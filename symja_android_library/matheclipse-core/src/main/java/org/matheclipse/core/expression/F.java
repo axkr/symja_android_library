@@ -7710,6 +7710,10 @@ public class F extends S {
     return new AST2(UnitConvert, a0, a1);
   }
 
+  public static IAST UniformDistribution(final IExpr a) {
+    return new AST1(UniformDistribution, a);
+  }
+
   public static IAST UnitStep(final IExpr a0) {
     return new AST1(UnitStep, a0);
   }
@@ -7822,7 +7826,8 @@ public class F extends S {
   }
 
   /**
-   * The operator form <code>op(f)[expr]</code> is transformed to <code>op(expr, f)</code>
+   * The operator form <code>op(f)[expr]</code> is transformed to <code>op(expr, f)</code>. The
+   * operator form <code>op(f, g)[expr]</code> is transformed to <code>op(expr, f, g)</code>
    *
    * @param ast1 an IAST with condition <code>ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
    * @return
@@ -7864,15 +7869,31 @@ public class F extends S {
   }
 
   /**
-   * The operator form <code>op(f)[expr]</code> is transformed to <code>op(f, expr)</code>
+   * The operator form <code>op(f)[expr]</code> is transformed to <code>op(f, expr)</code>. The
+   * operator form <code>op(f)[expr1, expr2]</code> is transformed to <code>op(f, expr1, expr2)
+   * </code>.
    *
    * @param ast1 an <code>IAST</code> with condition <code>
    *     ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
    * @return
    */
-  public static IAST operatorForm2Prepend(final IAST ast1) {
-    if (ast1.head().isAST1() && ast1.isAST1()) {
-      return new AST2(ast1.topHead(), ((IAST) ast1.head()).arg1(), ast1.arg1());
+  public static IAST operatorForm2Prepend(final IAST ast1, int[] expected, EvalEngine engine) {
+    if (ast1.head().isAST1() && ast1.argSize() > 0) {
+      if (ast1.argSize() + 1 < expected[0] || ast1.argSize() + 1 > expected[1]) {
+        return IOFunctions.printArgMessage(ast1, expected, engine);
+      }
+      IExpr headArg1 = ast1.head().first();
+      switch (ast1.size()) {
+        case 2:
+          return new AST2(ast1.topHead(), headArg1, ast1.arg1());
+        case 3:
+          return new AST3(ast1.topHead(), headArg1, ast1.arg1(), ast1.arg2());
+        default:
+          IASTAppendable result = F.ast(ast1.topHead(), ast1.size() + 1);
+          result.append(headArg1);
+          result.appendArgs(ast1);
+          return result;
+      }
     }
     return NIL;
   }

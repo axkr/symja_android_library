@@ -872,24 +872,21 @@ public class IOFunctions {
    * @return
    */
   public static IAST printArgMessage(IAST ast, int[] expected, EvalEngine engine) {
+    IExpr head = ast.head();
     final ISymbol topHead = ast.topHead();
     int argSize = ast.argSize();
     if (expected[0] == expected[1]) {
       if (expected[0] == 1) {
         return printMessage(
-            topHead, "argx", F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0])), engine);
+            topHead, "argx", F.List(head, F.ZZ(argSize), F.ZZ(expected[0])), engine);
       }
       if (argSize == 1) {
-        return printMessage(topHead, "argr", F.List(topHead, F.ZZ(expected[0])), engine);
+        return printMessage(topHead, "argr", F.List(head, F.ZZ(expected[0])), engine);
       }
-      return printMessage(
-          topHead, "argrx", F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0])), engine);
+      return printMessage(topHead, "argrx", F.List(head, F.ZZ(argSize), F.ZZ(expected[0])), engine);
     }
     return printMessage(
-        topHead,
-        "argt",
-        F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])),
-        engine);
+        topHead, "argt", F.List(head, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);
   }
 
   /**

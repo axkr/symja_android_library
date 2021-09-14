@@ -1832,7 +1832,7 @@ public abstract class AbstractAST implements IASTMutable {
         if (evaluator instanceof ICoreFunctionEvaluator) {
           try {
             ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) evaluator;
-            IAST ast = EvalEngine.checkBuiltinArguments(this, functionEvaluator, engine);
+            IAST ast = engine.checkBuiltinArguments(this, functionEvaluator);
             if (!ast.isPresent()) {
               return F.NIL;
             }
@@ -3465,7 +3465,7 @@ public abstract class AbstractAST implements IASTMutable {
   public final boolean isListableAST() {
     return topHead().hasListableAttribute();
   }
-  
+
   /** {@inheritDoc} */
   @Override
   public boolean isList(Predicate<IExpr> pred) {
@@ -5073,8 +5073,8 @@ public abstract class AbstractAST implements IASTMutable {
 
   /**
    * Associates the specified value with the specified property in the associated <code>
-   * EnumMap&lt;PROPERTY, Object&gt;</code> map. If the map previously contained a mapping for this key,
-   * the old value is replaced.
+   * EnumMap&lt;PROPERTY, Object&gt;</code> map. If the map previously contained a mapping for this
+   * key, the old value is replaced.
    *
    * @param key
    * @param value

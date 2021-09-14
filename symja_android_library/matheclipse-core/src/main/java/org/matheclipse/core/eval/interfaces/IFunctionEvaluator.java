@@ -105,13 +105,13 @@ public interface IFunctionEvaluator extends IEvaluator {
 
   /**
    * The function is allowed to have 1 or 3 arguments and the head must be the built-in symbol name
-   * of the function or can call <code>operatorForm1</code>.
+   * of the function or can call {@link F#operatorForm1Append(IAST)}.
    */
   int[] ARGS_1_3_1 = new int[] {1, 3, 1};
 
   /**
    * The function is allowed to have 1 or 3 arguments and the head must be the built-in symbol name
-   * of the function or can call <code>operatorForm2</code>.
+   * of the function or can call {@link F#operatorForm2Prepend(IAST)}.
    */
   int[] ARGS_1_3_2 = new int[] {1, 3, 2};
 
@@ -129,13 +129,13 @@ public interface IFunctionEvaluator extends IEvaluator {
 
   /**
    * The function is allowed to have 1 or 4 arguments and the head must be the built-in symbol name
-   * of the function or can be an <code>operatorForm1</code>.
+   * of the function or can be an {@link F#operatorForm1Append(IAST)}.
    */
   int[] ARGS_1_4_1 = new int[] {1, 4, 1};
 
   /**
    * The function is allowed to have 1 or 4 arguments and the head must be the built-in symbol name
-   * of the function or can be an <code>operatorForm2</code>.
+   * of the function or can be an {@link F#operatorForm2Prepend(IAST)}.
    */
   int[] ARGS_1_4_2 = new int[] {1, 4, 2};
 
@@ -149,13 +149,13 @@ public interface IFunctionEvaluator extends IEvaluator {
 
   /**
    * The function is allowed to have 2 or 3 arguments and the head must be the built-in symbol name
-   * of the function or can call <code>operatorForm1</code>.
+   * of the function or can call {@link F#operatorForm1Append(IAST)}.
    */
   int[] ARGS_2_3_1 = new int[] {2, 3, 1};
 
   /**
    * The function is allowed to have 2 or 3 arguments and the head must be the built-in symbol name
-   * of the function or can call <code>operatorForm2</code>.
+   * of the function or can call {@link F#operatorForm2Prepend(IAST)}.
    */
   int[] ARGS_2_3_2 = new int[] {2, 3, 2};
 
@@ -163,20 +163,20 @@ public interface IFunctionEvaluator extends IEvaluator {
 
   /**
    * The function is allowed to have 2 or 4 arguments and the head must be the built-in symbol name
-   * of the function or can call <code>operatorForm1</code>.
+   * of the function or can call {@link F#operatorForm1Append(IAST)}
    */
   int[] ARGS_2_4_1 = new int[] {2, 4, 1};
 
   /**
    * The function is allowed to have 2 or 4 arguments and the head must be the built-in symbol name
-   * of the function or can be an <code>operatorForm2</code>.
+   * of the function or can be an {@link F#operatorForm2Prepend(IAST)}.
    */
   int[] ARGS_2_4_2 = new int[] {2, 4, 2};
 
   int[] ARGS_3_3 = new int[] {3, 3};
 
   int[] ARGS_3_4 = new int[] {3, 4};
-  
+
   int[] ARGS_3_5 = new int[] {3, 5};
 
   int[] ARGS_4_4 = new int[] {4, 4};

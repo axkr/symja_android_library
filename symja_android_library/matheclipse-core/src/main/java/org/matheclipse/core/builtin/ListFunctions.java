@@ -3022,16 +3022,27 @@ public final class ListFunctions {
    *
    * <h3>Examples</h3>
    */
-  private static final class Fold extends AbstractCoreFunctionEvaluator {
+  private static final class Fold extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
+        IExpr arg1 = ast.arg1();
+        IExpr arg2 = ast.arg2();
+        if (ast.isAST2()) {
+          if (arg2.size() <= 1) {
+            if (!arg2.isAST()) {
+              // Nonatomic expression expected at position `1` in `2`.
+              return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C2, ast), engine);
+            }
+            // an empty IAST cannot be folded
+            return F.NIL;
+          }
+          return F.Fold(ast.arg1(), F.First(arg2), F.Rest(arg2));
+        }
         IExpr temp = engine.evaluate(ast.arg3());
         if (temp.isAST()) {
           final IAST list = (IAST) temp;
-          IExpr arg1 = engine.evaluate(ast.arg1());
-          IExpr arg2 = engine.evaluate(ast.arg2());
           return list.foldLeft((x, y) -> F.binaryAST2(arg1, x, y), arg2, 1);
         }
       } catch (final ArithmeticException e) {
@@ -3042,13 +3053,11 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      return ARGS_2_3_2;
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
-    }
+    public void setUp(final ISymbol newSymbol) {}
   }
 
   /**
@@ -3067,12 +3076,19 @@ public final class ListFunctions {
    *
    * <h3>Examples</h3>
    */
-  private static final class FoldList extends AbstractCoreFunctionEvaluator {
+  private static final class FoldList extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
+        IExpr arg2 = ast.arg2();
         if (ast.size() == 3) {
+          if (arg2.size() <= 1) {
+            if (!arg2.isAST()) {
+              // Nonatomic expression expected at position `1` in `2`.
+              return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C2, ast), engine);
+            }
+          }
           return evaluateNestList3(ast, engine);
         } else if (ast.size() == 4) {
           return evaluateNestList4(ast, engine);
@@ -3087,10 +3103,10 @@ public final class ListFunctions {
     }
 
     private static IAST evaluateNestList3(final IAST ast, EvalEngine engine) {
-      IExpr temp = engine.evaluate(ast.arg2());
+      IExpr temp = ast.arg2();
       if (temp.isAST()) {
         IAST list = (IAST) temp;
-        IExpr arg1 = engine.evaluate(ast.arg1());
+        IExpr arg1 = ast.arg1();
         if (list.isEmpty() || list.size() == 2) {
           return list;
         }
@@ -3104,11 +3120,11 @@ public final class ListFunctions {
 
     private static IAST evaluateNestList4(final IAST ast, EvalEngine engine) {
 
-      IExpr temp = engine.evaluate(ast.arg3());
+      IExpr temp = ast.arg3();
       if (temp.isAST()) {
         final IAST list = (IAST) temp;
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        IExpr arg2 = engine.evaluate(ast.arg2());
+        IExpr arg1 = ast.arg1();
+        IExpr arg2 = ast.arg2();
         if (list.isEmpty()) {
           return F.unaryAST1(list.head(), arg2);
         }
@@ -3118,10 +3134,12 @@ public final class ListFunctions {
       return F.NIL;
     }
 
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3_2;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
   }
 
   /**

@@ -318,7 +318,6 @@ public class EvalEngine implements Serializable {
    * @see org.matheclipse.core.builtin.function.Quiet
    */
   transient boolean fQuietMode = false;
- 
 
   /**
    * A single <code>EvalEngine</code> is associated with the current thread through a <a
@@ -942,7 +941,7 @@ public class EvalEngine implements Serializable {
         try {
           // evaluate a built-in function.
           final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) evaluator;
-          ast = checkBuiltinArguments(ast, functionEvaluator, this);
+          ast = checkBuiltinArguments(ast, functionEvaluator);
           if (!ast.isPresent()) {
             return F.NIL;
           }
@@ -1005,8 +1004,7 @@ public class EvalEngine implements Serializable {
    * @param engine
    * @return
    */
-  public static IAST checkBuiltinArguments(
-      IAST ast, final IFunctionEvaluator functionEvaluator, final EvalEngine engine) {
+  public IAST checkBuiltinArguments(IAST ast, final IFunctionEvaluator functionEvaluator) {
     int[] expected;
     if ((expected = functionEvaluator.expectedArgSize(ast)) != null) {
       if (expected.length == 2 && !ast.head().isBuiltInSymbol()) {
@@ -1022,8 +1020,8 @@ public class EvalEngine implements Serializable {
             }
             break;
           case 2:
-            if (ast.isAST1()) {
-              ast = F.operatorForm2Prepend(ast);
+            if (ast.head().isAST1()) {
+              ast = F.operatorForm2Prepend(ast, expected, this);
               if (!ast.isPresent()) {
                 return F.NIL;
               }
@@ -1033,7 +1031,11 @@ public class EvalEngine implements Serializable {
         }
       }
       if (ast.argSize() < expected[0] || ast.argSize() > expected[1]) {
-        return IOFunctions.printArgMessage(ast, expected, engine);
+        if (ast.isAST1() && expected.length > 2) {
+          // because an operator form is allowed do not print a message
+          return F.NIL;
+        }
+        return IOFunctions.printArgMessage(ast, expected, this);
       }
     }
     return ast;
@@ -2615,7 +2617,7 @@ public class EvalEngine implements Serializable {
       PrintStream stream = getErrorPrintStream();
       LOGGER.warn(str);
       stream.println(str);
-    } 
+    }
     return F.NIL;
   }
 
@@ -2633,7 +2635,7 @@ public class EvalEngine implements Serializable {
       } else {
         stream.println(symbol + ": " + exception.getClass().getSimpleName());
       }
-    } 
+    }
     return F.NIL;
   }
 
@@ -2938,7 +2940,8 @@ public class EvalEngine implements Serializable {
             } else {
               if (listLength[0] != ((IAST) x).argSize()) {
                 // tdlen: Objects of unequal length in `1` cannot be combined.
-                IOFunctions.printMessage(commandHead, messageShortcut, F.List(ast), EvalEngine.get());
+                IOFunctions.printMessage(
+                    commandHead, messageShortcut, F.List(ast), EvalEngine.get());
                 // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
                 return true;
               }
