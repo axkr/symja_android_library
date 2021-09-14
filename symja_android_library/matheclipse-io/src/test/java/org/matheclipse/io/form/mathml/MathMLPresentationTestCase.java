@@ -474,7 +474,7 @@ public class MathMLPresentationTestCase extends TestCase {
     expr = EvalEngine.get().evaluate("Inequality(a,Less,0,LessEqual,b, Equal,c, Unequal,d)");
     check(
         expr,
-        "<mrow><mi>a</mi><mo>&lt;</mo><mn>0</mn><mo>&lt;=</mo><mi>b</mi><mo>==</mo><mi>c</mi><mo>!=</mo><mi>d</mi></mrow>");
+        "<mrow><mrow><mi>a</mi><mo>&lt;</mo><mn>0</mn><mo>&lt;=</mo><mi>b</mi><mo>==</mo><mi>c</mi></mrow><mo>&#x2227;</mo><mrow><mi>c</mi><mo>!=</mo><mi>d</mi></mrow></mrow>");
   }
 
   public void testCenterDot() {
