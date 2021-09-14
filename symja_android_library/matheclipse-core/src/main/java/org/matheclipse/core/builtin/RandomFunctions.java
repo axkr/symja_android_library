@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import java.math.BigInteger;
 import java.util.concurrent.ThreadLocalRandom;
-
 import org.hipparchus.complex.Complex;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.util.MathArrays;
@@ -38,6 +37,7 @@ public final class RandomFunctions {
       S.RandomPrime.setEvaluator(new RandomPrime());
       S.RandomChoice.setEvaluator(new RandomChoice());
       S.RandomComplex.setEvaluator(new RandomComplex());
+      S.RandomPermutation.setEvaluator(new RandomPermutation());
       S.RandomReal.setEvaluator(new RandomReal());
       S.RandomSample.setEvaluator(new RandomSample());
     }
@@ -392,6 +392,46 @@ public final class RandomFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_2;
+    }
+  }
+
+  private static final class RandomPermutation extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      try {
+        int d = ast.arg1().toIntDefault();
+
+        if (d > 0) {
+          IAST randomVariate = F.RandomVariate(F.UniformDistribution(F.List(F.C0, F.C1)), F.ZZ(d));
+          if (ast.isAST1()) {
+            // one permutation
+            IExpr ordering = S.Ordering.of(engine, randomVariate);
+            return F.Cycles(F.List(ordering));
+          } else {
+            int n = ast.arg2().toIntDefault();
+            if (n > 0) {
+              // a list of n permutations
+              IASTAppendable list = F.ListAlloc(n);
+              for (int i = 0; i < n; i++) {
+                IExpr ordering = S.Ordering.of(engine, randomVariate);
+                list.append(F.Cycles(F.List(ordering)));
+              }
+              return list;
+            }
+          }
+        }
+
+      } catch (ValidateException ve) {
+        return engine.printMessage(ast.topHead(), ve);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 

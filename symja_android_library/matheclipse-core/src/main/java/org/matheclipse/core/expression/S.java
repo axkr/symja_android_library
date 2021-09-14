@@ -7546,6 +7546,9 @@ public class S {
   public static final IBuiltInSymbol RandomInteger =
       F.initFinalSymbol("RandomInteger", ID.RandomInteger);
 
+  public static final IBuiltInSymbol RandomPermutation =
+      F.initFinalSymbol("RandomPermutation", ID.RandomPermutation);
+
   /**
    * RandomPrime({imin, imax}) - create a random prime integer number between `imin` and `imax`
    * inclusive.

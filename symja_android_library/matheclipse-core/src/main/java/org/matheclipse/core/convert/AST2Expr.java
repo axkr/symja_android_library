@@ -1124,6 +1124,7 @@ public class AST2Expr {
     "RandomChoice",
     "RandomComplex",
     "RandomInteger",
+    "RandomPermutation",
     "RandomPrime",
     "RandomReal",
     "RandomSample",
