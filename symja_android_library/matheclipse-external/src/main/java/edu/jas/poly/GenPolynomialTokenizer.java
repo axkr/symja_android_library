@@ -373,7 +373,7 @@ public class GenPolynomialTokenizer {
                 try {
                     r = (RingElem) fac.parse(rf.toString());
                 } catch (NumberFormatException re) {
-                    throw new InvalidExpressionException("not a number " + rf, re);
+                    throw new InvalidExpressionException("not a number :" + rf + ": " + fac, re);
                 }
                 if (debug)
                     logger.debug("coeff " + r);
@@ -457,7 +457,7 @@ public class GenPolynomialTokenizer {
                         //System.out.println("r = " + r);
                     } catch (NumberFormatException re) {
                         //System.out.println("re = " + re);
-                        throw new InvalidExpressionException("not a number " + df, re);
+                        throw new InvalidExpressionException("not a number :" + df + ": " + fac, re);
                     }
                     if (debug)
                         logger.debug("coeff " + r);
@@ -1613,7 +1613,7 @@ public class GenPolynomialTokenizer {
                 try {
                     r = (RingElem) fac.parse(rf.toString());
                 } catch (NumberFormatException re) {
-                    throw new InvalidExpressionException("not a number " + rf, re);
+                    throw new InvalidExpressionException("not a number :" + rf + ": " + fac, re);
                 }
                 if (debug)
                     logger.debug("coeff " + r);
@@ -1697,7 +1697,7 @@ public class GenPolynomialTokenizer {
                         //System.out.println("r = " + r);
                     } catch (NumberFormatException re) {
                         //System.out.println("re = " + re);
-                        throw new InvalidExpressionException("not a number " + df, re);
+                        throw new InvalidExpressionException("not a number :" + df + ": " + fac, re);
                     }
                     if (debug)
                         logger.debug("coeff " + r);

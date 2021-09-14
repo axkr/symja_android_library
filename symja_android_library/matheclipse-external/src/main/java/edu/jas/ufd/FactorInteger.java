@@ -898,7 +898,13 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
         long evStart = 0L; //3L * 5L;
         List<Long> Evs = new ArrayList<Long>(pfac.nvar + 1); // Evs(0), Evs(1) unused
         for (int j = 0; j <= pfac.nvar; j++) {
-            Evs.add(evStart++); // bug
+            //Evs.add(evStart++); // bug
+            Evs.add(evStart);
+            if (evStart > 0) {
+                evStart = - evStart;
+            } else {
+                evStart = 1L - evStart;
+            }
         }
         //no: Collections.reverse(Evs);
         evStart = Evs.get(0);
@@ -952,6 +958,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
                     Vi = new BigInteger(vi);
                     pep = PolyUtil.<BigInteger> evaluateMain(cpfac, pe, Vi);
                     //System.out.println("pep = " + pep);
+                    //System.out.println("degp = " + degp + ", dege = " + pep.degree(cpfac.nvar - 1));
                     // check lucky evaluation point 
                     if (degp == pep.degree(cpfac.nvar - 1)) {
                         logger.info("pep = " + pep);
@@ -1009,7 +1016,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
                 pe = pep;
                 ce = cep;
             }
-            //System.out.println("ce = " + ce + ", pe = " + pe);
+            //System.out.println("ce = " + ce + ", pe = " + pe + ", V = " + V);
             pecw = engine.baseContent(pe); // original Wang
             isPrimitive = pecw.isONE();
             ped = ccpfac.coFac.getONE();

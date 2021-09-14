@@ -721,6 +721,80 @@ public class PolyUfdUtil {
 
 
     /**
+     * Polynomial suitable evaluation points. deg(B) = deg(A(x_1,...)) and B is
+     * also squarefree.
+     * @param A squarefree polynomial in r variables.
+     * @return L list of evaluation points and a squarefree univariate
+     *         Polynomial B = A(x_1,L_1,...L_{r-2}).
+     * @see "sacring.SACPFAC.mi#IPCEVP from SAC2/MAS"
+     */
+    @SuppressWarnings("unchecked")
+    public static <C extends GcdRingElem<C>> EvalPoints<C> evaluationPoints(GenPolynomial<C> A) {
+        ArrayList<C> L = new ArrayList<C>();
+        if (A == null) {
+            throw new IllegalArgumentException("A is null");
+        }
+        GenPolynomialRing<C> pfac = A.ring;
+        if (pfac.nvar <= 1) {
+            return new EvalPoints<C>(A, A, L);
+        }
+        GenPolynomial<C> B = A;
+        if (A.isZERO() || A.isONE()) {
+            return new EvalPoints<C>(A, A, L);
+        }
+        SquarefreeAbstract<C> sengine = SquarefreeFactory.<C> getImplementation(pfac.coFac);
+        //long dega = A.degree(0);
+        GenPolynomialRing<C> rpfac = pfac;
+        GenPolynomial<C> ape = A;
+        C one = pfac.coFac.getONE();
+        C ll = pfac.coFac.getZERO();
+        for (int i = pfac.nvar; i > 1; i--) {
+            //System.out.println("rpfac = " + rpfac.toScript());
+            GenPolynomialRing<GenPolynomial<C>> rfac = rpfac.recursive(1);
+            GenPolynomialRing<C> cpfac = (GenPolynomialRing) rfac.coFac;
+            GenPolynomial<GenPolynomial<C>> ap = PolyUtil.<C> recursive(rfac, ape);
+            //System.out.println("ap = " + ap);
+            long degd = ape.degree(rpfac.nvar - 2);
+            boolean unlucky = true;
+            long s = 0;
+            C Vi = null;
+            while (unlucky) {
+                //System.out.println("ll = " + ll);
+                Vi = ll;
+                if (ll.signum() > 0) {
+                    ll = ll.negate();
+                } else {
+                    ll = one.subtract(ll);
+                }
+                ape = PolyUtil.<C> evaluateMainRecursive(cpfac, ap, Vi);
+                //System.out.println("ape = " + ape);
+                //long degp = ape.degree(0);
+                long degc = ape.degree(cpfac.nvar - 1);
+                //System.out.println("degc = " + degc + ", degd = " + degd);
+                if (degd != degc) {
+                    continue;
+                }
+                if (!sengine.isSquarefree(ape)) {
+                    //System.out.println("not squarefree");
+                    continue;
+                }
+                //System.out.println("isSquarefree");
+                //ap = ape;
+                unlucky = false;
+                if (s++ > 300l) {
+                    throw new RuntimeException(s + " evaluations not squarefree: " + Vi + ", " + ape);
+                    //break;
+                }
+            }
+            L.add(Vi);
+            rpfac = cpfac;
+        }
+        B = ape;
+        return new EvalPoints<C>(A, B, L);
+    }
+
+
+    /**
      * Kronecker substitution. Substitute x_i by x**d**(i-1) to construct a
      * univariate polynomial.
      * @param A polynomial to be converted.

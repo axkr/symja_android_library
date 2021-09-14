@@ -308,6 +308,46 @@ public class GenMatrixRing<C extends RingElem<C>> implements AlgebraFactory<GenM
 
 
     /**
+     * Stack matrix ring. this on top of other.
+     * @param other matrix ring factory.
+     * @return stack ring factory.
+     */
+    public GenMatrixRing<C> stack(GenMatrixRing<C> other) {
+        if (cols != other.cols) {
+            throw new IllegalArgumentException("invalid dimensions in stack");
+        }
+        if (!coFac.equals(other.coFac)) {
+            throw new IllegalArgumentException("invalid coefficients in stack");
+        }
+        if (other.rows == 0) {
+            return this;
+        }
+        int stackrows = rows+other.rows;
+        return new GenMatrixRing<C>(coFac, stackrows, cols, blocksize);
+    }
+
+
+    /**
+     * Concat matrix ring. this before of other.
+     * @param other matrix ring factory.
+     * @return concat ring factory.
+     */
+    public GenMatrixRing<C> concat(GenMatrixRing<C> other) {
+        if (rows != other.rows) {
+            throw new IllegalArgumentException("invalid dimensions in concat");
+        }
+        if (!coFac.equals(other.coFac)) {
+            throw new IllegalArgumentException("invalid coefficients in stack");
+        }
+        if (other.cols == 0) {
+            return this;
+        }
+        int concatcols = cols+other.cols;
+        return new GenMatrixRing<C>(coFac, rows, concatcols, blocksize);
+    }
+
+
+    /**
      * Get the matrix for a.
      * @param a long
      * @return matrix corresponding to a.

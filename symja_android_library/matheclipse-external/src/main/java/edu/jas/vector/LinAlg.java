@@ -56,30 +56,31 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
         }
         GenMatrixRing<C> ring = A.ring;
         int N = ring.rows;
-        if (N != ring.cols) {
+        int M = ring.cols;
+        int NM = Math.min(N,M);
+        if (N != M) {
             logger.warn("nosquare matrix");
         }
-        int i, imax;
-        C maxA, absA;
-        List<Integer> P = new ArrayList<Integer>(N + 1);
-        for (i = 0; i <= N; i++) {
-            P.add(i); //Unit permutation matrix, P[N] initialized with N
+        List<Integer> P = new ArrayList<Integer>(NM + 1);
+        for (int i = 0; i <= NM; i++) {
+            P.add(i); //Unit permutation matrix, P[NM] initialized with NM
         }
         ArrayList<ArrayList<C>> mat = A.matrix;
-        for (i = 0; i < N; i++) {
-            imax = i;
-            maxA = ring.coFac.getZERO();
+        for (int i = 0; i < NM; i++) {
+            int imax = i;
+            C maxA = ring.coFac.getZERO();
             for (int k = i; k < N; k++) {
                 // absA = fabs(A[k][i])
-                absA = mat.get(k).get(i).abs();
+                C absA = mat.get(k).get(i).abs();
                 if (absA.compareTo(maxA) > 0) {
                     maxA = absA;
                     imax = k;
+                    break; // first
                 }
             }
             if (maxA.isZERO()) {
                 logger.warn("matrix is degenerate at col " + i);
-                mat.get(i).set(i, ring.coFac.getZERO());
+                mat.get(i).set(i, ring.coFac.getZERO()); // already zero
                 //continue;
                 P.clear();
                 return P; //failure, matrix is degenerate
@@ -94,20 +95,21 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
                 ArrayList<C> ptr = mat.get(i);
                 mat.set(i, mat.get(imax));
                 mat.set(imax, ptr);
-                //counting pivots starting from N (for determinant)
-                P.set(N, P.get(N) + 1);
+                //counting pivots starting from NM (for determinant)
+                P.set(NM, P.get(NM) + 1);
             }
             C dd = mat.get(i).get(i).inverse();
             for (int j = i + 1; j < N; j++) {
                 // A[j][i] /= A[i][i];
                 C d = mat.get(j).get(i).multiply(dd); //divide(dd);
                 mat.get(j).set(i, d);
-                for (int k = i + 1; k < N; k++) {
+                for (int k = i + 1; k < M; k++) {
                     // A[j][k] -= A[j][i] * A[i][k];
                     C a = mat.get(j).get(i).multiply(mat.get(i).get(k));
                     mat.get(j).set(k, mat.get(j).get(k).subtract(a));
                 }
             }
+            //System.out.println("row(last) = " + mat.get(NM-1));
         }
         return P;
     }
@@ -407,17 +409,15 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
         if (N != M) {
             logger.warn("nosquare matrix");
         }
-        int i, imax, kmax;
-        C maxA, absA;
-        kmax = 0;
+        int kmax = 0;
         ArrayList<ArrayList<C>> mat = A.matrix;
-        for (i = 0; i < N;) {
-            imax = i;
-            maxA = ring.coFac.getZERO();
+        for (int i = 0; i < N;) {
+            int imax = i;
+            C maxA = ring.coFac.getZERO();
             // search non-zero rows
             for (int k = i; k < N; k++) {
                 // absA = fabs(A[k][i])
-                absA = mat.get(k).get(kmax).abs();
+                C absA = mat.get(k).get(kmax).abs();
                 if (absA.compareTo(maxA) > 0) {
                     maxA = absA;
                     imax = k;
@@ -441,6 +441,7 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
             }
             // A[j][i] /= A[i][i];
             C dd = mat.get(i).get(kmax).inverse();
+            //System.out.println("matrix is non zero at row " + imax + ", dd = " + dd);
             for (int k = kmax; k < M; k++) {
                 C d = mat.get(i).get(k).multiply(dd); //divide(dd);
                 mat.get(i).set(k, d);
@@ -461,6 +462,7 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
             if (kmax >= M) {
                 break;
             }
+            //System.out.println("rowEch(last) = " + mat.get(N-1));
         }
         return A;
     }
@@ -553,6 +555,98 @@ public class LinAlg<C extends RingElem<C>> implements Serializable {
             }
         }
         return A;
+    }
+
+
+    /**
+     * Matrix fraction free Gauss elimination. Matrix A is replaced by
+     * its fraction free LU decomposition. A contains a copy of both
+     * matrices L-E and U as A=(L-E)+U such that P*A=L*U. Todo: L is
+     * not computed but 0. The permutation matrix is not stored as a
+     * matrix, but in an integer vector P of size N+1 containing
+     * column indexes where the permutation matrix has "1". The last
+     * element P[N]=S+N, where S is the number of row exchanges needed
+     * for determinant computation, det(P)=(-1)^S
+     * @param A a n&times;n matrix.
+     * @return permutation vector P and modified matrix A.
+     */
+    public List<Integer> fractionfreeGaussElimination(GenMatrix<C> A) {
+        if (A == null) {
+            return null;
+        }
+        GenMatrixRing<C> ring = A.ring;
+        int N = ring.rows;
+        int M = ring.cols;
+        int NM = Math.min(N,M);
+        if (N != M) {
+            logger.warn("nosquare matrix");
+        }
+        List<Integer> P = new ArrayList<Integer>(NM + 1);
+        for (int i = 0; i <= NM; i++) {
+            P.add(i); //Unit permutation matrix, P[NM] initialized with NM
+        }
+        int r = 0;
+        C divisor = ring.coFac.getONE();
+        ArrayList<ArrayList<C>> mat = A.matrix;
+        for (int i = 0; i < NM && r < N; i++) {
+            int imax = i;
+            C maxA = ring.coFac.getZERO();
+            for (int k = i; k < N; k++) {
+                // absA = fabs(A[k][i])
+                C absA = mat.get(k).get(i).abs();
+                if (absA.compareTo(maxA) > 0) {
+                    maxA = absA;
+                    imax = k;
+                    break; // first
+                }
+            }
+            if (maxA.isZERO()) {
+                logger.warn("matrix is degenerate at col " + i);
+                mat.get(i).set(i, ring.coFac.getZERO()); //already zero
+                //continue;
+                P.clear();
+                return P; //failure, matrix is degenerate
+            }
+            if (imax != i) {
+                //pivoting P
+                int j = P.get(i);
+                P.set(i, P.get(imax));
+                P.set(imax, j);
+                //System.out.println("new pivot " + imax); // + ", P = " + P);
+                //pivoting rows of A
+                ArrayList<C> ptr = mat.get(i);
+                mat.set(i, mat.get(imax));
+                mat.set(imax, ptr);
+                //counting pivots starting from NM (for determinant)
+                P.set(NM, P.get(NM) + 1);
+            }
+            //C dd = mat.get(i).get(i).inverse();
+            for (int j = r + 1; j < N; j++) {
+                // A[j][i] /= A[i][i];
+                //C d = mat.get(j).get(i).multiply(dd); //divide(dd);
+                //mat.get(j).set(i, d);
+                for (int k = i + 1; k < M; k++) { //+ 1
+                    // A[j][k] -= A[j][i] * A[i][k];
+                    //C a = mat.get(j).get(i).multiply(mat.get(i).get(k));
+                    //mat.get(j).set(k, mat.get(j).get(k).subtract(a));
+                    //System.out.println("i = " + i + ", r = " + r + ", j = " + j + ", k = " + k);
+                    C a = mat.get(r).get(i).multiply(mat.get(j).get(k));
+                    C b = mat.get(r).get(k).multiply(mat.get(j).get(i));
+                    C d = a.subtract(b).divide(divisor);
+                    //System.out.println(", a = " + a + ", b = " + b + ", d = " + d);
+                    mat.get(j).set(k, d);
+                }
+            }
+            for (int j = r + 1; j < N; j++) { // set L-E = 0
+                mat.get(j).set(i, ring.coFac.getZERO());
+            }
+            divisor = mat.get(r).get(i);
+            r++;
+            //System.out.println("divisor = " + divisor);
+            //System.out.println("mat = " + mat);
+            //System.out.println("row(last) = " + mat.get(NM-1));
+        }
+        return P;
     }
 
 }

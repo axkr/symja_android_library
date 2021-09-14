@@ -359,20 +359,61 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
 
     /**
-     * clone method.
-     * @see java.lang.Object#clone()
+     * Copy method.
+     * @see edu.jas.structure.Element#copy()
      */
     @Override
-    @SuppressWarnings("unchecked")
     public GenMatrix<C> copy() {
         //return ring.copy(this);
         ArrayList<ArrayList<C>> m = new ArrayList<ArrayList<C>>(ring.rows);
         ArrayList<C> v;
         for (ArrayList<C> val : matrix) {
-            v = new ArrayList<C>(val); // val.clone();
+            v = new ArrayList<C>(val);
             m.add(v);
         }
         return new GenMatrix<C>(ring, m);
+    }
+
+
+    /**
+     * Stack method.
+     * @param st stacked matrix ring.
+     * @param b other matrix.
+     * @return stacked matrix, this on top of other.
+     */
+    public GenMatrix<C> stack(GenMatrixRing<C> st, GenMatrix<C> b) {
+        ArrayList<ArrayList<C>> m = new ArrayList<ArrayList<C>>(st.rows);
+        ArrayList<C> v;
+        for (ArrayList<C> val : matrix) {
+            v = new ArrayList<C>(val);
+            m.add(v);
+        }
+        for (ArrayList<C> val : b.matrix) {
+            v = new ArrayList<C>(val);
+            m.add(v);
+        }
+        return new GenMatrix<C>(st, m);
+    }
+
+
+    /**
+     * Concat method.
+     * @param cc concated matrix ring.
+     * @param b other matrix.
+     * @return concated matrix, this before of other.
+     */
+    public GenMatrix<C> concat(GenMatrixRing<C> cc, GenMatrix<C> b) {
+        ArrayList<ArrayList<C>> m = new ArrayList<ArrayList<C>>(cc.rows);
+        ArrayList<ArrayList<C>> bm = b.matrix;
+        ArrayList<C> v, o;
+        int i = 0;
+        for (ArrayList<C> val : matrix) {
+            v = new ArrayList<C>(val);
+            o = bm.get(i++);
+            v.addAll(o);
+            m.add(v);
+        }
+        return new GenMatrix<C>(cc, m);
     }
 
 
@@ -509,6 +550,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
     /**
      * Sum of matrices.
+     * @param b other matrix.
      * @return this+b
      */
     public GenMatrix<C> sum(GenMatrix<C> b) {
@@ -531,6 +573,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
     /**
      * Difference of matrices.
+     * @param b other matrix.
      * @return this-b
      */
     public GenMatrix<C> subtract(GenMatrix<C> b) {
@@ -594,6 +637,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
     /**
      * Product of this matrix with scalar.
+     * @param s scalar
      * @return this*s
      */
     public GenMatrix<C> scalarMultiply(C s) {
@@ -613,6 +657,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
     /**
      * Left product of this matrix with scalar.
+     * @param s scalar
      * @return s*this
      */
     public GenMatrix<C> leftScalarMultiply(C s) {
@@ -632,6 +677,9 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
     /**
      * Linear compination of this matrix with scalar multiple of other matrix.
+     * @param s scalar
+     * @param t scalar
+     * @param b other matrix.
      * @return this*s+b*t
      */
     public GenMatrix<C> linearCombination(C s, GenMatrix<C> b, C t) {
@@ -656,6 +704,8 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
     /**
      * Linear combination of this matrix with scalar multiple of other matrix.
+     * @param t scalar
+     * @param b other matrix.
      * @return this+b*t
      */
     public GenMatrix<C> linearCombination(GenMatrix<C> b, C t) {
@@ -680,6 +730,8 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
     /**
      * Left linear combination of this matrix with scalar multiple of other
      * matrix.
+     * @param t scalar
+     * @param b other matrix.
      * @return this+t*b
      */
     public GenMatrix<C> linearCombination(C t, GenMatrix<C> b) {
@@ -704,6 +756,9 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
     /**
      * left linear compination of this matrix with scalar multiple of other
      * matrix.
+     * @param s scalar
+     * @param t scalar
+     * @param b other matrix.
      * @return s*this+t*b
      */
     public GenMatrix<C> leftLinearCombination(C s, C t, GenMatrix<C> b) {
@@ -728,6 +783,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
     /**
      * Transposed matrix.
+     * @param tr transposed matrix ring.
      * @return transpose(this)
      */
     public GenMatrix<C> transpose(GenMatrixRing<C> tr) {
@@ -759,7 +815,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
     /**
      * Multiply this with S.
-     * @param S
+     * @param S other matrix.
      * @return this * S.
      */
     public GenMatrix<C> multiply(GenMatrix<C> S) {
@@ -804,7 +860,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
     /**
      * Multiply this with S. Simple unblocked algorithm.
-     * @param S
+     * @param S other matrix.
      * @return this * S.
      */
     public GenMatrix<C> multiplySimple(GenMatrix<C> S) {
@@ -832,7 +888,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
     /**
      * Divide this by S.
-     * @param S
+     * @param S other matrix.
      * @return this * S^{-1}.
      */
     public GenMatrix<C> divide(GenMatrix<C> S) {
@@ -843,7 +899,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
     /**
      * Divide left this by S.
-     * @param S
+     * @param S other matrix.
      * @return S^{-1} * this.
      */
     public GenMatrix<C> divideLeft(GenMatrix<C> S) {
@@ -853,7 +909,7 @@ public class GenMatrix<C extends RingElem<C>> implements AlgebraElem<GenMatrix<C
 
     /**
      * Remainder after division of this by S.
-     * @param S
+     * @param S other matrix.
      * @return this - (this / S) * S.
      */
     public GenMatrix<C> remainder(GenMatrix<C> S) {
