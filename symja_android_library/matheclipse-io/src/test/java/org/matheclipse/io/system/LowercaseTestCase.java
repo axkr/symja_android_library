@@ -13239,11 +13239,21 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFold() {
+    // message: Fold: Fold called with 5 arguments; 1 or 3 arguments are expected.
+    check(
+        "Fold(f)[{a, b, c, d},x,y,z]", //
+        "Fold(f)[{a,b,c,d},x,y,z]");
+    check(
+        "Fold(f, {})", //
+        "Fold(f,{})");
     check(
         "Fold(test, t1, {a, b, c, d})", //
         "test(test(test(test(t1,a),b),c),d)");
     check(
         "Fold(f, x, {a, b, c, d})", //
+        "f(f(f(f(x,a),b),c),d)");
+    check(
+        "Fold(f)[x,{a, b, c, d}]", //
         "f(f(f(f(x,a),b),c),d)");
     check(
         "Fold(List, x, {a, b, c, d})", //
@@ -13263,9 +13273,20 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Fold(x *#1 + #2 &, 0, {a, b, c, d, e})", //
         "e+x*(d+x*(c+x*(b+a*x)))");
+    check(
+        "Fold(f)[{a, b, c, d}]", //
+        "f(f(f(a,b),c),d)");
+    check(
+        "Fold(Cross, {{1, -1, 1}, {0, 1, 1}, {1, 1, -1}})", //
+        "{0,-1,-1}");
   }
 
   public void testFoldList() {
+    // message: FoldList: FoldList called with 5 arguments; 1 or 3 arguments are expected.
+    check(
+        "FoldList(f)[{a, b, c, d},x,y,z]", //
+        "FoldList(f)[{a,b,c,d},x,y,z]");
+
     // A002110 Primorial numbers: product of first n primes.
     // https://oeis.org/A002110
     check(
@@ -13304,6 +13325,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "foldlist(1/(#2 + #1) &, x, reverse({a, b, c}))", //
         "{x,1/(c+x),1/(b+1/(c+x)),1/(a+1/(b+1/(c+x)))}");
+    check(
+        "FoldList(f)[{a, b, c, d}]", //
+        "{a,f(a,b),f(f(a,b),c),f(f(f(a,b),c),d)}");
   }
 
   public void testFor() {
@@ -14105,6 +14129,10 @@ public class LowercaseTestCase extends AbstractTestCase {
     // TODO
     // check("FunctionRange(Sqrt(x^2 - 1)/x, x, y)", //
     // "");
+
+    //    check(
+    //        "FunctionRange(E^x, x, y)", //
+    //        "y>0");
 
     check(
         "FunctionRange(x^2-1, x, y)", //
@@ -17064,7 +17092,15 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testInequality() {
     // check("Inequality(-1,Less,0,Lest,1)", //
     // "Inequality(0,Lest,1)");
-
+    check(
+        "b != c != d", //
+        "b!=c!=d");
+    check(
+        "a<b!=c!=d", //
+        "a<b&&b!=c&&c!=d");
+    check(
+        "3 < 4 >= 2 != 1", //
+        "True");
     check(
         "Inequality(-1,Less,0,LessEqual,a,Less,3,Less,4,Less,5,Less,b,Less,10,Less,11)", //
         "0<=a<3<5<b<10");
@@ -17123,6 +17159,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Inequality(a,Less,b,LessEqual,c,Equal,d,GreaterEqual,e,Greater,f)", //
         "a<b<=c==d&&d>=e>f");
+    check(
+        "Inequality(a,Less,b,LessEqual,c,Unequal,d,GreaterEqual,e,Greater,f)", //
+        "a<b<=c&&c!=d&&d>=e>f");
     check(
         "Inequality(a,Greater,b,GreaterEqual,c,Equal,d,LessEqual,e,Less,f)", //
         "a>b>=c==d&&d<=e<f");
@@ -29672,6 +29711,16 @@ public class LowercaseTestCase extends AbstractTestCase {
     // "0.320015+I*0.506726");
     // check("RandomComplex({-2-I,5+3*I})", //
     // "0.61304+I*(-0.482746)");
+  }
+
+  public void testRandomPermutation() {
+    //    check(
+    //        "RandomPermutation(10)", //
+    //        "Cycles({{1,2,7,3,8,10,5,9,4,6}})");
+    //    check(
+    //        "RandomPermutation(10,3)", //
+    //        "{Cycles({{1,6,4,5,7,10,9,2,3,8}}),Cycles({{1,10,9,4,2,6,3,8,7,5}}),Cycles({{1,4,\n"
+    //            + "2,6,8,9,5,7,10,3}})}");
   }
 
   public void testRandomReal() {
