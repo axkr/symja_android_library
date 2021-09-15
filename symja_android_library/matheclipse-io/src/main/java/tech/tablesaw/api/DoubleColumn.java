@@ -23,7 +23,7 @@ import tech.tablesaw.selection.Selection;
 public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     implements NumberFillers<DoubleColumn> {
 
-  private final DoubleArrayList data;
+  protected final DoubleArrayList data;
 
   protected DoubleColumn(String name, DoubleArrayList data) {
     super(DoubleColumnType.instance(), name, DoubleColumnType.DEFAULT_PARSER);
@@ -38,9 +38,6 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
   @Override
   public String getString(int row) {
     final double value = getDouble(row);
-    if (DoubleColumnType.valueIsMissing(value)) {
-      return "";
-    }
     return String.valueOf(getPrintFormatter().format(value));
   }
 

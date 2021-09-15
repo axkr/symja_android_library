@@ -14,6 +14,9 @@
 
 package tech.tablesaw.api;
 
+import static tech.tablesaw.api.ColumnType.STRING;
+import static tech.tablesaw.api.ColumnType.TEXT;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.ints.IntComparator;
@@ -44,7 +47,7 @@ import tech.tablesaw.selection.Selection;
 public class TextColumn extends AbstractStringColumn<TextColumn> {
 
   // holds each element in the column.
-  private List<String> values;
+  protected List<String> values;
 
   private final IntComparator rowComparator =
       (i, i1) -> {
@@ -337,11 +340,10 @@ public class TextColumn extends AbstractStringColumn<TextColumn> {
 
   @Override
   public TextColumn append(Column<String> column) {
-    Preconditions.checkArgument(column.type() == this.type());
-    TextColumn source = (TextColumn) column;
-    final int size = source.size();
+    Preconditions.checkArgument(column.type() == TEXT || column.type().equals(STRING));
+    final int size = column.size();
     for (int i = 0; i < size; i++) {
-      append(source.getString(i));
+      append(column.getString(i));
     }
     return this;
   }
@@ -381,9 +383,8 @@ public class TextColumn extends AbstractStringColumn<TextColumn> {
   /** Returns the contents of the cell at rowNumber as a byte[] */
   @Override
   public byte[] asBytes(int rowNumber) {
-    return new byte[0];
-    // TODO (lwhite): FIX ME:  return
-    // ByteBuffer.allocate(byteSize()).putInt(getInt(rowNumber)).array();
+    String value = get(rowNumber);
+    return value.getBytes();
   }
 
   /** Added for naming consistency with all other columns */
