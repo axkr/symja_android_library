@@ -5825,17 +5825,23 @@ public class StatisticsFunctions {
                     }
                     if (indx.length == 1) {
                       // create a list
+                      if (indx[0] >= Config.MAX_AST_SIZE) {
+                        ASTElementLimitExceeded.throwIt(indx[0]);
+                      }
                       return variate.randomVariate(random, dist, indx[0]);
                     }
-                    // create a tensor
+                    // create a tensor recursively
                     int sampleSize = indx[indx.length - 1];
                     System.arraycopy(indx, 0, indx, 1, indx.length - 1);
                     IASTAppendable list = F.ListAlloc(indx[0]);
-                    return createArray(
+                    return createTensorRecursive(
                         indx, 1, list, () -> variate.randomVariate(random, dist, sampleSize));
                   } else {
                     int n = arg2.toIntDefault();
                     if (n >= 0) {
+                      if (n >= Config.MAX_AST_SIZE) {
+                        ASTElementLimitExceeded.throwIt(n);
+                      }
                       return variate.randomVariate(random, dist, n);
                     }
                   }
@@ -5863,15 +5869,18 @@ public class StatisticsFunctions {
       return ARGS_1_2;
     }
 
-    private static IAST createArray(
+    private static IAST createTensorRecursive(
         int[] indx, int offset, IASTAppendable list, Supplier<IExpr> s) {
       if (indx.length <= offset) {
         list.append(s.get());
         return list;
       }
+      if (indx[offset] >= Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(indx[offset]);
+      }
       IASTAppendable subList = F.ListAlloc(indx[offset]);
       for (int i = 1; i <= indx[offset]; i++) {
-        createArray(indx, offset + 1, subList, s);
+        createTensorRecursive(indx, offset + 1, subList, s);
       }
       list.append(subList);
       return subList;
