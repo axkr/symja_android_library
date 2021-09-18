@@ -4,15 +4,18 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMatcher;
 
 public class Predicates {
   private static class InASTPredicate implements Predicate<IExpr>, Serializable {
@@ -246,6 +249,30 @@ public class Predicates {
         return false;
       }
     };
+  }
+
+  /**
+   * Convert the pattern into a predicate.
+   *
+   * @param pattern
+   * @return
+   * @see IExpr#isFree(Predicate, boolean)
+   */
+  public static Predicate<IExpr> toPredicate(IExpr pattern) {
+    if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
+      return x -> x.equals(pattern);
+    }
+    final IPatternMatcher matcher;
+    if (pattern.isOrderlessAST() && pattern.isFreeOfPatterns()) {
+      // append a BlankNullSequence[] to match the parts of an Orderless expression
+      IPatternSequence blankNullRest = F.$ps(null, true);
+      IASTAppendable newPattern = ((IAST) pattern).copyAppendable();
+      newPattern.append(blankNullRest);
+      matcher = new PatternMatcher(newPattern);
+    } else {
+      matcher = new PatternMatcher(pattern);
+    }
+    return matcher;
   }
 
   private Predicates() {}

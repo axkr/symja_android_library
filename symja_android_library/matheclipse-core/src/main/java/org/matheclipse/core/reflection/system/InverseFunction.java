@@ -40,7 +40,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
     if (arg1.isFunction()) {
       IExpr f = arg1.first();
       if (f.isAST()) {
-        ISymbol dummy = F.Dummy(engine);
+        ISymbol dummy = F.Dummy();
         IAST[] arr = Eliminate.eliminateSlot(F.Equal(f, dummy), F.Slot1, engine);
         if (arr != null) {
           return F.Function(F.subst(arr[1].second(), F.Rule(dummy, F.Slot1)));

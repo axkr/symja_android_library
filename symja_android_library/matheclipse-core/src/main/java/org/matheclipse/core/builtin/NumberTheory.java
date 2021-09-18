@@ -2784,7 +2784,7 @@ public final class NumberTheory {
               }
               boolean nonNegative = ((IAST) period).forAll(x -> x.isNonNegativeResult());
 
-              ISymbol y = F.Dummy(engine);
+              ISymbol y = F.Dummy();
               IASTAppendable periodicPart = ((IAST) period).copyAppendable(1);
               periodicPart.append(y);
 
@@ -2793,7 +2793,7 @@ public final class NumberTheory {
                 IExpr[] solutions = F.solve(F.Equal(F.Subtract(periodReduced, y), F.C0), y);
                 if (solutions.length > 0) {
                   IExpr solution = nonNegative ? solutions[solutions.length - 1] : solutions[0];
-                  ISymbol x = F.Dummy(engine);
+                  ISymbol x = F.Dummy();
                   IASTMutable nonPeriodicPart = list.setAtCopy(list.argSize(), x);
                   IExpr nonPeriodReduced = continuedFractionReduce(nonPeriodicPart, engine);
                   if (nonPeriodReduced.isPresent()) {

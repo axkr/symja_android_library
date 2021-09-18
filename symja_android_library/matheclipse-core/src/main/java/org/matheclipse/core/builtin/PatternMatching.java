@@ -1276,7 +1276,7 @@ public final class PatternMatching {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head().equals(S.OptionsPattern)) {
         if (ast.isAST0()) {
-          return F.$OptionsPattern(null);
+          return F.$OptionsPattern();
         }
         if (ast.isAST1()) {
           return F.$OptionsPattern(null, ast.arg1());

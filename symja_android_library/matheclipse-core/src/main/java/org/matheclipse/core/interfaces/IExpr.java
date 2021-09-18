@@ -2,7 +2,6 @@ package org.matheclipse.core.interfaces;
 
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.Sqrt;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -11,7 +10,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
@@ -41,6 +39,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.WolframFormFactory;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
@@ -53,7 +52,6 @@ import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.core.visit.VisitorReplaceAllLambda;
 import org.matheclipse.core.visit.VisitorReplacePart;
 import org.matheclipse.core.visit.VisitorReplaceSlots;
-
 import edu.jas.structure.ElemFactory;
 import edu.jas.structure.GcdRingElem;
 
@@ -1890,20 +1888,8 @@ public interface IExpr
    * @return
    */
   default boolean isFree(IExpr pattern, boolean heads) {
-    if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
-      return isFree(x -> x.equals(pattern), heads);
-    }
-    final IPatternMatcher matcher;
-    if (pattern.isOrderlessAST() && pattern.isFreeOfPatterns()) {
-      // append a BlankNullSequence[] to match the parts of an Orderless expression
-      IPatternSequence blankNullRest = F.$ps(null, true);
-      IASTAppendable newPattern = ((IAST) pattern).copyAppendable();
-      newPattern.append(blankNullRest);
-      matcher = new PatternMatcher(newPattern);
-    } else {
-      matcher = new PatternMatcher(pattern);
-    }
-    return !has(matcher, heads);
+    Predicate<IExpr> matcher = Predicates.toPredicate(pattern);
+    return isFree(matcher, heads);
   }
 
   /**

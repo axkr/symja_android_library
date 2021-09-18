@@ -11,7 +11,7 @@ import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
-/** Tests system.reflection classes */
+/** Tests built-in functions */
 public class LowercaseTestCase extends AbstractTestCase {
 
   public LowercaseTestCase(String name) {
@@ -10366,6 +10366,17 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testExpand() {
+    check(
+        "Expand((a(1)+a(2))*(x(1)+x(2))^2, x(_))", //
+        "(a(1)+a(2))*x(1)^2+2*(a(1)+a(2))*x(1)*x(2)+(a(1)+a(2))*x(2)^2");
+    
+    check(
+        "Expand((a + b)^2*(1 + x)^2, x)", //
+        "(a+b)^2+2*(a+b)^2*x+(a+b)^2*x^2");
+    check(
+        "Expand((1 + x)^2 + (2 + x)^2, 1 + x)", //
+        "1+2*x+x^2+(2+x)^2");
+    
     // performance test
     // check("Expand((x + y + z + w)^15 * ((x + y + z + w)^15+w));", //
     // "?");

@@ -656,9 +656,9 @@ public abstract class HMArrayList extends AbstractAST
   /** {@inheritDoc} */
   @Override
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
-    int start = firstIndex + startOffset;
-    for (int i = start; i < lastIndex; i++) {
-      if (predicate.test(array[i])) {
+    int i = firstIndex + startOffset;
+    while (i < lastIndex) {
+      if (predicate.test(array[i++])) {
         return true;
       }
     }
@@ -668,10 +668,10 @@ public abstract class HMArrayList extends AbstractAST
   /** {@inheritDoc} */
   @Override
   public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
-    final int start = firstIndex + startOffset;
+    int i = firstIndex + startOffset;
     int j = startOffset;
-    for (int i = start; i < lastIndex; i++) {
-      if (predicate.test(array[i], j++)) {
+    while (i < lastIndex) {
+      if (predicate.test(array[i++], j++)) {
         return true;
       }
     }
@@ -712,9 +712,9 @@ public abstract class HMArrayList extends AbstractAST
   /** {@inheritDoc} */
   @Override
   public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
-    final int start = firstIndex + startOffset;
-    for (int i = start; i < lastIndex; i++) {
-      if (!predicate.test(array[i])) {
+    int i = firstIndex + startOffset;
+    while (i < lastIndex) {
+      if (!predicate.test(array[i++])) {
         return false;
       }
     }
@@ -724,10 +724,10 @@ public abstract class HMArrayList extends AbstractAST
   /** {@inheritDoc} */
   @Override
   public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
-    final int start = firstIndex + startOffset;
+    int i = firstIndex + startOffset;
     int j = startOffset;
-    for (int i = start; i < lastIndex; i++) {
-      if (!predicate.test(array[i], j++)) {
+    while (i < lastIndex) {
+      if (!predicate.test(array[i++], j++)) {
         return false;
       }
     }
@@ -737,9 +737,9 @@ public abstract class HMArrayList extends AbstractAST
   /** {@inheritDoc} */
   @Override
   public void forEach(Consumer<? super IExpr> action, int startOffset) {
-    int start = firstIndex + startOffset;
-    for (int i = start; i < lastIndex; i++) {
-      action.accept(array[i]);
+    int i = firstIndex + startOffset;
+    while (i < lastIndex) {
+      action.accept(array[i++]);
     }
   }
 
@@ -747,9 +747,9 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
     int index = fromIndex;
-    int start = firstIndex + index;
-    for (int i = start; i < lastIndex; i++) {
-      if (predicate.test(array[i])) {
+    int i = firstIndex + index;
+    while (i < lastIndex) {
+      if (predicate.test(array[i++])) {
         return index;
       }
       index++;
@@ -760,9 +760,9 @@ public abstract class HMArrayList extends AbstractAST
   /** {@inheritDoc} */
   @Override
   public final IExpr findFirst(Function<IExpr, IExpr> function) {
-    int start = firstIndex + 1;
-    for (int i = start; i < lastIndex; i++) {
-      IExpr temp = function.apply(array[i]);
+    int i = firstIndex + 1;
+    while (i < lastIndex) {
+      IExpr temp = function.apply(array[i++]);
       if (temp.isPresent()) {
         return temp;
       }

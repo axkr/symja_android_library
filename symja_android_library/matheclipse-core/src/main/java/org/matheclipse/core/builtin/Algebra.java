@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.function.BiPredicate;
-
+import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Combinatoric.KPermutationsIterable;
 import org.matheclipse.core.convert.JASConvert;
@@ -43,6 +43,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1470,21 +1471,21 @@ public class Algebra {
 
     private static class Expander {
 
-      boolean expandNegativePowers;
+      final boolean expandNegativePowers;
 
-      boolean distributePlus;
+      final boolean distributePlus;
 
-      boolean factorTerms;
+      final boolean factorTerms;
 
-      /** Pattern which may be <code>null</code> */
-      IExpr pattern;
+      /** Pattern matcher which may be <code>null</code> if undefined */
+      final Predicate<IExpr> matcher;
 
       public Expander(
-          IExpr pattern,
+          Predicate<IExpr> matcher,
           boolean expandNegativePowers,
           boolean distributePlus,
           boolean factorTerms) {
-        this.pattern = pattern;
+        this.matcher = matcher;
         this.expandNegativePowers = expandNegativePowers;
         this.distributePlus = distributePlus;
         this.factorTerms = factorTerms;
@@ -1496,8 +1497,8 @@ public class Algebra {
        * @param expression
        * @return
        */
-      public boolean isPatternFree(IExpr expression) {
-        return (pattern != null && expression.isFree(pattern, false));
+      private boolean isPatternFree(IExpr expression) {
+        return (matcher != null && expression.isFree(matcher, false));
       }
 
       /**
@@ -1513,7 +1514,7 @@ public class Algebra {
           return F.NIL;
         }
         if (ast.isPower()) {
-          return expandPowerNull(ast);
+          return expandPowerNIL(ast);
         } else if (ast.isTimes()) {
           // (a+b)*(c+d)...
 
@@ -1593,7 +1594,11 @@ public class Algebra {
       }
 
       private IExpr addExpanded(IExpr expr) {
-        if (expandNegativePowers && !distributePlus && !factorTerms && expr.isAST()) {
+        if (expandNegativePowers
+            && !distributePlus
+            && !factorTerms
+            && expr.isAST()
+            && matcher == null) {
           ((IAST) expr).addEvalFlags(IAST.IS_EXPANDED);
         }
         return expr;
@@ -1603,12 +1608,12 @@ public class Algebra {
        * @param ast
        * @return <code>F.NIL</code> if no evaluation is possible
        */
-      public IExpr expandPlus(final IAST ast) {
+      private IExpr expandPlus(final IAST ast) {
         IASTAppendable result = F.NIL;
         for (int i = 1; i < ast.size(); i++) {
           final IExpr arg = ast.get(i);
           if (arg.isAST()) {
-            IExpr temp = expand((IAST) arg, pattern, expandNegativePowers, false, true);
+            IExpr temp = expand((IAST) arg, matcher, expandNegativePowers, false, true);
             if (temp.isPresent()) {
               if (!result.isPresent()) {
                 result = ast.copyUntil(ast.size(), i);
@@ -1639,7 +1644,7 @@ public class Algebra {
        * @param powerAST
        * @return
        */
-      public IExpr expandPowerNull(final IAST powerAST) {
+      private IExpr expandPowerNIL(final IAST powerAST) {
         IExpr base = powerAST.arg1();
         if ((base.isPlus())) {
           IExpr exponent = powerAST.arg2();
@@ -1696,6 +1701,9 @@ public class Algebra {
           return F.C1;
         }
 
+        if (isPatternFree(plusAST)) {
+          return F.NIL;
+        }
         int k = plusAST.argSize();
         long numberOfTerms = LongMath.binomial(n + k - 1, k - 1);
         if (numberOfTerms >= Integer.MAX_VALUE || numberOfTerms > Config.MAX_AST_SIZE) {
@@ -1712,36 +1720,40 @@ public class Algebra {
 
         IExpr temp;
         boolean evaled = false;
-        if (result.isPower()) {
-          temp = expandPowerNull((IAST) result);
-          if (temp.isPresent()) {
-            result = temp;
-            evaled = true;
-          }
+        if (!isPatternFree(result)) {
+          if (result.isPower()) {
+            temp = expandPowerNIL((IAST) result);
+            if (temp.isPresent()) {
+              result = temp;
+              evaled = true;
+            }
 
-        } else if (result.isPlus()) {
-          temp = expandPlus((IAST) result);
-          if (temp.isPresent()) {
-            result = temp;
-            evaled = true;
+          } else if (result.isPlus()) {
+            temp = expandPlus((IAST) result);
+            if (temp.isPresent()) {
+              result = temp;
+              evaled = true;
+            }
           }
         }
 
         for (int i = 2; i < timesAST.size(); i++) {
           IExpr arg = timesAST.get(i);
-          if (arg.isPower()) {
-            arg = expandPowerNull((IAST) arg);
-            if (!arg.isPresent()) {
-              arg = timesAST.get(i);
-            } else {
-              evaled = true;
-            }
-          } else if (arg.isPlus()) {
-            arg = expandPlus((IAST) arg);
-            if (!arg.isPresent()) {
-              arg = timesAST.get(i);
-            } else {
-              evaled = true;
+          if (!isPatternFree(arg)) {
+            if (arg.isPower()) {
+              arg = expandPowerNIL((IAST) arg);
+              if (!arg.isPresent()) {
+                arg = timesAST.get(i);
+              } else {
+                evaled = true;
+              }
+            } else if (arg.isPlus()) {
+              arg = expandPlus((IAST) arg);
+              if (!arg.isPresent()) {
+                arg = timesAST.get(i);
+              } else {
+                evaled = true;
+              }
             }
           }
           result = expandTimesBinary(result, arg);
@@ -1785,6 +1797,25 @@ public class Algebra {
        * @return
        */
       private IExpr expandPlusTimesPlus(final IAST plusAST0, final IAST plusAST1) {
+        if (isPatternFree(plusAST0)) {
+          if (isPatternFree(plusAST1)) {
+            return F.NIL;
+          }
+          final IASTAppendable result = F.ast(S.Plus, (int) plusAST1.argSize());
+          plusAST1.forEach(
+              x -> {
+                result.append(F.Times(plusAST0, x));
+              });
+          return EvalEngine.get().evaluate(result);
+
+        } else if (isPatternFree(plusAST1)) {
+          final IASTAppendable result = F.ast(S.Plus, (int) plusAST0.argSize());
+          plusAST0.forEach(
+              x -> {
+                result.append(F.Times(plusAST1, x));
+              });
+          return EvalEngine.get().evaluate(result);
+        }
         long numberOfTerms = (long) (plusAST0.argSize()) * (long) (plusAST1.argSize());
         if (numberOfTerms > Config.MAX_AST_SIZE) {
           throw new ASTElementLimitExceeded(numberOfTerms);
@@ -1828,7 +1859,7 @@ public class Algebra {
        * @param expr2
        * @param result
        */
-      public void evalAndExpandAST(IExpr expr1, IExpr expr2, final IASTAppendable result) {
+      private void evalAndExpandAST(IExpr expr1, IExpr expr2, final IASTAppendable result) {
         IASTAppendable timesAST = binaryFlatTimes(expr1, expr2);
         appendPlus(result, timesAST); // expandAST(timesAST, true).orElse(timesAST));
       }
@@ -1931,11 +1962,11 @@ public class Algebra {
         if (arg1.isList()) {
           return arg1.mapThreadEvaled(engine, F.ListAlloc(arg1.size()), ast, 1);
         }
-        IExpr patt = null;
+        Predicate<IExpr> matcher = null;
         if (ast.size() > 2) {
-          patt = ast.arg2();
+          matcher = Predicates.toPredicate(ast.arg2());
         }
-        return expand(arg1, patt, false, true, true).orElse(arg1);
+        return expand(arg1, matcher, false, true, true).orElse(arg1);
       }
 
       return ast.arg1();
@@ -1992,12 +2023,12 @@ public class Algebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      IExpr patt = null;
+      Predicate<IExpr> matcher = null;
       if (ast.size() > 2) {
-        patt = ast.arg2();
+        matcher = Predicates.toPredicate(ast.arg2());
       }
       if (arg1.isAST()) {
-        return expandAll((IAST) arg1, patt, true, true, false, engine).orElse(arg1);
+        return expandAll((IAST) arg1, matcher, true, true, false, engine).orElse(arg1);
       }
       return arg1;
     }
@@ -4772,7 +4803,7 @@ public class Algebra {
    */
   public static IExpr expand(
       final IAST ast,
-      IExpr patt,
+      Predicate<IExpr> patt,
       boolean expandNegativePowers,
       boolean distributePlus,
       boolean evalParts) {
@@ -4792,7 +4823,7 @@ public class Algebra {
    */
   public static IExpr expand(
       final IAST ast,
-      IExpr patt,
+      Predicate<IExpr> patt,
       boolean expandNegativePowers,
       boolean distributePlus,
       boolean evalParts,
@@ -4813,7 +4844,7 @@ public class Algebra {
    */
   public static IExpr expandAll(
       final IAST ast,
-      IExpr patt,
+      Predicate<IExpr> patt,
       boolean expandNegativePowers,
       boolean distributePlus,
       boolean factorTerms,
