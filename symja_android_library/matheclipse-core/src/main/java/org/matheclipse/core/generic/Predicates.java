@@ -252,13 +252,14 @@ public class Predicates {
   }
 
   /**
-   * Convert the pattern into a predicate.
+   * Convert the pattern into a pattern-matching predicate used in {@link F#FreeQ(IExpr, IExpr)}.
+   * FreeQ does test for subsequences (MemberQ does not test for subsequences).
    *
    * @param pattern
    * @return
    * @see IExpr#isFree(Predicate, boolean)
    */
-  public static Predicate<IExpr> toPredicate(IExpr pattern) {
+  public static Predicate<IExpr> toFreeQ(IExpr pattern) {
     if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
       return x -> x.equals(pattern);
     }
@@ -273,6 +274,20 @@ public class Predicates {
       matcher = new PatternMatcher(pattern);
     }
     return matcher;
+  }
+
+  /**
+   * Convert the pattern into a pattern-matching predicate used in {@link F#MemberQ(IExpr, IExpr)}.
+   * MemberQ does not test for subsequences(FreeQ does test for subsequences).
+   *
+   * @param pattern
+   * @return
+   */
+  public static Predicate<IExpr> toMemberQ(IExpr pattern) {
+    if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
+      return x -> x.equals(pattern);
+    }
+    return new PatternMatcher(pattern);
   }
 
   private Predicates() {}

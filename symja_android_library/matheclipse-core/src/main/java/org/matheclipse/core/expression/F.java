@@ -3908,6 +3908,16 @@ public class F extends S {
     return new AST1(FractionalPart, a);
   }
 
+  /**
+   * Returns {@link S#True} if <code>expr</code> does not contain the pattern <code>form</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FreeQ.md">FreeQ</a>
+   *
+   * @param expr
+   * @param form
+   * @return
+   */
   public static IAST FreeQ(final IExpr expr, final IExpr form) {
     return new B2.FreeQ(expr, form);
   }
@@ -5690,6 +5700,17 @@ public class F extends S {
     return new AST3(MeijerG, a0, a1, a2);
   }
 
+  /**
+   * Returns {@link S#True} if <code>form</code> matches any element of <code>list</code>, or {@link
+   * S#False} otherwise.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MemberQ.md">MemberQ</a>
+   *
+   * @param list
+   * @param form
+   * @return
+   */
   public static IAST MemberQ(final IExpr list, final IExpr form) {
     return new B2.MemberQ(list, form);
   }

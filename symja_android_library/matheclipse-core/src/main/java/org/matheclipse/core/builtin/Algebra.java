@@ -1964,7 +1964,7 @@ public class Algebra {
         }
         Predicate<IExpr> matcher = null;
         if (ast.size() > 2) {
-          matcher = Predicates.toPredicate(ast.arg2());
+          matcher = Predicates.toFreeQ(ast.arg2());
         }
         return expand(arg1, matcher, false, true, true).orElse(arg1);
       }
@@ -2025,7 +2025,7 @@ public class Algebra {
       IExpr arg1 = ast.arg1();
       Predicate<IExpr> matcher = null;
       if (ast.size() > 2) {
-        matcher = Predicates.toPredicate(ast.arg2());
+        matcher = Predicates.toFreeQ(ast.arg2());
       }
       if (arg1.isAST()) {
         return expandAll((IAST) arg1, matcher, true, true, false, engine).orElse(arg1);

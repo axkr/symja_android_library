@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
-
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
@@ -16,6 +15,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -28,7 +28,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
 
@@ -710,7 +709,7 @@ public class PredicateQ {
               return F.bool(arg1.isMember(arg2, heads, null));
             }
 
-            Predicate<IExpr> predicate = memberPredicate(arg2);
+            Predicate<IExpr> predicate = Predicates.toMemberQ(arg2);
             IVisitorBoolean level =
                 new VisitorBooleanLevelSpecification(predicate, ast.arg3(), heads, engine);
 
@@ -724,14 +723,7 @@ public class PredicateQ {
         return engine.printMessage(ve.getMessage(ast.topHead()));
       }
       return F.NIL;
-    }
-
-    private static Predicate<IExpr> memberPredicate(IExpr pattern) {
-      if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
-        return x -> x.equals(pattern);
-      }
-      return new PatternMatcher(pattern);
-    }
+    } 
 
     @Override
     public int[] expectedArgSize(IAST ast) {

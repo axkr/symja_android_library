@@ -1888,7 +1888,7 @@ public interface IExpr
    * @return
    */
   default boolean isFree(IExpr pattern, boolean heads) {
-    Predicate<IExpr> matcher = Predicates.toPredicate(pattern);
+    Predicate<IExpr> matcher = Predicates.toFreeQ(pattern);
     return isFree(matcher, heads);
   }
 
