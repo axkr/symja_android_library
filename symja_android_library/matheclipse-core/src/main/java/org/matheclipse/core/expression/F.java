@@ -203,150 +203,194 @@ public class F extends S {
 
   /**
    * Used to represent a formal pattern <code>a_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern a_ = initPredefinedPattern(a);
+
   /**
    * Used to represent a formal pattern <code>b_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern b_ = initPredefinedPattern(b);
+
   /**
    * Used to represent a formal pattern <code>c_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern c_ = initPredefinedPattern(c);
+
   /**
    * Used to represent a formal pattern <code>d_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern d_ = initPredefinedPattern(d);
+
   /**
    * Used to represent a formal pattern <code>e_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern e_ = initPredefinedPattern(e);
+
   /**
    * Used to represent a formal pattern <code>f_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern f_ = initPredefinedPattern(f);
+
   /**
    * Used to represent a formal pattern <code>g_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern g_ = initPredefinedPattern(g);
+
   /**
    * Used to represent a formal pattern <code>h_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern h_ = initPredefinedPattern(h);
+
   /**
    * Used to represent a formal pattern <code>i_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern i_ = initPredefinedPattern(i);
+
   /**
    * Used to represent a formal pattern <code>j_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern j_ = initPredefinedPattern(j);
+
   /**
    * Used to represent a formal pattern <code>k_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern k_ = initPredefinedPattern(k);
+
   /**
    * Used to represent a formal pattern <code>l_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern l_ = initPredefinedPattern(l);
+
   /**
    * Used to represent a formal pattern <code>m_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern m_ = initPredefinedPattern(m);
+
   /**
    * Used to represent a formal pattern <code>n_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern n_ = initPredefinedPattern(n);
+
   /**
    * Used to represent a formal pattern <code>o_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern o_ = initPredefinedPattern(o);
+
   /**
    * Used to represent a formal pattern <code>p_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern p_ = initPredefinedPattern(p);
+
   /**
    * Used to represent a formal pattern <code>q_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern q_ = initPredefinedPattern(q);
   /**
    * Used to represent a formal pattern <code>r_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern r_ = initPredefinedPattern(r);
+
   /**
    * Used to represent a formal pattern <code>s_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern s_ = initPredefinedPattern(s);
+
   /**
    * Used to represent a formal pattern <code>t_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern t_ = initPredefinedPattern(t);
+
   /**
    * Used to represent a formal pattern <code>u_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern u_ = initPredefinedPattern(u);
+
   /**
    * Used to represent a formal pattern <code>v_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern v_ = initPredefinedPattern(v);
+
   /**
    * Used to represent a formal pattern <code>w_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern w_ = initPredefinedPattern(w);
+
   /**
    * Used to represent a formal pattern <code>x_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern x_ = initPredefinedPattern(x);
+
   /**
    * Used to represent a formal pattern <code>y_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern y_ = initPredefinedPattern(y);
+
   /**
    * Used to represent a formal pattern <code>z_</code> that will be used only for predefined
-   * pattern-matching rules.
+   * pattern-matching rules and can match one expression.
    */
   public static final IPattern z_ = initPredefinedPattern(z);
 
   /**
    * Used to represent a formal pattern sequence <code>x__</code> that will be used only for
-   * predefined pattern-matching rules.
+   * predefined pattern-matching rules and can match any sequence of one or more expressions.
    */
   public static final IPatternSequence x__ = initPredefinedPatternSequence(x);
+
   /**
    * Used to represent a formal pattern sequence <code>y__</code> that will be used only for
-   * predefined pattern-matching rules.
+   * predefined pattern-matching rules and can match any sequence of one or more expressions.
    */
   public static final IPatternSequence y__ = initPredefinedPatternSequence(y);
+
   /**
    * Used to represent a formal pattern sequence <code>z__</code> that will be used only for
-   * predefined pattern-matching rules.
+   * predefined pattern-matching rules and can match any sequence of one or more expressions.
    */
   public static final IPatternSequence z__ = initPredefinedPatternSequence(z);
+
+  /**
+   * Used to represent a formal null pattern sequence <code>x___</code> that will be used only for
+   * predefined pattern-matching rules and can match any sequence of zero or more expressions.
+   */
+  public static final IPatternSequence x___ = initPredefinedPatternSequence(x, true);
+
+  /**
+   * Used to represent a formal null pattern sequence <code>y___</code> that will be used only for
+   * predefined pattern-matching rules and can match any sequence of zero or more expressions.
+   */
+  public static final IPatternSequence y___ = initPredefinedPatternSequence(y, true);
+
+  /**
+   * Used to represent a formal null pattern sequence <code>z___</code> that will be used only for
+   * predefined pattern-matching rules and can match any sequence of zero or more expressions.
+   */
+  public static final IPatternSequence z___ = initPredefinedPatternSequence(z, true);
 
   public static final IPattern A_ = initPredefinedPattern(ASymbol);
   public static final IPattern B_ = initPredefinedPattern(BSymbol);
@@ -1354,6 +1398,10 @@ public class F extends S {
     return PatternSequence.valueOf(symbol, check, def, zeroArgsAllowed);
   }
 
+  public static IPatternSequence $OptionsPattern() {
+    return org.matheclipse.core.expression.OptionsPattern.valueOf(null);
+  }
+
   public static IPatternSequence $OptionsPattern(final ISymbol symbol) {
     return org.matheclipse.core.expression.OptionsPattern.valueOf(symbol);
   }
@@ -1954,6 +2002,15 @@ public class F extends S {
     return new AST2(ArithmeticGeometricMean, a0, a1);
   }
 
+  /**
+   * Create an association from a list of rules.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Association.md">Association</a>
+   *
+   * @param listOfRules
+   * @return
+   */
   public static IAssociation assoc(final IAST listOfRules) {
     if (listOfRules.isAST1() && listOfRules.arg1().isListOfRules(true)) {
       return new ASTAssociation((IAST) listOfRules.arg1());
@@ -1961,10 +2018,28 @@ public class F extends S {
     return new ASTAssociation(listOfRules);
   }
 
+  /**
+   * Create an association and allocate the given capacity for the rules.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Association.md">Association</a>
+   *
+   * @param capacity
+   * @return
+   */
   public static IAssociation assoc(final int capacity) {
     return new ASTAssociation(capacity, false);
   }
 
+  /**
+   * Create a sparse array from the given rules list.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SparseArray.md">SparseArray</a>
+   *
+   * @param arrayRulesList
+   * @return
+   */
   public static ISparseArray sparseArray(final IAST arrayRulesList) {
     return SparseArrayExpr.newArrayRules(arrayRulesList, null, -1, F.C0);
   }
@@ -2501,26 +2576,26 @@ public class F extends S {
   /**
    * Create a symbolic complex number
    *
-   * @param real_numerator
-   * @param real_denominator
-   * @param imag_numerator
-   * @param imag_denominator
+   * @param realNumerator
+   * @param realDenominator
+   * @param imagNumerator
+   * @param imagDenominator
    * @return
    */
   public static IComplex CC(
-      final long real_numerator,
-      final long real_denominator,
-      final long imag_numerator,
-      final long imag_denominator) {
-    return ComplexSym.valueOf(real_numerator, real_denominator, imag_numerator, imag_denominator);
+      final long realNumerator,
+      final long realDenominator,
+      final long imagNumerator,
+      final long imagDenominator) {
+    return ComplexSym.valueOf(realNumerator, realDenominator, imagNumerator, imagDenominator);
   }
 
-  public static IAST CDF(final IExpr a0) {
-    return new AST1(CDF, a0);
+  public static IAST CDF(final IExpr distribution) {
+    return new AST1(CDF, distribution);
   }
 
-  public static IAST CDF(final IExpr a0, final IExpr a1) {
-    return new AST2(CDF, a0, a1);
+  public static IAST CDF(final IExpr distribution, final IExpr a1) {
+    return new AST2(CDF, distribution, a1);
   }
 
   public static IAST Ceiling(final IExpr z) {
@@ -2869,8 +2944,17 @@ public class F extends S {
     return complexNum(value.doubleValue(), 0.0d);
   }
 
-  public static IAST CompoundExpression(final IExpr... a) {
-    return function(CompoundExpression, a);
+  /**
+   * Evaluates its arguments in turn, returning the last result.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CompoundExpression.md">CompoundExpression</a>
+   *
+   * @param expr a list of expressions
+   * @return
+   */
+  public static IAST CompoundExpression(final IExpr... expr) {
+    return function(CompoundExpression, expr);
   }
 
   /**
@@ -3561,8 +3645,8 @@ public class F extends S {
    * wasn't possible this method returns the given argument.
    *
    * @param a the expression which should be evaluated
-   * @param expandNegativePowers TODO
-   * @param distributePlus TODO
+   * @param expandNegativePowers
+   * @param distributePlus
    * @param evalParts evaluate the determined numerator and denominator parts
    * @return the evaluated expression
    * @see EvalEngine#evaluate(IExpr)
@@ -3577,13 +3661,32 @@ public class F extends S {
     return a;
   }
 
-  public static IAST Expand(final IExpr a0) {
-    return new AST1(Expand, a0);
+  /**
+   * Expands out positive rational powers and products of sums in <code>expr</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Expand.md">Expand</a>
+   *
+   * @param expr
+   * @return
+   */
+  public static IAST Expand(final IExpr expr) {
+    return new AST1(Expand, expr);
   }
 
-  public static IAST Expand(final IExpr a0, final IExpr a1) {
+  /**
+   * Expands out positive rational powers and products of sums in <code>expr</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Expand.md">Expand</a>
+   *
+   * @param expr
+   * @param pattern
+   * @return
+   */
+  public static IAST Expand(final IExpr expr, final IExpr pattern) {
 
-    return new AST2(Expand, a0, a1);
+    return new AST2(Expand, expr, pattern);
   }
 
   /**
@@ -3591,8 +3694,8 @@ public class F extends S {
    * expanding wasn't possible this method returns the given argument.
    *
    * @param a the expression which should be evaluated
-   * @param expandNegativePowers TODO
-   * @param distributePlus TODO
+   * @param expandNegativePowers
+   * @param distributePlus
    * @return the evaluated expression
    * @see EvalEngine#evaluate(IExpr)
    */
@@ -4065,16 +4168,55 @@ public class F extends S {
     return new AST1(Identity, a0);
   }
 
-  public static IAST If(final IExpr a0, final IExpr a1) {
-    return new B2.If(a0, a1);
+  /**
+   * Returns <code>trueExpr</code> if <code>condition</code> evaluates to {@link S#True}.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/If.md">If</a>
+   *
+   * @param condition
+   * @param trueExpr
+   * @return
+   */
+  public static IAST If(final IExpr condition, final IExpr trueExpr) {
+    return new B2.If(condition, trueExpr);
   }
 
-  public static IAST If(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(If, a0, a1, a2);
+  /**
+   * Returns <code>trueExpr</code> if <code>condition</code> evaluates to {@link S#True} and <code>
+   * falseExpr</code> if it evaluates to {@link S#False}.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/If.md">If</a>
+   *
+   * @param condition
+   * @param trueExpr
+   * @param falseExpr
+   * @return
+   */
+  public static IAST If(final IExpr condition, final IExpr trueExpr, final IExpr falseExpr) {
+    return new AST3(If, condition, trueExpr, falseExpr);
   }
 
-  public static IAST If(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
-    return quaternary(If, a0, a1, a2, a3);
+  /**
+   * Returns <code>trueExpr</code> if <code>condition</code> evaluates to {@link S#True} and <code>
+   * falseExpr</code> if it evaluates to {@link S#False} or <code>
+   * undefinedExpr</code> if condition don't evakluate to {@link S#True} or {@link S#False}.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/If.md">If</a>
+   *
+   * @param condition
+   * @param trueExpr
+   * @param falseExpr
+   * @return
+   */
+  public static IAST If(
+      final IExpr condition,
+      final IExpr trueExpr,
+      final IExpr falseExpr,
+      final IExpr undefinedExpr) {
+    return quaternary(If, condition, trueExpr, falseExpr, undefinedExpr);
   }
 
   public static IAST IInit(final ISymbol sym, int[] sizes) {
@@ -4158,7 +4300,12 @@ public class F extends S {
   }
 
   public static IPatternSequence initPredefinedPatternSequence(final ISymbol symbol) {
-    PatternSequence temp = PatternSequence.valueOf(symbol, false);
+    return initPredefinedPatternSequence(symbol, false);
+  }
+
+  public static IPatternSequence initPredefinedPatternSequence(
+      final ISymbol symbol, boolean zeroArgsAllowed) {
+    PatternSequence temp = PatternSequence.valueOf(symbol, zeroArgsAllowed);
     PREDEFINED_PATTERNSEQUENCE_MAP.put(symbol.toString(), temp);
     return temp;
   }
@@ -4470,6 +4617,10 @@ public class F extends S {
   public static IAST InverseBetaRegularized(
       final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
     return quaternary(InverseBetaRegularized, a0, a1, a2, a3);
+  }
+
+  public static IAST InverseCDF(final IExpr distribution, final IExpr q) {
+    return new AST2(InverseCDF, distribution, q);
   }
 
   public static IAST InverseErf(final IExpr a0) {
@@ -5647,8 +5798,19 @@ public class F extends S {
     return new AST2(Mod, a0, a1);
   }
 
-  public static IAST Module(final IExpr a0, final IExpr a1) {
-    return new AST2(Module, a0, a1);
+  /**
+   * Evaluates <code>expr</code> for the <code>listOfLocalVariables</code> by first renaming the
+   * local variables in <code>expr</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Module.md">Module</a>
+   *
+   * @param listOfLocalVariables
+   * @param expr
+   * @return
+   */
+  public static IAST Module(final IExpr listOfLocalVariables, final IExpr expr) {
+    return new AST2(Module, listOfLocalVariables, expr);
   }
 
   public static IAST Most(final IExpr a0) {
@@ -6039,52 +6201,59 @@ public class F extends S {
     return new AST1(PartitionsQ, a0);
   }
 
-  public static IAST Pattern(final IExpr a0, final IExpr a1) {
-    return new AST2(Pattern, a0, a1);
-  }
-
-  public static IAST PatternTest(final IExpr a0, final IExpr a1) {
-    return new AST2(PatternTest, a0, a1);
+  /**
+   * Constrains <code>pattern</code> to match <code>expr</code> only if the evaluation of <code>
+   * test(expr)</code> yields {@link S#True}.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PatternTest.md">PatternTest</a>
+   *
+   * @param pattern
+   * @param test
+   * @return
+   */
+  public static IAST PatternTest(final IExpr pattern, final IExpr test) {
+    return new AST2(PatternTest, pattern, test);
   }
 
   /**
    * See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PDF.md">PDF</a>
    */
-  public static IAST PDF(final IExpr a0) {
-    return new AST1(PDF, a0);
+  public static IAST PDF(final IExpr distribution) {
+    return new AST1(PDF, distribution);
   }
 
   /**
    * See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PDF.md">PDF</a>
    */
-  public static IAST PDF(final IExpr a0, final IExpr a1) {
-    return new AST2(PDF, a0, a1);
+  public static IAST PDF(final IExpr distribution, final IExpr x) {
+    return new AST2(PDF, distribution, x);
   }
 
   /**
    * See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Piecewise.md">Piecewise</a>
    */
-  public static IAST Piecewise(final IExpr a0) {
-    return new AST1(Piecewise, a0);
+  public static IAST Piecewise(final IExpr listOfConditions) {
+    return new AST1(Piecewise, listOfConditions);
   }
 
   /**
    * See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Piecewise.md">Piecewise</a>
    */
-  public static IAST Piecewise(final IExpr a0, final IExpr a1) {
-    return new AST2(Piecewise, a0, a1);
+  public static IAST Piecewise(final IExpr listOfConditions, final IExpr val) {
+    return new AST2(Piecewise, listOfConditions, val);
   }
 
   /**
    * See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PiecewiseExpand.md">PiecewiseExpand</a>
    */
-  public static IAST PiecewiseExpand(final IExpr a0) {
-    return new AST1(PiecewiseExpand, a0);
+  public static IAST PiecewiseExpand(final IExpr expr) {
+    return new AST1(PiecewiseExpand, expr);
   }
 
   public static IAST Plot(final IExpr a0, final IExpr a1) {
@@ -6413,28 +6582,90 @@ public class F extends S {
     return new AST(new IExpr[] {head, a0, a1, a2, a3});
   }
 
-  public static IAST Quantile(final IExpr a0) {
-    return new AST1(Quantile, a0);
+  /**
+   * Returns the Quantile of the <code>distribution</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantile.md">Quantile</a>
+   *
+   * @param distribution
+   * @return
+   */
+  public static IAST Quantile(final IExpr distribution) {
+    return new AST1(Quantile, distribution);
   }
 
-  public static IAST Quantile(final IExpr a0, final IExpr a1) {
-    return new AST2(Quantile, a0, a1);
+  /**
+   * Returns the <code>q</code>-Quantile of <code>list</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantile.md">Quantile</a>
+   *
+   * @param list
+   * @param q
+   * @return
+   */
+  public static IAST Quantile(final IExpr list, final IExpr q) {
+    return new AST2(Quantile, list, q);
   }
 
-  public static IAST Quantile(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(Quantile, a0, a1, a2);
+  /**
+   * Returns the <code>q</code>-Quantile of <code>list</code> with the given quantile <code>
+   * definition</code>. The default parameters for the quantile definition are <code>{{0,0},{1,0}}
+   * </code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantile.md">Quantile</a>
+   *
+   * @param list
+   * @param q
+   * @partam definition the quantile definition
+   * @return
+   */
+  public static IAST Quantile(final IExpr list, final IExpr q, final IExpr definition) {
+    return new AST3(Quantile, list, q, definition);
   }
 
-  public static IAST Quantity(final IExpr a0, final IExpr a1) {
-    return new AST2(Quantity, a0, a1);
+  /**
+   * Returns the quantity for <code>magnitude</code> and <code>unit</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantity.md">Quantity</a>
+   *
+   * @param magnitude
+   * @param unit
+   * @return
+   */
+  public static IAST Quantity(final IExpr magnitude, final IExpr unit) {
+    return new AST2(Quantity, magnitude, unit);
   }
 
-  public static IAST QuantityMagnitude(final IExpr a0) {
-    return new AST1(QuantityMagnitude, a0);
+  /**
+   * Returns the value of the <code>quantity</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QuantityMagnitude.md">QuantityMagnitude</a>
+   *
+   * @param quantity
+   * @param unit
+   * @return
+   */
+  public static IAST QuantityMagnitude(final IExpr quantity) {
+    return new AST1(QuantityMagnitude, quantity);
   }
 
-  public static IAST QuantityMagnitude(final IExpr a0, final IExpr a1) {
-    return new AST2(QuantityMagnitude, a0, a1);
+  /**
+   * Returns the value of the <code>quantity</code> for the given <code>unit</code>
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QuantityMagnitude.md">QuantityMagnitude</a>
+   *
+   * @param quantity
+   * @param unit
+   * @return
+   */
+  public static IAST QuantityMagnitude(final IExpr quantity, final IExpr unit) {
+    return new AST2(QuantityMagnitude, quantity, unit);
   }
 
   public static IAST Quartiles(final IExpr a0) {
@@ -6659,7 +6890,7 @@ public class F extends S {
     // if (context == null) {
     // contextPath.add(new Context(contextStr));
     // }
-    symbol = contextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
+    symbol = ContextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
     if (assumptionAST != null) {
       IExpr temp = Lambda.replaceSlots(assumptionAST, F.List(symbol)).orElse(assumptionAST);
       if (temp.isAST()) {
@@ -6676,8 +6907,8 @@ public class F extends S {
   }
 
   public static ISymbol symbol(final Context context, final String symbolName, EvalEngine engine) {
-    ContextPath contextPath = engine.getContextPath();
-    return contextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
+    //    ContextPath contextPath = engine.getContextPath();
+    return ContextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
   }
 
   /**
@@ -6726,11 +6957,10 @@ public class F extends S {
    * Create a unique dummy symbol with prefix "$", which is retrieved from the evaluation engines
    * DUMMY context. A &quot;Dummy&quot; symbol is not known in string parsing.
    *
-   * @param engine the evaluation engine
    * @return the symbol object from the context path
    */
-  public static ISymbol Dummy(EvalEngine engine) {
-    return Dummy(engine.uniqueName("$"));
+  public static ISymbol Dummy() {
+    return Dummy(EvalEngine.uniqueName("$"));
   }
 
   public static IBuiltInSymbol localBiFunction(
@@ -7291,14 +7521,14 @@ public class F extends S {
   }
 
   /**
-   * Return <code>arg1 + (-1)*arg2</code>
+   * Return <code>x + (-1)*y</code>
    *
-   * @param arg1
-   * @param arg2
+   * @param x
+   * @param y
    * @return
    */
-  public static IAST Subtract(final IExpr arg1, final IExpr arg2) {
-    return new B2.Plus(arg1, new B2.Times(CN1, arg2));
+  public static IAST Subtract(final IExpr x, final IExpr y) {
+    return new B2.Plus(x, new B2.Times(CN1, y));
   }
 
   public static IAST Sum(final IExpr a0, final IExpr a1) {
@@ -7702,12 +7932,31 @@ public class F extends S {
     return new AST1(Unique, a0);
   }
 
-  public static IAST UnitConvert(final IExpr a0) {
-    return new AST1(UnitConvert, a0);
+  /**
+   * Convert the <code>quantity</code> to the base unit.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UnitConvert.md">UnitConvert</a>
+   *
+   * @param quantity
+   * @return
+   */
+  public static IAST UnitConvert(final IExpr quantity) {
+    return new AST1(UnitConvert, quantity);
   }
 
-  public static IAST UnitConvert(final IExpr a0, final IExpr a1) {
-    return new AST2(UnitConvert, a0, a1);
+  /**
+   * Convert the <code>quantity</code> to the given <code>unit</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UnitConvert.md">UnitConvert</a>
+   *
+   * @param quantity
+   * @param unit
+   * @return
+   */
+  public static IAST UnitConvert(final IExpr quantity, final IExpr unit) {
+    return new AST2(UnitConvert, quantity, unit);
   }
 
   public static IAST UniformDistribution(final IExpr a) {
@@ -7750,8 +7999,18 @@ public class F extends S {
     return new AST3(WeibullDistribution, a0, a1, a2);
   }
 
-  public static IAST While(final IExpr a0, final IExpr a1) {
-    return new AST2(While, a0, a1);
+  /**
+   * Evaluates <code>body</code> as long as <code>test</code> evaluates to {@link S#True}.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/While.md">While</a>
+   *
+   * @param test
+   * @param body
+   * @return
+   */
+  public static IAST While(final IExpr test, final IExpr body) {
+    return new AST2(While, test, body);
   }
 
   public static IAST WhittakerM(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -7762,8 +8021,19 @@ public class F extends S {
     return new AST3(WhittakerW, a0, a1, a2);
   }
 
-  public static IAST With(final IExpr a0, final IExpr a1) {
-    return new B2.With(a0, a1);
+  /**
+   * Evaluates <code>expr</code> for the<code>listOfLocalVariables</code> by replacing the local
+   * variables in <code>expr</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/With.md">With</a>
+   *
+   * @param listOfLocalVariables
+   * @param expr
+   * @return
+   */
+  public static IAST With(final IExpr listOfLocalVariables, final IExpr expr) {
+    return new B2.With(listOfLocalVariables, expr);
   }
 
   /**
