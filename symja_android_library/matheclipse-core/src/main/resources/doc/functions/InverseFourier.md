@@ -32,4 +32,4 @@ InverseFourier({1,2,0,0,7})
 
 ### Github
 
-* [Implementation of InverseFourier](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/InverseFourier.java#L19) 
+* [Implementation of InverseFourier](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/InverseFourier.java#L15) 

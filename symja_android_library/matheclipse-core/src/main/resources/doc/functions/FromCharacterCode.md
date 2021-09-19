@@ -19,4 +19,4 @@ a-3
 
 ### Github
 
-* [Implementation of FromCharacterCode](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L623) 
+* [Implementation of FromCharacterCode](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L622) 

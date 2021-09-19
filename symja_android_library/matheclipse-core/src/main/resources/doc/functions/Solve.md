@@ -32,4 +32,4 @@ It's important to use the `==` operator to define the equations. If you have uni
 
 ### Github
 
-* [Implementation of Solve](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Solve.java#L85) 
+* [Implementation of Solve](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Solve.java#L84) 

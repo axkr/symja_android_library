@@ -21,4 +21,4 @@ Cuboid({xmin, ymin, zmin}, {xmax, ymax, zmax})
 
 ### Github
 
-* [Implementation of Cuboid](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphicsFunctions.java#L80) 
+* [Implementation of Cuboid](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphicsFunctions.java#L260) 

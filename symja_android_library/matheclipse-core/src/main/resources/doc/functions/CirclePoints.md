@@ -16,4 +16,4 @@ CirclePoints(i)
 
 ### Github
 
-* [Implementation of CirclePoints](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1242) 
+* [Implementation of CirclePoints](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1240) 

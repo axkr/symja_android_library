@@ -37,4 +37,4 @@ a, b, c, d, e
 
 ### Github
 
-* [Implementation of StringRiffle](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L2289) 
+* [Implementation of StringRiffle](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L2288) 

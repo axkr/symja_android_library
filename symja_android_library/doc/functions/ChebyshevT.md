@@ -19,4 +19,4 @@ See:
 
 ### Github
 
-* [Implementation of ChebyshevT](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L1245) 
+* [Implementation of ChebyshevT](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L1223) 

@@ -20,4 +20,4 @@ See
 
 ### Github
 
-* [Implementation of Eigenvalues](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L1573) 
+* [Implementation of Eigenvalues](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L1583) 

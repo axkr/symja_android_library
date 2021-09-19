@@ -15,4 +15,4 @@ FactorTerms(poly)
 
 ### Github
 
-* [Implementation of FactorTerms](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L2569) 
+* [Implementation of FactorTerms](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L2599) 

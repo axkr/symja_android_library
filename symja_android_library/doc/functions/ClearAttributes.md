@@ -33,4 +33,4 @@ Attributes that are not even set are simply ignored:
 
 ### Github
 
-* [Implementation of ClearAttributes](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AttributeFunctions.java#L146) 
+* [Implementation of ClearAttributes](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AttributeFunctions.java#L147) 

@@ -27,3 +27,7 @@ Cylinder({{x1, y1, z1}, {x2, y2, z2}, ... }, r)
 >> Graphics3D({Yellow, Cylinder({{-1, 0, 0}, {1, 0, 0}, {0, 0, Sqrt(3)}, {1, 1, Sqrt(3}}, 1)})
  -Graphics3D-
 ```
+
+### Github
+
+* [Implementation of Cylinder](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphicsFunctions.java#L380) 

@@ -18,3 +18,7 @@ Polygon({{p_11, p_12, ...}, {p_21, p_22, ...}, ...})
 >> Graphics3D(Polygon({{0,0,0},{0,1,1},{1,0,0}}))
  -Graphics3D-
 ```
+
+### Github
+
+* [Implementation of Polygon](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphicsFunctions.java#L748) 

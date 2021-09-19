@@ -74,4 +74,4 @@ Options can only be assigned to symbols:
 
 ### Github
 
-* [Implementation of Options](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L1151) 
+* [Implementation of Options](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L1149) 
