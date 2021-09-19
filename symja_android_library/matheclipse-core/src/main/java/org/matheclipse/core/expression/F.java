@@ -1723,7 +1723,6 @@ public class F extends S {
     return StringX.valueOf(str, mimeType);
   }
 
-  // --- generated source codes:
   public static IAST Abs(final IExpr z) {
     return new AST1(Abs, z);
   }
@@ -1756,16 +1755,52 @@ public class F extends S {
     return ast(And);
   }
 
-  public static IAST And(final IExpr... a) {
-    return function(And, a);
+  /**
+   * <code>expr1 && expr2 && expr3 ...</code> evaluates each expression in turn, returning {@link
+   * S#False} as soon as an expression evaluates to {@link S#False}. If all expressions evaluate to
+   * {@link S#True}, it returns {@link S#True}.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/And.md">And</a>
+   *
+   * @param expr
+   * @return
+   */
+  public static IAST And(final IExpr... expr) {
+    return function(And, expr);
   }
 
-  public static IAST And(final IExpr a0, final IExpr a1) {
-    return new B2.And(a0, a1);
+  /**
+   * <code>expr1 && expr2</code> evaluates each expression in turn, returning {@link S#False} as
+   * soon as an expression evaluates to {@link S#False}. If all expressions evaluate to {@link
+   * S#True}, it returns {@link S#True}.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/And.md">And</a>
+   *
+   * @param expr1
+   * @param expr2
+   * @return
+   */
+  public static IAST And(final IExpr expr1, final IExpr expr2) {
+    return new B2.And(expr1, expr2);
   }
 
-  public static IAST And(final IExpr a0, final IExpr a1, final IExpr a3) {
-    return new AST3(S.And, a0, a1, a3);
+  /**
+   * <code>expr1 && expr2 && expr3</code> evaluates each expression in turn, returning {@link
+   * S#False} as soon as an expression evaluates to {@link S#False}. If all expressions evaluate to
+   * {@link S#True}, it returns {@link S#True}.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/And.md">And</a>
+   *
+   * @param expr1
+   * @param expr2
+   * @param expr3
+   * @return
+   */
+  public static IAST And(final IExpr expr1, final IExpr expr2, final IExpr expr3) {
+    return new AST3(S.And, expr1, expr2, expr3);
   }
 
   public static IAST AngleVector(final IExpr a0) {
@@ -2978,8 +3013,19 @@ public class F extends S {
     return new AST(head, a);
   }
 
-  public static IAST Condition(final IExpr a1, final IExpr a2) {
-    return new B2.Condition(a1, a2);
+  /**
+   * Places an additional constraint on <code>pattern</code> that only allows it to match if <code>
+   * test</code> evaluates to {@link S#True}.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Condition.md">Condition</a>
+   *
+   * @param pattern
+   * @param test
+   * @return
+   */
+  public static IAST Condition(final IExpr pattern, final IExpr test) {
+    return new B2.Condition(pattern, test);
   }
 
   public static IAST ConditionalExpression(final IExpr a0, final IExpr a1) {
@@ -3022,6 +3068,16 @@ public class F extends S {
     return new AST2(CoprimeQ, a0, a1);
   }
 
+  /**
+   * Returns the cosine of <code>z</code> (measured in <a
+   * href="https://en.wikipedia.org/wiki/Radian">Radians</a>).
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cos.md">Cos</a>
+   *
+   * @param z
+   * @return
+   */
   public static IAST Cos(final IExpr z) {
     return new B1.Cos(z);
   }
@@ -3038,6 +3094,16 @@ public class F extends S {
     return new AST1(CosIntegral, z);
   }
 
+  /**
+   * Returns the cotangent of <code>z</code> (measured in <a
+   * href="https://en.wikipedia.org/wiki/Radian">Radians</a>).
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cot.md">Cot</a>
+   *
+   * @param z
+   * @return
+   */
   public static IAST Cot(final IExpr z) {
     return new AST1(Cot, z);
   }
@@ -3219,8 +3285,19 @@ public class F extends S {
     return new AST1(DiracDelta, a0);
   }
 
-  public static IAST DirectedEdge(final IExpr a0, final IExpr a1) {
-    return new B2.DirectedEdge(a0, a1);
+  /**
+   * <code>DirectedEdge</code> is a directed edge from vertex <code>a</code to vertex <code>b
+   * </code in a `graph` object.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirectedEdge.md">DirectedEdge</a>
+   *
+   * @param a
+   * @param b
+   * @return
+   */
+  public static IAST DirectedEdge(final IExpr a, final IExpr b) {
+    return new B2.DirectedEdge(a, b);
   }
 
   public static IAST DirectedInfinity(final IExpr a0) {
@@ -3360,10 +3437,32 @@ public class F extends S {
     return function(Equal, a);
   }
 
+  /**
+   * Yields {@link S#True} if <code>lhs</code> and <code>rhs</code> are known to be equal, or {@link
+   * S#False} if <code>lhs</code> and <code>rhs</code> are known to be unequal.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Equal.md">Equal</a>
+   *
+   * @param lhs
+   * @param rhs
+   * @return
+   */
   public static IAST Equal(final IExpr lhs, final IExpr rhs) {
     return new B2.Equal(lhs, rhs);
   }
 
+  /**
+   * Yields {@link S#True} if <code>lhs</code> and <code>rhs</code> are known to be equal, or {@link
+   * S#False} if <code>lhs</code> and <code>rhs</code> are known to be unequal.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Equal.md">Equal</a>
+   *
+   * @param lhs
+   * @param rhs
+   * @return
+   */
   public static IAST Equal(final IExpr lhs, final int rhs) {
     return new B2.Equal(lhs, F.ZZ(rhs));
   }
@@ -3632,8 +3731,17 @@ public class F extends S {
     return new AST1(EulerPhi, a0);
   }
 
-  public static IAST Exp(final IExpr a0) {
-    return new B2.Power(E, a0);
+  /**
+   * The exponential function <code>E^z</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Exp.md">Exp</a>
+   *
+   * @param z
+   * @return
+   */
+  public static IAST Exp(final IExpr z) {
+    return new B2.Power(E, z);
   }
 
   public static IAST ExpToTrig(final IExpr a0) {
@@ -4051,18 +4159,58 @@ public class F extends S {
     return ast(Graphics);
   }
 
+  /**
+   * Yields {@link S#True} if <code>x</code> is known to be greater than <code>y</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Greater.md">Greater</a>
+   *
+   * @param x
+   * @param y
+   * @return
+   */
   public static IAST Greater(final IExpr x, final IExpr y) {
     return new B2.Greater(x, y);
   }
 
+  /**
+   * Yields {@link S#True} if <code>x</code> is known to be greater than <code>y</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Greater.md">Greater</a>
+   *
+   * @param x
+   * @param y
+   * @return
+   */
   public static IAST Greater(final IExpr x, final int y) {
     return new B2.Greater(x, F.ZZ(y));
   }
 
+  /**
+   * Yields {@link S#True} if <code>x</code> is known to be greater equal than <code>y</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GreaterEqual.md">GreaterEqual</a>
+   *
+   * @param x
+   * @param y
+   * @return
+   */
   public static IAST GreaterEqual(final IExpr x, final IExpr y) {
     return new B2.GreaterEqual(x, y);
   }
 
+  /**
+   * Yields {@link S#True} if <code>x</code> is known to be greater equal than <code>y</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GreaterEqual.md">GreaterEqual</a>
+   *
+   * @param x
+   * @param y
+   * @return
+   */
   public static IAST GreaterEqual(final IExpr x, final int y) {
     return new B2.GreaterEqual(x, F.ZZ(y));
   }
@@ -4480,6 +4628,17 @@ public class F extends S {
     return new B1.IntegerQ(a);
   }
 
+  /**
+   * Integrates <code>f</code> with respect to <code>x</code>. The result does not contain the
+   * additive integration constant.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Integrate.md">Integrate</a>
+   *
+   * @param f
+   * @param x
+   * @return
+   */
   public static IAST Integrate(final IExpr f, final IExpr x) {
     return new B2.Integrate(f, x);
   }
@@ -5020,16 +5179,48 @@ public class F extends S {
     return new AST1(Length, expr);
   }
 
+  /**
+   * Yields {@link S#True} if <code>x</code> is known to be less than <code>y</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Less.md">Less</a>
+   *
+   * @param x
+   * @param y
+   * @return
+   */
   public static IAST Less(final IExpr x, final IExpr y) {
     return new B2.Less(x, y);
   }
 
+  /**
+   * Yields {@link S#True} if <code>x</code> is known to be less than <code>y</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Less.md">Less</a>
+   *
+   * @param x
+   * @param y
+   * @return
+   */
   public static IAST Less(final IExpr x, final int y) {
     return new B2.Less(x, F.ZZ(y));
   }
 
-  public static IAST Less(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(Less, a0, a1, a2);
+  /**
+   * Yields {@link S#True} if <code>x1</code> is known to be less than <code>x2</code> and <code>x2
+   * </code> is known to be less than <code>x3</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Less.md">Less</a>
+   *
+   * @param x1
+   * @param x2
+   * @param x3
+   * @return
+   */
+  public static IAST Less(final IExpr x1, final IExpr x2, final IExpr x3) {
+    return new AST3(Less, x1, x2, x3);
   }
 
   public static IAST Less(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
@@ -5041,16 +5232,48 @@ public class F extends S {
     return quinary(Less, a0, a1, a2, a3, a4);
   }
 
+  /**
+   * Yields {@link S#True} if <code>x</code> is known to be less equal than <code>y</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LessEqual.md">LessEqual</a>
+   *
+   * @param x
+   * @param y
+   * @return
+   */
   public static IAST LessEqual(final IExpr x, final IExpr y) {
     return new B2.LessEqual(x, y);
   }
 
+  /**
+   * Yields {@link S#True} if <code>x</code> is known to be less equal than <code>y</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LessEqual.md">LessEqual</a>
+   *
+   * @param x
+   * @param y
+   * @return
+   */
   public static IAST LessEqual(final IExpr x, final int y) {
     return new B2.LessEqual(x, F.ZZ(y));
   }
 
-  public static IAST LessEqual(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(LessEqual, a0, a1, a2);
+  /**
+   * Yields {@link S#True} if <code>x1</code> is known to be less equal than <code>x2</code> and
+   * <code>x2</code> is known to be less equal than <code>x3</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LessEqual.md">LessEqual</a>
+   *
+   * @param x1
+   * @param x2
+   * @param x3
+   * @return
+   */
+  public static IAST LessEqual(final IExpr x1, final IExpr x2, final IExpr x3) {
+    return new AST3(LessEqual, x1, x2, x3);
   }
 
   public static IAST LessEqual(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
@@ -5527,13 +5750,31 @@ public class F extends S {
     return new AST1(Literal, a0);
   }
 
-  public static IAST Log(final IExpr a0) {
-    return new B1.Log(a0);
+  /**
+   * Returns the natural logarithm of <code>z</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Log.md">Log</a>
+   *
+   * @param z
+   * @return
+   */
+  public static IAST Log(final IExpr z) {
+    return new B1.Log(z);
   }
 
-  public static IAST Log(final IExpr a0, final IExpr a1) {
+  /**
+   * Returns the logarithm of <code>z</code> for the <code>base</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Log.md">Log</a>
+   *
+   * @param z
+   * @return
+   */
+  public static IAST Log(final IExpr z, final IExpr base) {
 
-    return new AST2(Log, a0, a1);
+    return new AST2(Log, z, base);
   }
 
   /**
@@ -5950,8 +6191,18 @@ public class F extends S {
     return new AST1(Normalize, a);
   }
 
-  public static IAST Not(final IExpr a) {
-    return new B1.Not(a);
+  /**
+   * Logical Not function (negation). Returns {@link S#True} if <code>expr</code> is {@link
+   * S#False}. Returns {@link S#False} if <code>expr</code> is {@link S#True}.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Not.md">Not</a>
+   *
+   * @param expr
+   * @return
+   */
+  public static IAST Not(final IExpr expr) {
+    return new B1.Not(expr);
   }
 
   public static IAST NotElement(final IExpr x, final IExpr domain) {
@@ -6138,16 +6389,41 @@ public class F extends S {
     return ast(Or);
   }
 
-  public static IAST Or(final IExpr a0, final IExpr a1) {
-    return new B2.Or(a0, a1);
+  /**
+   * <code>expr1 || expr2</code> evaluates each expression in turn, returning {@link S#True} as soon
+   * as an expression evaluates to {@link S#True}. If all expressions evaluate to {@link S#False},
+   * it returns {@link S#False}.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Or.md">Or</a>
+   *
+   * @param expr1
+   * @param expr2
+   * @return
+   */
+  public static IAST Or(final IExpr expr1, final IExpr expr2) {
+    return new B2.Or(expr1, expr2);
   }
 
-  public static IAST Or(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(S.Or, a0, a1, a2);
+  /**
+   * <code>expr1 || expr2 || expr3</code> evaluates each expression in turn, returning {@link
+   * S#True} as soon as an expression evaluates to {@link S#True}. If all expressions evaluate to
+   * {@link S#False}, it returns {@link S#False}.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Or.md">Or</a>
+   *
+   * @param expr1
+   * @param expr2
+   * @param expr3
+   * @return
+   */
+  public static IAST Or(final IExpr expr1, final IExpr expr2, final IExpr expr3) {
+    return new AST3(S.Or, expr1, expr2, expr3);
   }
 
-  public static IAST Or(final IExpr... a) {
-    return function(Or, a);
+  public static IAST Or(final IExpr... expr) {
+    return function(Or, expr);
   }
 
   public static IAST Order(final IExpr a0, final IExpr a1) {
@@ -6179,19 +6455,32 @@ public class F extends S {
   }
 
   /**
-   * See: <a
+   * Returns part <code>i</code> of <code>expr</code>.
+   *
+   * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
+   *
+   * @param expr
+   * @param i
+   * @return
    */
-  public static IAST Part(final IExpr a0, final IExpr a1) {
-    return new B2.Part(a0, a1);
+  public static IAST Part(final IExpr expr, final IExpr i) {
+    return new B2.Part(expr, i);
   }
 
   /**
-   * See: <a
+   * Returns the part <code>i, j</code> of <code>expr</code>.
+   *
+   * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
+   *
+   * @param expr
+   * @param i
+   * @param j
+   * @return
    */
-  public static IAST Part(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(Part, a0, a1, a2);
+  public static IAST Part(final IExpr expr, final IExpr i, final IExpr j) {
+    return new AST3(Part, expr, i, j);
   }
 
   /**
@@ -6343,10 +6632,14 @@ public class F extends S {
   }
 
   /**
-   * Define a <code>Plus()</code> expression <code>a1 + a2</code> for addition.
+   * Define a <code>Plus()</code> expression <code>x + y</code> for addition.
    *
    * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   *
+   * @param x
+   * @param y
+   * @return
    */
   public static IAST Plus(final IExpr x, final IExpr y) {
     if (x != null && y != null) {
@@ -6356,7 +6649,7 @@ public class F extends S {
   }
 
   /**
-   * Define a <code>Plus()</code> expression <code>a0 + a1 + a2</code> for addition.
+   * Define a <code>Plus()</code> expression <code>x + y + z</code> for addition.
    *
    * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
@@ -6402,8 +6695,19 @@ public class F extends S {
     return new AST2(PolynomialGCD, a0, a1);
   }
 
-  public static IAST PolynomialQ(final IExpr a0, final IExpr a1) {
-    return new B2.PolynomialQ(a0, a1);
+  /**
+   * Return {@link S#True} if <code>expr</code> is a polynomial for the <code>variable</code>.
+   * Return {@link S#False} in all other cases.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolynomialQ.md">PolynomialQ</a>
+   *
+   * @param expr
+   * @param variable
+   * @return
+   */
+  public static IAST PolynomialQ(final IExpr expr, final IExpr variable) {
+    return new B2.PolynomialQ(expr, variable);
   }
 
   public static IAST PolynomialQuotient(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -6433,6 +6737,9 @@ public class F extends S {
   /**
    * Define a power expression <code>base ^ exponent</code>.
    *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Power.md">Power</a>
+   *
    * @param base
    * @param exponent
    * @return
@@ -6443,6 +6750,9 @@ public class F extends S {
 
   /**
    * Define a power expression <code>base ^ exponent</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Power.md">Power</a>
    *
    * @param base
    * @param exponent
@@ -7092,26 +7402,87 @@ public class F extends S {
     return new AST1(RowReduce, m);
   }
 
+  /**
+   * Represents a rule replacing <code>lhsStr</code> with <code>rhs</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
+   *
+   * @param lhsStr
+   * @param rhs
+   * @return
+   */
   public static IAST Rule(final String lhsStr, final IExpr rhs) {
     return new B2.Rule(F.$str(lhsStr), rhs);
   }
 
+  /**
+   * Represents a rule replacing <code>lhsStr</code> with <code>rhsStr</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
+   *
+   * @param lhsStr
+   * @param rhsStr
+   * @return
+   */
   public static IAST Rule(final String lhsStr, final String rhsStr) {
     return new B2.Rule(F.$str(lhsStr), F.$str(rhsStr));
   }
 
+  /**
+   * Represents a rule replacing <code>lhs</code> with <code>rhs</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
+   *
+   * @param lhs
+   * @param rhs
+   * @return
+   */
   public static IAST Rule(final IExpr lhs, final IExpr rhs) {
     return new B2.Rule(lhs, rhs);
   }
 
+  /**
+   * Represents a rule replacing <code>lhs</code> with <code>rhsStr</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
+   *
+   * @param lhs
+   * @param rhsStr
+   * @return
+   */
   public static IAST Rule(final IExpr lhs, final String rhsStr) {
     return new B2.Rule(lhs, F.$str(rhsStr));
   }
 
+  /**
+   * Represents a rule replacing <code>lhs</code> with <code>rhs</code>, with <code>rhs</code> held
+   * unevaluated.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RuleDelayed.md">RuleDelayed</a>
+   *
+   * @param lhs
+   * @param rhs
+   * @return
+   */
   public static IAST RuleDelayed(final IExpr lhs, final IExpr rhs) {
     return new B2.RuleDelayed(lhs, rhs);
   }
 
+  /**
+   * Returns {@link S#True} if <code>lhs</code> and <code>rhs</code> are structurally identical.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SameQ.md">SameQ</a>
+   *
+   * @param lhs
+   * @param rhs
+   * @return
+   */
   public static IAST SameQ(final IExpr lhs, final IExpr rhs) {
     return new B2.SameQ(lhs, rhs);
   }
@@ -7179,6 +7550,16 @@ public class F extends S {
     return function(SeriesData, a);
   }
 
+  /**
+   * Evaluates <code>rhs</code> and assigns it to <code>lhs</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Set.md">Set</a>
+   *
+   * @param lhs
+   * @param rhs
+   * @return
+   */
   public static IAST Set(final IExpr lhs, final IExpr rhs) {
     return new B2.B2Set(lhs, rhs);
   }
@@ -7187,6 +7568,16 @@ public class F extends S {
     return new AST2(SetAttributes, symbol, attribute);
   }
 
+  /**
+   * Assigns <code>rhs</code> to <code>lhs</code>, without evaluating <code>rhs</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SetDelayed.md">SetDelayed</a>
+   *
+   * @param lhs
+   * @param rhs
+   * @return
+   */
   public static IAST SetDelayed(final IExpr lhs, final IExpr rhs) {
     return new AST2(SetDelayed, lhs, rhs);
   }
@@ -7215,6 +7606,16 @@ public class F extends S {
     return new AST2(Simplify, expr, assum);
   }
 
+  /**
+   * Returns the sine of <code>z</code> (measured in <a
+   * href="https://en.wikipedia.org/wiki/Radian">Radians</a>).
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sin.md">Sin</a>
+   *
+   * @param z
+   * @return
+   */
   public static IAST Sin(final IExpr z) {
     return new B1.Sin(z);
   }
@@ -7321,7 +7722,7 @@ public class F extends S {
   }
 
   /**
-   * Create a "square" expression: <code>Power(x, 2)</code>.
+   * Create a &quot;square&quot; expression: <code>Power(x, 2)</code>.
    *
    * @param x
    * @return
@@ -7331,7 +7732,10 @@ public class F extends S {
   }
 
   /**
-   * Create a "square root" expression: <code>Power(x, 1/2)</code>.
+   * Create a &quot;square root&quot; expression: <code>Power(x, 1/2)</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sqrt.md">Sqrt</a>
    *
    * @param x
    * @return
@@ -7340,6 +7744,15 @@ public class F extends S {
     return new B2.Power(x, C1D2);
   }
 
+  /**
+   * Create a &quot;square root&quot; expression: <code>Power(n, 1/2)</code>.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sqrt.md">Sqrt</a>
+   *
+   * @param n
+   * @return
+   */
   public static IAST Sqrt(int n) {
     return new B2.Power(F.ZZ(n), C1D2);
   }
@@ -7637,8 +8050,14 @@ public class F extends S {
   }
 
   /**
-   * See <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Tan.md">Tan</a>
+   * Returns the tangent of <code>z</code> (measured in <a
+   * href="https://en.wikipedia.org/wiki/Radian">Radians</a>).
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Tan.md">Tan</a>
+   *
+   * @param z
+   * @return
    */
   public static IAST Tan(final IExpr z) {
     return new B1.Tan(z);
@@ -7929,10 +8348,32 @@ public class F extends S {
     return new AST1(head, arg);
   }
 
-  public static IAST UndirectedEdge(final IExpr a0, final IExpr a1) {
-    return new B2.UndirectedEdge(a0, a1);
+  /**
+   * <code>UndirectedEdge</code> is an undirected edge between the vertices <code>a</code> and
+   * <code>b</code> in a `graph` object.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UndirectedEdge.md">UndirectedEdge</a>
+   *
+   * @param a
+   * @param b
+   * @return
+   */
+  public static IAST UndirectedEdge(final IExpr a, final IExpr b) {
+    return new B2.UndirectedEdge(a, b);
   }
 
+  /**
+   * Yields {@link S#False} if <code>lhs</code> and <code>rhs</code> are known to be equal, or
+   * {@link S#True} if <code>lhs</code> and <code>rhs</code> are known to be unequal.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Unequal.md">Unequal</a>
+   *
+   * @param lhs
+   * @param rhs
+   * @return
+   */
   public static IAST Unequal(final IExpr lhs, final IExpr rhs) {
     return new AST2(Unequal, lhs, rhs);
   }
@@ -7988,6 +8429,16 @@ public class F extends S {
     return new AST1(UnitStep, a0);
   }
 
+  /**
+   * Returns {@link S#True} if <code>lhs</code> and <code>rhs</code> are not structurally identical.
+   *
+   * <p>See: <a
+   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UnsameQ.md">UnsameQ</a>
+   *
+   * @param lhs
+   * @param rhs
+   * @return
+   */
   public static IAST UnsameQ(final IExpr lhs, final IExpr rhs) {
     return new AST2(UnsameQ, lhs, rhs);
   }
