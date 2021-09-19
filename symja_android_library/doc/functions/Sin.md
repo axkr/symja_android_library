@@ -11,6 +11,8 @@ Sin(expr)
 See
 * [Wikipedia - Sine](https://en.wikipedia.org/wiki/Sine)
 * [Fungrim - Sine](http://fungrim.org/topic/Sine/)
+* [Wikipedia - Radian](https://en.wikipedia.org/wiki/Radian)
+* [Wikipedia - Degree](https://en.wikipedia.org/wiki/Degree_(angle))
 
 ### Examples
 

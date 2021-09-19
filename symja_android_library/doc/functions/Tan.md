@@ -10,6 +10,8 @@ Tan(expr)
 
 See:
 * [Wikipedia - Trigonometric functions](https://en.wikipedia.org/wiki/Trigonometric_functions)
+* [Wikipedia - Radian](https://en.wikipedia.org/wiki/Radian)
+* [Wikipedia - Degree](https://en.wikipedia.org/wiki/Degree_(angle))
 
 ### Examples
 
