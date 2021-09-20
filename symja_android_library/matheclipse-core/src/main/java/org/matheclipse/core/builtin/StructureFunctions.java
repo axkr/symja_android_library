@@ -641,7 +641,7 @@ public class StructureFunctions {
                 new IdentityHashMap<ISymbol, IExpr>();
             // final long moduleCounter = engine.incModuleCounter();
             IExpr subst =
-                arg2.accept(new ModuleReplaceAll(moduleVariables, engine, engine.uniqueName("$")));
+                arg2.accept(new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
             if (subst.isPresent()) {
               arg2 = subst;
             }

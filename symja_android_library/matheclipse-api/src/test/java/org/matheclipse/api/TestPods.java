@@ -143,7 +143,7 @@ public class TestPods {
   @Test
   public void testMarkdownHelp() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = TestPods.createJUnitResult("Sin", formatsHTML);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
@@ -868,7 +868,7 @@ public class TestPods {
   @Test
   public void testPlotSin() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods.createJUnitResult("Plot(Sin(x), {x, 0, 6*Pi} )", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
@@ -907,7 +907,7 @@ public class TestPods {
   @Test
   public void testPlot002() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON =
         TestPods.createJUnitResult(
             "Plot({Sin(x),Cos(x),Tan(x)},{x,-2*Pi,2*Pi}) // JSForm", formatsTEX);
@@ -947,7 +947,7 @@ public class TestPods {
   @Test
   public void testPlotF() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = TestPods.createJUnitResult("Plot(f(x), {x, 0, 6*Pi} )", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
@@ -988,7 +988,7 @@ public class TestPods {
   @Test
   public void testPlotBessel() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON =
         TestPods.createJUnitResult(
@@ -1030,7 +1030,7 @@ public class TestPods {
   @Test
   public void testSin() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = TestPods.createJUnitResult("Sin(x)", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
@@ -1100,7 +1100,7 @@ public class TestPods {
   @Test
   public void testPolynomialQuotientRemainder() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = TestPods.createJUnitResult(" x**2-4,x-2", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
@@ -1318,7 +1318,7 @@ public class TestPods {
   @Test
   public void testList() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = TestPods.createJUnitResult("1,2,3", formatsMATHML);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
@@ -2277,7 +2277,7 @@ public class TestPods {
   @Test
   public void testListPlot001() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods.createJUnitResult("3,Sin(1),Pi,3/4,42,1.2", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
@@ -2375,7 +2375,7 @@ public class TestPods {
   @Test
   public void testListPlot002() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON =
         TestPods.createJUnitResult("Table({Sin(t*0.33), Cos(t*1.1)}, {t, 100})", formatsTEX);
@@ -2426,7 +2426,7 @@ public class TestPods {
   @Test
   public void testListPlot004() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON =
         TestPods.createJUnitResult("1, 2, 3, None, 3, 5, f(), 2, 1, foo, 2, 3", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
@@ -2476,7 +2476,7 @@ public class TestPods {
   @Test
   public void testListPlot005() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = TestPods.createJUnitResult("1, 2, 3, 4, 5", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
@@ -2546,7 +2546,7 @@ public class TestPods {
   @Test
   public void testListPlot003() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods.createJUnitResult("plot ([x,x**2,x**3,x**4])", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
@@ -2659,7 +2659,7 @@ public class TestPods {
   @Test
   public void testHornerForm() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     String s = System.getProperty("os.name");
     ObjectNode messageJSON = TestPods.createJUnitResult("HornerForm(x^2+x^3+2*x^14)", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
@@ -2793,7 +2793,7 @@ public class TestPods {
   @Test
   public void testCoshIntegral001() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     String s = System.getProperty("os.name");
     ObjectNode messageJSON =
         TestPods.createJUnitResult( //
@@ -2845,7 +2845,7 @@ public class TestPods {
   @Test
   public void testPolynomial001() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods.createJUnitResult("-x^2 + 4*x + 4", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
@@ -2924,7 +2924,7 @@ public class TestPods {
   @Test
   public void testRound001() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods.createJUnitResult("1/0", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 

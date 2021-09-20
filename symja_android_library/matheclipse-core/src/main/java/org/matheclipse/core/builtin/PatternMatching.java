@@ -2283,15 +2283,15 @@ public final class PatternMatching {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         if (ast.arg1().isSymbol()) {
-          final String varAppend = ast.arg1().toString() + engine.uniqueName("$");
+          final String varAppend = ast.arg1().toString() + EvalEngine.uniqueName("$");
           return F.symbol(varAppend, engine);
         } else if (ast.arg1() instanceof IStringX) {
           // TODO start counter by 1....
-          final String varAppend = engine.uniqueName(ast.arg1().toString());
+          final String varAppend = EvalEngine.uniqueName(ast.arg1().toString());
           return F.symbol(varAppend, engine);
         }
       }
-      return F.symbol(engine.uniqueName("$"), engine);
+      return F.symbol(EvalEngine.uniqueName("$"), engine);
     }
 
     @Override

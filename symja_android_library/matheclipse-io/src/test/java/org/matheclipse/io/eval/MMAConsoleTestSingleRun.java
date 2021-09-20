@@ -32,7 +32,7 @@ public class MMAConsoleTestSingleRun extends TestCase {
     PrintStream old = System.out;
     System.setOut(ps);
 
-    console.main(args);
+    MMAConsole.main(args);
 
     System.out.flush();
     System.setOut(old);

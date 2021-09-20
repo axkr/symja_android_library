@@ -3531,7 +3531,7 @@ public final class Programming {
   private static IExpr moduleSubstVariables(
       IAST intializerList, IExpr moduleBlock, final EvalEngine engine) {
     // final long moduleCounter = engine.incModuleCounter();
-    final String varAppend = engine.uniqueName("$");
+    final String varAppend = EvalEngine.uniqueName("$");
     final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables =
         new IdentityHashMap<ISymbol, IExpr>();
     if (rememberModuleVariables(intializerList, varAppend, moduleVariables, engine)) {
@@ -3559,7 +3559,7 @@ public final class Programming {
         new IdentityHashMap<ISymbol, IExpr>();
     if (rememberWithVariables(intializerList, moduleVariables, engine)) {
       IExpr result =
-          withBlock.accept(new ModuleReplaceAll(moduleVariables, engine, engine.uniqueName("$")));
+          withBlock.accept(new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
       return result.orElse(withBlock);
     }
     return F.NIL;

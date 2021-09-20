@@ -350,7 +350,7 @@ public class PolynomialHomogenizationNew {
         }
         return newSymbol;
       }
-      newSymbol = F.Dummy(engine.uniqueName("hg$"));
+      newSymbol = F.Dummy(EvalEngine.uniqueName("hg$"));
       substitutedVariables.put(newSymbol, exprPoly);
       substitutedExpr.put(exprPoly, newSymbol);
 

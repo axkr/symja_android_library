@@ -344,7 +344,7 @@ public class PolynomialHomogenization {
         }
         return newSymbol;
       }
-      newSymbol = F.Dummy(engine.uniqueName("jas$"));
+      newSymbol = F.Dummy(EvalEngine.uniqueName("jas$"));
       substitutedVariables.put(newSymbol, exprPoly);
       substitutedExpr.put(exprPoly, newSymbol);
 

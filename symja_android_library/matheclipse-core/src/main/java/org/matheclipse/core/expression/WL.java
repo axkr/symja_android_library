@@ -499,7 +499,7 @@ public class WL {
       }
       ContextPath contextPath = engine.getContextPath();
       Context context = contextPath.getContext(contextName);
-      return contextPath.getSymbol(lcSymbolName, context, engine.isRelaxedSyntax());
+      return ContextPath.getSymbol(lcSymbolName, context, engine.isRelaxedSyntax());
     }
   }
 
