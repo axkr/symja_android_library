@@ -259,10 +259,9 @@ public final class BooleanFunctions {
       if (s != null) {
         return s;
       }
-      EvalEngine engine = EvalEngine.get();
-      // long moduleCounter = engine.incModuleCounter();
+      // long moduleCounter = EvalEngine.incModuleCounter();
       // final String varAppend = "LF" + "$" + moduleCounter;
-      s = F.Dummy(engine.uniqueName("LF$"));
+      s = F.Dummy(EvalEngine.uniqueName("LF$"));
       variable2symbolMap.put(v, s);
       return s;
     }

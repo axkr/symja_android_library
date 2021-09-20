@@ -14054,7 +14054,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFunction() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     check(
         "g = (#1 + #2) &[3,4]", //
         "7");
@@ -18494,7 +18494,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testJavaForm() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     check(
         "JavaForm(Sqrt(x), Complex)", //
         "(x).sqrt()");
@@ -18570,7 +18570,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testJSForm() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     // check("JSForm(Ramp(x))", //
     // "((x>=0) ? x : ( 0 ))");
     check(
@@ -22621,7 +22621,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testModule() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     // check("num=Sin(3*I);Module({v=N(num)},If(PossibleZeroQ(Re(v)),Im(v)>0,Re(v)>0))",
     // "True");
     // check("Module({x=5}, Hold(x))", "Hold(x$1)");
@@ -38378,7 +38378,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testUnique() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     check(
         "Unique()", //
         "$1");
@@ -39142,12 +39142,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testWith() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
 
     check(
         "With({x = 2 + y}, Hold(With({y = 4}, x + y)))", //
         "Hold(With({y$1=4},2+y+y$1))");
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     check(
         "xm=10;With({xm=xm}, Print(xm));xm", //
         "10");

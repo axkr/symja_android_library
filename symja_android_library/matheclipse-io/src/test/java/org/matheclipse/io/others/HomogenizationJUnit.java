@@ -51,28 +51,27 @@ public class HomogenizationJUnit extends AbstractTestCase {
   }
 
   public void testHomogenization() {
-    EvalEngine engine = EvalEngine.get();
-    engine.resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     // TODO jas$1->Sqrt(x)
     check(
         "Homogenization(x+2*Sqrt(x)+1)", //
         "{1+2*jas$1+jas$1^2,{jas$1->Sqrt(x)}}");
-    engine.resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     check(
         "Homogenization(Sin(x))", //
         "{jas$1,{jas$1->Sin(x)}}");
 
-    engine.resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     check(
         "Homogenization(x^2+Sin(x)+Sin(x)^3)", //
         "{jas$1^2+jas$2+jas$2^3,{jas$1->x,jas$2->Sin(x)}}");
 
-    engine.resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     check(
         "Homogenization((1+x^2)^(-1))", //
         "{1/jas$1,{jas$1->1+x^2}}");
 
-    engine.resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     check(
         "Homogenization(f(x)^(-1))", //
         "{1/jas$1,{jas$1->f(x)}}");

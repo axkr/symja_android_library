@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
-
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
@@ -41,7 +40,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
-
 import com.baeldung.algorithms.romannumerals.RomanArabicConverter;
 import com.ibm.icu.text.NumberFormat;
 import com.ibm.icu.text.RuleBasedNumberFormat;
@@ -492,7 +490,7 @@ public final class OutputFunctions {
             VariablesSet varSet = new VariablesSet(arg1);
             List<IExpr> functionsParameters = varSet.getArrayList();
             StringBuilder buf = new StringBuilder();
-            long functionCounter = engine.incModuleCounter();
+            long functionCounter = EvalEngine.incModuleCounter();
             buf.append("double f");
             buf.append(functionCounter);
             buf.append("(");
@@ -528,7 +526,7 @@ public final class OutputFunctions {
               VariablesSet varSet = new VariablesSet(arg1);
               List<IExpr> functionsParameters = varSet.getArrayList();
               StringBuilder buf = new StringBuilder();
-              long functionCounter = engine.incModuleCounter();
+              long functionCounter = EvalEngine.incModuleCounter();
               buf.append("Complex f");
               buf.append(functionCounter);
               buf.append("(");

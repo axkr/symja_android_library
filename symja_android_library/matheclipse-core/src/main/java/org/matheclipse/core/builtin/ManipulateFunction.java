@@ -1119,7 +1119,7 @@ public class ManipulateFunction {
       IAST listOfFunctions = (IAST) arg1;
       String[] functionNames = new String[listOfFunctions.size() - 1];
       for (int i = 0; i < functionNames.length; i++) {
-        functionNames[i] = engine.uniqueName("$f");
+        functionNames[i] = EvalEngine.uniqueName("$f");
       }
       for (int i = 1; i < listOfFunctions.size(); i++) {
         function.append("function ");
@@ -1195,7 +1195,7 @@ public class ManipulateFunction {
 
       String[] functionNames = new String[list.size() - 1];
       for (int i = 0; i < functionNames.length; i++) {
-        functionNames[i] = engine.uniqueName("$f");
+        functionNames[i] = EvalEngine.uniqueName("$f");
       }
       for (int i = 1; i < list.size(); i++) {
         IAST listOfFunctions = (IAST) list.get(i);
@@ -1287,7 +1287,7 @@ public class ManipulateFunction {
 
       String[] functionNames = new String[listOfFunctions.size() - 1];
       for (int i = 0; i < functionNames.length; i++) {
-        functionNames[i] = engine.uniqueName("$f");
+        functionNames[i] = EvalEngine.uniqueName("$f");
       }
       for (int i = 1; i < listOfFunctions.size(); i++) {
         function.append("function ");

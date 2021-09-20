@@ -17,6 +17,7 @@ import static org.matheclipse.core.expression.S.Assumptions;
 import static org.matheclipse.core.expression.S.E;
 import static org.matheclipse.core.expression.S.I;
 import static org.matheclipse.core.expression.S.Pi;
+import static org.matheclipse.core.expression.S.Power;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -949,7 +950,7 @@ public class Algebra {
           // append a BlankNullSequence[] to match the parts of an Orderless expression into a
           // "rest" variable
           IPatternSequence blankNullRest =
-              F.$ps(F.Dummy("§rest§" + engine.incModuleCounter()), true);
+              F.$ps(F.Dummy("§rest§" + EvalEngine.incModuleCounter()), true);
           IASTAppendable newLHS = ((IAST) x).copyAppendable();
           newLHS.append(blankNullRest);
           final IPatternMatcher matcher = engine.evalPatternMatcher(newLHS);

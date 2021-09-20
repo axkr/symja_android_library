@@ -767,7 +767,7 @@ public class TestPodsStrict {
 
   @Test
   public void testPlotSin() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods.createJUnitResult("Plot(Sin(x), {x, 0, 6*Pi} )", formatsTEX);
     final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
     assertEquals(
@@ -804,7 +804,7 @@ public class TestPodsStrict {
 
   @Test
   public void testPlot002() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON =
         TestPods.createJUnitResult(
             "Plot({Sin(x),Cos(x),Tan(x)},{x,-2*Pi,2*Pi}) // JSForm", formatsTEX);
@@ -842,7 +842,7 @@ public class TestPodsStrict {
 
   @Test
   public void testPlotF() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods.createJUnitResult("Plot(f(x), {x, 0, 6*Pi} )", formatsTEX);
     final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
     assertEquals(
@@ -918,7 +918,7 @@ public class TestPodsStrict {
 
   @Test
   public void testPolynomialQuotientRemainder() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods.createJUnitResult(" x**2-4,x-2", formatsTEX);
     final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
     assertEquals(
@@ -1655,7 +1655,7 @@ public class TestPodsStrict {
 
   @Test
   public void testListPlot001() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON =
         Pods.createResult(
@@ -1699,7 +1699,7 @@ public class TestPodsStrict {
 
   @Test
   public void testListPlot002() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON =
         Pods.createResult(
@@ -1743,7 +1743,7 @@ public class TestPodsStrict {
 
   @Test
   public void testListPlot004() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON =
         Pods.createResult(
             "Histogram({1, 2, 3, None, 3, 5, f(), 2, 1, foo, 2, 3})",
@@ -1786,7 +1786,7 @@ public class TestPodsStrict {
 
   @Test
   public void testListPlot005() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON =
         Pods.createResult(
@@ -1830,7 +1830,7 @@ public class TestPodsStrict {
 
   @Test
   public void testListPlot003() {
-    EvalEngine.get().resetModuleCounter4JUnit();
+    EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON =
         Pods.createResult(
             "plot({x,x^2,x^3,x^4},{x,-5,5})",
