@@ -2266,10 +2266,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
    * @param pow the power expression of the factor
    * @param call
    * @return the current call status
-   * @throws IOException
    */
-  private boolean convertSeriesDataArg(
-      StringBuilder buf, IExpr coefficient, IExpr pow, boolean call) throws IOException {
+  private boolean convertSeriesDataArg(StringBuilder buf, IExpr coefficient, IExpr pow,
+      boolean call) {
     IExpr plusArg;
     if (coefficient.isZero()) {
       plusArg = F.C0;

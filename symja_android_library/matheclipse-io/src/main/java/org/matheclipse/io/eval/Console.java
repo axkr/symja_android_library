@@ -464,23 +464,9 @@ public class Console {
         return printResult(result);
       }
     } catch (final AbortException re) {
-      try {
-        return printResult(S.$Aborted);
-      } catch (IOException e) {
-        Validate.printException(buf, e);
-        stderr.println(buf.toString());
-        stderr.flush();
-        return "";
-      }
+      return printResult(S.$Aborted);
     } catch (final FailedException re) {
-      try {
-        return printResult(S.$Failed);
-      } catch (IOException e) {
-        Validate.printException(buf, e);
-        stderr.println(buf.toString());
-        stderr.flush();
-        return "";
-      }
+      return printResult(S.$Failed);
     } catch (final SyntaxError se) {
       String msg = se.getMessage();
       stderr.println(msg);
@@ -516,7 +502,7 @@ public class Console {
     return buf.toString();
   }
 
-  private String printResult(IExpr result) throws IOException {
+  private String printResult(IExpr result) {
     if (result.equals(S.Null)) {
       return "";
     }

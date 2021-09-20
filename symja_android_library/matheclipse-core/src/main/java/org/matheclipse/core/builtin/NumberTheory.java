@@ -3829,7 +3829,7 @@ public final class NumberTheory {
                     ast,
                     new Callable<IExpr>() {
                       @Override
-                      public IExpr call() throws Exception {
+                      public IExpr call() {
                         return sumPartitionsP(engine, (IInteger) arg1);
                       }
                     });
@@ -3936,7 +3936,7 @@ public final class NumberTheory {
                       ast,
                       new Callable<IExpr>() {
                         @Override
-                        public IExpr call() throws Exception {
+                        public IExpr call() {
                           return partitionsQ(engine, (IInteger) arg1);
                         }
                       });

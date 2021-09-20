@@ -101,8 +101,7 @@ public class ExpressionJSONConvert {
     return temp;
   }
 
-  private static JsonNode exportGraphics3DJSON(IExpr data3D)
-      throws IOException, JsonGenerationException, JsonMappingException {
+  private static JsonNode exportGraphics3DJSON(IExpr data3D) {
     if (data3D.isList()) {
       IAST list = (IAST) data3D;
       ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();

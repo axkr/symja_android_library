@@ -70,7 +70,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
   }
 
   @Override
-  public Object eval(final String script, final ScriptContext context) throws ScriptException {
+  public Object eval(final String script, final ScriptContext context) {
     // final ArrayList<ISymbol> list = new ArrayList<ISymbol>();
     boolean relaxedSyntax = false;
     boolean showStackTrace = Config.SHOW_STACKTRACE;
@@ -133,26 +133,12 @@ public class MathScriptEngine extends AbstractScriptEngine {
       if (showStackTrace) {
         e.printStackTrace();
       }
-      try {
-        return printResult(S.$Aborted, relaxedSyntax);
-      } catch (IOException e1) {
-        if (showStackTrace) {
-          e.printStackTrace();
-        }
-        return e1.getMessage();
-      }
+      return printResult(S.$Aborted, relaxedSyntax);
     } catch (final FailedException e) {
       if (showStackTrace) {
         e.printStackTrace();
       }
-      try {
-        return printResult(S.$Failed, relaxedSyntax);
-      } catch (IOException e1) {
-        if (Config.DEBUG) {
-          e.printStackTrace();
-        }
-        return e1.getMessage();
-      }
+      return printResult(S.$Failed, relaxedSyntax);
     } catch (final SyntaxError e) {
       if (showStackTrace) {
         e.printStackTrace();
@@ -201,7 +187,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
     }
   }
 
-  private String printResult(IExpr result, boolean relaxedSyntax) throws IOException {
+  private String printResult(IExpr result, boolean relaxedSyntax) {
     if (result.equals(S.Null)) {
       return "";
     }

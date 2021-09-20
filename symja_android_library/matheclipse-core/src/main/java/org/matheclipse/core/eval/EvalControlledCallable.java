@@ -31,7 +31,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
   }
 
   @Override
-  public IExpr call() throws Exception {
+  public IExpr call() {
     EvalEngine.remove();
     EvalEngine.setReset(fEngine);
     final StringWriter buf = new StringWriter();

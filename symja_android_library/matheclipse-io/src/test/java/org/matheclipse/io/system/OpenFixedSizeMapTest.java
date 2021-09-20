@@ -8,14 +8,14 @@ import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 public class OpenFixedSizeMapTest extends TestCase {
 
   @Test
-  public void testPut() throws Exception {
+  public void testPut() {
     OpenFixedSizeMap<Integer, Integer> myHashMap = new OpenFixedSizeMap<Integer, Integer>(3);
     myHashMap.put(2, 3);
     assertTrue(myHashMap.get(2).equals(3));
   }
 
   @Test
-  public void testPutWithSameKey() throws Exception {
+  public void testPutWithSameKey() {
     OpenFixedSizeMap<Integer, Integer> myHashMap = new OpenFixedSizeMap<Integer, Integer>(3);
     myHashMap.put(2, 3);
     myHashMap.put(2, 4);
@@ -24,7 +24,7 @@ public class OpenFixedSizeMapTest extends TestCase {
   }
 
   @Test
-  public void testGetByNotExistingKey() throws Exception {
+  public void testGetByNotExistingKey() {
     OpenFixedSizeMap<Integer, Integer> myHashMap = new OpenFixedSizeMap<Integer, Integer>(3);
     myHashMap.put(2, 3);
 
@@ -32,7 +32,7 @@ public class OpenFixedSizeMapTest extends TestCase {
   }
 
   @Test
-  public void testCollision() throws Exception {
+  public void testCollision() {
     OpenFixedSizeMap<Integer, Integer> myHashMap = new OpenFixedSizeMap<Integer, Integer>(3);
     myHashMap.put(2, 3);
     myHashMap.put(5, 4);
@@ -41,7 +41,7 @@ public class OpenFixedSizeMapTest extends TestCase {
   }
 
   @Test
-  public void testGetByNotExistingKeyWhenTableIsFull() throws Exception {
+  public void testGetByNotExistingKeyWhenTableIsFull() {
     OpenFixedSizeMap<Integer, Integer> myHashMap = new OpenFixedSizeMap<Integer, Integer>(3);
     myHashMap.put(2, 3);
     myHashMap.put(5, 4);
@@ -51,7 +51,7 @@ public class OpenFixedSizeMapTest extends TestCase {
   }
 
   @Test
-  public void testSize() throws Exception {
+  public void testSize() {
     OpenFixedSizeMap<Integer, Integer> myHashMap = new OpenFixedSizeMap<Integer, Integer>(3);
 
     assertTrue(myHashMap.size() == 0);
@@ -66,7 +66,7 @@ public class OpenFixedSizeMapTest extends TestCase {
     assertTrue(myHashMap.size() == 3);
   }
 
-  public void testPutWhenMapIsFull() throws Exception {
+  public void testPutWhenMapIsFull() {
     try {
       OpenFixedSizeMap<Integer, Integer> myHashMap = new OpenFixedSizeMap<Integer, Integer>(2);
       myHashMap.put(1, 1);

@@ -2,7 +2,6 @@ package org.matheclipse.core.expression.data;
 
 import java.io.Externalizable;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -19,9 +18,8 @@ public class FileExpr extends DataExpr<File> implements Externalizable {
   /**
    * @param fileName
    * @return
-   * @throws FileNotFoundException
    */
-  public static FileExpr newInstance(final String fileName) throws FileNotFoundException {
+  public static FileExpr newInstance(final String fileName) {
     File file = new File(fileName);
     return new FileExpr(file);
   }

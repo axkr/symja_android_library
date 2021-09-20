@@ -36,7 +36,7 @@ public class SymjaServer {
 
   private static final class APIHandler implements HttpHandler {
     @Override
-    public void handleRequest(final HttpServerExchange exchange) throws Exception {
+    public void handleRequest(final HttpServerExchange exchange) {
       String jsonStr;
       HeaderMap responseHeaders = exchange.getResponseHeaders();
       responseHeaders.put(new HttpString("Access-Control-Allow-Origin"), "*");

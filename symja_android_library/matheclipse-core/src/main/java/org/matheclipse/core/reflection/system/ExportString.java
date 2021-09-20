@@ -2,7 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -116,7 +115,7 @@ public class ExportString extends AbstractEvaluator {
   private static final Function<IExpr, String> nameProvider = v -> String.valueOf(v);
 
   void graphExport(Graph<IExpr, DefaultEdge> g, Writer writer, Extension format)
-      throws ExportException, UnsupportedEncodingException {
+      throws ExportException {
     switch (format) {
       case DOT:
         DOTExporter<IExpr, DefaultEdge> dotExporter =

@@ -99,9 +99,8 @@ public class JSONBuilder {
    *
    * @param script
    * @return
-   * @throws IOException
    */
-  public static String[] createJSONJavaScript(String script) throws IOException {
+  public static String[] createJSONJavaScript(String script) {
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
     resultsJSON.put("line", Integer.valueOf(21));
@@ -118,7 +117,7 @@ public class JSONBuilder {
     return new String[] {"mathml", json.toString()};
   }
 
-  public static String[] createJSONShow(EvalEngine engine, IAST show) throws IOException {
+  public static String[] createJSONShow(EvalEngine engine, IAST show) {
     StringBuilder stw = new StringBuilder();
     stw.append("<math><mtable><mtr><mtd>");
     if (show.isAST() && show.size() > 1 && show.arg1().isAST(S.Graphics,2)) {
@@ -237,9 +236,8 @@ public class JSONBuilder {
    * @param html
    * @param manipulateStr
    * @return
-   * @throws IOException
    */
-  public static String[] createJSONIFrame(String html, String manipulateStr) throws IOException {
+  public static String[] createJSONIFrame(String html, String manipulateStr) {
     html = IOFunctions.templateRender(html, new String[] {manipulateStr});
     html = StringEscapeUtils.escapeHtml4(html);
     return createJSONJavaScript(

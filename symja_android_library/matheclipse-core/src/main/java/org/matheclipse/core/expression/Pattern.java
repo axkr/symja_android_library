@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.io.ObjectStreamException;
 import java.util.List;
 import java.util.function.Function;
 
@@ -342,7 +341,7 @@ public class Pattern extends Blank {
     return buffer.toString();
   }
 
-  private Object writeReplace() throws ObjectStreamException {
+  private Object writeReplace() {
     return optional();
   }
 }

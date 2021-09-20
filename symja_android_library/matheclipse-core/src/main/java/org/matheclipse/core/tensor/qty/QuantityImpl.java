@@ -4,7 +4,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.ObjectStreamException;
 import java.util.Objects;
 
 import org.matheclipse.core.builtin.IOFunctions;
@@ -443,7 +442,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     objectOutput.writeObject(fData);
   }
 
-  private Object writeReplace() throws ObjectStreamException {
+  private Object writeReplace() {
     return optional();
   }
 }

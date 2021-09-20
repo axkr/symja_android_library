@@ -531,7 +531,7 @@ public class FileFunctions {
           if (arg1.isString()) {
             return FileExpr.newInstance(arg1.toString());
           }
-        } catch (FileNotFoundException | RuntimeException ex) {
+        } catch (RuntimeException ex) {
           if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }
@@ -1464,10 +1464,8 @@ public class FileFunctions {
    * @param reader
    * @param engine
    * @return
-   * @throws IOException
    */
-  public static List<ASTNode> parseReader(final String reader, final EvalEngine engine)
-      throws IOException {
+  public static List<ASTNode> parseReader(final String reader, final EvalEngine engine) {
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
     final List<ASTNode> node = parser.parsePackage(reader);
     return node;

@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.io.ObjectStreamException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -829,7 +828,7 @@ public abstract class AbstractAST implements IASTMutable {
       throw exceptionSupplier.get();
     }
 
-    private Object readResolve() throws ObjectStreamException {
+    private Object readResolve() {
       return F.NIL;
     }
 

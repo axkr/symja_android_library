@@ -136,7 +136,7 @@ public class UnitTestingFunctions {
       }
     }
 
-    private static IExpr runTests(EvalEngine engine, String str) throws IOException {
+    private static IExpr runTests(EvalEngine engine, String str) {
       final List<ASTNode> node = FileFunctions.parseReader(str, engine);
       IAssociation testResults = evaluatePackage(node, engine);
       IAssociation testResultObject = F.assoc(node.size());
@@ -290,7 +290,7 @@ public class UnitTestingFunctions {
     }
   }
 
-  public static IAST readFile(EvalEngine engine, String str) throws IOException {
+  public static IAST readFile(EvalEngine engine, String str) {
     final List<ASTNode> node = FileFunctions.parseReader(str, engine);
     IExpr temp;
     int i = 0;

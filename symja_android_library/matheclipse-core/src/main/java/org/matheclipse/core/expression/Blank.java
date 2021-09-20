@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.io.ObjectStreamException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -354,7 +353,7 @@ public class Blank implements IPattern {
     return F.NIL;
   }
 
-  private Object writeReplace() throws ObjectStreamException {
+  private Object writeReplace() {
     return optional();
   }
 }

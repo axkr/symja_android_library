@@ -1,7 +1,6 @@
 package org.matheclipse.core.expression;
 
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.text.Collator;
@@ -268,7 +267,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public String definitionToString() throws IOException {
+  public String definitionToString() {
     StringWriter buf = new StringWriter();
     IAST attributesList = AttributeFunctions.attributesList(this);
     if (attributesList.size() > 1) {
@@ -1100,7 +1099,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     // }
   }
 
-  private Object writeReplace() throws ObjectStreamException {
+  private Object writeReplace() {
     return optional();
   }
 

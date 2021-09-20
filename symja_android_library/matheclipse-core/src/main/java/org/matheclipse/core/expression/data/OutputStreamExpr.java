@@ -4,7 +4,6 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.Externalizable;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -73,8 +72,7 @@ public class OutputStreamExpr extends DataExpr<OutputStream> implements External
     return newInstance(file, false);
   }
 
-  public static OutputStreamExpr newInstance(final RandomAccessFile file, String streamName)
-      throws FileNotFoundException {
+  public static OutputStreamExpr newInstance(final RandomAccessFile file, String streamName) {
 
     OutputStream outputStream = Channels.newOutputStream(file.getChannel());
     //    OutputStreamWriter osw = new OutputStreamWriter(outputStream);
