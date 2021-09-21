@@ -1,7 +1,6 @@
 package org.matheclipse.core.visit;
 
 import java.util.function.Function;
-
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IASTMutable;

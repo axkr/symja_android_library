@@ -1,7 +1,6 @@
 package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
@@ -28,7 +27,6 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
 

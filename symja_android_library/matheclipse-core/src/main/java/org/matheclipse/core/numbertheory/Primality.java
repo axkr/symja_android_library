@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeSet;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.combinatoric.KSubsets.KSubsetsList;
@@ -23,10 +22,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
-
 import edu.jas.arith.PrimeInteger;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;

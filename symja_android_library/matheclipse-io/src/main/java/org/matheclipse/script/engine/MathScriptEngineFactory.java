@@ -2,9 +2,7 @@ package org.matheclipse.script.engine;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.script.ScriptEngine;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 

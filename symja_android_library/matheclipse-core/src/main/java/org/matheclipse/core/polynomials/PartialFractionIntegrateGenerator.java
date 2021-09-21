@@ -12,7 +12,6 @@ import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
-
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -21,7 +20,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
-
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.poly.ExpVector;

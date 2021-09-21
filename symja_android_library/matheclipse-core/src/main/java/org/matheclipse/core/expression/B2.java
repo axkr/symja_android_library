@@ -11,7 +11,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
-
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;

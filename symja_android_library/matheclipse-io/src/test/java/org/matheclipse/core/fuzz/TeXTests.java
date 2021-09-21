@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -23,7 +22,6 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
-
 import junit.framework.TestCase;
 
 public class TeXTests extends TestCase {

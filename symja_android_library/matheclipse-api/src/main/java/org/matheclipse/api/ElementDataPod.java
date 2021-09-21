@@ -7,7 +7,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
-
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 public class ElementDataPod implements IPod {

@@ -1,7 +1,6 @@
 package org.matheclipse.api;
 
 import org.matheclipse.core.eval.EvalEngine;
-
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 public interface IPod {

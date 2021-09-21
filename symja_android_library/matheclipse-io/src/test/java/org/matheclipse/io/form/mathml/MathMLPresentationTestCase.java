@@ -1,13 +1,11 @@
 package org.matheclipse.io.form.mathml;
 
 import java.io.StringWriter;
-
 import org.apfloat.Apcomplex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
-
 import junit.framework.TestCase;
 
 /** Tests MathML presentation function */

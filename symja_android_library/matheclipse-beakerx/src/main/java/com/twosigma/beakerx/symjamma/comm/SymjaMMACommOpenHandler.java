@@ -15,13 +15,13 @@
  */
 package com.twosigma.beakerx.symjamma.comm;
 
-import com.twosigma.beakerx.kernel.KernelFunctionality;
 import com.twosigma.beakerx.handler.Handler;
+import com.twosigma.beakerx.kernel.KernelFunctionality;
 import com.twosigma.beakerx.kernel.comm.AutotranslationHandler;
 import com.twosigma.beakerx.kernel.comm.KernelControlCommandListHandler;
 import com.twosigma.beakerx.kernel.comm.TargetNamesEnum;
-import com.twosigma.beakerx.message.Message;
 import com.twosigma.beakerx.kernel.handler.CommOpenHandler;
+import com.twosigma.beakerx.message.Message;
 
 public class SymjaMMACommOpenHandler extends CommOpenHandler {
 

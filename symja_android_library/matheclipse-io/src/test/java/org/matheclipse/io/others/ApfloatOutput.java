@@ -1,7 +1,6 @@
 package org.matheclipse.io.others;
 
 import java.math.RoundingMode;
-
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 

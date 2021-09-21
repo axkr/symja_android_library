@@ -4,7 +4,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-
 import junit.framework.TestCase;
 
 /** Test <code>org.matheclipse.core.eval.Console</code> app. */

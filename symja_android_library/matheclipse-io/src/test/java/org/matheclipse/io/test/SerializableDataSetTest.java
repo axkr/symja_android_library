@@ -5,10 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.io.expression.ASTDataset;
-
 import junit.framework.TestCase;
 import tech.tablesaw.api.Table;
 

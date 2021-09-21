@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.SourceCodeFunctions;
 import org.matheclipse.core.expression.F;

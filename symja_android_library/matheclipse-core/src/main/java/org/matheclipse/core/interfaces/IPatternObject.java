@@ -1,7 +1,6 @@
 package org.matheclipse.core.interfaces;
 
 import java.util.List;
-
 import org.hipparchus.util.Pair;
 import org.matheclipse.core.patternmatching.IPatternMap;
 

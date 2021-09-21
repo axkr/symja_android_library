@@ -15,8 +15,7 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.eval;
-import static org.matheclipse.core.expression.F.x;
-
+import static org.matheclipse.core.expression.S.x;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;

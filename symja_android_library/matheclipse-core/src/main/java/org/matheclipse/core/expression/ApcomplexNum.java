@@ -3,7 +3,6 @@ package org.matheclipse.core.expression;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;

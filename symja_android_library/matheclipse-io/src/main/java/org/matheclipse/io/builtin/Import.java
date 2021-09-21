@@ -8,7 +8,6 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.jgrapht.Graph;

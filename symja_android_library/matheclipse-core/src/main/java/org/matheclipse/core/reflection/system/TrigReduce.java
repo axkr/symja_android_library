@@ -12,11 +12,10 @@ import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.F.y;
 import static org.matheclipse.core.expression.F.y_;
-
+import static org.matheclipse.core.expression.S.x;
+import static org.matheclipse.core.expression.S.y;
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;

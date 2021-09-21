@@ -2,7 +2,6 @@ package org.matheclipse.core.generic;
 
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;

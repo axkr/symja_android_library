@@ -2,7 +2,6 @@ package org.matheclipse.core.eval;
 
 import java.util.Arrays;
 import java.util.Comparator;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;

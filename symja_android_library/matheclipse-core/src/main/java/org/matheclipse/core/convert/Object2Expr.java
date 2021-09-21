@@ -1,14 +1,12 @@
 package org.matheclipse.core.convert;
 
 import static org.matheclipse.core.expression.F.List;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -25,7 +23,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.parser.ExprParser;
-
 import com.google.common.util.concurrent.AtomicDouble;
 
 /** Converts objects into an IExpr expression */

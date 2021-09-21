@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import java.util.Base64;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;

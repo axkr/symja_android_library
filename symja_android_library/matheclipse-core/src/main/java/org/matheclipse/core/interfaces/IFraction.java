@@ -1,7 +1,7 @@
 package org.matheclipse.core.interfaces;
 
-import org.hipparchus.fraction.BigFraction;
 import java.math.BigInteger;
+import org.hipparchus.fraction.BigFraction;
 
 /** interface for "fractional" numbers */
 public interface IFraction extends IRational {

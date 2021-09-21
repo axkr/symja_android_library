@@ -3,7 +3,6 @@ package org.matheclipse.core.expression;
 import java.io.IOException;
 import java.util.function.DoubleFunction;
 import java.util.function.Predicate;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;

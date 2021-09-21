@@ -2,7 +2,6 @@ package org.matheclipse.core.expression;
 
 import java.util.List;
 import java.util.function.Function;
-
 import org.hipparchus.util.Pair;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.IAST;

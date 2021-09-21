@@ -3,7 +3,6 @@ package org.matheclipse.core.form.output;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;

@@ -1,7 +1,6 @@
 package org.matheclipse.core.form.output;
 
 import java.io.PrintWriter;
-
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;

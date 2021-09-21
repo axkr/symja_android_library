@@ -1,13 +1,12 @@
 package org.matheclipse.io.system;
 
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.a;
 import static org.matheclipse.core.expression.F.a_;
 import static org.matheclipse.core.expression.F.ast;
-import static org.matheclipse.core.expression.F.f;
-import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.x_;
-
+import static org.matheclipse.core.expression.S.a;
+import static org.matheclipse.core.expression.S.f;
+import static org.matheclipse.core.expression.S.x;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;

@@ -7,7 +7,6 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
-
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;

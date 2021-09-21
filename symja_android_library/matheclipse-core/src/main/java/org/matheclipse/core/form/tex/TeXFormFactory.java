@@ -3,7 +3,6 @@ package org.matheclipse.core.form.tex;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;

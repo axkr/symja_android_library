@@ -1,10 +1,8 @@
 package org.matheclipse.core.generic;
 
 import java.util.function.Supplier;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IDimensionFunction;
 import org.matheclipse.core.interfaces.IExpr;

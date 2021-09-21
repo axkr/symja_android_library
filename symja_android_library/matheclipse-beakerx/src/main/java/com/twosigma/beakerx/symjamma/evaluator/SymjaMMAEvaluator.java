@@ -17,10 +17,8 @@ package com.twosigma.beakerx.symjamma.evaluator;
 
 import static com.twosigma.beakerx.symjamma.evaluator.EnvVariablesFilter.envVariablesFilter;
 import java.io.File;
-import java.io.IOException;
 import java.util.Locale;
 import java.util.concurrent.Executors;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
@@ -29,7 +27,6 @@ import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.FEConfig;
-
 import com.twosigma.beakerx.BeakerXClient;
 import com.twosigma.beakerx.TryResult;
 import com.twosigma.beakerx.autocomplete.AutocompleteResult;

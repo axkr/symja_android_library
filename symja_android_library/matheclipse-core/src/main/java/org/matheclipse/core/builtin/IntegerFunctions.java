@@ -6,10 +6,8 @@ import static org.matheclipse.core.expression.F.FractionalPart;
 import static org.matheclipse.core.expression.F.IntegerPart;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Round;
-
 import java.math.BigInteger;
 import java.util.function.Function;
-
 import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -40,7 +38,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 

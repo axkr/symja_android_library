@@ -1,7 +1,6 @@
 package org.matheclipse.core.img;
 
 import java.util.stream.IntStream;
-
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;

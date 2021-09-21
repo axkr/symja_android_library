@@ -28,15 +28,13 @@ package org.matheclipse.core.frobenius;
  * along with Redberry. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import static java.math.BigInteger.ONE;
+import static java.math.BigInteger.ZERO;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
-
-import static java.math.BigInteger.ONE;
-import static java.math.BigInteger.ZERO;
 
 /**
  * @author Dmitry Bolotin

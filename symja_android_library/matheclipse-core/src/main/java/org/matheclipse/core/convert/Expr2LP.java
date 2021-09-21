@@ -1,7 +1,6 @@
 package org.matheclipse.core.convert;
 
 import java.util.List;
-
 import org.hipparchus.optim.linear.LinearConstraint;
 import org.hipparchus.optim.linear.LinearObjectiveFunction;
 import org.hipparchus.optim.linear.Relationship;

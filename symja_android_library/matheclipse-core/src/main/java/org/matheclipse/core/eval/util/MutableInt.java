@@ -2,7 +2,6 @@ package org.matheclipse.core.eval.util;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 

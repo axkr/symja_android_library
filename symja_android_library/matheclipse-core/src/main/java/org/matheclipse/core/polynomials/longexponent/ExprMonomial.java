@@ -1,7 +1,6 @@
 package org.matheclipse.core.polynomials.longexponent;
 
 import java.util.Map;
-
 import org.matheclipse.core.interfaces.IExpr;
 
 /** Monomial class. Represents pairs of exponent vectors and coefficients. Adaptor for Map.Entry. */

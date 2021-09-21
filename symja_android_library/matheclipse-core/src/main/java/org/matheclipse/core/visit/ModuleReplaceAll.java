@@ -1,7 +1,6 @@
 package org.matheclipse.core.visit;
 
 import java.util.IdentityHashMap;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;

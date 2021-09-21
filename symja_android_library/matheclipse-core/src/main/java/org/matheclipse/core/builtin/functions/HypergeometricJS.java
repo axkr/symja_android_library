@@ -1,11 +1,9 @@
 package org.matheclipse.core.builtin.functions;
 
 import static java.lang.Math.abs;
-
 import java.util.ArrayList;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.Gamma;
 import org.matheclipse.core.basic.Config;

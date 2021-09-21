@@ -4,7 +4,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.ObjectStreamException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.matheclipse.core.basic.Config;

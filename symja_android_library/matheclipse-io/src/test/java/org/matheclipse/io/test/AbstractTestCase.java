@@ -6,11 +6,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Locale;
-
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -21,7 +19,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.script.engine.MathScriptEngine;
-
 import junit.framework.TestCase;
 
 /** Tests system.reflection classes */

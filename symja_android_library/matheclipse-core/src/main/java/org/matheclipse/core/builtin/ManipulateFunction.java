@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.RealMatrix;
@@ -31,7 +30,6 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-
 import tech.tablesaw.plotly.components.Figure;
 import tech.tablesaw.plotly.components.Layout;
 import tech.tablesaw.plotly.traces.BarTrace;

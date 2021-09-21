@@ -18,7 +18,6 @@ package org.matheclipse.parser.client.ast;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.matheclipse.parser.client.operator.Operator;
 
 /** Basic common parser factory methods. */

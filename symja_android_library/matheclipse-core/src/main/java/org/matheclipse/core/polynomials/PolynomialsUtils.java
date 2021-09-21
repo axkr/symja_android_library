@@ -16,10 +16,9 @@
  */
 package org.matheclipse.core.polynomials;
 
-import org.hipparchus.fraction.BigFraction;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.expression.F;

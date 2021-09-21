@@ -5,14 +5,11 @@ import java.io.Reader;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Random;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
-
 import com.google.common.io.CharStreams;
-
 import edu.jas.structure.RingFactory;
 
 /** Singleton ring factory class. */

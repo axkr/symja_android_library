@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;

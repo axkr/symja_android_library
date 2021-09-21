@@ -6,14 +6,12 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Function;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-
 import edu.jas.kern.PrettyPrint;
 import edu.jas.structure.NotInvertibleException;
 import edu.jas.structure.RingElem;

@@ -3,7 +3,6 @@ package org.matheclipse.core.convert;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;

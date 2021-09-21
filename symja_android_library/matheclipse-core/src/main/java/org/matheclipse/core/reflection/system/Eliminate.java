@@ -3,7 +3,6 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.Predicate;
-
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;

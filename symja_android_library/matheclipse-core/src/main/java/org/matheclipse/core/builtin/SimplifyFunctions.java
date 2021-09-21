@@ -3,10 +3,8 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.S.x;
-
 import java.util.List;
 import java.util.function.Function;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;

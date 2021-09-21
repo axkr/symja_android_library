@@ -1,12 +1,10 @@
 package org.matheclipse.io.others;
 
 import java.math.BigInteger;
-
 import org.matheclipse.core.numbertheory.IPrimality;
 import org.matheclipse.core.numbertheory.SortedMultiset;
 import org.matheclipse.core.numbertheory.SortedMultiset_BottomUp;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
-
 import junit.framework.TestCase;
 
 public class EllipticCurveMethodJUnit extends TestCase {

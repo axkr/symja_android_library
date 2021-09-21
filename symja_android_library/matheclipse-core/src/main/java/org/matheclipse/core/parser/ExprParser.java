@@ -17,7 +17,6 @@ package org.matheclipse.core.parser;
 
 import java.util.List;
 import java.util.Locale;
-
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
@@ -47,7 +46,6 @@ import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.IParserFactory;
-import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 

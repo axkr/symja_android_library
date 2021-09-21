@@ -22,9 +22,7 @@ import static org.matheclipse.core.expression.S.n;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
 import static org.matheclipse.core.expression.S.z;
-
 import java.util.function.Supplier;
-
 import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -43,7 +41,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.reflection.system.rules.FunctionExpandRules;
-
 import com.google.common.base.Suppliers;
 
 /**

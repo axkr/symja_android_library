@@ -6,7 +6,6 @@ import java.io.Writer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
-
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.nio.Attribute;

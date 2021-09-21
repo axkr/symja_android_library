@@ -2,7 +2,6 @@ package org.matheclipse.core.expression;
 
 import java.math.RoundingMode;
 import java.util.function.Function;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
@@ -24,7 +23,6 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.FEConfig;
-
 import com.google.common.math.DoubleMath;
 
 /**

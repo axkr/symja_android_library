@@ -2,7 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.optim.PointValuePair;
 import org.hipparchus.optim.linear.LinearConstraint;

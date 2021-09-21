@@ -1,7 +1,6 @@
 package org.matheclipse.parser.client;
 
 import java.util.Map;
-
 import org.matheclipse.parser.trie.TrieMatch;
 
 public class Characters {

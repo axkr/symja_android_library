@@ -23,7 +23,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleSupplier;
 import java.util.function.DoubleUnaryOperator;
-
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;

@@ -22,10 +22,8 @@ import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.Zeta;
 import static org.matheclipse.core.expression.S.Pi;
-
 import java.math.BigDecimal;
 import java.util.function.DoubleUnaryOperator;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;

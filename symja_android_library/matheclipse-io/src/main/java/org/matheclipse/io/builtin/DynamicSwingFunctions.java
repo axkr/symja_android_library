@@ -1,9 +1,7 @@
 package org.matheclipse.io.builtin;
 
 import java.awt.Dimension;
-
 import javax.swing.SwingUtilities;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;

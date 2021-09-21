@@ -8,10 +8,8 @@ import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.S.Pi;
-
 import java.math.BigInteger;
 import java.util.function.Function;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;

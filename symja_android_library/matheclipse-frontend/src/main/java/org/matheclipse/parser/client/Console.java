@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-
 import org.matheclipse.parser.client.eval.DoubleEvaluator;
 import org.matheclipse.parser.client.math.MathException;
 

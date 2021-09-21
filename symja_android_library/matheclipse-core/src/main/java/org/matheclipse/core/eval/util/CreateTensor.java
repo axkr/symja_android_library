@@ -2,7 +2,6 @@ package org.matheclipse.core.eval.util;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IDimensionFunction;
 import org.matheclipse.core.interfaces.IExpr;

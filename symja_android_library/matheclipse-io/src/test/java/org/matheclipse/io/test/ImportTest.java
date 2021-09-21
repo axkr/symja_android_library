@@ -3,15 +3,12 @@ package org.matheclipse.io.test;
 
 import java.io.File;
 import java.util.Arrays;
-
 import javax.imageio.ImageIO;
-
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.io.tensor.io.ImageFormat;
-
 import junit.framework.TestCase;
 
 public class ImportTest extends TestCase {

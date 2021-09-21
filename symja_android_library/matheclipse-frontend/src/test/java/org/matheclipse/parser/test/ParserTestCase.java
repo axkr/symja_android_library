@@ -1,12 +1,10 @@
 package org.matheclipse.parser.test;
 
-import junit.framework.TestCase;
-
 import java.util.List;
-
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
+import junit.framework.TestCase;
 
 /** Tests parser function for SimpleParserFactory */
 public class ParserTestCase extends TestCase {

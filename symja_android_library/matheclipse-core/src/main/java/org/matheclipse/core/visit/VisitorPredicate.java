@@ -1,7 +1,6 @@
 package org.matheclipse.core.visit;
 
 import java.util.function.Predicate;
-
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;

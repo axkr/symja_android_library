@@ -9,9 +9,7 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.evalExpandAll;
-
 import java.util.function.Function;
-
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;

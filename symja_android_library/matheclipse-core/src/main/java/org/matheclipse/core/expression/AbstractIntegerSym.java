@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.exception.MathRuntimeException;
@@ -34,9 +33,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-
 import com.google.common.math.BigIntegerMath;
-
 import edu.jas.arith.PrimeInteger;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;

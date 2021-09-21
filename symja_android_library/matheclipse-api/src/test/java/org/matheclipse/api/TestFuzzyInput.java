@@ -1,7 +1,6 @@
 package org.matheclipse.api;
 
 import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 import org.matheclipse.api.parser.FuzzyParserFactory;
 import org.matheclipse.core.basic.Config;

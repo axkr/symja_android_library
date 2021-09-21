@@ -1,9 +1,7 @@
 package org.matheclipse.io.system;
 
 import java.io.StringWriter;
-
 import javax.script.ScriptEngine;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalEngine;

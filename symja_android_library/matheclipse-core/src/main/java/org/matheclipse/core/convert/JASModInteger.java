@@ -3,7 +3,6 @@ package org.matheclipse.core.convert;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -13,7 +12,6 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;

@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.F.List;
-
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayDeque;
@@ -12,7 +11,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-
 import org.apache.commons.text.StringEscapeUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
@@ -52,7 +50,6 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.SyntaxError;
-
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 

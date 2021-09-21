@@ -18,10 +18,8 @@ import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.ZZ;
 import static org.matheclipse.core.expression.F.fraction;
-
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;

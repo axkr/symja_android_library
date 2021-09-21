@@ -3,7 +3,7 @@ package org.matheclipse.core.interfaces;
 import java.io.IOException;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
-
+import org.hipparchus.special.elliptic.jacobi.Theta;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;

@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin.functions;
 
 import static org.matheclipse.core.builtin.functions.EllipticIntegralsJS.ellipticK;
-
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.jacobi.CopolarC;
 import org.hipparchus.special.elliptic.jacobi.CopolarD;

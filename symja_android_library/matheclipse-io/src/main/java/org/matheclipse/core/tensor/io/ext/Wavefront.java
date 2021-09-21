@@ -1,7 +1,6 @@
 package org.matheclipse.core.tensor.io.ext;
 
 import java.util.List;
-
 import org.matheclipse.core.interfaces.IAST;
 
 public interface Wavefront {

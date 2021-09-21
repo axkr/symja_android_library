@@ -1,7 +1,6 @@
 package org.matheclipse.core.interfaces;
 
 import java.util.function.Predicate;
-
 import org.matheclipse.core.eval.EvalEngine;
 
 /** An expression representing a symbol (i.e. variable- constant- or function-name) */

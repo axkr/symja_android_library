@@ -1,7 +1,6 @@
 package org.matheclipse.core.expression.data;
 
 import static com.google.common.base.Preconditions.checkArgument;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -11,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.LinearAlgebra;
@@ -20,7 +18,6 @@ import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -28,7 +25,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.parser.trie.Trie;
-
 import com.google.common.primitives.UnsignedBytes;
 import com.google.common.primitives.UnsignedInts;
 import com.google.common.primitives.UnsignedLong;

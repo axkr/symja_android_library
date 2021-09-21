@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -37,10 +36,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitorLong;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.ExprColumn;
 import tech.tablesaw.api.Row;

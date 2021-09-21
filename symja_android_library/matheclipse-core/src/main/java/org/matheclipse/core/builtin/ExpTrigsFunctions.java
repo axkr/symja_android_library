@@ -30,10 +30,8 @@ import static org.matheclipse.core.expression.F.Tanh;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.num;
 import static org.matheclipse.core.expression.S.Pi;
-
 import java.math.RoundingMode;
 import java.util.function.DoubleUnaryOperator;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -98,7 +96,6 @@ import org.matheclipse.core.reflection.system.rules.SincRules;
 import org.matheclipse.core.reflection.system.rules.SinhRules;
 import org.matheclipse.core.reflection.system.rules.TanRules;
 import org.matheclipse.core.reflection.system.rules.TanhRules;
-
 import com.google.common.math.DoubleMath;
 
 public class ExpTrigsFunctions {

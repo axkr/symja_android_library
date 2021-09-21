@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.util.List;
 import java.util.function.Consumer;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -26,7 +25,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ast.ASTNode;
-
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
 

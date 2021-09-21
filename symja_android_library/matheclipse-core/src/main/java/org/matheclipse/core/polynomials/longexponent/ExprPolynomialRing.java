@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
-
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
@@ -23,7 +22,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 // import
 // org.matheclipse.core.polynomials.longexponent.GenPolynomialIterator.GenPolynomialMonomialIterator;
-
 import edu.jas.kern.PrettyPrint;
 import edu.jas.kern.Scripting;
 import edu.jas.structure.RingFactory;

@@ -9,7 +9,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.stream.IntStream;
 import javax.imageio.ImageIO;
-
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.img.ColorFormat;

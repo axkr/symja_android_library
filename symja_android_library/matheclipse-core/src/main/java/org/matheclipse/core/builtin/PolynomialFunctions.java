@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
@@ -45,9 +44,7 @@ import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomialRing;
 import org.matheclipse.core.reflection.system.rules.LegendrePRules;
 import org.matheclipse.core.reflection.system.rules.LegendreQRules;
 import org.matheclipse.core.reflection.system.rules.SphericalHarmonicYRules;
-
 import com.google.common.math.LongMath;
-
 import edu.jas.application.GBAlgorithmBuilder;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;

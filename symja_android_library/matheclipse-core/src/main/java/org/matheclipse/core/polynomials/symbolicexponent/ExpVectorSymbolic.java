@@ -3,7 +3,6 @@ package org.matheclipse.core.polynomials.symbolicexponent;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;

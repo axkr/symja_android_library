@@ -6,7 +6,6 @@ import java.io.ObjectOutput;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.function.Function;
-
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.ArithmeticUtils;
@@ -17,7 +16,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.numbertheory.Primality;
-
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
 

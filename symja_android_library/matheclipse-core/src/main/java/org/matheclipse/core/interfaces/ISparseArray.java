@@ -1,9 +1,9 @@
 package org.matheclipse.core.interfaces;
 
 import java.util.function.Function;
-
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.trie.Trie;
 
 public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {

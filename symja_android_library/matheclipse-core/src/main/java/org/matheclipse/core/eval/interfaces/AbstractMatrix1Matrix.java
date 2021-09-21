@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
 import java.util.function.Predicate;
-
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;

@@ -1,11 +1,9 @@
 package org.matheclipse.core.generic;
 
 import static org.matheclipse.core.expression.F.Slot;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;

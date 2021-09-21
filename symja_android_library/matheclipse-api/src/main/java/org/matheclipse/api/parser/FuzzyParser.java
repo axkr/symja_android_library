@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
-
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;

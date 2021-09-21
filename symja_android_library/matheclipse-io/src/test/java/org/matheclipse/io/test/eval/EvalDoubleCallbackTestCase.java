@@ -2,7 +2,6 @@ package org.matheclipse.io.test.eval;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-
 import org.junit.Assert;
 import org.matheclipse.core.eval.CoreCallbackFunction;
 import org.matheclipse.parser.client.FEConfig;
@@ -11,7 +10,6 @@ import org.matheclipse.parser.client.eval.DoubleEvaluator;
 import org.matheclipse.parser.client.eval.DoubleVariable;
 import org.matheclipse.parser.client.eval.IDoubleValue;
 import org.matheclipse.parser.client.math.MathException;
-
 import junit.framework.TestCase;
 
 /** Tests evaluation in <code>double</code> expression mode */

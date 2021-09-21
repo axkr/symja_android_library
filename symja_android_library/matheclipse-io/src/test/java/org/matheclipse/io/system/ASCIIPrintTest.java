@@ -4,7 +4,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.interfaces.IExpr;
-
 import junit.framework.TestCase;
 
 public class ASCIIPrintTest extends TestCase {

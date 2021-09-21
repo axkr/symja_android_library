@@ -3,7 +3,6 @@ package org.matheclipse.core.polynomials;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeMap;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;

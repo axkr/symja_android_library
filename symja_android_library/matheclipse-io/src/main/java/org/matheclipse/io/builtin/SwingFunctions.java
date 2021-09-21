@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -28,7 +27,6 @@ import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileSystemView;
-
 import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;

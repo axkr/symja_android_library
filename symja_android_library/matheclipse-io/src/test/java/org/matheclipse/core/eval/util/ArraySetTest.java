@@ -2,7 +2,6 @@ package org.matheclipse.core.eval.util;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.ISymbol;
-
 import junit.framework.TestCase;
 
 public class ArraySetTest extends TestCase {

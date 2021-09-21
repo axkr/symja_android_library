@@ -13,10 +13,8 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Sum;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.k;
-
+import static org.matheclipse.core.expression.S.k;
 import java.util.function.Predicate;
-
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.convert.VariablesSet;

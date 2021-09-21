@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import java.util.function.Function;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.F;

@@ -2,7 +2,6 @@ package org.matheclipse.core.tensor.qty;
 
 import java.util.Objects;
 import java.util.function.UnaryOperator;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 

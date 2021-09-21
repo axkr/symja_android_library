@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.hipparchus.clustering.Cluster;
 import org.hipparchus.clustering.Clusterer;
 import org.hipparchus.clustering.DBSCANClusterer;
@@ -11,7 +10,7 @@ import org.hipparchus.clustering.KMeansPlusPlusClusterer;
 import org.hipparchus.clustering.MultiKMeansPlusPlusClusterer;
 import org.hipparchus.clustering.distance.DistanceMeasure;
 import org.hipparchus.exception.MathIllegalArgumentException;
-import org.hipparchus.exception.MathRuntimeException; 
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;

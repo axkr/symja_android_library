@@ -4,13 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
-
 import javax.script.AbstractScriptEngine;
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
-
 import org.apfloat.ApfloatRuntimeException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;

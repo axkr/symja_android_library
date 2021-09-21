@@ -2,7 +2,6 @@ package org.matheclipse.core.visit;
 
 import java.util.Map;
 import java.util.function.Function;
-
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;

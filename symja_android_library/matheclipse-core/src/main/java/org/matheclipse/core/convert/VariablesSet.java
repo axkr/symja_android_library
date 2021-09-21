@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
-
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;

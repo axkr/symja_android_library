@@ -4,7 +4,6 @@ import static org.matheclipse.core.expression.F.Abs;
 import static org.matheclipse.core.expression.F.Floor;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
-
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -14,7 +13,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.FEConfig;
-
 import junit.framework.TestCase;
 
 public class AssumptionTestCase extends TestCase {

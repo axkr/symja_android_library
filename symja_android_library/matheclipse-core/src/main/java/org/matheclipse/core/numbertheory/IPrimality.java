@@ -2,7 +2,6 @@ package org.matheclipse.core.numbertheory;
 
 import java.math.BigInteger;
 import java.util.SortedMap;
-
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IInteger;
 
