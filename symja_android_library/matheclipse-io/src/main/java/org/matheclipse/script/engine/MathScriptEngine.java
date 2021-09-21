@@ -18,7 +18,6 @@ import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
 public class MathScriptEngine extends AbstractScriptEngine {
@@ -137,13 +136,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
         e.printStackTrace();
       }
       return printResult(S.$Failed, relaxedSyntax);
-    } catch (final SyntaxError e) {
-      if (showStackTrace) {
-        e.printStackTrace();
-      }
-      // catch parser errors here
-      return e.getMessage();
-    } catch (final MathException e) {
+    } catch (final MathException e) { // catches parser errors as well
       if (showStackTrace) {
         e.printStackTrace();
       }

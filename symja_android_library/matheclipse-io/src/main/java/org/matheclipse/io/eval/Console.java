@@ -482,17 +482,7 @@ public class Console {
       stderr.println(buf.toString());
       stderr.flush();
       return "";
-    } catch (final Exception e) {
-      Validate.printException(buf, e);
-      stderr.println(buf.toString());
-      stderr.flush();
-      return "";
-    } catch (final OutOfMemoryError e) {
-      Validate.printException(buf, e);
-      stderr.println(buf.toString());
-      stderr.flush();
-      return "";
-    } catch (final StackOverflowError e) {
+    } catch (final Exception | OutOfMemoryError | StackOverflowError e) {
       Validate.printException(buf, e);
       stderr.println(buf.toString());
       stderr.flush();

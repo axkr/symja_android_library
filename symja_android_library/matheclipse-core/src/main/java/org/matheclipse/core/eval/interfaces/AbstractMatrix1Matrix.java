@@ -35,14 +35,6 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
       throw le;
     } catch (MathRuntimeException mre) {
       return engine.printMessage(ast.topHead(), mre);
-    } catch (final ClassCastException e) {
-      if (Config.SHOW_STACKTRACE) {
-        e.printStackTrace();
-      }
-    } catch (final IndexOutOfBoundsException e) {
-      if (Config.SHOW_STACKTRACE) {
-        e.printStackTrace();
-      }
     } catch (final RuntimeException rex) {
       if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();

@@ -24,14 +24,12 @@ import java.util.concurrent.TimeUnit;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.ExprEvaluator;
-import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
-import org.matheclipse.parser.client.SyntaxError;
 import com.twosigma.beakerx.TryResult;
 import com.twosigma.beakerx.jvm.object.SimpleEvaluationObject;
 import com.twosigma.beakerx.symjamma.output.MarkdownNotebookOutput;
@@ -90,12 +88,6 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
           return result;
         }
       }
-    } catch (final AbortException re) {
-      re.printStackTrace();
-    } catch (final SyntaxError se) {
-      se.printStackTrace();
-    } catch (final RuntimeException re) {
-      re.printStackTrace();
     } catch (final Exception e) {
       e.printStackTrace();
     }

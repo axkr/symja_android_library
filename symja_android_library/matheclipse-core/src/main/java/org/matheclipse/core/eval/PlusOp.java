@@ -378,16 +378,11 @@ public final class PlusOp {
       if (addMerge(arg, F.C1)) {
         evaled = true;
       }
-    } catch (ValidateException ve) {
+    } catch (ValidateException | LimitException e) {
       if (Config.SHOW_STACKTRACE) {
-        ve.printStackTrace();
+        e.printStackTrace();
       }
-      throw ve;
-    } catch (LimitException le) {
-      if (Config.SHOW_STACKTRACE) {
-        le.printStackTrace();
-      }
-      throw le;
+      throw e;
     } catch (SymjaMathException sme) {
       if (Config.SHOW_STACKTRACE) {
         sme.printStackTrace();

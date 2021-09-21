@@ -85,18 +85,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
       }
       System.err.println(buf.toString());
       System.err.flush();
-    } catch (final Exception e) {
-      if (Config.SHOW_STACKTRACE) {
-        e.printStackTrace();
-      }
-      Validate.printException(buf, e);
-      System.err.println(buf.toString());
-      System.err.flush();
-    } catch (final OutOfMemoryError e) {
-      Validate.printException(buf, e);
-      System.err.println(buf.toString());
-      System.err.flush();
-    } catch (final StackOverflowError e) {
+    } catch (final Exception | OutOfMemoryError | StackOverflowError e) {
       if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
       }

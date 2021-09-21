@@ -2057,12 +2057,8 @@ public class PolynomialFunctions {
       return poly.coefficientList();
     } catch (LimitException le) {
       throw le;
-    } catch (ClassCastException ex) {
-      // org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing.create()
-      if (Config.SHOW_STACKTRACE) {
-        ex.printStackTrace();
-      }
     } catch (RuntimeException ex) {
+      // org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing.create()
       if (Config.SHOW_STACKTRACE) {
         ex.printStackTrace();
       }

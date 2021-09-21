@@ -129,11 +129,7 @@ public class RootsFunctions {
           }
         }
         return resultList;
-      } catch (InvalidBoundaryException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-      } catch (JASConversionException e) {
+      } catch (InvalidBoundaryException | JASConversionException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }

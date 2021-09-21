@@ -37,7 +37,6 @@ import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.builtin.functions.ZetaJS;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.ThrowException;
@@ -297,8 +296,6 @@ public class SpecialFunctions {
             // TODO improve with regularizedIncompleteBetaFunction() ???
             // https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
             return F.num(GammaJS.betaRegularized(zn, an, nn));
-          } catch (ArgumentTypeException ate) {
-
           } catch (ValidateException ve) {
             // from org.matheclipse.core.eval.EvalEngine.evalDouble()
           }
@@ -363,10 +360,9 @@ public class SpecialFunctions {
               IterationLimitExceeded.throwIt(nInt, ast.topHead());
             }
             return F.num(GammaJS.betaRegularized(zn, an, nn, wn));
-          } catch (IllegalArgumentException rex) {
-            // from de.lab4inf.math.functions.IncompleteBeta.checkParameters()
-          } catch (ValidateException ve) {
-            // from org.matheclipse.core.eval.EvalEngine.evalDouble()
+          } catch (IllegalArgumentException | ValidateException e) {
+            // IAE: from de.lab4inf.math.functions.IncompleteBeta.checkParameters()
+            // ValidateException: from org.matheclipse.core.eval.EvalEngine.evalDouble()
           }
         }
       } catch (RuntimeException rex) {
@@ -875,14 +871,11 @@ public class SpecialFunctions {
             te.printStackTrace();
           }
           return te.getValue();
-        } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead() + ": " + ve.getMessage());
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+          if (Config.SHOW_STACKTRACE) {
+            rex.printStackTrace();
+          }
+          return engine.printMessage(ast.topHead(), rex);
         }
       }
 
@@ -1473,14 +1466,11 @@ public class SpecialFunctions {
               te.printStackTrace();
             }
             return te.getValue();
-          } catch (ValidateException ve) {
-            if (Config.SHOW_STACKTRACE) {
-              ve.printStackTrace();
-            }
-            return engine.printMessage(ast.topHead() + ": " + ve.getMessage());
           } catch (RuntimeException rex) {
-            // rex.printStackTrace();
-            return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+            if (Config.SHOW_STACKTRACE) {
+              rex.printStackTrace();
+            }
+            return engine.printMessage(ast.topHead(), rex);
           }
         }
       }
@@ -1581,14 +1571,11 @@ public class SpecialFunctions {
             te.printStackTrace();
           }
           return te.getValue();
-        } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead() + ": " + ve.getMessage());
         } catch (RuntimeException rex) {
-          // rex.printStackTrace();
-          return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
+          if (Config.SHOW_STACKTRACE) {
+            rex.printStackTrace();
+          }
+          return engine.printMessage(ast.topHead(), rex);
         }
       }
       return F.NIL;

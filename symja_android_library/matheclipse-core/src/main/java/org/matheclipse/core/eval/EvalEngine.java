@@ -956,12 +956,9 @@ public class EvalEngine implements Serializable {
             return result;
           }
 
-        } catch (FlowControlException fce) {
-          throw fce;
+        } catch (FlowControlException | LimitException e) {
+          throw e;
         } catch (SymjaMathException ve) {
-          if (ve instanceof LimitException) {
-            throw ve;
-          }
           if (Config.SHOW_STACKTRACE) {
             ve.printStackTrace();
           }

@@ -49,7 +49,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
-import org.matheclipse.parser.client.SyntaxError;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 
@@ -665,9 +664,8 @@ public final class Programming {
         return generator.doIt(ast.arg1());
       } catch (final ValidateException ve) {
         return engine.printMessage(ve.getMessage(ast.topHead()));
-      } catch (final NoEvalException e) {
-      } catch (final ClassCastException e) {
-        // the iterators are generated only from IASTs
+      } catch (final NoEvalException | ClassCastException e) {
+        // ClassCastException: the iterators are generated only from IASTs
       }
       return F.NIL;
     }
@@ -2771,25 +2769,14 @@ public final class Programming {
           long timeConstrainedMillis = System.currentTimeMillis() + fSeconds * 1000L;
           fEngine.setTimeConstrainedMillis(timeConstrainedMillis);
           return fEngine.evaluate(fExpr);
-        } catch (final SyntaxError se) {
-          String msg = se.getMessage();
-          fEngine.printMessage(msg);
         } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
           return S.$Aborted;
-        } catch (final RecursionLimitExceeded re) {
+        } catch (final RecursionLimitExceeded | ASTElementLimitExceeded re) {
           throw re;
-        } catch (final ASTElementLimitExceeded re) {
-          throw re;
-        } catch (final RuntimeException rex) {
+        } catch (Exception | OutOfMemoryError | StackOverflowError e) {
           if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
+            e.printStackTrace();
           }
-          fEngine.printMessage("TimeConstrained: " + rex.getMessage());
-        } catch (final Exception e) {
-          fEngine.printMessage("TimeConstrained: " + e.getMessage());
-        } catch (final OutOfMemoryError e) {
-          fEngine.printMessage("TimeConstrained: " + e.getMessage());
-        } catch (final StackOverflowError e) {
           fEngine.printMessage("TimeConstrained: " + e.getMessage());
         } finally {
           fEngine.setTimeConstrainedMillis(-1);
@@ -2844,36 +2831,15 @@ public final class Programming {
         seconds = seconds > 1 ? seconds - 1 : seconds;
         work.setExpr(ast.arg1(), seconds);
         return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
-      } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
-        // System.out.println("TIMED_OUT "+ast.arg1());
+      } catch (org.matheclipse.core.eval.exception.TimeoutException
+          | java.util.concurrent.TimeoutException
+          | com.google.common.util.concurrent.UncheckedTimeoutException e) {
         if (ast.isAST3()) {
           return ast.arg3();
         }
         return S.$Aborted;
-      } catch (java.util.concurrent.TimeoutException e) {
-        // System.out.println("TimeoutException "+ast.arg1());
-        if (ast.isAST3()) {
-          return ast.arg3();
-        }
-        return S.$Aborted;
-      } catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
-        // System.out.println("UncheckedTimeoutException "+ast.arg1());
-        if (ast.isAST3()) {
-          return ast.arg3();
-        }
-        return S.$Aborted;
-      } catch (RuntimeException rex) {
-        // System.out.println("RuntimeException "+ast.arg1());
-        // Appengine example: com.google.apphosting.api.DeadlineExceededException
-        if (ast.isAST3()) {
-          // e.printStackTrace();
-          return ast.arg3();
-        }
-        if (Config.DEBUG) {
-          rex.printStackTrace();
-        }
-        return S.Null;
       } catch (Exception e) {
+        // Appengine example: com.google.apphosting.api.DeadlineExceededException
         if (ast.isAST3()) {
           // e.printStackTrace();
           return ast.arg3();

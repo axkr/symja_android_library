@@ -512,8 +512,8 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
                 if (result != null) {
                   return result;
                 }
-              } catch (ArithmeticException | IllegalArgumentException | RangeException rex4) {
-              } catch (ArgumentTypeException | TypeException tex) {
+              } catch (ArithmeticException | IllegalArgumentException | RangeException
+                  | ArgumentTypeException | TypeException e) {
               }
             } catch (ArgumentTypeException | TypeException tex) {
             }
@@ -535,8 +535,8 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
             if (result != null) {
               return result;
             }
-          } catch (ArithmeticException | IllegalArgumentException | RangeException rex2) {
-          } catch (ArgumentTypeException | TypeException tex) {
+          } catch (ArithmeticException | IllegalArgumentException | RangeException
+              | ArgumentTypeException | TypeException e) {
           }
         } catch (ArgumentTypeException | TypeException tex) {
         }
@@ -553,8 +553,8 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
             if (result != null) {
               return result;
             }
-          } catch (ArithmeticException | RangeException rex2) {
-          } catch (ArgumentTypeException | TypeException tex) {
+          } catch (ArithmeticException | RangeException | ArgumentTypeException
+              | TypeException e) {
           }
         } catch (ArgumentTypeException | TypeException tex) {
         }
@@ -564,8 +564,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
 
     try {
       return newList(list, type);
-    } catch (RangeException rex) {
-    } catch (TypeException tex) {
+    } catch (RangeException | TypeException e) {
     }
     return null;
   }

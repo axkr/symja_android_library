@@ -33,11 +33,8 @@ import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.num;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y_;
-import static org.matheclipse.core.expression.S.Conjugate;
 import static org.matheclipse.core.expression.S.E;
 import static org.matheclipse.core.expression.S.Pi;
-import static org.matheclipse.core.expression.S.Power;
-import static org.matheclipse.core.expression.S.Times;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
 import java.util.function.DoubleFunction;
@@ -1820,16 +1817,11 @@ public final class Arithmetic {
           return unaryOperator(a);
         }
         return binaryOperator(ast, a, ast.arg2());
-      } catch (ApfloatRuntimeException arex) {
+      } catch (ApfloatRuntimeException | ValidateException e) {
         if (Config.SHOW_STACKTRACE) {
-          arex.printStackTrace();
+          e.printStackTrace();
         }
-        return engine.printMessage(ast.topHead(), arex);
-      } catch (ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), ve);
+        return engine.printMessage(ast.topHead(), e);
       }
     }
 

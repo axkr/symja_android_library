@@ -443,15 +443,11 @@ public class BesselFunctions {
 
             return F.num(BesselJS.besselJZero(n.evalDouble(), k));
 
-          } catch (MathRuntimeException mre) {
+          } catch (MathRuntimeException | ValidateException e) {
             // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a
             // root
             if (Config.SHOW_STACKTRACE) {
-              mre.printStackTrace();
-            }
-          } catch (ValidateException ve) {
-            if (Config.SHOW_STACKTRACE) {
-              ve.printStackTrace();
+              e.printStackTrace();
             }
           }
         }
@@ -794,14 +790,10 @@ public class BesselFunctions {
           if (n.isReal()) {
             return F.num(BesselJS.besselYZero(n.evalDouble(), k));
           }
-        } catch (MathRuntimeException mre) {
+        } catch (MathRuntimeException | ValidateException e) {
           // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
           if (Config.SHOW_STACKTRACE) {
-            mre.printStackTrace();
-          }
-        } catch (ValidateException ve) {
-          if (Config.SHOW_STACKTRACE) {
-            ve.printStackTrace();
+            e.printStackTrace();
           }
         }
       }

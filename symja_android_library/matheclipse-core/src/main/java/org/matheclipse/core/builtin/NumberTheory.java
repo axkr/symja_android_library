@@ -274,8 +274,6 @@ public final class NumberTheory {
             return bellB;
           }
         }
-      } catch (MathRuntimeException mre) {
-        return engine.printMessage(ast.topHead(), mre);
       } catch (RuntimeException rex) {
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
@@ -4646,10 +4644,6 @@ public final class NumberTheory {
           return F.bool(isSquarefreeWithOption(ast, expr, varList, engine));
         }
         return F.bool(isSquarefree(expr, varList));
-      } catch (JASConversionException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
       } catch (RuntimeException e) {
         // JAS may throw RuntimeExceptions
         if (Config.SHOW_STACKTRACE) {

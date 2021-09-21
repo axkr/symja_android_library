@@ -135,23 +135,11 @@ public class CompilerFunctions {
           return CompiledFunctionExpr.newInstance(variables, types, ast.arg2(), clazz);
         }
         return F.NIL;
-      } catch (CompileException cex) {
-        cex.printStackTrace();
-        return engine.printMessage("Compile: " + cex.getMessage());
-      } catch (ClassNotFoundException cnfx) {
-        cnfx.printStackTrace();
-        return engine.printMessage("Compile: " + cnfx.getMessage());
-        //      } catch (NoSuchMethodException
-        //          | InvocationTargetException
-        //          | InstantiationException
-        //          | IllegalAccessException iax) {
-        //        iax.printStackTrace();
-        //        return engine.printMessage("Compile: " + iax.getMessage());
       } catch (ValidateException ve) {
         return engine.printMessage(ast.topHead(), ve);
-      } catch (RuntimeException rex) {
-        rex.printStackTrace();
-        return engine.printMessage("Compile: " + rex.getMessage());
+      } catch (CompileException | ClassNotFoundException | RuntimeException e) {
+        e.printStackTrace();
+        return engine.printMessage("Compile: " + e.getMessage());
       }
     }
 
