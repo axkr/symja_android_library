@@ -122,6 +122,9 @@ public class ExprEvaluatorTests extends TestCase {
             F.complex(2.0, 1.0), //
             F.complex(-2.0, -2.0), //
             F.complex(-2.0, 2.0), //
+            F.complexNum(new Apfloat("-0.8", 30), new Apfloat("1.2", 30)), //
+            //            F.complexNum(new Apfloat(Long.MIN_VALUE, 30), new Apfloat(Long.MAX_VALUE,
+            // 30)), //
             F.num(0.5), //
             F.num(-0.5), //
             F.num(Math.PI * (-0.5)), //
@@ -130,6 +133,9 @@ public class ExprEvaluatorTests extends TestCase {
             F.num(Math.PI), //
             F.num(-Math.E), //
             F.num(Math.E), //
+            F.num(new Apfloat("-0.8", 30)), //
+            //            F.num(new Apfloat(Long.MAX_VALUE, 30)), //
+            //            F.num(new Apfloat(Long.MIN_VALUE, 30)), //
             F.C0, //
             F.C1, //
             F.CN1, //
@@ -163,13 +169,11 @@ public class ExprEvaluatorTests extends TestCase {
             F.ComplexInfinity, //
             F.x_, //
             F.y_, //
+            F.x__, // any sequence of one or more expressions
+            F.y__, // any sequence of one or more expressions
+            F.x___, // any sequence of zero or more expressions
+            F.y___, // any sequence of zero or more expressions
             F.CEmptyList, //
-            F.Rule(S.Heads, S.True), //
-            F.Rule(S.IgnoreCase, S.True), //
-            F.Rule(S.SameTest, S.Automatic), //
-            F.Rule(S.Heads, F.C10), //
-            F.Rule(S.IgnoreCase, F.CN1), //
-            F.Rule(S.SameTest, F.C0), //
             F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), //
             F.assoc(F.List()), //
             F.assoc(
@@ -186,8 +190,12 @@ public class ExprEvaluatorTests extends TestCase {
             SparseArrayExpr.newDenseList(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
             SparseArrayExpr.newDenseList(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
             SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
+            F.Function(F.EvenQ(F.Slot1)), //
+            F.Function(F.Expand(F.Power(F.Plus(F.C2, F.Slot1), F.C3))), //
             F.Graph(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C2, F.C3), F.Rule(F.C3, F.C1))), //
             F.Graph(F.List()), //
+            F.CEmptySequence, //
+            F.CEmptyList, //
             F.List(F.List(F.C0)), //
             F.List(F.List(F.C1)), //
             F.List(F.List(F.CN1)), //
@@ -195,6 +203,12 @@ public class ExprEvaluatorTests extends TestCase {
             F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
             F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
             F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
+            F.List(
+                F.num(new Apfloat("-3.1415", 30)),
+                F.num(new Apfloat("2.987", 30)),
+                F.num(new Apfloat(-1, 30)),
+                F.num(new Apfloat("0.0", 30)),
+                F.num(new Apfloat(1, 30))), //
             F.List(F.CN1, F.CN2, F.C3), //
             F.List(F.CN1D2, F.CN2, F.C3), //
             F.List(F.x, F.CN2, F.C3), //
@@ -222,6 +236,11 @@ public class ExprEvaluatorTests extends TestCase {
             F.List(F.CN3D2), //
             F.List(F.C3D2), //
             F.List(F.C3D4), //
+            F.Part(F.x, F.C1), //
+            F.Part(F.x, F.C2), //
+            F.Part(F.x, F.ZZ(Integer.MAX_VALUE)), //
+            F.Part(F.x, F.CN1, F.C1, F.C1), //
+            F.Part(F.x, F.C1, F.C1, F.C1, F.C1), //
             F.C1DSqrt5, //
             F.Divide(F.Plus(F.C1, F.Sqrt(5)), F.C2), // GoldenRatio
             F.Divide(F.C2, F.Plus(F.C1, F.Sqrt(5))), // 1/GoldenRatio
@@ -233,6 +252,8 @@ public class ExprEvaluatorTests extends TestCase {
             F.Exp(F.Times(F.Pi, F.CI, F.C1D3)), //
             F.Plus(F.C1, F.CI), //
             F.Plus(F.CN1, F.CI), //
+            F.Times(F.Sqrt(2), F.C7), //
+            F.Times(F.Sqrt(2), F.Sqrt(5)), //
             F.CSqrt2, //
             F.C2Pi, //
             F.CN3D2, //
@@ -245,10 +266,11 @@ public class ExprEvaluatorTests extends TestCase {
             F.QQ(Long.MAX_VALUE, Long.MAX_VALUE), //
             F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
             F.Slot2, //
+            F.Slot(Integer.MAX_VALUE), //
             IQuantity.of(1.2, "m"), //
             // throws PatternSyntaxException
             F.RegularExpression("?i)"), //
-            F.stringx(""), //
+            F.CEmptyString, //
             F.stringx("\\"), //
             F.stringx("\r"), //
             F.stringx("\t"), //
@@ -256,7 +278,17 @@ public class ExprEvaluatorTests extends TestCase {
             F.stringx("\r\n"), //
             F.stringx("\n   "), //
             F.stringx("\uffff"), //
-            F.Subtract(F.C1, F.C1));
+            F.Power(F.C0, F.CN1), // division by zero problem
+            F.Subtract(F.C1, F.C1), //
+            F.Rule(S.Modulus, F.C2), //
+            F.Rule(S.Modulus, F.C10), //
+            F.Rule(S.Heads, S.True), //
+            F.Rule(S.Heads, S.False), //
+            F.$OptionsPattern(), //
+            F.OptionValue(F.a), //
+            F.OptionValue(F.b), //
+            F.OptionValue(F.x), //
+            F.OptionValue(F.y));
     ThreadLocalRandom random = ThreadLocalRandom.current();
     SlowComputationThread thread = null;
     for (int j = 1; j < 10000; j++) {
@@ -318,7 +350,7 @@ public class ExprEvaluatorTests extends TestCase {
             // System.err.flush();
             // }
 
-            thread = new SlowComputationThread(">> " + mutant.toString());
+            thread = new SlowComputationThread(">> " + mutant.toString(), engine);
             thread.start();
             engine.evaluate(mutant);
 
@@ -404,6 +436,9 @@ public class ExprEvaluatorTests extends TestCase {
     ByteArrayExpr b0a = ByteArrayExpr.newInstance(b0Array);
     F.x.setAttributes(ISymbol.PROTECTED);
     F.y.setAttributes(ISymbol.PROTECTED);
+    double[] doubleArr = new double[] {1.0, -1.0, 0.0, 2.0, 100.0, 200.0};
+    int[] dims = new int[] {2, 3};
+    NumericArrayExpr nae = new NumericArrayExpr(doubleArr, dims, NumericArrayExpr.Real64);
 
     Config.MAX_AST_SIZE = 10000;
     Config.MAX_OUTPUT_SIZE = 10000;
@@ -417,6 +452,7 @@ public class ExprEvaluatorTests extends TestCase {
         F.List( //
             ba, //
             b0a, //
+            nae, //
             // F.NIL, //
             F.complex(-0.5, 0.5), //
             F.complex(0.0, 0.5), //
@@ -473,6 +509,10 @@ public class ExprEvaluatorTests extends TestCase {
             F.ComplexInfinity, //
             F.x_, //
             F.y_, //
+            F.x__, // any sequence of one or more expressions
+            F.y__, // any sequence of one or more expressions
+            F.x___, // any sequence of zero or more expressions
+            F.y___, // any sequence of zero or more expressions
             F.CEmptyList, //
             F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), //
             F.assoc(F.List()), //
@@ -540,6 +580,7 @@ public class ExprEvaluatorTests extends TestCase {
             F.Part(F.x, F.C2), //
             F.Part(F.x, F.ZZ(Integer.MAX_VALUE)), //
             F.Part(F.x, F.CN1, F.C1, F.C1), //
+            F.Part(F.x, F.C1, F.C1, F.C1, F.C1), //
             F.C1DSqrt5, //
             F.Divide(F.Plus(F.C1, F.Sqrt(5)), F.C2), // GoldenRatio
             F.Divide(F.C2, F.Plus(F.C1, F.Sqrt(5))), // 1/GoldenRatio
@@ -577,12 +618,13 @@ public class ExprEvaluatorTests extends TestCase {
             F.stringx("\r\n"), //
             F.stringx("\n   "), //
             F.stringx("\uffff"), //
+            F.Power(F.C0, F.CN1), // division by zero problem
             F.Subtract(F.C1, F.C1), //
             F.Rule(S.Modulus, F.C2), //
             F.Rule(S.Modulus, F.C10), //
             F.Rule(S.Heads, S.True), //
             F.Rule(S.Heads, S.False), //
-            F.$OptionsPattern(null), //
+            F.$OptionsPattern(), //
             F.OptionValue(F.a), //
             F.OptionValue(F.b), //
             F.OptionValue(F.x), //
@@ -602,6 +644,7 @@ public class ExprEvaluatorTests extends TestCase {
             || sym == S.CompiledFunction
             || sym == S.FactorialPower
             || sym == S.Pause
+            || sym == S.Power
             || sym == S.OptimizeExpression
             || sym == S.Share
             || sym == S.Set
@@ -879,10 +922,12 @@ public class ExprEvaluatorTests extends TestCase {
   private static class SlowComputationThread extends Thread {
     private String str;
     private AtomicBoolean running;
+    private EvalEngine engine;
 
-    SlowComputationThread(String str) {
+    SlowComputationThread(String str, EvalEngine engine) {
       this.str = str;
       this.running = new AtomicBoolean(true);
+      this.engine = engine;
     }
 
     @Override
@@ -900,7 +945,8 @@ public class ExprEvaluatorTests extends TestCase {
           running.set(false);
         }
         if (running.get()) {
-          System.err.println("SLOW: " + str); 
+          System.err.println("SLOW: " + str);
+          engine.setStopRequested(true);
         }
       }
     }
@@ -966,7 +1012,7 @@ public class ExprEvaluatorTests extends TestCase {
         }
         // System.out.println(">> " + ast.toString());
         // System.out.print(".");
-        thread = new SlowComputationThread(">> " + ast.toString());
+        thread = new SlowComputationThread(">> " + ast.toString(), engine);
         thread.start();
         //        engine.evaluate(ast);
         if (evaluator != null) {

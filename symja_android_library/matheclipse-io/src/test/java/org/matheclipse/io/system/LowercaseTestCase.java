@@ -7428,6 +7428,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testDerivative() {
     check(
+        "Derivative(0,0,0)[Sequence()]", //
+        "Derivative(0,0,0)[]");
+    check(
         "Derivative(1)[Abs]", //
         "Derivative(1)[Abs]");
     check(
@@ -10369,14 +10372,14 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Expand((a(1)+a(2))*(x(1)+x(2))^2, x(_))", //
         "(a(1)+a(2))*x(1)^2+2*(a(1)+a(2))*x(1)*x(2)+(a(1)+a(2))*x(2)^2");
-    
+
     check(
         "Expand((a + b)^2*(1 + x)^2, x)", //
         "(a+b)^2+2*(a+b)^2*x+(a+b)^2*x^2");
     check(
         "Expand((1 + x)^2 + (2 + x)^2, 1 + x)", //
         "1+2*x+x^2+(2+x)^2");
-    
+
     // performance test
     // check("Expand((x + y + z + w)^15 * ((x + y + z + w)^15+w));", //
     // "?");
@@ -11729,6 +11732,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   // }
 
   public void testFactorInteger() {
+    check(
+        "FactorInteger(-9223372036854775808/9223372036854775807)", //
+        "{{-1,1},{2,63},{7,-2},{73,-1},{127,-1},{337,-1},{92737,-1},{649657,-1}}");
     check(
         "4711\\\n"
             + //
@@ -14450,6 +14456,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testGamma() {
+    check(
+        "Gamma(-1.0000)", //
+        "ComplexInfinity");
+    check(
+        "N(Gamma(-42), 100)", //
+        "ComplexInfinity");
     check(
         "N(Gamma(15/10, 75/10), 100)", //
         "0.0005530843701478335831020000885303571978113365824401972528887275428448024081204609025735480073714774523");

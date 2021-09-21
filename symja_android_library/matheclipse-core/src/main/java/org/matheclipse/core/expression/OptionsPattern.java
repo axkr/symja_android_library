@@ -48,10 +48,9 @@ public class OptionsPattern extends PatternSequence {
           return cp;
         }
       } else {
-        if (!fDefaultOptions.isPresent()) {
-          return -1;
+        if (fDefaultOptions != optionsPattern.fDefaultOptions) {
+          return fDefaultOptions.isPresent() ? 1 : -1;
         }
-        return 1;
       }
     }
     return super.compareTo(expr);
@@ -90,7 +89,7 @@ public class OptionsPattern extends PatternSequence {
     }
     return false;
   }
-  
+
   @Override
   public String fullFormString() {
     StringBuilder buf = new StringBuilder();
@@ -177,7 +176,7 @@ public class OptionsPattern extends PatternSequence {
     }
     return buffer.toString();
   }
-  
+
   @Override
   public String toWolframString() {
     final StringBuilder buffer = new StringBuilder();

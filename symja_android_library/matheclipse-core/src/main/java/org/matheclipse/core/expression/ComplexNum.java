@@ -626,6 +626,24 @@ public class ComplexNum implements IComplexNum {
     return equals(NI);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNumIntValue() {
+    return F.isZero(fComplex.getImaginary()) && F.isNumIntValue(fComplex.getReal());
+  }
+
+  @Override
+  public int toIntDefault(int defaultValue) {
+    try {
+      if (F.isZero(fComplex.getImaginary())) {
+        return NumberUtil.toInt(fComplex.getReal());
+      }
+    } catch (ArithmeticException ae) {
+      //
+    }
+    return defaultValue;
+  }
+
   @Override
   public boolean isSame(IExpr expression, double epsilon) {
     if (expression instanceof ComplexNum) {

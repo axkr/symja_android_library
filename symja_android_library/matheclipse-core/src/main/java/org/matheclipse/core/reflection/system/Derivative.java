@@ -105,7 +105,10 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
       }
       if (isZero) {
         if (derivativeAST[2] == null) {
-          return derivativeAST[1].arg1();
+          if (derivativeAST[1].size() > 1) {
+            return derivativeAST[1].arg1();
+          }
+          return F.NIL;
         }
       }
 

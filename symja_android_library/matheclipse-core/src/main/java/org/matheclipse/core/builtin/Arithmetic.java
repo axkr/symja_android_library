@@ -33,8 +33,11 @@ import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.num;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y_;
+import static org.matheclipse.core.expression.S.Conjugate;
 import static org.matheclipse.core.expression.S.E;
 import static org.matheclipse.core.expression.S.Pi;
+import static org.matheclipse.core.expression.S.Power;
+import static org.matheclipse.core.expression.S.Times;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
 import java.util.function.DoubleFunction;
@@ -1674,6 +1677,9 @@ public final class Arithmetic {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      if (arg1.isInteger() && arg1.real().compareTo(Apfloat.ZERO) < 0) {
+        return F.CComplexInfinity;
+      }
       return F.complexNum(ApcomplexMath.gamma(arg1));
     }
 
@@ -1681,6 +1687,9 @@ public final class Arithmetic {
     public IExpr e1ApfloatArg(Apfloat arg1) {
       FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
       try {
+        if (arg1.isInteger() && arg1.compareTo(Apfloat.ZERO) < 0) {
+          return F.CComplexInfinity;
+        }
         return F.num(h.gamma(arg1));
       } catch (ArithmeticException aex1) {
         try {
@@ -1696,6 +1705,9 @@ public final class Arithmetic {
       // Apcomplex gamma =
       // ApcomplexMath.gamma(c.apcomplexNumValue(Config.MACHINE_PRECISION).apcomplexValue());
       // return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
+      if (c.isNumIntValue() && c.getRealPart() < 0) {
+        return F.CComplexInfinity;
+      }
 
       // TODO improve lanczos approx:
       return F.complexNum(lanczosApproxGamma(c.evalComplex()));
@@ -1703,6 +1715,9 @@ public final class Arithmetic {
 
     @Override
     public IExpr e1DblArg(final INum arg1) {
+      if (arg1.isNumIntValue() && arg1.doubleValue() < 0) {
+        return F.CComplexInfinity;
+      }
       double gamma = org.hipparchus.special.Gamma.gamma(arg1.doubleValue());
       return num(gamma);
     }
