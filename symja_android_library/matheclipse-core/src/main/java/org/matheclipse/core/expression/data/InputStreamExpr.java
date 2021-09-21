@@ -15,12 +15,10 @@ import java.io.ObjectOutput;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
-
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 

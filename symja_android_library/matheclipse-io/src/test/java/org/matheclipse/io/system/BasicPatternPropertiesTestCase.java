@@ -1,13 +1,12 @@
 package org.matheclipse.io.system;
 
-import junit.framework.TestCase;
-
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
+import junit.framework.TestCase;
 
 public class BasicPatternPropertiesTestCase extends TestCase {
   private Parser fParser;

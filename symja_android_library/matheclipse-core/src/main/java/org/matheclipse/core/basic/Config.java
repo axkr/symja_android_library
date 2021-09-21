@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
-
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -25,7 +24,6 @@ import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
 import org.matheclipse.parser.trie.TrieSequencerIntArray;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 

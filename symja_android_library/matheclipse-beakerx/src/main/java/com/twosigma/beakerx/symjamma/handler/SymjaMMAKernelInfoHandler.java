@@ -17,7 +17,6 @@ package com.twosigma.beakerx.symjamma.handler;
 
 import java.io.Serializable;
 import java.util.HashMap;
-
 import com.twosigma.beakerx.BeakerImplementationInfo;
 import com.twosigma.beakerx.KernelInfoHandler;
 import com.twosigma.beakerx.kernel.KernelFunctionality;

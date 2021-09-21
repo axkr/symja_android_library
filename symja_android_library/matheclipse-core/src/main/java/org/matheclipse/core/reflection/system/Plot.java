@@ -5,9 +5,7 @@ import static org.matheclipse.core.expression.F.Line;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
-
 import java.util.Arrays;
-
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
 import org.matheclipse.core.basic.Config;

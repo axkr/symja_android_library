@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.Collator;
 import java.util.Locale;
 import java.util.function.Function;
-
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;

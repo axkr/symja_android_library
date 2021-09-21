@@ -4,7 +4,6 @@ import static de.lab4inf.math.util.Accuracy.hasConverged;
 import static java.lang.Math.exp;
 import static java.lang.Math.log;
 import static org.matheclipse.core.builtin.functions.HypergeometricJS.hypergeometric1F1;
-
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
@@ -20,9 +19,7 @@ import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
-
 import com.google.common.math.DoubleMath;
-
 import de.lab4inf.math.Function;
 import de.lab4inf.math.gof.Visitor;
 import de.lab4inf.math.util.ContinuedFraction;

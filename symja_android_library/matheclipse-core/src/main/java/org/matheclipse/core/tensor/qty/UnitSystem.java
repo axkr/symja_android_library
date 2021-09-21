@@ -2,7 +2,6 @@ package org.matheclipse.core.tensor.qty;
 
 import java.util.Map;
 import java.util.function.UnaryOperator;
-
 import org.matheclipse.core.interfaces.IExpr;
 
 /**

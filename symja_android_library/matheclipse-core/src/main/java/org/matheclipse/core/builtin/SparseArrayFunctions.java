@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import java.util.Arrays;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;

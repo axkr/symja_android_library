@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval;
 
 import java.io.ByteArrayOutputStream;
-
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;

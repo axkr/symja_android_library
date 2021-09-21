@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-
 import org.jgrapht.Graph;
 import org.jgrapht.generate.GeneralizedPetersenGraphGenerator;
 import org.jgrapht.generate.StarGraphGenerator;

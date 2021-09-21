@@ -1,10 +1,8 @@
 package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.S.Power;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import org.hipparchus.optim.OptimizationData;
 import org.hipparchus.optim.PointValuePair;
 import org.hipparchus.optim.linear.LinearConstraint;

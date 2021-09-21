@@ -2,7 +2,6 @@ package org.matheclipse.core.data;
 
 import static org.matheclipse.core.expression.F.NIL;
 import java.util.HashMap;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;

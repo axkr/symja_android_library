@@ -3,7 +3,6 @@ package org.matheclipse.core.expression;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.function.Function;
-
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;

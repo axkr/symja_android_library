@@ -1,7 +1,6 @@
 package org.matheclipse.core.visit;
 
 import java.util.function.Predicate;
-
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;

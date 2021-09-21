@@ -14,7 +14,6 @@ import java.math.BigInteger;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.F;

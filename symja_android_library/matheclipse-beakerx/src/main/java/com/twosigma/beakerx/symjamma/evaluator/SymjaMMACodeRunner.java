@@ -17,7 +17,6 @@ package com.twosigma.beakerx.symjamma.evaluator;
 
 import static com.twosigma.beakerx.evaluator.BaseEvaluator.INTERUPTED_MSG;
 import static com.twosigma.beakerx.symjamma.evaluator.SymjaMMAStackTracePrettyPrinter.printStacktrace;
-
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
@@ -33,7 +32,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.parser.client.SyntaxError;
-
 import com.twosigma.beakerx.TryResult;
 import com.twosigma.beakerx.jvm.object.SimpleEvaluationObject;
 import com.twosigma.beakerx.symjamma.output.MarkdownNotebookOutput;

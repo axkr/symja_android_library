@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.Array2DRowFieldMatrix;
@@ -31,7 +30,6 @@ import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
-
 import edu.jas.vector.GenMatrix;
 import edu.jas.vector.GenMatrixRing;
 

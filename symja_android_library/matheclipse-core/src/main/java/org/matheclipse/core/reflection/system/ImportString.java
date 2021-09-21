@@ -1,8 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import java.io.IOException;
 import java.io.StringReader;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.matheclipse.core.basic.Config;

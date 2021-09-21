@@ -3,7 +3,6 @@ package org.matheclipse.io.others;
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.client.FEConfig;
-
 import junit.framework.TestCase;
 
 public class LastCalculationsHistoryJUnit extends TestCase {

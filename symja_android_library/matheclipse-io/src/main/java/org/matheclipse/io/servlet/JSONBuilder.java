@@ -1,6 +1,5 @@
 package org.matheclipse.io.servlet;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import org.apache.commons.text.StringEscapeUtils;
 import org.matheclipse.core.basic.Config;

@@ -37,11 +37,9 @@ import static org.matheclipse.core.expression.S.E;
 import static org.matheclipse.core.expression.S.Pi;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
-
 import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;

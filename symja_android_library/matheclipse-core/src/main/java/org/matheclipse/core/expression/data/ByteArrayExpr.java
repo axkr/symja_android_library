@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
-
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;

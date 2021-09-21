@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.parser.client.math.MathException;
 
 /**
  * Specification for number of <a href="https://en.wikipedia.org/wiki/Set_(mathematics)">set

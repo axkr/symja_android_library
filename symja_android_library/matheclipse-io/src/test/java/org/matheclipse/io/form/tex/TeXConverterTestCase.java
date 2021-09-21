@@ -4,7 +4,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IExpr;
-
 import junit.framework.TestCase;
 
 /** Tests LaTeX import (parsing) function */

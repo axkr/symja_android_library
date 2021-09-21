@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleUnaryOperator;
@@ -19,7 +18,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.stat.StatUtils;
 import org.hipparchus.stat.correlation.PearsonsCorrelation;
-import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;

@@ -1,7 +1,6 @@
 package org.matheclipse.core.visit;
 
 import java.util.ArrayList;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;

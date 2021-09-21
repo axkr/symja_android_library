@@ -3,7 +3,6 @@ package org.matheclipse.core.eval.util;
 import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Iterator;
-
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**

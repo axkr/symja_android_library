@@ -2,7 +2,6 @@ package org.matheclipse.core.polynomials;
 
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.interfaces.IExpr;
-
 import edu.jas.arith.BigRational;
 import edu.jas.poly.GenPolynomial;
 

@@ -18,7 +18,6 @@ package org.matheclipse.api.parser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -32,7 +31,6 @@ import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieMatch;
-
 import com.google.common.base.CharMatcher;
 
 public class FuzzyParserFactory implements IParserFactory {

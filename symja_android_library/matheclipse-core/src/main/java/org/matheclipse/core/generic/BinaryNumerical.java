@@ -1,7 +1,6 @@
 package org.matheclipse.core.generic;
 
 import java.util.function.BiFunction;
-
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.DoubleStackEvaluator;
 import org.matheclipse.core.eval.EvalEngine;

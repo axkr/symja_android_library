@@ -21,7 +21,6 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
-
 import org.matheclipse.core.interfaces.IExpr;
 
 /**

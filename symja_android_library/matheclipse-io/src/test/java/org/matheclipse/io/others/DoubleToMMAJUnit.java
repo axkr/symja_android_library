@@ -1,7 +1,6 @@
 package org.matheclipse.io.others;
 
 import org.matheclipse.core.form.DoubleToMMA;
-
 import junit.framework.TestCase;
 
 /**

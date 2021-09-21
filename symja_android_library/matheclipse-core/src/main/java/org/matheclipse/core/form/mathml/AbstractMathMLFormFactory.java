@@ -2,7 +2,6 @@ package org.matheclipse.core.form.mathml;
 
 import java.text.NumberFormat;
 import java.util.Map;
-
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;

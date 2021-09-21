@@ -1,12 +1,12 @@
 package org.matheclipse.core.graphics;
 
+import java.io.IOException;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
-
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
 

@@ -1,7 +1,6 @@
 package org.matheclipse.core.expression;
 
 import java.util.Comparator;
-
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.builtin.IOFunctions;

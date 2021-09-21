@@ -1,7 +1,6 @@
 package org.matheclipse.core.patternmatching.hash;
 
 import java.util.List;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToList;
 import org.matheclipse.core.expression.F;

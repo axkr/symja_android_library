@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.JavaFunctions;
 import org.matheclipse.core.eval.EvalEngine;

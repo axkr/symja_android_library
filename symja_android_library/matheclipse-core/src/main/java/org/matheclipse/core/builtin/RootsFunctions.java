@@ -2,9 +2,7 @@ package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.evalExpandAll;
-
 import java.util.List;
-
 import org.hipparchus.analysis.solvers.LaguerreSolver;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.EigenDecomposition;
@@ -34,7 +32,6 @@ import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
-
 import edu.jas.arith.BigRational;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;

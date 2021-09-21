@@ -1,7 +1,6 @@
 package org.matheclipse.parser.client;
 
 import java.util.ArrayList;
-
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.trie.TrieBuilder;
 

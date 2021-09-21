@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
-
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -20,7 +19,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExpVectorLong;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
-
 import edu.jas.arith.BigRational;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ExpVector;

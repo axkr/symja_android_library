@@ -2,7 +2,6 @@ package org.matheclipse.core.form.output;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;

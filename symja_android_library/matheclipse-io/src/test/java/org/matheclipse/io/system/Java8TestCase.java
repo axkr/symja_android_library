@@ -2,16 +2,14 @@ package org.matheclipse.io.system;
 
 import static org.matheclipse.core.expression.F.C10;
 import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.a;
-import static org.matheclipse.core.expression.F.b;
-import static org.matheclipse.core.expression.F.c;
-import static org.matheclipse.core.expression.F.d;
-import static org.matheclipse.core.expression.F.e;
-
+import static org.matheclipse.core.expression.S.a;
+import static org.matheclipse.core.expression.S.b;
+import static org.matheclipse.core.expression.S.c;
+import static org.matheclipse.core.expression.S.d;
+import static org.matheclipse.core.expression.S.e;
 import java.util.Comparator;
 import java.util.IntSummaryStatistics;
 import java.util.stream.Collectors;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;

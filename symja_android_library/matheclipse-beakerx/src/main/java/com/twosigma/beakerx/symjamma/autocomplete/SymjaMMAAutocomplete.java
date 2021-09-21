@@ -1,9 +1,7 @@
 package com.twosigma.beakerx.symjamma.autocomplete;
 
 import java.util.ArrayList;
-
 import org.matheclipse.core.builtin.IOFunctions;
-
 import com.twosigma.beakerx.autocomplete.AutocompleteResult;
 import com.twosigma.beakerx.autocomplete.AutocompleteServiceBeakerx;
 import com.twosigma.beakerx.autocomplete.MagicCommandAutocompletePatterns;

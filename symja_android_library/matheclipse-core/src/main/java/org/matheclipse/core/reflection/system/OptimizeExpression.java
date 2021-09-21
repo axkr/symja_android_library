@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;

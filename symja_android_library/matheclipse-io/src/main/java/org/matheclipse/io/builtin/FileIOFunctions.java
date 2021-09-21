@@ -5,7 +5,6 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.eval.EvalEngine;

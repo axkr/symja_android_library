@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval.util;
 
 import static org.matheclipse.core.expression.F.ReplaceAll;
-
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;

@@ -1,7 +1,6 @@
 package org.matheclipse.core.tensor.io.ext;
 
 import java.io.Serializable;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;

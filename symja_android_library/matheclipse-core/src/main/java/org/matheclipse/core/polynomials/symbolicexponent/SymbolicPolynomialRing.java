@@ -13,7 +13,6 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
@@ -24,7 +23,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExpVectorLong;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.polynomials.longexponent.ExprTermOrder;
-
 import edu.jas.kern.PrettyPrint;
 import edu.jas.kern.Scripting;
 import edu.jas.structure.RingFactory;

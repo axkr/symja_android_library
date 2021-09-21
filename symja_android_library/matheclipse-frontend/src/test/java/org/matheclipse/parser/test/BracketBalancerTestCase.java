@@ -1,7 +1,6 @@
 package org.matheclipse.parser.test;
 
 import org.matheclipse.parser.client.Scanner;
-
 import junit.framework.TestCase;
 
 /** Tests parser function for SimpleParserFactory */

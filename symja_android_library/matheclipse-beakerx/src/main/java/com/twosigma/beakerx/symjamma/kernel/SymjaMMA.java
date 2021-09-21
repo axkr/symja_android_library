@@ -15,6 +15,9 @@
  */
 package com.twosigma.beakerx.symjamma.kernel;
 
+import static com.twosigma.beakerx.DefaultJVMVariables.IMPORTS;
+import static com.twosigma.beakerx.kernel.Utils.uuid;
+import java.util.HashMap;
 import com.twosigma.beakerx.BeakerXCommRepository;
 import com.twosigma.beakerx.CommRepository;
 import com.twosigma.beakerx.NamespaceClient;
@@ -38,11 +41,6 @@ import com.twosigma.beakerx.message.Message;
 import com.twosigma.beakerx.symjamma.comm.SymjaMMACommOpenHandler;
 import com.twosigma.beakerx.symjamma.evaluator.SymjaMMAEvaluator;
 import com.twosigma.beakerx.symjamma.handler.SymjaMMAKernelInfoHandler;
-
-import java.util.HashMap;
-
-import static com.twosigma.beakerx.DefaultJVMVariables.IMPORTS;
-import static com.twosigma.beakerx.kernel.Utils.uuid;
 
 public class SymjaMMA extends Kernel {
 

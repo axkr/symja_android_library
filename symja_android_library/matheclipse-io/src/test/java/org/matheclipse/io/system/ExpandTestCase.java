@@ -10,10 +10,9 @@ import static org.matheclipse.core.expression.F.Sec;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sow;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.a;
-import static org.matheclipse.core.expression.F.x;
-import static org.matheclipse.core.expression.F.y;
-
+import static org.matheclipse.core.expression.S.a;
+import static org.matheclipse.core.expression.S.x;
+import static org.matheclipse.core.expression.S.y;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;

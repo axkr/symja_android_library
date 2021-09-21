@@ -1,7 +1,6 @@
 package org.matheclipse.core.form.output;
 
 import java.io.IOException;
-
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;

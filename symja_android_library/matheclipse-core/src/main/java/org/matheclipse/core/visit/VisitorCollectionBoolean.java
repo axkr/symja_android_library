@@ -1,7 +1,6 @@
 package org.matheclipse.core.visit;
 
 import java.util.Collection;
-
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 

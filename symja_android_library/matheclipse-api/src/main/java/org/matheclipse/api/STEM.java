@@ -1,7 +1,6 @@
 package org.matheclipse.api;
 
 import java.util.ArrayList;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;

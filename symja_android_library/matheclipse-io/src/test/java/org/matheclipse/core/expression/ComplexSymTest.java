@@ -2,9 +2,7 @@ package org.matheclipse.core.expression;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-
 import java.math.BigInteger;
-
 import org.junit.Test;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;

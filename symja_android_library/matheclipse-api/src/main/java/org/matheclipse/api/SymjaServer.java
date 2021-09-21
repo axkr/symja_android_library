@@ -1,22 +1,18 @@
 package org.matheclipse.api;
 
 import static io.undertow.Handlers.resource;
-
 import java.awt.Desktop;
 import java.net.InetAddress;
 import java.net.URI;
 import java.util.Deque;
 import java.util.Map;
-
 import org.matheclipse.api.parser.FuzzyParserFactory;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;

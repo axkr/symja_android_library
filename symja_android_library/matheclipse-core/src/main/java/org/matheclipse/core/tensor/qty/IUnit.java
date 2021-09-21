@@ -3,7 +3,6 @@ package org.matheclipse.core.tensor.qty;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.matheclipse.core.interfaces.IExpr;
 
 /** implementations are immutable */

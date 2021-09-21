@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.expression.F;
@@ -23,7 +22,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModIntegerRing;
 import edu.jas.integrate.Integral;

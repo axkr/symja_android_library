@@ -6,7 +6,6 @@ import java.io.ObjectOutput;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.function.Function;
-
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
@@ -20,7 +19,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.numbertheory.Primality;
-
 import com.google.common.math.BigIntegerMath;
 
 /**

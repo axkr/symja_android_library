@@ -2,7 +2,6 @@ package org.matheclipse.core.eval.exception;
 
 import java.io.IOException;
 import java.math.BigInteger;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;

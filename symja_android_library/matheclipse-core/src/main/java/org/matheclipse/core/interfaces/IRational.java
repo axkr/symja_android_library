@@ -1,9 +1,8 @@
 package org.matheclipse.core.interfaces;
 
+import java.math.BigInteger;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.expression.F;
-
-import java.math.BigInteger;
 
 /** Interface for "rational" numbers (i.e. numbers implementing IInteger or IFraction) */
 public interface IRational extends ISignedNumber, IBigNumber {

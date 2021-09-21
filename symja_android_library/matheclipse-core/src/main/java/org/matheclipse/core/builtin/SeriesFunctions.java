@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.VariablesSet;

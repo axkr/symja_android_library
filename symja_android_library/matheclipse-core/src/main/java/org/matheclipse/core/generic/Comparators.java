@@ -2,7 +2,6 @@ package org.matheclipse.core.generic;
 
 import java.util.Comparator;
 import java.util.function.BiPredicate;
-
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.interfaces.IExpr;
 

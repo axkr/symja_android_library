@@ -1,7 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.function.Function;
-
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;

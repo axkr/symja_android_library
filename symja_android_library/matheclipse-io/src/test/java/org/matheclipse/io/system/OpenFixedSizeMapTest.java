@@ -1,9 +1,8 @@
 package org.matheclipse.io.system;
 
-import junit.framework.TestCase;
-
 import org.junit.Test;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
+import junit.framework.TestCase;
 
 public class OpenFixedSizeMapTest extends TestCase {
 

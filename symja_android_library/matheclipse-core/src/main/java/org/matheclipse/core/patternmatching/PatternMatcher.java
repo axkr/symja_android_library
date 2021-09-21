@@ -6,7 +6,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayDeque;
 import java.util.List;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.combinatoric.NumberPartitionsIterator;

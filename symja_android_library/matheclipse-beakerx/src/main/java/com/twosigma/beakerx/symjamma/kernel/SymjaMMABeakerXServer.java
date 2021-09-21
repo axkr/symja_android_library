@@ -15,8 +15,8 @@
  */
 package com.twosigma.beakerx.symjamma.kernel;
 
-import com.twosigma.beakerx.kernel.restserver.impl.BeakerXServerJavalin;
 import com.twosigma.beakerx.kernel.KernelFunctionality;
+import com.twosigma.beakerx.kernel.restserver.impl.BeakerXServerJavalin;
 import com.twosigma.beakerx.kernel.restserver.impl.GetUrlArgHandler;
 import io.javalin.Javalin;
 

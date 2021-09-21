@@ -7,7 +7,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -24,7 +23,6 @@ import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.reflection.system.Share;
 import org.matheclipse.core.visit.AbstractVisitor;
-
 import junit.framework.TestCase;
 
 public class SerializableTest extends TestCase {

@@ -1,9 +1,8 @@
 package org.matheclipse.parser.test;
 
-import junit.framework.TestCase;
-
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
+import junit.framework.TestCase;
 
 /** Tests parser functions for the simple parser style */
 public class RelaxedParserTestCase extends TestCase {

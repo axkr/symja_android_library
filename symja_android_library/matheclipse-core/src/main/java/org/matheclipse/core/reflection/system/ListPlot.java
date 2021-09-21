@@ -4,7 +4,6 @@ import static org.matheclipse.core.expression.F.Graphics;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;

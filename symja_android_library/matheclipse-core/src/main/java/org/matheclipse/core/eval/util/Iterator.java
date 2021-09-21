@@ -3,7 +3,6 @@ package org.matheclipse.core.eval.util;
 import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Less;
 import static org.matheclipse.core.expression.F.Subtract;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.QuantityFunctions;

@@ -4,7 +4,6 @@ import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CInfinity;
 import static org.matheclipse.core.expression.F.Sinc;
 import static org.matheclipse.core.expression.F.Times;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;

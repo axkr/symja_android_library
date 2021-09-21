@@ -1,14 +1,12 @@
 package org.matheclipse.core.eval;
 
 import java.util.Stack;
-
+import java.util.function.Predicate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.AbstractEvalStepListener;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-
-import java.util.function.Predicate;
 
 public final class TraceStack extends AbstractEvalStepListener {
 

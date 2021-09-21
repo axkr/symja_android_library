@@ -2,11 +2,7 @@ package org.matheclipse.io.system;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
-
 import javax.script.ScriptEngine;
-
-import junit.framework.TestCase;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -19,6 +15,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
+import junit.framework.TestCase;
 
 public class PatternMatchingTestCase extends TestCase {
 

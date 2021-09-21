@@ -7,7 +7,6 @@ import java.util.SortedMap;
 import org.matheclipse.core.numbertheory.IPrimality;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
-
 import junit.framework.TestCase;
 
 public class NumberTheoryTestCase extends TestCase {

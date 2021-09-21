@@ -1,7 +1,6 @@
 package org.matheclipse.core.visit;
 
 import java.util.function.Function;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.expression.F;

@@ -1,7 +1,6 @@
 package org.matheclipse.core.interfaces;
 
 import java.util.Iterator;
-
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;

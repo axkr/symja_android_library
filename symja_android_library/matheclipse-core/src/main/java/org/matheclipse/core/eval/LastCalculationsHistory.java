@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval;
 
 import java.io.Serializable;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 

@@ -1,8 +1,8 @@
 package org.matheclipse.core.interfaces;
 
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.IPatternMap;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 /**
  * An IEvaluator can be linked to an ISymbol to define the evaluation behaviour of the symbol at

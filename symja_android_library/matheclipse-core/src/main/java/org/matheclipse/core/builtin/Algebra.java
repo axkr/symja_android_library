@@ -17,7 +17,6 @@ import static org.matheclipse.core.expression.S.Assumptions;
 import static org.matheclipse.core.expression.S.E;
 import static org.matheclipse.core.expression.S.I;
 import static org.matheclipse.core.expression.S.Pi;
-import static org.matheclipse.core.expression.S.Power;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -67,9 +66,7 @@ import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.visit.VisitorExpr;
-
 import com.google.common.math.LongMath;
-
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;

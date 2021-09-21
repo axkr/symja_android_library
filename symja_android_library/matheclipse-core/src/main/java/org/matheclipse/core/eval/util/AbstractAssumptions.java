@@ -2,7 +2,6 @@ package org.matheclipse.core.eval.util;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
