@@ -725,7 +725,6 @@ public class WL {
 
     private void writeSparseArray(SparseArrayExpr sparseArray) throws IOException {
       IAST fullForm = sparseArray.fullForm();
-      System.out.println(fullForm.toString());
 
       if (fullForm.size() == 5) {
         stream.write(WXF_CONSTANTS.Function);

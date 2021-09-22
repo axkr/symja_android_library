@@ -70,10 +70,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
     } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
       return S.$Aborted;
     } catch (final SyntaxError se) {
-      String msg = se.getMessage();
-      System.err.println(msg);
-      System.err.println();
-      System.err.flush();
+      LOGGER.error("EvalControlledCallable.call() failed", se);
     } catch (final RuntimeException re) {
       Throwable me = re.getCause();
       if (me instanceof MathException) {
@@ -81,13 +78,11 @@ public class EvalControlledCallable implements Callable<IExpr> {
       } else {
         Validate.printException(buf, re);
       }
-      System.err.println(buf.toString());
-      System.err.flush();
+      LOGGER.error(buf);
     } catch (final Exception | OutOfMemoryError | StackOverflowError e) {
       LOGGER.debug("EvalControlledCallable.call() failed", e);
       Validate.printException(buf, e);
-      System.err.println(buf.toString());
-      System.err.flush();
+      LOGGER.error(buf);
     }
     return S.$Aborted;
   }

@@ -273,7 +273,7 @@ public class Solve extends AbstractFunctionEvaluator {
         }
         if (fEquationType == LINEAR && sym == null) {
           // should never happen??
-          System.err.println("sym == null???");
+          LOGGER.error("sym == null???");
         }
       } else {
         getTimesArgumentEquationType(eqExpr);

@@ -7,6 +7,7 @@ import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.S.Integrate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -305,7 +306,7 @@ public class Integrate extends AbstractFunctionEvaluator {
       }
       boolean showSteps = false;
       if (showSteps) {
-        System.out.println("\nINTEGRATE: " + arg1.toString());
+        LOGGER.info(arg1);
         if (DEBUG_EXPR.contains(arg1)) {
           // System.exit(-1);
         }

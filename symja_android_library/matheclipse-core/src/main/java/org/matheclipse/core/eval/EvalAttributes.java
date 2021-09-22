@@ -475,7 +475,7 @@ public class EvalAttributes {
           } catch (java.lang.IllegalArgumentException iae) {
             // java.util.TimSort.mergeHi(TimSort.java:899) - Comparison method violates its general
             // contract!
-            System.err.println(ast.toString());
+            LOGGER.error(ast, iae);
             throw iae;
           }
         } else {

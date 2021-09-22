@@ -183,7 +183,7 @@ public class AJAXQueryServlet extends HttpServlet {
 
     String[] result = null;
     HttpSession session = request.getSession();
-    LOGGER.warn("(" + session.getId() + ") In::" + expression);
+    LOGGER.warn("({}) In::{}", session.getId(), expression);
     final StringWriter outWriter = new StringWriter();
     WriterOutputStream wouts = new WriterOutputStream(outWriter);
     final StringWriter errorWriter = new StringWriter();
