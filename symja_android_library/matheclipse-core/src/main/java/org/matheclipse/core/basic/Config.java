@@ -834,7 +834,7 @@ public class Config {
     for (int i = 0; i < args.length; i++) {
       commandLine.append(args[i]);
     }
-    System.out.println(commandLine);
+    LOGGER.info(commandLine);
     SCRIPT_COMMAND_LINE = commandLine;
   }
 }

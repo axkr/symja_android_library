@@ -1,11 +1,12 @@
 package org.matheclipse.core.basic;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.exception.MemoryLimitExceeded;
 
 @SuppressWarnings("unused")
 public class OperationSystem {
-
-  public static boolean debug = false;
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public static int toomCook3Threshold = Integer.MAX_VALUE;
 
@@ -86,7 +87,7 @@ public class OperationSystem {
       }
       long usedMemory = runtime.totalMemory() - runtime.freeMemory() + additionalMemoryInBytes;
 
-      if (debug) {
+      if (LOGGER.isDebugEnabled()) {
         printMemoryUsage(maxMemory, usedMemory);
       }
 
@@ -94,9 +95,7 @@ public class OperationSystem {
       if (maxMemory > 0 && maxMemory < Long.MAX_VALUE && usedMemory > 0) {
         float usageFactor = (float) usedMemory / maxMemory;
         if (usageFactor < 1.0f && usageFactor > maxMemoryUsageFactor) {
-          if (debug) {
-            System.err.println("usedMemory = " + usedMemory + "; maxMemory = " + maxMemory);
-          }
+          LOGGER.debug("usedMemory = {}; maxMemory = {}", usedMemory, maxMemory);
           throw new OutOfMemoryError("Out of memory");
         }
       }
@@ -106,13 +105,11 @@ public class OperationSystem {
       }
       Runtime runtime = Runtime.getRuntime();
       long usedMemory = runtime.totalMemory() + additionalMemoryInBytes;
-      if (debug) {
+      if (LOGGER.isDebugEnabled()) {
         printMemoryUsage(maxMemory, usedMemory);
       }
       if (usedMemory > maxMemory || memoryWarning) {
-        if (debug) {
-          System.err.println("usedMemory = " + usedMemory + "; maxMemory = " + maxMemory);
-        }
+        LOGGER.debug("usedMemory = {}; maxMemory = {}", usedMemory, maxMemory);
         throw new OutOfMemoryError("Out of memory");
       }
     }
@@ -131,7 +128,7 @@ public class OperationSystem {
     }
     str.append("] ");
     str.append(" ").append(toMegabytes(usageMemory)).append("/").append(toMegabytes(maxMemory));
-    System.out.println(str);
+    LOGGER.debug(str);
   }
 
   private static String toMegabytes(long bytes) {
@@ -139,10 +136,9 @@ public class OperationSystem {
   }
 
   public static void checkMultiplicationOperation(int magLength1, long magLength2) {
-    if (debug) {
-      System.out.println("magLength1 = " + magLength1);
-      System.out.println("magLength2 = " + magLength2);
-    }
+    LOGGER.debug("magLength1 = {}", magLength1);
+    LOGGER.debug("magLength2 = {}", magLength2);
+
     if (magLength1 > toomCook3Threshold && magLength2 > toomCook3Threshold) {
       throw new MemoryLimitExceeded(
           "toomCook3Threshold "

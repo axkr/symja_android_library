@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
@@ -31,6 +33,8 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
  */
 public final class RulesData implements Serializable {
   private static final long serialVersionUID = -7747268035549814899L;
+
+  private static final Logger LOGGER = LogManager.getLogger();
 
   static boolean showSteps = false;
 
@@ -388,17 +392,17 @@ public final class RulesData implements Serializable {
     if (Config.SHOW_PATTERN_EVAL_STEPS) {
       showSteps = Config.SHOW_PATTERN_SYMBOL_STEPS.contains(expr.topHead());
       if (showSteps) {
-        System.out.println("EVAL_EXPR: " + expr.toString());
+        LOGGER.info("EVAL_EXPR: {}", expr);
       }
     }
     if (fEqualDownRules != null) {
       // if (showSteps) {
-      // System.out.println(" EQUAL RULES");
+      // LOGGER.info(" EQUAL RULES");
       // }
       PatternMatcherEquals res = fEqualDownRules.get(expr);
       if (res != null) {
         if (showSteps) {
-          System.out.println("\n  >>>> " + res.getRHS().toString());
+          LOGGER.info("\n  >>>> {}", res.getRHS());
         }
         return res.getRHS();
       }
@@ -420,9 +424,9 @@ public final class RulesData implements Serializable {
         }
         for (IPatternMatcher patternEvaluator : fPatternDownRules) {
           // if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
-          // System.out.println(((IPatternMatcher) patternEvaluator).getLHSPriority());
+          // LOGGER.info(((IPatternMatcher) patternEvaluator).getLHSPriority());
           // if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 5665) {
-          // System.out.println("Debug from this line");
+          // LOGGER.info("Debug from this line");
           // }
           // }
           if (patternEvaluator.isPatternHashAllowed(patternHash)) {
@@ -430,37 +434,36 @@ public final class RulesData implements Serializable {
             if (showSteps) {
               if (isShowSteps(pmEvaluator)) {
                 IExpr rhs = pmEvaluator.getRHS().orElse(S.Null);
-                System.out.println(
-                    " COMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
+                LOGGER.info(" COMPLEX: {} := {}", pmEvaluator.getLHS(), rhs);
               }
             }
             // if (pmEvaluator.getLHSPriority() == 6656) {
-            // System.out.println("Debug from this line");
+            // LOGGER.info("Debug from this line");
             // }
             if (LOGGER.isDebugEnabled()) {
               if (isShowPriority(pmEvaluator)) {
                 LOGGER.debug("try: {} - ", pmEvaluator.getLHSPriority());
               }
               // if (pmEvaluator.getLHSPriority() == 432) {
-              // System.out.println(pmEvaluator.toString());
-              // System.out.println(expr);
-              // System.out.println("Debug from this line");
+              // LOGGER.info(pmEvaluator);
+              // LOGGER.info(expr);
+              // LOGGER.info("Debug from this line");
               // }
             }
-            // System.out.println(pmEvaluator.toString());
-            // System.out.println(">>"+expr);
+            // LOGGER.info(pmEvaluator);
+            // LOGGER.info(">>"+expr);
 
             result = pmEvaluator.eval(expr, engine);
             if (result.isPresent()) {
               //              if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
-              //                System.out.println(((IPatternMatcher) patternEvaluator).toString());
+              //                LOGGER.info(((IPatternMatcher) patternEvaluator));
               //                // if (((IPatternMatcher) patternEvaluator).getLHSPriority() ==
               // 6686) {
-              //                System.out.println(
+              //                LOGGER.info(
               //                    "Rule number: " + ((IPatternMatcher)
               // patternEvaluator).getLHSPriority());
               //                // }
-              //                System.out.println("Result: "+result.toString());
+              //                LOGGER.info("Result: "+result);
               //              }
               if (LOGGER.isDebugEnabled()) {
                 if (isShowPriority(pmEvaluator)) {
@@ -473,9 +476,8 @@ public final class RulesData implements Serializable {
                   if (!rhs.isPresent()) {
                     rhs = S.Null;
                   }
-                  System.out.println(
-                      "\nCOMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
-                  System.out.println(" >>> " + expr.toString() + "  >>>>  " + result.toString());
+                  LOGGER.info("\nCOMPLEX: {} := {}", pmEvaluator.getLHS(), rhs);
+                  LOGGER.info(" >>> {}  >>>>  {}", expr, result);
                 }
               }
               return result;

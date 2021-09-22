@@ -23,6 +23,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleSupplier;
 import java.util.function.DoubleUnaryOperator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -34,8 +36,7 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 /** Evaluate math expressions to <code>double</code> numbers. */
 public class DoubleEvaluator {
-
-  private static final boolean DEBUG = false;
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public static double EPSILON = 1.0e-15;
 
@@ -99,9 +100,7 @@ public class DoubleEvaluator {
       int end = function.size();
       for (int i = 1; i < end; i++) {
         result = engine.evaluateNode(function.getNode(i));
-        if (DEBUG) {
-          System.out.println(result);
-        }
+        LOGGER.debug(result);
       }
       return result;
     }

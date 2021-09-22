@@ -284,8 +284,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     if (RulesData.showSteps) {
       if (fLhsPatternExpr.head().equals(S.Integrate)) {
         IExpr rhs = fRightHandSide.orElse(S.Null);
-        System.out.println("\nCOMPLEX: " + fLhsPatternExpr.toString() + " := " + rhs.toString());
-        System.out.println("\n>>>>> " + toString());
+        LOGGER.info("COMPLEX: {} := {}", fLhsPatternExpr, rhs);
+        LOGGER.info(">>>>> {}", this);
       }
     }
 

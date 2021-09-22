@@ -1607,8 +1607,6 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
       List<IExpr> ecl = (List<IExpr>) ec.get(0);
       IExpr c = ec.get(1); // zero
       ExpVectorSymbolic e = ExpVectorSymbolic.create(ecl);
-      // System.out.println("exp = " + e);
-      // System.out.println("coeffs = " + c);
       current = new SymbolicPolynomial(ring, c, e);
     }
 
@@ -1640,8 +1638,6 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
       }
       List<IExpr> ecl = (List<IExpr>) ec.get(0);
       ExpVectorSymbolic e = ExpVectorSymbolic.create(ecl);
-      // System.out.println("exp = " + e);
-      // System.out.println("coeffs = " + c);
       current = new SymbolicPolynomial(ring, c, e);
 
       return res;

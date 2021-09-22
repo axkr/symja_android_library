@@ -8783,7 +8783,7 @@ public class F extends S {
           String htmlSnippet = str.toString();
           String htmlPage = Config.HTML_PAGE;
           htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
-          System.out.println(htmlPage);
+          EvalEngine.get().getOutPrintStream().println(htmlPage);
           return F.openHTMLOnDesktop(htmlPage);
         }
       } else if (expr.isList(x -> x.isAST(JSFormData, 3))) {

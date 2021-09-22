@@ -1598,7 +1598,7 @@ public class SpecialFunctions {
               new Apfloat(new BigDecimal(arg1.getRealPart()), FEConfig.MACHINE_PRECISION),
               new Apfloat(new BigDecimal(arg1.getImaginaryPart()), FEConfig.MACHINE_PRECISION));
       // if (Config.FUZZ_TESTING) {
-      // System.err.println(c.toString());
+      // LOGGER.error(c);
       // }
       c = ApcomplexMath.w(c);
       return F.complexNum(c.real().doubleValue(), c.imag().doubleValue());

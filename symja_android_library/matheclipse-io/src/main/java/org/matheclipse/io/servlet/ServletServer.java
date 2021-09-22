@@ -8,6 +8,8 @@ import java.awt.Desktop;
 import java.net.InetAddress;
 import java.net.URI;
 import javax.servlet.Servlet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ReturnException;
 import io.undertow.Handlers;
@@ -19,6 +21,8 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 
 public class ServletServer {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   /** If <code>true</code>, use localhost string */
   public static boolean LOCALHOST_STRING = false;
 
@@ -89,7 +93,7 @@ public class ServletServer {
       if (Desktop.isDesktopSupported()) {
         Desktop.getDesktop().browse(uri);
       }
-      System.out.println("Open browser URL: " + uri.toString());
+      LOGGER.info("Open browser URL: {}", uri);
     } catch (Exception ex) {
       ex.printStackTrace();
     }
@@ -103,7 +107,7 @@ public class ServletServer {
         LOCALHOST_STRING = true;
       } else if (arg.equals("-port") || arg.equals("-p")) {
         if (i + 1 >= args.length) {
-          System.out.println("You must specify a port number when using the -port argument");
+          LOGGER.error("You must specify a port number when using the -port argument");
           throw ReturnException.RETURN_FALSE;
         }
 
@@ -117,7 +121,7 @@ public class ServletServer {
       } else if (arg.charAt(0) == '-') {
         // we don't have any more args to recognize!
         final String msg = "Unknown arg: " + arg;
-        System.out.println(msg);
+        LOGGER.warn(msg);
         printUsage(serverClass);
         return -4;
       }

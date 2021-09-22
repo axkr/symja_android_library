@@ -306,7 +306,7 @@ public class TeXParser {
         if (name.equals("mo")) {
           String text = op.getTextContent();
           if (SHOW_UNICODE) {
-            System.out.println("mo: " + text + " - " + toUnicodeString(text, "UTF-8"));
+            LOGGER.info("mo: {} - {}", () -> text, () -> toUnicodeString(text, "UTF-8"));
           }
           BinaryOperator binaryOperator = BINARY_OPERATOR_MAP.get(text);
           if (binaryOperator != null) {
@@ -519,7 +519,7 @@ public class TeXParser {
         }
       }
       if (SHOW_UNICODE) {
-        System.out.println("mi: " + text + " - " + toUnicodeString(text, "UTF-8"));
+        LOGGER.info("mi: {} - {}", () -> text, () -> toUnicodeString(text, "UTF-8"));
       }
       IExpr x = UNICODE_OPERATOR_MAP.get(text);
       if (x != null) {
@@ -550,7 +550,7 @@ public class TeXParser {
     String text = node.getTextContent();
     if (text.length() == 1) {
       if (SHOW_UNICODE) {
-        System.out.println("mo: " + text + " - " + toUnicodeString(text, "UTF-8"));
+        LOGGER.info("mo: {} - {}", () -> text, () -> toUnicodeString(text, "UTF-8"));
       }
       IExpr x = UNICODE_OPERATOR_MAP.get(text);
       if (x != null) {
@@ -755,8 +755,7 @@ public class TeXParser {
     } else if (name.equals("mfenced")) {
       return convertArgs(node.getChildNodes(), position);
     }
-    // String n = node.getNodeName();
-    // System.out.println(n.toString());
+    // LOGGER.info(node.getNodeName());
     NodeList list = node.getChildNodes();
     return convert(list, position, null, 0);
   }
@@ -817,8 +816,7 @@ public class TeXParser {
     } else if (name.equals("mfenced")) {
       return convertArgs(node.getChildNodes(), position);
     }
-    // String n = node.getNodeName();
-    // System.out.println(n.toString());
+    // LOGGER.info(node.getNodeName());
     NodeList list = node.getChildNodes();
     return convert(list, position, null, 0);
   }
