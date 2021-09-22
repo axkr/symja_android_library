@@ -1160,12 +1160,12 @@ public class Solve extends AbstractFunctionEvaluator {
       if (Config.SHOW_STACKTRACE) {
         le.printStackTrace();
       }
-      return IOFunctions.printMessage(S.Solve, le, engine);
+      return engine.printMessage(S.Solve, le);
     } catch (ValidateException ve) {
       if (Config.SHOW_STACKTRACE) {
         ve.printStackTrace();
       }
-      return IOFunctions.printMessage(S.Solve, ve, engine);
+      return engine.printMessage(S.Solve, ve);
       //      return engine.printMessage(S.Solve, ve);
     } catch (RuntimeException rex) {
       if (Config.SHOW_STACKTRACE) {

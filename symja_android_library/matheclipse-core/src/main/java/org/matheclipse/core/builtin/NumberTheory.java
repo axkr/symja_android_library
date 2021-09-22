@@ -2807,7 +2807,7 @@ public final class NumberTheory {
           } catch (ArithmeticException aex) {
             // java.lang.ArithmeticException: Inverse root of zero
             // at org.apfloat.ApfloatMath.inverseRoot(ApfloatMath.java:280)
-            return IOFunctions.printMessage(ast.topHead(), aex, engine);
+            return engine.printMessage(ast.topHead(), aex);
           }
         }
       }

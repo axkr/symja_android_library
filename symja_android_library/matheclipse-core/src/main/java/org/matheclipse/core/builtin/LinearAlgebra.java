@@ -4052,7 +4052,7 @@ public final class LinearAlgebra {
             }
           }
         } catch (MathRuntimeException mrex) {
-          IOFunctions.printMessage(ast.topHead(), mrex, engine);
+          engine.printMessage(ast.topHead(), mrex);
         }
       }
       return F.NIL;
