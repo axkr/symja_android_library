@@ -922,7 +922,7 @@ public class IOFunctions {
     if (message == null) {
       message = "Undefined message shortcut: " + messageShortcut;
       engine.setMessageShortcut(messageShortcut);
-      engine.printMessage(symbol.toString() + ": " + message);
+      engine.printMessage(symbol + ": " + message);
     } else {
       try {
         Writer writer = new StringWriter();
@@ -935,7 +935,7 @@ public class IOFunctions {
 
         templateApply(message, writer, context);
         engine.setMessageShortcut(messageShortcut);
-        engine.printMessage(symbol.toString() + ": " + writer.toString());
+        engine.printMessage(symbol + ": " + writer);
       } catch (IOException e) {
         e.printStackTrace();
       }
@@ -964,17 +964,6 @@ public class IOFunctions {
     }
     engine.setMessageShortcut(messageShortcut);
     return message;
-  }
-
-  public static IAST printMessage(ISymbol symbol, Exception ex, EvalEngine engine) {
-    String message = ex.getMessage();
-    if (message != null) {
-      engine.printMessage(symbol.toString() + ": " + message);
-    } else {
-      engine.printMessage(symbol.toString() + ": " + ex.getClass().toString());
-    }
-
-    return F.NIL;
   }
 
   private static String rawMessage(final IAST list, String message) {

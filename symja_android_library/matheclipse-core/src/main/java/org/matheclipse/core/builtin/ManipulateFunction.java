@@ -1971,7 +1971,7 @@ public class ManipulateFunction {
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
-        return IOFunctions.printMessage(S.Manipulate, rex, engine);
+        return engine.printMessage(S.Manipulate, rex);
       }
       return F.NIL;
     }

@@ -68,7 +68,7 @@ public class JavaFunctions {
           Config.URL_CLASS_LOADER = child;
         }
       } catch (MalformedURLException ex) {
-        return IOFunctions.printMessage(ast.topHead(), ex, engine);
+        return engine.printMessage(ast.topHead(), ex);
       }
       return F.NIL;
     }
@@ -122,7 +122,7 @@ public class JavaFunctions {
           }
           arg2 = JavaClassExpr.newInstance(arg2.toString(), Config.URL_CLASS_LOADER);
         } catch (ClassNotFoundException cnfex) {
-          IOFunctions.printMessage(ast.topHead(), cnfex, engine);
+          engine.printMessage(ast.topHead(), cnfex);
           return F.False;
         }
       }
@@ -188,7 +188,7 @@ public class JavaFunctions {
             }
             arg1 = JavaClassExpr.newInstance(arg1.toString(), Config.URL_CLASS_LOADER);
           } catch (ClassNotFoundException cnfex) {
-            return IOFunctions.printMessage(ast.topHead(), cnfex, engine);
+            return engine.printMessage(ast.topHead(), cnfex);
           }
         }
         if (arg1 instanceof JavaClassExpr) {
@@ -211,7 +211,7 @@ public class JavaFunctions {
               | IllegalArgumentException
               | InvocationTargetException
               | SecurityException ex) {
-            return IOFunctions.printMessage(ast.topHead(), ex, engine);
+            return engine.printMessage(ast.topHead(), ex);
           }
         }
       }
@@ -301,7 +301,7 @@ public class JavaFunctions {
           }
 
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-          return IOFunctions.printMessage(S.JavaObject, ex, engine);
+          return engine.printMessage(S.JavaObject, ex);
         }
       }
       return F.NIL;
@@ -422,7 +422,7 @@ public class JavaFunctions {
             }
             return jClazz;
           } catch (ClassNotFoundException cnfex) {
-            return IOFunctions.printMessage(ast.topHead(), cnfex, engine);
+            return engine.printMessage(ast.topHead(), cnfex);
           }
         }
         if (arg1 instanceof JavaClassExpr) {

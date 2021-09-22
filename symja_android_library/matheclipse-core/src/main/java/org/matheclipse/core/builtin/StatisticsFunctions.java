@@ -1501,7 +1501,7 @@ public class StatisticsFunctions {
         }
         return F.NIL;
       } catch (MathRuntimeException mrex) {
-        return IOFunctions.printMessage(ast.topHead(), mrex, engine);
+        return engine.printMessage(ast.topHead(), mrex);
       }
     }
 

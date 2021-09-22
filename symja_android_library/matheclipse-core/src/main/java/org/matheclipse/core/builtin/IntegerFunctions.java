@@ -1513,7 +1513,7 @@ public class IntegerFunctions {
           }
         }
       } catch (NumberFormatException | ArgumentTypeException atex) {
-        return IOFunctions.printMessage(ast.topHead(), atex, engine);
+        return engine.printMessage(ast.topHead(), atex);
       }
 
       if (arg1.isNumber()) {

@@ -586,61 +586,6 @@ public class SwingFunctions {
     return F.NIL;
   }
 
-  public static IExpr printArgMessage(IAST ast, int[] expected, EvalEngine engine) {
-    final ISymbol topHead = ast.topHead();
-    int argSize = ast.argSize();
-    if (expected[0] == expected[1]) {
-      if (expected[0] == 1) {
-        return printMessage(
-            topHead, "argx", F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0])), engine);
-      }
-      if (argSize == 1) {
-        return printMessage(topHead, "argr", F.List(topHead, F.ZZ(expected[0])), engine);
-      }
-      return printMessage(
-          topHead, "argrx", F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0])), engine);
-    }
-    return printMessage(
-        topHead,
-        "argt",
-        F.List(topHead, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])),
-        engine);
-  }
-
-  /**
-   * @param symbol
-   * @param messageShortcut the message shortcut defined in <code>MESSAGES</code> array
-   * @param listOfArgs a list of arguments which should be inserted into the message shortcuts
-   *     placeholder
-   * @param engine
-   * @return always <code>F.NIL</code>
-   */
-  public static IAST printMessage(
-      ISymbol symbol, String messageShortcut, final IAST listOfArgs, EvalEngine engine) {
-    IExpr temp = symbol.evalMessage(messageShortcut);
-    String message = null;
-    if (temp.isPresent()) {
-      message = temp.toString();
-    } else {
-      temp = S.General.evalMessage(messageShortcut);
-      if (temp.isPresent()) {
-        message = temp.toString();
-      }
-    }
-    if (message == null) {
-      message = "Undefined message shortcut: " + messageShortcut;
-      engine.setMessageShortcut(messageShortcut);
-      engine.printMessage(symbol.toString() + ": " + message);
-    } else {
-      for (int i = 1; i < listOfArgs.size(); i++) {
-        message = StringUtils.replace(message, "`" + (i) + "`", shorten(listOfArgs.get(i)));
-      }
-      engine.setMessageShortcut(messageShortcut);
-      engine.printMessage(symbol.toString() + ": " + message);
-    }
-    return F.NIL;
-  }
-
   public static String getMessage(String messageShortcut, final IAST listOfArgs) {
     return getMessage(messageShortcut, listOfArgs, EvalEngine.get());
   }
@@ -662,17 +607,6 @@ public class SwingFunctions {
     }
     engine.setMessageShortcut(messageShortcut);
     return message;
-  }
-
-  public static IAST printMessage(ISymbol symbol, Exception ex, EvalEngine engine) {
-    String message = ex.getMessage();
-    if (message != null) {
-      engine.printMessage(symbol.toString() + ": " + message);
-    } else {
-      engine.printMessage(symbol.toString() + ": " + ex.getClass().toString());
-    }
-
-    return F.NIL;
   }
 
   private static String rawMessage(final IAST list, String message) {

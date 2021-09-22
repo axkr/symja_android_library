@@ -3428,7 +3428,7 @@ public final class StringFunctions {
           F.List(F.$str(pse.getPattern()), F.$str(pse.getMessage())),
           engine);
     } else {
-      return IOFunctions.printMessage(ast.topHead(), iae, engine);
+      return engine.printMessage(ast.topHead(), iae);
     }
   }
 
