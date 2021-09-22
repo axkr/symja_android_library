@@ -17,6 +17,7 @@ import static org.matheclipse.core.expression.S.Assumptions;
 import static org.matheclipse.core.expression.S.E;
 import static org.matheclipse.core.expression.S.I;
 import static org.matheclipse.core.expression.S.Pi;
+import static org.matheclipse.core.expression.S.Power;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -2871,6 +2872,8 @@ public class Algebra {
             subList.append(jas.modLongPoly2Expr(result[2]));
             list.append(subList);
             return list;
+          } catch (ArithmeticException aex) {
+            return engine.printMessage(S.PolynomialExtendedGCD, aex);
           } catch (JASConversionException e) {
             if (Config.DEBUG) {
               e.printStackTrace();
@@ -3027,6 +3030,8 @@ public class Algebra {
           // TODO https://github.com/kredel/java-algebra-system/issues/15
           // return jas.rationalPoly2Expr(poly.monic(), true);
           return jas.integerPoly2Expr(poly.monic());
+        } catch (ArithmeticException aex) {
+          return engine.printMessage(S.PolynomialGCD, aex);
         } catch (JASConversionException e) {
           try {
             if (eVar.size() == 0) {
@@ -3204,6 +3209,9 @@ public class Algebra {
 
               return Algebra.factorModulus(jas, modIntegerRing, poly.monic(), false);
               // return jas.modLongPoly2Expr(poly.monic());
+
+            } catch (ArithmeticException aex) {
+              return engine.printMessage(S.PolynomialLCM, aex);
             } catch (JASConversionException e) {
               try {
                 if (eVar.size() == 0) {
@@ -3445,8 +3453,10 @@ public class Algebra {
             return F.NIL;
           }
           return result[0];
-        } catch (ArithmeticException ae) {
+
+        } catch (ArithmeticException aex) {
           // division by zero
+          return engine.printMessage(S.PolynomialQuotient, aex);
         }
       }
       return F.NIL;
@@ -3596,6 +3606,9 @@ public class Algebra {
         }
         F.REMEMBER_AST_CACHE.put(ast, result);
         return result;
+      } catch (ArithmeticException aex) {
+        // division by zero
+        return engine.printMessage(S.PolynomialQuotientRemainder, aex);
       } catch (RuntimeException rex) {
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
@@ -3711,6 +3724,9 @@ public class Algebra {
           return F.NIL;
         }
         return result[1];
+      } catch (ArithmeticException aex) {
+        // division by zero
+        return engine.printMessage(S.PolynomialRemainder, aex);
       } catch (RuntimeException rex) {
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
