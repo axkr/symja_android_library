@@ -7,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTDataset;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.io.expression.ASTDataset;
 
@@ -90,10 +91,17 @@ public class DatasetFunctions {
         return F.NIL;
       }
       if (ast.head() == S.Dataset) {
-        if (ast.isAST1() && ast.arg1().isList()) {
-          IAST list = (IAST) ast.arg1();
-          if (list.forAll(x -> x.isAssociation())) {
-            return ASTDataset.newListOfAssociations(list);
+        if (ast.isAST1()) {
+          if (ast.arg1().isList()) {
+            IAST list = (IAST) ast.arg1();
+            if (list.forAll(x -> x.isAssociation())) {
+              return ASTDataset.newListOfAssociations(list);
+            }
+          } else if (ast.arg1().isAssociation()) {
+            IAssociation assoc = (IAssociation) ast.arg1();
+            if (assoc.forAll(x -> x.isRuleAST() && x.second().isAssociation())) {
+              return ASTDataset.newAssociationOfAssociations(assoc);
+            }
           }
         }
       }

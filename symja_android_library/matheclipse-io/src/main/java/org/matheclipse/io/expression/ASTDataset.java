@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import org.jsoup.nodes.Element;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -61,13 +62,15 @@ public class ASTDataset extends AbstractAST
   }
 
   /**
-   * Create a dataset from a <code>List(...)</code> of associations. Each association represents a
-   * row in the dataset. The left-hand-side of each singular rule in an association was assumed to
-   * be the name of the resulting dataset columns. Identical names maps the right-hand-side values
-   * of the rule to the same columns in the resulting dataset.
+   * Create a <code>Dataset</code> object from a <code>List(...)</code> of associations. Each
+   * association represents a row in the <code>Dataset</code>. The left-hand-side of each singular
+   * rule in an association was assumed to be the name of the resulting dataset columns. Identical
+   * names maps the right-hand-side values of the rule to the same columns in the resulting <code>
+   * Dataset
+   * </code>.
    *
    * @param listOfAssociations
-   * @return {@link F#NIL} if the dataset cannot be created
+   * @return {@link F#NIL} if the <code>Dataset</code> cannot be created
    */
   public static IExpr newListOfAssociations(IAST listOfAssociations) {
     // 1. phase: build up column names
@@ -98,6 +101,60 @@ public class ASTDataset extends AbstractAST
         Row row = table.appendRow();
         for (int j = 1; j < assoc.size(); j++) {
           IAST rule = assoc.getRule(j);
+          String columnName = rule.first().toString();
+          IExpr value = rule.second();
+          row.setExpr(columnName, value);
+        }
+      }
+      return newTablesawTable(table);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Create a <code>Dataset</code> object from a (head-)association <code>&lt;|...|&gt;</code> of
+   * (sub-)associations. Each key in the (head-)association is used in the first column the
+   * (sub-)association represents the other columns of a row in the <code>Dataset</code>. The
+   * left-hand-side of each singular rule in a (sub-)association was assumed to be the name of the
+   * resulting <code>Dataset</code> columns. Identical names maps the right-hand-side values of the
+   * rule to the same columns in the resulting dataset.
+   *
+   * @param listOfAssociations
+   * @return {@link F#NIL} if the <code>Dataset</code> cannot be created
+   */
+  public static IExpr newAssociationOfAssociations(IAssociation assocOfAssociations) {
+    // 1. phase: build up column names; reserve 1 column for header assoc
+    List<String> colNames = new ArrayList<String>();
+    Set<String> colNamesSet = new HashSet<String>();
+    colNamesSet.add("");
+    colNames.add("");
+    for (int i = 1; i < assocOfAssociations.size(); i++) {
+      IAssociation assoc = (IAssociation) assocOfAssociations.get(i);
+      for (int j = 1; j < assoc.size(); j++) {
+        IAST rule = assoc.getRule(j);
+        String columnName = rule.first().toString();
+        if (!colNamesSet.contains(columnName)) {
+          colNamesSet.add(columnName);
+          colNames.add(columnName);
+        }
+      }
+    }
+    if (colNames.size() > 0) {
+      // 2. phase: define the columns
+      Table table = Table.create();
+      Column<?>[] cols = new Column<?>[colNames.size()];
+      for (int i = 0; i < colNames.size(); i++) {
+        cols[i] = ExprColumn.create(colNames.get(i));
+      }
+      table.addColumns(cols);
+      // 3. phase: add the values
+      for (int i = 1; i < assocOfAssociations.size(); i++) {
+        IExpr rule = assocOfAssociations.getRule(i);
+        IAssociation assoc = (IAssociation) rule.second();
+        Row row = table.appendRow();
+        row.setExpr("", rule.first());
+        for (int j = 1; j < assoc.size(); j++) {
+          rule = assoc.getRule(j);
           String columnName = rule.first().toString();
           IExpr value = rule.second();
           row.setExpr(columnName, value);
@@ -712,7 +769,13 @@ public class ASTDataset extends AbstractAST
   @Override
   public String datasetToJSForm() throws IOException {
     OutputStream baos = new ByteArrayOutputStream();
-    fTable.write().usingOptions(HtmlWriteOptions.builder(baos).escapeText(true).build());
+    fTable
+        .write()
+        .usingOptions(
+            HtmlWriteOptions.builder(baos)
+                .escapeText(true)
+                .elementCreator((elementName, column, row) -> new Element(elementName))
+                .build());
     return baos.toString();
   }
 }

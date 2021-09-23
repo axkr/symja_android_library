@@ -20,9 +20,10 @@ public class FunctionsTestCase extends AbstractTestCase {
     // "");
 
     if (s.contains("Windows")) {
-//                  check(
-//                      "dset = SemanticImport(\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/data/whiskey.csv\")", //
-//                      "");
+      //                  check(
+      //                      "dset =
+      // SemanticImport(\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/data/whiskey.csv\")", //
+      //                      "");
       check(
           "dset = Dataset({\n"
               + //
@@ -61,6 +62,10 @@ public class FunctionsTestCase extends AbstractTestCase {
               + "<|\"a\"->4,\"b\"->\"x\",\"c\"->{4,5}|>," //
               + "<|\"a\"->5,\"b\"->\"y\",\"c\"->{5,6,7}|>," //
               + "<|\"a\"->6,\"b\"->\"z\",\"c\"->{}|>}");
+
+      check(
+          "dset[2,3]", //
+          "{2,3}");
 
       check(
           "dset[2]", //
@@ -582,6 +587,44 @@ public class FunctionsTestCase extends AbstractTestCase {
               + " 1999  |  Chevy  |  Venture \"Extended Edition, Very Large\"  |                                     |   5000  |\r\n"
               + " 1996  |   Jeep  |                          Grand Cherokee  |  MUST SELL!\n"
               + "air, moon roof, loaded  |   4799  |");
+    }
+  }
+
+  public void testDataset() {
+    String s = System.getProperty("os.name");
+
+    Config.FILESYSTEM_ENABLED = true;
+    //     check("ds=SemanticImport(\"./data/color2_data.csv\") //Normal //InputForm", //
+    //     "");
+    // check("ds=SemanticImport(\"./data/color2_data.csv\");ds(All, {\"r\",\"g\",\"b\"})//Normal
+    // //Values
+    // //InputForm", //
+    // "");
+
+    if (s.contains("Windows")) {
+      //                  check(
+      //                      "dset =
+      // SemanticImport(\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/data/whiskey.csv\")", //
+      //                      "");
+      check(
+          "dset=Dataset@<|101 -> <|\"t\" -> 42, \"r\" -> 7.5`|>, 102 -> <|\"t\" -> 42, \"r\" -> 7.5`|>, 103 -> <|\"t\" -> 42, \"r\" -> 7.5`|>|>", //
+          "      |  t   |   r   |\r\n"
+              + "----------------------\r\n"
+              + " 101  |  42  |  7.5  |\r\n"
+              + " 102  |  42  |  7.5  |\r\n"
+              + " 103  |  42  |  7.5  |");
+
+      check(
+          "Normal(dset) //InputForm", //
+          "{<|\"\"->101,\"t\"->42,\"r\"->7.5`|>,"
+              + "<|\"\"->102,\"t\"->42,\"r\"->7.5`|>,"
+              + "<|\"\"->103,\"t\"->42,\"r\"->7.5`|>}");
+      check(
+          "dset[1,1]", //
+          "101");
+      check(
+          "dset[2,3]", //
+          "7.5");
     }
   }
 }
