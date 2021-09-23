@@ -139,19 +139,16 @@ public class FileFunctions {
         }
 
         if (Config.isFileSystemEnabled(engine)) {
-          try {
-            for (int j = 2; j < ast.size(); j++) {
-              // FileReader reader = new FileReader(ast.get(j).toString());
-              FileInputStream fis = new FileInputStream(ast.get(j).toString());
-              BufferedReader reader =
-                  new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));
+          for (int j = 2; j < ast.size(); j++) {
+            try (FileInputStream fis = new FileInputStream(ast.get(j).toString());
+                Reader r = new InputStreamReader(fis, StandardCharsets.UTF_8);
+                BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));) {
               Get.loadPackage(engine, reader);
-              reader.close();
-              fis.close();
-            }
-          } catch (IOException e) {
-            if (Config.SHOW_STACKTRACE) {
-              e.printStackTrace();
+            } catch (IOException e) {
+              if (Config.SHOW_STACKTRACE) {
+                e.printStackTrace();
+              }
             }
           }
         }
@@ -647,20 +644,12 @@ public class FileFunctions {
      * @return the last evaluated expression result
      */
     protected static IExpr loadPackage(final EvalEngine engine, final BufferedReader is) {
-      final BufferedReader r = is;
-      try {
+      try (final BufferedReader r = is) {
         final List<ASTNode> node = parseReader(r, engine);
 
         return evaluatePackage(node, engine);
       } catch (final Exception e) {
         e.printStackTrace();
-      } finally {
-        try {
-          r.close();
-          is.close();
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
       }
       return S.Null;
     }
@@ -924,34 +913,22 @@ public class FileFunctions {
           return IOFunctions.printMessage(S.Put, "string", F.List(), engine);
         }
         IStringX fileName = (IStringX) ast.last();
-        FileWriter writer = null;
-        try {
 
-          final StringBuilder buf = new StringBuilder();
-          for (int i = 1; i < argSize; i++) {
-            IExpr temp = engine.evaluate(ast.get(i));
-            if (!OutputFormFactory.get().convert(buf, temp)) {
-              return engine.printMessage(
-                  "Put: file " + fileName.toString() + "ERROR-IN_OUTPUTFORM");
-            }
-            buf.append('\n');
-            if (i < argSize - 1) {
-              buf.append('\n');
-            }
+        final StringBuilder buf = new StringBuilder();
+        for (int i = 1; i < argSize; i++) {
+          IExpr temp = engine.evaluate(ast.get(i));
+          if (!OutputFormFactory.get().convert(buf, temp)) {
+            return engine.printMessage("Put: file " + fileName.toString() + "ERROR-IN_OUTPUTFORM");
           }
-          writer = new FileWriter(fileName.toString());
+          buf.append('\n');
+          if (i < argSize - 1) {
+            buf.append('\n');
+          }
+        }
+        try (FileWriter writer = new FileWriter(fileName.toString());) {
           writer.write(buf.toString());
         } catch (IOException e) {
           return engine.printMessage("Put: file " + fileName.toString() + " I/O exception !");
-        } finally {
-          if (writer != null) {
-            try {
-              writer.close();
-            } catch (IOException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
-            }
-          }
         }
         return S.Null;
       }
@@ -1392,22 +1369,11 @@ public class FileFunctions {
         }
         IStringX fileName = (IStringX) ast.arg1();
         IStringX str = (IStringX) ast.arg2();
-        FileWriter writer = null;
-        try {
-          writer = new FileWriter(fileName.toString());
+        try (FileWriter writer = new FileWriter(fileName.toString())) {
           writer.write(str.toString());
         } catch (IOException e) {
           return engine.printMessage(
               ast.topHead() + ": file " + fileName.toString() + " I/O exception !");
-        } finally {
-          if (writer != null) {
-            try {
-              writer.close();
-            } catch (IOException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
-            }
-          }
         }
         return S.Null;
       }

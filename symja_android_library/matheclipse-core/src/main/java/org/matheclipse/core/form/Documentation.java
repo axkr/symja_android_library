@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.SourceCodeFunctions;
 import org.matheclipse.core.expression.F;
@@ -35,17 +36,13 @@ public class Documentation {
     // Get file from resources folder
     ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 
-    try {
-      InputStream is = classloader.getResourceAsStream(fileName);
-      if (is != null) {
-        final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+    try (BufferedReader f = getResourceReader(classloader, url)) {
+      if (f != null) {
         String line;
         while ((line = f.readLine()) != null) {
           out.append(line);
           out.append("\n");
         }
-        f.close();
-        is.close();
         if (url != null) {
           out.append("[Github master](");
           out.append(url);
@@ -126,10 +123,8 @@ public class Documentation {
     // Get file from resources folder
     ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 
-    try {
-      InputStream is = classloader.getResourceAsStream(fileName);
-      if (is != null) {
-        final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+    try (BufferedReader f = getResourceReader(classloader, fileName)) {
+      if (f != null) {
         String line;
         boolean emptyLine = false;
         while ((line = f.readLine()) != null) {
@@ -153,8 +148,6 @@ public class Documentation {
           out.append(url);
           out.append(")\n\n");
         }
-        f.close();
-        is.close();
         return true;
       }
     } catch (IOException e) {
@@ -178,10 +171,8 @@ public class Documentation {
     // Get file from resources folder
     ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 
-    try {
-      InputStream is = classloader.getResourceAsStream(fileName);
-      if (is != null) {
-        final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+    try (BufferedReader f = getResourceReader(classloader, fileName)) {
+      if (f != null) {
         String line;
         String shortdesc = null;
         while ((line = f.readLine()) != null) {
@@ -214,8 +205,6 @@ public class Documentation {
             return 1;
           }
         }
-        f.close();
-        is.close();
         return 0;
       }
 
@@ -223,5 +212,11 @@ public class Documentation {
       e.printStackTrace();
     }
     return -1;
+  }
+
+  private static BufferedReader getResourceReader(ClassLoader classloader, String resource) {
+    InputStream in = classloader.getResourceAsStream(resource);
+    return in != null ? new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))
+        : null;
   }
 }

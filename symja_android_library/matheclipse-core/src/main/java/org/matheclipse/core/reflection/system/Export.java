@@ -52,9 +52,7 @@ public class Export extends AbstractEvaluator {
       }
 
       IExpr arg2 = ast.arg2();
-      FileWriter writer = null;
-      try {
-        writer = new FileWriter(arg1.toString());
+      try (FileWriter writer = new FileWriter(arg1.toString())) {
         if (arg2 instanceof GraphExpr) {
           graphExport(((GraphExpr<DefaultEdge>) arg2).toData(), writer, format);
           return arg1;
@@ -103,13 +101,6 @@ public class Export extends AbstractEvaluator {
         return engine.printMessage("Export: file " + arg1.toString() + " not found!");
       } catch (Exception ex) {
         return engine.printMessage("Export: file " + arg1.toString() + " - " + ex.getMessage());
-      } finally {
-        if (writer != null) {
-          try {
-            writer.close();
-          } catch (IOException e) {
-          }
-        }
       }
     }
     return F.NIL;
