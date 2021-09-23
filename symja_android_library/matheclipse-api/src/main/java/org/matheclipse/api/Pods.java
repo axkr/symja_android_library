@@ -1530,7 +1530,7 @@ public class Pods {
     StandardTokenizer stdToken = new StandardTokenizer();
     stdToken.setReader(new StringReader(term));
 
-    try (TokenStream tokenStream = new PorterStemFilter(stdToken);) {
+    try (TokenStream tokenStream = new PorterStemFilter(stdToken)) {
       tokenStream.reset();
 
       // eliminate duplicate tokens by adding them to a set

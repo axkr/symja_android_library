@@ -36,7 +36,7 @@ public class Documentation {
     // Get file from resources folder
     ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 
-    try (BufferedReader f = getResourceReader(classloader, url)) {
+    try (BufferedReader f = getResourceReader(classloader, fileName)) {
       if (f != null) {
         String line;
         while ((line = f.readLine()) != null) {

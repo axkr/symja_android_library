@@ -925,7 +925,7 @@ public class FileFunctions {
             buf.append('\n');
           }
         }
-        try (FileWriter writer = new FileWriter(fileName.toString());) {
+        try (FileWriter writer = new FileWriter(fileName.toString())) {
           writer.write(buf.toString());
         } catch (IOException e) {
           return engine.printMessage("Put: file " + fileName.toString() + " I/O exception !");
