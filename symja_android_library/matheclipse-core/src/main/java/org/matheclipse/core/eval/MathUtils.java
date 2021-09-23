@@ -655,9 +655,8 @@ public class MathUtils {
   public static String evaluate(final String codeString, final String function) {
     String result = null;
     // set up and direct the input and output streams
-    try {
-      // _inputStream = inputStreamFromString(codeString);
-      ByteArrayOutputStream _outputStream = new ByteArrayOutputStream();
+    // _inputStream = inputStreamFromString(codeString);
+    try (ByteArrayOutputStream _outputStream = new ByteArrayOutputStream()) {
 
       // fire up the command interpreter to evaluate the source code
       // buffer
@@ -669,7 +668,6 @@ public class MathUtils {
       } catch (Throwable t) {
         result = "UNSUPPORTED OPERATION!\n[\n" + codeString + "\n]\n" + t.toString();
       }
-      _outputStream.close();
     } catch (Throwable t) {
       result = "UNSUPPORTED OPERATION!\n[\n" + codeString + "\n]\n" + t.toString();
     }
@@ -688,8 +686,7 @@ public class MathUtils {
   public static String evaluateReaplaceAll(final String codeString, final IAST function) {
     String result = null;
     // set up and direct the input and output streams
-    try {
-      ByteArrayOutputStream _outputStream = new ByteArrayOutputStream();
+    try (ByteArrayOutputStream _outputStream = new ByteArrayOutputStream()) {
 
       // fire up the command interpreter to evaluate the source code
       // buffer
@@ -701,7 +698,6 @@ public class MathUtils {
       } catch (Throwable t) {
         result = "UNSUPPORTED OPERATION!\n[\n" + codeString + "\n]\n" + t.toString();
       }
-      _outputStream.close();
     } catch (Throwable t) {
       result = "UNSUPPORTED OPERATION!\n[\n" + codeString + "\n]\n" + t.toString();
     }

@@ -1527,13 +1527,10 @@ public class Pods {
 
   private static String getStemForm(String term) {
 
-    TokenStream tokenStream = null;
+    StandardTokenizer stdToken = new StandardTokenizer();
+    stdToken.setReader(new StringReader(term));
 
-    try {
-      StandardTokenizer stdToken = new StandardTokenizer();
-      stdToken.setReader(new StringReader(term));
-
-      tokenStream = new PorterStemFilter(stdToken);
+    try (TokenStream tokenStream = new PorterStemFilter(stdToken)) {
       tokenStream.reset();
 
       // eliminate duplicate tokens by adding them to a set
@@ -1559,15 +1556,6 @@ public class Pods {
 
       return stem;
     } catch (IOException ioe) {
-
-    } finally {
-      if (tokenStream != null) {
-        try {
-          tokenStream.close();
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
     }
     return null;
   }

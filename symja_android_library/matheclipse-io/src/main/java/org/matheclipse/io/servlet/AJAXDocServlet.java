@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -224,8 +226,7 @@ public class AJAXDocServlet extends HttpServlet {
       if (index > 0) {
         String functionName = destination.substring(0, index);
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        try {
-          InputStream is = classloader.getResourceAsStream("doc/functions/" + destination);
+        try (InputStream is = classloader.getResourceAsStream("doc/functions/" + destination)) {
           if (is != null) {
             destination = "javascript:loadDoc('/functions/" + functionName + "')";
           } else {
@@ -241,9 +242,6 @@ public class AJAXDocServlet extends HttpServlet {
             super.render(link.getFirstChild());
           }
           html.tag("/a");
-          if (is != null) {
-            is.close();
-          }
         } catch (Exception e) {
           e.printStackTrace();
         }
@@ -398,20 +396,17 @@ public class AJAXDocServlet extends HttpServlet {
     // Get file from resources folder
     ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 
-    try {
-      InputStream is = classloader.getResourceAsStream(fileName);
-      if (is != null) {
-        // jump back to Main documentation page
+    URL file = classloader.getResource(fileName);
+    if (file != null) {
+      // jump back to Main documentation page
+      try (BufferedReader f =
+          new BufferedReader(new InputStreamReader(file.openStream(), StandardCharsets.UTF_8))) {
         out.append("\n\n [&larr; Main](index.md)\n");
-
-        final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
         String line;
         while ((line = f.readLine()) != null) {
           out.append(line);
           out.append("\n");
         }
-        f.close();
-        is.close();
         String functionName = docName;
         if (docName.startsWith(FUNCTIONS_PREFIX1)) {
           functionName = docName.substring(FUNCTIONS_PREFIX1.length());
@@ -438,10 +433,10 @@ public class AJAXDocServlet extends HttpServlet {
             out.append("\n\n [&larr; Main](index.md) ");
           }
         }
-      }
 
-    } catch (IOException e) {
-      e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     }
   }
 

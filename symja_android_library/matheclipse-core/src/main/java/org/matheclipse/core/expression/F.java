@@ -8908,9 +8908,9 @@ public class F extends S {
     GraphicsFunctions.graphicsToSVG(show.getAST(1), stw);
     html = StringUtils.replace(html, "`1`", stw.toString());
     File temp = java.io.File.createTempFile("tempfile", ".svg");
-    BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
-    bw.write(html);
-    bw.close();
+    try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp))) {
+      bw.write(html);
+    }
     if (Desktop.isDesktopSupported()) {
       Desktop.getDesktop().open(temp);
     }
@@ -8919,9 +8919,9 @@ public class F extends S {
 
   public static String openHTMLOnDesktop(String html) throws IOException {
     File temp = java.io.File.createTempFile("tempfile", ".html");
-    BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
-    bw.write(html);
-    bw.close();
+    try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp));) {
+      bw.write(html);
+    }
     if (Desktop.isDesktopSupported()) {
       Desktop.getDesktop().open(temp);
     }

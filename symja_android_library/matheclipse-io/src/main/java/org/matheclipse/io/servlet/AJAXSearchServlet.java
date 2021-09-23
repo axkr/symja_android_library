@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -76,17 +78,18 @@ public class AJAXSearchServlet extends HttpServlet {
           final String functionName = list.get(i).toString();
 
           ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-          InputStream is = classloader.getResourceAsStream("doc/functions/" + functionName + ".md");
-          if (is != null) {
-            out.append("[");
-            out.append(functionName);
-            out.append("](functions/");
-            out.append(functionName);
-            out.append(".md)");
-            if (i != list.size() - 1) {
-              out.append(", ");
+          try (InputStream is =
+              classloader.getResourceAsStream("doc/functions/" + functionName + ".md")) {
+            if (is != null) {
+              out.append("[");
+              out.append(functionName);
+              out.append("](functions/");
+              out.append(functionName);
+              out.append(".md)");
+              if (i != list.size() - 1) {
+                out.append(", ");
+              }
             }
-            is.close();
           }
         }
       }
@@ -115,20 +118,18 @@ public class AJAXSearchServlet extends HttpServlet {
     // Get file from resources folder
     ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 
-    try {
-      InputStream is = classloader.getResourceAsStream(fileName);
-      if (is != null) {
-        final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+    URL file = classloader.getResource(fileName);
+    if (file != null) {
+      try (BufferedReader f =
+          new BufferedReader(new InputStreamReader(file.openStream(), StandardCharsets.UTF_8))) {
         String line;
         while ((line = f.readLine()) != null) {
           out.append(line);
           out.append("\n");
         }
-        f.close();
-        is.close();
+      } catch (IOException e) {
+        e.printStackTrace();
       }
-    } catch (IOException e) {
-      e.printStackTrace();
     }
   }
 

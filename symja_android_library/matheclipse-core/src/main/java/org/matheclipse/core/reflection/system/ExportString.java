@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.LinkedHashMap;
@@ -39,8 +38,7 @@ public class ExportString extends AbstractEvaluator {
       return F.NIL;
     }
     Extension format = Extension.exportExtension(((IStringX) ast.arg2()).toString());
-    StringWriter writer = null;
-    try {
+    try (StringWriter writer = new StringWriter()) {
       if (format.equals(Extension.JSON)) {
         if (arg1.isNumber() || arg1.isSymbol()) {
           return F.stringx(arg1.toString());
@@ -50,7 +48,6 @@ public class ExportString extends AbstractEvaluator {
         return ExpressionJSONConvert.exportIStringX(arg1);
       }
 
-      writer = new StringWriter();
       if (arg1 instanceof GraphExpr) {
         graphExport(((GraphExpr<DefaultEdge>) arg1).toData(), writer, format);
         return F.stringx(writer.toString());
@@ -100,13 +97,6 @@ public class ExportString extends AbstractEvaluator {
     } catch (Exception ex) {
       return engine.printMessage(
           "ExportString: format: " + arg1.toString() + " - " + ex.getMessage());
-    } finally {
-      if (writer != null) {
-        try {
-          writer.close();
-        } catch (IOException e) {
-        }
-      }
     }
     return F.NIL;
   }

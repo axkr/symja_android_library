@@ -623,22 +623,19 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     EvalEngine engine = EvalEngine.get();
     boolean oldPackageMode = engine.isPackageMode();
     boolean oldTraceMode = engine.isTraceMode();
-    try {
-      engine.setPackageMode(true);
-      engine.setTraceMode(false);
 
-      InputStream in =
-          AbstractFunctionEvaluator.class.getResourceAsStream(
-              "/ser/" + symbol.getSymbolName().toLowerCase(Locale.ENGLISH) + ".ser");
-      ObjectInputStream ois = new ObjectInputStream(in);
+    engine.setPackageMode(true);
+    engine.setTraceMode(false);
+    try (
+        InputStream in = AbstractFunctionEvaluator.class.getResourceAsStream(
+            "/ser/" + symbol.getSymbolName().toLowerCase(Locale.ENGLISH) + ".ser");
+        ObjectInputStream ois = new ObjectInputStream(in);) {
       // InputStream in = new FileInputStream("c:\\temp\\ser\\" +
       // symbol.getSymbolName() + ".ser");
       // read files with BufferedInputStream to improve performance
       // ObjectInputStream ois = new ObjectInputStream(new
       // BufferedInputStream(in));
       symbol.readRules(ois);
-      ois.close();
-      in.close();
     } catch (IOException e) {
       e.printStackTrace();
     } catch (ClassNotFoundException e) {
@@ -702,13 +699,11 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 
     // F.SYMBOL_OBSERVER.createPredefinedSymbol(newSymbol.toString());
     if (Config.SERIALIZE_SYMBOLS && newSymbol.containsRules()) {
-      FileOutputStream out;
-      try {
-        out = new FileOutputStream("c:\\temp\\ser\\" + newSymbol.getSymbolName() + ".ser");
-        ObjectOutputStream oos = new ObjectOutputStream(out);
+      try (
+          FileOutputStream out =
+              new FileOutputStream("c:\\temp\\ser\\" + newSymbol.getSymbolName() + ".ser");
+          ObjectOutputStream oos = new ObjectOutputStream(out);) {
         newSymbol.writeRules(oos);
-        oos.close();
-        out.close();
       } catch (IOException e) {
         e.printStackTrace();
       }

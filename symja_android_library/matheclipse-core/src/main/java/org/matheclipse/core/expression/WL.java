@@ -1118,18 +1118,12 @@ public class WL {
    */
   public static byte[] serialize(IExpr expr) {
     if (expr.isPresent()) {
-      WriteObject wo = new WriteObject();
-      try {
+      try (WriteObject wo = new WriteObject()) {
         wo.write(expr);
         return wo.toByteArray();
       } catch (IOException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
-        }
-      } finally {
-        try {
-          wo.close();
-        } catch (IOException e) {
         }
       }
     }
@@ -1147,18 +1141,12 @@ public class WL {
    */
   public static byte[] serializeInternal(IExpr expr) {
     if (expr.isPresent()) {
-      WriteInternalObject wo = new WriteInternalObject();
-      try {
+      try (WriteInternalObject wo = new WriteInternalObject()) {
         wo.write(expr);
         return wo.toByteArray();
       } catch (IOException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
-        }
-      } finally {
-        try {
-          wo.close();
-        } catch (IOException e) {
         }
       }
     }

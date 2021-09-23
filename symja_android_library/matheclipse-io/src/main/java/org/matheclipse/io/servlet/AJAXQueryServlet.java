@@ -183,17 +183,14 @@ public class AJAXQueryServlet extends HttpServlet {
     }
 
     String[] result = null;
-    PrintStream outs = null;
-    PrintStream errors = null;
     HttpSession session = request.getSession();
-    try {
-      LOGGER.warn("(" + session.getId() + ") In::" + expression);
-      final StringWriter outWriter = new StringWriter();
-      WriterOutputStream wouts = new WriterOutputStream(outWriter);
-      outs = new PrintStream(wouts);
-      final StringWriter errorWriter = new StringWriter();
-      WriterOutputStream werrors = new WriterOutputStream(errorWriter);
-      errors = new PrintStream(werrors);
+    LOGGER.warn("(" + session.getId() + ") In::" + expression);
+    final StringWriter outWriter = new StringWriter();
+    WriterOutputStream wouts = new WriterOutputStream(outWriter);
+    final StringWriter errorWriter = new StringWriter();
+    WriterOutputStream werrors = new WriterOutputStream(errorWriter);
+    try (PrintStream outs = new PrintStream(wouts);
+        PrintStream errors = new PrintStream(werrors);) {
 
       EvalEngine engine = ENGINES.get(session.getId());
       if (engine == null) {
@@ -207,12 +204,6 @@ public class AJAXQueryServlet extends HttpServlet {
       }
       result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
     } finally {
-      if (outs != null) {
-        outs.close();
-      }
-      if (errors != null) {
-        errors.close();
-      }
       // tear down associated ThreadLocal from EvalEngine
       EvalEngine.remove();
     }
