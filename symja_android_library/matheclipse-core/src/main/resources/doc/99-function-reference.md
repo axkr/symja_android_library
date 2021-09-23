@@ -192,6 +192,7 @@
 * [Cyclotomic](functions/Cyclotomic.md)
 * [Cylinder](functions/Cylinder.md)
 * [D](functions/D.md)
+* [Dataset](functions/Dataset.md)
 * [Decrement](functions/Decrement.md)
 * [Default](functions/Default.md)
 * [Defer](functions/Defer.md)

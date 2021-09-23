@@ -6,8 +6,9 @@ SemanticImportString("string-content")
  
 > import the data from a content string in CSV format and do a semantic interpretation of the columns.
  
-
-
+Dataset uses:   
+* [Github - JTablesaw - Java dataframe and visualization library ](https://github.com/jtablesaw/tablesaw)
+  
 ### Examples 
 
 ```
@@ -18,4 +19,4 @@ c,60000,33")
 ```
 
 ### Related terms
-[SemanticImport](SemanticImport.md)
+[Dataset](Dataset.md), [SemanticImport](SemanticImport.md)
