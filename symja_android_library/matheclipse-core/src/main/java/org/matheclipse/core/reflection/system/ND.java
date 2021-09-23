@@ -77,16 +77,11 @@ public class ND extends AbstractFunctionEvaluator {
       } else if (arg2.isSymbol()) {
         return partialDerivative(arg1, (ISymbol) arg2, 1, arg3, engine);
       }
-    } catch (MathRuntimeException mrex) {
+    } catch (MathRuntimeException | ValidateException e) {
       if (Config.SHOW_STACKTRACE) {
-        mrex.printStackTrace();
+        e.printStackTrace();
       }
-      return engine.printMessage(ast.topHead(), mrex);
-    } catch (ValidateException ve) {
-      if (Config.SHOW_STACKTRACE) {
-        ve.printStackTrace();
-      }
-      return engine.printMessage(ast.topHead(), ve);
+      return engine.printMessage(ast.topHead(), e);
     }
     return F.NIL;
   }

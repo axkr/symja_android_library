@@ -513,22 +513,12 @@ public class ExprEvaluator {
             F.await();
             TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor);
             return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);
-          } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
-            return S.$Aborted;
-          } catch (java.util.concurrent.TimeoutException e) {
+          } catch (org.matheclipse.core.eval.exception.TimeoutException
+              | java.util.concurrent.TimeoutException
+              | com.google.common.util.concurrent.UncheckedTimeoutException e) {
             if (Config.SHOW_STACKTRACE) {
               e.printStackTrace();
             }
-            // Throwable t = e.getCause();
-            // if (t instanceof RuntimeException) {
-            // throw (RuntimeException) t;
-            // }
-            return S.$Aborted;
-          } catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
-            // Throwable t = e.getCause();
-            // if (t instanceof RuntimeException) {
-            // throw (RuntimeException) t;
-            // }
             return S.$Aborted;
           } catch (Exception e) {
             if (Config.SHOW_STACKTRACE) {

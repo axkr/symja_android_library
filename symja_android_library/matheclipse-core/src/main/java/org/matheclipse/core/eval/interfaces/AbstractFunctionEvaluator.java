@@ -636,10 +636,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
       // ObjectInputStream ois = new ObjectInputStream(new
       // BufferedInputStream(in));
       symbol.readRules(ois);
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ClassNotFoundException e) {
-      // TODO Auto-generated catch block
+    } catch (IOException | ClassNotFoundException e) {
       e.printStackTrace();
     } finally {
       engine.setPackageMode(oldPackageMode);

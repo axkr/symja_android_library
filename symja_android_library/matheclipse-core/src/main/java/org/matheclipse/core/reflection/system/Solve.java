@@ -1156,17 +1156,11 @@ public class Solve extends AbstractFunctionEvaluator {
         }
         return checkDomain(result, domain);
       }
-    } catch (LimitException le) {
+    } catch (LimitException | ValidateException e) {
       if (Config.SHOW_STACKTRACE) {
-        le.printStackTrace();
+        e.printStackTrace();
       }
-      return engine.printMessage(S.Solve, le);
-    } catch (ValidateException ve) {
-      if (Config.SHOW_STACKTRACE) {
-        ve.printStackTrace();
-      }
-      return engine.printMessage(S.Solve, ve);
-      //      return engine.printMessage(S.Solve, ve);
+      return engine.printMessage(S.Solve, e);
     } catch (RuntimeException rex) {
       if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();

@@ -1035,12 +1035,10 @@ public class OutputFormFactory {
         }
       }
       return true;
-    } catch (IOException ioe) {
-    } catch (RuntimeException rex) {
+    } catch (IOException | RuntimeException | OutOfMemoryError rex) {
       if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
-    } catch (OutOfMemoryError oome) {
     }
     return false;
   }

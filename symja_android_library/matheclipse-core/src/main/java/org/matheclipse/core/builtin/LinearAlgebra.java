@@ -815,14 +815,12 @@ public final class LinearAlgebra {
           // Returns the transpose of the matrix L of the decomposition.
           return new ASTRealMatrix(dcomposition.getLT(), false);
         }
-      } catch (final MathRuntimeException mre) {
+      } catch (final MathRuntimeException | ValidateException e) {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
-        return engine.printMessage(ast.topHead(), mre);
-      } catch (final ValidateException ve) {
         if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
+          e.printStackTrace();
         }
-        return engine.printMessage(ast.topHead(), ve);
+        return engine.printMessage(ast.topHead(), e);
       } catch (final IndexOutOfBoundsException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
@@ -1460,9 +1458,6 @@ public final class LinearAlgebra {
       } catch (IllegalArgumentException iae) {
         // print message: Nonrectangular tensor encountered
         return IOFunctions.printMessage(ast.topHead(), "rect", F.List(ast), engine);
-      } catch (final MathRuntimeException mre) {
-        // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
-        return engine.printMessage(ast.topHead(), mre);
       } catch (final RuntimeException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
@@ -1759,11 +1754,7 @@ public final class LinearAlgebra {
         } catch (final MathRuntimeException mre) {
           // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
           return engine.printMessage(ast.topHead(), mre);
-        } catch (final ClassCastException e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
-        } catch (final IndexOutOfBoundsException e) {
+        } catch (final ClassCastException | IndexOutOfBoundsException e) {
           if (Config.SHOW_STACKTRACE) {
             e.printStackTrace();
           }
@@ -2419,11 +2410,7 @@ public final class LinearAlgebra {
             // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 !=
             // 3
             return engine.printMessage(ast.topHead(), mre);
-          } catch (final ClassCastException e) {
-            if (Config.SHOW_STACKTRACE) {
-              e.printStackTrace();
-            }
-          } catch (final IndexOutOfBoundsException e) {
+          } catch (final ClassCastException | IndexOutOfBoundsException e) {
             if (Config.SHOW_STACKTRACE) {
               e.printStackTrace();
             }
@@ -2434,11 +2421,7 @@ public final class LinearAlgebra {
                 F.LinearSolve(
                     F.ConjugateTranspose(F.Dot(matrixTransposed, matrix)),
                     F.Dot(matrixTransposed, vector)));
-          } catch (final ClassCastException e) {
-            if (Config.SHOW_STACKTRACE) {
-              e.printStackTrace();
-            }
-          } catch (final IndexOutOfBoundsException e) {
+          } catch (final ClassCastException | IndexOutOfBoundsException e) {
             if (Config.SHOW_STACKTRACE) {
               e.printStackTrace();
             }
@@ -3266,11 +3249,7 @@ public final class LinearAlgebra {
           }
         }
 
-      } catch (final ClassCastException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-      } catch (final IndexOutOfBoundsException e) {
+      } catch (final ClassCastException | IndexOutOfBoundsException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
@@ -3613,16 +3592,8 @@ public final class LinearAlgebra {
             return list2;
           }
         }
-      } catch (final MathRuntimeException mrex) {
+      } catch (final MathRuntimeException | ClassCastException | IndexOutOfBoundsException e) {
         // org.hipparchus.exception.MathIllegalArgumentException
-        if (Config.SHOW_STACKTRACE) {
-          mrex.printStackTrace();
-        }
-      } catch (final ClassCastException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-      } catch (final IndexOutOfBoundsException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
@@ -3983,11 +3954,7 @@ public final class LinearAlgebra {
           }
         }
 
-      } catch (final ClassCastException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-      } catch (final IndexOutOfBoundsException e) {
+      } catch (final ClassCastException | IndexOutOfBoundsException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
@@ -4144,11 +4111,7 @@ public final class LinearAlgebra {
             return Convert.matrix2List(fmw.getRowReducedMatrix());
           }
         }
-      } catch (final ClassCastException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-      } catch (final IndexOutOfBoundsException e) {
+      } catch (final ClassCastException | IndexOutOfBoundsException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }

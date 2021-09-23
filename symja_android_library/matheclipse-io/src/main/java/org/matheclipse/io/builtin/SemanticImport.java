@@ -84,13 +84,11 @@ public class SemanticImport extends AbstractEvaluator {
         Table table = Table.read().csv(url);
         return ASTDataset.newTablesawTable(table);
       }
-    } catch (ValidateException ve) {
-      return engine.printMessage(S.SemanticImport, ve);
-    } catch (MalformedURLException mue) {
+    } catch (ValidateException | MalformedURLException e) {
       if (Config.SHOW_STACKTRACE) {
-        mue.printStackTrace();
+        e.printStackTrace();
       }
-      return engine.printMessage(S.SemanticImport + ": " + mue.getMessage());
+      return engine.printMessage(S.SemanticImport, e);
     } catch (IOException ioe) {
       return engine.printMessage("SemanticImport: URL " + urlName + " not found!");
     } catch (RuntimeException rex) {

@@ -1,6 +1,5 @@
 package org.matheclipse.core.patternmatching;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -98,19 +97,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
       IExpr result = F.NIL;
       try {
         result = (IExpr) fMethod.invoke(fInstance);
-      } catch (ValidateException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-      } catch (IllegalArgumentException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-      } catch (IllegalAccessException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-      } catch (InvocationTargetException e) {
+      } catch (ValidateException | IllegalArgumentException | ReflectiveOperationException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
@@ -130,15 +117,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
           IExpr result = (IExpr) fMethod.invoke(fInstance, args.toArray());
           return result != null ? result : F.NIL;
         }
-      } catch (IllegalArgumentException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-      } catch (IllegalAccessException e) {
-        if (Config.SHOW_STACKTRACE) {
-          e.printStackTrace();
-        }
-      } catch (InvocationTargetException e) {
+      } catch (IllegalArgumentException | ReflectiveOperationException e) {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }

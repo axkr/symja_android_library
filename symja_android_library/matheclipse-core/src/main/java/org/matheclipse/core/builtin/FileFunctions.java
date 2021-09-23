@@ -278,20 +278,11 @@ public class FileFunctions {
           }
           writeType(dataOutput, arg2, typeByte);
           return S.Null;
-        } catch (ArithmeticException
-            | IllegalArgumentException
-            | RangeException
-            | TypeException tex) {
+        } catch (RuntimeException | RangeException | TypeException | IOException e) {
           if (Config.SHOW_STACKTRACE) {
-            tex.printStackTrace();
+            e.printStackTrace();
           }
-          engine.printMessage(ast.topHead(), tex);
-          return F.$Failed;
-        } catch (IOException | RuntimeException ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
-          engine.printMessage(ast.topHead(), ex);
+          engine.printMessage(ast.topHead(), e);
           return F.$Failed;
         }
       }
@@ -722,13 +713,11 @@ public class FileFunctions {
             }
           }
           Validate.checkContextName(ast, 1);
-        } catch (ValidateException ve) {
-          return engine.printMessage(ast.topHead(), ve);
-        } catch (MalformedURLException mue) {
+        } catch (ValidateException | MalformedURLException e) {
           if (Config.SHOW_STACKTRACE) {
-            mue.printStackTrace();
+            e.printStackTrace();
           }
-          return engine.printMessage(ast.topHead() + ": " + mue.getMessage());
+          return engine.printMessage(ast.topHead(), e);
         }
         // Cannot open `1`.
         return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
@@ -1256,12 +1245,7 @@ public class FileFunctions {
               return InputStreamExpr.newInstance(stringReader);
             }
           }
-        } catch (RuntimeException ex) {
-          if (Config.SHOW_STACKTRACE) {
-            ex.printStackTrace();
-          }
-          return engine.printMessage(ast.topHead(), ex);
-        } catch (IOException ex) {
+        } catch (RuntimeException | IOException ex) {
           if (Config.SHOW_STACKTRACE) {
             ex.printStackTrace();
           }

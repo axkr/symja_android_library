@@ -185,9 +185,7 @@ public class AJAXDocServlet extends HttpServlet {
                   if (expr != null) {
                     exampleCommand = wolframForm.toString(expr); // expr.toMMA().trim();
                   }
-                } catch (SyntaxError syx) {
-                } catch (RuntimeErrorException rex) {
-                  //
+                } catch (SyntaxError | RuntimeErrorException e) {
                 }
               }
               final String jsCode = StringEscapeUtils.escapeEcmaScript(exampleCommand);

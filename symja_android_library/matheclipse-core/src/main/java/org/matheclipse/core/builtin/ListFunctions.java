@@ -895,10 +895,9 @@ public final class ListFunctions {
       } catch (final ValidateException ve) {
         // int number validation
         return engine.printMessage(ast.topHead(), ve);
-      } catch (final ClassCastException e) {
-        // the iterators are generated only from IASTs
-      } catch (final ArithmeticException e) {
-        // the toInt() function throws ArithmeticExceptions
+      } catch (final ClassCastException | ArithmeticException e) {
+        // ClassCastException: the iterators are generated only from IASTs
+        // ArithmeticException: the toInt() function throws ArithmeticExceptions
       }
       return F.NIL;
     }
@@ -1708,10 +1707,9 @@ public final class ListFunctions {
       } catch (final ValidateException ve) {
         // int number validation
         return engine.printMessage(ast.topHead(), ve);
-      } catch (final ClassCastException e) {
-        // the iterators are generated only from IASTs
-      } catch (final ArithmeticException e) {
-        // the toInt() function throws ArithmeticExceptions
+      } catch (final ClassCastException | ArithmeticException e) {
+        // ClassCastException: the iterators are generated only from IASTs
+        // ArithmeticException: the toInt() function throws ArithmeticExceptions
       }
       return F.NIL;
     }
@@ -2322,18 +2320,11 @@ public final class ListFunctions {
             return resultList;
           }
         }
-      } catch (ValidateException ve) {
-        return engine.printMessage(ast.topHead(), ve);
-      } catch (final IndexOutOfBoundsException ibe) {
+      } catch (ValidateException | IndexOutOfBoundsException | NullPointerException e) {
         if (Config.SHOW_STACKTRACE) {
-          ibe.printStackTrace();
+          e.printStackTrace();
         }
-        return engine.printMessage(ast.topHead(), ibe);
-      } catch (final NullPointerException npe) {
-        if (Config.SHOW_STACKTRACE) {
-          npe.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), npe);
+        return engine.printMessage(ast.topHead(), e);
       }
       return F.NIL;
     }
@@ -4171,8 +4162,7 @@ public final class ListFunctions {
           }
         }
         return nearest;
-      } catch (ClassCastException cce) {
-      } catch (RuntimeException rex) {
+      } catch (RuntimeException e) {
       }
       return F.NIL;
     }
@@ -5357,9 +5347,8 @@ public final class ListFunctions {
       } catch (NoEvalException nev) {
         // Range specification in `1` does not have appropriate bounds.
         return IOFunctions.printMessage(ast.topHead(), "range", F.List(ast), engine);
-      } catch (final ArithmeticException e) {
-      } catch (final ClassCastException e) {
-        // the iterators are generated only from IASTs
+      } catch (final ArithmeticException | ClassCastException e) {
+        // ClassCastException: the iterators are generated only from IASTs
       }
       return F.NIL;
     }
@@ -6824,11 +6813,9 @@ public final class ListFunctions {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
-      } catch (final NoEvalException e) {
-      } catch (final ClassCastException e) {
-        // the iterators are generated only from IASTs
-      } catch (final ArithmeticException ae) {
-        // example division / by zero if step==-1
+      } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
+        // ClassCastException: the iterators are generated only from IASTs
+        // ArithmeticException example: division / by zero if step==-1
       }
       return F.NIL;
     }
@@ -6852,11 +6839,9 @@ public final class ListFunctions {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
-      } catch (final NoEvalException e) {
-      } catch (final ClassCastException e) {
-        // the iterators are generated only from IASTs
-      } catch (final ArithmeticException ae) {
-        // example division / by zero if step==-1
+      } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
+        // ClassCastException: the iterators are generated only from IASTs
+        // ArithmeticException example: division / by zero if step==-1
       }
       return F.NIL;
     }
@@ -6887,11 +6872,9 @@ public final class ListFunctions {
         if (Config.SHOW_STACKTRACE) {
           e.printStackTrace();
         }
-      } catch (final ClassCastException e) {
-        // the iterators are generated only from IASTs
-      } catch (final NoEvalException e) {
-      } catch (final ArithmeticException ae) {
-        // example division / by zero if step==-1
+      } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
+        // ClassCastException: the iterators are generated only from IASTs
+        // ArithmeticException example: division / by zero if step==-1
       }
       return F.NIL;
     }

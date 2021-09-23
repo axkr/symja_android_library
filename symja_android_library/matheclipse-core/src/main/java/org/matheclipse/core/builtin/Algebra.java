@@ -17,7 +17,6 @@ import static org.matheclipse.core.expression.S.Assumptions;
 import static org.matheclipse.core.expression.S.E;
 import static org.matheclipse.core.expression.S.I;
 import static org.matheclipse.core.expression.S.Pi;
-import static org.matheclipse.core.expression.S.Power;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -5504,12 +5503,8 @@ public class Algebra {
         }
         return pf.getResult();
       }
-    } catch (JASConversionException e) {
-      if (Config.DEBUG) {
-        e.printStackTrace();
-      }
     } catch (RuntimeException e) {
-      // JAS may throw RuntimeExceptions
+      // JAS may throw JASConversionException and RuntimeExceptions
       if (Config.DEBUG) {
         e.printStackTrace();
       }

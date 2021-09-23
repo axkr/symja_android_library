@@ -1854,12 +1854,9 @@ public abstract class AbstractAST implements IASTMutable {
             }
             return functionEvaluator.evaluate(ast, engine);
 
-          } catch (FlowControlException fce) {
-            throw fce;
+          } catch (FlowControlException | LimitException e) {
+            throw e;
           } catch (SymjaMathException ve) {
-            if (ve instanceof LimitException) {
-              throw ve;
-            }
             if (Config.SHOW_STACKTRACE) {
               ve.printStackTrace();
             }

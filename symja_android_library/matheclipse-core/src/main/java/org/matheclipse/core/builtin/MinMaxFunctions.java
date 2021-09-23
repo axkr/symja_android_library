@@ -505,16 +505,11 @@ public class MinMaxFunctions {
             }
           }
         }
-      } catch (org.hipparchus.exception.MathRuntimeException mrex) {
+      } catch (org.hipparchus.exception.MathRuntimeException | ValidateException e) {
         if (Config.SHOW_STACKTRACE) {
-          mrex.printStackTrace();
+          e.printStackTrace();
         }
-        return engine.printMessage(ast.topHead(), mrex);
-      } catch (ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), ve);
+        return engine.printMessage(ast.topHead(), e);
       }
       return F.NIL;
     }
@@ -606,16 +601,11 @@ public class MinMaxFunctions {
             }
           }
         }
-      } catch (org.hipparchus.exception.MathRuntimeException mrex) {
+      } catch (org.hipparchus.exception.MathRuntimeException | ValidateException e) {
         if (Config.SHOW_STACKTRACE) {
-          mrex.printStackTrace();
+          e.printStackTrace();
         }
-        return engine.printMessage(ast.topHead(), mrex);
-      } catch (ValidateException ve) {
-        if (Config.SHOW_STACKTRACE) {
-          ve.printStackTrace();
-        }
-        return engine.printMessage(ast.topHead(), ve);
+        return engine.printMessage(ast.topHead(), e);
       }
       return F.NIL;
     }
