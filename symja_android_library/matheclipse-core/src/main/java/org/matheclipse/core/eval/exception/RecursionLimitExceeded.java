@@ -11,9 +11,9 @@ public class RecursionLimitExceeded extends LimitException {
 
   private static final long serialVersionUID = 3610700158103716674L;
 
-  int fLimit;
+  private final int fLimit;
 
-  IExpr fExpr;
+  private final IExpr fExpr;
 
   public RecursionLimitExceeded(final int limit, final IExpr expr) {
     fLimit = limit;

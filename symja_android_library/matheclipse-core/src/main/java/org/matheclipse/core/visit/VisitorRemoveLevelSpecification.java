@@ -17,8 +17,9 @@ import org.matheclipse.core.interfaces.IExpr;
  */
 public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
   /** StopException will be thrown, if maximum number of Cases results are reached */
-  @SuppressWarnings("serial")
   public static class StopException extends SymjaMathException {
+    private static final long serialVersionUID = -8839477630696222675L;
+
     public StopException() {
       super("Stop VisitorDeleteLevelSpecification evaluation");
     }

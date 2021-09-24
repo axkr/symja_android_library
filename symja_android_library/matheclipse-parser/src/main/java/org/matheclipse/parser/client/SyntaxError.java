@@ -20,24 +20,23 @@ import org.matheclipse.parser.client.math.MathException;
 /** Exception for a syntax error detected by the Symja parsers */
 public class SyntaxError extends MathException {
 
-  /** */
   private static final long serialVersionUID = 1849387697719679119L;
 
   /** offset where the error occurred */
-  final int fStartOffset;
+  private final int fStartOffset;
 
   /** row index where the error occurred2 */
-  final int fRowIndex;
+  private final int fRowIndex;
 
   /** column index where the error occurred (offset relative to rowIndex) */
-  final int fColumnIndex;
+  private final int fColumnIndex;
 
   /** length of the error */
-  final int fLength;
+  private final int fLength;
 
-  final String fCurrentLine;
+  private final String fCurrentLine;
 
-  final String fError;
+  private final String fError;
 
   /**
    * SyntaxError exception

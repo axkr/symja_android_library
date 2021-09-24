@@ -1,8 +1,10 @@
 package org.matheclipse.parser.client.math;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class MathException extends RuntimeException {
 
-  /** */
   private static final long serialVersionUID = 3520033778672500363L;
 
   /**
@@ -11,14 +13,8 @@ public class MathException extends RuntimeException {
    * @throws Exception if any of the listed tensors is null
    */
   public static MathException of(Object... exprs) {
-    StringBuilder buf = new StringBuilder();
-    for (int i = 0; i < exprs.length; i++) {
-      buf.append(exprs[i].toString());
-      if (i < exprs.length - 1) {
-        buf.append(", ");
-      }
-    }
-    return new MathException(buf.toString());
+    String args = Arrays.stream(exprs).map(Object::toString).collect(Collectors.joining(", "));
+    return new MathException(args);
   }
 
   /**

@@ -8,15 +8,8 @@ import org.matheclipse.core.interfaces.IExpr;
 public class ConditionException extends FlowControlException {
 
   public static final ConditionException CONDITION_NIL = new ConditionException();
-  /** */
-  private static final long serialVersionUID = -1175359074220162860L;
 
-  /**
-   * This exception throws the result value {@link F#NIL} of a Symja {@link S#Condition} function.
-   */
-  public ConditionException() {
-    super();
-  }
+  private static final long serialVersionUID = -1175359074220162860L;
 
   public IExpr getValue() {
     return F.NIL;
@@ -24,6 +17,6 @@ public class ConditionException extends FlowControlException {
 
   @Override
   public String getMessage() {
-    return "Condition[] exception"; // + value.toString();
+    return "Condition[] exception";
   }
 }

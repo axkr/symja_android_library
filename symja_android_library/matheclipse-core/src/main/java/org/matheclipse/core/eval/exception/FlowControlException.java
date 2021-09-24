@@ -6,7 +6,7 @@ package org.matheclipse.core.eval.exception;
  * (ContinueException).
  */
 public abstract class FlowControlException extends SymjaMathException {
-  /** */
+
   private static final long serialVersionUID = -7700982641897767896L;
 
   /**
@@ -14,7 +14,6 @@ public abstract class FlowControlException extends SymjaMathException {
    * <code>cause=null</code>, <code>enableSuppression=false</code>, and <code>
    * writableStackTrace=false</code> .
    */
-  public FlowControlException() {
-    super();
+  protected FlowControlException() {
   }
 }

@@ -11,7 +11,7 @@ public class ArgumentTypeStopException extends LimitException {
 
   private static final long serialVersionUID = -464391877949488192L;
 
-  final String fMessage;
+  private final String fMessage;
 
   public ArgumentTypeStopException(String message) {
     fMessage = message;
@@ -34,6 +34,6 @@ public class ArgumentTypeStopException extends LimitException {
   }
 
   public String getMessage(ISymbol symbol) {
-    return symbol.toString() + ": " + fMessage;
+    return symbol + ": " + fMessage;
   }
 }

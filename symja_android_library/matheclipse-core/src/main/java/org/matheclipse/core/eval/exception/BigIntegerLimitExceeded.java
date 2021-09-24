@@ -5,7 +5,7 @@ public class BigIntegerLimitExceeded extends LimitException {
 
   private static final long serialVersionUID = 8925451277545397036L;
 
-  long fLimit;
+  private final long fLimit;
 
   public BigIntegerLimitExceeded(final long limit) {
     fLimit = limit;
@@ -17,8 +17,8 @@ public class BigIntegerLimitExceeded extends LimitException {
    * @param rowDimension
    * @param columnDimension
    */
-  public BigIntegerLimitExceeded(final int rowDimension, final int columnDimension) {
-    fLimit = (long) rowDimension * (long) columnDimension;
+  public BigIntegerLimitExceeded(int rowDimension, int columnDimension) {
+    fLimit = rowDimension * (long) columnDimension;
   }
 
   @Override

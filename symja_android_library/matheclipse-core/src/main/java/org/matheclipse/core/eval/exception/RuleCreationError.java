@@ -5,12 +5,12 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class RuleCreationError extends ValidateException {
-  /** */
+
   private static final long serialVersionUID = 4289111239388531874L;
 
-  IExpr fLHS = null;
+  private final IExpr fLHS;
 
-  public RuleCreationError(final IExpr lhs) {
+  public RuleCreationError(IExpr lhs) {
     fLHS = lhs;
   }
 
@@ -21,32 +21,32 @@ public class RuleCreationError extends ValidateException {
     }
     // if (fCondition != null) {
     // return "Error in rule creation: Condition not allowed in rules containing no pattern (" +
-    // fLHS.toString()
-    // + " " + fRHS.toString() + " " + fCondition.toString() + ")";
+    // fLHS
+    // + " " + fRHS + " " + fCondition + ")";
     // }
     // if (fRHS != null) {
-    // return "Error in rule creation: " + fLHS.toString() + " " + fRHS.toString();
+    // return "Error in rule creation: " + fLHS + " " + fRHS;
     // }
     Context context = fLHS.topHead().getContext();
     return "Not allowed left-hand-side expression: \""
-        + fLHS.toString()
+        + fLHS
         + "\" from context \""
-        + context.toString()
+        + context
         + "\"\nPlease use names which aren't predefined by the system.";
   }
 
   @Override
   public String getMessage(ISymbol symbol) {
     if (fLHS == null) {
-      return symbol.toString() + ": " + "Operation not allowed in server mode.";
+      return symbol + ": " + "Operation not allowed in server mode.";
     }
     Context context = fLHS.topHead().getContext();
-    return symbol.toString()
+    return symbol
         + ": "
         + "Not allowed left-hand-side expression: \""
-        + fLHS.toString()
+        + fLHS
         + "\" from context \""
-        + context.toString()
+        + context
         + "\"\nPlease use names which aren't predefined by the system.";
   }
 }
