@@ -7590,6 +7590,10 @@ public class S {
    */
   public static final IBuiltInSymbol Range = F.initFinalSymbol("Range", ID.Range);
 
+  public static final IBuiltInSymbol RankedMax = F.initFinalSymbol("RankedMax", ID.RankedMax);
+
+  public static final IBuiltInSymbol RankedMin = F.initFinalSymbol("RankedMin", ID.RankedMin);
+
   /**
    * Rational - is the head of rational numbers.
    *

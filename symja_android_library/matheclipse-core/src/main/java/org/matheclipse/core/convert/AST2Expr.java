@@ -1129,6 +1129,8 @@ public class AST2Expr {
     "RandomSample",
     "RandomVariate",
     "Range",
+    "RankedMax",
+    "RankedMin",
     "Rational",
     "Rationalize",
     "RawBoxes",

@@ -29931,6 +29931,66 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{10,9,8,7,6,5,4,3,2,1}");
   }
 
+  public void testRankedMax() {
+    // message: RankedMax: Input {1,I,E} is not a vector of reals or integers.
+    check(
+        "RankedMax({1, I, E}, 2)", //
+        "RankedMax({1,I,E},2)");
+
+    check(
+        "RankedMax({12,13,11}, 2)", //
+        "12");
+    check(
+        "RankedMax({Pi, Sqrt(3), 2.95, 3}, 3)", //
+        "2.95");
+    check(
+        "RankedMax({12.99, 3.775, 25.33}, 2)", //
+        "12.99");
+
+    check(
+        "RankedMax({2.5, E, 12, 15, 485}, -2)", //
+        "E");
+    check(
+        "RankedMax({2.5, E, 12, 15, 485}, -4)", //
+        "15");
+    check(
+        "RankedMax({2.5, E, 12, 15, 485}, -5)", //
+        "485");
+    check(
+        "RankedMax({Infinity,5, Infinity, -Infinity}, 2)", //
+        "Infinity");
+    check(
+        "RankedMax({Infinity,5, Infinity, -Infinity}, -1)", //
+        "-Infinity");
+  }
+
+  public void testRankedMin() {
+    // message: RankedMin: Input {1,I,E} is not a vector of reals or integers.
+    check(
+        "RankedMin({1, I, E}, 2)", //
+        "RankedMin({1,I,E},2)");
+
+    check(
+        "RankedMin({12,13,11}, 2)", //
+        "12");
+    check(
+        "RankedMin({Pi, Sqrt(3), 2.95, 3}, 3)", //
+        "3");
+    check(
+        "RankedMin({12.99, 3.775, 25.33}, 2)", //
+        "12.99");
+
+    check(
+        "RankedMin({2.5, E, 12, 15, 485}, -2)", //
+        "15");
+    check(
+        "RankedMin({2.5, E, 12, 15, 485}, -4)", //
+        "E");
+    check(
+        "RankedMin({2.5, E, 12, 15, 485}, -5)", //
+        "2.5");
+  }
+
   public void testRational() {
     check(
         "Head(1/2)", //

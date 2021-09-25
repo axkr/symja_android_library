@@ -752,6 +752,8 @@ public class IOFunctions {
     "`1` should be a non-empty list of points.", //
     "range",
     "Range specification in `1` does not have appropriate bounds.", //
+    "rank",
+    "The rank `1` is not an integer between `2` and  `3`.", //
     "rankl",
     "The list `1` of dimensions must have length `2`.",
     "realx",
@@ -772,6 +774,8 @@ public class IOFunctions {
     "Exiting after `1` scanned `2` times.", //
     "rvalue",
     "`1` is not a variable with a value, so its value cannot be changed.", //
+    "rvec",
+    "Input `1` is not a vector of reals or integers.", //
     "rubiendless",
     "Endless iteration detected in `1` for Rubi pattern-matching rules.", //
     "seqs",

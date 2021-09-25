@@ -126,6 +126,8 @@ public final class BooleanFunctions {
       S.Not.setEvaluator(new Not());
       S.Or.setEvaluator(new Or());
       S.Positive.setEvaluator(new Positive());
+      S.RankedMax.setEvaluator(new RankedMax());
+      S.RankedMin.setEvaluator(new RankedMin());
       S.SameQ.setEvaluator(new SameQ());
       S.SatisfiabilityCount.setEvaluator(new SatisfiabilityCount());
       S.SatisfiabilityInstances.setEvaluator(new SatisfiabilityInstances());
@@ -2585,7 +2587,7 @@ public final class BooleanFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return null;
+      return ARGS_0_INFINITY;
     }
 
     private static IExpr maximum(IAST list, boolean flattenedList) {
@@ -2721,7 +2723,7 @@ public final class BooleanFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return null;
+      return ARGS_0_INFINITY;
     }
 
     protected boolean flattenListRecursive(IAST ast, IASTAppendable result) {
@@ -3541,6 +3543,96 @@ public final class BooleanFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class RankedMax extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isList()) {
+        IAST list = (IAST) arg1;
+        int argSize = list.argSize();
+        int n = arg2.toIntDefault();
+        if (n != Integer.MIN_VALUE) {
+          if (n == 1) {
+            return list.setAtCopy(0, S.Max);
+          } else if (n == -1 || n == argSize) {
+            return list.setAtCopy(0, S.Min);
+          }
+          if (n < 0) {
+            // nth smallest element
+            int pn = -n;
+            if (pn < 1 || pn > argSize) {
+              // The rank `1` is not an integer between `2` and  `3`.
+              return IOFunctions.printMessage(
+                  ast.topHead(), "rank", F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+            }
+            return rankedMin(list, pn, ast, engine);
+          } else {
+            // nth largest element
+            if (n < 1 || n > argSize) {
+              // The rank `1` is not an integer between `2` and  `3`.
+              return IOFunctions.printMessage(
+                  ast.topHead(), "rank", F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+            }
+            return rankedMin(list, list.size() - n, ast, engine);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  private static class RankedMin extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isList()) {
+        IAST list = (IAST) arg1;
+        int argSize = list.argSize();
+        int n = arg2.toIntDefault();
+        if (n != Integer.MIN_VALUE) {
+          if (n == 1) {
+            return list.setAtCopy(0, S.Min);
+          } else if (n == -1 || n == argSize) {
+            return list.setAtCopy(0, S.Max);
+          }
+          if (n < 0) {
+            // nth largest element
+            int pn = -n;
+            if (pn < 1 || pn > argSize) {
+              // The rank `1` is not an integer between `2` and  `3`.
+              return IOFunctions.printMessage(
+                  ast.topHead(), "rank", F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+            }
+            return rankedMin(list, list.size() + n, ast, engine);
+          } else {
+            // nth smallest element
+            if (n < 1 || n > argSize) {
+              // The rank `1` is not an integer between `2` and  `3`.
+              return IOFunctions.printMessage(
+                  ast.topHead(), "rank", F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+            }
+            return rankedMin(list, n, ast, engine);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
   }
 
@@ -4482,6 +4574,38 @@ public final class BooleanFunctions {
 
   public static IExpr equals(final IAST ast) {
     return equalNull(ast.arg1(), ast.arg2(), EvalEngine.get()).orElse(ast);
+  }
+
+  /**
+   * Sort the list of real numbers and return the n-th smallest element.
+   *
+   * @param list list of real elements
+   * @param n must be in the range (1..list.argSize())
+   * @param ast
+   * @param engine
+   * @return {@link F#NIL} if not all elements are real
+   */
+  private static IExpr rankedMin(IAST list, int n, final IAST ast, EvalEngine engine) {
+    // TODO choose better algorithm: https://www.baeldung.com/cs/k-smallest-numbers-array
+
+    // check for non real elements (especially complex numbers)
+    for (int i = 1; i < list.size(); i++) {
+      IExpr element = list.get(i);
+      ISignedNumber r = element.evalReal();
+      if (r == null //
+          && !(element.isInfinity() || element.isNegativeInfinity())) {
+        for (int j = i; j < list.size(); j++) {
+          element = list.get(j);
+          if (element.isComplexNumeric() || element.isComplex()) {
+            // Input `1` is not a vector of reals or integers.
+            return IOFunctions.printMessage(ast.topHead(), "rvec", F.List(list), engine);
+          }
+        }
+        return F.NIL;
+      }
+    }
+    final IAST orderedList = EvalAttributes.copySortLess(list);
+    return orderedList.get(n);
   }
 
   /**
