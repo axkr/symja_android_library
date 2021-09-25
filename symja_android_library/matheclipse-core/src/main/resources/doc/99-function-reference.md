@@ -698,6 +698,8 @@
 * [RandomReal](functions/RandomReal.md)
 * [RandomSample](functions/RandomSample.md)
 * [Range](functions/Range.md)
+* [RankedMax](functions/RankedMax.md)
+* [RankedMin](functions/RankedMin.md)
 * [Rational](functions/Rational.md)
 * [Rationalize](functions/Rationalize.md)
 * [Re](functions/Re.md)

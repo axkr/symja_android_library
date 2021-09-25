@@ -24,4 +24,4 @@ Variables(expr)
 
 ### Github
 
-* [Implementation of Variables](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L4641) 
+* [Implementation of Variables](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L4654) 

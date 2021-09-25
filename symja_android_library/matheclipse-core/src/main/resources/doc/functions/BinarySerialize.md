@@ -19,4 +19,4 @@ BinarySerialize(expr)
 
 ### Github
 
-* [Implementation of BinarySerialize](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/WXFFunctions.java#L31) 
+* [Implementation of BinarySerialize](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/WXFFunctions.java#L30) 

@@ -15,4 +15,4 @@ BrayCurtisDistance(u, v)
 
 ### Github
 
-* [Implementation of BrayCurtisDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ClusteringFunctions.java#L124) 
+* [Implementation of BrayCurtisDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ClusteringFunctions.java#L123) 

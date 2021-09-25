@@ -33,4 +33,4 @@ ConditionalExpression(-Sqrt(2)*InverseErfc(2*#1),0<=#1<=1)&
 
 ### Github
 
-* [Implementation of InverseCDF](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L220) 
+* [Implementation of InverseCDF](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L218) 

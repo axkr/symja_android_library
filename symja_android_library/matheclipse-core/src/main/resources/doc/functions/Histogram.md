@@ -15,4 +15,4 @@ Histogram(list-of-values)
 
 ### Github
 
-* [Implementation of Histogram](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ManipulateFunction.java#L1846) 
+* [Implementation of Histogram](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ManipulateFunction.java#L1844) 

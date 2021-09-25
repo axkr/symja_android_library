@@ -29,4 +29,4 @@ a^2+Sin(x+x*y)^2+2*a*Sin(x+x*y)
 
 ### Github
 
-* [Implementation of ExpandAll](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L2021) 
+* [Implementation of ExpandAll](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L2019) 

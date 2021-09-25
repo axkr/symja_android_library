@@ -24,4 +24,4 @@ The variance of the exponential distribution is
 
 ### Github
 
-* [Implementation of ExponentialDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L3808) 
+* [Implementation of ExponentialDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L3806) 

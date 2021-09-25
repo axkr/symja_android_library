@@ -28,4 +28,4 @@ Print a message if no maximum can be found
 
 ### Github
 
-* [Implementation of Maximize](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/MinMaxFunctions.java#L355) 
+* [Implementation of Maximize](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/MinMaxFunctions.java#L353) 

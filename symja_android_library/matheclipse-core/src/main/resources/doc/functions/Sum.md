@@ -92,4 +92,4 @@ Sum(Cos(i*Pi),{i,1,Infinity})
 
 ### Github
 
-* [Implementation of Sum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Sum.java#L137) 
+* [Implementation of Sum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Sum.java#L135) 

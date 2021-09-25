@@ -20,4 +20,4 @@ See:
 
 ### Github
 
-* [Implementation of InverseGudermannian](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2215) 
+* [Implementation of InverseGudermannian](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2212) 
