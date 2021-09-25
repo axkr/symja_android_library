@@ -810,6 +810,8 @@ public class IOFunctions {
     "Lists of unequal length in `1` cannot be added.", //
     "toggle",
     "ToggleFeature `1` is disabled.", //
+    "udist",
+    "The specification `1` is not a random distribution recognized by the system.", //
     "unsupported",
     "`1` currently not supported in `2`.", //
     "usraw",

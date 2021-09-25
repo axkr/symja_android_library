@@ -5846,7 +5846,11 @@ public class StatisticsFunctions {
                   return F.NIL;
                 }
                 return variate.randomVariate(random, dist, 1);
+              } else if (!(evaluator instanceof IDistribution)) {
+                return printMessageUdist(head, ast, dist, engine);
               }
+            } else {
+              return printMessageUdist(head, ast, dist, engine);
             }
           } catch (ValidateException ve) {
             return engine.printMessage(ast.topHead(), ve);
@@ -5859,6 +5863,26 @@ public class StatisticsFunctions {
         }
       }
 
+      return F.NIL;
+    }
+
+    /**
+     * Print the <code>udist</code> message:
+     *
+     * <p><code>The specification `1` is not a random distribution recognized by the system.</code>
+     *
+     * @param head
+     * @param ast
+     * @param dist
+     * @param engine
+     * @return
+     */
+    private static IExpr printMessageUdist(
+        ISymbol head, final IAST ast, IAST dist, EvalEngine engine) {
+      // The specification `1` is not a random distribution recognized by the system.
+      if (head.getSymbolName().toLowerCase().endsWith("distribution")) {
+        return IOFunctions.printMessage(ast.topHead(), "udist", F.List(dist), engine);
+      }
       return F.NIL;
     }
 
