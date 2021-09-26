@@ -77,11 +77,11 @@ public final class ListFunctions {
    * See <a href="https://stackoverflow.com/a/4859279/24819">Get the indices of an array after
    * sorting?</a>
    */
-  private static final class ArrayIndexComparator implements Comparator<Integer> {
+  private static class LargestIndexComparator implements Comparator<Integer> {
     protected final IAST ast;
     protected EvalEngine engine;
 
-    public ArrayIndexComparator(IAST ast, EvalEngine engine) {
+    public LargestIndexComparator(IAST ast, EvalEngine engine) {
       this.ast = ast;
       this.engine = engine;
     }
@@ -99,15 +99,42 @@ public final class ListFunctions {
     public int compare(Integer index1, Integer index2) {
       IExpr arg1 = ast.get(index1);
       IExpr arg2 = ast.get(index2);
-      if (arg1.isNumericFunction(true) && arg2.isNumericFunction(true)) {
+      if (arg1.isNumericFunction(false) && arg2.isNumericFunction(false)) {
         if (engine.evalTrue(F.Greater(arg1, arg2))) {
           return -1;
         }
         if (engine.evalTrue(F.Less(arg1, arg2))) {
           return 1;
         }
+        if (engine.evalTrue(F.Equal(arg1, arg2))) {
+          return 0;
+        }
       }
-      return (-1) * arg1.compareTo(arg2);
+      throw NoEvalException.CONST;
+    }
+  }
+
+  private static final class SmallestIndexComparator extends LargestIndexComparator {
+    public SmallestIndexComparator(IAST ast, EvalEngine engine) {
+      super(ast, engine);
+    }
+
+    @Override
+    public int compare(Integer index1, Integer index2) {
+      IExpr arg1 = ast.get(index1);
+      IExpr arg2 = ast.get(index2);
+      if (arg1.isNumericFunction(false) && arg2.isNumericFunction(false)) {
+        if (engine.evalTrue(F.Less(arg1, arg2))) {
+          return -1;
+        }
+        if (engine.evalTrue(F.Greater(arg1, arg2))) {
+          return 1;
+        }
+        if (engine.evalTrue(F.Equal(arg1, arg2))) {
+          return 0;
+        }
+      }
+      throw NoEvalException.CONST;
     }
   }
 
@@ -194,6 +221,8 @@ public final class ListFunctions {
       S.Prepend.setEvaluator(new Prepend());
       S.PrependTo.setEvaluator(new PrependTo());
       S.Range.setEvaluator(new Range());
+      S.RankedMax.setEvaluator(new RankedMax());
+      S.RankedMin.setEvaluator(new RankedMin());
       S.Rest.setEvaluator(new Rest());
       S.Reverse.setEvaluator(new Reverse());
       S.Replace.setEvaluator(new Replace());
@@ -214,6 +243,8 @@ public final class ListFunctions {
       S.Take.setEvaluator(new Take());
       S.TakeLargest.setEvaluator(new TakeLargest());
       S.TakeLargestBy.setEvaluator(new TakeLargestBy());
+      S.TakeSmallest.setEvaluator(new TakeSmallest());
+      S.TakeSmallestBy.setEvaluator(new TakeSmallestBy());
       S.Tally.setEvaluator(new Tally());
       S.Total.setEvaluator(new Total());
       S.Union.setEvaluator(new Union());
@@ -5364,6 +5395,96 @@ public final class ListFunctions {
     }
   }
 
+  private static class RankedMax extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isList()) {
+        IAST list = (IAST) arg1;
+        int argSize = list.argSize();
+        int n = arg2.toIntDefault();
+        if (n != Integer.MIN_VALUE) {
+          if (n == 1) {
+            return list.setAtCopy(0, S.Max);
+          } else if (n == -1 || n == argSize) {
+            return list.setAtCopy(0, S.Min);
+          }
+          if (n < 0) {
+            // nth smallest element
+            int pn = -n;
+            if (pn < 1 || pn > argSize) {
+              // The rank `1` is not an integer between `2` and  `3`.
+              return IOFunctions.printMessage(
+                  ast.topHead(), "rank", F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+            }
+            return rankedMin(list, pn, ast, engine);
+          } else {
+            // nth largest element
+            if (n < 1 || n > argSize) {
+              // The rank `1` is not an integer between `2` and  `3`.
+              return IOFunctions.printMessage(
+                  ast.topHead(), "rank", F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+            }
+            return rankedMin(list, list.size() - n, ast, engine);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  private static class RankedMin extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isListOrAssociation()) {
+        IAST list = (IAST) arg1;
+        int argSize = list.argSize();
+        int n = arg2.toIntDefault();
+        if (n != Integer.MIN_VALUE) {
+          if (n == 1) {
+            return list.setAtCopy(0, S.Min);
+          } else if (n == -1 || n == argSize) {
+            return list.setAtCopy(0, S.Max);
+          }
+          if (n < 0) {
+            // nth largest element
+            int pn = -n;
+            if (pn < 1 || pn > argSize) {
+              // The rank `1` is not an integer between `2` and  `3`.
+              return IOFunctions.printMessage(
+                  ast.topHead(), "rank", F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+            }
+            return rankedMin(list, list.size() + n, ast, engine);
+          } else {
+            // nth smallest element
+            if (n < 1 || n > argSize) {
+              // The rank `1` is not an integer between `2` and  `3`.
+              return IOFunctions.printMessage(
+                  ast.topHead(), "rank", F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+            }
+            return rankedMin(list, n, ast, engine);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
   /**
    *
    *
@@ -7347,18 +7468,22 @@ public final class ListFunctions {
       if (ast.isAST2()) {
         try {
           if (ast.arg1().isASTOrAssociation()) {
-            IAST list = (IAST) ast.arg1();
-            list = cleanList(list);
-            int n = ast.arg2().toIntDefault();
-            if (n > 0 && n <= list.size()) {
-              ArrayIndexComparator largestComparator = new ArrayIndexComparator(list, engine);
-              Integer[] indexes = largestComparator.createIndexArray();
-              Arrays.sort(indexes, largestComparator);
-              int[] largestIndexes = new int[n];
-              for (int i = 0; i < n; i++) {
-                largestIndexes[i] = indexes[i];
+            IAST cleanedList = cleanList((IAST) ast.arg1());
+            try {
+              int n = ast.arg2().toIntDefault();
+              if (n > 0 && n <= cleanedList.size()) {
+                LargestIndexComparator comparator = new LargestIndexComparator(cleanedList, engine);
+                Integer[] indexes = comparator.createIndexArray();
+                Arrays.sort(indexes, comparator);
+                int[] largestIndexes = new int[n];
+                for (int i = 0; i < n; i++) {
+                  largestIndexes[i] = indexes[i];
+                }
+                return cleanedList.getItems(largestIndexes, largestIndexes.length);
               }
-              return list.getItems(largestIndexes, largestIndexes.length);
+            } catch (NoEvalException neex) {
+              // Input `1` is not a real-valued vector.
+              return IOFunctions.printMessage(ast.topHead(), "rvec2", F.List(cleanedList), engine);
             }
           }
         } catch (RuntimeException rex) {
@@ -7393,15 +7518,114 @@ public final class ListFunctions {
             IAST cleanedList = cleanList((IAST) ast.arg1());
             int n = ast.arg3().toIntDefault();
             if (n > 0 && n <= cleanedList.size()) {
-              IAST list = cleanedList.mapThread(F.unary(ast.arg2(), F.Slot1), 1);
-              ArrayIndexComparator largestComparator = new ArrayIndexComparator(list, engine);
-              Integer[] indexes = largestComparator.createIndexArray();
-              Arrays.sort(indexes, largestComparator);
-              int[] largestIndexes = new int[n];
-              for (int i = 0; i < n; i++) {
-                largestIndexes[i] = indexes[i];
+              IAST list = cleanedList.mapThreadEvaled(engine, F.unary(ast.arg2(), F.Slot1), 1);
+              try {
+                LargestIndexComparator comparator = new LargestIndexComparator(list, engine);
+                Integer[] indexes = comparator.createIndexArray();
+                Arrays.sort(indexes, comparator);
+                int[] largestIndexes = new int[n];
+                for (int i = 0; i < n; i++) {
+                  largestIndexes[i] = indexes[i];
+                }
+                return cleanedList.getItems(largestIndexes, largestIndexes.length);
+              } catch (NoEvalException neex) {
+                // Values `1` produced by the function `2` cannot be used for numerical sorting
+                // because they are not all real.
+                return IOFunctions.printMessage(
+                    ast.topHead(), "tbnval", F.List(list, ast.arg2()), engine);
               }
-              return cleanedList.getItems(largestIndexes, largestIndexes.length);
+            }
+          }
+        } catch (RuntimeException rex) {
+          return engine.printMessage(ast.topHead(), rex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3_0;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static final class TakeSmallest extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        try {
+          if (ast.arg1().isASTOrAssociation()) {
+            IAST cleanedList = cleanList((IAST) ast.arg1());
+            try {
+              int n = ast.arg2().toIntDefault();
+              if (n > 0 && n <= cleanedList.size()) {
+                SmallestIndexComparator comparator =
+                    new SmallestIndexComparator(cleanedList, engine);
+                Integer[] indexes = comparator.createIndexArray();
+                Arrays.sort(indexes, comparator);
+                int[] smallestIndexes = new int[n];
+                for (int i = 0; i < n; i++) {
+                  smallestIndexes[i] = indexes[i];
+                }
+                return cleanedList.getItems(smallestIndexes, smallestIndexes.length);
+              }
+            } catch (NoEvalException neex) {
+              // Input `1` is not a real-valued vector.
+              return IOFunctions.printMessage(ast.topHead(), "rvec2", F.List(cleanedList), engine);
+            }
+          }
+        } catch (RuntimeException rex) {
+          return engine.printMessage(ast.topHead(), rex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static final class TakeSmallestBy extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        ast = F.operatorForm1Append(ast);
+        if (!ast.isPresent()) {
+          return F.NIL;
+        }
+      }
+      if (ast.isAST3()) {
+        try {
+          if (ast.arg1().isASTOrAssociation()) {
+            IAST cleanedList = cleanList((IAST) ast.arg1());
+            int n = ast.arg3().toIntDefault();
+            if (n > 0 && n <= cleanedList.size()) {
+              IAST list = cleanedList.mapThreadEvaled(engine, F.unary(ast.arg2(), F.Slot1), 1);
+              try {
+                SmallestIndexComparator comparator = new SmallestIndexComparator(list, engine);
+                Integer[] indexes = comparator.createIndexArray();
+                Arrays.sort(indexes, comparator);
+                int[] smallestIndexes = new int[n];
+                for (int i = 0; i < n; i++) {
+                  smallestIndexes[i] = indexes[i];
+                }
+                return cleanedList.getItems(smallestIndexes, smallestIndexes.length);
+              } catch (NoEvalException neex) {
+                // Values `1` produced by the function `2` cannot be used for numerical sorting
+                // because they are not all real.
+                return IOFunctions.printMessage(
+                    ast.topHead(), "tbnval", F.List(list, ast.arg2()), engine);
+              }
             }
           }
         } catch (RuntimeException rex) {
@@ -7733,6 +7957,48 @@ public final class ListFunctions {
                 || x.isAST(S.Missing)));
   }
 
+  /**
+   * Sort the list of real numbers and return the n-th smallest element, or sort the values of an
+   * association of real numbers and return the n-th smallest element.
+   *
+   * @param listOrAssociation list or association of real elements
+   * @param n must be in the range (1..list.argSize())
+   * @param ast
+   * @param engine
+   * @return {@link F#NIL} if not all elements are real
+   */
+  private static IExpr rankedMin(IAST listOrAssociation, int n, final IAST ast, EvalEngine engine) {
+    // TODO choose better algorithm: https://www.baeldung.com/cs/k-smallest-numbers-array
+
+    // check for non real elements (especially complex numbers)
+    int quantities = 0;
+    for (int i = 1; i < listOrAssociation.size(); i++) {
+      IExpr element = listOrAssociation.getValue(i);
+      if (element.isQuantity()) {
+        quantities++;
+        continue;
+      }
+      ISignedNumber r = element.evalReal();
+      if (r == null //
+          && !(element.isInfinity() || element.isNegativeInfinity())) {
+        for (int j = i; j < listOrAssociation.size(); j++) {
+          element = listOrAssociation.get(j);
+          if (element.isComplexNumeric() || element.isComplex()) {
+            // Input `1` is not a vector of reals or integers.
+            return IOFunctions.printMessage(
+                ast.topHead(), "rvec", F.List(listOrAssociation), engine);
+          }
+        }
+        return F.NIL;
+      }
+    }
+    if (quantities > 0 && quantities != listOrAssociation.argSize()) {
+      return F.NIL;
+    }
+    IASTMutable orderedList = listOrAssociation.copyAST();
+    return EvalAttributes.copySortLess(orderedList).get(n);
+  }
+  
   /**
    * Reverse the elements in the given <code>list</code>.
    *

@@ -3043,7 +3043,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a Quantity(a,unit) expression.
+   * Test if this expression is a <code>Quantity(a,unit)</code> expression.
    *
    * @return
    */

@@ -1311,6 +1311,8 @@ public class AST2Expr {
     "Take",
     "TakeLargest",
     "TakeLargestBy",
+    "TakeSmallest",
+    "TakeSmallestBy",
     "Tally",
     "Tan",
     "Tanh",

@@ -343,8 +343,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
 
   /**
    * Return a copy of the pure <code>IAST</code> instance (the elements themselves are not copied).
-   * Additionally to the <code>copy()</code> method, this method tries to avoid <code>AssociationAST
-   * </code> objects by transforming them to <code>AST</code> objects if possible.
+   * Additionally to the <code>copy()</code> method, if this is a {@link IAssociation} the valus of
+   * the rules are copied.
    *
    * @return a copy of this <code>IAST</code> instance.
    */
@@ -817,7 +817,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   public IExpr get(IInteger location);
 
   /**
-   * Returns the element at the specified location in this {@code IAST}.
+   * Returns the element at the specified location in this {@code IAST}. If this is an {@link
+   * IAssociation} return the value of the rule at the specified location.
    *
    * @param location the index of the element to return.
    * @return the element at the specified location.
@@ -825,8 +826,15 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    */
   public IExpr get(int location);
 
-  default IExpr getValue(int location) {
-    return get(location);
+  /**
+   * If this is an <code>IAssociation</code> return the value of the rule at the position. Otherwise
+   * call {@link #get(int)}.
+   *
+   * @param position
+   * @return
+   */
+  default IExpr getValue(int position) {
+    return get(position);
   }
 
   /**
@@ -919,7 +927,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   public INumber getNumber(int index);
 
   /**
-   * Returns the element at the specified positions in the nested ASTs. 
+   * Returns the element at the specified positions in the nested ASTs.
    *
    * @param positions index of the element to return
    * @return the element at the specified positions in this nested AST or {@link F#NIL}
@@ -937,8 +945,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   public IExpr getPart(final List<Integer> positions);
 
   /**
-   * If this is an <code>IAssociation</code> return the rule at the position. Otherwise call <code>
-   * get(position)</code>
+   * If this is an <code>IAssociation</code> return the rule at the position. Otherwise call {@link
+   * #get(int)}.
    *
    * @param position
    * @return
@@ -1211,6 +1219,28 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    */
   public IASTMutable mapThread(final IAST replacement, int position);
 
+  /**
+   * Maps the elements of this {@link IAST} on the first level of arguments with the evaluated unary
+   * functor <code> Functors.replaceArg(replacement, position)</code>, there <code>replacement
+   * </code> is an IAST at which the argument at the given position will be replaced by the
+   * currently mapped element. This can be used to create an effect as if &quot;the <code>position
+   * </code>-th argument of an IAST object would be <code>Listable</code>&quot;.
+   *
+   * <p>Example for mapping with <code>Functors#replaceArg()</code>, where the argument at the given
+   * position will be replaced by the current argument of this AST:
+   *
+   * <pre>
+   * plusAST.mapThreadEvaled(engine, F.D(F.Slot1, F.x), 1);
+   * </pre>
+   *
+   * @param engine
+   * @param replacement an IAST there the argument at the given position is replaced by the
+   *     currently mapped argument of this {@link IAST}.
+   * @param position the position in <code>replacement</code> which should be replaced by the
+   *     corresponding argument of this {@link IAST}
+   * @return
+   * @see IAST#map(Function, int)
+   */
   public IASTMutable mapThreadEvaled(EvalEngine engine, final IAST replacement, int position);
 
   /**

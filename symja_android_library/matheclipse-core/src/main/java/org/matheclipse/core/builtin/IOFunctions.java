@@ -776,6 +776,8 @@ public class IOFunctions {
     "`1` is not a variable with a value, so its value cannot be changed.", //
     "rvec",
     "Input `1` is not a vector of reals or integers.", //
+    "rvec2",
+    "Input `1` is not a real-valued vector.", //
     "rubiendless",
     "Endless iteration detected in `1` for Rubi pattern-matching rules.", //
     "seqs",
@@ -808,6 +810,8 @@ public class IOFunctions {
     "Tag `1` not found in `2`.", //
     "take",
     "Cannot take positions `1` through `2` in `3`.", //
+    "tbnval",
+    "Values `1` produced by the function `2` cannot be used for numerical sorting because they are not all real.", //
     "tdlen",
     "Objects of unequal length in `1` cannot be combined.", //
     "tllen",

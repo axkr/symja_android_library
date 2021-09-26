@@ -9108,6 +9108,12 @@ public class S {
   public static final IBuiltInSymbol TakeLargestBy =
       F.initFinalSymbol("TakeLargestBy", ID.TakeLargestBy);
 
+  public static final IBuiltInSymbol TakeSmallest =
+      F.initFinalSymbol("TakeSmallest", ID.TakeSmallest);
+
+  public static final IBuiltInSymbol TakeSmallestBy =
+      F.initFinalSymbol("TakeSmallestBy", ID.TakeSmallestBy);
+
   /**
    * Tally(list) - return the elements and their number of occurrences in `list` in a new result
    * list. The `binary-predicate` tests if two elements are equivalent. `SameQ` is used as the

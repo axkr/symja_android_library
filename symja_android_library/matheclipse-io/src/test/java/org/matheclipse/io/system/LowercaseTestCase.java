@@ -29965,6 +29965,16 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testRankedMin() {
+    check(
+        "RankedMin({Quantity(1, \"Kilograms\"), Quantity(2, \"kg\"), Quantity(3, \"Kilograms\")}, 2)", //
+        "2[kg]");
+    check(
+        "RankedMin({Quantity(1, \"kg\"), Quantity(2, \"kg\"), Quantity(3, \"kg\")}, 2)", //
+        "2[kg]");
+    check(
+        "RankedMin(<|a -> 1, b -> 2, c -> 3, d -> 4|>, 2)", //
+        "2");
+    
     // message: RankedMin: Input {1,I,E} is not a vector of reals or integers.
     check(
         "RankedMin({1, I, E}, 2)", //
@@ -36458,7 +36468,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testTakeLargest() {
     check(
-        "TakeLargest[{1, 3, 5, None, Indeterminate, Missing[]}, 2]", //
+        "TakeLargest(Prime(Range(10)), 3)", //
+        "{29,23,19}");
+    check(
+        "TakeLargest({1, 3, 5, None, Indeterminate, Missing()}, 2)", //
         "{5,3}");
     check(
         "TakeLargest(<|a -> 1, b -> 2, c -> 3, d -> 4|>, 2)", //
@@ -36469,6 +36482,16 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testTakeLargestBy() {
+    // print message
+    check(
+        "TakeLargestBy({1, 3, 5, None, Indeterminate, Missing(),a,b}, Abs, 2)", //
+        "TakeLargestBy({1,3,5,None,Indeterminate,Missing(),a,b},Abs,2)");
+    check(
+        "TakeLargestBy(Prime(Range(10)),Mod(#,7)&, 3)", //
+        "{13,5,19}");
+    check(
+        "TakeLargestBy(Prime(Range(10)),Mod(#,7)&, 3)", //
+        "{13,5,19}");
     check(
         "TakeLargestBy({-5, -2, 4, 3, 1, 9, 2, -4}, Abs, 4)", //
         "{9,-5,4,-4}");
@@ -36477,6 +36500,41 @@ public class LowercaseTestCase extends AbstractTestCase {
         "<|b->xxx,c->xx|>");
   }
 
+  public void testTakeSmallest() {
+    // print message
+    check(
+        "TakeSmallest({1, 3, 5, None, Indeterminate, Missing(),a,b}, 2)", //
+        "TakeSmallest({1,3,5,None,Indeterminate,Missing(),a,b},2)");
+    check(
+        "TakeSmallest(Prime(Range(10)), 3)", //
+        "{2,3,5}");
+    check(
+        "TakeSmallest({1, 3, 5, None, Indeterminate, Missing()}, 2)", //
+        "{1,3}");
+    check(
+        "TakeSmallest(<|a -> 1, b -> 2, c -> 3, d -> 4|>, 2)", //
+        "<|a->1,b->2|>");
+    check(
+        "TakeSmallest(3) @ {1, 3, 5, 4, 2}", //
+        "{1,2,3}");
+  }
+
+  public void testTakeSmallestBy() {
+    // print message
+    check(
+        "TakeSmallestBy({1, 3, 5, None, Indeterminate, Missing(),a,b}, Abs, 2)", //
+        "TakeSmallestBy({1,3,5,None,Indeterminate,Missing(),a,b},Abs,2)");
+    check(
+        "TakeSmallestBy(Prime(Range(10)),Mod(#,7)&, 3)", //
+        "{7,29,2}");
+    check(
+        "TakeSmallestBy({-5, -2, 4, 3, 1, 9, 2, -4}, Abs, 4)", //
+        "{1,-2,2,3}");
+    check(
+        "TakeSmallestBy(<|a -> \"\", b -> \"xxx\", c -> \"xx\"|>, StringLength, 2)", //
+        "<|a->,c->xx|>");
+  }
+ 
   public void testTally() {
     check(
         "Tally({{a, b}, {w, x, y, z}, E, {w, x, y, z}, E}, Head(#1) === Head(#2) &)", //

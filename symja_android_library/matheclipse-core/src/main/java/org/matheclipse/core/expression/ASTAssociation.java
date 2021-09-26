@@ -834,21 +834,21 @@ public class ASTAssociation extends AST implements IAssociation {
 
   @Override
   public IExpr set(final int location, final IExpr rule) {
-    if (rule.isRuleAST() && location > 0) {
-      final IAST oldRule = getRule(location);
-      if (oldRule.isPresent()) {
-        keyToIndexMap.removeInt(oldRule.first());
+    if (location > 0) {
+      if (rule.isRuleAST()) {
+        final IAST oldRule = getRule(location);
+        if (oldRule.isPresent()) {
+          keyToIndexMap.removeInt(oldRule.first());
+        }
+        keyToIndexMap.put(rule.first(), location);
+        return super.set(location, rule);
       }
-      keyToIndexMap.put(rule.first(), location);
-      return super.set(location, rule);
+      // illegal arguments: \"`1`\" in `2`
+      ArgumentTypeException.throwArg(rule, S.Association);
+      return F.NIL;
     }
-    if (location == 0) {
-      // set header
-      return super.set(0, rule);
-    }
-    // illegal arguments: \"`1`\" in `2`
-    ArgumentTypeException.throwArg(rule, S.Association);
-    return F.NIL;
+    // set header
+    return super.set(location, rule);
   }
 
   @Override
