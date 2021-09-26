@@ -19,7 +19,7 @@ Try the Android or iOS apps:
 
 or help testing the latest [Android BETA version](https://github.com/axkr/symja_android_library/wiki/BETA-tests) or the web demo at [matheclipse.org](http://matheclipse.org/).
 
-Read the [Symja Manual](symja_android_library/doc/index.md) for the description of the Symja language or [browse the available functions](symja_android_library/doc/functions/). We encourage everyone to participate in our [Wiki](https://github.com/axkr/symja_android_library/wiki).
+Read the [Symja Manual](symja_android_library/doc/index.md) :blue_book: for the description of the Symja language or [browse the available functions](symja_android_library/doc/functions/) :green_book: . We encourage everyone to participate in our [Wiki](https://github.com/axkr/symja_android_library/wiki).
 
 - [Installation](#installation)
 - [Features](#features)
