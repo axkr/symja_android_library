@@ -89,7 +89,6 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-logging</artifactId>
 			<version>${project.version}</version>
-			<scope>runtime</scope>
 		</dependency>
 
 		<!-- test dependencies -->

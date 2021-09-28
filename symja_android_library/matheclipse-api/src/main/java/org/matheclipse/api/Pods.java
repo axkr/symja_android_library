@@ -16,6 +16,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.Message;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
@@ -47,6 +48,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.logging.ThreadLocalNotifyingAppender;
+import org.matheclipse.logging.ThreadLocalNotifyingAppender.ThreadLocalNotifierClosable;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieBuilder;
@@ -791,7 +794,7 @@ public class Pods {
             WriterOutputStream werrors = new WriterOutputStream(errorWriter);
             PrintStream errors = new PrintStream(werrors);
             IExpr firstEval = F.NIL;
-            try {
+            try (ThreadLocalNotifierClosable c = setLogEventNotifier(errors)) {
               engine.setErrorPrintStream(errors);
               firstEval = engine.evaluateNIL(inExpr);
             } finally {
@@ -870,7 +873,7 @@ public class Pods {
         WriterOutputStream werrors = new WriterOutputStream(errorWriter);
         PrintStream errors = new PrintStream(werrors);
         IExpr firstEval = F.NIL;
-        try {
+        try (ThreadLocalNotifierClosable c = setLogEventNotifier(errors)) {
           engine.setErrorPrintStream(errors);
           firstEval = engine.evaluateNIL(inExpr);
         } finally {
@@ -1454,6 +1457,24 @@ public class Pods {
 
     queryresult.put("error", error ? "true" : "false");
     return messageJSON;
+  }
+
+  private static ThreadLocalNotifierClosable setLogEventNotifier(PrintStream errors) {
+    StringBuilder msg = new StringBuilder();
+    return ThreadLocalNotifyingAppender.addLogEventNotifier(e -> {
+      msg.setLength(0);
+      // String loggerName = e.getLoggerName();
+      // msg.append(loggerName, loggerName.lastIndexOf('.') + 1, loggerName.length()).append(" - ");
+      Message logMessage = e.getMessage();
+      if (logMessage != null) {
+        msg.append(logMessage.getFormattedMessage());
+      }
+      Throwable thrown = e.getThrown();
+      if (thrown != null) {
+        msg.append(": ").append(thrown.getMessage());
+      }
+      errors.println(msg.toString());
+    });
   }
 
   public static String errorJSONString(String code, String msg) {
