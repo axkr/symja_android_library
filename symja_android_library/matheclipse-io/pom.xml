@@ -85,15 +85,10 @@
 
 		<!-- logging dependencies -->
 
-		<dependency> <!-- provide the logging-framework implementation -->
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-
-		<dependency> <!-- bind slf4j to log4j-2-core -->
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j-impl</artifactId>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-logging</artifactId>
+			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -180,28 +175,5 @@
 
 			</plugins>
 		</pluginManagement>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>add-resource</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>add-resource</goal>
-						</goals>
-						<configuration>
-							<resources>
-								<resource>
-									<directory>${project.basedir}/../</directory>
-									<include>log4j2.properties</include>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
 	</build>
 </project>

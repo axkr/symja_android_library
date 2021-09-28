@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.matheclipse</groupId>
+		<artifactId>matheclipse</artifactId>
+		<version>2.0.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>matheclipse-logging</artifactId>
+	<packaging>jar</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The Symja logging facility module</description>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License, Version 3</name>
+			<url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
+			<distribution>repo</distribution>
+			<comments>A free, copyleft license for software and other kinds of works</comments>
+		</license>
+	</licenses>
+
+	<dependencies>
+		<dependency> <!-- provide the logging-framework implementation -->
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+		</dependency>
+
+		<dependency> <!-- bind slf4j to log4j-2-core -->
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+		</dependency>
+	</dependencies>
+
+</project>
