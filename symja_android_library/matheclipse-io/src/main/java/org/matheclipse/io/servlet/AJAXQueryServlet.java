@@ -38,6 +38,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.io.expression.ASTDataset;
+import org.matheclipse.logging.ThreadLocalNotifyingAppender.ThreadLocalNotifierClosable;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
@@ -189,7 +190,8 @@ public class AJAXQueryServlet extends HttpServlet {
     final StringWriter errorWriter = new StringWriter();
     WriterOutputStream werrors = new WriterOutputStream(errorWriter);
     try (PrintStream outs = new PrintStream(wouts);
-        PrintStream errors = new PrintStream(werrors);) {
+        PrintStream errors = new PrintStream(werrors);
+        ThreadLocalNotifierClosable c = ServletServer.setLogEventNotifier(outs, errors);) {
 
       EvalEngine engine = ENGINES.get(session.getId());
       if (engine == null) {
