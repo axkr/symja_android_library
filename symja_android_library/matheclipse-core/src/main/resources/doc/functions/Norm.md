@@ -10,7 +10,13 @@ Norm(m, l)
 Norm(m)   
 ```
 
-> computes the 2-norm of matrix `m` (currently only works for vectors!).     
+> computes the norm of matrix `m` (SVD)
+
+```	
+Norm(m, "Frobenius")   
+```
+
+> computes the Frobenius norm of matrix `m` 
 
 See
 * [Wikipedia - Norm (mathematics)](https://en.wikipedia.org/wiki/Norm_(mathematics))
@@ -46,6 +52,9 @@ Sqrt(Abs(x)^2+Abs(y)^2)
 
 >> Norm({x, y}, p)    
 (Abs(x) ^ p + Abs(y) ^ p) ^ (1 / p)  
+
+>> Norm({{1,2}, {3,4}})
+5.46499
 ```
 
 The second argument of Norm, 0, should be a symbol, Infinity, or an integer or real number not less than 1 for vector p-norms; or 1, 2, Infinity, or "Frobenius" for matrix norms. 
