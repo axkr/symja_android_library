@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
@@ -949,9 +948,7 @@ public class IOFunctions {
 
         templateApply(message, writer, context);
         engine.setMessageShortcut(messageShortcut);
-        String completedMessage = writer.toString();
-        engine.printMessage(symbol + ": " + completedMessage);
-        LOGGER.log(Level.INFO, "{}: {}", symbol, completedMessage);
+        LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, message);
       } catch (IOException e) {
         LOGGER.error("IOFunctions.printMessage() failed", e);
       }

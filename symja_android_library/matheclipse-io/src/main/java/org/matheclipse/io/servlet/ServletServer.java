@@ -98,8 +98,7 @@ public class ServletServer {
       if (Desktop.isDesktopSupported()) {
         Desktop.getDesktop().browse(uri);
       }
-      // print URI string to console if browser can't be opened
-      System.out.println("Open browser URL: " + uri.toString());
+      LOGGER.info("Open browser URL: {}", uri);
     } catch (Exception ex) {
       ex.printStackTrace();
     }
