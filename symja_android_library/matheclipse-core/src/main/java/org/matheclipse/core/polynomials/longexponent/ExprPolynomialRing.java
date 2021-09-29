@@ -77,8 +77,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       List<Long> ecl = (List<Long>) ec.get(0);
       IExpr c = ec.get(1); // zero
       ExpVectorLong e = ExpVectorLong.create(ecl);
-      // System.out.println("exp = " + e);
-      // System.out.println("coeffs = " + c);
       current = new ExprPolynomial(ring, c, e);
     }
 
@@ -110,8 +108,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       }
       List<Long> ecl = (List<Long>) ec.get(0);
       ExpVectorLong e = ExpVectorLong.create(ecl);
-      // System.out.println("exp = " + e);
-      // System.out.println("coeffs = " + c);
       current = new ExprPolynomial(ring, c, e);
 
       return res;
@@ -1104,7 +1100,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    */
   @Override
   public ExprPolynomial copy(ExprPolynomial c) {
-    // System.out.println("GP copy = " + this);
     return new ExprPolynomial(this, c.val);
   }
 
@@ -1438,10 +1433,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       powers = new ArrayList<ExpVectorLong>();
       ExpVectorLong e = ExpVectorLong.create(eviter.next());
       powers.add(e);
-      // System.out.println("new e = " + e);
-      // System.out.println("powers = " + powers);
       List<IExpr> c = itercoeff.next();
-      // System.out.println("coeffs = " + c);
       current = new ExprPolynomial(ring, c.get(0), e);
     }
 
@@ -1466,8 +1458,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       if (!itercoeff.hasNext()) {
         ExpVectorLong e = ExpVectorLong.create(eviter.next());
         powers.add(0, e); // add new ev at beginning
-        // System.out.println("new e = " + e);
-        // System.out.println("powers = " + powers);
         if (coeffiter.size() == 1) { // shorten frist iterator by one
           // element
           coeffiter.add(coeffiter.get(0));
@@ -1486,11 +1476,9 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       }
       List<IExpr> coeffs = itercoeff.next();
       // while ( coeffs.get(0).isZERO() ) {
-      // System.out.println(" skip zero ");
       // coeffs = itercoeff.next(); // skip tuples with zero in first
       // component
       // }
-      // System.out.println("coeffs = " + coeffs);
       ExprPolynomial pol = ring.getZero().copy();
       int i = 0;
       for (ExpVectorLong f : powers) {
@@ -1499,7 +1487,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
           continue;
         }
         if (pol.val.get(f) != null) {
-          // System.out.println("error f in pol = " + f + ", " + pol.getMap().get(f));
           throw new RuntimeException("error in iterator");
         }
         pol.doPutToMap(f, c);

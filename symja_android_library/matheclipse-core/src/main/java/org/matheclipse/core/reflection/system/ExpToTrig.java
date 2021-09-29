@@ -52,7 +52,6 @@ public class ExpToTrig extends AbstractEvaluator {
                 } else if (base.isNumber()) {
                   // base^exponent => E ^(exponent*Log(base))
                   exponent = S.Expand.of(engine, F.Times(x.exponent(), F.Log(base)));
-                  // System.out.println(exponent);
                 }
                 if (exponent.isPresent()) {
                   if (exponent.isPlus()) {

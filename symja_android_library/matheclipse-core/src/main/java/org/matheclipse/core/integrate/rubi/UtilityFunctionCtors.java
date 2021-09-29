@@ -6,7 +6,6 @@ import static org.matheclipse.core.expression.F.quaternary;
 import static org.matheclipse.core.expression.F.quinary;
 import static org.matheclipse.core.expression.F.senary;
 import static org.matheclipse.core.expression.S.initFinalHiddenSymbol;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.B1;
@@ -2144,7 +2143,6 @@ public class UtilityFunctionCtors {
         temp = astTimes.splice(i).oneIdentity1();
         temp = engine.evaluate(temp);
         if (!temp.isMinusOne()) {
-          // System.out.println("w_*Dist[u_,v_,x_]");
           // Dist[ temp *u,v,x]
           return Dist(F.Times(temp, dist.arg1()), dist.arg2(), dist.arg3());
         }

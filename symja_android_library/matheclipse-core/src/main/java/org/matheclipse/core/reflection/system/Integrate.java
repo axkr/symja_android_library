@@ -96,7 +96,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 
     @Override
     public void run() {
-      // long start = System.currentTimeMillis();
       if (!INTEGRATE_RULES_READ.get()) {
         INTEGRATE_RULES_READ.set(true);
         final EvalEngine engine = EvalEngine.get();
@@ -160,8 +159,6 @@ public class Integrate extends AbstractFunctionEvaluator {
                 F.And(
                     F.SameQ(F.Head(F.Slot1), S.Power),
                     F.SameQ(F.Head(F.Part(F.Slot1, F.C2)), S.Rational))));
-        // long stop = System.currentTimeMillis();
-        // System.out.println("Milliseconds: " + (stop - start));
         COUNT_DOWN_LATCH.countDown();
       }
     }
@@ -174,7 +171,6 @@ public class Integrate extends AbstractFunctionEvaluator {
       //        IExpr lhs=binaryList.arg1();
       //        IExpr rhs=binaryList.arg2();
       //        F.IIntegrate(i, (IAST)lhs, rhs);
-      //        System.out.println(rhs.toString());
       //      }
       UtilityFunctionCtors.getRuleASTRubi45();
 
@@ -761,7 +757,6 @@ public class Integrate extends AbstractFunctionEvaluator {
               engine.setRecursionLimit(Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT);
             }
 
-            // System.out.println(ast.toString());
             engine.rememberASTCache.put(ast, F.NIL);
             IExpr temp = S.Integrate.evalDownRule(EvalEngine.get(), ast);
             if (temp.isPresent()) {

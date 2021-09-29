@@ -1755,7 +1755,6 @@ public class ManipulateFunction {
 
         HistogramTrace trace = HistogramTrace.builder(vector).build();
         Figure figure = new Figure(layout, trace);
-        // System.out.println(figure.asJavascript("plotly"));
         // Plot.show(figure);
         return F.JSFormData(figure.asJavascript("plotly"), "plotly");
       }

@@ -4710,7 +4710,6 @@ public final class NumberTheory {
       // // Long val = entry.getValue();
       // // result.add(F.Power(jas.integerPoly2Expr(integerCoefficientPoly),
       // // F.integer(val)));
-      // System.out.println(singleFactor);
       // }
       // return result;
       // } catch (ArithmeticException ae) {

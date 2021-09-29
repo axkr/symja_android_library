@@ -124,8 +124,6 @@ public class RootsFunctions {
             rectangleList.append(JASConvert.jas2Complex(refine.getSE()));
             rectangleList.append(JASConvert.jas2Complex(refine.getNE()));
             resultList.append(rectangleList);
-            // System.out.println("refine = " + refine);
-
           }
         }
         return resultList;
@@ -778,8 +776,6 @@ public class RootsFunctions {
                   zDenominator));
         }
       }
-      //      IExpr temp = EvalEngine.get().evaluate(result);
-      //      System.out.println(temp.toString());
       return result;
     } else {
       // even
@@ -809,8 +805,6 @@ public class RootsFunctions {
         result.append(F.Times(F.Power(F.CN1, F.fraction(k, varDegree)), zNumerator, zDenominator));
         k += 2;
       }
-      // IExpr temp = EvalEngine.get().evaluate(result);
-      // System.out.println(temp.toString());
       return result;
     }
   }

@@ -291,7 +291,6 @@ public class JASConvert<C extends RingElem<C>> {
       if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
-      // System.out.println("expr2JAS"+exprPoly.toString());
       throw new JASConversionException();
     }
   }

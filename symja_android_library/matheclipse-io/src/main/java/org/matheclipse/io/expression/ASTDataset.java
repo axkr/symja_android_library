@@ -641,7 +641,6 @@ public class ASTDataset extends AbstractAST
    * @return
    */
   private ASTDataset selectColumns(IAST list) {
-    // System.out.println(fData.columnNames().toString());
     String[] strList = new String[list.argSize()];
     int[] vector = list.toIntVector();
     Table table = fTable;

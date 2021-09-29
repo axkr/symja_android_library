@@ -208,11 +208,9 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
        */
       public IExprIterator(boolean nn, IExpr ub) {
         current = F.C0;
-        // System.out.println("current = " + current);
         empty = false;
         nonNegative = nn;
         upperBound = ub;
-        // System.out.println("upperBound = " + upperBound);
       }
 
       /**
@@ -1164,7 +1162,6 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
    */
   @Override
   public SymbolicPolynomial copy(SymbolicPolynomial c) {
-    // System.out.println("GP copy = " + this);
     return new SymbolicPolynomial(this, c.val);
   }
 
@@ -1498,10 +1495,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
       powers = new ArrayList<ExpVectorSymbolic>();
       ExpVectorSymbolic e = ExpVectorSymbolic.create(eviter.next());
       powers.add(e);
-      // System.out.println("new e = " + e);
-      // System.out.println("powers = " + powers);
       List<IExpr> c = itercoeff.next();
-      // System.out.println("coeffs = " + c);
       current = new SymbolicPolynomial(ring, c.get(0), e);
     }
 
@@ -1526,8 +1520,6 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
       if (!itercoeff.hasNext()) {
         ExpVectorSymbolic e = ExpVectorSymbolic.create(eviter.next());
         powers.add(0, e); // add new ev at beginning
-        // System.out.println("new e = " + e);
-        // System.out.println("powers = " + powers);
         if (coeffiter.size() == 1) { // shorten frist iterator by one
           // element
           coeffiter.add(coeffiter.get(0));
@@ -1546,11 +1538,9 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
       }
       List<IExpr> coeffs = itercoeff.next();
       // while ( coeffs.get(0).isZERO() ) {
-      // System.out.println(" skip zero ");
       // coeffs = itercoeff.next(); // skip tuples with zero in first
       // component
       // }
-      // System.out.println("coeffs = " + coeffs);
       SymbolicPolynomial pol = ring.getZero().copy();
       int i = 0;
       for (ExpVectorSymbolic f : powers) {
@@ -1559,7 +1549,6 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
           continue;
         }
         if (pol.val.get(f) != null) {
-          // System.out.println("error f in pol = " + f + ", " + pol.getMap().get(f));
           throw new RuntimeException("error in iterator");
         }
         pol.doPutToMap(f, c);

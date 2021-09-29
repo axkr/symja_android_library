@@ -120,7 +120,6 @@ public class AJAXQueryServlet extends HttpServlet {
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
-    //    System.out.println("/ajax/query");
     res.setContentType("text/html; charset=UTF-8");
     res.setCharacterEncoding("UTF-8");
     res.setHeader("Cache-Control", "no-cache");

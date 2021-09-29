@@ -1760,7 +1760,6 @@ public class PredicateQ {
                 || Double.isInfinite(imaginaryPart)) {
               return IExpr.COMPARE_TERNARY.UNDECIDABLE;
             }
-            //            System.out.println("\n"+temp.toString() +((INumber) result).toString());
             return IExpr.COMPARE_TERNARY.FALSE;
           }
           return IExpr.COMPARE_TERNARY.TRUE;

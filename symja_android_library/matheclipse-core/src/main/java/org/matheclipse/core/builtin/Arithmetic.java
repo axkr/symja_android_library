@@ -33,8 +33,11 @@ import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.num;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y_;
+import static org.matheclipse.core.expression.S.Conjugate;
 import static org.matheclipse.core.expression.S.E;
 import static org.matheclipse.core.expression.S.Pi;
+import static org.matheclipse.core.expression.S.Power;
+import static org.matheclipse.core.expression.S.Times;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
 import java.util.function.DoubleFunction;
@@ -5790,8 +5793,6 @@ public final class Arithmetic {
 
     @Override
     public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
-
-      // System.out.println(ast.toString());
 
       // the case where both args are numbers is already handled in binaryOperator()
       if (arg1.isReal() || arg2.isReal()) {

@@ -5327,7 +5327,6 @@ public final class LinearAlgebra {
     FieldReducedRowEchelonForm ref =
         new FieldReducedRowEchelonForm(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
     FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
-    // System.out.println(rowReduced.toString());
     IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
     if (lastVarCoefficient.isZero()) {
       if (!rowReduced.getEntry(rows - 1, cols - 1).isZero()) {

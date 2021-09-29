@@ -316,7 +316,6 @@ public class ClusteringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       String method = "";
       DistanceMeasure measure = new EuclideanDistance();
-      // System.out.println(ast.toString());
       try {
         if (ast.arg1().isList() && ast.arg1().size() > 1) {
           IAST listArg1 = (IAST) ast.arg1();

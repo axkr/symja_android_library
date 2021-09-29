@@ -288,7 +288,6 @@ public class ASCIIPrettyPrinter3 {
         }
         out.println(outputExpression[0]);
 
-        // System.out.println(prefix + outputExpression[1]);
         for (int i = 0; i < prefix.length(); i++) {
           out.print(" ");
         }

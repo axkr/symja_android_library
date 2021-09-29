@@ -1298,7 +1298,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   // if (lhsPatternExpr.isOrderlessAST() || lhsPatternExpr.isFlatAST()) {
   // IExpr temp = fPatternMap.substituteASTPatternOrSymbols((IAST) lhsPatternExpr, true);
   // if (temp.isPresent()) {
-  //// System.out.println(lhsPatternExpr+" ==> "+temp+" <==> "+lhsEvalExpr);
   // lhsPatternExpr = temp;
   // }
   // }
@@ -1761,7 +1760,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     // if (lhsPatternAST.size() > 1) {
     // IExpr temp = fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, true);
     // if (temp.isAST(lhsPatternAST.head())) {
-    // // System.out.println(" " + lhsPatternAST.toString() + " -> " + temp.toString());
     // return new IAST[] { (IAST) temp, lhsEvalAST };
     // }
     // }

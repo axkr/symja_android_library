@@ -196,7 +196,6 @@ public class WL {
           for (int i = 0; i < length; i++) {
             ast.append(read());
           }
-          // System.out.println(ast.toString());
           IExpr head = ast.head();
           if (head == S.Complex || head == S.Rational || head == S.Pattern || head == S.Optional) {
             // head == F.Blank || //

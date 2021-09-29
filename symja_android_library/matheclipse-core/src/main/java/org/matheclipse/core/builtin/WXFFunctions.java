@@ -92,7 +92,6 @@ public class WXFFunctions {
           byte[] bArray = (byte[]) ((IDataExpr) arg1).toData();
           if (bArray.length > 2) {
             IExpr temp = WL.deserialize(bArray);
-            // System.out.println(temp);
             return temp;
           }
         }

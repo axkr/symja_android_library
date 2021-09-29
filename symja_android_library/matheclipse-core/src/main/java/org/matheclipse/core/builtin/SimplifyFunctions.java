@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.x_;
+import static org.matheclipse.core.expression.S.Log;
 import static org.matheclipse.core.expression.S.x;
 import java.util.List;
 import java.util.function.Function;
@@ -398,7 +399,6 @@ public class SimplifyFunctions {
         }
 
         try {
-          // System.out.println(expr.toString());
           // TODO: Factor is not fast enough for large expressions!
           // Maybe restricting factoring to smaller expressions is necessary here
           temp = F.NIL;

@@ -1460,7 +1460,6 @@ public class StatisticsFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST1()) {
-          // System.out.println(ast.arg1().toString());
           if (ast.arg1() instanceof ASTRealMatrix) {
             PearsonsCorrelation pc =
                 new PearsonsCorrelation(((ASTRealMatrix) ast.arg1()).getRealMatrix());

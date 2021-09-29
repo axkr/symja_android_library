@@ -1540,15 +1540,6 @@ public class EvalEngine implements Serializable {
                 printOnOffTrace(result, temp);
               }
 
-              // if (temp == F.Null&&!result.isAST(F.SetDelayed)) {
-              // System.out.println(expr.toString());
-              // }
-              // if (result.isAST(F.Integrate)) {
-              // System.out.println(result.toString());
-              // System.out.println("("+iterationCounter+") --> " +
-              // temp.toString());
-              // }
-
               if (fIterationLimit >= 0 && fIterationLimit <= ++iterationCounter) {
                 IterationLimitExceeded.throwIt(iterationCounter, temp);
               }
