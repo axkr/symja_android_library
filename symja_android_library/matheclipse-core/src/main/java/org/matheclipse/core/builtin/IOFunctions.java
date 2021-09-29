@@ -948,7 +948,7 @@ public class IOFunctions {
 
         templateApply(message, writer, context);
         engine.setMessageShortcut(messageShortcut);
-        LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, message);
+        LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, writer);
       } catch (IOException e) {
         LOGGER.error("IOFunctions.printMessage() failed", e);
       }
