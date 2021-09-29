@@ -2591,6 +2591,21 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Print a message to the <code>Out</code> stream, if the engine is not in &quot;quiet mode&quot;.
+   *
+   * @param str the message which should be printed
+   * @return <code>F.NIL</code>
+   */
+  public IAST printMessage(String str) throws ArgumentTypeException {
+    if (!isQuietMode()) {
+      PrintStream stream = getErrorPrintStream();
+      LOGGER.warn(str);
+      stream.println(str);
+    }
+    return F.NIL;
+  }
+  
+  /**
    * Returns the level with which messages associated to this engine should be logged.
    * <p>
    * Returns {@link Level#ERROR} unless this engine is in {@link #isQuietMode() quiet-mode}, then
