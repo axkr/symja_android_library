@@ -34,7 +34,6 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.io.expression.ASTDataset;
@@ -44,6 +43,7 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
 public class AJAXQueryServlet extends HttpServlet {
+  private static final long serialVersionUID = 6265703737413093134L;
 
   static final Map<String, EvalEngine> ENGINES = new HashMap<String, EvalEngine>();
 
@@ -95,24 +95,14 @@ public class AJAXQueryServlet extends HttpServlet {
           + "</body>\n"
           + "</html>";
 
-  // public final static Cache<String, String[]> INPUT_CACHE =
-  // CacheBuilder.newBuilder().maximumSize(500).build();
-
-  private static final int HALF_MEGA = 1024 * 500;
-
-  private static final String USER_DATA_ENTITY = "USER_DATA";
-
-  private static final String SESSION_DATA_ENTITY = "SESSION_DATA";
-
-  private static final long serialVersionUID = 6265703737413093134L;
 
   private static final Logger LOGGER = LogManager.getLogger();
 
-  public static final String UTF8 = "utf-8";
-
-  public static final String EVAL_ENGINE = EvalEngine.class.getName();
-
   public static volatile boolean INITIALIZED = false;
+
+  protected boolean isRelaxedSyntax() {
+    return true;
+  }
 
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
@@ -155,7 +145,7 @@ public class AJAXQueryServlet extends HttpServlet {
       String result = evaluate(req, value, numericModeValue, functionValue, 0);
       out.println(result);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.error("{}.doPost() failed", getClass().getSimpleName(), e);
       String msg = e.getMessage();
       if (msg != null) {
         out.println(JSONBuilder.createJSONErrorString("Exception: " + msg));
@@ -166,7 +156,7 @@ public class AJAXQueryServlet extends HttpServlet {
     }
   }
 
-  public static String evaluate(
+  private String evaluate(
       HttpServletRequest request,
       String expression,
       String numericMode,
@@ -195,7 +185,7 @@ public class AJAXQueryServlet extends HttpServlet {
 
       EvalEngine engine = ENGINES.get(session.getId());
       if (engine == null) {
-        engine = new EvalEngine(session.getId(), 256, 256, outs, errors, true);
+        engine = new EvalEngine(session.getId(), 256, 256, outs, errors, isRelaxedSyntax());
         engine.setOutListDisabled(false, (short) 100);
         engine.setPackageMode(false);
         ENGINES.put(session.getId(), engine);
@@ -214,14 +204,13 @@ public class AJAXQueryServlet extends HttpServlet {
     return result[1].toString();
   }
 
-  public static String[] evaluateString(
+  private String[] evaluateString(
       EvalEngine engine,
       final String inputString,
       final String numericMode,
       final String function,
       StringWriter outWriter,
       StringWriter errorWriter) {
-    boolean SIMPLE_SYNTAX = true;
     String input = inputString.trim();
     if (input.length() > 1 && input.charAt(0) == '?') {
       IExpr doc = Documentation.findDocumentation(input);
@@ -229,8 +218,7 @@ public class AJAXQueryServlet extends HttpServlet {
     }
     try {
       EvalEngine.setReset(engine);
-      //      engine.reset();
-      ExprParser parser = new ExprParser(engine, SIMPLE_SYNTAX);
+      ExprParser parser = new ExprParser(engine, isRelaxedSyntax());
       // throws SyntaxError exception, if syntax isn't valid
       IExpr inExpr = parser.parse(input);
       if (inExpr != null) {
@@ -241,10 +229,8 @@ public class AJAXQueryServlet extends HttpServlet {
         if (numericMode.equals("N")) {
           inExpr = F.N(inExpr);
         }
-        if (inExpr instanceof IAST) {
-          IAST ast = (IAST) inExpr;
-          ISymbol sym = ast.topHead();
-        }
+        // inExpr contains the user input from the web interface in
+        // internal format now
         StringWriter outBuffer = new StringWriter();
         IExpr outExpr;
         outExpr = evalTopLevel(engine, outBuffer, inExpr);
@@ -262,7 +248,7 @@ public class AJAXQueryServlet extends HttpServlet {
                       + html
                       + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
             } catch (Exception ex) {
-              LOGGER.debug("AJAXQueryServlet.evaluateString() failed", ex);
+              LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
             }
           } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
             StringBuilder buf = new StringBuilder();
@@ -277,7 +263,7 @@ public class AJAXQueryServlet extends HttpServlet {
                         + html
                         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
               } catch (Exception ex) {
-                LOGGER.debug("AJAXQueryServlet.evaluateString() failed", ex);
+                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
             }
           }
@@ -301,13 +287,13 @@ public class AJAXQueryServlet extends HttpServlet {
                       + html
                       + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
             }
-          } else if (outExpr.isDataset()) {
+          } else if (outExpr instanceof ASTDataset) {
             String javaScriptStr = ((ASTDataset) outExpr).datasetToJSForm();
             if (javaScriptStr != null) {
               String htmlSnippet = javaScriptStr.trim();
               //              String html = HTML_IFRAME;
               //              html = StringUtils.replace(html, "`1`", htmlSnippet);
-              //             String html = StringEscapeUtils.escapeHtml4(htmlSnippet);
+              //              html = StringEscapeUtils.escapeHtml4(html);
               return JSONBuilder.createJSONHTML(engine, htmlSnippet, outWriter, errorWriter);
               //              return JSONBuilder.createJSONJavaScript(
               //                  "<iframe srcdoc=\""
@@ -331,14 +317,14 @@ public class AJAXQueryServlet extends HttpServlet {
                 //                        + "\" style=\"display: block; width: 100%; height: 100%;
                 // border: none;\" ></iframe>");
               } catch (Exception ex) {
-                LOGGER.debug("AJAXQueryServlet.evaluateString() failed", ex);
+                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
             } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
               try {
                 return JSONBuilder.createJSONIFrame(
                     JSONBuilder.JSXGRAPH_IFRAME, jsFormData.arg1().toString());
               } catch (Exception ex) {
-                LOGGER.debug("AJAXQueryServlet.evaluateString() failed", ex);
+                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
             } else if (jsFormData.arg2().toString().equals("plotly")) {
               try {
@@ -354,7 +340,7 @@ public class AJAXQueryServlet extends HttpServlet {
                 //                        + "\" style=\"display: block; width: 100%; height: 100%;
                 // border: none;\" ></iframe>");
               } catch (Exception ex) {
-                LOGGER.debug("AJAXQueryServlet.evaluateString() failed", ex);
+                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
             } else if (jsFormData.arg2().toString().equals("treeform")) {
               try {
@@ -390,7 +376,7 @@ public class AJAXQueryServlet extends HttpServlet {
                         + html
                         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
               } catch (Exception ex) {
-                LOGGER.debug("AJAXQueryServlet.evaluateString() failed", ex);
+                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
             }
           } else if (outExpr.isString()) {
@@ -428,12 +414,13 @@ public class AJAXQueryServlet extends HttpServlet {
       return JSONBuilder.createJSONError("IOException occured");
     } catch (Exception e) {
       // error message
-      LOGGER.error("AJAXQueryServlet.evaluateString() failed", e);
+      LOGGER.error("{}.evaluateString() failed", getClass().getSimpleName(), e);
       String msg = e.getMessage();
       if (msg != null) {
         return JSONBuilder.createJSONError("Error in evaluateString: " + msg);
       }
-      return JSONBuilder.createJSONError("Error in evaluateString" + e.getClass().getSimpleName());
+      return JSONBuilder
+          .createJSONError("Error in evaluateString: " + e.getClass().getSimpleName());
     }
   }
 
@@ -535,7 +522,7 @@ public class AJAXQueryServlet extends HttpServlet {
   //
   // }
   // } catch (Exception e) {
-  // LOGGER.debug("AJAXQueryServlet.getFromMemcache() failed", e);
+  // LOGGER.debug("{}.getFromMemcache() failed", getClass().getSimpleName(), e);
   // }
   // return null;
   // }
@@ -558,7 +545,7 @@ public class AJAXQueryServlet extends HttpServlet {
   // return true;
   // }
   // } catch (Exception e) {
-  // LOGGER.debug("AJAXQueryServlet.putToMemcache() failed", e);
+  // LOGGER.debug("{}.putToMemcache() failed", getClass().getSimpleName(), e);
   // }
   // return false;
   // }
@@ -630,13 +617,14 @@ public class AJAXQueryServlet extends HttpServlet {
   @Override
   public void init() throws ServletException {
     super.init();
-    if (!INITIALIZED) {
-      AJAXQueryServlet.initialization("AJAXQueryServlet");
-    }
+    initialization();
   }
 
-  public static synchronized void initialization(String servlet) {
-    AJAXQueryServlet.INITIALIZED = true;
+  protected synchronized void initialization() {
+    if (INITIALIZED) {
+      return;
+    }
+    INITIALIZED = true;
     FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
     ToggleFeature.COMPILE = true;
     Config.UNPROTECT_ALLOWED = false;
@@ -654,7 +642,7 @@ public class AJAXQueryServlet extends HttpServlet {
     //    Config.MAX_MATRIX_DIMENSION_SIZE = 100;
     //    Config.MAX_POLYNOMIAL_DEGREE = 100;
 
-    EvalEngine engine = new EvalEngine(true);
+    EvalEngine engine = new EvalEngine(isRelaxedSyntax());
     EvalEngine.set(engine);
     Config.FILESYSTEM_ENABLED = true;
     F.initSymbols(null, null, false);
@@ -666,6 +654,6 @@ public class AJAXQueryServlet extends HttpServlet {
     S.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
     // F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
     // Config.JAS_NO_THREADS = true;
-    //    AJAXQueryServlet.log.info(servlet + "initialized");
+    //    AJAXQueryServlet.log.info(servlet + " initialized");
   }
 }
