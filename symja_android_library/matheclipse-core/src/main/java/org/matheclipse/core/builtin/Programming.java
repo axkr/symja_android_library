@@ -2141,7 +2141,6 @@ public final class Programming {
           return F.NIL;
         }
         try {
-          //        System.out.println(ast.toString() );
           IASTMutable evaledAST = F.NIL;
           IExpr arg1 = engine.evaluateNIL(ast.arg1());
           if (arg1.isPresent()) {
@@ -2912,8 +2911,6 @@ public final class Programming {
         final IExpr result = engine.evaluate(ast.arg1());
         final long end = bean.getCurrentThreadCpuTime();
         double value = (end - begin) / 1000000000.0;
-        //        System.out.println(begin);
-        //        System.out.println(end);
         return List(F.num(value), F.HoldForm(result));
       }
       // fall back to AbsoluteTiming

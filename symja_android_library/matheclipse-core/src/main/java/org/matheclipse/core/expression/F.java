@@ -754,8 +754,6 @@ public class F extends S {
 
   static {
     try {
-      // long start = System.currentTimeMillis();
-      // System.out.println("Start");
       AST2Expr.initialize();
       ExprParserFactory.initialize();
 
@@ -1082,8 +1080,6 @@ public class F extends S {
 
       COUNT_DOWN_LATCH.countDown();
 
-      // long stop = System.currentTimeMillis();
-      // System.out.println("Milliseconds: " + (stop - start));
     } catch (Throwable th) {
       th.printStackTrace();
     }

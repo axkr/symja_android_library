@@ -69,8 +69,6 @@ public class ConstantDefinitions {
       // }
       // }
 
-      // System.out.println(VERSION);
-      // System.out.println(TIMESTAMP);
       S.$Assumptions.setEvaluator(new $Assumptions());
       S.$BaseDirectory.setEvaluator(new $BaseDirectory());
       S.$Context.setEvaluator(new $Context());
@@ -105,7 +103,6 @@ public class ConstantDefinitions {
       S.RecordSeparators.setEvaluator(new RecordSeparators());
       S.WordSeparators.setEvaluator(new WordSeparators());
 
-      // System.out.println(S.$CreationDate.of().toString());
       S.Catalan.setEvaluator(new Catalan());
       S.ComplexInfinity.setEvaluator(new ComplexInfinity());
       S.Degree.setEvaluator(new Degree());
@@ -354,7 +351,6 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      // System.out.println(Config.MACHINE_EPSILON);
       return F.num(Config.MACHINE_EPSILON);
     }
   }

@@ -354,9 +354,6 @@ public class FileFunctions {
             Path path = Paths.get(ast.arg1().toString());
             if (!Files.exists(path)) {
               Files.createDirectory(path);
-              //              System.out.println("Directory created");
-            } else {
-              //              System.out.println("Directory already exists");
             }
             return F.stringx(path.toString());
           }

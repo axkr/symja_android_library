@@ -139,15 +139,7 @@ public class Context implements Serializable {
     return contextName.equals(Context.SYSTEM_CONTEXT_NAME);
   }
 
-  // private static int counter = 0;
-
   public ISymbol put(String key, ISymbol value) {
-    // if (!contextName.equals("System")) {
-    // counter++;
-    // if (counter > 500) {
-    // System.out.println(contextName + "`" + value);
-    // }
-    // }
     return symbolTable.put(key, value);
   }
 

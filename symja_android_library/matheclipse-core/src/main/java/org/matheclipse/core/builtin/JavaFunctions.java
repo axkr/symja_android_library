@@ -198,7 +198,6 @@ public class JavaFunctions {
             for (int i = 0; i < constructors.length; i++) {
               Parameter[] parameters = constructors[i].getParameters();
               if (parameters.length == ast.argSize() - 1) {
-                //                System.out.println("constructor: " + constructors[i]);
                 Object[] params = determineParameters(ast, parameters, 2);
                 if (params != null) {
                   Object obj = constructors[i].newInstance(params);
@@ -412,7 +411,6 @@ public class JavaFunctions {
                   Method method = methods[i];
                   if (Modifier.isStatic(method.getModifiers())) {
                     ISymbol methodName = F.symbol(context, method.getName(), engine);
-                    //                    System.out.println(methodName.fullFormString());
                   }
                 }
 

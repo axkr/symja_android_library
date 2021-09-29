@@ -50,8 +50,6 @@ public class SemanticImport extends AbstractEvaluator {
       File file = new File(fileName);
       if (file.exists()) {
         Table table = Table.read().csv(file);
-        // System.out.println(table.printAll());
-        // System.out.println(table.structure().printAll());
         return ASTDataset.newTablesawTable(table);
       }
       return engine.printMessage("SemanticImport: file " + fileName + " does not exist!");

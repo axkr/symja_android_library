@@ -137,8 +137,4 @@ public enum Extension {
     }
     return STRING;
   }
-
-  // public static void main(String[] args) {
-  // System.out.println(isAllowedExtension("BMP"));
-  // }
 }

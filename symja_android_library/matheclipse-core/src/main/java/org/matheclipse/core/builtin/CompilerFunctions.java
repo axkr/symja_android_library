@@ -709,7 +709,6 @@ public class CompilerFunctions {
     source = source.replace("{$methods}", methods.toString());
     source = source.replace("{$expression}", buf.toString());
     source = source.replace("{$size}", Integer.toString(variables.argSize()));
-    //    System.out.println(source);
     return source;
   }
 }

@@ -1381,7 +1381,6 @@ public class GraphFunctions {
       //            new LineGraphConverter<IExpr, ExprEdge, ExprEdge>(g1);
       //        Graph<ExprEdge, ExprEdge> target = new SimpleGraph<>(ExprEdge.class);
       //        lgc.convertToLineGraph(target);
-      //        System.out.println(target.toString());
       //        //	              return GraphExpr.newInstance(target);
       //      } catch (RuntimeException rex) {
       //        if (FEConfig.SHOW_STACKTRACE) {

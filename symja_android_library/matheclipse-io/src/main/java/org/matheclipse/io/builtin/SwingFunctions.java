@@ -482,7 +482,6 @@ public class SwingFunctions {
           if (expr.isPresent()) {
             dynamic.assignValue(expr, false);
           }
-          // System.out.println(F.eval(dynamic).toString());
         }
       }
     }
@@ -510,19 +509,6 @@ public class SwingFunctions {
 
       MyDocumentListener dl = new MyDocumentListener(inputField, dynamic, headID);
       inputField.getDocument().addDocumentListener(dl);
-      // inputField.addActionListener(new ActionListener() {
-      // @Override
-      // public void actionPerformed(ActionEvent e) {
-      // try {
-      // System.out.println(inputField.getText());
-      // } catch (DialogReturnException rex) {
-      // result[0] = rex.getValue();
-      // dialog.dispose();
-      // } catch (RuntimeException rex) {
-      // //
-      // }
-      // }
-      // });
     }
 
     @Override

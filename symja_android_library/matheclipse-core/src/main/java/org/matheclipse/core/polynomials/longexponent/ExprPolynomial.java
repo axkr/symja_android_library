@@ -580,8 +580,6 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       ExpVectorLong be = bie.getKey();
       s = ae.compareTo(be);
       if (s != 0) {
-        // System.out.println("s = " + s + ", " + ring.toScript(ae) + ",
-        // " + ring.toScript(be));
         return s;
       }
       if (c == 0) {
@@ -591,16 +589,11 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       }
     }
     if (ai.hasNext()) {
-      // System.out.println("ai = " + ai);
       return 1;
     }
     if (bi.hasNext()) {
-      // System.out.println("bi = " + bi);
       return -1;
     }
-    // if (c != 0) {
-    // System.out.println("c = " + c);
-    // }
     // now all keys are equal
     return c;
   }
@@ -1515,7 +1508,6 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     }
     IExpr lc = leadingBaseCoefficient();
     if (!lc.isUnit()) {
-      // System.out.println("lc = "+lc);
       return this;
     }
     IExpr lm = lc.inverse();
@@ -1838,7 +1830,6 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       IExpr s = S.leadingBaseCoefficient();
       if (t.isInteger() && s.isInteger()) {
         IExpr[] gg = t.egcd(s);
-        // System.out.println("coeff gcd = " + Arrays.toString(gg));
         ExprPolynomial z = this.ring.getZero();
         ret[0] = z.sum(gg[0]);
         ret[1] = z.sum(gg[1]);

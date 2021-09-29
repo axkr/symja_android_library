@@ -17,6 +17,7 @@ import static org.matheclipse.core.expression.S.Assumptions;
 import static org.matheclipse.core.expression.S.E;
 import static org.matheclipse.core.expression.S.I;
 import static org.matheclipse.core.expression.S.Pi;
+import static org.matheclipse.core.expression.S.Power;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -2168,7 +2169,6 @@ public class Algebra {
       if (expr.isAST()) {
         IExpr temp;
         // if (expr.isPower()&&expr.base().isPlus()) {
-        //// System.out.println(ast.toString());
         // temp = factorExpr(ast, expr.base(), varList);
         // temp = F.Power(temp, expr.exponent());
         // } else
@@ -2179,7 +2179,6 @@ public class Algebra {
           }
           return expr;
         } else if (expr.isTimes()) {
-          // System.out.println(ast.toString());
           temp =
               ((IAST) expr)
                   .map(
@@ -2198,7 +2197,6 @@ public class Algebra {
                       1);
           return temp;
         } else {
-          // System.out.println("leafCount " + expr.leafCount());
           return factor((IAST) expr, eVar, factorSquareFree, engine);
         }
       }
@@ -2247,9 +2245,6 @@ public class Algebra {
           if (factorSquareFree) {
             map = factorAbstract.squarefreeFactors(poly); // factors(poly);
           } else {
-            // System.out.println("Variable: " + varList.toString() + " -- " +
-            // expr.fullFormString());
-            // System.out.println(poly);
             map = factorAbstract.factors(poly);
           }
         } catch (RuntimeException rex) {
@@ -2285,7 +2280,6 @@ public class Algebra {
         if (!f.isOne()) {
           result.append(f);
         }
-        // System.out.println("Factor: " + expr.toString() + " ==> " + result.toString());
         return engine.evaluate(result);
       }
       return F.NIL;
@@ -2359,7 +2353,6 @@ public class Algebra {
       if (substitutions.size() == 0) {
         return factorComplex(expr, eVar.getArrayList(), S.Times, gaussianIntegers, engine);
       }
-      // System.out.println(subsPolynomial.toString());
       if (subsPolynomial.isAST()) {
         eVar.addAll(substitutions.substitutedVariablesSet());
         IExpr factorization =

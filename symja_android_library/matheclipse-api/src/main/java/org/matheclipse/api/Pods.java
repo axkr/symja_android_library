@@ -285,10 +285,6 @@ public class Pods {
           + "</body>\n"
           + "</html>"; //
 
-  // public static void main(String[] args) {
-  // System.out.println(HIGHLIGHT_IFRAME);
-  // }
-
   private static void addElementData(String soundex, String value) {
     ArrayList<IPod> list = SOUNDEX_MAP.get(soundex);
     if (list == null) {

@@ -329,7 +329,6 @@ public final class ExprTermOrder implements Serializable {
       throw new IllegalArgumentException(
           "invalid term order split, r = " + r + ", split = " + split);
     }
-    // System.out.println("evbeg2 " + evbeg2 + ", evend2 " + evend2);
     switch (evord) { // horder = new EVhorder();
       case ExprTermOrder.LEX:
         {
@@ -1792,9 +1791,6 @@ public final class ExprTermOrder implements Serializable {
       }
       return new ExprTermOrder(evord, evord2, r + k, evend1 + k);
     }
-    // System.out.println("evord = " + evord);
-    // System.out.println("DEFAULT_EVORD = " + DEFAULT_EVORD);
-    // System.out.println("tord = " + this);
     return new ExprTermOrder(
         DEFAULT_EVORD /* evord */, evord, r + k, k); // don't change to evord, cause REVITDG
   }
@@ -1834,9 +1830,6 @@ public final class ExprTermOrder implements Serializable {
       }
       return new ExprTermOrder(evord, evord2, r + k, evend1 + k);
     }
-    // System.out.println("evord = " + evord);
-    // System.out.println("DEFAULT_EVORD = " + DEFAULT_EVORD);
-    // System.out.println("tord = " + this);
     return new ExprTermOrder(evord);
   }
 

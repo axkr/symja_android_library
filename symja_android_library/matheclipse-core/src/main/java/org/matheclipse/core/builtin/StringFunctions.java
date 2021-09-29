@@ -3274,12 +3274,6 @@ public final class StringFunctions {
       if (!arg1.isString()) {
         return F.NIL;
       }
-      //       Enumeration<String> ids = Transliterator.getAvailableIDs();
-      //
-      //       while (ids.hasMoreElements()) {
-      //       String s = ids.nextElement();
-      //       System.out.println(s);
-      //       }
       if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
         if (arg2.isRuleAST()) {

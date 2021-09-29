@@ -1147,7 +1147,6 @@ public class PolynomialFunctions {
     // if (sylvester.isAST0()) {
     // return null;
     // }
-    // // System.out.println(sylvester);
     // return F.eval(F.Det(sylvester));
     // }
 

@@ -301,7 +301,6 @@ public class AssumptionFunctions {
       IAssumptions oldAssumptions = engine.getAssumptions();
       try {
         engine.setAssumptions(assumptions);
-        // System.out.println(expr.toString());
         return engine.evalWithoutNumericReset(expr);
       } finally {
         engine.setAssumptions(oldAssumptions);

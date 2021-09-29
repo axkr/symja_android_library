@@ -996,8 +996,6 @@ public final class BooleanFunctions {
         }
 
         final Formula simplified = formula.transform(simplifier).transform(transformation);
-        // formula = QuineMcCluskeyAlgorithm.compute(formula);
-        // System.out.println(formula.toString());
         IExpr result = lf.booleanFunction2Expr(simplified);
         return result;
       } catch (final ValidateException ve) {

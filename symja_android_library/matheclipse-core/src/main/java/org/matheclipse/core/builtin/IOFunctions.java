@@ -1188,7 +1188,6 @@ public class IOFunctions {
       Context context = mapEntry.getValue();
       for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
         String fullName = context.completeContextName() + entry.getKey();
-        // System.out.println(fullName);
         java.util.regex.Matcher matcher = pattern.matcher(fullName);
         if (matcher.matches()) {
           if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
@@ -1213,7 +1212,6 @@ public class IOFunctions {
       if (!contextMap.containsKey(completeContextName)) {
         for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
           String fullName = completeContextName + entry.getKey();
-          // System.out.println(fullName);
           java.util.regex.Matcher matcher = pattern.matcher(fullName);
           if (matcher.matches()) {
             if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
