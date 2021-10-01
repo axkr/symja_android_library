@@ -364,23 +364,14 @@ public class EvalEngine implements Serializable {
       final PrintStream outStream,
       PrintStream errorStream,
       boolean relaxedSyntax) {
-    fOptionsStack = new OptionsStack();
     fSessionID = sessionID;
-    // fExpressionFactory = f;
     fRecursionLimit = recursionLimit;
     fIterationLimit = iterationLimit;
     fOutPrintStream = outStream;
-    if (errorStream == null) {
-      fErrorPrintStream = outStream;
-    } else {
-      fErrorPrintStream = errorStream;
-    }
+    fErrorPrintStream = errorStream == null ? outStream : errorStream;
     fRelaxedSyntax = relaxedSyntax;
     fOutListDisabled = true;
-    // fNamespace = fExpressionFactory.getNamespace();
-
     init();
-    // fContextPath = new ContextPath();
   }
 
   /**
