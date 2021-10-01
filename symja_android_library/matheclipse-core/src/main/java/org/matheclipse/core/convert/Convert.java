@@ -95,7 +95,7 @@ public class Convert {
     if (expr == null) {
       return null;
     }
-    int[] dim = expr.isMatrix();
+    int[] dim = expr.isMatrix(false);
     if (dim == null || dim[0] == 0 || dim[1] == 0) {
       return null;
     }
