@@ -20341,11 +20341,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testLinearProgramming() {
     check(
-        "LinearProgramming(Indeterminate,{{1,2}},{{3,0}})", //
-        "LinearProgramming(Indeterminate,{{1,2}},{{3,0}})");
-    check(
         "LinearProgramming({},{{1,2}},{{3,0}})", //
         "LinearProgramming({},{{1,2}},{{3,0}})");
+    check(
+        "LinearProgramming(Indeterminate,{{1,2}},{{3,0}})", //
+        "LinearProgramming(Indeterminate,{{1,2}},{{3,0}})");
+
     check(
         "LinearProgramming({1, 1}, {{1, 2}}, {3})", //
         "{0.0,1.5}");
@@ -21707,21 +21708,16 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testMatrixPower() {
-    check(
-        "MatrixPower({{1,0}, {0,1}},2147483647)", //
-        "MatrixPower(\n"
-            + //
-            "{{1,0},\n"
-            + //
-            " {0,1}},2147483647)");
     // github #121 - print error
     check(
         "MatrixPower({{2},{1}},2)", //
-        "MatrixPower(\n"
-            + //
-            "{{2},\n"
-            + //
-            " {1}},2)");
+        "MatrixPower({{2},{1}},2)");
+    check(
+        "MatrixPower({{1, 0}, {0}}, 2)", //
+        "MatrixPower({{1,0},{0}},2)");
+    check(
+        "MatrixPower({{1,0}, {0,1}},2147483647)", //
+        "MatrixPower({{1,0},{0,1}},2147483647)");
 
     check(
         "MatrixPower({{1, 2}, {2, 5}}, -3)", //
@@ -21733,9 +21729,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{{3363,4756},\n"
             + //
             " {2378,3363}}");
-    check(
-        "MatrixPower({{1, 0}, {0}}, 2)", //
-        "MatrixPower({{1,0},{0}},2)");
   }
 
   public void testMatrixQ() {
@@ -27052,15 +27045,17 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPolynomialQuotient() {
+    check(
+        "PolynomialQuotient(x^2+4*x+1,-10,x,Modulus->2)", //
+        "PolynomialQuotient(1+4*x+x^2,-10,x,Modulus->2)");
+
     // check(
     // "PolynomialQuotientRemainder((2+x^2+x^3)/x,1-x^2,x)", //
     // "(2-x)/x");
     check(
         "PolynomialQuotient(0,2,x,Modulus->2)", //
         "PolynomialQuotient(0,2,x,Modulus->2)");
-    check(
-        "PolynomialQuotient(x^2+4*x+1,-10,x,Modulus->2)", //
-        "PolynomialQuotient(1+4*x+x^2,-10,x,Modulus->2)");
+    
 
     check(
         "PolynomialQuotient(x^2+4*x+1,Indeterminate,x,Modulus->3)", //
@@ -33092,6 +33087,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testSign() {
+    // message Power: Infinite expression 1/0 encountered.
+    check(
+        "Sign(1/0^(0.8+I*(-1.2)))", //
+        "Indeterminate");
     check(
         "Sign(Sign(z))", //
         "Sign(z)");

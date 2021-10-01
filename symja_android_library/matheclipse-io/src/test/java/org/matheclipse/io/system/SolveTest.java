@@ -3,11 +3,32 @@ package org.matheclipse.io.system;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
-/** Tests for NumericArray functions */
+/** Tests forSolve and Roots functions */
 public class SolveTest extends AbstractTestCase {
 
   public SolveTest(String name) {
     super(name);
+  }
+
+  public void testEliminate() {
+    check(
+        "Eliminate({(a*x + b)/(c*x + d)==y},x)", //
+        "True");
+    //    check(
+    //        "Eliminate(E^(-x)==0,x)", //
+    //        "False");
+    checkNumeric(
+        "Eliminate(Abs(x-1)==(-1),x)", //
+        "True");
+  }
+
+  public void testSolveHomogenization() {
+    // TODO improve result by avoiding GCD 1/2
+    check(
+        "Solve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
+        "{{x->ConditionalExpression(I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n"
+            + "I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(3)),C(\n"
+            + "1)∈Integers)}}");
   }
 
   public void testRootsX6001() {
