@@ -3588,6 +3588,9 @@ public class Algebra {
         JASModInteger jas = new JASModInteger(variable, modIntegerRing);
         GenPolynomial<ModLong> poly1 = jas.expr2JAS(arg1);
         GenPolynomial<ModLong> poly2 = jas.expr2JAS(arg2);
+        if (poly2.isZERO()) {
+          return null;
+        }
         GenPolynomial<ModLong>[] divRem = poly1.quotientRemainder(poly2);
         IExpr[] result = new IExpr[2];
         result[0] = jas.modLongPoly2Expr(divRem[0]);

@@ -15,7 +15,9 @@ import org.hipparchus.analysis.solvers.RegulaFalsiSolver;
 import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
 import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -226,11 +228,17 @@ public class FindRoot extends AbstractFunctionEvaluator {
           try {
             return F.List(F.Rule(list.arg1(),
                 Num.valueOf(findRoot(method, maxIterations, list, min, max, function, engine))));
+          } catch (MathIllegalStateException miae) {
+            // `1`.
+            return IOFunctions.printMessage(
+                ast.topHead(), "error", F.List(F.$str(miae.getMessage())), engine);
+          } catch (MathIllegalArgumentException miae) {
+            // `1`.
+            IOFunctions.printMessage(
+                ast.topHead(), "error", F.List(F.$str(miae.getMessage())), engine);
+            return F.CEmptyList;
           } catch (ValidateException ve) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-          } catch (MathIllegalArgumentException miae) {
-            LOGGER.log(engine.getLogLevel(), "FindRoot", miae);
-            return F.CEmptyList;
           } catch (MathRuntimeException mre) {
             LOGGER.log(engine.getLogLevel(), "FindRoot", mre);
           }

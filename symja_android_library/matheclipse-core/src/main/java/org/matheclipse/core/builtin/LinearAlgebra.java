@@ -2392,6 +2392,10 @@ public final class LinearAlgebra {
               }
               return F.NIL;
             }
+          } catch (MathIllegalArgumentException miae) {
+            // `1`.
+            return IOFunctions.printMessage(
+                ast.topHead(), "error", F.List(F.$str(miae.getMessage())), engine);
           } catch (final MathRuntimeException mre) {
             // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 !=
             // 3
@@ -2509,12 +2513,13 @@ public final class LinearAlgebra {
                     && vector.getDimension() <= matrix.getColumnDimension()) {
                   return underdeterminedSystem(matrix, vector, engine);
                 }
-                LOGGER.log(engine.getLogLevel(),
-                    "LinearSolve: first argument is not a square matrix.");
+                LOGGER.log(
+                    engine.getLogLevel(), "LinearSolve: first argument is not a square matrix.");
                 return F.NIL;
               }
               if (vector.getDimension() != matrix.getRowDimension()) {
-                LOGGER.log(engine.getLogLevel(),
+                LOGGER.log(
+                    engine.getLogLevel(),
                     "LinearSolve: matrix row and vector have different dimensions.");
                 return F.NIL;
               }
@@ -3115,19 +3120,22 @@ public final class LinearAlgebra {
       boolean togetherMode = engine.isTogetherMode();
       try {
         engine.setTogetherMode(true);
-        int[] dimensions = ast.arg1().isMatrix(false);
+        final IExpr arg1 = ast.arg1();
+        final IExpr arg2 = ast.arg2();
+        int[] dimensions = arg1.isMatrix(false);
         if (dimensions != null && dimensions[1] > 0 && dimensions[0] > 0) {
-          matrix = Convert.list2Matrix(ast.arg1());
+          matrix = Convert.list2Matrix(arg1);
           if (matrix == null) {
             return F.NIL;
           }
-          int p = ast.arg2().toIntDefault();
+
+          int p = arg2.toIntDefault();
           if (p == Integer.MIN_VALUE) {
             return F.NIL;
           }
           if (p == 1) {
-            ((IAST) ast.arg1()).addEvalFlags(IAST.IS_MATRIX);
-            return ast.arg1();
+            ((IAST) arg1).addEvalFlags(IAST.IS_MATRIX);
+            return arg1;
           }
           if (p == 0) {
             resultMatrix =
@@ -3148,6 +3156,10 @@ public final class LinearAlgebra {
             IterationLimitExceeded.throwIt(p, ast);
           }
 
+          if (matrix.getRowDimension() != matrix.getColumnDimension()) {
+            // Argument `1` at position `2` is not a non-empty square matrix.
+            return IOFunctions.printMessage(ast.topHead(), "matsq", F.List(arg1, F.C1), engine);
+          }
           if (p < 0) {
             resultMatrix = Inverse.inverseMatrix(matrix, x -> x.isPossibleZero(false));
             matrix = resultMatrix;

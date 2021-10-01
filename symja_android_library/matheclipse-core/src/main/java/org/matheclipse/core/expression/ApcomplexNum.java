@@ -11,6 +11,7 @@ import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -211,7 +212,7 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IComplexNum pow(final IComplexNum val) {
     return valueOf(EvalEngine.getApfloat().pow(fApcomplex, val.apcomplexValue()));
-  } 
+  }
 
   @Override
   public IExpr power(final IExpr that) {
@@ -224,7 +225,7 @@ public class ApcomplexNum implements IComplexNum {
     }
     return IComplexNum.super.power(that);
   }
-  
+
   /** @return */
   @Override
   public IComplexNum conjugate() {
@@ -252,6 +253,11 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr divide(final IExpr that) {
+    if (that.isZero()) {
+      // Infinite expression `1` encountered.
+      IOFunctions.printMessage(S.Divide, "infy", F.List(F.Divide(this, that)), EvalEngine.get());
+      return F.CComplexInfinity;
+    }
     if (that instanceof IComplexNum) {
       return valueOf(
           EvalEngine.getApfloat().divide(fApcomplex, ((IComplexNum) that).apcomplexValue()));
@@ -323,7 +329,13 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr complexArg() {
-    return F.num(EvalEngine.getApfloat().arg(fApcomplex));
+    try {
+      return F.num(EvalEngine.getApfloat().arg(fApcomplex));
+    } catch (ArithmeticException aex) {
+      // Indeterminate expression `1` encountered.
+      IOFunctions.printMessage(S.Arg, "indet", F.List(F.Arg(this)), EvalEngine.get());
+      return S.Indeterminate;
+    }
   }
 
   /** {@inheritDoc} */
@@ -689,24 +701,30 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr atan2(IExpr value) {
-    if (value instanceof ApcomplexNum) {
-      Apcomplex th = fApcomplex;
-      Apcomplex x = ((ApcomplexNum) value).fApcomplex;
+    try {
+      if (value instanceof ApcomplexNum) {
+        Apcomplex th = fApcomplex;
+        Apcomplex x = ((ApcomplexNum) value).fApcomplex;
 
-      // compute r = sqrt(x^2+y^2)
-      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-      final Apcomplex r = h.sqrt(h.add(h.multiply(x, x), h.multiply(th, th)));
+        // compute r = sqrt(x^2+y^2)
+        FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+        final Apcomplex r = h.sqrt(h.add(h.multiply(x, x), h.multiply(th, th)));
 
-      if (x.real().compareTo(Apfloat.ZERO) >= 0) {
-        // compute atan2(y, x) = 2 atan(y / (r + x))
-        return valueOf(h.multiply(h.atan(h.divide(th, h.add(r, x))), new Apfloat(2)));
-      } else {
-        // compute atan2(y, x) = +/- pi - 2 atan(y / (r - x))
-        return valueOf(
-            h.add(h.multiply(h.atan(h.divide(th, h.subtract(r, x))), new Apfloat(-2)), h.pi()));
+        if (x.real().compareTo(Apfloat.ZERO) >= 0) {
+          // compute atan2(y, x) = 2 atan(y / (r + x))
+          return valueOf(h.multiply(h.atan(h.divide(th, h.add(r, x))), new Apfloat(2)));
+        } else {
+          // compute atan2(y, x) = +/- pi - 2 atan(y / (r - x))
+          return valueOf(
+              h.add(h.multiply(h.atan(h.divide(th, h.subtract(r, x))), new Apfloat(-2)), h.pi()));
+        }
       }
+      return IComplexNum.super.atan2(value);
+    } catch (ArithmeticException aex) {
+      // Indeterminate expression `1` encountered.
+      IOFunctions.printMessage(S.ArcTan, "indet", F.List(F.ArcTan(value, this)), EvalEngine.get());
+      return S.Indeterminate;
     }
-    return IComplexNum.super.atan2(value);
   }
 
   @Override

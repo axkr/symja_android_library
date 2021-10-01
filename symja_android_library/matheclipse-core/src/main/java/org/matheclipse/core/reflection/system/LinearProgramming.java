@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.optim.PointValuePair;
 import org.hipparchus.optim.linear.LinearConstraint;
@@ -14,6 +15,7 @@ import org.hipparchus.optim.linear.PivotSelectionRule;
 import org.hipparchus.optim.linear.Relationship;
 import org.hipparchus.optim.linear.SimplexSolver;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -153,6 +155,10 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
           return F.List(values);
         }
       }
+    } catch (MathIllegalArgumentException miae) {
+      // `1`.
+      return IOFunctions.printMessage(
+          ast.topHead(), "error", F.List(F.$str(miae.getMessage())), engine);
     } catch (MathRuntimeException mre) {
       LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
     }

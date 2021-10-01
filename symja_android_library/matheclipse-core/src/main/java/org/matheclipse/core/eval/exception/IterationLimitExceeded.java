@@ -28,7 +28,9 @@ public class IterationLimitExceeded extends LimitException {
   @Override
   public String getMessage() {
     // Iteration limit of `1` exceeded.
-    return IOFunctions.getMessage("itlim", F.List(F.ZZ(fLimit)), EvalEngine.get());
+    return fExpr.topHead().toString()
+        + ": "
+        + IOFunctions.getMessage("itlim", F.List(F.ZZ(fLimit)), EvalEngine.get());
   }
 
   public static void throwIt(long iterationCounter, final IExpr expr) {

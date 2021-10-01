@@ -522,7 +522,9 @@ public class IOFunctions {
     "empt",
     "Argument `1` should be a non-empty list.", //
     "eqf",
-    "`1` is not a well-formed equation.", //
+    "`1` is not a well-formed equation.", // ^
+    "error",
+    "`1`.", //
     "exact",
     "Argument `1` is not an exact number.", //
     "exdims",
@@ -651,6 +653,8 @@ public class IOFunctions {
     "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
     "nil",
     "unexpected NIL expression encountered.", //
+    "ninv",
+    "`1` is not invertible modulo `2`.", //
     "nocatch",
     "Uncaught `1` returned to top level.", //
     "nofirst",

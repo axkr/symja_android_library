@@ -259,7 +259,7 @@ public final class ListFunctions {
      * Convert the integer position number >= 0 into an object
      *
      * @param position which should be converted to an object
-     * @return
+     * @return the Symja integer number representation
      */
     public IExpr toObject(final int position) {
       return F.ZZ(position);
@@ -895,7 +895,10 @@ public final class ListFunctions {
               final IAST dimIter = (IAST) ast.arg2(); // dimensions
               final IAST originIter = (IAST) ast.arg3(); // origins
               if (dimIter.size() != originIter.size()) {
-                LOGGER.log(engine.getLogLevel(), "{} and {} should have the same length.", dimIter,
+                LOGGER.log(
+                    engine.getLogLevel(),
+                    "{} and {} should have the same length.",
+                    dimIter,
                     originIter);
                 return F.NIL;
               }
@@ -1902,6 +1905,12 @@ public final class ListFunctions {
             if (indx == 0) {
               return list.setAtCopy(0, S.Sequence);
             }
+            if (indx >= list.size()) {
+              return IOFunctions.printMessage(
+                  // Part `1` of `2` does not exist.
+                  ast.topHead(), "partw", F.List(F.List(ast.arg2()), list), engine);
+            }
+
             return list.splice(indx);
           } catch (final ValidateException ve) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
@@ -1948,8 +1957,8 @@ public final class ListFunctions {
         }
         return deletePartRecursive(list, indx, 0);
       } catch (final RuntimeException rex) {
-        LOGGER.log(engine.getLogLevel(), "Cannot delete position {} in {}", listOfIntPositions,
-            list, rex);
+        LOGGER.log(
+            engine.getLogLevel(), "Cannot delete position {} in {}", listOfIntPositions, list, rex);
         return F.NIL;
       }
     }
@@ -2345,6 +2354,8 @@ public final class ListFunctions {
             return resultList;
           }
         }
+      } catch (ArgumentTypeException ate) {
+        LOGGER.log(engine.getLogLevel(), "{}: {}", ast.topHead(), ate.getMessage());
       } catch (ValidateException | IndexOutOfBoundsException | NullPointerException e) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       }
@@ -2381,19 +2392,46 @@ public final class ListFunctions {
         end--;
         if (j < end || end <= 0) {
           throw new ArgumentTypeException(
-              "cannot drop positions " + j + " through " + end + " in " + list);
-          // return F.NIL;
+              "cannot drop positions "
+                  + sequenceSpecifications[level].getStartOffset()
+                  + " through "
+                  + sequenceSpecifications[level].getEndOffset()
+                  + " in "
+                  + list);
         }
         for (int i = j; i >= end; i += step) {
+          if (j >= list.size()) {
+            throw new ArgumentTypeException(
+                "cannot drop positions "
+                    + sequenceSpecifications[level].getStartOffset()
+                    + " through "
+                    + sequenceSpecifications[level].getEndOffset()
+                    + " in "
+                    + list);
+          }
           list.remove(j);
           j += step;
         }
       } else {
         if (j == 0) {
           throw new ArgumentTypeException(
-              "cannot drop positions " + j + " through " + (end - 1) + " in " + list);
+              "cannot drop positions "
+                  + sequenceSpecifications[level].getStartOffset()
+                  + " through "
+                  + sequenceSpecifications[level].getEndOffset()
+                  + " in "
+                  + list);
         }
         for (int i = j; i < end; i += step) {
+          if (j >= list.size()) {
+            throw new ArgumentTypeException(
+                "cannot drop positions "
+                    + sequenceSpecifications[level].getStartOffset()
+                    + " through "
+                    + sequenceSpecifications[level].getEndOffset()
+                    + " in "
+                    + list);
+          }
           list.remove(j);
           j += step - 1;
         }
@@ -2651,6 +2689,7 @@ public final class ListFunctions {
      * @param list
      * @param positions
      * @param headOffset
+     * @return
      */
     private static IExpr extract(final IAST list, final IAST positions, int headOffset) {
       int p = 0;
@@ -2906,7 +2945,6 @@ public final class ListFunctions {
        * </code> position into a result object.
        *
        * @param ast
-       * @return
        */
       private void positionRecursive(final IAST ast, IAST prototypeList) {
         int minDepth = 0;
@@ -3501,7 +3539,7 @@ public final class ListFunctions {
      *
      * @param ast1 first AST set
      * @param ast2 second AST set
-     * @return
+     * @return the intersection set of the sets ast1 and ast2
      */
     public static IAST intersection(IAST ast1, IAST ast2) {
       if (ast1.isEmpty() || ast2.isEmpty()) {
@@ -4981,7 +5019,8 @@ public final class ListFunctions {
       if (ast.size() >= 5) {
         maxResults = engine.evaluate(ast.arg4()).toIntDefault();
         if (maxResults < 0) {
-          LOGGER.log(engine.getLogLevel(),
+          LOGGER.log(
+              engine.getLogLevel(),
               "Position: non-negative integer for maximum number of objects expected.");
           return F.NIL;
         }
@@ -5303,7 +5342,8 @@ public final class ListFunctions {
         if (size != Integer.MIN_VALUE) {
           return range(size);
         }
-        LOGGER.log(engine.getLogLevel(),
+        LOGGER.log(
+            engine.getLogLevel(),
             "Range: argument {} is greater than Javas Integer.MAX_VALUE or no integer number.",
             ast.arg1());
         return F.NIL;
@@ -5327,8 +5367,10 @@ public final class ListFunctions {
      */
     public static IAST range(int size) {
       if (size > Integer.MAX_VALUE - 3) {
-        LOGGER.log(EvalEngine.get().getLogLevel(),
-            "Range: argument {} is greater than Javas Integer.MAX_VALUE-3", size);
+        LOGGER.log(
+            EvalEngine.get().getLogLevel(),
+            "Range: argument {} is greater than Javas Integer.MAX_VALUE-3",
+            size);
         return F.NIL;
       }
       return range(1, size + 1);
@@ -5339,7 +5381,7 @@ public final class ListFunctions {
      *
      * @param startInclusive
      * @param endExclusive
-     * @return
+     * @return a list of integer numbers
      */
     public static IAST range(int startInclusive, int endExclusive) {
       int size = endExclusive - startInclusive;
@@ -6506,6 +6548,8 @@ public final class ListFunctions {
               return list.select(x -> engine.evalTrue(F.unaryAST1(predicateHead, x)), resultLimit);
             }
           }
+        } catch (IllegalArgumentException iae) {
+          LOGGER.log(engine.getLogLevel(), "{}: {}", ast.topHead(), iae.getMessage());
         } catch (final ValidateException ve) {
           LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
         }
@@ -6995,7 +7039,7 @@ public final class ListFunctions {
      * Determine all local variables of the iterators starting with index <code>2</code>.
      *
      * @param ast
-     * @return
+     * @return a list of local variables
      */
     public IAST determineIteratorVariables(final IAST ast) {
       int size = ast.size();
@@ -7018,7 +7062,7 @@ public final class ListFunctions {
      * given <code>ast</code>.
      *
      * @param ast
-     * @return
+     * @return the variable set of local variables
      */
     public VariablesSet determineIteratorExprVariables(final IAST ast) {
       VariablesSet variableList = new VariablesSet();
@@ -7836,7 +7880,7 @@ public final class ListFunctions {
      *
      * @param ast1 first AST set
      * @param ast2 second AST set
-     * @return
+     * @return the union of the sets ast1 and ast2
      */
     public static IASTMutable union(IAST ast1, IAST ast2) {
       Set<IExpr> resultSet = new TreeSet<IExpr>();
@@ -7977,7 +8021,7 @@ public final class ListFunctions {
     IASTMutable orderedList = listOrAssociation.copyAST();
     return EvalAttributes.copySortLess(orderedList).get(n);
   }
-  
+
   /**
    * Reverse the elements in the given <code>list</code>.
    *

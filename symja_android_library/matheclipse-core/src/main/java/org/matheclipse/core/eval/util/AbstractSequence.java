@@ -21,6 +21,14 @@ public abstract class AbstractSequence implements ISequence {
     fStep = step;
   }
 
+  public int getStartOffset() {
+    return fStartOffset;
+  }
+
+  public int getEndOffset() {
+    return fEndOffset;
+  }
+  
   /** {@inheritDoc} */
   @Override
   public int getStep() {

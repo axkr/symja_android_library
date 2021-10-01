@@ -1148,10 +1148,18 @@ public class IntegerFunctions {
       if (ast.exists(x -> !x.isInteger())) {
         return F.NIL;
       }
-      IInteger arg1 = (IInteger) ast.arg1();
-      IInteger arg2 = (IInteger) ast.arg2();
-      IInteger arg3 = (IInteger) ast.arg3();
+      final IInteger arg1 = (IInteger) ast.arg1();
+      final IInteger arg2 = (IInteger) ast.arg2();
+      final IInteger arg3 = (IInteger) ast.arg3();
       try {
+        if (arg1.isZero() && arg2.isNegativeResult()) {
+          // `1` is not invertible modulo `2`.
+          return IOFunctions.printMessage(ast.topHead(), "ninv", F.List(arg1, arg3), engine);
+        }
+        if (arg3.isZero()) {
+          // The argument `1` should be nonzero.
+          return IOFunctions.printMessage(ast.topHead(), "divz", F.List(arg3, ast), engine);
+        }
         if (arg2.isMinusOne()) {
           return arg1.modInverse(arg3);
         }

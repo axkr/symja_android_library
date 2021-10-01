@@ -44,4 +44,9 @@ public interface ISequence {
    * @param size
    */
   public abstract void setListSize(int size);
+
+  public int getStartOffset();
+
+  public int getEndOffset();
+  
 }

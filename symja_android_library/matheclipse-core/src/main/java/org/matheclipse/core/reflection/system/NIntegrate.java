@@ -14,6 +14,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.Precision;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -159,8 +160,10 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       if (option.isReal()) {
         maxPoints = ((ISignedNumber) option).toIntDefault(-1);
         if (maxPoints <= 0) {
-          LOGGER.log(engine.getLogLevel(),
-              "NIntegrate: Error in option MaxPoints. Using default value: {}", maxPoints);
+          LOGGER.log(
+              engine.getLogLevel(),
+              "NIntegrate: Error in option MaxPoints. Using default value: {}",
+              maxPoints);
           maxPoints = DEFAULT_MAX_POINTS;
         }
       }
@@ -175,8 +178,10 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       if (option.isReal()) {
         precisionGoal = ((ISignedNumber) option).toIntDefault(-1);
         if (precisionGoal <= 0) {
-          LOGGER.log(engine.getLogLevel(),
-              "NIntegrate: Error in option PrecisionGoal. Using default value: {}", precisionGoal);
+          LOGGER.log(
+              engine.getLogLevel(),
+              "NIntegrate: Error in option PrecisionGoal. Using default value: {}",
+              precisionGoal);
           precisionGoal = 16;
         }
       }
@@ -205,6 +210,10 @@ public class NIntegrate extends AbstractFunctionEvaluator {
                     maxIterations);
             result = Precision.round(result, precisionGoal);
             return Num.valueOf(result);
+          } catch (MathIllegalArgumentException | MathIllegalStateException miae) {
+            // `1`.
+            return IOFunctions.printMessage(
+                ast.topHead(), "error", F.List(F.$str(miae.getMessage())), engine);
           } catch (MathRuntimeException mre) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
           } catch (Exception e) {
