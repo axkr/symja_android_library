@@ -618,7 +618,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       }
     }
     if (Character.isUpperCase(fSymbolName.charAt(0))) {
-      String alias = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(fSymbolName);
+      String alias = F.getPredefinedInternalFormString(fSymbolName);
       if (alias != null) {
         if (Config.RUBI_CONVERT_SYMBOLS) {
           if (alias.startsWith("Rubi`")) {

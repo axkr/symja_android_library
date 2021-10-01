@@ -17,7 +17,7 @@ public class Pattern extends Blank {
 
   public static IPattern valueOf(final ISymbol symbol) {
     if (symbol.getContext().equals(Context.DUMMY)) {
-      IPattern value = F.PREDEFINED_PATTERN_MAP.get(symbol.toString());
+      IPattern value = F.getPredefinedPattern(symbol.toString());
       if (value != null) {
         return value;
       }

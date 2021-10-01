@@ -1940,7 +1940,7 @@ public class Pods {
         String stemForm = getStemForm(rest.arg1().toString().toLowerCase());
         IExpr head = rest.head();
         if (stemForm != null) {
-          head = STEM.STEM_MAP.get(stemForm);
+          head = STEM.getSymbol(stemForm);
           if (head != null) {
             specialFunction = rest.setAtClone(0, head);
             specialFunction.remove(1);
@@ -1949,7 +1949,7 @@ public class Pods {
         if (!specialFunction.isPresent()) {
           stemForm = getStemForm(rest.last().toString().toLowerCase());
           if (stemForm != null) {
-            head = STEM.STEM_MAP.get(stemForm);
+            head = STEM.getSymbol(stemForm);
             if (head != null) {
               specialFunction = rest.setAtClone(0, head);
               specialFunction.remove(rest.size() - 1);
