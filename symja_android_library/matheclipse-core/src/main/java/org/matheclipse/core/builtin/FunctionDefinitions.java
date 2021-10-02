@@ -48,6 +48,7 @@ import static org.matheclipse.core.expression.S.Plot3D;
 import static org.matheclipse.core.expression.S.PolarPlot;
 import static org.matheclipse.core.expression.S.Product;
 import static org.matheclipse.core.expression.S.Ramp;
+import static org.matheclipse.core.expression.S.Reduce;
 import static org.matheclipse.core.expression.S.Share;
 import static org.matheclipse.core.expression.S.Solve;
 import static org.matheclipse.core.expression.S.Sum;
@@ -118,6 +119,7 @@ public final class FunctionDefinitions {
       PolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.PolarPlot());
       Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
       Ramp.setEvaluator(new org.matheclipse.core.reflection.system.Ramp());
+      Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
       Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
       Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
       Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
