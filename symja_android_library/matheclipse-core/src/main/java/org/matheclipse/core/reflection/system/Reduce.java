@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -9,12 +10,13 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Reduce extends AbstractEvaluator {
 
-  private static class ReduceComparison {
+  static class ReduceComparison {
 
     final IExpr variable;
 
@@ -25,7 +27,7 @@ public class Reduce extends AbstractEvaluator {
      * <p><code>minType</code> and <code>maxType</code> define if it is an open interval (value == 1
      * (LessThan) ) or a closed interval (value == 2 (LessEqualThan) or value == 3 (EQUAL))
      */
-    private static class VariableInterval {
+    static class VariableInterval {
 
       final IExpr variable;
 
@@ -142,6 +144,114 @@ public class Reduce extends AbstractEvaluator {
         String maxStr = maxType == 1 ? " < " : maxType == 2 ? " <= " : " == ";
         return "|" + xMin.toString() + minStr + variable + maxStr + xMax.toString() + "|";
       }
+
+      public IExpr reduceAnd(int headID, IExpr rhs) throws ArgumentTypeException {
+        try {
+          Complex c = rhs.evalComplex();
+          if (c != null && !F.isZero(c.getImaginary())) {
+            // complex values are not allowed in intervals
+            return S.False;
+          }
+        } catch (ArgumentTypeException ate) {
+          // fall through
+        }
+        switch (headID) {
+          case ID.Equal:
+            if (S.GreaterEqual.ofQ(rhs, xMin) && S.LessEqual.ofQ(rhs, xMax)) {
+              if (maxType == 1 && S.Equal.ofQ(rhs, xMax)) {
+                return S.False;
+              }
+              if (minType == 1 && S.Equal.ofQ(rhs, xMin)) {
+                return S.False;
+              }
+              xMax = rhs;
+              xMin = rhs;
+              minType = 3;
+              maxType = 3;
+              return S.Continue;
+            } else {
+              IExpr gt = S.Greater.of(rhs, xMax);
+              if (gt.isTrue()) {
+                return S.False;
+              }
+              IExpr lt = S.Less.of(rhs, xMin);
+              if (lt.isTrue()) {
+                return S.False;
+              }
+              if (gt.isFalse() && lt.isFalse()) {
+                xMax = rhs;
+                xMin = rhs;
+                minType = 3;
+                maxType = 3;
+                return S.Continue;
+              }
+            }
+            break;
+          case ID.Less:
+            if (S.Less.ofQ(rhs, xMax)) {
+              if (minType == 1 && S.LessEqual.ofQ(rhs, xMin)) {
+                return S.False;
+              } else if (S.Less.ofQ(rhs, xMin)) {
+                return S.False;
+              }
+              xMax = rhs;
+              maxType = 1;
+            } else {
+              if (S.LessEqual.ofQ(rhs, xMin)) {
+                return S.False;
+              }
+            }
+            return S.Continue;
+          case ID.LessEqual:
+            if (S.LessEqual.ofQ(rhs, xMax)) {
+              if (minType == 1 && S.LessEqual.ofQ(rhs, xMin)) {
+                return S.False;
+              } else if (S.Less.ofQ(rhs, xMin)) {
+                return S.False;
+              }
+              xMax = rhs;
+              maxType = 2;
+            } else {
+              if (S.Less.ofQ(rhs, xMin)) {
+                return S.False;
+              }
+            }
+            return S.Continue;
+          case ID.Greater:
+            if (S.Greater.ofQ(rhs, xMin)) {
+              if (maxType == 1 && S.GreaterEqual.ofQ(rhs, xMax)) {
+                return S.False;
+              } else if (S.Greater.ofQ(rhs, xMax)) {
+                return S.False;
+              }
+              xMin = rhs;
+              minType = 1;
+            } else {
+              if (S.GreaterEqual.ofQ(rhs, xMax)) {
+                return S.False;
+              }
+            }
+            return S.Continue;
+          case ID.GreaterEqual:
+            if (S.GreaterEqual.ofQ(rhs, xMin)) {
+              if (maxType == 1 && S.GreaterEqual.ofQ(rhs, xMax)) {
+                return S.False;
+              } else if (S.Greater.ofQ(rhs, xMax)) {
+                return S.False;
+              }
+              xMin = rhs;
+              minType = 2;
+            } else {
+              if (S.Greater.ofQ(rhs, xMax)) {
+                return S.False;
+              }
+            }
+            return S.Continue;
+          default:
+            return F.NIL;
+        }
+        return F.NIL;
+      }
     }
 
     public ReduceComparison(IExpr variable) {
@@ -155,7 +265,7 @@ public class Reduce extends AbstractEvaluator {
     private IExpr reduceAndOr(IExpr expr) throws ArgumentTypeException {
       if (expr.isAST(S.And)) {
         VariableInterval cd = new VariableInterval(variable);
-        IExpr temp = reduceAnd(expr, cd);
+        IExpr temp = reduceAnd((IAST) expr, cd);
         if (temp.isPresent()) {
           if (temp == S.Continue) {
             return cd.toExpr();
@@ -165,7 +275,7 @@ public class Reduce extends AbstractEvaluator {
         return F.NIL;
       } else if (expr.isAST(S.Or)) {
         VariableInterval cd = new VariableInterval(variable);
-        IExpr temp = reduceOr(expr, cd);
+        IExpr temp = reduceOr((IAST) expr, cd);
         if (temp.isPresent()) {
           if (temp == S.Continue) {
             return cd.toExpr();
@@ -178,7 +288,7 @@ public class Reduce extends AbstractEvaluator {
       return F.NIL;
     }
 
-    private IExpr reduceOr(IExpr expr, VariableInterval cd) throws ArgumentTypeException {
+    private IExpr reduceOr(IAST expr, VariableInterval cd) throws ArgumentTypeException {
       IAST orAST = (IAST) expr;
       if (orAST.isAST0()) {
         throw new ArgumentTypeException("Or: size == 0");
@@ -190,7 +300,7 @@ public class Reduce extends AbstractEvaluator {
         IExpr arg = orAST.get(i);
         if (arg.isAST(S.And)) {
           VariableInterval andCD = new VariableInterval(variable);
-          IExpr temp = reduceAnd(arg, andCD);
+          IExpr temp = reduceAnd((IAST) arg, andCD);
           if (temp.isPresent()) {
             if (temp == S.Continue) {
               if (cd.isInitial()) {
@@ -210,8 +320,7 @@ public class Reduce extends AbstractEvaluator {
           IExpr temp = S.Simplify.of(arg);
           if (temp.isAST2() && temp.first().equals(variable)) {
             VariableInterval comparatorCD = new VariableInterval(variable);
-            IExpr arg2 = temp.second();
-            temp = reduceComparator(comparatorCD, temp, arg2);
+            temp = comparatorCD.reduceAnd(temp.headID(), temp.second());
             if (temp != S.Continue) {
               if (temp.isTrue()) {
                 continue;
@@ -235,8 +344,19 @@ public class Reduce extends AbstractEvaluator {
       return S.Continue;
     }
 
-    private IExpr reduceAnd(IExpr expr, VariableInterval cd) throws ArgumentTypeException {
-      IAST andAST = (IAST) expr;
+    /**
+     * Try to reduce an {@link S#And} AST.
+     *
+     * @param andExpr the {@link S#And} AST
+     * @param variableInterval
+     * @return {@link S#Continue}, if all condition terms could be reduced (evaluated) in <code>
+     *     variableInterval
+     *     </code>, an {@link S#And} AST if some parts could be evaluated, {@link F#NIL} otherwise
+     * @throws ArgumentTypeException
+     */
+    public IExpr reduceAnd(IAST andExpr, VariableInterval variableInterval)
+        throws ArgumentTypeException {
+      IASTMutable andAST = andExpr.copy();
       if (andAST.isAST0()) {
         throw new ArgumentTypeException("And: size == 0");
       }
@@ -244,117 +364,121 @@ public class Reduce extends AbstractEvaluator {
         return andAST.arg1();
       }
 
-      for (int i = 1; i < andAST.size(); i++) {
-        // TODO check Simplify result
-        IExpr temp = S.Simplify.of(andAST.get(i));
-        if (temp.isAST2() && temp.first().equals(cd.variable)) {
-          IExpr arg2 = temp.second();
-          temp = reduceComparator(cd, temp, arg2);
+      boolean andEvaled = false;
+      boolean variableInternalContinued = true;
+      IExpr lastArg = rewriteVariableValue(variableInterval, andAST.arg1());
+      int lastIndex = 1;
+      IExpr temp = F.NIL;
+      if (lastArg.isAST2() && lastArg.first().equals(variableInterval.variable)) {
+        temp = variableInterval.reduceAnd(lastArg.headID(), lastArg.second());
+        if (temp.isPresent()) {
+          if (temp.isFalse()) {
+            return S.False;
+          }
           if (temp != S.Continue) {
-            if (temp.isTrue()) {
-              continue;
-            }
-            if (temp.isFalse()) {
-              return S.False;
-            }
-            return temp;
+            andAST.set(1, temp);
+            andEvaled = true;
+            lastArg = temp;
           }
         }
       }
+      if (temp != S.Continue) {
+        variableInternalContinued = false;
+      }
 
-      return S.Continue;
+      for (int i = 2; i < andAST.size(); i++) {
+        // TODO check Simplify result
+        IExpr arg = rewriteVariableValue(variableInterval, andAST.get(i));
+        IExpr reducedArg = F.NIL;
+        if (arg.isAST2() && arg.first().equals(variableInterval.variable)) {
+          reducedArg = variableInterval.reduceAnd(arg.headID(), arg.second());
+          if (reducedArg.isPresent()) {
+            if (reducedArg.isFalse()) {
+              return S.False;
+            }
+            if (reducedArg != S.Continue) {
+              andAST.set(i, reducedArg);
+              andEvaled = true;
+              arg = reducedArg;
+            }
+          }
+          if (reducedArg != S.Continue) {
+            variableInternalContinued = false;
+          }
+          IASTMutable orAST = F.NIL;
+          boolean evaled = false;
+          if (arg.isComparatorFunction() && lastArg.isAST(S.Or)) {
+            orAST = ((IAST) lastArg).copy();
+            evaled = mapOrReduced(arg, orAST);
+
+          } else if (lastArg.isComparatorFunction() && arg.isAST(S.Or)) {
+            orAST = ((IAST) arg).copy();
+            evaled = mapOrReduced(lastArg, orAST);
+          }
+          // TODO if 2 Or() expressions are involved, create a distributed And() expression
+          if (evaled) {
+            temp = EvalEngine.get().evaluate(orAST);
+            andAST.set(lastIndex, S.True);
+            lastArg = temp;
+            lastIndex = i;
+            andAST.set(i, lastArg);
+            andEvaled = true;
+          }
+        }
+      }
+      if (andEvaled) {
+        return andAST;
+      }
+      if (variableInternalContinued) {
+        return S.Continue;
+      }
+      return F.NIL;
     }
 
-    private IExpr reduceComparator(VariableInterval cd, IExpr temp, IExpr rhs)
-        throws ArgumentTypeException {
-      double d = rhs.evalDouble();
-      if (!(Double.isNaN(d) || Double.isInfinite(d))) {
-        switch (temp.headID()) {
-          case ID.Equal:
-            if (S.GreaterEqual.ofQ(rhs, cd.xMin) && S.LessEqual.ofQ(rhs, cd.xMax)) {
-              if (cd.maxType == 1 && S.Equal.ofQ(rhs, cd.xMax)) {
-                return S.False;
-              }
-              if (cd.minType == 1 && S.Equal.ofQ(rhs, cd.xMin)) {
-                return S.False;
-              }
-              cd.xMax = rhs;
-              cd.xMin = rhs;
-              cd.minType = 3;
-              cd.maxType = 3;
-              return S.Continue;
-            } else {
-              if (S.Greater.ofQ(rhs, cd.xMax)) {
-                return S.False;
-              }
-              if (S.Less.ofQ(rhs, cd.xMin)) {
-                return S.False;
-              }
-            }
-            break;
-          case ID.Less:
-            if (S.Less.ofQ(rhs, cd.xMax)) {
-              if (cd.minType == 1 && S.LessEqual.ofQ(rhs, cd.xMin)) {
-                return S.False;
-              } else if (S.Less.ofQ(rhs, cd.xMin)) {
-                return S.False;
-              }
-              cd.xMax = rhs;
-              cd.maxType = 1;
-            } else {
-              if (S.LessEqual.ofQ(rhs, cd.xMin)) {
-                return S.False;
-              }
-            }
-            return S.Continue;
-          case ID.LessEqual:
-            if (S.LessEqual.ofQ(rhs, cd.xMax)) {
-              if (cd.minType == 1 && S.LessEqual.ofQ(rhs, cd.xMin)) {
-                return S.False;
-              } else if (S.Less.ofQ(rhs, cd.xMin)) {
-                return S.False;
-              }
-              cd.xMax = rhs;
-              cd.maxType = 2;
-            } else {
-              if (S.Less.ofQ(rhs, cd.xMin)) {
-                return S.False;
-              }
-            }
-            return S.Continue;
-          case ID.Greater:
-            if (S.Greater.ofQ(rhs, cd.xMin)) {
-              if (cd.maxType == 1 && S.GreaterEqual.ofQ(rhs, cd.xMax)) {
-                return S.False;
-              } else if (S.Greater.ofQ(rhs, cd.xMax)) {
-                return S.False;
-              }
-              cd.xMin = rhs;
-              cd.minType = 1;
-            } else {
-              if (S.GreaterEqual.ofQ(rhs, cd.xMax)) {
-                return S.False;
-              }
-            }
-            return S.Continue;
-          case ID.GreaterEqual:
-            if (S.GreaterEqual.ofQ(rhs, cd.xMin)) {
-              if (cd.maxType == 1 && S.GreaterEqual.ofQ(rhs, cd.xMax)) {
-                return S.False;
-              } else if (S.Greater.ofQ(rhs, cd.xMax)) {
-                return S.False;
-              }
-              cd.xMin = rhs;
-              cd.minType = 2;
-            } else {
-              if (S.Greater.ofQ(rhs, cd.xMax)) {
-                return S.False;
-              }
-            }
-            return S.Continue;
-          default:
-            return F.NIL;
+    private boolean mapOrReduced(IExpr arg, IASTMutable orAST) {
+      boolean evaled = false;
+      for (int j = 1; j < orAST.size(); j++) {
+        IExpr r = reduceAndBinary(arg, orAST.get(j));
+        if (r.isPresent()) {
+          orAST.set(j, r);
+          evaled = true;
         }
+      }
+      return evaled;
+    }
+
+    private IExpr rewriteVariableValue(VariableInterval cd, IExpr lastArg) {
+      if (lastArg.isEqual()) {
+        IAST[] reduced =
+            Eliminate.eliminateOneVariable(F.List(lastArg), cd.variable, EvalEngine.get());
+        if (reduced != null && reduced[0].isEmptyList() && reduced[1].isRule()) {
+          IAST rule = (IAST) reduced[1];
+          lastArg = F.Equal(variable, rule.second());
+        }
+      } else {
+        lastArg = S.Simplify.of(lastArg, cd.variable);
+      }
+      return lastArg;
+    }
+
+    private IExpr reduceAndBinary(IExpr arg, IExpr orArg) {
+      //      VariableInterval cd = new VariableInterval(variable);
+      //      IExpr reduced = cd.reduceComparator(arg, orArg);
+      //      if (reduced.isPresent()) {
+      //        if (reduced == S.Continue || reduced.isAST(S.And)) {
+      //          return F.NIL;
+      //        }
+      //        return reduced;
+      //      }
+      //      return F.NIL;
+
+      ReduceComparison rcAnd = new ReduceComparison(variable);
+      IExpr reduced = rcAnd.evaluate(F.And(arg, orArg));
+      if (reduced.isPresent()) {
+        if (reduced == S.Continue || reduced.isAST(S.And)) {
+          return F.NIL;
+        }
+        return reduced;
       }
       return F.NIL;
     }
@@ -377,6 +501,7 @@ public class Reduce extends AbstractEvaluator {
       vars = eVar.getVarList();
     }
     if (!vars.isList1()) {
+      // only univariate expressions allowed atm
       return F.NIL;
     }
 
@@ -390,26 +515,51 @@ public class Reduce extends AbstractEvaluator {
     if (domain != S.Reals) {
       return F.NIL;
     }
-    IExpr expr = ast.arg1();
-    if (ast.arg1().isList()) {
-      expr = ((IAST) expr).setAtCopy(0, S.And);
-    } else if (!expr.isBooleanFunction()) {
-      if (!expr.isComparatorFunction()) {
-        expr = F.And(expr);
-      } else {
-        return F.NIL;
+    try {
+      IExpr expr = ast.arg1();
+      if (ast.arg1().isList()) {
+        expr = ((IAST) expr).setAtCopy(0, S.And);
+      } else if (!expr.isBooleanFunction()) {
+        if (!expr.isComparatorFunction()) {
+          expr = F.And(expr);
+        }
       }
-    }
-    IExpr variable = vars.get(1);
-    IExpr logicalExpand = S.LogicalExpand.of(engine, expr);
-    if (logicalExpand.isTrue() || logicalExpand.isFalse()) {
-      return logicalExpand;
-    }
+      IExpr variable = vars.get(1);
+      IExpr logicalExpand = S.LogicalExpand.of(engine, expr);
+      if (logicalExpand.isTrue() || logicalExpand.isFalse()) {
+        return logicalExpand;
+      }
+      if (!logicalExpand.isBooleanFunction()) {
+        logicalExpand = F.And(logicalExpand);
+      }
 
-    ReduceComparison rc = new ReduceComparison(variable);
-    // may throw ArgumentTypeException
-    IExpr reduced = rc.evaluate(logicalExpand);
-    return reduced.orElse(logicalExpand);
+      if (logicalExpand.isAST(S.And)) {
+        IAST andAST = (IAST) logicalExpand;
+        IASTMutable andResult = andAST.copy();
+        for (int i = 1; i < andAST.size(); i++) {
+          IExpr arg = andAST.get(i);
+          if (arg.isEqual()) {
+            IExpr roots = S.Roots.ofNIL(engine, arg, variable);
+            if (roots.isPresent()) {
+              andResult.set(i, roots);
+            }
+          }
+        }
+
+        logicalExpand = S.LogicalExpand.of(engine, andResult);
+        if (logicalExpand.isTrue() || logicalExpand.isFalse()) {
+          return logicalExpand;
+        }
+      }
+
+      ReduceComparison rc = new ReduceComparison(variable);
+      // may throw ArgumentTypeException
+      IExpr reduced = rc.evaluate(logicalExpand);
+      return reduced.orElse(logicalExpand);
+    } catch (RuntimeException rex) {
+      rex.printStackTrace();
+    }
+    return F.NIL;
   }
 
   @Override

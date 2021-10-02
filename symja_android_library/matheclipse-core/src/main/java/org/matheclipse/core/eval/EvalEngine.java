@@ -1239,7 +1239,9 @@ public class EvalEngine implements Serializable {
       }
     }
     throw new ArgumentTypeException(
-        "conversion into a machine-size double numeric value is not possible!");
+        "Expression \""
+            + IOFunctions.shorten(expr)
+            + "\" cannot be converted to a machine-sized double numeric value!");
   }
 
   public final double evalDouble(final IExpr expr, double defaultValue) {
@@ -1443,7 +1445,8 @@ public class EvalEngine implements Serializable {
       if (Config.FUZZ_TESTING) {
         throw new NullPointerException();
       }
-      LOGGER.log(getLogLevel(),
+      LOGGER.log(
+          getLogLevel(),
           "Evaluation aborted in EvalEngine#evalLoop() because of undefined expression!");
       throw AbortException.ABORTED;
     }
@@ -2592,13 +2595,12 @@ public class EvalEngine implements Serializable {
 
   /**
    * Returns the level with which messages associated to this engine should be logged.
-   * <p>
-   * Returns {@link Level#ERROR} unless this engine is in {@link #isQuietMode() quiet-mode}, then
+   *
+   * <p>Returns {@link Level#ERROR} unless this engine is in {@link #isQuietMode() quiet-mode}, then
    * {@link Level#DEBUG} is returned.
-   * </p>
-   * 
+   *
    * @return the logger-level of this engine. ERROR by default and DEBUG if this engine is in
-   *         quite-mode.
+   *     quite-mode.
    */
   public Level getLogLevel() {
     return isQuietMode() ? Level.DEBUG : Level.ERROR;

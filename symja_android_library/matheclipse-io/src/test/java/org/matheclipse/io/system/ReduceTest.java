@@ -44,6 +44,9 @@ public class ReduceTest extends AbstractTestCase {
 
   public void testReduceEquals() {
     check(
+        "Reduce(x == 1 || x == 42)", //
+        "x==1||x==42");
+    check(
         "Reduce({x == 7, x <= 7})", //
         "x==7");
     check(
@@ -61,9 +64,6 @@ public class ReduceTest extends AbstractTestCase {
     check(
         "Reduce({x == 13/2, x >= 5})", //
         "x==13/2");
-    check(
-        "Reduce(x == 1 || x == 42)", //
-        "x==1||x==42");
     check(
         "Reduce({x > 1, x > 2, x == 5})", //
         "x==5");
@@ -90,5 +90,39 @@ public class ReduceTest extends AbstractTestCase {
     check(
         "Reduce(x < 2 || x < 7 && x>1/2)", //
         "x<7");
+  }
+
+  public void testReduce006() {
+    check(
+        "Reduce((x==1||x==-1||x==(-1)^(1/3)||x==-(-1)^(1/3)||x==(-1)^(2/3)||x==-(-1)^(2/3))&&x>0,x)", //
+        "x==1");
+    check(
+        "Reduce(x^6-1==0&&x>0,x)", //
+        "x==1");
+    check(
+        "Reduce(x^6-1==0,x)", //
+        "x==1||x==-1||x==(-1)^(1/3)||x==-(-1)^(1/3)||x==(-1)^(2/3)||x==-(-1)^(2/3)");
+    check(
+        "Reduce(x==1&&x>0,x)", //
+        "x==1");
+
+    check(
+        "Reduce(x>0&&x==(-1),x)", //
+        "False");
+    check(
+        "Reduce(x==(-1)&&x>0,x)", //
+        "False");
+
+    // complex values should return False
+    check(
+        "Reduce(x==(-1)^(2/3)&&x>0,x)", //
+        "False");
+  }
+
+  public void testReduceQuadratic() {
+    // TODO add a != 0 condition
+    check(
+        "Reduce(a*x^2 + b*x + c == 0&&x>0, x)", //
+        "(x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a))&&x>0");
   }
 }

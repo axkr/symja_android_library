@@ -33,6 +33,7 @@ import org.jgrapht.GraphType;
 import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.graph.DefaultGraphType.Builder;
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.JavaFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.StructureFunctions;
@@ -1711,7 +1712,10 @@ public abstract class AbstractAST implements IASTMutable {
     if (number != null) {
       return number.complexNumValue().complexValue();
     }
-    throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
+    throw new ArgumentTypeException(
+        "Expression: "
+            + IOFunctions.shorten(this)
+            + " cannot be converted into a complex numeric value.");
   }
 
   /** {@inheritDoc} */
