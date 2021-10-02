@@ -22,7 +22,7 @@ NSolve(equations, vars, domain)
 ```
 
 ### Related terms 
-[Solve](Solve.md)
+[Solve](Solve.md), [Reduce](Reduce.md), [Roots](Roots.md) 
 
 ### Github
 

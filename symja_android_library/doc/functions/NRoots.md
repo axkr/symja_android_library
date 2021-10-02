@@ -14,7 +14,7 @@ NRoots(polynomial==0)
 ```
 
 ### Related terms 
-[DSolve](DSolve.md), [Eliminate](Eliminate.md), [GroebnerBasis](GroebnerBasis.md), [FindRoot](FindRoot.md), [Solve](Solve.md)
+[DSolve](DSolve.md), [Eliminate](Eliminate.md), [GroebnerBasis](GroebnerBasis.md), [FindRoot](FindRoot.md), [Reduce](Reduce.md), [Roots](Roots.md), [Solve](Solve.md)
 
 ### Github
 

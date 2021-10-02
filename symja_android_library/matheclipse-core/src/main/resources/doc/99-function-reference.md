@@ -710,6 +710,7 @@
 * [Reals](functions/Reals.md)
 * [RealSign](functions/RealSign.md)
 * [Reap](functions/Reap.md)
+* [Reduce](functions/Reduce.md)
 * [Refine](functions/Refine.md)
 * [RegularExpression](functions/RegularExpression.md)
 * [ReleaseHold](functions/ReleaseHold.md)

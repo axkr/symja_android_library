@@ -28,7 +28,7 @@ It's important to use the `==` operator to define the equations. If you have uni
 ```
 
 ### Related terms 
-[DSolve](DSolve.md), [Eliminate](Eliminate.md), [GroebnerBasis](GroebnerBasis.md), [FindInstance](FindInstance.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md), [NSolve](NSolve.md)
+[DSolve](DSolve.md), [Eliminate](Eliminate.md), [GroebnerBasis](GroebnerBasis.md), [FindInstance](FindInstance.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md), [NSolve](NSolve.md), [Reduce](Reduce.md), [Roots](Roots.md) 
 
 ### Github
 
