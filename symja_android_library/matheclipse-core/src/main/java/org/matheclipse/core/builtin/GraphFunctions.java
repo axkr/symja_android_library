@@ -78,6 +78,7 @@ public class GraphFunctions {
       S.AdjacencyMatrix.setEvaluator(new AdjacencyMatrix());
       S.EdgeList.setEvaluator(new EdgeList());
       S.EdgeQ.setEvaluator(new EdgeQ());
+      S.EdgeRules.setEvaluator(new EdgeRules());
       S.EulerianGraphQ.setEvaluator(new EulerianGraphQ());
       S.FindEulerianCycle.setEvaluator(new FindEulerianCycle());
       S.FindHamiltonianCycle.setEvaluator(new FindHamiltonianCycle());
@@ -895,6 +896,31 @@ public class GraphFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+  }
+
+  private static class EdgeRules extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        if (ast.isAST1()) {
+          GraphExpr<?> gex = createGraph(ast.arg1());
+          if (gex == null) {
+            return F.NIL;
+          }
+          Graph<IExpr, ?> g = gex.toData();
+          return edgesToRules(g)[0];
+        }
+      } catch (RuntimeException rex) {
+        LOGGER.debug("EdgeList.evaluate() failed", rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 
@@ -1845,6 +1871,28 @@ public class GraphFunctions {
         } else {
           edges.append(F.UndirectedEdge(exprEdge.lhs(), exprEdge.rhs()));
         }
+      }
+    }
+    return new IASTAppendable[] {edges, weights};
+  }
+
+  private static IASTAppendable[] edgesToRules(Graph<IExpr, ?> g) {
+    Set<Object> edgeSet = (Set<Object>) g.edgeSet();
+    IASTAppendable edges = F.ListAlloc(edgeSet.size());
+    IASTAppendable weights = null;
+    GraphType type = g.getType();
+
+    for (Object edge : edgeSet) {
+      if (edge instanceof ExprWeightedEdge) {
+        ExprWeightedEdge weightedEdge = (ExprWeightedEdge) edge;
+        edges.append(F.Rule(weightedEdge.lhs(), weightedEdge.rhs()));
+        if (weights == null) {
+          weights = F.ListAlloc(edgeSet.size());
+        }
+        weights.append(weightedEdge.weight());
+      } else if (edge instanceof ExprEdge) {
+        ExprEdge exprEdge = (ExprEdge) edge;
+        edges.append(F.Rule(exprEdge.lhs(), exprEdge.rhs()));
       }
     }
     return new IASTAppendable[] {edges, weights};

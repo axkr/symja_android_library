@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
+import org.jgrapht.generate.CompleteGraphGenerator;
 import org.jgrapht.generate.GeneralizedPetersenGraphGenerator;
 import org.jgrapht.generate.StarGraphGenerator;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
@@ -45,6 +46,8 @@ public class GraphDataFunctions {
       //      GRAPH_MAP.put("PetersenGraph", () -> petersenGraph());
       GRAPH_MAP.put("PappusGraph", () -> pappusGraph());
       S.GraphData.setEvaluator(new GraphData());
+
+      S.CompleteGraph.setEvaluator(new CompleteGraph());
       S.PetersenGraph.setEvaluator(new PetersenGraph());
       S.StarGraph.setEvaluator(new StarGraph());
     }
@@ -93,6 +96,47 @@ public class GraphDataFunctions {
       setOptions(
           newSymbol, //
           F.List(F.Rule(S.EdgeWeight, S.Automatic)));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class CompleteGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      int order = ast.arg1().toIntDefault();
+      if (order <= 0) {
+        // Positive machine-sized integer expected at position `2` in `1`
+        return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
+      }
+      if (order > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(order);
+      }
+
+      try {
+        CompleteGraphGenerator<IExpr, ExprEdge> gen =
+            new CompleteGraphGenerator<IExpr, ExprEdge>(order);
+        Graph<IExpr, ExprEdge> target =
+            GraphTypeBuilder //
+                .undirected()
+                .allowingMultipleEdges(false)
+                .allowingSelfLoops(false) //
+                .vertexSupplier(new IntegerSupplier(1))
+                .edgeClass(ExprEdge.class) //
+                .buildGraph();
+        //          Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
+        // ExprEdge>(ExprEdge.class);
+        gen.generateGraph(target);
+        return GraphExpr.newInstance(target);
+      } catch (RuntimeException rex) {
+        LOGGER.debug("StarGraph.evaluate() failed", rex);
+      }
+      return F.NIL;
     }
 
     @Override

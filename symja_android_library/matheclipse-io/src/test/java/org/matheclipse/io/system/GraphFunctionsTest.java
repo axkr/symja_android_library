@@ -74,6 +74,15 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "{12.0,2.0,0.0,8.0,3.0,4.0}");
   }
 
+  public void testCompleteGraph() {
+    check(
+        "CompleteGraph(4) // AdjacencyMatrix // Normal", //
+        "{{0,1,1,1},\n" //
+            + " {1,0,1,1},\n"
+            + " {1,1,0,1},\n"
+            + " {1,1,1,0}}");
+  }
+
   public void testEdgeList() {
     check(
         "EdgeList(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))", //
@@ -83,6 +92,18 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "{1<->2,2<->3,3<->1}");
     check(
         "EdgeList(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
+        "{1->2,2->3,3->1}");
+  }
+
+  public void testEdgeRules() {
+    check(
+        "EdgeRules(Graph({1 <-> 2, 2 <-> 3, 1 <-> 3, 4 <-> 2}))", //
+        "{1->2,2->3,1->3,4->2}");
+    check(
+        "EdgeRules(Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}))", //
+        "{1->2,2->3,3->1}");
+    check(
+        "EdgeRules(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
         "{1->2,2->3,3->1}");
   }
 

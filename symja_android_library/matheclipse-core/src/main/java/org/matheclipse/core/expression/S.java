@@ -1706,6 +1706,9 @@ public class S {
    */
   public static final IBuiltInSymbol Complement = F.initFinalSymbol("Complement", ID.Complement);
 
+  public static final IBuiltInSymbol CompleteGraph =
+      F.initFinalSymbol("CompleteGraph", ID.CompleteGraph);
+
   /**
    * Complex - is the head of complex numbers.
    *
@@ -2694,6 +2697,8 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol EdgeQ = F.initFinalSymbol("EdgeQ", ID.EdgeQ);
+
+  public static final IBuiltInSymbol EdgeRules = F.initFinalSymbol("EdgeRules", ID.EdgeRules);
 
   public static final IBuiltInSymbol EdgeShapeFunction =
       F.initFinalSymbol("EdgeShapeFunction", ID.EdgeShapeFunction);
