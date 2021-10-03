@@ -10,7 +10,11 @@ import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
 import org.jgrapht.generate.CompleteGraphGenerator;
 import org.jgrapht.generate.GeneralizedPetersenGraphGenerator;
+import org.jgrapht.generate.GnmRandomGraphGenerator;
+import org.jgrapht.generate.HyperCubeGraphGenerator;
+import org.jgrapht.generate.RingGraphGenerator;
 import org.jgrapht.generate.StarGraphGenerator;
+import org.jgrapht.generate.WheelGraphGenerator;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -21,6 +25,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
@@ -48,8 +53,12 @@ public class GraphDataFunctions {
       S.GraphData.setEvaluator(new GraphData());
 
       S.CompleteGraph.setEvaluator(new CompleteGraph());
+      S.CycleGraph.setEvaluator(new CycleGraph());
+      S.HypercubeGraph.setEvaluator(new HypercubeGraph());
       S.PetersenGraph.setEvaluator(new PetersenGraph());
+      S.RandomGraph.setEvaluator(new RandomGraph());
       S.StarGraph.setEvaluator(new StarGraph());
+      S.WheelGraph.setEvaluator(new WheelGraph());
     }
   }
 
@@ -81,8 +90,10 @@ public class GraphDataFunctions {
               Graph<IExpr, ExprEdge> g = supplier.get();
               return GraphExpr.newInstance(g);
             }
-            LOGGER.log(engine.getLogLevel(),
-                "GraphData: no value associated with the specified graph name: {}", graphName);
+            LOGGER.log(
+                engine.getLogLevel(),
+                "GraphData: no value associated with the specified graph name: {}",
+                graphName);
           }
         }
       } catch (RuntimeException rex) {
@@ -129,12 +140,91 @@ public class GraphDataFunctions {
                 .vertexSupplier(new IntegerSupplier(1))
                 .edgeClass(ExprEdge.class) //
                 .buildGraph();
+        gen.generateGraph(target);
+        return GraphExpr.newInstance(target);
+      } catch (RuntimeException rex) {
+        LOGGER.debug("CompleteGraph.evaluate() failed", rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class CycleGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      int order = ast.arg1().toIntDefault();
+      if (order <= 0) {
+        // Positive machine-sized integer expected at position `2` in `1`
+        return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
+      }
+      if (order > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(order);
+      }
+
+      try {
+        RingGraphGenerator<IExpr, ExprEdge> gen = new RingGraphGenerator<IExpr, ExprEdge>(order);
+        Graph<IExpr, ExprEdge> target =
+            GraphTypeBuilder //
+                .undirected()
+                .allowingMultipleEdges(false)
+                .allowingSelfLoops(false) //
+                .vertexSupplier(new IntegerSupplier(1))
+                .edgeClass(ExprEdge.class) //
+                .buildGraph();
         //          Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
         // ExprEdge>(ExprEdge.class);
         gen.generateGraph(target);
         return GraphExpr.newInstance(target);
       } catch (RuntimeException rex) {
-        LOGGER.debug("StarGraph.evaluate() failed", rex);
+        LOGGER.debug("CycleGraph.evaluate() failed", rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class HypercubeGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      int order = ast.arg1().toIntDefault();
+      if (order <= 0) {
+        // Positive machine-sized integer expected at position `2` in `1`
+        return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
+      }
+      if (order > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(order);
+      }
+
+      try {
+        HyperCubeGraphGenerator<IExpr, ExprEdge> gen =
+            new HyperCubeGraphGenerator<IExpr, ExprEdge>(order);
+        Graph<IExpr, ExprEdge> target =
+            GraphTypeBuilder //
+                .undirected()
+                .allowingMultipleEdges(false)
+                .allowingSelfLoops(false) //
+                .vertexSupplier(new IntegerSupplier(1))
+                .edgeClass(ExprEdge.class) //
+                .buildGraph();
+        //          Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
+        // ExprEdge>(ExprEdge.class);
+        gen.generateGraph(target);
+        return GraphExpr.newInstance(target);
+      } catch (RuntimeException rex) {
+        LOGGER.debug("HypercubeGraph.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -207,6 +297,74 @@ public class GraphDataFunctions {
     }
   }
 
+  private static class RandomGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isList2()) {
+        int vertices = ast.arg1().first().toIntDefault();
+        if (vertices <= 0) {
+          // Positive machine-sized integer expected at position `2` in `1`
+          return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast.arg1(), F.C1), engine);
+        }
+        if (vertices > Config.MAX_AST_SIZE) {
+          ASTElementLimitExceeded.throwIt(vertices);
+        }
+
+        int edges = ast.arg1().second().toIntDefault();
+        if (edges <= 0) {
+          // Positive machine-sized integer expected at position `2` in `1`
+          return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast.arg1(), F.C2), engine);
+        }
+        if (edges > Config.MAX_AST_SIZE) {
+          ASTElementLimitExceeded.throwIt(edges);
+        }
+
+        try {
+          if (ast.isAST2()) {
+            int k = ast.arg2().toIntDefault();
+            if (k <= 0) {
+              // Positive machine-sized integer expected at position `2` in `1`
+              return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C2), engine);
+            }
+            if (k > Config.MAX_AST_SIZE) {
+              ASTElementLimitExceeded.throwIt(k);
+            }
+            IASTAppendable result = F.ListAlloc(k);
+            for (int i = 0; i < k; i++) {
+              result.append(randomGraph(vertices, edges));
+            }
+            return result;
+          }
+          return randomGraph(vertices, edges);
+        } catch (RuntimeException rex) {
+          LOGGER.debug("RandomGraph.evaluate() failed", rex);
+        }
+      }
+      return F.NIL;
+    }
+
+    private IExpr randomGraph(int vertices, int edges) {
+      GnmRandomGraphGenerator<IExpr, ExprEdge> gen =
+          new GnmRandomGraphGenerator<IExpr, ExprEdge>(vertices, edges);
+      Graph<IExpr, ExprEdge> target =
+          GraphTypeBuilder //
+              .undirected()
+              .allowingMultipleEdges(false)
+              .allowingSelfLoops(false) //
+              .vertexSupplier(new IntegerSupplier(1))
+              .edgeClass(ExprEdge.class) //
+              .buildGraph();
+      gen.generateGraph(target);
+      return GraphExpr.newInstance(target);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
   private static class StarGraph extends AbstractEvaluator {
 
     @Override
@@ -237,6 +395,46 @@ public class GraphDataFunctions {
         return GraphExpr.newInstance(target);
       } catch (RuntimeException rex) {
         LOGGER.debug("StarGraph.evaluate() failed", rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class WheelGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      int order = ast.arg1().toIntDefault();
+      if (order <= 0) {
+        // Positive machine-sized integer expected at position `2` in `1`
+        return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
+      }
+      if (order > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(order);
+      }
+
+      try {
+        WheelGraphGenerator<IExpr, ExprEdge> gen = new WheelGraphGenerator<IExpr, ExprEdge>(order);
+        Graph<IExpr, ExprEdge> target =
+            GraphTypeBuilder //
+                .undirected()
+                .allowingMultipleEdges(false)
+                .allowingSelfLoops(false) //
+                .vertexSupplier(new IntegerSupplier(1))
+                .edgeClass(ExprEdge.class) //
+                .buildGraph();
+        //          Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
+        // ExprEdge>(ExprEdge.class);
+        gen.generateGraph(target);
+        return GraphExpr.newInstance(target);
+      } catch (RuntimeException rex) {
+        LOGGER.debug("WheelGraph.evaluate() failed", rex);
       }
       return F.NIL;
     }

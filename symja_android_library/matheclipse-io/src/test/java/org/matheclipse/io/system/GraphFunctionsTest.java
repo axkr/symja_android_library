@@ -83,6 +83,15 @@ public class GraphFunctionsTest extends AbstractTestCase {
             + " {1,1,1,0}}");
   }
 
+  public void testCycleGraph() {
+    check(
+        "CycleGraph(4) // AdjacencyMatrix // Normal", //
+        "{{0,1,0,1},\n" //
+            + " {1,0,1,0},\n"
+            + " {0,1,0,1},\n"
+            + " {1,0,1,0}}");
+  }
+
   public void testEdgeList() {
     check(
         "EdgeList(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))", //
@@ -231,6 +240,27 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check(
         "HamiltonianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
         "False");
+  }
+
+  public void testHypercubeGraph() {
+    check(
+        "HypercubeGraph(4) // AdjacencyMatrix // Normal", //
+        "{{0,1,1,0,1,0,0,0,1,0,0,0,0,0,0,0},\n" //
+            + " {1,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0},\n"
+            + " {1,0,0,1,0,0,1,0,0,0,1,0,0,0,0,0},\n"
+            + " {0,1,1,0,0,0,0,1,0,0,0,1,0,0,0,0},\n"
+            + " {1,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0},\n"
+            + " {0,1,0,0,1,0,0,1,0,0,0,0,0,1,0,0},\n"
+            + " {0,0,1,0,1,0,0,1,0,0,0,0,0,0,1,0},\n"
+            + " {0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,1},\n"
+            + " {1,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0},\n"
+            + " {0,1,0,0,0,0,0,0,1,0,0,1,0,1,0,0},\n"
+            + " {0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0},\n"
+            + " {0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,1},\n"
+            + " {0,0,0,0,1,0,0,0,1,0,0,0,0,1,1,0},\n"
+            + " {0,0,0,0,0,1,0,0,0,1,0,0,1,0,0,1},\n"
+            + " {0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,1},\n"
+            + " {0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0}}");
   }
 
   public void testGraphFullForm() {
@@ -427,6 +457,35 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
   }
 
+  public void testRandomGraph() {
+    // random result:
+
+    //    check(
+    //        "AdjacencyMatrix /@ RandomGraph({7,4}, 3) // Normal", //
+    //        "{\n" //
+    //            + "{{0,0,1,0,0,1,0},\n"
+    //            + " {0,0,0,0,0,0,0},\n"
+    //            + " {1,0,0,0,0,1,1},\n"
+    //            + " {0,0,0,0,0,0,0},\n"
+    //            + " {0,0,0,0,0,0,0},\n"
+    //            + " {1,0,1,0,0,0,0},\n"
+    //            + " {0,0,1,0,0,0,0}},\n"
+    //            + "{{0,1,0,0,0,0,0},\n"
+    //            + " {1,0,0,0,0,0,0},\n"
+    //            + " {0,0,0,0,0,1,0},\n"
+    //            + " {0,0,0,0,0,0,0},\n"
+    //            + " {0,0,0,0,0,1,1},\n"
+    //            + " {0,0,1,0,1,0,0},\n"
+    //            + " {0,0,0,0,1,0,0}},\n"
+    //            + "{{0,0,1,0,0,0,1},\n"
+    //            + " {0,0,1,0,0,0,0},\n"
+    //            + " {1,1,0,0,0,0,0},\n"
+    //            + " {0,0,0,0,0,0,0},\n"
+    //            + " {0,0,0,0,0,0,1},\n"
+    //            + " {0,0,0,0,0,0,0},\n"
+    //            + " {1,0,0,0,1,0,0}}}");
+  }
+
   public void testStarGraph() {
     check(
         "StarGraph(4) // AdjacencyMatrix // Normal", //
@@ -490,6 +549,16 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "WeightedGraphQ( Graph({1->2, 2->3, 3->1}, EdgeWeight->{5.061,2.282,5.086}) ) ", //
         "True");
   }
+
+  public void testWheelGraph() {
+    check(
+        "WheelGraph(4) // AdjacencyMatrix // Normal", //
+        "{{0,1,1,1},\n" //
+            + " {1,0,1,1},\n"
+            + " {1,1,0,1},\n"
+            + " {1,1,1,0}}");
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {

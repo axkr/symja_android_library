@@ -2129,6 +2129,8 @@ public class S {
 
   public static final IBuiltInSymbol Cyan = F.initFinalSymbol("Cyan", ID.Cyan);
 
+  public static final IBuiltInSymbol CycleGraph = F.initFinalSymbol("CycleGraph", ID.CycleGraph);
+
   /**
    * Cycles(a, b) - expression for defining canonical cycles of a permutation.
    *
@@ -4243,6 +4245,9 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol HurwitzZeta = F.initFinalSymbol("HurwitzZeta", ID.HurwitzZeta);
+
+  public static final IBuiltInSymbol HypercubeGraph =
+      F.initFinalSymbol("HypercubeGraph", ID.HypercubeGraph);
 
   /**
    * Hypergeometric0F1(b, z) - return the `Hypergeometric0F1` function
@@ -7541,6 +7546,8 @@ public class S {
   public static final IBuiltInSymbol RandomComplex =
       F.initFinalSymbol("RandomComplex", ID.RandomComplex);
 
+  public static final IBuiltInSymbol RandomGraph = F.initFinalSymbol("RandomGraph", ID.RandomGraph);
+
   /**
    * RandomInteger(n) - create a random integer number between `0` and `n`.
    *
@@ -9904,6 +9911,8 @@ public class S {
    */
   public static final IBuiltInSymbol WeightedGraphQ =
       F.initFinalSymbol("WeightedGraphQ", ID.WeightedGraphQ);
+
+  public static final IBuiltInSymbol WheelGraph = F.initFinalSymbol("WheelGraph", ID.WheelGraph);
 
   /**
    * Which(cond1, expr1, cond2, expr2, ...) - yields `expr1` if `cond1` evaluates to `True`, `expr2`
