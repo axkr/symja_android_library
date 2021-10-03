@@ -94,6 +94,9 @@ public class ReduceTest extends AbstractTestCase {
 
   public void testReduce006() {
     check(
+        "Reduce((x==1||x==-1||x==(-1)^(1/3)||x==-(-1)^(1/3)||x==(-1)^(2/3)||x==-(-1)^(2/3))&&x<0,x)", //
+        "x==-1");
+    check(
         "Reduce((x==1||x==-1||x==(-1)^(1/3)||x==-(-1)^(1/3)||x==(-1)^(2/3)||x==-(-1)^(2/3))&&x>0,x)", //
         "x==1");
     check(
@@ -117,9 +120,16 @@ public class ReduceTest extends AbstractTestCase {
     check(
         "Reduce(x==(-1)^(2/3)&&x>0,x)", //
         "False");
+    // ommit variable
+    check(
+        "Reduce(x^6-1==0&&x>0 )", //
+        "x==1");
   }
 
   public void testReduceQuadratic() {
+    check(
+        "Reduce(a*x^2 + b*x + c == 0, x)", //
+        "x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)");
     // TODO add a != 0 condition
     check(
         "Reduce(a*x^2 + b*x + c == 0&&x>0, x)", //
