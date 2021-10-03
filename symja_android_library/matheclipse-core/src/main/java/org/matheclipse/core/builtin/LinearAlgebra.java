@@ -2593,7 +2593,10 @@ public final class LinearAlgebra {
         if (solver.isNonSingular()) {
           return LinearSolveFunctionExpr.createIExpr(solver, engine.getNumericPrecision());
         }
-        LOGGER.log(engine.getLogLevel(), "LinearSolve: first argument is not a square matrix.");
+        if (ast.isAST1()) {
+          // The matrix `1` is singular; a factorization will not be saved.
+          return IOFunctions.printMessage(ast.topHead(), "sing1", F.List(ast.arg1()), engine);
+        }
         return F.NIL;
       }
 

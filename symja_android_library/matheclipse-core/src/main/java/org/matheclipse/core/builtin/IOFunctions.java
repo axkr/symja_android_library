@@ -797,6 +797,8 @@ public class IOFunctions {
     "`1` in the part assignment is not a symbol.", //
     "sing",
     "Matrix `1` is singular.", //
+    "sing1",
+    "The matrix `1` is singular; a factorization will not be saved.", //
     "span",
     "`1` is not a valid Span specification.", //
     "ssle",
