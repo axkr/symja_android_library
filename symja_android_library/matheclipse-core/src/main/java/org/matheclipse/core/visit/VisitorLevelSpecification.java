@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -246,6 +247,12 @@ public class VisitorLevelSpecification extends AbstractVisitor {
         && (level <= fToLevel)
         && (depth >= fFromDepth)
         && (depth <= fToDepth);
+  }
+
+  /** */
+  @Override
+  public IExpr visit(IDataExpr element) {
+    return visitAtom(element);
   }
 
   /** */
