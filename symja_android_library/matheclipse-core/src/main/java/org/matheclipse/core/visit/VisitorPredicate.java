@@ -4,6 +4,7 @@ import java.util.function.Predicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -29,6 +30,11 @@ public class VisitorPredicate implements IVisitorBoolean {
 
   @Override
   public boolean visit(IInteger element) {
+    return fMatcher.test(element);
+  }
+
+  @Override
+  public boolean visit(IDataExpr element) {
     return fMatcher.test(element);
   }
 

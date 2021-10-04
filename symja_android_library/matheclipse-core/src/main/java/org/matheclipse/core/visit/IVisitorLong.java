@@ -3,6 +3,7 @@ package org.matheclipse.core.visit;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -17,6 +18,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public interface IVisitorLong {
   public long visit(IInteger element);
+
+  public long visit(IDataExpr element);
 
   public long visit(IFraction element);
 

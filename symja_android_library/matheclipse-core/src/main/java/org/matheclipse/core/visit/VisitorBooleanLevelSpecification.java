@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -246,6 +247,11 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
   /** */
   @Override
   public boolean visit(IInteger element) {
+    return visitAtom(element);
+  }
+
+  @Override
+  public boolean visit(IDataExpr element) {
     return visitAtom(element);
   }
 

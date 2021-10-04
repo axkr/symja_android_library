@@ -2,6 +2,7 @@ package org.matheclipse.core.visit;
 
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -18,6 +19,11 @@ public abstract class AbstractVisitorBoolean implements IVisitorBoolean {
 
   @Override
   public boolean visit(IInteger element) {
+    return false;
+  }
+
+  @Override
+  public boolean visit(IDataExpr element) {
     return false;
   }
 

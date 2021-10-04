@@ -8,6 +8,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -65,6 +66,12 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 
   @Override
   public IExpr visit(IInteger element) {
+    return visistAtom(element);
+  }
+
+  /** @return <code>F.NIL</code>, if no evaluation is possible */
+  @Override
+  public IExpr visit(IDataExpr element) {
     return visistAtom(element);
   }
 
