@@ -14,6 +14,7 @@ import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.Message;
@@ -172,7 +173,7 @@ public class Pods {
           + "<script>\n"
           + "`1`\n"
           + "</script>\n"
-          + "</div>\n" 
+          + "</div>\n"
           + "\n"
           + "</body>\n"
           + "</html>";
@@ -676,7 +677,6 @@ public class Pods {
           json.put(JSXGRAPH_STR, html);
         } catch (Exception ex) {
           LOGGER.debug("ChineseRemainder.chineseRemainderBigInteger() failed", ex);
-
         }
 
       } else {
@@ -1460,21 +1460,22 @@ public class Pods {
   }
 
   private static ThreadLocalNotifierClosable setLogEventNotifier(PrintStream errors) {
-    StringBuilder msg = new StringBuilder();
-    return ThreadLocalNotifyingAppender.addLogEventNotifier(e -> {
-      msg.setLength(0);
-      // String loggerName = e.getLoggerName();
-      // msg.append(loggerName, loggerName.lastIndexOf('.') + 1, loggerName.length()).append(" - ");
-      Message logMessage = e.getMessage();
-      if (logMessage != null) {
-        msg.append(logMessage.getFormattedMessage());
-      }
-      Throwable thrown = e.getThrown();
-      if (thrown != null) {
-        msg.append(": ").append(thrown.getMessage());
-      }
-      errors.println(msg.toString());
-    });
+
+    return ThreadLocalNotifyingAppender.addLogEventNotifier(
+        e -> {
+          if (e.getLevel().isMoreSpecificThan(Level.ERROR)) {
+            StringBuilder msg = new StringBuilder();
+            Message logMessage = e.getMessage();
+            if (logMessage != null) {
+              msg.append(logMessage.getFormattedMessage());
+            }
+            Throwable thrown = e.getThrown();
+            if (thrown != null) {
+              msg.append(": ").append(thrown.getMessage());
+            }
+            errors.println(msg.toString());
+          }
+        });
   }
 
   public static String errorJSONString(String code, String msg) {

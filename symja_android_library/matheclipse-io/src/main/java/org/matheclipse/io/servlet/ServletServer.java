@@ -160,21 +160,22 @@ public class ServletServer {
   }
 
   static ThreadLocalNotifierClosable setLogEventNotifier(PrintStream outs, PrintStream errors) {
-    StringBuilder msg = new StringBuilder();
-    return ThreadLocalNotifyingAppender.addLogEventNotifier(e -> {
-      msg.setLength(0);
-      // String loggerName = e.getLoggerName();
-      // msg.append(loggerName, loggerName.lastIndexOf('.') + 1, loggerName.length()).append(" - ");
-      Message logMessage = e.getMessage();
-      if (logMessage != null) {
-        msg.append(logMessage.getFormattedMessage());
-      }
-      Throwable thrown = e.getThrown();
-      if (thrown != null) {
-        msg.append(": ").append(thrown.getMessage());
-      }
-      PrintStream stream = e.getLevel().isMoreSpecificThan(Level.ERROR) ? errors : outs;
-      stream.println(msg.toString());
-    });
+
+    return ThreadLocalNotifyingAppender.addLogEventNotifier(
+        e -> {
+          if (e.getLevel().isMoreSpecificThan(Level.ERROR)) {
+            StringBuilder msg = new StringBuilder();
+            Message logMessage = e.getMessage();
+            if (logMessage != null) {
+              msg.append(logMessage.getFormattedMessage());
+            }
+            Throwable thrown = e.getThrown();
+            if (thrown != null) {
+              msg.append(": ").append(thrown.getMessage());
+            }
+            PrintStream stream = e.getLevel().isMoreSpecificThan(Level.ERROR) ? errors : outs;
+            stream.println(msg.toString());
+          }
+        });
   }
 }
