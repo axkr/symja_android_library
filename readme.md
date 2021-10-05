@@ -17,7 +17,7 @@ Try the Android or iOS apps:
 <a href="https://itunes.apple.com/us/app/ncalc-scientific-calculator/id1449106995">
     <img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/appstore_badge.png" alt="App Store" width="200"></a>
 
-or help testing the latest [Android BETA version](https://github.com/axkr/symja_android_library/wiki/BETA-tests) or the web demo at [matheclipse.org](http://matheclipse.org/).
+or help testing the latest [Android BETA version](https://github.com/axkr/symja_android_library/wiki/BETA-tests) or the web demo at [matheclipse.org](https://matheclipse.org/).
 
 Read the [Symja Manual](symja_android_library/doc/index.md) :blue_book: for the description of the Symja language or [browse the available functions](symja_android_library/doc/functions/) :green_book: . We encourage everyone to participate in our [Wiki](https://github.com/axkr/symja_android_library/wiki).
 
@@ -79,29 +79,29 @@ To get an idea of the kinds of expressions Symja handles, see the [JUnit tests i
 
 #### Web Examples
 
-> [Solve({x^2==4,x+y^2==6}, {x,y})](http://matheclipse.org/input?i=Solve({x^2==4,x%2By^2==6},%20{x,y}))
+> [Solve({x^2==4,x+y^2==6}, {x,y})](https://matheclipse.org/input?i=Solve({x^2==4,x%2By^2==6},%20{x,y}))
 
-> [FactorInteger(2^15-5)](http://matheclipse.org/input?i=FactorInteger(2^15-5))
+> [FactorInteger(2^15-5)](https://matheclipse.org/input?i=FactorInteger(2^15-5))
 
-> [D(Sin(x^3), x)](http://matheclipse.org/input?i=D(Sin(x^3),%20x))
+> [D(Sin(x^3), x)](https://matheclipse.org/input?i=D(Sin(x^3),%20x))
 
-> [Factor(-1+x^16)](http://matheclipse.org/input?i=Factor(-1%2Bx^16))
+> [Factor(-1+x^16)](https://matheclipse.org/input?i=Factor(-1%2Bx^16))
 
-> [Manipulate(Plot3D(Sin(a * x * y), {x, -1.5, 1.5}, {y, -1.5, 1.5}), {a,1,5})](http://matheclipse.org/input?i=Manipulate(Plot3D(Sin(a*x*y),%20{x,%20-1.5,%201.5},%20{y,%20-1.5,%201.5}),%20{a,1,5}))
+> [Manipulate(Plot3D(Sin(a * x * y), {x, -1.5, 1.5}, {y, -1.5, 1.5}), {a,1,5})](https://matheclipse.org/input?i=Manipulate(Plot3D(Sin(a*x*y),%20{x,%20-1.5,%201.5},%20{y,%20-1.5,%201.5}),%20{a,1,5}))
  
->[Plot(Piecewise({{x^2, x < 0}, {x, x >= 0&&x<1},{Cos(x-1), x >= 1}}), {x, -2, 12})](http://matheclipse.org/input?i=Plot(Piecewise({{x^2,%20x%20%3C%200},%20{x,%20x%20%3E=%200%26%26x%3C1},{Cos(x-1),%20x%20%3E=%201}}),%20{x,%20-2,%2012}))
+>[Plot(Piecewise({{x^2, x < 0}, {x, x >= 0&&x<1},{Cos(x-1), x >= 1}}), {x, -2, 12})](https://matheclipse.org/input?i=Plot(Piecewise({{x^2,%20x%20%3C%200},%20{x,%20x%20%3E=%200%26%26x%3C1},{Cos(x-1),%20x%20%3E=%201}}),%20{x,%20-2,%2012}))
 
-> [Refine(Abs(n*Abs(m)),n<0)](http://matheclipse.org/input?i=Refine(Abs(n*Abs(m)),%20n%3C0))
+> [Refine(Abs(n*Abs(m)),n<0)](https://matheclipse.org/input?i=Refine(Abs(n*Abs(m)),%20n%3C0))
 
-> [Inverse({{1,2},{3,4}})](http://matheclipse.org/input?i=Inverse({{1,2},{3,4}}))
+> [Inverse({{1,2},{3,4}})](https://matheclipse.org/input?i=Inverse({{1,2},{3,4}}))
 
-> [Det({{1,2},{3,4}})](http://matheclipse.org/input?i=Det({{1,2},{3,4}}))
+> [Det({{1,2},{3,4}})](https://matheclipse.org/input?i=Det({{1,2},{3,4}}))
 
-> [Integrate(Cos(x)^5, x)](http://matheclipse.org/input?i=Integrate(Cos(x)^5,%20x))
+> [Integrate(Cos(x)^5, x)](https://matheclipse.org/input?i=Integrate(Cos(x)^5,%20x))
 
-> [JavaForm((x+1)^2+(x+1)^3, Float)](http://matheclipse.org/input?i=JavaForm%28%28x%2B1%29%5E2%2B%28x%2B1%29%5E3%2C%20Float%29)
+> [JavaForm((x+1)^2+(x+1)^3, Float)](https://matheclipse.org/input?i=JavaForm%28%28x%2B1%29%5E2%2B%28x%2B1%29%5E3%2C%20Float%29)
 
-> [ToExpression("\\\\frac{x}{\\\\sqrt{5}}", TeXForm)](http://matheclipse.org/input?i=ToExpression%28%22%5C%5C%5C%5Cfrac%7Bx%7D%7B%5C%5C%5C%5Csqrt%7B5%7D%7D%22%2C%20TeXForm%29)
+> [ToExpression("\\\\frac{x}{\\\\sqrt{5}}", TeXForm)](https://matheclipse.org/input?i=ToExpression%28%22%5C%5C%5C%5Cfrac%7Bx%7D%7B%5C%5C%5C%5Csqrt%7B5%7D%7D%22%2C%20TeXForm%29)
 
 A [Java usage example](https://github.com/axkr/symja_android_library/wiki/Java-usage):
 
