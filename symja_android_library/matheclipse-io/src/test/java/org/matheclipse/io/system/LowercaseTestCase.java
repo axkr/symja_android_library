@@ -1705,6 +1705,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testArrayReshape() {
     check(
+        "ArrayReshape(SparseArray({1 -> 1, 4 -> 5}, 10), {2, 6}, x)", //
+        "{{1,0,0,5,0,0},{0,0,0,0,x,x}}");
+    check(
         "ArrayReshape({}, {})", //
         "0");
     check(
