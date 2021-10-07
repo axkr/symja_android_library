@@ -902,21 +902,19 @@ public abstract class HMArrayList extends AbstractAST
     this.lastIndex = array.length;
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public IAST map(final Function<IExpr, IExpr> function, final int startOffset) {
+  public IAST mapReverse(final Function<IExpr, IExpr> function) {
     IASTMutable result = F.NIL;
-    int i = firstIndex + startOffset;
-    int j = startOffset;
+    int i = firstIndex + 1;
+    int j = lastIndex - 1;
     while (i < lastIndex) {
       IExpr temp = function.apply(array[i++]);
       if (temp.isPresent()) {
         // something was evaluated - return a new IAST:
         result = copy();
-        result.set(j++, temp);
+        result.set(j--, temp);
         break;
       }
-      j++;
+      j--;
     }
     if (result.isPresent()) {
       while (i < lastIndex) {
@@ -924,7 +922,7 @@ public abstract class HMArrayList extends AbstractAST
         if (temp.isPresent()) {
           result.set(j, temp);
         }
-        j++;
+        j--;
       }
       return result;
     }

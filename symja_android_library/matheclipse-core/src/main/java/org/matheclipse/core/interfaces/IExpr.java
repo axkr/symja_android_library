@@ -1478,7 +1478,7 @@ public interface IExpr
   /**
    * Test if this expression is a comparator function (i.e. a function with head <code>
    * Equal, Equivalent, Greater, GreaterEqual, Less, LessEqual, Inequlity, SameQ, Unequal, UnsameQ
-   * </code> where all arguments are also &quot;boolean formulas&quot;)
+   * </code> and size greater 2)
    *
    * @return <code>true</code>, if the given expression is a comparator function.
    */

@@ -248,6 +248,8 @@ public class S {
    */
   public static final IBuiltInSymbol Accumulate = F.initFinalSymbol("Accumulate", ID.Accumulate);
 
+  public static final IBuiltInSymbol AddSides = F.initFinalSymbol("AddSides", ID.AddSides);
+
   /**
    * AddTo(x, dx) - is equivalent to `x = x + dx`.
    *
@@ -467,6 +469,8 @@ public class S {
    */
   public static final IBuiltInSymbol Apply = F.initFinalSymbol("Apply", ID.Apply);
 
+  public static final IBuiltInSymbol ApplySides = F.initFinalSymbol("ApplySides", ID.ApplySides);
+
   /**
    * ArcCos(expr) - returns the arc cosine (inverse cosine) of `expr` (measured in radians).
    *
@@ -676,6 +680,13 @@ public class S {
 
   public static final IBuiltInSymbol Arrays = F.initFinalSymbol("Arrays", ID.Arrays);
 
+  /**
+   * Arrow({p1, p2}) - represents a line from `p1` to `p2` that ends with an arrow at `p2`.
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Arrow.md">Arrow
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol Arrow = F.initFinalSymbol("Arrow", ID.Arrow);
 
   public static final IBuiltInSymbol Arrowheads = F.initFinalSymbol("Arrowheads", ID.Arrowheads);
@@ -1706,6 +1717,13 @@ public class S {
    */
   public static final IBuiltInSymbol Complement = F.initFinalSymbol("Complement", ID.Complement);
 
+  /**
+   * CompleteGraph(order) - create a new complete graph with `order` number of total vertices.
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CompleteGraph.md">CompleteGraph
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol CompleteGraph =
       F.initFinalSymbol("CompleteGraph", ID.CompleteGraph);
 
@@ -2177,6 +2195,13 @@ public class S {
    */
   public static final IBuiltInSymbol DSolve = F.initFinalSymbol("DSolve", ID.DSolve);
 
+  /**
+   * - create a `Dataset` object from the `association`
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Dataset.md">Dataset
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol Dataset = F.initFinalSymbol("Dataset", ID.Dataset);
 
   public static final IBuiltInSymbol DateObject = F.initFinalSymbol("DateObject", ID.DateObject);
@@ -2446,6 +2471,13 @@ public class S {
    */
   public static final IBuiltInSymbol DiracDelta = F.initFinalSymbol("DiracDelta", ID.DiracDelta);
 
+  /**
+   * DirectedEdge(a, b) - is a directed edge from vertex `a` to vertex `b` in a `graph` object.
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirectedEdge.md">DirectedEdge
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol DirectedEdge =
       F.initFinalSymbol("DirectedEdge", ID.DirectedEdge);
 
@@ -2561,6 +2593,8 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol DivideBy = F.initFinalSymbol("DivideBy", ID.DivideBy);
+
+  public static final IBuiltInSymbol DivideSides = F.initFinalSymbol("DivideSides", ID.DivideSides);
 
   /**
    * Divisible(n, m) - returns `True` if `n` could be divide by `m`.
@@ -2700,6 +2734,14 @@ public class S {
    */
   public static final IBuiltInSymbol EdgeQ = F.initFinalSymbol("EdgeQ", ID.EdgeQ);
 
+  /**
+   * EdgeRules(graph) - convert the `graph` into a list of rules. All edge types (undirected,
+   * directed) are represented by a rule `lhs->rhs`.
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeRules.md">EdgeRules
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol EdgeRules = F.initFinalSymbol("EdgeRules", ID.EdgeRules);
 
   public static final IBuiltInSymbol EdgeShapeFunction =
@@ -6065,6 +6107,9 @@ public class S {
   public static final IBuiltInSymbol MultiplicativeOrder =
       F.initFinalSymbol("MultiplicativeOrder", ID.MultiplicativeOrder);
 
+  public static final IBuiltInSymbol MultiplySides =
+      F.initFinalSymbol("MultiplySides", ID.MultiplySides);
+
   /**
    * N(expr) - gives the numerical value of `expr`.
    *
@@ -7558,6 +7603,13 @@ public class S {
   public static final IBuiltInSymbol RandomInteger =
       F.initFinalSymbol("RandomInteger", ID.RandomInteger);
 
+  /**
+   * RandomPermutation(s) - create a pseudo random permutation between `1` and `s`.
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomPermutation.md">RandomPermutation
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol RandomPermutation =
       F.initFinalSymbol("RandomPermutation", ID.RandomPermutation);
 
@@ -7602,8 +7654,24 @@ public class S {
    */
   public static final IBuiltInSymbol Range = F.initFinalSymbol("Range", ID.Range);
 
+  /**
+   * RankedMax({e_1, e_2, ..., e_i}, n) - returns the n-th largest real value in the list `{e_1,
+   * e_2, ..., e_i}`.
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RankedMax.md">RankedMax
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol RankedMax = F.initFinalSymbol("RankedMax", ID.RankedMax);
 
+  /**
+   * RankedMin({e_1, e_2, ..., e_i}, n) - returns the n-th smallest real value in the list `{e_1,
+   * e_2, ..., e_i}`.
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RankedMin.md">RankedMin
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol RankedMin = F.initFinalSymbol("RankedMin", ID.RankedMin);
 
   /**
@@ -7722,6 +7790,14 @@ public class S {
 
   public static final IBuiltInSymbol Red = F.initFinalSymbol("Red", ID.Red);
 
+  /**
+   * Reduce(logic-expression, var) - returns the reduced `logic-expression` for the variable `var`.
+   * Reduce works only for the `Reals` domain.
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Reduce.md">Reduce
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol Reduce = F.initFinalSymbol("Reduce", ID.Reduce);
 
   /**
@@ -8954,6 +9030,9 @@ public class S {
   public static final IBuiltInSymbol SubtractFrom =
       F.initFinalSymbol("SubtractFrom", ID.SubtractFrom);
 
+  public static final IBuiltInSymbol SubtractSides =
+      F.initFinalSymbol("SubtractSides", ID.SubtractSides);
+
   /**
    * Sum(expr, {i, imin, imax}) - evaluates the discrete sum of `expr` with `i` ranging from `imin`
    * to `imax`.
@@ -9115,14 +9194,46 @@ public class S {
    */
   public static final IBuiltInSymbol Take = F.initFinalSymbol("Take", ID.Take);
 
+  /**
+   * TakeLargest({e_1, e_2, ..., e_i}, n) - returns the `n` largest real values from the list `{e_1,
+   * e_2, ..., e_i}`.
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TakeLargest.md">TakeLargest
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol TakeLargest = F.initFinalSymbol("TakeLargest", ID.TakeLargest);
 
+  /**
+   * TakeLargestBy({e_1, e_2, ..., e_i}, function, n) - returns the `n` values from the list `{e_1,
+   * e_2, ..., e_i}`, where `function(e_i)` is largest.
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TakeLargestBy.md">TakeLargestBy
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol TakeLargestBy =
       F.initFinalSymbol("TakeLargestBy", ID.TakeLargestBy);
 
+  /**
+   * TakeSmallest({e_1, e_2, ..., e_i}, n) - returns the `n` smallest real values from the list
+   * `{e_1, e_2, ..., e_i}`.
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TakeSmallest.md">TakeSmallest
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol TakeSmallest =
       F.initFinalSymbol("TakeSmallest", ID.TakeSmallest);
 
+  /**
+   * TakeSmallestBy({e_1, e_2, ..., e_i}, function, n) - returns the `n` values from the list `{e_1,
+   * e_2, ..., e_i}`, where `function(e_i)` is smallest.
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TakeSmallestBy.md">TakeSmallestBy
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol TakeSmallestBy =
       F.initFinalSymbol("TakeSmallestBy", ID.TakeSmallestBy);
 
@@ -9569,6 +9680,14 @@ public class S {
   public static final IBuiltInSymbol Underoverscript =
       F.initFinalSymbol("Underoverscript", ID.Underoverscript);
 
+  /**
+   * UndirectedEdge(a, b) - is an undirected edge between the vertices `a` and `b` in a `graph`
+   * object.
+   *
+   * @see <a
+   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UndirectedEdge.md">UndirectedEdge
+   *     documentation</a>
+   */
   public static final IBuiltInSymbol UndirectedEdge =
       F.initFinalSymbol("UndirectedEdge", ID.UndirectedEdge);
 

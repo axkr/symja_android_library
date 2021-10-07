@@ -1136,16 +1136,6 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    */
   public IAST map(final IASTMutable clonedResultAST, final Function<IExpr, IExpr> functor);
 
-  /** Set the head element of this list */
-  // public void setHeader(IExpr expr);
-
-  /**
-   * Returns an iterator over the elements in this list starting with offset <b>0</b>.
-   *
-   * @return an iterator over this list values.
-   */
-  // public Iterator<IExpr> iterator0();
-
   /**
    * Maps the elements of this IAST with the unary functor. If the function returns <code>null
    * </code> the original element of the result list is used.
@@ -1183,6 +1173,16 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    */
   @Override
   public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f);
+
+  /**
+   * Maps the elements of this IAST in the reversed order with the unary <code>functor</code>. If
+   * the <code>functor</code> returns <code>F.NIL</code> the original element of this AST list is
+   * set at the reversed position.
+   *
+   * @param function a unary function
+   * @return the reversed list mapped with the function
+   */
+  public IAST mapReverse(final Function<IExpr, IExpr> function);
 
   /**
    * Append the mapped ranges elements directly to the given <code>list</code>

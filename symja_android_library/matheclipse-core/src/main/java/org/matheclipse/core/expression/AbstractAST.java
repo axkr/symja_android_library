@@ -1,5 +1,5 @@
 package org.matheclipse.core.expression;
-
+  
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -83,7 +83,7 @@ import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.FEConfig;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
+ 
 public abstract class AbstractAST implements IASTMutable {
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -4731,6 +4731,17 @@ public abstract class AbstractAST implements IASTMutable {
       }
     }
     return result.orElse(this);
+  }
+
+  public IAST mapReverse(final Function<IExpr, IExpr> function) {
+    IASTMutable result = copy();
+    final int size = size();
+    for (int i = 1; i < size; i++) {
+      final IExpr arg = get(i);
+      final IExpr value = function.apply(arg);
+      result.set(size - i, value.orElse(arg));
+    }
+    return result;
   }
 
   /** {@inheritDoc} */

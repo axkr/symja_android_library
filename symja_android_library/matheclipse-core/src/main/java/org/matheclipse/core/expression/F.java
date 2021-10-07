@@ -74,6 +74,7 @@ import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.builtin.RandomFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.builtin.SeriesFunctions;
+import org.matheclipse.core.builtin.SidesFunctions;
 import org.matheclipse.core.builtin.SimplifyFunctions;
 import org.matheclipse.core.builtin.SourceCodeFunctions;
 import org.matheclipse.core.builtin.SparseArrayFunctions;
@@ -132,7 +133,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import edu.jas.kern.ComputerThreads;
 import edu.jas.kern.PreemptStatus;
-
+ 
 /** Factory for creating Symja predefined function expression objects (interface {@link IAST}). */
 public class F extends S {
 
@@ -1075,6 +1076,7 @@ public class F extends S {
       GraphicsFunctions.initialize();
       CompilerFunctions.initialize();
       JavaFunctions.initialize();
+      SidesFunctions.initialize();
 
       ComputationalGeometryFunctions.initialize();
 
@@ -6550,8 +6552,8 @@ public class F extends S {
    * See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Piecewise.md">Piecewise</a>
    */
-  public static IAST Piecewise(final IExpr listOfConditions, final IExpr val) {
-    return new AST2(Piecewise, listOfConditions, val);
+  public static IAST Piecewise(final IExpr listOfConditions, final IExpr defaultValue) {
+    return new AST2(Piecewise, listOfConditions, defaultValue);
   }
 
   /**
@@ -8897,7 +8899,7 @@ public class F extends S {
 
   public static String openHTMLOnDesktop(String html) throws IOException {
     File temp = java.io.File.createTempFile("tempfile", ".html");
-    try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp));) {
+    try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp)); ) {
       bw.write(html);
     }
     if (Desktop.isDesktopSupported()) {

@@ -37,7 +37,7 @@ import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.eval.DoubleNode;
 import org.matheclipse.parser.trie.SuggestTree;
 import org.matheclipse.parser.trie.TrieMatch;
-
+ 
 /**
  * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code> expression into an IExpr
  * expression
@@ -274,6 +274,7 @@ public class AST2Expr {
     "AbsoluteTiming",
     "Accumulate",
     "AddTo",
+    "AddSides",
     "AddToClassPath",
     "AdjacencyMatrix",
     "AiryAi",
@@ -298,6 +299,7 @@ public class AST2Expr {
     "Append",
     "AppendTo",
     "Apply",
+    "ApplySides",
     "Area",
     "ArcCos",
     "ArcCosh",
@@ -549,6 +551,7 @@ public class AST2Expr {
     "Div",
     "Divide",
     "DivideBy",
+    "DivideSides",
     "Divisible",
     "Divisors",
     "DivisorSum",
@@ -962,6 +965,7 @@ public class AST2Expr {
     "Most",
     "Multinomial",
     "MultiplicativeOrder",
+    "MultiplySides",
     "NakagamiDistribution",
     "Names",
     "Nand",
@@ -1298,6 +1302,7 @@ public class AST2Expr {
     "Subsets",
     "Subtract",
     "SubtractFrom",
+    "SubtractSides",
     "Sum",
     "Superscript",
     "SuperscriptBox",

@@ -681,6 +681,10 @@ public class ASTAssociation extends AST implements IAssociation {
     return this;
   }
 
+  public IAST mapReverse(final Function<IExpr, IExpr> function) {
+    throw new UnsupportedOperationException();
+  }
+
   @Override
   public IAST matrixOrList() {
 
