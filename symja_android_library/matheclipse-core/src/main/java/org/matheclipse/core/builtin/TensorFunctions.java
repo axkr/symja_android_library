@@ -132,8 +132,14 @@ public class TensorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList() && ast.arg2().isList()) {
-        IAST list = (IAST) ast.arg1();
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isList()) {
+        // TODO "native" implementation for SparseArray
+        arg1 = arg1.normal(false);
+      }
+
+      if (arg1.isList() && ast.arg2().isList()) {
+        IAST list = (IAST) arg1;
         IAST dims = (IAST) ast.arg2();
         if (dims.size() == 1) {
           if (list.isEmpty()) {
