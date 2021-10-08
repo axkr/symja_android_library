@@ -6,15 +6,6 @@ public class SidesFunctionsTest extends AbstractTestCase {
     super(name);
   }
 
-  public void testApplySides001() {
-    check(
-        "ApplySides(Sqrt, x^2 + 1 > 4)", //
-        "Sqrt(1+x^2)>2");
-    check(
-        "ApplySides(#^4 &, a == I*b)", //
-        "a^4==b^4");
-  }
-
   public void testAddSides001() {
     check(
         "AddSides(x - 5 == 5, 5)", //
@@ -26,20 +17,70 @@ public class SidesFunctionsTest extends AbstractTestCase {
         "AddSides(Sin(a)/a == Sin(b)/b == Sin(c)/c, r)", //
         "r+Sin(a)/a==r+Sin(b)/b==r+Sin(c)/c");
   }
+  
+  public void testApplySides001() {
+    check(
+        "ApplySides(f, a==a) ", //
+        "True");
+    check(
+        "ApplySides(Log, E^2==b)", //
+        "2==Log(b)");
+    check(
+        "ApplySides(Sqrt, x^2 + 1 > 4)", //
+        "Sqrt(1+x^2)>2");
+    check(
+        "ApplySides(#^4 &, a == I*b)", //
+        "a^4==b^4");
+    check(
+        "ApplySides(Log, a==b^2==c^3)", //
+        "Log(a)==Log(b^2)==Log(c^3)");
+    check(
+        "ApplySides(Exp, Log(x)==7)", //
+        "x==E^7");
+  }
 
-  public void testSubtractSides001() {
+  public void testDivideSides001() {
     check(
-        "SubtractSides(x - 5 == 5)", //
-        "x==10");
+        "DivideSides(a==b,x)", //
+        "a/x==b/x");
+    // print message
     check(
-        "SubtractSides(x - 5 == 5, 5)", //
-        "x==10");
+        "DivideSides(a==b,0)", //
+        "DivideSides(a==b,0)");
     check(
-        "SubtractSides(x - b > 7, b)", //
-        "-2*b+x>7-b");
+        "DivideSides(a>b>c>d,v)", //
+        "Piecewise({{a/v>b/v>c/v>d/v,v>0},{d/v>c/v>b/v>a/v,v<0}},a>b>c>d)");
+    check(
+        "DivideSides(a>=b,v)", //
+        "Piecewise({{a/v>=b/v,v>0},{b/v>=a/v,v<0}},a>=b)");
+    check(
+        "DivideSides(a<b<c<d,v)", //
+        "Piecewise({{a/v<b/v<c/v<d/v,v>0},{d/v<c/v<b/v<a/v,v<0}},a<b<c<d)");
+    check(
+        "DivideSides(a<=b<=c<=d,v)", //
+        "Piecewise({{a/v<=b/v<=c/v<=d/v,v>0},{d/v<=c/v<=b/v<=a/v,v<0}},a<=b<=c<=d)");
+    check(
+        "DivideSides(x/11==122)", //
+        "x==1342");
+    check(
+        "DivideSides(x/11==121,11)", //
+        "x==1331");
+
+    check(
+        "DivideSides(x/11>=a>=b,3)", //
+        "x/33>=a/3>=b/3");
+    check(
+        "DivideSides(x/11>a>b,-3)", //
+        "-b/3>-a/3>-x/33");
+    check(
+        "DivideSides(1 == 1, c)", //
+        "True");
   }
 
   public void testMultiplySides001() {
+    check(
+        "MultiplySides(a==b,x)", //
+        "a*x==b*x");
     check(
         "MultiplySides(a>b>c>d,v)", //
         "Piecewise({{a*v>b*v>c*v>d*v,v>0},{d*v>c*v>b*v>a*v,v<0}},a>b>c>d)");
@@ -66,31 +107,18 @@ public class SidesFunctionsTest extends AbstractTestCase {
         "-3*b<-3*a<-3/11*x");
   }
 
-  public void testDivideSides001() {
+  public void testSubtractSides001() {
     check(
-        "DivideSides(a>b>c>d,v)", //
-        "Piecewise({{a/v>b/v>c/v>d/v,v>0},{d/v>c/v>b/v>a/v,v<0}},a>b>c>d)");
+        "SubtractSides(x - 5 == 5)", //
+        "x==10");
     check(
-        "DivideSides(a>=b,v)", //
-        "Piecewise({{a/v>=b/v,v>0},{b/v>=a/v,v<0}},a>=b)");
+        "SubtractSides(x - 5 == 5, 5)", //
+        "x==10");
     check(
-        "DivideSides(a<b<c<d,v)", //
-        "Piecewise({{a/v<b/v<c/v<d/v,v>0},{d/v<c/v<b/v<a/v,v<0}},a<b<c<d)");
+        "SubtractSides(x - b > 7, b)", //
+        "-2*b+x>7-b");
     check(
-        "DivideSides(a<=b<=c<=d,v)", //
-        "Piecewise({{a/v<=b/v<=c/v<=d/v,v>0},{d/v<=c/v<=b/v<=a/v,v<0}},a<=b<=c<=d)");
-    check(
-        "DivideSides(x/11==122)", //
-        "x==1342");
-    check(
-        "DivideSides(x/11==121,11)", //
-        "x==1331");
-
-    check(
-        "DivideSides(x/11>=a>=b,3)", //
-        "x/33>=a/3>=b/3");
-    check(
-        "DivideSides(x/11>a>b,-3)", //
-        "-b/3>-a/3>-x/33");
+        "SubtractSides(1 == 0, c)", //
+        "False");
   }
 }

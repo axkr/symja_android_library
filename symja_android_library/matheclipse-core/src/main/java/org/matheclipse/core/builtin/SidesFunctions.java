@@ -31,17 +31,30 @@ public class SidesFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg2 = engine.evaluate(ast.arg2());
+      IExpr arg1 = ast.arg1();
       if (!arg2.isComparatorFunction()) {
-        IExpr arg1 = ast.arg1();
         if (!arg1.isComparatorFunction()) {
           arg1 = engine.evaluate(arg1);
         }
+        if (arg1.isTrue() || arg1.isFalse()) {
+          return arg1;
+        }
         if (arg1.isComparatorFunction()) {
           IAST comparator = (IAST) arg1;
-          return comparator.map(x -> function(x, arg2));
+          int headID = comparator.headID();
+          switch (headID) {
+            case ID.Equal:
+            case ID.Unequal:
+            case ID.Less:
+            case ID.LessEqual:
+            case ID.Greater:
+            case ID.GreaterEqual:
+              return comparator.map(x -> function(x, arg2));
+          }
         }
       }
-      return F.NIL;
+      // `1` should be an equation or inequality.
+      return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg1), engine);
     }
 
     @Override
@@ -59,12 +72,26 @@ public class SidesFunctions {
       if (!arg2.isComparatorFunction()) {
         arg2 = engine.evaluate(arg2);
       }
+
+      if (arg2.isTrue() || arg2.isFalse()) {
+        return arg2;
+      }
       if (arg2.isComparatorFunction()) {
         IAST comparator = (IAST) arg2;
-        return comparator.map(x -> F.unaryAST1(arg1, x));
+        int headID = comparator.headID();
+        switch (headID) {
+          case ID.Equal:
+          case ID.Unequal:
+          case ID.Less:
+          case ID.LessEqual:
+          case ID.Greater:
+          case ID.GreaterEqual:
+            return comparator.map(x -> F.unaryAST1(arg1, x));
+        }
       }
 
-      return F.NIL;
+      // `1` should be an equation or inequality.
+      return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg2), engine);
     }
 
     @Override
@@ -85,6 +112,9 @@ public class SidesFunctions {
       if (!arg1.isComparatorFunction()) {
         arg1 = engine.evaluate(arg1);
       }
+      if (arg1.isTrue() || arg1.isFalse()) {
+        return arg1;
+      }
       if (arg1.isComparatorFunction()) {
         final IExpr arg2;
         if (ast.isAST1()) {
@@ -94,6 +124,10 @@ public class SidesFunctions {
           arg2 = arg1.second();
         } else {
           arg2 = engine.evaluate(ast.arg2());
+        }
+        if (arg2.isZero()) {
+          // Cannot divide sides of an equation or inequality by 0.
+          return IOFunctions.printMessage(ast.topHead(), "arg2", F.CEmptyList, engine);
         }
         if (!arg2.isComparatorFunction()) {
           IAST comparator = (IAST) arg1;
@@ -146,7 +180,8 @@ public class SidesFunctions {
           }
         }
       }
-      return F.NIL;
+      // `1` should be an equation or inequality.
+      return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg1), engine);
     }
 
     @Override
@@ -164,10 +199,13 @@ public class SidesFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg2 = engine.evaluate(ast.arg2());
+      IExpr arg1 = ast.arg1();
       if (!arg2.isComparatorFunction()) {
-        IExpr arg1 = ast.arg1();
         if (!arg1.isComparatorFunction()) {
           arg1 = engine.evaluate(arg1);
+        }
+        if (arg1.isTrue() || arg1.isFalse()) {
+          return arg1;
         }
         if (arg1.isComparatorFunction()) {
           IAST comparator = (IAST) arg1;
@@ -220,7 +258,8 @@ public class SidesFunctions {
           }
         }
       }
-      return F.NIL;
+      // `1` should be an equation or inequality.
+      return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg1), engine);
     }
 
     @Override
@@ -241,6 +280,9 @@ public class SidesFunctions {
       if (!arg1.isComparatorFunction()) {
         arg1 = engine.evaluate(arg1);
       }
+      if (arg1.isTrue() || arg1.isFalse()) {
+        return arg1;
+      }
       if (arg1.isComparatorFunction()) {
         final IExpr arg2;
         if (ast.isAST1()) {
@@ -253,10 +295,20 @@ public class SidesFunctions {
         }
         if (!arg2.isComparatorFunction()) {
           IAST comparator = (IAST) arg1;
-          return comparator.map(x -> function(x, arg2));
+          int headID = comparator.headID();
+          switch (headID) {
+            case ID.Equal:
+            case ID.Unequal:
+            case ID.Less:
+            case ID.LessEqual:
+            case ID.Greater:
+            case ID.GreaterEqual:
+              return comparator.map(x -> function(x, arg2));
+          }
         }
       }
-      return F.NIL;
+      // `1` should be an equation or inequality.
+      return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg1), engine);
     }
 
     @Override

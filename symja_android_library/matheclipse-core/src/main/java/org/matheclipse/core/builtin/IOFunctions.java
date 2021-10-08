@@ -491,6 +491,8 @@ public class IOFunctions {
     "`1` called with 1 argument; `2` or `3` arguments are expected.", //
     "argtype",
     "Arguments `1` and `2` of `3` should be either non-negative integers or one-character strings.", //
+    "arg2",
+    "Cannot divide sides of an equation or inequality by 0.", //
     "base",
     "Requested base `1` in `2` should be between 2 and `3`.", //
     "boxfmt",
@@ -522,7 +524,9 @@ public class IOFunctions {
     "empt",
     "Argument `1` should be a non-empty list.", //
     "eqf",
-    "`1` is not a well-formed equation.", // ^
+    "`1` is not a well-formed equation.", //
+    "eqin",
+    "`1` should be an equation or inequality.", //
     "error",
     "`1`.", //
     "exact",
