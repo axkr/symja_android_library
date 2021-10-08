@@ -24,4 +24,4 @@ Names(pattern)
 
 ### Github
 
-* [Implementation of Names](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IOFunctions.java#L387) 
+* [Implementation of Names](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IOFunctions.java#L390) 

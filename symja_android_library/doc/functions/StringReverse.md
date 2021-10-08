@@ -24,4 +24,4 @@ neve ro ddo reveN
 
 ### Github
 
-* [Implementation of StringReverse](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L2268) 
+* [Implementation of StringReverse](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L2269) 

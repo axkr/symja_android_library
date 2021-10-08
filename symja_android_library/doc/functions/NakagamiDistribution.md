@@ -24,4 +24,4 @@ m+(-m*Pochhammer(n,1/2)^2)/n
 
 ### Github
 
-* [Implementation of NakagamiDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L4798) 
+* [Implementation of NakagamiDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L4789) 

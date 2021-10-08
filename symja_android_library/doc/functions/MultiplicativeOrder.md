@@ -20,4 +20,4 @@ The [A023394 Prime factors of Fermat numbers](https://oeis.org/A023394) integer 
 
 ### Github
 
-* [Implementation of MultiplicativeOrder](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3620) 
+* [Implementation of MultiplicativeOrder](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3612) 

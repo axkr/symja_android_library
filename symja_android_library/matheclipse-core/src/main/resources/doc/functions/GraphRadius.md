@@ -15,4 +15,4 @@ GraphRadius(graph)
 
 ### Github
 
-* [Implementation of GraphRadius](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L451) 
+* [Implementation of GraphRadius](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L445) 
