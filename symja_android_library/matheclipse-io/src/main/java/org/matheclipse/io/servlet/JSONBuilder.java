@@ -8,6 +8,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.output.JSXGraphPageBuilder;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -245,35 +246,15 @@ public class JSONBuilder {
             + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
   }
 
-  static final String JSXGRAPH_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>JSXGraph</title>\n"
-          + "\n"
-          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "\n"
-          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/jsxgraph.min.css\" />\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.6/build/math.js\"></script>\n"
-          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/jsxgraphcore.min.js\"\n"
-          + "        type=\"text/javascript\"></script>\n"
-          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/geonext.min.js\"\n"
-          + "        type=\"text/javascript\"></script>\n"
-          + "\n"
-          + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
-          + "<script>\n"
-          + "`1`\n"
-          + "</script>\n"
-          + "</div>\n"
-          + "\n"
-          + "</body>\n"
-          + "</html>";
+  public static String[] createJSXGraphIFrame(String html, String manipulateStr) {
+    //    html = IOFunctions.templateRender(html, new String[] {manipulateStr});
+    html = JSXGraphPageBuilder.build(html, manipulateStr);
+    html = StringEscapeUtils.escapeHtml4(html);
+    return createJSONJavaScript(
+        "<iframe srcdoc=\""
+            + html
+            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+  }
 
   protected static final String MATHCELL_IFRAME = //
       // "<html style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"

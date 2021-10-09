@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -1068,6 +1069,41 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    */
   @Override
   public Iterator<IExpr> iterator();
+
+  /**
+   * Append a String composed of copies of the arguments of this AST joined together with the
+   * specified {@code delimiter}.
+   *
+   * @param builder join the elements as strings
+   * @param delimiter the delimiter that separates each element
+   */
+  default void joinToString(StringBuilder builder, CharSequence delimiter) {
+    final int size = size();
+    for (int i = 1; i < size; i++) {
+      builder.append(get(i).toString());
+      if (i < size - 1) {
+        builder.append(delimiter);
+      }
+    }
+  }
+
+  /**
+   * Append a String composed of copies of the arguments of this AST joined together with the
+   * specified {@code delimiter}.
+   *
+   * @param builder join the elements as strings
+   * @param delimiter the delimiter that separates each element
+   */
+  default void joinToString(
+      StringBuilder builder, BiConsumer<StringBuilder, IExpr> consumer, CharSequence delimiter) {
+    final int size = size();
+    for (int i = 1; i < size; i++) {
+      consumer.accept(builder, get(i));
+      if (i < size - 1) {
+        builder.append(delimiter);
+      }
+    }
+  }
 
   public int lastIndexOf(IExpr object);
 

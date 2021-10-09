@@ -84,19 +84,21 @@ public class CompiledFunctionExpr extends DataExpr<Class<?>> {
     buf.append("CompiledFunction(Arg count: ");
     buf.append(variables.argSize());
     buf.append(" Types: {");
-    for (int i = 1; i < types.size(); i++) {
-      buf.append(types.get(i));
-      if (i < types.size() - 1) {
-        buf.append(",");
-      }
-    }
+    types.joinToString(buf, ",");
+    //    for (int i = 1; i < types.size(); i++) {
+    //      buf.append(types.get(i));
+    //      if (i < types.size() - 1) {
+    //        buf.append(",");
+    //      }
+    //    }
     buf.append("} Variables: {");
-    for (int i = 1; i < variables.size(); i++) {
-      buf.append(variables.get(i));
-      if (i < variables.size() - 1) {
-        buf.append(",");
-      }
-    }
+    variables.joinToString(buf, ",");
+    //    for (int i = 1; i < variables.size(); i++) {
+    //      buf.append(variables.get(i));
+    //      if (i < variables.size() - 1) {
+    //        buf.append(",");
+    //      }
+    //    }
     buf.append("}");
     buf.append(")");
     return buf.toString();

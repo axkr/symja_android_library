@@ -30,6 +30,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
+import org.matheclipse.core.form.output.JSXGraphPageBuilder;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -94,7 +95,6 @@ public class AJAXQueryServlet extends HttpServlet {
           + "`1`\n"
           + "</body>\n"
           + "</html>";
-
 
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -181,7 +181,7 @@ public class AJAXQueryServlet extends HttpServlet {
     WriterOutputStream werrors = new WriterOutputStream(errorWriter);
     try (PrintStream outs = new PrintStream(wouts);
         PrintStream errors = new PrintStream(werrors);
-        ThreadLocalNotifierClosable c = ServletServer.setLogEventNotifier(outs, errors);) {
+        ThreadLocalNotifierClosable c = ServletServer.setLogEventNotifier(outs, errors); ) {
 
       EvalEngine engine = ENGINES.get(session.getId());
       if (engine == null) {
@@ -321,8 +321,8 @@ public class AJAXQueryServlet extends HttpServlet {
               }
             } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
               try {
-                return JSONBuilder.createJSONIFrame(
-                    JSONBuilder.JSXGRAPH_IFRAME, jsFormData.arg1().toString());
+                return JSONBuilder.createJSXGraphIFrame(
+                    JSXGraphPageBuilder.JSXGRAPH_IFRAME_TEMPLATE, jsFormData.arg1().toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
@@ -419,8 +419,8 @@ public class AJAXQueryServlet extends HttpServlet {
       if (msg != null) {
         return JSONBuilder.createJSONError("Error in evaluateString: " + msg);
       }
-      return JSONBuilder
-          .createJSONError("Error in evaluateString: " + e.getClass().getSimpleName());
+      return JSONBuilder.createJSONError(
+          "Error in evaluateString: " + e.getClass().getSimpleName());
     }
   }
 

@@ -1016,7 +1016,6 @@ public class GraphicsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
-  
   private static class Tube extends AbstractEvaluator implements IGraphics3D {
 
     @Override
@@ -1028,6 +1027,7 @@ public class GraphicsFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
+
     @Override
     public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
@@ -1051,7 +1051,7 @@ public class GraphicsFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
-  
+
   private static class Volume extends AbstractEvaluator {
 
     @Override
@@ -1192,12 +1192,7 @@ public class GraphicsFunctions {
       }
       IAST coords = (IAST) arg;
       buf.append("[[");
-      for (int j = 1; j < coords.size(); j++) {
-        buf.append(coords.get(j).toString());
-        if (j < coords.size() - 1) {
-          buf.append(",");
-        }
-      }
+      coords.joinToString(buf, ",");
       buf.append("]]");
       if (i < ast.size() - 1) {
         buf.append(",");
@@ -1210,12 +1205,7 @@ public class GraphicsFunctions {
   private static boolean graphics3DSingleCoords(StringBuilder buf, IAST coords, String coordStr) {
     buf.append(coordStr + ": ");
     buf.append("[[");
-    for (int j = 1; j < coords.size(); j++) {
-      buf.append(coords.get(j).toString());
-      if (j < coords.size() - 1) {
-        buf.append(",");
-      }
-    }
+    coords.joinToString(buf, ",");
     buf.append("]]");
     return true;
   }
@@ -1234,10 +1224,7 @@ public class GraphicsFunctions {
     OptionArgs options = OptionArgs.createOptionArgs(graphics3DAST, engine);
     if (options != null) {
       IExpr option = options.getOption(S.Lighting);
-      if (option.isList1()
-          && option.first().isList()
-          && option.first().size() > 2
-          && option.first().first().isString()) {
+      if (option.isList1() && option.first().isList() && option.first().first().isString()) {
         lighting = (IAST) option.first();
       }
     }

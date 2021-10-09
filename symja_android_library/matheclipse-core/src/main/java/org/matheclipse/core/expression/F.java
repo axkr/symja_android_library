@@ -99,6 +99,7 @@ import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
+import org.matheclipse.core.form.output.JSXGraphPageBuilder;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -8903,8 +8904,12 @@ public class F extends S {
     } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
       try {
         String manipulateStr = jsFormData.arg1().toString();
-        String html = Config.JSXGRAPH_PAGE;
-        html = StringUtils.replace(html, "`1`", manipulateStr);
+        String html =
+            JSXGraphPageBuilder.build(JSXGraphPageBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
+
+//        String manipulateStr = jsFormData.arg1().toString();
+//        String html = Config.JSXGRAPH_PAGE;
+//        html = StringUtils.replace(html, "`1`", manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
         LOGGER.debug("F.printJSFormData() failed", ex);

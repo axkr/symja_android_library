@@ -6,6 +6,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.output.JSXGraphPageBuilder;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -52,38 +53,23 @@ public abstract class BasePlotExample {
                   js,
                   "`2`", //
                   "  var options = {\n"
-                      + //
-                      "		  edges: {\n"
-                      + //
-                      "              smooth: {\n"
-                      + //
-                      "                  type: 'cubicBezier',\n"
-                      + //
-                      "                  forceDirection:  'vertical',\n"
-                      + //
-                      "                  roundness: 0.4\n"
-                      + //
-                      "              }\n"
-                      + //
-                      "          },\n"
-                      + //
-                      "          layout: {\n"
-                      + //
-                      "              hierarchical: {\n"
-                      + //
-                      "                  direction: \"UD\"\n"
-                      + //
-                      "              }\n"
-                      + //
-                      "          },\n"
-                      + //
-                      "          nodes: {\n"
+                      + "		  edges: {\n"
+                      + "              smooth: {\n"
+                      + "                  type: 'cubicBezier',\n"
+                      + "                  forceDirection:  'vertical',\n"
+                      + "                  roundness: 0.4\n"
+                      + "              }\n"
+                      + "          },\n"
+                      + "          layout: {\n"
+                      + "              hierarchical: {\n"
+                      + "                  direction: \"UD\"\n"
+                      + "              }\n"
+                      + "          },\n"
+                      + "          nodes: {\n"
                       + "            shape: 'box'\n"
                       + "          },\n"
-                      + //
-                      "          physics:false\n"
-                      + //
-                      "      }; ");
+                      + "          physics:false\n"
+                      + "      }; ");
         } else if (result.second().toString().equals("traceform")) {
           String jsStr = ((IAST) result).arg1().toString();
           js = Config.TRACEFORM_PAGE;
@@ -94,8 +80,7 @@ public abstract class BasePlotExample {
           js = StringUtils.replace(js, "`1`", manipulateStr);
         } else {
           String manipulateStr = ((IAST) result).arg1().toString();
-          js = Config.JSXGRAPH_PAGE;
-          js = StringUtils.replace(js, "`1`", manipulateStr);
+          js = JSXGraphPageBuilder.build(JSXGraphPageBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
         }
         System.out.println(js);
         F.openHTMLOnDesktop(js);
@@ -128,4 +113,6 @@ public abstract class BasePlotExample {
       System.out.println(oome.getMessage());
     }
   }
+
+  
 }

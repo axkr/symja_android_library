@@ -706,36 +706,6 @@ public class Config {
           + "    </script>\n"
           + "</body>"; //
 
-  /** HTML template for JSXGraph */
-  public static final String JSXGRAPH_PAGE = //
-      "<html>\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>JSXGraph</title>\n"
-          + "</head>\n"
-          + "\n"
-          + "<body>\n"
-          + "\n"
-          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdn.jsdelivr.net/npm/jsxgraph@1.3.2/distrib/jsxgraph.css\" />\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.6/build/math.js\"></script>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/npm/jsxgraph@1.3.2/distrib/jsxgraphcore.js\"\n"
-          + "        type='text/javascript'></script>\n"
-          + "\n"
-          + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
-          + "<script>\n"
-          +
-          // "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true});\n" +
-          // ,boundingbox:[-7.0,5.0,4.0,-3.0]
-          // "board.suspendUpdate();\n" +
-          "`1`\n"
-          +
-          // "board.unsuspendUpdate();\n" +
-          "</script>\n"
-          + "</div>\n"
-          + "\n"
-          + "</body>\n"
-          + "</html>"; //
-
   /** HTML template for Plotly */
   public static final String PLOTLY_PAGE = //
       "<html>\n"

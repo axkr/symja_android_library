@@ -1591,12 +1591,10 @@ public class TeXFormFactory {
 
   public void convertFunctionArgs(final StringBuilder buf, final IAST list) {
     buf.append("(");
-    for (int i = 1; i < list.size(); i++) {
-      convertInternal(buf, list.get(i), Integer.MIN_VALUE);
-      if (i < list.argSize()) {
-        buf.append(",");
-      }
-    }
+    list.joinToString(
+        buf, //
+        (b, x) -> convertInternal(b, x, Integer.MIN_VALUE),
+        ",");
     buf.append(")");
   }
 
