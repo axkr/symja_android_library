@@ -16,8 +16,11 @@ public class SidesFunctionsTest extends AbstractTestCase {
     check(
         "AddSides(Sin(a)/a == Sin(b)/b == Sin(c)/c, r)", //
         "r+Sin(a)/a==r+Sin(b)/b==r+Sin(c)/c");
+    check(
+        "AddSides(ConditionalExpression(a/c==b/d, c!=0), -b/d)", //
+        "ConditionalExpression(a/c-b/d==0,c!=0)");
   }
-  
+
   public void testApplySides001() {
     check(
         "ApplySides(f, a==a) ", //
@@ -75,9 +78,16 @@ public class SidesFunctionsTest extends AbstractTestCase {
     check(
         "DivideSides(1 == 1, c)", //
         "True");
+    check(
+        "DivideSides(ConditionalExpression(a/c==b/d, c!=0))", //
+        "ConditionalExpression(Piecewise({{(a*d)/(b*c)==1},b/d!=0},a/c==b/d),c!=0)");
   }
 
   public void testMultiplySides001() {
+    // TODO
+    //    check(
+    //        "MultiplySides(Piecewise({{x^2== x/a+b, a>1}}, x^2<=x/a+b), a)", //
+    //        " ");
     check(
         "MultiplySides(a==b,x)", //
         "a*x==b*x");
@@ -105,6 +115,9 @@ public class SidesFunctionsTest extends AbstractTestCase {
     check(
         "MultiplySides(x/11<a<b,-3)", //
         "-3*b<-3*a<-3/11*x");
+    check(
+        "MultiplySides(ConditionalExpression(a/c == b/d, c != 0),w)", //
+        "ConditionalExpression(Piecewise({{(a*w)/c==(b*w)/d},w!=0},a/c==b/d),c!=0)");
   }
 
   public void testSubtractSides001() {
@@ -120,5 +133,8 @@ public class SidesFunctionsTest extends AbstractTestCase {
     check(
         "SubtractSides(1 == 0, c)", //
         "False");
+    check(
+        "SubtractSides(ConditionalExpression(a/c==b/d, c!=0))", //
+        "ConditionalExpression(a/c-b/d==0,c!=0)");
   }
 }

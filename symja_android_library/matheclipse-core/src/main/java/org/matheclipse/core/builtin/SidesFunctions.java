@@ -38,23 +38,36 @@ public class SidesFunctions {
         }
         if (arg1.isTrue() || arg1.isFalse()) {
           return arg1;
-        }
-        if (arg1.isComparatorFunction()) {
+        } else if (arg1.isConditionalExpression() && arg1.first().isAST()) {
+          IAST a1 = (IAST) arg1.first();
+          IExpr temp = addSides(a1, arg2);
+          if (temp.isPresent()) {
+            return F.ConditionalExpression(temp, arg1.second());
+          }
+        } else if (arg1.isComparatorFunction()) {
           IAST comparator = (IAST) arg1;
-          int headID = comparator.headID();
-          switch (headID) {
-            case ID.Equal:
-            case ID.Unequal:
-            case ID.Less:
-            case ID.LessEqual:
-            case ID.Greater:
-            case ID.GreaterEqual:
-              return comparator.map(x -> function(x, arg2));
+          IExpr temp = addSides(comparator, arg2);
+          if (temp.isPresent()) {
+            return temp;
           }
         }
       }
       // `1` should be an equation or inequality.
       return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg1), engine);
+    }
+
+    private IExpr addSides(IAST comparator, final IExpr arg2) {
+      int headID = comparator.headID();
+      switch (headID) {
+        case ID.Equal:
+        case ID.Unequal:
+        case ID.Less:
+        case ID.LessEqual:
+        case ID.Greater:
+        case ID.GreaterEqual:
+          return comparator.map(x -> function(x, arg2));
+      }
+      return F.NIL;
     }
 
     @Override
@@ -115,73 +128,107 @@ public class SidesFunctions {
       if (arg1.isTrue() || arg1.isFalse()) {
         return arg1;
       }
-      if (arg1.isComparatorFunction()) {
-        final IExpr arg2;
-        if (ast.isAST1()) {
-          if (arg1.size() != 3) {
-            return F.NIL;
+      IExpr arg2 = F.NIL;
+      if (ast.isAST1()) {
+        if (arg1.size() != 3) {
+          return F.NIL;
+        }
+        if (arg1.isConditionalExpression()) {
+          IExpr a1 = arg1.first();
+          if (a1.isComparatorFunction()) {
+            int headID = a1.headID();
+            switch (headID) {
+              case ID.Equal:
+              case ID.Unequal:
+              case ID.Less:
+              case ID.LessEqual:
+              case ID.Greater:
+              case ID.GreaterEqual:
+                arg2 = a1.last();
+                break;
+            }
           }
-          arg2 = arg1.second();
         } else {
-          arg2 = engine.evaluate(ast.arg2());
+          arg2 = arg1.second();
         }
-        if (arg2.isZero()) {
-          // Cannot divide sides of an equation or inequality by 0.
-          return IOFunctions.printMessage(ast.topHead(), "arg2", F.CEmptyList, engine);
-        }
-        if (!arg2.isComparatorFunction()) {
-          IAST comparator = (IAST) arg1;
-          int headID = comparator.headID();
-          switch (headID) {
-            case ID.Equal:
-              return comparator.map(x -> function(x, arg2));
-            case ID.Unequal:
-              return comparator.map(x -> function(x, arg2));
-            case ID.Less:
-              {
-                if (arg2.isNegative()) {
-                  return comparator.mapReverse(x -> function(x, arg2));
-                }
-                if (arg2.isPositive()) {
-                  return comparator.map(x -> function(x, arg2));
-                }
-                return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
-              }
-            case ID.LessEqual:
-              {
-                if (arg2.isNegative()) {
-                  return comparator.mapReverse(x -> function(x, arg2));
-                }
-                if (arg2.isPositive()) {
-                  return comparator.map(x -> function(x, arg2));
-                }
-                return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
-              }
-            case ID.Greater:
-              {
-                if (arg2.isNegative()) {
-                  return comparator.mapReverse(x -> function(x, arg2));
-                }
-                if (arg2.isPositive()) {
-                  return comparator.map(x -> function(x, arg2));
-                }
-                return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
-              }
-            case ID.GreaterEqual:
-              {
-                if (arg2.isNegative()) {
-                  return comparator.mapReverse(x -> function(x, arg2));
-                }
-                if (arg2.isPositive()) {
-                  return comparator.map(x -> function(x, arg2));
-                }
-                return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
-              }
+      } else {
+        arg2 = engine.evaluate(ast.arg2());
+      }
+      if (arg2.isPresent()) {
+        if (arg1.isConditionalExpression() && arg1.first().isAST()) {
+          IAST a1 = (IAST) arg1.first();
+          IExpr temp = divideSides(a1, arg2);
+          if (temp.isPresent()) {
+            temp = engine.evaluate(temp);
+            IExpr piecewise = F.Piecewise(F.List(F.List(temp), F.Unequal(arg2, F.C0)), a1);
+            return F.ConditionalExpression(piecewise, arg1.second());
+          }
+        } else if (arg1.isComparatorFunction()) {
+          if (arg2.isZero()) {
+            // Cannot divide sides of an equation or inequality by 0.
+            return IOFunctions.printMessage(ast.topHead(), "arg2", F.CEmptyList, engine);
+          } else if (!arg2.isComparatorFunction()) {
+            IAST comparator = (IAST) arg1;
+            IExpr temp = divideSides(comparator, arg2);
+            if (temp.isPresent()) {
+              return temp;
+            }
           }
         }
       }
       // `1` should be an equation or inequality.
       return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg1), engine);
+    }
+
+    private IExpr divideSides(IAST comparator, IExpr arg2) {
+      int headID = comparator.headID();
+      switch (headID) {
+        case ID.Equal:
+          return comparator.map(x -> function(x, arg2));
+        case ID.Unequal:
+          return comparator.map(x -> function(x, arg2));
+        case ID.Less:
+          {
+            if (arg2.isNegative()) {
+              return comparator.mapReverse(x -> function(x, arg2));
+            }
+            if (arg2.isPositive()) {
+              return comparator.map(x -> function(x, arg2));
+            }
+            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          }
+        case ID.LessEqual:
+          {
+            if (arg2.isNegative()) {
+              return comparator.mapReverse(x -> function(x, arg2));
+            }
+            if (arg2.isPositive()) {
+              return comparator.map(x -> function(x, arg2));
+            }
+            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          }
+        case ID.Greater:
+          {
+            if (arg2.isNegative()) {
+              return comparator.mapReverse(x -> function(x, arg2));
+            }
+            if (arg2.isPositive()) {
+              return comparator.map(x -> function(x, arg2));
+            }
+            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          }
+        case ID.GreaterEqual:
+          {
+            if (arg2.isNegative()) {
+              return comparator.mapReverse(x -> function(x, arg2));
+            }
+            if (arg2.isPositive()) {
+              return comparator.map(x -> function(x, arg2));
+            }
+            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          }
+      }
+      return F.NIL;
     }
 
     @Override
@@ -206,60 +253,75 @@ public class SidesFunctions {
         }
         if (arg1.isTrue() || arg1.isFalse()) {
           return arg1;
-        }
-        if (arg1.isComparatorFunction()) {
+        } else if (arg1.isConditionalExpression() && arg1.first().isAST()) {
+          IAST a1 = (IAST) arg1.first();
+          IExpr temp = multiplySides(a1, arg2);
+          if (temp.isPresent()) {
+            temp = engine.evaluate(temp);
+            IExpr piecewise = F.Piecewise(F.List(F.List(temp), F.Unequal(arg2, F.C0)), a1);
+            return F.ConditionalExpression(piecewise, arg1.second());
+          }
+        } else if (arg1.isComparatorFunction()) {
           IAST comparator = (IAST) arg1;
-          int headID = comparator.headID();
-          switch (headID) {
-            case ID.Equal:
-              return comparator.map(x -> function(x, arg2));
-            case ID.Unequal:
-              return comparator.map(x -> function(x, arg2));
-            case ID.Less:
-              {
-                if (arg2.isNegative()) {
-                  return comparator.mapReverse(x -> function(x, arg2));
-                }
-                if (arg2.isPositive()) {
-                  return comparator.map(x -> function(x, arg2));
-                }
-                return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
-              }
-            case ID.LessEqual:
-              {
-                if (arg2.isNegative()) {
-                  return comparator.mapReverse(x -> function(x, arg2));
-                }
-                if (arg2.isPositive()) {
-                  return comparator.map(x -> function(x, arg2));
-                }
-                return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
-              }
-            case ID.Greater:
-              {
-                if (arg2.isNegative()) {
-                  return comparator.mapReverse(x -> function(x, arg2));
-                }
-                if (arg2.isPositive()) {
-                  return comparator.map(x -> function(x, arg2));
-                }
-                return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
-              }
-            case ID.GreaterEqual:
-              {
-                if (arg2.isNegative()) {
-                  return comparator.mapReverse(x -> function(x, arg2));
-                }
-                if (arg2.isPositive()) {
-                  return comparator.map(x -> function(x, arg2));
-                }
-                return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
-              }
+          IExpr temp = multiplySides(comparator, arg2);
+          if (temp.isPresent()) {
+            return temp;
           }
         }
       }
       // `1` should be an equation or inequality.
       return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg1), engine);
+    }
+
+    private IExpr multiplySides(IAST comparator, final IExpr arg2) {
+      int headID = comparator.headID();
+      switch (headID) {
+        case ID.Equal:
+          return comparator.map(x -> function(x, arg2));
+        case ID.Unequal:
+          return comparator.map(x -> function(x, arg2));
+        case ID.Less:
+          {
+            if (arg2.isNegative()) {
+              return comparator.mapReverse(x -> function(x, arg2));
+            }
+            if (arg2.isPositive()) {
+              return comparator.map(x -> function(x, arg2));
+            }
+            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          }
+        case ID.LessEqual:
+          {
+            if (arg2.isNegative()) {
+              return comparator.mapReverse(x -> function(x, arg2));
+            }
+            if (arg2.isPositive()) {
+              return comparator.map(x -> function(x, arg2));
+            }
+            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          }
+        case ID.Greater:
+          {
+            if (arg2.isNegative()) {
+              return comparator.mapReverse(x -> function(x, arg2));
+            }
+            if (arg2.isPositive()) {
+              return comparator.map(x -> function(x, arg2));
+            }
+            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          }
+        case ID.GreaterEqual:
+          {
+            if (arg2.isNegative()) {
+              return comparator.mapReverse(x -> function(x, arg2));
+            }
+            if (arg2.isPositive()) {
+              return comparator.map(x -> function(x, arg2));
+            }
+            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          }
+      }
+      return F.NIL;
     }
 
     @Override
@@ -283,32 +345,65 @@ public class SidesFunctions {
       if (arg1.isTrue() || arg1.isFalse()) {
         return arg1;
       }
-      if (arg1.isComparatorFunction()) {
-        final IExpr arg2;
-        if (ast.isAST1()) {
-          if (arg1.size() != 3) {
-            return F.NIL;
-          }
-          arg2 = arg1.second();
-        } else {
-          arg2 = engine.evaluate(ast.arg2());
+      IExpr arg2 = F.NIL;
+      if (ast.isAST1()) {
+        if (arg1.size() != 3) {
+          return F.NIL;
         }
-        if (!arg2.isComparatorFunction()) {
-          IAST comparator = (IAST) arg1;
-          int headID = comparator.headID();
-          switch (headID) {
-            case ID.Equal:
-            case ID.Unequal:
-            case ID.Less:
-            case ID.LessEqual:
-            case ID.Greater:
-            case ID.GreaterEqual:
-              return comparator.map(x -> function(x, arg2));
+        if (arg1.isConditionalExpression()) {
+          IExpr a1 = arg1.first();
+          if (a1.isComparatorFunction()) {
+            int headID = a1.headID();
+            switch (headID) {
+              case ID.Equal:
+              case ID.Unequal:
+              case ID.Less:
+              case ID.LessEqual:
+              case ID.Greater:
+              case ID.GreaterEqual:
+                arg2 = a1.last();
+                break;
+            }
+          }
+        } else {
+          arg2 = arg1.second();
+        }
+      } else {
+        arg2 = engine.evaluate(ast.arg2());
+      }
+      if (arg2.isPresent()) {
+        if (arg1.isConditionalExpression() && arg1.first().isAST()) {
+          IAST a1 = (IAST) arg1.first();
+          IExpr temp = subtractSides(a1, arg2);
+          if (temp.isPresent()) {
+            return F.ConditionalExpression(temp, arg1.second());
+          }
+        } else if (arg1.isComparatorFunction()) {
+          if (!arg2.isComparatorFunction()) {
+            IAST comparator = (IAST) arg1;
+            IExpr temp = subtractSides(comparator, arg2);
+            if (temp.isPresent()) {
+              return temp;
+            }
           }
         }
       }
       // `1` should be an equation or inequality.
       return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg1), engine);
+    }
+
+    private IExpr subtractSides(IAST comparator, final IExpr arg2) {
+      int headID = comparator.headID();
+      switch (headID) {
+        case ID.Equal:
+        case ID.Unequal:
+        case ID.Less:
+        case ID.LessEqual:
+        case ID.Greater:
+        case ID.GreaterEqual:
+          return comparator.map(x -> function(x, arg2));
+      }
+      return F.NIL;
     }
 
     @Override
