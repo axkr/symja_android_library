@@ -42,6 +42,26 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
+  static class Csc extends B1 {
+    public Csc() {
+      super();
+    }
+
+    Csc(IExpr arg1) {
+      super(arg1);
+    }
+
+    @Override
+    public final IBuiltInSymbol head() {
+      return S.Csc;
+    }
+
+    @Override
+    public IASTMutable copy() {
+      return new Csc(arg1);
+    }
+  }
+
   static class IntegerQ extends B1 {
     public IntegerQ() {
       super();
@@ -119,6 +139,26 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IASTMutable copy() {
       return new Log(arg1);
+    }
+  }
+
+  static class Missing extends B1 {
+    public Missing() {
+      super();
+    }
+
+    Missing(IExpr arg1) {
+      super(arg1);
+    }
+
+    @Override
+    public final IBuiltInSymbol head() {
+      return S.Missing;
+    }
+
+    @Override
+    public IASTMutable copy() {
+      return new Missing(arg1);
     }
   }
 

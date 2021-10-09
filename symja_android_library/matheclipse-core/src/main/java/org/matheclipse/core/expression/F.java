@@ -1174,6 +1174,16 @@ public class F extends S {
    * @return
    */
   public static final IASTMutable $(final IExpr head, final IExpr... a) {
+    switch (a.length) {
+      case 0:
+        return headAST0(head);
+      case 1:
+        return unaryAST1(head, a[0]);
+      case 2:
+        return binaryAST2(head, a[0], a[1]);
+      case 3:
+        return ternaryAST3(head, a[0], a[1], a[2]);
+    }
     return ast(a, head);
   }
 
@@ -3026,8 +3036,8 @@ public class F extends S {
     return new B2.Condition(pattern, test);
   }
 
-  public static IAST ConditionalExpression(final IExpr a0, final IExpr a1) {
-    return new AST2(ConditionalExpression, a0, a1);
+  public static IAST ConditionalExpression(final IExpr expr, final IExpr condition) {
+    return new AST2(ConditionalExpression, expr, condition);
   }
 
   public static IAST Cone(final IExpr matrix) {
@@ -3123,7 +3133,7 @@ public class F extends S {
   }
 
   public static IAST Csc(final IExpr z) {
-    return new AST1(Csc, z);
+    return new B1.Csc(z);
   }
 
   public static IAST Csch(final IExpr z) {
@@ -4773,7 +4783,6 @@ public class F extends S {
   }
 
   public static IAST Inverse(final IExpr a0) {
-
     return new AST1(Inverse, a0);
   }
 
@@ -5998,12 +6007,12 @@ public class F extends S {
     return Plus(ZZ(i), new B2.Times(CN1, b));
   }
 
-  public static IAST Missing(final IExpr a0) {
-    return new AST1(Missing, a0);
+  public static IAST Missing(final IExpr reason) {
+    return new B1.Missing(reason);
   }
 
-  public static IAST Missing(final String str) {
-    return new AST1(Missing, stringx(str));
+  public static IAST Missing(final String reason) {
+    return new B1.Missing(stringx(reason));
   }
 
   public static IAST Missing(final IExpr a0, final IExpr a1) {
@@ -6626,7 +6635,16 @@ public class F extends S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IAST Plus(final IExpr... a) {
-    return function(Plus, a);
+    final int size = a.length;
+    switch (size) {
+      case 1:
+        return new AST1(S.Plus, a[0]);
+      case 2:
+        return new B2.Plus(a[0], a[1]);
+      case 3:
+        return new AST3(S.Plus, a[0], a[1], a[2]);
+    }
+    return new AST(S.Plus, a);
   }
 
   /**
@@ -6641,7 +6659,7 @@ public class F extends S {
    */
   public static IAST Plus(final IExpr x, final IExpr y) {
     if (x != null && y != null) {
-      return binaryASTOrderless(IExpr::isPlus, S.Plus, x, y);
+      return plusOrderless(IExpr::isPlus, x, y);
     }
     return new B2.Plus(x, y);
   }
@@ -8182,7 +8200,16 @@ public class F extends S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IAST Times(final IExpr... a) {
-    return function(Times, a);
+    final int size = a.length;
+    switch (size) {
+      case 1:
+        return new AST1(S.Times, a[0]);
+      case 2:
+        return new B2.Times(a[0], a[1]);
+      case 3:
+        return new AST3(S.Times, a[0], a[1], a[2]);
+    }
+    return new AST(S.Times, a);
   }
 
   /**
@@ -8193,7 +8220,7 @@ public class F extends S {
    */
   public static IASTMutable Times(final IExpr x, final IExpr y) {
     if (x != null && y != null) {
-      return binaryASTOrderless(IExpr::isTimes, S.Times, x, y);
+      return timesOrderless(IExpr::isTimes, x, y);
     }
     return new B2.Times(x, y);
   }
@@ -8204,7 +8231,7 @@ public class F extends S {
    * <p>See: <a
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
-  public static IASTMutable Times(final IExpr x, final IExpr y, final IExpr z) {
+  public static IAST Times(final IExpr x, final IExpr y, final IExpr z) {
     return new AST3(Times, x, y, z);
   }
 
@@ -8234,6 +8261,60 @@ public class F extends S {
       return binaryAST2(symbol, a2, a1);
     }
     return binaryAST2(symbol, a1, a2);
+  }
+
+  private static IASTMutable plusOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2) {
+    final boolean test1 = t.test(a1);
+    final boolean test2 = t.test(a2);
+    if (test1 || test2) {
+      int size = test1 ? a1.size() : 1;
+      size += test2 ? a2.size() : 1;
+      IASTAppendable result = ast(S.Plus, size);
+      if (test1) {
+        result.appendArgs((IAST) a1);
+      } else {
+        result.append(a1);
+      }
+      if (test2) {
+        result.appendArgs((IAST) a2);
+      } else {
+        result.append(a2);
+      }
+      EvalAttributes.sort(result);
+      return result;
+    }
+    if (a1.compareTo(a2) > 0) {
+      // swap arguments
+      return new B2.Plus(a2, a1);
+    }
+    return new B2.Plus(a1, a2);
+  }
+
+  private static IASTMutable timesOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2) {
+    final boolean test1 = t.test(a1);
+    final boolean test2 = t.test(a2);
+    if (test1 || test2) {
+      int size = test1 ? a1.size() : 1;
+      size += test2 ? a2.size() : 1;
+      IASTAppendable result = ast(S.Times, size);
+      if (test1) {
+        result.appendArgs((IAST) a1);
+      } else {
+        result.append(a1);
+      }
+      if (test2) {
+        result.appendArgs((IAST) a2);
+      } else {
+        result.append(a2);
+      }
+      EvalAttributes.sort(result);
+      return result;
+    }
+    if (a1.compareTo(a2) > 0) {
+      // swap arguments
+      return new B2.Times(a2, a1);
+    }
+    return new B2.Times(a1, a2);
   }
 
   /**
