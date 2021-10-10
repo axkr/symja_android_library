@@ -6631,6 +6631,28 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testD() {
+    // message - D: D called with 0 arguments; 1 or more arguments are expected.
+    check(
+        "D( )", //
+        "D()");
+
+    // github #302 - special case - only 1 argument
+    check(
+        "D(f)", //
+        "f");
+    // github #302 test case
+    check(
+        "Integrate(D(x),x)", //
+        "x^2/2");
+    // github #302 test case
+    check(
+        "Integrate(D(y)*D(x),x,y)", //
+        "1/4*x^2*y^2");
+    // github #302 test case
+    check(
+        "Integrate(D(x),x)*Integrate(D(y),y)", //
+        "1/4*x^2*y^2");
+
     check(
         "D(StruveH(n,x),x)", //
         "1/2*(x^n/(2^n*Sqrt(Pi)*Gamma(3/2+n))+StruveH(-1+n,x)-StruveH(1+n,x))");
@@ -27058,7 +27080,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "PolynomialQuotient(0,2,x,Modulus->2)", //
         "PolynomialQuotient(0,2,x,Modulus->2)");
-    
 
     check(
         "PolynomialQuotient(x^2+4*x+1,Indeterminate,x,Modulus->3)", //
@@ -29972,7 +29993,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "RankedMin(<|a -> 1, b -> 2, c -> 3, d -> 4|>, 2)", //
         "2");
-    
+
     // message: RankedMin: Input {1,I,E} is not a vector of reals or integers.
     check(
         "RankedMin({1, I, E}, 2)", //
@@ -36536,7 +36557,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "TakeSmallestBy(<|a -> \"\", b -> \"xxx\", c -> \"xx\"|>, StringLength, 2)", //
         "<|a->,c->xx|>");
   }
- 
+
   public void testTally() {
     check(
         "Tally({{a, b}, {w, x, y, z}, E, {w, x, y, z}, E}, Head(#1) === Head(#2) &)", //

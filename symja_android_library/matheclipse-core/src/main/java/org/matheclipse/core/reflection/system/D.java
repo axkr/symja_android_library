@@ -265,8 +265,8 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    if (ast.size() < 3) {
-      return F.NIL;
+    if (ast.isAST1()) {
+      return ast.arg1();
     }
     try {
       final IExpr fx = ast.arg1();
@@ -545,6 +545,6 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_INFINITY;
+    return ARGS_1_INFINITY;
   }
 }

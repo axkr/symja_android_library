@@ -479,6 +479,8 @@ public class IOFunctions {
     "`1` called with `2` arguments.", //
     "argctu",
     "`1` called with 1 argument.", //
+    "argm",
+    "`1` called with `2` arguments; `3` or more arguments are expected.", //
     "argr",
     "`1` called with 1 argument; `2` arguments are expected.", //
     "argrx",
@@ -908,6 +910,9 @@ public class IOFunctions {
       }
       return printMessage(topHead, "argrx", F.List(head, F.ZZ(argSize), F.ZZ(expected[0])), engine);
     }
+    if (expected[1] == Integer.MAX_VALUE) {
+      return printMessage(topHead, "argm", F.List(head, F.ZZ(argSize), F.ZZ(expected[0])), engine);
+    }
     return printMessage(
         topHead, "argt", F.List(head, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);
   }
@@ -1134,8 +1139,8 @@ public class IOFunctions {
 
   /**
    * Render the template string with the <code>args</code> parameters. Typically the <code>args
-   * </code> are a <code>List</code> or an <code>Association</code> expressiosn, otherwise the
-   * <code>args</code> parameter will be ignored.
+   * </code> are a <code>List</code> or an <code>Association</code> expression, otherwise the <code>
+   * args</code> parameter will be ignored.
    *
    * @param templateStr
    * @param args
