@@ -3,7 +3,6 @@ package org.matheclipse.gpl.numbertheory;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.SortedMap;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
@@ -14,7 +13,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.numbertheory.SortedMultiset;
 import org.matheclipse.core.numbertheory.SortedMultiset_BottomUp;
-
 import de.tilman_neumann.jml.factor.CombinedFactorAlgorithm;
 import edu.jas.arith.PrimeInteger;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -140,7 +138,6 @@ public class BigIntegerPrimality extends Primality {
       result.append(AbstractIntegerSym.valueOf(rest));
       return result;
     }
-    b = AbstractIntegerSym.valueOf(rest);
     SortedMap<BigInteger, Integer> bigMap = factorInteger(rest);
 
     for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
