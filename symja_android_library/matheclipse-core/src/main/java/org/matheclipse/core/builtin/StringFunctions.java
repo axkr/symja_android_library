@@ -2026,22 +2026,25 @@ public final class StringFunctions {
 
         IExpr arg2 = ast.arg2();
         IASTAppendable result = F.ListAlloc();
-
-        if (arg2.isList()) {
-          IAST list = (IAST) arg2;
-          for (int i = 1; i < list.size(); i++) {
-            IExpr temp =
-                stringPosition(ast, arg1, list.get(i), maxOccurences, ignoreCase, result, engine);
-            if (!temp.isPresent()) {
-              return F.NIL;
+        try {
+          if (arg2.isList()) {
+            IAST list = (IAST) arg2;
+            for (int i = 1; i < list.size(); i++) {
+              IExpr temp =
+                  stringPosition(ast, arg1, list.get(i), maxOccurences, ignoreCase, result, engine);
+              if (!temp.isPresent()) {
+                return F.NIL;
+              }
+              if (maxOccurences < result.size()) {
+                return result;
+              }
             }
-            if (maxOccurences < result.size()) {
-              return result;
-            }
+            return result;
           }
-          return result;
+          return stringPosition(ast, arg1, arg2, maxOccurences, ignoreCase, result, engine);
+        } catch (StackOverflowError soe) {
+          return F.NIL;
         }
-        return stringPosition(ast, arg1, arg2, maxOccurences, ignoreCase, result, engine);
       }
       return F.NIL;
     }
@@ -3623,12 +3626,21 @@ public final class StringFunctions {
       }
     } else if (partOfRegex.isPatternSequence(false)) {
       PatternSequence ps = ((PatternSequence) partOfRegex);
+      final ISymbol symbol = ps.getSymbol();
+      final String str;
       if (ps.isNullSequence()) {
         // RepeatedNull
-        return "(.|\\n)" + shortestLongest[ASTERISK_Q];
+        str = "(.|\\n)" + shortestLongest[ASTERISK_Q];
       } else {
         // Repeated
-        return "(.|\\n)" + shortestLongest[PLUS_Q];
+        str = "(.|\\n)" + shortestLongest[PLUS_Q];
+      }
+      if (symbol == null) {
+        return str;
+      } else {
+        final String groupName = symbol.toString();
+        groups.put(symbol, groupName);
+        return "(?<" + groupName + ">" + str + ")";
       }
     } else if (partOfRegex.isAST(S.CharacterRange, 3)) {
       String[] characterRange = characterRange((IAST) partOfRegex);
