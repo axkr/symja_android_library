@@ -4718,7 +4718,7 @@ public final class LinearAlgebra {
         }
         int k = ast.arg2().toIntDefault();
         if (k <= 0) {
-          if (n == Integer.MIN_VALUE) {
+          if (k == Integer.MIN_VALUE) {
             return F.NIL;
           }
           // Positive machine-sized integer expected at position `2` in `1`.
