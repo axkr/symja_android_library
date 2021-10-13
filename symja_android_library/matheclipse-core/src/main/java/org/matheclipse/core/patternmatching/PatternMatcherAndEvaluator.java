@@ -354,14 +354,11 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       return F.NIL;
     } catch (final ReturnException e) {
       result = e.getValue();
-      if (evaluate) {
-        if (Config.TRACE_REWRITE_RULE) {
-          return engine.addEvaluatedTraceStep(
-              leftHandSide, result, leftHandSide.topHead(), F.$str("RewriteRule"));
-        }
-        return engine.evaluate(result);
+      if (Config.TRACE_REWRITE_RULE) {
+        return engine.addEvaluatedTraceStep(
+            leftHandSide, result, leftHandSide.topHead(), F.$str("RewriteRule"));
       }
-      return result;
+      return engine.evaluate(result);
     }
   }
 
