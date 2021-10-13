@@ -2,6 +2,7 @@ package org.matheclipse.core.tensor.qty;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.parser.client.math.MathException;
 import com.univocity.parsers.csv.CsvFormat;
@@ -49,7 +50,7 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
     return QuantityImpl.of(value, unit);
   }
 
-  static IQuantity of(ISignedNumber value, IUnit unit) {
+  static IQuantity of(INumber value, IUnit unit) {
     return new QuantityImpl(value, unit);
   }
 
@@ -58,13 +59,12 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
    * problems subsequently.
    *
    * @param value
-   * @param string for instance "m*s^-2"
+   * @param unit for instance "m*s^-2"
    * @return
    * @throws Exception if value is instance of {@code Quantity}
    */
-  static IExpr of(IExpr value, String string) {
-    if (value instanceof IQuantity) throw MathException.of(value);
-    return QuantityImpl.of(value, IUnit.ofPutIfAbsent(string));
+  static IExpr of(IExpr value, String unit) {
+    return of(value, IUnit.ofPutIfAbsent(unit));
   }
 
   /**
@@ -86,12 +86,12 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
    * creates quantity with number encoded as {@link ISignedNumber}
    *
    * @param number
-   * @param string for instance "kg^3*m*s^-2"
+   * @param unit for instance "kg^3*m*s^-2"
    * @return
    * @throws Exception if either parameter equals null
    */
-  static IExpr of(Number number, String string) {
-    return QuantityImpl.of(F.expr(number), IUnit.ofPutIfAbsent(string));
+  static IExpr of(Number number, String unit) {
+    return of(F.expr(number), unit);
   }
 
   public IQuantity ofUnit(IExpr scalar);
