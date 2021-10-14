@@ -401,35 +401,35 @@ public class F extends S {
   public static final IPattern P_ = initPredefinedPattern(PSymbol);
   public static final IPattern Q_ = initPredefinedPattern(QSymbol);
 
-  public static final IPattern m_Integer = new Pattern(m, F.Integer);
-  public static final IPattern n_Integer = new Pattern(n, F.Integer);
+  public static final IPattern m_Integer = new Pattern(m, Integer);
+  public static final IPattern n_Integer = new Pattern(n, Integer);
 
-  public static final IPattern a_Symbol = new Pattern(a, F.Symbol);
-  public static final IPattern b_Symbol = new Pattern(b, F.Symbol);
-  public static final IPattern c_Symbol = new Pattern(c, F.Symbol);
-  public static final IPattern d_Symbol = new Pattern(d, F.Symbol);
-  public static final IPattern e_Symbol = new Pattern(e, F.Symbol);
-  public static final IPattern f_Symbol = new Pattern(f, F.Symbol);
-  public static final IPattern g_Symbol = new Pattern(g, F.Symbol);
-  public static final IPattern h_Symbol = new Pattern(h, F.Symbol);
-  public static final IPattern i_Symbol = new Pattern(i, F.Symbol);
-  public static final IPattern j_Symbol = new Pattern(j, F.Symbol);
-  public static final IPattern k_Symbol = new Pattern(k, F.Symbol);
-  public static final IPattern l_Symbol = new Pattern(l, F.Symbol);
-  public static final IPattern m_Symbol = new Pattern(m, F.Symbol);
-  public static final IPattern n_Symbol = new Pattern(n, F.Symbol);
-  public static final IPattern o_Symbol = new Pattern(o, F.Symbol);
-  public static final IPattern p_Symbol = new Pattern(p, F.Symbol);
-  public static final IPattern q_Symbol = new Pattern(q, F.Symbol);
-  public static final IPattern r_Symbol = new Pattern(r, F.Symbol);
-  public static final IPattern s_Symbol = new Pattern(s, F.Symbol);
-  public static final IPattern t_Symbol = new Pattern(t, F.Symbol);
-  public static final IPattern u_Symbol = new Pattern(u, F.Symbol);
-  public static final IPattern v_Symbol = new Pattern(v, F.Symbol);
-  public static final IPattern w_Symbol = new Pattern(w, F.Symbol);
-  public static final IPattern x_Symbol = new Pattern(x, F.Symbol);
-  public static final IPattern y_Symbol = new Pattern(y, F.Symbol);
-  public static final IPattern z_Symbol = new Pattern(z, F.Symbol);
+  public static final IPattern a_Symbol = new Pattern(a, Symbol);
+  public static final IPattern b_Symbol = new Pattern(b, Symbol);
+  public static final IPattern c_Symbol = new Pattern(c, Symbol);
+  public static final IPattern d_Symbol = new Pattern(d, Symbol);
+  public static final IPattern e_Symbol = new Pattern(e, Symbol);
+  public static final IPattern f_Symbol = new Pattern(f, Symbol);
+  public static final IPattern g_Symbol = new Pattern(g, Symbol);
+  public static final IPattern h_Symbol = new Pattern(h, Symbol);
+  public static final IPattern i_Symbol = new Pattern(i, Symbol);
+  public static final IPattern j_Symbol = new Pattern(j, Symbol);
+  public static final IPattern k_Symbol = new Pattern(k, Symbol);
+  public static final IPattern l_Symbol = new Pattern(l, Symbol);
+  public static final IPattern m_Symbol = new Pattern(m, Symbol);
+  public static final IPattern n_Symbol = new Pattern(n, Symbol);
+  public static final IPattern o_Symbol = new Pattern(o, Symbol);
+  public static final IPattern p_Symbol = new Pattern(p, Symbol);
+  public static final IPattern q_Symbol = new Pattern(q, Symbol);
+  public static final IPattern r_Symbol = new Pattern(r, Symbol);
+  public static final IPattern s_Symbol = new Pattern(s, Symbol);
+  public static final IPattern t_Symbol = new Pattern(t, Symbol);
+  public static final IPattern u_Symbol = new Pattern(u, Symbol);
+  public static final IPattern v_Symbol = new Pattern(v, Symbol);
+  public static final IPattern w_Symbol = new Pattern(w, Symbol);
+  public static final IPattern x_Symbol = new Pattern(x, Symbol);
+  public static final IPattern y_Symbol = new Pattern(y, Symbol);
+  public static final IPattern z_Symbol = new Pattern(z, Symbol);
 
   public static final IPattern a_DEFAULT = new Pattern(a, null, true);
   public static final IPattern b_DEFAULT = new Pattern(b, null, true);
@@ -769,8 +769,8 @@ public class F extends S {
       PatternTest.setAttributes(ISymbol.HOLDREST);
       List.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
 
-      CEmptySequence = headAST0(S.Sequence);
-      CEmptyList = headAST0(S.List);
+      CEmptySequence = headAST0(Sequence);
+      CEmptyList = headAST0(List);
       CEmptyString = $str("");
       CMissingNotFound = Missing("NotFound");
       CListC0 = new B1.List(C0);
@@ -1020,7 +1020,7 @@ public class F extends S {
 
       ConstantDefinitions.initialize();
       FunctionDefinitions.initialize();
-      S.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
+      Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
       IOFunctions.initialize();
       Programming.initialize();
       PatternMatching.initialize();
@@ -1103,19 +1103,19 @@ public class F extends S {
 
   private static void createDenominatorFunctionMap() {
     DENOMINATOR_NUMERATOR_SYMBOLS = new ISymbol[6];
-    DENOMINATOR_NUMERATOR_SYMBOLS[0] = S.Sin;
-    DENOMINATOR_NUMERATOR_SYMBOLS[1] = S.Cos;
-    DENOMINATOR_NUMERATOR_SYMBOLS[2] = S.Tan;
-    DENOMINATOR_NUMERATOR_SYMBOLS[3] = S.Csc;
-    DENOMINATOR_NUMERATOR_SYMBOLS[4] = S.Sec;
-    DENOMINATOR_NUMERATOR_SYMBOLS[5] = S.Cot;
+    DENOMINATOR_NUMERATOR_SYMBOLS[0] = Sin;
+    DENOMINATOR_NUMERATOR_SYMBOLS[1] = Cos;
+    DENOMINATOR_NUMERATOR_SYMBOLS[2] = Tan;
+    DENOMINATOR_NUMERATOR_SYMBOLS[3] = Csc;
+    DENOMINATOR_NUMERATOR_SYMBOLS[4] = Sec;
+    DENOMINATOR_NUMERATOR_SYMBOLS[5] = Cot;
     DENOMINATOR_TRIG_TRUE_EXPRS = new IExpr[6];
-    DENOMINATOR_TRIG_TRUE_EXPRS[0] = F.C1;
-    DENOMINATOR_TRIG_TRUE_EXPRS[1] = F.C1;
-    DENOMINATOR_TRIG_TRUE_EXPRS[2] = S.Cos;
-    DENOMINATOR_TRIG_TRUE_EXPRS[3] = S.Sin;
-    DENOMINATOR_TRIG_TRUE_EXPRS[4] = S.Cos;
-    DENOMINATOR_TRIG_TRUE_EXPRS[5] = S.Sin;
+    DENOMINATOR_TRIG_TRUE_EXPRS[0] = C1;
+    DENOMINATOR_TRIG_TRUE_EXPRS[1] = C1;
+    DENOMINATOR_TRIG_TRUE_EXPRS[2] = Cos;
+    DENOMINATOR_TRIG_TRUE_EXPRS[3] = Sin;
+    DENOMINATOR_TRIG_TRUE_EXPRS[4] = Cos;
+    DENOMINATOR_TRIG_TRUE_EXPRS[5] = Sin;
   }
 
   private static void createInverseFunctionMap() {
@@ -1589,7 +1589,7 @@ public class F extends S {
    * @return {@link IInteger} integer value
    */
   public static IInteger symjify(final long value) {
-    return F.ZZ(value);
+    return ZZ(value);
   }
 
   /**
@@ -1597,7 +1597,7 @@ public class F extends S {
    * @return {@link INum} double wrapper
    */
   public static INum symjify(final double value) {
-    return F.num(value);
+    return num(value);
   }
 
   /**
@@ -1607,7 +1607,7 @@ public class F extends S {
    * @return {@link S#True} or {@link S#False} symbol
    */
   public static IBuiltInSymbol symjify(final boolean value) {
-    return value ? S.True : S.False;
+    return value ? True : False;
   }
 
   /**
@@ -1787,7 +1787,7 @@ public class F extends S {
    * @return
    */
   public static IAST And(final IExpr expr1, final IExpr expr2, final IExpr expr3) {
-    return new AST3(S.And, expr1, expr2, expr3);
+    return new AST3(And, expr1, expr2, expr3);
   }
 
   public static IAST AngleVector(final IExpr a0) {
@@ -1994,7 +1994,7 @@ public class F extends S {
    * @return <code>Arrays(dimensions, Complexes, {})</code>.
    */
   public static IAST Arrays(final IAST dimension) {
-    return Arrays(dimension, S.Complexes, F.List());
+    return Arrays(dimension, Complexes, List());
   }
 
   /**
@@ -2005,7 +2005,7 @@ public class F extends S {
    * @return <code>Arrays(dimensions, domain, {})</code>.
    */
   public static IAST Arrays(final IAST dimension, ISymbol domain) {
-    return Arrays(dimension, domain, F.List());
+    return Arrays(dimension, domain, List());
   }
 
   /**
@@ -2063,7 +2063,7 @@ public class F extends S {
    * @return
    */
   public static ISparseArray sparseArray(final IAST arrayRulesList) {
-    return SparseArrayExpr.newArrayRules(arrayRulesList, null, -1, F.C0);
+    return SparseArrayExpr.newArrayRules(arrayRulesList, null, -1, C0);
   }
 
   /**
@@ -2192,7 +2192,7 @@ public class F extends S {
    * @return
    */
   public static IASTAppendable constantArray(final IExpr value, final int copies) {
-    return value.constantArray(S.List, 0, copies);
+    return value.constantArray(List, 0, copies);
   }
 
   /**
@@ -2306,7 +2306,7 @@ public class F extends S {
   }
 
   public static IAST BaseForm(final IExpr a0, final IExpr a1) {
-    return new AST2(S.BaseForm, a0, a1);
+    return new AST2(BaseForm, a0, a1);
   }
 
   /**
@@ -2316,7 +2316,7 @@ public class F extends S {
    * @return
    */
   public static IAST BellB(final IExpr a0) {
-    return new AST1(S.BellB, a0);
+    return new AST1(BellB, a0);
   }
 
   /**
@@ -2327,23 +2327,23 @@ public class F extends S {
    * @return
    */
   public static IAST BellB(final IExpr a0, final IExpr a1) {
-    return new AST2(S.BellB, a0, a1);
+    return new AST2(BellB, a0, a1);
   }
 
   public static IAST BellY(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(S.BellY, a0, a1, a2);
+    return new AST3(BellY, a0, a1, a2);
   }
 
   public static IAST BernoulliB(final IExpr a0) {
-    return new AST1(S.BernoulliB, a0);
+    return new AST1(BernoulliB, a0);
   }
 
   public static IAST BernoulliB(final IExpr a0, final IExpr a1) {
-    return new AST2(S.BernoulliB, a0, a1);
+    return new AST2(BernoulliB, a0, a1);
   }
 
   public static IAST BernoulliDistribution(final IExpr a0) {
-    return new AST1(S.BernoulliDistribution, a0);
+    return new AST1(BernoulliDistribution, a0);
   }
 
   /**
@@ -2373,20 +2373,20 @@ public class F extends S {
 
   public static final IASTMutable binaryAST2(
       final IExpr head, final String arg1, final IExpr arg2) {
-    return new AST2(head, F.$str(arg1), arg2);
+    return new AST2(head, $str(arg1), arg2);
   }
 
   public static final IASTMutable binaryAST2(
       final IExpr head, final String arg1, final String arg2) {
-    return new AST2(head, F.$str(arg1), F.$str(arg2));
+    return new AST2(head, $str(arg1), $str(arg2));
   }
 
   public static IAST Binomial(final IExpr a0, final IExpr a1) {
-    return new AST2(S.Binomial, a0, a1);
+    return new AST2(Binomial, a0, a1);
   }
 
   public static IAST Binomial(final int a0, final int a1) {
-    return new AST2(S.Binomial, F.ZZ(a0), F.ZZ(a1));
+    return new AST2(Binomial, ZZ(a0), ZZ(a1));
   }
 
   public static IAST BlankSequence() {
@@ -2500,7 +2500,7 @@ public class F extends S {
   }
 
   public static IAST C(final int index) {
-    return new AST1(C, F.ZZ(index));
+    return new AST1(C, ZZ(index));
   }
 
   public static IAST Cancel(final IExpr a) {
@@ -3453,7 +3453,7 @@ public class F extends S {
    * @return
    */
   public static IAST Equal(final IExpr lhs, final int rhs) {
-    return new B2.Equal(lhs, F.ZZ(rhs));
+    return new B2.Equal(lhs, ZZ(rhs));
   }
 
   public static IAST Equivalent(final IExpr lhs, final IExpr rhs) {
@@ -3857,7 +3857,7 @@ public class F extends S {
   }
 
   public static IAST Factorial(final int a0) {
-    return new AST1(Factorial, F.ZZ(a0));
+    return new AST1(Factorial, ZZ(a0));
   }
 
   public static IAST Factorial2(final IExpr a0) {
@@ -4064,7 +4064,7 @@ public class F extends S {
   }
 
   public static IAST Get(final String str) {
-    return new AST1(Get, F.stringx(str));
+    return new AST1(Get, stringx(str));
   }
 
   public static IAST Gamma(final IExpr a0) {
@@ -4173,7 +4173,7 @@ public class F extends S {
    * @return
    */
   public static IAST Greater(final IExpr x, final int y) {
-    return new B2.Greater(x, F.ZZ(y));
+    return new B2.Greater(x, ZZ(y));
   }
 
   /**
@@ -4201,7 +4201,7 @@ public class F extends S {
    * @return
    */
   public static IAST GreaterEqual(final IExpr x, final int y) {
-    return new B2.GreaterEqual(x, F.ZZ(y));
+    return new B2.GreaterEqual(x, ZZ(y));
   }
 
   public static IAST Gudermannian(final IExpr a0) {
@@ -4500,11 +4500,11 @@ public class F extends S {
         // try {
         // reader = new InputStreamReader(new FileInputStream(fileName), "UTF-8");
         // } catch (FileNotFoundException e) {
-        // LOGGER.error("F.initSymbols() failed", e);
+        // LOGGER.error("initSymbols() failed", e);
         // }
         // }
         // if (reader == null) {
-        // InputStream systemPackage = F.class.getResourceAsStream("/System.mep");
+        // InputStream systemPackage = class.getResourceAsStream("/System.mep");
         // if (systemPackage != null) {
         // reader = new InputStreamReader(systemPackage, "UTF-8");
         // }
@@ -4679,10 +4679,10 @@ public class F extends S {
       final int from,
       final int to,
       final int step) {
-    IASTAppendable result = F.ast(head, to - from + 1);
+    IASTAppendable result = ast(head, to - from + 1);
     long numberOfLeaves = 0;
     for (int i = from; i <= to; i += step) {
-      IExpr temp = function.apply(F.ZZ(i));
+      IExpr temp = function.apply(ZZ(i));
       numberOfLeaves += temp.leafCount() + 1;
       if (numberOfLeaves >= Config.MAX_AST_SIZE) {
         ASTElementLimitExceeded.throwIt(numberOfLeaves);
@@ -4694,7 +4694,7 @@ public class F extends S {
 
   public static IRational sumRational(
       final IntFunction<IRational> function, final int from, final int to, final int step) {
-    IRational result = F.C0;
+    IRational result = C0;
     for (int i = from; i <= to; i += step) {
       result = result.add(function.apply(i));
     }
@@ -4703,7 +4703,7 @@ public class F extends S {
 
   public static IRational productRational(
       final IntFunction<IRational> function, final int from, final int to, final int step) {
-    IRational result = F.C1;
+    IRational result = C1;
     for (int i = from; i <= to; i += step) {
       result = result.multiply(function.apply(i));
     }
@@ -4728,7 +4728,7 @@ public class F extends S {
       final int from,
       final int to,
       final int step) {
-    IASTAppendable result = F.ast(head, to - from + 1);
+    IASTAppendable result = ast(head, to - from + 1);
     for (int i = from; i <= to; i += step) {
       result.append(function.apply(i));
     }
@@ -4737,7 +4737,7 @@ public class F extends S {
 
   public static IAST intIterator(
       ISymbol head, final Function<IExpr, IExpr> function, final IAST list) {
-    IASTAppendable result = F.ast(head, list.size());
+    IASTAppendable result = ast(head, list.size());
     for (int i = 1; i < list.size(); i++) {
       result.append(function.apply(list.get(i)));
     }
@@ -4810,23 +4810,23 @@ public class F extends S {
       ((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
     }
     PatternMatching.setDownRule(IPatternMatcher.NOFLAG, lhs, rhs, true);
-    return F.NIL;
+    return NIL;
   }
 
   /**
    * Assign the unevaluated <code>rhs</code> to the <code>lhs</code>.<br>
-   * <b>Note:</b> this method returns <code>F.NIL</code>.
+   * <b>Note:</b> this method returns <code>NIL</code>.
    *
    * @param lhs left-hand-side of the assignment
    * @param rhs right-hand-side of the assignment
-   * @return <code>F.NIL</code>
+   * @return <code>NIL</code>
    */
   public static IAST ISetDelayed(final IExpr lhs, final IExpr rhs) {
     if (lhs.isAST()) {
       ((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
     }
     PatternMatching.setDelayedDownRule(IPatternMap.DEFAULT_RULE_PRIORITY, lhs, rhs, true);
-    return F.NIL;
+    return NIL;
   }
 
   public static IAST ISetDelayed(int priority, final IExpr lhs, final IExpr rhs) {
@@ -4834,14 +4834,14 @@ public class F extends S {
       ((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
     }
     PatternMatching.setDelayedDownRule(priority, lhs, rhs, true);
-    return F.NIL;
+    return NIL;
   }
 
   public static IExpr IIntegrate(int priority, final IAST lhs, final IExpr rhs) {
     lhs.setEvalFlags(lhs.getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
     org.matheclipse.core.reflection.system.Integrate.INTEGRATE_RULES_DATA.integrate(
         lhs, rhs, priority);
-    return F.NIL;
+    return NIL;
   }
 
   public static boolean isNumEqualInteger(double value, IInteger ii) throws ArithmeticException {
@@ -5029,7 +5029,7 @@ public class F extends S {
    * @return
    */
   public static IAST JSFormData(final String plainJavaScript, final String format) {
-    return new AST2(JSFormData, F.$str(plainJavaScript), F.$str(format));
+    return new AST2(JSFormData, $str(plainJavaScript), $str(format));
   }
 
   public static IAST JacobiAmplitude(final IExpr a0, final IExpr a1) {
@@ -5177,7 +5177,7 @@ public class F extends S {
    * @return
    */
   public static IAST Less(final IExpr x, final int y) {
-    return new B2.Less(x, F.ZZ(y));
+    return new B2.Less(x, ZZ(y));
   }
 
   /**
@@ -5230,7 +5230,7 @@ public class F extends S {
    * @return
    */
   public static IAST LessEqual(final IExpr x, final int y) {
-    return new B2.LessEqual(x, F.ZZ(y));
+    return new B2.LessEqual(x, ZZ(y));
   }
 
   /**
@@ -5523,14 +5523,14 @@ public class F extends S {
       }
       int j = 0;
       for (int i = numbers.length - 1; i >= size; i--) {
-        a[j++] = F.ZZ(numbers[i]);
+        a[j++] = ZZ(numbers[i]);
       }
     } else {
       if (n < size) {
         size = n;
       }
       for (int i = 0; i < size; i++) {
-        a[i] = F.ZZ(numbers[i]);
+        a[i] = ZZ(numbers[i]);
       }
     }
     return ast(a, List);
@@ -5547,7 +5547,7 @@ public class F extends S {
   public static IAST List(final String... strs) {
     IStringX[] a = new IStringX[strs.length];
     for (int i = 0; i < strs.length; i++) {
-      a[i] = F.stringx(strs[i]);
+      a[i] = stringx(strs[i]);
     }
     return function(List, a);
   }
@@ -5559,7 +5559,7 @@ public class F extends S {
    * @see {@link #ListAlloc()} to create an appendable list
    */
   public static IAST List() {
-    return F.CEmptyList;
+    return CEmptyList;
   }
 
   /**
@@ -5574,7 +5574,7 @@ public class F extends S {
     for (int i = 0; i < objects.length; i++) {
       a[i] = Object2Expr.convert(objects[i], true, false);
     }
-    return F.List(a);
+    return List(a);
   }
 
   /**
@@ -5588,33 +5588,33 @@ public class F extends S {
     switch (a.length) {
       case 1:
         if (a[0] != null) {
-          if (a[0].equals(F.C0)) {
-            return F.CListC0;
+          if (a[0].equals(C0)) {
+            return CListC0;
           }
-          if (a[0].equals(F.C1)) {
-            return F.CListC1;
+          if (a[0].equals(C1)) {
+            return CListC1;
           }
-          if (a[0].equals(F.C2)) {
-            return F.CListC2;
+          if (a[0].equals(C2)) {
+            return CListC2;
           }
           return new B1.List(a[0]);
         }
         break;
       case 2:
         if (a[0] != null) {
-          if (a[0].equals(F.C1)) {
-            if (a[1].equals(F.C1)) {
-              return F.CListC1C1;
+          if (a[0].equals(C1)) {
+            if (a[1].equals(C1)) {
+              return CListC1C1;
             }
-            if (a[1].equals(F.C2)) {
-              return F.CListC1C2;
+            if (a[1].equals(C2)) {
+              return CListC1C2;
             }
-          } else if (a[0].equals(F.C2)) {
-            if (a[1].equals(F.C1)) {
-              return F.CListC2C1;
+          } else if (a[0].equals(C2)) {
+            if (a[1].equals(C1)) {
+              return CListC2C1;
             }
-            if (a[1].equals(F.C2)) {
-              return F.CListC2C2;
+            if (a[1].equals(C2)) {
+              return CListC2C2;
             }
           }
           return new B2.List(a[0], a[1]);
@@ -5760,7 +5760,7 @@ public class F extends S {
    */
   public static IAST Log10(final IExpr a0) {
 
-    return new AST2(Log, F.C10, a0);
+    return new AST2(Log, C10, a0);
   }
 
   public static IAST LogGamma(final IExpr a0) {
@@ -5936,7 +5936,7 @@ public class F extends S {
   }
 
   public static IAST MessageName(final ISymbol symbol, final String str) {
-    return new AST2(MessageName, symbol, F.$str(str));
+    return new AST2(MessageName, symbol, $str(str));
   }
 
   public static IASTAppendable Min() {
@@ -5960,7 +5960,7 @@ public class F extends S {
   }
 
   public static IExpr minus(IExpr a, Integer i) {
-    return Plus(F.ZZ(i.longValue() * (-1)), a);
+    return Plus(ZZ(i.longValue() * (-1)), a);
   }
 
   public static IExpr minus(IExpr a, java.math.BigInteger i) {
@@ -6394,7 +6394,7 @@ public class F extends S {
    * @return
    */
   public static IAST Or(final IExpr expr1, final IExpr expr2, final IExpr expr3) {
-    return new AST3(S.Or, expr1, expr2, expr3);
+    return new AST3(Or, expr1, expr2, expr3);
   }
 
   public static IAST Or(final IExpr... expr) {
@@ -6471,7 +6471,7 @@ public class F extends S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
    */
   public static IASTAppendable Part(final int extraSize, final IExpr... a) {
-    IASTAppendable part = F.ast(Part, a.length + extraSize + 1);
+    IASTAppendable part = ast(Part, a.length + extraSize + 1);
     for (int i = 0; i < a.length; i++) {
       part.append(a[i]);
     }
@@ -6605,13 +6605,13 @@ public class F extends S {
   public static IAST Plus(final IExpr... a) {
     switch (a.length) {
       case 1:
-        return new AST1(S.Plus, a[0]);
+        return new AST1(Plus, a[0]);
       case 2:
         return new B2.Plus(a[0], a[1]);
       case 3:
-        return new AST3(S.Plus, a[0], a[1], a[2]);
+        return new AST3(Plus, a[0], a[1], a[2]);
       default:
-        return new AST(S.Plus, a);
+        return new AST(Plus, a);
     }
   }
 
@@ -6753,7 +6753,7 @@ public class F extends S {
       if (exponent == -1L) {
         if (base.isZero()) {
           LOGGER.log(EvalEngine.get().getLogLevel(), "Infinite expression 0^(-1)");
-          return F.CComplexInfinity;
+          return CComplexInfinity;
         }
         return base.inverse();
       }
@@ -6841,7 +6841,7 @@ public class F extends S {
    * @return
    */
   public static IAST product(final Function<IExpr, IExpr> function, final int from, final int to) {
-    return intIterator(S.Times, function, from, to, 1);
+    return intIterator(Times, function, from, to, 1);
   }
 
   public static IAST ProductLog(final IExpr a0) {
@@ -7085,7 +7085,7 @@ public class F extends S {
   }
 
   public static IAST RegularExpression(final String str) {
-    return new AST1(RegularExpression, F.$str(str));
+    return new AST1(RegularExpression, $str(str));
   }
 
   public static IAST Replace(final IExpr a0, final IExpr a1) {
@@ -7125,7 +7125,7 @@ public class F extends S {
   }
 
   public static IAST RGBColor(final double a0, final double a1, final double a2) {
-    return new AST3(RGBColor, F.num(a0), F.num(a1), F.num(a2));
+    return new AST3(RGBColor, num(a0), num(a1), num(a2));
   }
 
   /**
@@ -7180,7 +7180,7 @@ public class F extends S {
     ISymbol symbol =
         engine.getContextPath().symbol(symbolName, engine.getContext(), engine.isRelaxedSyntax());
     if (assumptionAST != null) {
-      IExpr temp = Lambda.replaceSlots(assumptionAST, F.List(symbol)).orElse(assumptionAST);
+      IExpr temp = Lambda.replaceSlots(assumptionAST, List(symbol)).orElse(assumptionAST);
       if (temp.isAST()) {
         IAssumptions assumptions = engine.getAssumptions();
         if (assumptions == null) {
@@ -7207,7 +7207,7 @@ public class F extends S {
     // }
     symbol = ContextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
     if (assumptionAST != null) {
-      IExpr temp = Lambda.replaceSlots(assumptionAST, F.List(symbol)).orElse(assumptionAST);
+      IExpr temp = Lambda.replaceSlots(assumptionAST, List(symbol)).orElse(assumptionAST);
       if (temp.isAST()) {
         IAssumptions assumptions = engine.getAssumptions();
         if (assumptions == null) {
@@ -7314,7 +7314,7 @@ public class F extends S {
         new AbstractCoreFunctionEvaluator() {
           @Override
           public IExpr evaluate(IAST ast, EvalEngine engine) {
-            return F.bool(function.test(ast.arg1(), ast.arg2()));
+            return bool(function.test(ast.arg1(), ast.arg2()));
           }
         });
   }
@@ -7325,7 +7325,7 @@ public class F extends S {
         new AbstractCoreFunctionEvaluator() {
           @Override
           public IExpr evaluate(IAST ast, EvalEngine engine) {
-            return F.bool(function.test(ast.arg1()));
+            return bool(function.test(ast.arg1()));
           }
         });
   }
@@ -7395,7 +7395,7 @@ public class F extends S {
    * @return
    */
   public static IAST Rule(final String lhsStr, final IExpr rhs) {
-    return new B2.Rule(F.$str(lhsStr), rhs);
+    return new B2.Rule($str(lhsStr), rhs);
   }
 
   /**
@@ -7409,7 +7409,7 @@ public class F extends S {
    * @return
    */
   public static IAST Rule(final String lhsStr, final String rhsStr) {
-    return new B2.Rule(F.$str(lhsStr), F.$str(rhsStr));
+    return new B2.Rule($str(lhsStr), $str(rhsStr));
   }
 
   /**
@@ -7437,7 +7437,7 @@ public class F extends S {
    * @return
    */
   public static IAST Rule(final IExpr lhs, final String rhsStr) {
-    return new B2.Rule(lhs, F.$str(rhsStr));
+    return new B2.Rule(lhs, $str(rhsStr));
   }
 
   /**
@@ -7474,7 +7474,7 @@ public class F extends S {
   }
 
   public static IAST SameQ(final IExpr a0, final double d) {
-    return new AST2(SameQ, a0, F.num(d));
+    return new AST2(SameQ, a0, num(d));
   }
 
   public static IAST Scan(final IExpr a0, final IExpr a1) {
@@ -7581,7 +7581,7 @@ public class F extends S {
   }
 
   public static IAST Simplify(final IExpr expr) {
-    return new AST1(S.Simplify, expr);
+    return new AST1(Simplify, expr);
   }
 
   public static IAST Simplify(final IExpr expr, final IExpr assum) {
@@ -7661,7 +7661,7 @@ public class F extends S {
    * @return
    */
   public static IExpr[] solve(final IAST equations, final ISymbol variable) {
-    IExpr solve = S.Solve.of(equations, variable);
+    IExpr solve = Solve.of(equations, variable);
     if (!solve.isListOfLists()) {
       return new IExpr[0];
     }
@@ -7736,7 +7736,7 @@ public class F extends S {
    * @return
    */
   public static IAST Sqrt(int n) {
-    return new B2.Power(F.ZZ(n), C1D2);
+    return new B2.Power(ZZ(n), C1D2);
   }
 
   public static IAST StandardDeviation(final IExpr a0) {
@@ -7869,7 +7869,7 @@ public class F extends S {
    *     the substituted expression.
    */
   public static IExpr subs(final IExpr expr, final IExpr x, final IExpr y) {
-    return expr.replaceAll(F.Rule(x, y)).orElse(expr);
+    return expr.replaceAll(Rule(x, y)).orElse(expr);
   }
 
   /**
@@ -7914,7 +7914,7 @@ public class F extends S {
     if (astRules.isListOfLists()) {
       IExpr result = expr;
       for (IExpr subList : astRules) {
-        result = F.subst(result, (IAST) subList);
+        result = subst(result, (IAST) subList);
       }
       return result;
     }
@@ -7956,7 +7956,7 @@ public class F extends S {
   }
 
   public static IAST Sum(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
-    return quaternary(S.Sum, a0, a1, a2, a3);
+    return quaternary(Sum, a0, a1, a2, a3);
   }
 
   public static IRational sumRational(
@@ -7973,11 +7973,11 @@ public class F extends S {
    * @return
    */
   public static IAST sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax) {
-    return intIterator(S.Plus, function, iMin, iMax, 1);
+    return intIterator(Plus, function, iMin, iMax, 1);
   }
 
   public static IAST intSum(final IntFunction<IExpr> function, final int iMin, final int iMax) {
-    return intIterator(S.Plus, function, iMin, iMax, 1);
+    return intIterator(Plus, function, iMin, iMax, 1);
   }
 
   /**
@@ -7991,7 +7991,7 @@ public class F extends S {
    */
   public static IAST sum(
       final Function<IExpr, IExpr> function, final int iMin, final int iMax, final int iStep) {
-    return intIterator(S.Plus, function, iMin, iMax, iStep);
+    return intIterator(Plus, function, iMin, iMax, iStep);
   }
 
   public static IAST Superscript(final IExpr x, final IExpr y) {
@@ -8168,13 +8168,13 @@ public class F extends S {
   public static IAST Times(final IExpr... a) {
     switch (a.length) {
       case 1:
-        return new AST1(S.Times, a[0]);
+        return new AST1(Times, a[0]);
       case 2:
         return new B2.Times(a[0], a[1]);
       case 3:
-        return new AST3(S.Times, a[0], a[1], a[2]);
+        return new AST3(Times, a[0], a[1], a[2]);
       default:
-        return new AST(S.Times, a);
+        return new AST(Times, a);
     }
   }
 
@@ -8207,7 +8207,7 @@ public class F extends S {
     if (test1 || test2) {
       int size = test1 ? a1.size() : 1;
       size += test2 ? a2.size() : 1;
-      IASTAppendable result = ast(S.Plus, size);
+      IASTAppendable result = ast(Plus, size);
       if (test1) {
         result.appendArgs((IAST) a1);
       } else {
@@ -8234,7 +8234,7 @@ public class F extends S {
     if (test1 || test2) {
       int size = test1 ? a1.size() : 1;
       size += test2 ? a2.size() : 1;
-      IASTAppendable result = ast(S.Times, size);
+      IASTAppendable result = ast(Times, size);
       if (test1) {
         result.appendArgs((IAST) a1);
       } else {
@@ -8600,7 +8600,7 @@ public class F extends S {
         case 3:
           return new AST3(ast1.topHead(), ast1.arg1(), head.arg1(), head.arg2());
         default:
-          IASTAppendable result = F.ast(ast1.topHead(), head.size() + 1);
+          IASTAppendable result = ast(ast1.topHead(), head.size() + 1);
           result.append(ast1.arg1());
           result.appendArgs(head);
           return result;
@@ -8648,7 +8648,7 @@ public class F extends S {
         case 3:
           return new AST3(ast1.topHead(), headArg1, ast1.arg1(), ast1.arg2());
         default:
-          IASTAppendable result = F.ast(ast1.topHead(), ast1.size() + 1);
+          IASTAppendable result = ast(ast1.topHead(), ast1.size() + 1);
           result.append(headArg1);
           result.appendArgs(ast1);
           return result;
@@ -8681,9 +8681,9 @@ public class F extends S {
     if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
       ASTElementLimitExceeded.throwIt(((long) n) * ((long) m));
     }
-    IASTAppendable matrix = F.ListAlloc(n);
+    IASTAppendable matrix = ListAlloc(n);
     for (int i = 0; i < n; i++) {
-      IASTAppendable row = F.ListAlloc(m);
+      IASTAppendable row = ListAlloc(m);
       for (int j = 0; j < m; j++) {
         row.append(biFunction.apply(i, j));
       }
@@ -8704,7 +8704,7 @@ public class F extends S {
    * @return
    */
   public static IAST vector(IntFunction<? extends IExpr> iFunction, int n) {
-    IASTAppendable matrix = F.ListAlloc(n);
+    IASTAppendable matrix = ListAlloc(n);
     for (int i = 0; i < n; i++) {
       matrix.append(iFunction.apply(i));
     }
@@ -8795,7 +8795,7 @@ public class F extends S {
           html = StringUtils.replace(html, "`2`", "var options = {};");
           return openHTMLOnDesktop(html);
         }
-      } else if (expr.isAST(S.JSFormData, 3)) {
+      } else if (expr.isAST(JSFormData, 3)) {
         return printJSFormData(expr);
       } else if (expr.isString()) {
         IStringX str = (IStringX) expr;
@@ -8804,7 +8804,7 @@ public class F extends S {
           String htmlPage = Config.HTML_PAGE;
           htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
           EvalEngine.get().getOutPrintStream().println(htmlPage);
-          return F.openHTMLOnDesktop(htmlPage);
+          return openHTMLOnDesktop(htmlPage);
         }
       } else if (expr.isList(x -> x.isAST(JSFormData, 3))) {
         StringBuilder buf = new StringBuilder();
@@ -8958,7 +8958,7 @@ public class F extends S {
             }
             seqResult[0].appendArgs(seq);
             return;
-          } else if (x.equals(S.Nothing)) {
+          } else if (x.equals(Nothing)) {
             if ((ISymbol.HOLDALL & attr) == ISymbol.NOATTRIBUTE) {
               if (!seqResult[0].isPresent()) {
                 seqResult[0] = ast(list.head(), list.size() - 1);
