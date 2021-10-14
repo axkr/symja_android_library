@@ -9,6 +9,8 @@ import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.tensor.qty.IQuantity;
+import org.matheclipse.core.tensor.qty.IUnit;
 import org.matheclipse.parser.client.FEConfig;
 
 /** */
@@ -39,11 +41,17 @@ public class JavaFormTestCase extends AbstractTestCase {
     IAST function = Sinc(Times(CI, CInfinity));
 
     IExpr result = EvalEngine.get().evalHoldPattern(function);
-    assertEquals(
-        result.internalJavaString(true, -1, false, true, false, F.CNullFunction), //
+    assertEquals(result.internalJavaString(true, -1, false, true, false, F.CNullFunction),
         "F.Sinc(F.DirectedInfinity(F.CI))");
 
     result = util.evaluate(function);
     assertEquals(result.internalJavaString(true, -1, false, true, false, F.CNullFunction), "F.oo");
+  }
+
+  public void testJavaFormQuantity() {
+    IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ofPutIfAbsent("kg"));
+    String javaForm = quantity.internalJavaString(null);
+    System.out.println(javaForm);
+    assertEquals("IQuantity.of(F.ZZ(43L), IUnit.ofPutIfAbsent(\"kg\"))", javaForm);
   }
 }

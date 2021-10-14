@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Objects;
+import java.util.function.Function;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -33,9 +34,8 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
   }
 
   /* package */ QuantityImpl(IExpr value, IUnit unit) {
-    super(S.Quantity, unit);
+    super(S.Quantity, Objects.requireNonNull(unit, "Unit must not be null"));
     this.arg1 = value;
-    this.fData = unit;
   }
 
   @Override
@@ -150,6 +150,14 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
       return new QuantityImpl(F.C0, fData);
     }
     return new QuantityImpl(F.Im(arg1), fData);
+  }
+
+  @Override
+  public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
+      boolean usePrefix, boolean noSymbolPrefix, Function<IExpr, String> variables) {
+    String value = value().internalJavaString(symbolsAsFactoryMethod, depth, useOperators,
+        usePrefix, noSymbolPrefix, variables);
+    return "IQuantity.of(" + value + ", IUnit.ofPutIfAbsent(\"" + unitString() + "\"))";
   }
 
   /** {@inheritDoc} */
@@ -417,12 +425,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
 
   @Override
   public String toString() {
-    StringBuilder stringBuilder = new StringBuilder(32); // initial buffer size
-    stringBuilder.append(arg1);
-    stringBuilder.append(UNIT_OPENING_BRACKET);
-    stringBuilder.append(fData);
-    stringBuilder.append(UNIT_CLOSING_BRACKET);
-    return stringBuilder.toString();
+    return arg1.toString() + UNIT_OPENING_BRACKET + fData + UNIT_CLOSING_BRACKET;
   }
 
   @Override
