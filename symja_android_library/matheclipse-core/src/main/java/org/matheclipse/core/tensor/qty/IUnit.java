@@ -20,7 +20,7 @@ public interface IUnit extends Comparable<IUnit>, Serializable {
    * @return <code>null</code> if unit couldn't be found
    */
   static IUnit of(String string) {
-    return UnitHelper.MEMO.lookup(string);
+    return UnitHelper.lookup(string);
   }
 
   /**
@@ -28,7 +28,7 @@ public interface IUnit extends Comparable<IUnit>, Serializable {
    * @return if unit couldn't be found, add string as new unit
    */
   static IUnit ofPutIfAbsent(String string) {
-    return UnitHelper.MEMO.lookupAndPutIfAbsent(string);
+    return UnitHelper.lookupAndPutIfAbsent(string);
   }
 
   /**

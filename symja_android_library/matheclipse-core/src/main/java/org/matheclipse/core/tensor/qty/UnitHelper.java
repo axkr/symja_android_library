@@ -12,15 +12,15 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** associates strings with instances of unit */
-/* package */ enum UnitHelper {
-  MEMO;
+/* package */ class UnitHelper {
 
-  // ---
+  private UnitHelper() {} // static use only
+
   private static final int SIZE = 500;
   private static final Pattern PATTERN = Pattern.compile("[a-zA-Z]+");
-  static EvalEngine ENGINE = null;
-  // ---
-  private final Map<String, IUnit> map =
+  static final EvalEngine ENGINE = new EvalEngine(false);
+
+  private static final Map<String, IUnit> map =
       new LinkedHashMap<String, IUnit>(SIZE * 4 / 3, 0.75f, true) {
         private static final long serialVersionUID = -5110699298658386612L;
 
@@ -34,7 +34,7 @@ import org.matheclipse.core.interfaces.IExpr;
    * @param str for instance "A*kg^-1*s^2"
    * @return unit <code>null</code> if unit couldn't be found
    */
-  IUnit lookup(String str) {
+  static IUnit lookup(String str) {
     IUnit unit = map.get(str);
     if (unit == null) {
       unit = create(str);
@@ -46,7 +46,7 @@ import org.matheclipse.core.interfaces.IExpr;
    * @param str for instance "A*kg^-1*s^2"
    * @return unit <code>null</code> if unit couldn't be found
    */
-  IUnit lookupAndPutIfAbsent(String str) {
+  static IUnit lookupAndPutIfAbsent(String str) {
     return map.computeIfAbsent(str, UnitHelper::create);
   }
 
@@ -59,10 +59,6 @@ import org.matheclipse.core.interfaces.IExpr;
 
   // helper function
   private static IUnit create(String string) {
-    if (ENGINE == null) {
-      // lazy initialization
-      ENGINE = new EvalEngine(false);
-    }
     String key = string.strip();
     NavigableMap<String, IExpr> map = new TreeMap<>();
     if (!key.isEmpty()) {
