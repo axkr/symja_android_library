@@ -30,7 +30,7 @@ public class MathMLUtilities {
 
   static {
     // initialize the global available symbols
-    F.initSymbols(null, null, true);
+    F.initSymbols();
   }
 
   /**

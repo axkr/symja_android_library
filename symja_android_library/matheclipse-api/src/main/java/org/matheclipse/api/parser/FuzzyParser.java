@@ -81,7 +81,7 @@ public class FuzzyParser extends Scanner {
   }
 
   static {
-    F.initSymbols(null, null, true);
+    F.initSymbols();
   }
 
   public static final ISymbol DERIVATIVE = F.Derivative;

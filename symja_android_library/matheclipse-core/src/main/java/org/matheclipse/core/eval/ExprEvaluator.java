@@ -132,7 +132,7 @@ public class ExprEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
 
   static {
-    F.initSymbols(null, null, true);
+    F.initSymbols();
   }
 
   private Map<ISymbol, IExpr> fVariableMap;
