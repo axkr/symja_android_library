@@ -7,7 +7,7 @@
  
 [![LGTM Alerts](https://img.shields.io/lgtm/alerts/bitbucket/axelclk/symja_android_library)](https://lgtm.com/projects/b/axelclk/symja_android_library) [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axkr/symja_android_library)
 
-**Note**: this repository contains the **Java 8** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) Android calculator project 
+**Note**: this repository contains the **Java 11** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) Android calculator project 
 maintains a **[Java 7 Android branch](https://github.com/tranleduy2000/symja_android_library)** of the [Android *.AAR library](https://github.com/tranleduy2000/symja_android_library/releases).
 
 Try the Android or iOS apps:
@@ -206,11 +206,11 @@ How to use Maven is described in the [Maven wiki page](https://github.com/axkr/s
 
 ### Getting started
 
-First, you'll need a Java Development Kit compatible with Java 8 or later.
+First, you'll need a Java Development Kit compatible with Java 11 or later.
 
 You can find JDK installers at:
 
-* http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+* https://www.oracle.com/java/technologies/downloads/#java11
 
 If you're unsure how to install the JDK, you can find instructions for
 all operating systems here: 
