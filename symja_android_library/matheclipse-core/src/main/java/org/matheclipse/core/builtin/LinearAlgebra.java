@@ -1994,7 +1994,7 @@ public final class LinearAlgebra {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.IdentityMatrix, "intpm", F.List(ast, F.C1), engine);
         }
-        return F.matrix((i, j) -> i.equals(j) ? F.C1 : F.C0, m, m);
+        return F.matrix((i, j) -> i == j ? F.C1 : F.C0, m, m);
       }
       return F.NIL;
     }

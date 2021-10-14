@@ -94,6 +94,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.util.BiIntFunction;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.data.GraphExpr;
@@ -8740,8 +8741,7 @@ public class F extends S {
    * @param m the number of elements in one row
    * @return
    */
-  public static IAST matrix(
-      BiFunction<Integer, Integer, ? extends IExpr> biFunction, int n, int m) {
+  public static IAST matrix(BiIntFunction<? extends IExpr> biFunction, int n, int m) {
     if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
       ASTElementLimitExceeded.throwIt(((long) n) * ((long) m));
     }

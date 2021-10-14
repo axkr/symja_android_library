@@ -2152,7 +2152,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list (i.e. an AST with head List) with exactly 2 arguments
+   * Test if this expression is a list (i.e. an AST with head List) with exactly 1 arguments
    *
    * @return
    */
@@ -2170,7 +2170,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list (i.e. an AST with head List) with exactly 2 arguments
+   * Test if this expression is a list (i.e. an AST with head List) with exactly 3 arguments
    *
    * @return
    */
