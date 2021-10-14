@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -146,7 +147,7 @@ public class F extends S {
    * integer functions to remember the results of the recursive call. See: <a
    * href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
    */
-  public static Cache<IAST, IExpr> REMEMBER_INTEGER_CACHE =
+  public static final Cache<IAST, IExpr> REMEMBER_INTEGER_CACHE =
       CacheBuilder.newBuilder().maximumSize(500).build();
 
   /**
@@ -159,28 +160,43 @@ public class F extends S {
    * </code> result to indicate that a new evaluation of a function is unnecessary. See: <a
    * href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
    */
-  public static Cache<IAST, IExpr> REMEMBER_AST_CACHE =
+  public static final Cache<IAST, IExpr> REMEMBER_AST_CACHE =
       CacheBuilder.newBuilder().maximumSize(500).build();
 
   /** Set to <code>true</code> at the start of initSymbols() method */
-  public static volatile boolean isSystemStarted = false;
+  private static volatile boolean isSystemStarted = false;
 
   /** Set to <code>true</code> at the end of initSymbols() method */
-  public static volatile boolean isSystemInitialized = false;
+  private static volatile boolean systemInitialized = false;
+
+  public static boolean isSystemInitialized() {
+    return systemInitialized;
+  }
 
   /**
    * The map for predefined strings for the {@link IExpr#internalFormString(boolean, int)} method.
    */
-  public static final Map<String, String> PREDEFINED_INTERNAL_FORM_STRINGS =
+  private static final Map<String, String> PREDEFINED_INTERNAL_FORM_STRINGS =
       FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build();
 
-  public static final Map<String, IPattern> PREDEFINED_PATTERN_MAP =
+  public static String getPredefinedInternalFormString(String key) {
+    return PREDEFINED_INTERNAL_FORM_STRINGS.get(key);
+  }
+
+  private static final Map<String, IPattern> PREDEFINED_PATTERN_MAP =
       Config.TRIE_STRING2PATTERN_BUILDER.withMatch(TrieMatch.EXACT).build();
 
-  public static final Map<String, IPatternSequence> PREDEFINED_PATTERNSEQUENCE_MAP =
+  public static IPattern getPredefinedPattern(String key) {
+    return PREDEFINED_PATTERN_MAP.get(key);
+  }
+  private static final Map<String, IPatternSequence> PREDEFINED_PATTERNSEQUENCE_MAP =
       Config.TRIE_STRING2PATTERNSEQUENCE_BUILDER.withMatch(TrieMatch.EXACT).build();
 
-  public static ISymbolObserver SYMBOL_OBSERVER =
+  public static IPatternSequence getPredefinedPatternSequence(String key) {
+    return PREDEFINED_PATTERNSEQUENCE_MAP.get(key);
+  }
+
+  public static final ISymbolObserver SYMBOL_OBSERVER =
       new ISymbolObserver() {
         @Override
         public final boolean createPredefinedSymbol(String symbol) {
@@ -558,149 +574,149 @@ public class F extends S {
   public static final IComplexNum CDNI = ComplexNum.NI;
 
   /** Represents the empty Smyja string <code>""</code> */
-  public static IStringX CEmptyString;
+  public static final IStringX CEmptyString;
 
   /** Represents <code>Sequence()</code> (i.e. the constant empty list) */
-  public static IAST CEmptySequence;
+  public static final IAST CEmptySequence;
 
   /** Represents <code>List()</code> (i.e. the constant empty list) */
-  public static IAST CEmptyList;
+  public static final IAST CEmptyList;
 
-  public static Function<IExpr, String> CNullFunction = x -> null;
+  public static final Function<IExpr, String> CNullFunction = x -> null;
 
   /** Represents <code>Missing("NotFound")</code> */
-  public static IAST CMissingNotFound;
+  public static final IAST CMissingNotFound;
 
   /** Represents <code>List(0)</code> */
-  public static IAST CListC0;
+  public static final IAST CListC0;
 
   /** Represents <code>List(1)</code> */
-  public static IAST CListC1;
+  public static final IAST CListC1;
 
   /**
    * Represents <code>List(-1)</code>. Can be used to specify the &quot;leaf&quot; {@link
    * VisitorLevelSpecification} of an expression.
    */
-  public static IAST CListCN1;
+  public static final IAST CListCN1;
 
   /** Represents <code>List(1,1)</code> */
-  public static IAST CListC1C1;
+  public static final IAST CListC1C1;
 
   /** Represents <code>List(1,2)</code> */
-  public static IAST CListC1C2;
+  public static final IAST CListC1C2;
 
   /** Represents <code>List(2)</code> */
-  public static IAST CListC2;
+  public static final IAST CListC2;
 
   /** Represents <code>List(2,1)</code> */
-  public static IAST CListC2C1;
+  public static final IAST CListC2C1;
 
   /** Represents <code>List(2,2)</code> */
-  public static IAST CListC2C2;
+  public static final IAST CListC2C2;
 
   /** Represents <code>Infinity</code> (i.e. <code>Infinity-&gt;DirectedInfinity(1)</code>) */
-  public static IAST CInfinity;
+  public static final IAST CInfinity;
 
   /** Represents <code>Return(False)</code> */
-  public static IAST CReturnFalse;
+  public static final IAST CReturnFalse;
 
   /** Represents <code>Return(True)</code> */
-  public static IAST CReturnTrue;
+  public static final IAST CReturnTrue;
 
   /** Represents <code>Throw(False)</code> */
-  public static IAST CThrowFalse;
+  public static final IAST CThrowFalse;
 
   /** Represents <code>Throw(True)</code> */
-  public static IAST CThrowTrue;
+  public static final IAST CThrowTrue;
 
   /**
    * Alias for CInfinity. Represents <code>Infinity</code> (i.e. <code>
    * Infinity-&gt;DirectedInfinity(1)</code>)
    */
-  public static IAST oo;
+  public static final IAST oo;
 
   /** Represents <code>-Infinity</code> (i.e. <code>-Infinity-&gt;DirectedInfinity(-1)</code>) */
-  public static IAST CNInfinity;
+  public static final IAST CNInfinity;
 
   /**
    * Alias for CNInfinity. Represents <code>-Infinity</code> (i.e. <code>
    * -Infinity-&gt;DirectedInfinity(-1)</code>)
    */
-  public static IAST Noo;
+  public static final IAST Noo;
 
   /** Represents <code>I*Infinity</code> (i.e. <code>I*Infinity-&gt;DirectedInfinity(I)</code>) */
-  public static IAST CIInfinity;
+  public static final IAST CIInfinity;
 
   /**
    * Represents <code>-I*Infinity</code> (i.e. <code>-I*Infinity-&gt;DirectedInfinity(-I)</code>)
    */
-  public static IAST CNIInfinity;
+  public static final IAST CNIInfinity;
 
   /**
    * Represents <code>ComplexInfinity</code> (i.e. <code>ComplexInfinity-&gt;DirectedInfinity()
    * </code>)
    */
-  public static IAST CComplexInfinity;
+  public static final IAST CComplexInfinity;
 
   /** Represents <code>-Pi</code> as Symja expression <code>Times(CN1, Pi)</code> */
-  public static IAST CNPi;
+  public static final IAST CNPi;
 
   /** Represents <code>-2*Pi</code> as Symja expression <code>Times(CN2, Pi)</code> */
-  public static IAST CN2Pi;
+  public static final IAST CN2Pi;
 
   /** Represents <code>2*Pi</code> as Symja expression <code>Times(C2, Pi)</code> */
-  public static IAST C2Pi;
+  public static final IAST C2Pi;
 
   /** Represents <code>-Pi/2</code> as Symja expression <code>Times(CN1D2, Pi)</code> */
-  public static IAST CNPiHalf;
+  public static final IAST CNPiHalf;
 
   /** Represents <code>Pi/2</code> as Symja expression <code>Times(C1D2, Pi)</code> */
-  public static IAST CPiHalf;
+  public static final IAST CPiHalf;
 
   /** Represents <code>Sqrt(2)</code> */
-  public static IAST CSqrt2;
+  public static final IAST CSqrt2;
 
   /** Represents <code>Sqrt(3)</code> */
-  public static IAST CSqrt3;
+  public static final IAST CSqrt3;
 
   /** Represents <code>Sqrt(5)</code> */
-  public static IAST CSqrt5;
+  public static final IAST CSqrt5;
 
   /** Represents <code>Sqrt(6)</code> */
-  public static IAST CSqrt6;
+  public static final IAST CSqrt6;
 
   /** Represents <code>Sqrt(7)</code> */
-  public static IAST CSqrt7;
+  public static final IAST CSqrt7;
 
   /** Represents <code>Sqrt(10)</code> */
-  public static IAST CSqrt10;
+  public static final IAST CSqrt10;
 
   /** Represents <code>1/Sqrt(2)</code> */
-  public static IAST C1DSqrt2;
+  public static final IAST C1DSqrt2;
 
   /** Represents <code>1/Sqrt(3)</code> */
-  public static IAST C1DSqrt3;
+  public static final IAST C1DSqrt3;
 
   /** Represents <code>1/Sqrt(5)</code> */
-  public static IAST C1DSqrt5;
+  public static final IAST C1DSqrt5;
 
   /** Represents <code>1/Sqrt(6)</code> */
-  public static IAST C1DSqrt6;
+  public static final IAST C1DSqrt6;
 
   /** Represents <code>1/Sqrt(7)</code> */
-  public static IAST C1DSqrt7;
+  public static final IAST C1DSqrt7;
 
   /** Represents <code>1/Sqrt(10)</code> */
-  public static IAST C1DSqrt10;
+  public static final IAST C1DSqrt10;
 
   /** Represents <code>#1</code>, the first argument of a pure function. */
-  public static IAST Slot1;
+  public static final IAST Slot1;
 
   /** Represents <code>#2</code>, the second argument of a pure function. */
-  public static IAST Slot2;
+  public static final IAST Slot2;
 
   /** Represents <code>#3</code>, the third argument of a pure function. */
-  public static IAST Slot3;
+  public static final IAST Slot3;
 
   public static final Field<IExpr> EXPR_FIELD = new ExprField();
 
@@ -734,15 +750,19 @@ public class F extends S {
   /** Constant integer &quot;-10&quot; */
   public static final IInteger CN10 = AbstractIntegerSym.valueOf(-10);
 
-  public static Map<ISymbol, IExpr> UNARY_INVERSE_FUNCTIONS = new IdentityHashMap<ISymbol, IExpr>();
+  private static final Map<ISymbol, IExpr> UNARY_INVERSE_FUNCTIONS = new IdentityHashMap<>();
 
-  public static ISymbol[] DENOMINATOR_NUMERATOR_SYMBOLS = null;
+  public static IExpr getUnaryInverseFunction(IExpr symbol) {
+    return UNARY_INVERSE_FUNCTIONS.get(symbol);
+  }
 
-  public static IExpr[] DENOMINATOR_TRIG_TRUE_EXPRS = null;
+  public static final java.util.List<ISymbol> DENOMINATOR_NUMERATOR_SYMBOLS;
 
-  public static ISymbol[] NUMERATOR_NUMERATOR_SYMBOLS = null;
+  public static final java.util.List<IExpr> DENOMINATOR_TRIG_TRUE_EXPRS;
 
-  public static IExpr[] NUMERATOR_TRIG_TRUE_EXPRS = null;
+  public static final java.util.List<ISymbol> NUMERATOR_NUMERATOR_SYMBOLS;
+
+  public static final java.util.List<IExpr> NUMERATOR_TRIG_TRUE_EXPRS;
 
   private static final CountDownLatch COUNT_DOWN_LATCH = new CountDownLatch(1);
 
@@ -1015,8 +1035,15 @@ public class F extends S {
       AttributeFunctions.initialize();
 
       createInverseFunctionMap();
-      createDenominatorFunctionMap();
-      createNumeratorFunctionMap();
+      DENOMINATOR_NUMERATOR_SYMBOLS = Collections
+          .unmodifiableList(java.util.Arrays.asList(Sin, Cos, Tan, Csc, Sec, Cot));
+      DENOMINATOR_TRIG_TRUE_EXPRS = Collections
+          .unmodifiableList(java.util.Arrays.asList(C1, C1, Cos, Sin, Cos, Sin));
+
+      NUMERATOR_NUMERATOR_SYMBOLS =
+          Collections.unmodifiableList(java.util.Arrays.asList(Sin, Cos, Tan, Csc, Sec, Cot));
+      NUMERATOR_TRIG_TRUE_EXPRS =
+          Collections.unmodifiableList(java.util.Arrays.asList(Sin, Cos, Sin, C1, C1, Cos));
 
       ConstantDefinitions.initialize();
       FunctionDefinitions.initialize();
@@ -1081,41 +1108,8 @@ public class F extends S {
 
     } catch (Throwable th) {
       LOGGER.error("F-class initilaization failed", th);
+      throw th;
     }
-  }
-
-  private static void createNumeratorFunctionMap() {
-    NUMERATOR_NUMERATOR_SYMBOLS = new ISymbol[6];
-    NUMERATOR_NUMERATOR_SYMBOLS[0] = Sin;
-    NUMERATOR_NUMERATOR_SYMBOLS[1] = Cos;
-    NUMERATOR_NUMERATOR_SYMBOLS[2] = Tan;
-    NUMERATOR_NUMERATOR_SYMBOLS[3] = Csc;
-    NUMERATOR_NUMERATOR_SYMBOLS[4] = Sec;
-    NUMERATOR_NUMERATOR_SYMBOLS[5] = Cot;
-    NUMERATOR_TRIG_TRUE_EXPRS = new IExpr[6];
-    NUMERATOR_TRIG_TRUE_EXPRS[0] = Sin;
-    NUMERATOR_TRIG_TRUE_EXPRS[1] = Cos;
-    NUMERATOR_TRIG_TRUE_EXPRS[2] = Sin;
-    NUMERATOR_TRIG_TRUE_EXPRS[3] = C1;
-    NUMERATOR_TRIG_TRUE_EXPRS[4] = C1;
-    NUMERATOR_TRIG_TRUE_EXPRS[5] = Cos;
-  }
-
-  private static void createDenominatorFunctionMap() {
-    DENOMINATOR_NUMERATOR_SYMBOLS = new ISymbol[6];
-    DENOMINATOR_NUMERATOR_SYMBOLS[0] = Sin;
-    DENOMINATOR_NUMERATOR_SYMBOLS[1] = Cos;
-    DENOMINATOR_NUMERATOR_SYMBOLS[2] = Tan;
-    DENOMINATOR_NUMERATOR_SYMBOLS[3] = Csc;
-    DENOMINATOR_NUMERATOR_SYMBOLS[4] = Sec;
-    DENOMINATOR_NUMERATOR_SYMBOLS[5] = Cot;
-    DENOMINATOR_TRIG_TRUE_EXPRS = new IExpr[6];
-    DENOMINATOR_TRIG_TRUE_EXPRS[0] = C1;
-    DENOMINATOR_TRIG_TRUE_EXPRS[1] = C1;
-    DENOMINATOR_TRIG_TRUE_EXPRS[2] = Cos;
-    DENOMINATOR_TRIG_TRUE_EXPRS[3] = Sin;
-    DENOMINATOR_TRIG_TRUE_EXPRS[4] = Cos;
-    DENOMINATOR_TRIG_TRUE_EXPRS[5] = Sin;
   }
 
   private static void createInverseFunctionMap() {
@@ -4514,7 +4508,7 @@ public class F extends S {
         // }
         // }
 
-        isSystemInitialized = true;
+        systemInitialized = true;
       } catch (Throwable th) {
         LOGGER.error("F.initSymbols() failed", th);
       }

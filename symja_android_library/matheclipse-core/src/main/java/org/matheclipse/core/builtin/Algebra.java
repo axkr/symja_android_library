@@ -1266,10 +1266,10 @@ public class Algebra {
     public static IExpr getTrigForm(IAST function, boolean trig) {
       if (trig) {
         if (function.isAST1()) {
-          for (int i = 0; i < F.DENOMINATOR_NUMERATOR_SYMBOLS.length; i++) {
-            final ISymbol symbol = F.DENOMINATOR_NUMERATOR_SYMBOLS[i];
+          for (int i = 0; i < F.DENOMINATOR_NUMERATOR_SYMBOLS.size(); i++) {
+            final ISymbol symbol = F.DENOMINATOR_NUMERATOR_SYMBOLS.get(i);
             if (function.head().equals(symbol)) {
-              IExpr result = F.DENOMINATOR_TRIG_TRUE_EXPRS[i];
+              IExpr result = F.DENOMINATOR_TRIG_TRUE_EXPRS.get(i);
               if (result.isSymbol()) {
                 return F.unaryAST1(result, function.arg1());
               }
@@ -2743,10 +2743,10 @@ public class Algebra {
     public static IExpr getTrigForm(IAST function, boolean trig) {
       if (trig) {
         if (function.isAST1()) {
-          for (int i = 0; i < F.DENOMINATOR_NUMERATOR_SYMBOLS.length; i++) {
-            final ISymbol symbol = F.DENOMINATOR_NUMERATOR_SYMBOLS[i];
+          for (int i = 0; i < F.DENOMINATOR_NUMERATOR_SYMBOLS.size(); i++) {
+            final ISymbol symbol = F.DENOMINATOR_NUMERATOR_SYMBOLS.get(i);
             if (function.head().equals(symbol)) {
-              final IExpr result = F.NUMERATOR_TRIG_TRUE_EXPRS[i];
+              final IExpr result = F.NUMERATOR_TRIG_TRUE_EXPRS.get(i);
               if (result.isSymbol()) {
                 return F.unaryAST1(result, function.arg1());
               }

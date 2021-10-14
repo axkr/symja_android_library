@@ -715,7 +715,7 @@ public class TeXParser {
     }
     IExpr a2 = toExpr(arg2);
     if (a1.isBuiltInSymbol() && a2.isMinusOne()) {
-      IExpr value = F.UNARY_INVERSE_FUNCTIONS.get(a1);
+      IExpr value = F.getUnaryInverseFunction(a1);
       if (value != null) {
         // typically Sin^(-1) -> ArcSin or similar...
         return value;

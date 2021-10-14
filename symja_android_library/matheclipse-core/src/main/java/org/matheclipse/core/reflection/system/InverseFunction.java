@@ -84,7 +84,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
    * @return <code>null</code> if there is no inverse function defined.
    */
   public static IExpr getUnaryInverseFunction(ISymbol headSymbol) {
-    return F.UNARY_INVERSE_FUNCTIONS.get(headSymbol);
+    return F.getUnaryInverseFunction(headSymbol);
   }
 
   /**
@@ -99,7 +99,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
   public static IASTAppendable getUnaryInverseFunction(IAST ast, boolean realAbs) {
     IExpr expr = ast.head();
     if (expr.isSymbol()) {
-      IExpr inverseSymbol = F.UNARY_INVERSE_FUNCTIONS.get(expr);
+      IExpr inverseSymbol = F.getUnaryInverseFunction(expr);
       if (inverseSymbol != null) {
         return F.ast(inverseSymbol);
       }

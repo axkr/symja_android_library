@@ -10,720 +10,703 @@ import org.matheclipse.parser.trie.TrieMatch;
 
 public class STEM {
 
-  public static final Object[] STEMS =
-      new Object[] { //
-        "abort", F.Abort, //
-        "absarg", F.AbsArg, //
-        "accumul", F.Accumulate, //
-        "addto", F.AddTo, //
-        "adjacencymatrix", F.AdjacencyMatrix, //
-        "airyai", F.AiryAi, //
-        "airyaiprim", F.AiryAiPrime, //
-        "airybi", F.AiryBi, //
-        "airybiprim", F.AiryBiPrime, //
-        "alltru", F.AllTrue, //
-        "altern", F.Alternatives, //
-        "anglevector", F.AngleVector, //
-        "annuiti", F.Annuity, //
-        "annuitydu", F.AnnuityDue, //
-        "antihermitianmatrixq", F.AntihermitianMatrixQ, //
-        "antisymmetricmatrixq", F.AntisymmetricMatrixQ, //
-        "anytru", F.AnyTrue, //
-        "apart", F.Apart, //
-        "append", F.Append, //
-        "appendto", F.AppendTo, //
-        "appli", F.Apply, //
-        "arcco", F.ArcCos, //
-        "arccosh", F.ArcCosh, //
-        "arccot", F.ArcCot, //
-        "arccoth", F.ArcCoth, //
-        "arccsc", F.ArcCsc, //
-        "arccsch", F.ArcCsch, //
-        "arcsec", F.ArcSec, //
-        "arcsech", F.ArcSech, //
-        "arcsin", F.ArcSin, //
-        "arcsinh", F.ArcSinh, //
-        "arctan", F.ArcTan, //
-        "arctanh", F.ArcTanh, //
-        "argmax", F.ArgMax, //
-        "argmin", F.ArgMin, //
-        "arithmeticgeometricmean", F.ArithmeticGeometricMean, //
-        "arrai", F.Array, //
-        "arraydepth", F.ArrayDepth, //
-        "arraypad", F.ArrayPad, //
-        "arrayq", F.ArrayQ, //
-        "arrayreshap", F.ArrayReshape, //
-        "associ", F.Association, //
-        "associationq", F.AssociationQ, //
-        "atomq", F.AtomQ, //
-        "attribut", F.Attributes, //
-        "baseform", F.BaseForm, //
-        "begin", F.Begin, //
-        "beginpackag", F.BeginPackage, //
-        "bellb", F.BellB, //
-        "belli", F.BellY, //
-        "bernoullib", F.BernoulliB, //
-        "bernoullidistribut", F.BernoulliDistribution, //
-        "bess", F.BesselI, //
-        "besselj", F.BesselJ, //
-        "besseljzero", F.BesselJZero, //
-        "besselk", F.BesselK, //
-        "bess", F.BesselY, //
-        "besselyzero", F.BesselYZero, //
-        "beta", F.Beta, //
-        "binarydeseri", F.BinaryDeserialize, //
-        "binaryseri", F.BinarySerialize, //
-        "bincount", F.BinCounts, //
-        "binomi", F.Binomial, //
-        "binomialdistribut", F.BinomialDistribution, //
-        "bitlength", F.BitLength, //
-        "block", F.Block, //
-        "bool", F.Boole, //
-        "booleanconvert", F.BooleanConvert, //
-        "booleanminim", F.BooleanMinimize, //
-        "booleanq", F.BooleanQ, //
-        "boolean", F.Booleans, //
-        "booleant", F.BooleanTable, //
-        "booleanvari", F.BooleanVariables, //
-        "braycurtisdist", F.BrayCurtisDistance, //
-        "break", F.Break, //
-        "bytearrai", F.ByteArray, //
-        "bytearrayq", F.ByteArrayQ, //
-        "canberradist", F.CanberraDistance, //
-        "cancel", F.Cancel, //
-        "carmichaellambda", F.CarmichaelLambda, //
-        "cartesianproduct", F.CartesianProduct, //
-        "case", F.Cases, //
-        "catalan", F.Catalan, //
-        "catalannumb", F.CatalanNumber, //
-        "caten", F.Catenate, //
-        "ceil", F.Ceiling, //
-        "centralmo", F.CentralMoment, //
-        "characteristicpolynomi", F.CharacteristicPolynomial, //
-        "chebyshevt", F.ChebyshevT, //
-        "chebyshevu", F.ChebyshevU, //
-        "check", F.Check, //
-        "chessboarddist", F.ChessboardDistance, //
-        "chineseremaind", F.ChineseRemainder, //
-        "choleskydecomposit", F.CholeskyDecomposition, //
-        "chop", F.Chop, //
-        "circlepoint", F.CirclePoints, //
-        "clear", F.Clear, //
-        "clearal", F.ClearAll, //
-        "clearattribut", F.ClearAttributes, //
-        "clip", F.Clip, //
-        "coeffici", F.Coefficient, //
-        "coefficientlist", F.CoefficientList, //
-        "coefficientrul", F.CoefficientRules, //
-        "collect", F.Collect, //
-        "complement", F.Complement, //
-        "complex", F.Complex, //
-        "complex", F.Complexes, //
-        "complexexpand", F.ComplexExpand, //
-        "complexinfin", F.ComplexInfinity, //
-        "complexplot3d", F.ComplexPlot3D, //
-        "composelist", F.ComposeList, //
-        "composeseri", F.ComposeSeries, //
-        "composit", F.Composition, //
-        "compoundexpress", F.CompoundExpression, //
-        "condit", F.Condition, //
-        "conditionalexpress", F.ConditionalExpression, //
-        "conjug", F.Conjugate, //
-        "conjugatetranspos", F.ConjugateTranspose, //
-        "constant", F.Constant, //
-        "constantarrai", F.ConstantArray, //
-        "containsonli", F.ContainsOnly, //
-        "context", F.Context, //
-        "continu", F.Continue, //
-        "continuedfract", F.ContinuedFraction, //
-        "converg", F.Convergents, //
-        "coprimeq", F.CoprimeQ, //
-        "correl", F.Correlation, //
-        "cosh", F.Cosh, //
-        "coshintegr", F.CoshIntegral, //
-        "cosinedist", F.CosineDistance, //
-        "cosintegr", F.CosIntegral, //
-        "coth", F.Coth, //
-        "count", F.Count, //
-        "count", F.Counts, //
-        "covari", F.Covariance, //
-        "cross", F.Cross, //
-        "csch", F.Csch, //
-        "cuberoot", F.CubeRoot, //
-        "curl", F.Curl, //
-        "cyclotom", F.Cyclotomic, //
-        "decrement", F.Decrement, //
-        "default", F.Default, //
-        "defer", F.Defer, //
-        "definit", F.Definition, //
-        "degre", F.Degree, //
-        "delet", F.Delete, //
-        "deletecas", F.DeleteCases, //
-        "deletedupl", F.DeleteDuplicates, //
-        "denomin", F.Denominator, //
-        "depth", F.Depth, //
-        "deriv", F.Derivative, //
-        "designmatrix", F.DesignMatrix, //
-        "diagon", F.Diagonal, //
-        "diagonalmatrix", F.DiagonalMatrix, //
-        "dialoginput", F.DialogInput, //
-        "dicedissimilar", F.DiceDissimilarity, //
-        "digitcount", F.DigitCount, //
-        "digitq", F.DigitQ, //
-        "dimens", F.Dimensions, //
-        "diracdelta", F.DiracDelta, //
-        "directedinfin", F.DirectedInfinity, //
-        "discretedelta", F.DiscreteDelta, //
-        "discreteuniformdistribut", F.DiscreteUniformDistribution, //
-        "discrimin", F.Discriminant, //
-        "distribut", F.Distribute, //
-        "divid", F.Divide, //
-        "dividebi", F.DivideBy, //
-        "divis", F.Divisible, //
-        "divisor", F.Divisors, //
-        "divisorsigma", F.DivisorSigma, //
-        "divisorsum", F.DivisorSum, //
-        "drop", F.Drop, //
-        "dsolv", F.DSolve, //
-        "edgelist", F.EdgeList, //
-        "edgeq", F.EdgeQ, //
-        "effectiveinterest", F.EffectiveInterest, //
-        "eigenvalu", F.Eigenvalues, //
-        "eigenvector", F.Eigenvectors, //
-        "element", F.Element, //
-        "elementdata", F.ElementData, //
-        "elimin", F.Eliminate, //
-        "elliptic", F.EllipticE, //
-        "ellipticf", F.EllipticF, //
-        "elliptick", F.EllipticK, //
-        "ellipticpi", F.EllipticPi, //
-        "endpackag", F.EndPackage, //
-        "equal", F.Equal, //
-        "equival", F.Equivalent, //
-        "erfc", F.Erfc, //
-        "erfi", F.Erfi, //
-        "erlangdistribut", F.ErlangDistribution, //
-        "euclideandist", F.EuclideanDistance, //
-        "euler", F.EulerE, //
-        "eulergamma", F.EulerGamma, //
-        "euleriangraphq", F.EulerianGraphQ, //
-        "eulerphi", F.EulerPhi, //
-        "evalu", F.Evaluate, //
-        "evenq", F.EvenQ, //
-        "exactnumberq", F.ExactNumberQ, //
-        "except", F.Except, //
-        "expand", F.Expand, //
-        "expandal", F.ExpandAll, //
-        "expect", F.Expectation, //
-        "expintegral", F.ExpIntegralE, //
-        "expintegralei", F.ExpIntegralEi, //
-        "expon", F.Exponent, //
-        "exponentialdistribut", F.ExponentialDistribution, //
-        "export", F.Export, //
-        "extendedgcd", F.ExtendedGCD, //
-        "extract", F.Extract, //
-        "factor", F.Factor, //
-        "factori", F.Factorial, //
-        "factorial2", F.Factorial2, //
-        "factorinteg", F.FactorInteger, //
-        "factorsquarefre", F.FactorSquareFree, //
-        "factorsquarefreelist", F.FactorSquareFreeList, //
-        "factorterm", F.FactorTerms, //
-        "fals", S.False, //
-        "fibonacci", F.Fibonacci, //
-        "findeuleriancycl", F.FindEulerianCycle, //
-        "findfit", F.FindFit, //
-        "findhamiltoniancycl", F.FindHamiltonianCycle, //
-        "findinst", F.FindInstance, //
-        "findroot", F.FindRoot, //
-        "findshortestpath", F.FindShortestPath, //
-        "findshortesttour", F.FindShortestTour, //
-        "findspanningtre", F.FindSpanningTree, //
-        "findvertexcov", F.FindVertexCover, //
-        "first", F.First, //
-        "fivenum", F.FiveNum, //
-        "fixedpoint", F.FixedPoint, //
-        "fixedpointlist", F.FixedPointList, //
-        "flat", F.Flat, //
-        "flatten", F.Flatten, //
-        "flattenat", F.FlattenAt, //
-        "floor", F.Floor, //
-        "fold", F.Fold, //
-        "foldlist", F.FoldList, //
-        "fourier", F.Fourier, //
-        "fouriermatrix", F.FourierMatrix, //
-        "fractionalpart", F.FractionalPart, //
-        "frechetdistribut", F.FrechetDistribution, //
-        "freeq", F.FreeQ, //
-        "frobeniusnumb", F.FrobeniusNumber, //
-        "frobeniussolv", F.FrobeniusSolve, //
-        "fromcharactercod", F.FromCharacterCode, //
-        "fromcontinuedfract", F.FromContinuedFraction, //
-        "fromdigit", F.FromDigits, //
-        "frompolarcoordin", F.FromPolarCoordinates, //
-        "fullform", F.FullForm, //
-        "fullsimplifi", F.FullSimplify, //
-        "functionexpand", F.FunctionExpand, //
-        "gamma", F.Gamma, //
-        "gammadistribut", F.GammaDistribution, //
-        "gather", F.Gather, //
-        "gatherbi", F.GatherBy, //
-        "gegenbauerc", F.GegenbauerC, //
-        "geodist", F.GeoDistance, //
-        "geometricdistribut", F.GeometricDistribution, //
-        "geometricmean", F.GeometricMean, //
-        "glaisher", F.Glaisher, //
-        "goldenratio", F.GoldenRatio, //
-        "grad", F.Grad, //
-        "graph", F.Graph, //
-        "graphcent", F.GraphCenter, //
-        "graphdiamet", F.GraphDiameter, //
-        "graphperipheri", F.GraphPeriphery, //
-        "graphq", F.GraphQ, //
-        "graphradiu", F.GraphRadius, //
-        "greater", F.Greater, //
-        "greaterequ", F.GreaterEqual, //
-        "groebnerbasi", F.GroebnerBasis, //
-        "gumbeldistribut", F.GumbelDistribution, //
-        "hamiltoniangraphq", F.HamiltonianGraphQ, //
-        "harmonicmean", F.HarmonicMean, //
-        "harmonicnumb", F.HarmonicNumber, //
-        "haversin", F.Haversine, //
-        "head", F.Head, //
-        "heavisidetheta", F.HeavisideTheta, //
-        "hermiteh", F.HermiteH, //
-        "hermitianmatrixq", F.HermitianMatrixQ, //
-        "hilbertmatrix", F.HilbertMatrix, //
-        "hold", F.Hold, //
-        "holdal", F.HoldAll, //
-        "holdfirst", F.HoldFirst, //
-        "holdform", F.HoldForm, //
-        "holdpattern", F.HoldPattern, //
-        "holdrest", F.HoldRest, //
-        "hornerform", F.HornerForm, //
-        "hurwitzzeta", F.HurwitzZeta, //
-        "hypergeometric0f1", F.Hypergeometric0F1, //
-        "hypergeometric1f1", F.Hypergeometric1F1, //
-        "hypergeometric2f1", F.Hypergeometric2F1, //
-        "hypergeometricdistribut", F.HypergeometricDistribution, //
-        "hypergeometricpfq", F.HypergeometricPFQ, //
-        "ident", F.Identity, //
-        "identitymatrix", F.IdentityMatrix, //
-        "impli", F.Implies, //
-        "import", F.Import, //
-        "increment", F.Increment, //
-        "indetermin", F.Indeterminate, //
-        "inexactnumberq", F.InexactNumberQ, //
-        "infin", F.Infinity, //
-        "inner", F.Inner, //
-        "input", F.Input, //
-        "inputstr", F.InputString, //
-        "integ", F.Integer, //
-        "integerdigit", F.IntegerDigits, //
-        "integerexpon", F.IntegerExponent, //
-        "integerlength", F.IntegerLength, //
-        "integernam", F.IntegerName, //
-        "integerpart", F.IntegerPart, //
-        "integerpartit", F.IntegerPartitions, //
-        "integerq", F.IntegerQ, //
-        "integ", F.Integers, //
-        "integr", F.Integrate, //
-        "interpolatingfunct", F.InterpolatingFunction, //
-        "interpolatingpolynomi", F.InterpolatingPolynomial, //
-        "interrupt", F.Interrupt, //
-        "intersect", F.Intersection, //
-        "interv", F.Interval, //
-        "invers", F.Inverse, //
-        "inversecdf", F.InverseCDF, //
-        "inverseerf", F.InverseErf, //
-        "inverseerfc", F.InverseErfc, //
-        "inversefouri", F.InverseFourier, //
-        "inversefunct", F.InverseFunction, //
-        "inversehaversin", F.InverseHaversine, //
-        "inverselaplacetransform", F.InverseLaplaceTransform, //
-        "inverseseri", F.InverseSeries, //
-        "jaccarddissimilar", F.JaccardDissimilarity, //
-        "jacobiamplitud", F.JacobiAmplitude, //
-        "jacobicn", F.JacobiCN, //
-        "jacobidn", F.JacobiDN, //
-        "jacobimatrix", F.JacobiMatrix, //
-        "jacobisn", F.JacobiSN, //
-        "jacobisymbol", F.JacobiSymbol, //
-        "javaform", F.JavaForm, //
-        "join", F.Join, //
-        "jsform", F.JSForm, //
-        "keysort", F.KeySort, //
-        "khinchin", F.Khinchin, //
-        "kolmogorovsmirnovtest", F.KolmogorovSmirnovTest, //
-        "kroneckerdelta", F.KroneckerDelta, //
-        "kurtosi", F.Kurtosis, //
-        "laguerrel", F.LaguerreL, //
-        "laplacetransform", F.LaplaceTransform, //
-        "last", F.Last, //
-        "leafcount", F.LeafCount, //
-        "leastsquar", F.LeastSquares, //
-        "legendrep", F.LegendreP, //
-        "legendreq", F.LegendreQ, //
-        "length", F.Length, //
-        "less", F.Less, //
-        "lessequ", F.LessEqual, //
-        "letterq", F.LetterQ, //
-        "level", F.Level, //
-        "levelq", F.LevelQ, //
-        "limit", F.Limit, //
-        "linearprogram", F.LinearProgramming, //
-        "linearrecurr", F.LinearRecurrence, //
-        "linearsolv", F.LinearSolve, //
-        "list", F.List, //
-        "listabl", F.Listable, //
-        "listconvolv", F.ListConvolve, //
-        "listcorrel", F.ListCorrelate, //
-        "listlineplot", F.ListLinePlot, //
-        "listplot", F.ListPlot, //
-        "listplot3d", F.ListPlot3D, //
-        "listq", F.ListQ, //
-        "log10", F.Log10, //
-        "log2", F.Log2, //
-        "loggamma", F.LogGamma, //
-        "logintegr", F.LogIntegral, //
-        "logisticsigmoid", F.LogisticSigmoid, //
-        "lognormaldistribut", F.LogNormalDistribution, //
-        "lookup", F.Lookup, //
-        "lowertriangular", F.LowerTriangularize, //
-        "lucasl", F.LucasL, //
-        "ludecomposit", F.LUDecomposition, //
-        "machinenumberq", F.MachineNumberQ, //
-        "mangoldtlambda", F.MangoldtLambda, //
-        "manhattandist", F.ManhattanDistance, //
-        "manipul", F.Manipulate, //
-        "mapindex", F.MapIndexed, //
-        "mapthread", F.MapThread, //
-        "matchingdissimilar", F.MatchingDissimilarity, //
-        "matchq", F.MatchQ, //
-        "mathmlform", F.MathMLForm, //
-        "matrixexp", F.MatrixExp, //
-        "matrixminimalpolynomi", F.MatrixMinimalPolynomial, //
-        "matrixpow", F.MatrixPower, //
-        "matrixq", F.MatrixQ, //
-        "matrixrank", F.MatrixRank, //
-        "maxfilt", F.MaxFilter, //
-        "maxim", F.Maximize, //
-        "mean", F.Mean, //
-        "meanfilt", F.MeanFilter, //
-        "median", F.Median, //
-        "medianfilt", F.MedianFilter, //
-        "memberq", F.MemberQ, //
-        "mersenneprimeexpon", F.MersennePrimeExponent, //
-        "mersenneprimeexponentq", F.MersennePrimeExponentQ, //
-        "messag", F.Message, //
-        "messagenam", F.MessageName, //
-        "minfilt", F.MinFilter, //
-        "minim", F.Minimize, //
-        "minu", F.Minus, //
-        "missingq", F.MissingQ, //
-        "modul", F.Module, //
-        "moebiusmu", F.MoebiusMu, //
-        "monomiallist", F.MonomialList, //
-        "most", F.Most, //
-        "multinomi", F.Multinomial, //
-        "multiplicativeord", F.MultiplicativeOrder, //
-        "nakagamidistribut", F.NakagamiDistribution, //
-        "nand", F.Nand, //
-        "nest", F.Nest, //
-        "nestlist", F.NestList, //
-        "nestwhil", F.NestWhile, //
-        "nestwhilelist", F.NestWhileList, //
-        "nextprim", F.NextPrime, //
-        "nholdal", F.NHoldAll, //
-        "nholdfirst", F.NHoldFirst, //
-        "nholdrest", F.NHoldRest, //
-        "nintegr", F.NIntegrate, //
-        "nmaxim", F.NMaximize, //
-        "nminim", F.NMinimize, //
-        "none", F.None, //
-        "nonetru", F.NoneTrue, //
-        "nonneg", F.NonNegative, //
-        "nonposit", F.NonPositive, //
-        "norm", F.Norm, //
-        "normal", F.Normal, //
-        "normaldistribut", F.NormalDistribution, //
-        "normal", F.Normalize, //
-        "nroot", F.NRoots, //
-        "nsolv", F.NSolve, //
-        "null", F.Null, //
-        "nullspac", F.NullSpace, //
-        "numberq", F.NumberQ, //
-        "numer", F.Numerator, //
-        "numericq", F.NumericQ, //
-        "oddq", F.OddQ, //
-        "oneident", F.OneIdentity, //
-        "oper", F.Operate, //
-        "optimizeexpress", F.OptimizeExpression, //
-        "option", F.Optional, //
-        "order", F.Order, //
-        "orderedq", F.OrderedQ, //
-        "order", F.Ordering, //
-        "orderless", F.Orderless, //
-        "orthogon", F.Orthogonalize, //
-        "orthogonalmatrixq", F.OrthogonalMatrixQ, //
-        "outer", F.Outer, //
-        "padleft", F.PadLeft, //
-        "padright", F.PadRight, //
-        "parametricplot", F.ParametricPlot, //
-        "part", F.Part, //
-        "partit", F.Partition, //
-        "partitionsp", F.PartitionsP, //
-        "partitionsq", F.PartitionsQ, //
-        "patterntest", F.PatternTest, //
-        "perfectnumb", F.PerfectNumber, //
-        "perfectnumberq", F.PerfectNumberQ, //
-        "permut", F.Permutations, //
-        "piecewis", F.Piecewise, //
-        "piecewiseexpand", F.PiecewiseExpand, //
-        "plot", F.Plot, //
-        "plot3d", F.Plot3D, //
-        "pochhamm", F.Pochhammer, //
-        "poissondistribut", F.PoissonDistribution, //
-        "polarplot", F.PolarPlot, //
-        "polygamma", F.PolyGamma, //
-        "polynomialextendedgcd", F.PolynomialExtendedGCD, //
-        "polynomialgcd", F.PolynomialGCD, //
-        "polynomiallcm", F.PolynomialLCM, //
-        "polynomialq", F.PolynomialQ, //
-        "polynomialquoti", F.PolynomialQuotient, //
-        "polynomialquotientremaind", F.PolynomialQuotientRemainder, //
-        "polynomialremaind", F.PolynomialRemainder, //
-        "posit", F.Position, //
-        "posit", F.Positive, //
-        "possiblezeroq", F.PossibleZeroQ, //
-        "power", F.Power, //
-        "powerexpand", F.PowerExpand, //
-        "powermod", F.PowerMod, //
-        "predecr", F.PreDecrement, //
-        "preincrement", F.PreIncrement, //
-        "prepend", F.Prepend, //
-        "prependto", F.PrependTo, //
-        "prime", F.Prime, //
-        "primeomega", F.PrimeOmega, //
-        "primepi", F.PrimePi, //
-        "primepowerq", F.PrimePowerQ, //
-        "primeq", F.PrimeQ, //
-        "primitiverootlist", F.PrimitiveRootList, //
-        "probabl", F.Probability, //
-        "product", F.Product, //
-        "productlog", F.ProductLog, //
-        "project", F.Projection, //
-        "pseudoinvers", F.PseudoInverse, //
-        "qrdecomposit", F.QRDecomposition, //
-        "quantil", F.Quantile, //
-        "quantiti", F.Quantity, //
-        "quantitymagnitud", F.QuantityMagnitude, //
-        "quartil", F.Quartiles, //
-        "quiet", F.Quiet, //
-        "quotient", F.Quotient, //
-        "quotientremaind", F.QuotientRemainder, //
-        "ramp", F.Ramp, //
-        "randomchoic", F.RandomChoice, //
-        "randominteg", F.RandomInteger, //
-        "randomprim", F.RandomPrime, //
-        "randomr", F.RandomReal, //
-        "randomsampl", F.RandomSample, //
-        "rang", F.Range, //
-        "ration", F.Rational, //
-        "ration", F.Rationalize, //
-        "real", F.Real, //
-        "realnumberq", F.RealNumberQ, //
-        "real", F.Reals, //
-        "reap", F.Reap, //
-        "refin", F.Refine, //
-        "replac", F.Replace, //
-        "replaceal", F.ReplaceAll, //
-        "replacelist", F.ReplaceList, //
-        "replacepart", F.ReplacePart, //
-        "replacerep", F.ReplaceRepeated, //
-        "rescal", F.Rescale, //
-        "rest", F.Rest, //
-        "result", F.Resultant, //
-        "return", F.Return, //
-        "revers", F.Reverse, //
-        "riffl", F.Riffle, //
-        "rogerstanimotodissimilar", F.RogersTanimotoDissimilarity, //
-        "romannumer", F.RomanNumeral, //
-        "root", F.Roots, //
-        "rotateleft", F.RotateLeft, //
-        "rotateright", F.RotateRight, //
-        "rotationmatrix", F.RotationMatrix, //
-        "round", F.Round, //
-        "rowreduc", F.RowReduce, //
-        "rule", F.Rule, //
-        "ruledelai", F.RuleDelayed, //
-        "russellraodissimilar", F.RussellRaoDissimilarity, //
-        "sameq", F.SameQ, //
-        "satisfiabilitycount", F.SatisfiabilityCount, //
-        "satisfiabilityinst", F.SatisfiabilityInstances, //
-        "satisfiableq", F.SatisfiableQ, //
-        "scan", F.Scan, //
-        "sech", F.Sech, //
-        "select", F.Select, //
-        "selectfirst", F.SelectFirst, //
-        "semanticimport", F.SemanticImport, //
-        "semanticimportstr", F.SemanticImportString, //
-        "seri", F.Series, //
-        "seriescoeffici", F.SeriesCoefficient, //
-        "seriesdata", F.SeriesData, //
-        "setattribut", F.SetAttributes, //
-        "setdelai", F.SetDelayed, //
-        "sign", F.Sign, //
-        "simplifi", F.Simplify, //
-        "sinc", F.Sinc, //
-        "singularvaluedecomposit", F.SingularValueDecomposition, //
-        "sinh", F.Sinh, //
-        "sinhintegr", F.SinhIntegral, //
-        "sinintegr", F.SinIntegral, //
-        "skew", F.Skewness, //
-        "slot", F.Slot, //
-        "slotsequ", F.SlotSequence, //
-        "sokalsneathdissimilar", F.SokalSneathDissimilarity, //
-        "solv", F.Solve, //
-        "sort", F.Sort, //
-        "sortbi", F.SortBy, //
-        "span", F.Span, //
-        "sphericalbesselj", F.SphericalBesselJ, //
-        "sphericalbess", F.SphericalBesselY, //
-        "split", F.Split, //
-        "splitbi", F.SplitBy, //
-        "sqrt", F.Sqrt, //
-        "squaredeuclideandist", F.SquaredEuclideanDistance, //
-        "squarefreeq", F.SquareFreeQ, //
-        "squarematrixq", F.SquareMatrixQ, //
-        "standarddevi", F.StandardDeviation, //
-        "stieltjesgamma", F.StieltjesGamma, //
-        "stirlings1", F.StirlingS1, //
-        "stirlings2", F.StirlingS2, //
-        "stringcas", F.StringCases, //
-        "stringcontainsq", F.StringContainsQ, //
-        "stringjoin", F.StringJoin, //
-        "stringlength", F.StringLength, //
-        "stringmatchq", F.StringMatchQ, //
-        "stringpart", F.StringPart, //
-        "stringq", F.StringQ, //
-        "stringreplac", F.StringReplace, //
-        "stringsplit", F.StringSplit, //
-        "struveh", F.StruveH, //
-        "struvel", F.StruveL, //
-        "studenttdistribut", F.StudentTDistribution, //
-        "subdivid", F.Subdivide, //
-        "subfactori", F.Subfactorial, //
-        "subset", F.Subsets, //
-        "subtract", F.Subtract, //
-        "subtractfrom", F.SubtractFrom, //
-        "surd", F.Surd, //
-        "survivalfunct", F.SurvivalFunction, //
-        "switch", F.Switch, //
-        "symbol", F.Symbol, //
-        "symbolnam", F.SymbolName, //
-        "symbolq", F.SymbolQ, //
-        "symmetricmatrixq", F.SymmetricMatrixQ, //
-        "syntaxq", F.SyntaxQ, //
-        "systemdialoginput", F.SystemDialogInput, //
-        "tabl", F.Table, //
-        "take", F.Take, //
-        "tanh", F.Tanh, //
-        "tautologyq", F.TautologyQ, //
-        "texform", F.TeXForm, //
-        "thread", F.Thread, //
-        "through", F.Through, //
-        "time", F.Times, //
-        "timesbi", F.TimesBy, //
-        "timevalu", F.TimeValue, //
-        "time", F.Timing, //
-        "tocharactercod", F.ToCharacterCode, //
-        "toeplitzmatrix", F.ToeplitzMatrix, //
-        "toexpress", F.ToExpression, //
-        "togeth", F.Together, //
-        "topolarcoordin", F.ToPolarCoordinates, //
-        "tostr", F.ToString, //
-        "total", F.Total, //
-        "trace", F.Trace, //
-        "transpos", F.Transpose, //
-        "treeform", F.TreeForm, //
-        "trigexpand", F.TrigExpand, //
-        "trigreduc", F.TrigReduce, //
-        "trigtoexp", F.TrigToExp, //
-        "true", S.True, //
-        "trueq", S.TrueQ, //
-        "tupl", F.Tuples, //
-        "unequ", F.Unequal, //
-        "uniformdistribut", F.UniformDistribution, //
-        "union", F.Union, //
-        "uniqu", F.Unique, //
-        "unitconvert", F.UnitConvert, //
-        "unit", F.Unitize, //
-        "unitstep", F.UnitStep, //
-        "unitvector", F.UnitVector, //
-        "unsameq", F.UnsameQ, //
-        "unset", F.Unset, //
-        "uppercaseq", F.UpperCaseQ, //
-        "uppertriangular", F.UpperTriangularize, //
-        "valueq", F.ValueQ, //
-        "valu", F.Values, //
-        "vandermondematrix", F.VandermondeMatrix, //
-        "variabl", F.Variables, //
-        "varianc", F.Variance, //
-        "vectorangl", F.VectorAngle, //
-        "vectorq", F.VectorQ, //
-        "vertexeccentr", F.VertexEccentricity, //
-        "vertexlist", F.VertexList, //
-        "vertexq", F.VertexQ, //
-        "weibulldistribut", F.WeibullDistribution, //
-        "weierstrassp", F.WeierstrassP, //
-        "which", F.Which, //
-        "while", F.While, //
-        "yuledissimilar", F.YuleDissimilarity, //
-        "zeta", F.Zeta, //
-      };
+  private STEM() { // static use only
+  }
 
-  public static final Object[] STEMS1 =
-      new Object[] { //
-        "convert",
-        F.UnitConvert,
-        "convers",
-        F.UnitConvert, //
-        "expand",
-        F.ExpandAll,
-        "expans",
-        F.ExpandAll, //
-        "deriv",
-        F.D,
-        "differenti",
-        F.D, //
-        "horner",
-        F.HornerForm, //
-        "mathml",
-        F.MathMLForm, //
-        "simplif",
-        F.FullSimplify,
-        "simplifi",
-        F.FullSimplify, //
-        "solver",
-        F.Solve, //
-        "tex",
-        F.TeXForm, //
-        "tree",
-        F.TreeForm, //
-      };
-
-  public static final TrieBuilder<String, IBuiltInSymbol, ArrayList<IBuiltInSymbol>> builder =
+  private static final TrieBuilder<String, IBuiltInSymbol, ArrayList<IBuiltInSymbol>> builder =
       TrieBuilder.create();
-  public static final Trie<String, IBuiltInSymbol> STEM_MAP =
+  private static final Trie<String, IBuiltInSymbol> STEM_MAP =
       builder.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
+  public static IBuiltInSymbol getSymbol(String name) {
+    return STEM_MAP.get(name);
+  }
+
   static {
-    for (int i = 0; i < STEM.STEMS.length; i += 2) {
-      STEM_MAP.put((String) STEM.STEMS[i], (IBuiltInSymbol) STEM.STEMS[i + 1]);
-    }
-    for (int i = 0; i < STEMS1.length; i += 2) {
-      STEM_MAP.put((String) STEMS1[i], (IBuiltInSymbol) STEMS1[i + 1]);
-    }
+    // STEMS
+    STEM_MAP.put("abort", F.Abort);
+    STEM_MAP.put("absarg", F.AbsArg);
+    STEM_MAP.put("accumul", F.Accumulate);
+    STEM_MAP.put("addto", F.AddTo);
+    STEM_MAP.put("adjacencymatrix", F.AdjacencyMatrix);
+    STEM_MAP.put("airyai", F.AiryAi);
+    STEM_MAP.put("airyaiprim", F.AiryAiPrime);
+    STEM_MAP.put("airybi", F.AiryBi);
+    STEM_MAP.put("airybiprim", F.AiryBiPrime);
+    STEM_MAP.put("alltru", F.AllTrue);
+    STEM_MAP.put("altern", F.Alternatives);
+    STEM_MAP.put("anglevector", F.AngleVector);
+    STEM_MAP.put("annuiti", F.Annuity);
+    STEM_MAP.put("annuitydu", F.AnnuityDue);
+    STEM_MAP.put("antihermitianmatrixq", F.AntihermitianMatrixQ);
+    STEM_MAP.put("antisymmetricmatrixq", F.AntisymmetricMatrixQ);
+    STEM_MAP.put("anytru", F.AnyTrue);
+    STEM_MAP.put("apart", F.Apart);
+    STEM_MAP.put("append", F.Append);
+    STEM_MAP.put("appendto", F.AppendTo);
+    STEM_MAP.put("appli", F.Apply);
+    STEM_MAP.put("arcco", F.ArcCos);
+    STEM_MAP.put("arccosh", F.ArcCosh);
+    STEM_MAP.put("arccot", F.ArcCot);
+    STEM_MAP.put("arccoth", F.ArcCoth);
+    STEM_MAP.put("arccsc", F.ArcCsc);
+    STEM_MAP.put("arccsch", F.ArcCsch);
+    STEM_MAP.put("arcsec", F.ArcSec);
+    STEM_MAP.put("arcsech", F.ArcSech);
+    STEM_MAP.put("arcsin", F.ArcSin);
+    STEM_MAP.put("arcsinh", F.ArcSinh);
+    STEM_MAP.put("arctan", F.ArcTan);
+    STEM_MAP.put("arctanh", F.ArcTanh);
+    STEM_MAP.put("argmax", F.ArgMax);
+    STEM_MAP.put("argmin", F.ArgMin);
+    STEM_MAP.put("arithmeticgeometricmean", F.ArithmeticGeometricMean);
+    STEM_MAP.put("arrai", F.Array);
+    STEM_MAP.put("arraydepth", F.ArrayDepth);
+    STEM_MAP.put("arraypad", F.ArrayPad);
+    STEM_MAP.put("arrayq", F.ArrayQ);
+    STEM_MAP.put("arrayreshap", F.ArrayReshape);
+    STEM_MAP.put("associ", F.Association);
+    STEM_MAP.put("associationq", F.AssociationQ);
+    STEM_MAP.put("atomq", F.AtomQ);
+    STEM_MAP.put("attribut", F.Attributes);
+    STEM_MAP.put("baseform", F.BaseForm);
+    STEM_MAP.put("begin", F.Begin);
+    STEM_MAP.put("beginpackag", F.BeginPackage);
+    STEM_MAP.put("bellb", F.BellB);
+    STEM_MAP.put("belli", F.BellY);
+    STEM_MAP.put("bernoullib", F.BernoulliB);
+    STEM_MAP.put("bernoullidistribut", F.BernoulliDistribution);
+    STEM_MAP.put("bess", F.BesselI);
+    STEM_MAP.put("besselj", F.BesselJ);
+    STEM_MAP.put("besseljzero", F.BesselJZero);
+    STEM_MAP.put("besselk", F.BesselK);
+    STEM_MAP.put("bess", F.BesselY);
+    STEM_MAP.put("besselyzero", F.BesselYZero);
+    STEM_MAP.put("beta", F.Beta);
+    STEM_MAP.put("binarydeseri", F.BinaryDeserialize);
+    STEM_MAP.put("binaryseri", F.BinarySerialize);
+    STEM_MAP.put("bincount", F.BinCounts);
+    STEM_MAP.put("binomi", F.Binomial);
+    STEM_MAP.put("binomialdistribut", F.BinomialDistribution);
+    STEM_MAP.put("bitlength", F.BitLength);
+    STEM_MAP.put("block", F.Block);
+    STEM_MAP.put("bool", F.Boole);
+    STEM_MAP.put("booleanconvert", F.BooleanConvert);
+    STEM_MAP.put("booleanminim", F.BooleanMinimize);
+    STEM_MAP.put("booleanq", F.BooleanQ);
+    STEM_MAP.put("boolean", F.Booleans);
+    STEM_MAP.put("booleant", F.BooleanTable);
+    STEM_MAP.put("booleanvari", F.BooleanVariables);
+    STEM_MAP.put("braycurtisdist", F.BrayCurtisDistance);
+    STEM_MAP.put("break", F.Break);
+    STEM_MAP.put("bytearrai", F.ByteArray);
+    STEM_MAP.put("bytearrayq", F.ByteArrayQ);
+    STEM_MAP.put("canberradist", F.CanberraDistance);
+    STEM_MAP.put("cancel", F.Cancel);
+    STEM_MAP.put("carmichaellambda", F.CarmichaelLambda);
+    STEM_MAP.put("cartesianproduct", F.CartesianProduct);
+    STEM_MAP.put("case", F.Cases);
+    STEM_MAP.put("catalan", F.Catalan);
+    STEM_MAP.put("catalannumb", F.CatalanNumber);
+    STEM_MAP.put("caten", F.Catenate);
+    STEM_MAP.put("ceil", F.Ceiling);
+    STEM_MAP.put("centralmo", F.CentralMoment);
+    STEM_MAP.put("characteristicpolynomi", F.CharacteristicPolynomial);
+    STEM_MAP.put("chebyshevt", F.ChebyshevT);
+    STEM_MAP.put("chebyshevu", F.ChebyshevU);
+    STEM_MAP.put("check", F.Check);
+    STEM_MAP.put("chessboarddist", F.ChessboardDistance);
+    STEM_MAP.put("chineseremaind", F.ChineseRemainder);
+    STEM_MAP.put("choleskydecomposit", F.CholeskyDecomposition);
+    STEM_MAP.put("chop", F.Chop);
+    STEM_MAP.put("circlepoint", F.CirclePoints);
+    STEM_MAP.put("clear", F.Clear);
+    STEM_MAP.put("clearal", F.ClearAll);
+    STEM_MAP.put("clearattribut", F.ClearAttributes);
+    STEM_MAP.put("clip", F.Clip);
+    STEM_MAP.put("coeffici", F.Coefficient);
+    STEM_MAP.put("coefficientlist", F.CoefficientList);
+    STEM_MAP.put("coefficientrul", F.CoefficientRules);
+    STEM_MAP.put("collect", F.Collect);
+    STEM_MAP.put("complement", F.Complement);
+    STEM_MAP.put("complex", F.Complex);
+    STEM_MAP.put("complex", F.Complexes);
+    STEM_MAP.put("complexexpand", F.ComplexExpand);
+    STEM_MAP.put("complexinfin", F.ComplexInfinity);
+    STEM_MAP.put("complexplot3d", F.ComplexPlot3D);
+    STEM_MAP.put("composelist", F.ComposeList);
+    STEM_MAP.put("composeseri", F.ComposeSeries);
+    STEM_MAP.put("composit", F.Composition);
+    STEM_MAP.put("compoundexpress", F.CompoundExpression);
+    STEM_MAP.put("condit", F.Condition);
+    STEM_MAP.put("conditionalexpress", F.ConditionalExpression);
+    STEM_MAP.put("conjug", F.Conjugate);
+    STEM_MAP.put("conjugatetranspos", F.ConjugateTranspose);
+    STEM_MAP.put("constant", F.Constant);
+    STEM_MAP.put("constantarrai", F.ConstantArray);
+    STEM_MAP.put("containsonli", F.ContainsOnly);
+    STEM_MAP.put("context", F.Context);
+    STEM_MAP.put("continu", F.Continue);
+    STEM_MAP.put("continuedfract", F.ContinuedFraction);
+    STEM_MAP.put("converg", F.Convergents);
+    STEM_MAP.put("coprimeq", F.CoprimeQ);
+    STEM_MAP.put("correl", F.Correlation);
+    STEM_MAP.put("cosh", F.Cosh);
+    STEM_MAP.put("coshintegr", F.CoshIntegral);
+    STEM_MAP.put("cosinedist", F.CosineDistance);
+    STEM_MAP.put("cosintegr", F.CosIntegral);
+    STEM_MAP.put("coth", F.Coth);
+    STEM_MAP.put("count", F.Count);
+    STEM_MAP.put("count", F.Counts);
+    STEM_MAP.put("covari", F.Covariance);
+    STEM_MAP.put("cross", F.Cross);
+    STEM_MAP.put("csch", F.Csch);
+    STEM_MAP.put("cuberoot", F.CubeRoot);
+    STEM_MAP.put("curl", F.Curl);
+    STEM_MAP.put("cyclotom", F.Cyclotomic);
+    STEM_MAP.put("decrement", F.Decrement);
+    STEM_MAP.put("default", F.Default);
+    STEM_MAP.put("defer", F.Defer);
+    STEM_MAP.put("definit", F.Definition);
+    STEM_MAP.put("degre", F.Degree);
+    STEM_MAP.put("delet", F.Delete);
+    STEM_MAP.put("deletecas", F.DeleteCases);
+    STEM_MAP.put("deletedupl", F.DeleteDuplicates);
+    STEM_MAP.put("denomin", F.Denominator);
+    STEM_MAP.put("depth", F.Depth);
+    STEM_MAP.put("deriv", F.Derivative);
+    STEM_MAP.put("designmatrix", F.DesignMatrix);
+    STEM_MAP.put("diagon", F.Diagonal);
+    STEM_MAP.put("diagonalmatrix", F.DiagonalMatrix);
+    STEM_MAP.put("dialoginput", F.DialogInput);
+    STEM_MAP.put("dicedissimilar", F.DiceDissimilarity);
+    STEM_MAP.put("digitcount", F.DigitCount);
+    STEM_MAP.put("digitq", F.DigitQ);
+    STEM_MAP.put("dimens", F.Dimensions);
+    STEM_MAP.put("diracdelta", F.DiracDelta);
+    STEM_MAP.put("directedinfin", F.DirectedInfinity);
+    STEM_MAP.put("discretedelta", F.DiscreteDelta);
+    STEM_MAP.put("discreteuniformdistribut", F.DiscreteUniformDistribution);
+    STEM_MAP.put("discrimin", F.Discriminant);
+    STEM_MAP.put("distribut", F.Distribute);
+    STEM_MAP.put("divid", F.Divide);
+    STEM_MAP.put("dividebi", F.DivideBy);
+    STEM_MAP.put("divis", F.Divisible);
+    STEM_MAP.put("divisor", F.Divisors);
+    STEM_MAP.put("divisorsigma", F.DivisorSigma);
+    STEM_MAP.put("divisorsum", F.DivisorSum);
+    STEM_MAP.put("drop", F.Drop);
+    STEM_MAP.put("dsolv", F.DSolve);
+    STEM_MAP.put("edgelist", F.EdgeList);
+    STEM_MAP.put("edgeq", F.EdgeQ);
+    STEM_MAP.put("effectiveinterest", F.EffectiveInterest);
+    STEM_MAP.put("eigenvalu", F.Eigenvalues);
+    STEM_MAP.put("eigenvector", F.Eigenvectors);
+    STEM_MAP.put("element", F.Element);
+    STEM_MAP.put("elementdata", F.ElementData);
+    STEM_MAP.put("elimin", F.Eliminate);
+    STEM_MAP.put("elliptic", F.EllipticE);
+    STEM_MAP.put("ellipticf", F.EllipticF);
+    STEM_MAP.put("elliptick", F.EllipticK);
+    STEM_MAP.put("ellipticpi", F.EllipticPi);
+    STEM_MAP.put("endpackag", F.EndPackage);
+    STEM_MAP.put("equal", F.Equal);
+    STEM_MAP.put("equival", F.Equivalent);
+    STEM_MAP.put("erfc", F.Erfc);
+    STEM_MAP.put("erfi", F.Erfi);
+    STEM_MAP.put("erlangdistribut", F.ErlangDistribution);
+    STEM_MAP.put("euclideandist", F.EuclideanDistance);
+    STEM_MAP.put("euler", F.EulerE);
+    STEM_MAP.put("eulergamma", F.EulerGamma);
+    STEM_MAP.put("euleriangraphq", F.EulerianGraphQ);
+    STEM_MAP.put("eulerphi", F.EulerPhi);
+    STEM_MAP.put("evalu", F.Evaluate);
+    STEM_MAP.put("evenq", F.EvenQ);
+    STEM_MAP.put("exactnumberq", F.ExactNumberQ);
+    STEM_MAP.put("except", F.Except);
+    STEM_MAP.put("expand", F.Expand);
+    STEM_MAP.put("expandal", F.ExpandAll);
+    STEM_MAP.put("expect", F.Expectation);
+    STEM_MAP.put("expintegral", F.ExpIntegralE);
+    STEM_MAP.put("expintegralei", F.ExpIntegralEi);
+    STEM_MAP.put("expon", F.Exponent);
+    STEM_MAP.put("exponentialdistribut", F.ExponentialDistribution);
+    STEM_MAP.put("export", F.Export);
+    STEM_MAP.put("extendedgcd", F.ExtendedGCD);
+    STEM_MAP.put("extract", F.Extract);
+    STEM_MAP.put("factor", F.Factor);
+    STEM_MAP.put("factori", F.Factorial);
+    STEM_MAP.put("factorial2", F.Factorial2);
+    STEM_MAP.put("factorinteg", F.FactorInteger);
+    STEM_MAP.put("factorsquarefre", F.FactorSquareFree);
+    STEM_MAP.put("factorsquarefreelist", F.FactorSquareFreeList);
+    STEM_MAP.put("factorterm", F.FactorTerms);
+    STEM_MAP.put("fals", S.False);
+    STEM_MAP.put("fibonacci", F.Fibonacci);
+    STEM_MAP.put("findeuleriancycl", F.FindEulerianCycle);
+    STEM_MAP.put("findfit", F.FindFit);
+    STEM_MAP.put("findhamiltoniancycl", F.FindHamiltonianCycle);
+    STEM_MAP.put("findinst", F.FindInstance);
+    STEM_MAP.put("findroot", F.FindRoot);
+    STEM_MAP.put("findshortestpath", F.FindShortestPath);
+    STEM_MAP.put("findshortesttour", F.FindShortestTour);
+    STEM_MAP.put("findspanningtre", F.FindSpanningTree);
+    STEM_MAP.put("findvertexcov", F.FindVertexCover);
+    STEM_MAP.put("first", F.First);
+    STEM_MAP.put("fivenum", F.FiveNum);
+    STEM_MAP.put("fixedpoint", F.FixedPoint);
+    STEM_MAP.put("fixedpointlist", F.FixedPointList);
+    STEM_MAP.put("flat", F.Flat);
+    STEM_MAP.put("flatten", F.Flatten);
+    STEM_MAP.put("flattenat", F.FlattenAt);
+    STEM_MAP.put("floor", F.Floor);
+    STEM_MAP.put("fold", F.Fold);
+    STEM_MAP.put("foldlist", F.FoldList);
+    STEM_MAP.put("fourier", F.Fourier);
+    STEM_MAP.put("fouriermatrix", F.FourierMatrix);
+    STEM_MAP.put("fractionalpart", F.FractionalPart);
+    STEM_MAP.put("frechetdistribut", F.FrechetDistribution);
+    STEM_MAP.put("freeq", F.FreeQ);
+    STEM_MAP.put("frobeniusnumb", F.FrobeniusNumber);
+    STEM_MAP.put("frobeniussolv", F.FrobeniusSolve);
+    STEM_MAP.put("fromcharactercod", F.FromCharacterCode);
+    STEM_MAP.put("fromcontinuedfract", F.FromContinuedFraction);
+    STEM_MAP.put("fromdigit", F.FromDigits);
+    STEM_MAP.put("frompolarcoordin", F.FromPolarCoordinates);
+    STEM_MAP.put("fullform", F.FullForm);
+    STEM_MAP.put("fullsimplifi", F.FullSimplify);
+    STEM_MAP.put("functionexpand", F.FunctionExpand);
+    STEM_MAP.put("gamma", F.Gamma);
+    STEM_MAP.put("gammadistribut", F.GammaDistribution);
+    STEM_MAP.put("gather", F.Gather);
+    STEM_MAP.put("gatherbi", F.GatherBy);
+    STEM_MAP.put("gegenbauerc", F.GegenbauerC);
+    STEM_MAP.put("geodist", F.GeoDistance);
+    STEM_MAP.put("geometricdistribut", F.GeometricDistribution);
+    STEM_MAP.put("geometricmean", F.GeometricMean);
+    STEM_MAP.put("glaisher", F.Glaisher);
+    STEM_MAP.put("goldenratio", F.GoldenRatio);
+    STEM_MAP.put("grad", F.Grad);
+    STEM_MAP.put("graph", F.Graph);
+    STEM_MAP.put("graphcent", F.GraphCenter);
+    STEM_MAP.put("graphdiamet", F.GraphDiameter);
+    STEM_MAP.put("graphperipheri", F.GraphPeriphery);
+    STEM_MAP.put("graphq", F.GraphQ);
+    STEM_MAP.put("graphradiu", F.GraphRadius);
+    STEM_MAP.put("greater", F.Greater);
+    STEM_MAP.put("greaterequ", F.GreaterEqual);
+    STEM_MAP.put("groebnerbasi", F.GroebnerBasis);
+    STEM_MAP.put("gumbeldistribut", F.GumbelDistribution);
+    STEM_MAP.put("hamiltoniangraphq", F.HamiltonianGraphQ);
+    STEM_MAP.put("harmonicmean", F.HarmonicMean);
+    STEM_MAP.put("harmonicnumb", F.HarmonicNumber);
+    STEM_MAP.put("haversin", F.Haversine);
+    STEM_MAP.put("head", F.Head);
+    STEM_MAP.put("heavisidetheta", F.HeavisideTheta);
+    STEM_MAP.put("hermiteh", F.HermiteH);
+    STEM_MAP.put("hermitianmatrixq", F.HermitianMatrixQ);
+    STEM_MAP.put("hilbertmatrix", F.HilbertMatrix);
+    STEM_MAP.put("hold", F.Hold);
+    STEM_MAP.put("holdal", F.HoldAll);
+    STEM_MAP.put("holdfirst", F.HoldFirst);
+    STEM_MAP.put("holdform", F.HoldForm);
+    STEM_MAP.put("holdpattern", F.HoldPattern);
+    STEM_MAP.put("holdrest", F.HoldRest);
+    STEM_MAP.put("hornerform", F.HornerForm);
+    STEM_MAP.put("hurwitzzeta", F.HurwitzZeta);
+    STEM_MAP.put("hypergeometric0f1", F.Hypergeometric0F1);
+    STEM_MAP.put("hypergeometric1f1", F.Hypergeometric1F1);
+    STEM_MAP.put("hypergeometric2f1", F.Hypergeometric2F1);
+    STEM_MAP.put("hypergeometricdistribut", F.HypergeometricDistribution);
+    STEM_MAP.put("hypergeometricpfq", F.HypergeometricPFQ);
+    STEM_MAP.put("ident", F.Identity);
+    STEM_MAP.put("identitymatrix", F.IdentityMatrix);
+    STEM_MAP.put("impli", F.Implies);
+    STEM_MAP.put("import", F.Import);
+    STEM_MAP.put("increment", F.Increment);
+    STEM_MAP.put("indetermin", F.Indeterminate);
+    STEM_MAP.put("inexactnumberq", F.InexactNumberQ);
+    STEM_MAP.put("infin", F.Infinity);
+    STEM_MAP.put("inner", F.Inner);
+    STEM_MAP.put("input", F.Input);
+    STEM_MAP.put("inputstr", F.InputString);
+    STEM_MAP.put("integ", F.Integer);
+    STEM_MAP.put("integerdigit", F.IntegerDigits);
+    STEM_MAP.put("integerexpon", F.IntegerExponent);
+    STEM_MAP.put("integerlength", F.IntegerLength);
+    STEM_MAP.put("integernam", F.IntegerName);
+    STEM_MAP.put("integerpart", F.IntegerPart);
+    STEM_MAP.put("integerpartit", F.IntegerPartitions);
+    STEM_MAP.put("integerq", F.IntegerQ);
+    STEM_MAP.put("integ", F.Integers);
+    STEM_MAP.put("integr", F.Integrate);
+    STEM_MAP.put("interpolatingfunct", F.InterpolatingFunction);
+    STEM_MAP.put("interpolatingpolynomi", F.InterpolatingPolynomial);
+    STEM_MAP.put("interrupt", F.Interrupt);
+    STEM_MAP.put("intersect", F.Intersection);
+    STEM_MAP.put("interv", F.Interval);
+    STEM_MAP.put("invers", F.Inverse);
+    STEM_MAP.put("inversecdf", F.InverseCDF);
+    STEM_MAP.put("inverseerf", F.InverseErf);
+    STEM_MAP.put("inverseerfc", F.InverseErfc);
+    STEM_MAP.put("inversefouri", F.InverseFourier);
+    STEM_MAP.put("inversefunct", F.InverseFunction);
+    STEM_MAP.put("inversehaversin", F.InverseHaversine);
+    STEM_MAP.put("inverselaplacetransform", F.InverseLaplaceTransform);
+    STEM_MAP.put("inverseseri", F.InverseSeries);
+    STEM_MAP.put("jaccarddissimilar", F.JaccardDissimilarity);
+    STEM_MAP.put("jacobiamplitud", F.JacobiAmplitude);
+    STEM_MAP.put("jacobicn", F.JacobiCN);
+    STEM_MAP.put("jacobidn", F.JacobiDN);
+    STEM_MAP.put("jacobimatrix", F.JacobiMatrix);
+    STEM_MAP.put("jacobisn", F.JacobiSN);
+    STEM_MAP.put("jacobisymbol", F.JacobiSymbol);
+    STEM_MAP.put("javaform", F.JavaForm);
+    STEM_MAP.put("join", F.Join);
+    STEM_MAP.put("jsform", F.JSForm);
+    STEM_MAP.put("keysort", F.KeySort);
+    STEM_MAP.put("khinchin", F.Khinchin);
+    STEM_MAP.put("kolmogorovsmirnovtest", F.KolmogorovSmirnovTest);
+    STEM_MAP.put("kroneckerdelta", F.KroneckerDelta);
+    STEM_MAP.put("kurtosi", F.Kurtosis);
+    STEM_MAP.put("laguerrel", F.LaguerreL);
+    STEM_MAP.put("laplacetransform", F.LaplaceTransform);
+    STEM_MAP.put("last", F.Last);
+    STEM_MAP.put("leafcount", F.LeafCount);
+    STEM_MAP.put("leastsquar", F.LeastSquares);
+    STEM_MAP.put("legendrep", F.LegendreP);
+    STEM_MAP.put("legendreq", F.LegendreQ);
+    STEM_MAP.put("length", F.Length);
+    STEM_MAP.put("less", F.Less);
+    STEM_MAP.put("lessequ", F.LessEqual);
+    STEM_MAP.put("letterq", F.LetterQ);
+    STEM_MAP.put("level", F.Level);
+    STEM_MAP.put("levelq", F.LevelQ);
+    STEM_MAP.put("limit", F.Limit);
+    STEM_MAP.put("linearprogram", F.LinearProgramming);
+    STEM_MAP.put("linearrecurr", F.LinearRecurrence);
+    STEM_MAP.put("linearsolv", F.LinearSolve);
+    STEM_MAP.put("list", F.List);
+    STEM_MAP.put("listabl", F.Listable);
+    STEM_MAP.put("listconvolv", F.ListConvolve);
+    STEM_MAP.put("listcorrel", F.ListCorrelate);
+    STEM_MAP.put("listlineplot", F.ListLinePlot);
+    STEM_MAP.put("listplot", F.ListPlot);
+    STEM_MAP.put("listplot3d", F.ListPlot3D);
+    STEM_MAP.put("listq", F.ListQ);
+    STEM_MAP.put("log10", F.Log10);
+    STEM_MAP.put("log2", F.Log2);
+    STEM_MAP.put("loggamma", F.LogGamma);
+    STEM_MAP.put("logintegr", F.LogIntegral);
+    STEM_MAP.put("logisticsigmoid", F.LogisticSigmoid);
+    STEM_MAP.put("lognormaldistribut", F.LogNormalDistribution);
+    STEM_MAP.put("lookup", F.Lookup);
+    STEM_MAP.put("lowertriangular", F.LowerTriangularize);
+    STEM_MAP.put("lucasl", F.LucasL);
+    STEM_MAP.put("ludecomposit", F.LUDecomposition);
+    STEM_MAP.put("machinenumberq", F.MachineNumberQ);
+    STEM_MAP.put("mangoldtlambda", F.MangoldtLambda);
+    STEM_MAP.put("manhattandist", F.ManhattanDistance);
+    STEM_MAP.put("manipul", F.Manipulate);
+    STEM_MAP.put("mapindex", F.MapIndexed);
+    STEM_MAP.put("mapthread", F.MapThread);
+    STEM_MAP.put("matchingdissimilar", F.MatchingDissimilarity);
+    STEM_MAP.put("matchq", F.MatchQ);
+    STEM_MAP.put("mathmlform", F.MathMLForm);
+    STEM_MAP.put("matrixexp", F.MatrixExp);
+    STEM_MAP.put("matrixminimalpolynomi", F.MatrixMinimalPolynomial);
+    STEM_MAP.put("matrixpow", F.MatrixPower);
+    STEM_MAP.put("matrixq", F.MatrixQ);
+    STEM_MAP.put("matrixrank", F.MatrixRank);
+    STEM_MAP.put("maxfilt", F.MaxFilter);
+    STEM_MAP.put("maxim", F.Maximize);
+    STEM_MAP.put("mean", F.Mean);
+    STEM_MAP.put("meanfilt", F.MeanFilter);
+    STEM_MAP.put("median", F.Median);
+    STEM_MAP.put("medianfilt", F.MedianFilter);
+    STEM_MAP.put("memberq", F.MemberQ);
+    STEM_MAP.put("mersenneprimeexpon", F.MersennePrimeExponent);
+    STEM_MAP.put("mersenneprimeexponentq", F.MersennePrimeExponentQ);
+    STEM_MAP.put("messag", F.Message);
+    STEM_MAP.put("messagenam", F.MessageName);
+    STEM_MAP.put("minfilt", F.MinFilter);
+    STEM_MAP.put("minim", F.Minimize);
+    STEM_MAP.put("minu", F.Minus);
+    STEM_MAP.put("missingq", F.MissingQ);
+    STEM_MAP.put("modul", F.Module);
+    STEM_MAP.put("moebiusmu", F.MoebiusMu);
+    STEM_MAP.put("monomiallist", F.MonomialList);
+    STEM_MAP.put("most", F.Most);
+    STEM_MAP.put("multinomi", F.Multinomial);
+    STEM_MAP.put("multiplicativeord", F.MultiplicativeOrder);
+    STEM_MAP.put("nakagamidistribut", F.NakagamiDistribution);
+    STEM_MAP.put("nand", F.Nand);
+    STEM_MAP.put("nest", F.Nest);
+    STEM_MAP.put("nestlist", F.NestList);
+    STEM_MAP.put("nestwhil", F.NestWhile);
+    STEM_MAP.put("nestwhilelist", F.NestWhileList);
+    STEM_MAP.put("nextprim", F.NextPrime);
+    STEM_MAP.put("nholdal", F.NHoldAll);
+    STEM_MAP.put("nholdfirst", F.NHoldFirst);
+    STEM_MAP.put("nholdrest", F.NHoldRest);
+    STEM_MAP.put("nintegr", F.NIntegrate);
+    STEM_MAP.put("nmaxim", F.NMaximize);
+    STEM_MAP.put("nminim", F.NMinimize);
+    STEM_MAP.put("none", F.None);
+    STEM_MAP.put("nonetru", F.NoneTrue);
+    STEM_MAP.put("nonneg", F.NonNegative);
+    STEM_MAP.put("nonposit", F.NonPositive);
+    STEM_MAP.put("norm", F.Norm);
+    STEM_MAP.put("normal", F.Normal);
+    STEM_MAP.put("normaldistribut", F.NormalDistribution);
+    STEM_MAP.put("normal", F.Normalize);
+    STEM_MAP.put("nroot", F.NRoots);
+    STEM_MAP.put("nsolv", F.NSolve);
+    STEM_MAP.put("null", F.Null);
+    STEM_MAP.put("nullspac", F.NullSpace);
+    STEM_MAP.put("numberq", F.NumberQ);
+    STEM_MAP.put("numer", F.Numerator);
+    STEM_MAP.put("numericq", F.NumericQ);
+    STEM_MAP.put("oddq", F.OddQ);
+    STEM_MAP.put("oneident", F.OneIdentity);
+    STEM_MAP.put("oper", F.Operate);
+    STEM_MAP.put("optimizeexpress", F.OptimizeExpression);
+    STEM_MAP.put("option", F.Optional);
+    STEM_MAP.put("order", F.Order);
+    STEM_MAP.put("orderedq", F.OrderedQ);
+    STEM_MAP.put("order", F.Ordering);
+    STEM_MAP.put("orderless", F.Orderless);
+    STEM_MAP.put("orthogon", F.Orthogonalize);
+    STEM_MAP.put("orthogonalmatrixq", F.OrthogonalMatrixQ);
+    STEM_MAP.put("outer", F.Outer);
+    STEM_MAP.put("padleft", F.PadLeft);
+    STEM_MAP.put("padright", F.PadRight);
+    STEM_MAP.put("parametricplot", F.ParametricPlot);
+    STEM_MAP.put("part", F.Part);
+    STEM_MAP.put("partit", F.Partition);
+    STEM_MAP.put("partitionsp", F.PartitionsP);
+    STEM_MAP.put("partitionsq", F.PartitionsQ);
+    STEM_MAP.put("patterntest", F.PatternTest);
+    STEM_MAP.put("perfectnumb", F.PerfectNumber);
+    STEM_MAP.put("perfectnumberq", F.PerfectNumberQ);
+    STEM_MAP.put("permut", F.Permutations);
+    STEM_MAP.put("piecewis", F.Piecewise);
+    STEM_MAP.put("piecewiseexpand", F.PiecewiseExpand);
+    STEM_MAP.put("plot", F.Plot);
+    STEM_MAP.put("plot3d", F.Plot3D);
+    STEM_MAP.put("pochhamm", F.Pochhammer);
+    STEM_MAP.put("poissondistribut", F.PoissonDistribution);
+    STEM_MAP.put("polarplot", F.PolarPlot);
+    STEM_MAP.put("polygamma", F.PolyGamma);
+    STEM_MAP.put("polynomialextendedgcd", F.PolynomialExtendedGCD);
+    STEM_MAP.put("polynomialgcd", F.PolynomialGCD);
+    STEM_MAP.put("polynomiallcm", F.PolynomialLCM);
+    STEM_MAP.put("polynomialq", F.PolynomialQ);
+    STEM_MAP.put("polynomialquoti", F.PolynomialQuotient);
+    STEM_MAP.put("polynomialquotientremaind", F.PolynomialQuotientRemainder);
+    STEM_MAP.put("polynomialremaind", F.PolynomialRemainder);
+    STEM_MAP.put("posit", F.Position);
+    STEM_MAP.put("posit", F.Positive);
+    STEM_MAP.put("possiblezeroq", F.PossibleZeroQ);
+    STEM_MAP.put("power", F.Power);
+    STEM_MAP.put("powerexpand", F.PowerExpand);
+    STEM_MAP.put("powermod", F.PowerMod);
+    STEM_MAP.put("predecr", F.PreDecrement);
+    STEM_MAP.put("preincrement", F.PreIncrement);
+    STEM_MAP.put("prepend", F.Prepend);
+    STEM_MAP.put("prependto", F.PrependTo);
+    STEM_MAP.put("prime", F.Prime);
+    STEM_MAP.put("primeomega", F.PrimeOmega);
+    STEM_MAP.put("primepi", F.PrimePi);
+    STEM_MAP.put("primepowerq", F.PrimePowerQ);
+    STEM_MAP.put("primeq", F.PrimeQ);
+    STEM_MAP.put("primitiverootlist", F.PrimitiveRootList);
+    STEM_MAP.put("probabl", F.Probability);
+    STEM_MAP.put("product", F.Product);
+    STEM_MAP.put("productlog", F.ProductLog);
+    STEM_MAP.put("project", F.Projection);
+    STEM_MAP.put("pseudoinvers", F.PseudoInverse);
+    STEM_MAP.put("qrdecomposit", F.QRDecomposition);
+    STEM_MAP.put("quantil", F.Quantile);
+    STEM_MAP.put("quantiti", F.Quantity);
+    STEM_MAP.put("quantitymagnitud", F.QuantityMagnitude);
+    STEM_MAP.put("quartil", F.Quartiles);
+    STEM_MAP.put("quiet", F.Quiet);
+    STEM_MAP.put("quotient", F.Quotient);
+    STEM_MAP.put("quotientremaind", F.QuotientRemainder);
+    STEM_MAP.put("ramp", F.Ramp);
+    STEM_MAP.put("randomchoic", F.RandomChoice);
+    STEM_MAP.put("randominteg", F.RandomInteger);
+    STEM_MAP.put("randomprim", F.RandomPrime);
+    STEM_MAP.put("randomr", F.RandomReal);
+    STEM_MAP.put("randomsampl", F.RandomSample);
+    STEM_MAP.put("rang", F.Range);
+    STEM_MAP.put("ration", F.Rational);
+    STEM_MAP.put("ration", F.Rationalize);
+    STEM_MAP.put("real", F.Real);
+    STEM_MAP.put("realnumberq", F.RealNumberQ);
+    STEM_MAP.put("real", F.Reals);
+    STEM_MAP.put("reap", F.Reap);
+    STEM_MAP.put("refin", F.Refine);
+    STEM_MAP.put("replac", F.Replace);
+    STEM_MAP.put("replaceal", F.ReplaceAll);
+    STEM_MAP.put("replacelist", F.ReplaceList);
+    STEM_MAP.put("replacepart", F.ReplacePart);
+    STEM_MAP.put("replacerep", F.ReplaceRepeated);
+    STEM_MAP.put("rescal", F.Rescale);
+    STEM_MAP.put("rest", F.Rest);
+    STEM_MAP.put("result", F.Resultant);
+    STEM_MAP.put("return", F.Return);
+    STEM_MAP.put("revers", F.Reverse);
+    STEM_MAP.put("riffl", F.Riffle);
+    STEM_MAP.put("rogerstanimotodissimilar", F.RogersTanimotoDissimilarity);
+    STEM_MAP.put("romannumer", F.RomanNumeral);
+    STEM_MAP.put("root", F.Roots);
+    STEM_MAP.put("rotateleft", F.RotateLeft);
+    STEM_MAP.put("rotateright", F.RotateRight);
+    STEM_MAP.put("rotationmatrix", F.RotationMatrix);
+    STEM_MAP.put("round", F.Round);
+    STEM_MAP.put("rowreduc", F.RowReduce);
+    STEM_MAP.put("rule", F.Rule);
+    STEM_MAP.put("ruledelai", F.RuleDelayed);
+    STEM_MAP.put("russellraodissimilar", F.RussellRaoDissimilarity);
+    STEM_MAP.put("sameq", F.SameQ);
+    STEM_MAP.put("satisfiabilitycount", F.SatisfiabilityCount);
+    STEM_MAP.put("satisfiabilityinst", F.SatisfiabilityInstances);
+    STEM_MAP.put("satisfiableq", F.SatisfiableQ);
+    STEM_MAP.put("scan", F.Scan);
+    STEM_MAP.put("sech", F.Sech);
+    STEM_MAP.put("select", F.Select);
+    STEM_MAP.put("selectfirst", F.SelectFirst);
+    STEM_MAP.put("semanticimport", F.SemanticImport);
+    STEM_MAP.put("semanticimportstr", F.SemanticImportString);
+    STEM_MAP.put("seri", F.Series);
+    STEM_MAP.put("seriescoeffici", F.SeriesCoefficient);
+    STEM_MAP.put("seriesdata", F.SeriesData);
+    STEM_MAP.put("setattribut", F.SetAttributes);
+    STEM_MAP.put("setdelai", F.SetDelayed);
+    STEM_MAP.put("sign", F.Sign);
+    STEM_MAP.put("simplifi", F.Simplify);
+    STEM_MAP.put("sinc", F.Sinc);
+    STEM_MAP.put("singularvaluedecomposit", F.SingularValueDecomposition);
+    STEM_MAP.put("sinh", F.Sinh);
+    STEM_MAP.put("sinhintegr", F.SinhIntegral);
+    STEM_MAP.put("sinintegr", F.SinIntegral);
+    STEM_MAP.put("skew", F.Skewness);
+    STEM_MAP.put("slot", F.Slot);
+    STEM_MAP.put("slotsequ", F.SlotSequence);
+    STEM_MAP.put("sokalsneathdissimilar", F.SokalSneathDissimilarity);
+    STEM_MAP.put("solv", F.Solve);
+    STEM_MAP.put("sort", F.Sort);
+    STEM_MAP.put("sortbi", F.SortBy);
+    STEM_MAP.put("span", F.Span);
+    STEM_MAP.put("sphericalbesselj", F.SphericalBesselJ);
+    STEM_MAP.put("sphericalbess", F.SphericalBesselY);
+    STEM_MAP.put("split", F.Split);
+    STEM_MAP.put("splitbi", F.SplitBy);
+    STEM_MAP.put("sqrt", F.Sqrt);
+    STEM_MAP.put("squaredeuclideandist", F.SquaredEuclideanDistance);
+    STEM_MAP.put("squarefreeq", F.SquareFreeQ);
+    STEM_MAP.put("squarematrixq", F.SquareMatrixQ);
+    STEM_MAP.put("standarddevi", F.StandardDeviation);
+    STEM_MAP.put("stieltjesgamma", F.StieltjesGamma);
+    STEM_MAP.put("stirlings1", F.StirlingS1);
+    STEM_MAP.put("stirlings2", F.StirlingS2);
+    STEM_MAP.put("stringcas", F.StringCases);
+    STEM_MAP.put("stringcontainsq", F.StringContainsQ);
+    STEM_MAP.put("stringjoin", F.StringJoin);
+    STEM_MAP.put("stringlength", F.StringLength);
+    STEM_MAP.put("stringmatchq", F.StringMatchQ);
+    STEM_MAP.put("stringpart", F.StringPart);
+    STEM_MAP.put("stringq", F.StringQ);
+    STEM_MAP.put("stringreplac", F.StringReplace);
+    STEM_MAP.put("stringsplit", F.StringSplit);
+    STEM_MAP.put("struveh", F.StruveH);
+    STEM_MAP.put("struvel", F.StruveL);
+    STEM_MAP.put("studenttdistribut", F.StudentTDistribution);
+    STEM_MAP.put("subdivid", F.Subdivide);
+    STEM_MAP.put("subfactori", F.Subfactorial);
+    STEM_MAP.put("subset", F.Subsets);
+    STEM_MAP.put("subtract", F.Subtract);
+    STEM_MAP.put("subtractfrom", F.SubtractFrom);
+    STEM_MAP.put("surd", F.Surd);
+    STEM_MAP.put("survivalfunct", F.SurvivalFunction);
+    STEM_MAP.put("switch", F.Switch);
+    STEM_MAP.put("symbol", F.Symbol);
+    STEM_MAP.put("symbolnam", F.SymbolName);
+    STEM_MAP.put("symbolq", F.SymbolQ);
+    STEM_MAP.put("symmetricmatrixq", F.SymmetricMatrixQ);
+    STEM_MAP.put("syntaxq", F.SyntaxQ);
+    STEM_MAP.put("systemdialoginput", F.SystemDialogInput);
+    STEM_MAP.put("tabl", F.Table);
+    STEM_MAP.put("take", F.Take);
+    STEM_MAP.put("tanh", F.Tanh);
+    STEM_MAP.put("tautologyq", F.TautologyQ);
+    STEM_MAP.put("texform", F.TeXForm);
+    STEM_MAP.put("thread", F.Thread);
+    STEM_MAP.put("through", F.Through);
+    STEM_MAP.put("time", F.Times);
+    STEM_MAP.put("timesbi", F.TimesBy);
+    STEM_MAP.put("timevalu", F.TimeValue);
+    STEM_MAP.put("time", F.Timing);
+    STEM_MAP.put("tocharactercod", F.ToCharacterCode);
+    STEM_MAP.put("toeplitzmatrix", F.ToeplitzMatrix);
+    STEM_MAP.put("toexpress", F.ToExpression);
+    STEM_MAP.put("togeth", F.Together);
+    STEM_MAP.put("topolarcoordin", F.ToPolarCoordinates);
+    STEM_MAP.put("tostr", F.ToString);
+    STEM_MAP.put("total", F.Total);
+    STEM_MAP.put("trace", F.Trace);
+    STEM_MAP.put("transpos", F.Transpose);
+    STEM_MAP.put("treeform", F.TreeForm);
+    STEM_MAP.put("trigexpand", F.TrigExpand);
+    STEM_MAP.put("trigreduc", F.TrigReduce);
+    STEM_MAP.put("trigtoexp", F.TrigToExp);
+    STEM_MAP.put("true", S.True);
+    STEM_MAP.put("trueq", S.TrueQ);
+    STEM_MAP.put("tupl", F.Tuples);
+    STEM_MAP.put("unequ", F.Unequal);
+    STEM_MAP.put("uniformdistribut", F.UniformDistribution);
+    STEM_MAP.put("union", F.Union);
+    STEM_MAP.put("uniqu", F.Unique);
+    STEM_MAP.put("unitconvert", F.UnitConvert);
+    STEM_MAP.put("unit", F.Unitize);
+    STEM_MAP.put("unitstep", F.UnitStep);
+    STEM_MAP.put("unitvector", F.UnitVector);
+    STEM_MAP.put("unsameq", F.UnsameQ);
+    STEM_MAP.put("unset", F.Unset);
+    STEM_MAP.put("uppercaseq", F.UpperCaseQ);
+    STEM_MAP.put("uppertriangular", F.UpperTriangularize);
+    STEM_MAP.put("valueq", F.ValueQ);
+    STEM_MAP.put("valu", F.Values);
+    STEM_MAP.put("vandermondematrix", F.VandermondeMatrix);
+    STEM_MAP.put("variabl", F.Variables);
+    STEM_MAP.put("varianc", F.Variance);
+    STEM_MAP.put("vectorangl", F.VectorAngle);
+    STEM_MAP.put("vectorq", F.VectorQ);
+    STEM_MAP.put("vertexeccentr", F.VertexEccentricity);
+    STEM_MAP.put("vertexlist", F.VertexList);
+    STEM_MAP.put("vertexq", F.VertexQ);
+    STEM_MAP.put("weibulldistribut", F.WeibullDistribution);
+    STEM_MAP.put("weierstrassp", F.WeierstrassP);
+    STEM_MAP.put("which", F.Which);
+    STEM_MAP.put("while", F.While);
+    STEM_MAP.put("yuledissimilar", F.YuleDissimilarity);
+    STEM_MAP.put("zeta", F.Zeta);
+
+    // STEMS 1
+    STEM_MAP.put("convert", F.UnitConvert);
+    STEM_MAP.put("convers", F.UnitConvert);
+    STEM_MAP.put("expand", F.ExpandAll);
+    STEM_MAP.put("expans", F.ExpandAll);
+    STEM_MAP.put("deriv", F.D);
+    STEM_MAP.put("differenti", F.D);
+    STEM_MAP.put("horner", F.HornerForm);
+    STEM_MAP.put("mathml", F.MathMLForm);
+    STEM_MAP.put("simplif", F.FullSimplify);
+    STEM_MAP.put("simplifi", F.FullSimplify);
+    STEM_MAP.put("solver", F.Solve);
+    STEM_MAP.put("tex", F.TeXForm);
+    STEM_MAP.put("tree", F.TreeForm);
   }
 }

@@ -215,7 +215,7 @@ public final class RulesData implements Serializable {
     IExpr head = ((IAST) leftHandSide).head();
     if (head.isFreeOfPatterns()) {
       final int hash = ((IAST) leftHandSide).topHead().hashCode();
-      if (F.isSystemInitialized) {
+      if (F.isSystemInitialized()) {
         int indx = fSimplePatternUpRules.indexOf(pmEvaluator);
         if (indx >= 0) {
           fSimplePatternUpRules.remove(indx);
@@ -225,7 +225,7 @@ public final class RulesData implements Serializable {
       return pmEvaluator;
     }
 
-    if (F.isSystemInitialized) {
+    if (F.isSystemInitialized()) {
       int indx = fSimplePatternUpRules.indexOf(pmEvaluator);
       if (indx >= 0) {
         fSimplePatternUpRules.remove(indx);
