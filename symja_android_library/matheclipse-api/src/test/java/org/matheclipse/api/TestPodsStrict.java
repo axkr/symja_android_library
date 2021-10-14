@@ -35,7 +35,7 @@ public class TestPodsStrict {
     Config.MAX_INPUT_LEAVES = 100L;
     Config.MAX_MATRIX_DIMENSION_SIZE = 100;
     EvalEngine.get().setPackageMode(true);
-    F.initSymbols(null, null, false); // new SymbolObserver(), false);
+    F.initSymbols();
     FuzzyParserFactory.initialize();
 
     formatsMATHML = Pods.internFormat(new String[] {"mathml", "plaintext"});

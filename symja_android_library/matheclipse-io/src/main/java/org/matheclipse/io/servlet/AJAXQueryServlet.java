@@ -645,7 +645,7 @@ public class AJAXQueryServlet extends HttpServlet {
     EvalEngine engine = new EvalEngine(isRelaxedSyntax());
     EvalEngine.set(engine);
     Config.FILESYSTEM_ENABLED = true;
-    F.initSymbols(null, null, false);
+    F.initSymbols();
     IOInit.init();
     engine.setRecursionLimit(256);
     engine.setIterationLimit(500);

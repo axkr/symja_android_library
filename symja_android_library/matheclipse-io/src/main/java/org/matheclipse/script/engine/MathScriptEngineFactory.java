@@ -9,7 +9,7 @@ import org.matheclipse.core.expression.F;
 public class MathScriptEngineFactory implements javax.script.ScriptEngineFactory {
 
   static {
-    F.initSymbols(null, null, true);
+    F.initSymbols();
   }
 
   public MathScriptEngineFactory() {

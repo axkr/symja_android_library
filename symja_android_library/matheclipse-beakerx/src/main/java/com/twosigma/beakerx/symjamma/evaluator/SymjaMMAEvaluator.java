@@ -64,7 +64,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
   static {
     // distinguish between lower- and uppercase identifiers
     FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
-    F.initSymbols(null, null, true);
+    F.initSymbols();
     IOInit.init();
   }
 

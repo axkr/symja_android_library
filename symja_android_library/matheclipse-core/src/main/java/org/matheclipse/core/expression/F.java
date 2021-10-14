@@ -7,11 +7,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -568,8 +566,6 @@ public class F extends S {
   /** Represents <code>List()</code> (i.e. the constant empty list) */
   public static IAST CEmptyList;
 
-  public static Set<IExpr> CEmptySet;
-
   public static Function<IExpr, String> CNullFunction = x -> null;
 
   /** Represents <code>Missing("NotFound")</code> */
@@ -776,7 +772,6 @@ public class F extends S {
       CEmptySequence = headAST0(S.Sequence);
       CEmptyList = headAST0(S.List);
       CEmptyString = $str("");
-      CEmptySet = new HashSet<IExpr>();
       CMissingNotFound = Missing("NotFound");
       CListC0 = new B1.List(C0);
       CListC1 = new B1.List(C1);
@@ -1185,8 +1180,9 @@ public class F extends S {
         return binaryAST2(head, a[0], a[1]);
       case 3:
         return ternaryAST3(head, a[0], a[1], a[2]);
+      default:
+        return ast(a, head);
     }
-    return ast(a, head);
   }
 
   /**
@@ -1445,20 +1441,6 @@ public class F extends S {
   }
 
   /**
-   * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or
-   * created or retrieved from the SYSTEM context variables map.
-   *
-   * <p><b>Note:</b> user defined variables on the context path are defined with method <code>
-   * userSymbol()</code>
-   *
-   * @param symbolName the name of the symbol
-   * @return
-   */
-  public static ISymbol $s(final String symbolName) {
-    return $s(symbolName, true);
-  }
-
-  /**
    *
    *
    * <pre>
@@ -1636,16 +1618,11 @@ public class F extends S {
    * userSymbol()</code>
    *
    * @param symbolName the name of the symbol
-   * @param setEval if <code>true</code> determine and assign the built-in evaluator object to the
-   *     symbol.
-   * @return
    */
-  private static ISymbol $s(final String symbolName, boolean setEval) {
+  public static ISymbol $s(final String symbolName) {
     String name = symbolName;
     if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      if (symbolName.length() == 1) {
-        name = symbolName;
-      } else {
+      if (symbolName.length() != 1) {
         name = symbolName.toLowerCase(Locale.ENGLISH);
       }
     }
@@ -2155,6 +2132,7 @@ public class F extends S {
    * @return
    * @deprecated use {@link #ast(IExpr, int)} or {@link #astMutable(IExpr, int)}
    */
+  @Deprecated
   public static IASTAppendable ast(
       final IExpr head, final int initialCapacity, final boolean initNull) {
     return AST.newInstance(initialCapacity, head, initNull);
@@ -3019,8 +2997,9 @@ public class F extends S {
         return new AST2(head, a[0], a[1]);
       case 3:
         return new AST3(head, a[0], a[1], a[2]);
+      default:
+        return new AST(head, a);
     }
-    return new AST(head, a);
   }
 
   /**
@@ -3547,7 +3526,7 @@ public class F extends S {
     if (expr.isAST()) {
       IAST ast = (IAST) expr;
       if (ast.isPlus()) {
-        if (ast.exists(x -> x.isPlusTimesPower())) {
+        if (ast.exists(IExpr::isPlusTimesPower)) {
           return engine.evaluate(Expand(expr));
         }
       } else if (ast.isTimes() || ast.isPower()) {
@@ -4479,23 +4458,11 @@ public class F extends S {
   }
 
   /**
-   * Initialize the complete System. Calls {@link #initSymbols(String, ISymbolObserver, boolean)}
-   * with parameters <code>null, null</code>.
-   */
-  public static synchronized void initSymbols() {
-    initSymbols(null, null, false);
-  }
-
-  /**
    * Initialize the complete System
    *
-   * @param fileName <code>null</code> or optional text filename, which includes the preloaded
-   *     system rules
-   * @param symbolObserver the observer for newly created <code>ISymbols</code>
    * @param noPackageLoading don't load any package at start up
    */
-  public static synchronized void initSymbols(
-      String fileName, ISymbolObserver symbolObserver, boolean noPackageLoading) {
+  public static synchronized void initSymbols() {
 
     if (!isSystemStarted) {
       try {
@@ -4505,9 +4472,6 @@ public class F extends S {
           // watch the rules which are used in pattern matching in
           // system.out
           Config.SHOW_PATTERN_SYMBOL_STEPS.add(Integrate);
-        }
-        if (symbolObserver != null) {
-          SYMBOL_OBSERVER = symbolObserver;
         }
         try {
           String autoload = ".\\Autoload";
@@ -5573,7 +5537,7 @@ public class F extends S {
   }
 
   public static IAST List(final double... numbers) {
-    INum a[] = new INum[numbers.length];
+    INum[] a = new INum[numbers.length];
     for (int i = 0; i < numbers.length; i++) {
       a[i] = num(numbers[i]);
     }
@@ -5581,7 +5545,7 @@ public class F extends S {
   }
 
   public static IAST List(final String... strs) {
-    IStringX a[] = new IStringX[strs.length];
+    IStringX[] a = new IStringX[strs.length];
     for (int i = 0; i < strs.length; i++) {
       a[i] = F.stringx(strs[i]);
     }
@@ -5658,6 +5622,8 @@ public class F extends S {
         break;
       case 3:
         return new AST3(List, a[0], a[1], a[2]);
+      default:
+        break;
     }
     return ast(a, List);
   }
@@ -5696,7 +5662,7 @@ public class F extends S {
   }
 
   public static IAST List(final long... numbers) {
-    IInteger a[] = new IInteger[numbers.length];
+    IInteger[] a = new IInteger[numbers.length];
     for (int i = 0; i < numbers.length; i++) {
       a[i] = ZZ(numbers[i]);
     }
@@ -5704,7 +5670,7 @@ public class F extends S {
   }
 
   public static IASTMutable List(final int... numbers) {
-    IInteger a[] = new IInteger[numbers.length];
+    IInteger[] a = new IInteger[numbers.length];
     for (int i = 0; i < numbers.length; i++) {
       a[i] = ZZ(numbers[i]);
     }
@@ -6637,16 +6603,16 @@ public class F extends S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IAST Plus(final IExpr... a) {
-    final int size = a.length;
-    switch (size) {
+    switch (a.length) {
       case 1:
         return new AST1(S.Plus, a[0]);
       case 2:
         return new B2.Plus(a[0], a[1]);
       case 3:
         return new AST3(S.Plus, a[0], a[1], a[2]);
+      default:
+        return new AST(S.Plus, a);
     }
-    return new AST(S.Plus, a);
   }
 
   /**
@@ -7221,7 +7187,7 @@ public class F extends S {
           assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
           engine.setAssumptions(assumptions);
         } else {
-          assumptions.addAssumption((IAST) temp);
+          assumptions.addAssumption(temp);
         }
       }
     }
@@ -7248,7 +7214,7 @@ public class F extends S {
           assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
           engine.setAssumptions(assumptions);
         } else {
-          assumptions.addAssumption((IAST) temp);
+          assumptions.addAssumption(temp);
         }
       }
     }
@@ -7293,9 +7259,7 @@ public class F extends S {
   public static ISymbol Dummy(final String symbolName) {
     String name = symbolName;
     if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      if (symbolName.length() == 1) {
-        name = symbolName;
-      } else {
+      if (symbolName.length() != 1) {
         name = symbolName.toLowerCase(Locale.ENGLISH);
       }
     }
@@ -8202,16 +8166,16 @@ public class F extends S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IAST Times(final IExpr... a) {
-    final int size = a.length;
-    switch (size) {
+    switch (a.length) {
       case 1:
         return new AST1(S.Times, a[0]);
       case 2:
         return new B2.Times(a[0], a[1]);
       case 3:
         return new AST3(S.Times, a[0], a[1], a[2]);
+      default:
+        return new AST(S.Times, a);
     }
-    return new AST(S.Times, a);
   }
 
   /**
@@ -8235,34 +8199,6 @@ public class F extends S {
    */
   public static IAST Times(final IExpr x, final IExpr y, final IExpr z) {
     return new AST3(Times, x, y, z);
-  }
-
-  private static IASTMutable binaryASTOrderless(
-      Predicate<IExpr> t, ISymbol symbol, final IExpr a1, final IExpr a2) {
-    final boolean test1 = t.test(a1);
-    final boolean test2 = t.test(a2);
-    if (test1 || test2) {
-      int size = test1 ? a1.size() : 1;
-      size += test2 ? a2.size() : 1;
-      IASTAppendable result = ast(symbol, size);
-      if (test1) {
-        result.appendArgs((IAST) a1);
-      } else {
-        result.append(a1);
-      }
-      if (test2) {
-        result.appendArgs((IAST) a2);
-      } else {
-        result.append(a2);
-      }
-      EvalAttributes.sort(result);
-      return result;
-    }
-    if (a1.compareTo(a2) > 0) {
-      // swap arguments
-      return binaryAST2(symbol, a2, a1);
-    }
-    return binaryAST2(symbol, a1, a2);
   }
 
   private static IASTMutable plusOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2) {
@@ -8933,7 +8869,7 @@ public class F extends S {
                 html,
                 "`2`", //
                 "  var options = {\n"
-                    + "		  edges: {\n"
+                    + "          edges: {\n"
                     + "              smooth: {\n"
                     + "                  type: 'cubicBezier',\n"
                     + "                  forceDirection:  'vertical',\n"
