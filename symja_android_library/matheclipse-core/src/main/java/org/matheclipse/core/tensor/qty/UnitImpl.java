@@ -12,6 +12,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 /* package */ class UnitImpl implements IUnit, Serializable {
+  private static final long serialVersionUID = 2551378967100742904L;
+
   private final NavigableMap<String, IExpr> navigableMap;
 
   UnitImpl(NavigableMap<String, IExpr> navigableMap) {
@@ -35,16 +37,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
   @Override // from Unit
   public IUnit add(IUnit unit) {
     NavigableMap<String, IExpr> map = new TreeMap<>(navigableMap);
-    for (Entry<String, IExpr> entry : unit.map().entrySet()) {
-      String key = entry.getKey();
-      IExpr value = entry.getValue();
-      if (map.containsKey(key)) {
-        // TODO this may not always use the defined UnitHelper.EvalEngine
-        IExpr sum = S.Plus.of(UnitHelper.ENGINE, map.get(key), value);
-        if (sum.isZero()) map.remove(key); // exponents cancel out
-        else map.put(key, sum); // exponent is updated
-      } else map.put(key, value); // unit is introduced
-    }
+    unit.map().forEach((k, v) -> UnitHelper.addValue(map, k, v));
     return new UnitImpl(map);
   }
 
@@ -52,11 +45,13 @@ import org.matheclipse.core.interfaces.ISignedNumber;
   public IUnit multiply(IExpr factor) {
     if (factor instanceof ISignedNumber) {
       NavigableMap<String, IExpr> map = new TreeMap<>();
-      for (Entry<String, IExpr> entry : navigableMap.entrySet()) {
+      navigableMap.forEach((key, value) -> {
         // TODO this may not always use the defined UnitHelper.EvalEngine
-        IExpr value = S.Times.of(UnitHelper.ENGINE, entry.getValue(), factor);
-        if (!value.isZero()) map.put(entry.getKey(), value);
-      }
+        IExpr product = S.Times.of(UnitHelper.ENGINE, value, factor);
+        if (!product.isZero()) {
+          map.put(key, product);
+        }
+      });
       return new UnitImpl(map);
     }
     return null;
