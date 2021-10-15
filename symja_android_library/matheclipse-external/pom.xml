@@ -15,7 +15,6 @@
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>The Symja external module</description>
 
-
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License, Version 3</name>
