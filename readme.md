@@ -7,7 +7,7 @@
  
 [![LGTM Alerts](https://img.shields.io/lgtm/alerts/bitbucket/axelclk/symja_android_library)](https://lgtm.com/projects/b/axelclk/symja_android_library) [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axkr/symja_android_library)
 
-**Note**: this repository contains the **Java 8** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) Android calculator project 
+**Note**: this repository contains the **Java 11** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) Android calculator project 
 maintains a **[Java 7 Android branch](https://github.com/tranleduy2000/symja_android_library)** of the [Android *.AAR library](https://github.com/tranleduy2000/symja_android_library/releases).
 
 Try the Android or iOS apps:
@@ -206,22 +206,12 @@ How to use Maven is described in the [Maven wiki page](https://github.com/axkr/s
 
 ### Getting started
 
-First, you'll need a Java Development Kit compatible with Java 8 or later.
+First, you'll need a Java Development Kit (JDK) compatible with Java 11 or later.
 
-You can find JDK installers at:
-
-* http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
-
-If you're unsure how to install the JDK, you can find instructions for
-all operating systems here: 
-
-* https://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html
-
-Pay careful attention to anything about setting up your `PATH` or `CLASSPATH`.
-
+The Integrated Development Environment (IDE) Eclipse is shipped with a suitable JDK, so you don't have to install a JDK by yourself.
 Install and open the latest version of the Eclipse development IDE for Java Developers:
 
-* http://www.eclipse.org/downloads/packages/
+* https://www.eclipse.org/downloads/packages/
 
 ### Github GIT
 
