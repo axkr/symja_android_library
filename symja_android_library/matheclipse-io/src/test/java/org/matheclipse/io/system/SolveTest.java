@@ -314,6 +314,12 @@ public class SolveTest extends AbstractTestCase {
     // "{{x->(0.516973+I*0.516973)*a^0.25*b^0.25},{x->(-0.516973+I*(-0.516973))*a^0.25*b^0.25},{x->(-0.516973+I*0.516973)*a^0.25*b^0.25},{x->(0.516973+I*(-0.516973))*a^0.25*b^0.25}}");
   }
 
+  public void testSolveGalleryExample() {
+    check(
+        "Solve({x^2-11==y, x+y==-9}, {x,y})", //
+        "{{x->-2,y->-7},{x->1,y->-10}}");
+  }
+  
   /** The JUnit setup method */
   @Override
   protected void setUp() {

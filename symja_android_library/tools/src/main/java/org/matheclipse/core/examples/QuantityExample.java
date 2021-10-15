@@ -12,7 +12,7 @@ public class QuantityExample {
   public static void main(String[] args) {
     try {
       ToggleFeature.QUANTITY = true;
-      F.initSymbols(null, null, true);
+      F.initSymbols();
       EvalEngine engine = new EvalEngine(false);
       // ExprEvaluator engine = new ExprEvaluator(false, 100);
 

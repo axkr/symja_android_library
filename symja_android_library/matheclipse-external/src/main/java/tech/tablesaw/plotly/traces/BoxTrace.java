@@ -1,14 +1,13 @@
 package tech.tablesaw.plotly.traces;
 
 import static tech.tablesaw.plotly.Utils.dataAsString;
-
-import com.mitchellbosecke.pebble.error.PebbleException;
-import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.Map;
+import com.mitchellbosecke.pebble.error.PebbleException;
+import com.mitchellbosecke.pebble.template.PebbleTemplate;
 
 public class BoxTrace extends AbstractTrace {
 
@@ -58,7 +57,9 @@ public class BoxTrace extends AbstractTrace {
     Map<String, Object> context = super.getContext();
     context.put("variableName", "trace" + i);
     context.put("y", dataAsString(y));
-    context.put("x", dataAsString(x));
+    if (x != null) { // axkr 20211010: if inserted:
+      context.put("x", dataAsString(x));
+    }
     return context;
   }
 

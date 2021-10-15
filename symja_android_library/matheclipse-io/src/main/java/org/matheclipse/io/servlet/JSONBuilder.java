@@ -8,7 +8,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.form.output.JSXGraphPageBuilder;
+import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -246,14 +246,31 @@ public class JSONBuilder {
             + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
   }
 
-  public static String[] createJSXGraphIFrame(String html, String manipulateStr) {
-    //    html = IOFunctions.templateRender(html, new String[] {manipulateStr});
-    html = JSXGraphPageBuilder.build(html, manipulateStr);
+  public static String[] createMathcellIFrame(String html, String manipulateStr) {
+    html = JSBuilder.buildMathcell(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);
     return createJSONJavaScript(
         "<iframe srcdoc=\""
             + html
-            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+  }
+
+  public static String[] createJSXGraphIFrame(String html, String manipulateStr) {
+    html = JSBuilder.buildJSXGraph(html, manipulateStr);
+    html = StringEscapeUtils.escapeHtml4(html);
+    return createJSONJavaScript(
+        "<iframe srcdoc=\""
+            + html
+            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+  }
+
+  public static String[] createPlotlyIFrame(String html, String manipulateStr) {
+    html = JSBuilder.buildPlotly(html, manipulateStr);
+    html = StringEscapeUtils.escapeHtml4(html);
+    return createJSONJavaScript(
+        "<iframe srcdoc=\""
+            + html
+            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" scrolling=\"no\"></iframe>");
   }
 
   protected static final String MATHCELL_IFRAME = //

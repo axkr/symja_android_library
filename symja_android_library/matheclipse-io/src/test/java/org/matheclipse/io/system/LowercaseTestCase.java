@@ -18690,121 +18690,73 @@ public class LowercaseTestCase extends AbstractTestCase {
     // Mathcell syntax / generate TeX for MathJAX
     check(
         "JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
-        "MathCell( id, [ { type: 'slider', min: 1.0, max: 5.0, step: 1.0, name: 'n', label: 'n' }\n"
-            + //
-            " ] );\n"
-            + //
-            "\n"
-            + //
-            "parent.update = function( id ) {\n"
-            + //
-            "\n"
-            + //
-            "var n = getVariable(id, 'n');\n"
-            + //
-            "\n"
-            + //
-            "\n"
-            + //
-            "var expressions = [ '1+x',\n"
-            + //
-            "'1+{x}^{2}',\n"
-            + //
-            "'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2}\\\\\\\\right) ',\n"
-            + //
-            "'1+{x}^{4}',\n"
-            + //
-            "'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2} - {x}^{3}+{x}^{4}\\\\\\\\right) ' ];\n"
-            + //
-            "\n"
-            + //
-            "  var data = '\\\\\\\\[' + expressions[Math.trunc((n-1.0)/1.0)] + '\\\\\\\\]';\n"
-            + //
-            "\n"
-            + //
-            "  data = data.replace( /\\\\\\\\/g, '&#92;' );\n"
-            + //
-            "\n"
-            + //
-            "  var config = {type: 'text', center: true };\n"
-            + //
-            "\n"
-            + //
-            "  evaluate( id, data, config );\n"
-            + //
-            "\n"
-            + //
-            "  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n"
-            + //
-            "\n"
-            + //
-            "}");
+        "var parent = document.currentScript.parentNode;\n"
+            + "var id = generateId();\n"
+            + "parent.id = id;\n"
+            + "MathCell( id, [ { type: 'slider', min: 1.0, max: 5.0, step: 1.0, name: 'n', label: 'n' }\n"
+            + " ] );\n"
+            + "\n"
+            + "parent.update = function( id ) {\n"
+            + "\n"
+            + "var n = getVariable(id, 'n');\n"
+            + "\n"
+            + "\n"
+            + "var expressions = [ '1+x',\n"
+            + "'1+{x}^{2}',\n"
+            + "'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2}\\\\\\\\right) ',\n"
+            + "'1+{x}^{4}',\n"
+            + "'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2} - {x}^{3}+{x}^{4}\\\\\\\\right) ' ];\n"
+            + "\n"
+            + "  var data = '\\\\\\\\[' + expressions[Math.trunc((n-1.0)/1.0)] + '\\\\\\\\]';\n"
+            + "\n"
+            + "  data = data.replace( /\\\\\\\\/g, '&#92;' );\n"
+            + "\n"
+            + "  var config = {type: 'text', center: true };\n"
+            + "\n"
+            + "  evaluate( id, data, config );\n"
+            + "\n"
+            + "  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n"
+            + "\n"
+            + "}\n"
+            + "parent.update( id );\n"
+            + "");
     // JSXGraph.org syntax
     check(
         "JSForm(ListPlot(Prime(Range(25))))", //
         "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.85,102.3,27.85,-3.3]});\n"
-            + //
-            "board.suspendUpdate();\n"
-            + //
-            "\n"
-            + //
-            "board.create('point', [function() {return 1;},function() {return 2;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.suspendUpdate();\n"
+            + "\n"
+            + "board.create('point', [function() {return 1;},function() {return 2;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
             + //
             "board.create('point', [function() {return 2;},function() {return 3;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 3;},function() {return 5;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 4;},function() {return 7;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 5;},function() {return 11;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 6;},function() {return 13;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 7;},function() {return 17;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 3;},function() {return 5;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 4;},function() {return 7;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 5;},function() {return 11;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 6;},function() {return 13;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 7;},function() {return 17;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
             + //
             "board.create('point', [function() {return 8;},function() {return 19;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 9;},function() {return 23;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 10;},function() {return 29;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 11;},function() {return 31;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 12;},function() {return 37;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 13;},function() {return 41;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 14;},function() {return 43;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 15;},function() {return 47;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 16;},function() {return 53;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 17;},function() {return 59;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 18;},function() {return 61;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 19;},function() {return 67;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 20;},function() {return 71;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 21;},function() {return 73;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 22;},function() {return 79;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 23;},function() {return 83;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 24;},function() {return 89;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "board.create('point', [function() {return 25;},function() {return 97;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
-            + //
-            "\n"
-            + //
-            "\n"
-            + //
-            "board.unsuspendUpdate();\n"
-            + //
-            "");
+            + "board.create('point', [function() {return 9;},function() {return 23;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 10;},function() {return 29;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 11;},function() {return 31;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 12;},function() {return 37;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 13;},function() {return 41;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 14;},function() {return 43;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 15;},function() {return 47;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 16;},function() {return 53;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 17;},function() {return 59;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 18;},function() {return 61;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 19;},function() {return 67;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 20;},function() {return 71;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 21;},function() {return 73;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 22;},function() {return 79;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 23;},function() {return 83;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 24;},function() {return 89;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "board.create('point', [function() {return 25;},function() {return 97;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\n"
+            + "\n"
+            + "\n"
+            + "board.unsuspendUpdate();\n"
+            + "");
     check(
         "JSForm((x+y)^-1)", //
         "1.0/(x+y)");

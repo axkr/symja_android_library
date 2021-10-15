@@ -37,6 +37,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
+import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -648,8 +649,11 @@ public class Pods {
     if ((formats & MATHCELL) != 0x00) {
       if (plainText != null && plainText.length() > 0) {
         try {
-          String html = MATHCELL_IFRAME;
-          html = StringUtils.replace(html, "`1`", plainText);
+          String html =
+              JSBuilder.buildMathcell(
+                  JSBuilder.MATHCELL_IFRAME_TEMPLATE, plainText);
+          //          String html = MATHCELL_IFRAME;
+          //          html = StringUtils.replace(html, "`1`", plainText);
           html = StringEscapeUtils.escapeHtml4(html);
           html =
               "<iframe srcdoc=\""
@@ -667,8 +671,11 @@ public class Pods {
     if ((formats & JSXGRAPH) != 0x00) {
       if (plainText != null && plainText.length() > 0) {
         try {
-          String html = JSXGRAPH_IFRAME;
-          html = StringUtils.replace(html, "`1`", plainText);
+          String html =
+              JSBuilder.buildJSXGraph(
+                  JSBuilder.JSXGRAPH_IFRAME_TEMPLATE, plainText);
+          //          String html = JSXGRAPH_IFRAME;
+          //          html = StringUtils.replace(html, "`1`", plainText);
           html = StringEscapeUtils.escapeHtml4(html);
           html =
               "<iframe srcdoc=\""
@@ -687,8 +694,11 @@ public class Pods {
     if ((formats & PLOTLY) != 0x00) {
       if (plainText != null && plainText.length() > 0) {
         try {
-          String html = PLOTLY_IFRAME;
-          html = StringUtils.replace(html, "`1`", plainText);
+          String html =
+              JSBuilder.buildPlotly(
+                  JSBuilder.PLOTLY_IFRAME_TEMPLATE, plainText);
+          //          String html = PLOTLY_IFRAME;
+          //          html = StringUtils.replace(html, "`1`", plainText);
           html = StringEscapeUtils.escapeHtml4(html);
           html =
               "<iframe srcdoc=\""

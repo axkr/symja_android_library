@@ -4,9 +4,10 @@ import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.builtin.ManipulateFunction;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.form.output.JSXGraphPageBuilder;
+import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -24,7 +25,7 @@ public abstract class BasePlotExample {
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.USE_VISJS = true;
     Config.FILESYSTEM_ENABLED = true;
-
+    ManipulateFunction.AUTOSIZE = false;
     IOInit.init();
   }
 
@@ -42,8 +43,11 @@ public abstract class BasePlotExample {
         String js;
         if (result.second().toString().equals("mathcell")) {
           String manipulateStr = ((IAST) result).arg1().toString();
-          js = Config.MATHCELL_PAGE;
-          js = StringUtils.replace(js, "`1`", manipulateStr);
+          js =
+              JSBuilder.buildMathcell(
+                  JSBuilder.MATHCELL_TEMPLATE, manipulateStr);
+          //          js = Config.MATHCELL_PAGE;
+          //          js = StringUtils.replace(js, "`1`", manipulateStr);
         } else if (result.second().toString().equals("treeform")) {
           String manipulateStr = ((IAST) result).arg1().toString();
           js = Config.VISJS_PAGE;
@@ -76,11 +80,14 @@ public abstract class BasePlotExample {
           js = StringUtils.replace(js, "`1`", jsStr);
         } else if (result.second().toString().equals("plotly")) {
           String manipulateStr = ((IAST) result).arg1().toString();
-          js = Config.PLOTLY_PAGE;
-          js = StringUtils.replace(js, "`1`", manipulateStr);
+          js = JSBuilder.buildPlotly(JSBuilder.PLOTLY_TEMPLATE, manipulateStr);
+          //          js = Config.PLOTLY_PAGE;
+          //          js = StringUtils.replace(js, "`1`", manipulateStr);
         } else {
           String manipulateStr = ((IAST) result).arg1().toString();
-          js = JSXGraphPageBuilder.build(JSXGraphPageBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
+          js =
+              JSBuilder.buildJSXGraph(
+                  JSBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
         }
         System.out.println(js);
         F.openHTMLOnDesktop(js);

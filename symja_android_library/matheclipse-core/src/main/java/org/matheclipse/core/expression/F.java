@@ -99,7 +99,7 @@ import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
-import org.matheclipse.core.form.output.JSXGraphPageBuilder;
+import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -176,7 +176,7 @@ public class F extends S {
   /**
    * The map for predefined strings for the {@link IExpr#internalFormString(boolean, int)} method.
    */
-  private static final Map<String, String> PREDEFINED_INTERNAL_FORM_STRINGS =
+  public static final Map<String, String> PREDEFINED_INTERNAL_FORM_STRINGS =
       FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build();
 
   public static String getPredefinedInternalFormString(String key) {
@@ -1712,6 +1712,10 @@ public class F extends S {
     return new AST2(AbsoluteCorrelation, a0, a1);
   }
 
+  public static IASTMutable AddSides(final IExpr equationOrInequality, final IExpr a1) {
+    return new AST2(AddSides, equationOrInequality, a1);
+  }
+
   public static IAST Alternatives(final IExpr... a) {
     return function(Alternatives, a);
   }
@@ -1828,6 +1832,10 @@ public class F extends S {
    */
   public static IASTMutable Apply(final IExpr a0, final IExpr a1) {
     return new AST2(Apply, a0, a1);
+  }
+
+  public static IASTMutable ApplySides(final IExpr a0, final IExpr equationOrInequality) {
+    return new AST2(ApplySides, a0, equationOrInequality);
   }
 
   /**
@@ -3343,6 +3351,14 @@ public class F extends S {
    */
   public static IAST Divide(final IExpr arg1, final IExpr arg2) {
     return new B2.Times(arg1, new B2.Power(arg2, CN1));
+  }
+
+  public static IASTMutable DivideSides(final IExpr equationOrInequality) {
+    return new AST1(DivideSides, equationOrInequality);
+  }
+
+  public static IASTMutable DivideSides(final IExpr equationOrInequality, final IExpr a1) {
+    return new AST2(DivideSides, equationOrInequality, a1);
   }
 
   public static IAST Divisible(final IExpr a0, final IExpr a1) {
@@ -6072,6 +6088,9 @@ public class F extends S {
     return new AST2(MultiplicativeOrder, a0, a1);
   }
 
+  public static IASTMutable MultiplySides(final IExpr equationOrInequality, final IExpr x) {
+    return new AST2(MultiplySides, equationOrInequality, x);
+  }
   /**
    * Evaluate the given expression in numeric mode
    *
@@ -7941,6 +7960,14 @@ public class F extends S {
     return new B2.Plus(x, new B2.Times(CN1, y));
   }
 
+  public static IASTMutable SubtractSides(final IExpr equationOrInequality) {
+    return new AST1(SubtractSides, equationOrInequality);
+  }
+
+  public static IASTMutable SubtractSides(final IExpr equationOrInequality, final IExpr x) {
+    return new AST2(SubtractSides, equationOrInequality, x);
+  }
+
   public static IAST Sum(final IExpr a0, final IExpr a1) {
     return new AST2(Sum, a0, a1);
   }
@@ -8835,7 +8862,7 @@ public class F extends S {
       try {
         String manipulateStr = jsFormData.arg1().toString();
         String html =
-            JSXGraphPageBuilder.build(JSXGraphPageBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
+            JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
 
 //        String manipulateStr = jsFormData.arg1().toString();
 //        String html = Config.JSXGRAPH_PAGE;

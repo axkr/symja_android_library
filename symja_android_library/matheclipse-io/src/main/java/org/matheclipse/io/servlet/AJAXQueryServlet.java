@@ -30,7 +30,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
-import org.matheclipse.core.form.output.JSXGraphPageBuilder;
+import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -303,33 +303,48 @@ public class AJAXQueryServlet extends HttpServlet {
             }
           } else if (outExpr.isAST(S.JSFormData, 3)) {
             IAST jsFormData = (IAST) outExpr;
-            if (jsFormData.arg2().toString().equals("mathcell")) {
+            String jsLibraryType = jsFormData.arg2().toString();
+            if (jsLibraryType.equals("mathcell")) {
               try {
-                return JSONBuilder.createJSONIFrame(
-                    JSONBuilder.MATHCELL_IFRAME, jsFormData.arg1().toString());
-                //                String manipulateStr = jsFormData.arg1().toString();
-                //                String html = MATHCELL_IFRAME;
-                //                html = StringUtils.replace(html, "`1`", manipulateStr);
-                //                html = StringEscapeUtils.escapeHtml4(html);
-                //                return JSONBuilder.createJSONJavaScript(
-                //                    "<iframe srcdoc=\""
-                //                        + html
-                //                        + "\" style=\"display: block; width: 100%; height: 100%;
-                // border: none;\" ></iframe>");
+                String manipulateStr =
+                    "var parent = document.currentScript.parentNode;\n"
+                        + "var id = generateId();\n"
+                        + "parent.id = id;\n"
+                        + jsFormData.arg1().toString()
+                        + "\nparent.update(id);\n";
+
+                //
+                //                + "\n"
+                //                + "var parent = document.currentScript.parentNode;\n"
+                //                + "\n"
+                //                + "var id = generateId();\n"
+                //                + "parent.id = id;\n"
+                //                + "\n"
+                //                + "`1`\n"
+                //                + "\n"
+                //                + "parent.update( id );\n"
+                //                + "\n"
+
+                return JSONBuilder.createMathcellIFrame(
+                    JSBuilder.MATHCELL_IFRAME_TEMPLATE, manipulateStr);
+
+                //                return JSONBuilder.createJSONIFrame(
+                //                    JSONBuilder.MATHCELL_IFRAME, jsFormData.arg1().toString());
+
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
-            } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
+            } else if (jsLibraryType.equals("jsxgraph")) {
               try {
                 return JSONBuilder.createJSXGraphIFrame(
-                    JSXGraphPageBuilder.JSXGRAPH_IFRAME_TEMPLATE, jsFormData.arg1().toString());
+                    JSBuilder.JSXGRAPH_IFRAME_TEMPLATE, jsFormData.arg1().toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
-            } else if (jsFormData.arg2().toString().equals("plotly")) {
+            } else if (jsLibraryType.equals("plotly")) {
               try {
                 return JSONBuilder.createJSONIFrame(
-                    JSONBuilder.PLOTLY_IFRAME, jsFormData.arg1().toString());
+                    JSBuilder.PLOTLY_IFRAME_TEMPLATE, jsFormData.arg1().toString());
                 //                String manipulateStr = jsFormData.arg1().toString();
                 //                String html = PLOTLY_IFRAME;
                 //                html = StringUtils.replace(html, "`1`", manipulateStr);
@@ -342,7 +357,7 @@ public class AJAXQueryServlet extends HttpServlet {
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
-            } else if (jsFormData.arg2().toString().equals("treeform")) {
+            } else if (jsLibraryType.equals("treeform")) {
               try {
                 String manipulateStr = jsFormData.arg1().toString();
                 String html = VISJS_IFRAME;

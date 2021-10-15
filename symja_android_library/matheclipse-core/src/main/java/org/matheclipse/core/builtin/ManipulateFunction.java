@@ -34,6 +34,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import tech.tablesaw.plotly.components.Figure;
 import tech.tablesaw.plotly.components.Layout;
+import tech.tablesaw.plotly.components.Layout.LayoutBuilder;
 import tech.tablesaw.plotly.traces.BarTrace;
 import tech.tablesaw.plotly.traces.BarTrace.Orientation;
 import tech.tablesaw.plotly.traces.BoxTrace;
@@ -44,7 +45,14 @@ import tech.tablesaw.plotly.traces.HistogramTrace;
 import tech.tablesaw.plotly.traces.PieTrace;
 
 public class ManipulateFunction {
+
   private static final Logger LOGGER = LogManager.getLogger();
+
+  public static boolean AUTOSIZE = true;
+
+  public static int WIDTH = 600;
+
+  public static int HEIGHT = 400;
 
   private static final int N = 100;
 
@@ -77,27 +85,23 @@ public class ManipulateFunction {
           "";
 
   private static final String MATHCELL = //
-      "MathCell( id, [ `1` ] );\n"
+      "var parent = document.currentScript.parentNode;\n"
+          + "var id = generateId();\n"
+          + "parent.id = id;\n"
+          + "MathCell( id, [ `1` ] );\n"
           + //
           "\n"
           + //
           "parent.update = function( id ) {\n"
-          + //
-          "\n"
-          + //
-          "`2`"
-          + //
-          "\n"
-          + //
-          "`3`"
-          + //
-          "\n"
-          + //
-          "`4`"
-          + //
-          "\n"
-          + //
-          "}";
+          + "\n"
+          + "`2`"
+          + "\n"
+          + "`3`"
+          + "\n"
+          + "`4`"
+          + "\n"
+          + "}\n"
+          + "parent.update( id );\n";
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -1811,7 +1815,7 @@ public class ManipulateFunction {
         for (int i = 0; i < colCount; i++) {
           xStrs[i] = Integer.toString(i + 1);
         }
-        Layout layout = Layout.builder().autosize(true).build();
+        Layout layout = buildLayout("MatrixPlot").build();
         HeatmapTrace trace = HeatmapTrace.builder(xStrs, yStrs, matrix).build();
         Figure figure = new Figure(layout, trace);
         return F.JSFormData(figure.asJavascript("plotly"), "plotly");
@@ -1827,7 +1831,7 @@ public class ManipulateFunction {
           strs[i] = Integer.toString(i + 1);
         }
 
-        Layout layout = Layout.builder().autosize(true).build();
+        Layout layout = buildLayout("PieChart").build();
         PieTrace trace = PieTrace.builder(strs, vector).build();
         Figure figure = new Figure(layout, trace);
         return F.JSFormData(figure.asJavascript("plotly"), "plotly");
@@ -1838,12 +1842,9 @@ public class ManipulateFunction {
     private static IExpr boxWhiskerChart(IExpr arg) {
       double[] vector = arg.toDoubleVector();
       if (vector != null && vector.length > 0) {
-        double[] strs = new double[vector.length];
-        for (int i = 0; i < vector.length; i++) {
-          strs[i] = i + 1;
-        }
-        Layout layout = Layout.builder().autosize(true).build();
-        BoxTrace trace = BoxTrace.builder(strs, vector).build();
+        Layout layout = buildLayout("BoxWhiskerChart").build();
+
+        BoxTrace trace = BoxTrace.builder((String[]) null, vector).build();
         Figure figure = new Figure(layout, trace);
         return F.JSFormData(figure.asJavascript("plotly"), "plotly");
       }
@@ -1865,10 +1866,7 @@ public class ManipulateFunction {
         for (int i = 0; i < vector.length; i++) {
           strs[i] = Integer.toString(i + 1);
         }
-
-        Layout layout = Layout.builder().autosize(true).build();
-        // BarBuilder barBuilder = BarTrace.builder(strs, vector).orientation(Orientation.VERTICAL)
-
+        Layout layout = buildLayout("BarChart").build();
         BarTrace trace = BarTrace.builder(strs, vector).orientation(orientation).build();
         Figure figure = new Figure(layout, trace);
         return F.JSFormData(figure.asJavascript("plotly"), "plotly");
@@ -1876,11 +1874,24 @@ public class ManipulateFunction {
       return F.NIL;
     }
 
+    private static LayoutBuilder buildLayout(String chartType) {
+      if (AUTOSIZE) {
+        return Layout.builder(chartType).autosize(true).width(WIDTH).height(HEIGHT);
+      }
+      return Layout.builder(chartType).autosize(false);
+    }
+
+    private static LayoutBuilder buildLayout(String chartType, String xTitle, String yTitle) {
+      if (AUTOSIZE) {
+        return Layout.builder(chartType, xTitle, yTitle).autosize(true).width(WIDTH).height(HEIGHT);
+      }
+      return Layout.builder(chartType, xTitle, yTitle).autosize(false);
+    }
+
     private static IExpr histogram(IExpr arg1) {
       double[] vector = arg1.toDoubleVectorIgnore();
       if (vector != null && vector.length > 0) {
-        Layout layout = Layout.builder().autosize(true).build(); // .title("Histogram").build();
-
+        Layout layout = buildLayout("Histogram").build();
         HistogramTrace trace = HistogramTrace.builder(vector).build();
         Figure figure = new Figure(layout, trace);
         // Plot.show(figure);
@@ -1908,11 +1919,8 @@ public class ManipulateFunction {
                 && vector2.length > 0) {
               Histogram2DBuilder builder = Histogram2DTrace.builder(vector1, vector2);
               // builder.opacity(opacity);
-
-              Figure figure =
-                  new Figure(
-                      Layout.builder("Histogram", "x", "y").autosize(true).build(),
-                      builder.build());
+              Layout layout = buildLayout("DensityHistogram", "x", "y").build();
+              Figure figure = new Figure(layout, builder.build());
               return F.JSFormData(figure.asJavascript("plotly"), "plotly");
             }
           }
@@ -1933,8 +1941,10 @@ public class ManipulateFunction {
   private static final class BoxWhiskerChart extends AbstractEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return redirectToManipulate(ast, engine);
       // "Function `1` not implemented.", //
-      return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.List(ast.topHead()), engine);
+      //      return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.List(ast.topHead()),
+      // engine);
       // return redirectToManipulate(ast, engine);
     }
   }
