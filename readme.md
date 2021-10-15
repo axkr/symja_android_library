@@ -206,22 +206,12 @@ How to use Maven is described in the [Maven wiki page](https://github.com/axkr/s
 
 ### Getting started
 
-First, you'll need a Java Development Kit compatible with Java 11 or later.
+First, you'll need a Java Development Kit (JDK) compatible with Java 11 or later.
 
-You can find JDK installers at:
-
-* https://www.oracle.com/java/technologies/downloads/#java11
-
-If you're unsure how to install the JDK, you can find instructions for
-all operating systems here: 
-
-* https://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html
-
-Pay careful attention to anything about setting up your `PATH` or `CLASSPATH`.
-
+The Integrated Development Environment (IDE) Eclipse has a suitable in JDK already built-in, so you don't have to install Java by yourself.
 Install and open the latest version of the Eclipse development IDE for Java Developers:
 
-* http://www.eclipse.org/downloads/packages/
+* https://www.eclipse.org/downloads/packages/
 
 ### Github GIT
 
