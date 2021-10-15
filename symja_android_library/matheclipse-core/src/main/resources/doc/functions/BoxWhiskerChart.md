@@ -8,6 +8,10 @@ BoxWhiskerChart( )
 
 ### Examples
  
+```
+>> BoxWhiskerChart(RandomVariate(NormalDistribution(0, 1), 50))
+
+```
 
 ### Github
 
