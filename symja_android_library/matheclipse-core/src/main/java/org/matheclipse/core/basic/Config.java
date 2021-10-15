@@ -67,6 +67,7 @@ public class Config {
    */
   public static final int MAX_FACTOR_LEAFCOUNT = 1000;
 
+  public static int MAX_GRAPH_VERTICES_SIZE = 100;
   /**
    * Maximum number for the leaf count of an expression so that <code>PossibleZeroQ()</code> will
    * try a factoring. Has to be an int value greater 0.

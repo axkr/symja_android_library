@@ -32,7 +32,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
-
+ 
 /** Functions for graph theory algorithms. */
 public class GraphDataFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -125,7 +125,7 @@ public class GraphDataFunctions {
         // Positive machine-sized integer expected at position `2` in `1`
         return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
       }
-      if (order > Config.MAX_AST_SIZE) {
+      if (order > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(order);
       }
 
@@ -164,7 +164,7 @@ public class GraphDataFunctions {
         // Positive machine-sized integer expected at position `2` in `1`
         return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
       }
-      if (order > Config.MAX_AST_SIZE) {
+      if (order > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(order);
       }
 
@@ -204,7 +204,7 @@ public class GraphDataFunctions {
         // Positive machine-sized integer expected at position `2` in `1`
         return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
       }
-      if (order > Config.MAX_AST_SIZE) {
+      if (order > Config.MAX_GRAPH_VERTICES_SIZE / 10) {
         ASTElementLimitExceeded.throwIt(order);
       }
 
@@ -219,8 +219,6 @@ public class GraphDataFunctions {
                 .vertexSupplier(new IntegerSupplier(1))
                 .edgeClass(ExprEdge.class) //
                 .buildGraph();
-        //          Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
-        // ExprEdge>(ExprEdge.class);
         gen.generateGraph(target);
         return GraphExpr.newInstance(target);
       } catch (RuntimeException rex) {
@@ -243,6 +241,7 @@ public class GraphDataFunctions {
         // The argument `2`  in  `1`  is not valid. 0 or 2 arguments expected.
         return IOFunctions.printMessage(ast.topHead(), "inv", F.List(ast, ast.arg1()), engine);
       }
+
       if (ast.isAST0()) {
         Graph<IExpr, ExprEdge> target =
             GraphTypeBuilder //
@@ -307,7 +306,7 @@ public class GraphDataFunctions {
           // Positive machine-sized integer expected at position `2` in `1`
           return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast.arg1(), F.C1), engine);
         }
-        if (vertices > Config.MAX_AST_SIZE) {
+        if (vertices > Config.MAX_GRAPH_VERTICES_SIZE) {
           ASTElementLimitExceeded.throwIt(vertices);
         }
 
@@ -375,7 +374,7 @@ public class GraphDataFunctions {
         // Positive machine-sized integer expected at position `2` in `1`
         return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
       }
-      if (order > Config.MAX_AST_SIZE) {
+      if (order > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(order);
       }
 
@@ -415,7 +414,7 @@ public class GraphDataFunctions {
         // Positive machine-sized integer expected at position `2` in `1`
         return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
       }
-      if (order > Config.MAX_AST_SIZE) {
+      if (order > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(order);
       }
 
