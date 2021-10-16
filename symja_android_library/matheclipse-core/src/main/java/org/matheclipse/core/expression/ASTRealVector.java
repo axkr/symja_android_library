@@ -413,6 +413,17 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
     return true;
   }
 
+  /**
+   * Append a String composed of the elements of this vector joined together with the specified
+   * {@code delimiter}.
+   *
+   * @param builder join the elements as strings
+   * @param delimiter the delimiter that separates each element
+   */
+  public void joinToString(StringBuilder builder, CharSequence delimiter) {
+    Convert.joinToString(vector.toArray(), builder, delimiter);
+  }
+
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
     this.fEvalFlags = objectInput.readShort();

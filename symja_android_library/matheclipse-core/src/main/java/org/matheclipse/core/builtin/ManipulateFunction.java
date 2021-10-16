@@ -37,7 +37,6 @@ import tech.tablesaw.plotly.components.Layout;
 import tech.tablesaw.plotly.components.Layout.LayoutBuilder;
 import tech.tablesaw.plotly.traces.BarTrace;
 import tech.tablesaw.plotly.traces.BarTrace.Orientation;
-import tech.tablesaw.plotly.traces.BoxTrace;
 import tech.tablesaw.plotly.traces.HeatmapTrace;
 import tech.tablesaw.plotly.traces.Histogram2DTrace;
 import tech.tablesaw.plotly.traces.Histogram2DTrace.Histogram2DBuilder;
@@ -1840,13 +1839,45 @@ public class ManipulateFunction {
     }
 
     private static IExpr boxWhiskerChart(IExpr arg) {
+      if (arg.isListOfLists()) {
+        IAST listOfLists = (IAST) arg;
+        StringBuilder buf = new StringBuilder();
+        for (int i = 1; i < listOfLists.size(); i++) {
+          buf.append("var y" + i);
+          buf.append("=[");
+          double[] vector = listOfLists.get(i).toDoubleVector();
+          if (vector != null && vector.length > 0) {
+            Convert.joinToString(vector, buf, ",");
+            buf.append("];\n");
+            buf.append("var trace" + i);
+            buf.append(" = {y: y" + i);
+            buf.append(", type: 'box'};\n");
+          } else {
+            return F.NIL;
+          }
+        }
+        buf.append("var data = [");
+        for (int i = 1; i < listOfLists.size(); i++) {
+          buf.append("trace" + i);
+          if (i < listOfLists.size() - 1) {
+            buf.append(",");
+          }
+        }
+        buf.append("];\n");
+        buf.append("Plotly.newPlot('plotly', data);");
+        return F.JSFormData(buf.toString(), "plotly");
+      }
       double[] vector = arg.toDoubleVector();
       if (vector != null && vector.length > 0) {
-        Layout layout = buildLayout("BoxWhiskerChart").build();
-
-        BoxTrace trace = BoxTrace.builder((String[]) null, vector).build();
-        Figure figure = new Figure(layout, trace);
-        return F.JSFormData(figure.asJavascript("plotly"), "plotly");
+        StringBuilder buf = new StringBuilder();
+        buf.append("var y1=[");
+        Convert.joinToString(vector, buf, ",");
+        buf.append("];\n");
+        buf.append(
+            "var trace1 = {y: y1, type: 'box'};\n" //
+                + "var data = [trace1];\n"
+                + "Plotly.newPlot('plotly', data);");
+        return F.JSFormData(buf.toString(), "plotly");
       }
       return F.NIL;
     }

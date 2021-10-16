@@ -352,6 +352,24 @@ public class Convert {
   }
 
   /**
+   * Append a String composed of the elements of the {@code vector} joined together with the
+   * specified {@code delimiter}.
+   *
+   * @param vector the vector which should be appended
+   * @param builder join the elements as strings
+   * @param delimiter the delimiter that separates each element
+   */
+  public static void joinToString(double[] vector, StringBuilder builder, CharSequence delimiter) {
+    final int size = vector.length;
+    for (int i = 0; i < size; i++) {
+      builder.append(Double.toString(vector[i]));
+      if (i < size - 1) {
+        builder.append(delimiter);
+      }
+    }
+  }
+
+  /**
    * Returns a RealMatrix if possible.
    *
    * @param listMatrix
