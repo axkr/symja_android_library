@@ -456,9 +456,7 @@ public class ManipulateFunction {
         }
         complexPlot3D(listOfFunctions, plotRangeX, graphicControl, optionPlotRange, toJS);
       } else {
-        if (plotID == ID.ParametricPlot
-            || //
-            plotID == ID.PolarPlot) {
+        if (plotID == ID.ParametricPlot || plotID == ID.PolarPlot) {
           parametricPlot(listOfFunctions, plotRangeX, plotSymbolX, graphicControl, toJS);
         } else {
           for (int i = 1; i < listOfFunctions.size(); i++) {
@@ -988,7 +986,7 @@ public class ManipulateFunction {
             return F.NIL;
           }
         } else if (plot.isAST(S.Plot) //
-            || plot.isAST(S.ParametricPlot) //
+            || plot.isAST(S.ParametricPlot)
             || plot.isAST(S.PolarPlot)) {
 
           if (plot.size() < 3 || !plot.arg2().isList3() || !plot.arg2().first().isSymbol()) {
@@ -1112,7 +1110,7 @@ public class ManipulateFunction {
           } catch (RuntimeException rex) {
           }
         } else if (plotRangeY.isReal()) {
-          if ((plotID == ID.Plot)
+          if ((plotID == ID.Plot) //
               || (plotID == ID.ParametricPlot //
                   || plotID == ID.PolarPlot)) {
             try {
@@ -1943,11 +1941,7 @@ public class ManipulateFunction {
             // }
             double[] vector1 = m.getColumn(0);
             double[] vector2 = m.getColumn(1);
-            if (vector1 != null
-                && vector1.length > 0
-                && //
-                vector2 != null
-                && vector2.length > 0) {
+            if (vector1 != null && vector1.length > 0 && vector2 != null && vector2.length > 0) {
               Histogram2DBuilder builder = Histogram2DTrace.builder(vector1, vector2);
               // builder.opacity(opacity);
               Layout layout = buildLayout("DensityHistogram", "x", "y").build();
