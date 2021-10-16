@@ -719,6 +719,8 @@ public class IOFunctions {
     "Overflow occurred in computation.", //
     "padlevel",
     "The padding specification `1` involves `2` levels; the list `3` has only `4` level.", //
+    "pairs",
+    "The first argument `1` of `2` is not a list of pairs.", //
     "partd",
     "Part specification `1` is longer than depth of object.", //
     "partw",

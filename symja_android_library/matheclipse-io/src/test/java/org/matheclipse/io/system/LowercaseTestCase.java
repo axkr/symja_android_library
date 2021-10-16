@@ -26198,6 +26198,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPiecewise() {
+    // message Piecewise: The first argument x of Piecewise is not a list of pairs.
+    check(
+        "Piecewise(x)", //
+        "Piecewise(x)");
     check(
         "Piecewise({{(-1)^(1+n)/n,n>=1},{0,n==0}},0)", //
         "Piecewise({{(-1)^(1+n)/n,n>=1}},0)");

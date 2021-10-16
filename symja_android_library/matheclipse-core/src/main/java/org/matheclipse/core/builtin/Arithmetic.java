@@ -2692,9 +2692,9 @@ public final class Arithmetic {
           }
           return F.C0;
         }
-        LOGGER.log(engine.getLogLevel(),
-            "Piecewise: Matrix with row-dimension > 0 and column-dimension == 2 expected!");
-        return F.NIL;
+        // The first argument `1` of `2` is not a list of pairs.
+        return IOFunctions.printMessage(
+            ast.topHead(), "pairs", F.List(arg1, ast.topHead()), engine);
       }
       IAST matrix = (IAST) arg1;
       IExpr defaultValue = F.C0;
@@ -4678,8 +4678,8 @@ public final class Arithmetic {
           IInteger numerator = (IInteger) numeratorExpr;
           IInteger denominator = (IInteger) denominatorExpr;
           if (denominator.isZero()) {
-            LOGGER.log(engine.getLogLevel(), "Division by zero expression: {}/{}", numerator,
-                denominator);
+            LOGGER.log(
+                engine.getLogLevel(), "Division by zero expression: {}/{}", numerator, denominator);
             if (numerator.isZero()) {
               // 0^0
               return S.Indeterminate;
