@@ -6794,20 +6794,22 @@ public final class ListFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
-      if (ast.size() == 2) {
+      if (ast.isAST1()) {
         int n = arg1.toIntDefault(-1);
-        if (n < 0 || n == 0) {
-          LOGGER.log(engine.getLogLevel(), "Subdivide: argument 1 should be a positive integer.");
-          return F.NIL;
+        if (n <= 0) {
+          // The number of subdivisions given in position `1` of `2` should be a positive
+          // machine-sized integer.
+          return IOFunctions.printMessage(S.Subdivide, "sdmint", F.List(F.C1, ast), engine);
         }
         return Range.range(0, n + 1).map(x -> x.divide(arg1), 1);
       }
       IExpr arg2 = ast.arg2();
-      if (ast.size() == 3) {
+      if (ast.isAST2()) {
         int n = arg2.toIntDefault(-1);
-        if (n < 0 || n == 0) {
-          LOGGER.log(engine.getLogLevel(), "Subdivide: argument 2 should be a positive integer.");
-          return F.NIL;
+        if (n <= 0) {
+          // The number of subdivisions given in position `1` of `2` should be a positive
+          // machine-sized integer.
+          return IOFunctions.printMessage(S.Subdivide, "sdmint", F.List(F.C2, ast), engine);
         }
         IAST factorList = Range.range(0, n + 1).map(x -> x.divide(arg2), 1);
         return factorList.map(x -> arg1.times(x), 1);
@@ -6820,9 +6822,10 @@ public final class ListFunctions {
       }
       IExpr arg3 = ast.arg3();
       int n = arg3.toIntDefault(-1);
-      if (n < 0 || n == 0) {
-        LOGGER.log(engine.getLogLevel(), "Subdivide: argument 3 should be a positive integer.");
-        return F.NIL;
+      if (n <= 0) {
+        // The number of subdivisions given in position `1` of `2` should be a positive
+        // machine-sized integer.
+        return IOFunctions.printMessage(S.Subdivide, "sdmint", F.List(F.C3, ast), engine);
       }
       IAST factorList = Range.range(0, n + 1).map(x -> x.divide(arg3), 1);
       return factorList.map(x -> arg1.plus(arg2.times(x).subtract(arg1.times(x))), 1);

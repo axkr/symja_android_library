@@ -35235,13 +35235,22 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testSubdivide() {
-
     // print: $IterationLimit: Iteration limit of 500 exceeded.
     // TODO
     // check(
     // "Subdivide(3/4,Quantity(1.2,\"m\"),11)", //
     // "{3/4+0[m],0,0,0,0,0,0,0,0,0,0,1.2[m]}");
 
+    // message: Subdivide: The number of subdivisions given in position 3 of Subdivide(a,b,-1)
+    // should be a positive machine-sized integer.
+    check(
+        "Subdivide(a,b,-1)", //
+        "Subdivide(a,b,-1)");
+
+    // TODO result should be {{x,y,z},{a/2+x/2,a/2+y/2,a/2+z/2},a}
+    check(
+        "Subdivide({x,y,z}, a, 2)", //
+        "{{x,y,z},{a/2+x/2,a/2+y/2,a/2+z/2},{a,a,a}}");
     check(
         "Subdivide(N(E,21),E^(Pi*I*1/3),4)", //
         "{2.71828182845904523536," //

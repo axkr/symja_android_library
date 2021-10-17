@@ -795,6 +795,8 @@ public class IOFunctions {
     "Input `1` is not a real-valued vector.", //
     "rubiendless",
     "Endless iteration detected in `1` for Rubi pattern-matching rules.", //
+    "sdmint",
+    "The number of subdivisions given in position `1` of `2` should be a positive machine-sized integer.", //
     "seqs",
     "Sequence specification expected, but got `1`.", //
     "setp",
