@@ -134,7 +134,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import edu.jas.kern.ComputerThreads;
 import edu.jas.kern.PreemptStatus;
- 
+
 /** Factory for creating Symja predefined function expression objects (interface {@link IAST}). */
 public class F extends S {
 
@@ -189,6 +189,7 @@ public class F extends S {
   public static IPattern getPredefinedPattern(String key) {
     return PREDEFINED_PATTERN_MAP.get(key);
   }
+
   private static final Map<String, IPatternSequence> PREDEFINED_PATTERNSEQUENCE_MAP =
       Config.TRIE_STRING2PATTERNSEQUENCE_BUILDER.withMatch(TrieMatch.EXACT).build();
 
@@ -1035,10 +1036,10 @@ public class F extends S {
       AttributeFunctions.initialize();
 
       createInverseFunctionMap();
-      DENOMINATOR_NUMERATOR_SYMBOLS = Collections
-          .unmodifiableList(java.util.Arrays.asList(Sin, Cos, Tan, Csc, Sec, Cot));
-      DENOMINATOR_TRIG_TRUE_EXPRS = Collections
-          .unmodifiableList(java.util.Arrays.asList(C1, C1, Cos, Sin, Cos, Sin));
+      DENOMINATOR_NUMERATOR_SYMBOLS =
+          Collections.unmodifiableList(java.util.Arrays.asList(Sin, Cos, Tan, Csc, Sec, Cot));
+      DENOMINATOR_TRIG_TRUE_EXPRS =
+          Collections.unmodifiableList(java.util.Arrays.asList(C1, C1, Cos, Sin, Cos, Sin));
 
       NUMERATOR_NUMERATOR_SYMBOLS =
           Collections.unmodifiableList(java.util.Arrays.asList(Sin, Cos, Tan, Csc, Sec, Cot));
@@ -8843,8 +8844,7 @@ public class F extends S {
     if (jsFormData.arg2().toString().equals("mathcell")) {
       try {
         String manipulateStr = jsFormData.arg1().toString();
-        String html = Config.MATHCELL_PAGE;
-        html = StringUtils.replace(html, "`1`", manipulateStr);
+        String html = JSBuilder.buildMathcell(JSBuilder.MATHCELL_TEMPLATE, manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
         LOGGER.debug("F.printJSFormData() failed", ex);
@@ -8861,12 +8861,7 @@ public class F extends S {
     } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
       try {
         String manipulateStr = jsFormData.arg1().toString();
-        String html =
-            JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
-
-//        String manipulateStr = jsFormData.arg1().toString();
-//        String html = Config.JSXGRAPH_PAGE;
-//        html = StringUtils.replace(html, "`1`", manipulateStr);
+        String html = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
         LOGGER.debug("F.printJSFormData() failed", ex);
@@ -8874,8 +8869,7 @@ public class F extends S {
     } else if (jsFormData.arg2().toString().equals("plotly")) {
       try {
         String manipulateStr = jsFormData.arg1().toString();
-        String html = Config.PLOTLY_PAGE;
-        html = StringUtils.replace(html, "`1`", manipulateStr);
+        String html = JSBuilder.buildPlotly(JSBuilder.PLOTLY_TEMPLATE, manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
         LOGGER.debug("F.printJSFormData() failed", ex);

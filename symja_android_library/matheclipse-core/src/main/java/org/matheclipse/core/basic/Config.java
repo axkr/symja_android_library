@@ -645,40 +645,6 @@ public class Config {
           + //
           "</html>"; //
 
-  /**
-   * HTML template for the <a href="https://github.com/paulmasson/mathcell">MathCell</a> and <a
-   * href="https://github.com/paulmasson/math">Math</a> JavaScript libraries.
-   */
-  public static final String MATHCELL_PAGE = //
-      "<html>\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>MathCell</title>\n"
-          + "</head>\n"
-          + "\n"
-          + "<body>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.6/build/math.js\"></script>"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.2/build/mathcell.js\"></script>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
-          + "\n"
-          + "<div class=\"mathcell\" style=\"width: 100%; height: 100%; padding: .25in .5in .5in .5in;\">\n"
-          + "<script>\n"
-          + "\n"
-          + "var parent = document.currentScript.parentNode;\n"
-          + "\n"
-          + "var id = generateId();\n"
-          + "parent.id = id;\n"
-          + "\n"
-          + "`1`\n"
-          + "\n"
-          + "parent.update( id );\n"
-          + "\n"
-          + "</script>\n"
-          + "</div>\n"
-          + "\n"
-          + "</body>\n"
-          + "</html>"; //
-
   public static final String SVG_PAGE = //
       "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"-0.333333 -0.333333 350.666667 350.666667\" width=\"350.6666666px\" height=\"350.6666666px\">\n"
           + "`1`\n"
@@ -706,20 +672,6 @@ public class Config {
           + "            document.getElementById('graphics3d'),`1`);\n"
           + "    </script>\n"
           + "</body>"; //
-
-  /** HTML template for Plotly */
-  public static final String PLOTLY_PAGE = //
-      "<html>\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>Plotly</title>\n"
-          + "    <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\r\n"
-          + "</head>\r\n"
-          + "<body>\n"
-          + "    <div id='plotly' ></div>"
-          + "`1`\n"
-          + "</body>\n"
-          + "</html>"; //
 
   /** HTML template */
   public static final String HTML_PAGE = //
