@@ -591,16 +591,18 @@ public class EvalAttributes {
             // EvalEngine.get()));
           }
         } else if (listHead == S.SparseArray) {
-          if (ast.get(i).isList() || ast.get(i).isSparseArray()) {
-            if (ast.get(i).isList()) {
-              final IAST arg = (IAST) ast.get(i);
-              subResult.set(i, arg.get(j));
-            } else if (ast.get(i).isSparseArray()) {
-              final ISparseArray arg = (ISparseArray) ast.get(i);
-              subResult.set(i, arg.get(j));
-              // subResult.set(i, Programming.sparsePart(arg, F.Part(arg, F.ZZ(j)), 2,
-              // EvalEngine.get()));
+          if (ast.get(i).isList()) {
+            final IAST arg = (IAST) ast.get(i);
+            if (j >= arg.size()) {
+              return F.NIL;
             }
+            subResult.set(i, arg.get(j));
+          } else if (ast.get(i).isSparseArray()) {
+            final ISparseArray arg = (ISparseArray) ast.get(i);
+            if (j >= arg.size()) {
+              return F.NIL;
+            }
+            subResult.set(i, arg.get(j));
           } else {
             subResult.set(i, ast.get(i));
           }
