@@ -120,7 +120,7 @@ public class JSONBuilder {
   public static String[] createJSONShow(EvalEngine engine, IAST show) {
     StringBuilder stw = new StringBuilder();
     stw.append("<math><mtable><mtr><mtd>");
-    if (show.isAST() && show.size() > 1 && show.arg1().isAST(S.Graphics,2)) {
+    if (show.isAST() && show.size() > 1 && show.arg1().isAST(S.Graphics, 2)) {
       StringBuilder buf = new StringBuilder(2048);
       GraphicsFunctions.graphicsToSVG((IAST) ((IAST) show).arg1(), stw);
     }
@@ -272,62 +272,4 @@ public class JSONBuilder {
             + html
             + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" scrolling=\"no\"></iframe>");
   }
-
-  protected static final String MATHCELL_IFRAME = //
-      // "<html style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>MathCell</title>\n"
-          + "</head>\n"
-          + "\n"
-          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.6/build/math.js\"></script>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.2/build/mathcell.js\"></script>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
-          + "\n"
-          + "<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + "<script>\n"
-          + "\n"
-          + "var parent = document.currentScript.parentNode;\n"
-          + "\n"
-          + "var id = generateId();\n"
-          + "parent.id = id;\n"
-          + "\n"
-          + "`1`\n"
-          + "\n"
-          + "parent.update( id );\n"
-          + "\n"
-          + "</script>\n"
-          + "</div>\n"
-          + "\n"
-          + "</body>\n"
-          + "</html>";
-
-  protected static final String PLOTLY_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>Plotly</title>\n"
-          + "\n"
-          + "   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\n"
-          + "</head>\n"
-          + "<body>\n"
-          + "<div id='plotly' ></div>\n"
-          + "`1`\n"
-          + "</body>\n"
-          + "</html>";
 }

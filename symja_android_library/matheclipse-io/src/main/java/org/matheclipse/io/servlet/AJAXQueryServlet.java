@@ -306,31 +306,8 @@ public class AJAXQueryServlet extends HttpServlet {
             String jsLibraryType = jsFormData.arg2().toString();
             if (jsLibraryType.equals("mathcell")) {
               try {
-                String manipulateStr =
-                    "var parent = document.currentScript.parentNode;\n"
-                        + "var id = generateId();\n"
-                        + "parent.id = id;\n"
-                        + jsFormData.arg1().toString()
-                        + "\nparent.update(id);\n";
-
-                //
-                //                + "\n"
-                //                + "var parent = document.currentScript.parentNode;\n"
-                //                + "\n"
-                //                + "var id = generateId();\n"
-                //                + "parent.id = id;\n"
-                //                + "\n"
-                //                + "`1`\n"
-                //                + "\n"
-                //                + "parent.update( id );\n"
-                //                + "\n"
-
                 return JSONBuilder.createMathcellIFrame(
-                    JSBuilder.MATHCELL_IFRAME_TEMPLATE, manipulateStr);
-
-                //                return JSONBuilder.createJSONIFrame(
-                //                    JSONBuilder.MATHCELL_IFRAME, jsFormData.arg1().toString());
-
+                    JSBuilder.MATHCELL_IFRAME_TEMPLATE, jsFormData.arg1().toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
@@ -343,17 +320,8 @@ public class AJAXQueryServlet extends HttpServlet {
               }
             } else if (jsLibraryType.equals("plotly")) {
               try {
-                return JSONBuilder.createJSONIFrame(
+                return JSONBuilder.createPlotlyIFrame(
                     JSBuilder.PLOTLY_IFRAME_TEMPLATE, jsFormData.arg1().toString());
-                //                String manipulateStr = jsFormData.arg1().toString();
-                //                String html = PLOTLY_IFRAME;
-                //                html = StringUtils.replace(html, "`1`", manipulateStr);
-                //                html = StringEscapeUtils.escapeHtml4(html);
-                //                return JSONBuilder.createJSONJavaScript(
-                //                    "<iframe srcdoc=\""
-                //                        + html
-                //                        + "\" style=\"display: block; width: 100%; height: 100%;
-                // border: none;\" ></iframe>");
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
