@@ -8800,13 +8800,12 @@ public class F extends S {
       } else if (expr.isSameHeadSizeGE(Graphics3D, 2)) {
         StringBuilder buf = new StringBuilder();
         if (GraphicsFunctions.renderGraphics3D(buf, (IAST) expr, EvalEngine.get())) {
-          String jsonStr = buf.toString();
           try {
-            String html = Config.GRAPHICS3D_PAGE;
-            html = StringUtils.replace(html, "`1`", jsonStr);
+            String manipulateStr = buf.toString();
+            String html = JSBuilder.buildGraphics3D(JSBuilder.GRAPHICS3D_TEMPLATE, manipulateStr);
             return openHTMLOnDesktop(html);
           } catch (Exception ex) {
-            LOGGER.debug("F.showGraphic() failed", ex);
+            LOGGER.debug("JSBuilder.buildGraphics3D() failed", ex);
           }
         }
       } else if (expr instanceof GraphExpr) {

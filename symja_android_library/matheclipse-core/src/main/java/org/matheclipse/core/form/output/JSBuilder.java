@@ -59,6 +59,53 @@ public class JSBuilder {
           + "</body>\n"
           + "</html>";
 
+  public static final String GRAPHICS3D_IFRAME_TEMPLATE = //
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+          + "\n"
+          + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
+          + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%;margin: 0; padding: 0\">\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>Graphics3D</title>\n"
+          + "</head>\n"
+          + "\n"
+          + "<body>\n"
+          // 1 - libraries
+          + "`1`\n"
+          + "<div id=\"graphics3d\"></div>\n"
+          + "\n"
+          + "<script type=\"module\"> \n"
+          // 2 - JavaScript string
+          + "`2`\n"
+          + "</script>\n"
+          // 3 - JSFiddle string
+          + "`3`\n"
+          + "</body>"; //
+
+  /** HTML template for Graphics3D */
+  public static final String GRAPHICS3D_TEMPLATE = //
+      "<html>\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>Graphics3D</title>\n"
+          // 1 - libraries
+          + "`1`\n"
+          + "</head>\n"
+          + "<body>\n"
+          + "<div id=\"graphics3d\" style=\"width:100%; height:100%; margin: 0; padding: 0\">\n"
+          + "<script>\n"
+          // 2 - JavaScript string
+          + "`2`\n"
+          + "</script>\n"
+          // 3 - JSFiddle string
+          + "`3`\n"
+          + "</div>\n"
+          + "</body>\n"
+          + "</html>"; //
+
   public static final String JSXGRAPH_IFRAME_TEMPLATE = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
           + "\n"
@@ -153,6 +200,13 @@ public class JSBuilder {
           + "</html>"; //
 
   /** CSS libraries */
+  private static final String[] CSS_CDN_GRAPHICS3D = {};
+
+  private static final String[] JS_CDN_GRAPHICS3D = { //
+    "https://cdn.jsdelivr.net/npm/@mathicsorg/mathics-threejs-backend"
+  };
+
+  /** CSS libraries */
   private static final String[] CSS_CDN_JSXGRAPH = {
     "https://cdn.jsdelivr.net/npm/jsxgraph@1.3.2/distrib/jsxgraph.css"
   };
@@ -180,7 +234,7 @@ public class JSBuilder {
   };
 
   private static final String JSFIDDLE_STR =
-      "<form method='post' action='http://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'>\n"
+      "<form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'>\n"
           + "<button type='submit' style='background-color:lightblue;'>JSFiddle</button>\n"
           // + "<input type='hidden' name=\"panel_html\" value=\"0\">"
           + "<textarea name='html' style='display:none;'>`1`</textarea>\n"
@@ -190,6 +244,15 @@ public class JSBuilder {
           + "</form>";
 
   private JSBuilder() {}
+
+  public static String buildGraphics3D(String pageTemplate, String manipulateStr) {
+    return build(
+        pageTemplate,
+        manipulateStr,
+        "<div id='graphics3d' style=\"width:600px; height:400px;\"></div>",
+        CSS_CDN_GRAPHICS3D,
+        JS_CDN_GRAPHICS3D);
+  }
 
   public static String buildJSXGraph(String pageTemplate, String manipulateStr) {
     return build(

@@ -236,7 +236,6 @@ public class AJAXQueryServlet extends HttpServlet {
         outExpr = evalTopLevel(engine, outBuffer, inExpr);
         if (outExpr != null) {
           if (outExpr.isAST(S.Graphics)) {
-            //            outExpr = F.Show(outExpr);
             try {
               String html = Config.SVG_PAGE;
               StringBuilder stw = new StringBuilder();
@@ -253,15 +252,9 @@ public class AJAXQueryServlet extends HttpServlet {
           } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
             StringBuilder buf = new StringBuilder();
             if (GraphicsFunctions.renderGraphics3D(buf, (IAST) outExpr, engine)) {
-              String jsonStr = buf.toString();
               try {
-                String html = Config.GRAPHICS3D_PAGE;
-                html = StringUtils.replace(html, "`1`", jsonStr);
-                html = StringEscapeUtils.escapeHtml4(html);
-                return JSONBuilder.createJSONJavaScript(
-                    "<iframe srcdoc=\""
-                        + html
-                        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+                return JSONBuilder.createGraphics3DIFrame(
+                    JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE, buf.toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }

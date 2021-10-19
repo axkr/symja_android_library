@@ -246,6 +246,15 @@ public class JSONBuilder {
             + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
   }
 
+  public static String[] createGraphics3DIFrame(String html, String manipulateStr) {
+    html = JSBuilder.buildGraphics3D(html, manipulateStr);
+    html = StringEscapeUtils.escapeHtml4(html);
+    return createJSONJavaScript(
+        "<iframe srcdoc=\""
+            + html
+            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+  }
+
   public static String[] createMathcellIFrame(String html, String manipulateStr) {
     html = JSBuilder.buildMathcell(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);

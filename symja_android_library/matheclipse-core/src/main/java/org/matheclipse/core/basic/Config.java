@@ -650,29 +650,6 @@ public class Config {
           + "`1`\n"
           + "</svg>"; //
 
-  public static final String GRAPHICS3D_PAGE = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>Graphics3D</title>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/npm/@mathicsorg/mathics-threejs-backend\"></script>\n"
-          + "</head>\n"
-          + "\n"
-          + "<body>\n"
-          + "    <main id=\"graphics3d\"></main>\n"
-          + "\n"
-          + "    <script type=\"module\"> \n"
-          + "        drawGraphics3d(\n"
-          + "            document.getElementById('graphics3d'),`1`);\n"
-          + "    </script>\n"
-          + "</body>"; //
-
   /** HTML template */
   public static final String HTML_PAGE = //
       "<html>\n"

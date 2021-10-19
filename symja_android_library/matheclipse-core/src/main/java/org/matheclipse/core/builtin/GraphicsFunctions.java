@@ -1233,6 +1233,8 @@ public class GraphicsFunctions {
       StringBuilder jsonPrimitives = new StringBuilder();
       if (GraphicsFunctions.exportGraphics3D(jsonPrimitives, (IAST) data3D)) {
         try {
+
+          graphics3DBuffer.append("drawGraphics3d(document.getElementById('graphics3d'),\n");
           graphics3DBuffer.append("{");
           graphics3DBuffer.append("\naxes: {},");
           graphics3DBuffer.append("\nelements: [");
@@ -1301,7 +1303,8 @@ public class GraphicsFunctions {
             graphics3DBuffer.append("],");
           }
           graphics3DBuffer.append("\nviewpoint: [1.3,-2.4,2.0]");
-          graphics3DBuffer.append("}");
+          graphics3DBuffer.append("}\n");
+          graphics3DBuffer.append(");");
           return true;
         } catch (Exception ex) {
           LOGGER.debug("GraphicsFunctions.renderGraphics3D() failed", ex);
