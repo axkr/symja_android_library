@@ -55,7 +55,6 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
   private String createSVGOutput(IAST show) {
     StringBuilder svgData = new StringBuilder();
     if (show.isAST() && show.size() > 1 && show.first().isAST()) {
-      StringBuilder buf = new StringBuilder(2048);
       GraphicsFunctions.graphicsToSVG((IAST) ((IAST) show).arg1(), svgData);
     }
     return svgData.toString();
