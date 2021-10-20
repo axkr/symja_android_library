@@ -22,9 +22,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
    * @return
    */
   /* package */ static IExpr of(IExpr value, IUnit unit) {
-    return IUnit.ONE.equals(unit)
-        ? value
-        : new QuantityImpl(value, unit);
+    return IUnit.ONE.equals(unit) ? value : new QuantityImpl(value, unit);
   }
 
   private IExpr arg1;
@@ -43,19 +41,6 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     return ofUnit(arg1.abs());
   }
 
-  public IExpr arcTan(IExpr x) {
-    if (x instanceof IQuantity) {
-      IQuantity quantity = (IQuantity) x;
-      if (fData.equals(quantity.unit())) return S.ArcTan.of(quantity.value(), arg1);
-    }
-    throw MathException.of(x, this);
-  }
-
-  public IExpr arg() {
-    return S.Arg.of(arg1);
-  }
-
-  // @Override
   @Override
   public String unitString() {
     return fData.toString();
@@ -116,19 +101,17 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     if (arg1.isIndeterminate()) {
       return arg1;
     }
-    if (engine.isDoubleMode()
-        && //
-        !arg1.isInexactNumber()) {
+    if (engine.isDoubleMode() && !arg1.isInexactNumber()) {
       try {
         double qDouble = arg1.evalDouble();
         return new QuantityImpl(F.num(qDouble), fData); // setAtCopy(1, F.num(qDouble));
       } catch (RuntimeException rex) {
       }
     }
-
     return F.NIL;
   }
 
+  @Override
   public IExpr floor() {
     return ofUnit(S.Floor.of(arg1));
   }
@@ -363,9 +346,8 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
         if (!this.equals(lhs) || !quantity.equals(rhs)) {
           return lhs.plus(rhs);
         }
-        String str =
-            IOFunctions.getMessage(
-                "compat", F.List(F.stringx(fData.toString()), F.stringx(unit.toString())));
+        String str = IOFunctions.getMessage("compat",
+            F.List(F.stringx(fData.toString()), F.stringx(unit.toString())));
         throw new ArgumentTypeException(str);
         // quantity = (IQuantity) UnitConvert.SI().to(unit).apply(quantity);
       }
