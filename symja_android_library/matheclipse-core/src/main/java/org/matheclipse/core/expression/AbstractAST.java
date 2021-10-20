@@ -455,13 +455,13 @@ public abstract class AbstractAST implements IASTMutable {
 
     /** {@inheritDoc} */
     @Override
-    public final String internalJavaString(
+    public final CharSequence internalJavaString(
         boolean symbolsAsFactoryMethod,
         int depth,
         boolean useOperators,
         boolean usePrefix,
         boolean noSymbolPrefix,
-        Function<IExpr, String> variables) {
+        Function<IExpr, ? extends CharSequence> variables) {
       return usePrefix ? "F.NIL" : "NIL";
     }
 
@@ -1148,7 +1148,7 @@ public abstract class AbstractAST implements IASTMutable {
       boolean useOperators,
       boolean usePrefix,
       boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
+      Function<IExpr, ? extends CharSequence> variables) {
     for (int i = 1; i < ast.size(); i++) {
       if ((ast.get(i) instanceof IAST) && ast.head().equals(ast.get(i).head())) {
         internalFormOrderless(
@@ -2471,21 +2471,21 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, x -> null);
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, x -> null)
+        .toString();
   }
 
   /** {@inheritDoc} */
   @Override
-  public String internalJavaString(
+  public CharSequence internalJavaString(
       boolean symbolsAsFactoryMethod,
       int depth,
       boolean useOperators,
       boolean usePrefix,
       boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
+      Function<IExpr, ? extends CharSequence> variables) {
     final String sep = ",";
     final IExpr temp = head();
-    String prefix = usePrefix ? "F." : "";
     if (temp.equals(S.HoldForm) && size() == 2) {
       return arg1()
           .internalJavaString(
@@ -2496,20 +2496,21 @@ public abstract class AbstractAST implements IASTMutable {
           .internalJavaString(
               symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix, variables);
     }
+    String prefix = usePrefix ? "F." : "";
     if (isInfinity()) {
-      return prefix + "oo";
+      return new StringBuilder(prefix).append("oo");
     }
     if (isNegativeInfinity()) {
-      return prefix + "Noo";
+      return new StringBuilder(prefix).append("Noo");
     }
     if (isComplexInfinity()) {
-      return prefix + "CComplexInfinity";
+      return new StringBuilder(prefix).append("CComplexInfinity");
     }
     if (this.equals(F.Slot1)) {
-      return prefix + "Slot1";
+      return new StringBuilder(prefix).append("Slot1");
     }
     if (this.equals(F.Slot2)) {
-      return prefix + "Slot2";
+      return new StringBuilder(prefix).append("Slot2");
     }
     if (temp.equals(S.Inequality) && size() >= 4) {
       return BooleanFunctions.inequality2And(this)
@@ -2527,90 +2528,90 @@ public abstract class AbstractAST implements IASTMutable {
       if (arg1().isInteger() && arg2().isMinusOne()) {
         IInteger i = (IInteger) arg1();
         if (i.equals(F.C2)) {
-          return prefix + "C1D2";
+          return new StringBuilder(prefix).append("C1D2");
         } else if (i.equals(F.C3)) {
-          return prefix + "C1D3";
+          return new StringBuilder(prefix).append("C1D3");
         } else if (i.equals(F.C4)) {
-          return prefix + "C1D4";
+          return new StringBuilder(prefix).append("C1D4");
         } else if (i.equals(F.CN2)) {
-          return prefix + "CN1D2";
+          return new StringBuilder(prefix).append("CN1D2");
         } else if (i.equals(F.CN3)) {
-          return prefix + "CN1D3";
+          return new StringBuilder(prefix).append("CN1D3");
         } else if (i.equals(F.CN4)) {
-          return prefix + "CN1D4";
+          return new StringBuilder(prefix).append("CN1D4");
         }
       }
       if (equalsAt(1, S.E)) {
-        return prefix
-            + "Exp("
-            + arg2()
+        return new StringBuilder(prefix)
+            .append("Exp(")
+            .append(arg2()
                 .internalJavaString(
                     symbolsAsFactoryMethod,
                     depth + 1,
                     useOperators,
                     usePrefix,
                     noSymbolPrefix,
-                    variables)
-            + ")";
+                    variables))
+            .append(")");
       }
       if (equalsAt(2, F.C1D2)) {
         if (base().isInteger()) {
           // square root of an integer number
           IInteger i = (IInteger) base();
           if (i.equals(F.C2)) {
-            return prefix + "CSqrt2";
+            return new StringBuilder(prefix).append("CSqrt2");
           } else if (i.equals(F.C3)) {
-            return prefix + "CSqrt3";
+            return new StringBuilder(prefix).append("CSqrt3");
           } else if (i.equals(F.C5)) {
-            return prefix + "CSqrt5";
+            return new StringBuilder(prefix).append("CSqrt5");
           } else if (i.equals(F.C6)) {
-            return prefix + "CSqrt6";
+            return new StringBuilder(prefix).append("CSqrt6");
           } else if (i.equals(F.C7)) {
-            return prefix + "CSqrt7";
+            return new StringBuilder(prefix).append("CSqrt7");
           } else if (i.equals(F.C10)) {
-            return prefix + "CSqrt10";
+            return new StringBuilder(prefix).append("CSqrt10");
           }
         }
-        return prefix
-            + "Sqrt("
-            + arg1()
+        return new StringBuilder(prefix)
+            .append("Sqrt(")
+            .append(arg1()
                 .internalJavaString(
                     symbolsAsFactoryMethod,
                     depth + 1,
                     useOperators,
                     usePrefix,
                     noSymbolPrefix,
-                    variables)
-            + ")";
+                    variables))
+            .append(")");
       }
       if (equalsAt(2, F.C2)) {
-        return prefix
-            + "Sqr("
-            + arg1()
+        return new StringBuilder(prefix)
+            .append("Sqr(")
+            .append(arg1()
                 .internalJavaString(
                     symbolsAsFactoryMethod,
                     depth + 1,
                     useOperators,
                     usePrefix,
                     noSymbolPrefix,
-                    variables)
-            + ")";
+                    variables))
+            .append(")");
       }
       if (equalsAt(2, F.CN1D2) && arg1().isInteger()) {
         // negative square root of an integer number
         IInteger i = (IInteger) arg1();
         if (i.equals(F.C2)) {
-          return prefix + "C1DSqrt2";
+          return new StringBuilder(prefix).append("C1DSqrt2");
         } else if (i.equals(F.C3)) {
-          return prefix + "C1DSqrt3";
+          return new StringBuilder(prefix).append("C1DSqrt3");
         } else if (i.equals(F.C5)) {
-          return prefix + "C1DSqrt5";
+          return new StringBuilder(prefix).append("C1DSqrt5");
         } else if (i.equals(F.C6)) {
-          return prefix + "C1DSqrt6";
+          return new StringBuilder(prefix).append("C1DSqrt6");
         } else if (i.equals(F.C7)) {
-          return prefix + "C1DSqrt7";
+          return new StringBuilder(prefix).append("C1DSqrt7");
         } else if (i.equals(F.C10)) {
-          return prefix + "C1DSqrt10";
+          return new StringBuilder(prefix).append("C1DSqrt10");
         }
       }
       // don't optimize if arg2() is integer
@@ -2627,7 +2628,7 @@ public abstract class AbstractAST implements IASTMutable {
         name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(name);
       }
       if (name == null && !Character.isUpperCase(sym.toString().charAt(0))) {
-        text.append(prefix + "$(");
+        text.append(prefix).append("$(");
         for (int i = 0; i < size(); i++) {
           text.append(
               get(i)
@@ -2642,11 +2643,10 @@ public abstract class AbstractAST implements IASTMutable {
             text.append(sep);
           }
         }
-        text.append(')');
-        return text.toString();
+        return text.append(')');
       }
     } else if (temp.isPattern() || temp.isAST()) {
-      text.append(prefix + "$(");
+      text.append(prefix).append("$(");
       for (int i = 0; i < size(); i++) {
         text.append(
             get(i)
@@ -2661,21 +2661,20 @@ public abstract class AbstractAST implements IASTMutable {
           text.append(sep);
         }
       }
-      text.append(')');
-      return text.toString();
+      return text.append(')');
     }
 
     if (isAST(S.Times, 3)) {
       if (equals(F.CNPi)) {
-        return prefix + "CNPi";
+        return new StringBuilder(prefix).append("CNPi");
       } else if (equals(F.CN2Pi)) {
-        return prefix + "CN2Pi";
+        return new StringBuilder(prefix).append("CN2Pi");
       } else if (equals(F.C2Pi)) {
-        return prefix + "C2Pi";
+        return new StringBuilder(prefix).append("C2Pi");
       } else if (equals(F.CNPiHalf)) {
-        return prefix + "CNPiHalf";
+        return new StringBuilder(prefix).append("CNPiHalf");
       } else if (equals(F.CPiHalf)) {
-        return prefix + "CPiHalf";
+        return new StringBuilder(prefix).append("CPiHalf");
       }
       if (arg1().isMinusOne() && !arg2().isTimes()) {
         if (arg2().isNumber()) {
@@ -2688,41 +2687,40 @@ public abstract class AbstractAST implements IASTMutable {
               noSymbolPrefix,
               variables);
         }
-        return prefix
-            + "Negate("
-            + arg2()
+        return new StringBuilder(prefix)
+            .append("Negate(")
+            .append(arg2()
                 .internalJavaString(
                     symbolsAsFactoryMethod,
                     depth + 1,
                     useOperators,
                     usePrefix,
                     noSymbolPrefix,
-                    variables)
-            + ")";
+                    variables))
+            .append(")");
       }
     } else if (isAST(S.Plus, 3)) {
       if (arg2().isAST(S.Times, 3) && arg2().first().isMinusOne()) {
-        return prefix
-            + "Subtract("
-            + arg1()
+        return new StringBuilder(prefix)
+            .append("Subtract(")
+            .append(arg1()
                 .internalJavaString(
                     symbolsAsFactoryMethod,
                     depth + 1,
                     useOperators,
                     usePrefix,
                     noSymbolPrefix,
-                    variables)
-            + ","
-            + arg2()
-                .second()
+                    variables))
+            .append(",")
+            .append(arg2().second()
                 .internalJavaString(
                     symbolsAsFactoryMethod,
                     depth + 1,
                     useOperators,
                     usePrefix,
                     noSymbolPrefix,
-                    variables)
-            + ")";
+                    variables))
+            .append(")");
       }
     }
 
@@ -2751,7 +2749,7 @@ public abstract class AbstractAST implements IASTMutable {
             usePrefix,
             noSymbolPrefix,
             text);
-        return text.toString();
+        return text;
       } else if (isPlus()) {
         IExpr arg1 = arg1();
         IExpr arg2 = arg2();
@@ -2774,7 +2772,7 @@ public abstract class AbstractAST implements IASTMutable {
             usePrefix,
             noSymbolPrefix,
             text);
-        return text.toString();
+        return text;
       } else if (isPower()) {
         IExpr arg1 = arg1();
         IExpr arg2 = arg2();
@@ -2799,7 +2797,7 @@ public abstract class AbstractAST implements IASTMutable {
             usePrefix,
             noSymbolPrefix,
             text);
-        return text.toString();
+        return text;
       }
     }
     text.append(
@@ -2844,8 +2842,7 @@ public abstract class AbstractAST implements IASTMutable {
     if (depth == 0 && isList()) {
       text.append('\n');
     }
-    text.append(')');
-    return text.toString();
+    return text.append(')');
   }
 
   private void internalOperatorForm(
@@ -2876,7 +2873,8 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null)
+        .toString();
   }
 
   /** {@inheritDoc} */

@@ -546,25 +546,26 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, x -> null);
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, x -> null)
+        .toString();
   }
 
   /** {@inheritDoc} */
   @Override
-  public String internalJavaString(
+  public CharSequence internalJavaString(
       boolean symbolsAsFactoryMethod,
       int depth,
       boolean useOperators,
       boolean usePrefix,
       boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
-    String result = variables.apply(this);
+      Function<IExpr, ? extends CharSequence> variables) {
+    CharSequence result = variables.apply(this);
     if (result != null) {
       return result;
     }
     String prefix = usePrefix ? "F." : "";
     if (symbolsAsFactoryMethod) {
-      return prefix + internalJavaStringAsFactoryMethod();
+      return new StringBuilder(prefix).append(internalJavaStringAsFactoryMethod());
     }
     if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       String name;
@@ -574,17 +575,17 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
         name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toLowerCase(Locale.ENGLISH));
       }
       if (name != null) {
-        return prefix + name;
+        return new StringBuilder(prefix).append(name);
       }
     } else {
       String name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toLowerCase(Locale.ENGLISH));
       if (name != null && name.equals(fSymbolName)) {
-        return prefix + name;
+        return new StringBuilder(prefix).append(name);
       }
     }
     char ch = fSymbolName.charAt(0);
     if (!noSymbolPrefix && fSymbolName.length() == 1 && ('a' <= ch && ch <= 'z')) {
-      return prefix + fSymbolName;
+      return new StringBuilder(prefix).append(fSymbolName);
     } else {
       return fSymbolName;
     }
@@ -634,7 +635,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null)
+        .toString();
   }
 
   /** {@inheritDoc} */

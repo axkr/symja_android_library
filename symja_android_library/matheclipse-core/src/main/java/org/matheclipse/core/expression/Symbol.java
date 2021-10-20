@@ -558,25 +558,26 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, x -> null);
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, x -> null)
+        .toString();
   }
 
   /** {@inheritDoc} */
   @Override
-  public String internalJavaString(
+  public CharSequence internalJavaString(
       boolean symbolsAsFactoryMethod,
       int depth,
       boolean useOperators,
       boolean usePrefix,
       boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
-    String result = variables.apply(this);
+      Function<IExpr, ? extends CharSequence> variables) {
+    CharSequence result = variables.apply(this);
     if (result != null) {
       return result;
     }
     String prefix = usePrefix ? "F." : "";
     if (symbolsAsFactoryMethod) {
-      return prefix + internalJavaStringAsFactoryMethod();
+      return new StringBuilder(prefix).append(internalJavaStringAsFactoryMethod());
     }
     if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       String name;
@@ -586,17 +587,17 @@ public class Symbol implements ISymbol, Serializable {
         name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toLowerCase(Locale.ENGLISH));
       }
       if (name != null) {
-        return prefix + name;
+        return new StringBuilder(prefix).append(name);
       }
     } else {
       String name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toLowerCase(Locale.ENGLISH));
       if (name != null && name.equals(fSymbolName)) {
-        return prefix + name;
+        return new StringBuilder(prefix).append(name);
       }
     }
     char ch = fSymbolName.charAt(0);
     if (!noSymbolPrefix && fSymbolName.length() == 1 && ('a' <= ch && ch <= 'z')) {
-      return prefix + fSymbolName;
+      return new StringBuilder(prefix).append(fSymbolName);
     } else {
       return fSymbolName;
     }
@@ -607,20 +608,15 @@ public class Symbol implements ISymbol, Serializable {
    *
    * @return
    */
-  protected String internalJavaStringAsFactoryMethod() {
+  protected CharSequence internalJavaStringAsFactoryMethod() {
     if (fSymbolName.length() == 1) {
       char ch = fSymbolName.charAt(0);
       if ('a' <= ch && ch <= 'z') {
         return fSymbolName;
       }
-      if (Config.RUBI_CONVERT_SYMBOLS && 'A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') {
-        return fSymbolName + "Symbol";
-      }
-      if ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') {
-        return fSymbolName + "Symbol";
-      }
-      if ('P' == ch || ch == 'Q') {
-        return fSymbolName + "Symbol";
+      if ((Config.RUBI_CONVERT_SYMBOLS && 'A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E')
+          || ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') || ('P' == ch || ch == 'Q')) {
+        return new StringBuilder(fSymbolName).append("Symbol");
       }
     }
     if (Config.RUBI_CONVERT_SYMBOLS) {
@@ -629,7 +625,7 @@ public class Symbol implements ISymbol, Serializable {
           && Character.isLowerCase(fSymbolName.charAt(1))) {
         char ch = fSymbolName.charAt(1);
         if ('a' <= ch && ch <= 'z') {
-          return "p" + ch;
+          return new StringBuilder("p").append(ch);
         }
       } else if (fSymbolName.equals("Int")) {
         return "Integrate";
@@ -638,21 +634,20 @@ public class Symbol implements ISymbol, Serializable {
     if (Character.isUpperCase(fSymbolName.charAt(0))) {
       String alias = F.getPredefinedInternalFormString(fSymbolName);
       if (alias != null) {
-        if (Config.RUBI_CONVERT_SYMBOLS) {
-          if (alias.startsWith("Rubi`")) {
-            return "$rubi(\"" + alias.substring(5) + "\")";
-          }
+        if (Config.RUBI_CONVERT_SYMBOLS && alias.startsWith("Rubi`")) {
+          return new StringBuilder("$rubi(\"").append(alias, 5, alias.length()).append("\")");
         }
         return alias;
       }
     }
-    return "$s(\"" + fSymbolName + "\")";
+    return new StringBuilder("$s(\"").append(fSymbolName).append("\")");
   }
 
   /** {@inheritDoc} */
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null)
+        .toString();
   }
 
   /** {@inheritDoc} */

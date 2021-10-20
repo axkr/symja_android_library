@@ -452,7 +452,7 @@ public final class OutputFunctions {
    */
   private static class JavaForm extends AbstractCoreFunctionEvaluator {
 
-    public static String javaForm(IExpr arg1, boolean strictJava, boolean usePrefix) {
+    public static CharSequence javaForm(IExpr arg1, boolean strictJava, boolean usePrefix) {
       return arg1.internalJavaString(strictJava, 0, false, usePrefix, false, F.CNullFunction);
     }
 
@@ -554,12 +554,12 @@ public final class OutputFunctions {
 
             return F.$str(toJavaComplex(arg1), IStringX.APPLICATION_JAVA);
           }
-        String resultStr = javaForm(arg1, strictJava, usePrefix);
-        return F.$str(resultStr, IStringX.APPLICATION_JAVA);
-      } catch (Exception rex) {
-        LOGGER.log(engine.getLogLevel(), "JavaForm", rex);
-        return F.NIL;
-      }
+          String resultStr = javaForm(arg1, strictJava, usePrefix).toString();
+          return F.$str(resultStr, IStringX.APPLICATION_JAVA);
+        } catch (Exception rex) {
+          LOGGER.log(engine.getLogLevel(), "JavaForm", rex);
+          return F.NIL;
+        }
     }
 
     @Override

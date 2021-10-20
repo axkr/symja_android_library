@@ -403,45 +403,46 @@ public class BigFractionSym extends AbstractFractionSym {
   }
 
   @Override
-  public String internalJavaString(
+  public CharSequence internalJavaString(
       boolean symbolsAsFactoryMethod,
       int depth,
       boolean useOperators,
       boolean usePrefix,
       boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
+      Function<IExpr, ? extends CharSequence> variables) {
     String prefix = usePrefix ? "F." : "";
+    StringBuilder javaForm = new StringBuilder(prefix);
     int numerator = NumberUtil.toIntDefault(fFraction.getNumerator());
     if (numerator == 1 || numerator == -1) {
       int denominator = NumberUtil.toIntDefault(fFraction.getDenominator());
       if (numerator == 1) {
         switch (denominator) {
           case 2:
-            return prefix + "C1D2";
+            return javaForm.append("C1D2");
           case 3:
-            return prefix + "C1D3";
+            return javaForm.append("C1D3");
           case 4:
-            return prefix + "C1D4";
+            return javaForm.append("C1D4");
           default:
         }
       } else if (numerator == -1) {
         switch (denominator) {
           case 2:
-            return prefix + "CN1D2";
+            return javaForm.append("CN1D2");
           case 3:
-            return prefix + "CN1D3";
+            return javaForm.append("CN1D3");
           case 4:
-            return prefix + "CN1D4";
+            return javaForm.append("CN1D4");
           default:
         }
       }
     }
-    return prefix
-        + "QQ("
-        + fFraction.getNumerator().toString()
-        + "L,"
-        + fFraction.getDenominator().toString()
-        + "L)";
+    return javaForm
+        .append("QQ(")
+        .append(fFraction.getNumerator().toString())
+        .append("L,")
+        .append(fFraction.getDenominator().toString())
+        .append("L)");
   }
 
   /**

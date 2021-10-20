@@ -425,26 +425,30 @@ public class Num implements INum {
 
   @Override
   public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction);
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction)
+        .toString();
   }
 
   @Override
-  public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-      boolean usePrefix, boolean noSymbolPrefix, Function<IExpr, String> variables) {
+  public CharSequence internalJavaString(boolean symbolsAsFactoryMethod, int depth,
+      boolean useOperators, boolean usePrefix, boolean noSymbolPrefix,
+      Function<IExpr, ? extends CharSequence> variables) {
     String prefix = usePrefix ? "F." : "";
+    StringBuilder javaForm = new StringBuilder(prefix);
     if (isZero()) {
-      return prefix + "CD0";
+      return javaForm.append("CD0");
     } else if (isOne()) {
-      return prefix + "CD1";
+      return javaForm.append("CD1");
     } else if (isMinusOne()) {
-      return prefix + "CND1";
+      return javaForm.append("CND1");
     }
-    return prefix + "num(" + fDouble + ")";
+    return javaForm.append("num(").append(fDouble).append(")");
   }
 
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction)
+        .toString();
   }
 
   /** @return */

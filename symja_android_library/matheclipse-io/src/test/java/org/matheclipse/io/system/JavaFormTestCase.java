@@ -27,10 +27,10 @@ public class JavaFormTestCase extends AbstractTestCase {
     IAST function = Sinc(Times(CI, CInfinity));
 
     IExpr result = EvalEngine.get().evalHoldPattern(function);
-    assertEquals(result.internalFormString(true, -1), "Sinc(DirectedInfinity(CI))");
+    assertEquals("Sinc(DirectedInfinity(CI))", result.internalFormString(true, -1));
 
     result = util.evaluate(function);
-    assertEquals(result.internalFormString(true, -1), "oo");
+    assertEquals("oo", result.internalFormString(true, -1));
   }
 
   public void testJavaForm002() {
@@ -41,22 +41,23 @@ public class JavaFormTestCase extends AbstractTestCase {
     IAST function = Sinc(Times(CI, CInfinity));
 
     IExpr result = EvalEngine.get().evalHoldPattern(function);
-    assertEquals(result.internalJavaString(true, -1, false, true, false, F.CNullFunction),
-        "F.Sinc(F.DirectedInfinity(F.CI))");
+    assertEquals("F.Sinc(F.DirectedInfinity(F.CI))",
+        result.internalJavaString(true, -1, false, true, false, F.CNullFunction).toString());
 
     result = util.evaluate(function);
-    assertEquals(result.internalJavaString(true, -1, false, true, false, F.CNullFunction), "F.oo");
+    assertEquals("F.oo",
+        result.internalJavaString(true, -1, false, true, false, F.CNullFunction).toString());
   }
 
   public void testJavaFormQuantity_withUnitKG() {
     IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ofPutIfAbsent("kg"));
-    String javaForm = quantity.internalJavaString(null);
+    String javaForm = quantity.internalJavaString(null).toString();
     assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ofPutIfAbsent(\"kg\"))", javaForm);
   }
 
   public void testJavaFormQuantity_withUnitOne() {
     IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ONE);
-    String javaForm = quantity.internalJavaString(null);
+    String javaForm = quantity.internalJavaString(null).toString();
     assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ONE)", javaForm);
   }
 }

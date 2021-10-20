@@ -231,16 +231,15 @@ public class Pattern extends Blank {
   }
 
   @Override
-  public String internalJavaString(
+  public CharSequence internalJavaString(
       boolean symbolsAsFactoryMethod,
       int depth,
       boolean useOperaators,
       boolean usePrefix,
       boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
-    final StringBuilder buffer = new StringBuilder();
+      Function<IExpr, ? extends CharSequence> variables) {
     String prefix = usePrefix ? "F." : "";
-    buffer.append(prefix + "$p(");
+    final StringBuilder buffer = new StringBuilder(prefix);
     String symbolStr = fSymbol.toString();
     char ch = symbolStr.charAt(0);
     if (symbolStr.length() == 1) { // && fOptionalValue == null) {
@@ -250,13 +249,13 @@ public class Pattern extends Blank {
           || ch == 'Q') {
         if (!fDefault) {
           if (fHeadTest == null) {
-            return prefix + symbolStr + "_";
+            return buffer.append(symbolStr).append("_");
           } else if (fHeadTest == S.Symbol) {
-            return prefix + symbolStr + "_Symbol";
+            return buffer.append(symbolStr).append("_Symbol");
           }
         } else {
           if (fHeadTest == null) {
-            return prefix + symbolStr + "_DEFAULT";
+            return buffer.append(symbolStr).append("_DEFAULT");
           }
         }
       }
@@ -267,21 +266,21 @@ public class Pattern extends Blank {
         if ('a' <= ch2 && ch2 <= 'z') {
           if (!fDefault) {
             if (fHeadTest == null) {
-              return prefix + "p" + ch2 + "_";
+              return buffer.append("p").append(ch2).append("_");
             }
           } else {
             if (fHeadTest == null) {
-              return prefix + "p" + ch2 + "_DEFAULT";
+              return buffer.append("p").append(ch2).append("_DEFAULT");
             }
           }
         }
       }
     }
-
+    buffer.append("$p(");
     if (symbolStr.length() == 1 && ('a' <= ch && ch <= 'z')) {
-      buffer.append(prefix + symbolStr);
+      buffer.append(prefix).append(symbolStr);
     } else {
-      buffer.append("\"" + symbolStr + "\"");
+      buffer.append("\"").append(symbolStr).append("\"");
     }
     if (fHeadTest != null) {
       if (fHeadTest == S.Integer) {
@@ -289,9 +288,8 @@ public class Pattern extends Blank {
       } else if (fHeadTest == S.Symbol) {
         buffer.append(", Symbol");
       } else {
-        buffer.append(
-            ","
-                + fHeadTest.internalJavaString(
+        buffer.append(",")
+              .append(fHeadTest.internalJavaString(
                     symbolsAsFactoryMethod,
                     0,
                     useOperaators,
@@ -303,9 +301,7 @@ public class Pattern extends Blank {
     if (fDefault) {
       buffer.append(",true");
     }
-
-    buffer.append(')');
-    return buffer.toString();
+    return buffer.append(')');
   }
 
   /** {@inheritDoc} */
