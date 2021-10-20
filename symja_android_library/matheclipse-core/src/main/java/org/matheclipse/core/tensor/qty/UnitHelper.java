@@ -60,22 +60,23 @@ import org.matheclipse.core.interfaces.IExpr;
   // helper function
   private static IUnit create(String string) {
     String key = string.strip();
+    if (key.isEmpty()) {
+      return null;
+    }
     NavigableMap<String, IExpr> map = new TreeMap<>();
-    if (!key.isEmpty()) {
-      IExpr value = ENGINE.parse(key);
-      if (value.isTimes()) {
-        for (IExpr factor : (IAST) value) {
-          if (factor.isPower()) {
-            putPowerExponent(map, factor);
-          } else {
-            putKeyExponent(map, factor, F.C1);
-          }
+    IExpr value = ENGINE.parse(key);
+    if (value.isTimes()) {
+      for (IExpr factor : (IAST) value) {
+        if (factor.isPower()) {
+          putPowerExponent(map, factor);
+        } else {
+          putKeyExponent(map, factor, F.C1);
         }
-      } else if (value.isPower()) {
-        putPowerExponent(map, value);
-      } else {
-        map.put(key, F.C1);
       }
+    } else if (value.isPower()) {
+      putPowerExponent(map, value);
+    } else {
+      map.put(key, F.C1);
     }
     return map.isEmpty() ? null : new UnitImpl(map);
   }
