@@ -5,7 +5,7 @@
 <a href="https://hub.docker.com/r/symja/symja-2.0" target="blank"><img src="https://img.shields.io/docker/pulls/symja/symja-2.0?logo=docker&style=for-the-badge" alt="Symja" />
 </p>
  
-[![LGTM Alerts](https://img.shields.io/lgtm/alerts/bitbucket/axelclk/symja_android_library)](https://lgtm.com/projects/b/axelclk/symja_android_library) [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axkr/symja_android_library)
+[![LGTM Alerts](https://img.shields.io/lgtm/alerts/github/axkr/symja_android_library)](https://lgtm.com/projects/g/axkr/symja_android_library/) [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axkr/symja_android_library)
 
 **Note**: this repository contains the **Java 11** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) Android calculator project 
 maintains a **[Java 7 Android branch](https://github.com/tranleduy2000/symja_android_library)** of the [Android *.AAR library](https://github.com/tranleduy2000/symja_android_library/releases).
