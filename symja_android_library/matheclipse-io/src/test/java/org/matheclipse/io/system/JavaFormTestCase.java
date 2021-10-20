@@ -48,10 +48,15 @@ public class JavaFormTestCase extends AbstractTestCase {
     assertEquals(result.internalJavaString(true, -1, false, true, false, F.CNullFunction), "F.oo");
   }
 
-  public void testJavaFormQuantity() {
+  public void testJavaFormQuantity_withUnitKG() {
     IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ofPutIfAbsent("kg"));
     String javaForm = quantity.internalJavaString(null);
-    System.out.println(javaForm);
-    assertEquals("IQuantity.of(F.ZZ(43L), IUnit.ofPutIfAbsent(\"kg\"))", javaForm);
+    assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ofPutIfAbsent(\"kg\"))", javaForm);
+  }
+
+  public void testJavaFormQuantity_withUnitOne() {
+    IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ONE);
+    String javaForm = quantity.internalJavaString(null);
+    assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ONE)", javaForm);
   }
 }
