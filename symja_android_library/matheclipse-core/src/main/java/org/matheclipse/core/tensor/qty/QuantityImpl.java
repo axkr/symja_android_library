@@ -157,7 +157,14 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
       boolean usePrefix, boolean noSymbolPrefix, Function<IExpr, String> variables) {
     String value = value().internalJavaString(symbolsAsFactoryMethod, depth, useOperators,
         usePrefix, noSymbolPrefix, variables);
-    return "IQuantity.of(" + value + ", IUnit.ofPutIfAbsent(\"" + unitString() + "\"))";
+    StringBuilder javaForm = new StringBuilder();
+    javaForm.append("IQuantity.of(").append(value).append(",");
+    if (IUnit.ONE.equals(unit())) {
+      javaForm.append("IUnit.ONE");
+    } else {
+      javaForm.append("IUnit.ofPutIfAbsent(\"").append(unitString()).append("\")");
+    }
+    return javaForm.append(")").toString();
   }
 
   /** {@inheritDoc} */
