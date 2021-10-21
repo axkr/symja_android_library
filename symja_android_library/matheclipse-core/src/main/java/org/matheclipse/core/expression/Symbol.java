@@ -558,24 +558,20 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, x -> null);
+    SourceCodeProperties p = AbstractAST.stringFormProperties(symbolsAsFactoryMethod);
+    return internalJavaString(p, depth, x -> null);
   }
 
   /** {@inheritDoc} */
   @Override
-  public CharSequence internalJavaString(
-      boolean symbolsAsFactoryMethod,
-      int depth,
-      boolean useOperators,
-      boolean usePrefix,
-      boolean noSymbolPrefix,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<IExpr, ? extends CharSequence> variables) {
     CharSequence result = variables.apply(this);
     if (result != null) {
       return result;
     }
-    String prefix = usePrefix ? "F." : "";
-    if (symbolsAsFactoryMethod) {
+    String prefix = AbstractAST.getPrefixF(properties);
+    if (properties.symbolsAsFactoryMethod) {
       return new StringBuilder(prefix).append(internalJavaStringAsFactoryMethod());
     }
     if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
@@ -595,7 +591,7 @@ public class Symbol implements ISymbol, Serializable {
       }
     }
     char ch = fSymbolName.charAt(0);
-    if (!noSymbolPrefix && fSymbolName.length() == 1 && ('a' <= ch && ch <= 'z')) {
+    if (!properties.noSymbolPrefix && fSymbolName.length() == 1 && ('a' <= ch && ch <= 'z')) {
       return new StringBuilder(prefix).append(fSymbolName);
     } else {
       return fSymbolName;
@@ -645,7 +641,8 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null);
+    SourceCodeProperties p = AbstractAST.scalaFormProperties(symbolsAsFactoryMethod);
+    return internalJavaString(p, depth, x -> null);
   }
 
   /** {@inheritDoc} */

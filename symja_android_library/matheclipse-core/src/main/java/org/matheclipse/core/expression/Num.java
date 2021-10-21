@@ -425,14 +425,14 @@ public class Num implements INum {
 
   @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction);
+    SourceCodeProperties p = AbstractAST.stringFormProperties(symbolsAsFactoryMethod);
+    return internalJavaString(p, depth, F.CNullFunction);
   }
 
   @Override
-  public CharSequence internalJavaString(boolean symbolsAsFactoryMethod, int depth,
-      boolean useOperators, boolean usePrefix, boolean noSymbolPrefix,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<IExpr, ? extends CharSequence> variables) {
-    String prefix = usePrefix ? "F." : "";
+    String prefix = AbstractAST.getPrefixF(properties);
     StringBuilder javaForm = new StringBuilder(prefix);
     if (isZero()) {
       return javaForm.append("CD0");
@@ -446,7 +446,8 @@ public class Num implements INum {
 
   @Override
   public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
+    SourceCodeProperties p = AbstractAST.scalaFormProperties(symbolsAsFactoryMethod);
+    return internalJavaString(p, depth, F.CNullFunction);
   }
 
   /** @return */

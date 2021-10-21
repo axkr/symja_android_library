@@ -26,6 +26,7 @@ import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -518,9 +519,12 @@ public class CompilerFunctions {
       return 0;
     }
 
+    private static final SourceCodeProperties JAVA_FORM_PROPERTIES =
+        SourceCodeProperties.of(false, false, true, false);
+
     private boolean convertSymbolic(StringBuilder buf, IExpr expression) {
       try {
-        buf.append(expression.internalJavaString(false, -1, false, true, false, x -> {
+        buf.append(expression.internalJavaString(JAVA_FORM_PROPERTIES, -1, x -> {
           if (x.isSymbol()) {
             if (localVariables.contains(x.toString())) {
               return "vars.get(\"" + x.toString() + "\")";

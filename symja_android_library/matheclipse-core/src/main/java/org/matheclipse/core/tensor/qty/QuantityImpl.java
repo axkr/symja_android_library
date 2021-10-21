@@ -136,11 +136,11 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
   }
 
   @Override
-  public CharSequence internalJavaString(boolean symbolsAsFactoryMethod, int depth,
-      boolean useOperators, boolean usePrefix, boolean noSymbolPrefix,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<IExpr, ? extends CharSequence> variables) {
-    CharSequence value = value().internalJavaString(symbolsAsFactoryMethod, depth, useOperators,
-        usePrefix, noSymbolPrefix, variables);
+
+    CharSequence value = value().internalJavaString(properties, depth, variables);
+
     StringBuilder javaForm = new StringBuilder();
     javaForm.append("IQuantity.of(").append(value).append(",");
     if (IUnit.ONE.equals(unit())) {

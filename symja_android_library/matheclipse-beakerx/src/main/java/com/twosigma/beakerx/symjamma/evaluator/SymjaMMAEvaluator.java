@@ -25,6 +25,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.FEConfig;
 import com.twosigma.beakerx.BeakerXClient;
@@ -232,6 +233,9 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
     return null;
   }
 
+  private static final SourceCodeProperties JAVA_FORM_PROPERTIES =
+      SourceCodeProperties.of(false, false, true, false);
+
   /**
    * Print the result in the default output form
    *
@@ -242,8 +246,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
   TryResult printForm(final SymjaMMACodeRunner symjaMMACodeRunner, final Object result) {
     switch (fUsedForm) {
       case SymjaMMAEvaluator.JAVAFORM:
-        return TryResult.createResult(
-            ((IExpr) result).internalJavaString(false, -1, false, true, false, F.CNullFunction));
+        return TryResult.createResult(((IExpr) result).internalJavaString(JAVA_FORM_PROPERTIES, -1, F.CNullFunction));
       case SymjaMMAEvaluator.TRADITIONALFORM:
         StringBuilder traditionalBuffer = new StringBuilder();
         fOutputTraditionalFactory.reset();
