@@ -27,6 +27,7 @@ import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -520,7 +521,7 @@ public class CompilerFunctions {
     }
 
     private static final SourceCodeProperties JAVA_FORM_PROPERTIES =
-        SourceCodeProperties.of(false, false, true, false);
+        SourceCodeProperties.of(false, false, Prefix.CLASS_NAME, false);
 
     private boolean convertSymbolic(StringBuilder buf, IExpr expression) {
       try {

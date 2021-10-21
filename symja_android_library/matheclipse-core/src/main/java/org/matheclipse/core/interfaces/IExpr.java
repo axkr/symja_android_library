@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -1054,6 +1055,10 @@ public interface IExpr
   }
 
   public static class SourceCodeProperties {
+    public enum Prefix {
+      NONE, CLASS_NAME, FULLY_QUALIFIED_CLASS_NAME;
+    }
+
     /**
      * If <code>true</code> use the <code>F.symbol()</code> method, otherwise print the symbol name.
      */
@@ -1063,9 +1068,11 @@ public interface IExpr
      */
     public final boolean useOperators;
     /**
-     * If true usePrefix use the <code>F....</code> class prefix for generating Java code.
+     * If {@link Prefix#CLASS_NAME} use the <code>F....</code> class prefix for generating Java
+     * code, if {@link Prefix#FULLY_QUALIFIED_CLASS_NAME} use the fully qualified class name, if
+     * {@link Prefix#NONE} use no prefix.
      */
-    public final boolean usePrefix;
+    public final Prefix prefix;
     /**
      * If <code>true</code>, for symbols like <code>x,y,z,...</code> don't use the
      * <code>F....</code> class prefix for code generation.
@@ -1073,10 +1080,10 @@ public interface IExpr
     public final boolean noSymbolPrefix;
 
     private SourceCodeProperties(boolean symbolsAsFactoryMethod, boolean useOperators,
-        boolean usePrefix, boolean noSymbolPrefix) {
+        Prefix prefix, boolean noSymbolPrefix) {
       this.symbolsAsFactoryMethod = symbolsAsFactoryMethod;
       this.useOperators = useOperators;
-      this.usePrefix = usePrefix;
+      this.prefix = Objects.requireNonNull(prefix, "Method prefix must not be null");
       this.noSymbolPrefix = noSymbolPrefix;
     }
 
@@ -1087,15 +1094,15 @@ public interface IExpr
      *        otherwise print the symbol name.
      * @param useOperators use operators instead of function names for representation of Plus,
      *        Times, Power,...
-     * @param usePrefix if <code>true</code> usePrefix use the <code>F....</code> class prefix for
-     *        generating Java code.
+     * @param prefix if {@link Prefix#CLASS_NAME} use the <code>F....</code> class prefix for
+     *        generating Java code, if {@link Prefix#FULLY_QUALIFIED_CLASS_NAME} use the fully
+     *        qualified class name, if {@link Prefix#NONE} use no prefix.
      * @param noSymbolPrefix for symbols like <code>x,y,z,...</code> don't use the
      *        <code>F....</code> class prefix for code generation
      */
     public static SourceCodeProperties of(boolean symbolsAsFactoryMethod, boolean useOperators,
-        boolean usePrefix, boolean noSymbolPrefix) {
-      return new SourceCodeProperties(symbolsAsFactoryMethod, useOperators, usePrefix,
-          noSymbolPrefix);
+        Prefix prefix, boolean noSymbolPrefix) {
+      return new SourceCodeProperties(symbolsAsFactoryMethod, useOperators, prefix, noSymbolPrefix);
     }
 
     /**
@@ -1105,7 +1112,7 @@ public interface IExpr
      */
     public static SourceCodeProperties copyWithoutSymbolsAsFactoryMethod(SourceCodeProperties o) {
       return !o.symbolsAsFactoryMethod ? o
-          : new SourceCodeProperties(false, o.useOperators, o.usePrefix, o.noSymbolPrefix);
+          : new SourceCodeProperties(false, o.useOperators, o.prefix, o.noSymbolPrefix);
     }
   }
 
