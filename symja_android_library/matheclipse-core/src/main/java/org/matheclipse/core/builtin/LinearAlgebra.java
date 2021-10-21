@@ -1403,7 +1403,7 @@ public final class LinearAlgebra {
         if (dimensions2.size() == 0) {
           return F.NIL;
         }
-        if (dimensions1.get(dimensions1.size() - 1) != dimensions2.get(0)) {
+        if (!dimensions1.get(dimensions1.size() - 1).equals(dimensions2.get(0))) {
           // Tensors `1` and `2` have incompatible shapes.
           return IOFunctions.printMessage(ast.topHead(), "dotsh", F.List(arg1, arg2), engine);
         }

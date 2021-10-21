@@ -182,8 +182,7 @@ public class ApfloatNum implements INum {
     }
     if (that instanceof INum) {
       if (fApfloat.compareTo(Apfloat.ZERO) < 0) {
-        return F.complexNum(
-            EvalEngine.getApfloat().pow(fApfloat, ((IComplexNum) that).apcomplexValue()));
+        return F.complexNum(EvalEngine.getApfloat().pow(fApfloat, ((INum) that).apcomplexValue()));
       }
       return valueOf(EvalEngine.getApfloat().pow(fApfloat, ((INum) that).apfloatValue()));
     }

@@ -415,7 +415,6 @@ public class OptionArgs {
     if (options != null) {
       if (options.fInvalidPosition > 0
           && options.fInvalidPosition <= position
-          && position > 0
           && ast.size() > position) {
         assumptionExpr = ast.get(position);
       } else {
