@@ -30,7 +30,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class CompilerFunctions {
-  private static final Logger LOGGER = LogManager.getLogger(); 
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /** Template for CompilePrint */
   public static final String JAVA_SOURCE_CODE = //
