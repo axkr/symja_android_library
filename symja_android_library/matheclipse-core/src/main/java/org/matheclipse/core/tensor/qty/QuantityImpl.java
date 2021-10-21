@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.parser.client.math.MathException;
 
 public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, Externalizable {
@@ -142,11 +143,13 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     CharSequence value = value().internalJavaString(properties, depth, variables);
 
     StringBuilder javaForm = new StringBuilder();
-    javaForm.append("IQuantity.of(").append(value).append(",");
+    boolean fullName = properties.prefix == Prefix.FULLY_QUALIFIED_CLASS_NAME;
+    String pPrefix = fullName ? "org.matheclipse.core.tensor.qty." : "";
+    javaForm.append(pPrefix).append("IQuantity.of(").append(value).append(",");
     if (IUnit.ONE.equals(unit())) {
-      javaForm.append("IUnit.ONE");
+      javaForm.append(pPrefix).append("IUnit.ONE");
     } else {
-      javaForm.append("IUnit.ofPutIfAbsent(\"").append(unitString()).append("\")");
+      javaForm.append(pPrefix).append("IUnit.ofPutIfAbsent(\"").append(unitString()).append("\")");
     }
     return javaForm.append(")");
   }

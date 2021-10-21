@@ -63,6 +63,7 @@ import org.matheclipse.core.interfaces.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -457,7 +458,15 @@ public abstract class AbstractAST implements IASTMutable {
     @Override
     public final CharSequence internalJavaString(SourceCodeProperties properties, int depth,
         Function<IExpr, ? extends CharSequence> variables) {
-      return properties.usePrefix ? "F.NIL" : "NIL";
+      switch (properties.prefix) {
+        case FULLY_QUALIFIED_CLASS_NAME:
+          return "org.matheclipse.core.expression.F.NIL";
+        case CLASS_NAME:
+          return "F.NIL";
+        case NONE:
+        default:
+        return "NIL";
+      }
     }
 
     @Override
@@ -2444,9 +2453,9 @@ public abstract class AbstractAST implements IASTMutable {
   }
 
   private static final SourceCodeProperties STRING_FORM_SYMBOL_FACTORY =
-      SourceCodeProperties.of(true, false, false, false);
+      SourceCodeProperties.of(true, false, Prefix.NONE, false);
   private static final SourceCodeProperties STRING_FORM_NO_SYMBOL_FACTORY =
-      SourceCodeProperties.of(false, false, false, false);
+      SourceCodeProperties.of(false, false, Prefix.NONE, false);
 
   static SourceCodeProperties stringFormProperties(boolean symbolsAsFactoryMethod) {
     return symbolsAsFactoryMethod ? STRING_FORM_SYMBOL_FACTORY : STRING_FORM_NO_SYMBOL_FACTORY;
@@ -2689,7 +2698,15 @@ public abstract class AbstractAST implements IASTMutable {
   }
 
   static String getPrefixF(SourceCodeProperties properties) {
-    return properties.usePrefix ? "F." : "";
+    switch (properties.prefix) {
+      case FULLY_QUALIFIED_CLASS_NAME:
+        return "org.matheclipse.core.expression.F.";
+      case CLASS_NAME:
+        return "F.";
+      case NONE:
+      default:
+        return "";
+    }
   }
 
   private void internalOperatorForm(
@@ -2708,9 +2725,9 @@ public abstract class AbstractAST implements IASTMutable {
   }
 
   private static final SourceCodeProperties SCALA_FORM_SYMBOL_FACTORY =
-      SourceCodeProperties.of(true, true, false, false);
+      SourceCodeProperties.of(true, true, Prefix.NONE, false);
   private static final SourceCodeProperties SCALA_FORM_NO_SYMBOL_FACTORY =
-      SourceCodeProperties.of(false, true, false, false);
+      SourceCodeProperties.of(false, true, Prefix.NONE, false);
 
   static SourceCodeProperties scalaFormProperties(boolean symbolsAsFactoryMethod) {
     return symbolsAsFactoryMethod ? SCALA_FORM_SYMBOL_FACTORY : SCALA_FORM_NO_SYMBOL_FACTORY;

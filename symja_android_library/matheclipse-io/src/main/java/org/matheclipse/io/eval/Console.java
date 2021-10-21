@@ -26,6 +26,7 @@ import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
@@ -493,7 +494,7 @@ public class Console {
   }
 
   static final SourceCodeProperties JAVA_FORM_PROPERTIES =
-      SourceCodeProperties.of(false, false, true, false);
+      SourceCodeProperties.of(false, false, Prefix.CLASS_NAME, false);
 
   private String printResult(IExpr result) {
     if (result.equals(S.Null)) {

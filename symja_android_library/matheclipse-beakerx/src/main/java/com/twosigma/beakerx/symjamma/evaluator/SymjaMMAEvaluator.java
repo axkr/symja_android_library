@@ -26,6 +26,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.FEConfig;
 import com.twosigma.beakerx.BeakerXClient;
@@ -234,7 +235,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
   }
 
   private static final SourceCodeProperties JAVA_FORM_PROPERTIES =
-      SourceCodeProperties.of(false, false, true, false);
+      SourceCodeProperties.of(false, false, Prefix.CLASS_NAME, false);
 
   /**
    * Print the result in the default output form

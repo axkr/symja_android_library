@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.mathml.MathMLFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.parser.ExprParser;
 
 /**
@@ -161,7 +162,7 @@ public class MathMLUtilities {
   }
 
   private static final SourceCodeProperties JAVA_FORM_PROPERTIES =
-      SourceCodeProperties.of(false, false, true, false);
+      SourceCodeProperties.of(false, false, Prefix.CLASS_NAME, false);
 
   private synchronized void toJava(
       final String inputExpression, final Writer out, boolean strictJava) {
