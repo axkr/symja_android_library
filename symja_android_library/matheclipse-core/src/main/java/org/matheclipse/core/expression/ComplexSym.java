@@ -488,18 +488,14 @@ public class ComplexSym implements IComplex {
 
   @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction);
+    SourceCodeProperties p = AbstractAST.stringFormProperties(symbolsAsFactoryMethod);
+    return internalJavaString(p, depth, F.CNullFunction);
   }
 
   @Override
-  public CharSequence internalJavaString(
-      boolean symbolsAsFactoryMethod,
-      int depth,
-      boolean useOperators,
-      boolean usePrefix,
-      boolean noSymbolPrefix,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<IExpr, ? extends CharSequence> variables) {
-    String prefix = usePrefix ? "F." : "";
+    String prefix = AbstractAST.getPrefixF(properties);
     if (fReal.isZero()) {
       if (fImaginary.isOne()) {
         return new StringBuilder(prefix).append("CI");
@@ -533,17 +529,16 @@ public class ComplexSym implements IComplex {
     }
     return new StringBuilder(prefix)
         .append("CC(")
-        .append(fReal.internalJavaString(
-            symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix, variables))
+        .append(fReal.internalJavaString(properties, depth, variables))
         .append(",")
-        .append(fImaginary.internalJavaString(
-            symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix, variables))
+        .append(fImaginary.internalJavaString(properties, depth, variables))
         .append(")");
   }
 
   @Override
   public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
+    SourceCodeProperties p = AbstractAST.scalaFormProperties(symbolsAsFactoryMethod);
+    return internalJavaString(p, depth, F.CNullFunction);
   }
 
   @Override

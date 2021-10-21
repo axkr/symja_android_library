@@ -312,14 +312,9 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public CharSequence internalJavaString(
-      boolean symbolsAsFactoryMethod,
-      int depth,
-      boolean useOperators,
-      boolean usePrefix,
-      boolean noSymbolPrefix,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<IExpr, ? extends CharSequence> variables) {
-    String prefix = usePrefix ? "F." : "";
+    String prefix = AbstractAST.getPrefixF(properties);
     StringBuilder javaForm = new StringBuilder(prefix);
     int value = NumberUtil.toInt(fIntValue);
     switch (value) {
@@ -372,7 +367,8 @@ public class IntegerSym extends AbstractIntegerSym {
 
   @Override
   public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
+    SourceCodeProperties p = AbstractAST.scalaFormProperties(symbolsAsFactoryMethod);
+    return internalJavaString(p, depth, F.CNullFunction);
   }
 
   @Override

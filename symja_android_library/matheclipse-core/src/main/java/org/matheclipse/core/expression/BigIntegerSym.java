@@ -354,14 +354,9 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public CharSequence internalJavaString(
-      boolean symbolsAsFactoryMethod,
-      int depth,
-      boolean useOperators,
-      boolean usePrefix,
-      boolean noSymbolPrefix,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<IExpr, ? extends CharSequence> variables) {
-    String prefix = usePrefix ? "F." : "";
+    String prefix = AbstractAST.getPrefixF(properties);
     StringBuilder javaForm = new StringBuilder(prefix);
     int value = toIntDefault(); // NumberUtil.toInt(fBigIntValue);
     if (value != Integer.MIN_VALUE) {
@@ -418,7 +413,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
   @Override
   public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null);
+    SourceCodeProperties p = AbstractAST.scalaFormProperties(symbolsAsFactoryMethod);
+    return internalJavaString(p, depth, x -> null);
   }
 
   @Override

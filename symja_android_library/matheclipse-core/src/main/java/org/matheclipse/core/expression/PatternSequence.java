@@ -229,28 +229,16 @@ public class PatternSequence implements IPatternSequence {
   }
 
   @Override
-  public CharSequence internalJavaString(
-      boolean symbolsAsFactoryMethod,
-      int depth,
-      boolean useOperators,
-      boolean usePrefix,
-      boolean noSymbolPrefix,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<IExpr, ? extends CharSequence> variables) {
-    if (symbolsAsFactoryMethod) {
-      String prefix = usePrefix ? "F." : "";
+    if (properties.symbolsAsFactoryMethod) {
+      String prefix = AbstractAST.getPrefixF(properties);
       final StringBuilder buffer = new StringBuilder();
       buffer.append(prefix).append("$ps(");
       if (fSymbol == null) {
         buffer.append("(ISymbol)null");
         if (fHeadTest != null) {
-          buffer.append(",")
-              .append(fHeadTest.internalJavaString(
-                      symbolsAsFactoryMethod,
-                      0,
-                      useOperators,
-                      usePrefix,
-                      noSymbolPrefix,
-                      variables));
+          buffer.append(",").append(fHeadTest.internalJavaString(properties, 0, variables));
         }
         if (fDefault) {
           if (fHeadTest == null) {
@@ -261,14 +249,7 @@ public class PatternSequence implements IPatternSequence {
       } else {
         buffer.append("\"" + fSymbol.toString() + "\"");
         if (fHeadTest != null) {
-          buffer.append(",")
-              .append(fHeadTest.internalJavaString(
-                      symbolsAsFactoryMethod,
-                      0,
-                      useOperators,
-                      usePrefix,
-                      noSymbolPrefix,
-                      variables));
+          buffer.append(",").append(fHeadTest.internalJavaString(properties, 0, variables));
         }
         if (fDefault) {
           buffer.append(",true");

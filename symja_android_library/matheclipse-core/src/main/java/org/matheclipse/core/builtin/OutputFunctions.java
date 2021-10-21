@@ -36,6 +36,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -453,7 +454,8 @@ public final class OutputFunctions {
   private static class JavaForm extends AbstractCoreFunctionEvaluator {
 
     public static CharSequence javaForm(IExpr arg1, boolean strictJava, boolean usePrefix) {
-      return arg1.internalJavaString(strictJava, 0, false, usePrefix, false, F.CNullFunction);
+      SourceCodeProperties p = SourceCodeProperties.of(strictJava, false, usePrefix, false);
+      return arg1.internalJavaString(p, 0, F.CNullFunction);
     }
 
     @Override

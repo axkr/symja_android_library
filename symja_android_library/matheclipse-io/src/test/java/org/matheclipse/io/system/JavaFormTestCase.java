@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.tensor.qty.IUnit;
 import org.matheclipse.parser.client.FEConfig;
@@ -33,6 +34,9 @@ public class JavaFormTestCase extends AbstractTestCase {
     assertEquals("oo", result.internalFormString(true, -1).toString());
   }
 
+  private static final SourceCodeProperties SYMBOL_FACTORY_PROPERTIES =
+      SourceCodeProperties.of(true, false, true, false);
+
   public void testJavaForm002() {
     // don't distinguish between lower- and uppercase identifiers
     FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
@@ -42,22 +46,25 @@ public class JavaFormTestCase extends AbstractTestCase {
 
     IExpr result = EvalEngine.get().evalHoldPattern(function);
     assertEquals("F.Sinc(F.DirectedInfinity(F.CI))",
-        result.internalJavaString(true, -1, false, true, false, F.CNullFunction).toString());
+        result.internalJavaString(SYMBOL_FACTORY_PROPERTIES, -1, F.CNullFunction).toString());
 
     result = util.evaluate(function);
     assertEquals("F.oo",
-        result.internalJavaString(true, -1, false, true, false, F.CNullFunction).toString());
+        result.internalJavaString(SYMBOL_FACTORY_PROPERTIES, -1, F.CNullFunction).toString());
   }
 
-  public void testJavaFormQuantity_withUnitKG() {
+  private static final SourceCodeProperties NO_SYMBOL_FACTORY_PROPERTIES =
+      SourceCodeProperties.of(false, false, true, false);
+
+  public void testJavaFormQuantity_unitKG() {
     IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ofPutIfAbsent("kg"));
-    String javaForm = quantity.internalJavaString(false, -1, false, true, false, null).toString();
-    assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ofPutIfAbsent(\"kg\"))", javaForm);
+    assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ofPutIfAbsent(\"kg\"))",
+        quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES, -1, null).toString());
   }
 
-  public void testJavaFormQuantity_withUnitOne() {
+  public void testJavaFormQuantity_unitOne() {
     IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ONE);
-    String javaForm = quantity.internalJavaString(false, -1, false, true, false, null).toString();
-    assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ONE)", javaForm);
+    assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ONE)",
+        quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES, -1, null).toString());
   }
 }

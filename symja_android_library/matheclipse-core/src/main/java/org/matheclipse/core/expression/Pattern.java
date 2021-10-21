@@ -231,14 +231,9 @@ public class Pattern extends Blank {
   }
 
   @Override
-  public CharSequence internalJavaString(
-      boolean symbolsAsFactoryMethod,
-      int depth,
-      boolean useOperaators,
-      boolean usePrefix,
-      boolean noSymbolPrefix,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<IExpr, ? extends CharSequence> variables) {
-    String prefix = usePrefix ? "F." : "";
+    String prefix = AbstractAST.getPrefixF(properties);
     final StringBuilder buffer = new StringBuilder(prefix);
     String symbolStr = fSymbol.toString();
     char ch = symbolStr.charAt(0);
@@ -288,14 +283,7 @@ public class Pattern extends Blank {
       } else if (fHeadTest == S.Symbol) {
         buffer.append(", Symbol");
       } else {
-        buffer.append(",")
-              .append(fHeadTest.internalJavaString(
-                    symbolsAsFactoryMethod,
-                    0,
-                    useOperaators,
-                    usePrefix,
-                    noSymbolPrefix,
-                    variables));
+        buffer.append(",").append(fHeadTest.internalJavaString(properties, 0, variables));
       }
     }
     if (fDefault) {

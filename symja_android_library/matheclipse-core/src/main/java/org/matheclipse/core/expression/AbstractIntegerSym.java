@@ -756,7 +756,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction);
+    SourceCodeProperties p = AbstractAST.stringFormProperties(symbolsAsFactoryMethod);
+    return internalJavaString(p, depth, F.CNullFunction);
   }
 
   @Override

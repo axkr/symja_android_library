@@ -255,19 +255,12 @@ public class Blank implements IPattern {
   }
 
   @Override
-  public CharSequence internalJavaString(
-      boolean symbolsAsFactoryMethod,
-      int depth,
-      boolean useOperators,
-      boolean usePrefix,
-      boolean noSymbolPrefix,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<IExpr, ? extends CharSequence> variables) {
-    String prefix = usePrefix ? "F." : "";
+    String prefix = AbstractAST.getPrefixF(properties);
     final StringBuilder buffer = new StringBuilder(prefix).append("$b(");
     if (fHeadTest != null) {
-      buffer.append(
-          fHeadTest.internalJavaString(
-              symbolsAsFactoryMethod, 0, useOperators, usePrefix, noSymbolPrefix, variables));
+      buffer.append(fHeadTest.internalJavaString(properties, 0, variables));
     }
     return buffer.append(')');
   }

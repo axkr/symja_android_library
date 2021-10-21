@@ -25,6 +25,7 @@ import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.Scanner;
@@ -491,13 +492,16 @@ public class Console {
     return buf.toString();
   }
 
+  static final SourceCodeProperties JAVA_FORM_PROPERTIES =
+      SourceCodeProperties.of(false, false, true, false);
+
   private String printResult(IExpr result) {
     if (result.equals(S.Null)) {
       return "";
     }
     switch (fUsedForm) {
       case JAVAFORM:
-        return result.internalJavaString(false, -1, false, true, false, F.CNullFunction).toString();
+        return result.internalJavaString(JAVA_FORM_PROPERTIES, -1, F.CNullFunction).toString();
       case TRADITIONALFORM:
         StringBuilder traditionalBuffer = new StringBuilder();
         fOutputTraditionalFactory.reset();

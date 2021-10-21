@@ -1053,27 +1053,72 @@ public interface IExpr
     return toString();
   }
 
+  public static class SourceCodeProperties {
+    /**
+     * If <code>true</code> use the <code>F.symbol()</code> method, otherwise print the symbol name.
+     */
+    public final boolean symbolsAsFactoryMethod;
+    /**
+     * If true use operators instead of function names for representation of Plus, Times, Power,...
+     */
+    public final boolean useOperators;
+    /**
+     * If true usePrefix use the <code>F....</code> class prefix for generating Java code.
+     */
+    public final boolean usePrefix;
+    /**
+     * If <code>true</code>, for symbols like <code>x,y,z,...</code> don't use the
+     * <code>F....</code> class prefix for code generation.
+     */
+    public final boolean noSymbolPrefix;
+
+    private SourceCodeProperties(boolean symbolsAsFactoryMethod, boolean useOperators,
+        boolean usePrefix, boolean noSymbolPrefix) {
+      this.symbolsAsFactoryMethod = symbolsAsFactoryMethod;
+      this.useOperators = useOperators;
+      this.usePrefix = usePrefix;
+      this.noSymbolPrefix = noSymbolPrefix;
+    }
+
+    /**
+     * Reaturns a {@link SourceCodeProperties} object with the specified parameters.
+     * 
+     * @param symbolsAsFactoryMethod if <code>true</code> use the <code>F.symbol()</code> method,
+     *        otherwise print the symbol name.
+     * @param useOperators use operators instead of function names for representation of Plus,
+     *        Times, Power,...
+     * @param usePrefix if <code>true</code> usePrefix use the <code>F....</code> class prefix for
+     *        generating Java code.
+     * @param noSymbolPrefix for symbols like <code>x,y,z,...</code> don't use the
+     *        <code>F....</code> class prefix for code generation
+     */
+    public static SourceCodeProperties of(boolean symbolsAsFactoryMethod, boolean useOperators,
+        boolean usePrefix, boolean noSymbolPrefix) {
+      return new SourceCodeProperties(symbolsAsFactoryMethod, useOperators, usePrefix,
+          noSymbolPrefix);
+    }
+
+    /**
+     * Returns a {@link SourceCodeProperties} objects with the same values as the given one except
+     * that the field {@link #symbolsAsFactoryMethod} of the returned object is always
+     * <code>false</code>.
+     */
+    public static SourceCodeProperties copyWithoutSymbolsAsFactoryMethod(SourceCodeProperties o) {
+      return !o.symbolsAsFactoryMethod ? o
+          : new SourceCodeProperties(false, o.useOperators, o.usePrefix, o.noSymbolPrefix);
+    }
+  }
+
   /**
    * Return the internal Java form of this expression.
    *
-   * @param symbolsAsFactoryMethod if <code>true</code> use the <code>F.symbol()</code> method,
-   *     otherwise print the symbol name.
+   * @param properties the settings to use for code generation.
    * @param depth the recursion depth of this call. <code>0</code> indicates &quot;recurse without a
-   *     limit&quot;.
-   * @param useOperators use operators instead of function names for representation of Plus, Times,
-   *     Power,...
-   * @param usePrefix use the <code>F....</code> class prefix for generating Java code.
-   * @param noSymbolPrefix for symbols like <code>x,y,z,...</code> don't use the <code>F....</code>
-   *     class prefix for code generation
+   *        limit&quot;.
    * @param variables TODO
    * @return the internal Java form of this expression
    */
-  default CharSequence internalJavaString(
-      boolean symbolsAsFactoryMethod,
-      int depth,
-      boolean useOperators,
-      boolean usePrefix,
-      boolean noSymbolPrefix,
+  default CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<IExpr, ? extends CharSequence> variables) {
     return toString();
   }
