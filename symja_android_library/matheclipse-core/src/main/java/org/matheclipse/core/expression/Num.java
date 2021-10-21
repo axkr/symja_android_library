@@ -48,29 +48,23 @@ public class Num implements INum {
    */
   public static Num valueOf(final double d) {
     if (d >= (-1.1) && d <= 1.1) {
-      try {
-        int i = DoubleMath.roundToInt(d, RoundingMode.UNNECESSARY);
-        if (i >= (-1) && i <= 1) {
-          switch (i) {
-            case -1:
-              if (d == (-1.0d)) {
-                return F.CND1;
-              }
-              break;
-            case 0:
-              if (d == 0.0d || d == -0.0d) {
-                return F.CD0;
-              }
-              break;
-            case 1:
-              if (d == 1.0d) {
-                return F.CD1;
-              }
-              break;
+      int i = (int) d;
+      switch (i) {
+        case -1:
+          if (d == (-1.0d)) {
+            return F.CND1;
           }
-        }
-      } catch (ArithmeticException ae) {
-        //
+          break;
+        case 0:
+          if (d == 0.0d || d == -0.0d) {
+            return F.CD0;
+          }
+          break;
+        case 1:
+          if (d == 1.0d) {
+            return F.CD1;
+          }
+          break;
       }
     }
     return new Num(d);
@@ -430,7 +424,9 @@ public class Num implements INum {
   }
 
   @Override
-  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
+  public CharSequence internalJavaString(
+      SourceCodeProperties properties,
+      int depth,
       Function<IExpr, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
     StringBuilder javaForm = new StringBuilder(prefix);
@@ -585,8 +581,8 @@ public class Num implements INum {
   @Override
   public INum multiply(final INum val) {
     if (val instanceof ApfloatNum) {
-      return F
-          .num(EvalEngine.getApfloat().multiply(apfloatValue(), ((ApfloatNum) val).apfloatValue()));
+      return F.num(
+          EvalEngine.getApfloat().multiply(apfloatValue(), ((ApfloatNum) val).apfloatValue()));
     }
     return valueOf(fDouble * val.getRealPart());
   }
@@ -678,12 +674,13 @@ public class Num implements INum {
   public ISignedNumber roundClosest(ISignedNumber multiple) {
     if (multiple.isRational()) {
       return F.ZZ(
-          DoubleMath.roundToBigInteger(fDouble / multiple.doubleValue(), RoundingMode.HALF_EVEN))
+              DoubleMath.roundToBigInteger(
+                  fDouble / multiple.doubleValue(), RoundingMode.HALF_EVEN))
           .multiply((IRational) multiple);
     }
     double factor = multiple.doubleValue();
-    return F
-        .num(DoubleMath.roundToBigInteger(fDouble / factor, RoundingMode.HALF_EVEN).doubleValue()
+    return F.num(
+        DoubleMath.roundToBigInteger(fDouble / factor, RoundingMode.HALF_EVEN).doubleValue()
             * factor);
   }
 
