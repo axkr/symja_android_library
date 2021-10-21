@@ -4609,8 +4609,8 @@ public class F extends S {
    * False
    * </pre>
    */
-  public static IAST IntegerQ(final IExpr a) {
-    return new B1.IntegerQ(a);
+  public static IAST IntegerQ(final IExpr expr) {
+    return new B1.IntegerQ(expr);
   }
 
   /**
@@ -5280,8 +5280,8 @@ public class F extends S {
     return ast(Line);
   }
 
-  public static IAST Line(final IExpr a0) {
-    return new B1.Line(a0);
+  public static IAST Line(final IExpr listOfPoints) {
+    return new B1.Line(listOfPoints);
   }
 
   public static IAST LinearModelFit(final IExpr a0) {
@@ -5640,24 +5640,24 @@ public class F extends S {
   }
 
   /**
-   * Return a single of value as a <code>List()</code>
+   * Return a single value as a <code>List()</code>
    *
-   * @param a
+   * @param expr
    * @return
    */
-  public static IAST list(final IExpr a) {
-    return new B1.List(a);
+  public static IAST list(final IExpr expr) {
+    return new B1.List(expr);
   }
 
   /**
    * Return a pair of values as a <code>List()</code>
    *
-   * @param a0
-   * @param a1
+   * @param x1
+   * @param x2
    * @return
    */
-  public static IAST list(final IExpr a0, final IExpr a1) {
-    return new B2.List(a0, a1);
+  public static IAST list(final IExpr x1, final IExpr x2) {
+    return new B2.List(x1, x2);
   }
 
   /**

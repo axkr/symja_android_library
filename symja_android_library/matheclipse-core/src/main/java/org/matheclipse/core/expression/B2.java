@@ -400,8 +400,8 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       super();
     }
 
-    Power(IExpr arg1, IExpr arg2) {
-      super(arg1, arg2);
+    Power(IExpr base, IExpr exponent) {
+      super(base, exponent);
     }
 
     @Override
