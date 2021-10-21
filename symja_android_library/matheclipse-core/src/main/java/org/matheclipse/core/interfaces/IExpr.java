@@ -1078,10 +1078,6 @@ public interface IExpr
     return toString();
   }
 
-  default CharSequence internalJavaString(Function<IExpr, ? extends CharSequence> variables) {
-    return internalJavaString(false, -1, false, true, false, variables);
-  }
-
   /**
    * Return the internal Scala form of this expression.
    *

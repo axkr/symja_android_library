@@ -51,13 +51,13 @@ public class JavaFormTestCase extends AbstractTestCase {
 
   public void testJavaFormQuantity_withUnitKG() {
     IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ofPutIfAbsent("kg"));
-    String javaForm = quantity.internalJavaString(null).toString();
+    String javaForm = quantity.internalJavaString(false, -1, false, true, false, null).toString();
     assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ofPutIfAbsent(\"kg\"))", javaForm);
   }
 
   public void testJavaFormQuantity_withUnitOne() {
     IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ONE);
-    String javaForm = quantity.internalJavaString(null).toString();
+    String javaForm = quantity.internalJavaString(false, -1, false, true, false, null).toString();
     assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ONE)", javaForm);
   }
 }
