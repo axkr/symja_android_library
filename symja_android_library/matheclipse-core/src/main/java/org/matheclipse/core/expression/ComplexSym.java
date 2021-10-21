@@ -488,24 +488,25 @@ public class ComplexSym implements IComplex {
 
   @Override
   public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction);
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false,
+        F.CNullFunction).toString();
   }
 
   @Override
-  public String internalJavaString(
+  public CharSequence internalJavaString(
       boolean symbolsAsFactoryMethod,
       int depth,
       boolean useOperators,
       boolean usePrefix,
       boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
+      Function<IExpr, ? extends CharSequence> variables) {
     String prefix = usePrefix ? "F." : "";
     if (fReal.isZero()) {
       if (fImaginary.isOne()) {
-        return prefix + "CI";
+        return new StringBuilder(prefix).append("CI");
       }
       if (fImaginary.isMinusOne()) {
-        return prefix + "CNI";
+        return new StringBuilder(prefix).append("CNI");
       }
     }
 
@@ -520,34 +521,31 @@ public class ComplexSym implements IComplex {
         imagNumerator != Integer.MIN_VALUE
         && //
         imagDenominator != Integer.MIN_VALUE) {
-      return prefix
-          + "CC("
-          + realNumerator
-          + "L,"
-          + realDenominator
-          + "L,"
-          + imagNumerator
-          + "L,"
-          + imagDenominator
-          + "L)";
+      return new StringBuilder(prefix)
+          .append("CC(")
+          .append(realNumerator)
+          .append("L,")
+          .append(realDenominator)
+          .append("L,")
+          .append(imagNumerator)
+          .append("L,")
+          .append(imagDenominator)
+          .append("L)");
     }
-    return prefix
-        + "CC("
-        + //
-        fReal.internalJavaString(
-            symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix, variables)
-        + //
-        ","
-        + //
-        fImaginary.internalJavaString(
-            symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix, variables)
-        + //
-        ")";
+    return new StringBuilder(prefix)
+        .append("CC(")
+        .append(fReal.internalJavaString(
+            symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix, variables))
+        .append(",")
+        .append(fImaginary.internalJavaString(
+            symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix, variables))
+        .append(")");
   }
 
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction)
+        .toString();
   }
 
   @Override

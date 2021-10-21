@@ -403,46 +403,49 @@ public class FractionSym extends AbstractFractionSym {
 
   @Override
   public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction);
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction)
+        .toString();
   }
 
   @Override
-  public String internalJavaString(
+  public CharSequence internalJavaString(
       boolean symbolsAsFactoryMethod,
       int depth,
       boolean useOperators,
       boolean usePrefix,
       boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
+      Function<IExpr, ? extends CharSequence> variables) {
     String prefix = usePrefix ? "F." : "";
+    StringBuilder javaForm = new StringBuilder(prefix);
     if (fNumerator == 1) {
       switch (fDenominator) {
         case 2:
-          return prefix + "C1D2";
+          return javaForm.append("C1D2");
         case 3:
-          return prefix + "C1D3";
+          return javaForm.append("C1D3");
         case 4:
-          return prefix + "C1D4";
+          return javaForm.append("C1D4");
         default:
       }
     }
     if (fNumerator == -1) {
       switch (fDenominator) {
         case 2:
-          return prefix + "CN1D2";
+          return javaForm.append("CN1D2");
         case 3:
-          return prefix + "CN1D3";
+          return javaForm.append("CN1D3");
         case 4:
-          return prefix + "CN1D4";
+          return javaForm.append("CN1D4");
         default:
       }
     }
-    return prefix + "QQ(" + fNumerator + "L," + fDenominator + "L)";
+    return javaForm.append("QQ(").append(fNumerator).append("L,").append(fDenominator).append("L)");
   }
 
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction)
+        .toString();
   }
 
   /**

@@ -232,14 +232,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   }
 
   @Override
-  protected String internalJavaStringAsFactoryMethod() {
-    if (Config.RUBI_CONVERT_SYMBOLS) {
-      if (fOrdinal >= 1) {
-        if (Config.RUBI_CONVERT_SYMBOLS && "C".equals(fSymbolName)) {
-          return fSymbolName + "Symbol";
-        }
-        return fSymbolName;
+  protected CharSequence internalJavaStringAsFactoryMethod() {
+    if (Config.RUBI_CONVERT_SYMBOLS && fOrdinal >= 1) {
+      if (Config.RUBI_CONVERT_SYMBOLS && "C".equals(fSymbolName)) {
+        return new StringBuilder(fSymbolName).append("Symbol");
       }
+      return fSymbolName;
     }
     return super.internalJavaStringAsFactoryMethod();
   }

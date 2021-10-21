@@ -136,9 +136,10 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
   }
 
   @Override
-  public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-      boolean usePrefix, boolean noSymbolPrefix, Function<IExpr, String> variables) {
-    String value = value().internalJavaString(symbolsAsFactoryMethod, depth, useOperators,
+  public CharSequence internalJavaString(boolean symbolsAsFactoryMethod, int depth,
+      boolean useOperators, boolean usePrefix, boolean noSymbolPrefix,
+      Function<IExpr, ? extends CharSequence> variables) {
+    CharSequence value = value().internalJavaString(symbolsAsFactoryMethod, depth, useOperators,
         usePrefix, noSymbolPrefix, variables);
     StringBuilder javaForm = new StringBuilder();
     javaForm.append("IQuantity.of(").append(value).append(",");
@@ -147,7 +148,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     } else {
       javaForm.append("IUnit.ofPutIfAbsent(\"").append(unitString()).append("\")");
     }
-    return javaForm.append(")").toString();
+    return javaForm.append(")");
   }
 
   /** {@inheritDoc} */

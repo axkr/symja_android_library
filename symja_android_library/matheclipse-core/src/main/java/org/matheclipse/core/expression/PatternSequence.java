@@ -229,23 +229,22 @@ public class PatternSequence implements IPatternSequence {
   }
 
   @Override
-  public String internalJavaString(
+  public CharSequence internalJavaString(
       boolean symbolsAsFactoryMethod,
       int depth,
       boolean useOperators,
       boolean usePrefix,
       boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
+      Function<IExpr, ? extends CharSequence> variables) {
     if (symbolsAsFactoryMethod) {
       String prefix = usePrefix ? "F." : "";
       final StringBuilder buffer = new StringBuilder();
-      buffer.append(prefix + "$ps(");
+      buffer.append(prefix).append("$ps(");
       if (fSymbol == null) {
         buffer.append("(ISymbol)null");
         if (fHeadTest != null) {
-          buffer.append(
-              ","
-                  + fHeadTest.internalJavaString(
+          buffer.append(",")
+              .append(fHeadTest.internalJavaString(
                       symbolsAsFactoryMethod,
                       0,
                       useOperators,
@@ -262,9 +261,8 @@ public class PatternSequence implements IPatternSequence {
       } else {
         buffer.append("\"" + fSymbol.toString() + "\"");
         if (fHeadTest != null) {
-          buffer.append(
-              ","
-                  + fHeadTest.internalJavaString(
+          buffer.append(",")
+              .append(fHeadTest.internalJavaString(
                       symbolsAsFactoryMethod,
                       0,
                       useOperators,
@@ -276,14 +274,17 @@ public class PatternSequence implements IPatternSequence {
           buffer.append(",true");
         }
       }
-      buffer.append(')');
-      return buffer.toString();
+      return buffer.append(')');
     }
-    return toString();
+    return toCharSequence();
   }
 
   @Override
   public String toString() {
+    return toCharSequence().toString();
+  }
+
+  private CharSequence toCharSequence() {
     final StringBuilder buffer = new StringBuilder();
     if (fSymbol == null) {
       buffer.append("__");
@@ -318,7 +319,7 @@ public class PatternSequence implements IPatternSequence {
         buffer.append(fHeadTest.toString());
       }
     }
-    return buffer.toString();
+    return buffer;
   }
 
   @Override

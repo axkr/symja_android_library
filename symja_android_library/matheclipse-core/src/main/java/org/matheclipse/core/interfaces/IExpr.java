@@ -1068,17 +1068,17 @@ public interface IExpr
    * @param variables TODO
    * @return the internal Java form of this expression
    */
-  default String internalJavaString(
+  default CharSequence internalJavaString(
       boolean symbolsAsFactoryMethod,
       int depth,
       boolean useOperators,
       boolean usePrefix,
       boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
+      Function<IExpr, ? extends CharSequence> variables) {
     return toString();
   }
 
-  default String internalJavaString(Function<IExpr, String> variables) {
+  default CharSequence internalJavaString(Function<IExpr, ? extends CharSequence> variables) {
     return internalJavaString(false, -1, false, true, false, variables);
   }
 

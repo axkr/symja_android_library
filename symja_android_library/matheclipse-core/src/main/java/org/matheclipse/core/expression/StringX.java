@@ -401,19 +401,15 @@ public class StringX implements IStringX {
 
   /** {@inheritDoc} */
   @Override
-  public String internalJavaString(
+  public CharSequence internalJavaString(
       boolean symbolsAsFactoryMethod,
       int depth,
       boolean useOperators,
       boolean usePrefix,
       boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
-    final StringBuilder buffer = new StringBuilder();
+      Function<IExpr, ? extends CharSequence> variables) {
     String prefix = usePrefix ? "F." : "";
-    buffer.append(prefix + "$str(\"");
-    buffer.append(fString);
-    buffer.append("\")");
-    return buffer.toString();
+    return new StringBuilder(prefix).append("$str(\"").append(fString).append("\")");
   }
 
   /**

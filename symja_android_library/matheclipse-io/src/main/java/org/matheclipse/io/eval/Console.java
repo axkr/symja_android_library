@@ -497,7 +497,7 @@ public class Console {
     }
     switch (fUsedForm) {
       case JAVAFORM:
-        return result.internalJavaString(false, -1, false, true, false, F.CNullFunction);
+        return result.internalJavaString(false, -1, false, true, false, F.CNullFunction).toString();
       case TRADITIONALFORM:
         StringBuilder traditionalBuffer = new StringBuilder();
         fOutputTraditionalFactory.reset();

@@ -312,66 +312,68 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public String internalJavaString(
+  public CharSequence internalJavaString(
       boolean symbolsAsFactoryMethod,
       int depth,
       boolean useOperators,
       boolean usePrefix,
       boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
+      Function<IExpr, ? extends CharSequence> variables) {
     String prefix = usePrefix ? "F." : "";
+    StringBuilder javaForm = new StringBuilder(prefix);
     int value = NumberUtil.toInt(fIntValue);
     switch (value) {
       case -1:
-        return prefix + "CN1";
+        return javaForm.append("CN1");
       case -2:
-        return prefix + "CN2";
+        return javaForm.append("CN2");
       case -3:
-        return prefix + "CN3";
+        return javaForm.append("CN3");
       case -4:
-        return prefix + "CN4";
+        return javaForm.append("CN4");
       case -5:
-        return prefix + "CN5";
+        return javaForm.append("CN5");
       case -6:
-        return prefix + "CN6";
+        return javaForm.append("CN6");
       case -7:
-        return prefix + "CN7";
+        return javaForm.append("CN7");
       case -8:
-        return prefix + "CN8";
+        return javaForm.append("CN8");
       case -9:
-        return prefix + "CN9";
+        return javaForm.append("CN9");
       case -10:
-        return prefix + "CN10";
+        return javaForm.append("CN10");
       case 0:
-        return prefix + "C0";
+        return javaForm.append("C0");
       case 1:
-        return prefix + "C1";
+        return javaForm.append("C1");
       case 2:
-        return prefix + "C2";
+        return javaForm.append("C2");
       case 3:
-        return prefix + "C3";
+        return javaForm.append("C3");
       case 4:
-        return prefix + "C4";
+        return javaForm.append("C4");
       case 5:
-        return prefix + "C5";
+        return javaForm.append("C5");
       case 6:
-        return prefix + "C6";
+        return javaForm.append("C6");
       case 7:
-        return prefix + "C7";
+        return javaForm.append("C7");
       case 8:
-        return prefix + "C8";
+        return javaForm.append("C8");
       case 9:
-        return prefix + "C9";
+        return javaForm.append("C9");
       case 10:
-        return prefix + "C10";
+        return javaForm.append("C10");
       default:
     }
-    return prefix + "ZZ(" + value + "L)";
+    return javaForm.append("ZZ(").append(value).append("L)");
   }
 
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction)
+        .toString();
   }
 
   @Override

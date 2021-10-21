@@ -581,24 +581,27 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction);
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction)
+        .toString();
   }
 
   @Override
-  public String internalJavaString(
+  public CharSequence internalJavaString(
       boolean symbolsAsFactoryMethod,
       int depth,
       boolean useOperators,
       boolean usePrefix,
       boolean noSymbolPrefix,
-      Function<IExpr, String> variables) {
+      Function<IExpr, ? extends CharSequence> variables) {
     String prefix = usePrefix ? "F." : "";
-    return prefix + "complexNum(" + fComplex.getReal() + "," + fComplex.getImaginary() + ")";
+    return new StringBuilder(prefix).append("complexNum(").append(fComplex.getReal()).append(",")
+        .append(fComplex.getImaginary()).append(")");
   }
 
   @Override
   public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction)
+        .toString();
   }
 
   @Override

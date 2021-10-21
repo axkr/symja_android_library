@@ -169,8 +169,8 @@ public class MathMLUtilities {
         parsedExpression = parser.parse(inputExpression);
         // node = fEvalEngine.parseNode(inputExpression);
         // parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
-        out.write(
-            parsedExpression.internalJavaString(false, -1, false, true, false, F.CNullFunction));
+        out.write(parsedExpression
+            .internalJavaString(false, -1, false, true, false, F.CNullFunction).toString());
       } catch (final IOException ioe) {
         //
       } catch (final RuntimeException rex) {
