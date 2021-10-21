@@ -20,8 +20,7 @@ import org.matheclipse.parser.client.FEConfig;
 
 /** Generate java sources for Symja rule files. */
 public class RulePreprocessor {
-  private static SourceCodeProperties p =
-      SourceCodeProperties.of(false, false, Prefix.CLASS_NAME, false);
+  private static SourceCodeProperties p = SourceCodeProperties.of(false, false, Prefix.NONE, false);
 
   /**
    * If <code>true</code> abort rule creation, if the left-hand-side contains a variable (instead of
