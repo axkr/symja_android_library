@@ -417,9 +417,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null)
-        .toString();
+  public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null);
   }
 
   @Override

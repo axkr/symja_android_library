@@ -487,9 +487,8 @@ public class ComplexSym implements IComplex {
   }
 
   @Override
-  public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false,
-        F.CNullFunction).toString();
+  public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, F.CNullFunction);
   }
 
   @Override
@@ -543,9 +542,8 @@ public class ComplexSym implements IComplex {
   }
 
   @Override
-  public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction)
-        .toString();
+  public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
   }
 
   @Override

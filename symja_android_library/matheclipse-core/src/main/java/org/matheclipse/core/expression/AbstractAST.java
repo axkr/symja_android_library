@@ -2470,9 +2470,8 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
-  public final String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, x -> null)
-        .toString();
+  public final CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, x -> null);
   }
 
   /** {@inheritDoc} */
@@ -2872,9 +2871,8 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
-  public final String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null)
-        .toString();
+  public final CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null);
   }
 
   /** {@inheritDoc} */

@@ -182,7 +182,7 @@ public class EvalUtilities extends MathMLUtilities {
       EvalEngine.setReset(fEvalEngine);
       ExprParser parser = new ExprParser(fEvalEngine);
       IExpr parsedExpression = parser.parse(inputExpression);
-      return parsedExpression.internalFormString(false, 0);
+      return parsedExpression.internalFormString(false, 0).toString();
     }
     return "";
   }

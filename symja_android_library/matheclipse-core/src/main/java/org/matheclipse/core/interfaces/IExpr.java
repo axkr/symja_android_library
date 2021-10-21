@@ -1049,7 +1049,7 @@ public interface IExpr
    *     limit&quot;.
    * @return the internal Java form of this expression
    */
-  default String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+  default CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
     return toString();
   }
 
@@ -1091,7 +1091,7 @@ public interface IExpr
    *     limit&quot;.
    * @return the internal Scala form of this expression
    */
-  default String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+  default CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
     return toString();
   }
 
