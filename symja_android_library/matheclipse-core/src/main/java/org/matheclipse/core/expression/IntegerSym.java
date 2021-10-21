@@ -371,9 +371,8 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction)
-        .toString();
+  public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, F.CNullFunction);
   }
 
   @Override

@@ -388,15 +388,11 @@ public class StringX implements IStringX {
   }
 
   @Override
-  public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+  public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
     if (symbolsAsFactoryMethod) {
-      final StringBuilder buffer = new StringBuilder();
-      buffer.append("$str(\"");
-      buffer.append(fString);
-      buffer.append("\")");
-      return buffer.toString();
+      return new StringBuilder("$str(\"").append(fString).append("\")");
     }
-    return "\"" + fString + "\"";
+    return new StringBuilder(fString.length() + 2).append("\"").append(fString).append("\"");
   }
 
   /** {@inheritDoc} */

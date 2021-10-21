@@ -545,9 +545,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, x -> null)
-        .toString();
+  public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+    return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false, x -> null);
   }
 
   /** {@inheritDoc} */
@@ -634,9 +633,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null)
-        .toString();
+  public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+    return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false, x -> null);
   }
 
   /** {@inheritDoc} */

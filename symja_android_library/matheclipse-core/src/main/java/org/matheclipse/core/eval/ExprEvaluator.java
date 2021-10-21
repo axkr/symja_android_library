@@ -674,7 +674,7 @@ public class ExprEvaluator {
     if (inputExpression != null) {
       ExprParser parser = new ExprParser(fEngine);
       parsedExpression = parser.parse(inputExpression);
-      return parsedExpression.internalFormString(false, 0);
+      return parsedExpression.internalFormString(false, 0).toString();
     }
     return "";
   }
@@ -690,7 +690,7 @@ public class ExprEvaluator {
     if (inputExpression != null) {
       ExprParser parser = new ExprParser(fEngine);
       parsedExpression = parser.parse(inputExpression);
-      return parsedExpression.internalScalaString(false, 0);
+      return parsedExpression.internalScalaString(false, 0).toString();
     }
     return "";
   }
