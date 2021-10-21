@@ -520,20 +520,18 @@ public class CompilerFunctions {
 
     private boolean convertSymbolic(StringBuilder buf, IExpr expression) {
       try {
-        buf.append(
-            expression.internalJavaString(
-                x -> {
-                  if (x.isSymbol()) {
-                    if (localVariables.contains(x.toString())) {
-                      return "vars.get(\"" + x.toString() + "\")";
-                    }
-                  }
-                  String str = numericVariables.apply(x);
-                  if (x.isSymbol() && str != null) {
-                    return str;
-                  }
-                  return null;
-                }));
+        buf.append(expression.internalJavaString(false, -1, false, true, false, x -> {
+          if (x.isSymbol()) {
+            if (localVariables.contains(x.toString())) {
+              return "vars.get(\"" + x.toString() + "\")";
+            }
+          }
+          String str = numericVariables.apply(x);
+          if (x.isSymbol() && str != null) {
+            return str;
+          }
+          return null;
+        }));
         return true;
       } catch (RuntimeException rex) {
         //
