@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -13,13 +12,16 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IPatternObject;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.FEConfig;
 
 /** Generate java sources for Symja rule files. */
 public class RulePreprocessor {
+  private static SourceCodeProperties p =
+      SourceCodeProperties.of(false, false, Prefix.CLASS_NAME, false);
 
   /**
    * If <code>true</code> abort rule creation, if the left-hand-side contains a variable (instead of
@@ -76,9 +78,9 @@ public class RulePreprocessor {
     if (evalRHS) {
       rightHandSide = F.eval(rightHandSide);
     }
-    buffer.append(leftHandSide.internalJavaString(false, 1, false, false, false, F.CNullFunction));
+    buffer.append(leftHandSide.internalJavaString(p, 1, F.CNullFunction));
     buffer.append(",\n      ");
-    buffer.append(rightHandSide.internalJavaString(false, 1, false, false, false, F.CNullFunction));
+    buffer.append(rightHandSide.internalJavaString(p, 1, F.CNullFunction));
     if (last) {
       buffer.append(")\n");
     } else {

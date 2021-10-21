@@ -2,7 +2,6 @@ package org.matheclipse.core.preprocessor;
 
 import java.io.FileReader;
 import java.io.IOException;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.matheclipse.core.convert.AST2Expr;
@@ -11,10 +10,14 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
+import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 public class ElementPreprocessor {
+  private static SourceCodeProperties JAVA_FORM_PROPERTIES =
+      SourceCodeProperties.of(false, false, Prefix.NONE, false);
 
   public static void main(String[] args) {
     F.initSymbols();
@@ -59,12 +62,9 @@ public class ElementPreprocessor {
         }
         rowList.append(columnList);
       }
-      // System.out.println(rowList.toString());
       for (int i = 2; i < rowList.size(); i++) {
         IAST columnList = (IAST) rowList.get(i);
-
-        System.out.print(
-            columnList.internalJavaString(false, 1, false, false, false, F.CNullFunction));
+        System.out.print(columnList.internalJavaString(JAVA_FORM_PROPERTIES, 1, F.CNullFunction));
         System.out.println(", ");
       }
       // return rowList;
