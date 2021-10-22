@@ -225,9 +225,6 @@ public final class Combinatoric {
         return new CartesianProductIterator(comps, fEmptyResultList);
       }
 
-      int size() {
-        return comps.size();
-      }
     }
 
     @Override
@@ -660,22 +657,91 @@ public final class Combinatoric {
      * <p>See <a href="http://en.wikipedia.org/wiki/Integer_partition">Wikipedia - Integer
      * partition</a>
      */
-    public static final class NumberPartitionsIterable implements Iterator<int[]>, Iterable<int[]> {
+    public static final class NumberPartitionsIterable implements Iterable<int[]> {
 
       private final int n;
 
       private final int len;
 
-      private final int fPartititionsIndex[];
+      private class NumberPartitionsIterator implements Iterator<int[]> {
 
-      private int i;
+        private int i = 0;
 
-      private int k;
+        private int k = 0;
 
-      private final int fCopiedResultIndex[];
+        private final int fPartititionsIndex[];
 
-      private int fResultIndex[];
+        private final int fCopiedResultIndex[];
 
+        private int fResultIndex[];
+
+        private NumberPartitionsIterator() {
+          int size = n;
+          if (len > n) {
+            size = len;
+          }
+          fPartititionsIndex = new int[size];
+          fCopiedResultIndex = new int[size];
+          fResultIndex = nextBeforehand();
+        }
+
+        private final int[] nextBeforehand() {
+          int l;
+          int k1;
+          if (i == -1) {
+            return null;
+          }
+          if (fPartititionsIndex[0] != 0) {
+            k1 = k;
+            while (fPartititionsIndex[k1] == 1) {
+              fPartititionsIndex[k1--] = 0;
+            }
+            while (true) {
+              l = k - i;
+              k = i;
+              fPartititionsIndex[i] -= 1;
+              while (fPartititionsIndex[k] <= l) {
+                l = l - fPartititionsIndex[k++];
+                fPartititionsIndex[k] = fPartititionsIndex[k - 1];
+              }
+              if (k != n - 1) {
+                fPartititionsIndex[++k] = l + 1;
+                if (fPartititionsIndex[i] != 1) {
+                  i = k;
+                }
+                if (fPartititionsIndex[i] == 1) {
+                  i--;
+                }
+                // only exit for while(true)
+                return fPartititionsIndex;
+              }
+              k++;
+              if (fPartititionsIndex[i] != 1) {
+                i = k;
+              }
+              if (fPartititionsIndex[i] == 1) {
+                i--;
+              }
+            }
+          }
+          fPartititionsIndex[0] = n;
+          k = 0;
+          i = 0;
+          return fPartititionsIndex;
+        }
+
+        @Override
+        public int[] next() {
+          System.arraycopy(fResultIndex, 0, fCopiedResultIndex, 0, fResultIndex.length);
+          fResultIndex = nextBeforehand();
+          return fCopiedResultIndex;
+        }
+
+        @Override
+        public boolean hasNext() {
+          return fResultIndex != null;
+        }
+      }
       /**
        * @param n with <code>n > 1</code>
        * @param l
@@ -683,7 +749,7 @@ public final class Combinatoric {
       public NumberPartitionsIterable(final int n, final int l) {
         super();
         this.n = n;
-        len = l;
+        this.len = l;
         int size = n;
         if (len > n) {
           size = len;
@@ -691,76 +757,14 @@ public final class Combinatoric {
         if (Config.MAX_AST_SIZE < size) {
           ASTElementLimitExceeded.throwIt(size);
         }
-        fPartititionsIndex = new int[size];
-        fCopiedResultIndex = new int[size];
-        fResultIndex = nextBeforehand();
-      }
-
-      private final int[] nextBeforehand() {
-        int l;
-        int k1;
-        if (i == -1) {
-          return null;
-        }
-        if (fPartititionsIndex[0] != 0) {
-          k1 = k;
-          while (fPartititionsIndex[k1] == 1) {
-            fPartititionsIndex[k1--] = 0;
-          }
-          while (true) {
-            l = k - i;
-            k = i;
-            fPartititionsIndex[i] -= 1;
-            while (fPartititionsIndex[k] <= l) {
-              l = l - fPartititionsIndex[k++];
-              fPartititionsIndex[k] = fPartititionsIndex[k - 1];
-            }
-            if (k != n - 1) {
-              fPartititionsIndex[++k] = l + 1;
-              if (fPartititionsIndex[i] != 1) {
-                i = k;
-              }
-              if (fPartititionsIndex[i] == 1) {
-                i--;
-              }
-              // only exit for while(true)
-              return fPartititionsIndex;
-            }
-            k++;
-            if (fPartititionsIndex[i] != 1) {
-              i = k;
-            }
-            if (fPartititionsIndex[i] == 1) {
-              i--;
-            }
-          }
-        }
-        fPartititionsIndex[0] = n;
-        k = 0;
-        i = 0;
-        return fPartititionsIndex;
-      }
-
-      @Override
-      public int[] next() {
-        System.arraycopy(fResultIndex, 0, fCopiedResultIndex, 0, fResultIndex.length);
-        fResultIndex = nextBeforehand();
-        return fCopiedResultIndex;
-      }
-
-      @Override
-      public boolean hasNext() {
-        return fResultIndex != null;
-      }
-
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
+        //        fPartititionsIndex = new int[size];
+        //        fCopiedResultIndex = new int[size];
+        //        fResultIndex = nextBeforehand();
       }
 
       @Override
       public Iterator<int[]> iterator() {
-        return this;
+        return new NumberPartitionsIterator();
       }
     }
 
@@ -1031,20 +1035,19 @@ public final class Combinatoric {
         final ISymbol sym = listArg0.topHead();
         final IASTAppendable result = F.ListAlloc(50);
         final KPermutationsIterable permutationIterator = new KPermutationsIterable(listArg0, n, 1);
-        final KPartitions.KPartitionsIterable partitionIterator =
-            new KPartitions.KPartitionsIterable(n, k);
         IAST partition;
 
         // first generate all permutations:
         for (int permutationsIndex[] : permutationIterator) {
           // second generate all partitions:
+          final KPartitions.KPartitionsIterable partitionIterator =
+              new KPartitions.KPartitionsIterable(n, k);
           for (int partitionsIndex[] : partitionIterator) {
             partition = createSinglePartition(listArg0, sym, permutationsIndex, partitionsIndex);
             if (partition.isPresent()) {
               result.append(partition);
             }
           }
-          partitionIterator.reset();
         }
         return result;
       }
@@ -1147,7 +1150,7 @@ public final class Combinatoric {
      * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia - Partition of a
      * set</a>
      */
-    public static final class KPartitionsIterable implements Iterator<int[]>, Iterable<int[]> {
+    public static final class KPartitionsIterable implements Iterable<int[]> {
 
       private final int fLength;
 
@@ -1157,7 +1160,58 @@ public final class Combinatoric {
 
       private final int fCopiedResultIndex[];
 
-      private int fResultIndex[];
+      private class KPartitionsIterator implements Iterator<int[]> {
+
+        private int fResultIndex[];
+
+        private KPartitionsIterator() {
+          fResultIndex = nextBeforehand();
+        }
+
+        /**
+         * Get the index array for the next partition.
+         *
+         * @return <code>null</code> if no further index array could be generated
+         */
+        @Override
+        public int[] next() {
+          System.arraycopy(fResultIndex, 0, fCopiedResultIndex, 0, fResultIndex.length);
+          fResultIndex = nextBeforehand();
+          return fCopiedResultIndex;
+        }
+
+        @Override
+        public boolean hasNext() {
+          return fResultIndex != null;
+        }
+
+        /**
+         * Get the index array for the next partition.
+         *
+         * @return <code>null</code> if no further index array could be generated
+         */
+        private final int[] nextBeforehand() {
+          if (fPartitionsIndex[0] < 0) {
+            for (int i = 0; i < fNumberOfParts; ++i) {
+              fPartitionsIndex[i] = i;
+            }
+            return fPartitionsIndex;
+          } else {
+            int i = 0;
+            for (i = fNumberOfParts - 1;
+                (i >= 0) && (fPartitionsIndex[i] >= fLength - fNumberOfParts + i);
+                --i) {}
+            if (i <= 0) {
+              return null;
+            }
+            fPartitionsIndex[i]++;
+            for (int m = i + 1; m < fNumberOfParts; ++m) {
+              fPartitionsIndex[m] = fPartitionsIndex[m - 1] + 1;
+            }
+            return fPartitionsIndex;
+          }
+        }
+      }
 
       public KPartitionsIterable(final int length, final int parts) {
         super();
@@ -1170,70 +1224,11 @@ public final class Combinatoric {
         fPartitionsIndex = new int[fNumberOfParts];
         fCopiedResultIndex = new int[fNumberOfParts];
         fPartitionsIndex[0] = -1;
-        fResultIndex = nextBeforehand();
-      }
-
-      public final void reset() {
-        fResultIndex = null;
-        for (int i = 1; i < fNumberOfParts; i++) {
-          fPartitionsIndex[i] = 0;
-        }
-        fPartitionsIndex[0] = -1;
-        fResultIndex = nextBeforehand();
-      }
-
-      /**
-       * Get the index array for the next partition.
-       *
-       * @return <code>null</code> if no further index array could be generated
-       */
-      private final int[] nextBeforehand() {
-        if (fPartitionsIndex[0] < 0) {
-          for (int i = 0; i < fNumberOfParts; ++i) {
-            fPartitionsIndex[i] = i;
-          }
-          return fPartitionsIndex;
-        } else {
-          int i = 0;
-          for (i = fNumberOfParts - 1;
-              (i >= 0) && (fPartitionsIndex[i] >= fLength - fNumberOfParts + i);
-              --i) {}
-          if (i <= 0) {
-            return null;
-          }
-          fPartitionsIndex[i]++;
-          for (int m = i + 1; m < fNumberOfParts; ++m) {
-            fPartitionsIndex[m] = fPartitionsIndex[m - 1] + 1;
-          }
-          return fPartitionsIndex;
-        }
-      }
-
-      /**
-       * Get the index array for the next partition.
-       *
-       * @return <code>null</code> if no further index array could be generated
-       */
-      @Override
-      public int[] next() {
-        System.arraycopy(fResultIndex, 0, fCopiedResultIndex, 0, fResultIndex.length);
-        fResultIndex = nextBeforehand();
-        return fCopiedResultIndex;
-      }
-
-      @Override
-      public boolean hasNext() {
-        return fResultIndex != null;
-      }
-
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
       }
 
       @Override
       public Iterator<int[]> iterator() {
-        return this;
+        return new KPartitionsIterator();
       }
     }
 
@@ -1243,66 +1238,69 @@ public final class Combinatoric {
      * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia - Partition of a
      * set</a>
      */
-    public static final class KPartitionsList implements Iterator<IAST>, Iterable<IAST> {
+    public static final class KPartitionsList implements Iterable<IAST> {
 
       private final IAST fList;
       private final IAST fResultList;
+      private final int fKParts;
       private final int fOffset;
-      private final KPartitionsIterable fIterable;
+
+      private class KPartitionsListIterator implements Iterator<IAST> {
+
+        private final Iterator<int[]> fIterable;
+
+        private KPartitionsListIterator() {
+          this.fIterable = new KPartitionsIterable(fList.size() - fOffset, fKParts).iterator();
+        }
+        /**
+         * Get the index array for the next partition.
+         *
+         * @return <code>null</code> if no further index array could be generated
+         */
+        @Override
+        public IAST next() {
+          int[] partitionsIndex = fIterable.next();
+          if (partitionsIndex == null) {
+            return null;
+          }
+          IASTAppendable part = fResultList.copyAppendable();
+          IASTAppendable temp;
+          int j = 0;
+          for (int i = 1; i < partitionsIndex.length; i++) {
+            temp = fResultList.copyAppendable();
+            for (int m = j; m < partitionsIndex[i]; m++) {
+              temp.append(fList.get(m + fOffset));
+            }
+            j = partitionsIndex[i];
+            part.append(temp);
+          }
+
+          temp = fResultList.copyAppendable();
+          int n = fList.size() - fOffset;
+          for (int m = j; m < n; m++) {
+            temp.append(fList.get(m + fOffset));
+          }
+          part.append(temp);
+          return part;
+        }
+
+        @Override
+        public boolean hasNext() {
+          return fIterable.hasNext();
+        }
+      }
 
       public KPartitionsList(final IAST list, final int kParts, IAST resultList, final int offset) {
         super();
-        fIterable = new KPartitionsIterable(list.size() - offset, kParts);
-        fList = list;
-        fResultList = resultList;
-        fOffset = offset;
-      }
-
-      /**
-       * Get the index array for the next partition.
-       *
-       * @return <code>null</code> if no further index array could be generated
-       */
-      @Override
-      public IAST next() {
-        int[] partitionsIndex = fIterable.next();
-        if (partitionsIndex == null) {
-          return null;
-        }
-        IASTAppendable part = fResultList.copyAppendable();
-        IASTAppendable temp;
-        int j = 0;
-        for (int i = 1; i < partitionsIndex.length; i++) {
-          temp = fResultList.copyAppendable();
-          for (int m = j; m < partitionsIndex[i]; m++) {
-            temp.append(fList.get(m + fOffset));
-          }
-          j = partitionsIndex[i];
-          part.append(temp);
-        }
-
-        temp = fResultList.copyAppendable();
-        int n = fList.size() - fOffset;
-        for (int m = j; m < n; m++) {
-          temp.append(fList.get(m + fOffset));
-        }
-        part.append(temp);
-        return part;
-      }
-
-      @Override
-      public boolean hasNext() {
-        return fIterable.hasNext();
-      }
-
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
+        this.fList = list;
+        this.fKParts = kParts;
+        this.fResultList = resultList;
+        this.fOffset = offset;
       }
 
       @Override
       public Iterator<IAST> iterator() {
-        return this;
+        return new KPartitionsListIterator();
       }
     }
 
@@ -1991,13 +1989,45 @@ public final class Combinatoric {
      *
      * <p>See <a href="http://en.wikipedia.org/wiki/Permutation">Permutation</a>
      */
-    private static final class KPermutationsList implements Iterator<IAST>, Iterable<IAST> {
+    private static final class KPermutationsList implements Iterable<IAST> {
 
       private final IAST fList;
       private final IAST fResultList;
       private final int fOffset;
       private final int fParts;
-      private final KPermutationsIterable fIterable;
+
+      private class KPermutationsIterator implements Iterator<IAST> {
+
+        private final Iterator<int[]> fIterable;
+
+        private KPermutationsIterator() {
+          this.fIterable = new KPermutationsIterable(fList, fParts, fOffset).iterator();
+        }
+
+        /**
+         * Get the index array for the next permutation.
+         *
+         * @return <code>null</code> if no further index array could be generated
+         */
+        @Override
+        public IAST next() {
+          int[] permutationsIndex = fIterable.next();
+          if (permutationsIndex == null) {
+            return null;
+          }
+          IASTAppendable temp = fResultList.copyAppendable();
+          // parts <= permutationsIndex.length
+          for (int i = 0; i < fParts; i++) {
+            temp.append(fList.get(permutationsIndex[i] + fOffset));
+          }
+          return temp;
+        }
+
+        @Override
+        public boolean hasNext() {
+          return fIterable.hasNext();
+        }
+      }
 
       /**
        * Create an iterator which gives all possible permutations of <code>list</code> which
@@ -2011,7 +2041,7 @@ public final class Combinatoric {
        */
       public KPermutationsList(
           final IAST list, final int parts, IAST resultList, final int offset) {
-        fIterable = new KPermutationsIterable(list, parts, offset);
+        //        fIterable = new KPermutationsIterable(list, parts, offset).iterator();
         fList = list;
         fResultList = resultList;
         fOffset = offset;
@@ -2019,37 +2049,8 @@ public final class Combinatoric {
       }
 
       @Override
-      public boolean hasNext() {
-        return fIterable.hasNext();
-      }
-
-      @Override
       public Iterator<IAST> iterator() {
-        return this;
-      }
-
-      /**
-       * Get the index array for the next permutation.
-       *
-       * @return <code>null</code> if no further index array could be generated
-       */
-      @Override
-      public IAST next() {
-        int[] permutationsIndex = fIterable.next();
-        if (permutationsIndex == null) {
-          return null;
-        }
-        IASTAppendable temp = fResultList.copyAppendable();
-        // parts <= permutationsIndex.length
-        for (int i = 0; i < fParts; i++) {
-          temp.append(fList.get(permutationsIndex[i] + fOffset));
-        }
-        return temp;
-      }
-
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
+        return new KPermutationsIterator();
       }
     }
 
@@ -2477,74 +2478,67 @@ public final class Combinatoric {
      *
      * <p>See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
      */
-    public static final class KSubsetsList implements Iterator<IAST>, Iterable<IAST> {
+    public static final class KSubsetsList implements Iterable<IAST> {
 
       private final IAST fList;
       private final IAST fResultList;
       private final int fOffset;
-      private final Iterator<int[]> fIterable;
+
       private final int fK;
 
-      public KSubsetsList(
-          final Iterator<int[]> iterable, final IAST list, final int k, IAST resultList) {
-        this(iterable, list, k, resultList, 0);
+      private class KSubsetsIterator implements Iterator<IAST> {
+
+        private final Iterator<int[]> fIterable;
+
+        private KSubsetsIterator() {
+          this.fIterable = new KSubsets.KSubsetsIterable(fList.size() - fOffset, fK);
+        }
+
+        /**
+         * Get the index array for the next partition.
+         *
+         * @return <code>null</code> if no further index array could be generated
+         */
+        @Override
+        public IAST next() {
+          int j[] = fIterable.next();
+          if (j == null) {
+            return null;
+          }
+
+          IASTAppendable temp = fResultList.copyAppendable();
+          return temp.appendArgs(
+              0,
+              fK,
+              i -> {
+                if (j.length > i && fList.size() > (j[i] + fOffset)) {
+                  return fList.get(j[i] + fOffset);
+                }
+                return F.NIL;
+              });
+        }
+
+        @Override
+        public boolean hasNext() {
+          return fIterable.hasNext();
+        }
       }
 
-      public KSubsetsList(
-          final Iterator<int[]> iterable,
+      private KSubsetsList(
+          //          final Iterator<int[]> iterable,
           final IAST list,
           final int k,
           IAST resultList,
           final int offset) {
-        fIterable = iterable;
         fList = list;
         fK = k;
         fResultList = resultList;
         fOffset = offset;
       }
 
-      /**
-       * Get the index array for the next partition.
-       *
-       * @return <code>null</code> if no further index array could be generated
-       */
-      @Override
-      public IAST next() {
-        int j[] = fIterable.next();
-        if (j == null) {
-          return null;
-        }
-
-        IASTAppendable temp = fResultList.copyAppendable();
-        return temp.appendArgs(
-            0,
-            fK,
-            i -> {
-              if (j.length > i && fList.size() > (j[i] + fOffset)) {
-                return fList.get(j[i] + fOffset);
-              }
-              return F.NIL;
-            });
-        // for (int i = 0; i < fK; i++) {
-        // temp.append(fList.get(j[i] + fOffset));
-        // }
-        //
-        // return temp;
-      }
-
-      @Override
-      public boolean hasNext() {
-        return fIterable.hasNext();
-      }
-
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
-      }
-
       @Override
       public Iterator<IAST> iterator() {
-        return this;
+        return new KSubsetsIterator();
       }
     }
 
@@ -2609,8 +2603,7 @@ public final class Combinatoric {
 
     public static KSubsetsList createKSubsets(
         final IAST list, final int k, IAST resultList, final int offset) {
-      return new KSubsetsList(
-          new KSubsets.KSubsetsIterable(list.size() - offset, k), list, k, resultList, offset);
+      return new KSubsetsList(list, k, resultList, offset);
     }
   }
 
@@ -2852,7 +2845,7 @@ public final class Combinatoric {
    *
    * <p>See <a href="http://en.wikipedia.org/wiki/Permutation">Permutation</a>
    */
-  public static final class KPermutationsIterable implements Iterator<int[]>, Iterable<int[]> {
+  public static final class KPermutationsIterable implements Iterable<int[]> {
 
     private final int n;
 
@@ -2868,7 +2861,55 @@ public final class Combinatoric {
 
     private final int fCopiedResultIndex[];
 
-    private int fResultIndex[];
+    private class KPermutationsIterator implements Iterator<int[]> {
+      private int fResultIndex[];
+
+      private KPermutationsIterator() {
+        fResultIndex = nextBeforehand();
+      }
+
+      /** */
+      private final int[] nextBeforehand() {
+        if (first) {
+          first = false;
+          return fPermutationsIndex;
+        }
+        do {
+          if (y[i] < (n - 1)) {
+            y[i] = y[i] + 1;
+            if (fPermutationsIndex[i] != fPermutationsIndex[y[i]]) {
+              // check fixpoint
+              h = fPermutationsIndex[i];
+              fPermutationsIndex[i] = fPermutationsIndex[y[i]];
+              fPermutationsIndex[y[i]] = h;
+              i = m - 1;
+              return fPermutationsIndex;
+            }
+            continue;
+          }
+          do {
+            h = fPermutationsIndex[i];
+            fPermutationsIndex[i] = fPermutationsIndex[y[i]];
+            fPermutationsIndex[y[i]] = h;
+            y[i] = y[i] - 1;
+          } while (y[i] > i);
+          i--;
+        } while (i != -1);
+        return null;
+      }
+
+      @Override
+      public boolean hasNext() {
+        return fResultIndex != null;
+      }
+
+      @Override
+      public int[] next() {
+        System.arraycopy(fResultIndex, 0, fCopiedResultIndex, 0, fResultIndex.length);
+        fResultIndex = nextBeforehand();
+        return fCopiedResultIndex;
+      }
+    }
 
     public KPermutationsIterable(final IAST fun, final int parts, final int headOffset) {
       super();
@@ -2898,7 +2939,6 @@ public final class Combinatoric {
       }
       first = true;
       i = m - 1;
-      fResultIndex = nextBeforehand();
     }
 
     /**
@@ -2942,59 +2982,12 @@ public final class Combinatoric {
       }
       first = true;
       i = m - 1;
-      fResultIndex = nextBeforehand();
-    }
-
-    @Override
-    public boolean hasNext() {
-      return fResultIndex != null;
+      //      fResultIndex = nextBeforehand();
     }
 
     @Override
     public Iterator<int[]> iterator() {
-      return this;
-    }
-
-    @Override
-    public int[] next() {
-      System.arraycopy(fResultIndex, 0, fCopiedResultIndex, 0, fResultIndex.length);
-      fResultIndex = nextBeforehand();
-      return fCopiedResultIndex;
-    }
-
-    /** */
-    private final int[] nextBeforehand() {
-      if (first) {
-        first = false;
-        return fPermutationsIndex;
-      }
-      do {
-        if (y[i] < (n - 1)) {
-          y[i] = y[i] + 1;
-          if (fPermutationsIndex[i] != fPermutationsIndex[y[i]]) {
-            // check fixpoint
-            h = fPermutationsIndex[i];
-            fPermutationsIndex[i] = fPermutationsIndex[y[i]];
-            fPermutationsIndex[y[i]] = h;
-            i = m - 1;
-            return fPermutationsIndex;
-          }
-          continue;
-        }
-        do {
-          h = fPermutationsIndex[i];
-          fPermutationsIndex[i] = fPermutationsIndex[y[i]];
-          fPermutationsIndex[y[i]] = h;
-          y[i] = y[i] - 1;
-        } while (y[i] > i);
-        i--;
-      } while (i != -1);
-      return null;
-    }
-
-    @Override
-    public void remove() {
-      throw new UnsupportedOperationException();
+      return new KPermutationsIterator();
     }
   }
   /**
