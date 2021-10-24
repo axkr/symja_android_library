@@ -3,7 +3,11 @@ package org.matheclipse.core.eval.exception;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
-/** This exception throws the result of a Symja {@link S#Return} function. */
+/**
+ * Exception for the <a
+ * href="https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Return.md">Return</a>
+ * function. This exception throws the result of a Symja {@link S#Return} function.
+ */
 public class ReturnException extends FlowControlException {
   /** */
   private static final long serialVersionUID = 6165872840807864554L;

@@ -9,8 +9,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
 /**
- * This visitor is used in an <code>MultisetPartitionsIterator</code> to match flat and orderless
- * expressions in pattern matching.
+ * This visitor is used in an <code>MultisetPartitionsIterator</code> to match {@link ISymbol#FLAT}
+ * and {@link ISymbol#ORDERLESS} expressions in pattern matching.
  *
  * @see PatternMatcher
  * @see MultisetPartitionsIterator
@@ -69,16 +69,14 @@ public class FlatOrderlessStepVisitor extends FlatStepVisitor implements IStepVi
    * @param sortedList
    * @param start
    * @param end
-   * @return
    */
   private final void toIntArray(IAST sortedList, int start, int end) {
     multiset = new int[end - start];
     array = new IExpr[end - start];
-    IExpr[] lastT = new IExpr[1];
+    final IExpr[] lastT = new IExpr[1];
     lastT[0] = sortedList.get(start);
-
-    int[] index = new int[1];
-    int[] j = new int[1];
+    final int[] index = new int[1];
+    final int[] j = new int[1];
     multiset[j[0]++] = index[0];
     array[index[0]] = lastT[0];
     sortedList.forEach(

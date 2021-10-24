@@ -1247,35 +1247,38 @@ public class F extends S {
    * Create a pattern for pattern-matching and term rewriting
    *
    * @param symbol
-   * @param def use a default value for this pattern if necessary
+   * @param matchDefaultValue if <code>true</code>, the pattern can match to a default value
+   *     associated with the AST's head the pattern is used in
    * @return IPattern
    */
-  public static IPattern $p(final ISymbol symbol, boolean def) {
-    return $p(symbol, null, def);
+  public static IPattern $p(final ISymbol symbol, boolean matchDefaultValue) {
+    return $p(symbol, null, matchDefaultValue);
   }
 
   /**
    * Create a pattern for pattern-matching and term rewriting
    *
    * @param symbol
-   * @param check additional condition which should be checked in pattern-matching
+   * @param headerCheck additional condition which should be checked for the header of an expression
+   *     in pattern-matching
    * @return IPattern
    */
-  public static IPattern $p(final ISymbol symbol, final IExpr check) {
-    return org.matheclipse.core.expression.Pattern.valueOf(symbol, check);
+  public static IPattern $p(final ISymbol symbol, final IExpr headerCheck) {
+    return org.matheclipse.core.expression.Pattern.valueOf(symbol, headerCheck);
   }
 
   /**
    * Create a pattern for pattern-matching and term rewriting
    *
    * @param symbol
-   * @param check additional condition which should be checked in pattern-matching
-   * @param def if <code>true</code>, the pattern can match to a default value associated with the
-   *     AST's head the pattern is used in.
+   * @param headerCheck additional condition which should be checked for the header of an expression
+   * @param matchDefaultValue if <code>true</code>, the pattern can match to a default value
+   *     associated with the AST's head the pattern is used in
    * @return IPattern
    */
-  public static IPattern $p(final ISymbol symbol, final IExpr check, final boolean def) {
-    return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, def);
+  public static IPattern $p(
+      final ISymbol symbol, final IExpr headerCheck, final boolean matchDefaultValue) {
+    return org.matheclipse.core.expression.Pattern.valueOf(symbol, headerCheck, matchDefaultValue);
   }
 
   /**
@@ -6841,8 +6844,13 @@ public class F extends S {
     return function(Print, a);
   }
 
-  public static IAST Product(final IExpr a0, final IExpr a1) {
-    return new AST2(Product, a0, a1);
+  /**
+   * @param expr expression which should be multiplied up
+   * @param iterationSpecification a standard iteration specification
+   * @return <code>Product(expr, iterationSpecification)</code> AST
+   */
+  public static IAST Product(final IExpr expr, final IExpr iterationSpecification) {
+    return new AST2(Product, expr, iterationSpecification);
   }
 
   /**
@@ -7969,16 +7977,27 @@ public class F extends S {
     return new AST2(SubtractSides, equationOrInequality, x);
   }
 
-  public static IAST Sum(final IExpr a0, final IExpr a1) {
-    return new AST2(Sum, a0, a1);
+  /**
+   * @param expr expression which should be summed up
+   * @param iterationSpecification a standard iteration specification
+   * @return <code>Sum(expr, iterationSpecification)</code> AST
+   */
+  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification) {
+    return new AST2(Sum, expr, iterationSpecification);
   }
 
-  public static IAST Sum(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(Sum, a0, a1, a2);
+  public static IAST Sum(
+      final IExpr expr, final IExpr iterationSpecification1, final IExpr iterationSpecification2) {
+    return new AST3(Sum, expr, iterationSpecification1, iterationSpecification2);
   }
 
-  public static IAST Sum(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
-    return quaternary(Sum, a0, a1, a2, a3);
+  public static IAST Sum(
+      final IExpr expr,
+      final IExpr iterationSpecification1,
+      final IExpr iterationSpecification2,
+      final IExpr iterationSpecification3) {
+    return quaternary(
+        Sum, expr, iterationSpecification1, iterationSpecification2, iterationSpecification3);
   }
 
   public static IRational sumRational(
@@ -8032,9 +8051,13 @@ public class F extends S {
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Table.md">Table</a>
+   *
+   * @param expr expression which should be iterated
+   * @param iterationSpecification a standard iteration specification
+   * @return <code>Table(expr, iterationSpecification)</code> AST
    */
-  public static IAST Table(final IExpr a0, final IExpr a1) {
-    return new AST2(Table, a0, a1);
+  public static IAST Table(final IExpr expr, final IExpr iterationSpecification) {
+    return new AST2(Table, expr, iterationSpecification);
   }
 
   public static IASTMutable TagSet(final IExpr a0, final IExpr a1, final IExpr a2) {

@@ -264,30 +264,37 @@ public final class Programming {
       try {
         return engine.evaluate(ast.arg1());
       } catch (final ThrowException e) {
-        if (ast.size() == 2) {
-          if (ThrowException.THROW_FALSE == e) {
-            return S.False;
-          } else if (ThrowException.THROW_TRUE == e) {
-            return S.True;
-          }
-          return e.getValue();
-        } else if (ast.size() == 3) {
-          IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
-          IExpr tag = engine.evaluate(e.getTag());
-          if (matcher.test(tag)) {
+        final int size = ast.size();
+        switch (size) {
+          case 2:
+            if (ThrowException.THROW_FALSE == e) {
+              return S.False;
+            } else if (ThrowException.THROW_TRUE == e) {
+              return S.True;
+            }
             return e.getValue();
-          }
-          throw e;
-        } else if (ast.size() == 4) {
-          IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
-          IExpr head = engine.evaluate(ast.arg3());
-          IExpr tag = engine.evaluate(e.getTag());
-          if (matcher.test(tag)) {
-            return F.binaryAST2(head, e.getValue(), tag);
-          }
-          throw e;
+          case 3:
+            {
+              final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
+              IExpr tag = engine.evaluate(e.getTag());
+              if (matcher.test(tag)) {
+                return e.getValue();
+              }
+              throw e;
+            }
+          case 4:
+            {
+              final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
+              IExpr tag = engine.evaluate(e.getTag());
+              if (matcher.test(tag)) {
+                IExpr head = engine.evaluate(ast.arg3());
+                return F.binaryAST2(head, e.getValue(), tag);
+              }
+              throw e;
+            }
+          default:
+            return e.getValue();
         }
-        return e.getValue();
       }
     }
 
@@ -1270,7 +1277,9 @@ public final class Programming {
         EvalEngine engine) {
       if (leftHandSide.isList()) {
         // thread over lists
-        IExpr temp = engine.threadASTListArgs((IASTMutable) F.Set(leftHandSide, rightHandSide), S.Thread, "tdlen");
+        IExpr temp =
+            engine.threadASTListArgs(
+                (IASTMutable) F.Set(leftHandSide, rightHandSide), S.Thread, "tdlen");
         if (temp.isPresent()) {
           return engine.evaluate(temp);
         }
@@ -1796,8 +1805,8 @@ public final class Programming {
       }
 
       if (ast.isAST1()) {
-        LOGGER.log(engine.getLogLevel(), "Off: {} - disabling messages currently not supported",
-            ast);
+        LOGGER.log(
+            engine.getLogLevel(), "Off: {} - disabling messages currently not supported", ast);
       }
       return F.NIL;
     }
@@ -3393,12 +3402,14 @@ public final class Programming {
             variablesMap.put(oldSymbol, newSymbol);
             newSymbol.assignValue(engine.evaluate(setFun.arg2()));
           } else {
-            LOGGER.log(engine.getLogLevel(), "Module: expression requires symbol variable: {}",
-                setFun);
+            LOGGER.log(
+                engine.getLogLevel(), "Module: expression requires symbol variable: {}", setFun);
             return false;
           }
         } else {
-          LOGGER.log(engine.getLogLevel(), "Module: expression requires symbol variable: {}",
+          LOGGER.log(
+              engine.getLogLevel(),
+              "Module: expression requires symbol variable: {}",
               variablesList.get(i));
           return false;
         }
@@ -3516,7 +3527,8 @@ public final class Programming {
         new IdentityHashMap<ISymbol, IExpr>();
     if (rememberWithVariables(intializerList, moduleVariables, engine)) {
       IExpr result =
-          withBlock.accept(new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
+          withBlock.accept(
+              new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
       return result.orElse(withBlock);
     }
     return F.NIL;
