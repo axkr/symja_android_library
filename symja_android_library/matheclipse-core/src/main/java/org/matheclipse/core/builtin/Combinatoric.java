@@ -2491,7 +2491,7 @@ public final class Combinatoric {
         private final Iterator<int[]> fIterable;
 
         private KSubsetsIterator() {
-          this.fIterable = new KSubsets.KSubsetsIterable(fList.size() - fOffset, fK);
+          this.fIterable = new KSubsets.KSubsetsIterable(fList.size() - fOffset, fK).iterator();
         }
 
         /**
