@@ -323,6 +323,7 @@ public class ExprParserFactory implements IParserFactory {
     "UpSetDelayed",
     "PreIncrement",
     "Function",
+    "Function",
     "Greater",
     "PreDecrement",
     "Subtract",
@@ -355,7 +356,7 @@ public class ExprParserFactory implements IParserFactory {
     "::", "<<", "?", "??", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.", "@@", "@@@", "//.",
     "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=",
     "/;", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=",
-    "++", "&", ">", "--", "-", ":=", "|", "+=", "..", "/.", "/:", "@*", "/*", "~~", //
+    "++", "|->", "&", ">", "--", "-", ":=", "|", "+=", "..", "/.", "/:", "@*", "/*", "~~", //
     ":", // Pattern
     "<->", // TwoWayRule
     "\uF120", // TwoWayRule
@@ -366,7 +367,7 @@ public class ExprParserFactory implements IParserFactory {
     "\u2297", // CircleTimes
     "\u2208", // Element
     "\u22C2", // Intersection
-    "\u2260", // NotEqual,
+    "\u2260", // NotEqual
     "\u22C0", // Wedge
     "\uF3DA", // TensorProduct
     "~"
@@ -475,7 +476,12 @@ public class ExprParserFactory implements IParserFactory {
                 "UpSetDelayed",
                 Precedence.UPSETDELAYED,
                 InfixExprOperator.RIGHT_ASSOCIATIVE), //
-            new PrefixExprOperator("++", "PreIncrement", Precedence.PREINCREMENT), //
+            new PrefixExprOperator(
+                "++",
+                "PreIncrement",
+                Precedence.PREINCREMENT), // // the order of the 2 operators matters for Function
+            new InfixExprOperator(
+                "|->", "Function", Precedence.FUNCTION, InfixOperator.RIGHT_ASSOCIATIVE),
             new PostfixExprOperator("&", "Function", Precedence.FUNCTION), //
             new InfixExprOperator(">", "Greater", Precedence.GREATER, InfixExprOperator.NONE), //
             new PrefixExprOperator("--", "PreDecrement", Precedence.PREDECREMENT), //

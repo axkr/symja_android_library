@@ -14158,13 +14158,30 @@ public class LowercaseTestCase extends AbstractTestCase {
         "FullForm(Mod(#, 3) == 1 && Mod(#, 5) == 1 &)", //
         "Function(And(Equal(Mod(Slot(1), 3), 1), Equal(Mod(Slot(1), 5), 1)))");
 
-    check("({#1,Plus(##2)}&) @@@(Range/@Range(2,3))", "{{1,2},{1,5}}");
-    check("(#[[1]]+#[[2]]&) /@{{1,2},{3,4,5},{6,7}}", "{3,7,13}");
-    check("((#+##&) @@#&) /@{{1,2},{2,2,2},{3,4}}", "{4,8,10}");
+    check(
+        "({#1,Plus(##2)}&) @@@(Range/@Range(2,3))", //
+        "{{1,2},{1,5}}");
+    check(
+        "(#[[1]]+#[[2]]&) /@{{1,2},{3,4,5},{6,7}}", //
+        "{3,7,13}");
+    check(
+        "((#+##&) @@#&) /@{{1,2},{2,2,2},{3,4}}", //
+        "{4,8,10}");
 
-    check("Function({x,y},x y)[2,3]", "6");
-    check("Function(x,2 x)[5]", "10");
-    check("(Function@@{{x},x==2})[2]", "True");
+    check(
+        "Function({x,y},x y)[2,3]", //
+        "6");
+    check(
+        "Function(x,2 x)[5]", //
+        "10");
+    check(
+        "(Function@@{{x},x==2})[2]", //
+        "True");
+
+    // new lambda operator |->
+    check(
+        "Array(x |-> 1+x^2, 10)", //
+        "{2,5,10,17,26,37,50,65,82,101}");
   }
 
   public void testFunctionRange() {
@@ -35473,6 +35490,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testSum() {
+    //    check(
+    //        "Sum(i, {i, 1, 1000000000}) ", //
+    //        "500000000500000000");
     // Leibnitz formula
     check(
         "Sum( ((-1)^k*(2*k + 1))^(-1), {k, 1, Infinity}) ", //

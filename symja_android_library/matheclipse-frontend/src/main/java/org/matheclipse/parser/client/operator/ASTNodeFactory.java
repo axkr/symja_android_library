@@ -141,7 +141,7 @@ public class ASTNodeFactory implements INodeParserFactory {
               return factory.createFunction(
                   factory.createSymbol("Optional"),
                   factory.createFunction(factory.createSymbol("Pattern"), lhs, pn1.get(1)),
-                  pn2); 
+                  pn2);
             }
           }
         }
@@ -294,6 +294,7 @@ public class ASTNodeFactory implements INodeParserFactory {
     "UpSetDelayed",
     "PreIncrement",
     "Function",
+    "Function",
     "Greater",
     "PreDecrement",
     "Subtract",
@@ -371,6 +372,7 @@ public class ASTNodeFactory implements INodeParserFactory {
     "->",
     "^:=",
     "++",
+    "|->",
     "&",
     ">",
     "--",
@@ -494,6 +496,9 @@ public class ASTNodeFactory implements INodeParserFactory {
             new InfixOperator(
                 "^:=", "UpSetDelayed", Precedence.UPSETDELAYED, InfixOperator.RIGHT_ASSOCIATIVE),
             new PrefixOperator("++", "PreIncrement", Precedence.PREINCREMENT), //
+            // the order of the 2 operators matters for Function
+            new InfixOperator(
+                "|->", "Function", Precedence.FUNCTION, InfixOperator.RIGHT_ASSOCIATIVE),
             new PostfixOperator("&", "Function", Precedence.FUNCTION),
             new InfixOperator(">", "Greater", 290, InfixOperator.NONE),
             new PrefixOperator("--", "PreDecrement", Precedence.PREDECREMENT),
@@ -561,12 +566,8 @@ public class ASTNodeFactory implements INodeParserFactory {
     }
   }
 
-  public static void initialize() {
-    Initializer.init();
-  }
-
   static {
-    initialize();
+    Initializer.init();
   }
 
   protected final boolean fIgnoreCase;
