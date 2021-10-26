@@ -1382,6 +1382,7 @@ public class AST2Expr {
     "TrigReduce",
     "TrigToExp",
     "TrueQ",
+    "TTest",
     "TukeyWindow",
     "Tube",
     "Tuples",

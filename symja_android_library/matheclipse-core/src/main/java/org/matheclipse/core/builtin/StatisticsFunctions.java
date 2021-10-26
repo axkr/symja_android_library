@@ -120,6 +120,7 @@ public class StatisticsFunctions {
       S.Standardize.setEvaluator(new Standardize());
       S.StudentTDistribution.setEvaluator(new StudentTDistribution());
       S.SurvivalFunction.setEvaluator(new SurvivalFunction());
+      S.TTest.setEvaluator(new TTest());
       S.UniformDistribution.setEvaluator(new UniformDistribution());
       S.Variance.setEvaluator(new Variance());
       S.WeibullDistribution.setEvaluator(new WeibullDistribution());
@@ -187,7 +188,7 @@ public class StatisticsFunctions {
    *
    * <p>ICDF extends the capabilities of {@link IPDF}
    */
-  private interface ICDF {
+  private interface ICDF extends IDistribution {
     static final IExpr CDF_NUMERIC_THRESHOLD = F.num(1e-14);
 
     public IExpr cdf(IAST dist, IExpr x, EvalEngine engine);
@@ -256,7 +257,7 @@ public class StatisticsFunctions {
   }
 
   /** probability density function */
-  private interface IPDF {
+  private interface IPDF extends IDistribution {
     /**
      * For {@link IExpectationDiscreteDistribution}, the function returns the P(X == x), i.e.
      * probability of random variable X == x
@@ -5055,6 +5056,26 @@ public class StatisticsFunctions {
     }
 
     @Override
+    public IAST checkParameters(IAST dist) {
+      if (dist.isAST0()) {
+        return dist;
+      }
+      if (dist.isAST2()) {
+        double v = dist.arg2().toDoubleDefault();
+        if (v <= 0.0) {
+          if (v != Double.MIN_VALUE) {
+            // Parameter `1` at position `2` in `3` is expected to be positive.
+            return IOFunctions.printMessage(
+                S.NormalDistribution, "posprm", F.List(dist.arg2(), F.C2, dist), EvalEngine.get());
+          }
+          return F.NIL;
+        }
+        return dist;
+      }
+      return F.NIL;
+    }
+
+    @Override
     public IExpr mean(IAST dist) {
       if (dist.isAST0()) {
         return F.C0;
@@ -5416,7 +5437,10 @@ public class StatisticsFunctions {
                   IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
                   if (evaluator instanceof IPDF) {
                     IPDF pdf = (IPDF) evaluator;
-                    return pdf.pdf(dist, xArg, engine);
+                    dist = pdf.checkParameters(dist);
+                    if (dist.isPresent()) {
+                      return pdf.pdf(dist, xArg, engine);
+                    }
                   }
                 }
               }
@@ -6418,6 +6442,51 @@ public class StatisticsFunctions {
     }
   }
 
+  private static final class TTest extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList2()) {
+        IAST list = (IAST) arg1;
+        int dimension1 = list.first().isVector();
+        if (dimension1 > 0) {
+          int dimension2 = list.second().isVector();
+          if (dimension1 == dimension2) {
+            double[] vector1 = list.first().toDoubleVector();
+            if (vector1 != null) {
+              double[] vector2 = list.second().toDoubleVector();
+              if (vector2 != null) {
+                org.hipparchus.stat.inference.TTest tTest =
+                    new org.hipparchus.stat.inference.TTest();
+                double value = tTest.tTest(vector1, vector2);
+                return F.num(value);
+              }
+            }
+          }
+        }
+        return F.NIL;
+      }
+      int dimension = arg1.isVector();
+      if (dimension > 0) {
+        double[] vector = arg1.toDoubleVector();
+        if (vector != null) {
+          org.hipparchus.stat.inference.TTest tTest = new org.hipparchus.stat.inference.TTest();
+          double value = tTest.tTest(0.0, vector);
+          return F.num(value);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
   /**
    *
    *

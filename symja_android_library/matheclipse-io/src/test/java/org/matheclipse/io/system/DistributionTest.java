@@ -130,6 +130,21 @@ public class DistributionTest extends AbstractTestCase {
 
   public void testNormalDistribution() {
     check(
+        "data1={0.536463693808193,-1.511974629293994,-0.22845265689863847,0.4114790735362004,-1.372540834688803,0.18841748289331972,0.7678270833344806,0.7820712767427386,0.027735965955395632,0.38766508070235384};", //
+        "");
+    check(
+        "TTest(data1)", //
+        "0.99662");
+    check(
+        "TTest({data1,data1+2})", //
+        "0.0000356619");
+    //    check(
+    //        "TTest({data1,{3.2,4.3}})", //
+    //        "0.000145336");
+    check(
+        "PDF(NormalDistribution(m,0), x)", //
+        "PDF(NormalDistribution(m,0),x)");
+    check(
         "Mean(NormalDistribution( ) )", //
         "0");
     check(

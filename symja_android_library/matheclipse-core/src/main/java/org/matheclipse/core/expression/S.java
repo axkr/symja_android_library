@@ -1,6 +1,6 @@
 package org.matheclipse.core.expression;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -32,7 +32,7 @@ public class S {
    * corresponding expressions.
    */
   static final Map<IExpr, Short> GLOBAL_IDS_MAP =
-      new HashMap<>((EXPRID_MAX_BUILTIN_LENGTH + 1000) * 4 / 3 + 1);
+      new IdentityHashMap<>((EXPRID_MAX_BUILTIN_LENGTH + 1000) * 4 / 3 + 1);
 
   static final Map<String, ISymbol> HIDDEN_SYMBOLS_MAP =
       Config.TRIE_STRING2SYMBOL_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
@@ -9659,6 +9659,8 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol TrueQ = initFinalSymbol("TrueQ", ID.TrueQ);
+
+  public static final IBuiltInSymbol TTest = initFinalSymbol("TTest", ID.TTest);
 
   public static final IBuiltInSymbol Tube = initFinalSymbol("Tube", ID.Tube);
 
