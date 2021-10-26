@@ -43,7 +43,6 @@ public class ApfloatNum implements INum {
    * Create a new instance.
    *
    * @param value
-   * @param precision
    * @return
    */
   public static ApfloatNum valueOf(final double value) {

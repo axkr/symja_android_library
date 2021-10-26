@@ -72,7 +72,6 @@ public class ApcomplexNum implements IComplexNum {
    * @param realDenominator the real numbers denominator part
    * @param imagNumerator the imaginary numbers numerator part
    * @param imagDenominator the imaginary numbers denominator part
-   * @param precision the precision of the number.
    * @return a new <code>ApcomplexNum</code> complex number object
    */
   public static ApcomplexNum valueOf(

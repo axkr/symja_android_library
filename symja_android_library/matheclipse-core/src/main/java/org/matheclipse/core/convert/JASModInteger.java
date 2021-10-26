@@ -23,10 +23,7 @@ import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
 
 /**
- * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to MathEclipse
- * objects
- *
- * @param <C>
+ * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to Symja objects.
  */
 public class JASModInteger {
   private final ModLongRing fRingFactory;

@@ -31,8 +31,8 @@ import edu.jas.poly.TermOrderByName;
 import edu.jas.structure.RingFactory;
 
 /**
- * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to MathEclipse
- * <code>IExpr</code> objects
+ * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to Symja <code>
+ * IExpr</code> objects
  *
  * <p><b>Note:</b>: set the "no complex number" flag to <code>false</code> to allow complex numbers
  * on input in method <code>expr2IExprJAS(IExpr)</code>

@@ -49,7 +49,7 @@ public interface IEvalStepListener {
    * @param resultExpr the evaluated result expression
    * @param recursionDepth the current recursion depth
    * @param iterationCounter the current iteration counter
-   * @param IAST listOfHints this hints will be used in the listener
+   * @param listOfHints this hints will be used in the listener
    * @see IEvalStepListener#setHint(String)
    */
   public abstract void add(

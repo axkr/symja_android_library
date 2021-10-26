@@ -755,6 +755,8 @@ public class IOFunctions {
     "The dimension parameter `1` is expected to be a positive integer or a list of positive integers.", //
     "pospoint",
     "`1` contains integers that are not positive.", //
+    "posprm",
+    "Parameter `1` at position `2` in `3` is expected to be positive.", //
     "posr",
     "The left hand side of `2` in `1` doesn't match an int-array of depth `3`.", //
     "preal",

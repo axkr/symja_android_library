@@ -384,7 +384,7 @@ public class AST extends HMArrayList implements Externalizable {
   /**
    * Package private constructor.
    *
-   * @param es
+   * @param exprs
    */
   /* package private */ AST(IExpr[] exprs) {
     super(exprs);

@@ -13,12 +13,11 @@ public interface ISignedNumber extends INumber {
   public ISignedNumber abs();
 
   /**
-   * Get a <code>Apfloat</code> number wrapped into an <code>ApfloatNum</code> object.
+   * Get a {@link Apfloat} number wrapped into an <code>ApfloatNum</code> object.
    *
-   * @param precision set the precision of the resulting ApfloatNum
    * @return this signed number represented as an ApfloatNum
    */
-  public ApfloatNum apfloatNumValue( );
+  public ApfloatNum apfloatNumValue();
 
   public Apfloat apfloatValue( );
 

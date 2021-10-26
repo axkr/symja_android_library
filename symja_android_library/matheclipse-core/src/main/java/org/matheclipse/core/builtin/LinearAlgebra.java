@@ -285,7 +285,6 @@ public final class LinearAlgebra {
     /**
      * Multiplies a row by a scalar.
      *
-     * @param rowReducedMatrix matrix before row addition
      * @param rowIndex index of row to be scaled
      * @param scalar value to scale row by
      */
@@ -304,7 +303,6 @@ public final class LinearAlgebra {
     /**
      * Adds a row by the scalar of another row row2 = row2 + (row1 * scalar)
      *
-     * @param rowReducedMatrix matrix before row additon
      * @param rowIndex1 index of row to be added
      * @param rowIndex2 index or row that row1 is added to
      * @param scalar value to scale row by

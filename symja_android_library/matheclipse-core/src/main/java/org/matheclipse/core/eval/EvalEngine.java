@@ -507,9 +507,9 @@ public class EvalEngine implements Serializable {
   /**
    * Add a single step to the currently defined trace stack.
    *
-   * @param before
-   * @param rewrittenExpr
-   * @param listOfHints
+   * @param inputExpr the input expression
+   * @param rewrittenExpr the rewritten input expression
+   * @param listOfHints list of hints parameters
    */
   public void addTraceStep(
       Supplier<IExpr> inputExpr, Supplier<IExpr> rewrittenExpr, IAST listOfHints) {
@@ -988,7 +988,6 @@ public class EvalEngine implements Serializable {
    *
    * @param ast
    * @param functionEvaluator
-   * @param engine
    * @return
    */
   public IAST checkBuiltinArguments(IAST ast, final IFunctionEvaluator functionEvaluator) {

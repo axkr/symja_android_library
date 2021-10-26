@@ -591,9 +591,8 @@ public class MMAConsole {
   }
 
   /**
-   * read a string from the console. The string is terminated by a newline
+   * Read a string from the console.
    *
-   * @param out Description of Parameter
    * @return the input string (without the newline)
    */
   private String readString() {

@@ -71,7 +71,6 @@ public final class RandomFunctions {
     /**
      * Sampler for enumerated distributions.
      *
-     * @param <T> type of sample space objects
      */
     private final class EnumeratedDistributionSampler {
       /** Probabilities */

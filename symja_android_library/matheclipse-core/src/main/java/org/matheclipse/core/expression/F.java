@@ -2150,8 +2150,7 @@ public class F extends S {
    *
    * @param head the header expression of the function. If the ast represents a function like <code>
    *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
-   * @param initialCapacity the initial capacity (i.e. number of arguments without the header
-   *     element) of the list.
+   * @param collection the collection which holds the elements which should be appended
    * @return
    */
   public static IASTAppendable ast(final IExpr head, Collection<? extends IExpr> collection) {
@@ -4474,7 +4473,6 @@ public class F extends S {
   /**
    * Initialize the complete System
    *
-   * @param noPackageLoading don't load any package at start up
    */
   public static synchronized void initSymbols() {
 
@@ -5466,8 +5464,7 @@ public class F extends S {
    * Create a new <code>List</code> with the capacity <code>collection.size()</code> and append the
    * elements of the collection.
    *
-   * @param collection
-   * @param capacity
+   * @param collection the collection which holds the elements which should be appended
    * @return
    */
   public static IASTMutable ListAlloc(Collection<? extends IExpr> collection) {
@@ -6984,7 +6981,6 @@ public class F extends S {
    * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QuantityMagnitude.md">QuantityMagnitude</a>
    *
    * @param quantity
-   * @param unit
    * @return
    */
   public static IAST QuantityMagnitude(final IExpr quantity) {

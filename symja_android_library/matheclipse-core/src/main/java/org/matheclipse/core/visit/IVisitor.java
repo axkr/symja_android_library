@@ -17,9 +17,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * A visitor which could be used in the <code>org.matheclipse.core.interfaces.IExpr#accept()</code>
  * method.
- *
- * @param <T>
- * @see org.matheclipse.core.interfaces.IExpr
  */
 public interface IVisitor {
 

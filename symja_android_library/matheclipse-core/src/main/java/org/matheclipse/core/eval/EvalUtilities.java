@@ -194,8 +194,6 @@ public class EvalUtilities extends MathMLUtilities {
    * @param inputExpression the expression which should be evaluated.
    * @param matcher a filter which determines the expressions which should be traced, If the matcher
    *     is set to <code>null</code>, all expressions are traced.
-   * @param list an IAST object which will be cloned for containing the traced expressions.
-   *     Typically a <code>F.List()</code> will be used.
    * @return <code>F.NIL</code> if <code>inputExpression == null</code>
    */
   public IAST evalTrace(final String inputExpression, Predicate<IExpr> matcher) {

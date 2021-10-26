@@ -119,7 +119,7 @@ public class ASTDataset extends AbstractAST
    * resulting <code>Dataset</code> columns. Identical names maps the right-hand-side values of the
    * rule to the same columns in the resulting dataset.
    *
-   * @param listOfAssociations
+   * @param assocOfAssociations
    * @return {@link F#NIL} if the <code>Dataset</code> cannot be created
    */
   public static IExpr newAssociationOfAssociations(IAssociation assocOfAssociations) {

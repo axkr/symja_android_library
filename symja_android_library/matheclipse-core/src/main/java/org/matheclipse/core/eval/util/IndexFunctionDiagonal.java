@@ -5,7 +5,6 @@ import org.matheclipse.core.interfaces.IExpr;
 /**
  * Evaluates to one of two given values. Useful for table generation.
  *
- * @param <IExpr>
  */
 public class IndexFunctionDiagonal implements IIndexFunction<IExpr> {
   final IExpr[] fValues;

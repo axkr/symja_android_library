@@ -1637,52 +1637,6 @@ public class PredicateQ {
   }
 
   /**
-   * Test if <code>Complex(re, im)</code> inserted into the function approximates <code>0</code>.
-   *
-   * <ul>
-   *   <li><code>IExpr.COMPARE_TERNARY.TRUE</code> if the result approximates <code>0</code>
-   *   <li><code>IExpr.COMPARE_TERNARY.FALSE</code> if the result is a number and doesn't
-   *       approximate <code>0</code>
-   *   <li><code>IExpr.COMPARE_TERNARY.UNDECIDABLE</code> if the result isn't a number
-   * </ul>
-   *
-   * @param function the function which should be evaluate for the <code>variable</code>
-   * @param variable the symbol which will be replaced by <code>Complex(re, im)</code> to evaluate
-   *     <code>function</code>
-   * @param realPart the real value of the complex variable
-   * @param imaginaryPart the imaginary value of the complex variable
-   * @param engine
-   * @return
-   */
-  //  private static IExpr.COMPARE_TERNARY isPossibeZero(
-  //      IAST function, IExpr variable, double realPart, double imaginaryPart, EvalEngine engine) {
-  //    IComplexNum c = F.complexNum(realPart, imaginaryPart);
-  //    IExpr temp = function.replaceAll(F.Rule(variable, c));
-  //    try {
-  //      if (temp.isPresent()) {
-  //        IExpr result = engine.evalN(temp);
-  //        if (result.isZero()) {
-  //          return IExpr.COMPARE_TERNARY.TRUE;
-  //        }
-  //        if (result.isNumber() && !result.isZero()) {
-  //          INumber num = (INumber) result;
-  //          if (!(F.isZero(num.reDoubleValue(), Config.DEFAULT_ROOTS_CHOP_DELTA)
-  //              && F.isZero(num.imDoubleValue(), Config.DEFAULT_ROOTS_CHOP_DELTA))) {
-  //            return IExpr.COMPARE_TERNARY.FALSE;
-  //          }
-  //          return IExpr.COMPARE_TERNARY.TRUE;
-  //        }
-  //        if (result.isDirectedInfinity()) {
-  //          return IExpr.COMPARE_TERNARY.FALSE;
-  //        }
-  //      }
-  //    } catch (RuntimeException rex) {
-  //      //
-  //    }
-  //    return IExpr.COMPARE_TERNARY.UNDECIDABLE;
-  //  }
-
-  /**
    * Test if <code>Complex(re, im)</code> inserted into the arguments of the function and evaluated
    * approximates <code>0</code>.
    *

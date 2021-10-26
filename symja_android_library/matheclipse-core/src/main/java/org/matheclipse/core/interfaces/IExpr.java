@@ -4602,10 +4602,30 @@ public interface IExpr
     return toDoubleVector();
   }
 
-  default double toDoubleDefault() throws ArgumentTypeException {
+  /**
+   * Converts this number to a <code>doube</code> value; this method returns {@link
+   * Double#MIN_VALUE} if the value of this expression isn't in the range <code>
+   * Double.MIN_VALUE</code> to <code>Double.MAX_VALUE</code> or the expression is not convertible
+   * to the <code>double</code> range.
+   *
+   * @return the numeric value represented by this expression after conversion to type <code>double
+   *     </code> or {@link Double#MIN_VALUE} if this expression cannot be converted.
+   */
+  default double toDoubleDefault() {
     return EvalEngine.get().evalDouble(this, Double.MIN_VALUE);
   }
 
+  /**
+   * Converts this number to a <code>doube</code> value; this method returns <code>defaultValue
+   * </code> if the value of this expression isn't in the range <code>
+   * Double.MIN_VALUE</code> to <code>Double.MAX_VALUE</code> or the expression is not convertible
+   * to the <code>double</code> range.
+   *
+   * @param defaultValue
+   * @return the numeric value represented by this expression after conversion to type <code>double
+   *     </code> or <code>defaultValue</code> if this expression cannot be converted.
+   * @return
+   */
   default double toDoubleDefault(double defaultValue) {
     return EvalEngine.get().evalDouble(this, defaultValue);
   }

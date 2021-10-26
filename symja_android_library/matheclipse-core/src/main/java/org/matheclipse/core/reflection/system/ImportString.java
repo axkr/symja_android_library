@@ -83,7 +83,7 @@ public class ImportString extends AbstractEvaluator {
   /**
    * Get arbitrary data represented as a Symja expression string
    *
-   * @param file
+   * @param str
    * @param engine
    * @return
    */
@@ -97,7 +97,7 @@ public class ImportString extends AbstractEvaluator {
   /**
    * Get plain text from file
    *
-   * @param file
+   * @param str
    * @param engine
    * @return
    */

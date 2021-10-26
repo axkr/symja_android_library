@@ -45,8 +45,7 @@ import edu.jas.structure.UnaryFunctor;
 import edu.jas.ufd.Quotient;
 
 /**
- * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to MathEclipse
- * objects
+ * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to Symja objects.
  *
  * @param <C>
  */

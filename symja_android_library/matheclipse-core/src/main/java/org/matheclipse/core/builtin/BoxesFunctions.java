@@ -49,10 +49,11 @@ public class BoxesFunctions {
       }
 
       /**
-       * Converts a given function into the corresponding MathML output
+       * Converts a given function
        *
-       * @param buf StringBuilder for MathML output
-       * @param f The math function which should be converted to MathML
+       * @param list
+       * @param f The math function which should be converted
+       * @param precedence the precedence of the currently used operator
        */
       public boolean convert(final IASTAppendable list, final IAST f, final int precedence) {
         precedenceOpen(list, precedence);

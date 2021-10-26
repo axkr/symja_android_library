@@ -18,20 +18,18 @@ public interface INumber extends IExpr {
   public IExpr abs();
 
   /**
-   * Get a <code>Apcomplex</code> number wrapped into an <code>ApcomplexNum</code> object.
+   * Get a {@link Apcomplex} number wrapped into an <code>ApcomplexNum</code> object.
    *
-   * @param precision set the precision of the resulting ApcomplexNum
    * @return this number represented as an ApcomplexNum
    */
-  public ApcomplexNum apcomplexNumValue( );
+  public ApcomplexNum apcomplexNumValue();
 
   /**
-   * Get a <code>Apcomplex</code> object.
+   * Get a {@link Apcomplex} object.
    *
-   * @param precision set the precision of the resulting Apcomplex
    * @return this number represented as an Apcomplex
    */
-  public Apcomplex apcomplexValue( );
+  public Apcomplex apcomplexValue();
 
   /**
    * Returns the smallest (closest to negative infinity) <code>IInteger</code> value that is not

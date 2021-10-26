@@ -1,6 +1,7 @@
 package org.matheclipse.core.interfaces;
 
 import org.hipparchus.distribution.RealDistribution;
+import org.matheclipse.core.expression.F;
 
 /**
  * Any distribution for which an analytic expression of the mean exists should implement {@link
@@ -12,6 +13,16 @@ import org.hipparchus.distribution.RealDistribution;
 public interface IDistribution {
   default RealDistribution dist() {
     return null;
+  }
+
+  /**
+   * Test if the parameters are consistent.
+   *
+   * @param distribution
+   * @return the distribution or otherwise {@link F#NIL} if the parameters are not consistent
+   */
+  default IAST checkParameters(IAST distribution) {
+    return distribution;
   }
 
   IExpr mean(IAST distribution);
