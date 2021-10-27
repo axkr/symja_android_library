@@ -541,7 +541,6 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
      * @exception NoSuchElementException if there is no element left in the map
      */
     public void advance() throws ConcurrentModificationException, NoSuchElementException {
-
       if (referenceCount != count) {
         throw new ConcurrentModificationException();
       }
@@ -550,9 +549,16 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
       current = next;
 
       // prepare next step
+      final int length = states.length;
       try {
-        while (states[++next] != FULL) {
+        while (++next < length && states[next] != FULL) {
           // nothing to do
+        }
+        if (next >= length) {
+          next = -2;
+          if (current < 0) {
+            throw new NoSuchElementException();
+          }
         }
       } catch (ArrayIndexOutOfBoundsException e) {
         next = -2;

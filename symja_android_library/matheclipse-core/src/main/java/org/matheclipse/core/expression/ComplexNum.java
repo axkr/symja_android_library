@@ -586,11 +586,17 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
-  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
+  public CharSequence internalJavaString(
+      SourceCodeProperties properties,
+      int depth,
       Function<IExpr, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
-    return new StringBuilder(prefix).append("complexNum(").append(fComplex.getReal()).append(",")
-        .append(fComplex.getImaginary()).append(")");
+    return new StringBuilder(prefix)
+        .append("complexNum(")
+        .append(fComplex.getReal())
+        .append(",")
+        .append(fComplex.getImaginary())
+        .append(")");
   }
 
   @Override
@@ -635,12 +641,11 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public int toIntDefault(int defaultValue) {
-    try {
-      if (F.isZero(fComplex.getImaginary())) {
-        return NumberUtil.toInt(fComplex.getReal());
+    if (F.isZero(fComplex.getImaginary())) {
+      final double re = fComplex.getReal();
+      if (DoubleMath.isMathematicalInteger(re)) {
+        return (int) re;
       }
-    } catch (ArithmeticException ae) {
-      //
     }
     return defaultValue;
   }

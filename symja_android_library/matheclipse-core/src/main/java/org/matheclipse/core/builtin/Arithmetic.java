@@ -6712,10 +6712,8 @@ public final class Arithmetic {
     IInteger fn2Rest = Primality.countPrimes1021(p2Numer, p2Exp, fn2Map, setEvaled, evaled);
     IInteger fd1Rest =
         Primality.countPrimes1021(p1Denom, p1Exp.negate(), fn2Map, setEvaled, evaled);
-    if (!evaled[0]) {
+    if (!evaled[0] && fn2Map.size() > 0) {
       OpenIntToIExprHashMap<IExpr>.Iterator iter = fn2Map.iterator();
-
-      iter = fn2Map.iterator();
       while (iter.hasNext()) {
         iter.advance();
         int base = iter.key();
@@ -6738,18 +6736,18 @@ public final class Arithmetic {
       }
     }
     if (evaled[0]) {
-      OpenIntToIExprHashMap<IExpr>.Iterator iter = fn2Map.iterator();
-
-      iter = fn2Map.iterator();
-      while (iter.hasNext()) {
-        iter.advance();
-        int base = iter.key();
-        IExpr exponent = iter.value();
-        IExpr exp = fn1Map.get(base);
-        if (exp == null) {
-          fn1Map.put(base, exponent);
-        } else {
-          fn1Map.put(base, exp.add(exponent));
+      if (fn2Map.size() > 0) {
+        OpenIntToIExprHashMap<IExpr>.Iterator iter = fn2Map.iterator();
+        while (iter.hasNext()) {
+          iter.advance();
+          int base = iter.key();
+          IExpr exponent = iter.value();
+          IExpr exp = fn1Map.get(base);
+          if (exp == null) {
+            fn1Map.put(base, exponent);
+          } else {
+            fn1Map.put(base, exp.add(exponent));
+          }
         }
       }
       IASTAppendable times1 = F.TimesAlloc(fn1Map.size() + 4);
@@ -6765,13 +6763,15 @@ public final class Arithmetic {
       if (!fd1Rest.isOne()) {
         times1.append(F.Power(fd1Rest, p1Exp.negate()));
       }
-      iter = fn1Map.iterator();
-      while (iter.hasNext()) {
-        iter.advance();
-        int base = iter.key();
-        IExpr exponent = iter.value();
-        if (base != 1) {
-          times1.append(F.Power(F.ZZ(base), F.evalExpand(exponent)));
+      if (fn1Map.size() > 0) {
+        OpenIntToIExprHashMap<IExpr>.Iterator iter = fn1Map.iterator();
+        while (iter.hasNext()) {
+          iter.advance();
+          int base = iter.key();
+          IExpr exponent = iter.value();
+          if (base != 1) {
+            times1.append(F.Power(F.ZZ(base), F.evalExpand(exponent)));
+          }
         }
       }
       return times1;

@@ -737,11 +737,10 @@ public class Num implements INum {
   /** {@inheritDoc} */
   @Override
   public int toIntDefault(int defaultValue) {
-    try {
-      return NumberUtil.toInt(fDouble);
-    } catch (ArithmeticException ae) {
-      return defaultValue;
+    if (DoubleMath.isMathematicalInteger(fDouble)) {
+      return (int) fDouble;
     }
+    return defaultValue;
   }
 
   /** {@inheritDoc} */

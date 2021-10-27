@@ -312,7 +312,9 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
+  public CharSequence internalJavaString(
+      SourceCodeProperties properties,
+      int depth,
       Function<IExpr, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
     StringBuilder javaForm = new StringBuilder(prefix);
@@ -822,11 +824,13 @@ public class IntegerSym extends AbstractIntegerSym {
    */
   @Override
   public IExpr sqrt() {
-    try {
-      return valueOf(IntMath.sqrt(fIntValue, RoundingMode.UNNECESSARY));
-    } catch (ArithmeticException | IllegalArgumentException ex) {
-      return F.Sqrt(this);
+    if (fIntValue >= 0) {
+      try {
+        return valueOf(IntMath.sqrt(fIntValue, RoundingMode.UNNECESSARY));
+      } catch (ArithmeticException | IllegalArgumentException ex) {
+      }
     }
+    return F.Sqrt(this);
   }
 
   @Override
