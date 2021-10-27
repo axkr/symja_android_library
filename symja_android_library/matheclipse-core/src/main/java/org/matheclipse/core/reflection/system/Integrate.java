@@ -877,7 +877,7 @@ public class Integrate extends AbstractFunctionEvaluator {
     if (Config.THREAD_FACTORY != null) {
       INIT_THREAD = Config.THREAD_FACTORY.newThread(new IntegrateInitializer());
     } else {
-      INIT_THREAD = new Thread(new IntegrateInitializer());
+      INIT_THREAD = new Thread(new IntegrateInitializer(), "IntegrateInitializer");
     }
 
     if (!Config.JAS_NO_THREADS) {
