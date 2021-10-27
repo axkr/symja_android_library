@@ -138,9 +138,13 @@ public class DistributionTest extends AbstractTestCase {
     check(
         "TTest({data1,data1+2})", //
         "0.0000356619");
-    //    check(
-    //        "TTest({data1,{3.2,4.3}})", //
-    //        "0.000145336");
+    check(
+        "TTest({data1,{3.2,4.3}})", //
+        "0.000145336");
+    check(
+        "TTest({data1,{0.536463693808193, 0.7678270833344806,1.1,4.5 }})", //
+        "0.0283933");
+
     check(
         "PDF(NormalDistribution(m,0), x)", //
         "PDF(NormalDistribution(m,0),x)");

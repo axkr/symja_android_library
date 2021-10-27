@@ -6452,14 +6452,14 @@ public class StatisticsFunctions {
         int dimension1 = list.first().isVector();
         if (dimension1 > 0) {
           int dimension2 = list.second().isVector();
-          if (dimension1 == dimension2) {
+          if (dimension2 > 0) {
             double[] vector1 = list.first().toDoubleVector();
             if (vector1 != null) {
               double[] vector2 = list.second().toDoubleVector();
               if (vector2 != null) {
                 org.hipparchus.stat.inference.TTest tTest =
                     new org.hipparchus.stat.inference.TTest();
-                double value = tTest.tTest(vector1, vector2);
+                double value = tTest.homoscedasticTTest(vector1, vector2);
                 return F.num(value);
               }
             }
