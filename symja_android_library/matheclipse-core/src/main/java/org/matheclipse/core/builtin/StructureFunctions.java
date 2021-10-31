@@ -1663,17 +1663,11 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm2Prepend(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-      if (ast.size() >= 3 && ast.size() < 5) {
-        int lastIndex = ast.argSize();
+      final int argSize = ast.argSize();
+      if (argSize >= 2) {
+        int lastIndex = argSize;
         boolean heads = false;
-        if (ast.size() > 3) {
+        if (argSize > 2) {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
           IExpr option = options.getOption(S.Heads);
           if (option.isPresent()) {

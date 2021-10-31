@@ -250,70 +250,65 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
    *     large integer.
    */
   public static IInteger valueOf(final String integerString, final int radix) {
-    if (integerString.length() >= 1 && radix == 10) {
-      char ch = integerString.charAt(0);
-      if (ch == '-') {
-        if (integerString.length() == 2) {
-          ch = integerString.charAt(1);
-          switch (ch) {
-            case '0':
-              return F.C0;
-            case '1':
-              return F.CN1;
-            case '2':
-              return F.CN2;
-            case '3':
-              return F.CN3;
-            case '4':
-              return F.CN4;
-            case '5':
-              return F.CN5;
-            case '6':
-              return F.CN6;
-            case '7':
-              return F.CN7;
-            case '8':
-              return F.CN8;
-            case '9':
-              return F.CN9;
-          }
+    final int length = integerString.length();
+    if (radix == 10) {
+      if (length == 1) {
+        char ch = integerString.charAt(0);
+        switch (ch) {
+          case '0':
+            return F.C0;
+          case '1':
+            return F.C1;
+          case '2':
+            return F.C2;
+          case '3':
+            return F.C3;
+          case '4':
+            return F.C4;
+          case '5':
+            return F.C5;
+          case '6':
+            return F.C6;
+          case '7':
+            return F.C7;
+          case '8':
+            return F.C8;
+          case '9':
+            return F.C9;
         }
-      } else {
-        if (integerString.length() == 1) {
-          switch (ch) {
-            case '0':
-              return F.C0;
-            case '1':
-              return F.C1;
-            case '2':
-              return F.C2;
-            case '3':
-              return F.C3;
-            case '4':
-              return F.C4;
-            case '5':
-              return F.C5;
-            case '6':
-              return F.C6;
-            case '7':
-              return F.C7;
-            case '8':
-              return F.C8;
-            case '9':
-              return F.C9;
-          }
+      } else if (length == 2 && integerString.charAt(0) == '-') {
+        char ch = integerString.charAt(1);
+        switch (ch) {
+          case '0':
+            return F.C0;
+          case '1':
+            return F.CN1;
+          case '2':
+            return F.CN2;
+          case '3':
+            return F.CN3;
+          case '4':
+            return F.CN4;
+          case '5':
+            return F.CN5;
+          case '6':
+            return F.CN6;
+          case '7':
+            return F.CN7;
+          case '8':
+            return F.CN8;
+          case '9':
+            return F.CN9;
         }
       }
     }
     try {
-      int value = Integer.parseInt(integerString, radix);
-      return new IntegerSym(value);
+      int newnum = Integer.parseInt(integerString, radix);
+      return valueOf(newnum);
     } catch (NumberFormatException nfe) {
-      // possibly a big integer?
+      // probably a big integer?
     }
-    BigIntegerSym z = new BigIntegerSym();
-    z.fBigIntValue = new BigInteger(integerString, radix);
-    return z;
+    return new BigIntegerSym(new BigInteger(integerString, radix));
   }
 
   /** {@inheritDoc} */
@@ -341,21 +336,21 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   @Override
-  public ApcomplexNum apcomplexNumValue( ) {
-    return ApcomplexNum.valueOf(apcomplexValue( ));
+  public ApcomplexNum apcomplexNumValue() {
+    return ApcomplexNum.valueOf(apcomplexValue());
   }
 
-  public Apcomplex apcomplexValue( ) {
+  public Apcomplex apcomplexValue() {
     return new Apcomplex(new Apfloat(toBigNumerator(), EvalEngine.getApfloat().precision()));
   }
 
   @Override
-  public ApfloatNum apfloatNumValue( ) {
+  public ApfloatNum apfloatNumValue() {
     return ApfloatNum.valueOf(toBigNumerator());
   }
 
   @Override
-  public Apfloat apfloatValue( ) {
+  public Apfloat apfloatValue() {
     return new Apfloat(toBigNumerator(), EvalEngine.getApfloat().precision());
   }
 

@@ -10,6 +10,10 @@ import org.matheclipse.core.interfaces.IExpr;
 /** Common interface for built-in Symja functions. */
 public interface IFunctionEvaluator extends IEvaluator {
 
+  /**
+   * The function is allowed to have 0 arguments and the head must be the built-in symbol name of
+   * the function.
+   */
   int[] ARGS_0_0 = new int[] {0, 0};
 
   /**
@@ -145,6 +149,10 @@ public interface IFunctionEvaluator extends IEvaluator {
    */
   int[] ARGS_2_3 = new int[] {2, 3};
 
+  /**
+   * The function is allowed to have 2 or 3 arguments and the head must be the built-in symbol name
+   * of the function or can be an operator form.
+   */
   int[] ARGS_2_3_0 = new int[] {2, 3, 0};
 
   /**
@@ -159,6 +167,10 @@ public interface IFunctionEvaluator extends IEvaluator {
    */
   int[] ARGS_2_3_2 = new int[] {2, 3, 2};
 
+  /**
+   * The function is allowed to have 2 or 4 arguments and the head must be the built-in symbol name
+   * of the function.
+   */
   int[] ARGS_2_4 = new int[] {2, 4};
 
   /**
@@ -173,28 +185,76 @@ public interface IFunctionEvaluator extends IEvaluator {
    */
   int[] ARGS_2_4_2 = new int[] {2, 4, 2};
 
+  /**
+   * The function is allowed to have 3 arguments and the head must be the built-in symbol name of
+   * the function.
+   */
   int[] ARGS_3_3 = new int[] {3, 3};
 
+  /**
+   * The function is allowed to have 3 or 4 arguments and the head must be the built-in symbol name
+   * of the function.
+   */
   int[] ARGS_3_4 = new int[] {3, 4};
 
+  /**
+   * The function is allowed to have 3 or 5 arguments and the head must be the built-in symbol name
+   * of the function.
+   */
   int[] ARGS_3_5 = new int[] {3, 5};
 
+  /**
+   * The function is allowed to have 4 arguments and the head must be the built-in symbol name of
+   * the function.
+   */
   int[] ARGS_4_4 = new int[] {4, 4};
 
+  /**
+   * The function is allowed to have 5 arguments and the head must be the built-in symbol name of
+   * the function.
+   */
   int[] ARGS_5_5 = new int[] {5, 5};
 
+  /**
+   * The function is allowed to have 6 arguments and the head must be the built-in symbol name of
+   * the function.
+   */
   int[] ARGS_6_6 = new int[] {6, 6};
 
+  /**
+   * The function is allowed to have 0 or n arguments and the head must be the built-in symbol name
+   * of the function.
+   */
   int[] ARGS_0_INFINITY = new int[] {0, Integer.MAX_VALUE};
 
+  /**
+   * The function is allowed to have 1 or n arguments and the head must be the built-in symbol name
+   * of the function.
+   */
   int[] ARGS_1_INFINITY = new int[] {1, Integer.MAX_VALUE};
 
+  /**
+   * The function is allowed to have 0 or n arguments and the head must be the built-in symbol name
+   * of the function or can be an operator form.
+   */
   int[] ARGS_1_INFINITY_0 = new int[] {1, Integer.MAX_VALUE, 0};
 
+  /**
+   * The function is allowed to have 1 or n arguments and the head must be the built-in symbol name
+   * of the function or can call {@link F#operatorForm1Append(IAST)}
+   */
   int[] ARGS_1_INFINITY_1 = new int[] {1, Integer.MAX_VALUE, 1};
 
+  /**
+   * The function is allowed to have 2 or n arguments and the head must be the built-in symbol name
+   * of the function.
+   */
   int[] ARGS_2_INFINITY = new int[] {2, Integer.MAX_VALUE};
 
+  /**
+   * The function is allowed to have 3 or n arguments and the head must be the built-in symbol name
+   * of the function.
+   */
   int[] ARGS_3_INFINITY = new int[] {3, Integer.MAX_VALUE};
 
   /**
@@ -276,7 +336,7 @@ public interface IFunctionEvaluator extends IEvaluator {
    * @param ast
    * @param expected
    * @param engine
-   * @return
+   * @return always {@link F#NIL}
    */
   default IExpr print(IAST ast, int expected, EvalEngine engine) {
     // `1` called with `2` arguments; `3` arguments are expected.
