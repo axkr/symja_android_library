@@ -516,12 +516,12 @@ public class Symbol implements ISymbol, Serializable {
   public final boolean hasHoldAllCompleteAttribute() {
     return ISymbol.hasHoldAllCompleteAttribute(fAttributes);
   }
-  
+
   @Override
   public final boolean hasListableAttribute() {
     return ISymbol.hasListableAttribute(fAttributes);
   }
-  
+
   /** {@inheritDoc} */
   @Override
   public int hashCode() {
@@ -564,7 +564,9 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
+  public CharSequence internalJavaString(
+      SourceCodeProperties properties,
+      int depth,
       Function<IExpr, ? extends CharSequence> variables) {
     CharSequence result = variables.apply(this);
     if (result != null) {
@@ -610,7 +612,8 @@ public class Symbol implements ISymbol, Serializable {
         return fSymbolName;
       }
       if ((Config.RUBI_CONVERT_SYMBOLS && 'A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E')
-          || ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') || ('P' == ch || ch == 'Q')) {
+          || ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E')
+          || ('P' == ch || ch == 'Q')) {
         return new StringBuilder(fSymbolName).append("Symbol");
       }
     }
@@ -801,15 +804,11 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final boolean isVariable() {
-    return ((fAttributes & CONSTANT) != CONSTANT)
-        && //
-        (this != S.ComplexInfinity)
-        && //
-        (this != S.Indeterminate)
-        && //
-        (this != S.DirectedInfinity)
-        && //
-        (this != S.Infinity);
+    return ((fAttributes & (CONSTANT | NUMERICFUNCTION)) == NOATTRIBUTE)
+        && (this != S.ComplexInfinity)
+        && (this != S.Indeterminate)
+        && (this != S.DirectedInfinity)
+        && (this != S.Infinity);
   }
 
   /** {@inheritDoc} */

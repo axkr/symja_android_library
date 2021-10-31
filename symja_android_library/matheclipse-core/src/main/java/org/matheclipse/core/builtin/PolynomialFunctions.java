@@ -974,7 +974,7 @@ public class PolynomialFunctions {
       if (arg1.isZero() || arg2.isZero()) {
         return F.C0;
       }
-      IExpr arg3 = Validate.checkSymbolType(ast, 3, engine);
+      IExpr arg3 = Validate.checkIsVariable(ast, 3, engine);
       if (arg3.isPresent()) {
         ISymbol x = (ISymbol) arg3;
         IExpr a = F.evalExpandAll(arg1, engine);

@@ -731,7 +731,7 @@ public final class ListFunctions {
         return assignPartTo(sym, (IAST) arg1, S.Append, ast, engine);
       }
 
-      IExpr sym = Validate.checkSymbolType(ast, 1, engine);
+      IExpr sym = Validate.checkIsVariable(ast, 1, engine);
       if (sym.isPresent()) {
         IExpr arg2 = engine.evaluate(ast.arg2());
         Function<IExpr, IExpr> function = new AppendToFunction(arg2);
@@ -5260,7 +5260,7 @@ public final class ListFunctions {
         return assignPartTo(sym, (IAST) arg1, S.Prepend, ast, engine);
       }
 
-      IExpr sym = Validate.checkSymbolType(ast, 1, engine);
+      IExpr sym = Validate.checkIsVariable(ast, 1, engine);
       if (sym.isPresent()) {
         IExpr arg2 = engine.evaluate(ast.arg2());
         Function<IExpr, IExpr> function = new PrependToFunction(arg2);
@@ -7067,7 +7067,7 @@ public final class ListFunctions {
      * @param ast
      * @return the variable set of local variables
      */
-    public VariablesSet determineIteratorExprVariables(final IAST ast) {
+    public static VariablesSet determineIteratorExprVariables(final IAST ast) {
       VariablesSet variableList = new VariablesSet();
       for (int i = 2; i < ast.size(); i++) {
         IExpr arg = ast.get(i);

@@ -2097,16 +2097,16 @@ public final class Arithmetic {
         }
         if (arg2.isInteger() && !arg2.isPositive()) {
           IExpr z = arg1;
-          IExpr n = arg2.negate();
+          IInteger n = ((IInteger) arg2).negate();
+          IInteger m = n.inc();
           return
-          // [$ (1/(n + 1))*BernoulliB(n + 1, z + 1) + ((-1)^n/(n + 1))* BernoulliB(n + 1) $]
-          F.Plus(
+          // [$ Expand( (1/m)*(BernoulliB(m, z + 1) + ((-1)^n)* BernoulliB(m)) ) $]
+          F.Expand(
               F.Times(
-                  F.Power(F.Plus(n, F.C1), F.CN1), F.BernoulliB(F.Plus(n, F.C1), F.Plus(z, F.C1))),
-              F.Times(
-                  F.Power(F.CN1, n),
-                  F.Power(F.Plus(n, F.C1), F.CN1),
-                  F.BernoulliB(F.Plus(n, F.C1)))); // $$;
+                  F.Power(m, F.CN1),
+                  F.Plus(
+                      F.BernoulliB(m, F.Plus(z, F.C1)),
+                      F.Times(F.Power(F.CN1, n), F.BernoulliB(m))))); // $$;
         }
 
         if (arg1.isInteger()) {

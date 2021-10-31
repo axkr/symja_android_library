@@ -331,7 +331,7 @@ public class IOFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
+      IExpr arg1 = Validate.checkIsVariable(ast, 1, engine);
       if (arg1.isSymbol()) {
         ISymbol symbol = (ISymbol) arg1;
         RulesData rulesData = symbol.getRulesData();

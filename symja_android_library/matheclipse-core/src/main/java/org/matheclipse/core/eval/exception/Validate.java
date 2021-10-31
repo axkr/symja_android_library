@@ -673,12 +673,13 @@ public final class Validate {
    * @return <code>F.NIL</code> if the argument at the given position is not a symbol.
    */
   public static IExpr checkSymbolType(IAST ast, int position, EvalEngine engine) {
-    if (ast.get(position).isSymbol() && ast.get(position).isVariable()) {
-      return ast.get(position);
+    IExpr arg = ast.get(position);
+    if (arg.isSymbol()) {
+      return arg;
     }
     // Argument `1` at position `2` is expected to be a symbol.
     return IOFunctions.printMessage(
-        ast.topHead(), "sym", F.List(ast.get(position), F.ZZ(position)), engine);
+        ast.topHead(), "sym", F.List(arg, F.ZZ(position)), engine);
   }
 
   /**

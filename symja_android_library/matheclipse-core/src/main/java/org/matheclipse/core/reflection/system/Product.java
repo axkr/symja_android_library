@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
+import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.ListFunctions;
@@ -20,7 +21,9 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.rules.ProductRules;
+import org.matheclipse.core.patternmatching.Matcher;
+import org.matheclipse.core.reflection.system.rulesets.ProductRules;
+import com.google.common.base.Suppliers;
 
 /**
  *
@@ -96,12 +99,13 @@ import org.matheclipse.core.reflection.system.rules.ProductRules;
 public class Product extends ListFunctions.Table implements ProductRules {
   private static final Logger LOGGER = LogManager.getLogger();
 
-  public Product() {}
+  private static Supplier<Matcher> MATCHER1;
 
-  @Override
-  public IAST getRuleAST() {
-    return RULES;
+  private static Matcher matcher1() {
+    return MATCHER1.get();
   }
+
+  public Product() {}
 
   /**
    * Product of expressions.
@@ -122,24 +126,36 @@ public class Product extends ListFunctions.Table implements ProductRules {
       // IASTMutable prod = ast.setAtCopy(1, null);
       return ((IAST) arg1).mapThread(ast, 1);
     }
-    if (ast.size() > 2) {
+    IAST preevaledProduct = engine.preevalForwardBackwardAST(ast, 1);
+    arg1 = preevaledProduct.arg1();
+    return evaluateProduct(preevaledProduct, arg1, engine);
+  }
+
+  private IExpr evaluateProduct(final IAST preevaledProduct, IExpr arg1, EvalEngine engine) {
+    if (preevaledProduct.size() > 2) {
       IAST list;
-      if (ast.last().isList()) {
-        list = (IAST) ast.last();
+      if (preevaledProduct.last().isList()) {
+        list = (IAST) preevaledProduct.last();
       } else {
-        list = F.List(ast.last());
+        list = F.List(preevaledProduct.last());
       }
       if (list.isAST1()) {
         // indefinite product case
         IExpr variable = list.arg1();
-        if (ast.arg1().isFree(variable) && variable.isVariable()) {
-          return indefiniteProduct(ast, variable);
+        if (preevaledProduct.arg1().isFree(variable) && variable.isVariable()) {
+          return indefiniteProduct(preevaledProduct, variable);
         }
       }
     }
     IExpr temp = F.NIL;
+    if (preevaledProduct.size() == 3) {
+      IExpr result = matcher1().apply(preevaledProduct);
+      if (result.isPresent()) {
+        return result;
+      }
+    }
     try {
-      temp = evaluateTableThrow(ast, Times(), Times(), engine);
+      temp = evaluateTableThrow(preevaledProduct, Times(), Times(), engine);
       if (temp.isPresent()) {
         return temp;
       }
@@ -147,19 +163,16 @@ public class Product extends ListFunctions.Table implements ProductRules {
       LOGGER.log(engine.getLogLevel(), ve.getMessage(S.Product), ve);
       return F.NIL;
     }
-    // arg1 = evalBlockExpandWithoutReap(arg1,
-    // determineIteratorVariables(ast));
-
     if (arg1.isPower()) {
       IExpr exponent = arg1.exponent();
       boolean flag = true;
       // Prod( i^a, {i,from,to},... )
-      for (int i = 2; i < ast.size(); i++) {
+      for (int i = 2; i < preevaledProduct.size(); i++) {
         IIterator<IExpr> iterator;
-        if (ast.get(i).isList()) {
-          iterator = Iterator.create((IAST) ast.get(i), i, engine);
+        if (preevaledProduct.get(i).isList()) {
+          iterator = Iterator.create((IAST) preevaledProduct.get(i), i, engine);
         } else {
-          iterator = Iterator.create(F.List(ast.get(i)), i, engine);
+          iterator = Iterator.create(F.List(preevaledProduct.get(i)), i, engine);
         }
         if (iterator.isValidVariable() && exponent.isFree(iterator.getVariable())) {
           continue;
@@ -168,19 +181,20 @@ public class Product extends ListFunctions.Table implements ProductRules {
         break;
       }
       if (flag) {
-        IASTMutable prod = ast.copy();
+        IASTMutable prod = preevaledProduct.copy();
         prod.set(1, arg1.base());
         return F.Power(prod, exponent);
       }
     }
-    IExpr argN = ast.last();
-    if (ast.size() >= 3 && argN.isList()) {
+    IExpr argN = preevaledProduct.last();
+    if (preevaledProduct.size() >= 3 && argN.isList()) {
       try {
         if (arg1.isZero()) {
           // Product(0, {k, n, m})
           return F.C0;
         }
-        IIterator<IExpr> iterator = Iterator.create((IAST) argN, ast.argSize(), engine);
+        IIterator<IExpr> iterator =
+            Iterator.create((IAST) argN, preevaledProduct.argSize(), engine);
         if (iterator.isValidVariable() && iterator.getUpperLimit().isInfinity()) {
           if (arg1.isOne()) {
             // Product(1, {k, a, Infinity})
@@ -192,8 +206,6 @@ public class Product extends ListFunctions.Table implements ProductRules {
           }
         }
         if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
-          // if (iterator.getLowerLimit().isInteger() && iterator.getUpperLimit().isSymbol()
-          // && iterator.getStep().isOne()) {
           if (iterator.getUpperLimit().isSymbol() && iterator.getStep().isOne()) {
             final ISymbol var = iterator.getVariable();
             final IExpr from = iterator.getLowerLimit();
@@ -205,10 +217,11 @@ public class Product extends ListFunctions.Table implements ProductRules {
                   IExpr exponent = arg1.exponent();
                   if (exponent.equals(var)) {
                     // Prod( a^i, ..., {i,from,to} )
-                    if (ast.isAST2()) {
+                    if (preevaledProduct.isAST2()) {
                       return F.Power(base, Times(C1D2, to, Plus(C1, to)));
                     }
-                    IASTAppendable result = ast.removeAtClone(ast.argSize());
+                    IASTAppendable result =
+                        preevaledProduct.removeAtClone(preevaledProduct.argSize());
                     // result.remove(ast.argSize());
                     result.set(1, F.Power(base, Times(C1D2, to, Plus(C1, to))));
                     return result;
@@ -219,26 +232,26 @@ public class Product extends ListFunctions.Table implements ProductRules {
 
             if (arg1.isFree(var)) {
 
-              if (ast.isAST2()) {
+              if (preevaledProduct.isAST2()) {
                 if (from.isOne()) {
-                  return F.Power(ast.arg1(), to);
+                  return F.Power(preevaledProduct.arg1(), to);
                 }
                 if (from.isZero()) {
-                  return F.Power(ast.arg1(), Plus(to, C1));
+                  return F.Power(preevaledProduct.arg1(), Plus(to, C1));
                 }
                 if (from.isSymbol()) {
                   // 2^(1-from+to)
                   return F.Power(arg1, F.Plus(F.C1, from.negate(), to));
                 }
               } else {
-                IASTAppendable result = ast.removeAtClone(ast.argSize());
+                IASTAppendable result = preevaledProduct.removeAtClone(preevaledProduct.argSize());
                 // result.remove(ast.argSize());
                 if (from.isOne()) {
-                  result.set(1, F.Power(ast.arg1(), to));
+                  result.set(1, F.Power(preevaledProduct.arg1(), to));
                   return result;
                 }
                 if (from.isZero()) {
-                  result.set(1, F.Power(ast.arg1(), Plus(to, C1)));
+                  result.set(1, F.Power(preevaledProduct.arg1(), Plus(to, C1)));
                   return result;
                 }
                 if (from.isSymbol()) {
@@ -252,7 +265,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
         }
         temp = F.NIL;
         IAST resultList = Times();
-        temp = evaluateLast(ast.arg1(), iterator, resultList, F.C1);
+        temp = evaluateLast(preevaledProduct.arg1(), iterator, resultList, F.C1);
         if (!temp.isPresent() || temp.equals(resultList)) {
           return F.NIL;
         }
@@ -263,11 +276,10 @@ public class Product extends ListFunctions.Table implements ProductRules {
         LOGGER.log(engine.getLogLevel(), "Product: Recursionlimit exceeded");
         return F.NIL;
       }
-      if (ast.isAST2()) {
+      if (preevaledProduct.isAST2()) {
         return temp;
       } else {
-        IASTAppendable result = ast.removeAtClone(ast.argSize());
-        // result.remove(ast.argSize());
+        IASTAppendable result = preevaledProduct.removeAtClone(preevaledProduct.argSize());
         result.set(1, temp);
         return result;
       }
@@ -306,11 +318,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.DELAYED_RULE_EVALUATION);
-    if (getRuleAST() != null) {
-      // don't call EvalEngine#addRules() here!
-      // the rules should add themselves
-      // EvalEngine.get().addRules(ruleList);
-    }
+    newSymbol.setAttributes(ISymbol.HOLDALL);
+    MATCHER1 = Suppliers.memoize(ProductRules::init1);
   }
 }

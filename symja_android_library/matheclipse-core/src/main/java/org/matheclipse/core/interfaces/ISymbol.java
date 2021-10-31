@@ -103,7 +103,7 @@ public interface ISymbol extends IExpr {
    * ISymbol attribute to indicate that a symbols evaluation should be printed to Console with
    * System.out.println();
    */
-  public static final int DELAYED_RULE_EVALUATION = 0x00020000;
+  //  public static final int DELAYED_RULE_EVALUATION = 0x00020000;
 
   //
   // Flags definition starts here

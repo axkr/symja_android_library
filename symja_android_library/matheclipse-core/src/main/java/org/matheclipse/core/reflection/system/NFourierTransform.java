@@ -27,7 +27,7 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr expr = ast.arg1();
     try {
-      IExpr symbol = Validate.checkSymbolType(ast, 2, engine);
+      IExpr symbol = Validate.checkIsVariable(ast, 2, engine);
       if (symbol.isPresent()) {
         // IExpr omega = ast.arg3();
         if (ast.size() > 4) {

@@ -22,6 +22,7 @@ import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.builtin.Programming;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.FlowControlException;
@@ -919,8 +920,7 @@ public class EvalEngine implements Serializable {
       }
     }
 
-    if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.NOATTRIBUTE)
-        && !symbol.equals(S.Integrate)) {
+    if (!symbol.equals(S.Integrate)) {
       IExpr result;
       if ((result = symbol.evalDownRule(this, ast)).isPresent()) {
         return result;
@@ -954,15 +954,9 @@ public class EvalEngine implements Serializable {
           LOGGER.log(getLogLevel(), ast.topHead(), ve);
           return F.NIL;
         }
-        if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
-          // evaluate args especially for Sum() and Product(), although they have HOLDALL attribute
-          IExpr temp = evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
-          return symbol.evalDownRule(this, temp);
-        } else {
-          if (isSymbolicMode(attr)) {
-            ast.addEvalFlags(IAST.BUILT_IN_EVALED);
-            return F.NIL;
-          }
+        if (isSymbolicMode(attr)) {
+          ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+          return F.NIL;
         }
       }
     }
@@ -1404,7 +1398,7 @@ public class EvalEngine implements Serializable {
   /**
    * Evaluate the ast recursively, according to the attributes Flat, HoldAll, HoldFirst, HoldRest,
    * Orderless to create pattern-matching expressions directly or for the left-hand-side of a <code>
-   * Set[]</code>, <code>SetDelayed[]</code>, <code>UpSet[]</code> or <code>UpSetDelayed[]</code>
+   * Set[]</code>, <code>SetDelayed[]</code>, <code>UpSet[]</code> or <code>UpSeted[]</code>
    * expression
    *
    * @param ast
@@ -2932,6 +2926,66 @@ public class EvalEngine implements Serializable {
       return result;
     }
     ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+    return F.NIL;
+  }
+
+  /**
+   * Pre-evaluate each argument of the <code>ast</code> by first (forward-) substituting all
+   * variables with dummy variables, evaluating the new expression and (backward-) substituting all
+   * dummy variables with the original variables.
+   *
+   * @param ast
+   * @param offset number of the argument, there the pre-evaluation should start
+   * @return
+   */
+  public IAST preevalForwardBackwardAST(final IAST ast, int offset) {
+    IASTMutable preevaled = F.NIL;
+    for (int i = offset; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isAST()) {
+        arg = preevalForwardBackward((IAST) arg);
+        if (arg.isPresent()) {
+          if (!preevaled.isPresent()) {
+            preevaled = ast.copy();
+          }
+          preevaled.set(i, arg);
+        }
+      }
+    }
+    return preevaled.orElse(ast);
+  }
+
+  private IExpr preevalForwardBackward(final IAST arg1) {
+    VariablesSet variablesSet = new VariablesSet(0, arg1);
+    IAST moduleVariablesList = variablesSet.getVarList();
+
+    java.util.List<IExpr> reapList = getReapList();
+    boolean quietMode = isQuietMode();
+    try {
+      setQuietMode(true);
+      setReapList(null);
+      final java.util.IdentityHashMap<IExpr, ISymbol> variablesMap =
+          new IdentityHashMap<IExpr, ISymbol>();
+      final java.util.IdentityHashMap<ISymbol, IExpr> dummyVariablesMap =
+          new IdentityHashMap<ISymbol, IExpr>();
+      final String varAppend = uniqueName("$");
+      for (int i = 1; i < moduleVariablesList.size(); i++) {
+        IExpr oldSymbol = moduleVariablesList.get(i);
+        ISymbol newSymbol = F.Dummy(oldSymbol.toString() + varAppend);
+        variablesMap.put(oldSymbol, newSymbol);
+        dummyVariablesMap.put(newSymbol, oldSymbol);
+      }
+      // forward substitution
+      IExpr expr = arg1.replaceAll(variablesMap);
+      if (expr.isPresent()) {
+        IExpr temp = evaluate(expr);
+        // backward substitution
+        return temp.replaceAll(dummyVariablesMap).orElse(temp);
+      }
+    } finally {
+      setQuietMode(quietMode);
+      setReapList(reapList);
+    }
     return F.NIL;
   }
 

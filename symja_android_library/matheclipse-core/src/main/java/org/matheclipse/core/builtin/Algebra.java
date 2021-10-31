@@ -3366,7 +3366,7 @@ public class Algebra {
         if (ast.arg3().isAST()) {
           variable = ast.arg3();
         } else {
-          variable = Validate.checkSymbolType(ast, 3, engine);
+          variable = Validate.checkIsVariable(ast, 3, engine);
           if (!variable.isPresent()) {
             return F.NIL;
           }
@@ -3513,7 +3513,7 @@ public class Algebra {
       if (ast.arg3().isAST()) {
         variable = ast.arg3();
       } else {
-        variable = Validate.checkSymbolType(ast, 3, engine);
+        variable = Validate.checkIsVariable(ast, 3, engine);
         if (!variable.isPresent()) {
           return F.NIL;
         }
@@ -3647,7 +3647,7 @@ public class Algebra {
       if (ast.arg3().isAST()) {
         variable = ast.arg3();
       } else {
-        variable = Validate.checkSymbolType(ast, 3, engine);
+        variable = Validate.checkIsVariable(ast, 3, engine);
         if (!variable.isPresent()) {
           return F.NIL;
         }

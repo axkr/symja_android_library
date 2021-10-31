@@ -139,8 +139,12 @@ public class VariablesSet {
    * @see IExpr#isVariable()
    */
   static class VariablesVisitor extends VisitorCollectionBoolean<IExpr> {
+    public VariablesVisitor(int offset, Collection<IExpr> collection) {
+      super(offset, collection);
+    }
+
     public VariablesVisitor(Collection<IExpr> collection) {
-      super(collection);
+      this(1, collection);
     }
 
     @Override
@@ -269,6 +273,12 @@ public class VariablesSet {
     super();
     fVariablesSet = new TreeSet<IExpr>();
     expression.accept(new VariablesVisitor(fVariablesSet));
+  }
+
+  public VariablesSet(final int offset, final IExpr expression) {
+    super();
+    fVariablesSet = new TreeSet<IExpr>();
+    expression.accept(new VariablesVisitor(offset, fVariablesSet));
   }
 
   /**
