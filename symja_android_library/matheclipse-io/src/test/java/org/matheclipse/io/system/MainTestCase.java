@@ -2285,181 +2285,228 @@ public class MainTestCase extends AbstractTestCase {
     check("$y=$x^3;Module({$x=42},$x+$y)", "42+$x^3");
   }
 
-  public void testSystem193() {
-    check("Sum(x,{x,10})", "55");
-    check("Sum(x,{a,10,z})", "x*(-9+z)");
-    check("Sum(x,{x,1,1})", "1");
-    check("Sum(x,{x,3,2,-1})", "5");
-    check("Sum(x,{x,10,3,-4})", "16");
-    // use default value "0" for iterator with invalid range
-    check("Sum(x,{x,1,0})", "0");
-    check("Sum(x,{x,2,3,-1})", "0");
-    // 1*1 + 2*1 + 3*1 + 2*2 + 2*3 + 3*3
-    check("Sum(x*y, {x, 1, 3}, {y, 1, x})", "25");
-    check("Sum(k+a,{k,1,n})", "a*n+1/2*n*(1+n)");
-  }
-
   public void testSystem194() {
-    check("(n!)^x", "(n!)^x");
-    check("(n++)^(n!)", "(n++)^n!");
-    check("(n++)^(n!)^a", "(n++)^(n!)^a");
-    check("Product(x,{x,10})", "3628800");
-    check("Product(x,{x,0,1})", "0");
-    check("Product(x,{x,0,10,2})", "0");
-    check("Product(x,{x,1,1})", "1");
-    check("Product(x,{x,1,5})", "120");
-    check("Product(x,{x,3,2,-1})", "6");
-    check("Product(x,{x,10,3,-4})", "60");
-    // use default value "1" for iterator with invalid range
-    check("Product(x,{x,1,0})", "1");
-    check("Product(x,{x,2,3,-1})", "1");
-    check("Product(x,{x,0,-1,2})", "1");
-    // check("Product(x,{a,10,z})", "x^(-10)*x^(z+1)");
-    check("Product(i^(x),{i,1,n})", "(n!)^x");
+    check(
+        "(n!)^x", //
+        "(n!)^x");
+    check(
+        "(n++)^(n!)", //
+        "(n++)^n!");
+    check(
+        "(n++)^(n!)^a", //
+        "(n++)^(n!)^a");
   }
 
   public void testSystem195() {
-    check("ComposeList({x, y, z}, a)", "{a,x(a),y(x(a)),z(y(x(a)))}");
+    check(
+        "ComposeList({x, y, z}, a)", //
+        "{a,x(a),y(x(a)),z(y(x(a)))}");
   }
 
   public void testSystem196() {
-    check("Fold(fl, 0, {1, 2, 3})", "fl(fl(fl(0,1),2),3)");
+    check(
+        "Fold(fl, 0, {1, 2, 3})", //
+        "fl(fl(fl(0,1),2),3)");
   }
 
   public void testSystem197() {
-    check("FoldList(fl, 0, {1, 2, 3})", "{0,fl(0,1),fl(fl(0,1),2),fl(fl(fl(0,1),2),3)}");
+    check(
+        "FoldList(fl, 0, {1, 2, 3})", //
+        "{0,fl(0,1),fl(fl(0,1),2),fl(fl(fl(0,1),2),3)}");
   }
 
   public void testSystem198() {
-    check("Nest(n0,10,0)", "10");
+    check(
+        "Nest(n0,10,0)", //
+        "10");
   }
 
   public void testSystem199() {
-    check("Nest(n0,10,4)", "n0(n0(n0(n0(10))))");
+    check(
+        "Nest(n0,10,4)", //
+        "n0(n0(n0(n0(10))))");
   }
 
   public void testSystem200() {
-    check("NestList(n0,10,0)", "{10}");
+    check(
+        "NestList(n0,10,0)", //
+        "{10}");
   }
 
   public void testSystem201() {
-    check("NestList(n0,10,4)", "{10,n0(10),n0(n0(10)),n0(n0(n0(10))),n0(n0(n0(n0(10))))}");
+    check(
+        "NestList(n0,10,4)", //
+        "{10,n0(10),n0(n0(10)),n0(n0(n0(10))),n0(n0(n0(n0(10))))}");
   }
 
   public void testSystem202() {
     check(
-        "Outer(List, {a, b, c, d}, {{{1, 2}}})",
+        "Outer(List, {a, b, c, d}, {{{1, 2}}})", //
         "{{{{{a,1},{a,2}}}},{{{{b,1},{b,2}}}},{{{{c,1},{c,2}}}},{{{{d,1},{d,2}}}}}");
   }
 
   public void testSystem203() {
-    check("Outer(List, {1, 2, 3}, {4, 5})", "{{{1,4},{1,5}},{{2,4},{2,5}},{{3,4},{3,5}}}");
+    check(
+        "Outer(List, {1, 2, 3}, {4, 5})", //
+        "{{{1,4},{1,5}},{{2,4},{2,5}},{{3,4},{3,5}}}");
   }
 
   public void testSystem204() {
     check(
-        "Outer(Times, {a, b, c}, {{{1, 2}, {3, 4}}})",
+        "Outer(Times, {a, b, c}, {{{1, 2}, {3, 4}}})", //
         "{{{{a,2*a},{3*a,4*a}}},{{{b,2*b},{3*b,4*b}}},{{{c,2*c},{3*c,4*c}}}}");
   }
 
   public void testSystem205() {
-    check("Array(hd,3)", "{hd(1),hd(2),hd(3)}");
+    check(
+        "Array(hd,3)", //
+        "{hd(1),hd(2),hd(3)}");
   }
 
   public void testSystem206() {
-    check("Array(hd,4,2,g)", "g(hd(2),hd(3),hd(4),hd(5))");
+    check(
+        "Array(hd,4,2,g)", //
+        "g(hd(2),hd(3),hd(4),hd(5))");
   }
 
   public void testSystem207() {
     check(
-        "Array(hd,{3,4})",
+        "Array(hd,{3,4})", //
         "{{hd(1,1),hd(1,2),hd(1,3),hd(1,4)},{hd(2,1),hd(2,2),hd(2,3),hd(2,4)},{hd(3,1),hd(\n"
             + "3,2),hd(3,3),hd(3,4)}}");
   }
 
   public void testSystem208() {
-    check("Table(i0,{i0,3})", "{1,2,3}");
-    check("f @@ Table(i0+1,List(i0,1,5))", "f(2,3,4,5,6)");
-    check("Table(i0,{i0,1,1})", "{1}");
-    check("Table(i0,{i0,1,0})", "{}");
+    check(
+        "Table(i0,{i0,3})", //
+        "{1,2,3}");
+    check(
+        "f @@ Table(i0+1,List(i0,1,5))", //
+        "f(2,3,4,5,6)");
+    check(
+        "Table(i0,{i0,1,1})", //
+        "{1}");
+    check(
+        "Table(i0,{i0,1,0})", //
+        "{}");
   }
 
   public void testSystem209() {
-    check("Table(i0*j,{i0,3},{j,2})", "{{1,2},{2,4},{3,6}}");
+    check(
+        "Table(i0*j,{i0,3},{j,2})", //
+        "{{1,2},{2,4},{3,6}}");
   }
 
   public void testSystem210() {
-    check("Table(i0*j,{i0,3,10,2},{j,2})", "{{3,6},{5,10},{7,14},{9,18}}");
+    check(
+        "Table(i0*j,{i0,3,10,2},{j,2})", //
+        "{{3,6},{5,10},{7,14},{9,18}}");
   }
 
   public void testSystem211() {
-    check("Range(5)", "{1,2,3,4,5}");
+    check(
+        "Range(5)", //
+        "{1,2,3,4,5}");
   }
 
   public void testSystem211a() {
-    check("$g(x_Integer):=x+1; Range/@ $g /@Range(3)", "{{1,2},{1,2,3},{1,2,3,4}}");
+    check(
+        "$g(x_Integer):=x+1; Range/@ $g /@Range(3)", //
+        "{{1,2},{1,2,3},{1,2,3,4}}");
   }
 
   public void testSystem212() {
-    check("Range(3,10,2)", "{3,5,7,9}");
+    check(
+        "Range(3,10,2)", //
+        "{3,5,7,9}");
   }
 
   public void testSystem213() {
-    check("Range(3,10,1/2)", "{3,7/2,4,9/2,5,11/2,6,13/2,7,15/2,8,17/2,9,19/2,10}");
+    check(
+        "Range(3,10,1/2)", //
+        "{3,7/2,4,9/2,5,11/2,6,13/2,7,15/2,8,17/2,9,19/2,10}");
   }
 
   public void testSystem214() {
-    check("Range(1,2,0.25)", "{1.0,1.25,1.5,1.75,2.0}");
+    check(
+        "Range(1,2,0.25)", //
+        "{1.0,1.25,1.5,1.75,2.0}");
   }
 
   public void testSystem215() {
-    check("Extract({u+v+w^5, 42, w^10, 12, u+w^3, w^2}, {3, 2})", "10");
+    check(
+        "Extract({u+v+w^5, 42, w^10, 12, u+w^3, w^2}, {3, 2})", //
+        "10");
   }
 
   public void testSystem216() {
     check(
-        "Extract({ArcCsc,ArcSec,ArcCot,ArcTan}, Position({ArcSin,ArcCos,ArcTan,ArcCot},ArcCos))[[1]]",
+        "Extract({ArcCsc,ArcSec,ArcCot,ArcTan}, Position({ArcSin,ArcCos,ArcTan,ArcCot},ArcCos))[[1]]", //
         "ArcSec");
 
-    check("{ArcCsc,ArcSec,ArcCot,ArcTan}[[1]][x]", "ArcCsc(x)");
-    check("Extract({u+v+w^5, 42, w^10, 12, x(u,w^3), w^2}, {5, 2, 2})", "3");
-    check("Position({ArcSin,ArcCos,ArcTan,ArcCot},ArcCos)", "{{2}}");
-    check("Extract({ArcCsc,ArcSec,ArcCot,ArcTan}, {{2}})", "{ArcSec}");
     check(
-        "Extract({ArcCsc,ArcSec,ArcCot,ArcTan}, Position({ArcSin,ArcCos,ArcTan,ArcCot},ArcCos))[[1]]",
+        "{ArcCsc,ArcSec,ArcCot,ArcTan}[[1]][x]", //
+        "ArcCsc(x)");
+    check(
+        "Extract({u+v+w^5, 42, w^10, 12, x(u,w^3), w^2}, {5, 2, 2})", //
+        "3");
+    check(
+        "Position({ArcSin,ArcCos,ArcTan,ArcCot},ArcCos)", //
+        "{{2}}");
+    check(
+        "Extract({ArcCsc,ArcSec,ArcCot,ArcTan}, {{2}})", //
+        "{ArcSec}");
+    check(
+        "Extract({ArcCsc,ArcSec,ArcCot,ArcTan}, Position({ArcSin,ArcCos,ArcTan,ArcCot},ArcCos))[[1]]", //
         "ArcSec");
     check(
-        "Extract({ArcCsc,ArcSec,ArcCot,ArcTan}, Position({ArcSin,ArcCos,ArcTan,ArcCot},ArcCos))[[1]][x]",
+        "Extract({ArcCsc,ArcSec,ArcCot,ArcTan}, Position({ArcSin,ArcCos,ArcTan,ArcCot},ArcCos))[[1]][x]", //
         "ArcSec(x)");
-    check("{f(a)}[[1]][x]", "f(a)[x]");
+    check(
+        "{f(a)}[[1]][x]", //
+        "f(a)[x]");
   }
 
   public void testSystem217() {
-    check("Position({42}, 42)", "{{1}}");
+    check(
+        "Position({42}, 42)", //
+        "{{1}}");
   }
 
   public void testSystem218() {
-    check("Position({u+v+w^5, 42, w^10}, w^_)", "{{1,3},{3}}");
+    check(
+        "Position({u+v+w^5, 42, w^10}, w^_)", //
+        "{{1,3},{3}}");
   }
 
   public void testSystem219() {
-    check("Position({u+v+w^5, 42, w^10}, w^_, {1})", "{{3}}");
+    check(
+        "Position({u+v+w^5, 42, w^10}, w^_, {1})", //
+        "{{3}}");
   }
 
   public void testSystem220() {
-    check("Position({u+v+w^5, 42, w^10, 12, u+w^3, w^2}, w^_, {1,2})", "{{1,3},{3},{5,2},{6}}");
+    check(
+        "Position({u+v+w^5, 42, w^10, 12, u+w^3, w^2}, w^_, {1,2})", //
+        "{{1,3},{3},{5,2},{6}}");
   }
 
   public void testSystem221() {
-    check("Take({1,2,3,4,5,6,7,8,9,10},3)", "{1,2,3}");
+    check(
+        "Take({1,2,3,4,5,6,7,8,9,10},3)", //
+        "{1,2,3}");
   }
 
   public void testSystem222() {
-    check("Take({1,2,3,4,5,6,7,8,9,10},-3)", "{8,9,10}");
+    check(
+        "Take({1,2,3,4,5,6,7,8,9,10},-3)", //
+        "{8,9,10}");
   }
 
   public void testSystem223() {
-    check("Take({1,2,3,4,5,6,7,8,9,10},{2,7,3})", "{2,5}");
+    check(
+        "Take({1,2,3,4,5,6,7,8,9,10},{2,7,3})", //
+        "{2,5}");
   }
 
   public void testSystem224() {

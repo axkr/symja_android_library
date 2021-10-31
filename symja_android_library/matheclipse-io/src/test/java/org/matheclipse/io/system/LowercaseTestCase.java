@@ -12678,7 +12678,7 @@ public class LowercaseTestCase extends AbstractTestCase {
             + "$zj=0;\n"
             + "$sz=1;\n"
             + "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})", //
-        "{p->0.04999709394010556}");
+        "{p->0.04999709394010558}");
     checkNumeric(
         "$K=10000;\n"
             + "$g=0.0;\n"
@@ -15162,6 +15162,14 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "HarmonicNumber(10007, 3)", //
         "Hold(HarmonicNumber(10007,3))");
+
+    check(
+        " HarmonicNumber(m,-2) ", //
+        "m/6+m^2/2+m^3/3");
+    check(
+        "Table(HarmonicNumber(m,-n), {n, 1, 5, 1})", //
+        "{m/2+m^2/2,m/6+m^2/2+m^3/3,m^2/4+m^3/2+m^4/4,-m/30+m^3/3+m^4/2+m^5/5,-m^2/12+5/\n"
+            + "12*m^4+m^5/2+m^6/6}");
 
     check(
         "HarmonicNumber(10007, -2)", //
@@ -35558,6 +35566,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testTable() {
+    EvalEngine.resetModuleCounter4JUnit();
 
     check(
         "Module({i}, Table({{1,2},{1,2},{1,2},{1,2}}[[ i,{{1,2},{1,2},{1,2},{1,2}}[[i]] ]], {i,2}))", //
@@ -35575,11 +35584,11 @@ public class LowercaseTestCase extends AbstractTestCase {
         "s={x,1,10};Table(f(x),s)", //
         "Table(f(x),s)");
 
+    
     check(
         "Table(Sum(k^n, {k, 0, m}), {n, 1, 5, 1})", //
         "{1/2*m*(1+m),m/6+m^2/2+m^3/3,m^2/4+m^3/2+m^4/4,-m/30+m^3/3+m^4/2+m^5/5,-m^2/12+5/\n"
-            + //
-            "12*m^4+m^5/2+m^6/6}");
+            + "12*m^4+m^5/2+m^6/6}");
     check(
         "Table(f(x), {x, a, a+1})", //
         "{f(a),f(1+a)}");
@@ -38618,13 +38627,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Table(With({i = j}, Hold(i)), {j, 5})", //
         "{Hold(1),Hold(2),Hold(3),Hold(4),Hold(5)}");
-
-    check(
-        "With({y = Sin(1.0)}, Sum(y^i, {i, 0, 10}))", //
-        "5.36323");
     check(
         "With({e = Expand((1 + x)^5)}, Function(x, e))", //
-        "Function(x$12,1+5*x+10*x^2+10*x^3+5*x^4+x^5)");
+        "Function(x$11,1+5*x+10*x^2+10*x^3+5*x^4+x^5)");
     check(
         "With({e = Expand((1 + x)^5)}, Function @@ {x, e})", //
         "Function(x,1+5*x+10*x^2+10*x^3+5*x^4+x^5)");
@@ -38655,7 +38660,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
     check(
         "With({x=z},Module({x},x+y))", //
-        "x$21+y");
+        "x$20+y");
 
     check(
         "f(x_) := With({q = False},  test /; q==0) /;  x==1", //
@@ -38684,6 +38689,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "With({a=2},{b=a},{c=b},a+b+c)", //
         "6");
+    check(
+        "With({y = Sin(1.0)}, Sum(y^i, {i, 0, 10}))", //
+        "5.36323");
   }
 
   public void testXor() {
