@@ -330,6 +330,17 @@ public class AST2 extends AST1 {
     }
   }
 
+  @Override
+  public int indexOf(final IExpr expr) {
+    if (arg1.equals(expr)) {
+      return 1;
+    }
+    if (arg2.equals(expr)) {
+      return 2;
+    }
+    return -1;
+  }
+
   /** {@inheritDoc} */
   @Override
   public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {

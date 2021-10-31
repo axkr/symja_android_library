@@ -1,5 +1,5 @@
 package org.matheclipse.core.expression;
-  
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -84,7 +84,7 @@ import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.FEConfig;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
- 
+
 public abstract class AbstractAST implements IASTMutable {
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -456,7 +456,9 @@ public abstract class AbstractAST implements IASTMutable {
 
     /** {@inheritDoc} */
     @Override
-    public final CharSequence internalJavaString(SourceCodeProperties properties, int depth,
+    public final CharSequence internalJavaString(
+        SourceCodeProperties properties,
+        int depth,
         Function<IExpr, ? extends CharSequence> variables) {
       switch (properties.prefix) {
         case FULLY_QUALIFIED_CLASS_NAME:
@@ -465,7 +467,7 @@ public abstract class AbstractAST implements IASTMutable {
           return "F.NIL";
         case NONE:
         default:
-        return "NIL";
+          return "NIL";
       }
     }
 
@@ -2420,9 +2422,9 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
-  public final int indexOf(final IExpr expr) {
+  public int indexOf(final IExpr expr) {
     for (int i = 1; i < size(); i++) {
-      if (equalsAt(i, expr)) {
+      if (get(i).equals(expr)) {
         return i;
       }
     }
@@ -2469,7 +2471,9 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
-  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
+  public CharSequence internalJavaString(
+      SourceCodeProperties properties,
+      int depth,
       Function<IExpr, ? extends CharSequence> variables) {
     final String sep = ",";
     final IExpr temp = head();
@@ -2669,8 +2673,9 @@ public abstract class AbstractAST implements IASTMutable {
       }
     }
 
-    text.append(temp.internalJavaString(
-        SourceCodeProperties.copyWithoutSymbolsAsFactoryMethod(properties), 0, variables));
+    text.append(
+        temp.internalJavaString(
+            SourceCodeProperties.copyWithoutSymbolsAsFactoryMethod(properties), 0, variables));
     text.append('(');
     if (isTimes() || isPlus()) {
       if (depth == 0 && isList()) {

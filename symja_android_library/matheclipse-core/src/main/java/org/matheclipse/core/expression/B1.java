@@ -576,6 +576,12 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
 
   /** {@inheritDoc} */
   @Override
+  public int indexOf(final IExpr expr) {
+    return arg1.equals(expr) ? 1 : -1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
     if (fromIndex == 1 && predicate.test(arg1)) {
       return 1;

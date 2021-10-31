@@ -748,6 +748,20 @@ public abstract class HMArrayList extends AbstractAST
 
   /** {@inheritDoc} */
   @Override
+  public int indexOf(final IExpr expr) {
+    int index = 1;
+    int i = firstIndex + 1;
+    while (i < lastIndex) {
+      if (array[i++].equals(expr)) {
+        return index;
+      }
+      index++;
+    }
+    return -1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
     int index = fromIndex;
     int i = firstIndex + index;

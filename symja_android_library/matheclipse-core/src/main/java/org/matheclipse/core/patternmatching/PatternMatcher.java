@@ -377,51 +377,33 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    */
   private static IAST[] removeOrderless(final IAST lhsPattern, final IAST lhsEval) {
     int iIndex = 1;
-    int jIndex = 1;
-    boolean evaled = false;
+    int jIndex = -1;
     while (iIndex < lhsPattern.size()) {
       IExpr temp = lhsPattern.get(iIndex);
       if (temp.isFreeOfPatterns()) {
-        jIndex = 1;
-        while (jIndex < lhsEval.size()) {
-          IExpr x = lhsEval.get(jIndex);
-          if (x.equals(temp)) {
-            evaled = true;
-            break;
-          }
-          jIndex++;
+        jIndex = lhsEval.indexOf(temp);
+        if (jIndex > 0) {
+          break;
         }
-        if (!evaled) {
-          return null;
-        }
-        break;
+        return null;
       }
       iIndex++;
     }
-    if (evaled) {
+    if (jIndex > 0) {
       IASTAppendable lhsPatternAST = lhsPattern.copyAppendable();
       IASTAppendable lhsEvalAST = lhsEval.copyAppendable();
       lhsPatternAST.remove(iIndex);
       lhsEvalAST.remove(jIndex);
       while (iIndex < lhsPatternAST.size()) {
-        IExpr temp = lhsPatternAST.get(iIndex);
+        final IExpr temp = lhsPatternAST.get(iIndex);
         if (temp.isFreeOfPatterns()) {
-          evaled = false;
-          jIndex = 1;
-          while (jIndex < lhsEvalAST.size()) {
-            IExpr x = lhsEvalAST.get(jIndex);
-            if (x.equals(temp)) {
-              lhsPatternAST.remove(iIndex);
-              lhsEvalAST.remove(jIndex);
-              evaled = true;
-              break;
-            }
-            jIndex++;
+          int indx = lhsEvalAST.indexOf(temp);
+          if (indx > 0) {
+            lhsPatternAST.remove(iIndex);
+            lhsEvalAST.remove(indx);
+            continue;
           }
-          if (!evaled) {
-            return null;
-          }
-          continue;
+          return null;
         }
         iIndex++;
       }

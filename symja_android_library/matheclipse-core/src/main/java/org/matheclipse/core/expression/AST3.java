@@ -400,6 +400,19 @@ public final class AST3 extends AST2 {
     }
   }
 
+  public int indexOf(final IExpr expr) {
+    if (arg1.equals(expr)) {
+      return 1;
+    }
+    if (arg2.equals(expr)) {
+      return 2;
+    }
+    if (arg3.equals(expr)) {
+      return 3;
+    }
+    return -1;
+  }
+
   /** {@inheritDoc} */
   @Override
   public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {

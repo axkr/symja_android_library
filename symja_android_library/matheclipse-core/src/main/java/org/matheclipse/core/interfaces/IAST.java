@@ -997,6 +997,10 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    */
   public boolean isEmpty();
 
+  default boolean isASTOrAssociation() {
+    return true;
+  }
+  
   /**
    * Are the given evaluation flags disabled for this list ?
    *

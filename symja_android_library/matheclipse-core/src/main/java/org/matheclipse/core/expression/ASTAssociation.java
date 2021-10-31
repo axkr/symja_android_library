@@ -496,6 +496,20 @@ public class ASTAssociation extends AST implements IAssociation {
 
   /** {@inheritDoc} */
   @Override
+  public int indexOf(final IExpr expr) {
+    int index = 1;
+    int start = firstIndex + index;
+    for (int i = start; i < lastIndex; i++) {
+      if (expr.equals(get(i))) {
+        return index;
+      }
+      index++;
+    }
+    return -1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public final int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
     int index = fromIndex;
     int start = firstIndex + index;

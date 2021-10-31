@@ -281,6 +281,12 @@ public class AST1 extends AST0 {
 
   /** {@inheritDoc} */
   @Override
+  public int indexOf(final IExpr expr) {
+    return arg1.equals(expr) ? 1 : -1;
+  }
+  
+  /** {@inheritDoc} */
+  @Override
   public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
     if (fromIndex == 1 && predicate.test(arg1)) {
       return 1;

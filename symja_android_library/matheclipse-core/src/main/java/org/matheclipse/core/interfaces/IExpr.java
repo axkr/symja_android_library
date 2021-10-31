@@ -1378,7 +1378,7 @@ public interface IExpr
    * @return
    */
   default boolean isASTOrAssociation() {
-    return isAST() || isAssociation();
+    return false;
   }
 
   /**

@@ -283,6 +283,12 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
 
   /** {@inheritDoc} */
   @Override
+  public int indexOf(final IExpr expr) {
+    return -1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
     return -1;
   }
