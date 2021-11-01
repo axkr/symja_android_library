@@ -562,9 +562,6 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
         }
       } catch (ArrayIndexOutOfBoundsException e) {
         next = -2;
-        if (current < 0) {
-          throw new NoSuchElementException();
-        }
       }
     }
   }
