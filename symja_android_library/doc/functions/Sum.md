@@ -77,7 +77,7 @@ Infinite sums:
 >> Sum(1 / k ^ 2, {k, 1, Infinity})    
 Pi^2/6   
 
->> Sum(x^k*Sum(y^l,{l,0,4}),{k,0,4}))    
+>> Sum(x^k*Sum(y^l,{l,0,4}),{k,0,4})    
 1+y+y^2+y^3+y^4+x*(1+y+y^2+y^3+y^4)+(1+y+y^2+y^3+y^4)*x^2+(1+y+y^2+y^3+y^4)*x^3+(1+y+y^2+y^3+y^4)*x^4  
 
 >> Sum(2^(-i), {i, 1, Infinity})    
