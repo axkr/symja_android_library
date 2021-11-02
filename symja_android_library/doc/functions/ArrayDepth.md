@@ -13,7 +13,10 @@ ArrayDepth(a)
 2    
 
 >> ArrayDepth(x)
-0    
+0
+
+>> ArrayDepth(SparseArray({{1, 2, 3} -> a}, {2, 3, 4}))
+3
 ```
 
 ### Github
