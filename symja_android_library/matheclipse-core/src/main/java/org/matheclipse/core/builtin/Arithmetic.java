@@ -1377,11 +1377,31 @@ public final class Arithmetic {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (ast.size() == 2 && arg1.isList()) {
-        if (arg1.size() <= 2) {
-          return F.CEmptyList;
+      int c = 1;
+      if (ast.isAST2()) {
+        int n = ast.arg2().toIntDefault();
+        if (n == Integer.MIN_VALUE) {
+          return F.NIL;
         }
-        return F.ListConvolve(F.List(F.C1, F.CN1), arg1);
+        if (n < 0) {
+          // Single or list of non-negative machine-sized integers expected at position `1` of `2`.
+          return IOFunctions.printMessage(ast.topHead(), "ilsmn", F.List(F.C2, ast), engine);
+        }
+        c = n;
+      }
+      if (ast.isAST1()) {
+        if (arg1.isSparseArray()) {
+          arg1 = arg1.normal(false);
+        }
+        if (arg1.isList()) {
+          if (arg1.size() <= 2) {
+            return F.CEmptyList;
+          }
+          return F.ListConvolve(F.List(F.ZZ(c), F.ZZ(-c)), arg1);
+        } else if (arg1.isNumber()) {
+          // List or SparseArray or structured array expected at position `1` in `2`.
+          return IOFunctions.printMessage(ast.topHead(), "listrp", F.List(F.C1, ast), engine);
+        }
       }
       return F.NIL;
     }

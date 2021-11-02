@@ -547,6 +547,8 @@ public class IOFunctions {
     "Heads `1` and `2` are expected to be the same.", //
     "idim",
     "`1` and `2` must have the same length.", //
+    "ilsmn",
+    "Single or list of non-negative machine-sized integers expected at position `1` of `2`.", //
     "ilsnn",
     "Single or list of non-negative integers expected at position `1`.", //
     "incom",
@@ -627,6 +629,8 @@ public class IOFunctions {
     "List of Java int numbers expected in `1`.", //
     "listoflongs",
     "List of Java long numbers expected in `1`.", //
+    "listrp",
+    "List or SparseArray or structured array expected at position `1` in `2`.", //
     "locked",
     "Symbol `1` is locked.", //
     "lowlen",
@@ -936,13 +940,13 @@ public class IOFunctions {
    *
    * @param symbol
    * @param messageShortcut the message shortcut defined in the {@link #MESSAGES} array
-   * @param listOfArgs a list of arguments which should be inserted into the message shortcuts
+   * @param listOfParameters a list of arguments which should be inserted into the message shortcuts
    *     placeholder
    * @param engine
    * @return always <code>F.NIL</code>
    */
   public static IAST printMessage(
-      ISymbol symbol, String messageShortcut, final IAST listOfArgs, EvalEngine engine) {
+      ISymbol symbol, String messageShortcut, final IAST listOfParameters, EvalEngine engine) {
     IExpr temp = symbol.evalMessage(messageShortcut);
     String message = null;
     if (temp.isPresent()) {
@@ -961,9 +965,9 @@ public class IOFunctions {
       try {
         Writer writer = new StringWriter();
         Map<String, Object> context = new HashMap<String, Object>();
-        if (listOfArgs != null) {
-          for (int i = 1; i < listOfArgs.size(); i++) {
-            context.put(Integer.toString(i), shorten(listOfArgs.get(i)));
+        if (listOfParameters != null) {
+          for (int i = 1; i < listOfParameters.size(); i++) {
+            context.put(Integer.toString(i), shorten(listOfParameters.get(i)));
           }
         }
 
