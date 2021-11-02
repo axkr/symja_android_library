@@ -82,8 +82,11 @@ public class TensorTest extends AbstractTestCase {
         "A=Array(a, {2, 3, 4});TensorDimensions(A)", //
         "{2,3,4}");
     check(
-        "TensorDimensions({{1,2},{3,4},{a,b}})", //
-        "{3,2}");
+        "TensorDimensions({{1,2},{3,4},{a,b},{c,d}})", //
+        "{4,2}");
+    check(
+        "m = SparseArray({{1, 2, 3} -> a}, {2, 3, 4});TensorDimensions(m)", //
+        "{2,3,4}");
   }
 
   public void testTensorRank() {
@@ -103,8 +106,11 @@ public class TensorTest extends AbstractTestCase {
         "A=Array(a, {2, 3, 4});TensorRank(A)", //
         "3");
     check(
-        "TensorRank({{1,2},{3,4}})", //
+        "TensorRank({{1,2},{3,4},{a,b},{c,d}})", //
         "2");
+    check(
+        "m = SparseArray({{1, 2, 3} -> a}, {2, 3, 4});TensorRank(m)", //
+        "3");
   }
 
   public void testTensorSymmetry() {

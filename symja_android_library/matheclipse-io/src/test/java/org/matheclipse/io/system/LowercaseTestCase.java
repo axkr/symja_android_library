@@ -7862,6 +7862,11 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testDifferences() {
+    // TODO: two args function
+    //    check(
+    //        "Differences({a, b, c, d},3)", //
+    //        "{-a+3*b-3*c+d}");
+
     check(
         "Differences({ })", //
         "{}");
@@ -7872,8 +7877,31 @@ public class LowercaseTestCase extends AbstractTestCase {
         "Differences({a,b})", //
         "{-a+b}");
     check(
+        "Differences({a, b, c, d} )", //
+        "{-a+b,-b+c,-c+d}");
+
+    check(
         "Differences({a,b,c})", //
         "{-a+b,-b+c}");
+    check(
+        "Differences(SparseArray(10 -> 1, 21))", //
+        "{0,0,0,0,0,0,0,0,1,-1,0,0,0,0,0,0,0,0,0,0}");
+    check(
+        "t=Table(n^5 + 2*n - 1, {n, 8})", //
+        "{2,35,248,1031,3134,7787,16820,32783}");
+    check(
+        "FixedPointList(Differences, %)", //
+        "{{2,35,248,1031,3134,7787,16820,32783},{33,213,783,2103,4653,9033,15963},{180,\n"
+            + "570,1320,2550,4380,6930},{390,750,1230,1830,2550},{360,480,600,720},{120,120,120},{\n"
+            + "0,0},{0},{},{}}");
+    check(
+        "NestList(Differences, Normal(SparseArray(10 -> 1, 21)), 11)", //
+        "{{0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,1,-1,0,0,0,0,0,0,0,\n"
+            + "0,0,0},{0,0,0,0,0,0,0,1,-2,1,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,1,-3,3,-1,0,0,0,0,0,\n"
+            + "0,0,0},{0,0,0,0,0,1,-4,6,-4,1,0,0,0,0,0,0,0},{0,0,0,0,1,-5,10,-10,5,-1,0,0,0,0,0,\n"
+            + "0},{0,0,0,1,-6,15,-20,15,-6,1,0,0,0,0,0},{0,0,1,-7,21,-35,35,-21,7,-1,0,0,0,0},{\n"
+            + "0,1,-8,28,-56,70,-56,28,-8,1,0,0,0},{1,-9,36,-84,126,-126,84,-36,9,-1,0,0},{-10,\n"
+            + "45,-120,210,-252,210,-120,45,-10,1,0},{55,-165,330,-462,462,-330,165,-55,11,-1}}");
   }
 
   public void testDigitCount() {
@@ -28638,7 +28666,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "517/720*1/E");
   }
 
-
   public void testProductLog() {
     // check("ProductLog({0.5,-0.5,-3.0," + //
     // Double.toString(Math.PI * (-0.5)) + //
@@ -35308,7 +35335,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{1,2,3-y,4,5,6,7,8,9}");
   }
 
-
   public void testSurd() {
     check(
         "Surd(x,3)^14", //
@@ -35584,7 +35610,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "s={x,1,10};Table(f(x),s)", //
         "Table(f(x),s)");
 
-    
     check(
         "Table(Sum(k^n, {k, 0, m}), {n, 1, 5, 1})", //
         "{1/2*m*(1+m),m/6+m^2/2+m^3/3,m^2/4+m^3/2+m^4/4,-m/30+m^3/3+m^4/2+m^5/5,-m^2/12+5/\n"

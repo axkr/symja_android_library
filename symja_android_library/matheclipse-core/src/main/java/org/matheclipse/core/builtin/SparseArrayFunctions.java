@@ -86,8 +86,11 @@ public class SparseArrayFunctions {
           defaultValue = d;
         } else if (ast.isAST2()) {
           if (!d.equals(defaultValue)) {
-            LOGGER.log(engine.getLogLevel(),
-                "{}: Sparse array default value: {} unequals default value {}", ast.topHead(), d,
+            LOGGER.log(
+                engine.getLogLevel(),
+                "{}: Sparse array default value: {} unequals default value {}",
+                ast.topHead(),
+                d,
                 defaultValue);
             return F.NIL;
           }
@@ -234,9 +237,7 @@ public class SparseArrayFunctions {
         }
 
         if (checkedDimensions) {
-          if (!defaultValue.isPresent()
-              || //
-              defaultValue.equals(sparseArray.getDefaultValue())) {
+          if (!defaultValue.isPresent() || defaultValue.equals(sparseArray.getDefaultValue())) {
             return sparseArray;
           }
           if (defaultValue.isPresent()) {

@@ -22,6 +22,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class TensorFunctions {
@@ -497,7 +498,7 @@ public class TensorFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isList()) {
+      if (arg1.isList() || arg1.isSparseArray()) {
         // same as Dimensions for List structures
         return F.Dimensions(arg1);
       }
@@ -856,6 +857,8 @@ public class TensorFunctions {
         if (engine.evalN(arg1).isNumber()) {
           return F.C0;
         }
+      } else if (arg1.isSparseArray()) {
+        return F.ZZ(((ISparseArray) arg1).getDimension().length);
       }
 
       IAssumptions oldAssumptions = engine.getAssumptions();
