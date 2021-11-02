@@ -50,15 +50,19 @@ public class ParallelSolver extends Solver implements SolutionHandler {
   }
 
   @Override
-  public synchronized void solved(Solver solver, Solution solution) {
+  public synchronized boolean solved(Solver solver, Solution solution) {
     if (isAborted() || solution == null) {
-      return;
+      return false;
     }
     int oldBestValue = bestValue;
     this.solution = solution;
     success();
-    if (!(solver instanceof LocalSearch)) return;
-    if (network.getObjective() == null) return;
+    if (!(solver instanceof LocalSearch)) {
+      return false;
+    }
+    if (network.getObjective() == null) {
+      return false;
+    }
     int value = solution.getObjectiveIntValue();
     if (!isBetter(value, oldBestValue)) {
       double rate = 0.0;
@@ -70,6 +74,7 @@ public class ParallelSolver extends Solver implements SolutionHandler {
         ((LocalSearch) solver).setCandidate(bestSolution);
       }
     }
+    return true;
   }
 
   public synchronized void allStart() {

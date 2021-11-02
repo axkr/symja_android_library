@@ -3549,7 +3549,6 @@ public final class BooleanFunctions {
     }
   }
 
-
   /**
    *
    *
@@ -4535,18 +4534,19 @@ public final class BooleanFunctions {
    * @param booleanExpression an expression build from symbols and boolean operators like <code>
    *     And, Or, Not, Xor, Nand, Nor, Implies, Equivalent,...</code>
    * @param variables the possible variables. Example: <code>{a,b,c,d}</code>
-   * @param maxChoices
+   * @param maximumNumberOfResults
    * @return
    */
-  public static IAST solveInstances(IExpr booleanExpression, IAST variables, int maxChoices) {
+  public static IAST solveInstances(
+      IExpr booleanExpression, IAST variables, int maximumNumberOfResults) {
     LogicFormula lf = new LogicFormula();
     Variable[] vars = lf.ast2Variable(variables);
     List<Assignment> assignments =
-        logicNGSatisfiabilityInstances(booleanExpression, vars, lf, maxChoices);
+        logicNGSatisfiabilityInstances(booleanExpression, vars, lf, maximumNumberOfResults);
     Map<String, Integer> map = LogicFormula.name2Position(vars);
     IASTAppendable list = F.ListAlloc(assignments.size());
     for (int i = 0; i < assignments.size(); i++) {
-      if (i >= maxChoices) {
+      if (i >= maximumNumberOfResults) {
         break;
       }
       list.append( //

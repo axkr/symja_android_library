@@ -58,34 +58,39 @@ public class FindInstance extends Solve {
     try {
       boolean formula = false;
       int maxChoices = 1;
-      if (ast.size() == 4) {
+      if (ast.argSize() >= 4) {
+        maxChoices = ast.arg4().toIntDefault();
+        if (maxChoices < 0) {
+          maxChoices = 1;
+        }
+      } else if (ast.argSize() >= 3) {
         maxChoices = ast.arg3().toIntDefault();
         if (maxChoices < 0) {
           maxChoices = 1;
         }
-      } else if (ast.size() >= 3) {
-        maxChoices = ast.arg2().toIntDefault();
-        if (maxChoices < 0) {
-          maxChoices = 1;
-        }
       }
-      if (ast.size() > 2) {
-        try {
-          if (ast.arg1().isBooleanFormula()) {
-            formula = ast.arg1().isBooleanFormula();
-            if (ast.isAST2()) {
-              return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
-            }
+
+      try {
+        if (ast.arg1().isBooleanFormula()) {
+          formula = ast.arg1().isBooleanFormula();
+          if (ast.isAST2()) {
+            return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
           }
-        } catch (RuntimeException rex) {
         }
+      } catch (RuntimeException rex) {
       }
-      if (ast.isAST3()) {
+
+      if (ast.argSize() >= 3) {
         if (ast.arg3().equals(S.Booleans) || formula) {
           return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
+        } else if (ast.arg3().equals(S.Integers)) {
+          return Solve.solveIntegers(ast, vars, vars, maxChoices, engine);
         }
-        LOGGER.log(engine.getLogLevel(), "{}: Booleans domain expected at position 3 instead of {}",
-            ast.topHead(), ast.arg3());
+        LOGGER.log(
+            engine.getLogLevel(),
+            "{}: Booleans domain expected at position 3 instead of {}",
+            ast.topHead(),
+            ast.arg3());
         return F.NIL;
       }
       IASTMutable termsEqualZeroList = Validate.checkEquations(ast, 1);
@@ -102,6 +107,6 @@ public class FindInstance extends Solve {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_2_3;
+    return IFunctionEvaluator.ARGS_2_4;
   }
 }

@@ -25,6 +25,61 @@ import jp.ac.kobe_u.cs.cream.Solver;
  * Java</a>
  */
 public class CreamConvert {
+
+  private final class CreamSolutionHandler implements SolutionHandler {
+    private final IAST userDefinedVariables;
+    private final IASTAppendable result;
+    private final int maximumNumberOfResults;
+    private final IAST equationVariables;
+    private final EvalEngine engine;
+
+    private CreamSolutionHandler(
+        IASTAppendable result,
+        IAST equationVariables,
+        IAST userDefinedVariables,
+        int maximumNumberOfResults,
+        EvalEngine engine) {
+      this.userDefinedVariables = userDefinedVariables;
+      this.result = result;
+      this.maximumNumberOfResults = maximumNumberOfResults;
+      this.equationVariables = equationVariables;
+      this.engine = engine;
+    }
+
+    @Override
+    public boolean solved(Solver solver, Solution solution) {
+      if (solution != null) {
+        IExpr listOfZZVariables = F.NIL;
+        IExpr complement = S.Complement.of(engine, userDefinedVariables, equationVariables);
+        if (complement.size() > 1 && complement.isList()) {
+          listOfZZVariables =
+              S.Apply.of(
+                  engine, S.And, ((IAST) complement).mapThread(F.Element(F.Slot1, S.Integers), 1));
+        }
+
+        Set<Entry<ISymbol, IntVariable>> set = map.entrySet();
+        IASTAppendable temp = F.ListAlloc(set.size());
+        for (Entry<ISymbol, IntVariable> entry : set) {
+          ISymbol variable = entry.getKey();
+          if (listOfZZVariables.isPresent()) {
+            temp.append(
+                F.Rule(
+                    variable,
+                    F.ConditionalExpression(
+                        F.ZZ(solution.getIntValue(entry.getValue())), listOfZZVariables)));
+          } else {
+            temp.append(F.Rule(variable, F.ZZ(solution.getIntValue(entry.getValue()))));
+          }
+        }
+        result.append(temp);
+        if (result.size() - 1 >= maximumNumberOfResults) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+
   TreeMap<ISymbol, IntVariable> map = new TreeMap<ISymbol, IntVariable>();
 
   public CreamConvert() {}
@@ -147,44 +202,16 @@ public class CreamConvert {
       final IAST list,
       final IAST equationVariables,
       final IAST userDefinedVariables,
+      int maximumNumberOfResults,
       final EvalEngine engine) {
     IASTAppendable result = F.ListAlloc();
 
-    Solver solver = new DefaultSolver(expr2Cream(list, equationVariables));
+    Solver solver = new DefaultSolver(expr2Cream(list, equationVariables), Solver.DEFAULT);
 
+    // call with timeout
     solver.findAll(
-        new SolutionHandler() {
-          @Override
-          public void solved(Solver solver, Solution solution) {
-            if (solution != null) {
-              IExpr listOfZZVariables = F.NIL;
-              IExpr complement = S.Complement.of(engine, userDefinedVariables, equationVariables);
-              if (complement.size() > 1 && complement.isList()) {
-                listOfZZVariables =
-                    S.Apply.of(
-                        engine,
-                        S.And,
-                        ((IAST) complement).mapThread(F.Element(F.Slot1, S.Integers), 1));
-              }
-
-              Set<Entry<ISymbol, IntVariable>> set = map.entrySet();
-              IASTAppendable temp = F.ListAlloc(set.size());
-              for (Entry<ISymbol, IntVariable> entry : set) {
-                ISymbol variable = entry.getKey();
-                if (listOfZZVariables.isPresent()) {
-                  temp.append(
-                      F.Rule(
-                          variable,
-                          F.ConditionalExpression(
-                              F.ZZ(solution.getIntValue(entry.getValue())), listOfZZVariables)));
-                } else {
-                  temp.append(F.Rule(variable, F.ZZ(solution.getIntValue(entry.getValue()))));
-                }
-              }
-              result.append(temp);
-            }
-          }
-        },
+        new CreamSolutionHandler(
+            result, equationVariables, userDefinedVariables, maximumNumberOfResults, engine),
         10000);
     return result;
   }

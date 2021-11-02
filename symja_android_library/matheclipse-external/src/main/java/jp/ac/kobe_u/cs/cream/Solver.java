@@ -296,11 +296,18 @@ public abstract class Solver implements Runnable {
     public void run() {
       clearBest();
       for (start(timeout); waitNext(); resume()) {
-        if (isAborted()) break;
-        handler.solved(Solver.this, solution);
+        if (isAborted()) {
+          break;
+        }
+        if (!handler.solved(Solver.this, solution)) {
+          stop();
+          break;
+        }
       }
       // solution = null;
-      handler.solved(Solver.this, null);
+      if (!handler.solved(Solver.this, null)) {
+        //
+      }
       stop();
     }
   }

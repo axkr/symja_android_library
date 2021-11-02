@@ -3,7 +3,12 @@
  */
 package examples;
 
-import jp.ac.kobe_u.cs.cream.*;
+import jp.ac.kobe_u.cs.cream.DefaultSolver;
+import jp.ac.kobe_u.cs.cream.IntVariable;
+import jp.ac.kobe_u.cs.cream.Network;
+import jp.ac.kobe_u.cs.cream.Solution;
+import jp.ac.kobe_u.cs.cream.SolutionHandler;
+import jp.ac.kobe_u.cs.cream.Solver;
 
 /**
  * First step example.
@@ -55,11 +60,12 @@ class FirstStepHandler implements SolutionHandler {
   }
 
   @Override
-  public synchronized void solved(Solver solver, Solution solution) {
+  public synchronized boolean solved(Solver solver, Solution solution) {
     if (solution != null) {
       int xv = solution.getIntValue(x);
       int yv = solution.getIntValue(y);
       System.out.println("x = " + xv + ", y = " + yv);
     }
+    return true;
   }
 }

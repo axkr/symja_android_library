@@ -486,7 +486,7 @@ public class Solve extends AbstractFunctionEvaluator {
         if (expr.isAST()) {
           IAST function = (IAST) expr;
           IAST inverseFunction = InverseFunction.getUnaryInverseFunction(function, true);
-          if (inverseFunction.isPresent()  ) {
+          if (inverseFunction.isPresent()) {
             IExpr temp = rewriteInverseFunction(plusAST, i);
             if (temp.isPresent()) {
               return temp;
@@ -1035,8 +1035,10 @@ public class Solve extends AbstractFunctionEvaluator {
         ISymbol domain = S.Complexes;
         if (ast.isAST3()) {
           if (!ast.arg3().isSymbol()) {
-            LOGGER.log(engine.getLogLevel(),
-                "{}: domain definition expected at position 3 instead of {}", ast.topHead(),
+            LOGGER.log(
+                engine.getLogLevel(),
+                "{}: domain definition expected at position 3 instead of {}",
+                ast.topHead(),
                 ast.arg3());
             return F.NIL;
           }
@@ -1046,49 +1048,8 @@ public class Solve extends AbstractFunctionEvaluator {
                 ast.arg1(), userDefinedVariables, Integer.MAX_VALUE);
           }
           if (domain.equals(S.Integers)) {
-            if (!userDefinedVariables.isEmpty()) {
-              IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
-              if (equationsAndInequations.isEmpty()) {
-                return F.NIL;
-              }
-              try {
-                //                if (ToggleFeature.CHOCO_SOLVER) {
-                //                  // try calling choco solver
-                //                  if (equationsAndInequations.isFreeAST(x -> x.equals(S.Power))) {
-                //                    try {
-                //                      IAST resultList =
-                //                          ChocoConvert.integerSolve(
-                //                              equationsAndInequations,
-                //                              equationVariables,
-                //                              userDefinedVariables,
-                //                              engine);
-                //                      if (resultList.isPresent()) {
-                //                        EvalAttributes.sort((IASTMutable) resultList);
-                //                        return resultList;
-                //                      }
-                //                    } catch (RuntimeException rex) {
-                //                      // try 2nd solver
-                //                    }
-                //                  }
-                //                }
-                // call cream solver
-                CreamConvert converter = new CreamConvert();
-                IAST resultList =
-                    converter.integerSolve(
-                        equationsAndInequations, equationVariables, userDefinedVariables, engine);
-                if (resultList.isPresent()) {
-                  EvalAttributes.sort((IASTMutable) resultList);
-                  return resultList;
-                }
-              } catch (LimitException le) {
-                LOGGER.debug("Solve.of() failed", le);
-                throw le;
-              } catch (RuntimeException rex) {
-                LOGGER.log(engine.getLogLevel(), "Integers solution not found", rex);
-                return F.NIL;
-              }
-            }
-            return F.NIL;
+            return solveIntegers(
+                ast, equationVariables, userDefinedVariables, Integer.MAX_VALUE, engine);
           }
 
           //          if (domain.equals(S.Reals)) {
@@ -1127,8 +1088,11 @@ public class Solve extends AbstractFunctionEvaluator {
 
           if (!domain.equals(S.Reals) && !domain.equals(S.Complexes)) {
             Level level = engine.getLogLevel();
-            LOGGER.log(level, "{}: domain definition expected at position 3 instead of {}",
-                ast.topHead(), domain);
+            LOGGER.log(
+                level,
+                "{}: domain definition expected at position 3 instead of {}",
+                ast.topHead(),
+                domain);
             return F.NIL;
           }
         }
@@ -1154,6 +1118,61 @@ public class Solve extends AbstractFunctionEvaluator {
       LOGGER.log(engine.getLogLevel(), S.Solve, e);
     } catch (RuntimeException rex) {
       LOGGER.debug("Solve.of() failed() failed", rex);
+    }
+    return F.NIL;
+  }
+
+  public static IExpr solveIntegers(
+      final IAST ast,
+      IAST equationVariables,
+      IAST userDefinedVariables,
+      int maximumNumberOfResults,
+      EvalEngine engine) {
+    if (!userDefinedVariables.isEmpty()) {
+      IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
+      if (equationsAndInequations.isEmpty()) {
+        return F.NIL;
+      }
+      try {
+        //                if (ToggleFeature.CHOCO_SOLVER) {
+        //                  // try calling choco solver
+        //                  if (equationsAndInequations.isFreeAST(x -> x.equals(S.Power))) {
+        //                    try {
+        //                      IAST resultList =
+        //                          ChocoConvert.integerSolve(
+        //                              equationsAndInequations,
+        //                              equationVariables,
+        //                              userDefinedVariables,
+        //                              engine);
+        //                      if (resultList.isPresent()) {
+        //                        EvalAttributes.sort((IASTMutable) resultList);
+        //                        return resultList;
+        //                      }
+        //                    } catch (RuntimeException rex) {
+        //                      // try 2nd solver
+        //                    }
+        //                  }
+        //                }
+        // call cream solver
+        CreamConvert converter = new CreamConvert();
+        IAST resultList =
+            converter.integerSolve(
+                equationsAndInequations,
+                equationVariables,
+                userDefinedVariables,
+                maximumNumberOfResults,
+                engine);
+        if (resultList.isPresent()) {
+          EvalAttributes.sort((IASTMutable) resultList);
+          return resultList;
+        }
+      } catch (LimitException le) {
+        LOGGER.debug("Solve.of() failed", le);
+        throw le;
+      } catch (RuntimeException rex) {
+        LOGGER.log(engine.getLogLevel(), "Integers solution not found", rex);
+        return F.NIL;
+      }
     }
     return F.NIL;
   }
@@ -1382,7 +1401,9 @@ public class Solve extends AbstractFunctionEvaluator {
     // collect linear and univariate polynomial equations:
     for (IExpr expr : termsEqualZeroList) {
       if (expr.has(predicate, true)) {
-        LOGGER.log(engine.getLogLevel(), "Solve: the system contains the wrong object: {}",
+        LOGGER.log(
+            engine.getLogLevel(),
+            "Solve: the system contains the wrong object: {}",
             predicate.getWrongExpr());
         throw new NoEvalException();
       }
