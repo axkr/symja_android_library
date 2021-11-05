@@ -250,9 +250,9 @@ If you would like to use parts of the system here are some Maven module licenses
 
 Here are some of the associated **Java** library dependency licenses:
 * the [TilmanNeumann/java-math-library](https://github.com/TilmanNeumann/java-math-library) is published under the GNU GENERAL PUBLIC LICENSE license.
-* the [apfloat project](https://github.com/mtommila/apfloat) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE license. 
-* the [JAS Java Algebra System](http://krum.rz.uni-mannheim.de/jas/) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE license. The Java bytecode is dual licenced also under the Apache 2.0 license to allow usage in Android projects.  
+* the [JAS Java Algebra System](http://krum.rz.uni-mannheim.de/jas/) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE license. The Java bytecode is dual licenced also under the Apache 2.0 license to allow usage in Android projects. 
 * the [JGraphT Library](https://jgrapht.org/)  is published under the Eclipse Public License (EPL) or (LESSER) GNU GENERAL PUBLIC LICENSE license.
+* the [apfloat project](https://github.com/mtommila/apfloat) is published under the MIT License. 
 * the [Hipparchus Mathematics Library](https://www.hipparchus.org/) is published under the Apache software license
 * the [LogicNG project](https://github.com/logic-ng/LogicNG) is published under the Apache software license
 * the [Tablesaw](https://github.com/jtablesaw/tablesaw) is published under the Apache software license 
