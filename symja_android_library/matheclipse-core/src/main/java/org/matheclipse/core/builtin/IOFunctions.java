@@ -777,6 +777,8 @@ public class IOFunctions {
     "The rank `1` is not an integer between `2` and  `3`.", //
     "rankl",
     "The list `1` of dimensions must have length `2`.",
+    "rctndm1",
+    "The argument `1` at position `2` should be a rectangular array of real numbers with length greater than the dimension of the array or two such arrays with of equal dimension.",
     "realx",
     "The value `1` is not a real number.", //
     "reclim2",

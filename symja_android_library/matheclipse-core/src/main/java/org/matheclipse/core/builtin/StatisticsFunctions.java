@@ -6457,6 +6457,14 @@ public class StatisticsFunctions {
             if (vector1 != null) {
               double[] vector2 = list.second().toDoubleVector();
               if (vector2 != null) {
+                if (vector1.length <= 1 || vector2.length <= 1) {
+                  // The argument `1` at position `2` should be a rectangular array of real
+                  // numbers with length greater than the dimension of the array or two such arrays
+                  // with
+                  // of equal dimension.
+                  return IOFunctions.printMessage(
+                      ast.topHead(), "rctndm1", F.List(arg1, F.C1), engine);
+                }
                 org.hipparchus.stat.inference.TTest tTest =
                     new org.hipparchus.stat.inference.TTest();
                 double value = tTest.homoscedasticTTest(vector1, vector2);
@@ -6471,6 +6479,13 @@ public class StatisticsFunctions {
       if (dimension > 0) {
         double[] vector = arg1.toDoubleVector();
         if (vector != null) {
+          if (vector.length <= 1) {
+            // The argument `1` at position `2` should be a rectangular array of real
+            // numbers with length greater than the dimension of the array or two such arrays with
+            // of equal dimension.
+            return IOFunctions.printMessage(ast.topHead(), "rctndm1", F.List(arg1, F.C1), engine);
+          }
+
           org.hipparchus.stat.inference.TTest tTest = new org.hipparchus.stat.inference.TTest();
           double value = tTest.tTest(0.0, vector);
           return F.num(value);

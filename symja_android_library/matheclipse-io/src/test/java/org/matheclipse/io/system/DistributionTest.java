@@ -130,22 +130,6 @@ public class DistributionTest extends AbstractTestCase {
 
   public void testNormalDistribution() {
     check(
-        "data1={0.536463693808193,-1.511974629293994,-0.22845265689863847,0.4114790735362004,-1.372540834688803,0.18841748289331972,0.7678270833344806,0.7820712767427386,0.027735965955395632,0.38766508070235384};", //
-        "");
-    check(
-        "TTest(data1)", //
-        "0.99662");
-    check(
-        "TTest({data1,data1+2})", //
-        "0.0000356619");
-    check(
-        "TTest({data1,{3.2,4.3}})", //
-        "0.000145336");
-    check(
-        "TTest({data1,{0.536463693808193, 0.7678270833344806,1.1,4.5 }})", //
-        "0.0283933");
-
-    check(
         "PDF(NormalDistribution(m,0), x)", //
         "PDF(NormalDistribution(m,0),x)");
     check(
@@ -228,6 +212,15 @@ public class DistributionTest extends AbstractTestCase {
         "m");
   }
 
+  public void testQuantileSparseArray() {
+    check(
+        "sp = SparseArray({{i_, i_} :> i, {i_, j_} /; j == i + 1 :> i - 1}, {100, 10})", //
+        "SparseArray(Number of elements: 18 Dimensions: {100,10} Default value: 0)");
+    check(
+        "Quantile(sp, 99/100)", //
+        "{0,0,1,2,3,4,5,6,7,8}");
+  }
+
   public void testStudentTDistribution() {
     check(
         "Mean(StudentTDistribution(v))", //
@@ -242,7 +235,34 @@ public class DistributionTest extends AbstractTestCase {
     check(
         "Quantile(StudentTDistribution(m,s,v), {1/4, 1/2, 3/4})", //
         "{m-s*Sqrt(v)*Sqrt(-1+1/InverseBetaRegularized(1/2,v/2,1/2)),m,m+s*Sqrt(v)*Sqrt(-\n"
-        + "1+1/InverseBetaRegularized(1/2,v/2,1/2))}");
+            + "1+1/InverseBetaRegularized(1/2,v/2,1/2))}");
+  }
+
+  public void testTTest() {
+    check(
+        "data1={0.536463693808193,-1.511974629293994,-0.22845265689863847,0.4114790735362004,-1.372540834688803,0.18841748289331972,0.7678270833344806,0.7820712767427386,0.027735965955395632,0.38766508070235384};", //
+        "");
+    check(
+        "TTest(data1)", //
+        "0.99662");
+    check(
+        "TTest({data1,data1+2})", //
+        "0.0000356619");
+    check(
+        "TTest({data1,{3.2,4.3}})", //
+        "0.000145336");
+    check(
+        "TTest({data1,{0.536463693808193, 0.7678270833344806,1.1,4.5 }})", //
+        "0.0283933");
+    check(
+        "TTest({{0.5,1.3,-0,7},{0.5,1.3,-0,7}})", //
+        "1.0");
+    check(
+        "TTest({{0.5,1.3,-0,7},{-0.7,1.3,0.5}})", //
+        "0.396998");
+    check(
+        "TTest({0.5,1.3,-0,7})", //
+        "0.268096");
   }
 
   public void testWeibullDistribution() {
@@ -259,14 +279,5 @@ public class DistributionTest extends AbstractTestCase {
     check(
         "Quantile(WeibullDistribution(a,b,m), {1/4, 1/2, 3/4})", //
         "{m+b*Log(4/3)^(1/a),m+b*Log(2)^(1/a),m+b*Log(4)^(1/a)}");
-  }
-
-  public void testQuantileSparseArray() {
-    check(
-        "sp = SparseArray({{i_, i_} :> i, {i_, j_} /; j == i + 1 :> i - 1}, {100, 10})", //
-        "SparseArray(Number of elements: 18 Dimensions: {100,10} Default value: 0)");
-    check(
-        "Quantile(sp, 99/100)", //
-        "{0,0,1,2,3,4,5,6,7,8}");
   }
 }
