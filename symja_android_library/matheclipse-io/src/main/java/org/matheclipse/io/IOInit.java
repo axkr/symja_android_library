@@ -3,6 +3,7 @@ package org.matheclipse.io;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
+import org.matheclipse.io.builtin.BioFunctions;
 import org.matheclipse.io.builtin.DatasetFunctions;
 import org.matheclipse.io.builtin.DynamicSwingFunctions;
 import org.matheclipse.io.builtin.FileIOFunctions;
@@ -23,5 +24,6 @@ public class IOInit {
     DynamicSwingFunctions.initialize();
     SwingFunctions.initialize();
     DatasetFunctions.initialize();
+    BioFunctions.initialize();
   }
 }
