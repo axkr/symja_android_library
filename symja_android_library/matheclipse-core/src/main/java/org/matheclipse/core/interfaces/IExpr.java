@@ -188,6 +188,8 @@ public interface IExpr
 
   public static final int LINEARSOLVEUNCTONID = DATAID + 20;
 
+  public static final int BIOSEQUENCEID = DATAID + 21;
+
   public static IExpr convertToExpr(COMPARE_TERNARY temp) {
     if (temp == COMPARE_TERNARY.TRUE) {
       return S.True;

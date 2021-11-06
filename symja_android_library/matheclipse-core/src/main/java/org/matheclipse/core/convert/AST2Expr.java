@@ -37,7 +37,7 @@ import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.eval.DoubleNode;
 import org.matheclipse.parser.trie.SuggestTree;
 import org.matheclipse.parser.trie.TrieMatch;
- 
+
 /**
  * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code> expression into an IExpr
  * expression
@@ -369,6 +369,8 @@ public class AST2Expr {
     "BinCounts",
     "Binomial",
     "BinomialDistribution",
+    "BioSequence",
+    "BioSequenceQ",
     "BitLength",
     "BlackmanHarrisWindow",
     "BlackmanNuttallWindow",
@@ -764,6 +766,17 @@ public class AST2Expr {
     "IdentityMatrix",
     "If",
     "Im",
+    "Image",
+    "ImageData",
+    "ImageChannels",
+    "ImageColorSpace",
+    "ImageDimensions",
+    "ImageQ",
+    "ImageCrop",
+    "ImageResize",
+    "ImageRotate",
+    "ImageSize",
+    "ImageType",
     "Implies",
     "Import",
     "ImportString",
@@ -772,6 +785,7 @@ public class AST2Expr {
     "Inequality",
     "InexactNumberQ",
     "Infix",
+    "Information",
     "Inner",
     "Input",
     "InputField",
@@ -781,7 +795,6 @@ public class AST2Expr {
     "Insert",
     "InstallJava",
     "InstanceOf",
-    "Information",
     "IntegerDigits",
     "IntegerExponent",
     "IntegerLength",
@@ -1345,7 +1358,9 @@ public class AST2Expr {
     "Tetrahedron",
     "Text",
     "TextCell",
+    "TextElement",
     "TextString",
+    "TextStructure",
     "TeXForm",
     "Thickness",
     "Thread",
