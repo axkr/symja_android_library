@@ -2142,21 +2142,16 @@ public final class ListFunctions {
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
 
-        boolean evaledTrue;
         BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(test);
         int size = list.size();
         final IASTAppendable result = F.ListAlloc(size);
+        iLoop:
         for (int i = 1; i < size; i++) {
           IExpr listElement = list.get(i);
-          evaledTrue = false;
           for (int j = 1; j < result.size(); j++) {
             if (biPredicate.test(result.get(j), listElement)) {
-              evaledTrue = true;
-              break;
+              continue iLoop;
             }
-          }
-          if (evaledTrue) {
-            continue;
           }
           result.append(listElement);
         }
@@ -7193,20 +7188,16 @@ public final class ListFunctions {
 
     private static IAST tally2Args(IAST list, BiPredicate<IExpr, IExpr> test) {
       java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
-      boolean evaled;
+      iLoop:
       for (int i = 1; i < list.size(); i++) {
-        evaled = false;
         IExpr arg = list.get(i);
         for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
           if (test.test(entry.getKey(), arg)) {
-            evaled = true;
             map.put(entry.getKey(), Integer.valueOf(entry.getValue() + 1));
-            break;
+            continue iLoop;
           }
         }
-        if (!evaled) {
-          map.put(arg, Integer.valueOf(1));
-        }
+        map.put(arg, Integer.valueOf(1));
       }
       return createResultList(map);
     }
@@ -7769,9 +7760,7 @@ public final class ListFunctions {
           if (ast.isAST2()) {
             int[] dims = sparseArray.getDimension();
             IExpr arg2 = ast.arg2();
-            if (arg2.isInfinity()
-                || //
-                arg2.toIntDefault() >= dims.length) {
+            if (arg2.isInfinity() || arg2.toIntDefault() >= dims.length) {
               return sparseArray.total(S.Plus);
             }
           }

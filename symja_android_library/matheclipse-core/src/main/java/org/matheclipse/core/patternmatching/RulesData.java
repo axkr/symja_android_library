@@ -818,22 +818,21 @@ public final class RulesData implements Serializable {
       }
     }
 
+    boolean evaled = false;
     if (fPatternDownRules != null) {
       int i = 0;
-      boolean evaled = false;
       while (i < fPatternDownRules.size()) {
         IPatternMatcher pm = fPatternDownRules.get(i);
         if (pm.equivalentLHS(pmEvaluator) == 0) {
           fPatternDownRules.remove(i);
           fPriorityDownRules.removeInt(i);
           evaled = true;
-          continue;
+        } else {
+          i++;
         }
-        i++;
       }
-      return evaled;
     }
-    return false;
+    return evaled;
   }
 
   @Override

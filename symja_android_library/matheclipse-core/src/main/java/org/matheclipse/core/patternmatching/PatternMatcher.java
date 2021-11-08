@@ -328,18 +328,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     while (iIndex < lhsPatternAST.size()) {
       IExpr temp = lhsPatternAST.get(iIndex);
       if (temp.isFreeOfPatterns()) {
-        boolean evaled = false;
         if (iIndex < lhsEvalAST.size()) {
           if (lhsEvalAST.get(iIndex).equals(temp)) {
             lhsPatternAST.remove(iIndex);
             lhsEvalAST.remove(iIndex);
-            evaled = true;
+            continue;
           }
         }
-        if (!evaled) {
-          return null;
-        }
-        continue;
+        return null;
       }
       break;
     }
@@ -350,18 +346,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     while (iIndex > 0) {
       IExpr temp = lhsPatternAST.get(iIndex);
       if (temp.isFreeOfPatterns()) {
-        boolean evaled = false;
         if (jIndex < lhsEvalAST.size()) {
           if (lhsEvalAST.get(jIndex).equals(temp)) {
             lhsPatternAST.remove(iIndex--);
             lhsEvalAST.remove(jIndex--);
-            evaled = true;
+            continue;
           }
         }
-        if (!evaled) {
-          return null;
-        }
-        continue;
+        return null;
       }
       break;
     }
@@ -1693,18 +1685,23 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    */
   private IAST[] remove(
       final IAST lhsPattern, final IAST lhsEval, EvalEngine engine, StackMatcher stackMatcher) {
-    IASTAppendable lhsPatternAST = lhsPattern.copyAppendable();
-    IASTAppendable lhsEvalAST = lhsEval.copyAppendable();
-
+    IASTAppendable lhsPatternAST = F.NIL;
+    IASTAppendable lhsEvalAST = F.NIL;
+    int i = 1;
     int iIndex = 1;
     boolean evaled = false;
     boolean matched = false;
     while (iIndex < lhsPatternAST.size()) {
-      IExpr lhs = lhsPatternAST.get(iIndex);
-      IExpr rhs = lhsEvalAST.get(iIndex);
+      IExpr lhs = lhsPattern.get(i);
+      IExpr rhs = lhsEval.get(i);
+      i++;
 
       if (lhs.isFreeOfPatterns()) {
         if (lhs.equals(rhs)) {
+          if (!evaled) {
+            lhsPatternAST = lhsPattern.copyAppendable();
+            lhsEvalAST = lhsEval.copyAppendable();
+          }
           lhsPatternAST.remove(iIndex);
           lhsEvalAST.remove(iIndex);
           evaled = true;
@@ -1714,8 +1711,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
       if (lhs instanceof IPattern) {
         matched = matchPattern((IPatternObject) lhs, rhs, engine, stackMatcher);
-        // matched = ((IPattern) lhs).matchPattern(rhs, fPatternMap);
         if (matched) {
+          if (!evaled) {
+            lhsPatternAST = lhsPattern.copyAppendable();
+            lhsEvalAST = lhsEval.copyAppendable();
+          }
           lhsPatternAST.remove(iIndex);
           lhsEvalAST.remove(iIndex);
           evaled = true;
@@ -1726,27 +1726,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       if (lhs instanceof IPatternSequence) {
         return UNEVALED;
       }
-      // if (lhs.isASTOrAssociation() && lhs.isFree(x -> x.isOrderlessAST(), true)) {
-      // matched = matchExpr(lhs, rhs, engine);
-      // if (matched) {
-      // lhsPatternAST.remove(iIndex);
-      // lhsEvalAST.remove(iIndex);
-      // evaled = true;
-      // continue;
-      // }
-      // return null;
-      // }
       iIndex++;
     }
     if (!evaled) {
       return UNEVALED;
     }
-    // if (lhsPatternAST.size() > 1) {
-    // IExpr temp = fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, true);
-    // if (temp.isAST(lhsPatternAST.head())) {
-    // return new IAST[] { (IAST) temp, lhsEvalAST };
-    // }
-    // }
     return new IAST[] {lhsPatternAST, lhsEvalAST};
   }
 
