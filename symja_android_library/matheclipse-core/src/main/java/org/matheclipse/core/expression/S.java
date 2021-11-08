@@ -1081,6 +1081,12 @@ public class S {
   public static final IBuiltInSymbol BioSequenceQ =
       F.initFinalSymbol("BioSequenceQ", ID.BioSequenceQ);
 
+  public static final IBuiltInSymbol BioSequenceTranscribe =
+      F.initFinalSymbol("BioSequenceTranscribe", ID.BioSequenceTranscribe);
+
+  public static final IBuiltInSymbol BioSequenceTranslate =
+      F.initFinalSymbol("BioSequenceTranslate", ID.BioSequenceTranslate);
+
   /**
    * BitLengthi(x) - gives the number of bits needed to represent the integer `x`. The sign of `x`
    * is ignored.

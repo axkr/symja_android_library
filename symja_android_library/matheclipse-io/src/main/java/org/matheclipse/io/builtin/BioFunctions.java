@@ -66,7 +66,7 @@ public class BioFunctions {
       return ARGS_1_1;
     }
   }
-
+  
   public static void initialize() {
     Initializer.init();
   }

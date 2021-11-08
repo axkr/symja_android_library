@@ -371,6 +371,8 @@ public class AST2Expr {
     "BinomialDistribution",
     "BioSequence",
     "BioSequenceQ",
+    "BioSequenceTranscribe",
+    "BioSequenceTranslate",
     "BitLength",
     "BlackmanHarrisWindow",
     "BlackmanNuttallWindow",

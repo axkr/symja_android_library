@@ -87,7 +87,11 @@
 			<groupId>org.biojava</groupId>
 			<artifactId>biojava-core</artifactId>
 		</dependency>
-		
+		<dependency>
+			<groupId>org.biojava</groupId>
+			<artifactId>biojava-alignment</artifactId>
+		</dependency>
+
 		<!-- logging dependencies -->
 
 		<dependency>

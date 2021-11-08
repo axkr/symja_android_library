@@ -21,4 +21,5 @@ public class BioTest extends AbstractTestCase {
         "BioSequence(\"RNA\", \"AUAACGUAUGUA\")", //
         "BioSequence[Type: RNA Sequence, Content: AUAACG-GUA (12 letters)]");
   }
+
 }
