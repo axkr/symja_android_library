@@ -91,8 +91,7 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
    */
   public ASTRealMatrix(double[][] matrix, boolean deepCopy) {
     if (Config.MAX_MATRIX_DIMENSION_SIZE < matrix.length
-        || //
-        Config.MAX_MATRIX_DIMENSION_SIZE < matrix[0].length) {
+        || Config.MAX_MATRIX_DIMENSION_SIZE < matrix[0].length) {
       throw new ASTElementLimitExceeded(matrix.length, matrix[0].length);
     }
     this.matrix = new Array2DRowRealMatrix(matrix, deepCopy);
@@ -104,8 +103,7 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
    */
   public ASTRealMatrix(RealMatrix matrix, boolean deepCopy) {
     if (Config.MAX_MATRIX_DIMENSION_SIZE < matrix.getRowDimension()
-        || //
-        Config.MAX_MATRIX_DIMENSION_SIZE < matrix.getColumnDimension()) {
+        || Config.MAX_MATRIX_DIMENSION_SIZE < matrix.getColumnDimension()) {
       throw new ASTElementLimitExceeded(matrix.getRowDimension(), matrix.getColumnDimension());
     }
     if (deepCopy) {

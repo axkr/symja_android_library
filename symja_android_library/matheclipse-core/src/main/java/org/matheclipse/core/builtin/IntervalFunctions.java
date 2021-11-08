@@ -281,9 +281,7 @@ public class IntervalFunctions {
           IAST list2 = (IAST) interval2.get(j);
           IExpr min2 = list2.arg1();
           IExpr max2 = list2.arg2();
-          if (S.Less.ofQ(engine, max1, min2)
-              || //
-              S.Less.ofQ(engine, max2, min1)) {
+          if (S.Less.ofQ(engine, max1, min2) || S.Less.ofQ(engine, max2, min1)) {
             continue;
           }
 

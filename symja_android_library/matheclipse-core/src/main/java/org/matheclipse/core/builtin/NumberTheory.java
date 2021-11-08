@@ -2571,11 +2571,7 @@ public final class NumberTheory {
         int n = ((IInteger) arg1).toIntDefault();
         if (n > Integer.MIN_VALUE) {
           if (ast.isAST2()) {
-            if (ast.arg2().isSymbol()
-                || //
-                ast.arg2().isNumber()
-                || //
-                ast.arg2().isAST()) {
+            if (ast.arg2().isSymbol() || ast.arg2().isNumber() || ast.arg2().isAST()) {
               return fibonacciPolynomialIterative(n, ast.arg2(), ast, engine);
             }
             return F.NIL;

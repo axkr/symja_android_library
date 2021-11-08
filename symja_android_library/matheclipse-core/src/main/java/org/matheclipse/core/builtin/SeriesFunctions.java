@@ -922,9 +922,7 @@ public class SeriesFunctions {
               direction = Direction.FROM_BELOW;
             } else if (option.isMinusOne()) {
               direction = Direction.FROM_ABOVE;
-            } else if (option.equals(S.Automatic)
-                || //
-                option.equals(S.Reals)) {
+            } else if (option.equals(S.Automatic) || option.equals(S.Reals)) {
               direction = Direction.TWO_SIDED;
             } else {
               LOGGER.log(engine.getLogLevel(), "{}: direction option expected at position 2!",
@@ -1894,9 +1892,7 @@ public class SeriesFunctions {
         IExpr x = ast.arg1();
         IExpr x0 = ast.arg2();
 
-        if (ast.arg3().isVector() < 0
-            || //
-            !ast.arg3().isAST()) {
+        if (ast.arg3().isVector() < 0 || !ast.arg3().isAST()) {
           return F.NIL;
         }
         IAST coefficients = (IAST) ast.arg3();

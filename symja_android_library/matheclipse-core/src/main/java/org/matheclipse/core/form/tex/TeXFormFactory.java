@@ -374,9 +374,7 @@ public class TeXFormFactory {
           return true;
         }
       }
-      if ((ast instanceof ASTRealMatrix)
-          || //
-          ast.isEvalFlagOn(IAST.IS_MATRIX)) {
+      if ((ast instanceof ASTRealMatrix) || ast.isEvalFlagOn(IAST.IS_MATRIX)) {
         int[] dims = ast.isMatrix();
         if (dims != null) {
           // create a LaTeX matrix

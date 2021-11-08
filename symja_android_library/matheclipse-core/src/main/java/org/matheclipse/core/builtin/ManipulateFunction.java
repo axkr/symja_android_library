@@ -776,9 +776,7 @@ public class ManipulateFunction {
         }
         slider.append("{ type: 'buttons', values: [");
         for (int j = 1; j < listOfButtons.size(); j++) {
-          if (listOfButtons.get(j).isFalse()
-              || //
-              listOfButtons.get(j).isTrue()) {
+          if (listOfButtons.get(j).isFalse() || listOfButtons.get(j).isTrue()) {
             // replace true and false values with 0, 1
             if (listOfButtons.get(j).isFalse()) {
               slider.append("0");
@@ -2057,14 +2055,10 @@ public class ManipulateFunction {
         for (int i = 1; i < listOfSymbols.size(); i++) {
           IExpr arg = listOfSymbols.get(i);
           if (arg.isAST(S.ListLinePlot)
-              || //
-              arg.isAST(S.ListPlot)
-              || //
-              arg.isAST(S.Plot)
-              || //
-              arg.isAST(S.ParametricPlot)
-              || //
-              arg.isAST(S.PolarPlot)) {
+              || arg.isAST(S.ListPlot)
+              || arg.isAST(S.Plot)
+              || arg.isAST(S.ParametricPlot)
+              || arg.isAST(S.PolarPlot)) {
             continue;
           }
           return F.NIL;
@@ -2072,14 +2066,10 @@ public class ManipulateFunction {
         return listOfSymbols;
       } else {
         if (expr.isAST(S.ListLinePlot)
-            || //
-            expr.isAST(S.ListPlot)
-            || //
-            expr.isAST(S.Plot)
-            || //
-            expr.isAST(S.ParametricPlot)
-            || //
-            expr.isAST(S.PolarPlot)) {
+            || expr.isAST(S.ListPlot)
+            || expr.isAST(S.Plot)
+            || expr.isAST(S.ParametricPlot)
+            || expr.isAST(S.PolarPlot)) {
           return F.List(expr);
         }
       }
@@ -2467,17 +2457,11 @@ public class ManipulateFunction {
   }
 
   private static boolean isNonReal(IExpr lastPoint) {
-    return lastPoint == S.Indeterminate
-        || //
-        lastPoint == S.None
-        || //
-        lastPoint.isAST(S.Missing);
+    return lastPoint == S.Indeterminate || lastPoint == S.None || lastPoint.isAST(S.Missing);
   }
 
   private static boolean isNonReal(IExpr lastPointX, IExpr lastPointY) {
-    return isNonReal(lastPointX)
-        || //
-        isNonReal(lastPointY);
+    return isNonReal(lastPointX) || isNonReal(lastPointY);
   }
 
   private static void unaryJSFunction(

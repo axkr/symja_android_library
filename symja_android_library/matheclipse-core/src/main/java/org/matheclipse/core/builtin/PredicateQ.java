@@ -833,20 +833,16 @@ public class PredicateQ {
         identityMatrix = S.Dot.of(engine, F.Transpose(arg1), arg1);
         identityMatrixDims = identityMatrix.isMatrix();
         if (identityMatrixDims == null
-            || //
-            identityMatrixDims[0] != dims[1]
-            || //
-            identityMatrixDims[1] != dims[1]) {
+            || identityMatrixDims[0] != dims[1]
+            || identityMatrixDims[1] != dims[1]) {
           return S.False;
         }
       } else {
         identityMatrix = S.Dot.of(engine, arg1, F.Transpose(arg1));
         identityMatrixDims = identityMatrix.isMatrix();
         if (identityMatrixDims == null
-            || //
-            identityMatrixDims[0] != dims[0]
-            || //
-            identityMatrixDims[1] != dims[0]) {
+            || identityMatrixDims[0] != dims[0]
+            || identityMatrixDims[1] != dims[0]) {
           return S.False;
         }
       }

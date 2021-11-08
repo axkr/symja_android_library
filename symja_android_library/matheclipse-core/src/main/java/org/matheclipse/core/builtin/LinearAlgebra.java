@@ -2555,8 +2555,7 @@ public final class LinearAlgebra {
                 FieldVector<IExpr> resultVector = solver.solve(vector);
                 for (int i = 0; i < resultVector.getDimension(); i++) {
                   if (resultVector.getEntry(i).isIndeterminate()
-                      || //
-                      resultVector.getEntry(i).isDirectedInfinity()) {
+                      || resultVector.getEntry(i).isDirectedInfinity()) {
                     return underdeterminedSystem(matrix, vector, engine);
                   }
                 }
@@ -2659,9 +2658,7 @@ public final class LinearAlgebra {
       if (temp.isAST()) {
         IAST ast = (IAST) temp;
         for (int k = 1; k < ast.size(); k++) {
-          if (ast.get(k).isIndeterminate()
-              || //
-              ast.get(k).isDirectedInfinity()) {
+          if (ast.get(k).isIndeterminate() || ast.get(k).isDirectedInfinity()) {
             return F.NIL;
           }
         }
@@ -2709,9 +2706,7 @@ public final class LinearAlgebra {
       if (temp.isAST()) {
         IAST ast = (IAST) temp;
         for (int k = 1; k < ast.size(); k++) {
-          if (ast.get(k).isIndeterminate()
-              || //
-              ast.get(k).isDirectedInfinity()) {
+          if (ast.get(k).isIndeterminate() || ast.get(k).isDirectedInfinity()) {
             return F.NIL;
           }
         }
@@ -2814,9 +2809,7 @@ public final class LinearAlgebra {
       if (temp.isAST()) {
         IAST ast = (IAST) temp;
         for (int k = 1; k < ast.size(); k++) {
-          if (ast.get(k).isIndeterminate()
-              || //
-              ast.get(k).isDirectedInfinity()) {
+          if (ast.get(k).isIndeterminate() || ast.get(k).isDirectedInfinity()) {
             return F.NIL;
           }
         }

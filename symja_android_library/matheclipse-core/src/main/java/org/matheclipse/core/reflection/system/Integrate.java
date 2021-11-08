@@ -540,9 +540,7 @@ public class Integrate extends AbstractFunctionEvaluator {
         }
       }
     }
-    if (function.isAbs()
-        || //
-        (function.isPower() && function.base().isAbs())) {
+    if (function.isAbs() || (function.isPower() && function.base().isAbs())) {
       return S.Undefined;
     }
     return F.NIL;

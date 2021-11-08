@@ -1479,11 +1479,7 @@ public class StatisticsFunctions {
         int dim1 = arg1.isVector();
         int dim2 = arg2.isVector();
         if (dim1 >= 0 && dim1 == dim2) {
-          if (engine.isDoubleMode()
-              || //
-              arg1.isNumericAST()
-              || //
-              arg2.isNumericAST()) {
+          if (engine.isDoubleMode() || arg1.isNumericAST() || arg2.isNumericAST()) {
             double[] a = arg1.toDoubleVector();
             if (a != null) {
               double[] b = arg2.toDoubleVector();

@@ -339,14 +339,10 @@ public class Functors {
         @Override
         public boolean test(IExpr input) {
           return input.isBlank()
-              || //
-              input.isPattern()
-              || //
-              input.isPatternSequence(false)
-              || //
-              input.isAlternatives()
-              || //
-              input.isExcept();
+              || input.isPattern()
+              || input.isPatternSequence(false)
+              || input.isAlternatives()
+              || input.isExcept();
         }
       };
 

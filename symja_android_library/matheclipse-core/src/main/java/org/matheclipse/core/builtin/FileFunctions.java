@@ -1222,9 +1222,7 @@ public class FileFunctions {
         return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
       }
       String arg1Str = ((IStringX) ast.arg1()).toString();
-      if (arg1Str.startsWith("https://")
-          || //
-          arg1Str.startsWith("http://")) {
+      if (arg1Str.startsWith("https://") || arg1Str.startsWith("http://")) {
         URL url;
         try {
           url = new URL(arg1Str);

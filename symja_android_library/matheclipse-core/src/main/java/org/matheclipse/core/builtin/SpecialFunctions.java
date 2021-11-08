@@ -705,10 +705,7 @@ public class SpecialFunctions {
             z2Double = z2.evalDouble();
           } catch (ValidateException ve) {
           }
-          if (Double.isNaN(aDouble)
-              || Double.isNaN(z1Double)
-              || //
-              Double.isNaN(z2Double)) {
+          if (Double.isNaN(aDouble) || Double.isNaN(z1Double) || Double.isNaN(z2Double)) {
             // TODO
             // Complex sc = s.evalComplex();
             // Complex ac = a.evalComplex();

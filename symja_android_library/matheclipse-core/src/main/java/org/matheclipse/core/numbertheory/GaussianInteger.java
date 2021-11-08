@@ -235,9 +235,7 @@ public final class GaussianInteger {
   public static IInteger[] gcd(final IInteger[] g1, final IInteger[] g2) {
     final IInteger fReal = g1[0];
     final IInteger fImaginary = g1[1];
-    if ((fReal.isZero() && fImaginary.isZero())
-        || //
-        (g2[0].isZero() && g2[1].isZero())) {
+    if ((fReal.isZero() && fImaginary.isZero()) || (g2[0].isZero() && g2[1].isZero())) {
       return new IInteger[] {F.C0, F.C0};
     }
 
@@ -261,10 +259,8 @@ public final class GaussianInteger {
     }
 
     if ((dividendRe.isMinusOne() && dividendIm.isZero())
-        || //
-        (dividendRe.isZero() && dividendIm.isOne())
-        || //
-        (dividendRe.isZero() && dividendIm.isMinusOne())) {
+        || (dividendRe.isZero() && dividendIm.isOne())
+        || (dividendRe.isZero() && dividendIm.isMinusOne())) {
       return new IInteger[] {F.C1, F.C0};
     }
 

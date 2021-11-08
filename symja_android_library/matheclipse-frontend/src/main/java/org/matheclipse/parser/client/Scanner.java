@@ -982,10 +982,8 @@ public abstract class Scanner {
             boolean evaled = false;
             getChar();
             while (Character.isDigit(fCurrentChar)
-                || //
-                (fCurrentChar >= 'a' && fCurrentChar <= 'z')
-                || //
-                (fCurrentChar >= 'A' && fCurrentChar <= 'Z')) {
+                || (fCurrentChar >= 'a' && fCurrentChar <= 'z')
+                || (fCurrentChar >= 'A' && fCurrentChar <= 'Z')) {
               evaled = true;
               getChar();
             }
@@ -1218,11 +1216,9 @@ public abstract class Scanner {
   protected static final boolean isComparatorOperator(String operatorString) {
     return operatorString.equals("==")
         || operatorString.equals("!=")
-        || //
-        operatorString.equals(">")
+        || operatorString.equals(">")
         || operatorString.equals(">=")
-        || //
-        operatorString.equals("<")
+        || operatorString.equals("<")
         || operatorString.equals("<=");
   }
 
@@ -1471,9 +1467,7 @@ public abstract class Scanner {
   /** Shows the current line for debugging purposes. */
   @Override
   public String toString() {
-    if (fInputString == null
-        || //
-        fCurrentPosition < 0) {
+    if (fInputString == null || fCurrentPosition < 0) {
       return "<undefined scanner>";
     }
     // read until end-of-line

@@ -3708,15 +3708,10 @@ public class F extends S {
    */
   public static ISignedNumber expr(Number number) {
     if (number instanceof Integer
-        || //
-        number instanceof Long
-        || //
-        number instanceof Short
-        || //
-        number instanceof Byte) return ZZ(number.longValue());
-    if (number instanceof Double
-        || //
-        number instanceof Float) return num(number.doubleValue());
+        || number instanceof Long
+        || number instanceof Short
+        || number instanceof Byte) return ZZ(number.longValue());
+    if (number instanceof Double || number instanceof Float) return num(number.doubleValue());
     if (number instanceof BigInteger) return ZZ((BigInteger) number);
     throw new IllegalArgumentException(number.getClass().getName());
   }

@@ -68,10 +68,8 @@ public class DatasetFunctions {
 
           if (!arg1.equals(S.All)) {
             if (arg1.isBuiltInSymbol()
-                || //
-                arg1.isAST(S.TakeLargest, 2)
-                || //
-                arg1.isAST(S.TakeLargestBy, 3)) {
+                || arg1.isAST(S.TakeLargest, 2)
+                || arg1.isAST(S.TakeLargestBy, 3)) {
               IExpr expr = dataSet.select(S.All, arg2);
               if (expr.isDataset()) {
                 return F.unaryAST1(arg1, ((IASTDataset) expr).normal(false));

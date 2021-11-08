@@ -1052,8 +1052,7 @@ public class IntegerFunctions {
           if (m.isComplex()
               || n.isComplex()
               || d.isComplex()
-              || //
-              m.isComplexNumeric()
+              || m.isComplexNumeric()
               || n.isComplexNumeric()
               || d.isComplexNumeric()) {
             // https://mathematica.stackexchange.com/a/114373/21734
@@ -1267,9 +1266,7 @@ public class IntegerFunctions {
               nDouble = n.evalDouble();
             } catch (RuntimeException ve) {
             }
-            if (Double.isNaN(zDouble)
-                || //
-                Double.isNaN(nDouble)) {
+            if (Double.isNaN(zDouble) || Double.isNaN(nDouble)) {
               Complex zComplex = z.evalComplex();
               Complex nComplex = n.evalComplex();
               Complex[] qr = ComplexNum.quotientRemainder(zComplex, nComplex);
@@ -1401,9 +1398,7 @@ public class IntegerFunctions {
               nDouble = arg2.evalDouble();
             } catch (RuntimeException ve) {
             }
-            if (Double.isNaN(zDouble)
-                || //
-                Double.isNaN(nDouble)) {
+            if (Double.isNaN(zDouble) || Double.isNaN(nDouble)) {
               Complex zComplex = arg1.evalComplex();
               Complex nComplex = arg2.evalComplex();
               Complex[] qr = ComplexNum.quotientRemainder(zComplex, nComplex);

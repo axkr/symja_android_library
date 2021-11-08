@@ -756,9 +756,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public boolean isPolynomialStruct() {
-    return ((fAttributes & CONSTANT) == CONSTANT)
-        || //
-        isVariable();
+    return ((fAttributes & CONSTANT) == CONSTANT) || isVariable();
   }
 
   /** {@inheritDoc} */

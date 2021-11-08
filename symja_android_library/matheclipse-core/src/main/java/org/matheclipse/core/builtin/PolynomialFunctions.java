@@ -1411,12 +1411,7 @@ public class PolynomialFunctions {
       if (arg1.isInteger() && ast.arg2().isInteger()) {
         int n = arg1.toIntDefault();
         int k = ast.arg2().toIntDefault();
-        if (n < 0
-            || k < 0
-            || //
-            !ast.arg3().isList()
-            || //
-            ast.arg3().isMatrix() != null) {
+        if (n < 0 || k < 0 || !ast.arg3().isList() || ast.arg3().isMatrix() != null) {
           return F.NIL;
         }
         if (n == 0 && k == 0) {

@@ -201,8 +201,8 @@ public class WL {
           }
           IExpr head = ast.head();
           if (head == S.Complex || head == S.Rational || head == S.Pattern || head == S.Optional) {
-            // head == F.Blank || //
-            // head == F.BlankSequence || //
+            // head == F.Blank ||
+            // head == F.BlankSequence ||
             // head == F.BlankNullSequence) {
             IFunctionEvaluator evaluator =
                 (IFunctionEvaluator) ((IBuiltInSymbol) head).getEvaluator();

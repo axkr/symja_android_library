@@ -94,9 +94,7 @@ public class HypergeometricJS {
         throw new ArgumentTypeException(
             "maximum iteration exceeded in hypergeometricSeries (double)");
       }
-    } while (!hasReachedAccuracy(s, sOld1, 1.E-12)
-        || //
-        !hasReachedAccuracy(sOld1, sOld2, 1.E-12));
+    } while (!hasReachedAccuracy(s, sOld1, 1.E-12) || !hasReachedAccuracy(sOld1, sOld2, 1.E-12));
 
     return s;
   }
@@ -192,8 +190,7 @@ public class HypergeometricJS {
     long i = 1;
     long iterationLimit = EvalEngine.get().getIterationLimit();
     while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-        || //
-        Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+        || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
       p = p.multiply(x).multiply(a.reciprocal()).divide(i);
       s = s.add(p);
       a = a.add(1);
@@ -248,8 +245,7 @@ public class HypergeometricJS {
 
     long iterationLimit = EvalEngine.get().getIterationLimit();
     while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-        || //
-        Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+        || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
       p = p.multiply(x).multiply(a).multiply(b.reciprocal()).divide(i);
       s = s.add(p);
       a = a.add(1.0);
@@ -863,9 +859,7 @@ public class HypergeometricJS {
           .multiply(hypergeometric2F0(a, a.add(b.negate()).add(1.0), x.reciprocal().negate()));
     }
 
-    if (b.equals(Complex.ONE)
-        || //
-        (F.isNumIntValue(b.getReal(), 1) && F.isZero(b.getImaginary()))) {
+    if (b.equals(Complex.ONE) || (F.isNumIntValue(b.getReal(), 1) && F.isZero(b.getImaginary()))) {
       return complexAverage(arg -> hypergeometricU(a, arg, x), b);
     }
 

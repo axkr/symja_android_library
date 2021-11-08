@@ -53,11 +53,7 @@ public class ClusteringFunctions {
     }
 
     protected IExpr vectorDistance(IExpr arg1, IExpr arg2, EvalEngine engine) {
-      if (engine.isDoubleMode()
-          || //
-          arg1.isNumericAST()
-          || //
-          arg2.isNumericAST()) {
+      if (engine.isDoubleMode() || arg1.isNumericAST() || arg2.isNumericAST()) {
         double[] a = arg1.toDoubleVector();
         if (a != null) {
           double[] b = arg2.toDoubleVector();
@@ -345,9 +341,7 @@ public class ClusteringFunctions {
               }
             }
 
-            if ("KMeans".equals(method)
-                || //
-                "".equals(method)) {
+            if ("KMeans".equals(method) || "".equals(method)) {
               k = ast.arg2().toIntDefault();
               if (k == Integer.MIN_VALUE) {
                 k = 3;

@@ -265,9 +265,7 @@ public class VisitorReplaceAll extends VisitorExpr {
     VisitorReplaceAll visitor;
     if (arg2 instanceof DispatchExpr) {
       visitor = ((DispatchExpr) arg2).getVisitor();
-    } else if (arg2.isListOfRules(false)
-        || //
-        arg2.isRuleAST()) {
+    } else if (arg2.isListOfRules(false) || arg2.isRuleAST()) {
       visitor = new VisitorReplaceAll((IAST) arg2);
     } else if (arg2.isAssociation()) {
       visitor = new VisitorReplaceAll((IAST) arg2.normal(false));

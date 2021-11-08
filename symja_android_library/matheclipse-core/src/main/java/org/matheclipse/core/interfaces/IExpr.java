@@ -190,6 +190,8 @@ public interface IExpr
 
   public static final int BIOSEQUENCEID = DATAID + 21;
 
+  public static final int IMAGEID = DATAID + 22;
+
   public static IExpr convertToExpr(COMPARE_TERNARY temp) {
     if (temp == COMPARE_TERNARY.TRUE) {
       return S.True;
@@ -930,14 +932,7 @@ public interface IExpr
    */
   default boolean hasComplexNumber() {
     return !isFree(
-        x ->
-            (x.isComplex()
-                || //
-                x.isComplexNumeric()
-                || //
-                x == S.I
-                || //
-                x.isAST(S.Complex)), //
+        x -> (x.isComplex() || x.isComplexNumeric() || x == S.I || x.isAST(S.Complex)), //
         false);
   }
 
@@ -1058,7 +1053,9 @@ public interface IExpr
 
   public static class SourceCodeProperties {
     public enum Prefix {
-      NONE, CLASS_NAME, FULLY_QUALIFIED_CLASS_NAME;
+      NONE,
+      CLASS_NAME,
+      FULLY_QUALIFIED_CLASS_NAME;
     }
 
     /**
@@ -1076,13 +1073,16 @@ public interface IExpr
      */
     public final Prefix prefix;
     /**
-     * If <code>true</code>, for symbols like <code>x,y,z,...</code> don't use the
-     * <code>F....</code> class prefix for code generation.
+     * If <code>true</code>, for symbols like <code>x,y,z,...</code> don't use the <code>F....
+     * </code> class prefix for code generation.
      */
     public final boolean noSymbolPrefix;
 
-    private SourceCodeProperties(boolean symbolsAsFactoryMethod, boolean useOperators,
-        Prefix prefix, boolean noSymbolPrefix) {
+    private SourceCodeProperties(
+        boolean symbolsAsFactoryMethod,
+        boolean useOperators,
+        Prefix prefix,
+        boolean noSymbolPrefix) {
       this.symbolsAsFactoryMethod = symbolsAsFactoryMethod;
       this.useOperators = useOperators;
       this.prefix = Objects.requireNonNull(prefix, "Method prefix must not be null");
@@ -1091,29 +1091,33 @@ public interface IExpr
 
     /**
      * Reaturns a {@link SourceCodeProperties} object with the specified parameters.
-     * 
+     *
      * @param symbolsAsFactoryMethod if <code>true</code> use the <code>F.symbol()</code> method,
-     *        otherwise print the symbol name.
+     *     otherwise print the symbol name.
      * @param useOperators use operators instead of function names for representation of Plus,
-     *        Times, Power,...
+     *     Times, Power,...
      * @param prefix if {@link Prefix#CLASS_NAME} use the <code>F....</code> class prefix for
-     *        generating Java code, if {@link Prefix#FULLY_QUALIFIED_CLASS_NAME} use the fully
-     *        qualified class name, if {@link Prefix#NONE} use no prefix.
-     * @param noSymbolPrefix for symbols like <code>x,y,z,...</code> don't use the
-     *        <code>F....</code> class prefix for code generation
+     *     generating Java code, if {@link Prefix#FULLY_QUALIFIED_CLASS_NAME} use the fully
+     *     qualified class name, if {@link Prefix#NONE} use no prefix.
+     * @param noSymbolPrefix for symbols like <code>x,y,z,...</code> don't use the <code>F....
+     *     </code> class prefix for code generation
      */
-    public static SourceCodeProperties of(boolean symbolsAsFactoryMethod, boolean useOperators,
-        Prefix prefix, boolean noSymbolPrefix) {
+    public static SourceCodeProperties of(
+        boolean symbolsAsFactoryMethod,
+        boolean useOperators,
+        Prefix prefix,
+        boolean noSymbolPrefix) {
       return new SourceCodeProperties(symbolsAsFactoryMethod, useOperators, prefix, noSymbolPrefix);
     }
 
     /**
      * Returns a {@link SourceCodeProperties} objects with the same values as the given one except
-     * that the field {@link #symbolsAsFactoryMethod} of the returned object is always
-     * <code>false</code>.
+     * that the field {@link #symbolsAsFactoryMethod} of the returned object is always <code>false
+     * </code>.
      */
     public static SourceCodeProperties copyWithoutSymbolsAsFactoryMethod(SourceCodeProperties o) {
-      return !o.symbolsAsFactoryMethod ? o
+      return !o.symbolsAsFactoryMethod
+          ? o
           : new SourceCodeProperties(false, o.useOperators, o.prefix, o.noSymbolPrefix);
     }
   }
@@ -1123,11 +1127,13 @@ public interface IExpr
    *
    * @param properties the settings to use for code generation.
    * @param depth the recursion depth of this call. <code>0</code> indicates &quot;recurse without a
-   *        limit&quot;.
+   *     limit&quot;.
    * @param variables TODO
    * @return the internal Java form of this expression
    */
-  default CharSequence internalJavaString(SourceCodeProperties properties, int depth,
+  default CharSequence internalJavaString(
+      SourceCodeProperties properties,
+      int depth,
       Function<IExpr, ? extends CharSequence> variables) {
     return toString();
   }
@@ -4561,9 +4567,17 @@ public interface IExpr
   default Complex[] toComplexVector() {
     return null;
   }
-
   /**
-   * Convert this object into a <code>double[]</code> matrix.
+   * Convert this object into a <code>byte[][]</code> matrix.
+   *
+   * @return <code>null</code> if this object can not be converted into a <code>byte[][]</code>
+   *     matrix
+   */
+  default byte[][] toByteMatrix() {
+    return null;
+  }
+  /**
+   * Convert this object into a <code>double[][]</code> matrix.
    *
    * @return <code>null</code> if this object can not be converted into a <code>double[]</code>
    *     matrix
@@ -4631,7 +4645,17 @@ public interface IExpr
   default double toDoubleDefault(double defaultValue) {
     return EvalEngine.get().evalDouble(this, defaultValue);
   }
-
+  
+  /**
+   * Convert this object into a <code>byte[][]</code> matrix.
+   *
+   * @return <code>null</code> if this object can not be converted into a <code>byte[][]</code>
+   *     matrix
+   */
+  default int[][] toIntMatrix() {
+    return null;
+  }
+  
   /**
    * Converts this number to an <code>int</code> value; unlike {@link #intValue} this method returns
    * <code>Integer.MIN_VALUE</code> if the value of this integer isn't in the range <code>

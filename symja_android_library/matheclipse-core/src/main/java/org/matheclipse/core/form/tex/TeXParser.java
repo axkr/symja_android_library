@@ -291,9 +291,9 @@ public class TeXParser {
               } else {
                 lhs = F.unaryAST1(lhs, args);
               }
-      if (position[0] == listSize) {
-        return lhs;
-      }
+              if (position[0] == listSize) {
+                return lhs;
+              }
             }
           }
         }
@@ -384,9 +384,9 @@ public class TeXParser {
         position[0]++;
         buf.append(temp.getTextContent());
         evaled = true;
-        continue;
+      } else {
+        break;
       }
-      break;
     }
     if (evaled) {
       return F.$s(buf.toString());

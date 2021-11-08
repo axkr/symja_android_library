@@ -882,6 +882,11 @@ public abstract class AbstractAST implements IASTMutable {
       return 0;
     }
 
+    @Override
+    public byte[][] toByteMatrix() {
+      return null;
+    }
+
     /** {@inheritDoc} */
     @Override
     public double[][] toDoubleMatrix() {
@@ -903,6 +908,11 @@ public abstract class AbstractAST implements IASTMutable {
     /** {@inheritDoc} */
     @Override
     public double[] toDoubleVectorIgnore() {
+      return null;
+    }
+
+    @Override
+    public int[][] toIntMatrix() {
       return null;
     }
 
@@ -2004,20 +2014,18 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public IAST removeIf(Predicate<? super IExpr> predicate) {
-    IASTAppendable result = copyHead(argSize());
-    boolean evaled = false;
+    IASTAppendable result = F.NIL;
     for (int i = 1; i < size(); i++) {
-      IExpr arg = get(i);
+      final IExpr arg = get(i);
       if (predicate.test(arg)) {
-        evaled = true;
         continue;
+      }
+      if (!result.isPresent()) {
+        result = copyHead(argSize());
       }
       result.appendRule(arg);
     }
-    if (evaled) {
-      return result;
-    }
-    return this;
+    return result.orElse(this);
   }
 
   /**
@@ -2345,46 +2353,26 @@ public abstract class AbstractAST implements IASTMutable {
             if (head.isBuiltInSymbol()) {
               return //
               (head == S.ArcCos)
-                  || //
-                  (head == S.ArcCsc)
-                  || //
-                  (head == S.ArcCot)
-                  || //
-                  (head == S.ArcSec)
-                  || //
-                  (head == S.ArcSin)
-                  || //
-                  (head == S.ArcTan)
-                  || //
-                  (head == S.Cos)
-                  || //
-                  (head == S.Csc)
-                  || //
-                  (head == S.Cot)
-                  || //
-                  (head == S.Sec)
-                  || //
-                  (head == S.Sin)
-                  || //
-                  (head == S.Sinc)
-                  || //
-                  (head == S.Tan)
-                  || //
-                  (head == S.Cosh)
-                  || //
-                  (head == S.Csch)
-                  || //
-                  (head == S.Coth)
-                  || //
-                  (head == S.Sech)
-                  || //
-                  (head == S.Sinh)
-                  || //
-                  (head == S.Tanh)
-                  || //
-                  (head == S.Haversine)
-                  || //
-                  (head == S.InverseHaversine);
+                  || (head == S.ArcCsc)
+                  || (head == S.ArcCot)
+                  || (head == S.ArcSec)
+                  || (head == S.ArcSin)
+                  || (head == S.ArcTan)
+                  || (head == S.Cos)
+                  || (head == S.Csc)
+                  || (head == S.Cot)
+                  || (head == S.Sec)
+                  || (head == S.Sin)
+                  || (head == S.Sinc)
+                  || (head == S.Tan)
+                  || (head == S.Cosh)
+                  || (head == S.Csch)
+                  || (head == S.Coth)
+                  || (head == S.Sech)
+                  || (head == S.Sinh)
+                  || (head == S.Tanh)
+                  || (head == S.Haversine)
+                  || (head == S.InverseHaversine);
             }
           }
           if (x.isAST2()) {
@@ -3625,16 +3613,14 @@ public abstract class AbstractAST implements IASTMutable {
       return forAll(
           x ->
               x.isNumericFunction(true)
-                  || //
-                  (x.isList() && ((IAST) x).forAll(y -> y.isNumericFunction(true))));
+                  || (x.isList() && ((IAST) x).forAll(y -> y.isNumericFunction(true))));
     }
     // TODO optimize this expression:
     return isAST(S.Interval)
         && forAll(
             x ->
                 x.isNumericArgument()
-                    || //
-                    (x.isList() && ((IAST) x).forAll(y -> y.isNumericArgument())));
+                    || (x.isList() && ((IAST) x).forAll(y -> y.isNumericArgument())));
   }
 
   /** {@inheritDoc} */
@@ -5188,9 +5174,52 @@ public abstract class AbstractAST implements IASTMutable {
       }
       return result;
     } catch (ArgumentTypeException rex) {
-
+      //
     }
     return null;
+  }
+
+  public byte[][] toByteMatrix() {
+    int[] dim = isMatrix();
+    if (dim == null) {
+      return null;
+    }
+    byte[][] result = new byte[dim[0]][dim[1]];
+    int n;
+    for (int i = 1; i <= dim[0]; i++) {
+      IAST row = (IAST) get(i);
+      for (int j = 1; j <= dim[1]; j++) {
+        n = row.get(j).toIntDefault();
+        if (n >= 0 && n < 256) {
+          result[i - 1][j - 1] = (byte) n;
+        } else {
+          return null;
+        }
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public int[][] toIntMatrix() {
+    int[] dim = isMatrix();
+    if (dim == null) {
+      return null;
+    }
+    int[][] result = new int[dim[0]][dim[1]];
+    int n;
+    for (int i = 1; i <= dim[0]; i++) {
+      IAST row = (IAST) get(i);
+      for (int j = 1; j <= dim[1]; j++) {
+        n = row.get(j).toIntDefault();
+        if (n != Integer.MIN_VALUE) {
+          result[i - 1][j - 1] = n;
+        } else {
+          return null;
+        }
+      }
+    }
+    return result;
   }
 
   /** {@inheritDoc} */

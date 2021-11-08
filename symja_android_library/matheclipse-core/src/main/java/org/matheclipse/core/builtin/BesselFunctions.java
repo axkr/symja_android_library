@@ -518,9 +518,7 @@ public class BesselFunctions {
       }
       if (n.isNumber()
           && //
-          (z.isDirectedInfinity(F.CI)
-              || //
-              z.isDirectedInfinity(F.CNI))) {
+          (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI))) {
         return F.C0;
       }
       if (engine.isDoubleMode()) {
@@ -615,9 +613,7 @@ public class BesselFunctions {
       }
       if (n.isNumber()
           && //
-          (z.isDirectedInfinity(F.CI)
-              || //
-              z.isDirectedInfinity(F.CNI))) {
+          (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI))) {
         return F.C0;
       }
       if (engine.isDoubleMode()) {
@@ -713,9 +709,7 @@ public class BesselFunctions {
       }
       if (n.isNumber()
           && //
-          (z.isInfinity()
-              || //
-              z.isNegativeInfinity())) {
+          (z.isInfinity() || z.isNegativeInfinity())) {
         return F.C0;
       }
       if (engine.isDoubleMode()) {

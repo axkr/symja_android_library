@@ -77,9 +77,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
     }
     if (ast.arg3().isList()) {
       final IAST tRangeList = (IAST) ast.arg3();
-      if (!(tRangeList.isAST2()
-          || //
-          tRangeList.isAST3())) {
+      if (!(tRangeList.isAST2() || tRangeList.isAST3())) {
         return F.NIL;
       }
       try {

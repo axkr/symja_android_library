@@ -416,8 +416,7 @@ public class GammaJS {
     Complex p = Complex.ONE;
     int i = 1;
     while (Math.abs(p.getReal() / i) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-        || //
-        Math.abs(p.getImaginary() / i) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+        || Math.abs(p.getImaginary() / i) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
       p = p.multiply(x).divide(i);
       s = s.add(p.divide(i));
       i++;

@@ -905,9 +905,7 @@ public class Pods {
           numExpr = inExpr.isAST(S.N) ? inExpr : F.N(inExpr);
           evaledNumExpr = engine.evaluate(F.N(outExpr));
         }
-        if (outExpr.isNumber()
-            || //
-            outExpr.isQuantity()) {
+        if (outExpr.isNumber() || outExpr.isQuantity()) {
           if (outExpr.isInteger()) {
             numpods += integerPods(podsArray, inExpr, (IInteger) outExpr, formats, engine);
             resultStatistics(queryresult, error, numpods, podsArray);
@@ -921,9 +919,7 @@ public class Pods {
 
             if (numExpr.isPresent()
                 && //
-                (evaledNumExpr.isInexactNumber()
-                    || //
-                    evaledNumExpr.isQuantity())) {
+                (evaledNumExpr.isInexactNumber() || evaledNumExpr.isQuantity())) {
               addSymjaPod(
                   podsArray, numExpr, evaledNumExpr, "Decimal form", "Numeric", formats, engine);
               numpods++;
@@ -1000,9 +996,7 @@ public class Pods {
 
           if (numExpr.isPresent()
               && //
-              (evaledNumExpr.isInexactNumber()
-                  || //
-                  evaledNumExpr.isQuantity())) {
+              (evaledNumExpr.isInexactNumber() || evaledNumExpr.isQuantity())) {
             addSymjaPod(
                 podsArray, numExpr, evaledNumExpr, "Decimal form", "Numeric", formats, engine);
             numpods++;
@@ -1044,10 +1038,8 @@ public class Pods {
               if (outExpr.isString()) {
                 int mimeTyp = ((IStringX) outExpr).getMimeType();
                 if (mimeTyp == IStringX.APPLICATION_SYMJA
-                    || //
-                    mimeTyp == IStringX.APPLICATION_JAVA
-                    || //
-                    mimeTyp == IStringX.APPLICATION_JAVASCRIPT) {
+                    || mimeTyp == IStringX.APPLICATION_JAVA
+                    || mimeTyp == IStringX.APPLICATION_JAVASCRIPT) {
                   String html = toHighligthedCode(outExpr.toString());
                   addSymjaPod(
                       podsArray, inExpr, F.NIL, html, "Result", "String form", HTML, engine);
@@ -1979,9 +1971,7 @@ public class Pods {
               int i = 1;
               while (i < specialFunction.size()) {
                 String argStr = specialFunction.get(i).toString().toLowerCase();
-                if (argStr.equalsIgnoreCase("by")
-                    || //
-                    argStr.equalsIgnoreCase("for")) {
+                if (argStr.equalsIgnoreCase("by") || argStr.equalsIgnoreCase("for")) {
                   specialFunction.remove(i);
                   continue;
                 }
