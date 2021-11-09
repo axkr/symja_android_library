@@ -39,6 +39,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.uni-mannheim.rz.krum</groupId>
+			<artifactId>jas</artifactId>
+		</dependency>
+		
+		<dependency>
 			<groupId>org.apfloat</groupId>
 			<artifactId>apfloat</artifactId>
 		</dependency>
@@ -62,7 +67,7 @@
 			<groupId>org.hipparchus</groupId>
 			<artifactId>hipparchus-ode</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.jgrapht</groupId>
 			<artifactId>jgrapht-io</artifactId>
