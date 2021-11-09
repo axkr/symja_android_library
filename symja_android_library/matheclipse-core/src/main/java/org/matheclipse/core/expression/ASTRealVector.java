@@ -333,7 +333,7 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
 
   @Override
   public final IExpr head() {
-    return S.$RealVector;
+    return S.List;
   }
 
   /** {@inheritDoc} */
@@ -379,26 +379,26 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
   /** {@inheritDoc} */
   @Override
   public boolean isSameHead(ISymbol head) {
-    return S.$RealVector == head;
+    return S.List == head;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isSameHead(ISymbol head, int length) {
-    return S.$RealVector.equals(head) && vector.getDimension() == length - 1;
+    return S.List == head && vector.getDimension() == length - 1;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isSameHead(ISymbol head, int minLength, int maxLength) {
     int size = vector.getDimension() + 1;
-    return S.$RealVector.equals(head) && minLength <= size && maxLength >= size;
+    return S.List == head && minLength <= size && maxLength >= size;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isSameHeadSizeGE(ISymbol head, int length) {
-    return S.$RealVector == head && length <= vector.getDimension() + 1;
+    return S.List == head && length <= vector.getDimension() + 1;
   }
 
   /** {@inheritDoc} */

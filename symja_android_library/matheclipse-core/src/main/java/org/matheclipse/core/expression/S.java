@@ -10275,11 +10275,6 @@ public class S {
    */
   public static final IBuiltInSymbol Zeta = F.initFinalSymbol("Zeta", ID.Zeta);
 
-  public static final ISymbol $RealVector =
-      initFinalHiddenSymbol(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? "$realvector" : "$RealVector");
-  public static final ISymbol $RealMatrix =
-      initFinalHiddenSymbol(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? "$realmatrix" : "$RealMatrix");
-
   /** Used to represent a formal parameter <code>a</code> that will never be assigned a value. */
   public static final ISymbol a = initFinalHiddenSymbol("a");
   /** Used to represent a formal parameter <code>b</code> that will never be assigned a value. */

@@ -343,7 +343,7 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
 
   @Override
   public final IExpr head() {
-    return S.$RealMatrix;
+    return S.List;
   }
 
   /** {@inheritDoc} */
@@ -406,26 +406,26 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
   /** {@inheritDoc} */
   @Override
   public boolean isSameHead(ISymbol head) {
-    return S.$RealMatrix == head;
+    return S.List == head;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isSameHead(ISymbol head, int length) {
-    return S.$RealMatrix == head && matrix.getRowDimension() == length - 1;
+    return S.List == head && matrix.getRowDimension() == length - 1;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isSameHead(ISymbol head, int minLength, int maxLength) {
     int size = matrix.getRowDimension() + 1;
-    return S.$RealMatrix.equals(head) && minLength <= size && maxLength >= size;
+    return S.List == head && minLength <= size && maxLength >= size;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isSameHeadSizeGE(ISymbol head, int length) {
-    return S.$RealMatrix == head && length <= matrix.getRowDimension() + 1;
+    return S.List == head && length <= matrix.getRowDimension() + 1;
   }
 
   /** {@inheritDoc} */

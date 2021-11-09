@@ -31,7 +31,7 @@ public class SymjifyTestCase extends AbstractTestCase {
     IExpr expr = F.symjify(new double[][] {{1.0, 2.1, 3.5}, {1.1, 2.2, 3.6}});
     assertEquals(
         expr.fullFormString(), //
-        "$realmatrix(List(1.0`, 2.1`, 3.5`), List(1.1`, 2.2`, 3.6`))");
+        "List(List(1.0`, 2.1`, 3.5`), List(1.1`, 2.2`, 3.6`))");
     assertEquals(
         expr.toString(), //
         "\n{{1.0,2.1,3.5},\n" + " {1.1,2.2,3.6}}");

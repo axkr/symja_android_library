@@ -1980,8 +1980,8 @@ public class TeXFormFactory {
     operTab.put(S.Integrate, new Integrate());
     operTab.put(S.Limit, new Limit());
     operTab.put(S.List, new List());
-    operTab.put(S.$RealMatrix, new List());
-    operTab.put(S.$RealVector, new List());
+    //    operTab.put(S.$RealMatrix, new List());
+    //    operTab.put(S.$RealVector, new List());
     operTab.put(S.MatrixForm, new MatrixForm());
     operTab.put(S.TableForm, new TableForm());
     operTab.put(S.Parenthesis, new Parenthesis());
