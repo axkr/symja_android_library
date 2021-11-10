@@ -18350,6 +18350,9 @@ public class LowercaseTestCase extends AbstractTestCase {
         "InverseFunction(#*a^# &)", //
         "ProductLog(Log(a)*#1)/Log(a)&");
     check(
+        "InverseFunction(c*#*a^# &)", //
+        "ProductLog((Log(a)*#1)/c)/Log(a)&");
+    check(
         "InverseFunction(Composition(f, g, h))[x]", //
         "InverseFunction(h)[InverseFunction(g)[InverseFunction(f)[x]]]");
     check(

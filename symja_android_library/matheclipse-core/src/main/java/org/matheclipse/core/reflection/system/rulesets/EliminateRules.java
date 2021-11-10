@@ -10,9 +10,9 @@ import org.matheclipse.core.patternmatching.Matcher;
  */
 public interface EliminateRules {
 public static Matcher init1() {
-  Matcher matcher = new Matcher();    // #1*a_^#1:=ProductLog(Log(a)*#1)/Log(a)
-matcher.caseOf(Times(Slot1,Power(a_,Slot1)),
-      Times(Power(Log(a),CN1),ProductLog(Times(Log(a),Slot1))));
+  Matcher matcher = new Matcher();    // #1*a_^#1*z_.:=ProductLog((Log(a)*#1)/z)/Log(a)/;FreeQ({a,z},#1)
+matcher.caseOf(Times(Slot1,Power(a_,Slot1),z_DEFAULT),
+      Condition(Times(Power(Log(a),CN1),ProductLog(Times(Power(z,CN1),Log(a),Slot1))),FreeQ(List(a,z),Slot1)));
 return matcher;
 }
 }
