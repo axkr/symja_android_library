@@ -547,6 +547,8 @@ public class IOFunctions {
     "Heads `1` and `2` are expected to be the same.", //
     "idim",
     "`1` and `2` must have the same length.", //
+    "ifun",
+    "Inverse functions are being used. Values may be lost for multivalued inverses.", //
     "ilsmn",
     "Single or list of non-negative machine-sized integers expected at position `1` of `2`.", //
     "ilsnn",

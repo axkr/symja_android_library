@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.Algebra;
@@ -28,7 +29,9 @@ import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
+import org.matheclipse.core.reflection.system.rulesets.EliminateRules;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
+import com.google.common.base.Suppliers;
 
 /**
  *
@@ -59,8 +62,14 @@ import org.matheclipse.core.visit.AbstractVisitorBoolean;
  * x==2+z
  * </pre>
  */
-public class Eliminate extends AbstractFunctionEvaluator {
+public class Eliminate extends AbstractFunctionEvaluator implements EliminateRules {
   private static final Logger LOGGER = LogManager.getLogger();
+
+  private static Supplier<Matcher> INVERSE_MATCHER;
+
+  private static Matcher inverseMatcher() {
+    return INVERSE_MATCHER.get();
+  }
 
   private static class VariableCounterVisitor extends AbstractVisitorBoolean
       implements Comparable<VariableCounterVisitor> {
@@ -349,6 +358,12 @@ public class Eliminate extends AbstractFunctionEvaluator {
         }
       } else {
         int size = ast.size();
+        if (size > 2) {
+          IExpr result = inverseMatcher().apply(ast);
+          if (result.isPresent()) {
+            return resultWithIfunMessage(result, engine);
+          }
+        }
         if (ast.isPlus()) {
           // a + b + c....
           IASTAppendable rest = F.PlusAlloc(size);
@@ -417,6 +432,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
           IExpr exponent = ast.exponent();
           if (exponent.isFree(predicate, true)) {
             // f(x) ^ a
+            printIfunMessage(engine);
             IExpr value = F.Power(exprWithoutVariable, F.Divide(F.C1, exponent));
             return extractVariableRecursive(base, value, predicate, x, engine);
           } else if (base.isFree(predicate, true)) {
@@ -439,6 +455,28 @@ public class Eliminate extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Print message "Inverse functions are being used. Values may be lost for multivalued inverses."
+   * and return the result;
+   *
+   * @param result
+   * @param engine
+   * @return
+   */
+  private static IExpr resultWithIfunMessage(IExpr result, EvalEngine engine) {
+    printIfunMessage(engine);
+    return result;
+  }
+
+  /**
+   * Print message "Inverse functions are being used. Values may be lost for multivalued inverses."
+   *
+   * @param engine
+   */
+  private static void printIfunMessage(EvalEngine engine) {
+    IOFunctions.printMessage(S.InverseFunction, "ifun", F.CEmptyList, engine);
   }
 
   /**
@@ -605,5 +643,9 @@ public class Eliminate extends AbstractFunctionEvaluator {
     Collections.sort(analyzerList);
 
     return eliminateOneVariable(analyzerList, slot, engine);
+  }
+
+  public void setUp(final ISymbol newSymbol) {
+    INVERSE_MATCHER = Suppliers.memoize(EliminateRules::init1);
   }
 }
