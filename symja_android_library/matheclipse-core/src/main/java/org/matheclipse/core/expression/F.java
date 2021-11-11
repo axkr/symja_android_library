@@ -3411,6 +3411,10 @@ public class F extends S {
     return new AST2(ElementData, name, property);
   }
 
+  public static IAST Eliminate(final IExpr a0, final IExpr a1) {
+    return new AST2(Eliminate, a0, a1);
+  }
+
   public static IAST EllipticE(final IExpr m) {
     return new AST1(EllipticE, m);
   }

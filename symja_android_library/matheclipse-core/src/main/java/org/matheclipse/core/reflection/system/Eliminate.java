@@ -66,9 +66,14 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
   private static final Logger LOGGER = LogManager.getLogger();
 
   private static Supplier<Matcher> INVERSE_MATCHER;
+  private static Supplier<Matcher> ZERO_MATCHER;
 
   private static Matcher inverseMatcher() {
     return INVERSE_MATCHER.get();
+  }
+
+  private static Matcher zeroMatcher() {
+    return ZERO_MATCHER.get();
   }
 
   private static class VariableCounterVisitor extends AbstractVisitorBoolean
@@ -359,9 +364,15 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       } else {
         int size = ast.size();
         if (size > 2) {
-          IExpr result = inverseMatcher().apply(ast);
+          if (exprWithoutVariable.isZero()) {
+            IExpr result = zeroMatcher().apply(F.binaryAST2(elimzero, ast, x));
+            if (result.isPresent()) {
+              return resultWithIfunMessage(result, x, exprWithoutVariable, engine);
+            }
+          }
+          IExpr result = inverseMatcher().apply(F.binaryAST2(eliminv, ast, x));
           if (result.isPresent()) {
-            return resultWithIfunMessage(result, engine);
+            return resultWithIfunMessage(result, x, exprWithoutVariable, engine);
           }
         }
         if (ast.isPlus()) {
@@ -378,13 +389,6 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             }
           }
           if (plusClone.isAST0()) {
-            // no change for given expression
-            if (ast.size() == 3) {
-              IExpr temp = matchSpecialExpressions(ast, exprWithoutVariable, x);
-              if (temp.isPresent()) {
-                return temp;
-              }
-            }
             return F.NIL;
           }
           IExpr value = engine.evaluate(F.Subtract(exprWithoutVariable, plusClone));
@@ -459,15 +463,18 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
 
   /**
    * Print message "Inverse functions are being used. Values may be lost for multivalued inverses."
-   * and return the result;
+   * and return the {@code result} by substituting {@code subExpr} with {@code replacementExpr}.
    *
    * @param result
+   * @param subExpr
+   * @param replacementExpr
    * @param engine
    * @return
    */
-  private static IExpr resultWithIfunMessage(IExpr result, EvalEngine engine) {
+  private static IExpr resultWithIfunMessage(
+      IExpr result, IExpr subExpr, IExpr replacementExpr, EvalEngine engine) {
     printIfunMessage(engine);
-    return result;
+    return F.subst(result, subExpr, replacementExpr);
   }
 
   /**
@@ -477,39 +484,6 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    */
   private static void printIfunMessage(EvalEngine engine) {
     IOFunctions.printMessage(S.InverseFunction, "ifun", F.CEmptyList, engine);
-  }
-
-  /**
-   * Match <code>a_.*variable^n_+b_.*variable^m_</code> to <code>
-   * E^(((-I)*Pi + Log(a) - Log(b))/(m - n)) /; FreeQ(a,x)&&FreeQ(b,x)&&FreeQ(n,x)&&FreeQ(m,x)
-   * </code>
-   *
-   * @param ast
-   * @param x
-   * @return
-   */
-  private static IExpr matchSpecialExpressions(IAST ast, IExpr exprWithoutVariable, IExpr x) {
-    if (exprWithoutVariable.isZero()) {
-      final Matcher matcher = initMatcher(x);
-      return matcher.replaceAll(ast);
-    }
-    return F.NIL;
-  }
-
-  private static Matcher initMatcher(IExpr x) {
-    final Matcher matcher = new Matcher();
-    // match a_.*variable^n_.+b_.*variable^m_ to E^(((-I)*Pi + Log(a) - Log(b))/(m - n))
-    matcher.caseOf(
-        F.Plus(
-            F.Times(F.b_DEFAULT, F.Power(x, F.m_)),
-            F.Times(F.a_DEFAULT, F.Power(x, F.n_DEFAULT))), //
-        F.Condition(
-            F.Exp(
-                F.Times(
-                    F.Power(F.Plus(S.m, F.Negate(S.n)), -1),
-                    F.Plus(F.Times(F.CNI, S.Pi), F.Log(S.a), F.Negate(F.Log(S.b))))),
-            F.And(F.FreeQ(S.a, x), F.FreeQ(S.b, x), F.FreeQ(S.n, x), F.FreeQ(S.m, x))));
-    return matcher;
   }
 
   public Eliminate() {}
@@ -647,5 +621,6 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
 
   public void setUp(final ISymbol newSymbol) {
     INVERSE_MATCHER = Suppliers.memoize(EliminateRules::init1);
+    ZERO_MATCHER = Suppliers.memoize(EliminateRules::init2);
   }
 }

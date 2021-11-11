@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system.rulesets;
 
 import static org.matheclipse.core.expression.F.*;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.patternmatching.Matcher;
 
@@ -9,10 +10,20 @@ import org.matheclipse.core.patternmatching.Matcher;
  * <p>See GIT repository at: <a href="https://github.com/axkr/symja_android_library">github.com/axkr/symja_android_library under the tools directory</a>.</p>
  */
 public interface EliminateRules {
+
+  public final static ISymbol eliminv = Dummy("eliminv");
 public static Matcher init1() {
-  Matcher matcher = new Matcher();    // #1*a_^#1*z_.:=ProductLog((Log(a)*#1)/z)/Log(a)/;FreeQ({a,z},#1)
-matcher.caseOf(Times(Slot1,Power(a_,Slot1),z_DEFAULT),
-      Condition(Times(Power(Log(a),CN1),ProductLog(Times(Power(z,CN1),Log(a),Slot1))),FreeQ(List(a,z),Slot1)));
+  Matcher matcher = new Matcher();    // eliminv(a_^x_*x_*z_.,x_):=ProductLog((x*Log(a))/z)/Log(a)/;FreeQ({a,z},x)
+matcher.caseOf($(eliminv,Times(Power(a_,x_),x_,z_DEFAULT),x_),
+      Condition(Times(Power(Log(a),CN1),ProductLog(Times(x,Power(z,CN1),Log(a)))),FreeQ(List(a,z),x)));
+return matcher;
+}
+
+  public final static ISymbol elimzero = Dummy("elimzero");
+public static Matcher init2() {
+  Matcher matcher = new Matcher();    // elimzero(b_.*x_^m_+a_.*x_^n_.,x_):=E^((-I*Pi+Log(a)-Log(b))/(m-n))/;FreeQ(a,x)&&FreeQ(b,x)&&FreeQ(n,x)&&FreeQ(m,x)
+matcher.caseOf($(elimzero,Plus(Times(b_DEFAULT,Power(x_,m_)),Times(a_DEFAULT,Power(x_,n_DEFAULT))),x_),
+      Condition(Exp(Times(Power(Subtract(m,n),CN1),Plus(Times(CNI,Pi),Log(a),Negate(Log(b))))),And(FreeQ(a,x),FreeQ(b,x),FreeQ(n,x),FreeQ(m,x))));
 return matcher;
 }
 }

@@ -11066,6 +11066,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFactor() {
+    //    for (int i = 0; i < 2_000_000; i++) {
+    //      check(
+    //          "Factor(a*Cosh(x) + I*b*Cosh(x) - I*a*Sinh(x) + b*Sinh(x))", //
+    //          "(-I*a+b)*(I*Cosh(x)+Sinh(x))");
+    //    }
+
     // Use heuristic?
     check(
         "Factor(x^34 + x^17 + 1)", //
@@ -18343,15 +18349,24 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testInverseFunction() {
+
+    check(
+        "Solve((a0*x^p+a1*x^q)==0,x)", //
+        "{{x->E^((-I*Pi+Log(a0)-Log(a1))/(-p+q))}}");
+    check(
+        "Solve(c*x*a^x==12,x)", //
+        "{{x->ProductLog((12*Log(a))/c)/Log(a)}}");
+    
+    check(
+        "InverseFunction(#*a^# &)", //
+        "ProductLog(#1*Log(a))/Log(a)&");
+    check(
+        "InverseFunction(c*#*a^# &)", //
+        "ProductLog((#1*Log(a))/c)/Log(a)&");
+
     check(
         "InverseFunction(#^p &)", //
         "#1^(1/p)&");
-    check(
-        "InverseFunction(#*a^# &)", //
-        "ProductLog(Log(a)*#1)/Log(a)&");
-    check(
-        "InverseFunction(c*#*a^# &)", //
-        "ProductLog((Log(a)*#1)/c)/Log(a)&");
     check(
         "InverseFunction(Composition(f, g, h))[x]", //
         "InverseFunction(h)[InverseFunction(g)[InverseFunction(f)[x]]]");
