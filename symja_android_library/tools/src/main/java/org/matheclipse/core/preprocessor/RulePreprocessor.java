@@ -34,6 +34,7 @@ public class RulePreprocessor {
   static final String HEADER =
       "\n"
           + "import static org.matheclipse.core.expression.F.*;\n"
+          + "import org.matheclipse.core.interfaces.ISymbol;\n"
           + "import org.matheclipse.core.interfaces.IAST;\n"
           + "import org.matheclipse.core.patternmatching.Matcher;\n"
           + "\n"
@@ -284,6 +285,7 @@ public class RulePreprocessor {
       IExpr expr, String rulePostfix, final PrintWriter out, String symbolName, EvalEngine engine) {
     boolean last;
     StringBuilder buffer = new StringBuilder();
+    StringBuilder symbolBuffer = new StringBuilder();
     // ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
     if (expr.isAST()) {
       IAST list = (IAST) expr;
@@ -291,7 +293,11 @@ public class RulePreprocessor {
       for (int i = 1; i < list.size(); i++) {
         last = i == (list.argSize());
         expr = list.get(i);
-        if (expr.isAST(S.SetDelayed, 3)) {
+        if (expr.isSymbol()) {
+          String name = expr.toString();
+          symbolBuffer.append(
+              "\n  public final static ISymbol " + name + " = Dummy(\"" + name + "\");\n");
+        } else if (expr.isAST(S.SetDelayed, 3)) {
           IASTMutable ast = ((IAST) expr).copy();
           if (ast.arg1().isAST()) {
             ast.set(1, engine.evalHoldPattern((IAST) ast.arg1()));
@@ -312,7 +318,11 @@ public class RulePreprocessor {
         }
       }
     } else {
-      if (expr.isAST(S.SetDelayed, 3)) {
+      if (expr.isSymbol()) {
+        String name = expr.toString();
+        symbolBuffer.append(
+            "\n  public final static ISymbol " + name + " = Dummy(\"" + name + "\");\n");
+      } else if (expr.isAST(S.SetDelayed, 3)) {
         IAST ast = (IAST) expr;
         buffer.append("matcher.caseOf(");
         appendSetDelayedToMatcher(ast, buffer, false, true);
@@ -324,6 +334,8 @@ public class RulePreprocessor {
         throw new UnsupportedOperationException();
       }
     }
+
+    out.print(symbolBuffer.toString());
     out.print("public static Matcher init");
     out.print(rulePostfix);
     out.print("() {\n");
