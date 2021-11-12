@@ -37,6 +37,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public final IBuiltInSymbol topHead() {
+      return S.List;
+    }
+
+    @Override
     public IASTMutable copy() {
       return new List(arg1, arg2);
     }
@@ -349,6 +354,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public final IBuiltInSymbol topHead() {
+      return S.Plus;
+    }
+
+    @Override
     public IASTMutable copy() {
       return new Plus(arg1, arg2);
     }
@@ -531,6 +541,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public final IBuiltInSymbol head() {
+      return S.Times;
+    }
+
+    @Override
+    public final IBuiltInSymbol topHead() {
       return S.Times;
     }
 
@@ -1136,9 +1151,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public IASTMutable setAtCopy(int i, IExpr expr) {
     if (i == 0) {
-      IASTMutable ast = new AST2(head(), arg1(), arg2());
-      ast.set(i, expr);
-      return ast;
+      return new AST2(expr, arg1(), arg2());
     }
     IASTMutable ast = copy();
     ast.set(i, expr);
@@ -1185,7 +1198,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   }
 
   @Override
-  public final ISymbol topHead() {
+  public ISymbol topHead() {
     return head();
   }
 

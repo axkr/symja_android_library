@@ -1047,42 +1047,36 @@ public class OutputFormFactory {
       throws IOException {
     if (o instanceof INum) {
       convertDouble(buf, (INum) o, precedence, caller);
-      return;
-    }
-    if (o instanceof IComplexNum) {
+    } else if (o instanceof IComplexNum) {
       convertDoubleComplex(buf, (IComplexNum) o, precedence, caller);
-      return;
-    }
-    if (o instanceof IInteger) {
+    } else if (o instanceof IInteger) {
       convertInteger(buf, (IInteger) o, precedence, caller);
-      return;
-    }
-    if (o instanceof IFraction) {
+    } else if (o instanceof IFraction) {
       convertFraction(buf, (IFraction) o, precedence, caller);
-      return;
-    }
-    if (o instanceof IComplex) {
+    } else if (o instanceof IComplex) {
       convertComplex(buf, (IComplex) o, precedence, caller);
+    } else {
+      LOGGER.error("OutputFormFactory.convertNumber() failed");
     }
   }
 
   private void convert(final Appendable buf, final IExpr o, final int precedence, boolean isASTHead)
       throws IOException {
     if (o instanceof IAST) {
-      if (o.isDataset()) {
-        // TODO improve output
-        buf.append(o.toString());
-        return;
-      }
-      if (o.isAssociation()) {
-        convertAssociation(buf, (IAssociation) o);
-        return;
-      }
       final IAST list = (IAST) o;
       if (!list.isPresent()) {
         append(buf, "NIL");
         return;
       }
+      if (o.isDataset()) {
+        // TODO improve output
+        buf.append(o.toString());
+        return;
+      } else if (o.isAssociation()) {
+        convertAssociation(buf, (IAssociation) o);
+        return;
+      }
+
       IExpr header = list.head();
       if (!header.isSymbol()) {
         // print expressions like: f(#1, y)& [x]
@@ -1298,8 +1292,8 @@ public class OutputFormFactory {
                   append(buf, "(");
                 }
                 if (isZeroRealPart) {
-                	buf.append("I*");
-                    convert(buf, list.arg2(), Precedence.TIMES, false);
+                  buf.append("I*");
+                  convert(buf, list.arg2(), Precedence.TIMES, false);
                 } else {
                   convert(buf, list.arg1(), Precedence.PLUS, false);
                   buf.append("+I*");
@@ -1339,30 +1333,19 @@ public class OutputFormFactory {
       }
 
       convertAST(buf, list);
-      return;
-    }
-    if (o instanceof ISignedNumber) {
+    } else if (o instanceof ISignedNumber) {
       convertNumber(buf, (ISignedNumber) o, precedence, NO_PLUS_CALL);
-      return;
-    }
-    if (o instanceof IComplexNum) {
+    } else if (o instanceof IComplexNum) {
       convertDoubleComplex(buf, (IComplexNum) o, precedence, NO_PLUS_CALL);
-      return;
-    }
-    if (o instanceof IComplex) {
+    } else if (o instanceof IComplex) {
       convertComplex(buf, (IComplex) o, precedence, NO_PLUS_CALL);
-      return;
-    }
-    if (o instanceof ISymbol) {
+    } else if (o instanceof ISymbol) {
       convertSymbol(buf, (ISymbol) o);
-      return;
-    }
-    if (o instanceof IPatternObject) {
+    } else if (o instanceof IPatternObject) {
       convertPattern(buf, (IPatternObject) o);
-      return;
+    } else {
+      convertString(buf, o.toString());
     }
-
-    convertString(buf, o.toString());
   }
 
   private void convertAssociation(final Appendable buf, final IAssociation association)
@@ -1736,17 +1719,6 @@ public class OutputFormFactory {
     }
     return call;
   }
-
-  // public void convertFunctionArgs(final Appendable buf, final IAST list) throws IOException {
-  // append(buf, "[");
-  // for (int i = 1; i < list.size(); i++) {
-  // convert(buf, list.get(i), Integer.MIN_VALUE, false);
-  // if (i < list.argSize()) {
-  // append(buf, ",");
-  // }
-  // }
-  // append(buf, "]");
-  // }
 
   /**
    * Write a function into the given <code>Appendable</code>.

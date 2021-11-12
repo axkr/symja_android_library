@@ -405,10 +405,24 @@ public class VisitorLevelSpecification extends AbstractVisitor {
     return result[0];
   }
 
+  /**
+   * Can be overridden in derived visitors.
+   *
+   * @param assoc an association
+   * @param x current rule of the association
+   * @return
+   */
   public IAssociation createResult(IAssociation assoc, final IExpr x) {
     return assoc.copy();
   }
 
+  /**
+   * Can be overridden in derived visitors.
+   *
+   * @param ast
+   * @param x
+   * @return
+   */
   public IASTMutable createResult(IASTMutable ast, final IExpr x) {
     return ast.copyAppendable();
   }

@@ -738,9 +738,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public IASTMutable setAtCopy(int i, IExpr expr) {
     if (i == 0) {
-      IASTMutable ast = new AST1(head(), arg1());
-      ast.set(i, expr);
-      return ast;
+      return new AST1(expr, arg1());
     }
     IASTMutable ast = copy();
     ast.set(i, expr);

@@ -601,8 +601,6 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
       return null;
     }
 
-    int queryOffset = root.end;
-
     // If a non-root root was passed in, it might be the node you are looking for.
     if (root.sequence != null) {
       int matches = sequencer.matches(root.sequence, 0, query, 0, root.end);
@@ -615,13 +613,13 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
       }
     }
 
+    int queryOffset = root.end;
     TrieNode<S, T> node = root.children.get(sequencer.hashOf(query, queryOffset));
 
     while (node != null) {
-      final S nodeSequence = node.sequence;
       final int nodeLength = node.end - node.start;
       final int max = Math.min(nodeLength, queryLength - queryOffset);
-      final int matches = sequencer.matches(nodeSequence, node.start, query, queryOffset, max);
+      final int matches = sequencer.matches(node.sequence, node.start, query, queryOffset, max);
 
       queryOffset += matches;
 

@@ -17,7 +17,6 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
@@ -699,20 +698,7 @@ public class Symbol implements ISymbol, Serializable {
     if (hasAssignedSymbolValue()) {
       IExpr temp = assignedValue();
       if (temp != null) {
-        EvalEngine engine = EvalEngine.get();
-        if ((engine.getRecursionLimit() > 0)
-            && (engine.getRecursionCounter() > engine.getRecursionLimit())) {
-          RecursionLimitExceeded.throwIt(engine.getRecursionLimit(), this);
-        }
-
-        engine.incRecursionCounter();
-        try {
-          if (temp.isNumericFunction(true) && temp != this) {
-            return true;
-          }
-        } finally {
-          engine.decRecursionCounter();
-        }
+        return temp != this && temp.isNumericFunction(true);
       }
     }
     return false;
