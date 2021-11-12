@@ -4217,6 +4217,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testClip() {
     check(
+        "Clip({1,2,{7},2.00001})", //
+        "{1,1,{1},1}");
+    check(
+        "Clip({1,2,{7},a})", //
+        "Clip({1,2,{7},a})");
+    check(
         "Clip(Tan(E),{-1/2,1/2})", //
         "Tan(E)");
     check(
@@ -7139,10 +7145,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
     check(
         "Delete(a+b+c,0)", //
-        "Sequence(a,b,c)");
+        "Identity(a,b,c)");
     check(
         "Delete({ }, 0)", //
-        "Sequence()");
+        "Identity()");
     // print Cannot delete position 5 in {a,b,c,d}
     check(
         "Delete({a, b, c, d}, 5)", //
@@ -15401,7 +15407,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "HoldComplete(g(1+2))");
     check(
         "ReleaseHold(HoldComplete(Sequence(1, 2)))", //
-        "Sequence(1,2)");
+        "Identity(1,2)");
 
     check(
         "g /: Hold(g(x_)) := x", //
@@ -18356,7 +18362,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Solve(c*x*a^x==12,x)", //
         "{{x->ProductLog((12*Log(a))/c)/Log(a)}}");
-    
+
     check(
         "InverseFunction(#*a^# &)", //
         "ProductLog(#1*Log(a))/Log(a)&");
@@ -18899,6 +18905,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testValues() {
+    check(
+        "Values(<|a :> 1 + 1, b -> Nothing|>, Hold)", //
+        "{Hold(1+1),Hold(Nothing)}");
+
     check(
         "Values(<|a -> x, b -> y|>)", //
         "{x,y}");
@@ -24060,6 +24070,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testNothing() {
     check(
+        "Nothing(a,b,c)", //
+        "Nothing");
+    check(
+        "{a, Nothing, Nothing, d}", //
+        "{a,d}");
+    check(
+        "bar(a, Nothing, baz(Nothing), c)", //
+        "bar(a,Nothing,baz(Nothing),c)");
+    check(
         "{1, 2, Nothing, 4, 5, Nothing}", //
         "{1,2,4,5}");
     check(
@@ -26191,10 +26210,10 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{a,b,c,d,e}");
     check(
         "Pick({1, 2, 3}, False)", //
-        "Sequence()");
+        "Identity()");
     check(
         "Pick(x, {1, 2, 3}, _?NumericQ)", //
-        "Sequence()");
+        "Identity()");
     check(
         "Pick(x, {1, 2, 3}, _List)", //
         "x");
@@ -32577,6 +32596,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testSequence() {
     check(
+        "Sequence(a,b,c)", //
+        "Identity(a,b,c)");
+    check(
         "{Sequence( ),a}", //
         "{a}");
     check(
@@ -32597,9 +32619,10 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "f({{a, b}, {c, d}, {a}}) /. List -> Sequence", //
         "f(a,b,c,d,a)");
+    // message Identity: Identity called with 3 arguments; 1 argument is expected.
     check(
         "f(a, b, c) /. f(x__) -> x", //
-        "Sequence(a,b,c)");
+        "Identity(a,b,c)");
     check(
         "{a, Sequence(b), c, Identity(d)}", //
         "{a,b,c,d}");
@@ -33745,13 +33768,13 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testSlotSequence() {
     check(
         "(## &)[a, b, c]", //
-        "Sequence(a,b,c)");
+        "Identity(a,b,c)");
     check(
         "(##2 &)[a, b, c]", //
-        "Sequence(b,c)");
+        "Identity(b,c)");
     check(
         "(##4 &)[a, b, c]", //
-        "Sequence()");
+        "Identity()");
     check(
         "(##5 &)[a, b, c]", //
         "##5");
