@@ -895,6 +895,12 @@ public final class Arithmetic {
         }
         return x;
       }
+      if (x.isInfinity()) {
+        return F.C1;
+      }
+      if (x.isNegativeInfinity()) {
+        return F.CN1;
+      }
       return F.NIL;
     }
 
@@ -947,12 +953,18 @@ public final class Arithmetic {
         }
         return x;
       }
+      if (x.isInfinity() && S.Greater.ofQ(x, max)) {
+        return vMax;
+      }
+      if (x.isNegativeInfinity() && S.Less.ofQ(x, min)) {
+        return vMin;
+      }
       return F.NIL;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
     }
   }
 

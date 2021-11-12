@@ -31,7 +31,7 @@ import org.matheclipse.core.tensor.qty.IUnit;
  * </code>
  */
 public class Iterator {
-  public static class ExprIterator implements IIterator<IExpr> {
+  private static class ExprIterator implements IIterator<IExpr> {
 
     IExpr count;
 
@@ -59,15 +59,13 @@ public class Iterator {
 
     final ISymbol variable;
 
-    IExpr variableValue;
-
     public ExprIterator(
         final ISymbol symbol,
-        final EvalEngine engine,
         final IExpr originalStart,
         final IExpr originalMaxCount,
         final IExpr originalStep,
-        boolean numericMode) {
+        boolean numericMode,
+        final EvalEngine engine) {
       this.variable = symbol;
       this.evalEngine = engine;
       this.originalLowerLimit = originalStart;
@@ -112,7 +110,7 @@ public class Iterator {
       if (maxCounterOrList == null) { // || (illegalIterator)) {
         throw NoEvalException.CONST;
       }
-      if ((maxCounterOrList.isDirectedInfinity()) || (count.isDirectedInfinity())) {
+      if ((maxCounterOrList.isDirectedInfinity()) || count.isDirectedInfinity()) {
         throw NoEvalException.CONST;
       }
       // if (count == null || count.isDirectedInfinity()) {
@@ -204,9 +202,6 @@ public class Iterator {
 
     @Override
     public boolean setUp() {
-      if (variable != null) {
-        variableValue = variable.assignedValue();
-      }
       lowerLimit = originalLowerLimit;
       if (!(originalLowerLimit.isReal())) {
         lowerLimit = evalEngine.evalWithoutNumericReset(originalLowerLimit);
@@ -258,7 +253,138 @@ public class Iterator {
     }
   }
 
-  public static class DoubleIterator implements IIterator<IExpr> {
+  /** Iterate over a list of values. */
+  private static class ExprListIterator implements IIterator<IExpr> {
+
+    IExpr count;
+
+    EvalEngine evalEngine;
+
+    IAST maxCounterOrList;
+
+    /**
+     * If <code>maxCounterOrList</code> is a list the <code>maxCounterOrListIndex</code> attribute
+     * points to the current element.
+     */
+    int maxCounterOrListIndex;
+
+    final IAST originalList;
+
+    final ISymbol variable;
+
+    /**
+     * Iterate over a list of values.
+     *
+     * @param symbol
+     * @param originalList
+     * @param engine
+     */
+    public ExprListIterator(
+        final ISymbol symbol, final IAST originalList, final EvalEngine engine) {
+      this.variable = symbol;
+      this.evalEngine = engine;
+      this.originalList = originalList;
+    }
+
+    @Override
+    public int allocHint() {
+      return 10;
+    }
+
+    @Override
+    public ISymbol getVariable() {
+      return variable;
+    }
+
+    /**
+     * Tests if this enumeration contains more elements.
+     *
+     * @return <code>true</code> if this enumeration contains more elements; <code>false</code>
+     *     otherwise.
+     */
+    @Override
+    public boolean hasNext() {
+      if (maxCounterOrList == null) { // || (illegalIterator)) {
+        throw NoEvalException.CONST;
+      }
+
+      if (maxCounterOrListIndex <= ((IAST) maxCounterOrList).size()) {
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public boolean isNumericFunction() {
+      return false;
+    }
+
+    @Override
+    public boolean isSetIterator() {
+      return variable != null;
+    }
+
+    @Override
+    public boolean isValidVariable() {
+      return variable != null;
+    }
+
+    /**
+     * Returns the next element of this enumeration.
+     *
+     * @return the next element of this enumeration.
+     */
+    @Override
+    public IExpr next() {
+      if (variable != null && variable != count) {
+        variable.assignValue(count, false);
+      }
+      final IExpr temp = count;
+      if (maxCounterOrList.isList()) {
+        if (maxCounterOrListIndex == ((IAST) maxCounterOrList).size()) {
+          maxCounterOrListIndex++;
+          return temp;
+        }
+        count = ((IAST) maxCounterOrList).get(maxCounterOrListIndex++);
+      }
+      return temp;
+    }
+
+    /** Not implemented; throws UnsupportedOperationException */
+    @Override
+    public void remove() throws UnsupportedOperationException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean setUp() {
+      maxCounterOrList = originalList;
+      maxCounterOrList = originalList.map(x -> evalEngine.evalWithoutNumericReset(x));
+      // points to first element in maxCounterOrList if it's a list
+      maxCounterOrListIndex = 1;
+
+      if (maxCounterOrListIndex < maxCounterOrList.size()) {
+        count = maxCounterOrList.get(maxCounterOrListIndex++);
+      } else {
+        return false;
+      }
+
+      if (variable != null && variable != count) {
+        variable.assignValue(count, false);
+      }
+      return true;
+    }
+
+    /** Method Declaration. */
+    @Override
+    public void tearDown() {
+      if (variable != null) {
+        variable.assignValue(null, false);
+      }
+    }
+  }
+
+  private static class DoubleIterator implements IIterator<IExpr> {
     double count;
 
     double lowerLimit;
@@ -399,7 +525,7 @@ public class Iterator {
     }
   }
 
-  public static class RationalIterator implements IIterator<IExpr> {
+  private static class RationalIterator implements IIterator<IExpr> {
     IRational count;
 
     IRational lowerLimit;
@@ -541,7 +667,7 @@ public class Iterator {
     }
   }
 
-  public static class QuantityIterator implements IIterator<IExpr> {
+  private static class QuantityIterator implements IIterator<IExpr> {
     IQuantity count;
 
     IQuantity lowerLimit;
@@ -723,7 +849,7 @@ public class Iterator {
     }
   }
 
-  public static class ISignedNumberIterator implements IIterator<IExpr> {
+  private static class ISignedNumberIterator implements IIterator<IExpr> {
     ISignedNumber count;
 
     ISignedNumber lowerLimit;
@@ -862,7 +988,7 @@ public class Iterator {
     }
   }
 
-  public static class IntIterator implements IIterator<IExpr> {
+  private static class IntIterator implements IIterator<IExpr> {
     int count;
 
     int lowerLimit;
@@ -1018,6 +1144,7 @@ public class Iterator {
    * Product()</code>
    *
    * @param list a list representing an iterator specification
+   * @param position
    * @param engine the evaluation engine
    * @return the iterator
    */
@@ -1094,6 +1221,9 @@ public class Iterator {
             // Raw object `1` cannot be used as an iterator.
             throw new ArgumentTypeException(
                 IOFunctions.getMessage("itraw", F.List(list.arg1()), EvalEngine.get()));
+          }
+          if (upperLimit.isList()) {
+            return new ExprListIterator(variable, (IAST) upperLimit, evalEngine);
           }
           if (upperLimit instanceof Num) {
             return new DoubleIterator(variable, 1.0, ((INum) upperLimit).doubleValue(), 1.0);
@@ -1231,7 +1361,7 @@ public class Iterator {
           // variable = null;
       }
 
-      return new ExprIterator(variable, evalEngine, lowerLimit, upperLimit, step, fNumericMode);
+      return new ExprIterator(variable, lowerLimit, upperLimit, step, fNumericMode, evalEngine);
     } catch (LimitException le) {
       throw le;
     } catch (ArgumentTypeException atex) {
@@ -1308,6 +1438,20 @@ public class Iterator {
           upperLimit = evalEngine.evalWithoutNumericReset(list.arg2());
           step = F.C1;
           variable = symbol;
+          if (upperLimit.isList()) {
+            if (variable != null) {
+              if (!variable.isVariable() || variable.isProtected()) {
+                // Cannot assign to raw object `1`.
+                throw new ArgumentTypeException(
+                    IOFunctions.getMessage("setraw", F.List(variable), EvalEngine.get()));
+              }
+            } else {
+              // Raw object `1` cannot be used as an iterator.
+              throw new ArgumentTypeException(
+                  IOFunctions.getMessage("itraw", F.List(list.arg1()), EvalEngine.get()));
+            }
+            return new ExprListIterator(variable, (IAST) upperLimit, evalEngine);
+          }
           if (lowerLimit instanceof Num && upperLimit instanceof Num) {
             return new DoubleIterator(
                 variable,
@@ -1382,7 +1526,7 @@ public class Iterator {
           step = null;
           variable = null;
       }
-      return new ExprIterator(variable, evalEngine, lowerLimit, upperLimit, step, fNumericMode);
+      return new ExprIterator(variable, lowerLimit, upperLimit, step, fNumericMode, evalEngine);
     } catch (LimitException le) {
       throw le;
     } catch (ArgumentTypeException atex) {

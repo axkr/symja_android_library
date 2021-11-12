@@ -4217,8 +4217,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testClip() {
     check(
-        "Clip({1,2,{7},2.00001})", //
-        "{1,1,{1},1}");
+        "Table(Clip(n,{-2,2}),{n,{-E,-1/17,1/7,2/3,5/2,Pi}})", //
+        "{-2,-1/17,1/7,2/3,2,2}");
+    check(
+        "Table(Clip(n,{-1/2,1/2}),{n,{-Infinity,-E,-1/17,1/7,2/3,5/2,Pi,Infinity}})", //
+        "{-1/2,-1/2,-1/17,1/7,1/2,1/2,1/2,1/2}");
+    check(
+        "Clip({-Infinity,1,2,{7},2.00001})", //
+        "{-1,1,1,{1},1}");
+    check(
+        "Clip(Infinity)", //
+        "1");
+
     check(
         "Clip({1,2,{7},a})", //
         "Clip({1,2,{7},a})");
