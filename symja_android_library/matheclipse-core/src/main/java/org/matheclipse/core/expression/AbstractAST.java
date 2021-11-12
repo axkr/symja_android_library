@@ -3629,7 +3629,7 @@ public abstract class AbstractAST implements IASTMutable {
     if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute()
         || (allowList && isList())) {
       // check if all arguments are &quot;numeric&quot;
-      return forAll(x -> x.isNumericFunction(allowList));
+      return forAll(x -> x.isNumericFunction(allowList), 1);
     }
     return false;
   }

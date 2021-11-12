@@ -4469,10 +4469,7 @@ public class F extends S {
     return temp;
   }
 
-  /**
-   * Initialize the complete System
-   *
-   */
+  /** Initialize the complete System */
   public static synchronized void initSymbols() {
 
     if (!isSystemStarted) {
@@ -8977,34 +8974,25 @@ public class F extends S {
     if (list.isEvalFlagOn(IAST.SEQUENCE_FLATTENED)) {
       return NIL;
     }
-    int attr = list.topHead().getAttributes();
-    final IASTAppendable[] seqResult = new IASTAppendable[] {NIL};
 
-    list.forEach(
-        (x, i) -> {
-          if (x.isSequence()) {
-            IAST seq = (IAST) x;
-            if (!seqResult[0].isPresent()) {
-              seqResult[0] = ast(list.head(), list.size() + seq.size());
-              seqResult[0].appendArgs(list, i);
+    final boolean isList = list.isList();
+    final int indx = list.indexOf(x -> x.isSequence() || (isList && x == Nothing));
+    if (indx > 0) {
+      final int extraSize = list.get(indx).size();
+      final IASTAppendable seqResult = F.ast(list.head(), list.size() + extraSize + 1);
+      seqResult.appendArgs(list, indx);
+      list.forEach(
+          indx,
+          list.size(),
+          x -> {
+            if (x.isSequence()) {
+              seqResult.appendArgs((IAST) x);
+            } else if (isList && x == Nothing) {
+            } else {
+              seqResult.append(x);
             }
-            seqResult[0].appendArgs(seq);
-            return;
-          } else if (x.equals(Nothing)) {
-            if ((ISymbol.HOLDALL & attr) == ISymbol.NOATTRIBUTE) {
-              if (!seqResult[0].isPresent()) {
-                seqResult[0] = ast(list.head(), list.size() - 1);
-                seqResult[0].appendArgs(list, i);
-              }
-              return;
-            }
-          }
-          if (seqResult[0].isPresent()) {
-            seqResult[0].append(x);
-          }
-        });
-    if (seqResult[0].isPresent()) {
-      return seqResult[0];
+          });
+      return seqResult;
     }
     list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
     return NIL;

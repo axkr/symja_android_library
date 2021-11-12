@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.RuleDelayed;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
+import java.util.ArrayDeque;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -63,12 +64,14 @@ public final class PatternMatching {
       S.Information.setEvaluator(new Information());
       S.Literal.setEvaluator(new Literal());
       S.MessageName.setEvaluator(new MessageName());
+      S.Nothing.setEvaluator(new Nothing());
       S.Optional.setEvaluator(Optional.CONST);
       S.Options.setEvaluator(new Options());
       S.OptionValue.setEvaluator(new OptionValue());
       S.ReleaseHold.setEvaluator(new ReleaseHold());
       S.Rule.setEvaluator(new Rule());
       S.RuleDelayed.setEvaluator(new RuleDelayed());
+      S.Sequence.setEvaluator(new Sequence());
       // if (!Config.FUZZY_PARSER) {
       S.Set.setEvaluator(new Set());
       S.SetDelayed.setEvaluator(new SetDelayed());
@@ -946,8 +949,11 @@ public final class PatternMatching {
               return arg1;
             }
             if (!arg1.isSymbol()) {
-              LOGGER.log(engine.getLogLevel(), "{}: symbol expected at position 1 instead of {}",
-                  ast.topHead(), arg1);
+              LOGGER.log(
+                  engine.getLogLevel(),
+                  "{}: symbol expected at position 1 instead of {}",
+                  ast.topHead(),
+                  arg1);
               return F.NIL;
             }
             symbol = (ISymbol) arg1;
@@ -999,8 +1005,11 @@ public final class PatternMatching {
       // Here we only validate the arguments
       // The assignment of the message is handled in the Set() function
       if (!ast.arg1().isSymbol()) {
-        LOGGER.log(engine.getLogLevel(), "{}: symbol expected at position 1 instead of {}",
-            ast.topHead(), ast.arg1());
+        LOGGER.log(
+            engine.getLogLevel(),
+            "{}: symbol expected at position 1 instead of {}",
+            ast.topHead(),
+            ast.arg1());
         return F.NIL;
       }
       if (ast.arg2().isString()) {
@@ -1054,6 +1063,14 @@ public final class PatternMatching {
     @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+  }
+
+  private static final class Nothing extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return S.Nothing;
     }
   }
 
@@ -1614,6 +1631,19 @@ public final class PatternMatching {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDREST | ISymbol.SEQUENCEHOLD);
+    }
+  }
+
+  private static final class Sequence extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      ArrayDeque<IExpr> stack = engine.getStack();
+      if (stack.size() == 1 && ast.head() == S.Sequence) {
+        return ast.setAtClone(0, S.Identity);
+      }
+
+      return F.NIL;
     }
   }
 
