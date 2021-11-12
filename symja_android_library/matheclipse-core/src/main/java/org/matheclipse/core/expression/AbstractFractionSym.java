@@ -158,26 +158,30 @@ public abstract class AbstractFractionSym implements IFraction {
           IOFunctions.getMessage(
               "infy", F.List(F.Rational(F.ZZ(newnum), F.ZZ(newdenom))), EvalEngine.get());
       throw new ArgumentTypeException(str);
+    } else if (newnum == 0) {
+      return ZERO;
+    } else if (newnum == newdenom) {
+      return ONE;
     }
     if (newnum > Long.MIN_VALUE && newdenom > Long.MIN_VALUE) {
-      if (newdenom != 1) {
-        long gcd2 = Math.abs(ArithmeticUtils.gcd(newnum, newdenom));
+      if (newnum != 1 && newdenom != 1) {
+        long gcd = Math.abs(ArithmeticUtils.gcd(newnum, newdenom));
         if (newdenom < 0) {
-          gcd2 = -gcd2;
+          gcd = -gcd;
         }
-        newnum /= gcd2;
-        newdenom /= gcd2;
+        newnum /= gcd;
+        newdenom /= gcd;
       }
 
       if (newdenom == 1) {
-        if (newnum == 0) {
-          return ZERO;
-        }
         if (newnum == 1) {
           return ONE;
         }
         if (newnum == -1) {
           return MONE;
+        }
+        if (newnum == 0) {
+          return ZERO;
         }
       }
 
