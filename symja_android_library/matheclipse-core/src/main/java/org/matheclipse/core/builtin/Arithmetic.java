@@ -63,6 +63,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
+import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -802,7 +803,11 @@ public final class Arithmetic {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr x = ast.first();
       if (ast.size() == 2) {
-        return clip(x);
+        try {
+          return clip(x);
+        } catch (ArgumentTypeStopException atsex) {
+          return F.NIL;
+        }
       }
 
       IExpr vMin = null;
@@ -827,15 +832,19 @@ public final class Arithmetic {
             vMin = min;
             vMax = max;
           }
-          if (min.isReal() && max.isReal()) {
-            return clip(x, (ISignedNumber) min, (ISignedNumber) max, vMin, vMax);
-          }
-          ISignedNumber minEvaled = min.evalReal();
-          if (minEvaled != null) {
-            ISignedNumber maxEvaled = max.evalReal();
-            if (maxEvaled != null) {
-              return clip(x, minEvaled, maxEvaled, vMin, vMax);
+          try {
+            if (min.isReal() && max.isReal()) {
+              return clip(x, (ISignedNumber) min, (ISignedNumber) max, vMin, vMax);
             }
+            ISignedNumber minEvaled = min.evalReal();
+            if (minEvaled != null) {
+              ISignedNumber maxEvaled = max.evalReal();
+              if (maxEvaled != null) {
+                return clip(x, minEvaled, maxEvaled, vMin, vMax);
+              }
+            }
+          } catch (ArgumentTypeStopException atsex) {
+            return F.NIL;
           }
         }
       }
@@ -848,6 +857,24 @@ public final class Arithmetic {
     }
 
     private IExpr clip(IExpr x) {
+      if (x.isSparseArray()) {
+        x = x.normal(false);
+      }
+      if (x.isList()) {
+        IAST list = (IAST) x;
+        IAST result =
+            list.map(
+                a -> {
+                  IExpr temp = clip(a);
+                  if (temp.isPresent()) {
+                    return temp;
+                  }
+                  ArgumentTypeStopException.throwNIL();
+                  return F.NIL;
+                });
+        return result;
+      }
+
       if (x.isReal()) {
         ISignedNumber real = (ISignedNumber) x;
         if (real.isGT(F.C1)) {
@@ -883,6 +910,23 @@ public final class Arithmetic {
      *     is greater than max.
      */
     private IExpr clip(IExpr x, ISignedNumber min, ISignedNumber max, IExpr vMin, IExpr vMax) {
+      if (x.isSparseArray()) {
+        x = x.normal(false);
+      }
+      if (x.isList()) {
+        IAST list = (IAST) x;
+        IAST result =
+            list.map(
+                a -> {
+                  IExpr temp = clip(a, min, max, vMin, vMax);
+                  if (temp.isPresent()) {
+                    return temp;
+                  }
+                  ArgumentTypeStopException.throwNIL();
+                  return F.NIL;
+                });
+        return result;
+      }
       if (x.isReal()) {
         ISignedNumber real = (ISignedNumber) x;
         if (real.isGT(max)) {
