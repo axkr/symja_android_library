@@ -31,6 +31,7 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.TimeoutException;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -947,7 +948,8 @@ public class EvalEngine implements Serializable {
           if (result.isPresent()) {
             return result;
           }
-
+        } catch (ValidateException ve) {
+          return IOFunctions.printMessage(ast.topHead(), ve, this);
         } catch (FlowControlException | LimitException e) {
           throw e;
         } catch (SymjaMathException ve) {
@@ -1200,6 +1202,17 @@ public class EvalEngine implements Serializable {
       if (numericResult.equals(S.False)) {
         return false;
       }
+    } else {
+      IExpr temp = evaluateNIL(expr);
+      if (temp.isNumericFunction(true)) {
+        IExpr numericResult = evalN(temp);
+        if (numericResult.equals(S.True)) {
+          return true;
+        }
+        if (numericResult.equals(S.False)) {
+          return false;
+        }
+      }
     }
     throw new ArgumentTypeException(
         "conversion into a machine-size boolean value is not possible!");
@@ -1213,19 +1226,7 @@ public class EvalEngine implements Serializable {
    * @see #evaluate(IExpr)
    */
   public final double evalDouble(final IExpr expr) throws ArgumentTypeException {
-    if (expr.isReal()) {
-      return ((ISignedNumber) expr).doubleValue();
-    }
-    if (expr.isNumericFunction(true)) {
-      IExpr result = evalN(expr);
-      if (result.isReal()) {
-        return ((ISignedNumber) result).doubleValue();
-      }
-    }
-    throw new ArgumentTypeException(
-        "Expression \""
-            + IOFunctions.shorten(expr)
-            + "\" cannot be converted to a machine-sized double numeric value!");
+    return evalDouble(expr, Double.NaN);
   }
 
   public final double evalDouble(final IExpr expr, double defaultValue) {
@@ -1237,6 +1238,20 @@ public class EvalEngine implements Serializable {
       if (result.isReal()) {
         return ((ISignedNumber) result).doubleValue();
       }
+    } else {
+      IExpr temp = evaluateNIL(expr);
+      if (temp.isNumericFunction(true)) {
+        IExpr result = evalN(temp);
+        if (result.isReal()) {
+          return ((ISignedNumber) result).doubleValue();
+        }
+      }
+    }
+    if (Double.isNaN(defaultValue)) {
+      throw new ArgumentTypeException(
+          "Expression \""
+              + IOFunctions.shorten(expr)
+              + "\" cannot be converted to a machine-sized double numeric value!");
     }
     return defaultValue;
   }
@@ -1250,6 +1265,14 @@ public class EvalEngine implements Serializable {
       IExpr numericResult = evalN(expr);
       if (numericResult.isReal()) {
         result = numericResult.toIntDefault();
+      }
+    } else {
+      IExpr temp = evaluateNIL(expr);
+      if (temp.isNumericFunction(true)) {
+        IExpr numericResult = evalN(temp);
+        if (numericResult.isReal()) {
+          result = numericResult.toIntDefault();
+        }
       }
     }
     if (result != Integer.MIN_VALUE) {
@@ -1281,6 +1304,18 @@ public class EvalEngine implements Serializable {
       }
       if (result.isNumber()) {
         return new Complex(((INumber) result).reDoubleValue(), ((INumber) result).imDoubleValue());
+      }
+    } else {
+      IExpr temp = evaluateNIL(expr);
+      if (temp.isNumericFunction(true)) {
+        IExpr result = evalN(temp);
+        if (result.isReal()) {
+          return new Complex(((ISignedNumber) result).doubleValue());
+        }
+        if (result.isNumber()) {
+          return new Complex(
+              ((INumber) result).reDoubleValue(), ((INumber) result).imDoubleValue());
+        }
       }
     }
     throw new ArgumentTypeException(
@@ -1425,7 +1460,7 @@ public class EvalEngine implements Serializable {
    * @see #evaluateNIL(IExpr)
    */
   private final IExpr evalLoop(final IExpr expr) {
-    if (expr == null || !expr.isPresent()) {
+    if (!expr.isPresent() || expr == null) {
       if (Config.FUZZ_TESTING) {
         throw new NullPointerException();
       }
@@ -1444,7 +1479,6 @@ public class EvalEngine implements Serializable {
     }
     IExpr result = expr;
     try {
-      IExpr temp;
       fRecursionCounter++;
       stackPush(expr);
       if (fTraceMode) {
@@ -1452,7 +1486,7 @@ public class EvalEngine implements Serializable {
           return result.first();
         }
         fTraceStack.setUp(expr, fRecursionCounter);
-        temp = result.evaluate(this);
+        IExpr temp = result.evaluate(this);
         if (temp.isPresent()) {
           if (fStopRequested || Thread.currentThread().isInterrupted()) {
             throw TimeoutException.TIMED_OUT;
@@ -1491,7 +1525,7 @@ public class EvalEngine implements Serializable {
         if (result.isUnevaluated()) {
           return result.first();
         }
-        temp = result.evaluate(this);
+        IExpr temp = result.evaluate(this);
         if (temp.isPresent()) {
           if (fStopRequested || Thread.currentThread().isInterrupted()) {
             throw TimeoutException.TIMED_OUT;

@@ -46,6 +46,7 @@ import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
@@ -81,6 +82,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.parser.client.FEConfig;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -861,6 +863,55 @@ public abstract class AbstractAST implements IASTMutable {
       // throw new UnsupportedOperationException();
     }
 
+    public IExpr replace(final Predicate<IExpr> predicate, final Function<IExpr, IExpr> function) {
+      return F.NIL;
+    }
+
+    public IExpr replaceAll(final Function<IExpr, IExpr> function) {
+      return F.NIL;
+    }
+
+    public IExpr replaceAll(final IAST listOfRules) {
+      return F.NIL;
+    }
+ 
+    public IExpr replaceAll(final Map<? extends IExpr, ? extends IExpr> map) {
+      return F.NIL;
+    }
+
+    public IExpr replaceAll(VisitorReplaceAll visitor) {
+      return F.NIL;
+    }
+ 
+    public IExpr replacePart(final IAST astRules, IExpr.COMPARE_TERNARY heads) {
+      return F.NIL;
+    }
+
+    /**
+     * Repeatedly replace all (sub-) expressions with the given unary function. If no substitution
+     * matches, the method returns <code>this</code>.
+     *
+     * @param function if the unary functions <code>apply()</code> method returns <code>null</code>
+     *     the expression isn't substituted.
+     * @return <code>this</code> if no substitution of a (sub-)expression was possible.
+     */
+    public IExpr replaceRepeated(final Function<IExpr, IExpr> function) {
+      return F.NIL;
+    }
+
+    public IExpr replaceRepeated(final IAST astRules) {
+      return F.NIL;
+    }
+
+    public IExpr replaceRepeated(VisitorReplaceAll visitor, int maxIterations) {
+      return F.NIL;
+    }
+
+    @Deprecated
+    public IExpr replaceSlots(final IAST slotsList) {
+      return F.NIL;
+    }
+    
     /**
      * Replaces the element at the specified location in this {@code ArrayList} with the specified
      * object.
@@ -875,6 +926,16 @@ public abstract class AbstractAST implements IASTMutable {
       ArgumentTypeException.throwNIL();
       return F.NIL;
       // throw new UnsupportedOperationException();
+    }
+
+    public IASTAppendable setAtClone(int i, IExpr expr) {
+      ArgumentTypeException.throwNIL();
+      return F.NIL;
+    }
+
+    public IASTMutable setAtCopy(int i, IExpr expr) {
+      ArgumentTypeException.throwNIL();
+      return F.NIL;
     }
 
     @Override
@@ -1854,7 +1915,8 @@ public abstract class AbstractAST implements IASTMutable {
               return evaluateTemp;
             }
             return functionEvaluator.evaluate(ast, engine);
-
+          } catch (ValidateException ve) {
+            return IOFunctions.printMessage(topHead(), ve, engine);
           } catch (FlowControlException | LimitException e) {
             throw e;
           } catch (SymjaMathException ve) {
@@ -5082,7 +5144,7 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
-  public final IASTAppendable setAtClone(int position, IExpr expr) {
+  public IASTAppendable setAtClone(int position, IExpr expr) {
     IASTAppendable ast = copyAppendable();
     ast.set(position, expr);
     return ast;
