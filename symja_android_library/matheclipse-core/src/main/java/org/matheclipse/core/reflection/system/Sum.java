@@ -284,7 +284,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
           }
         }
       } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), preevaledSum.topHead(), ve);
+        return IOFunctions.printMessage(preevaledSum.topHead(), ve, engine);
       }
     }
     return F.NIL;

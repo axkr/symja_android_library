@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -33,95 +32,90 @@ public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
     if (ast.size() < 3) {
       return F.NIL;
     }
-    try {
-      final IExpr fx = ast.arg1();
-      if (fx.isIndeterminate()) {
-        return S.Indeterminate;
-      }
-      if (ast.size() > 3) {
-        // reduce arguments by folding MatrixD[fxy, x, y] to MatrixD[ MatrixD[fxy, x], y] ...
-        return ast.foldLeft((x, y) -> engine.evaluateNIL(F.MatrixD(x, y)), fx, 2);
-      }
 
-      IExpr x = ast.arg2();
-      if (!(x.isVariable() || x.isList())) {
-        // `1` is not a valid variable.
-        return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
-      }
+    final IExpr fx = ast.arg1();
+    if (fx.isIndeterminate()) {
+      return S.Indeterminate;
+    }
+    if (ast.size() > 3) {
+      // reduce arguments by folding MatrixD[fxy, x, y] to MatrixD[ MatrixD[fxy, x], y] ...
+      return ast.foldLeft((x, y) -> engine.evaluateNIL(F.MatrixD(x, y)), fx, 2);
+    }
 
-      if (fx.isList()) {
-        IAST list = (IAST) fx;
-        // thread over first list
-        return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
-      }
+    IExpr x = ast.arg2();
+    if (!(x.isVariable() || x.isList())) {
+      // `1` is not a valid variable.
+      return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+    }
 
-      if (x.isList()) {
-        // MatrixD[fx_, {...}]
-        IAST xList = (IAST) x;
-        if (xList.isAST1() && xList.arg1().isListOfLists()) {
-          IAST subList = (IAST) xList.arg1();
-          IASTAppendable result = F.ListAlloc(subList.size());
-          result.appendArgs(subList.size(), i -> F.MatrixD(fx, F.List(subList.get(i))));
-          return result;
-        } else if (xList.isAST1() && xList.arg1().isList()) {
-          IAST subList = (IAST) xList.arg1();
-          return subList.mapLeft(F.ListAlloc(), (a, b) -> engine.evaluateNIL(F.MatrixD(a, b)), fx);
-        } else if (xList.isAST2()) {
-          if (xList.arg1().isList()) {
-            x = F.List(xList.arg1());
-          } else {
-            x = xList.arg1();
-          }
-          IExpr arg2 = xList.arg2();
-          int n = arg2.toIntDefault();
-          if (n >= 0) {
-            IExpr temp = fx;
-            for (int i = 0; i < n; i++) {
-              temp = S.MatrixD.ofNIL(engine, temp, x);
-              if (!temp.isPresent()) {
-                return F.NIL;
-              }
-            }
-            return temp;
-          }
-          if (arg2.isFree(num -> num.isNumber(), false)) {
-            if (fx.equals(x)) {
-              return S.$SingleEntryMatrix;
-            }
-            if (fx.isAST()) {
-              final IAST function = (IAST) fx;
-              if (function.isPlus()) {
-                // MatrixD(a_+b_+c_,x_) -> MatrixD(a,x)+MatrixD(b,x)+MatrixD(c,x)
-                return function.mapThread(F.MatrixD(F.Slot1, xList), 1); // (35)
-              }
-            }
-            return F.NIL;
-          }
-          if (!x.isVariable()) {
-            // `1` is not a valid variable.
-            return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
-          }
-          if (arg2.isAST()) {
-            return F.NIL;
-          }
-          // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
-          // symbolic expression or a non-negative integer.
-          return IOFunctions.printMessage(ast.topHead(), "dvar", F.List(xList), engine);
+    if (fx.isList()) {
+      IAST list = (IAST) fx;
+      // thread over first list
+      return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
+    }
+
+    if (x.isList()) {
+      // MatrixD[fx_, {...}]
+      IAST xList = (IAST) x;
+      if (xList.isAST1() && xList.arg1().isListOfLists()) {
+        IAST subList = (IAST) xList.arg1();
+        IASTAppendable result = F.ListAlloc(subList.size());
+        result.appendArgs(subList.size(), i -> F.MatrixD(fx, F.List(subList.get(i))));
+        return result;
+      } else if (xList.isAST1() && xList.arg1().isList()) {
+        IAST subList = (IAST) xList.arg1();
+        return subList.mapLeft(F.ListAlloc(), (a, b) -> engine.evaluateNIL(F.MatrixD(a, b)), fx);
+      } else if (xList.isAST2()) {
+        if (xList.arg1().isList()) {
+          x = F.List(xList.arg1());
+        } else {
+          x = xList.arg1();
         }
-        return F.NIL;
+        IExpr arg2 = xList.arg2();
+        int n = arg2.toIntDefault();
+        if (n >= 0) {
+          IExpr temp = fx;
+          for (int i = 0; i < n; i++) {
+            temp = S.MatrixD.ofNIL(engine, temp, x);
+            if (!temp.isPresent()) {
+              return F.NIL;
+            }
+          }
+          return temp;
+        }
+        if (arg2.isFree(num -> num.isNumber(), false)) {
+          if (fx.equals(x)) {
+            return S.$SingleEntryMatrix;
+          }
+          if (fx.isAST()) {
+            final IAST function = (IAST) fx;
+            if (function.isPlus()) {
+              // MatrixD(a_+b_+c_,x_) -> MatrixD(a,x)+MatrixD(b,x)+MatrixD(c,x)
+              return function.mapThread(F.MatrixD(F.Slot1, xList), 1); // (35)
+            }
+          }
+          return F.NIL;
+        }
+        if (!x.isVariable()) {
+          // `1` is not a valid variable.
+          return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+        }
+        if (arg2.isAST()) {
+          return F.NIL;
+        }
+        // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
+        // symbolic expression or a non-negative integer.
+        return IOFunctions.printMessage(ast.topHead(), "dvar", F.List(xList), engine);
       }
-
-      if (!x.isVariable()) {
-        // `1` is not a valid variable.
-        return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
-      }
-
-      return binaryMatrixD(fx, x);
-    } catch (final ValidateException ve) {
-      // int number validation
-      LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       return F.NIL;
     }
+
+    if (!x.isVariable()) {
+      // `1` is not a valid variable.
+      return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+    }
+
+    return binaryMatrixD(fx, x);
   }
 
   /**

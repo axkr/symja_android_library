@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -97,8 +98,7 @@ public class FindInstance extends Solve {
 
       return solveEquations(termsEqualZeroList, F.List(), vars, maxChoices, engine);
     } catch (final ValidateException ve) {
-      // int number validation
-      LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+      return IOFunctions.printMessage(ast.topHead(), ve, engine);
     } catch (RuntimeException rex) {
       LOGGER.debug("FindInstance.evaluate() failed", rex);
     }

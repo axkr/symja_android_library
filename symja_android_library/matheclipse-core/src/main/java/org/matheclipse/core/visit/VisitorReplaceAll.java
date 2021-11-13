@@ -218,7 +218,13 @@ public class VisitorReplaceAll extends VisitorExpr {
       IExpr temp = assoc.getValue(i).accept(this);
       if (temp.isPresent()) {
         // something was evaluated - return a new IAST:
-        IASTMutable result = assoc.setAtCopy(i, assoc.getRule(i).setAtCopy(2, temp));
+        IAST iRuleOrNIL = assoc.getRule(i);
+        IASTMutable result;
+        if (iRuleOrNIL.isPresent()) {
+          result = assoc.setAtCopy(i, iRuleOrNIL.setAtCopy(2, temp));
+        } else {
+          result = assoc.copy(); // setAtCopy(i, iRuleOrNIL.setAtCopy(2, temp));
+        }
         i++;
         assoc.forEach(
             i,
@@ -270,7 +276,8 @@ public class VisitorReplaceAll extends VisitorExpr {
     } else if (arg2.isAssociation()) {
       visitor = new VisitorReplaceAll((IAST) arg2.normal(false));
     } else {
-      // (`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for replacing.
+      // (`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for
+      // replacing.
       String str = IOFunctions.getMessage("reps", F.List(arg2));
       throw new ArgumentTypeException(str);
     }

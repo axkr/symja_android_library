@@ -212,7 +212,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("CosIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          LOGGER.debug("CosIntegral.evaluate() failed", ve);
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -304,7 +304,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("CoshIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          LOGGER.debug("CoshIntegral.evaluate() failed", ve);
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -364,7 +364,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("ExpIntegralE.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          LOGGER.debug("ExpIntegralE.evaluate() failed", ve);
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -465,7 +465,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("ExpIntegralEi.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          LOGGER.debug("ExpIntegralEi.evaluate() failed", ve);
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -792,7 +792,7 @@ public class HypergeometricFunctions {
           }
 
         } catch (ValidateException ve) {
-          LOGGER.debug("Hypergeometric0F1.evaluate() failed", ve);
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -914,7 +914,7 @@ public class HypergeometricFunctions {
               F.Times(F.Power(b, -1), F.Power(F.Plus(F.C1, b), -1), F.Sqr(z)));
         }
       } catch (ValidateException ve) {
-        LOGGER.debug("Hypergeometric1F1.evaluate() failed", ve);
+        return IOFunctions.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -1054,7 +1054,7 @@ public class HypergeometricFunctions {
         LOGGER.debug("Hypergeometric2F1.evaluate() failed", te);
         return te.getValue();
       } catch (ValidateException ve) {
-        LOGGER.debug("Hypergeometric2F1.evaluate() failed", ve);
+        return IOFunctions.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -1129,7 +1129,7 @@ public class HypergeometricFunctions {
           }
 
         } catch (ValidateException ve) {
-          LOGGER.debug("HypergeometricPFQ.evaluate() failed", ve);
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -1214,7 +1214,7 @@ public class HypergeometricFunctions {
                 HypergeometricJS.hypergeometricU(
                     new Complex(aDouble), new Complex(bDouble), new Complex(zDouble)));
           } catch (ValidateException ve) {
-            LOGGER.debug("HypergeometricU.evaluate() failed", ve);
+            IOFunctions.printMessage(ast.topHead(), ve, engine);
           }
           Complex ac = a.evalComplex();
           Complex bc = b.evalComplex();
@@ -1225,7 +1225,7 @@ public class HypergeometricFunctions {
         LOGGER.debug("HypergeometricU.evaluate() failed", te);
         return te.getValue();
       } catch (ValidateException ve) {
-        LOGGER.debug("HypergeometricU.evaluate() failed", ve);
+        return IOFunctions.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -1330,7 +1330,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("LogIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          LOGGER.debug("LogIntegral.evaluate() failed", ve);
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -1425,7 +1425,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("SinIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          LOGGER.debug("SinIntegral.evaluate() failed", ve);
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -1500,7 +1500,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("SinhIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          LOGGER.debug("SinhIntegral.evaluate() failed", ve);
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -1559,7 +1559,7 @@ public class HypergeometricFunctions {
                 HypergeometricJS.whittakerM(
                     new Complex(kDouble), new Complex(mDouble), new Complex(zDouble)));
           } catch (ValidateException ve) {
-            LOGGER.debug("WhittakerM.evaluate() failed", ve);
+            IOFunctions.printMessage(ast.topHead(), ve, engine);
           }
           Complex kc = k.evalComplex();
           Complex mc = m.evalComplex();
@@ -1570,7 +1570,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("WhittakerM.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          LOGGER.debug("WhittakerM.evaluate() failed", ve);
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }

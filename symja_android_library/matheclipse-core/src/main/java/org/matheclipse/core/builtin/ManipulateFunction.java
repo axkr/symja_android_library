@@ -18,6 +18,7 @@ import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TeXUtilities;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -2137,6 +2138,8 @@ public class ManipulateFunction {
             }
           }
         }
+      } catch (ValidateException ve) {
+        return IOFunctions.printMessage(manipulateAST.topHead(), ve, engine);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), S.Manipulate, rex);
       }

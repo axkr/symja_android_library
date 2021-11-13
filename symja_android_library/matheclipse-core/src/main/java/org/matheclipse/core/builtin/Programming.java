@@ -30,7 +30,6 @@ import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
@@ -672,8 +671,6 @@ public final class Programming {
         ast.forEach(2, ast.size(), (x, i) -> iterList.add(Iterator.create((IAST) x, i, engine)));
         final DoIterator generator = new DoIterator(iterList, engine);
         return generator.doIt(ast.arg1());
-      } catch (final ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       } catch (final NoEvalException | ClassCastException e) {
         // ClassCastException: the iterators are generated only from IASTs
       }
@@ -829,10 +826,6 @@ public final class Programming {
           } while ((!current.isSame(last)) && (--maxIterations > 0));
           return current;
         }
-
-      } catch (final ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
-        return F.NIL;
       } finally {
         engine.setNumericMode(numericMode);
       }
@@ -944,27 +937,23 @@ public final class Programming {
         }
         if (iterations == 0) {
           return F.List(ast.arg2());
-        } else {
-          IASTAppendable list = F.ListAlloc(iterations < 100 ? iterations : 32);
+        }
+        IASTAppendable list = F.ListAlloc(iterations < 100 ? iterations : 32);
+        list.append(current);
+
+        final int iterationLimit = engine.getIterationLimit();
+        int iterationCounter = 1;
+        IExpr last;
+        do {
+          last = current;
+          current = engine.evaluate(F.Apply(f, F.List(current)));
           list.append(current);
 
-          final int iterationLimit = engine.getIterationLimit();
-          int iterationCounter = 1;
-          IExpr last;
-          do {
-            last = current;
-            current = engine.evaluate(F.Apply(f, F.List(current)));
-            list.append(current);
-
-            if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-              IterationLimitExceeded.throwIt(iterationCounter, ast);
-            }
-          } while ((!current.isSame(last)) && (--iterations > 0));
-          return list;
-        }
-      } catch (final ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
-        return F.NIL;
+          if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+            IterationLimitExceeded.throwIt(iterationCounter, ast);
+          }
+        } while ((!current.isSame(last)) && (--iterations > 0));
+        return list;
       } finally {
         engine.setNumericMode(numericMode);
       }
@@ -2154,60 +2143,57 @@ public final class Programming {
         if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
           return F.NIL;
         }
-        try {
-          IASTMutable evaledAST = F.NIL;
-          IExpr arg1 = engine.evaluateNIL(ast.arg1());
-          if (arg1.isPresent()) {
-            evaledAST = ast.setAtCopy(1, arg1);
-            if (!arg1.isASTOrAssociation()) {
-              if (arg1.isSparseArray()) {
-                return sparseEvaluate(evaledAST, (ISparseArray) arg1, engine).orElse(evaledAST);
-              }
-              if (ast.size() == 3 && ast.arg2().isZero()) {
-                return arg1.head();
-              }
-              // Part specification `1` is longer than depth of object.
-              IOFunctions.printMessage(S.Part, "partd", F.List(evaledAST), engine);
-              // return the evaluated result:
-              return evaledAST;
-            }
-          } else {
-            arg1 = ast.arg1();
-            if (!arg1.isASTOrAssociation()) {
-              if (arg1.isSparseArray()) {
-                return sparseEvaluate(ast, (ISparseArray) arg1, engine);
-              }
-              if (ast.size() == 3 && ast.arg2().isZero()) {
-                return arg1.head();
-              }
-              // Part specification `1` is longer than depth of object.
-              return IOFunctions.printMessage(S.Part, "partd", F.List(ast), engine);
-            }
-          }
-          IAST arg1AST = (IAST) arg1;
 
-          IExpr temp;
-
-          int astSize = ast.size();
-          for (int i = 2; i < astSize; i++) {
-            temp = engine.evaluateNIL(ast.get(i));
-            if (temp.isPresent()) {
-              if (evaledAST.isPresent()) {
-                evaledAST.set(i, temp);
-              } else {
-                evaledAST = ast.setAtCopy(i, temp);
-                evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
-              }
+        IASTMutable evaledAST = F.NIL;
+        IExpr arg1 = engine.evaluateNIL(ast.arg1());
+        if (arg1.isPresent()) {
+          evaledAST = ast.setAtCopy(1, arg1);
+          if (!arg1.isASTOrAssociation()) {
+            if (arg1.isSparseArray()) {
+              return sparseEvaluate(evaledAST, (ISparseArray) arg1, engine).orElse(evaledAST);
             }
+            if (ast.size() == 3 && ast.arg2().isZero()) {
+              return arg1.head();
+            }
+            // Part specification `1` is longer than depth of object.
+            IOFunctions.printMessage(S.Part, "partd", F.List(evaledAST), engine);
+            // return the evaluated result:
+            return evaledAST;
           }
-
-          if (evaledAST.isPresent()) {
-            return part(arg1AST, evaledAST, 2, engine);
+        } else {
+          arg1 = ast.arg1();
+          if (!arg1.isASTOrAssociation()) {
+            if (arg1.isSparseArray()) {
+              return sparseEvaluate(ast, (ISparseArray) arg1, engine);
+            }
+            if (ast.size() == 3 && ast.arg2().isZero()) {
+              return arg1.head();
+            }
+            // Part specification `1` is longer than depth of object.
+            return IOFunctions.printMessage(S.Part, "partd", F.List(ast), engine);
           }
-          return part(arg1AST, ast, 2, engine);
-        } catch (ValidateException ve) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         }
+        IAST arg1AST = (IAST) arg1;
+
+        IExpr temp;
+
+        int astSize = ast.size();
+        for (int i = 2; i < astSize; i++) {
+          temp = engine.evaluateNIL(ast.get(i));
+          if (temp.isPresent()) {
+            if (evaledAST.isPresent()) {
+              evaledAST.set(i, temp);
+            } else {
+              evaledAST = ast.setAtCopy(i, temp);
+              evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+            }
+          }
+        }
+
+        if (evaledAST.isPresent()) {
+          return part(arg1AST, evaledAST, 2, engine);
+        }
+        return part(arg1AST, ast, 2, engine);
       }
       return F.NIL;
     }

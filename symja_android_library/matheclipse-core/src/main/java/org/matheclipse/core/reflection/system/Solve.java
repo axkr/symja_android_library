@@ -1114,7 +1114,9 @@ public class Solve extends AbstractFunctionEvaluator {
         }
         return checkDomain(result, domain);
       }
-    } catch (LimitException | ValidateException e) {
+    } catch (ValidateException ve) {
+      return IOFunctions.printMessage(S.Solve, ve, engine);
+    } catch (LimitException e) {
       LOGGER.log(engine.getLogLevel(), S.Solve, e);
     } catch (RuntimeException rex) {
       LOGGER.debug("Solve.of() failed() failed", rex);

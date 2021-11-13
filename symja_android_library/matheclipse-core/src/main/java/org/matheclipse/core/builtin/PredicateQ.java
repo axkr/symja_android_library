@@ -684,49 +684,39 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
-      try {
-        boolean heads = false;
-        int size = ast.size();
-        if (ast.size() > 3) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, size, engine);
-          if (options.isTrue(S.Heads)) {
-            heads = true;
-          }
-          int pos = options.getLastPosition();
-          if (pos != -1) {
-            size = pos;
-          }
+      boolean heads = false;
+      int size = ast.size();
+      if (ast.size() > 3) {
+        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, size, engine);
+        if (options.isTrue(S.Heads)) {
+          heads = true;
         }
-
-        if (size >= 3) {
-          final IExpr arg1 = engine.evaluate(ast.arg1());
-          if (arg1.isAST()) {
-            final IExpr arg2 = engine.evaluate(ast.arg2());
-            if (size == 3) {
-              return F.bool(arg1.isMember(arg2, heads, null));
-            }
-
-            Predicate<IExpr> predicate = Predicates.toMemberQ(arg2);
-            IVisitorBoolean level =
-                new VisitorBooleanLevelSpecification(predicate, ast.arg3(), heads, engine);
-
-            return F.bool(arg1.accept(level));
-          }
-
-          return S.False;
+        int pos = options.getLastPosition();
+        if (pos != -1) {
+          size = pos;
         }
-      } catch (final ValidateException ve) {
-        // see level specification
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       }
+
+      if (size >= 3) {
+        final IExpr arg1 = engine.evaluate(ast.arg1());
+        if (arg1.isAST()) {
+          final IExpr arg2 = engine.evaluate(ast.arg2());
+          if (size == 3) {
+            return F.bool(arg1.isMember(arg2, heads, null));
+          }
+
+          Predicate<IExpr> predicate = Predicates.toMemberQ(arg2);
+          IVisitorBoolean level =
+              new VisitorBooleanLevelSpecification(predicate, ast.arg3(), heads, engine);
+
+          return F.bool(arg1.accept(level));
+        }
+
+        return S.False;
+      }
+
       return F.NIL;
-    } 
+    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {

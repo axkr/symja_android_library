@@ -17,7 +17,6 @@ import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IntRangeSpec;
@@ -224,7 +223,6 @@ public final class Combinatoric {
       public Iterator<IAST> iterator() {
         return new CartesianProductIterator(comps, fEmptyResultList);
       }
-
     }
 
     @Override
@@ -2549,49 +2547,44 @@ public final class Combinatoric {
         return F.NIL;
       }
       if (ast.arg1().isAST()) {
-        try {
-          final IAST f = (IAST) ast.arg1();
-          int n = f.argSize();
-          SetSpecification level = new SetSpecification(0, n);
-          if (ast.isAST2()) {
-            IExpr arg2 = ast.arg2();
-            if (arg2 != S.All && !arg2.isInfinity()) {
-              if (arg2.isInteger()) {
-                n = arg2.toIntDefault();
-                if (n > Integer.MIN_VALUE) {
-                  level = new SetSpecification(0, n > f.argSize() ? f.argSize() : n);
-                } else {
-                  return F.NIL;
-                }
+        final IAST f = (IAST) ast.arg1();
+        int n = f.argSize();
+        SetSpecification level = new SetSpecification(0, n);
+        if (ast.isAST2()) {
+          IExpr arg2 = ast.arg2();
+          if (arg2 != S.All && !arg2.isInfinity()) {
+            if (arg2.isInteger()) {
+              n = arg2.toIntDefault();
+              if (n > Integer.MIN_VALUE) {
+                level = new SetSpecification(0, n > f.argSize() ? f.argSize() : n);
               } else {
-                level = new SetSpecification(arg2);
+                return F.NIL;
               }
+            } else {
+              level = new SetSpecification(arg2);
             }
           }
-
-          int k;
-          final IASTAppendable result = F.ast(S.List);
-          level.setMinCountAsCurrent();
-          while (level.isInRange()) {
-            k = level.getCurrentCounter();
-            if (k > f.argSize()) {
-              return F.CEmptyList;
-            }
-            final KSubsetsList iter = createKSubsets(f, k, F.ast(f.head()), 1);
-            for (IAST part : iter) {
-              if (part == null) {
-                break;
-              }
-              result.append(part);
-            }
-            level.incCurrentCounter();
-          }
-
-          return result;
-        } catch (final ValidateException ve) {
-          // see level specification
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         }
+
+        int k;
+        final IASTAppendable result = F.ast(S.List);
+        level.setMinCountAsCurrent();
+        while (level.isInRange()) {
+          k = level.getCurrentCounter();
+          if (k > f.argSize()) {
+            return F.CEmptyList;
+          }
+          final KSubsetsList iter = createKSubsets(f, k, F.ast(f.head()), 1);
+          for (IAST part : iter) {
+            if (part == null) {
+              break;
+            }
+            result.append(part);
+          }
+          level.incCurrentCounter();
+        }
+
+        return result;
       }
       return F.NIL;
     }

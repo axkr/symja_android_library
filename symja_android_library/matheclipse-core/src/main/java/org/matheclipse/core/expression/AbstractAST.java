@@ -1764,19 +1764,6 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
-  public final Complex evalComplex() {
-    INumber number = evalNumber();
-    if (number != null) {
-      return number.complexNumValue().complexValue();
-    }
-    throw new ArgumentTypeException(
-        "Expression: "
-            + IOFunctions.shorten(this)
-            + " cannot be converted into a complex numeric value.");
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public final INumber evalNumber() {
     if (isNumericFunction(true)) {
       IExpr result = EvalEngine.get().evalN(this);

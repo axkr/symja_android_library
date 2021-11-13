@@ -249,8 +249,7 @@ public class StructureFunctions {
         }
       } catch (final ValidateException ve) {
         // see level specification
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(S.Apply));
-        return F.NIL;
+        return IOFunctions.printMessage(S.Apply, ve, engine);
       }
       return F.NIL;
     }
@@ -483,45 +482,40 @@ public class StructureFunctions {
       }
       if (arg1.isAST()) {
         IAST arg1AST = (IAST) arg1;
-        try {
-          if (ast.isAST1()) {
-            IAST resultList = EvalAttributes.flattenDeep(arg1AST.topHead(), (IAST) arg1);
-            if (resultList.isPresent()) {
+
+        if (ast.isAST1()) {
+          IAST resultList = EvalAttributes.flattenDeep(arg1AST.topHead(), (IAST) arg1);
+          if (resultList.isPresent()) {
+            return resultList;
+          }
+          return arg1AST;
+        } else if (ast.isAST2()) {
+          IExpr arg2 = engine.evaluate(ast.arg2());
+
+          int level = Validate.checkIntLevelType(arg2);
+          if (level > 0) {
+            IASTAppendable resultList = F.ast(arg1AST.topHead(), arg1AST.size());
+            if (EvalAttributes.flatten(arg1AST.topHead(), (IAST) arg1, resultList, 0, level)) {
               return resultList;
             }
-            return arg1AST;
-          } else if (ast.isAST2()) {
-            IExpr arg2 = engine.evaluate(ast.arg2());
-
-            int level = Validate.checkIntLevelType(arg2);
-            if (level > 0) {
-              IASTAppendable resultList = F.ast(arg1AST.topHead(), arg1AST.size());
-              if (EvalAttributes.flatten(arg1AST.topHead(), (IAST) arg1, resultList, 0, level)) {
-                return resultList;
-              }
-            }
-            return arg1;
-          } else if (ast.isAST3() && ast.arg3().isSymbol()) {
-            IExpr arg2 = engine.evaluate(ast.arg2());
-
-            int level = Validate.checkIntLevelType(arg2);
-            if (level > 0) {
-              IASTAppendable resultList = F.ast(arg1AST.topHead());
-              if (EvalAttributes.flatten((ISymbol) ast.arg3(), (IAST) arg1, resultList, 0, level)) {
-                return resultList;
-              }
-            }
-            return arg1;
           }
-        } catch (final ValidateException ve) {
-          // see level specification
-          LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+          return arg1;
+        } else if (ast.isAST3() && ast.arg3().isSymbol()) {
+          IExpr arg2 = engine.evaluate(ast.arg2());
+
+          int level = Validate.checkIntLevelType(arg2);
+          if (level > 0) {
+            IASTAppendable resultList = F.ast(arg1AST.topHead());
+            if (EvalAttributes.flatten((ISymbol) ast.arg3(), (IAST) arg1, resultList, 0, level)) {
+              return resultList;
+            }
+          }
+          return arg1;
         }
-      } else {
-        // Nonatomic expression expected at position `1` in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
+        return F.NIL;
       }
-      return F.NIL;
+      // Nonatomic expression expected at position `1` in `2`.
+      return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
     }
 
     @Override
@@ -644,7 +638,8 @@ public class StructureFunctions {
                 new IdentityHashMap<ISymbol, IExpr>();
             // final long moduleCounter = engine.incModuleCounter();
             IExpr subst =
-                arg2.accept(new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
+                arg2.accept(
+                    new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
             if (subst.isPresent()) {
               arg2 = subst;
             }
@@ -868,28 +863,22 @@ public class StructureFunctions {
         heads = option.isTrue();
       }
 
-      try {
-        IExpr arg1 = ast.arg1();
-        IExpr arg2 = ast.arg2();
-        if (ast.isAST2()) {
-          if (arg2.isSparseArray()) {
-            return ((ISparseArray) arg2).map(x -> F.unaryAST1(arg1, x));
-          }
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (ast.isAST2()) {
+        if (arg2.isSparseArray()) {
+          return ((ISparseArray) arg2).map(x -> F.unaryAST1(arg1, x));
         }
-        VisitorLevelSpecification level;
-        if (lastIndex == 3) {
-          level =
-              new VisitorLevelSpecification(
-                  x -> F.unaryAST1(arg1, x), ast.get(lastIndex), heads, engine);
-        } else {
-          level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, heads);
-        }
-        return arg2.accept(level).orElse(arg2);
-      } catch (final ValidateException ve) {
-        // see level specification
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
-        return F.NIL;
       }
+      VisitorLevelSpecification level;
+      if (lastIndex == 3) {
+        level =
+            new VisitorLevelSpecification(
+                x -> F.unaryAST1(arg1, x), ast.get(lastIndex), heads, engine);
+      } else {
+        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, heads);
+      }
+      return arg2.accept(level).orElse(arg2);
     }
 
     @Override
@@ -960,7 +949,7 @@ public class StructureFunctions {
               return arg2;
             }
           } catch (final ValidateException ve) {
-            LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+            return IOFunctions.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException ae) {
             LOGGER.debug("MapAt.evaluate() failed", ae);
           }
@@ -1478,9 +1467,12 @@ public class StructureFunctions {
         }
         IInteger depth = (IInteger) ast.arg3();
         if (depth.isNegative()) {
-          LOGGER.log(engine.getLogLevel(),
-              "Non-negative integer expected at position 3 in Operate()");
-          return F.NIL;
+          // Non-negative integer expected.
+          return IOFunctions.printMessage(ast.topHead(), "intnn", F.List(), engine);
+          //          LOGGER.log(
+          //              engine.getLogLevel(), "Non-negative integer expected at position 3 in
+          // Operate()");
+          //          return F.NIL;
         }
 
         headDepth = depth.toIntDefault();
@@ -1699,10 +1691,6 @@ public class StructureFunctions {
             }
           }
           return S.Null;
-        } catch (final ValidateException ve) {
-          // see level specification
-          LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
-          return F.NIL;
         } catch (final ReturnException e) {
           return e.getValue();
           // don't catch Throw[] here !
@@ -1873,6 +1861,8 @@ public class StructureFunctions {
             }
             return result;
           }
+        } catch (ValidateException ve) {
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }

@@ -506,7 +506,9 @@ public class MinMaxFunctions {
             }
           }
         }
-      } catch (org.hipparchus.exception.MathRuntimeException | ValidateException e) {
+      } catch (ValidateException ve) {
+        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+      } catch (org.hipparchus.exception.MathRuntimeException e) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       }
       return F.NIL;
@@ -599,7 +601,9 @@ public class MinMaxFunctions {
             }
           }
         }
-      } catch (org.hipparchus.exception.MathRuntimeException | ValidateException e) {
+      } catch (ValidateException ve) {
+        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+      } catch (org.hipparchus.exception.MathRuntimeException e) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       }
       return F.NIL;

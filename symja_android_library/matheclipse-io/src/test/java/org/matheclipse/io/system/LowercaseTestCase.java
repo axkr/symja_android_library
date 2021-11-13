@@ -11083,9 +11083,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testFactor() {
     //    for (int i = 0; i < 2_000_000; i++) {
-    //      check(
-    //          "Factor(a*Cosh(x) + I*b*Cosh(x) - I*a*Sinh(x) + b*Sinh(x))", //
-    //          "(-I*a+b)*(I*Cosh(x)+Sinh(x))");
+    //    check(
+    //        "Factor(a*Cosh(x) + I*b*Cosh(x) - I*a*Sinh(x) + b*Sinh(x))", //
+    //        " (-I*a+b)*(I*Cosh(x)+Sinh(x))");
     //    }
 
     // Use heuristic?
@@ -11419,7 +11419,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "((-I+E^(I*x))*(I+E^(I*x))*(1-E^(I*x)+E^(I*2*x))*(-1-I*E^(I*x)+E^(I*2*x))*(-1+I*E^(I*x)+E^(\n"
             + "I*2*x))*(1+E^(I*x)+E^(I*2*x)))/(2*E^(I*5*x))");
 
-    System.out.print('.');
+    System.out.print('.'); // (a+I*b)*(Cosh(x)-I*Sinh(x))
     check(
         "Factor(a*Cosh(x) + I*b*Cosh(x) - I*a*Sinh(x) + b*Sinh(x))", //
         "(-I*a+b)*(I*Cosh(x)+Sinh(x))");

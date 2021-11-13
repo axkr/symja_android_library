@@ -79,7 +79,7 @@ public class ND extends AbstractFunctionEvaluator {
       } else if (arg2.isSymbol()) {
         return partialDerivative(arg1, (ISymbol) arg2, 1, arg3, engine);
       }
-    } catch (MathRuntimeException | ValidateException e) {
+    } catch (MathRuntimeException e) {
       LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
     }
     return F.NIL;

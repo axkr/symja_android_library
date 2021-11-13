@@ -25,8 +25,6 @@ import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -261,22 +259,6 @@ public class ExprParser extends Scanner {
       return expr.orElse(ast);
     }
     return ast;
-  }
-
-  private IExpr convertN(final IASTMutable function) {
-    try {
-      int precision = Validate.throwIntType(function.arg2(), 5, EvalEngine.get());
-      if (EvalEngine.isApfloat(precision)) {
-        NVisitorExpr nve = new NVisitorExpr(precision);
-        IExpr temp = function.arg1().accept(nve);
-        if (temp.isPresent()) {
-          function.set(1, temp);
-        }
-      }
-    } catch (ValidateException wat) {
-      // checkIntType
-    }
-    return function;
   }
 
   protected IExpr convertSymbolOnInput(final String nodeStr, final String context) {

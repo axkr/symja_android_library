@@ -18,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -535,9 +534,6 @@ public final class StringFunctions {
         // Cannot take positions `1` through `2` in `3`.
         return IOFunctions.printMessage(
             ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1), engine);
-      } catch (final ValidateException ve) {
-        // int number validation
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       }
       return F.NIL;
     }
@@ -582,9 +578,6 @@ public final class StringFunctions {
         // Cannot take positions `1` through `2` in `3`.
         return IOFunctions.printMessage(
             ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1), engine);
-      } catch (final ValidateException ve) {
-        // int number validation
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       }
       return F.NIL;
     }
@@ -1475,9 +1468,6 @@ public final class StringFunctions {
         // Cannot drop positions `1` through `2` in `3`.
         return IOFunctions.printMessage(
             ast.topHead(), "drop", F.List(F.ZZ(from - 1), F.ZZ(to), ast.arg1()), engine);
-      } catch (final ValidateException ve) {
-        // int number validation
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
       }
       return F.NIL;
     }
@@ -2627,10 +2617,6 @@ public final class StringFunctions {
         // Cannot take positions `1` through `2` in `3`.
         return IOFunctions.printMessage(
             ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1), engine);
-      } catch (final ValidateException ve) {
-        // int number validation
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
-        return F.NIL;
       }
     }
 

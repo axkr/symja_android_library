@@ -68,10 +68,7 @@ public final class RandomFunctions {
    */
   private static final class RandomChoice extends AbstractFunctionEvaluator {
 
-    /**
-     * Sampler for enumerated distributions.
-     *
-     */
+    /** Sampler for enumerated distributions. */
     private final class EnumeratedDistributionSampler {
       /** Probabilities */
       private final double[] weights;
@@ -109,56 +106,19 @@ public final class RandomFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
-      try {
-        if (arg1.isRuleAST()
-            && arg1.first().isList()
-            && arg1.second().isList()
-            && arg1.first().size() == arg1.second().size()) {
-          IAST weights = (IAST) arg1.first();
-          IAST items = (IAST) arg1.second();
-          double[] itemWeights = weights.toDoubleVector();
-          if (itemWeights != null) {
-            EnumeratedDistributionSampler sampler = new EnumeratedDistributionSampler(itemWeights);
-            if (ast.size() == 2) {
-              int[] chosen = sampler.sample(1);
-              return items.get(chosen[0] + 1);
-            }
-            if (ast.isAST2()) {
-              IExpr arg2 = ast.arg2();
-              //
-              if (arg2.isList()) {
-                // n1 x n2 x n3 ... array
-                int[] dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
-                if (dimension == null) {
-                  return F.NIL;
-                }
-                return Tensors.build(
-                    () -> {
-                      return items.get(sampler.sample(1)[0] + 1);
-                    },
-                    dimension);
-              }
-              int n = arg2.toIntDefault();
-              if (n > 0) {
-                IASTAppendable result = F.ListAlloc(n);
-                int[] chosen = sampler.sample(n);
-                for (int i = 0; i < n; i++) {
-                  result.append(items.get(chosen[i] + 1));
-                }
-                return result;
-              }
-            }
-          }
-        } else if (arg1.isList()) {
-          IAST list = (IAST) arg1;
-          ThreadLocalRandom random = ThreadLocalRandom.current();
-          final int listSize = list.argSize();
-          if (listSize == 0) {
-            return F.NIL;
-          }
-          int randomIndex = random.nextInt(listSize);
+
+      if (arg1.isRuleAST()
+          && arg1.first().isList()
+          && arg1.second().isList()
+          && arg1.first().size() == arg1.second().size()) {
+        IAST weights = (IAST) arg1.first();
+        IAST items = (IAST) arg1.second();
+        double[] itemWeights = weights.toDoubleVector();
+        if (itemWeights != null) {
+          EnumeratedDistributionSampler sampler = new EnumeratedDistributionSampler(itemWeights);
           if (ast.size() == 2) {
-            return list.get(randomIndex + 1);
+            int[] chosen = sampler.sample(1);
+            return items.get(chosen[0] + 1);
           }
           if (ast.isAST2()) {
             IExpr arg2 = ast.arg2();
@@ -169,28 +129,63 @@ public final class RandomFunctions {
               if (dimension == null) {
                 return F.NIL;
               }
-              int[] randomValue = new int[1];
               return Tensors.build(
                   () -> {
-                    randomValue[0] = random.nextInt(listSize);
-                    return list.get(randomValue[0] + 1);
+                    return items.get(sampler.sample(1)[0] + 1);
                   },
                   dimension);
             }
             int n = arg2.toIntDefault();
             if (n > 0) {
               IASTAppendable result = F.ListAlloc(n);
+              int[] chosen = sampler.sample(n);
               for (int i = 0; i < n; i++) {
-                result.append(list.get(randomIndex + 1));
-                randomIndex = random.nextInt(listSize);
+                result.append(items.get(chosen[i] + 1));
               }
               return result;
             }
           }
         }
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+      } else if (arg1.isList()) {
+        IAST list = (IAST) arg1;
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        final int listSize = list.argSize();
+        if (listSize == 0) {
+          return F.NIL;
+        }
+        int randomIndex = random.nextInt(listSize);
+        if (ast.size() == 2) {
+          return list.get(randomIndex + 1);
+        }
+        if (ast.isAST2()) {
+          IExpr arg2 = ast.arg2();
+          //
+          if (arg2.isList()) {
+            // n1 x n2 x n3 ... array
+            int[] dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
+            if (dimension == null) {
+              return F.NIL;
+            }
+            int[] randomValue = new int[1];
+            return Tensors.build(
+                () -> {
+                  randomValue[0] = random.nextInt(listSize);
+                  return list.get(randomValue[0] + 1);
+                },
+                dimension);
+          }
+          int n = arg2.toIntDefault();
+          if (n > 0) {
+            IASTAppendable result = F.ListAlloc(n);
+            for (int i = 0; i < n; i++) {
+              result.append(list.get(randomIndex + 1));
+              randomIndex = random.nextInt(listSize);
+            }
+            return result;
+          }
+        }
       }
+
       return F.NIL;
     }
 
@@ -258,7 +253,7 @@ public final class RandomFunctions {
           }
         }
       } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return IOFunctions.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
         //
       }
@@ -299,59 +294,24 @@ public final class RandomFunctions {
         ThreadLocalRandom tlr = ThreadLocalRandom.current();
         return randomBigInteger(BigInteger.ONE, false, tlr);
       }
-      try {
-        if (ast.arg1().isAST(S.List, 3)) {
-          int min = ast.arg1().first().toIntDefault();
-          int max = ast.arg1().second().toIntDefault();
-          if (min != Integer.MIN_VALUE && max != Integer.MIN_VALUE) {
-            if (min >= max) {
-              int temp = min;
-              min = max;
-              max = temp;
-              if (min == max) {
-                return F.ZZ(min);
-              }
+
+      if (ast.arg1().isAST(S.List, 3)) {
+        int min = ast.arg1().first().toIntDefault();
+        int max = ast.arg1().second().toIntDefault();
+        if (min != Integer.MIN_VALUE && max != Integer.MIN_VALUE) {
+          if (min >= max) {
+            int temp = min;
+            min = max;
+            max = temp;
+            if (min == max) {
+              return F.ZZ(min);
             }
-            if (max == Integer.MAX_VALUE) {
-              return F.NIL;
-            }
-            ThreadLocalRandom tlr = ThreadLocalRandom.current();
-            if (ast.isAST2()) {
-              IExpr arg2 = ast.arg2();
-              if (arg2.isList()) {
-                // n1 x n2 x n3 ... array
-                int[] dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
-                if (dimension == null) {
-                  return F.NIL;
-                }
-                final int min2 = min;
-                final int max2 = max;
-                return Tensors.build(() -> F.ZZ(tlr.nextInt((max2 - min2) + 1) + min2), dimension);
-              }
-              int size = arg2.toIntDefault();
-              if (size >= 0) {
-                IASTAppendable list = F.ListAlloc(size);
-                for (int i = 0; i < size; i++) {
-                  list.append(tlr.nextInt((max - min) + 1) + min);
-                }
-                return list;
-              }
-              return F.NIL;
-            }
-            return F.ZZ(tlr.nextInt((max - min) + 1) + min);
           }
-          return F.NIL;
-        }
-        if (ast.arg1().isInteger()) {
-          // RandomInteger(100) gives an integer between 0 and 100
+          if (max == Integer.MAX_VALUE) {
+            return F.NIL;
+          }
           ThreadLocalRandom tlr = ThreadLocalRandom.current();
-          BigInteger upperLimit = ((IInteger) ast.arg1()).toBigNumerator();
-          boolean negative = false;
-          if (upperLimit.compareTo(BigInteger.ZERO) < 0) {
-            upperLimit = upperLimit.negate();
-            negative = true;
-          }
-          if (ast.isAST2() && !ast.arg2().isEmptyList()) {
+          if (ast.isAST2()) {
             IExpr arg2 = ast.arg2();
             if (arg2.isList()) {
               // n1 x n2 x n3 ... array
@@ -359,26 +319,59 @@ public final class RandomFunctions {
               if (dimension == null) {
                 return F.NIL;
               }
-              final BigInteger upperLimit2 = upperLimit;
-              final boolean negative2 = negative;
-              return Tensors.build(() -> randomBigInteger(upperLimit2, negative2, tlr), dimension);
+              final int min2 = min;
+              final int max2 = max;
+              return Tensors.build(() -> F.ZZ(tlr.nextInt((max2 - min2) + 1) + min2), dimension);
             }
             int size = arg2.toIntDefault();
             if (size >= 0) {
               IASTAppendable list = F.ListAlloc(size);
               for (int i = 0; i < size; i++) {
-                list.append(randomBigInteger(upperLimit, negative, tlr));
+                list.append(tlr.nextInt((max - min) + 1) + min);
               }
               return list;
             }
-
-          } else {
-            return randomBigInteger(upperLimit, negative, tlr);
+            return F.NIL;
           }
+          return F.ZZ(tlr.nextInt((max - min) + 1) + min);
         }
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return F.NIL;
       }
+      if (ast.arg1().isInteger()) {
+        // RandomInteger(100) gives an integer between 0 and 100
+        ThreadLocalRandom tlr = ThreadLocalRandom.current();
+        BigInteger upperLimit = ((IInteger) ast.arg1()).toBigNumerator();
+        boolean negative = false;
+        if (upperLimit.compareTo(BigInteger.ZERO) < 0) {
+          upperLimit = upperLimit.negate();
+          negative = true;
+        }
+        if (ast.isAST2() && !ast.arg2().isEmptyList()) {
+          IExpr arg2 = ast.arg2();
+          if (arg2.isList()) {
+            // n1 x n2 x n3 ... array
+            int[] dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
+            if (dimension == null) {
+              return F.NIL;
+            }
+            final BigInteger upperLimit2 = upperLimit;
+            final boolean negative2 = negative;
+            return Tensors.build(() -> randomBigInteger(upperLimit2, negative2, tlr), dimension);
+          }
+          int size = arg2.toIntDefault();
+          if (size >= 0) {
+            IASTAppendable list = F.ListAlloc(size);
+            for (int i = 0; i < size; i++) {
+              list.append(randomBigInteger(upperLimit, negative, tlr));
+            }
+            return list;
+          }
+
+        } else {
+          return randomBigInteger(upperLimit, negative, tlr);
+        }
+      }
+
       return F.NIL;
     }
 
@@ -402,32 +395,28 @@ public final class RandomFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-      try {
-        int d = ast.arg1().toIntDefault();
+      int d = ast.arg1().toIntDefault();
 
-        if (d > 0) {
-          IAST randomVariate = F.RandomVariate(F.UniformDistribution(F.List(F.C0, F.C1)), F.ZZ(d));
-          if (ast.isAST1()) {
-            // one permutation
-            IExpr ordering = S.Ordering.of(engine, randomVariate);
-            return F.Cycles(F.List(ordering));
-          } else {
-            int n = ast.arg2().toIntDefault();
-            if (n > 0) {
-              // a list of n permutations
-              IASTAppendable list = F.ListAlloc(n);
-              for (int i = 0; i < n; i++) {
-                IExpr ordering = S.Ordering.of(engine, randomVariate);
-                list.append(F.Cycles(F.List(ordering)));
-              }
-              return list;
+      if (d > 0) {
+        IAST randomVariate = F.RandomVariate(F.UniformDistribution(F.List(F.C0, F.C1)), F.ZZ(d));
+        if (ast.isAST1()) {
+          // one permutation
+          IExpr ordering = S.Ordering.of(engine, randomVariate);
+          return F.Cycles(F.List(ordering));
+        } else {
+          int n = ast.arg2().toIntDefault();
+          if (n > 0) {
+            // a list of n permutations
+            IASTAppendable list = F.ListAlloc(n);
+            for (int i = 0; i < n; i++) {
+              IExpr ordering = S.Ordering.of(engine, randomVariate);
+              list.append(F.Cycles(F.List(ordering)));
             }
+            return list;
           }
         }
-
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       }
+
       return F.NIL;
     }
 
@@ -496,7 +485,7 @@ public final class RandomFunctions {
           }
           return randomPrime(lowerLimit, upperLimit, ast, engine);
         } catch (ValidateException ve) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+          IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.debug("RandomPrime.evaluate() failed", rex);
           // There are no primes in the specified interval.
@@ -561,40 +550,37 @@ public final class RandomFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST0()) {
-          // RandomReal() gives a double value between 0.0 and 1.0
-          ThreadLocalRandom tlr = ThreadLocalRandom.current();
-          double r = tlr.nextDouble();
-          return F.num(r);
-        } else {
-          IExpr arg1 = ast.arg1();
-          if (ast.isAST1()) {
-            return randomReal(arg1, engine);
-          } else if (ast.isAST2()) {
-            if (ast.arg2().isList()) {
-              if (ast.arg2().argSize() == 1) {
-                int n = ast.arg2().first().toIntDefault();
-                if (n <= 0) {
-                  return F.NIL;
-                }
-                return randomASTRealVector(arg1, n, engine);
-              }
-              IAST list = (IAST) ast.arg2();
-              int[] dimension = Validate.checkListOfInts(ast, list, 1, Integer.MAX_VALUE, engine);
-              if (dimension == null) {
+
+      if (ast.isAST0()) {
+        // RandomReal() gives a double value between 0.0 and 1.0
+        ThreadLocalRandom tlr = ThreadLocalRandom.current();
+        double r = tlr.nextDouble();
+        return F.num(r);
+      } else {
+        IExpr arg1 = ast.arg1();
+        if (ast.isAST1()) {
+          return randomReal(arg1, engine);
+        } else if (ast.isAST2()) {
+          if (ast.arg2().isList()) {
+            if (ast.arg2().argSize() == 1) {
+              int n = ast.arg2().first().toIntDefault();
+              if (n <= 0) {
                 return F.NIL;
               }
-              return Tensors.build(() -> randomReal(arg1, engine), dimension);
-            }
-            int n = ast.arg2().toIntDefault();
-            if (n > 0) {
               return randomASTRealVector(arg1, n, engine);
             }
+            IAST list = (IAST) ast.arg2();
+            int[] dimension = Validate.checkListOfInts(ast, list, 1, Integer.MAX_VALUE, engine);
+            if (dimension == null) {
+              return F.NIL;
+            }
+            return Tensors.build(() -> randomReal(arg1, engine), dimension);
+          }
+          int n = ast.arg2().toIntDefault();
+          if (n > 0) {
+            return randomASTRealVector(arg1, n, engine);
           }
         }
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       }
       return F.NIL;
     }

@@ -1041,8 +1041,8 @@ public class ExprEvaluatorTests extends TestCase {
 
         // fail();
       } catch (ValidateException ve) {
+        System.err.println(ve.getMessage());
         System.err.println(ast.toString());
-        ve.printStackTrace();
         System.err.println();
         // fail();
       } catch (MathException mex) {

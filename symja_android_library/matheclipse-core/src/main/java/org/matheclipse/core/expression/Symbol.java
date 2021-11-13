@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -322,14 +321,14 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   /** {@inheritDoc} */
-  @Override
-  public final Complex evalComplex() {
-    INumber number = evalNumber();
-    if (number != null) {
-      return number.complexNumValue().complexValue();
-    }
-    throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
-  }
+  //  @Override
+  //  public final Complex evalComplex() {
+  //    INumber number = evalNumber();
+  //    if (number != null) {
+  //      return number.complexNumValue().complexValue();
+  //    }
+  //    throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
+  //  }
 
   /** {@inheritDoc} */
   @Override
@@ -695,12 +694,12 @@ public class Symbol implements ISymbol, Serializable {
     if (isConstantAttribute()) {
       return true;
     }
-    if (hasAssignedSymbolValue()) {
-      IExpr temp = assignedValue();
-      if (temp != null) {
-        return temp != this && temp.isNumericFunction(true);
-      }
-    }
+    //    if (hasAssignedSymbolValue()) {
+    //      IExpr temp = assignedValue();
+    //      if (temp != null) {
+    //        return temp != this && temp.isNumericFunction(true);
+    //      }
+    //    }
     return false;
   }
 

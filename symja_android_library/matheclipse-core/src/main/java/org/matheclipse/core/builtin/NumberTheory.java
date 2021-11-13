@@ -818,8 +818,6 @@ public final class NumberTheory {
             // from Math.multiplyExact()
             return chineseRemainderBigInteger(ast, engine);
           }
-        } catch (ValidateException ve) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         } catch (ArithmeticException ae) {
           LOGGER.debug("ChineseRemainder.evaluate() failed", ae);
         }
@@ -1167,7 +1165,8 @@ public final class NumberTheory {
       continuedFractionList.append(aNow);
       for (int i = 0; i < iterationLimit - 1; i++) {
         if (i >= 99) {
-          LOGGER.log(engine.getLogLevel(),
+          LOGGER.log(
+              engine.getLogLevel(),
               "ContinuedFraction: calculations of double number values require a iteration limit less equal 100.");
           return F.NIL;
         }
@@ -2857,7 +2856,7 @@ public final class NumberTheory {
         }
         return result;
       } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), S.FromContinuedFraction, ve);
+        IOFunctions.printMessage(S.FromContinuedFraction, ve, engine);
         return F.NIL;
       }
     }
@@ -3818,8 +3817,6 @@ public final class NumberTheory {
             if (result != null) {
               return result;
             }
-          } catch (ValidateException ve) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
           } catch (UncheckedExecutionException e) {
             Throwable th = e.getCause();
             if (th instanceof LimitException) {
@@ -3925,8 +3922,6 @@ public final class NumberTheory {
                 return result;
               }
             }
-          } catch (ValidateException ve) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
           } catch (UncheckedExecutionException e) {
             Throwable th = e.getCause();
             if (th instanceof LimitException) {
@@ -4609,8 +4604,10 @@ public final class NumberTheory {
         }
       }
       if (!eVar.isSize(1)) {
-        LOGGER.log(engine.getLogLevel(),
-            "{}: only implemented for univariate polynomials at position 1", ast.topHead());
+        LOGGER.log(
+            engine.getLogLevel(),
+            "{}: only implemented for univariate polynomials at position 1",
+            ast.topHead());
         return F.NIL;
       }
       try {

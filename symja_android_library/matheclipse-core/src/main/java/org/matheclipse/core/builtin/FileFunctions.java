@@ -104,16 +104,11 @@ public class FileFunctions {
   private static final class Begin extends AbstractCoreFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        String contextName = Validate.checkContextName(ast, 1);
-        org.matheclipse.core.expression.Context pack =
-            EvalEngine.get().getContextPath().currentContext();
-        org.matheclipse.core.expression.Context context = engine.begin(contextName, pack);
-        return F.stringx(context.completeContextName());
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
-        return F.NIL;
-      }
+      String contextName = Validate.checkContextName(ast, 1);
+      org.matheclipse.core.expression.Context pack =
+          EvalEngine.get().getContextPath().currentContext();
+      org.matheclipse.core.expression.Context context = engine.begin(contextName, pack);
+      return F.stringx(context.completeContextName());
     }
 
     @Override
@@ -130,8 +125,7 @@ public class FileFunctions {
   private static final class BeginPackage extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
-      try {
+ 
         String contextName = Validate.checkContextName(ast, 1);
         engine.beginPackage(contextName);
         if (ast.isAST2()) {
@@ -148,7 +142,7 @@ public class FileFunctions {
             try (FileInputStream fis = new FileInputStream(ast.get(j).toString());
                 Reader r = new InputStreamReader(fis, StandardCharsets.UTF_8);
                 BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));) {
+                    new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8)); ) {
               Get.loadPackage(engine, reader);
             } catch (IOException e) {
               LOGGER.debug("BeginPackage.evaluate() failed", e);
@@ -156,11 +150,7 @@ public class FileFunctions {
           }
         }
         return S.Null;
-
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
-        return F.NIL;
-      }
+ 
     }
 
     @Override
@@ -688,7 +678,9 @@ public class FileFunctions {
             }
           }
           Validate.checkContextName(ast, 1);
-        } catch (ValidateException | MalformedURLException e) {
+        } catch (ValidateException ve) {
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        } catch (MalformedURLException e) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
           return F.NIL;
         }
@@ -830,16 +822,11 @@ public class FileFunctions {
   private static final class Needs extends Get {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        String contextName = Validate.checkContextName(ast, 1);
-        if (!ContextPath.PACKAGES.contains(contextName)) {
-          return super.evaluate(ast, engine);
-        }
-        return S.Null;
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-        return F.NIL;
+      String contextName = Validate.checkContextName(ast, 1);
+      if (!ContextPath.PACKAGES.contains(contextName)) {
+        return super.evaluate(ast, engine);
       }
+      return S.Null;
     }
 
     @Override

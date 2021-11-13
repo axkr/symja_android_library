@@ -815,7 +815,10 @@ public final class LinearAlgebra {
           // Returns the transpose of the matrix L of the decomposition.
           return new ASTRealMatrix(dcomposition.getLT(), false);
         }
-      } catch (final MathRuntimeException | ValidateException e) {
+      } catch (final  ValidateException ve) {
+        // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
+        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+      } catch (final MathRuntimeException   e) {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
         LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       } catch (final IndexOutOfBoundsException e) {
@@ -1176,7 +1179,6 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
         IExpr arg1 = ast.arg1();
         int dimension = arg1.isVector();
         final IAST vector;
@@ -1197,10 +1199,6 @@ public final class LinearAlgebra {
           final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Integer.MIN_VALUE) : 0;
           return F.matrix((i, j) -> (i + offset) == j ? vector.get(i + 1) : F.C0, m - 1, m - 1);
         }
-      } catch (final ValidateException ve) {
-        // int number validation
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-      }
       return F.NIL;
     }
 
@@ -2824,13 +2822,8 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() instanceof LinearSolveFunctionExpr && ast.isAST1()) {
         LinearSolveFunctionExpr<?> lsf = (LinearSolveFunctionExpr<?>) ast.head();
-        try {
           IExpr arg1 = ast.arg1();
           return linearSolve(lsf, arg1, ast, engine);
-        } catch (final ValidateException ve) {
-          // int number validation
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-        }
       }
       return F.NIL;
     }
@@ -2840,30 +2833,22 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        int[] dim = ast.arg1().isMatrix(false);
-        if (dim == null) {
-          // Argument `1` at position `2` is not a non-empty rectangular matrix.
-          return IOFunctions.printMessage(
-              ast.topHead(), "matrix", F.List(ast.arg1(), F.C1), engine);
-        }
-
-        final int k;
-        if (ast.size() == 3) {
-          k = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-        } else {
-          k = 0;
-        }
-        int m = dim[0];
-        int n = dim[1];
-        FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
-        return F.matrix((i, j) -> i >= j - k ? matrix.getEntry(i, j) : F.C0, m, n);
-
-      } catch (final ValidateException ve) {
-        // int number validation
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-        return F.NIL;
+      int[] dim = ast.arg1().isMatrix(false);
+      if (dim == null) {
+        // Argument `1` at position `2` is not a non-empty rectangular matrix.
+        return IOFunctions.printMessage(ast.topHead(), "matrix", F.List(ast.arg1(), F.C1), engine);
       }
+
+      final int k;
+      if (ast.size() == 3) {
+        k = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+      } else {
+        k = 0;
+      }
+      int m = dim[0];
+      int n = dim[1];
+      FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
+      return F.matrix((i, j) -> i >= j - k ? matrix.getEntry(i, j) : F.C0, m, n);
     }
 
     @Override
@@ -3400,10 +3385,6 @@ public final class LinearAlgebra {
             }
             return result;
           }
-
-        } catch (final ValidateException ve) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-          return F.NIL;
         } catch (final IndexOutOfBoundsException e) {
           LOGGER.debug("Norm.evaluate() failed", e);
         }
@@ -3728,7 +3709,7 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int dim1 = ast.arg1().isVector();
       int dim2 = ast.arg2().isVector();
-      try {
+ 
         if (ast.size() == 4) {
           IExpr head = ast.arg3();
           if (dim1 >= 0 && dim1 == dim2) {
@@ -3761,9 +3742,7 @@ public final class LinearAlgebra {
           return Convert.vector2List(
               v.mapMultiply(u.dotProduct(vConjugate).divide(v.dotProduct(vConjugate))));
         }
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-      }
+  
       return F.NIL;
     }
 
@@ -4189,7 +4168,6 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       RealMatrix matrix;
       try {
-
         matrix = ast.arg1().toRealMatrix();
         if (matrix != null) {
           final org.hipparchus.linear.SingularValueDecomposition svd =
@@ -4200,8 +4178,6 @@ public final class LinearAlgebra {
               new ASTRealMatrix(svd.getV(), false));
         }
 
-      } catch (final ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final IndexOutOfBoundsException e) {
         LOGGER.debug("SingularValueDecomposition.evaluate() failed", e);
       }
@@ -4756,22 +4732,16 @@ public final class LinearAlgebra {
         // Argument `1` at position `2` is not a non-empty rectangular matrix.
         return IOFunctions.printMessage(ast.topHead(), "matrix", F.List(ast.arg1(), F.C1), engine);
       }
-      try {
-        final int k;
-        if (ast.size() == 3) {
-          k = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-        } else {
-          k = 0;
-        }
-        int m = dim[0];
-        int n = dim[1];
-        FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
-        return F.matrix((i, j) -> i <= j - k ? matrix.getEntry(i, j) : F.C0, m, n);
-      } catch (final ValidateException ve) {
-        // int number validation
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-        return F.NIL;
+      final int k;
+      if (ast.size() == 3) {
+        k = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+      } else {
+        k = 0;
       }
+      int m = dim[0];
+      int n = dim[1];
+      FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
+      return F.matrix((i, j) -> i <= j - k ? matrix.getEntry(i, j) : F.C0, m, n);
     }
 
     @Override

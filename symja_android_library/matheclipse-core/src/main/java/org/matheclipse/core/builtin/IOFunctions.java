@@ -15,6 +15,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -929,6 +930,14 @@ public class IOFunctions {
     }
     return printMessage(
         topHead, "argt", F.List(head, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);
+  }
+
+  public static IExpr printMessage(ISymbol symbol, final ValidateException ve, EvalEngine engine) {
+    if (Config.SHOW_STACKTRACE) {
+      ve.printStackTrace();
+    }
+    LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, ve.getMessage());
+    return F.NIL;
   }
 
   /**

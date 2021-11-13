@@ -27,7 +27,6 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -904,8 +903,6 @@ public class StatisticsFunctions {
             return binCounts(ast, vector, F.C1, engine);
           }
         }
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (ArithmeticException rex) {
         LOGGER.debug("BinCounts.evaluate() failed", rex);
       }
@@ -3266,8 +3263,6 @@ public class StatisticsFunctions {
       } catch (final MathRuntimeException mre) {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
         LOGGER.log(engine.getLogLevel(), S.Covariance, mre);
-      } catch (final ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       } catch (final IndexOutOfBoundsException e) {
         LOGGER.debug("Covariance.evaluate() failed", e);
       }
@@ -3965,18 +3960,14 @@ public class StatisticsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      try {
-        int length = arg1.isVector();
-        if (length > 0) {
-          IExpr resultQuartiles = engine.evaluate(F.Quartiles(arg1));
-          if (resultQuartiles.isList3()) {
-            return F.Subtract(resultQuartiles.getAt(3), resultQuartiles.getAt(1));
-          }
-        } else if (arg1.isDistribution()) {
-          return F.Subtract(F.Quantile(arg1, F.C3D4), F.Quantile(arg1, F.C1D4));
+      int length = arg1.isVector();
+      if (length > 0) {
+        IExpr resultQuartiles = engine.evaluate(F.Quartiles(arg1));
+        if (resultQuartiles.isList3()) {
+          return F.Subtract(resultQuartiles.getAt(3), resultQuartiles.getAt(1));
         }
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+      } else if (arg1.isDistribution()) {
+        return F.Subtract(F.Quantile(arg1, F.C3D4), F.Quantile(arg1, F.C1D4));
       }
       return F.NIL;
     }
@@ -5642,109 +5633,106 @@ public class StatisticsFunctions {
       if (dim != null) {
         return arg1.mapMatrixColumns(dim, (IExpr x) -> ast.setAtCopy(1, x));
       }
-      try {
-        int dimension = arg1.isVector();
-        if (dimension >= 0 || arg1.isList()) {
-          IExpr normal = arg1.normal(false);
-          if (normal.isList()) {
-            IAST list = (IAST) normal;
-            IExpr a = F.C0;
-            IExpr b = F.C0;
-            IExpr c = F.C1;
-            IExpr d = F.C0;
-            if (ast.size() == 4) {
-              IExpr arg3 = ast.arg3();
-              int[] dimParameters = arg3.isMatrix();
-              if (dimParameters == null || dimParameters[0] != 2 || dimParameters[1] != 2) {
-                return F.NIL;
-              }
-              a = arg3.first().first();
-              b = arg3.first().second();
-              c = arg3.second().first();
-              d = arg3.second().second();
+
+      int dimension = arg1.isVector();
+      if (dimension >= 0 || arg1.isList()) {
+        IExpr normal = arg1.normal(false);
+        if (normal.isList()) {
+          IAST list = (IAST) normal;
+          IExpr a = F.C0;
+          IExpr b = F.C0;
+          IExpr c = F.C1;
+          IExpr d = F.C0;
+          if (ast.size() == 4) {
+            IExpr arg3 = ast.arg3();
+            int[] dimParameters = arg3.isMatrix();
+            if (dimParameters == null || dimParameters[0] != 2 || dimParameters[1] != 2) {
+              return F.NIL;
             }
+            a = arg3.first().first();
+            b = arg3.first().second();
+            c = arg3.second().first();
+            d = arg3.second().second();
+          }
 
-            int dim1 = list.argSize();
-            try {
-              if (dim1 == 0) {
-                // Argument `1` should be a non-empty list.
-                return IOFunctions.printMessage(ast.topHead(), "empt", F.List(list), engine);
-              }
-              if (dim1 > 0 && ast.size() >= 3) {
+          int dim1 = list.argSize();
+          try {
+            if (dim1 == 0) {
+              // Argument `1` should be a non-empty list.
+              return IOFunctions.printMessage(ast.topHead(), "empt", F.List(list), engine);
+            }
+            if (dim1 > 0 && ast.size() >= 3) {
 
-                final IAST s = EvalAttributes.copySortLess(list);
-                final IInteger length = F.ZZ(s.argSize());
+              final IAST s = EvalAttributes.copySortLess(list);
+              final IInteger length = F.ZZ(s.argSize());
 
-                IExpr q = ast.arg2();
-                int dim2 = q.isVector();
-                if (dim2 >= 0 && q.isList()) {
-                  final IAST vector = ((IAST) q);
-                  return vector.mapThread(ast, 2);
-                  // if (vector.forAll(x -> x.isReal())) {
-                  // return vector.map(scalar -> of(s, length, (ISignedNumber) scalar), 1);
-                  // }
-                } else {
-                  if (q.isReal()) {
-                    ISignedNumber qi = (ISignedNumber) q;
-                    if (!qi.isRange(F.C0, F.C1)) {
-                      return IOFunctions.printMessage(
-                          ast.topHead(), "nquan", F.List(qi, F.C0, F.C1), engine);
-                    }
-                    // x = a + (length + b) * q
-                    IExpr x = q.isZero() ? a : S.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
-                    if (x.isNumIntValue()) {
-                      int index = x.toIntDefault();
-                      if (index != Integer.MIN_VALUE) {
-                        if (index < 1) {
-                          index = 1;
-                        } else if (index > s.argSize()) {
-                          index = s.argSize();
-                        }
-                        return s.get(index);
-                      }
-                    }
-                    if (x.isReal()) {
-                      ISignedNumber xi = (ISignedNumber) x;
-                      int xFloor = xi.floorFraction().toIntDefault();
-                      int xCeiling = xi.ceilFraction().toIntDefault();
-                      if (xFloor != Integer.MIN_VALUE && xCeiling != Integer.MIN_VALUE) {
-                        if (xFloor < 1) {
-                          xFloor = 1;
-                        }
-                        if (xCeiling > s.argSize()) {
-                          xCeiling = s.argSize();
-                        }
-                        // factor = c + d * FractionalPart(x);
-                        IExpr factor =
-                            d.isZero() || xi.isZero()
-                                ? c
-                                : S.Plus.of(engine, c, F.Times(d, xi.fractionalPart()));
-                        // s[[Floor(x)]]+(s[[Ceiling(x)]]-s[[Floor(x)]]) * (c + d *
-                        // FractionalPart(x))
-                        return F.Plus(
-                            s.get(xFloor), //
-                            F.Times(F.Subtract(s.get(xCeiling), s.get(xFloor)), factor));
-                      }
-                    }
-                    // return of(s, length, q);
+              IExpr q = ast.arg2();
+              int dim2 = q.isVector();
+              if (dim2 >= 0 && q.isList()) {
+                final IAST vector = ((IAST) q);
+                return vector.mapThread(ast, 2);
+                // if (vector.forAll(x -> x.isReal())) {
+                // return vector.map(scalar -> of(s, length, (ISignedNumber) scalar), 1);
+                // }
+              } else {
+                if (q.isReal()) {
+                  ISignedNumber qi = (ISignedNumber) q;
+                  if (!qi.isRange(F.C0, F.C1)) {
+                    return IOFunctions.printMessage(
+                        ast.topHead(), "nquan", F.List(qi, F.C0, F.C1), engine);
                   }
+                  // x = a + (length + b) * q
+                  IExpr x = q.isZero() ? a : S.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
+                  if (x.isNumIntValue()) {
+                    int index = x.toIntDefault();
+                    if (index != Integer.MIN_VALUE) {
+                      if (index < 1) {
+                        index = 1;
+                      } else if (index > s.argSize()) {
+                        index = s.argSize();
+                      }
+                      return s.get(index);
+                    }
+                  }
+                  if (x.isReal()) {
+                    ISignedNumber xi = (ISignedNumber) x;
+                    int xFloor = xi.floorFraction().toIntDefault();
+                    int xCeiling = xi.ceilFraction().toIntDefault();
+                    if (xFloor != Integer.MIN_VALUE && xCeiling != Integer.MIN_VALUE) {
+                      if (xFloor < 1) {
+                        xFloor = 1;
+                      }
+                      if (xCeiling > s.argSize()) {
+                        xCeiling = s.argSize();
+                      }
+                      // factor = c + d * FractionalPart(x);
+                      IExpr factor =
+                          d.isZero() || xi.isZero()
+                              ? c
+                              : S.Plus.of(engine, c, F.Times(d, xi.fractionalPart()));
+                      // s[[Floor(x)]]+(s[[Ceiling(x)]]-s[[Floor(x)]]) * (c + d *
+                      // FractionalPart(x))
+                      return F.Plus(
+                          s.get(xFloor), //
+                          F.Times(F.Subtract(s.get(xCeiling), s.get(xFloor)), factor));
+                    }
+                  }
+                  // return of(s, length, q);
                 }
               }
-            } catch (ArithmeticException ae) {
-              LOGGER.debug("Quantile.evaluate() failed", ae);
             }
-          }
-        } else if (arg1.isDistribution() && ast.size() >= 3) {
-          IExpr function = engine.evaluate(F.Quantile(arg1));
-          if (function.isFunction()) {
-            if (ast.arg2().isList()) {
-              return ((IAST) ast.arg2()).map(x -> F.unaryAST1(function, x), 1);
-            }
-            return F.unaryAST1(function, ast.arg2());
+          } catch (ArithmeticException ae) {
+            LOGGER.debug("Quantile.evaluate() failed", ae);
           }
         }
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+      } else if (arg1.isDistribution() && ast.size() >= 3) {
+        IExpr function = engine.evaluate(F.Quantile(arg1));
+        if (function.isFunction()) {
+          if (ast.arg2().isList()) {
+            return ((IAST) ast.arg2()).map(x -> F.unaryAST1(function, x), 1);
+          }
+          return F.unaryAST1(function, ast.arg2());
+        }
       }
       return F.NIL;
     }
@@ -5857,8 +5845,6 @@ public class StatisticsFunctions {
             } else {
               return printMessageUdist(head, ast, dist, engine);
             }
-          } catch (ValidateException ve) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
           } catch (RuntimeException ex) {
             LOGGER.log(engine.getLogLevel(), "RandomVariate", ex);
           }

@@ -159,7 +159,8 @@ public class SpecialFunctions {
           LOGGER.debug("Beta.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          LOGGER.debug("Beta.evaluate() failed", ve);
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          //          LOGGER.debug("Beta.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -213,7 +214,8 @@ public class SpecialFunctions {
         LOGGER.debug("Beta.evaluate() failed", te);
         return te.getValue();
       } catch (ValidateException ve) {
-        LOGGER.debug("Beta.evaluate() failed", ve);
+        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        //        LOGGER.debug("Beta.evaluate() failed", ve);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -670,8 +672,7 @@ public class SpecialFunctions {
           LOGGER.debug("GammaRegularized.gammaRegularized2() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-          return F.NIL;
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -717,8 +718,7 @@ public class SpecialFunctions {
           LOGGER.debug("GammaRegularized.gammaRegularzed3() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-          return F.NIL;
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -844,6 +844,8 @@ public class SpecialFunctions {
               return F.num(ZetaJS.hurwitzZeta(sDouble, aDouble));
             }
           }
+        } catch (ValidateException ve) {
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (ThrowException te) {
           LOGGER.debug("HurwitzZeta.evaluate() failed", te);
           return te.getValue();
@@ -1434,6 +1436,8 @@ public class SpecialFunctions {
                 return F.num(GammaJS.polyGamma(n, xDouble));
               }
             }
+          } catch (ValidateException ve) {
+            return IOFunctions.printMessage(ast.topHead(), ve, engine);
           } catch (ThrowException te) {
             LOGGER.debug("PolyGamma.evaluate() failed", te);
             return te.getValue();

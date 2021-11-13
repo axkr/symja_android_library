@@ -133,25 +133,21 @@ public class AssociationFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr leftHandSide = ast.arg1();
-      try {
-        if (leftHandSide.isSymbol()) {
-          ISymbol sym = (ISymbol) leftHandSide;
-          IExpr arg2 = engine.evaluate(ast.arg2());
-          Function<IExpr, IExpr> function = new AssociateToFunction(arg2);
-          IExpr[] results = sym.reassignSymbolValue(function, S.AssociateTo, engine);
-          if (results != null) {
-            return results[1];
-          }
-          return F.NIL;
+      if (leftHandSide.isSymbol()) {
+        ISymbol sym = (ISymbol) leftHandSide;
+        IExpr arg2 = engine.evaluate(ast.arg2());
+        Function<IExpr, IExpr> function = new AssociateToFunction(arg2);
+        IExpr[] results = sym.reassignSymbolValue(function, S.AssociateTo, engine);
+        if (results != null) {
+          return results[1];
         }
-        if (leftHandSide.isASTSizeGE(S.Part, 3) && leftHandSide.first().isSymbol()) {
-          ISymbol sym = (ISymbol) leftHandSide.first();
-          return assignPartTo(sym, (IAST) leftHandSide, ast, engine);
-        }
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         return F.NIL;
       }
+      if (leftHandSide.isASTSizeGE(S.Part, 3) && leftHandSide.first().isSymbol()) {
+        ISymbol sym = (ISymbol) leftHandSide.first();
+        return assignPartTo(sym, (IAST) leftHandSide, ast, engine);
+      }
+
       // `1` is not a variable with a value, so its value cannot be changed.
       return IOFunctions.printMessage(ast.topHead(), "rvalue", F.List(leftHandSide), engine);
     }
@@ -279,7 +275,8 @@ public class AssociationFunctions {
           }
           return assoc;
         } catch (ValidateException ve) {
-          LOGGER.debug("Association.evaluate() failed", ve);
+          IOFunctions.printMessage(S.Association, ve, engine);
+          //          LOGGER.debug("Association.evaluate() failed", ve);
           // print no message
         }
         return evaled ? assocList : F.NIL;
@@ -321,8 +318,7 @@ public class AssociationFunctions {
               return rightHandSide;
             }
           } catch (ValidateException ve) {
-            LOGGER.log(engine.getLogLevel(), builtinSymbol, ve);
-            return F.NIL;
+            return IOFunctions.printMessage(builtinSymbol, ve, engine);
           }
         }
       }
@@ -534,16 +530,12 @@ public class AssociationFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
-        try {
-          Map<IExpr, MutableInt> histogram = MutableInt.createHistogram(list);
-          IAssociation assoc = new ASTAssociation(histogram.size(), false);
-          for (Map.Entry<IExpr, MutableInt> elem : histogram.entrySet()) {
-            assoc.appendRule(F.Rule(elem.getKey(), F.ZZ(elem.getValue().value())));
-          }
-          return assoc;
-        } catch (ValidateException ve) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        Map<IExpr, MutableInt> histogram = MutableInt.createHistogram(list);
+        IAssociation assoc = new ASTAssociation(histogram.size(), false);
+        for (Map.Entry<IExpr, MutableInt> elem : histogram.entrySet()) {
+          assoc.appendRule(F.Rule(elem.getKey(), F.ZZ(elem.getValue().value())));
         }
+        return assoc;
       }
       return F.NIL;
     }
@@ -727,18 +719,14 @@ public class AssociationFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       int size = ast.size();
       if (size == 3) {
-        try {
-          IExpr arg1 = ast.arg1();
-          if (arg1.isListOfRulesOrAssociation(false)) {
-            IAST list = (IAST) arg1;
-            IExpr predicateHead = ast.arg2();
-            return keySelect(list, x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
-          }
-          // The argument `1` is not a valid Association or a list of rules.
-          return IOFunctions.printMessage(ast.topHead(), "invrl", F.List(arg1), engine);
-        } catch (final ValidateException ve) {
-          LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        IExpr arg1 = ast.arg1();
+        if (arg1.isListOfRulesOrAssociation(false)) {
+          IAST list = (IAST) arg1;
+          IExpr predicateHead = ast.arg2();
+          return keySelect(list, x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
         }
+        // The argument `1` is not a valid Association or a list of rules.
+        return IOFunctions.printMessage(ast.topHead(), "invrl", F.List(arg1), engine);
       }
       return F.NIL;
     }
@@ -871,21 +859,17 @@ public class AssociationFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isString()) {
         String str = ((IStringX) arg1).toString();
-        try {
-          HashMap<Character, MutableInt> map = new HashMap<Character, MutableInt>();
-          for (int i = 0; i < str.length(); i++) {
-            map.compute(
-                str.charAt(i), //
-                (k, v) -> (v == null) ? new MutableInt(1) : v.increment());
-          }
-          IAssociation assoc = new ASTAssociation(map.size(), false);
-          for (Map.Entry<Character, MutableInt> elem : map.entrySet()) {
-            assoc.appendRule(F.Rule(F.$str(elem.getKey()), F.ZZ(elem.getValue().value())));
-          }
-          return assoc;
-        } catch (ValidateException ve) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        HashMap<Character, MutableInt> map = new HashMap<Character, MutableInt>();
+        for (int i = 0; i < str.length(); i++) {
+          map.compute(
+              str.charAt(i), //
+              (k, v) -> (v == null) ? new MutableInt(1) : v.increment());
         }
+        IAssociation assoc = new ASTAssociation(map.size(), false);
+        for (Map.Entry<Character, MutableInt> elem : map.entrySet()) {
+          assoc.appendRule(F.Rule(F.$str(elem.getKey()), F.ZZ(elem.getValue().value())));
+        }
+        return assoc;
       }
       return F.NIL;
     }
@@ -1085,11 +1069,12 @@ public class AssociationFunctions {
           }
           return keyTake(arg1, (IAST) arg2);
         } else {
-          LOGGER.log(engine.getLogLevel(),
+          LOGGER.log(
+              engine.getLogLevel(),
               "KeyTake: Association or list of rules expected at position 1.");
         }
       } catch (final ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        IOFunctions.printMessage(ast.topHead(), ve, engine);
       } catch (final RuntimeException rex) {
         LOGGER.debug("KeyTake.evaluate() failed", rex);
       }

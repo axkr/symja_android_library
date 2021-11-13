@@ -941,13 +941,7 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        return booleanConvert(ast, engine);
-      } catch (final ValidateException ve) {
-        // int number validation
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-        return F.NIL;
-      }
+      return booleanConvert(ast, engine);
     }
 
     @Override
@@ -1005,7 +999,7 @@ public final class BooleanFunctions {
         return result;
       } catch (final ValidateException ve) {
         // int number validation
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        IOFunctions.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
 
       }
@@ -1100,20 +1094,16 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        IAST variables;
-        if (ast.isAST2()) {
-          variables = ast.arg2().orNewList();
-        } else {
-          variables = BooleanVariables.booleanVariables(ast.arg1());
-        }
 
-        BooleanTableParameter btp = new BooleanTableParameter(variables, engine);
-        return btp.booleanTable(ast.arg1(), 1);
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-        return F.NIL;
+      IAST variables;
+      if (ast.isAST2()) {
+        variables = ast.arg2().orNewList();
+      } else {
+        variables = BooleanVariables.booleanVariables(ast.arg1());
       }
+
+      BooleanTableParameter btp = new BooleanTableParameter(variables, engine);
+      return btp.booleanTable(ast.arg1(), 1);
     }
 
     @Override
@@ -2172,93 +2162,90 @@ public final class BooleanFunctions {
       if (ast.size() == 2) {
         return S.True;
       }
-      try {
-        // Validate.checkRange(ast, 4, Integer.MAX_VALUE);
-        if (ast.size() < 4) {
-          return F.NIL;
-        }
-        if (ast.size() == 4) {
-          for (IBuiltInSymbol sym : COMPARATOR_SYMBOLS) {
-            if (sym.equals(ast.arg2())) {
-              return F.binaryAST2(ast.arg2(), ast.arg1(), ast.arg3());
-            }
-          }
-          return F.NIL;
-        }
 
-        if ((ast.size()) % 2 != 0) {
-          return F.NIL;
-        }
-        int firstSign = getCompSign(ast.arg2());
-        if (firstSign == UNKNOWN) {
-          return F.NIL;
-        }
-
-        for (int i = 4; i < ast.size(); i += 2) {
-          final int thisSign = getCompSign(ast.get(i));
-          if (thisSign == UNKNOWN) {
-            return F.NIL;
-          }
-          if (thisSign == -firstSign || thisSign == UNEQUAL || firstSign == UNEQUAL) {
-            IASTAppendable firstIneq = F.ast(S.Inequality);
-            IASTAppendable secondIneq = F.ast(S.Inequality);
-            for (int j = 1; j < ast.size(); j++) {
-              final IExpr arg = ast.get(j);
-              if (j < i) {
-                firstIneq.append(arg);
-              }
-              if (j > (i - 2)) {
-                secondIneq.append(arg);
-              }
-            }
-            return F.And(firstIneq, secondIneq);
-          }
-        }
-
-        IASTAppendable res = F.ast(S.Inequality);
-        IExpr lastOp = F.NIL;
-        for (int i = 0; i < (ast.size() - 1) / 2; i++) {
-          final IExpr lhs = ast.get(2 * i + 1);
-          final IExpr op = ast.get(2 * i + 2);
-          final IExpr rhs = ast.get(2 * i + 3);
-          for (int rhsI = 2 * i + 3; rhsI < ast.size(); rhsI += 2) {
-            final IExpr arg = engine.evaluate(F.binaryAST2(op, lhs, ast.get(rhsI)));
-            if (arg.isFalse()) {
-              // explicitly tested for False symbol
-              return S.False;
-            }
-          }
-          IExpr evalRes = engine.evaluate(F.binaryAST2(op, lhs, rhs));
-          if (!evalRes.isTrue()) {
-            if (engine.evaluate(F.SameQ(lhs, res.get(res.size() - 1))).isFalse()) {
-              if (lastOp.isPresent() && res.size() > 2) {
-                res.append(lastOp);
-              }
-              res.append(lhs);
-            }
-            res.append(op);
-            res.append(rhs);
-            lastOp = F.NIL;
-          } else {
-            lastOp = op;
-          }
-        }
-        if (res.isEmpty()) {
-          return S.True;
-        }
-        if (res.size() == 4) {
-          return F.binaryAST2(res.arg2(), res.arg1(), res.arg3());
-        }
-        if (res.size() == ast.size()) {
-          return F.NIL;
-        }
-        return res;
-
-        // return inequality(ast, engine);
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+      // Validate.checkRange(ast, 4, Integer.MAX_VALUE);
+      if (ast.size() < 4) {
         return F.NIL;
       }
+      if (ast.size() == 4) {
+        for (IBuiltInSymbol sym : COMPARATOR_SYMBOLS) {
+          if (sym.equals(ast.arg2())) {
+            return F.binaryAST2(ast.arg2(), ast.arg1(), ast.arg3());
+          }
+        }
+        return F.NIL;
+      }
+
+      if ((ast.size()) % 2 != 0) {
+        return F.NIL;
+      }
+      int firstSign = getCompSign(ast.arg2());
+      if (firstSign == UNKNOWN) {
+        return F.NIL;
+      }
+
+      for (int i = 4; i < ast.size(); i += 2) {
+        final int thisSign = getCompSign(ast.get(i));
+        if (thisSign == UNKNOWN) {
+          return F.NIL;
+        }
+        if (thisSign == -firstSign || thisSign == UNEQUAL || firstSign == UNEQUAL) {
+          IASTAppendable firstIneq = F.ast(S.Inequality);
+          IASTAppendable secondIneq = F.ast(S.Inequality);
+          for (int j = 1; j < ast.size(); j++) {
+            final IExpr arg = ast.get(j);
+            if (j < i) {
+              firstIneq.append(arg);
+            }
+            if (j > (i - 2)) {
+              secondIneq.append(arg);
+            }
+          }
+          return F.And(firstIneq, secondIneq);
+        }
+      }
+
+      IASTAppendable res = F.ast(S.Inequality);
+      IExpr lastOp = F.NIL;
+      for (int i = 0; i < (ast.size() - 1) / 2; i++) {
+        final IExpr lhs = ast.get(2 * i + 1);
+        final IExpr op = ast.get(2 * i + 2);
+        final IExpr rhs = ast.get(2 * i + 3);
+        for (int rhsI = 2 * i + 3; rhsI < ast.size(); rhsI += 2) {
+          final IExpr arg = engine.evaluate(F.binaryAST2(op, lhs, ast.get(rhsI)));
+          if (arg.isFalse()) {
+            // explicitly tested for False symbol
+            return S.False;
+          }
+        }
+        IExpr evalRes = engine.evaluate(F.binaryAST2(op, lhs, rhs));
+        if (!evalRes.isTrue()) {
+          if (engine.evaluate(F.SameQ(lhs, res.get(res.size() - 1))).isFalse()) {
+            if (lastOp.isPresent() && res.size() > 2) {
+              res.append(lastOp);
+            }
+            res.append(lhs);
+          }
+          res.append(op);
+          res.append(rhs);
+          lastOp = F.NIL;
+        } else {
+          lastOp = op;
+        }
+      }
+      if (res.isEmpty()) {
+        return S.True;
+      }
+      if (res.size() == 4) {
+        return F.binaryAST2(res.arg2(), res.arg1(), res.arg3());
+      }
+      if (res.size() == ast.size()) {
+        return F.NIL;
+      }
+      return res;
+
+      // return inequality(ast, engine);
+
     }
   }
 
@@ -2506,6 +2493,7 @@ public final class BooleanFunctions {
           try {
             return booleanConvert(F.BooleanConvert(formula, F.stringx("DNF")), engine);
           } catch (final ValidateException ve) {
+            // necessary here because of direct calls
           }
         }
         return F.NIL;
@@ -3633,29 +3621,24 @@ public final class BooleanFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST userDefinedVariables;
       IExpr arg1 = ast.arg1();
-      try {
-        // currently only SAT is available
-        String method = "SAT";
-        if (ast.size() > 2) {
-          userDefinedVariables = ast.arg2().orNewList();
-          if (ast.size() > 3) {
-            final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-            // "BDD" (binary decision diagram), "SAT", "TREE" ?
-            IExpr optionMethod = options.getOption(S.Method);
-            if (optionMethod.isString()) {
-              method = optionMethod.toString();
-            }
+
+      // currently only SAT is available
+      String method = "SAT";
+      if (ast.size() > 2) {
+        userDefinedVariables = ast.arg2().orNewList();
+        if (ast.size() > 3) {
+          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+          // "BDD" (binary decision diagram), "SAT", "TREE" ?
+          IExpr optionMethod = options.getOption(S.Method);
+          if (optionMethod.isString()) {
+            method = optionMethod.toString();
           }
-        } else {
-          VariablesSet vSet = new VariablesSet(arg1);
-          userDefinedVariables = vSet.getVarList();
         }
-        return logicNGSatisfiabilityCount(arg1, userDefinedVariables);
-      } catch (final ValidateException ve) {
-        // int number validation
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-        return F.NIL;
+      } else {
+        VariablesSet vSet = new VariablesSet(arg1);
+        userDefinedVariables = vSet.getVarList();
       }
+      return logicNGSatisfiabilityCount(arg1, userDefinedVariables);
     }
 
     @Override
@@ -3722,53 +3705,48 @@ public final class BooleanFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST userDefinedVariables;
       IExpr arg1 = ast.arg1();
-      try {
-        VariablesSet vSet = new VariablesSet(arg1);
-        IAST variablesInFormula = vSet.getVarList();
-        // currently only SAT is available
-        String method = "SAT";
-        int maxChoices = 1;
-        if (ast.size() > 2) {
-          if (ast.arg2().equals(S.All)) {
-            maxChoices = Integer.MAX_VALUE;
-            userDefinedVariables = variablesInFormula;
-          } else {
-            userDefinedVariables = ast.arg2().orNewList();
-          }
-          IExpr complement = S.Complement.of(engine, userDefinedVariables, variablesInFormula);
-          if (complement.size() > 1 && complement.isList()) {
-            IASTAppendable or = F.Or();
-            or.append(arg1);
-            arg1 = or;
-            or.appendArgs((IAST) complement);
-          }
 
-          if (ast.size() > 3) {
-            final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-            // "BDD" (binary decision diagram), "SAT", "TREE" ?
-            IExpr optionMethod = options.getOption(S.Method);
-            if (optionMethod.isString()) {
-              method = optionMethod.toString();
-            }
-          }
-
-          IExpr argN = ast.last();
-          if (!argN.isRule()) {
-            if (argN.equals(S.All)) {
-              maxChoices = Integer.MAX_VALUE;
-            } else if (argN.isNumber()) {
-              maxChoices = Validate.checkPositiveIntType(ast, ast.argSize());
-            }
-          }
-        } else {
+      VariablesSet vSet = new VariablesSet(arg1);
+      IAST variablesInFormula = vSet.getVarList();
+      // currently only SAT is available
+      String method = "SAT";
+      int maxChoices = 1;
+      if (ast.size() > 2) {
+        if (ast.arg2().equals(S.All)) {
+          maxChoices = Integer.MAX_VALUE;
           userDefinedVariables = variablesInFormula;
+        } else {
+          userDefinedVariables = ast.arg2().orNewList();
         }
-        return satisfiabilityInstances(arg1, userDefinedVariables, maxChoices);
-      } catch (final ValidateException ve) {
-        // int number validation
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-        return F.NIL;
+        IExpr complement = S.Complement.of(engine, userDefinedVariables, variablesInFormula);
+        if (complement.size() > 1 && complement.isList()) {
+          IASTAppendable or = F.Or();
+          or.append(arg1);
+          arg1 = or;
+          or.appendArgs((IAST) complement);
+        }
+
+        if (ast.size() > 3) {
+          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+          // "BDD" (binary decision diagram), "SAT", "TREE" ?
+          IExpr optionMethod = options.getOption(S.Method);
+          if (optionMethod.isString()) {
+            method = optionMethod.toString();
+          }
+        }
+
+        IExpr argN = ast.last();
+        if (!argN.isRule()) {
+          if (argN.equals(S.All)) {
+            maxChoices = Integer.MAX_VALUE;
+          } else if (argN.isNumber()) {
+            maxChoices = Validate.checkPositiveIntType(ast, ast.argSize());
+          }
+        }
+      } else {
+        userDefinedVariables = variablesInFormula;
       }
+      return satisfiabilityInstances(arg1, userDefinedVariables, maxChoices);
     }
 
     @Override
@@ -3804,40 +3782,34 @@ public final class BooleanFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IASTMutable userDefinedVariables;
       IExpr arg1 = ast.arg1();
-      try {
-        // currently only SAT is available
-        String method = "SAT";
-        if (ast.size() > 2) {
-          if (ast.arg2().isList()) {
-            userDefinedVariables = ((IAST) ast.arg2()).copy();
-            EvalAttributes.sort(userDefinedVariables);
-          } else {
-            userDefinedVariables = F.ListAlloc(ast.arg2());
-          }
-          if (ast.size() > 3) {
-            final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-            // "BDD" (binary decision diagram), "SAT", "TREE" ?
-            IExpr optionMethod = options.getOption(S.Method);
-            if (optionMethod.isString()) {
-              method = optionMethod.toString();
-            }
-          }
-          VariablesSet vSet = new VariablesSet(arg1);
-          IAST variables = vSet.getVarList();
-          if (variables.equals(userDefinedVariables)) {
-            return logicNGSatisfiableQ(arg1);
-          }
 
+      // currently only SAT is available
+      String method = "SAT";
+      if (ast.size() > 2) {
+        if (ast.arg2().isList()) {
+          userDefinedVariables = ((IAST) ast.arg2()).copy();
+          EvalAttributes.sort(userDefinedVariables);
         } else {
+          userDefinedVariables = F.ListAlloc(ast.arg2());
+        }
+        if (ast.size() > 3) {
+          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+          // "BDD" (binary decision diagram), "SAT", "TREE" ?
+          IExpr optionMethod = options.getOption(S.Method);
+          if (optionMethod.isString()) {
+            method = optionMethod.toString();
+          }
+        }
+        VariablesSet vSet = new VariablesSet(arg1);
+        IAST variables = vSet.getVarList();
+        if (variables.equals(userDefinedVariables)) {
           return logicNGSatisfiableQ(arg1);
         }
-        return bruteForceSatisfiableQ(arg1, userDefinedVariables, 1) ? S.True : S.False;
 
-      } catch (final ValidateException ve) {
-        // int number validation
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-        return F.NIL;
+      } else {
+        return logicNGSatisfiableQ(arg1);
       }
+      return bruteForceSatisfiableQ(arg1, userDefinedVariables, 1) ? S.True : S.False;
     }
 
     @Override
@@ -3936,29 +3908,24 @@ public final class BooleanFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IASTMutable userDefinedVariables;
       IExpr arg1 = ast.arg1();
-      try {
-        if (ast.isAST2()) {
-          if (ast.arg2().isList()) {
-            userDefinedVariables = ((IAST) ast.arg2()).copy();
-            EvalAttributes.sort(userDefinedVariables);
-          } else {
-            userDefinedVariables = F.ListAlloc(ast.arg2());
-          }
-          VariablesSet vSet = new VariablesSet(arg1);
-          IAST variables = vSet.getVarList();
-          if (variables.equals(userDefinedVariables)) {
-            return logicNGTautologyQ(arg1);
-          }
+
+      if (ast.isAST2()) {
+        if (ast.arg2().isList()) {
+          userDefinedVariables = ((IAST) ast.arg2()).copy();
+          EvalAttributes.sort(userDefinedVariables);
         } else {
+          userDefinedVariables = F.ListAlloc(ast.arg2());
+        }
+        VariablesSet vSet = new VariablesSet(arg1);
+        IAST variables = vSet.getVarList();
+        if (variables.equals(userDefinedVariables)) {
           return logicNGTautologyQ(arg1);
         }
-
-        return bruteForceTautologyQ(arg1, userDefinedVariables, 1) ? S.True : S.False;
-      } catch (final ValidateException ve) {
-        // int number validation
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
-        return F.NIL;
+      } else {
+        return logicNGTautologyQ(arg1);
       }
+
+      return bruteForceTautologyQ(arg1, userDefinedVariables, 1) ? S.True : S.False;
     }
 
     @Override

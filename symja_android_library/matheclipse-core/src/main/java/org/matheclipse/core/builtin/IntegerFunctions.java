@@ -1275,7 +1275,7 @@ public class IntegerFunctions {
               return F.num(zDouble / nDouble).floorFraction();
             }
           } catch (ValidateException ve) {
-            LOGGER.debug("Quotient.evaluate() failed", ve);
+            return IOFunctions.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
@@ -1409,7 +1409,7 @@ public class IntegerFunctions {
               return F.List(quotient, remainder);
             }
           } catch (ValidateException ve) {
-            LOGGER.debug("QuotientRemainder.evaluate() failed", ve);
+            return IOFunctions.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }

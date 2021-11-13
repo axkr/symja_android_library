@@ -142,7 +142,7 @@ public class CompilerFunctions {
         }
         return F.NIL;
       } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+        return IOFunctions.printMessage(ast.topHead(), ve, engine);
       } catch (CompileException | ClassNotFoundException | RuntimeException e) {
         LOGGER.log(engine.getLogLevel(), "Compile", e);
       }
@@ -497,7 +497,7 @@ public class CompilerFunctions {
       }
       try {
         StringBuilder buf = new StringBuilder();
-        JavaComplexFormFactory factory = JavaComplexFormFactory.get(true, false,-1,-1,true);
+        JavaComplexFormFactory factory = JavaComplexFormFactory.get(true, false, -1, -1, true);
         buf.append("F.complexNum(");
         expression =
             F.subst(
@@ -525,18 +525,22 @@ public class CompilerFunctions {
 
     private boolean convertSymbolic(StringBuilder buf, IExpr expression) {
       try {
-        buf.append(expression.internalJavaString(JAVA_FORM_PROPERTIES, -1, x -> {
-          if (x.isSymbol()) {
-            if (localVariables.contains(x.toString())) {
-              return "vars.get(\"" + x.toString() + "\")";
-            }
-          }
-          String str = numericVariables.apply(x);
-          if (x.isSymbol() && str != null) {
-            return str;
-          }
-          return null;
-        }));
+        buf.append(
+            expression.internalJavaString(
+                JAVA_FORM_PROPERTIES,
+                -1,
+                x -> {
+                  if (x.isSymbol()) {
+                    if (localVariables.contains(x.toString())) {
+                      return "vars.get(\"" + x.toString() + "\")";
+                    }
+                  }
+                  String str = numericVariables.apply(x);
+                  if (x.isSymbol() && str != null) {
+                    return str;
+                  }
+                  return null;
+                }));
         return true;
       } catch (RuntimeException rex) {
         //
@@ -592,27 +596,23 @@ public class CompilerFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST3()) {
-          // TODO implement for 3 args
-          return F.NIL;
-        }
-        IAST[] vars = OutputFunctions.checkIsVariableOrVariableList(ast, engine);
-        if (vars == null) {
-          return F.NIL;
-        }
-        IAST variables = vars[0];
-        IAST types = vars[1];
 
-        String source = compilePrint(ast, variables, types, engine);
-        if (source != null) {
-          return F.stringx(source, IStringX.APPLICATION_JAVA);
-        }
-        return F.NIL;
-      } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
+      if (ast.isAST3()) {
+        // TODO implement for 3 args
         return F.NIL;
       }
+      IAST[] vars = OutputFunctions.checkIsVariableOrVariableList(ast, engine);
+      if (vars == null) {
+        return F.NIL;
+      }
+      IAST variables = vars[0];
+      IAST types = vars[1];
+
+      String source = compilePrint(ast, variables, types, engine);
+      if (source != null) {
+        return F.stringx(source, IStringX.APPLICATION_JAVA);
+      }
+      return F.NIL;
     }
 
     @Override

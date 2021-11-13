@@ -953,6 +953,8 @@ public class EllipticIntegrals {
             try {
               return F.complexNum(
                   EllipticFunctionsJS.jacobiTheta(a, x.evalComplex(), m.evalComplex()));
+            } catch (ValidateException ve) {
+              return IOFunctions.printMessage(ast.topHead(), ve, engine);
             } catch (RuntimeException rex) {
               LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             }
@@ -1680,6 +1682,8 @@ public class EllipticIntegrals {
             org.hipparchus.complex.Complex[] invariants =
                 EllipticFunctionsJS.weierstrassInvariants(g2.evalComplex(), g3.evalComplex());
             return Object2Expr.convertComplex(false, invariants);
+          } catch (ValidateException ve) {
+            return IOFunctions.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }

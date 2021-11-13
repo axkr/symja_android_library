@@ -2144,7 +2144,7 @@ public final class PatternMatching {
               createPatternMatcher(symbol, leftHandSide, rightHandSide, false, S.TagSet, engine);
           return (IExpr) result[1];
         } catch (final ValidateException ve) {
-          LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+          IOFunctions.printMessage(ast.topHead(), ve, engine);
           return rightHandSide;
         }
       }
@@ -2247,7 +2247,7 @@ public final class PatternMatching {
           createPatternMatcher(symbol, leftHandSide, rightHandSide, false, S.TagSetDelayed, engine);
           return S.Null;
         } catch (final ValidateException ve) {
-          LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+          IOFunctions.printMessage(ast.topHead(), ve, engine);
           return S.Null;
         }
       }
@@ -2496,7 +2496,7 @@ public final class PatternMatching {
         Object[] result = createPatternMatcher(leftHandSide, rightHandSide, false, engine);
         return (IExpr) result[1];
       } catch (final ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        IOFunctions.printMessage(ast.topHead(), ve, engine);
         return F.NIL;
       }
     }
@@ -2565,7 +2565,7 @@ public final class PatternMatching {
 
         return S.Null;
       } catch (final ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
+        IOFunctions.printMessage(ast.topHead(), ve, engine);
         return F.NIL;
       }
     }

@@ -2156,7 +2156,7 @@ public class ExpTrigsFunctions {
             // z)))));
           }
         } catch (ValidateException ve) {
-          LOGGER.debug("Gudermannian.evaluate() failed", ve);
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -2229,7 +2229,7 @@ public class ExpTrigsFunctions {
                     ));
           }
         } catch (ValidateException ve) {
-          LOGGER.debug("InverseGudermannian.evaluate() failed", ve);
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
