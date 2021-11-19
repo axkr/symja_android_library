@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -49,20 +50,25 @@ public class BinaryNumerical implements BiFunction<IExpr, IExpr, IExpr> {
         F.subst(fun, F.List(F.Rule(variable1, firstArg), F.Rule(variable2, secondArg))));
   }
 
-  public double value(double x, double y) {
+  public double value(final double x, final double y) {
     double result = 0.0;
-    IExpr value1 = variable1.assignedValue();
-    IExpr value2 = variable2.assignedValue();
     try {
-      variable1.assignValue(Num.valueOf(x), false);
-      variable2.assignValue(Num.valueOf(y), false);
+      final INum xValue = F.num(x);
+      final INum yValue = F.num(y);
+      // substitution is more thread safe than direct value assigning to global variables
+      IExpr temp =
+          F.subst(
+              fun,
+              arg -> {
+                if (arg.equals(variable1)) {
+                  return xValue;
+                }
+                return arg.equals(variable2) ? yValue : arg;
+              });
       final double[] stack = new double[10];
-      result = DoubleStackEvaluator.eval(stack, 0, fun);
+      result = DoubleStackEvaluator.eval(stack, 0, temp);
     } catch (RuntimeException rex) {
       return Double.NaN;
-    } finally {
-      variable1.assignValue(value1, false);
-      variable2.assignValue(value2, false);
     }
     return result;
   }

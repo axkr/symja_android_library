@@ -69,14 +69,12 @@ public class UnaryNumerical
   public double value(double x) {
     double result = 0.0;
     final double[] stack = new double[10];
-    IExpr value = fVariable.assignedValue();
     try {
-      fVariable.assignValue(Num.valueOf(x), false);
-      result = DoubleStackEvaluator.eval(stack, 0, fFunction);
+      // substitution is more thread safe than direct value assigning to global variable
+      IExpr temp = F.subs(fFunction, fVariable, Num.valueOf(x));
+      result = DoubleStackEvaluator.eval(stack, 0, temp);
     } catch (RuntimeException rex) {
       return Double.NaN;
-    } finally {
-      fVariable.assignValue(value, false);
     }
     return result;
   }
