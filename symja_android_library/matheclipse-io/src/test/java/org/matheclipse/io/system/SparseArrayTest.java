@@ -60,33 +60,33 @@ public class SparseArrayTest extends AbstractTestCase {
         "");
   }
 
-//  public void testCoefficientArrays() {
-//	  // TODO 
-//    check(
-//        "CoefficientArrays(2*x + 3*y^2 + 4*z + 5, {x, y, z}) // Normal", //
-//        "{5,{2,0,4},{{0,0,0},{0,3,0},{0,0,0}}}");
-//    check(
-//        "CoefficientArrays(2*x + 3*y + 4*z + 5, {x, y, z}) // Normal", //
-//        "{5,{2,3,4}}");
-//
-//    check(
-//        "CoefficientArrays({a + x - y - z == 0, b + x + 2 y + z == 0}, {x, y, z})", //
-//        " ");
-//
-//    check(
-//        "CoefficientList({a + x - y - z , b + x + 2 y + z}, {x, y, z})", //
-//        "{{{{a,-1},{-1,0}},{{1,0},{0,0}}},{{{b,1},{2,0}},{{1,0},{0,0}}}}");
-//    check(
-//        "CoefficientRules({a + x - y - z, b + x + 2 y + z}, {x, y, z})", //
-//        "{{{1,0,0}->1,{0,1,0}->-1,{0,0,1}->-1,{0,0,0}->a},{{1,0,0}->1,{0,1,0}->2,{0,0,1}->\n"
-//            + "1,{0,0,0}->b}}");
-//    check(
-//        "CoefficientRules(a+x - y - z, {x, y, z})", //
-//        "{{1,0,0}->1,{0,1,0}->-1,{0,0,1}->-1,{0,0,0}->a}");
-//    check(
-//        "SparseArray({{2,1,1}->1,{1,2,1}->-1,{1,1,2}->-1,{1,1,1}->a}) // Normal", //
-//        "{{{a,-1},{-1,0}},{{1,0},{0,0}}}");
-//  }
+  //  public void testCoefficientArrays() {
+  //	  // TODO
+  //    check(
+  //        "CoefficientArrays(2*x + 3*y^2 + 4*z + 5, {x, y, z}) // Normal", //
+  //        "{5,{2,0,4},{{0,0,0},{0,3,0},{0,0,0}}}");
+  //    check(
+  //        "CoefficientArrays(2*x + 3*y + 4*z + 5, {x, y, z}) // Normal", //
+  //        "{5,{2,3,4}}");
+  //
+  //    check(
+  //        "CoefficientArrays({a + x - y - z == 0, b + x + 2 y + z == 0}, {x, y, z})", //
+  //        " ");
+  //
+  //    check(
+  //        "CoefficientList({a + x - y - z , b + x + 2 y + z}, {x, y, z})", //
+  //        "{{{{a,-1},{-1,0}},{{1,0},{0,0}}},{{{b,1},{2,0}},{{1,0},{0,0}}}}");
+  //    check(
+  //        "CoefficientRules({a + x - y - z, b + x + 2 y + z}, {x, y, z})", //
+  //        "{{{1,0,0}->1,{0,1,0}->-1,{0,0,1}->-1,{0,0,0}->a},{{1,0,0}->1,{0,1,0}->2,{0,0,1}->\n"
+  //            + "1,{0,0,0}->b}}");
+  //    check(
+  //        "CoefficientRules(a+x - y - z, {x, y, z})", //
+  //        "{{1,0,0}->1,{0,1,0}->-1,{0,0,1}->-1,{0,0,0}->a}");
+  //    check(
+  //        "SparseArray({{2,1,1}->1,{1,2,1}->-1,{1,1,2}->-1,{1,1,1}->a}) // Normal", //
+  //        "{{{a,-1},{-1,0}},{{1,0},{0,0}}}");
+  //  }
 
   public void testDot() {
     check(
@@ -632,6 +632,13 @@ public class SparseArrayTest extends AbstractTestCase {
   }
 
   public void testSparseArrayPattern() {
+        check(
+            "SparseArray({{i_, j_} /; (i > j+1)-> (i+j ) }, {4, 4}) // MatrixForm", //
+            "{{0,0,0,0},\n" //
+                + " {0,0,0,0},\n"
+                + " {4,0,0,0},\n"
+                + " {5,6,0,0}}");
+
     check(
         "SparseArray({{6, _} -> 11.5, {_, 6} -> 21.5, {i_, i_} -> i}, {10, 10}) // MatrixForm", //
         "{{1,0,0,0,0,21.5,0,0,0,0},\n"
@@ -644,13 +651,16 @@ public class SparseArrayTest extends AbstractTestCase {
             + " {0,0,0,0,0,21.5,0,8,0,0},\n"
             + " {0,0,0,0,0,21.5,0,0,9,0},\n"
             + " {0,0,0,0,0,21.5,0,0,0,10}}");
-    //
-    //    check(
-    //            "s=SparseArray({{6, _} -> 11.5, {_, 6} -> 21.5, {i_, i_} -> i}, {50, 50})", //
-    //            "SparseArray(Number of elements: 148 Dimensions: {50,50} Default value: 0)");
-    //    check(
-    //            "Eigenvalues(s, 4)", //
-    //            "");
+
+    check(
+        "s=SparseArray({{6, _} -> 11.5, {_, 6} -> 21.5, {i_, i_} -> i}, {50, 50})", //
+        "SparseArray(Number of elements: 148 Dimensions: {50,50} Default value: 0)");
+    check(
+        "Eigenvalues(s, 4)", //
+        "{130.066,-92.43031,49.78784,48.74938}");
+    check(
+        "Eigenvalues(s, -4)", //
+        "{4.32993,3.29103,2.25761,1.21517}");
   }
 
   public void testSparseArrayOfSparseArray01() {

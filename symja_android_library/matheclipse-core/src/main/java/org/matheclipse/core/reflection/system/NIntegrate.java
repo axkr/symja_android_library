@@ -16,6 +16,7 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -107,6 +108,11 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       throws MathIllegalStateException {
     GaussIntegratorFactory factory = new GaussIntegratorFactory();
 
+    if (!list.arg1().isSymbol()) {
+      // `1` is not a valid variable.
+      String str = IOFunctions.getMessage("ivar", F.List(list.arg1()), EvalEngine.get());
+      throw new ArgumentTypeException(str);
+    }
     ISymbol xVar = (ISymbol) list.arg1();
     final EvalEngine engine = EvalEngine.get();
     IExpr tempFunction = F.eval(function);

@@ -6,6 +6,7 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.transform.DftNormalization;
 import org.hipparchus.transform.FastFourierTransformer;
 import org.hipparchus.transform.TransformType;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -26,8 +27,12 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr expr = ast.arg1();
 
-    IExpr symbol = Validate.checkIsVariable(ast, 2, engine);
-    if (symbol.isPresent()) {
+    IExpr variable = Validate.checkIsVariable(ast, 2, engine);
+    if (variable.isPresent()) {
+      if (!variable.isSymbol()) {
+        // `1` is not a valid variable.
+        return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(variable), engine);
+      }
       // IExpr omega = ast.arg3();
       if (ast.size() > 4) {
         // final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
@@ -37,7 +42,7 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
         // }
       }
 
-      UnivariateFunction f = new UnaryNumerical(expr, (ISymbol) symbol, engine);
+      UnivariateFunction f = new UnaryNumerical(expr, (ISymbol) variable, engine);
       FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
       org.hipparchus.complex.Complex[] result =
           fft.transform(f, -1.0, 1.0, 8, TransformType.FORWARD);

@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -49,6 +50,10 @@ public class Plot extends AbstractEvaluator {
       try {
         final IAST rangeList = (IAST) ast.arg2();
         if (rangeList.isAST3()) {
+          if (!rangeList.arg1().isSymbol()) {
+            // `1` is not a valid variable.
+            return IOFunctions.printMessage(S.Plot, "ivar", F.List(rangeList.arg1()), engine);
+          }
           final ISymbol x = (ISymbol) rangeList.arg1();
           final IExpr xMin = engine.evalN(rangeList.arg2());
           final IExpr xMax = engine.evalN(rangeList.arg3());
@@ -175,7 +180,7 @@ public class Plot extends AbstractEvaluator {
    * @param yMax if <code>yMin != 0 && yMax != 0</code> filter only results which are in the y-range
    *     and set yMin or yMax as plot result-range.
    * @param function the function which should be plotted
-   * @param xVar the variable name
+   * @param xVar the variable symbol
    * @param engine the evaluation engine
    * @return <code>F.NIL</code> is no conversion of the data into an <code>IExpr</code> was possible
    */
@@ -188,6 +193,7 @@ public class Plot extends AbstractEvaluator {
       final ISymbol xVar,
       Dimensions2D autoPlotRange,
       final EvalEngine engine) {
+
     final double step = (xMax - xMin) / N;
     double y;
 

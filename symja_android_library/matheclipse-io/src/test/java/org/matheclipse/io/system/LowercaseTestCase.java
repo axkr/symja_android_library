@@ -1545,6 +1545,24 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testArray() {
+    check(
+        "Array(f, 10, {0,1})", //
+        "{f(0),f(1/9),f(2/9),f(1/3),f(4/9),f(5/9),f(2/3),f(7/9),f(8/9),f(1)}");
+    check(
+        "Array(f, 5, {0,Pi/2})", //
+        "{f(0),f(Pi/8),f(Pi/4),f(3/8*Pi),f(Pi/2)}");
+    check(
+        "Array(Sin(2*#) - Cos(3*#) &,  5, {0,Pi/2})", //
+        "{-1,1/Sqrt(2)-Sqrt(2-Sqrt(2))/2,1+1/Sqrt(2),1/Sqrt(2)+Sqrt(2+Sqrt(2))/2,0}");
+    check(
+        "Array(f, -10, {0,1})", //
+        "Array(f,-10,{0,1})");
+    check(
+        "Array(f, 5, a)", //
+        "{f(a),f(1+a),f(2+a),f(3+a),f(4+a)}");
+    check(
+        "Array(f, 5, a, g)", //
+        "g(f(a),f(1+a),f(2+a),f(3+a),f(4+a))");
 
     // TODO return 0
     // check("Array(f,0,1,Plus)", //
@@ -3984,6 +4002,15 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "Check(0^0, failure)", //
         "failure");
+  }
+  
+  public void testCheckAbort() {
+    check(
+        "CheckAbort(Abort(); -1, 41) + 1", //
+        "42");
+    check(
+        "CheckAbort(abc; -1, 41) + 1", //
+        "0");
   }
 
   public void testChebyshevT() {
@@ -7467,6 +7494,12 @@ public class LowercaseTestCase extends AbstractTestCase {
         "2");
   }
 
+  public void testCapitalDifferentialD() {
+    check(
+        "\"start \\[CapitalDifferentialD] 123 end\"", //
+        "startⅅ 123 end");
+  }
+
   public void testDerivative() {
     check(
         "Derivative(0,0,0)[Sequence()]", //
@@ -8891,10 +8924,10 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{2,3,5,6,8,9}");
     check(
         "Drop(Range(6), {-5, -2, -2}) ", //
-        "Drop(Range(6),{-5,-2,-2})");
+        "Drop({1,2,3,4,5,6},{-5,-2,-2})");
     check(
         "Drop(Range(6), {0, 3, 1}) ", //
-        "Drop(Range(6),{0,3,1})");
+        "Drop({1,2,3,4,5,6},{0,3,1})");
     check(
         "Drop(Range(6), {1, 3, 1}) ", //
         "{4,5,6}");
@@ -10106,7 +10139,13 @@ public class LowercaseTestCase extends AbstractTestCase {
         "False");
     check(
         "Equivalent(a,b,c)", //
-        "Equivalent(a,b,c)");
+        "a⇔b⇔c");
+    check(
+        "Equivalent(a \\[Implies] b,c)", //
+        "c⇔(a⇒b)");
+    check(
+        "Equivalent(a \\[Equivalent] b,c)", //
+        "c⇔a⇔b");
     check(
         "Equivalent(a,b,True,c)", //
         "a&&b&&c");
@@ -10125,7 +10164,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "True");
     check(
         "Equivalent(a,b,a,b,c)", //
-        "Equivalent(a,b,c)");
+        "a⇔b⇔c");
     check(
         "Equivalent(a,b,c,True,False)", //
         "False");
@@ -12838,6 +12877,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testFirstPosition() {
     check(
+        "FirstPosition(x^2 + y^2, Power, Heads->False)", //
+        "Missing(NotFound)");
+
+    check(
         "FirstPosition({a, b, a, a, b, c, b}, b)", //
         "{2}");
     check(
@@ -12858,9 +12901,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "FirstPosition(x^2 + y^2, Power)", //
         "{1,0}");
-    check(
-        "FirstPosition(x^2 + y^2, Power, Heads->False)", //
-        "Missing(NotFound)");
     check(
         "FirstPosition(Range(-1, 1, 0.05), 0.1)", //
         "Missing(NotFound)");
@@ -16091,11 +16131,11 @@ public class LowercaseTestCase extends AbstractTestCase {
         "a");
     check(
         "Implies(a,Implies(b,Implies(True,c)))", //
-        "Implies(a,Implies(b,c))");
+        "a⇒b⇒c");
 
     check(
         "Implies(p,q)", //
-        "Implies(p,q)");
+        "p⇒q");
 
     check(
         "Implies(a,True)", //
@@ -20905,7 +20945,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     // "");
     check(
         "e1=Implies(Xor(a, b, c), (a || b) && c)", //
-        "Implies(Xor(a,b,c),(a||b)&&c)");
+        "Xor(a,b,c)⇒(a||b)&&c");
     check(
         "e2=LogicalExpand(Implies(Xor(a, b, c), (a || b) && c))", //
         "(a&&b&&!c)||(a&&!b&&c)||(a&&c)||(!a&&b&&c)||(!a&&!b&&!c)||(b&&c)");
@@ -35710,6 +35750,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testTableForm() {
+    //    check(
+    //        "TableForm({{a, b}, {c, d}, {e, f}}, TableHeadings -> {None, {\"c1\", \"c2\"}})", //
+    //        "");
     check(
         "TableForm(SparseArray(Array(a, {2})))", //
         "a(1)\n" + "a(2)\n");
@@ -35775,7 +35818,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{8,6,4}");
     check(
         "Take(Range(6), {-5, -2, -2})", //
-        "Take(Range(6),{-5,-2,-2})");
+        "Take({1,2,3,4,5,6},{-5,-2,-2})");
     check(
         "Take(l, {-1})", //
         "Take(l,{-1})");

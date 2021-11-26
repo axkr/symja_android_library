@@ -146,17 +146,17 @@ public class SeriesTest extends AbstractTestCase {
     // TODO check max power
     check(
         "Series(Sin(x)^2,{x,0,5})//FullForm", //
-        "SeriesData(x,0,{1,0,-1/3},2,6,1)");
+        "SeriesData(x, 0, List(1, 0, Rational(-1,3)), 2, 6, 1)");
 
     check(
         "Series(b ,{x,0,5})//FullForm", //
         "b");
     check(
         "Series(b *x ,{x,0,5})//FullForm", //
-        "SeriesData(x,0,{b},1,6,1)");
+        "SeriesData(x, 0, List(b), 1, 6, 1)");
     check(
         "Series(b *x ,{x,0,-2})//FullForm", //
-        "SeriesData(x,0,{},0,1,1)");
+        "SeriesData(x, 0, List(), 0, 1, 1)");
 
     check(
         "Series(Sin(x),{x,2,3})", //
@@ -204,30 +204,30 @@ public class SeriesTest extends AbstractTestCase {
     // TODO check max power
     check(
         "Series(Sin(x)^3,{x,0,5})//FullForm", //
-        "SeriesData(x,0,{1,0,-1/2},3,6,1)");
+        "SeriesData(x, 0, List(1, 0, Rational(-1,2)), 3, 6, 1)");
 
     // TODO check power value
     check(
         "Series(Sin(x) ,{x,0,-2})//FullForm", //
-        "SeriesData(x,0,{},1,1,1)");
+        "SeriesData(x, 0, List(), 1, 1, 1)");
     // TODO check power value
     check(
-        "Series(b*Sin(x) ,{x,0,-2})//FullForm", //
+        "Series(b*Sin(x) ,{x,0,-2})//InputForm", //
         "SeriesData(x,0,{},1,1,1)");
 
     check(
-        "Series(b*x ,{x,0,-2})//FullForm", //
+        "Series(b*x ,{x,0,-2})//InputForm", //
         "SeriesData(x,0,{},0,1,1)");
     check(
-        "Series(b*x ,{x,0,5})//FullForm", //
+        "Series(b*x ,{x,0,5})//InputForm", //
         "SeriesData(x,0,{b},1,6,1)");
 
     // TODO check power value
     check(
-        "Series(b*Sin(x) ,{x,0,5})//FullForm", //
+        "Series(b*Sin(x) ,{x,0,5})//InputForm", //
         "SeriesData(x,0,{b,0,-b/6,0,b/120},1,6,1)");
     check(
-        "Series(b+Sin(x) ,{x,0,5})//FullForm", //
+        "Series(b+Sin(x) ,{x,0,5})//InputForm", //
         "SeriesData(x,0,{b,1,0,-1/6,0,1/120},0,6,1)");
     check(
         "Series(f(b) ,{x,0,5})", //
@@ -390,6 +390,10 @@ public class SeriesTest extends AbstractTestCase {
 
   public void testSeriesData() {
     check(
+        "Series(Exp(x), {x,0,2}) // FullForm", //
+        "SeriesData(x, 0, List(1, 1, Rational(1,2)), 0, 3, 1)");
+
+    check(
         "s1=SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)*SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)", //
         "x^2-x^4/3+2/45*x^6-x^8/360+x^10/14400+O(x)^11");
 
@@ -423,7 +427,7 @@ public class SeriesTest extends AbstractTestCase {
     // TODO check order
     check(
         "s1=SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)^2//FullForm", //
-        "SeriesData(x,0,{1,0,-1/3,0,2/45,0,-1/360,0,1/14400},2,11,1)");
+        "SeriesData(x, 0, List(1, 0, Rational(-1,3), 0, Rational(2,45), 0, Rational(-1,360), 0, Rational(1,14400)), 2, 11, 1)");
     if (ToggleFeature.SERIES_DENOMINATOR) {
       check(
           "SeriesData(x, 0,{1,0,-1/6,0,1/120}, -2, 11, 3)", //
@@ -468,7 +472,7 @@ public class SeriesTest extends AbstractTestCase {
         "x^2-x^4/3+2/45*x^6-x^8/360+x^10/14400+O(x)^11");
     check(
         "s1 // FullForm", //
-        "SeriesData(x,0,{1,0,-1/3,0,2/45,0,-1/360,0,1/14400},2,11,1)");
+        "SeriesData(x, 0, List(1, 0, Rational(-1,3), 0, Rational(2,45), 0, Rational(-1,360), 0, Rational(1,14400)), 2, 11, 1)");
     check(
         "SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)^3", //
         "x^3-x^5/2+13/120*x^7-7/540*x^9+O(x)^11");
@@ -478,7 +482,7 @@ public class SeriesTest extends AbstractTestCase {
 
     check(
         "SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)*SeriesData(x, 0,{1,0,-1/5,0,1/110}, 1, 11, 1) // FullForm", //
-        "SeriesData(x,0,{1,0,-11/30,0,67/1320,0,-7/2200,0,1/13200},2,11,1)");
+        "SeriesData(x, 0, List(1, 0, Rational(-11,30), 0, Rational(67,1320), 0, Rational(-7,2200), 0, Rational(1,13200)), 2, 11, 1)");
     check(
         "SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)*SeriesData(x, 0,{1,0,-1/5,0,1/110}, 1, 11, 1)", //
         "x^2-11/30*x^4+67/1320*x^6-7/2200*x^8+x^10/13200+O(x)^11");
