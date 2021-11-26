@@ -190,7 +190,7 @@ public class TeXConverterTestCase extends TestCase {
     // Rightarrow
     check(
         "((a \\lor \\neg b) \\land (c\\Rightarrow a))", //
-        "(a||!b)&&Implies(c,a)");
+        "(a||!b)&&(c⇒a)");
 
     // vs rightarrow
     check(
@@ -207,10 +207,10 @@ public class TeXConverterTestCase extends TestCase {
   public void testTeX024() {
     check(
         "a \\Leftrightarrow b", //
-        "Equivalent(a,b)");
+        "a⇔b");
     check(
         "a \\equiv b", //
-        "Equivalent(a,b)");
+        "a⇔b");
   }
 
   public void testTeX025() {
