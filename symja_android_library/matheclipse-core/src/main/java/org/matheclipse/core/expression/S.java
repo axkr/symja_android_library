@@ -1517,6 +1517,8 @@ public class S {
    */
   public static final IBuiltInSymbol Check = F.initFinalSymbol("Check", ID.Check);
 
+  public static final IBuiltInSymbol CheckAbort = F.initFinalSymbol("CheckAbort", ID.CheckAbort);
+
   /**
    * ChessboardDistance(u, v) - returns the chessboard distance (also known as Chebyshev distance)
    * between `u` and `v`, which is the number of moves a king on a chessboard needs to get from
@@ -9254,8 +9256,19 @@ public class S {
 
   public static final IBuiltInSymbol TableForm = F.initFinalSymbol("TableForm", ID.TableForm);
 
+  public static final IBuiltInSymbol TableAlignments =
+      F.initFinalSymbol("TableAlignments", ID.TableAlignments);
+
+  public static final IBuiltInSymbol TableDepth = F.initFinalSymbol("TableDepth", ID.TableDepth);
+
+  public static final IBuiltInSymbol TableDirections =
+      F.initFinalSymbol("TableDirections", ID.TableDirections);
+
   public static final IBuiltInSymbol TableHeadings =
       F.initFinalSymbol("TableHeadings", ID.TableHeadings);
+
+  public static final IBuiltInSymbol TableSpacing =
+      F.initFinalSymbol("TableSpacing", ID.TableSpacing);
 
   /**
    * TagSet(f, expr, value) - assigns the evaluated `value` to `expr` and associates the
@@ -10097,6 +10110,8 @@ public class S {
   public static final IBuiltInSymbol ViewPoint = F.initFinalSymbol("ViewPoint", ID.ViewPoint);
 
   public static final IBuiltInSymbol Volume = F.initFinalSymbol("Volume", ID.Volume);
+
+  public static final IBuiltInSymbol WeberE = F.initFinalSymbol("WeberE", ID.WeberE);
 
   /**
    * WeibullDistribution(a, b) - returns a Weibull distribution.

@@ -7712,6 +7712,22 @@ public class F extends S {
     return new AST2(Sphere, vector, radius);
   }
 
+  public static IAST SphericalBesselJ(final IExpr n, final IExpr z) {
+    return new AST2(SphericalBesselJ, n, z);
+  }
+
+  public static IAST SphericalBesselY(final IExpr n, final IExpr z) {
+    return new AST2(SphericalBesselY, n, z);
+  }
+
+  public static IAST SphericalHankelH1(final IExpr n, final IExpr z) {
+    return new AST2(SphericalHankelH1, n, z);
+  }
+
+  public static IAST SphericalHankelH2(final IExpr n, final IExpr z) {
+    return new AST2(SphericalHankelH2, n, z);
+  }
+
   public static IAST SphericalHarmonicY(
       final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
     return function(SphericalHarmonicY, a0, a1, a2, a3);
@@ -8066,6 +8082,22 @@ public class F extends S {
    */
   public static IAST Take(final IExpr a0, final IExpr a1) {
     return new AST2(Take, a0, a1);
+  }
+
+  public static IASTMutable TakeLargest(final IExpr a0, final IExpr a1) {
+    return new AST2(TakeLargest, a0, a1);
+  }
+
+  public static IASTMutable TakeLargestBy(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(TakeLargestBy, a0, a1, a2);
+  }
+
+  public static IASTMutable TakeSmallest(final IExpr a0, final IExpr a1) {
+    return new AST2(TakeSmallest, a0, a1);
+  }
+
+  public static IASTMutable TakeSmallestBy(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(TakeSmallestBy, a0, a1, a2);
   }
 
   /**
@@ -8515,6 +8547,14 @@ public class F extends S {
 
   public static IAST Variance(final IExpr a0) {
     return new AST1(Variance, a0);
+  }
+
+  public static IAST WeberE(final IExpr v, final IExpr z) {
+    return new AST2(WeberE, v, z);
+  }
+
+  public static IAST WeberE(final IExpr v, final IExpr m, final IExpr z) {
+    return new AST3(WeberE, v, m, z);
   }
 
   public static IAST WeibullDistribution(final IExpr a0, final IExpr a1) {

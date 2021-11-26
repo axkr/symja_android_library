@@ -239,7 +239,11 @@ public class AST2Expr {
     "Strict",
     "String",
     "Symbol",
+    "TableAlignments",
+    "TableDepth",
+    "TableDirections",
     "TableHeadings",
+    "TableSpacing",
     "TestID",
     "Today",
     "TooLarge",
@@ -422,6 +426,7 @@ public class AST2Expr {
     "ChebyshevT",
     "ChebyshevU",
     "Check",
+    "CheckAbort",
     "ChessboardDistance",
     "ChineseRemainder",
     "ChiSquareDistribution",
@@ -1442,6 +1447,7 @@ public class AST2Expr {
     "VerificationTest",
     "VertexQ",
     "Volume",
+    "WeberE",
     "WeibullDistribution",
     "WeierstrassHalfPeriods",
     "WeierstrassInvariants",
@@ -1491,6 +1497,7 @@ public class AST2Expr {
     "Trunc",
     "NthRoot"
   };
+
   /** The implemented function names for the alias function names. */
   private static final String[] ALIASES_SUBSTITUTES = {
     "ArcCos",
