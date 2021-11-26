@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system.rulesets;
 
 import static org.matheclipse.core.expression.F.*;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.patternmatching.Matcher;
 

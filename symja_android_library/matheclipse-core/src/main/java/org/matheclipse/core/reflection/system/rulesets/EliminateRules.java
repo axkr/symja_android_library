@@ -24,6 +24,9 @@ public static Matcher init2() {
   Matcher matcher = new Matcher();    // elimzero(b_.*x_^m_+a_.*x_^n_.,x_):=E^((-I*Pi+Log(a)-Log(b))/(m-n))/;FreeQ(a,x)&&FreeQ(b,x)&&FreeQ(n,x)&&FreeQ(m,x)
 matcher.caseOf($(elimzero,Plus(Times(b_DEFAULT,Power(x_,m_)),Times(a_DEFAULT,Power(x_,n_DEFAULT))),x_),
       Condition(Exp(Times(Power(Subtract(m,n),CN1),Plus(Times(CNI,Pi),Log(a),Negate(Log(b))))),And(FreeQ(a,x),FreeQ(b,x),FreeQ(n,x),FreeQ(m,x))));
+    // elimzero(b_.*m_^x_+a_.*x_^n_,x_):={(-n*ProductLog((-(-b/a)^(1/n)*Log(m))/n))/Log(m),(-n*ProductLog(((-b/a)^(1/n)*Log(m))/n))/Log(m)}/;FreeQ(a,x)&&FreeQ(b,x)&&FreeQ(n,x)&&FreeQ(m,x)
+matcher.caseOf($(elimzero,Plus(Times(b_DEFAULT,Power(m_,x_)),Times(a_DEFAULT,Power(x_,n_))),x_),
+      Condition(List(Times(CN1,n,Power(Log(m),CN1),ProductLog(Times(CN1,Power(Times(CN1,Power(a,CN1),b),Power(n,CN1)),Power(n,CN1),Log(m)))),Times(CN1,n,Power(Log(m),CN1),ProductLog(Times(Power(Times(CN1,Power(a,CN1),b),Power(n,CN1)),Power(n,CN1),Log(m))))),And(FreeQ(a,x),FreeQ(b,x),FreeQ(n,x),FreeQ(m,x))));
 return matcher;
 }
 }
