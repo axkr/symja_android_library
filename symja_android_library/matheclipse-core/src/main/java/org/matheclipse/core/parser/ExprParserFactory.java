@@ -104,9 +104,9 @@ public class ExprParserFactory implements IParserFactory {
     }
   }
 
-  private static class TildeOperator extends InfixExprOperator {
+  private static class TildeExprOperator extends InfixExprOperator {
 
-    public TildeOperator(
+    public TildeExprOperator(
         final String oper, final String functionName, final int precedence, final int grouping) {
       super(oper, functionName, precedence, grouping);
     }
@@ -349,6 +349,8 @@ public class ExprParserFactory implements IParserFactory {
     "NotEqual",
     "Wedge",
     "TensorProduct",
+    "Equivalent",
+    "Implies",
     "§TILDE§"
   };
 
@@ -370,6 +372,8 @@ public class ExprParserFactory implements IParserFactory {
     "\u2260", // NotEqual
     "\u22C0", // Wedge
     "\uF3DA", // TensorProduct
+    "\u29E6", // Equivalent
+    "\uF523", // Implies
     "~"
   };
   private static Operator[] OPERATORS;
@@ -532,7 +536,11 @@ public class ExprParserFactory implements IParserFactory {
             new InfixExprOperator("\u22C0", "Wedge", Precedence.WEDGE, InfixExprOperator.NONE), //
             new InfixExprOperator(
                 "\uF3DA", "TensorProduct", Precedence.TENSORPRODUCT, InfixExprOperator.NONE),
-            new TildeOperator("~", "§TILDE§", Precedence.TILDE_OPERATOR, InfixOperator.NONE)
+            new InfixExprOperator(
+                "\u29E6", "Equivalent", Precedence.EQUIVALENT, InfixOperator.NONE),
+            new InfixExprOperator(
+                "\uF523", "Implies", Precedence.IMPLIES, InfixOperator.RIGHT_ASSOCIATIVE),
+            new TildeExprOperator("~", "§TILDE§", Precedence.TILDE_OPERATOR, InfixOperator.NONE)
           };
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 

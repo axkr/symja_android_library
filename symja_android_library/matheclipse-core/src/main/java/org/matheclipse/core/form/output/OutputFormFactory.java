@@ -42,6 +42,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
+import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
@@ -573,7 +574,7 @@ public class OutputFormFactory {
       append(buf, str);
       append(buf, "\"");
     } else {
-      append(buf, str);
+      appendUnicodeMapped(buf, str);
     }
   }
 
@@ -904,6 +905,7 @@ public class OutputFormFactory {
       final Appendable buf, final IAST list, final InfixOperator oper, final int precedence)
       throws IOException {
     final boolean isOr = list.isOr();
+    String operatorString = oper.getOperatorString();
     if (list.isAST2()) {
       IExpr arg1 = list.arg1();
       IExpr arg2 = list.arg2();
@@ -914,7 +916,7 @@ public class OutputFormFactory {
           && arg1.head().equals(list.head())) {
         append(buf, "(");
       } else {
-        if (oper.getOperatorString().equals("^")) {
+        if (operatorString.equals("^")) {
           final Operator operator = getOperator(arg1.topHead());
           if (operator instanceof PostfixOperator) {
             append(buf, "(");
@@ -932,7 +934,7 @@ public class OutputFormFactory {
           && arg1.head().equals(list.head())) {
         append(buf, ")");
       } else {
-        if (oper.getOperatorString().equals("^")) {
+        if (operatorString.equals("^")) {
           final Operator operator = getOperator(arg1.topHead());
           if (operator instanceof PostfixOperator) {
             append(buf, ")");
@@ -940,7 +942,7 @@ public class OutputFormFactory {
         }
       }
 
-      append(buf, oper.getOperatorString());
+      appendUnicodeMapped(buf, operatorString);
 
       if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && arg2.head().equals(list.head())) {
         append(buf, "(");
@@ -976,7 +978,7 @@ public class OutputFormFactory {
     }
 
     for (int i = 2; i < list.size(); i++) {
-      append(buf, oper.getOperatorString());
+      appendUnicodeMapped(buf, operatorString);
       if (isOr && list.get(i).isAnd()) {
         append(buf, "(");
       }
@@ -988,6 +990,11 @@ public class OutputFormFactory {
     if (oper.getPrecedence() < precedence) {
       append(buf, ")");
     }
+  }
+
+  private void appendUnicodeMapped(final Appendable buf, String operatorString) throws IOException {
+    operatorString = Characters.mapWLUnicodeToEquivalent(operatorString);
+    append(buf, operatorString);
   }
 
   public void convertPrefixOperator(
@@ -1612,6 +1619,11 @@ public class OutputFormFactory {
   public boolean convertSeriesData(
       final Appendable buf, final ASTSeriesData seriesData, final int precedence)
       throws IOException {
+    if (fInputForm) {
+      IAST series = seriesData.toSeriesData();
+      append(buf, series.toString());
+      return true;
+    }
     StringBuilder tempBuffer = new StringBuilder();
     if (Precedence.PLUS < precedence) {
       append(tempBuffer, "(");

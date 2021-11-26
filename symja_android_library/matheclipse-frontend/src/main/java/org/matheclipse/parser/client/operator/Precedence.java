@@ -32,12 +32,14 @@ public class Precedence {
    */
   public static final int EQUAL = 290;
 
+  public static final int EQUIVALENT = 205;
   public static final int FACTORIAL = 610;
   public static final int FACTORIAL2 = 610;
   public static final int FUNCTION = 90;
   public static final int GET = 720;
   public static final int GREATER = 290;
   public static final int GREATEREQUAL = 290;
+  public static final int IMPLIES = 200;
   public static final int INCREMENT = 660;
   public static final int INTERSECTION = 305;
   public static final int LESS = 290;

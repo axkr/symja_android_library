@@ -2393,4 +2393,47 @@ public class Characters {
         || (ch == '`') // context name separator character
         || (ch >= '\uF800' && ch <= '\uF819'); // FormalA <= ch <= FormalZ
   }
+
+  /**
+   * Map the WL-unicode string to Unicode-equivalent string for inserting into an output form.
+   *
+   * <p>Some data from Mathics: <a
+   * href="https://github.com/Mathics3/mathics-scanner/blob/master/mathics_scanner/data/named-characters.yml">named-characters.yml</a>
+   *
+   * @param operatorString
+   * @return
+   */
+  public static String mapWLUnicodeToEquivalent(String operatorString) {
+    StringBuilder sb = null;
+    char newCh;
+    for (int i = 0; i < operatorString.length(); i++) {
+      char ch = operatorString.charAt(i);
+      newCh = Character.MIN_VALUE;
+      if ('\u0fff' < ch) {
+        if ('\uF74B' == ch) {
+          // CapitalDifferentialD
+          newCh = '\u2145';
+        } else if ('\uF523' == ch) {
+          // Implies
+          newCh = '\u21D2';
+        } else if ('\u29E6' == ch) {
+          // Equivalent
+          newCh = '\u21D4'; // DoubleLeftRightArrow
+        }
+
+        if (Character.MIN_VALUE != newCh) {
+          if (sb == null) {
+            sb = new StringBuilder(operatorString.length());
+            if (i > 0) {
+              sb.append(operatorString.substring(0, i - 1));
+            }
+          }
+        }
+      }
+      if (sb != null) {
+        sb.append('\u0000' != newCh ? newCh : ch);
+      }
+    }
+    return sb != null ? sb.toString() : operatorString;
+  }
 }

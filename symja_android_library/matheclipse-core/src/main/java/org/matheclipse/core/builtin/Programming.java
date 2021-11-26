@@ -69,6 +69,7 @@ public final class Programming {
       S.Block.setEvaluator(new Block());
       S.Catch.setEvaluator(new Catch());
       S.Check.setEvaluator(new Check());
+      S.CheckAbort.setEvaluator(new CheckAbort());
       S.CompoundExpression.setEvaluator(new CompoundExpression());
       S.Condition.setEvaluator(new Condition());
       S.Continue.setEvaluator(new Continue());
@@ -367,6 +368,43 @@ public final class Programming {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  /**
+   * <pre><code>CheckAbort(expr, failure-expr)
+   * </code></pre>
+   *
+   * <p>evaluates <code>expr</code>, and returns the result, unless <code>Abort</code> was called
+   * during the evaluation, in which case <code>failure-expr</code> will be returned.
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre><code>&gt;&gt; CheckAbort(Abort(); -1, 41) + 1
+   * 42
+   *
+   * &gt;&gt; CheckAbort(abc; -1, 41) + 1
+   * 0
+   * </code></pre>
+   */
+  private static final class CheckAbort extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        return engine.evaluate(ast.arg1());
+      } catch (AbortException aex) {
+        return ast.arg2();
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+  }
   /**
    *
    *
@@ -2589,6 +2627,23 @@ public final class Programming {
     }
   }
 
+  /**
+   * <pre><code>Stack( )
+   * </code></pre>
+   *
+   * <p>return a list of the heads of the current stack wrapped by <code>HoldForm</code>.
+   *
+   * <pre><code>Stack(_)
+   * </code></pre>
+   *
+   * <p>return a list of the expressions of the current stack wrapped by <code>HoldForm</code>.
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre><code>
+   * </code></pre>
+   *
+   */
   private static final class Stack extends AbstractCoreFunctionEvaluator {
 
     @Override

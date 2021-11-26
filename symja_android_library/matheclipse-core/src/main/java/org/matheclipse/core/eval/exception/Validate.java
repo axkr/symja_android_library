@@ -27,7 +27,6 @@ import org.matheclipse.parser.client.Scanner;
 public final class Validate {
   private static final Logger LOGGER = LogManager.getLogger();
 
-
   /** Check the argument, if it's a Java {@code int} value in the range [0, Integer.MAX_VALUE] */
   public static int checkIntType(IAST ast, int pos) {
     return checkIntType(ast, pos, 0);
@@ -343,32 +342,39 @@ public final class Validate {
     IOFunctions.printMessage(ast.topHead(), "posdim", F.List(arg), engine);
     return null;
   }
+
   /**
-   * Check the argument, if it's a Java {@code int} value in the range [ {@code startValue},
-   * Integer.MAX_VALUE]
+   * Check the {@code ast}s argument, if it's a Java {@code int} value in the range [ {@code
+   * startValue}, Integer.MAX_VALUE]
+   *
+   * @param ast
+   * @param position the arguments position in the {@code ast}
+   * @param startValue
+   * @return
    */
-  public static int checkIntType(IAST ast, int pos, int startValue) {
-    if (ast.get(pos) instanceof IntegerSym) {
+  public static int checkIntType(IAST ast, int position, int startValue) {
+    final IExpr arg = ast.get(position);
+    if (arg instanceof IntegerSym) {
       // IntegerSym always fits into an int number
-      int result = ((IntegerSym) ast.get(pos)).toInt();
+      int result = ((IntegerSym) arg).toInt();
       if (startValue > result) {
         // Machine-sized integer expected at position `2` in `1`.
-        String str = IOFunctions.getMessage("intm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
+        String str = IOFunctions.getMessage("intm", F.List(ast, F.ZZ(position)), EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
     }
-    if (ast.get(pos).isReal()) {
-      int result = ast.get(pos).toIntDefault();
+    if (arg.isReal()) {
+      int result = arg.toIntDefault();
       if (result == Integer.MIN_VALUE || startValue > result) {
         // Machine-sized integer expected at position `2` in `1`.
-        String str = IOFunctions.getMessage("intm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
+        String str = IOFunctions.getMessage("intm", F.List(ast, F.ZZ(position)), EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
     }
     // Machine-sized integer expected at position `2` in `1`.
-    String str = IOFunctions.getMessage("intm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
+    String str = IOFunctions.getMessage("intm", F.List(ast, F.ZZ(position)), EvalEngine.get());
     throw new ArgumentTypeException(str);
   }
 
@@ -678,8 +684,7 @@ public final class Validate {
       return arg;
     }
     // Argument `1` at position `2` is expected to be a symbol.
-    return IOFunctions.printMessage(
-        ast.topHead(), "sym", F.List(arg, F.ZZ(position)), engine);
+    return IOFunctions.printMessage(ast.topHead(), "sym", F.List(arg, F.ZZ(position)), engine);
   }
 
   /**
@@ -705,7 +710,7 @@ public final class Validate {
    */
   public static IExpr checkIsVariable(IAST ast, int position, ISymbol head, EvalEngine engine) {
     IExpr arg = ast.get(position);
-    if (arg.isSymbol() && arg.isVariable()) {
+    if (arg.isVariable()) {
       return arg;
     }
     // `1` is not a valid variable.

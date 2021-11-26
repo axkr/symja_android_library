@@ -976,7 +976,7 @@ public class PolynomialFunctions {
       }
       IExpr arg3 = Validate.checkIsVariable(ast, 3, engine);
       if (arg3.isPresent()) {
-        ISymbol x = (ISymbol) arg3;
+        IExpr x = arg3;
         IExpr a = F.evalExpandAll(arg1, engine);
         IExpr b = F.evalExpandAll(arg2, engine);
         ExprPolynomialRing ring = new ExprPolynomialRing(F.List(x));
@@ -1008,7 +1008,7 @@ public class PolynomialFunctions {
       return ARGS_3_3;
     }
 
-    private IExpr resultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
+    private IExpr resultant(IExpr a, IExpr b, IExpr x, EvalEngine engine) {
       IExpr aExp = S.Exponent.ofNIL(engine, a, x);
       IExpr bExp = S.Exponent.ofNIL(engine, b, x);
       if (aExp.isPresent() && bExp.isPresent()) {
@@ -1032,7 +1032,7 @@ public class PolynomialFunctions {
       return F.NIL;
     }
 
-    private static IExpr jasResultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
+    private static IExpr jasResultant(IExpr a, IExpr b, IExpr x, EvalEngine engine) {
       VariablesSet eVar = new VariablesSet();
       eVar.addVarList(x);
 
@@ -2054,12 +2054,12 @@ public class PolynomialFunctions {
    *     polynomials
    */
   public static IASTAppendable solveGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables) {
-    List<ISymbol> varList = new ArrayList<ISymbol>(listOfVariables.argSize());
+    List<IExpr> varList = new ArrayList<IExpr>(listOfVariables.argSize());
     for (int i = 1; i < listOfVariables.size(); i++) {
-      if (!listOfVariables.get(i).isSymbol()) {
-        return F.NIL;
-      }
-      varList.add((ISymbol) listOfVariables.get(i));
+      //      if (!listOfVariables.get(i).isSymbol() ) {
+      //        return F.NIL;
+      //      }
+      varList.add(listOfVariables.get(i));
     }
 
     List<GenPolynomial<BigRational>> polyList =

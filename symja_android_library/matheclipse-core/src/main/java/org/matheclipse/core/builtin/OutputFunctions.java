@@ -23,6 +23,7 @@ import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
@@ -35,6 +36,7 @@ import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
@@ -456,7 +458,8 @@ public final class OutputFunctions {
 
     public static CharSequence javaForm(IExpr arg1, boolean strictJava, boolean usePrefix) {
       SourceCodeProperties p =
-          SourceCodeProperties.of(strictJava, false, usePrefix ? Prefix.CLASS_NAME : Prefix.NONE, false);
+          SourceCodeProperties.of(
+              strictJava, false, usePrefix ? Prefix.CLASS_NAME : Prefix.NONE, false);
       return arg1.internalJavaString(p, 0, F.CNullFunction);
     }
 
@@ -522,48 +525,48 @@ public final class OutputFunctions {
 
           return F.$str(toJavaDouble(arg1), IStringX.APPLICATION_JAVA);
         } else if (complexJava) {
-            IExpr optimized = S.OptimizeExpression.of(engine, arg1);
-            if (optimized.isList2() && optimized.second().isListOfRules()) {
-              IExpr newExpr = optimized.first();
-              IAST listOfRules = (IAST) optimized.second();
-              VariablesSet varSet = new VariablesSet(arg1);
-              List<IExpr> functionsParameters = varSet.getArrayList();
-              StringBuilder buf = new StringBuilder();
-              long functionCounter = EvalEngine.incModuleCounter();
-              buf.append("Complex f");
-              buf.append(functionCounter);
-              buf.append("(");
-              for (int i = 0; i < functionsParameters.size(); i++) {
-                buf.append("Complex ");
-                buf.append(functionsParameters.get(i));
-                if (i < functionsParameters.size() - 1) {
-                  buf.append(", ");
-                }
+          IExpr optimized = S.OptimizeExpression.of(engine, arg1);
+          if (optimized.isList2() && optimized.second().isListOfRules()) {
+            IExpr newExpr = optimized.first();
+            IAST listOfRules = (IAST) optimized.second();
+            VariablesSet varSet = new VariablesSet(arg1);
+            List<IExpr> functionsParameters = varSet.getArrayList();
+            StringBuilder buf = new StringBuilder();
+            long functionCounter = EvalEngine.incModuleCounter();
+            buf.append("Complex f");
+            buf.append(functionCounter);
+            buf.append("(");
+            for (int i = 0; i < functionsParameters.size(); i++) {
+              buf.append("Complex ");
+              buf.append(functionsParameters.get(i));
+              if (i < functionsParameters.size() - 1) {
+                buf.append(", ");
               }
-              buf.append(") {\n");
-              for (int i = 1; i < listOfRules.size(); i++) {
-                IAST rule = (IAST) listOfRules.get(i);
-                buf.append("Complex ");
-                buf.append(toJavaComplex(rule.first()));
-                buf.append(" = ");
-                buf.append(toJavaComplex(rule.second()));
-                buf.append(";\n");
-              }
-              buf.append("return ");
-              buf.append(toJavaComplex(newExpr));
-              buf.append(";\n");
-              buf.append("}\n");
-              return F.$str(buf.toString(), IStringX.APPLICATION_JAVA);
             }
-
-            return F.$str(toJavaComplex(arg1), IStringX.APPLICATION_JAVA);
+            buf.append(") {\n");
+            for (int i = 1; i < listOfRules.size(); i++) {
+              IAST rule = (IAST) listOfRules.get(i);
+              buf.append("Complex ");
+              buf.append(toJavaComplex(rule.first()));
+              buf.append(" = ");
+              buf.append(toJavaComplex(rule.second()));
+              buf.append(";\n");
+            }
+            buf.append("return ");
+            buf.append(toJavaComplex(newExpr));
+            buf.append(";\n");
+            buf.append("}\n");
+            return F.$str(buf.toString(), IStringX.APPLICATION_JAVA);
           }
-          String resultStr = javaForm(arg1, strictJava, usePrefix).toString();
-          return F.$str(resultStr, IStringX.APPLICATION_JAVA);
-        } catch (Exception rex) {
-          LOGGER.log(engine.getLogLevel(), "JavaForm", rex);
-          return F.NIL;
+
+          return F.$str(toJavaComplex(arg1), IStringX.APPLICATION_JAVA);
         }
+        String resultStr = javaForm(arg1, strictJava, usePrefix).toString();
+        return F.$str(resultStr, IStringX.APPLICATION_JAVA);
+      } catch (Exception rex) {
+        LOGGER.log(engine.getLogLevel(), "JavaForm", rex);
+        return F.NIL;
+      }
     }
 
     @Override
@@ -678,12 +681,14 @@ public final class OutputFunctions {
     }
   }
 
-  private static class TableForm extends AbstractCoreFunctionEvaluator {
+  private static class TableForm extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        IExpr arg1 = engine.evaluate(ast.arg1());
+    public IExpr evaluate(
+        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+      if (argSize >= 1) {
+        IExpr tableHeadings = option[0];
+        IExpr arg1 = ast.arg1();
         StringBuilder tableForm = new StringBuilder();
         if (plaintextTable(tableForm, arg1, " ", x -> x.toString(), true)) {
           return F.stringx(tableForm.toString(), IStringX.TEXT_PLAIN);
@@ -720,7 +725,14 @@ public final class OutputFunctions {
     }
 
     @Override
-    public void setUp(ISymbol newSymbol) {}
+    public void setUp(ISymbol newSymbol) {
+      IBuiltInSymbol[] lhsOptionSymbols =
+          new IBuiltInSymbol[] {
+            S.TableAlignments, S.TableDepth, S.TableDirections, S.TableHeadings, S.TableSpacing
+          };
+      IExpr[] rhsValues = new IExpr[] {S.Automatic, F.CInfinity, S.Column, S.None, S.Automatic};
+      setOptions(newSymbol, lhsOptionSymbols, rhsValues);
+    }
   }
 
   /**

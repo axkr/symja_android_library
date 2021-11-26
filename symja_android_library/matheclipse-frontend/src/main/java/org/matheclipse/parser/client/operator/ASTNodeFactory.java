@@ -320,6 +320,8 @@ public class ASTNodeFactory implements INodeParserFactory {
     "NotEqual",
     "Wedge",
     "TensorProduct",
+    "Equivalent",
+    "Implies",
     "§TILDE§"
   };
 
@@ -399,6 +401,8 @@ public class ASTNodeFactory implements INodeParserFactory {
     "\u2260", // NotEqual,
     "\u22C0", // Wedge
     "\uF3DA", // TensorProduct
+    "\u29E6", // Equivalent
+    "\uF523", // Implies
     "~"
   };
 
@@ -540,6 +544,9 @@ public class ASTNodeFactory implements INodeParserFactory {
             new InfixOperator("\u22C0", "Wedge", Precedence.WEDGE, InfixOperator.NONE), //
             new InfixOperator(
                 "\uF3DA", "TensorProduct", Precedence.TENSORPRODUCT, InfixOperator.NONE),
+            new InfixOperator("\u29E6", "Equivalent", Precedence.EQUIVALENT, InfixOperator.NONE),
+            new InfixOperator(
+                "\uF523", "Implies", Precedence.IMPLIES, InfixOperator.RIGHT_ASSOCIATIVE),
             new TildeOperator("~", "§TILDE§", Precedence.TILDE_OPERATOR, InfixOperator.NONE)
           };
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);

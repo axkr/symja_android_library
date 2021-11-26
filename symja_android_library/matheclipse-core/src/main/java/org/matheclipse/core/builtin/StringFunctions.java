@@ -749,7 +749,7 @@ public final class StringFunctions {
   private static final class HammingDistance extends AbstractFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(
+    public IExpr evaluate(
         final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
@@ -777,7 +777,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_2;
     }
 
     @Override
@@ -1081,7 +1081,7 @@ public final class StringFunctions {
   private static final class EditDistance extends AbstractFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(
+    public IExpr evaluate(
         final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
@@ -1102,7 +1102,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_2;
     }
 
     @Override
@@ -1882,7 +1882,7 @@ public final class StringFunctions {
   private static class StringMatchQ extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(
+    public IExpr evaluate(
         final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
 
       if (argSize >= 2) {
@@ -2242,7 +2242,7 @@ public final class StringFunctions {
       for (Map.Entry<ISymbol, String> group : namedRegexGroups.entrySet()) {
         String groupValue = matcher.group(group.getValue());
         if (groupValue != null) {
-          expr = expr.replaceAll(F.Rule(group.getKey(), F.stringx(groupValue)));
+          expr = F.subs(expr, group.getKey(), F.stringx(groupValue));
         }
       }
       return expr;

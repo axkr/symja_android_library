@@ -45,6 +45,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
@@ -1900,8 +1901,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
         // }
       }
 
-      // append(buf, oper.getOperatorString());
-      tag(buf, "mo", oper.getOperatorString());
+      appendOperatorUnicodeMapped(buf, oper.getOperatorString());
 
       if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE
           && list.arg2().head().equals(list.head())) {
@@ -1933,8 +1933,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
 
     for (int i = 2; i < list.size(); i++) {
-      // append(buf, oper.getOperatorString());
-      tag(buf, "mo", oper.getOperatorString());
+      appendOperatorUnicodeMapped(buf, oper.getOperatorString());
       convertInternal(buf, list.get(i), oper.getPrecedence(), false);
     }
     if (oper.getPrecedence() < precedence) {
@@ -1942,6 +1941,29 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       tag(buf, "mo", ")");
     }
     tagEnd(buf, "mrow");
+  }
+
+  /**
+   * Map the WL-unicode string to Unicode-equivalent string and surround by <code>
+   * &lt;mo&gt;</code> tags.
+   *
+   * @param buf
+   * @param operatorString the operator string
+   */
+  private void appendOperatorUnicodeMapped(final StringBuilder buf, String operatorString) {
+    operatorString = Characters.mapWLUnicodeToEquivalent(operatorString);
+    tag(buf, "mo", operatorString);
+  }
+
+  /**
+   * Map the WL-unicode string to Unicode-equivalent string.
+   *
+   * @param buf
+   * @param str the string which should be converted
+   */
+  private static void appendUnicodeMapped(final StringBuilder buf, String str) {
+    str = Characters.mapWLUnicodeToEquivalent(str);
+    buf.append(str);
   }
 
   @Override
@@ -2265,8 +2287,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
    * @param call
    * @return the current call status
    */
-  private boolean convertSeriesDataArg(StringBuilder buf, IExpr coefficient, IExpr pow,
-      boolean call) {
+  private boolean convertSeriesDataArg(
+      StringBuilder buf, IExpr coefficient, IExpr pow, boolean call) {
     IExpr plusArg;
     if (coefficient.isZero()) {
       plusArg = F.C0;
@@ -2318,7 +2340,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
               .replaceAll("\\<", "&lt;")
               .replaceAll("\\>", "&gt;");
       text = text.replaceAll("\\\"", "&quot;").replaceAll(" ", "&nbsp;");
-      buf.append(text);
+      appendUnicodeMapped(buf, text);
       tagEnd(buf, "mtext");
       if (splittedStrLength > 1) {
         buf.append("<mspace linebreak='newline' />");
