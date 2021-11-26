@@ -294,20 +294,20 @@ public final class ListFunctions {
   }
 
   private static class ArrayIterator implements IIterator<IExpr> {
-    private int fCurrent;
+    private final IInteger fOrigin;
 
-    private final int fFrom;
+    private final int fLength;
 
-    private final int fTo;
+    private int fCounter;
 
     public ArrayIterator(final int to) {
       this(1, to);
     }
 
-    public ArrayIterator(final int from, final int length) {
-      fFrom = from;
-      fCurrent = from;
-      fTo = from + length - 1;
+    public ArrayIterator(final int origin, final int length) {
+      fOrigin = F.ZZ(origin);
+      fLength = length;
+      fCounter = 0;
     }
 
     @Override
@@ -317,17 +317,17 @@ public final class ListFunctions {
 
     @Override
     public void tearDown() {
-      fCurrent = fFrom;
+      fCounter = 0;
     }
 
     @Override
     public boolean hasNext() {
-      return fCurrent <= fTo;
+      return fCounter < fLength;
     }
 
     @Override
     public IExpr next() {
-      return F.ZZ(fCurrent++);
+      return fOrigin.add(F.ZZ(fCounter++));
     }
 
     @Override
@@ -337,7 +337,7 @@ public final class ListFunctions {
 
     @Override
     public int allocHint() {
-      return fTo - fFrom;
+      return fLength + 2;
     }
   }
 
@@ -732,7 +732,7 @@ public final class ListFunctions {
       }
 
       IExpr sym = Validate.checkIsVariable(ast, 1, engine);
-      if (sym.isPresent()) {
+      if (sym.isSymbol()) {
         IExpr arg2 = engine.evaluate(ast.arg2());
         Function<IExpr, IExpr> function = new AppendToFunction(arg2);
         IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, ast.topHead(), engine);
@@ -850,6 +850,48 @@ public final class ListFunctions {
    */
   private static final class Array extends AbstractCoreFunctionEvaluator {
 
+    private static class ExprArrayIterator implements IIterator<IExpr> {
+      private final IExpr fOrigin;
+      private int fCounter;
+      private final int fLength;
+
+      public ExprArrayIterator(final IExpr origin, final int length) {
+        fOrigin = origin;
+        this.fCounter = 0;
+        this.fLength = length;
+      }
+
+      @Override
+      public boolean setUp() {
+        return true;
+      }
+
+      @Override
+      public void tearDown() {
+        this.fCounter = 0;
+      }
+
+      @Override
+      public boolean hasNext() {
+        return fCounter < fLength;
+      }
+
+      @Override
+      public IExpr next() {
+        return F.Plus(fOrigin, F.ZZ(fCounter++));
+      }
+
+      @Override
+      public void remove() {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public int allocHint() {
+        return fLength + 2;
+      }
+    }
+
     private static class MultipleArrayFunction implements IVariablesFunction {
       final EvalEngine fEngine;
 
@@ -870,67 +912,102 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
-        IAST resultList;
+        IAST prototypeList;
+        IExpr head = S.List;
         if (ast.size() == 5) {
-          resultList = F.ast(ast.arg4());
+          head = ast.arg4();
+          prototypeList = F.ast(head);
         } else {
-          resultList = F.List();
+          prototypeList = F.List();
         }
-        if (ast.size() >= 3 && (ast.size() <= 5)) {
-          int indx1, indx2;
-          final List<ArrayIterator> iterList = new ArrayList<ArrayIterator>();
-          if (ast.size() >= 4) {
-            if (ast.arg2().isInteger() && ast.arg3().isInteger()) {
-              indx1 = Validate.checkIntType(ast, 3, Integer.MIN_VALUE + 1);
-              indx2 = Validate.checkIntType(ast, 2);
-              iterList.add(new ArrayIterator(indx1, indx2));
-            } else if (ast.arg2().isList() && ast.arg3().isInteger()) {
-              final IAST dimIter = (IAST) ast.arg2(); // dimensions
-              indx1 = Validate.checkIntType(ast, 3, Integer.MIN_VALUE + 1);
-              for (int i = 1; i < dimIter.size(); i++) {
-                indx2 = Validate.checkIntType(dimIter, i);
-                iterList.add(new ArrayIterator(indx1, indx2));
-              }
-            } else if (ast.arg2().isList() && ast.arg3().isList()) {
-              final IAST dimIter = (IAST) ast.arg2(); // dimensions
-              final IAST originIter = (IAST) ast.arg3(); // origins
-              if (dimIter.size() != originIter.size()) {
-                LOGGER.log(
-                    engine.getLogLevel(),
-                    "{} and {} should have the same length.",
-                    dimIter,
-                    originIter);
-                return F.NIL;
-              }
-              for (int i = 1; i < dimIter.size(); i++) {
-                indx1 = Validate.checkIntType(originIter, i);
-                indx2 = Validate.checkIntType(dimIter, i);
-                iterList.add(new ArrayIterator(indx1, indx2));
-              }
+        final IExpr arg1 = ast.arg1();
+        final IExpr arg2 = ast.arg2();
+        final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
+        if (ast.size() >= 4) {
+          final IExpr arg3 = ast.arg3();
+          if (arg2.isInteger() && !arg3.isList()) {
+            int length = arg2.toIntDefault();
+            if (length <= 0) {
+              // Single or list of non-negative machine-sized integers expected at position `1` of
+              // `2`.
+              return IOFunctions.printMessage(ast.topHead(), "ilsmn", F.List(F.C2, ast), engine);
             }
-          } else if (ast.size() >= 3 && ast.arg2().isInteger()) {
-            indx1 = Validate.checkIntType(ast, 2);
-            iterList.add(new ArrayIterator(indx1));
-          } else if (ast.size() >= 3 && ast.arg2().isList()) {
-            final IAST dimIter = (IAST) ast.arg2();
-            for (int i = 1; i < dimIter.size(); i++) {
-              indx1 = Validate.checkIntType(dimIter, i);
-              iterList.add(new ArrayIterator(indx1));
-            }
-          }
+            IExpr indexOrigin = arg3;
 
-          if (iterList.size() > 0) {
-            final IAST list = F.ast(ast.arg1());
-            final TableGenerator generator =
-                new TableGenerator(iterList, resultList, new MultipleArrayFunction(engine, list));
-            return generator.table();
+            int origin = indexOrigin.toIntDefault();
+            if (origin != Integer.MIN_VALUE) {
+              iterList.add(new ArrayIterator(origin, length));
+            } else {
+              iterList.add(new ExprArrayIterator(indexOrigin, length));
+            }
+          } else if (arg2.isList() && arg3.isInteger()) {
+            final IAST dimIter = (IAST) arg2; // dimensions
+            int indx1 = Validate.checkIntType(ast, 3, Integer.MIN_VALUE + 1);
+            for (int i = 1; i < dimIter.size(); i++) {
+              int indx2 = Validate.checkIntType(dimIter, i);
+              iterList.add(new ArrayIterator(indx1, indx2));
+            }
+          } else if (arg2.isInteger() && arg3.isList2()) {
+            int n = arg2.toIntDefault();
+            if (n <= 0) {
+              // Single or list of non-negative machine-sized integers expected at position `1` of
+              // `2`.
+              return IOFunctions.printMessage(ast.topHead(), "ilsmn", F.List(F.C2, ast), engine);
+            }
+            final IAST interval = (IAST) arg3;
+            final IExpr from = interval.arg1();
+            final IExpr to = interval.arg2();
+            final IExpr subdivideResult = engine.evaluate(F.Subdivide(from, to, F.ZZ(n - 1)));
+            if (subdivideResult.isList()) {
+              IAST list = (IAST) subdivideResult;
+              if (head != S.List) {
+                list = list.setAtCopy(0, head);
+              }
+              return list.mapThread(F.unaryAST1(arg1, F.Slot1), 1);
+            }
+            return F.NIL;
+          } else if (arg2.isList() && arg3.isList()) {
+            final IAST dimIter = (IAST) arg2; // dimensions
+            final IAST originIter = (IAST) arg3; // origins
+            if (dimIter.size() != originIter.size()) {
+              // `1` and `2` should have the same length.
+              return IOFunctions.printMessage(
+                  ast.topHead(), "plen", F.List(dimIter, originIter), engine);
+            }
+            for (int i = 1; i < dimIter.size(); i++) {
+              int indx1 = Validate.checkIntType(originIter, i);
+              int indx2 = Validate.checkIntType(dimIter, i);
+              iterList.add(new ArrayIterator(indx1, indx2));
+            }
+          }
+        } else if (ast.size() >= 3 && arg2.isInteger()) {
+          int indx1 = Validate.checkIntType(ast, 2);
+          iterList.add(new ArrayIterator(indx1));
+        } else if (ast.size() >= 3 && arg2.isList()) {
+          final IAST dimIter = (IAST) arg2;
+          for (int i = 1; i < dimIter.size(); i++) {
+            int indx1 = Validate.checkIntType(dimIter, i);
+            iterList.add(new ArrayIterator(indx1));
           }
         }
+
+        if (iterList.size() > 0) {
+          final IAST list = F.ast(arg1);
+          final TableGenerator generator =
+              new TableGenerator(iterList, prototypeList, new MultipleArrayFunction(engine, list));
+          return generator.table();
+        }
+
       } catch (final ClassCastException | ArithmeticException e) {
         // ClassCastException: the iterators are generated only from IASTs
         // ArithmeticException: the toInt() function throws ArithmeticExceptions
       }
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_4;
     }
 
     @Override
@@ -2315,18 +2392,18 @@ public final class ListFunctions {
    * Drop({1, 2, 3, 4, 5, 6}, {-5, -2, -2})
    * </pre>
    */
-  private static final class Drop extends AbstractCoreFunctionEvaluator {
+  private static final class Drop extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IAST evaledAST = (IAST) engine.evalAttributes(S.Drop, ast);
-      if (!evaledAST.isPresent()) {
-        evaledAST = ast;
-      }
-      final IExpr arg1 = evaledAST.arg1();
+      //      IAST evaledAST = (IAST) engine.evalAttributes(S.Drop, ast);
+      //      if (!evaledAST.isPresent()) {
+      //        evaledAST = ast;
+      //      }
+      final IExpr arg1 = ast.arg1();
       try {
         if (arg1.isASTOrAssociation()) {
-          final ISequence[] sequ = Sequence.createSequences(evaledAST, 2, "drop", engine);
+          final ISequence[] sequ = Sequence.createSequences(ast, 2, "drop", engine);
           if (sequ == null) {
             return F.NIL;
           } else {
@@ -2811,7 +2888,7 @@ public final class ListFunctions {
     }
 
     @Override
-    protected IExpr evaluate(
+    public IExpr evaluate(
         final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
 
       boolean heads = option[0].isTrue();
@@ -2984,7 +3061,7 @@ public final class ListFunctions {
     }
 
     @Override
-    protected IExpr evaluate(
+    public IExpr evaluate(
         final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
 
       boolean heads = option[0].isTrue();
@@ -3022,7 +3099,7 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_5_1;
+      return ARGS_2_4_1;
     }
 
     @Override
@@ -3978,7 +4055,7 @@ public final class ListFunctions {
   private static final class Level extends AbstractFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(
+    public IExpr evaluate(
         final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
 
       boolean heads = option[0].isTrue();
@@ -4007,7 +4084,7 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_4;
+      return ARGS_2_3;
     }
 
     @Override
@@ -5211,7 +5288,7 @@ public final class ListFunctions {
       }
 
       IExpr sym = Validate.checkIsVariable(ast, 1, engine);
-      if (sym.isPresent()) {
+      if (sym.isSymbol()) {
         IExpr arg2 = engine.evaluate(ast.arg2());
         Function<IExpr, IExpr> function = new PrependToFunction(arg2);
         IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, S.PrependTo, engine);
@@ -7222,21 +7299,21 @@ public final class ListFunctions {
    * Take({1, 2, 3, 4, 5}, {1, 0, -1})
    * </pre>
    */
-  private static final class Take extends AbstractCoreFunctionEvaluator {
+  private static final class Take extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IAST evaledAST = (IAST) engine.evalAttributes(S.Take, ast);
-      if (!evaledAST.isPresent()) {
-        evaledAST = ast;
-      }
+      //      IAST evaledAST = (IAST) engine.evalAttributes(S.Take, ast);
+      //      if (!evaledAST.isPresent()) {
+      //        evaledAST = ast;
+      //      }
       try {
-        if (evaledAST.arg1().isASTOrAssociation()) {
-          final ISequence[] sequ = Sequence.createSequences(evaledAST, 2, "take", engine);
+        if (ast.arg1().isASTOrAssociation()) {
+          final ISequence[] sequ = Sequence.createSequences(ast, 2, "take", engine);
           if (sequ == null) {
             return F.NIL;
           } else {
-            final IAST arg1 = (IAST) evaledAST.arg1();
+            final IAST arg1 = (IAST) ast.arg1();
             if (arg1.isAssociation()) {
               return take((IAssociation) arg1, 0, sequ);
             }
