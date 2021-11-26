@@ -116,35 +116,20 @@ public class Console {
       return;
     }
 
-    // final File file = console.getFile();
-    // if (file != null) {
-    // try {
-    // final BufferedReader f = new BufferedReader(new InputStreamReader(new FileInputStream(file),
-    // StandardCharsets.UTF_8));
-    // final StringBuilder buff = new StringBuilder(1024);
-    // String line;
-    // while ((line = f.readLine()) != null) {
-    // buff.append(line);
-    // buff.append('\n');
-    // }
-    // f.close();
-    // inputExpression = buff.toString();
-    // stdout.println("In [" + COUNTER + "]: " + inputExpression);
-    // console.resultPrinter(inputExpression);
-    // COUNTER++;
-    // } catch (final IOException ioe) {
-    // final String msg = "Cannot read from the specified file. "
-    // + "Make sure the path exists and you have read permission.";
-    // stdout.println(msg);
-    // return;
-    // }
-    // }
-
     while (true) {
       try {
         String inputExpression = console.readString(stdout, ">> ");
         if (inputExpression != null) {
           trimmedInput = inputExpression.trim();
+          if (inputExpression.length() > 1
+              && inputExpression.charAt(inputExpression.length() - 1) == '\t'
+              && Scanner.isIdentifier(trimmedInput)) {
+            String docInput = "?" + trimmedInput + "*";
+            IExpr doc = Documentation.findDocumentation(docInput);
+            stdout.println(doc.toString());
+            continue;
+          }
+ 
           if (trimmedInput.length() >= 4 && trimmedInput.charAt(0) == '/') {
             String command = trimmedInput.substring(1).toLowerCase(Locale.ENGLISH);
             if (command.equals("exit")) {
@@ -274,6 +259,7 @@ public class Console {
             + lineSeparator);
     // msg.append(" -pp enable pretty printer" + lineSeparator);
     msg.append("To stop the program type: /exit<RETURN>" + lineSeparator);
+    msg.append("To get the available identifiers type: ident<TAB><RETURN>" + lineSeparator);
     msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
     msg.append("at the end of the line." + lineSeparator);
     msg.append("To disable the evaluation timeout type: /timeoutoff<RETURN>" + lineSeparator);
@@ -617,7 +603,7 @@ public class Console {
   }
 
   /**
-   * read a string from the console. The string is terminated by a newline
+   * read a string from the console.
    *
    * @return the input string (without the newline)
    */
@@ -625,6 +611,7 @@ public class Console {
     final StringBuilder input = new StringBuilder();
     final BufferedReader in =
         new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+  
     boolean done = false;
 
     try {
@@ -656,7 +643,7 @@ public class Console {
   }
 
   /**
-   * read a string from the console. The string is terminated by a newline
+   * read a string from the console.
    *
    * @param prompt the prompt string to display
    * @param out Description of Parameter
