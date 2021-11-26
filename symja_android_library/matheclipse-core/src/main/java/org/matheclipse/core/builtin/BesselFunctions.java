@@ -14,6 +14,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.FunctionExpand;
 import org.matheclipse.core.reflection.system.rules.BesselIRules;
 import org.matheclipse.core.reflection.system.rules.BesselKRules;
 import org.matheclipse.core.reflection.system.rules.BesselYRules;
@@ -42,6 +43,9 @@ public class BesselFunctions {
       S.HankelH2.setEvaluator(new HankelH2());
       S.SphericalBesselJ.setEvaluator(new SphericalBesselJ());
       S.SphericalBesselY.setEvaluator(new SphericalBesselY());
+      S.SphericalHankelH1.setEvaluator(new SphericalHankelH1());
+      S.SphericalHankelH2.setEvaluator(new SphericalHankelH2());
+      S.WeberE.setEvaluator(new WeberE());
     }
   }
 
@@ -950,6 +954,70 @@ public class BesselFunctions {
     }
   }
 
+  private static final class SphericalHankelH1 extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      IExpr z = ast.arg2();
+      if (engine.isNumericMode()) {
+        try {
+          Complex nc = n.evalComplex();
+          Complex zc = z.evalComplex();
+          return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast);
+
+        } catch (ValidateException ve) {
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
+  }
+
+  private static final class SphericalHankelH2 extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      IExpr z = ast.arg2();
+      if (engine.isNumericMode()) {
+        try {
+          Complex nc = n.evalComplex();
+          Complex zc = z.evalComplex();
+          return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast);
+        } catch (ValidateException ve) {
+          ve.printStackTrace();
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
+  }
+
   /**
    *
    *
@@ -1010,6 +1078,41 @@ public class BesselFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
+  }
+
+  private static final class WeberE extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      IExpr z = ast.arg2();
+      if (engine.isNumericMode()) {
+        try {
+          Complex nc = n.evalComplex();
+          Complex zc = z.evalComplex();
+          if (ast.isAST3()) {
+            Complex a3 = ast.arg3().evalComplex();
+          }
+          return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast);
+
+        } catch (ValidateException ve) {
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
     }
 
     @Override
