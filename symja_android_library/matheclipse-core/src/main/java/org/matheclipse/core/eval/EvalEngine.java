@@ -32,6 +32,8 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.eval.exception.ValidateException;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -73,7 +75,7 @@ import org.matheclipse.parser.client.math.MathException;
 import com.google.common.cache.Cache;
 
 /**
- * The main evaluation algorithms for the .Symja computer algebra system. A single <code>EvalEngine
+ * The main evaluation algorithms for the Symja computer algebra system. A single <code>EvalEngine
  * </code> is associated with the current thread through a <a
  * href="https://en.wikipedia.org/wiki/Thread-local_storage">ThreadLocal</a> mechanism.
  */
@@ -83,6 +85,17 @@ public class EvalEngine implements Serializable {
 
   private static final IStringX EVALUATION_LOOP = StringX.valueOf("EvalLoop");
 
+  public static class OptionsResult {
+    public IAST result;
+    public int argSize;
+    public IExpr[] options;
+
+    public OptionsResult(IAST ast, int argSize, IExpr[] options) {
+      this.result = ast;
+      this.argSize = argSize;
+      this.options = options;
+    }
+  }
   /** Stack to manage the <code>OptionsPattern()</code> mappings for a pattern-matching rule. */
   private static class OptionsStack extends ArrayDeque<IdentityHashMap<ISymbol, IASTAppendable>> {
 
@@ -120,7 +133,7 @@ public class EvalEngine implements Serializable {
   /**
    * Get the thread local evaluation engine instance
    *
-   * @return
+   * @return the current {@link EvalEngine} for this thread.
    */
   public static EvalEngine get() {
     return instance.get();
@@ -200,7 +213,7 @@ public class EvalEngine implements Serializable {
 
   transient boolean fEvalRHSMode;
 
-  /** @see Config#isFileSystemEnabled(); */
+  /** @see Config#isFileSystemEnabled() */
   transient boolean fFileSystemEnabled;
 
   transient String fSessionID;
@@ -401,7 +414,7 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * For every evaluation store the list of modified variables in an internal list.
+   * For every evaluation, store the list of modified variables in an internal list.
    *
    * @param arg0
    * @return
@@ -640,7 +653,7 @@ public class EvalEngine implements Serializable {
   /**
    * Decrement the recursion counter by 1 and return the result.
    *
-   * @return
+   * @return the decremented recursion counter
    */
   public int decRecursionCounter() {
     return --fRecursionCounter;
@@ -696,20 +709,21 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Evaluate the arguments of the given ast, taking the attributes HoldFirst, HoldRest into
-   * account.
+   * Evaluate the arguments of the given ast, taking the attributes <code>
+   * HoldFirst, NHoldFirst, HoldRest, NHoldRest, NumericFunction</code> into account.
    *
    * @param ast
-   * @param attr
+   * @param attributes
    * @return <code>F.NIL</code> is no evaluation was possible
    */
-  public IASTMutable evalArgs(final IAST ast, final int attr) {
+  public IASTMutable evalArgs(final IAST ast, final int attributes) {
     final int astSize = ast.size();
 
     if (astSize > 1) {
       boolean numericMode = fNumericMode;
       boolean localNumericMode = fNumericMode;
-      final boolean isNumericFunction = (ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION;
+      final boolean isNumericFunction =
+          (ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION;
       boolean isNumericArgument = ast.isNumericArgument();
       if (!fNumericMode) {
         if (isNumericFunction && isNumericArgument) {
@@ -720,18 +734,18 @@ public class EvalEngine implements Serializable {
       IASTMutable[] rlist = new IASTMutable[1];
       rlist[0] = F.NIL;
       IExpr x = ast.arg1();
-      if ((ISymbol.HOLDFIRST & attr) == ISymbol.NOATTRIBUTE) {
+      if ((ISymbol.HOLDFIRST & attributes) == ISymbol.NOATTRIBUTE) {
         // the HoldFirst attribute is disabled
         try {
           if (!x.isAST(S.Unevaluated)) {
-            selectNumericMode(attr, ISymbol.NHOLDFIRST, localNumericMode);
+            selectNumericMode(attributes, ISymbol.NHOLDFIRST, localNumericMode);
             evalArg(rlist, ast, x, 1, isNumericFunction);
             if (astSize == 2 && rlist[0].isPresent()) {
               return rlist[0];
             }
           }
         } finally {
-          if ((ISymbol.NHOLDFIRST & attr) == ISymbol.NHOLDFIRST) {
+          if ((ISymbol.NHOLDFIRST & attributes) == ISymbol.NHOLDFIRST) {
             fNumericMode = numericMode;
           }
         }
@@ -740,14 +754,14 @@ public class EvalEngine implements Serializable {
         if (!ast.isHoldAllCompleteAST()) {
           try {
             if (x.isAST(S.Evaluate)) {
-              selectNumericMode(attr, ISymbol.NHOLDFIRST, localNumericMode);
+              selectNumericMode(attributes, ISymbol.NHOLDFIRST, localNumericMode);
               evalArg(rlist, ast, x, 1, isNumericFunction);
               if (astSize == 2 && rlist[0].isPresent()) {
                 return rlist[0];
               }
             }
           } finally {
-            if ((ISymbol.NHOLDFIRST & attr) == ISymbol.NHOLDFIRST) {
+            if ((ISymbol.NHOLDFIRST & attributes) == ISymbol.NHOLDFIRST) {
               fNumericMode = numericMode;
             }
           }
@@ -755,11 +769,11 @@ public class EvalEngine implements Serializable {
       }
 
       if (astSize > 2) {
-        if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
+        if ((ISymbol.HOLDREST & attributes) == ISymbol.NOATTRIBUTE) {
           // the HoldRest attribute is disabled
           numericMode = fNumericMode;
           try {
-            selectNumericMode(attr, ISymbol.NHOLDREST, localNumericMode);
+            selectNumericMode(attributes, ISymbol.NHOLDREST, localNumericMode);
             ast.forEach(
                 2,
                 astSize,
@@ -769,7 +783,7 @@ public class EvalEngine implements Serializable {
                   }
                 });
           } finally {
-            if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
+            if ((ISymbol.NHOLDREST & attributes) == ISymbol.NHOLDREST) {
               fNumericMode = numericMode;
             }
           }
@@ -778,7 +792,7 @@ public class EvalEngine implements Serializable {
           if (!ast.isHoldAllCompleteAST()) {
             numericMode = fNumericMode;
             try {
-              selectNumericMode(attr, ISymbol.NHOLDREST, localNumericMode);
+              selectNumericMode(attributes, ISymbol.NHOLDREST, localNumericMode);
               ast.forEach(
                   2,
                   astSize,
@@ -788,7 +802,7 @@ public class EvalEngine implements Serializable {
                     }
                   });
             } finally {
-              if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
+              if ((ISymbol.NHOLDREST & attributes) == ISymbol.NHOLDREST) {
                 fNumericMode = numericMode;
               }
             }
@@ -798,7 +812,7 @@ public class EvalEngine implements Serializable {
       if (!isNumericArgument && ast.isNumericArgument()) {
         // one of the arguments is a numeric value
         if (!rlist[0].isPresent()) {
-          return evalArgs(ast, attr);
+          return evalArgs(ast, attributes);
         }
       }
       return rlist[0];
@@ -822,9 +836,9 @@ public class EvalEngine implements Serializable {
     }
 
     final ISymbol symbol = ast.topHead();
-    final int attr = symbol.getAttributes();
+    final int attributes = symbol.getAttributes();
 
-    if ((attr & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
+    if ((attributes & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
       if ((result = F.flattenSequence(ast)).isPresent()) {
         return result;
       }
@@ -834,12 +848,12 @@ public class EvalEngine implements Serializable {
     // pattern-matching".
     // Functions like Times and PLus implement OneIdentity as extra transformation!
 
-    if ((result = evalArgs(ast, attr)).isPresent()) {
+    if ((result = evalArgs(ast, attributes)).isPresent()) {
       return result;
     }
 
     final IExpr arg1 = ast.arg1();
-    if (ISymbol.hasFlatAttribute(attr)) {
+    if (ISymbol.hasFlatAttribute(attributes)) {
       if (arg1.head().equals(symbol)) {
         // associative
         return arg1;
@@ -850,7 +864,7 @@ public class EvalEngine implements Serializable {
       }
     }
 
-    if ((ISymbol.LISTABLE & attr) == ISymbol.LISTABLE) {
+    if ((ISymbol.LISTABLE & attributes) == ISymbol.LISTABLE) {
       if (symbol.isBuiltInSymbol()) {
         if (arg1.isRealVector() && ((IAST) arg1).size() > 1) {
           final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
@@ -883,7 +897,7 @@ public class EvalEngine implements Serializable {
       }
     }
 
-    if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
+    if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
       if (ast.arg1().isIndeterminate()) {
         return S.Indeterminate;
       }
@@ -902,9 +916,9 @@ public class EvalEngine implements Serializable {
    * @return <code>F.NIL</code> if no evaluation happened
    */
   private IExpr evalASTBuiltinFunction(final ISymbol symbol, IAST ast) {
-    final int attr = symbol.getAttributes();
+    final int attributes = symbol.getAttributes();
     if (fEvalLHSMode) {
-      if ((ISymbol.HOLDALL & attr) == ISymbol.HOLDALL) {
+      if ((ISymbol.HOLDALL & attributes) == ISymbol.HOLDALL) {
         // check for Set or SetDelayed necessary, because of dynamic
         // evaluation then initializing rules for predefined symbols
         // (i.e. Sin, Cos,...)
@@ -915,7 +929,7 @@ public class EvalEngine implements Serializable {
           return F.NIL;
         }
       } else {
-        if ((ISymbol.NUMERICFUNCTION & attr) != ISymbol.NUMERICFUNCTION) {
+        if ((ISymbol.NUMERICFUNCTION & attributes) != ISymbol.NUMERICFUNCTION) {
           return F.NIL;
         }
       }
@@ -931,22 +945,34 @@ public class EvalEngine implements Serializable {
     if (symbol.isBuiltInSymbol()) {
       final IEvaluator evaluator = ((IBuiltInSymbol) symbol).getEvaluator();
       if (evaluator instanceof IFunctionEvaluator) {
+        if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED) && isSymbolicMode(attributes)) {
+          return F.NIL;
+        }
+        // evaluate a built-in function.
+        final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) evaluator;
+
+        OptionsResult opres = checkBuiltinArguments(ast, functionEvaluator);
+        if (opres == null) {
+          return F.NIL;
+        }
+        ast = opres.result;
         try {
-          // evaluate a built-in function.
-          final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) evaluator;
-          ast = checkBuiltinArguments(ast, functionEvaluator);
-          if (!ast.isPresent()) {
-            return F.NIL;
-          }
-          if (isSymbolicMode(attr) && ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
-            return F.NIL;
-          }
-          IExpr result =
-              fNumericMode
-                  ? functionEvaluator.numericEval(ast, this)
-                  : functionEvaluator.evaluate(ast, this);
-          if (result.isPresent()) {
-            return result;
+          if (evaluator instanceof AbstractFunctionOptionEvaluator) {
+            AbstractFunctionOptionEvaluator optionsEvaluator =
+                (AbstractFunctionOptionEvaluator) evaluator;
+            IExpr result = optionsEvaluator.evaluate(ast, opres.argSize, opres.options, this);
+            if (result.isPresent()) {
+              return result;
+            }
+          } else {
+
+            IExpr result =
+                fNumericMode
+                    ? functionEvaluator.numericEval(ast, this)
+                    : functionEvaluator.evaluate(ast, this);
+            if (result.isPresent()) {
+              return result;
+            }
           }
         } catch (ValidateException ve) {
           return IOFunctions.printMessage(ast.topHead(), ve, this);
@@ -956,7 +982,7 @@ public class EvalEngine implements Serializable {
           LOGGER.log(getLogLevel(), ast.topHead(), ve);
           return F.NIL;
         }
-        if (isSymbolicMode(attr)) {
+        if (isSymbolicMode(attributes)) {
           ast.addEvalFlags(IAST.BUILT_IN_EVALED);
           return F.NIL;
         }
@@ -986,41 +1012,82 @@ public class EvalEngine implements Serializable {
    * @param functionEvaluator
    * @return
    */
-  public IAST checkBuiltinArguments(IAST ast, final IFunctionEvaluator functionEvaluator) {
+  public OptionsResult checkBuiltinArguments(IAST ast, final IFunctionEvaluator functionEvaluator) {
     int[] expected;
+    OptionsResult opres = new OptionsResult(ast, ast.argSize(), null);
     if ((expected = functionEvaluator.expectedArgSize(ast)) != null) {
       if (expected.length == 2 && !ast.head().isBuiltInSymbol()) {
-        return F.NIL;
+        return null;
       } else if (expected.length == 3 && expected[2] > 0) {
         switch (expected[2]) {
           case 1:
             if (ast.isAST1()) {
-              ast = F.operatorForm1Append(ast);
-              if (!ast.isPresent()) {
-                return F.NIL;
+              opres.result = F.operatorForm1Append(ast);
+              if (!opres.result.isPresent()) {
+                return null;
               }
             }
             break;
           case 2:
             if (ast.head().isAST1()) {
-              ast = F.operatorForm2Prepend(ast, expected, this);
-              if (!ast.isPresent()) {
-                return F.NIL;
+              opres.result = F.operatorForm2Prepend(ast, expected, this);
+              if (!opres.result.isPresent()) {
+                return null;
               }
             }
             break;
           default:
         }
       }
+
+      ast = opres.result;
       if (ast.argSize() < expected[0] || ast.argSize() > expected[1]) {
         if (ast.isAST1() && expected.length > 2) {
           // because an operator form is allowed do not print a message
-          return F.NIL;
+          return null;
         }
-        return IOFunctions.printArgMessage(ast, expected, this);
+        if (ast.argSize() > expected[0]) {
+          if (functionEvaluator instanceof AbstractFunctionOptionEvaluator) {
+            AbstractFunctionOptionEvaluator optionEvaluator =
+                (AbstractFunctionOptionEvaluator) functionEvaluator;
+            opres = getOptions(optionEvaluator, opres, ast, expected);
+            if (opres != null) {
+              return opres;
+            }
+          }
+        }
+        IOFunctions.printArgMessage(ast, expected, this);
+        return null;
       }
     }
-    return ast;
+    if (functionEvaluator instanceof AbstractFunctionOptionEvaluator) {
+      AbstractFunctionOptionEvaluator optionEvaluator =
+          (AbstractFunctionOptionEvaluator) functionEvaluator;
+      opres = getOptions(optionEvaluator, opres, ast, expected);
+      if (opres != null) {
+        return opres;
+      }
+    }
+    return opres;
+  }
+
+  private OptionsResult getOptions(
+      AbstractFunctionOptionEvaluator optionEvaluator,
+      OptionsResult opres,
+      IAST ast,
+      int[] expected) {
+    IBuiltInSymbol[] optionSymbols = optionEvaluator.getOptionSymbols();
+    if (optionSymbols != null) {
+      opres.options = new IExpr[optionSymbols.length];
+      int argSize =
+          AbstractFunctionEvaluator.determineOptions(
+              opres.options, ast, ast.argSize(), expected, optionSymbols, this);
+      if (argSize <= expected[1] && argSize >= expected[0]) {
+        opres.argSize = argSize;
+        return opres;
+      }
+    }
+    return null;
   }
 
   /**
@@ -1028,86 +1095,85 @@ public class EvalEngine implements Serializable {
    * controlled by the header attributes.
    *
    * @param symbol the header symbol
-   * @param ast the AST which should be evaluated
+   * @param mutableAST the AST which should be evaluated. If <code>symbol</code> has attribute
+   *     {@link ISymbol#ORDERLESS} the mutableAST will be modified.
    * @return <code>F.NIL</code> if no evaluation was possible
    */
-  public IExpr evalAttributes(ISymbol symbol, IAST ast) {
-    IASTMutable tempAST = (IASTMutable) ast;
-    final int astSize = tempAST.size();
+  public IExpr evalAttributes(ISymbol symbol, IASTMutable mutableAST) {
+    final int astSize = mutableAST.size();
     if (astSize == 2) {
-      return evalASTArg1(tempAST);
+      return evalASTArg1(mutableAST);
     }
 
-    // first evaluate the header
-    IExpr head = tempAST.head();
-    IExpr result = head.evaluateHead(tempAST, this);
+    IExpr result = mutableAST.head().evaluateHead(mutableAST, this);
     if (result.isPresent()) {
       return result;
     }
 
     if (astSize != 1) {
-      final int attr = symbol.getAttributes();
+      final int attributes = symbol.getAttributes();
       IASTMutable returnResult = F.NIL;
 
-      if ((attr & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
-        if ((result = F.flattenSequence(tempAST)).isPresent()) {
+      if ((attributes & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
+        if ((result = F.flattenSequence(mutableAST)).isPresent()) {
           return result;
         }
       }
 
-      IASTMutable resultList = evalArgs(tempAST, attr);
+      IASTMutable resultList = evalArgs(mutableAST, attributes);
       if (resultList.isPresent()) {
         return resultList;
       }
 
       // ONEIDENTITY is checked in the evalASTArg1() method!
-      if (ISymbol.hasFlatAttribute(attr)) {
+      if (ISymbol.hasFlatAttribute(attributes)) {
         // associative symbol
         IASTAppendable flattened;
-        if ((flattened = EvalAttributes.flatten(tempAST)).isPresent()) {
+        if ((flattened = EvalAttributes.flatten(mutableAST)).isPresent()) {
           returnResult = flattened;
-          tempAST = returnResult;
+          mutableAST = returnResult;
         }
       }
 
-      result = evalTagSetPlusTimes(tempAST);
+      result = evalTagSetPlusTimes(mutableAST);
       if (result.isPresent()) {
         return result;
       }
 
-      if ((ISymbol.LISTABLE & attr) == ISymbol.LISTABLE
-          && !((tempAST.getEvalFlags() & IAST.IS_LISTABLE_THREADED) == IAST.IS_LISTABLE_THREADED)) {
+      if ((ISymbol.LISTABLE & attributes) == ISymbol.LISTABLE
+          && !((mutableAST.getEvalFlags() & IAST.IS_LISTABLE_THREADED)
+              == IAST.IS_LISTABLE_THREADED)) {
         // thread over the lists
-        resultList = threadASTListArgs(tempAST, S.Thread, "tdlen");
+        resultList = threadASTListArgs(mutableAST, S.Thread, "tdlen");
         if (resultList.isPresent()) {
           return evalArgs(resultList, ISymbol.NOATTRIBUTE).orElse(resultList);
         }
-        int indx = tempAST.indexOf(x -> x.isAssociation());
+        int indx = mutableAST.indexOf(x -> x.isAssociation());
         if (indx > 0) {
-          return ((IAssociation) tempAST.get(indx)).mapThread(tempAST, indx);
+          return ((IAssociation) mutableAST.get(indx)).mapThread(mutableAST, indx);
         }
       }
 
-      if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
-        if (!((ISymbol.HOLDALL & attr) == ISymbol.HOLDALL)) {
-          if (tempAST.exists(x -> x.isIndeterminate())) {
+      if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
+        if (!((ISymbol.HOLDALL & attributes) == ISymbol.HOLDALL)) {
+          if (mutableAST.exists(x -> x.isIndeterminate())) {
             return S.Indeterminate;
           }
-          IExpr temp = tempAST.extractConditionalExpression(false);
+          IExpr temp = mutableAST.extractConditionalExpression(false);
           if (temp.isPresent()) {
             return temp;
           }
         }
-      } else if (tempAST.isBooleanFunction() || tempAST.isComparatorFunction()) {
-        IExpr temp = tempAST.extractConditionalExpression(false);
+      } else if (mutableAST.isBooleanFunction() || mutableAST.isComparatorFunction()) {
+        IExpr temp = mutableAST.extractConditionalExpression(false);
         if (temp.isPresent()) {
           return temp;
         }
       }
 
-      if (astSize > 2 && ISymbol.hasOrderlessAttribute(attr)) {
+      if (astSize > 2 && ISymbol.hasOrderlessAttribute(attributes)) {
         // commutative symbol
-        EvalAttributes.sortWithFlags(tempAST);
+        EvalAttributes.sortWithFlags(mutableAST);
       }
       return returnResult;
     }
@@ -1233,19 +1299,25 @@ public class EvalEngine implements Serializable {
     if (expr.isReal()) {
       return ((ISignedNumber) expr).doubleValue();
     }
-    if (expr.isNumericFunction(true)) {
-      IExpr result = evalN(expr);
-      if (result.isReal()) {
-        return ((ISignedNumber) result).doubleValue();
-      }
-    } else {
-      IExpr temp = evaluateNIL(expr);
-      if (temp.isNumericFunction(true)) {
-        IExpr result = evalN(temp);
+    boolean quietMode = fQuietMode;
+    try {
+      fQuietMode = true;
+      if (expr.isNumericFunction(true)) {
+        IExpr result = evalN(expr);
         if (result.isReal()) {
           return ((ISignedNumber) result).doubleValue();
         }
+      } else {
+        IExpr temp = evaluateNIL(expr);
+        if (temp.isNumericFunction(true)) {
+          IExpr result = evalN(temp);
+          if (result.isReal()) {
+            return ((ISignedNumber) result).doubleValue();
+          }
+        }
       }
+    } finally {
+      fQuietMode = quietMode;
     }
     if (Double.isNaN(defaultValue)) {
       throw new ArgumentTypeException(
@@ -1297,18 +1369,11 @@ public class EvalEngine implements Serializable {
     if (expr.isNumber()) {
       return new Complex(((INumber) expr).reDoubleValue(), ((INumber) expr).imDoubleValue());
     }
-    if (expr.isNumericFunction(true)) {
-      IExpr result = evalN(expr);
-      if (result.isReal()) {
-        return new Complex(((ISignedNumber) result).doubleValue());
-      }
-      if (result.isNumber()) {
-        return new Complex(((INumber) result).reDoubleValue(), ((INumber) result).imDoubleValue());
-      }
-    } else {
-      IExpr temp = evaluateNIL(expr);
-      if (temp.isNumericFunction(true)) {
-        IExpr result = evalN(temp);
+    boolean quietMode = fQuietMode;
+    try {
+      fQuietMode = true;
+      if (expr.isNumericFunction(true)) {
+        IExpr result = evalN(expr);
         if (result.isReal()) {
           return new Complex(((ISignedNumber) result).doubleValue());
         }
@@ -1316,7 +1381,21 @@ public class EvalEngine implements Serializable {
           return new Complex(
               ((INumber) result).reDoubleValue(), ((INumber) result).imDoubleValue());
         }
+      } else {
+        IExpr temp = evaluateNIL(expr);
+        if (temp.isNumericFunction(true)) {
+          IExpr result = evalN(temp);
+          if (result.isReal()) {
+            return new Complex(((ISignedNumber) result).doubleValue());
+          }
+          if (result.isNumber()) {
+            return new Complex(
+                ((INumber) result).reDoubleValue(), ((INumber) result).imDoubleValue());
+          }
+        }
       }
+    } finally {
+      fQuietMode = quietMode;
     }
     throw new ArgumentTypeException(
         "conversion into a machine-size Complex numeric value is not possible!");
@@ -1333,14 +1412,14 @@ public class EvalEngine implements Serializable {
       return F.NIL;
     }
     final ISymbol symbol = ast.topHead();
-    final int attr = symbol.getAttributes();
+    final int attributes = symbol.getAttributes();
     // final Predicate<IExpr> isPattern = Predicates.isPattern();
     IASTMutable resultList = F.NIL;
 
-    if ((ISymbol.HOLDALL & attr) != ISymbol.HOLDALL) {
+    if ((ISymbol.HOLDALL & attributes) != ISymbol.HOLDALL) {
       final int astSize = ast.size();
 
-      if ((ISymbol.HOLDFIRST & attr) == ISymbol.NOATTRIBUTE) {
+      if ((ISymbol.HOLDFIRST & attributes) == ISymbol.NOATTRIBUTE) {
         // the HoldFirst attribute isn't set here
         if (astSize > 1 && ast.arg1().isAST()) {
           IExpr expr = ast.arg1();
@@ -1356,7 +1435,7 @@ public class EvalEngine implements Serializable {
         }
       }
       if (astSize > 2) {
-        if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
+        if ((ISymbol.HOLDREST & attributes) == ISymbol.NOATTRIBUTE) {
           // the HoldRest attribute isn't set here
           for (int i = 2; i < astSize; i++) {
             if (ast.get(i).isAST()) {
@@ -1375,19 +1454,19 @@ public class EvalEngine implements Serializable {
     }
     if (resultList.isPresent()) {
       if (resultList.size() > 2) {
-        if (ISymbol.hasFlatAttribute(attr)) {
+        if (ISymbol.hasFlatAttribute(attributes)) {
           // associative
           IASTAppendable result;
           if ((result = EvalAttributes.flattenDeep(resultList)).isPresent()) {
             resultList = result;
-            if (ISymbol.hasOrderlessAttribute(attr)) {
+            if (ISymbol.hasOrderlessAttribute(attributes)) {
               EvalAttributes.sortWithFlags(resultList);
             }
             resultList.addEvalFlags(IAST.IS_FLAT_ORDERLESS_EVALED);
             return resultList;
           }
         }
-        if (ISymbol.hasOrderlessAttribute(attr)) {
+        if (ISymbol.hasOrderlessAttribute(attributes)) {
           EvalAttributes.sortWithFlags(resultList);
         }
       }
@@ -1395,19 +1474,19 @@ public class EvalEngine implements Serializable {
       return resultList;
     }
 
-    if (ISymbol.hasFlatAttribute(attr)) {
+    if (ISymbol.hasFlatAttribute(attributes)) {
       // associative
       IASTAppendable result;
       if ((result = EvalAttributes.flattenDeep(ast)).isPresent()) {
         resultList = result;
-        if (ISymbol.hasOrderlessAttribute(attr)) {
+        if (ISymbol.hasOrderlessAttribute(attributes)) {
           EvalAttributes.sortWithFlags(resultList);
         }
         resultList.addEvalFlags(IAST.IS_FLAT_ORDERLESS_EVALED);
         return resultList;
       }
     }
-    if (ISymbol.hasOrderlessAttribute(attr)) {
+    if (ISymbol.hasOrderlessAttribute(attributes)) {
       if (EvalAttributes.sortWithFlags((IASTMutable) ast)) {
         ast.addEvalFlags(IAST.IS_FLAT_ORDERLESS_EVALED);
         return ast;
@@ -1909,13 +1988,13 @@ public class EvalEngine implements Serializable {
       }
     }
 
-    final int attr = symbol.getAttributes();
+    final int attributes = symbol.getAttributes();
     IASTMutable resultList = F.NIL;
 
-    if ((ISymbol.HOLDALL & attr) != ISymbol.HOLDALL) {
+    if ((ISymbol.HOLDALL & attributes) != ISymbol.HOLDALL) {
       final int astSize = ast.size();
 
-      if ((ISymbol.HOLDFIRST & attr) == ISymbol.NOATTRIBUTE) {
+      if ((ISymbol.HOLDFIRST & attributes) == ISymbol.NOATTRIBUTE) {
         // the HoldFirst attribute isn't set here
         if (astSize > 1) {
           IExpr expr = ast.arg1();
@@ -1930,7 +2009,7 @@ public class EvalEngine implements Serializable {
         }
       }
       if (astSize > 2) {
-        if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
+        if ((ISymbol.HOLDREST & attributes) == ISymbol.NOATTRIBUTE) {
           // the HoldRest attribute isn't set here
           for (int i = 2; i < astSize; i++) {
             IExpr expr = ast.get(i);
@@ -1950,7 +2029,7 @@ public class EvalEngine implements Serializable {
           }
         }
       }
-      if (evalNumericFunction && ((ISymbol.HOLDALL & attr) == ISymbol.NOATTRIBUTE)) {
+      if (evalNumericFunction && ((ISymbol.HOLDALL & attributes) == ISymbol.NOATTRIBUTE)) {
         IAST f = resultList.orElse(ast);
         if (f.isNumericFunction(true)) {
           IExpr temp = evalLoop(f);
@@ -1962,14 +2041,14 @@ public class EvalEngine implements Serializable {
     }
     if (resultList.isPresent()) {
       if (resultList.size() > 2) {
-        if (ISymbol.hasFlatAttribute(attr)) {
+        if (ISymbol.hasFlatAttribute(attributes)) {
           // associative
           IASTAppendable result;
           if ((result = EvalAttributes.flattenDeep(resultList)).isPresent()) {
-            return evalSetOrderless(result, attr, noEvaluation, level);
+            return evalSetOrderless(result, attributes, noEvaluation, level);
           }
         }
-        IExpr expr = evalSetOrderless(resultList, attr, noEvaluation, level);
+        IExpr expr = evalSetOrderless(resultList, attributes, noEvaluation, level);
         if (expr.isPresent()) {
           return expr;
         }
@@ -1982,25 +2061,25 @@ public class EvalEngine implements Serializable {
       return ast;
     }
 
-    if (ISymbol.hasFlatAttribute(attr)) {
+    if (ISymbol.hasFlatAttribute(attributes)) {
       // associative
       IASTAppendable result;
       if ((result = EvalAttributes.flattenDeep(ast)).isPresent()) {
-        return evalSetOrderless(result, attr, noEvaluation, level);
+        return evalSetOrderless(result, attributes, noEvaluation, level);
       }
     }
-    return evalSetOrderless(ast, attr, noEvaluation, level);
+    return evalSetOrderless(ast, attributes, noEvaluation, level);
   }
 
   /**
    * @param ast
-   * @param attr
+   * @param attributes
    * @param noEvaluation
    * @param level
    * @return <code>ast</code> if no evaluation was possible
    */
-  private IExpr evalSetOrderless(IAST ast, final int attr, boolean noEvaluation, int level) {
-    if (ISymbol.hasOrderlessAttribute(attr)) {
+  private IExpr evalSetOrderless(IAST ast, final int attributes, boolean noEvaluation, int level) {
+    if (ISymbol.hasOrderlessAttribute(attributes)) {
       EvalAttributes.sortWithFlags((IASTMutable) ast);
       //      if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
       if (!noEvaluation) {
@@ -2654,8 +2733,17 @@ public class EvalEngine implements Serializable {
     }
   }
 
-  private void selectNumericMode(final int attr, final int nAttribute, boolean localNumericMode) {
-    if ((nAttribute & attr) == nAttribute) {
+  /**
+   * If <code>nHoldAttribute</code> ( {@link ISymbol#NHOLDFIRST} or {@link ISymbol#NHOLDREST} ) are
+   * set in attributes, set numeric mode to false, otherwise set <code>localNumericMode</code>
+   *
+   * @param attributes
+   * @param nHoldAttribute {@link ISymbol#NHOLDFIRST} or {@link ISymbol#NHOLDREST} attribute bitmask
+   * @param localNumericMode
+   */
+  private void selectNumericMode(
+      final int attributes, final int nHoldAttribute, boolean localNumericMode) {
+    if ((nHoldAttribute & attributes) == nHoldAttribute) {
       fNumericMode = false;
     } else {
       fNumericMode = localNumericMode;

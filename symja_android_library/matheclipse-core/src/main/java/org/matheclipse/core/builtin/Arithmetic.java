@@ -3017,7 +3017,7 @@ public final class Arithmetic {
    */
   public static class Plus extends AbstractArgMultiple implements INumeric {
 
-    private static HashedOrderlessMatcherPlus ORDERLESS_MATCHER = new HashedOrderlessMatcherPlus();
+    private static HashedOrderlessMatcherPlus PLUS_ORDERLESS_MATCHER;
 
     public Plus() {}
 
@@ -3123,9 +3123,6 @@ public final class Arithmetic {
      */
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
-        return F.NIL;
-      }
       final int size = ast.size();
       if (size > 2) {
         if (ast.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
@@ -3148,9 +3145,6 @@ public final class Arithmetic {
         if (temp.isAST(S.Plus, 2)) {
           return temp.first();
         }
-        if (!temp.isPresent()) {
-          ast.addEvalFlags(IAST.BUILT_IN_EVALED);
-        }
         return temp;
       } else {
         if (size == 1) {
@@ -3160,14 +3154,12 @@ public final class Arithmetic {
           return ast.arg1();
         }
       }
-
-      ast.addEvalFlags(IAST.BUILT_IN_EVALED);
       return F.NIL;
     }
 
     @Override
     public HashedOrderlessMatcher getHashRuleMap() {
-      return ORDERLESS_MATCHER;
+      return PLUS_ORDERLESS_MATCHER;
     }
 
     /** {@inheritDoc} */
@@ -3188,38 +3180,64 @@ public final class Arithmetic {
               | ISymbol.FLAT
               | ISymbol.LISTABLE
               | ISymbol.NUMERICFUNCTION);
+      PLUS_ORDERLESS_MATCHER = Arithmetic.Plus.initPlusHashMatcher();
+      super.setUp(newSymbol);
+    }
 
-      ORDERLESS_MATCHER.definePatternHashRule(Power(Sin(x_), C2), Power(Cos(x_), C2), C1);
-      ORDERLESS_MATCHER.definePatternHashRule(Power(F.Sech(x_), C2), Power(F.Tanh(x_), C2), C1);
-      ORDERLESS_MATCHER.definePatternHashRule(
-          Power(F.Cosh(x_), C2), Power(F.Sinh(x_), C2), C1, true);
-      ORDERLESS_MATCHER.definePatternHashRule(Power(F.Csc(x_), C2), Power(F.Cot(x_), C2), C1, true);
+    private static HashedOrderlessMatcherPlus initPlusHashMatcher() {
+      HashedOrderlessMatcherPlus plusMatcher = new HashedOrderlessMatcherPlus();
 
-      ORDERLESS_MATCHER.defineHashRule(ArcSin(x_), ArcCos(x_), F.CPiHalf);
-      ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcCot(x_), F.CPiHalf);
+      plusMatcher.definePatternHashRule(
+          Power(Sin(x_), C2),
+          Power(Cos(x_), C2), //
+          C1);
+      plusMatcher.definePatternHashRule(
+          Power(F.Sech(x_), C2),
+          Power(F.Tanh(x_), C2), //
+          C1);
+      plusMatcher.definePatternHashRule(
+          Power(F.Cosh(x_), C2),
+          Power(F.Sinh(x_), C2), //
+          C1,
+          true);
+      plusMatcher.definePatternHashRule(
+          Power(F.Csc(x_), C2),
+          Power(F.Cot(x_), C2), //
+          C1,
+          true);
+
+      plusMatcher.defineHashRule(
+          ArcSin(x_),
+          ArcCos(x_), //
+          F.CPiHalf);
+      plusMatcher.defineHashRule(
+          ArcTan(x_),
+          ArcCot(x_), //
+          F.CPiHalf);
       // "Positive[x]&&(y==1/x)");
-      ORDERLESS_MATCHER.defineHashRule(
+      plusMatcher.defineHashRule(
           ArcTan(x_),
           ArcTan(y_), //
           Times(C1D2, Pi), //
           And(Positive(x), Equal(y, Power(x, CN1))));
 
       // ArcTan(1/2) + ArcTan(1/3) = Pi/4
-      ORDERLESS_MATCHER.defineHashRule(
+      plusMatcher.defineHashRule(
           F.ArcTan(F.C1D3),
           F.ArcTan(F.C1D2), //
           Times(F.C1D4, Pi));
       // ArcTan(1/3) + ArcTan(1/7) = ArcTan(1/2)
-      ORDERLESS_MATCHER.defineHashRule(
+      plusMatcher.defineHashRule(
           F.ArcTan(F.C1D3),
           F.ArcTan(F.QQ(1L, 7L)), //
           F.ArcTan(F.C1D2));
-      // ORDERLESS_MATCHER.setUpHashRule("-ArcTan[x_]", "-ArcTan[y_]",
+      // plusMatcher.setUpHashRule("-ArcTan[x_]", "-ArcTan[y_]",
       // "-Pi/2", "Positive[x]&&(y==1/x)");
-      // ORDERLESS_MATCHER.definePatternHashRule(Times(CN1, ArcTan(x_)), Times(CN1,
+      // plusMatcher.definePatternHashRule(Times(CN1, ArcTan(x_)), Times(CN1,
       // ArcTan(y_)), Times(CN1D2, Pi),
       // And(Positive(x), Equal(y, Power(x, CN1))));
-      super.setUp(newSymbol);
+
+      return plusMatcher;
     }
   }
 
@@ -5655,8 +5673,12 @@ public final class Arithmetic {
     /** Constructor for the singleton */
     public static final Times CONST = new Times();
 
-    private static HashedOrderlessMatcherTimes TIMES_ORDERLESS_MATCHER =
-        new HashedOrderlessMatcherTimes();
+    private static HashedOrderlessMatcherTimes TIMES_ORDERLESS_MATCHER;
+
+    @Override
+    public HashedOrderlessMatcher getHashRuleMap() {
+      return TIMES_ORDERLESS_MATCHER;
+    }
 
     private static IExpr eInfinity(IAST inf, IExpr o1) {
       if (inf.isComplexInfinity()) {
@@ -6123,9 +6145,6 @@ public final class Arithmetic {
         // OneIdentity
         return ast1.arg1();
       }
-      if (ast1.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
-        return F.NIL;
-      }
       if (size > 2) {
         IAST temp = evaluateHashsRepeated(ast1, engine);
         if (temp.isPresent()) {
@@ -6220,25 +6239,12 @@ public final class Arithmetic {
             return result.oneIdentity0();
           }
 
-          IExpr temp = distributeLeadingFactor(result, F.NIL);
-          if (!temp.isPresent()) {
-            ast1.addEvalFlags(IAST.BUILT_IN_EVALED);
-          }
-          return temp;
+          return distributeLeadingFactor(result, F.NIL);
         }
-        IExpr temp = distributeLeadingFactor(F.NIL, astTimes);
-        if (!temp.isPresent()) {
-          ast1.addEvalFlags(IAST.BUILT_IN_EVALED);
-        }
-        return temp;
+        return distributeLeadingFactor(F.NIL, astTimes);
       }
 
       return F.NIL;
-    }
-
-    @Override
-    public HashedOrderlessMatcher getHashRuleMap() {
-      return TIMES_ORDERLESS_MATCHER;
     }
 
     /** {@inheritDoc} */
@@ -6260,66 +6266,72 @@ public final class Arithmetic {
               | ISymbol.LISTABLE
               | ISymbol.NUMERICFUNCTION);
 
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      TIMES_ORDERLESS_MATCHER = Arithmetic.Times.initTimesHashMatcher();
+      super.setUp(newSymbol);
+    }
+
+    private static HashedOrderlessMatcherTimes initTimesHashMatcher() {
+      HashedOrderlessMatcherTimes timesMatcher = new HashedOrderlessMatcherTimes();
+      timesMatcher.defineHashRule(
           new HashedPatternRulesLog( //
               Log(x_), //
               Log(y_)));
 
       // Sin(x)*Cot(x) -> Cos(x)
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Sin(x_), //
               F.Cot(x_), //
               F.Cos(x)));
       // Sin(x)*Csc(x) -> 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Sin(x_), //
               F.Csc(x_), //
               F.C1));
 
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Tan(x_), //
               F.Cot(x_), //
               F.C1));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Cos(x_), //
               F.Sec(x_), //
               F.C1));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Cos(x_), //
               F.Tan(x_), //
               F.Sin(x)));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Csc(x_), //
               F.Tan(x_), //
               F.Sec(x)));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Power(F.Csc(x_), F.m_), //
               F.Power(F.Cot(x_), F.n_DEFAULT), //
               F.Condition(
                   F.Times(F.Power(F.Csc(S.x), F.Plus(S.m, S.n)), F.Power(F.Cos(S.x), S.n)),
                   F.And(F.Not(F.NumberQ(S.m)), F.IntegerQ(S.n), F.Greater(S.n, F.C0)))));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Power(F.Sec(x_), F.m_), //
               F.Power(F.Tan(x_), F.n_DEFAULT), //
               F.Condition(
                   F.Times(F.Power(F.Sec(S.x), F.Plus(S.m, S.n)), F.Power(F.Sin(S.x), S.n)),
                   F.And(F.Not(F.NumberQ(S.m)), F.IntegerQ(S.n), F.Greater(S.n, F.C0)))));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Power(F.Csch(x_), F.m_), //
               F.Power(F.Coth(x_), F.n_DEFAULT), //
               F.Condition(
                   F.Times(F.Power(F.Csch(S.x), F.Plus(S.m, S.n)), F.Power(F.Cosh(S.x), S.n)),
                   F.And(F.Not(F.NumberQ(S.m)), F.IntegerQ(S.n), F.Greater(S.n, F.C0)))));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Power(F.Sech(x_), F.m_), //
               F.Power(F.Tanh(x_), F.n_DEFAULT), //
@@ -6327,12 +6339,12 @@ public final class Arithmetic {
                   F.Times(F.Power(F.Sech(S.x), F.Plus(S.m, S.n)), F.Power(F.Sinh(S.x), S.n)),
                   F.And(F.Not(F.NumberQ(S.m)), F.IntegerQ(S.n), F.Greater(S.n, F.C0)))));
       // ProductLog(x_)*E^ProductLog(x_) = x
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.ProductLog(x_), //
               F.Power(S.E, F.ProductLog(x_)), //
               x));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Gamma(x_), //
               F.Gamma(F.Plus(F.C1, F.Times(F.CN1, x_))), //
@@ -6340,104 +6352,104 @@ public final class Arithmetic {
               F.Times(S.Pi, F.Csc(F.Times(x, S.Pi)))));
 
       // Sin(x_)^2/(1-Cos(x_)^2) = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Power(F.Sin(x_), F.C2), //
               F.Power(F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Cos(x_), F.C2))), F.CN1), //
               F.C1));
       // (1-Cos(x_)^2) / Sin(x_)^2 = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Cos(x_), F.C2))), //
               F.Power(F.Sin(x_), F.CN2), //
               F.C1));
 
       // Cos(x_)^2/(1-Sin(x_)^2) = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Power(F.Cos(x_), F.C2), //
               F.Power(F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Sin(x_), F.C2))), F.CN1), //
               F.C1));
       // (1-Sin(x_)^2) / Cos(x_)^2 = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Sin(x_), F.C2))), //
               F.Power(F.Cos(x_), F.CN2), //
               F.C1));
 
       // Sech(x_)^2/(1-Tanh(x_)^2 ) = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Power(F.Sech(x_), F.C2), //
               F.Power(F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Tanh(x_), F.C2))), F.CN1), //
               F.C1));
       // (1-Tanh(x_)^2 ) / Sech(x_)^2 = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Tanh(x_), F.C2))), //
               F.Power(F.Sech(x_), F.CN2), //
               F.C1));
 
       // Tanh(x_)^2/(1-Sech(x_)^2 ) = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Power(F.Tanh(x_), F.C2), //
               F.Power(F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Sech(x_), F.C2))), F.CN1), //
               F.C1));
       // (1-Sech(x_)^2 ) / Tanh(x_)^2= 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Sech(x_), F.C2))), //
               F.Power(F.Tanh(x_), F.CN2), //
               F.C1));
 
       // Cos(2*x_)/(1-2*Sin(x)^2) = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Cos(F.Times(F.C2, x_)), //
               F.Power(F.Plus(F.C1, F.Times(F.CN2, F.Power(F.Sin(x_), F.C2))), F.CN1), //
               F.C1));
       // (1-2*Sin(x)^2) / Cos(2*x_) = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Plus(F.C1, F.Times(F.CN2, F.Power(F.Sin(x_), F.C2))), //
               F.Power(F.Cos(F.Times(F.C2, x_)), F.CN1), //
               F.C1));
 
       // Cos(2*x_)/(-1+2*Cos(x)^2) = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Cos(F.Times(F.C2, x_)), //
               F.Power(F.Plus(F.CN1, F.Times(F.C2, F.Power(F.Cos(x_), F.C2))), F.CN1), //
               F.C1));
       // (-1+2*Cos(x)^2) / Cos(2*x_) = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Plus(F.CN1, F.Times(F.C2, F.Power(F.Cos(x_), F.C2))), //
               F.Power(F.Cos(F.Times(F.C2, x_)), F.CN1), //
               F.C1));
 
       // Sec(x_)^2/(1+Tan(x_)^2 ) = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Power(F.Sec(x_), F.C2), //
               F.Power(F.Plus(F.C1, F.Power(F.Tan(x_), F.C2)), F.CN1), //
               F.C1));
       // (1+Tan(x_)^2) / Sec(x_)^2 = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Plus(F.C1, F.Power(F.Tan(x_), F.C2)), //
               F.Power(F.Sec(x_), F.CN2), //
               F.C1));
 
       // Csc(x_)^2/(1+Cot(x_)^2 ) = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Power(F.Csc(x_), F.C2), //
               F.Power(F.Plus(F.C1, F.Power(F.Cot(x_), F.C2)), F.CN1), //
               F.C1));
       // (1+Cot(x_)^2) / Csc(x_)^2 = 1
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimesPower( //
               F.Plus(F.C1, F.Power(F.Cot(x_), F.C2)), //
               F.Power(F.Csc(x_), F.CN2), //
@@ -6446,65 +6458,65 @@ public final class Arithmetic {
       // TODO: HACK useOnlyEqualFactors = true in the following rules,
       // to avoid stack overflow in integration rules.
       // If true use only rules where both factors are equal,
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Sin(x_), //
               F.Sec(x_), //
               F.Tan(x)));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Cos(x_), //
               F.Csc(x_), //
               F.Cot(x)));
 
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Cosh(x_), //
               F.Tanh(x_), //
               F.Sinh(x)));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Coth(x_), //
               F.Sinh(x_), //
               F.Cosh(x)));
 
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Csch(x_), //
               F.Tanh(x_), //
               F.Sech(x)));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Coth(x_), //
               F.Sech(x_), //
               F.Csch(x)));
 
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Sech(x_), //
               F.Sinh(x_), //
               F.Tanh(x)));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Sech(x_), //
               F.Cosh(x_), //
               F.C1));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Csch(x_), //
               F.Sinh(x_), //
               F.C1));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Cosh(x_), //
               F.Csch(x_), //
               F.Coth(x)));
-      TIMES_ORDERLESS_MATCHER.defineHashRule(
+      timesMatcher.defineHashRule(
           new HashedPatternRulesTimes( //
               F.Coth(x_), //
               F.Tanh(x_), //
               F.C1));
-      super.setUp(newSymbol);
+      return timesMatcher;
     }
 
     /**

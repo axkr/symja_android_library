@@ -1252,12 +1252,12 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    *
    * @param replacement an IAST there the argument at the given position is replaced by the
    *     currently mapped argument of this {@link IAST}.
-   * @param position the position in <code>replacement</code> which should be replaced by the
-   *     corresponding argument of this {@link IAST}
+   * @param positionInReplacement the position in <code>replacement</code> which should be replaced
+   *     by the corresponding argument of this {@link IAST}
    * @return
    * @see IAST#map(Function, int)
    */
-  public IASTMutable mapThread(final IAST replacement, int position);
+  public IASTMutable mapThread(final IAST replacement, int positionInReplacement);
 
   /**
    * Maps the elements of this {@link IAST} on the first level of arguments with the evaluated unary
@@ -1276,12 +1276,13 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param engine
    * @param replacement an IAST there the argument at the given position is replaced by the
    *     currently mapped argument of this {@link IAST}.
-   * @param position the position in <code>replacement</code> which should be replaced by the
-   *     corresponding argument of this {@link IAST}
+   * @param positionInReplacement the position in <code>replacement</code> which should be replaced
+   *     by the corresponding argument of this {@link IAST}
    * @return
    * @see IAST#map(Function, int)
    */
-  public IASTMutable mapThreadEvaled(EvalEngine engine, final IAST replacement, int position);
+  public IASTMutable mapThreadEvaled(
+      EvalEngine engine, final IAST replacement, int positionInReplacement);
 
   /**
    * Maps the elements of this IAST on the first level of arguments with the unary <code>function)

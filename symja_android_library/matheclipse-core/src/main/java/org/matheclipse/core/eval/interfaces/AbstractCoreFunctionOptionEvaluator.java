@@ -13,10 +13,17 @@ public abstract class AbstractCoreFunctionOptionEvaluator extends AbstractCoreFu
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
-    IExpr[] option = new IExpr[optionSymbols.length];
-    int argSize =
-        AbstractFunctionEvaluator.determineOptions(
-            option, ast, ast.argSize(), expectedArgSize(ast), optionSymbols, engine);
+    IExpr[] option;
+    int argSize = ast.argSize();
+    if (optionSymbols == null) {
+      option = new IExpr[0];
+    } else {
+      option = new IExpr[optionSymbols.length];
+      argSize =
+          AbstractFunctionEvaluator.determineOptions(
+              option, ast, ast.argSize(), expectedArgSize(ast), optionSymbols, engine);
+    }
+
     return evaluate(ast, argSize, option, engine);
   }
 

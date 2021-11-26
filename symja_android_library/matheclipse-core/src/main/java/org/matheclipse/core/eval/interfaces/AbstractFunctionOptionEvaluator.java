@@ -13,9 +13,16 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
-    IExpr[] option = new IExpr[optionSymbols.length];
-    int argSize =
-        determineOptions(option, ast, ast.argSize(), expectedArgSize(ast), optionSymbols, engine);
+    IExpr[] option;
+    int argSize = ast.argSize();
+    if (optionSymbols == null) {
+      option = new IExpr[0];
+    } else {
+      option = new IExpr[optionSymbols.length];
+      argSize =
+          AbstractFunctionEvaluator.determineOptions(
+              option, ast, ast.argSize(), expectedArgSize(ast), optionSymbols, engine);
+    }
     return evaluate(ast, argSize, option, engine);
   }
 
@@ -25,15 +32,19 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
   }
 
   protected void setOptions(
-      final ISymbol symbol, IBuiltInSymbol[] lhsOptionSymbol, IExpr[] rhsValue) {
-    optionSymbols = lhsOptionSymbol;
-    IASTAppendable list = F.ListAlloc(rhsValue.length);
-    for (int i = 0; i < rhsValue.length; i++) {
-      list.append(F.Rule(lhsOptionSymbol[i], rhsValue[i]));
+      final ISymbol symbol, IBuiltInSymbol[] lhsOptionSymbols, IExpr[] rhsValues) {
+    optionSymbols = lhsOptionSymbols;
+    IASTAppendable list = F.ListAlloc(rhsValues.length);
+    for (int i = 0; i < rhsValues.length; i++) {
+      list.append(F.Rule(lhsOptionSymbols[i], rhsValues[i]));
     }
     super.setOptions(symbol, list);
   }
 
-  protected abstract IExpr evaluate(
+  public IBuiltInSymbol[] getOptionSymbols() {
+    return optionSymbols;
+  }
+
+  public abstract IExpr evaluate(
       final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine);
 }

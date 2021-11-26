@@ -874,7 +874,7 @@ public abstract class AbstractAST implements IASTMutable {
     public IExpr replaceAll(final IAST listOfRules) {
       return F.NIL;
     }
- 
+
     public IExpr replaceAll(final Map<? extends IExpr, ? extends IExpr> map) {
       return F.NIL;
     }
@@ -882,7 +882,7 @@ public abstract class AbstractAST implements IASTMutable {
     public IExpr replaceAll(VisitorReplaceAll visitor) {
       return F.NIL;
     }
- 
+
     public IExpr replacePart(final IAST astRules, IExpr.COMPARE_TERNARY heads) {
       return F.NIL;
     }
@@ -911,7 +911,7 @@ public abstract class AbstractAST implements IASTMutable {
     public IExpr replaceSlots(final IAST slotsList) {
       return F.NIL;
     }
-    
+
     /**
      * Replaces the element at the specified location in this {@code ArrayList} with the specified
      * object.
@@ -1397,19 +1397,6 @@ public abstract class AbstractAST implements IASTMutable {
     this.hashValue = 0;
   }
 
-  //  @Override
-  //  public abstract IAST clone() throws CloneNotSupportedException;
-  // {
-  // AbstractAST ast = null;
-  // try {
-  // ast = (AbstractAST) super.clone();
-  // ast.fEvalFlags = 0;
-  // ast.hashValue = 0;
-  // } catch (CloneNotSupportedException e) {
-  // }
-  // return ast;
-  // }
-
   /**
    * Compare all adjacent elements from lowest to highest index and return true, if the binary
    * predicate gives true in each step. If the size is &lt; 2 the method returns false;
@@ -1740,9 +1727,7 @@ public abstract class AbstractAST implements IASTMutable {
         return IExpr.COMPARE_TERNARY.TRUE;
       } else {
         int size1 = size();
-        if (size1 == list2.size() //
-            && size1 > 0
-            && head().equals(list2.head())) {
+        if (size1 == list2.size() && size1 > 0 && head().equals(list2.head())) {
           boolean unequal = false;
           IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.TRUE;
           for (int i = 1; i < size1; i++) {
@@ -1878,11 +1863,11 @@ public abstract class AbstractAST implements IASTMutable {
         if (evaluator instanceof ICoreFunctionEvaluator) {
           try {
             ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) evaluator;
-            IAST ast = engine.checkBuiltinArguments(this, functionEvaluator);
-            if (!ast.isPresent()) {
+            EvalEngine.OptionsResult opres = engine.checkBuiltinArguments(this, functionEvaluator);
+            if (opres == null) {
               return F.NIL;
             }
-
+            IAST ast = opres.result;
             IBuiltInSymbol header = ((IBuiltInSymbol) head);
             if ((header.getAttributes() & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
               IExpr temp;
@@ -2330,7 +2315,7 @@ public abstract class AbstractAST implements IASTMutable {
     if (isAST(S.Optional, 3)) {
       return arg2();
     }
-    return null; // fOptionalValue;
+    return null;
   }
 
   @Override
@@ -2400,8 +2385,7 @@ public abstract class AbstractAST implements IASTMutable {
           if (x.isAST1()) {
             final IExpr head = x.head();
             if (head.isBuiltInSymbol()) {
-              return //
-              (head == S.ArcCos)
+              return (head == S.ArcCos)
                   || (head == S.ArcCsc)
                   || (head == S.ArcCot)
                   || (head == S.ArcSec)
@@ -3254,8 +3238,8 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isBooleanResult() {
-    return head().isPredicateFunctionSymbol() //
-        || ((head().isBooleanFormulaSymbol() || head().isComparatorFunctionSymbol()) //
+    return head().isPredicateFunctionSymbol()
+        || ((head().isBooleanFormulaSymbol() || head().isComparatorFunctionSymbol())
             && forAll(x -> x.isBooleanResult()));
   }
 
@@ -4139,9 +4123,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isSlot() {
-    return isSameHead(S.Slot, 2)
-        && //
-        (arg1().isInteger() || arg1().isString());
+    return isSameHead(S.Slot, 2) && (arg1().isInteger() || arg1().isString());
   }
 
   /** {@inheritDoc} */

@@ -1144,7 +1144,8 @@ public class Iterator {
    * Product()</code>
    *
    * @param list a list representing an iterator specification
-   * @param position
+   * @param position the position of the list in the argument sequence, for printing an error if
+   *     list cannot be converted into an iterator form
    * @param engine the evaluation engine
    * @return the iterator
    */

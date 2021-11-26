@@ -1743,9 +1743,11 @@ public final class BooleanFunctions {
       if ((flattened = EvalAttributes.flattenDeep(ast)).isPresent()) {
         ast = flattened;
       }
-      IExpr temp = engine.evalAttributes((ISymbol) ast.head(), ast);
-      if (temp.isPresent()) {
-        return temp;
+      if (ast instanceof IASTMutable) {
+        IExpr temp = engine.evalAttributes((ISymbol) ast.head(), (IASTMutable) ast);
+        if (temp.isPresent()) {
+          return temp;
+        }
       }
 
       IAST astEvaled = ast;

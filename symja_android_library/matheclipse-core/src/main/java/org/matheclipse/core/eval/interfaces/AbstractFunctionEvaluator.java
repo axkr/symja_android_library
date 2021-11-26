@@ -9,6 +9,7 @@ import java.util.Locale;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -721,7 +722,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    * @param engine
    * @return
    */
-  protected static int determineOptions(
+  public static int determineOptions(
       IExpr[] options,
       IAST ast,
       int argSize,
@@ -820,7 +821,8 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
       }
     }
     if (optionNullStart >= 0) {
-      final IExpr temp = engine.evaluate(F.Options(ast.topHead()));
+      final IExpr temp = PatternMatching.optionsList(ast.topHead(), false);
+      //      final IExpr temp = engine.evaluate(F.Options(ast.topHead()));
       if (temp.isList() && temp.size() > 1) {
         IAST list = (IAST) temp;
         for (int i = optionNullStart; i < options.length; i++) {
