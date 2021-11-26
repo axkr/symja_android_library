@@ -815,10 +815,10 @@ public final class LinearAlgebra {
           // Returns the transpose of the matrix L of the decomposition.
           return new ASTRealMatrix(dcomposition.getLT(), false);
         }
-      } catch (final  ValidateException ve) {
+      } catch (final ValidateException ve) {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
         return IOFunctions.printMessage(ast.topHead(), ve, engine);
-      } catch (final MathRuntimeException   e) {
+      } catch (final MathRuntimeException e) {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
         LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       } catch (final IndexOutOfBoundsException e) {
@@ -1179,26 +1179,26 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-        IExpr arg1 = ast.arg1();
-        int dimension = arg1.isVector();
-        final IAST vector;
-        if (dimension >= 0) {
-          IExpr normal = arg1.normal(false);
-          if (normal.isAST()) {
-            vector = (IAST) normal;
-          } else {
-            vector = F.NIL;
-          }
-        } else if (arg1.isAST()) {
-          vector = (IAST) arg1;
+      IExpr arg1 = ast.arg1();
+      int dimension = arg1.isVector();
+      final IAST vector;
+      if (dimension >= 0) {
+        IExpr normal = arg1.normal(false);
+        if (normal.isAST()) {
+          vector = (IAST) normal;
         } else {
           vector = F.NIL;
         }
-        if (vector.isPresent()) {
-          int m = vector.size();
-          final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Integer.MIN_VALUE) : 0;
-          return F.matrix((i, j) -> (i + offset) == j ? vector.get(i + 1) : F.C0, m - 1, m - 1);
-        }
+      } else if (arg1.isAST()) {
+        vector = (IAST) arg1;
+      } else {
+        vector = F.NIL;
+      }
+      if (vector.isPresent()) {
+        int m = vector.size();
+        final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Integer.MIN_VALUE) : 0;
+        return F.matrix((i, j) -> (i + offset) == j ? vector.get(i + 1) : F.C0, m - 1, m - 1);
+      }
       return F.NIL;
     }
 
@@ -1569,7 +1569,7 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
+      if (ast.isAST1() && !engine.isNumericMode()) {
         FieldMatrix<IExpr> matrix;
         try {
 
@@ -1616,7 +1616,21 @@ public final class LinearAlgebra {
         }
       }
       // switch to numeric calculation
-      return numericEval(ast, engine);
+      IExpr eigenValues = numericEval(ast, engine);
+      if (eigenValues.isList()) {
+        if (ast.isAST2()) {
+          int n = ast.arg2().toIntDefault();
+          if (n < 0) {
+            if (n == Integer.MIN_VALUE) {
+              return F.NIL;
+            }
+            return F.Reverse(F.TakeSmallestBy(eigenValues, S.Abs, F.ZZ(-n)));
+          }
+          return F.TakeLargestBy(eigenValues, S.Abs, F.ZZ(n));
+        }
+        return eigenValues;
+      }
+      return F.NIL;
     }
 
     @Override
@@ -2822,8 +2836,8 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() instanceof LinearSolveFunctionExpr && ast.isAST1()) {
         LinearSolveFunctionExpr<?> lsf = (LinearSolveFunctionExpr<?>) ast.head();
-          IExpr arg1 = ast.arg1();
-          return linearSolve(lsf, arg1, ast, engine);
+        IExpr arg1 = ast.arg1();
+        return linearSolve(lsf, arg1, ast, engine);
       }
       return F.NIL;
     }
@@ -3709,40 +3723,40 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int dim1 = ast.arg1().isVector();
       int dim2 = ast.arg2().isVector();
- 
-        if (ast.size() == 4) {
-          IExpr head = ast.arg3();
-          if (dim1 >= 0 && dim1 == dim2) {
-            if (dim1 == 0) {
-              return F.CEmptyList;
-            }
-            if (head.equals(S.Dot)) {
-              FieldVector<IExpr> u = Convert.list2Vector(ast.arg1());
-              FieldVector<IExpr> v = Convert.list2Vector(ast.arg2());
-              if (u != null && v != null) {
-                return Convert.vector2List(u.projection(v));
-              }
-            }
-          }
-          IExpr u = ast.arg1();
-          IExpr v = ast.arg2();
-          return v.times(dotProduct(head, u, v, engine).divide(dotProduct(head, v, v, engine)));
-        }
+
+      if (ast.size() == 4) {
+        IExpr head = ast.arg3();
         if (dim1 >= 0 && dim1 == dim2) {
           if (dim1 == 0) {
             return F.CEmptyList;
           }
-          FieldVector<IExpr> u = Convert.list2Vector(ast.arg1());
-          FieldVector<IExpr> v = Convert.list2Vector(ast.arg2());
-          FieldVector<IExpr> vConjugate = v.copy();
-          for (int i = 0; i < dim2; i++) {
-            vConjugate.setEntry(i, vConjugate.getEntry(i).conjugate());
+          if (head.equals(S.Dot)) {
+            FieldVector<IExpr> u = Convert.list2Vector(ast.arg1());
+            FieldVector<IExpr> v = Convert.list2Vector(ast.arg2());
+            if (u != null && v != null) {
+              return Convert.vector2List(u.projection(v));
+            }
           }
-
-          return Convert.vector2List(
-              v.mapMultiply(u.dotProduct(vConjugate).divide(v.dotProduct(vConjugate))));
         }
-  
+        IExpr u = ast.arg1();
+        IExpr v = ast.arg2();
+        return v.times(dotProduct(head, u, v, engine).divide(dotProduct(head, v, v, engine)));
+      }
+      if (dim1 >= 0 && dim1 == dim2) {
+        if (dim1 == 0) {
+          return F.CEmptyList;
+        }
+        FieldVector<IExpr> u = Convert.list2Vector(ast.arg1());
+        FieldVector<IExpr> v = Convert.list2Vector(ast.arg2());
+        FieldVector<IExpr> vConjugate = v.copy();
+        for (int i = 0; i < dim2; i++) {
+          vConjugate.setEntry(i, vConjugate.getEntry(i).conjugate());
+        }
+
+        return Convert.vector2List(
+            v.mapMultiply(u.dotProduct(vConjugate).divide(v.dotProduct(vConjugate))));
+      }
+
       return F.NIL;
     }
 
