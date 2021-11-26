@@ -243,8 +243,13 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     IExpr coeff0 = series2.coefficient(0);
     if (!coeff0.equals(x0)) {
       Level logLevel = EvalEngine.get().getLogLevel();
-      LOGGER.log(logLevel, "Constant {} of series {} unequals point {} of series {}", coeff0, this,
-          x0, series2);
+      LOGGER.log(
+          logLevel,
+          "Constant {} of series {} unequals point {} of series {}",
+          coeff0,
+          this,
+          x0,
+          series2);
       return null;
     }
     ASTSeriesData series =
@@ -375,30 +380,19 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   /** {@inheritDoc} */
   @Override
   public String fullFormString() {
-    StringBuilder buf = new StringBuilder(128);
-    buf.append("SeriesData(").append(x.toString()).append(',').append(x0.toString()).append(',');
+    IAST seriesData = toSeriesData();
+    return seriesData.fullFormString();
+  }
 
+  public IAST toSeriesData() {
     // list of coefficients
-    buf.append('{');
-    boolean first = true;
+    IASTAppendable coefficientList = F.ListAlloc(16);
     for (int i = nMin; i < nMax; i++) {
-      IExpr temp = coefficient(i);
-      if (!first) {
-        buf.append(',');
-      }
-      buf.append(temp.toString());
-      first = false;
+      coefficientList.append(coefficient(i));
     }
-    buf.append('}');
-
-    buf.append(',');
-    buf.append(nMin);
-    buf.append(',');
-    buf.append(truncate);
-    buf.append(',');
-    buf.append(denominator);
-    buf.append(')');
-    return buf.toString();
+    IAST seriesData =
+        F.SeriesData(x, x0, coefficientList, F.ZZ(nMin), F.ZZ(truncate), F.ZZ(denominator));
+    return seriesData;
   }
 
   @Override
