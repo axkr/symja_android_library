@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.linear.FieldMatrix;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -117,7 +118,7 @@ public class Solve extends AbstractFunctionEvaluator {
      */
     private long fLeafCount;
 
-    private HashSet<ISymbol> fSymbolSet;
+    private HashSet<IExpr> fVariableSet;
     private IASTAppendable fMatrixRow;
     private IASTAppendable fPlusAST;
 
@@ -134,7 +135,7 @@ public class Solve extends AbstractFunctionEvaluator {
         splitNumeratorDenominator((IAST) this.fExpr);
       }
       this.fListOfVariables = listOfVariables;
-      this.fSymbolSet = new HashSet<ISymbol>();
+      this.fVariableSet = new HashSet<IExpr>();
       this.fLeafCount = 0;
       reset();
     }
@@ -164,8 +165,8 @@ public class Solve extends AbstractFunctionEvaluator {
 
     @Override
     public int compareTo(ExprAnalyzer o) {
-      if (fSymbolSet.size() != o.fSymbolSet.size()) {
-        return (fSymbolSet.size() < o.fSymbolSet.size()) ? -1 : 1;
+      if (fVariableSet.size() != o.fVariableSet.size()) {
+        return (fVariableSet.size() < o.fVariableSet.size()) ? -1 : 1;
       }
       if (fEquationType != o.fEquationType) {
         return (fEquationType < o.fEquationType) ? -1 : 1;
@@ -199,9 +200,9 @@ public class Solve extends AbstractFunctionEvaluator {
       if (fPlusAST == null) {
         if (other.fPlusAST != null) return false;
       } else if (!fPlusAST.equals(other.fPlusAST)) return false;
-      if (fSymbolSet == null) {
-        if (other.fSymbolSet != null) return false;
-      } else if (!fSymbolSet.equals(other.fSymbolSet)) return false;
+      if (fVariableSet == null) {
+        if (other.fVariableSet != null) return false;
+      } else if (!fVariableSet.equals(other.fVariableSet)) return false;
       if (fListOfVariables == null) {
         if (other.fListOfVariables != null) return false;
       } else if (!fListOfVariables.equals(other.fListOfVariables)) return false;
@@ -218,7 +219,7 @@ public class Solve extends AbstractFunctionEvaluator {
     }
 
     public int getNumberOfVars() {
-      return fSymbolSet.size();
+      return fVariableSet.size();
     }
 
     public IExpr getNumerator() {
@@ -232,7 +233,7 @@ public class Solve extends AbstractFunctionEvaluator {
      */
     private void getPlusArgumentEquationType(IExpr eqExpr) {
       if (eqExpr.isTimes()) {
-        ISymbol sym = null;
+        IExpr variable = null;
         fLeafCount++;
         IAST arg = (IAST) eqExpr;
         IExpr expr;
@@ -240,17 +241,17 @@ public class Solve extends AbstractFunctionEvaluator {
           expr = arg.get(i);
           if (expr.isFree(Predicates.in(fListOfVariables), true)) {
             fLeafCount++;
-          } else if (expr.isSymbol()) {
+          } else if (expr.isVariable()) {
             fLeafCount++;
             for (int j = 1; j < fListOfVariables.size(); j++) {
               if (fListOfVariables.get(j).equals(expr)) {
-                fSymbolSet.add((ISymbol) expr);
-                if (sym != null) {
+                fVariableSet.add(expr);
+                if (variable != null) {
                   if (fEquationType == LINEAR) {
                     fEquationType = POLYNOMIAL;
                   }
                 } else {
-                  sym = (ISymbol) expr;
+                  variable = expr;
                   if (fEquationType == LINEAR) {
                     IAST cloned = arg.splice(i);
                     fMatrixRow.set(j, F.Plus(fMatrixRow.get(j), cloned));
@@ -271,7 +272,7 @@ public class Solve extends AbstractFunctionEvaluator {
             }
           }
         }
-        if (fEquationType == LINEAR && sym == null) {
+        if (fEquationType == LINEAR && variable == null) {
           // should never happen??
           LOGGER.error("sym == null???");
         }
@@ -286,16 +287,16 @@ public class Solve extends AbstractFunctionEvaluator {
     }
 
     /** @return the symbolSet */
-    public Set<ISymbol> getSymbolSet() {
-      return fSymbolSet;
+    public Set<IExpr> getVariableSet() {
+      return fVariableSet;
     }
 
     private void getTimesArgumentEquationType(IExpr expr) {
-      if (expr.isSymbol()) {
+      if (expr.isVariable()) {
         fLeafCount++;
         int position = fListOfVariables.indexOf(expr);
         if (position > 0) {
-          fSymbolSet.add((ISymbol) expr);
+          fVariableSet.add(expr);
           if (fEquationType == LINEAR) {
             fMatrixRow.set(position, F.Plus(fMatrixRow.get(position), F.C1));
           }
@@ -347,7 +348,7 @@ public class Solve extends AbstractFunctionEvaluator {
       result = prime * result + ((fMatrixRow == null) ? 0 : fMatrixRow.hashCode());
       result = prime * result + ((fNumerator == null) ? 0 : fNumerator.hashCode());
       result = prime * result + ((fPlusAST == null) ? 0 : fPlusAST.hashCode());
-      result = prime * result + ((fSymbolSet == null) ? 0 : fSymbolSet.hashCode());
+      result = prime * result + ((fVariableSet == null) ? 0 : fVariableSet.hashCode());
       result = prime * result + ((fListOfVariables == null) ? 0 : fListOfVariables.hashCode());
       return result;
     }
@@ -561,7 +562,7 @@ public class Solve extends AbstractFunctionEvaluator {
               F.Subtract(
                   base, F.Expand(F.Power(F.Times(num.inverse(), F.Negate(plus)), arg2.inverse()))));
         }
-      } else if (base.isSymbol() && base.equals(exponent)) {
+      } else if (base.isVariable() && base.equals(exponent)) {
         // rewrite num * x^x as ProductLog() (Lambert W function)
         IExpr plus = plusAST.splice(i).oneIdentity0().negate().divide(num);
         // Log(arg1)/ProductLog(Log(arg1))
@@ -948,7 +949,7 @@ public class Solve extends AbstractFunctionEvaluator {
     IExpr numerator = exprAnalyzer.getNumerator();
     IExpr denominator = exprAnalyzer.getDenominator();
     // try to solve the expr for a symbol in the symbol set
-    for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
+    for (IExpr sym : exprAnalyzer.getVariableSet()) {
       IExpr temp = F.NIL;
       if (numerator.isNumericMode() && denominator.isOne()) {
         temp = RootsFunctions.roots(numerator, F.List(sym), engine);
@@ -1341,14 +1342,19 @@ public class Solve extends AbstractFunctionEvaluator {
     // because Eliminate() operates on equations.
     IAST equalsASTList = termsEqualZeroList.mapThread(F.Equal(F.Slot1, F.C0), 1);
     IAST[] tempAST = Eliminate.eliminateOneVariable(equalsASTList, variable, engine);
-    if (tempAST != null
-        && tempAST[1] != null
-        && tempAST[1].isRule()
-        && tempAST[1].second().isTrue()) {
-      return F.CEmptyList;
-    }
-    if (tempAST != null && tempAST[1] != null) {
-      return F.List(F.List(tempAST[1]));
+    if (tempAST != null) {
+      if (tempAST[1] != null && tempAST[1].isRule() && tempAST[1].second().isTrue()) {
+        return F.CEmptyList;
+      }
+      if (tempAST != null && tempAST[1] != null) {
+        if (tempAST[1].isList()) {
+          IAST list = (IAST) tempAST[1];
+          IASTAppendable result = F.ListAlloc(list.size());
+          list.forEach(x -> result.append(F.List(x)));
+          return result;
+        }
+        return F.List(F.List(tempAST[1]));
+      }
     }
     return F.NIL;
   }
@@ -1539,6 +1545,9 @@ public class Solve extends AbstractFunctionEvaluator {
       throw le;
     } catch (RuntimeException rex) {
       LOGGER.debug("Solve.solveTimesEquationsRecursively() failed", rex);
+      if (Config.SHOW_STACKTRACE) {
+        rex.printStackTrace();
+      }
     }
     return F.NIL;
   }

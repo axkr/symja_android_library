@@ -76,7 +76,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     return ZERO_MATCHER.get();
   }
 
-  private static class VariableCounterVisitor extends AbstractVisitorBoolean
+  static class VariableCounterVisitor extends AbstractVisitorBoolean
       implements Comparable<VariableCounterVisitor> {
 
     /** Count the number of nodes in <code>fExpr</code>, which equals <code>fVariable</code>. */
@@ -498,33 +498,58 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
    *     rule which is used for variable elimination in index <code>[1]</code>.
    */
-  private static IAST[] eliminateOneVariable(
+  protected static IAST[] eliminateOneVariable(
       ArrayList<VariableCounterVisitor> analyzerList, IExpr variable, EvalEngine engine) {
     IASTAppendable eliminatedResultEquations = F.ListAlloc(analyzerList.size());
     for (int i = 0; i < analyzerList.size(); i++) {
-      IExpr variableExpr = eliminateAnalyze(analyzerList.get(i).getExpr(), variable, engine);
-      if (variableExpr.isPresent()) {
-        variableExpr = engine.evalQuiet(variableExpr);
-        IExpr expr;
-        IAST rule = F.Rule(variable, variableExpr);
+      IExpr variableValues = eliminateAnalyze(analyzerList.get(i).getExpr(), variable, engine);
+      if (variableValues.isPresent()) {
         analyzerList.remove(i);
-        for (int j = 0; j < analyzerList.size(); j++) {
-          expr = analyzerList.get(j).getExpr();
-          IExpr temp = expr.replaceAll(rule);
-          if (temp.isPresent()) {
-            temp = F.expandAll(temp, true, true);
-            eliminatedResultEquations.append(temp);
-          } else {
-            eliminatedResultEquations.append(expr);
-          }
-        }
         IAST[] result = new IAST[2];
-        result[0] = eliminatedResultEquations;
-        result[1] = rule;
+        if (variableValues.isList()) {
+          IAST listOfRules =
+              ((IAST) variableValues)
+                  .map(
+                      x -> {
+                        return applyRuleToAnalyzer(
+                            variable, x, eliminatedResultEquations, analyzerList, engine);
+                      });
+          result[0] = eliminatedResultEquations;
+          result[1] = listOfRules;
+        } else {
+          IAST rule =
+              applyRuleToAnalyzer(
+                  variable, variableValues, eliminatedResultEquations, analyzerList, engine);
+
+          result[0] = eliminatedResultEquations;
+          result[1] = rule;
+        }
         return result;
       }
     }
     return null;
+  }
+
+  private static IAST applyRuleToAnalyzer(
+      IExpr variable,
+      IExpr variableValue,
+      IASTAppendable eliminatedResultEquations,
+      ArrayList<VariableCounterVisitor> analyzerList,
+      EvalEngine engine) {
+    variableValue = engine.evalQuiet(variableValue);
+    IExpr expr;
+    IAST rule = F.Rule(variable, variableValue);
+    for (int j = 0; j < analyzerList.size(); j++) {
+      expr = analyzerList.get(j).getExpr();
+      IExpr temp = expr.replaceAll(rule);
+      if (temp.isPresent()) {
+        temp = F.expandAll(temp, true, true);
+        eliminatedResultEquations.append(temp);
+      } else {
+        eliminatedResultEquations.append(expr);
+      }
+    }
+    return rule;
   }
 
   /** {@inheritDoc} */
@@ -578,18 +603,18 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
   }
 
   /**
-   * @param result
+   * @param ast
    * @param variable
    * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
    *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
    *     rule which is used for variable elimination in index <code>[1]</code>.
    */
-  public static IAST[] eliminateOneVariable(IAST result, IExpr variable, EvalEngine engine) {
+  public static IAST[] eliminateOneVariable(IAST ast, IExpr variable, EvalEngine engine) {
     IAST equalAST;
     VariableCounterVisitor exprAnalyzer;
     ArrayList<VariableCounterVisitor> analyzerList = new ArrayList<VariableCounterVisitor>();
-    for (int j = 1; j < result.size(); j++) {
-      equalAST = result.getAST(j);
+    for (int j = 1; j < ast.size(); j++) {
+      equalAST = ast.getAST(j);
       exprAnalyzer = new VariableCounterVisitor(equalAST, variable);
       equalAST.accept(exprAnalyzer);
       analyzerList.add(exprAnalyzer);
@@ -597,26 +622,13 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     Collections.sort(analyzerList);
 
     return eliminateOneVariable(analyzerList, variable, engine);
-  }
-
-  /**
-   * @param result
-   * @param slot
-   * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
-   *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
-   *     rule which is used for variable elimination in index <code>[1]</code>.
-   */
-  public static IAST[] eliminateSlot(IAST result, IExpr slot, EvalEngine engine) {
-
-    VariableCounterVisitor exprAnalyzer;
-    ArrayList<VariableCounterVisitor> analyzerList = new ArrayList<VariableCounterVisitor>();
-    IAST equalAST = result;
-    exprAnalyzer = new VariableCounterVisitor(equalAST, slot);
-    equalAST.accept(exprAnalyzer);
-    analyzerList.add(exprAnalyzer);
-    Collections.sort(analyzerList);
-
-    return eliminateOneVariable(analyzerList, slot, engine);
+    //    if (tempAST != null && tempAST[1].isList()) {
+    //      IAST list = (IAST) tempAST[1];
+    //      IASTAppendable result = F.ListAlloc(list.size());
+    //      list.forEach(x -> result.append(F.List(x)));
+    //      tempAST[1] = list;
+    //    }
+    //    return tempAST;
   }
 
   public void setUp(final ISymbol newSymbol) {

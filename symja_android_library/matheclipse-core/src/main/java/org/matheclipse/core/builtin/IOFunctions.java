@@ -740,6 +740,8 @@ public class IOFunctions {
     "Invalid permutation list `1`.", //
     "pilist",
     "The arguments to `1` must be two lists of integers of identical length, with the second list only containing positive integers.", //
+    "plen",
+    "`1` and `2` should have the same length.", //
     "plld",
     "Endpoints in `1` must be distinct machine-size real numbers.", //
     "pllim",

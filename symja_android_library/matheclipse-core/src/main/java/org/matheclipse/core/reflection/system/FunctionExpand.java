@@ -479,9 +479,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
         if (assumptions != null) {
           try {
             engine.setAssumptions(assumptions);
-            IExpr temp = getMatcher().replaceAll(arg1, FunctionExpand::beforeRules).orElse(arg1);
-            F.REMEMBER_AST_CACHE.put(ast, temp);
-            return temp;
+            return callMatcher(ast, arg1);
           } finally {
             engine.setAssumptions(oldAssumptions);
           }
@@ -489,6 +487,15 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
       }
     }
     // don't call PowerExpand
+    return callMatcher(ast, arg1);
+  }
+
+  /**
+   * @param ast
+   * @param arg1
+   * @return {@link F#NIL} if no match was found
+   */
+  public static IExpr callMatcher(final IAST ast, IExpr arg1) {
     IExpr temp = getMatcher().replaceAll(arg1, FunctionExpand::beforeRules).orElse(arg1);
     F.REMEMBER_AST_CACHE.put(ast, temp);
     return temp;

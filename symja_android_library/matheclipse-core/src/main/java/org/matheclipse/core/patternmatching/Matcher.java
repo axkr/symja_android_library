@@ -4,7 +4,9 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -271,7 +273,13 @@ public class Matcher implements Function<IExpr, IExpr> {
    * @return a
    */
   public void caseOf(final IExpr patternMatchingRule, final IExpr resultExpr) {
-    rules.putDownRule(patternMatchingRule, resultExpr);
+    if (patternMatchingRule.isPresent()) {
+      rules.putDownRule(patternMatchingRule, resultExpr);
+      return;
+    }
+    // unexpected NIL expression encountered.
+    String str = IOFunctions.getMessage("nil", F.CEmptyList, EvalEngine.get());
+    throw new ArgumentTypeException(str);
   }
 
   /**

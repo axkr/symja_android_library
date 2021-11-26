@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
@@ -41,17 +43,18 @@ public class InverseFunction extends AbstractFunctionEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
     if (arg1.isFunction()) {
-      IExpr f = arg1.first();
-      if (f.isAST()) {
-        ISymbol dummy = F.Dummy();
-        IAST[] arr = Eliminate.eliminateSlot(F.Equal(f, dummy), F.Slot1, engine);
+      IExpr xFunction = arg1.first();
+      ISymbol dummy = F.Dummy();
+      if (xFunction.isAST()) {
+        IAST[] arr = InverseFunction.eliminateSlotInverseFunction(xFunction, dummy, engine);
         if (arr != null) {
           return F.Function(F.subst(arr[1].second(), F.Rule(dummy, F.Slot1)));
         }
       }
     } else if (arg1.isBuiltInSymbol()) {
       if (arg1.equals(S.Abs)) {
-        LOGGER.log(engine.getLogLevel(),
+        LOGGER.log(
+            engine.getLogLevel(),
             "InverseFunction: using of inverse functions may omit some values.");
       }
       IExpr temp = getUnaryInverseFunction((ISymbol) arg1);
@@ -115,5 +118,31 @@ public class InverseFunction extends AbstractFunctionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(ISymbol.NHOLDALL);
+  }
+
+  /**
+   * @param xFunction the function which should be inverted
+   * @param dummy a temporary variable
+   * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
+   *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
+   *     rule which is used for variable elimination in index <code>[1]</code>.
+   */
+  public static IAST[] eliminateSlotInverseFunction(
+      IExpr xFunction, ISymbol dummy, EvalEngine engine) {
+    final IAST equalAST = F.Equal(xFunction, dummy);
+    Eliminate.VariableCounterVisitor exprAnalyzer;
+    ArrayList<Eliminate.VariableCounterVisitor> analyzerList =
+        new ArrayList<Eliminate.VariableCounterVisitor>();
+    exprAnalyzer = new Eliminate.VariableCounterVisitor(equalAST, F.Slot1);
+    equalAST.accept(exprAnalyzer);
+    analyzerList.add(exprAnalyzer);
+    Collections.sort(analyzerList);
+
+    IAST[] slotEliminated = Eliminate.eliminateOneVariable(analyzerList, F.Slot1, engine);
+    if (slotEliminated != null && slotEliminated[1].isList()) {
+      // List results are not allowed in S.InverseFunction
+      return null;
+    }
+    return slotEliminated;
   }
 }

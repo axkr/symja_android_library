@@ -319,7 +319,42 @@ public class SolveTest extends AbstractTestCase {
         "Solve({x^2-11==y, x+y==-9}, {x,y})", //
         "{{x->-2,y->-7},{x->1,y->-10}}");
   }
-  
+
+  public void testInverseFunctionProductLog() {
+    check(
+        "InverseFunction(#*a^#*d &)", //
+        "ProductLog((#1*Log(a))/d)/Log(a)&");
+    check(
+        "InverseFunction(#^2+2^# &)", //
+        "InverseFunction(#1^2+2^#1&)");
+  }
+
+  public void testSolveSlot() {
+    check(
+        "Solve(f(x)^2+1==0,f(x))", //
+        "{{f(x)->-I},{f(x)->I}}");
+    check(
+        "Solve(#^2+1==0,#)", //
+        "{{#1->-I},{#1->I}}");
+    check(
+        "Solve(x^2+1==0,x)", //
+        "{{x->-I},{x->I}}");
+
+    check(
+        "Solve(#*2+1==0,#)", //
+        "{{#1->-1/2}}");
+
+    check(
+        "Solve(#*a^#*d==0,#)", //
+        "{{#1->0}}");
+  }
+
+  public void testSolveProductLog() {
+    check(
+        "Solve(x^2==2^x,x)", //
+        "{{x->(-2*ProductLog(-Log(2)/2))/Log(2)},{x->(-2*ProductLog(Log(2)/2))/Log(2)}}");
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {
