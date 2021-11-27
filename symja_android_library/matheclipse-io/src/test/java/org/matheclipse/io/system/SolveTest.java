@@ -355,6 +355,11 @@ public class SolveTest extends AbstractTestCase {
         "{{x->(-2*ProductLog(-Log(2)/2))/Log(2)},{x->(-2*ProductLog(Log(2)/2))/Log(2)}}");
   }
 
+  public void testSolveIssue329() {
+    check(
+        "Solve(-2+Sqrt(-2*x+x^2+3) == 0, x)", //
+        "{{x->1/2*(2-2*Sqrt(2))},{x->1/2*(2+2*Sqrt(2))}}");
+  }
   /** The JUnit setup method */
   @Override
   protected void setUp() {

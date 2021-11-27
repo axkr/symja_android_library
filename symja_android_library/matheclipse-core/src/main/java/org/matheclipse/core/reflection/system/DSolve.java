@@ -334,7 +334,7 @@ public class DSolve extends AbstractFunctionEvaluator {
         gyExpr = S.Integrate.of(engine, F.Divide(F.C1, gyExpr), y);
         fxExpr = S.Plus.of(engine, F.Integrate(F.Times(F.CN1, fxExpr), x), C_1);
         IExpr yEquation = S.Subtract.of(engine, gyExpr, fxExpr);
-        IExpr result = Eliminate.extractVariable(yEquation, y, engine);
+        IExpr result = Eliminate.extractVariable(yEquation, y, false, engine);
         if (result.isPresent()) {
           return engine.evaluate(result);
         }

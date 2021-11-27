@@ -1247,14 +1247,14 @@ public class Solve extends AbstractFunctionEvaluator {
       EvalEngine engine) {
     IASTMutable temp =
         solveTimesEquationsRecursively(
-            termsEqualZeroList, inequationsList, numericFlag, variables, engine);
+            termsEqualZeroList, inequationsList, numericFlag, variables, true, engine);
     if (temp.isPresent()) {
       return solveNumeric(QuarticSolver.sortASTArguments(temp), numericFlag, engine);
     }
 
     if (inequationsList.isEmpty() && termsEqualZeroList.size() == 2 && variables.size() == 2) {
       IExpr firstVariable = variables.arg1();
-      IExpr res = eliminateOneVariable(termsEqualZeroList, firstVariable, engine);
+      IExpr res = eliminateOneVariable(termsEqualZeroList, firstVariable, true, engine);
       if (!res.isPresent()) {
         if (numericFlag) {
           // find numerically find start value 0
@@ -1273,7 +1273,7 @@ public class Solve extends AbstractFunctionEvaluator {
       IExpr firstVariable = variables.arg1();
       IAST[] reduced =
           Eliminate.eliminateOneVariable(
-              F.List(F.Equal(firstEquation, F.C0)), firstVariable, engine);
+              F.List(F.Equal(firstEquation, F.C0)), firstVariable, true, engine);
       if (reduced != null) {
         variables = variables.splice(1);
         termsEqualZeroList = termsEqualZeroList.removeAtCopy(1);
@@ -1332,7 +1332,7 @@ public class Solve extends AbstractFunctionEvaluator {
    * @return
    */
   private static IAST eliminateOneVariable(
-      IAST termsEqualZeroList, IExpr variable, EvalEngine engine) {
+      IAST termsEqualZeroList, IExpr variable, boolean multipleValues, EvalEngine engine) {
     if (!termsEqualZeroList
         .arg1()
         .isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
@@ -1341,7 +1341,8 @@ public class Solve extends AbstractFunctionEvaluator {
     // copy the termsEqualZeroList back to a list of F.Equal(...) expressions
     // because Eliminate() operates on equations.
     IAST equalsASTList = termsEqualZeroList.mapThread(F.Equal(F.Slot1, F.C0), 1);
-    IAST[] tempAST = Eliminate.eliminateOneVariable(equalsASTList, variable, engine);
+    IAST[] tempAST =
+        Eliminate.eliminateOneVariable(equalsASTList, variable, multipleValues, engine);
     if (tempAST != null) {
       if (tempAST[1] != null && tempAST[1].isRule() && tempAST[1].second().isTrue()) {
         return F.CEmptyList;
@@ -1496,6 +1497,7 @@ public class Solve extends AbstractFunctionEvaluator {
       IAST inequationsList,
       boolean numericFlag,
       IAST variables,
+      boolean multipleValues,
       EvalEngine engine) {
     try {
       IASTMutable resultList =
@@ -1513,6 +1515,7 @@ public class Solve extends AbstractFunctionEvaluator {
               inequationsList,
               numericFlag,
               variables,
+              multipleValues,
               engine,
               subSolutionSet,
               i);
@@ -1529,6 +1532,7 @@ public class Solve extends AbstractFunctionEvaluator {
                   inequationsList,
                   numericFlag,
                   variables,
+                  multipleValues,
                   engine,
                   subSolutionSet,
                   i);
@@ -1558,6 +1562,7 @@ public class Solve extends AbstractFunctionEvaluator {
       IAST inequationsList,
       boolean numericFlag,
       IAST variables,
+      boolean multipleValues,
       EvalEngine engine,
       Set<IExpr> subSolutionSet,
       int i) {
@@ -1586,7 +1591,8 @@ public class Solve extends AbstractFunctionEvaluator {
 
           if (clonedEqualZeroList.size() == 2 && variables.size() == 2) {
             IExpr firstVariable = variables.arg1();
-            IExpr res = eliminateOneVariable(clonedEqualZeroList, firstVariable, engine);
+            IExpr res =
+                eliminateOneVariable(clonedEqualZeroList, firstVariable, multipleValues, engine);
             if (!res.isPresent()) {
               if (numericFlag) {
                 // find numerically with start value 0

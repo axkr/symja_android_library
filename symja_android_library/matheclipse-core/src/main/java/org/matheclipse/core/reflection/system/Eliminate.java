@@ -290,9 +290,11 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    *
    * @param equalAST an <code>Equal()</code> expression.
    * @param variable the variable which should be eliminated.
+   * @param multipleValues if <code>true</code> multiple results are returned as list of values
    * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
    */
-  private static IExpr eliminateAnalyze(IAST equalAST, IExpr variable, EvalEngine engine) {
+  private static IExpr eliminateAnalyze(
+      IAST equalAST, IExpr variable, boolean multipleValues, EvalEngine engine) {
     if (equalAST.isEqual()) {
       IExpr arg1 = equalAST.arg1();
       IExpr arg2 = equalAST.arg2();
@@ -301,9 +303,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       boolean boolArg2 = arg2.isFree(predicate, true);
       IExpr result = F.NIL;
       if (!boolArg1 && boolArg2) {
-        result = extractVariableRecursive(arg1, arg2, predicate, variable, engine);
+        result = extractVariableRecursive(arg1, arg2, predicate, variable, multipleValues, engine);
       } else if (boolArg1 && !boolArg2) {
-        result = extractVariableRecursive(arg2, arg1, predicate, variable, engine);
+        result = extractVariableRecursive(arg2, arg1, predicate, variable, multipleValues, engine);
       }
       return result;
     }
@@ -315,13 +317,15 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    *
    * @param expr an expression.
    * @param variable the variable which should be eliminated.
+   * @param multipleValues if <code>true</code> multiple results are returned as list of values
    * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
    */
-  public static IExpr extractVariable(IExpr expr, IExpr variable, EvalEngine engine) {
+  public static IExpr extractVariable(
+      IExpr expr, IExpr variable, boolean multipleValues, EvalEngine engine) {
     Predicate<IExpr> predicate = Predicates.in(variable);
     IExpr result = F.NIL;
     if (!expr.isFree(predicate, true)) {
-      result = extractVariableRecursive(expr, F.C0, predicate, variable, engine);
+      result = extractVariableRecursive(expr, F.C0, predicate, variable, multipleValues, engine);
     }
     return result;
   }
@@ -332,6 +336,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param exprWithVariable expression which contains the given <code>variabe</code>.
    * @param exprWithoutVariable expression which doesn't contain the given <code>variabe</code>.
    * @param x the variable which should be eliminated.
+   * @param multipleValues if <code>true</code> multiple results are returned as list of values
    * @return <code>F.NIL</code> if we can't find an equation for the given variable <code>x</code>.
    */
   private static IExpr extractVariableRecursive(
@@ -339,6 +344,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       IExpr exprWithoutVariable,
       Predicate<IExpr> predicate,
       IExpr x,
+      boolean multipleValues,
       EvalEngine engine) {
     if (exprWithVariable.equals(x)) {
       return exprWithoutVariable;
@@ -352,13 +358,15 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             if (exprWithoutVariable.isNonNegativeResult()) {
               // example: Abs(x-1) == 1
               inverseFunction.append(exprWithoutVariable);
-              return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, x, engine);
+              return extractVariableRecursive(
+                  ast.arg1(), inverseFunction, predicate, x, multipleValues, engine);
             }
             return S.True;
           } else {
             // example: Sin(f(x)) == y -> f(x) == ArcSin(y)
             inverseFunction.append(exprWithoutVariable);
-            return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, x, engine);
+            return extractVariableRecursive(
+                ast.arg1(), inverseFunction, predicate, x, multipleValues, engine);
           }
         }
       } else {
@@ -367,15 +375,29 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           if (exprWithoutVariable.isZero()) {
             IExpr result = zeroMatcher().apply(F.binaryAST2(elimzero, ast, x));
             if (result.isPresent()) {
-              return resultWithIfunMessage(result, x, exprWithoutVariable, engine);
+              return resultWithIfunMessage(result, x, exprWithoutVariable, multipleValues, engine);
             }
           }
           IExpr result = inverseMatcher().apply(F.binaryAST2(eliminv, ast, x));
           if (result.isPresent()) {
-            return resultWithIfunMessage(result, x, exprWithoutVariable, engine);
+            return resultWithIfunMessage(result, x, exprWithoutVariable, multipleValues, engine);
           }
         }
+
         if (ast.isPlus()) {
+          if (exprWithoutVariable.isNumericFunction()
+              && !exprWithoutVariable.isZero()
+              && ast.isPolynomial(x)) {
+            IExpr solve =
+                S.Solve.ofNIL(engine, F.Equal(F.Subtract(ast, exprWithoutVariable), F.C0), x);
+            if (solve.isList() && solve.size() > 1) {
+              IExpr result = listOfRulesToValues(solve, x, multipleValues);
+              if (result.isPresent()) {
+                return result;
+              }
+            }
+          }
+
           // a + b + c....
           IASTAppendable rest = F.PlusAlloc(size);
           IASTAppendable plusClone = ast.copyAppendable();
@@ -392,7 +414,8 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             return F.NIL;
           }
           IExpr value = engine.evaluate(F.Subtract(exprWithoutVariable, plusClone));
-          return extractVariableRecursive(rest.oneIdentity0(), value, predicate, x, engine);
+          return extractVariableRecursive(
+              rest.oneIdentity0(), value, predicate, x, multipleValues, engine);
         } else if (ast.isTimes()) {
           // a * b * c....
           IASTAppendable rest = F.TimesAlloc(size);
@@ -430,15 +453,16 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             return F.NIL;
           }
           IExpr value = F.Divide(exprWithoutVariable, timesClone);
-          return extractVariableRecursive(rest.oneIdentity1(), value, predicate, x, engine);
+          return extractVariableRecursive(
+              rest.oneIdentity1(), value, predicate, x, multipleValues, engine);
         } else if (ast.isPower()) {
           IExpr base = ast.base();
           IExpr exponent = ast.exponent();
           if (exponent.isFree(predicate, true)) {
             // f(x) ^ a
             printIfunMessage(engine);
-            IExpr value = F.Power(exprWithoutVariable, F.Divide(F.C1, exponent));
-            return extractVariableRecursive(base, value, predicate, x, engine);
+            IExpr value = engine.evaluate(F.Power(exprWithoutVariable, F.Divide(F.C1, exponent)));
+            return extractVariableRecursive(base, value, predicate, x, multipleValues, engine);
           } else if (base.isFree(predicate, true)) {
             if (base.isE()) {
               // E ^ f(x)
@@ -449,13 +473,45 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
                   F.ConditionalExpression(
                       F.Plus(F.Times(F.C2, F.CI, S.Pi, c1), F.Log(exprwovar)),
                       F.Element(c1, S.Integers)); // $$;
-              return extractVariableRecursive(exponent, temp, predicate, x, engine);
+              return extractVariableRecursive(exponent, temp, predicate, x, multipleValues, engine);
             }
             // a ^ f(x)
             IExpr value = F.Divide(F.Log(exprWithoutVariable), F.Log(base));
-            return extractVariableRecursive(exponent, value, predicate, x, engine);
+            return extractVariableRecursive(exponent, value, predicate, x, multipleValues, engine);
           }
         }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * @param listOfRules
+   * @param multipleValues if <code>false</code> return only the first found value in the list
+   * @return
+   */
+  private static IExpr listOfRulesToValues(
+      IExpr listOfRules, IExpr variable, boolean multipleValues) {
+    if (multipleValues) {
+      IASTAppendable solveValues = F.ListAlloc(listOfRules.size());
+      ((IAST) listOfRules)
+          .map(
+              a -> {
+                if (a.isList1() //
+                    && a.first().isRuleAST()
+                    && a.first().first().equals(variable)) {
+                  solveValues.append(a.first().second());
+                }
+
+                return F.NIL;
+              });
+      if (solveValues.size() > 1) {
+        return solveValues;
+      }
+    } else {
+      if (listOfRules.first().isRuleAST() //
+          && listOfRules.first().equals(variable)) {
+        return listOfRules.first().second();
       }
     }
     return F.NIL;
@@ -468,13 +524,22 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param result
    * @param subExpr
    * @param replacementExpr
+   * @param multipleValues if <code>true</code> multiple results are returned as lsit of values
    * @param engine
    * @return
    */
   private static IExpr resultWithIfunMessage(
-      IExpr result, IExpr subExpr, IExpr replacementExpr, EvalEngine engine) {
+      IExpr result,
+      IExpr subExpr,
+      IExpr replacementExpr,
+      boolean multipleValues,
+      EvalEngine engine) {
     printIfunMessage(engine);
-    return F.subst(result, subExpr, replacementExpr);
+    IExpr expr = F.subst(result, subExpr, replacementExpr);
+    if (!multipleValues && expr.isList() && expr.size() > 1) {
+      return expr.first();
+    }
+    return expr;
   }
 
   /**
@@ -494,15 +559,20 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    *
    * @param analyzerList the list of <code>Equal()</code> terms with statistics of it's equations.
    * @param variable the variable which should be eliminated.
+   * @param multipleValues if <code>true</code> multiple results are returned as list of values
    * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
    *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
    *     rule which is used for variable elimination in index <code>[1]</code>.
    */
   protected static IAST[] eliminateOneVariable(
-      ArrayList<VariableCounterVisitor> analyzerList, IExpr variable, EvalEngine engine) {
+      ArrayList<VariableCounterVisitor> analyzerList,
+      IExpr variable,
+      boolean multipleValues,
+      EvalEngine engine) {
     IASTAppendable eliminatedResultEquations = F.ListAlloc(analyzerList.size());
     for (int i = 0; i < analyzerList.size(); i++) {
-      IExpr variableValues = eliminateAnalyze(analyzerList.get(i).getExpr(), variable, engine);
+      IExpr variableValues =
+          eliminateAnalyze(analyzerList.get(i).getExpr(), variable, multipleValues, engine);
       if (variableValues.isPresent()) {
         analyzerList.remove(i);
         IAST[] result = new IAST[2];
@@ -573,7 +643,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       for (int i = 1; i < vars.size(); i++) {
         variable = (ISymbol) vars.get(i);
 
-        temp = eliminateOneVariable(result, variable, engine);
+        temp = eliminateOneVariable(result, variable, false, engine);
         if (temp != null) {
           result = temp[0];
         } else {
@@ -605,11 +675,14 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
   /**
    * @param ast
    * @param variable
+   * @param multipleValues if <code>true</code> multiple results are returned as list of values
+   * @param engine
    * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
    *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
    *     rule which is used for variable elimination in index <code>[1]</code>.
    */
-  public static IAST[] eliminateOneVariable(IAST ast, IExpr variable, EvalEngine engine) {
+  public static IAST[] eliminateOneVariable(
+      IAST ast, IExpr variable, boolean multipleValues, EvalEngine engine) {
     IAST equalAST;
     VariableCounterVisitor exprAnalyzer;
     ArrayList<VariableCounterVisitor> analyzerList = new ArrayList<VariableCounterVisitor>();
@@ -621,14 +694,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     }
     Collections.sort(analyzerList);
 
-    return eliminateOneVariable(analyzerList, variable, engine);
-    //    if (tempAST != null && tempAST[1].isList()) {
-    //      IAST list = (IAST) tempAST[1];
-    //      IASTAppendable result = F.ListAlloc(list.size());
-    //      list.forEach(x -> result.append(F.List(x)));
-    //      tempAST[1] = list;
-    //    }
-    //    return tempAST;
+    return eliminateOneVariable(analyzerList, variable, multipleValues, engine);
   }
 
   public void setUp(final ISymbol newSymbol) {
