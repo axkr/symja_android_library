@@ -11,34 +11,34 @@ import org.matheclipse.core.patternmatching.Matcher;
  */
 public interface FunctionExpandRules {
   final public static IAST RULES = List(
-    // ArcCos(Power(1/x_)):=ArcSec(x)
+    // ArcCos(1/x_):=ArcSec(x)
     SetDelayed(ArcCos(Power(x_,CN1)),
       ArcSec(x)),
-    // ArcSec(Power(1/x_)):=ArcCos(x)
+    // ArcSec(1/x_):=ArcCos(x)
     SetDelayed(ArcSec(Power(x_,CN1)),
       ArcCos(x)),
     // ArcCot(Sqrt(x_^2)):=(Sqrt(x^2)*ArcCot(x))/x
     SetDelayed(ArcCot(Sqrt(Sqr(x_))),
       Times(Power(x,CN1),Sqrt(Sqr(x)),ArcCot(x))),
-    // ArcCot(Power(1/x_)):=ArcTan(x)
+    // ArcCot(1/x_):=ArcTan(x)
     SetDelayed(ArcCot(Power(x_,CN1)),
       ArcTan(x)),
     // ArcTan(Sqrt(x_^2)):=(Sqrt(x^2)*ArcTan(x))/x
     SetDelayed(ArcTan(Sqrt(Sqr(x_))),
       Times(Power(x,CN1),Sqrt(Sqr(x)),ArcTan(x))),
-    // ArcTan(Power(1/x_)):=ArcCot(x)
+    // ArcTan(1/x_):=ArcCot(x)
     SetDelayed(ArcTan(Power(x_,CN1)),
       ArcCot(x)),
     // ArcCsc(Sqrt(x_^2)):=(Sqrt(x^2)*ArcCsc(x))/x
     SetDelayed(ArcCsc(Sqrt(Sqr(x_))),
       Times(Power(x,CN1),Sqrt(Sqr(x)),ArcCsc(x))),
-    // ArcCsc(Power(1/x_)):=ArcSin(x)
+    // ArcCsc(1/x_):=ArcSin(x)
     SetDelayed(ArcCsc(Power(x_,CN1)),
       ArcSin(x)),
     // ArcSin(Sqrt(x_^2)):=(Sqrt(x^2)*ArcSin(x))/x
     SetDelayed(ArcSin(Sqrt(Sqr(x_))),
       Times(Power(x,CN1),Sqrt(Sqr(x)),ArcSin(x))),
-    // ArcSin(Power(1/x_)):=ArcCsc(x)
+    // ArcSin(1/x_):=ArcCsc(x)
     SetDelayed(ArcSin(Power(x_,CN1)),
       ArcCsc(x)),
     // BetaRegularized(z_,a_,b_):=(Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))
