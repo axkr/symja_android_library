@@ -16585,21 +16585,19 @@ public class LowercaseTestCase extends AbstractTestCase {
         "(x^(1+a)*Surd(x,3)^p)/(1+a+p/3)");
   }
 
-  //  public void testIntegrateIssue330() {
-  //    check(
-  //        "Integrate(x*ArcSin(x) ,x)", //
-  //
-  // "1/2*x^2*ArcSin(x)+1/4*(1-x^2)*(x/Sqrt(1-x^2)-ArcTan(x/Sqrt(1-x^2))+(-x^2*ArcTan(x/Sqrt(\n"
-  //            + "1-x^2)))/(1-x^2))");
-  //    check(
-  //        "Limit(x/Sqrt(1-x^2),x->1)", //
-  //        "Indeterminate");
-  //    check(
-  //        "Integrate(x*(1/2*Pi-ArcSin(x)),x)", //
-  //
-  // "1/4*x^2*(Pi-2*ArcSin(x))+1/4*(-1+x^2)*(x/Sqrt(1-x^2)-ArcTan(x/Sqrt(1-x^2))+(-x^2*ArcTan(x/Sqrt(\n"
-  //            + "1-x^2)))/(1-x^2))");
-  //  }
+  public void testIntegrateIssue330() {
+    check(
+        "Integrate(x*ArcSin(x) ,x)", //
+        "1/2*x^2*ArcSin(x)+1/4*(1-x^2)*(x/Sqrt(1-x^2)-ArcTan(x/Sqrt(1-x^2))+(-x^2*ArcTan(x/Sqrt(\n"
+            + "1-x^2)))/(1-x^2))");
+    check(
+        "Limit(x/Sqrt(1-x^2),x->1)", //
+        "Indeterminate");
+    check(
+        "Integrate(x*(1/2*Pi-ArcSin(x)),x)", //
+        "1/4*x^2*(Pi-2*ArcSin(x))+1/4*(-1+x^2)*(x/Sqrt(1-x^2)-ArcTan(x/Sqrt(1-x^2))+(-x^2*ArcTan(x/Sqrt(\n"
+            + "1-x^2)))/(1-x^2))");
+  }
 
   public void testIntegrate() {
     check(

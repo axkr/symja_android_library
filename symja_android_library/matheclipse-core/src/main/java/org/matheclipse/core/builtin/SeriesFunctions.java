@@ -797,7 +797,13 @@ public class SeriesFunctions {
         IAST[] timesPolyFiltered = timesAST.filter(x -> x.isPolynomial(data.variable));
         if (timesPolyFiltered[0].size() > 1 && timesPolyFiltered[1].size() > 1) {
           IExpr first = engine.evaluate(data.limit(timesPolyFiltered[0].oneIdentity1()));
+          if (first.isIndeterminate()) {
+            return S.Indeterminate;
+          }
           IExpr second = engine.evaluate(data.limit(timesPolyFiltered[1].oneIdentity1()));
+          if (second.isIndeterminate()) {
+            return S.Indeterminate;
+          }
           if (first.isReal() || second.isReal()) {
             IExpr temp = engine.evaluate(F.Times(first, second));
             if (!temp.isIndeterminate()) {
@@ -894,15 +900,17 @@ public class SeriesFunctions {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (!arg2.isRuleAST()) {
-        LOGGER.log(engine.getLogLevel(), "{}: rule definition expected at position 2!",
-            ast.topHead());
+        LOGGER.log(
+            engine.getLogLevel(), "{}: rule definition expected at position 2!", ast.topHead());
         return F.NIL;
       }
       IAST rule = (IAST) arg2;
 
       if (!(rule.arg1().isSymbol())) {
-        LOGGER.log(engine.getLogLevel(),
-            "{}: variable symbol for rule definition expected at position 2!", ast.topHead());
+        LOGGER.log(
+            engine.getLogLevel(),
+            "{}: variable symbol for rule definition expected at position 2!",
+            ast.topHead());
         return F.NIL;
       }
       if (arg1.isList()) {
@@ -925,12 +933,16 @@ public class SeriesFunctions {
             } else if (option.equals(S.Automatic) || option.equals(S.Reals)) {
               direction = Direction.TWO_SIDED;
             } else {
-              LOGGER.log(engine.getLogLevel(), "{}: direction option expected at position 2!",
+              LOGGER.log(
+                  engine.getLogLevel(),
+                  "{}: direction option expected at position 2!",
                   ast.topHead());
               return F.NIL;
             }
           } else {
-            LOGGER.log(engine.getLogLevel(), "{}: direction option expected at position 2!",
+            LOGGER.log(
+                engine.getLogLevel(),
+                "{}: direction option expected at position 2!",
                 ast.topHead());
             return F.NIL;
           }
@@ -946,8 +958,10 @@ public class SeriesFunctions {
         if (rule.isFreeAt(2, symbol)) {
           limit = rule.arg2();
         } else {
-          LOGGER.log(engine.getLogLevel(),
-              "{}: limit value is not free of variable symbol at position 2!", ast.topHead());
+          LOGGER.log(
+              engine.getLogLevel(),
+              "{}: limit value is not free of variable symbol at position 2!",
+              ast.topHead());
           return F.NIL;
         }
 
