@@ -85,7 +85,6 @@ import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.parser.client.FEConfig;
 import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 public abstract class AbstractAST implements IASTMutable {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -1129,7 +1128,12 @@ public abstract class AbstractAST implements IASTMutable {
   }
 
   /** The enumeration map which possibly maps the properties (keys) to a user defined object. */
-  private static Cache<IAST, EnumMap<PROPERTY, Object>> IAST_CACHE = null;
+  //  private static Cache<IAST, EnumMap<PROPERTY, Object>> IAST_CACHE = null;
+  private static Supplier<Cache<IAST, EnumMap<PROPERTY, Object>>> IAST_CACHE;
+
+  private static Cache<IAST, EnumMap<PROPERTY, Object>> propertyCache() {
+    return IAST_CACHE.get();
+  }
 
   /** package private */
   static final NILPointer NIL = new NILPointer();
@@ -2359,14 +2363,11 @@ public abstract class AbstractAST implements IASTMutable {
    * @see #putProperty(PROPERTY, Object)
    */
   public Object getProperty(PROPERTY key) {
-    if (IAST_CACHE != null) {
-      EnumMap<PROPERTY, Object> map = IAST_CACHE.getIfPresent(this);
-      if (map == null) {
-        return null;
-      }
-      return map.get(key);
+    EnumMap<PROPERTY, Object> map = propertyCache().getIfPresent(this);
+    if (map == null) {
+      return null;
     }
-    return null;
+    return map.get(key);
   }
 
   /** {@inheritDoc} */
@@ -4947,13 +4948,11 @@ public abstract class AbstractAST implements IASTMutable {
    * @see #getProperty(PROPERTY)
    */
   public Object putProperty(PROPERTY key, Object value) {
-    if (IAST_CACHE == null) {
-      IAST_CACHE = CacheBuilder.newBuilder().maximumSize(500).build();
-    }
-    EnumMap<PROPERTY, Object> map = IAST_CACHE.getIfPresent(this);
+    Cache<IAST, EnumMap<PROPERTY, Object>> propertyCache = propertyCache();
+    EnumMap<PROPERTY, Object> map = propertyCache.getIfPresent(this);
     if (map == null) {
       map = new EnumMap<PROPERTY, Object>(PROPERTY.class);
-      IAST_CACHE.put(this, map);
+      propertyCache.put(this, map);
     }
     return map.put(key, value);
   }

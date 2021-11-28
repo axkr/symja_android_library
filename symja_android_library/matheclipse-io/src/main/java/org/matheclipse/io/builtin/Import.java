@@ -5,8 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
 import javax.imageio.ImageIO;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -14,7 +12,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.ImportException;
 import org.jgrapht.nio.dot.DOTImporter;
 import org.jgrapht.nio.graphml.GraphMLImporter;
@@ -176,9 +173,9 @@ public class Import extends AbstractEvaluator {
         return GraphExpr.newInstance(result);
       case GRAPHML:
         result = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
-        Map<String, Map<String, Attribute>> vertexAttributes = new HashMap<>();
-        Map<ExprEdge, Map<String, Attribute>> edgeAttributes =
-            new HashMap<ExprEdge, Map<String, Attribute>>();
+        //        Map<String, Map<String, Attribute>> vertexAttributes = new HashMap<>();
+        //        Map<ExprEdge, Map<String, Attribute>> edgeAttributes =
+        //            new HashMap<ExprEdge, Map<String, Attribute>>();
         GraphMLImporter<IExpr, ExprEdge> graphMLImporter = new GraphMLImporter<IExpr, ExprEdge>();
         graphMLImporter.setVertexFactory(label -> engine.parse(label));
         graphMLImporter.importGraph(result, reader);

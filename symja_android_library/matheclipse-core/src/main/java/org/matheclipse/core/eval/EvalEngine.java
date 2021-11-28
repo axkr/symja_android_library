@@ -241,9 +241,9 @@ public class EvalEngine implements Serializable {
 
   transient ContextPath fContextPath;
 
-  transient String f$Input = "";
+  transient String f$Input = null;
 
-  transient String f$InputFileName = "";
+  transient String f$InputFileName = null;
 
   /** The precision for numeric operations. */
   //  protected transient long fNumericPrecision;
@@ -2300,19 +2300,33 @@ public class EvalEngine implements Serializable {
   }
 
   public String get$Input() {
+    if (f$Input == null) {
+      f$Input = "";
+    }
     return f$Input;
   }
 
   public String get$InputFileName() {
+    if (f$InputFileName == null) {
+      f$InputFileName = "";
+    }
     return f$InputFileName;
   }
 
   public void set$Input(String input) {
-    f$Input = input;
+    if (input == null) {
+      f$Input = "";
+    } else {
+      f$Input = input;
+    }
   }
 
   public void set$InputFileName(String inputFileName) {
-    f$InputFileName = inputFileName;
+    if (inputFileName == null) {
+      f$InputFileName = "";
+    } else {
+      f$InputFileName = inputFileName;
+    }
   }
 
   public ContextPath getContextPath() {
