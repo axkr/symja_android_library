@@ -66,15 +66,20 @@ import com.google.common.base.Suppliers;
 public class Eliminate extends AbstractFunctionEvaluator implements EliminateRules {
   private static final Logger LOGGER = LogManager.getLogger();
 
+  /** Match <code>f(x) == y</code> expressions to determine the inverse function. */
   private static Supplier<Matcher> INVERSE_MATCHER;
-  private static Supplier<Matcher> ZERO_MATCHER;
 
+  /** Match <code>Plus(....) == 0</code> expressions for a variable. */
+  private static Supplier<Matcher> ZERO_PLUS_MATCHER;
+
+  /** Get the matcher for <code>f(x) == y</code> expressions to determine the inverse function. */
   private static Matcher inverseMatcher() {
     return INVERSE_MATCHER.get();
   }
 
-  private static Matcher zeroMatcher() {
-    return ZERO_MATCHER.get();
+  /** Match <code>Plus(....) == 0</code> expressions for a variable. */
+  private static Matcher zeroPlusMatcher() {
+    return ZERO_PLUS_MATCHER.get();
   }
 
   static class VariableCounterVisitor extends AbstractVisitorBoolean
@@ -373,13 +378,15 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       } else {
         int size = ast.size();
         if (size > 2) {
-          if (exprWithoutVariable.isZero()) {
-            IExpr result = zeroMatcher().apply(F.binaryAST2(elimzero, ast, x));
+          if (exprWithoutVariable.isZero() && ast.isPlus()) {
+            IAST elimZeroPlus = F.binaryAST2(elimzeroplus, ast, x);
+            IExpr result = zeroPlusMatcher().apply(elimZeroPlus);
             if (result.isPresent()) {
               return resultWithIfunMessage(result, x, exprWithoutVariable, multipleValues, engine);
             }
           }
-          IExpr result = inverseMatcher().apply(F.binaryAST2(eliminv, ast, x));
+          IAST elimInverse = F.binaryAST2(eliminv, ast, x);
+          IExpr result = inverseMatcher().apply(elimInverse);
           if (result.isPresent()) {
             return resultWithIfunMessage(result, x, exprWithoutVariable, multipleValues, engine);
           }
@@ -708,6 +715,6 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
 
   public void setUp(final ISymbol newSymbol) {
     INVERSE_MATCHER = Suppliers.memoize(EliminateRules::init1);
-    ZERO_MATCHER = Suppliers.memoize(EliminateRules::init2);
+    ZERO_PLUS_MATCHER = Suppliers.memoize(EliminateRules::init2);
   }
 }
