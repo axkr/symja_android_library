@@ -53,7 +53,7 @@ public interface IPatternObject extends IExpr {
   /**
    * Get the associated symbol for this pattern-object
    *
-   * @return
+   * @return <code>null</code> if no symbol is associated
    */
   public ISymbol getSymbol();
 
