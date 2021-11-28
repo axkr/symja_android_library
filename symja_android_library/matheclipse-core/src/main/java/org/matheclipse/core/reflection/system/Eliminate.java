@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -385,16 +386,21 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
         }
 
         if (ast.isPlus()) {
-          if (exprWithoutVariable.isNumericFunction()
-              && !exprWithoutVariable.isZero()
-              && ast.isPolynomial(x)) {
-            IExpr solve =
-                S.Solve.ofNIL(engine, F.Equal(F.Subtract(ast, exprWithoutVariable), F.C0), x);
-            if (solve.isList() && solve.size() > 1) {
-              IExpr result = listOfRulesToValues(solve, x, multipleValues);
-              if (result.isPresent()) {
-                return result;
+          if (exprWithoutVariable.isNumericFunction() //
+              && ast.isPolynomial(x)
+              && ast.isNumericFunction(x)) {
+            IAST temp =
+                RootsFunctions.rootsOfVariable(
+                    F.Subtract.of(ast, exprWithoutVariable),
+                    F.C1,
+                    F.List(x),
+                    engine.isNumericMode(),
+                    engine);
+            if (temp.isList() && temp.size() > 1) {
+              if (!multipleValues || temp.size() == 2) {
+                return temp.first();
               }
+              return temp;
             }
           }
 
@@ -614,6 +620,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       IExpr temp = expr.replaceAll(rule);
       if (temp.isPresent()) {
         temp = F.expandAll(temp, true, true);
+        if (temp.isEqual() && temp.size() == 3) {
+          temp = F.Equal(F.Subtract.of(temp.first(), temp.second()), F.C0);
+        }
         eliminatedResultEquations.append(temp);
       } else {
         eliminatedResultEquations.append(expr);

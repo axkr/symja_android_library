@@ -948,27 +948,35 @@ public class Solve extends AbstractFunctionEvaluator {
   private static IAST rootsOfUnivariatePolynomial(ExprAnalyzer exprAnalyzer, EvalEngine engine) {
     IExpr numerator = exprAnalyzer.getNumerator();
     IExpr denominator = exprAnalyzer.getDenominator();
-    // try to solve the expr for a symbol in the symbol set
-    for (IExpr sym : exprAnalyzer.getVariableSet()) {
-      IExpr temp = F.NIL;
-      if (numerator.isNumericMode() && denominator.isOne()) {
-        temp = RootsFunctions.roots(numerator, F.List(sym), engine);
-      }
-      if (!temp.isPresent()) {
-        temp =
-            RootsFunctions.rootsOfVariable(
-                numerator, denominator, F.List(sym), numerator.isNumericMode(), engine);
-      }
+    // try to solve the expr for one of the variables in the symbol set
+    for (IExpr variable : exprAnalyzer.getVariableSet()) {
+      IAST temp = rootsOfUnivariatePolynomial(numerator, denominator, variable, engine);
       if (temp.isPresent()) {
-        if (temp.isSameHeadSizeGE(S.List, 2)) {
-          IAST rootsList = (IAST) temp;
-          IASTAppendable resultList = F.ListAlloc(rootsList.size());
-          for (IExpr root : rootsList) {
-            resultList.append(F.Rule(sym, root));
-          }
-          return QuarticSolver.sortASTArguments(resultList);
+        return temp;
+      }
+    }
+    return F.NIL;
+  }
+
+  private static IAST rootsOfUnivariatePolynomial(
+      IExpr numerator, IExpr denominator, IExpr variable, EvalEngine engine) {
+    IExpr temp = F.NIL;
+    if (numerator.isNumericMode() && denominator.isOne()) {
+      temp = RootsFunctions.roots(numerator, F.List(variable), engine);
+    }
+    if (!temp.isPresent()) {
+      temp =
+          RootsFunctions.rootsOfVariable(
+              numerator, denominator, F.List(variable), numerator.isNumericMode(), engine);
+    }
+    if (temp.isPresent()) {
+      if (temp.isSameHeadSizeGE(S.List, 2)) {
+        IAST rootsList = (IAST) temp;
+        IASTAppendable resultList = F.ListAlloc(rootsList.size());
+        for (IExpr root : rootsList) {
+          resultList.append(F.Rule(variable, root));
         }
-        return F.NIL;
+        return QuarticSolver.sortASTArguments(resultList);
       }
     }
     return F.NIL;

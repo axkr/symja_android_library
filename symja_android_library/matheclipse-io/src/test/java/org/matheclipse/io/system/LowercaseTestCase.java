@@ -9385,6 +9385,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testEliminate() {
+
     // print: Eliminate: y>2 is not a well-formed equation.
     check(
         "Eliminate({x==y,y>2},{x})", //
@@ -9399,27 +9400,27 @@ public class LowercaseTestCase extends AbstractTestCase {
         "True");
     check(
         "Eliminate({x == 2 + y, y == z}, y)", //
-        "x==2+z");
+        "x-z==2");
     check(
         "Eliminate({x == 2 + y, y == z}, {y,v})", //
-        "x==2+z");
+        "x-z==2");
     check(
         "Eliminate({2*x + 3*y + 4*z == 1, 9*x + 8*y + 7*z == 2}, z)", //
         "11/2*x+11/4*y==1/4");
     check(
         "Eliminate({x^2 + y^2 + z^2 == 1, x - y + z == 2, x^3 - y^2 == z + 1}, {y, z})",
-        "-4*x+2*x^2-4*z+2*x*z+2*z^2==-3&&-4+4*x-x^2+x^3+4*z-2*x*z-z^2==1+z");
+        "-4*x+2*x^2-4*z+2*x*z+2*z^2==-3&&4*x-x^2+x^3+3*z-2*x*z-z^2==5");
     check(
         "Eliminate({x == 2 + y^3, y^2 == z}, y)", //
-        "x==2+z^(3/2)");
+        "x-z^(3/2)==2");
 
     // use evaluation step: Cos(ArcSin(y)) => Sqrt(1-y^2)
     check(
         "Eliminate({Sin(x)==y, Cos(x) == z}, x)", //
-        "Sqrt(1-y^2)==z");
+        "Sqrt(1-y^2)-z==0");
     check(
         "Eliminate({a^x==y, b^(2*x) == z}, x)", //
-        "b^((2*Log(y))/Log(a))==z");
+        "b^((2*Log(y))/Log(a))-z==0");
   }
 
   public void testEllipticE() {

@@ -357,9 +357,17 @@ public class SolveTest extends AbstractTestCase {
 
   public void testSolveIssue329() {
     check(
+        "Solve(x+Sqrt(a+b*x+c*x^2)==y, x)", //
+        "{{x->(-b-2*y-Sqrt(4*a+b^2-4*a*c+4*b*y+4*c*y^2))/(2*(-1+c))},{x->(-b-2*y+Sqrt(4*a+b^\n"
+            + "2-4*a*c+4*b*y+4*c*y^2))/(2*(-1+c))}}");
+    check(
+        "Solve(x+Sqrt(x+a) == y, x)", //
+        "{{x->1/2*(1+2*y-Sqrt(1+4*a+4*y))},{x->1/2*(1+2*y+Sqrt(1+4*a+4*y))}}");
+    check(
         "Solve(-2+Sqrt(-2*x+x^2+3) == 0, x)", //
         "{{x->1/2*(2-2*Sqrt(2))},{x->1/2*(2+2*Sqrt(2))}}");
   }
+  
   /** The JUnit setup method */
   @Override
   protected void setUp() {
