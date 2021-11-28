@@ -357,6 +357,9 @@ public class SolveTest extends AbstractTestCase {
 
   public void testSolveIssue329() {
     check(
+        "Solve(x+Sqrt(a+b*x+x^2)==y, x)", //
+        "{{x->(-a+y^2)/(b+2*y)}}");
+    check(
         "Solve(x+Sqrt(a+b*x+c*x^2)==y, x)", //
         "{{x->(-b-2*y-Sqrt(4*a+b^2-4*a*c+4*b*y+4*c*y^2))/(2*(-1+c))},{x->(-b-2*y+Sqrt(4*a+b^\n"
             + "2-4*a*c+4*b*y+4*c*y^2))/(2*(-1+c))}}");
