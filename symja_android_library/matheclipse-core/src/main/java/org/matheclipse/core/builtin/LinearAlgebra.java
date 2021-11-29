@@ -92,6 +92,7 @@ public final class LinearAlgebra {
       S.CharacteristicPolynomial.setEvaluator(new CharacteristicPolynomial());
       S.CholeskyDecomposition.setEvaluator(new CholeskyDecomposition());
       S.ConjugateTranspose.setEvaluator(new ConjugateTranspose());
+      S.Cofactor.setEvaluator(new Cofactor());
       S.Cross.setEvaluator(new Cross());
       S.DesignMatrix.setEvaluator(new DesignMatrix());
       S.Det.setEvaluator(new Det());
@@ -859,6 +860,49 @@ public final class LinearAlgebra {
     @Override
     protected IExpr transform(final IExpr expr) {
       return expr.conjugate();
+    }
+  }
+
+  private static final class Cofactor extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      int[] dims = arg1.isMatrix();
+      if (dims != null && arg2.isList2()) {
+        if (dims[0] != dims[1]) {
+          // TODO error message
+          return F.NIL;
+        }
+        IAST matrix = (IAST) arg1;
+        int i = arg2.first().toIntDefault();
+        int j = arg2.second().toIntDefault();
+        if (i <= 0 || j <= 0) {
+          // TODO error message
+          return F.NIL;
+        }
+        if (i > dims[0] || j > dims[1]) {
+          // TODO error message
+          return F.NIL;
+        }
+        if (i + j < 0) {
+          // TODO overflow  error message
+          return F.NIL;
+        }
+        // (-1)^(i + j)*Det(Drop(matrix, {i}, {j}))
+        return F.Times(
+            F.Power(F.CN1, F.ZZ(i + j)), //
+            F.Det( //
+                F.Drop(matrix, F.List(F.ZZ(i)), F.List(F.ZZ(j))) //
+                ));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
   }
 

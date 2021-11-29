@@ -3388,8 +3388,12 @@ public class F extends S {
     return new AST2(Dot, a0, a1);
   }
 
-  public static IAST Drop(final IExpr a0, final IExpr a1) {
-    return new AST2(Drop, a0, a1);
+  public static IAST Drop(final IExpr list, final IExpr a1) {
+    return new AST2(Drop, list, a1);
+  }
+
+  public static IAST Drop(final IExpr list, final IExpr a1, final IExpr a2) {
+    return new AST3(Drop, list, a1, a2);
   }
 
   public static IAST DSolve(final IExpr a0, final IExpr a1, final IExpr a2) {

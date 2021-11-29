@@ -1673,6 +1673,8 @@ public class S {
   public static final IBuiltInSymbol CoefficientRules =
       F.initFinalSymbol("CoefficientRules", ID.CoefficientRules);
 
+  public static final IBuiltInSymbol Cofactor = F.initFinalSymbol("Cofactor", ID.Cofactor);
+
   /**
    * Collect(expr, variable) - collect subexpressions in `expr` which belong to the same `variable`.
    *
@@ -6089,6 +6091,10 @@ public class S {
    *     documentation</a>
    */
   public static final IBuiltInSymbol Minimize = F.initFinalSymbol("Minimize", ID.Minimize);
+
+  public static final IBuiltInSymbol Minor = F.initFinalSymbol("Minor", ID.Minor);
+
+  public static final IBuiltInSymbol Minors = F.initFinalSymbol("Minors", ID.Minors);
 
   /**
    * Minus(expr) - is the negation of `expr`.

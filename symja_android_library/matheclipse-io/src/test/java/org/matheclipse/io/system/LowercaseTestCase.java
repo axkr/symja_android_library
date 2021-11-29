@@ -4803,6 +4803,12 @@ public class LowercaseTestCase extends AbstractTestCase {
         "1+x==y");
   }
 
+  public void testCofactor() {
+    check(
+        "Cofactor({{1, 2, 3, 4}, {5, 6, 7, 8}, {8, 7, 6, 4}, {5, 3, 2, 1}}, {3, 2})", //
+        "4");
+  }
+
   public void testCollect() {
     check(
         "Collect(a*x*Log(x)+ b*(x*Log(x)), x*Log(x))", //
