@@ -357,6 +357,28 @@ public class SolveTest extends AbstractTestCase {
 
   public void testSolveIssue329() {
     check(
+        "Solve(a1+a2+5*x+4*Sqrt(a+b*x+25/16*x^2)+z1+z2==0, x)", //
+        "{{x->(-16*a+a1^2+2*a1*a2+a2^2+2*a1*z1+2*a2*z1+z1^2+2*a1*z2+2*a2*z2+2*z1*z2+z2^2)/(\n"
+            + "16*b-10*(a1+a2+z1+z2))}}");
+    check(
+        "Solve(5*x+4*Sqrt(a+b*x+25/16*x^2)+z==0, x)", //
+        "{{x->(-16*a+z^2)/(16*b-10*z)}}");
+    check(
+        "Solve(4*x+2*Sqrt(a+b*x+4*x^2)+z==0, x)", //
+        "{{x->(-4*a+z^2)/(4*b-8*z)}}");
+    
+    check(
+        "Solve(-42*Sqrt(a+b*x)+z==0, x)", //
+        "{{x->(-1764*a+z^2)/(1764*b)}}");
+    check(
+        "Solve(y*x-Sqrt(a+b*x)+z==0, x)", //
+        "{{x->(b-2*y*z+Sqrt(b^2+4*a*y^2-4*b*y*z))/(2*y^2)},{x->(b-2*y*z-Sqrt(b^2+4*a*y^2-\n"
+            + "4*b*y*z))/(2*y^2)}}");
+   
+    check(
+        "Solve(4*x+2*Sqrt(a+b*x+4*x^2)+z==0, x)", //
+        "{{x->(-4*a+z^2)/(4*b-8*z)}}");
+    check(
         "Solve(y*x+Sqrt(a+b*x+y^2*x^2)+z==0, x)", //
         "{{x->(-a+z^2)/(b-2*y*z)}}");
     check(
@@ -364,7 +386,7 @@ public class SolveTest extends AbstractTestCase {
         "{{x->(-a+y^2)/(b+2*y)}}");
     check(
         "Solve(x+Sqrt(a+b*x+c*x^2)==y, x)", //
-        "{{x->(b+2*y+Sqrt(4*a+b^2-4*a*c+4*b*y+4*c*y^2))/(2*(1-c))},{x->(-b-2*y+Sqrt(4*a+b^\n"
+        "{{x->(-b-2*y-Sqrt(4*a+b^2-4*a*c+4*b*y+4*c*y^2))/(2*(-1+c))},{x->(-b-2*y+Sqrt(4*a+b^\n"
             + "2-4*a*c+4*b*y+4*c*y^2))/(2*(-1+c))}}");
     check(
         "Solve(x+Sqrt(x+a) == y, x)", //
@@ -373,7 +395,7 @@ public class SolveTest extends AbstractTestCase {
         "Solve(-2+Sqrt(-2*x+x^2+3) == 0, x)", //
         "{{x->1/2*(2-2*Sqrt(2))},{x->1/2*(2+2*Sqrt(2))}}");
   }
-  
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {
