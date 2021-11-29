@@ -22313,6 +22313,22 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{31/8,{x->3/4}}");
   }
 
+  public void testMinors() {
+    check(
+        "m1 = Table(i^2 + i j + j^3, {i, 4}, {j, 4})", //
+        "{{3,11,31,69},{7,16,37,76},{13,23,45,85},{21,32,55,96}}");
+    check(
+        "Minors(m1)", //
+        "{{-24,-84,-96,-36},{-72,-252,-288,-108},{-72,-252,-288,-108},{-24,-84,-96,-36}}");
+
+    check(
+        "m2 = Partition(Range(16), 4)", //
+        "{{1,2,3,4},{5,6,7,8},{9,10,11,12},{13,14,15,16}}");
+    check(
+        "Minors(m2)", //
+        "{{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}}");
+  }
+
   public void testMinus() {
     check(
         "Minus(a)", //

@@ -119,6 +119,8 @@ public final class LinearAlgebra {
       S.MatrixLog.setEvaluator(new MatrixLog());
       S.MatrixPower.setEvaluator(new MatrixPower());
       S.MatrixRank.setEvaluator(new MatrixRank());
+      //      S.Minor.setEvaluator(new Minor());
+      S.Minors.setEvaluator(new Minors());
       S.Norm.setEvaluator(new Norm());
       S.Normalize.setEvaluator(new Normalize());
       S.NullSpace.setEvaluator(new NullSpace());
@@ -3297,8 +3299,87 @@ public final class LinearAlgebra {
     }
   }
 
+  //  private static final class Minor extends AbstractFunctionEvaluator {
+  //
+  //    @Override
+  //    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  //      IExpr arg1 = ast.arg1();
+  //      IExpr arg2 = ast.arg2();
+  //      int[] dims = arg1.isMatrix();
+  //      if (dims != null && arg2.isList2()) {
+  //        if (dims[0] != dims[1]) {
+  //          // TODO error message
+  //          return F.NIL;
+  //        }
+  //        IAST matrix = (IAST) arg1;
+  //        int i = arg2.first().toIntDefault();
+  //        int j = arg2.second().toIntDefault();
+  //        if (i <= 0 || j <= 0) {
+  //          // TODO error message
+  //          return F.NIL;
+  //        }
+  //        if (i > dims[0] || j > dims[1]) {
+  //          // TODO error message
+  //          return F.NIL;
+  //        }
+  //        if (i + j < 0) {
+  //          // TODO overflow  error message
+  //          return F.NIL;
+  //        }
+  //        // (-1)^(i + j)*Det(Drop(matrix, {i}, {j}))
+  //        return F.Det(
+  //            F.Drop(matrix, F.List(F.ZZ(i)), F.List(F.ZZ(j))) //
+  //            );
+  //      }
+  //      return F.NIL;
+  //    }
+  //
+  //    @Override
+  //    public int[] expectedArgSize(IAST ast) {
+  //      return ARGS_2_2;
+  //    }
+  //  }
+
+  private static final class Minors extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      int[] dims = arg1.isMatrix();
+      if (dims != null) {
+        if (dims[0] != dims[1]) {
+          // TODO error message
+          return F.NIL;
+        }
+        if (dims[0] <= 1) {
+          // TODO error message
+          return F.NIL;
+        }
+        IAST matrix = (IAST) arg1;
+        IASTAppendable result = F.ListAlloc(dims[0] + 1);
+        for (int i = 1; i <= dims[0]; i++) {
+          IASTAppendable row = F.ListAlloc(dims[1] + 1);
+          for (int j = 1; j <= dims[1]; j++) {
+            IExpr det =
+                engine.evaluate(
+                    F.Det( //
+                        F.Drop(matrix, F.List(F.ZZ(i)), F.List(F.ZZ(j)))));
+            row.append(det);
+          }
+          result.append(F.Reverse.of(engine, row));
+        }
+        return result;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
   /**
-   *
+   * 0]
    *
    * <pre>
    * Norm(m, l)
