@@ -3355,18 +3355,19 @@ public final class LinearAlgebra {
           // TODO error message
           return F.NIL;
         }
+        int n = dims[0];
         IAST matrix = (IAST) arg1;
-        IASTAppendable result = F.ListAlloc(dims[0] + 1);
-        for (int i = 1; i <= dims[0]; i++) {
-          IASTAppendable row = F.ListAlloc(dims[1] + 1);
-          for (int j = 1; j <= dims[1]; j++) {
+        IASTAppendable result = F.ListAlloc(n + 1);
+        for (int i = 1; i <= n; i++) {
+          IASTAppendable row = F.ListAlloc(n + 1);
+          for (int j = 1; j <= n; j++) {
             IExpr det =
                 engine.evaluate(
                     F.Det( //
-                        F.Drop(matrix, F.List(F.ZZ(i)), F.List(F.ZZ(j)))));
+                        F.Drop(matrix, F.List(F.ZZ(n - i + 1)), F.List(F.ZZ(n - j + 1)))));
             row.append(det);
           }
-          result.append(F.Reverse.of(engine, row));
+          result.append(row);
         }
         return result;
       }

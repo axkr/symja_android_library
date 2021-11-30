@@ -4003,7 +4003,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "Check(0^0, failure)", //
         "failure");
   }
-  
+
   public void testCheckAbort() {
     check(
         "CheckAbort(Abort(); -1, 41) + 1", //
@@ -14256,8 +14256,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "-1<=y<=1");
   }
 
-  
-
   public void testFunctionURL() {
     assertEquals(ID.LINE_NUMBER_OF_JAVA_CLASS.length, ID.Zeta + 1);
     checkRegex(
@@ -22314,6 +22312,21 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testMinors() {
+    check(
+        "m0 = Array(Subscript(a, ##) &, {3, 3})", //
+        "{{Subscript(a,1,1),Subscript(a,1,2),Subscript(a,1,3)},{Subscript(a,2,1),Subscript(a,\n"
+            + "2,2),Subscript(a,2,3)},{Subscript(a,3,1),Subscript(a,3,2),Subscript(a,3,3)}}");
+    check(
+        "Minors(m0)", //
+        "{{-Subscript(a,1,2)*Subscript(a,2,1)+Subscript(a,1,1)*Subscript(a,2,2),-Subscript(a,\n"
+            + "1,3)*Subscript(a,2,1)+Subscript(a,1,1)*Subscript(a,2,3),-Subscript(a,1,3)*Subscript(a,\n"
+            + "2,2)+Subscript(a,1,2)*Subscript(a,2,3)},{-Subscript(a,1,2)*Subscript(a,3,1)+Subscript(a,\n"
+            + "1,1)*Subscript(a,3,2),-Subscript(a,1,3)*Subscript(a,3,1)+Subscript(a,1,1)*Subscript(a,\n"
+            + "3,3),-Subscript(a,1,3)*Subscript(a,3,2)+Subscript(a,1,2)*Subscript(a,3,3)},{-Subscript(a,\n"
+            + "2,2)*Subscript(a,3,1)+Subscript(a,2,1)*Subscript(a,3,2),-Subscript(a,2,3)*Subscript(a,\n"
+            + "3,1)+Subscript(a,2,1)*Subscript(a,3,3),-Subscript(a,2,3)*Subscript(a,3,2)+Subscript(a,\n"
+            + "2,2)*Subscript(a,3,3)}}");
+
     check(
         "m1 = Table(i^2 + i j + j^3, {i, 4}, {j, 4})", //
         "{{3,11,31,69},{7,16,37,76},{13,23,45,85},{21,32,55,96}}");
