@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.RandomAccess;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -664,6 +665,18 @@ public abstract class HMArrayList extends AbstractAST
       if (predicate.test(array[i++])) {
         return true;
       }
+    }
+    return false;
+  }
+
+  @Override
+  public boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
+    int i = firstIndex + 2;
+    while (i < lastIndex) {
+      if (stopPredicate.test(array[i - 1], array[i])) {
+        return true;
+      }
+      i++;
     }
     return false;
   }

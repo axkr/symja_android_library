@@ -31782,6 +31782,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testSameQUnsameQ() {
     check(
+        "SameQ( )", //
+        "True");
+    check(
+        "SameQ(abc)", //
+        "True");
+    check(
+        "UnsameQ( )", //
+        "True");
+    check(
+        "UnsameQ(abc)", //
+        "True");
+    check(
         "a===a", //
         "True");
     check(

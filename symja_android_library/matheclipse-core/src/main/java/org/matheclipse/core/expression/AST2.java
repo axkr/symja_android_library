@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
@@ -175,6 +176,10 @@ public class AST2 extends AST1 {
     return false;
   }
 
+  public boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
+    return stopPredicate.test(arg1, arg2);
+  }
+  
   /** {@inheritDoc} */
   @Override
   public IAST filter(

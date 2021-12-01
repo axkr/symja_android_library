@@ -861,16 +861,13 @@ public final class BooleanFunctions {
     }
 
     private IExpr booleValue(final IExpr arg1, IExpr defaultValue) {
-      if (arg1.isSymbol()) {
-        if (arg1.isTrue()) {
-          return F.C1;
-        }
-        if (arg1.isFalse()) {
-          return F.C0;
-        }
+      if (arg1.isTrue()) {
+        return F.C1;
+      } else if (arg1.isFalse()) {
+        return F.C0;
+      } else if (arg1.isSymbol()) {
         return defaultValue;
-      }
-      if (arg1.isList()) {
+      } else if (arg1.isList()) {
         // Boole has attribute Listable
         return ((IAST) arg1).mapThread(x -> F.Boole(x));
       }
@@ -3573,13 +3570,16 @@ public final class BooleanFunctions {
    */
   private static final class SameQ extends AbstractCoreFunctionEvaluator
       implements IPredicate, IComparatorFunction {
+    
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() > 1) {
         IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
-        return F.bool(!temp.existsLeft((x, y) -> !x.isSame(y)));
+        if (temp.existsLeft((x, y) -> !x.isSame(y))) {
+          return S.False;
+        }
       }
-      return S.False;
+      return S.True;
     }
   }
 
@@ -4194,9 +4194,8 @@ public final class BooleanFunctions {
           }
           i++;
         }
-        return S.True;
       }
-      return S.False;
+      return S.True;
     }
   }
 

@@ -7,6 +7,7 @@ import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.RandomAccess;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
@@ -219,6 +220,10 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   @Override
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
     return (startOffset == 0) ? predicate.test(arg0) : false;
+  }
+
+  public boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
+    return false;
   }
 
   /** {@inheritDoc} */

@@ -7,6 +7,7 @@ import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.RandomAccess;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
@@ -458,6 +459,10 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
       case 1:
         return predicate.test(arg1);
     }
+    return false;
+  }
+
+  public boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
     return false;
   }
 

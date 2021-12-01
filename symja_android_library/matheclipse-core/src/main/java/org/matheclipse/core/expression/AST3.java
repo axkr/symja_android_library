@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
@@ -186,6 +187,16 @@ public final class AST3 extends AST2 {
         return predicate.test(arg2) || predicate.test(arg3);
       case 3:
         return predicate.test(arg3);
+    }
+    return false;
+  }
+
+  public boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
+    if (stopPredicate.test(arg1, arg2)) {
+      return true;
+    }
+    if (stopPredicate.test(arg2, arg3)) {
+      return true;
     }
     return false;
   }
