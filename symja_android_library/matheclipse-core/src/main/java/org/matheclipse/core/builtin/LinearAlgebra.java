@@ -877,6 +877,9 @@ public final class LinearAlgebra {
           // TODO error message
           return F.NIL;
         }
+        if (arg1.isSparseArray()) {
+          arg1 = arg1.normal(false);
+        }
         IAST matrix = (IAST) arg1;
         int i = arg2.first().toIntDefault();
         int j = arg2.second().toIntDefault();
@@ -3354,6 +3357,9 @@ public final class LinearAlgebra {
         if (dims[0] <= 1) {
           // TODO error message
           return F.NIL;
+        }
+        if (arg1.isSparseArray()) {
+          arg1 = arg1.normal(false);
         }
         int n = dims[0];
         IAST matrix = (IAST) arg1;
