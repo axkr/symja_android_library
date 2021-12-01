@@ -3570,11 +3570,14 @@ public final class BooleanFunctions {
    */
   private static final class SameQ extends AbstractCoreFunctionEvaluator
       implements IPredicate, IComparatorFunction {
-    
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() > 1) {
+      if (ast.size() > 2) {
         IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
+        if (temp.isAST2()) {
+          return temp.arg1().isSame(temp.arg2()) ? S.True : S.False;
+        }
         if (temp.existsLeft((x, y) -> !x.isSame(y))) {
           return S.False;
         }
@@ -4178,10 +4181,10 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() > 1) {
+      if (ast.size() > 2) {
         IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
-        if (ast.isAST2()) {
-          return F.bool(!temp.arg1().isSame(temp.arg2()));
+        if (temp.isAST2()) {
+          return temp.arg1().isSame(temp.arg2()) ? S.False : S.True;
         }
         int i = 2;
         int j;
