@@ -9,6 +9,39 @@ public class AssociationTest extends AbstractTestCase {
     super(name);
   }
 
+  public void testAssociation001() {
+    check(
+        "Head(<|a -> x, b -> y, c -> z|>)", //
+        "Association");
+    check(
+        "<|a -> x, b -> y|>", //
+        "<|a->x,b->y|>");
+    check(
+        "Association({a -> x, b -> y})", //
+        "<|a->x,b->y|>");
+    check(
+        "<|a -> x, b -> y, <|a -> z, d -> t|>|>", //
+        "<|a->z,b->y,d->t|>");
+    check(
+        "<|a -> x, b -> y, c -> <|d -> t|>|>", //
+        "<|a->x,b->y,c-><|d->t|>|>");
+    check(
+        "%(\"s\")", //
+        "Missing(KeyAbsent,s)");
+    check(
+        "<|a -> x, b + c -> y, {<|{}|>, a -> {z}}|>", //
+        "<|a->{z},b+c->y|>");
+    check(
+        "%(a)", //
+        "{z}");
+    check(
+        "<|\"x\" -> 1, {y} -> 1|>", //
+        "<|x->1,{y}->1|>");
+    check(
+        " %(\"x\")", //
+        "1");
+  }
+
   public void testAssociateTo() {
     check(
         "aa=42", //
