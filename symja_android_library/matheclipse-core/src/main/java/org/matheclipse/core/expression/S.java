@@ -8480,6 +8480,9 @@ public class S {
   public static final IBuiltInSymbol SingularValueDecomposition =
       F.initFinalSymbol("SingularValueDecomposition", ID.SingularValueDecomposition);
 
+  public static final IBuiltInSymbol SingularValueList =
+      F.initFinalSymbol("SingularValueList", ID.SingularValueList);
+
   /**
    * Sinh(z) - returns the hyperbolic sine of `z`.
    *

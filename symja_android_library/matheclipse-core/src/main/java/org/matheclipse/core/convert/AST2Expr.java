@@ -1253,6 +1253,7 @@ public class AST2Expr {
     "Sin",
     "Sinc",
     "SingularValueDecomposition",
+    "SingularValueList",
     "Sinh",
     "SinIntegral",
     "SinhIntegral",
