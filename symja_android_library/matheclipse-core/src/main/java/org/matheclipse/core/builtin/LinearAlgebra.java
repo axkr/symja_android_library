@@ -36,6 +36,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.BlockFieldMatrix;
+import org.hipparchus.linear.ComplexEigenDecomposition;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.FieldDecompositionSolver;
@@ -48,6 +49,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.linear.RiccatiEquationSolver;
 import org.hipparchus.linear.RiccatiEquationSolverImpl;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -132,6 +134,7 @@ public final class LinearAlgebra {
       S.RiccatiSolve.setEvaluator(new RiccatiSolve());
       S.RowReduce.setEvaluator(new RowReduce());
       S.SingularValueDecomposition.setEvaluator(new SingularValueDecomposition());
+      S.SingularValueList.setEvaluator(new SingularValueList());
       S.ToeplitzMatrix.setEvaluator(new ToeplitzMatrix());
       S.ToPolarCoordinates.setEvaluator(new ToPolarCoordinates());
       S.Tr.setEvaluator(new Tr());
@@ -873,7 +876,7 @@ public final class LinearAlgebra {
       IExpr arg2 = ast.arg2();
       int[] dims = arg1.isMatrix();
       if (dims != null && arg2.isList2()) {
-        if (dims[0] != dims[1]) {
+        if (dims[0] == 0 || dims[1] == 0) {
           // TODO error message
           return F.NIL;
         }
@@ -982,6 +985,8 @@ public final class LinearAlgebra {
           final IAST v1 = (IAST) arg1.normal(false);
           return List(Negate(v1.arg2()), v1.arg1());
         }
+        // The arguments are expected to be vectors of equal length, and the number of arguments is
+        // expected to be 1 less than their length.
         return IOFunctions.printMessage(ast.topHead(), "nonn1", F.List(), engine);
       } else if (ast.size() > 3) {
         int dim1 = arg1.isVector();
@@ -1729,6 +1734,155 @@ public final class LinearAlgebra {
    * </pre>
    */
   private static class Eigenvectors extends AbstractMatrix1Expr {
+    /**
+     * Given a matrix A, it computes a complex eigen decomposition A = VDV^{T}.
+     *
+     * <p>Eigenvectors with numeric eigenvalues are sorted in order of decreasing absolute value of
+     * their eigenvalues.
+     */
+//    private static class OrderedComplexAbsEigenDecomposition extends ComplexEigenDecomposition {
+//
+//      /**
+//       * Constructor for the decomposition.
+//       *
+//       * @param matrix real matrix.
+//       */
+//      public OrderedComplexAbsEigenDecomposition(final RealMatrix matrix) {
+//        this(
+//            matrix,
+//            ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY,
+//            ComplexEigenDecomposition.DEFAULT_EPSILON,
+//            ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK);
+//      }
+//
+//      /**
+//       * Constructor for decomposition.
+//       *
+//       * <p>The {@code eigenVectorsEquality} threshold is used to ensure the L∞-normalized
+//       * eigenvectors found using inverse iteration are different from each other. if
+//       * \(min(|e_i-e_j|,|e_i+e_j|)\) is smaller than this threshold, the algorithm considers it has
+//       * found again an already known vector, so it drops it and attempts a new inverse iteration
+//       * with a different start vector. This value should be much larger than {@code epsilon} which
+//       * is used for convergence
+//       *
+//       * @param matrix real matrix.
+//       * @param eigenVectorsEquality threshold below which eigenvectors are considered equal
+//       * @param epsilon Epsilon used for internal tests (e.g. is singular, eigenvalue ratio, etc.)
+//       * @param epsilonAVVDCheck Epsilon criteria for final AV=VD check
+//       * @since 1.9
+//       */
+//      public OrderedComplexAbsEigenDecomposition(
+//          final RealMatrix matrix,
+//          final double eigenVectorsEquality,
+//          final double epsilon,
+//          final double epsilonAVVDCheck) {
+//        super(matrix, eigenVectorsEquality, epsilon, epsilonAVVDCheck);
+//        final FieldMatrix<Complex> D = this.getD();
+//        final FieldMatrix<Complex> V = this.getV();
+//
+//        // getting eigen values
+//        IndexedEigenvalue[] eigenValues = new IndexedEigenvalue[D.getRowDimension()];
+//        for (int ij = 0; ij < matrix.getRowDimension(); ij++) {
+//          eigenValues[ij] = new IndexedEigenvalue(ij, D.getEntry(ij, ij));
+//        }
+//
+//        // ordering
+//        Arrays.sort(eigenValues);
+//        for (int ij = 0; ij < matrix.getRowDimension() - 1; ij++) {
+//          final IndexedEigenvalue eij = eigenValues[ij];
+//
+//          if (ij == eij.index) {
+//            continue;
+//          }
+//
+//          // exchanging D
+//          final Complex previousValue = D.getEntry(ij, ij);
+//          D.setEntry(ij, ij, eij.eigenValue);
+//          D.setEntry(eij.index, eij.index, previousValue);
+//
+//          // exchanging V
+//          for (int k = 0; k < matrix.getRowDimension(); ++k) {
+//            final Complex previous = V.getEntry(k, ij);
+//            V.setEntry(k, ij, V.getEntry(k, eij.index));
+//            V.setEntry(k, eij.index, previous);
+//          }
+//
+//          // exchanging eigenvalue
+//          for (int k = ij + 1; k < matrix.getRowDimension(); ++k) {
+//            if (eigenValues[k].index == ij) {
+//              eigenValues[k].index = eij.index;
+//              break;
+//            }
+//          }
+//        }
+//
+//        checkDefinition(matrix);
+//      }
+//
+//      /** {@inheritDoc} */
+//      @Override
+//      public FieldMatrix<Complex> getVT() {
+//        return getV().transpose();
+//      }
+//
+//      /** Container for index and eigenvalue pair. */
+//      private static class IndexedEigenvalue implements Comparable<IndexedEigenvalue> {
+//
+//        /** Index in the diagonal matrix. */
+//        private int index;
+//
+//        /** Eigenvalue. */
+//        private final Complex eigenValue;
+//
+//        /**
+//         * Build the container from its fields.
+//         *
+//         * @param index index in the diagonal matrix
+//         * @param eigenvalue eigenvalue
+//         */
+//        IndexedEigenvalue(final int index, final Complex eigenvalue) {
+//          this.index = index;
+//          this.eigenValue = eigenvalue;
+//        }
+//
+//        /**
+//         * {@inheritDoc}
+//         *
+//         * <p>Ordering uses real ordering as the primary sort order and imaginary ordering as the
+//         * secondary sort order.
+//         */
+//        @Override
+//        public int compareTo(final IndexedEigenvalue other) {
+//          return Double.compare(other.eigenValue.abs().getReal(), eigenValue.abs().getReal());
+//        }
+//
+//        /** {@inheritDoc} */
+//        @Override
+//        public boolean equals(final Object other) {
+//
+//          if (this == other) {
+//            return true;
+//          }
+//
+//          if (other instanceof IndexedEigenvalue) {
+//            final IndexedEigenvalue rhs = (IndexedEigenvalue) other;
+//            return eigenValue.equals(rhs.eigenValue);
+//          }
+//
+//          return false;
+//        }
+//
+//        /**
+//         * Get a hashCode for the pair.
+//         *
+//         * @return a hash code value for this object
+//         */
+//        @Override
+//        public int hashCode() {
+//          return 4563 + index + eigenValue.hashCode();
+//        }
+//      }
+//    }
 
     @Override
     public int[] checkMatrixDimensions(IExpr arg1) {
@@ -1817,10 +1971,22 @@ public final class LinearAlgebra {
 
     @Override
     public IAST realMatrixEval(RealMatrix matrix) {
-      // TODO
-      //      ComplexEigenDecomposition ced = new ComplexEigenDecomposition(matrix);
-      //      int size = matrix.getColumnDimension();
-      //      IASTAppendable list = F.ListAlloc(size);
+      // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
+      ComplexEigenDecomposition ced = new ComplexEigenDecomposition(matrix);
+      int size = matrix.getColumnDimension();
+      IASTAppendable list = F.ListAlloc(size);
+      //      Complex[] v = ced.getEigenvalues();
+      //      for (int i = 0; i < v.length; i++) {
+      //        System.out.println(v[i].toString());
+      //      }
+      for (int j = 0; j < size; j++) {
+        FieldVector<Complex> rv = ced.getEigenvector(j);
+        System.out.println(rv);
+
+        IASTAppendable complexVector2List = Convert.complexVector2List(rv);
+        list.append(F.Normalize(complexVector2List));
+      }
+      return list;
       //      return list.appendArgs(
       //          0,
       //          size,
@@ -1828,16 +1994,17 @@ public final class LinearAlgebra {
       //            FieldVector<Complex> rv = ced.getEigenvector(i);
       //            return Convert.complexVector2List(rv);
       //          });
-      EigenDecomposition ed = new EigenDecomposition(matrix);
-      int size = matrix.getColumnDimension();
-      IASTAppendable list = F.ListAlloc(size);
-      return list.appendArgs(
-          0,
-          size,
-          i -> {
-            RealVector rv = ed.getEigenvector(i);
-            return Convert.vector2List(rv);
-          });
+
+      //      EigenDecomposition ed = new EigenDecomposition(matrix);
+      //      int size = matrix.getColumnDimension();
+      //      IASTAppendable list = F.ListAlloc(size);
+      //      return list.appendArgs(
+      //          0,
+      //          size,
+      //          i -> {
+      //            RealVector rv = ed.getEigenvector(i);
+      //            return Convert.vector2List(rv);
+      //          });
     }
   }
 
@@ -4333,6 +4500,56 @@ public final class LinearAlgebra {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+  }
+
+  private static final class SingularValueList extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int[] dim = ast.arg1().isMatrix();
+      if (dim != null && dim[0] > 0 && dim[1] > 0) {
+        IExpr m = ast.arg1();
+        IExpr singularValueList =
+            engine.evaluate(F.Sqrt(F.Eigenvalues(F.Dot(F.ConjugateTranspose(m), m))));
+        int vectorLength = singularValueList.isVector();
+        if (vectorLength > 0) {
+          singularValueList =
+              ((IAST) singularValueList).filter(x -> keepSingularValue(x, engine))[0];
+          int n = singularValueList.argSize();
+          if (ast.isAST2()) {
+            n = ast.arg2().toIntDefault();
+            if (n <= 0) {
+              // Positive integer (less equal 2147483647) expected at position `2` in `1`.
+              return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C2), engine);
+            }
+          }
+
+          return S.TakeLargestBy.of(engine, singularValueList, S.Abs, F.ZZ(n));
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Singular values are kept only when their <code>Abs(singularValue)</code> is larger than
+     * {@link Config#DEFAULT_ROOTS_CHOP_DELTA}.
+     *
+     * @param x
+     * @param engine
+     * @return <code>true</code> if the value should be kept; <code>false</code> otherwise.
+     */
+    private boolean keepSingularValue(IExpr singularValue, EvalEngine engine) {
+      double y = engine.evalDouble(F.Abs(singularValue));
+      if (F.isZero(y, Config.DEFAULT_ROOTS_CHOP_DELTA)) {
+        return false;
+      }
+      return true;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 
