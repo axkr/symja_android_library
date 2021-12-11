@@ -316,6 +316,22 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
+  public IExpr divide(IExpr that) {
+    IExpr inverse = that.inverse();
+    if (inverse.isOne()) {
+      return this;
+    }
+    if (inverse.isMinusOne()) {
+      return negate();
+    }
+    if (hasNoValue() && !(this == that) && !that.isPlusTimesPower()) {
+      return F.Times(this, inverse);
+    }
+    return ISymbol.super.times(inverse);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean equals(final Object obj) {
     return this == obj;
   }
@@ -503,6 +519,10 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public final boolean hasAssignedSymbolValue() {
     return fValue != null;
+  }
+
+  private boolean hasNoValue() {
+    return fValue == null && fRulesData == null;
   }
 
   @Override
@@ -833,6 +853,33 @@ public class Symbol implements ISymbol, Serializable {
     return ofQ(EvalEngine.get(), args);
   }
 
+  @Override
+  public IExpr inverse() {
+    if (hasNoValue()) {
+      return F.Power(this, F.CN1);
+    }
+    return power(F.CN1);
+  }
+
+  @Override
+  public IExpr opposite() {
+    if (hasNoValue()) {
+      return F.Times(F.CN1, this);
+    }
+    return times(F.CN1);
+  }
+
+  @Override
+  public IExpr plus(final IExpr that) {
+    if (hasNoValue() && this != that && !that.isPlusTimesPower()) {
+      if (that.isZero()) {
+        return this;
+      }
+      return F.Plus(this, that);
+    }
+    return ISymbol.super.plus(that);
+  }
+
   /** {@inheritDoc} */
   @Override
   public final void putDownRule(
@@ -1088,6 +1135,20 @@ public class Symbol implements ISymbol, Serializable {
     } catch (Exception e1) {
       return fSymbolName;
     }
+  }
+
+  @Override
+  public IExpr times(final IExpr that) {
+    if (hasNoValue() && !(this == that) && !that.isPlusTimesPower()) {
+      if (that.isZero()) {
+        return F.C0;
+      }
+      if (that.isOne()) {
+        return this;
+      }
+      return F.Times(this, that);
+    }
+    return ISymbol.super.times(that);
   }
 
   @Override

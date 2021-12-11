@@ -699,6 +699,27 @@ public class ComplexSym implements IComplex {
   }
 
   @Override
+  public IExpr power(final IExpr that) {
+    if (that instanceof IInteger) {
+      if (that.isZero()) {
+        if (!this.isZero()) {
+          return F.C1;
+        }
+        return IComplex.super.power(that);
+      } else if (that.isOne()) {
+        return this;
+      } else if (that.isMinusOne()) {
+        return inverse();
+      }
+      long n = ((IInteger) that).toLongDefault();
+      if (n != Long.MIN_VALUE) {
+        return power(n);
+      }
+    }
+    return IComplex.super.power(that);
+  }
+
+  @Override
   public IComplex pow(final int n) {
 
     if ((n == 0) && fReal.isZero() && fImaginary.isZero()) {

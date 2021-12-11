@@ -425,11 +425,10 @@ public class BigIntegerSym extends AbstractIntegerSym {
   public int intValue() {
     return fBigIntValue.intValue();
   }
-
-  /** @return */
+ 
   @Override
   public IRational inverse() {
-    if (isOne()) {
+    if (isOne() || isMinusOne()) {
       return this;
     }
     if (NumberUtil.isNegative(fBigIntValue)) {

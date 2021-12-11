@@ -930,6 +930,27 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return IInteger.super.plus(that);
   }
 
+  @Override
+  public IExpr power(final IExpr that) {
+    if (that instanceof IInteger) {
+      if (that.isZero()) {
+        if (!this.isZero()) {
+          return F.C1;
+        }
+        return IInteger.super.power(that);
+      } else if (that.isOne()) {
+        return this;
+      } else if (that.isMinusOne()) {
+        return inverse();
+      }
+      long n = ((IInteger) that).toLongDefault();
+      if (n != Long.MIN_VALUE) {
+        return power(n);
+      }
+    }
+    return IInteger.super.power(that);
+  }
+
   /** {@inheritDoc} */
   @Override
   public final IInteger powerRational(final long exponent) throws ArithmeticException {

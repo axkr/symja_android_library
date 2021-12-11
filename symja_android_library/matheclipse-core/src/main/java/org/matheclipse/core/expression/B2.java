@@ -370,6 +370,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public boolean isPlusTimesPower() {
+      return true;
+    }
+
+    @Override
     public boolean isPower() {
       return false;
     }
@@ -438,6 +443,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public boolean isPlus() {
       return false;
+    }
+
+    @Override
+    public boolean isPlusTimesPower() {
+      return true;
     }
 
     @Override
@@ -553,6 +563,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IASTMutable copy() {
       return new Times(arg1, arg2);
+    }
+
+    @Override
+    public boolean isPlusTimesPower() {
+      return true;
     }
 
     @Override
@@ -811,7 +826,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   public boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
     return stopPredicate.test(arg1, arg2);
   }
-  
+
   /** {@inheritDoc} */
   @Override
   public IAST filter(
@@ -1070,6 +1085,12 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public boolean isPlus() {
     return head() == S.Plus;
+  }
+
+  @Override
+  public boolean isPlusTimesPower() {
+    final ISymbol head = head();
+    return head == S.Plus || head == S.Times || head == S.Power;
   }
 
   /** {@inheritDoc} */

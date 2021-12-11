@@ -385,7 +385,7 @@ public class IntegerSym extends AbstractIntegerSym {
   /** @return */
   @Override
   public IRational inverse() {
-    if (isOne()) {
+    if (isOne() || isMinusOne()) {
       return this;
     }
     if (fIntValue < 0) {
