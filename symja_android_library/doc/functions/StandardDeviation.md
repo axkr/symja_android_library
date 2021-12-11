@@ -40,4 +40,4 @@ Sqrt((-1+E)*E)
 
 ### Github
 
-* [Implementation of StandardDeviation](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L6108) 
+* [Implementation of StandardDeviation](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L6114) 

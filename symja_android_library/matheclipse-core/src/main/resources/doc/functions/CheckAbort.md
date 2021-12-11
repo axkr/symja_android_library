@@ -15,3 +15,7 @@ CheckAbort(expr, failure-expr)
 >> CheckAbort(abc; -1, 41) + 1
 0
 ```
+
+### Github
+
+* [Implementation of CheckAbort](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L387) 

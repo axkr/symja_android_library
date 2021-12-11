@@ -14,4 +14,4 @@ BarChart(list-of-values, options)
 
 ### Github
 
-* [Implementation of BarChart](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ManipulateFunction.java#L1925) 
+* [Implementation of BarChart](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ManipulateFunction.java#L1957) 

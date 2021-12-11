@@ -55,4 +55,4 @@ x^2 + y^2
 
 ### Github
 
-* [Implementation of OutputStream](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FileFunctions.java#L807) 
+* [Implementation of OutputStream](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FileFunctions.java#L799) 

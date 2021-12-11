@@ -23,4 +23,4 @@ See:
 
 ### Github
 
-* [Implementation of ChessboardDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ClusteringFunctions.java#L211) 
+* [Implementation of ChessboardDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ClusteringFunctions.java#L207) 

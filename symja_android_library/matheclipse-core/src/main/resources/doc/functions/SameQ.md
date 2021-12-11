@@ -26,4 +26,4 @@ Unlike `Equal`, `SameQ` only yields `True` if `x` and `y` have the same type:
 
 ### Github
 
-* [Implementation of SameQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L3585) 
+* [Implementation of SameQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L3571) 
