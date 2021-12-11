@@ -596,6 +596,8 @@ public class IOFunctions {
     "The argument is not a rule or a list of rules.", //
     "invdt",
     "The argument `1` is not a valid Association.", //
+    "invdt2",
+    "The argument `1` is not a rule or a list of rules.", //
     "invidx2",
     "Index `1` should be a machine sized integer between `2` and `3`.", //
     "invrl",

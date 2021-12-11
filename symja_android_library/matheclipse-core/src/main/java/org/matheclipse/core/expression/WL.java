@@ -214,7 +214,7 @@ public class WL {
           return ast;
         case WXF_CONSTANTS.Association:
           length = parseLength();
-          ASTAssociation assoc = new ASTAssociation(length);
+          ASTAssociation assoc = new ASTAssociation();
           for (int i = 0; i < length; i++) {
             value = array[position++];
             IExpr ruleHead = S.Rule;

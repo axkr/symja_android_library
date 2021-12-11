@@ -2,7 +2,6 @@ package org.matheclipse.core.visit;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -49,7 +48,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
     return F.NIL;
   }
 
-  private IExpr getSlotSequence(IntegerSym ii) {
+  private IExpr getSlotSequence(IInteger ii) {
     int i = ii.toIntDefault();
     if (i >= 0 && i <= astSlots.size()) {
       IASTAppendable result = F.ast(S.Sequence, astSlots.size());
@@ -61,28 +60,32 @@ public class VisitorReplaceSlots extends VisitorExpr {
     return F.NIL;
   }
 
-  private int getSlotSequence(IASTAppendable ast, int pos, IntegerSym ii) {
-    int i = ii.toIntDefault();
-    if (i >= 0 && i < astSlots.size()) {
-      ast.remove(pos);
-      for (int j = i; j < astSlots.size(); j++) {
-        ast.append(pos++, astSlots.get(j));
-      }
+  /**
+   * @param ast
+   * @param pos
+   * @param startSlot it is assumed that <code>startSlot>=0 && startSlot < astSlots.size()</code>
+   * @return
+   */
+  private int getSlotSequence(IASTAppendable ast, int pos, int startSlot) {
+    for (int j = startSlot; j < astSlots.size(); j++) {
+      ast.append(pos++, astSlots.get(j));
     }
     return pos;
   }
 
   @Override
   public IExpr visit(IASTMutable ast) {
-    if (ast.isSlot()) {
-      if (ast.arg1().isInteger()) {
-        return getSlot((IInteger) ast.arg1());
-      } else if (ast.arg1().isString()) {
-        return getSlot((IStringX) ast.arg1());
+    if (ast.size() == 2) {
+      final IExpr arg1 = ast.arg1();
+      if (ast.isSlot()) {
+        if (arg1.isInteger()) {
+          return getSlot((IInteger) arg1);
+        } else if (arg1.isString()) {
+          return getSlot((IStringX) arg1);
+        }
+      } else if (ast.isSlotSequence() && arg1.isInteger()) {
+        return getSlotSequence((IInteger) arg1);
       }
-    }
-    if (ast.isSlotSequence() && ast.arg1().isInteger()) {
-      return getSlotSequence((IntegerSym) ast.arg1());
     }
     return visitAST(ast);
   }
@@ -99,11 +102,12 @@ public class VisitorReplaceSlots extends VisitorExpr {
       arg = ast.get(i);
       if (!arg.isPureFunction()) {
         if (arg.isSlotSequence()) {
-          IAST slotSequence = (IAST) arg;
-          if (slotSequence.arg1().isInteger()) {
-            // something may be evaluated - return a new IAST:
-            result = ast.copyAppendable(astSlots.argSize());
-            j = getSlotSequence(result, i, (IntegerSym) slotSequence.arg1());
+          int sequ = ((IAST) arg).arg1().toIntDefault();
+          // something may be evaluated - return a new IAST:
+          result = ast.copyAppendable(astSlots.argSize());
+          result.remove(j);
+          if (sequ >= 0 && sequ < astSlots.size()) {
+            j = getSlotSequence(result, i, sequ);
             i++;
           }
           break;
@@ -124,11 +128,12 @@ public class VisitorReplaceSlots extends VisitorExpr {
         arg = ast.get(i);
         if (!arg.isPureFunction()) {
           if (arg.isSlotSequence()) {
-            IAST slotSequence = (IAST) arg;
-            if (slotSequence.arg1().isInteger()) {
-              j = getSlotSequence(result, j, (IntegerSym) slotSequence.arg1());
-              i++;
+            int sequ = ((IAST) arg).arg1().toIntDefault();
+            result.remove(j);
+            if (sequ >= 0 && sequ < astSlots.size()) {
+              j = getSlotSequence(result, j, sequ);
             }
+            i++;
             continue;
           }
           temp = arg.accept(this);

@@ -1005,6 +1005,9 @@ public interface IExpr
    * If this is of type {@link IAST}, find the first argument position, which equals <code>expr
    * </code>. The search starts at index <code>1</code>. Otherwise return <code>-1</code>.
    *
+   * <p><b>Note</b>: If this is an <code>IAssociation</code> the position of the rule will be
+   * searched.
+   *
    * @param expr
    * @return <code>-1</code> if no position was found
    */
@@ -1015,6 +1018,9 @@ public interface IExpr
   /**
    * If this is of type {@link IAST}, find the first argument position, which fulfills the <code>
    * predicate</code>. The search starts at index <code>1</code>. Otherwise return <code>-1</code>.
+   *
+   * <p><b>Note</b>: If this is an <code>IAssociation</code> the position of the rule will be
+   * searched.
    *
    * @param predicate
    * @return the index of the first occurrence of the specified predicate, or <code>-1</code> if no

@@ -10,7 +10,6 @@ import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
-import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -820,15 +819,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
   @Override
   public String toString() {
-    try {
-      StringBuilder sb = new StringBuilder();
-      OutputFormFactory.get()
-          .convertInteger(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
-      return sb.toString();
-    } catch (Exception e1) {
-      // fall back to simple output format
-      return fBigIntValue.toString();
-    }
+    return fBigIntValue.toString();
   }
 
   @Override

@@ -328,6 +328,11 @@
 				<version>2.15.0</version>
 			</dependency>
 
+			<dependency>
+				<groupId>org.organicdesign</groupId>
+				<artifactId>Paguro</artifactId>
+				<version>3.6.0</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

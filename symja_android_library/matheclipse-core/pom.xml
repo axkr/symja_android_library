@@ -42,7 +42,7 @@
 			<groupId>de.uni-mannheim.rz.krum</groupId>
 			<artifactId>jas</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apfloat</groupId>
 			<artifactId>apfloat</artifactId>
@@ -112,6 +112,11 @@
 		<dependency>
 			<groupId>com.univocity</groupId>
 			<artifactId>univocity-parsers</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.organicdesign</groupId>
+			<artifactId>Paguro</artifactId> 
 		</dependency>
 
 		<!-- logging dependencies -->

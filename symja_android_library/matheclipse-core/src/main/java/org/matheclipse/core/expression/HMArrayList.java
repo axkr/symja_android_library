@@ -320,10 +320,7 @@ public abstract class HMArrayList extends AbstractAST
     int size = lastIndex - firstIndex;
     if (location < 0 || location > size) {
       throw new IndexOutOfBoundsException(
-          "Index: "
-              + Integer.valueOf(location)
-              + ", Size: "
-              + Integer.valueOf(lastIndex - firstIndex));
+          "Index: " + location + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
     }
     Object[] dumparray = collection.toArray();
     int growSize = dumparray.length;

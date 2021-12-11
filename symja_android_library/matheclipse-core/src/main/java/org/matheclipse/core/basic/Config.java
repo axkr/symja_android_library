@@ -116,6 +116,12 @@ public class Config {
   /** Maximum number of loop runs in some Symja functions */
   public static long MAX_LOOP_COUNT = Long.MAX_VALUE;
 
+  /**
+   * The minimum capacity of elements needed in an {@link IAST} to switch to persistence list
+   * implementation with structural sharing
+   */
+  public static final int MIN_LIMIT_PERSISTENT_LIST = 32;
+
   static {
     EXPR_CACHE =
         CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();

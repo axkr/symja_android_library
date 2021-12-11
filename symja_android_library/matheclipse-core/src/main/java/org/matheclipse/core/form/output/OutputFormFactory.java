@@ -372,23 +372,23 @@ public class OutputFormFactory {
   // return str;
   // }
 
-  public void convertInteger(
-      final Appendable buf, final IInteger i, final int precedence, boolean caller)
+  public void convertInteger(final Appendable buf, IInteger i, final int precedence, boolean caller)
       throws IOException {
     final boolean isNegative = i.isNegative();
-    BigInteger bigNumerator = i.toBigNumerator();
     if (!isNegative && caller == PLUS_CALL) {
       append(buf, fInputForm ? " + " : "+");
     }
     if (isNegative && (Precedence.PLUS < precedence)) {
       append(buf, "(");
     }
+    final String str;
     if (isNegative) {
-      bigNumerator = bigNumerator.negate();
+      str = i.toString().substring(1);
       append(buf, fInputForm && (caller == PLUS_CALL) ? " - " : "-");
+    } else {
+      str = i.toString();
     }
 
-    final String str = bigNumerator.toString();
     if ((str.length() + getColumnCounter() > Config.MAX_OUTPUT_LINE)) {
       if (getColumnCounter() > 40) {
         newLine(buf);
@@ -1081,6 +1081,9 @@ public class OutputFormFactory {
         return;
       } else if (o.isAssociation()) {
         convertAssociation(buf, (IAssociation) o);
+        return;
+      } else if (o.isAST(S.Association, 1)) {
+        buf.append("<||>");
         return;
       }
 

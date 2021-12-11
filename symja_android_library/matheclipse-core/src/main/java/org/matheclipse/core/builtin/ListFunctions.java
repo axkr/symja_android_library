@@ -43,7 +43,6 @@ import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.Sequence;
-import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -3491,7 +3490,7 @@ public final class ListFunctions {
       }
 
       positionOfHeads++;
-      IAssociation result = F.assoc(map.size());
+      IAssociation result = F.assoc();
       IExpr reduce = (ast.isAST3() && positionOfHeads >= listOfHeads.size()) ? ast.arg3() : F.NIL;
       for (Map.Entry<IExpr, IASTAppendable> entry : map.entrySet()) {
         IExpr temp;
@@ -3650,9 +3649,16 @@ public final class ListFunctions {
           }
           if (i > 0 && i <= arg1AST.size()) {
             return arg1AST.appendAtClone(i, arg2);
+          } else {
+            // Cannot insert at position `1` in `2`.
+            return IOFunctions.printMessage(ast.topHead(), "ins", F.List(arg3, arg1), engine);
           }
+        } catch (final ArgumentTypeException ate) {
+          IOFunctions.printMessage(ast.topHead(), ate, engine);
+          return arg1;
         } catch (final IndexOutOfBoundsException e) {
-          LOGGER.debug("Insert.evaluate() failed", e);
+          // Cannot insert at position `1` in `2`.
+          return IOFunctions.printMessage(ast.topHead(), "ins", F.List(arg3, arg1), engine);
         }
       }
       return F.NIL;
@@ -6213,7 +6219,7 @@ public final class ListFunctions {
       IExpr arg1 = functionList.arg1();
       if (arg1.isAssociation()) {
         IAssociation assoc = (IAssociation) arg1;
-        return assoc.reverse(new ASTAssociation(arg1.size(), false));
+        return assoc.reverse(F.assoc());
       }
       if (arg1.isASTOrAssociation()) {
         IAST list = (IAST) arg1;

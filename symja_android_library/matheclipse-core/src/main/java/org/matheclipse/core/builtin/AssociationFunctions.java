@@ -14,7 +14,6 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.MutableInt;
-import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
@@ -264,7 +263,7 @@ public class AssociationFunctions {
             }
           }
 
-          IAssociation assoc = F.assoc(assocList.size());
+          IAssociation assoc = F.assoc();
           for (int i = 1; i < assocList.size(); i++) {
             final IExpr arg = assocList.get(i);
             if (arg.isASTOrAssociation()) {
@@ -387,7 +386,7 @@ public class AssociationFunctions {
     private static IExpr associationMap(ISymbol symbol, IExpr arg1, IExpr arg2, EvalEngine engine) {
       if (arg2.isList()) {
         IAST list2 = (IAST) arg2;
-        IAssociation result = F.assoc(list2.size());
+        IAssociation result = F.assoc(); // list2.size());
         for (int i = 1; i < list2.size(); i++) {
           final IExpr function = engine.evaluate(F.unaryAST1(arg1, list2.get(i)));
           result.append(F.binaryAST2(symbol, list2.get(i), function));
@@ -531,7 +530,7 @@ public class AssociationFunctions {
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
         Map<IExpr, MutableInt> histogram = MutableInt.createHistogram(list);
-        IAssociation assoc = new ASTAssociation(histogram.size(), false);
+        IAssociation assoc = F.assoc();
         for (Map.Entry<IExpr, MutableInt> elem : histogram.entrySet()) {
           assoc.appendRule(F.Rule(elem.getKey(), F.ZZ(elem.getValue().value())));
         }
@@ -743,7 +742,7 @@ public class AssociationFunctions {
       if (length == assoc.size() - 1) {
         return assoc;
       }
-      IAssociation result = F.assoc(length);
+      IAssociation result = F.assoc();
       if (length > 0) {
         for (int i = 0; i < length; i++) {
           result.appendRule(assoc.getRule(items[i]));
@@ -865,7 +864,7 @@ public class AssociationFunctions {
               str.charAt(i), //
               (k, v) -> (v == null) ? new MutableInt(1) : v.increment());
         }
-        IAssociation assoc = new ASTAssociation(map.size(), false);
+        IAssociation assoc = F.assoc();
         for (Map.Entry<Character, MutableInt> elem : map.entrySet()) {
           assoc.appendRule(F.Rule(F.$str(elem.getKey()), F.ZZ(elem.getValue().value())));
         }
@@ -1089,7 +1088,7 @@ public class AssociationFunctions {
     private static IAST keyTake(final IAST expr, final IAST list) {
       final int size = list.size();
       // final IASTAppendable assoc = F.assoc(expr);
-      final IASTAppendable resultAssoc = F.assoc(10 > size ? size : 10);
+      final IASTAppendable resultAssoc = F.assoc(); // 10 > size ? size : 10);
       for (int i = 1; i < size; i++) {
         final IExpr rule = expr.getRule(list.get(i));
         if (rule.isPresent()) {

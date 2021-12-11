@@ -140,6 +140,16 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   /** The <code>Times(...)</code> expression was determined implicitly in the expression parser. */
   public static final int TIMES_PARSED_IMPLICIT = 0x00200000;
 
+  public static final int IS_NUMERIC_FUNCTION = 0x00400000;
+
+  public static final int IS_NOT_NUMERIC_FUNCTION = 0x00800000;
+
+  public static final int IS_NUMERIC_FUNCTION_OR_LIST = 0x01000000;
+
+  public static final int IS_NOT_NUMERIC_FUNCTION_OR_LIST = 0x02000000;
+
+  public static final int IS_NUMERIC_MASK = 0x03C00000;
+
   default IExpr acceptChecked(IVisitor visitor) {
     try {
       return accept(visitor);
@@ -344,7 +354,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
 
   /**
    * Return a copy of the pure <code>IAST</code> instance (the elements themselves are not copied).
-   * Additionally to the <code>copy()</code> method, if this is a {@link IAssociation} the valus of
+   * Additionally to the <code>copy()</code> method, if this is a {@link IAssociation} the values of
    * the rules are copied.
    *
    * @return a copy of this <code>IAST</code> instance.
@@ -636,6 +646,9 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * Find the first argument position, where the the <code>function</code> doesn't return <code>
    * F.NIL</code>. The search starts at index <code>1</code>.
    *
+   * <p><b>Note</b>: If this is an <code>IAssociation</code> the rule at the position will be
+   * returned.
+   *
    * @param function
    * @return <code>F.NIL</code> if no position was found
    */
@@ -705,6 +718,9 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * </code> and return <code>true</code> if all of the arguments starting from index <code>
    * startOffset</code> satisfy the predicate.
    *
+   * <p><b>Note</b>: If this is an <code>IAssociation</code> the rule at the position will be
+   * returned.
+   *
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @param startOffset start offset from which the element have to be tested
    * @return <code>true</code> if the predicate is true for all elements or <code>false</code>
@@ -729,6 +745,9 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST
    * </code> and return <code>true</code> if all of the arguments starting from index <code>
    * startOffset</code> satisfy the predicate.
+   *
+   * <p><b>Note</b>: If this is an <code>IAssociation</code> the rule at the position will be
+   * returned.
    *
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @param startOffset start offset from which the element have to be tested
@@ -1000,7 +1019,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   default boolean isASTOrAssociation() {
     return true;
   }
-  
+
   /**
    * Are the given evaluation flags disabled for this list ?
    *

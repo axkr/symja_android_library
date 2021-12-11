@@ -54,8 +54,16 @@ public class AssociationTest extends AbstractTestCase {
     check(
         "assoc = <|\"A\" -> <|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>|>", //
         "<|A-><|a->1,b->2,c->3|>|>");
+    //    for (int i = 0; i < 300000; i++) {
+    //      check(
+    //          "AssociateTo(assoc, \"" + i + "\" -> 11);", //
+    //          "");
+    //    }
     check(
         "AssociateTo(assoc, \"A\" -> 11)", //
+        "<|A->11|>");
+    check(
+        "assoc", //
         "<|A->11|>");
 
     check(
@@ -66,6 +74,9 @@ public class AssociationTest extends AbstractTestCase {
         "<|a->11,b->2,c->3|>");
     check(
         "AssociateTo(assoc, d -> 4)", //
+        "<|a->11,b->2,c->3,d->4|>");
+    check(
+        "assoc", //
         "<|a->11,b->2,c->3,d->4|>");
 
     check(
@@ -80,6 +91,12 @@ public class AssociationTest extends AbstractTestCase {
     check(
         "AppendTo(assoc, assoc2)", //
         "<|a->1,b->2,c->3|>");
+    check(
+        "assoc", //
+        "<|a->1,b->2,c->3|>");
+    check(
+        "assoc2", //
+        "<|c->3|>");
 
     check(
         "a = {Association({a -> 1, b -> 2}), Association({c -> 3, d -> 4})}", //
@@ -464,7 +481,6 @@ public class AssociationTest extends AbstractTestCase {
     check(
         "KeySelect(r, MatchQ(#,alpha|x)&)", //
         "<|alpha->2,x->4|>");
-
     check(
         "KeySelect(<|1 -> a, 2 -> b, 3 -> c|>, OddQ)", //
         "<|1->a,3->c|>");

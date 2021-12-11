@@ -22,7 +22,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.MemoryLimitExceeded;
-import org.matheclipse.core.expression.ASTAssociation;
 import org.matheclipse.core.expression.AbstractAST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -395,7 +394,7 @@ public class ASTDataset extends AbstractAST
     int size = fTable.rowCount();
     for (int k = 0; k < size; k++) {
       Row row = fTable.row(k);
-      IAssociation assoc = new ASTAssociation(row.columnCount(), false);
+      IAssociation assoc = F.assoc();
       for (int j = 0; j < row.columnCount(); j++) {
         String columnName = names.get(j);
         IStringX colName = namesStr.get(j);

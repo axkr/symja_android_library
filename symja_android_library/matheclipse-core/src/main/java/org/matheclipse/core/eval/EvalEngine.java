@@ -1539,7 +1539,7 @@ public class EvalEngine implements Serializable {
    * @see #evaluateNIL(IExpr)
    */
   private final IExpr evalLoop(final IExpr expr) {
-    if (!expr.isPresent() || expr == null) {
+    if (expr == null || !expr.isPresent()) {
       if (Config.FUZZ_TESTING) {
         throw new NullPointerException();
       }

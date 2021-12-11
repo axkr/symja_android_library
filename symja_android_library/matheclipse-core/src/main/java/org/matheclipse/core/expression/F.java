@@ -2046,17 +2046,8 @@ public class F extends S {
     return new ASTAssociation(listOfRules);
   }
 
-  /**
-   * Create an association and allocate the given capacity for the rules.
-   *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Association.md">Association</a>
-   *
-   * @param capacity
-   * @return
-   */
-  public static IAssociation assoc(final int capacity) {
-    return new ASTAssociation(capacity, false);
+  public static IAssociation assoc() {
+    return new ASTAssociation();
   }
 
   /**
@@ -2124,6 +2115,9 @@ public class F extends S {
    * @return
    */
   public static IASTAppendable ast(final IExpr head, final int initialCapacity) {
+    if (initialCapacity > Config.MIN_LIMIT_PERSISTENT_LIST) {
+      return ASTRRBTree.newInstance(initialCapacity, head);
+    }
     return AST.newInstance(initialCapacity, head);
   }
 
@@ -3384,8 +3378,12 @@ public class F extends S {
     return function(Dot, a);
   }
 
-  public static IAST Dot(final IExpr a0, final IExpr a1) {
-    return new AST2(Dot, a0, a1);
+  public static IAST Dot(final IExpr a, final IExpr b) {
+    return new AST2(Dot, a, b);
+  }
+
+  public static IAST Dot(final IExpr a, final IExpr b, final IExpr c) {
+    return new AST3(Dot, a, b, c);
   }
 
   public static IAST Drop(final IExpr list, final IExpr a1) {
@@ -3398,6 +3396,14 @@ public class F extends S {
 
   public static IAST DSolve(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(DSolve, a0, a1, a2);
+  }
+
+  public static IAST Eigenvalues(final IExpr m) {
+    return new AST1(Eigenvalues, m);
+  }
+
+  public static IAST Eigenvectors(final IExpr m) {
+    return new AST1(Eigenvectors, m);
   }
 
   public static IAST Element(final IExpr x, final IExpr domain) {

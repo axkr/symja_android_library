@@ -194,125 +194,107 @@ public abstract class AbstractAST implements IASTMutable {
     public boolean append(IExpr object) {
       ArgumentTypeException.throwNIL();
       return false;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public void append(int location, IExpr object) {
       ArgumentTypeException.throwNIL();
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean appendAll(Collection<? extends IExpr> collection) {
       ArgumentTypeException.throwNIL();
       return false;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map) {
       ArgumentTypeException.throwNIL();
       return false;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean appendAll(IAST ast, int startPosition, int endPosition) {
       ArgumentTypeException.throwNIL();
       return false;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean appendAll(IExpr[] args, int startPosition, int endPosition) {
       ArgumentTypeException.throwNIL();
       return false;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean appendAll(int location, Collection<? extends IExpr> collection) {
       ArgumentTypeException.throwNIL();
       return false;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition) {
       ArgumentTypeException.throwNIL();
       return false;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean appendArgs(IAST ast) {
       ArgumentTypeException.throwNIL();
       return false;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public final boolean appendArgs(IAST ast, int untilPosition) {
       ArgumentTypeException.throwNIL();
       return false;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public IASTAppendable appendArgs(int start, int end, IntFunction<IExpr> function) {
       ArgumentTypeException.throwNIL();
       return F.NIL;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public IASTAppendable appendArgs(int end, IntFunction<IExpr> function) {
       ArgumentTypeException.throwNIL();
       return F.NIL;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public IAST appendOneIdentity(IAST subAST) {
       ArgumentTypeException.throwNIL();
       return F.NIL;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public IExpr arg1() {
       ArgumentTypeException.throwNIL();
       return F.NIL;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public IExpr arg2() {
       ArgumentTypeException.throwNIL();
       return F.NIL;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public IExpr arg3() {
       ArgumentTypeException.throwNIL();
       return F.NIL;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public IExpr arg4() {
       ArgumentTypeException.throwNIL();
       return F.NIL;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public IExpr arg5() {
       ArgumentTypeException.throwNIL();
       return F.NIL;
-      // throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
@@ -325,21 +307,12 @@ public abstract class AbstractAST implements IASTMutable {
     public Set<IExpr> asSet() {
       ArgumentTypeException.throwNIL();
       return null;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public void clear() {
       ArgumentTypeException.throwNIL();
-      // throw new UnsupportedOperationException();
     }
-
-    //    @Override
-    //    public IAST clone() {
-    //      ArgumentTypeException.throwNIL();
-    //      return F.NIL;
-    ////       throw new UnsupportedOperationException();
-    //    }
 
     @Override
     public boolean contains(Object object) {
@@ -350,21 +323,18 @@ public abstract class AbstractAST implements IASTMutable {
     public IAssociation copy() {
       ArgumentTypeException.throwNIL();
       return null;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public IASTAppendable copyAppendable() {
       ArgumentTypeException.throwNIL();
       return null;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
     public IASTAppendable copyAppendable(int additionalCapacity) {
       ArgumentTypeException.throwNIL();
       return null;
-      // throw new UnsupportedOperationException();
     }
 
     @Override
@@ -913,20 +883,30 @@ public abstract class AbstractAST implements IASTMutable {
       return F.NIL;
     }
 
-    /**
-     * Replaces the element at the specified location in this {@code ArrayList} with the specified
-     * object.
-     *
-     * @param location the index at which to put the specified object.
-     * @param object the object to add.
-     * @return the previous element at the index.
-     * @throws IndexOutOfBoundsException when {@code location < 0 || >= size()}
-     */
     @Override
     public IExpr set(int location, IExpr object) {
       ArgumentTypeException.throwNIL();
       return F.NIL;
-      // throw new UnsupportedOperationException();
+    }
+
+    public IASTMutable setArgs(int start, int end, IntFunction<IExpr> function) {
+      ArgumentTypeException.throwNIL();
+      return F.NIL;
+    }
+
+    public IASTMutable setArgs(int end, IntFunction<IExpr> function) {
+      ArgumentTypeException.throwNIL();
+      return F.NIL;
+    }
+
+    public IExpr setValue(final int location, final IExpr value) {
+      ArgumentTypeException.throwNIL();
+      return F.NIL;
+    }
+
+    public IExpr setPart(IExpr value, final int... positions) {
+      ArgumentTypeException.throwNIL();
+      return F.NIL;
     }
 
     public IASTAppendable setAtClone(int i, IExpr expr) {
@@ -2135,7 +2115,7 @@ public abstract class AbstractAST implements IASTMutable {
   public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
     final int size = size();
     for (int i = startOffset; i < size; i++) {
-      if (!predicate.test(get(i), i)) {
+      if (!predicate.test(getRule(i), i)) {
         return false;
       }
     }
@@ -2147,7 +2127,7 @@ public abstract class AbstractAST implements IASTMutable {
   public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
     final int size = size();
     for (int i = startOffset; i < size; i++) {
-      if (!predicate.test(get(i))) {
+      if (!predicate.test(getRule(i))) {
         return false;
       }
     }
@@ -2453,7 +2433,7 @@ public abstract class AbstractAST implements IASTMutable {
   @Override
   public int indexOf(final IExpr expr) {
     for (int i = 1; i < size(); i++) {
-      if (get(i).equals(expr)) {
+      if (getRule(i).equals(expr)) {
         return i;
       }
     }
@@ -2464,7 +2444,7 @@ public abstract class AbstractAST implements IASTMutable {
   @Override
   public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
     for (int i = fromIndex; i < size(); i++) {
-      if (predicate.test(get(i))) {
+      if (predicate.test(getRule(i))) {
         return i;
       }
     }
@@ -2475,7 +2455,7 @@ public abstract class AbstractAST implements IASTMutable {
   @Override
   public IExpr findFirst(Function<IExpr, IExpr> function) {
     for (int i = 1; i < size(); i++) {
-      IExpr temp = function.apply(get(i));
+      IExpr temp = function.apply(getRule(i));
       if (temp.isPresent()) {
         return temp;
       }
@@ -3667,10 +3647,39 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isNumericFunction(boolean allowList) {
-    if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute()
-        || (allowList && isList())) {
-      // check if all arguments are &quot;numeric&quot;
-      return forAll(x -> x.isNumericFunction(allowList), 1);
+
+    final int evalFlags = getEvalFlags();
+    if ((evalFlags & IAST.IS_NUMERIC_MASK) != IAST.NO_FLAG) {
+      if (allowList) {
+        if ((evalFlags & IAST.IS_NUMERIC_FUNCTION_OR_LIST) == IAST.IS_NUMERIC_FUNCTION_OR_LIST) {
+          return true;
+        } else if ((evalFlags & IAST.IS_NOT_NUMERIC_FUNCTION_OR_LIST)
+            == IAST.IS_NOT_NUMERIC_FUNCTION_OR_LIST) {
+          return false;
+        }
+      } else {
+        if ((evalFlags & IAST.IS_NUMERIC_FUNCTION) == IAST.IS_NUMERIC_FUNCTION) {
+          return true;
+        } else if ((evalFlags & IAST.IS_NOT_NUMERIC_FUNCTION) == IAST.IS_NOT_NUMERIC_FUNCTION) {
+          return false;
+        }
+      }
+    }
+    if (allowList) {
+      if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute() || isList()) {
+        // check if all arguments are &quot;numeric&quot;
+        boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
+        addEvalFlags(
+            forAll ? IAST.IS_NUMERIC_FUNCTION_OR_LIST : IAST.IS_NOT_NUMERIC_FUNCTION_OR_LIST);
+        return forAll;
+      }
+    } else {
+      if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute()) {
+        // check if all arguments are &quot;numeric&quot;
+        boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
+        addEvalFlags(forAll ? IAST.IS_NUMERIC_FUNCTION : IAST.IS_NOT_NUMERIC_FUNCTION);
+        return forAll;
+      }
     }
     return false;
   }
@@ -5011,7 +5020,7 @@ public abstract class AbstractAST implements IASTMutable {
   @Override
   public IASTMutable removeAtCopy(int position) {
     int size = size();
-    if (position < size) {
+    if (position < size && !isAssociation()) {
       switch (size) {
         case 2:
           switch (position) {
@@ -5418,15 +5427,23 @@ public abstract class AbstractAST implements IASTMutable {
       sb = null;
 
       final StringBuilder buf = new StringBuilder();
-      if (size() > 0 && isList()) {
-        buf.append('{');
+      if (size() > 0 && isListOrAssociation()) {
+        if (isList()) {
+          buf.append('{');
+        } else {
+          buf.append("<|");
+        }
         for (int i = 1; i < size(); i++) {
-          buf.append(get(i) == this ? "(this AST)" : String.valueOf(get(i)));
+          buf.append(getRule(i) == this ? "(this AST)" : String.valueOf(getRule(i)));
           if (i < argSize()) {
             buf.append(", ");
           }
         }
-        buf.append('}');
+        if (isList()) {
+          buf.append('}');
+        } else {
+          buf.append("|>");
+        }
         return buf.toString();
 
       } else if (isAST(S.Slot, 2) && (arg1().isReal())) {

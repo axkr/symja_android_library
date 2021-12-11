@@ -4,7 +4,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Set;
 import java.util.StringTokenizer;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -38,156 +37,6 @@ public class AST extends HMArrayList implements Externalizable {
 
   /** */
   private static final long serialVersionUID = 4295200630292148027L;
-
-  /** <a href="https://en.wikipedia.org/wiki/Proxy_pattern">Proxy</a> for an AST object. */
-  private static final class ASTProxy extends AbstractAST implements Externalizable {
-    /** */
-    private static final long serialVersionUID = -7027944101238962694L;
-
-    IAST fDelegate;
-    int fFirstIndex;
-
-    public ASTProxy() {
-      super();
-      // needed for serialization
-    }
-
-    public ASTProxy(IAST delegate, int firstIndex) {
-      this.fDelegate = delegate;
-      this.fFirstIndex = firstIndex;
-    }
-
-    @Override
-    public IExpr arg1() {
-      return fDelegate.get(fFirstIndex);
-    }
-
-    @Override
-    public IExpr arg2() {
-      return fDelegate.get(fFirstIndex + 1);
-    }
-
-    @Override
-    public IExpr arg3() {
-      return fDelegate.get(fFirstIndex + 2);
-    }
-
-    @Override
-    public IExpr arg4() {
-      return fDelegate.get(fFirstIndex + 3);
-    }
-
-    @Override
-    public IExpr arg5() {
-      return fDelegate.get(fFirstIndex + 4);
-    }
-
-    @Override
-    public Set<IExpr> asSet() {
-      return fDelegate.asSet();
-    }
-
-    public IAST oopy() {
-      return new ASTProxy(fDelegate, fFirstIndex);
-    }
-
-    @Override
-    public IASTAppendable copyAppendable() {
-      return fDelegate.copyFrom(fFirstIndex);
-    }
-
-    @Override
-    public IASTAppendable copyAppendable(int additionalCapacity) {
-      return copyAppendable();
-    }
-
-    @Override
-    public IASTMutable copy() {
-      return fDelegate.copyFrom(fFirstIndex);
-    }
-
-    @Override
-    public IExpr head() {
-      return fDelegate.head();
-    }
-
-    @Override
-    public IExpr get(int location) {
-      if (location == 0) {
-        return fDelegate.head();
-      }
-      return fDelegate.get(fFirstIndex + location - 1);
-    }
-
-    @Override
-    public IAST getItems(int[] items, int length) {
-      AST result = new AST(length, true);
-      result.set(0, head());
-      for (int i = 0; i < length; i++) {
-        result.set(i + 1, get(items[i]));
-      }
-      return result;
-    }
-
-    @Override
-    public int size() {
-      return fDelegate.size() - fFirstIndex + 1;
-    }
-
-    @Override
-    public IExpr[] toArray() {
-      throw new UnsupportedOperationException("ASTProxy#toArray()");
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public IAST rest() {
-      int last = size();
-      switch (last) {
-        case 1:
-          return this;
-        case 2:
-          return F.headAST0(head());
-      }
-      return new ASTProxy(fDelegate, fFirstIndex + 1);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public IAST removeFromStart(int firstPosition) {
-      if (firstPosition == 1) {
-        return this;
-      }
-      if (0 < firstPosition && firstPosition <= size()) {
-        int last = size();
-        int size = last - firstPosition + 1;
-        switch (size) {
-          case 1:
-            return F.headAST0(head());
-          case 2:
-            return F.unaryAST1(head(), get(last - 1));
-        }
-      }
-      return new ASTProxy(fDelegate, fFirstIndex + firstPosition - 1);
-    }
-
-    @Override
-    public IExpr set(int i, IExpr object) {
-      throw new UnsupportedOperationException("ASTProxy#set()");
-    }
-
-    @Override
-    public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-      fDelegate = (IAST) objectInput.readObject();
-      fFirstIndex = 1;
-    }
-
-    @Override
-    public void writeExternal(ObjectOutput objectOutput) throws IOException {
-      IASTAppendable ast = copyAppendable();
-      objectOutput.writeObject(ast);
-    }
-  }
 
   public static AST newInstance(final IExpr head) {
     AST ast = new AST(5, false);
@@ -436,6 +285,9 @@ public class AST extends HMArrayList implements Externalizable {
 
   @Override
   public IASTAppendable copyAppendable() {
+    if (size() > Config.MIN_LIMIT_PERSISTENT_LIST) {
+      return new ASTRRBTree(this);
+    }
     AST ast = new AST();
     // ast.fProperties = null;
     ast.array = array.clone();
@@ -447,9 +299,14 @@ public class AST extends HMArrayList implements Externalizable {
 
   @Override
   public IASTAppendable copyAppendable(int additionalCapacity) {
+    final int size = size();
+    if (size > Config.MIN_LIMIT_PERSISTENT_LIST
+        || additionalCapacity > Config.MIN_LIMIT_PERSISTENT_LIST) {
+      return new ASTRRBTree(this);
+    }
     AST ast = new AST();
     // ast.fProperties = null;
-    if (size() + additionalCapacity > array.length) {
+    if (size + additionalCapacity > array.length) {
       ast.array = new IExpr[size() + additionalCapacity];
       System.arraycopy(array, 0, ast.array, 0, array.length);
     } else {
@@ -510,7 +367,8 @@ public class AST extends HMArrayList implements Externalizable {
         if (isOrderlessAST()) {
           return super.rest();
         }
-        return new ASTProxy(this, 2);
+        //        return new ASTProxy(this, 2);
+        return super.rest();
     }
   }
 
@@ -546,15 +404,16 @@ public class AST extends HMArrayList implements Externalizable {
           return F.headAST0(head());
         case 2:
           return F.unaryAST1(head(), get(last - 1));
-          // case 3:
-          // return F.binaryAST2(head(), get(last - 2), get(last - 1));
-          // case 4:
-          // return F.ternaryAST3(head(), get(last - 3), get(last - 2), get(last - 1));
+        case 3:
+          return F.binaryAST2(head(), get(last - 2), get(last - 1));
+        case 4:
+          return F.ternaryAST3(head(), get(last - 3), get(last - 2), get(last - 1));
         default:
           if (isOrderlessAST()) {
             return copyFrom(firstPosition);
           }
-          return new ASTProxy(this, firstPosition);
+          //          return new ASTProxy(this, firstPosition);
+          return copyFrom(firstPosition);
       }
     } else {
       throw new IndexOutOfBoundsException(
