@@ -369,6 +369,8 @@ public final class Programming {
   }
 
   /**
+   *
+   *
    * <pre><code>CheckAbort(expr, failure-expr)
    * </code></pre>
    *
@@ -2174,6 +2176,7 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
       if (ast.isAST1()) {
         return ast.arg1();
       }
@@ -2211,10 +2214,9 @@ public final class Programming {
             return IOFunctions.printMessage(S.Part, "partd", F.List(ast), engine);
           }
         }
+        
         IAST arg1AST = (IAST) arg1;
-
         IExpr temp;
-
         int astSize = ast.size();
         for (int i = 2; i < astSize; i++) {
           temp = engine.evaluateNIL(ast.get(i));
@@ -2233,6 +2235,7 @@ public final class Programming {
         }
         return part(arg1AST, ast, 2, engine);
       }
+
       return F.NIL;
     }
 
@@ -2628,6 +2631,8 @@ public final class Programming {
   }
 
   /**
+   *
+   *
    * <pre><code>Stack( )
    * </code></pre>
    *
@@ -2642,7 +2647,6 @@ public final class Programming {
    *
    * <pre><code>
    * </code></pre>
-   *
    */
   private static final class Stack extends AbstractCoreFunctionEvaluator {
 
@@ -3674,7 +3678,7 @@ public final class Programming {
       if (arg2.isList()) {
         IExpr temp = null;
         final IAST list = (IAST) arg2;
-        final IAssociation result = F.assoc(list.size());
+        final IAssociation result = F.assoc(); // list.size());
 
         for (int i = 1; i < list.size(); i++) {
           final IExpr listArg = list.get(i);
@@ -3688,19 +3692,29 @@ public final class Programming {
             if (ires.isPresent()) {
               if (p1 < ast.size()) {
                 if (ires.isASTOrAssociation()) {
+
                   temp = part((IAST) ires, ast, p1, engine);
                   if (temp.isPresent()) {
-                    result.appendRule(temp);
+                    try {
+                      result.appendRule(temp);
+                    } catch (IndexOutOfBoundsException ioobex) {
+                      return IOFunctions.printMessage(S.Part, "pkspec1", F.List(temp), engine);
+                    }
                   } else {
                     // an error occurred
                     return F.NIL;
                   }
+
                 } else {
                   // Part specification `1` is longer than depth of object.
                   return IOFunctions.printMessage(S.Part, "partd", F.List(ires), engine);
                 }
               } else {
-                result.appendRule(ires);
+                try {
+                  result.appendRule(ires);
+                } catch (IndexOutOfBoundsException ioobex) {
+                  return IOFunctions.printMessage(S.Part, "pkspec1", F.List(ires), engine);
+                }
               }
             } else {
               return F.NIL;

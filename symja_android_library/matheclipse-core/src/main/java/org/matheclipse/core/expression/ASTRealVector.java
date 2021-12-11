@@ -413,6 +413,10 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
     return true;
   }
 
+  public boolean isNumericFunction(boolean allowList) {
+    return allowList;
+  }
+  
   /**
    * Append a String composed of the elements of this vector joined together with the specified
    * {@code delimiter}.

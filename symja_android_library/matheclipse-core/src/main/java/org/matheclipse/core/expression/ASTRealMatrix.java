@@ -385,12 +385,14 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
   /** {@inheritDoc} */
   @Override
   public final int[] isMatrix(boolean setMatrixFormat) {
-    int[] dim = new int[2];
-    dim[0] = matrix.getRowDimension();
-    dim[1] = matrix.getColumnDimension();
-    return dim;
+    return new int[] {matrix.getRowDimension(), matrix.getColumnDimension()};
   }
 
+  /** {@inheritDoc} */
+  public boolean isNumericFunction(boolean allowList) {
+    return allowList;
+  }
+  
   /** {@inheritDoc} */
   @Override
   public int[] isPiecewise() {

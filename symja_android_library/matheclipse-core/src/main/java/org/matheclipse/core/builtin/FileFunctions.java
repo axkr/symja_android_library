@@ -125,32 +125,31 @@ public class FileFunctions {
   private static final class BeginPackage extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
- 
-        String contextName = Validate.checkContextName(ast, 1);
-        engine.beginPackage(contextName);
-        if (ast.isAST2()) {
-          IExpr arg2 = ast.arg2();
-          if (arg2.isList()) {
-            IAST needs = ((IAST) arg2).mapThread(F.Needs(F.Slot1), 1);
-            return engine.evaluate(needs);
-          }
-          return engine.evaluate(F.Needs(arg2));
-        }
 
-        if (Config.isFileSystemEnabled(engine)) {
-          for (int j = 2; j < ast.size(); j++) {
-            try (FileInputStream fis = new FileInputStream(ast.get(j).toString());
-                Reader r = new InputStreamReader(fis, StandardCharsets.UTF_8);
-                BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8)); ) {
-              Get.loadPackage(engine, reader);
-            } catch (IOException e) {
-              LOGGER.debug("BeginPackage.evaluate() failed", e);
-            }
+      String contextName = Validate.checkContextName(ast, 1);
+      engine.beginPackage(contextName);
+      if (ast.isAST2()) {
+        IExpr arg2 = ast.arg2();
+        if (arg2.isList()) {
+          IAST needs = ((IAST) arg2).mapThread(F.Needs(F.Slot1), 1);
+          return engine.evaluate(needs);
+        }
+        return engine.evaluate(F.Needs(arg2));
+      }
+
+      if (Config.isFileSystemEnabled(engine)) {
+        for (int j = 2; j < ast.size(); j++) {
+          try (FileInputStream fis = new FileInputStream(ast.get(j).toString());
+              Reader r = new InputStreamReader(fis, StandardCharsets.UTF_8);
+              BufferedReader reader =
+                  new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8)); ) {
+            Get.loadPackage(engine, reader);
+          } catch (IOException e) {
+            LOGGER.debug("BeginPackage.evaluate() failed", e);
           }
         }
-        return S.Null;
- 
+      }
+      return S.Null;
     }
 
     @Override
@@ -247,28 +246,29 @@ public class FileFunctions {
           if (arg1 instanceof OutputStreamExpr) {
             dataOutput = ((OutputStreamExpr) arg1).getDataOutput();
           }
-
-          IExpr arg2 = ast.arg2();
-          String typeStr = ast.isAST3() ? ast.arg3().toString() : "UnsignedInteger8";
-          if (typeStr.equals("Byte")) {
-            typeStr = "UnsignedInteger8";
-          }
-          byte typeByte = NumericArrayExpr.toType(typeStr);
-          if (typeByte == NumericArrayExpr.UNDEFINED) {
-            return S.$Failed;
-          }
-          if (arg2.isList()) {
-            IAST list = (IAST) arg2;
-            for (int i = 1; i < list.size(); i++) {
-
-              if (!writeType(dataOutput, list.get(i), typeByte)) {
-                return S.$Failed;
-              }
+          if (dataOutput != null) {
+            IExpr arg2 = ast.arg2();
+            String typeStr = ast.isAST3() ? ast.arg3().toString() : "UnsignedInteger8";
+            if (typeStr.equals("Byte")) {
+              typeStr = "UnsignedInteger8";
             }
+            byte typeByte = NumericArrayExpr.toType(typeStr);
+            if (typeByte == NumericArrayExpr.UNDEFINED) {
+              return S.$Failed;
+            }
+            if (arg2.isList()) {
+              IAST list = (IAST) arg2;
+              for (int i = 1; i < list.size(); i++) {
+
+                if (!writeType(dataOutput, list.get(i), typeByte)) {
+                  return S.$Failed;
+                }
+              }
+              return S.Null;
+            }
+            writeType(dataOutput, arg2, typeByte);
             return S.Null;
           }
-          writeType(dataOutput, arg2, typeByte);
-          return S.Null;
         } catch (RuntimeException | RangeException | TypeException | IOException e) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
           return F.$Failed;

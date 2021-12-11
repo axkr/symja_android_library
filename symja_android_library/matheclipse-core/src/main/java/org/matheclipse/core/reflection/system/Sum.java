@@ -158,11 +158,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
       return ((IAST) arg1).mapThread(ast, 1);
     }
     IAST preevaledSum = engine.preevalForwardBackwardAST(ast, 1);
-    IExpr result = evaluateSum(preevaledSum, engine);
-    if (result.isPresent()) {
-      return result;
-    }
-    return F.NIL;
+    return evaluateSum(preevaledSum, engine);
   }
 
   private static IExpr evaluateSum(final IAST preevaledSum, EvalEngine engine) {

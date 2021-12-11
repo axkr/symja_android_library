@@ -649,9 +649,7 @@ public class Pods {
     if ((formats & MATHCELL) != 0x00) {
       if (plainText != null && plainText.length() > 0) {
         try {
-          String html =
-              JSBuilder.buildMathcell(
-                  JSBuilder.MATHCELL_IFRAME_TEMPLATE, plainText);
+          String html = JSBuilder.buildMathcell(JSBuilder.MATHCELL_IFRAME_TEMPLATE, plainText);
           //          String html = MATHCELL_IFRAME;
           //          html = StringUtils.replace(html, "`1`", plainText);
           html = StringEscapeUtils.escapeHtml4(html);
@@ -671,9 +669,7 @@ public class Pods {
     if ((formats & JSXGRAPH) != 0x00) {
       if (plainText != null && plainText.length() > 0) {
         try {
-          String html =
-              JSBuilder.buildJSXGraph(
-                  JSBuilder.JSXGRAPH_IFRAME_TEMPLATE, plainText);
+          String html = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_IFRAME_TEMPLATE, plainText);
           //          String html = JSXGRAPH_IFRAME;
           //          html = StringUtils.replace(html, "`1`", plainText);
           html = StringEscapeUtils.escapeHtml4(html);
@@ -694,9 +690,7 @@ public class Pods {
     if ((formats & PLOTLY) != 0x00) {
       if (plainText != null && plainText.length() > 0) {
         try {
-          String html =
-              JSBuilder.buildPlotly(
-                  JSBuilder.PLOTLY_IFRAME_TEMPLATE, plainText);
+          String html = JSBuilder.buildPlotly(JSBuilder.PLOTLY_IFRAME_TEMPLATE, plainText);
           //          String html = PLOTLY_IFRAME;
           //          html = StringUtils.replace(html, "`1`", plainText);
           html = StringEscapeUtils.escapeHtml4(html);
@@ -1917,15 +1911,23 @@ public class Pods {
   /** package private */
   static IExpr parseInput(String inputStr, EvalEngine engine) {
     engine.setPackageMode(false);
-    final FuzzyParser parser = new FuzzyParser(engine);
     IExpr inExpr = F.NIL;
-    try {
-      inExpr = parser.parseFuzzyList(inputStr);
-    } catch (SyntaxError serr) {
-      // this includes syntax errors
-      LOGGER.debug("Pods.parseInput() failed", serr);
-      TeXParser texConverter = new TeXParser(engine);
-      inExpr = texConverter.toExpression(inputStr);
+    //    try {
+    //      inExpr = Ask.ask(inputStr, engine);
+    //    } catch (Exception ex) {
+    //      // this includes syntax errors
+    //      LOGGER.debug("Pods: Ask.ask() failed", ex);
+    //    }
+    if (!inExpr.isPresent()) {
+      final FuzzyParser parser = new FuzzyParser(engine);
+      try {
+        inExpr = parser.parseFuzzyList(inputStr);
+      } catch (SyntaxError serr) {
+        // this includes syntax errors
+        LOGGER.debug("Pods: FuzzyParser.parseFuzzyList() failed", serr);
+        TeXParser texConverter = new TeXParser(engine);
+        inExpr = texConverter.toExpression(inputStr);
+      }
     }
 
     if (inExpr == S.$Aborted) {
