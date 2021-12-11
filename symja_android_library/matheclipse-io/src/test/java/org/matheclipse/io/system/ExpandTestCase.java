@@ -11,8 +11,11 @@ import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sow;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.S.a;
+import static org.matheclipse.core.expression.S.b;
+import static org.matheclipse.core.expression.S.c;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
+import static org.matheclipse.core.expression.S.z;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalEngine;
@@ -28,7 +31,7 @@ public class ExpandTestCase extends AbstractTestCase {
 
   public void testExpand001() {
     IAST ast = Times(x, x);
-    IExpr temp = Algebra.expandAll(ast, null, false, false, false,EvalEngine.get());
+    IExpr temp = Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
     assertEquals(temp.toString(), "x^2");
   }
 
@@ -40,13 +43,13 @@ public class ExpandTestCase extends AbstractTestCase {
 
   public void testExpand003() {
     IAST ast = Power(Plus(x, y), C3);
-    IExpr temp = Algebra.expandAll(ast, null, false, false, false,EvalEngine.get());
+    IExpr temp = Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
     assertEquals(temp.toString(), "x^3+y^3+3*x^2*y+3*x*y^2");
   }
 
   public void testExpand004() {
     IAST ast = Plus(Sow(Power(a, 2)), C1);
-    IExpr temp = Algebra.expandAll(ast, null, false, false, false,EvalEngine.get());
+    IExpr temp = Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
     if (!temp.isPresent()) {
       temp = ast;
     }
@@ -56,7 +59,7 @@ public class ExpandTestCase extends AbstractTestCase {
   public void testExpand005() {
     // x / y
     IAST ast = Times(x, Power(y, -1));
-    IExpr temp = Algebra.expandAll(ast, null, true, false,false, EvalEngine.get());
+    IExpr temp = Algebra.expandAll(ast, null, true, false, false, EvalEngine.get());
     // because of sorting and flattening flags:
     assertEquals(temp, F.NIL);
 
@@ -85,11 +88,43 @@ public class ExpandTestCase extends AbstractTestCase {
     assertEquals(temp.toString(), "Tan[x]^2");
   }
 
-  //  public void testExpandPerformance() {
-  //    IAST ast = Power(Plus(F.Times(C2, w), x, y, F.Times(F.C3, z)), F.ZZ(400));
-  //    IExpr temp = Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
-  //    //    assertEquals(temp.toString(), " ");
-  //  }
+  public void testExpandPerformance001() {
+    // ExpandAll((a+b+2*c+x+y+3*z)^6)
+    IAST ast = Power(Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(6));
+    IAST temp = (IAST) Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
+    EvalEngine engine = EvalEngine.get();
+    temp = (IAST) engine.evaluate(temp);
+    // number of terms
+    assertEquals(temp.argSize(), 462);
+    assertEquals(temp.get(462).toString(), "729*z^6");
+  }
+
+  public void testExpandPerformance002() {
+    if (Config.EXPENSIVE_JUNIT_TESTS) {
+      // ExpandAll((a+b+2*c+x+y+3*z)^12)
+      IAST ast = Power(Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(12));
+      IAST temp = (IAST) Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
+      EvalEngine engine = EvalEngine.get();
+      temp = (IAST) engine.evaluate(temp);
+      // number of terms
+      assertEquals(temp.argSize(), 6188);
+      assertEquals(temp.get(6188).toString(), "531441*z^12");
+      assertEquals(temp.get(462).toString(), "5544*a^5*b^6*y");
+    }
+  }
+
+  public void testExpandPerformance003() {
+    if (Config.EXPENSIVE_JUNIT_TESTS) {
+      // ExpandAll((a+b+2*c+x+y+3*z)^24)
+      IAST ast = Power(Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(24));
+      IAST temp = (IAST) Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
+      EvalEngine engine = EvalEngine.get();
+      temp = (IAST) engine.evaluate(temp);
+      // number of terms
+      assertEquals(temp.argSize(), 118755);
+      assertEquals(temp.get(118755).toString(), "282429536481*z^24");
+    }
+  }
 
   public void testRationalFunction001() {
     check("PolynomialQ(x^2*(a+b*x^3)^16,x)", "True");

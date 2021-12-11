@@ -5918,6 +5918,9 @@ public final class Arithmetic {
           return arg1;
         }
       }
+      if (arg1.isNumber() && arg2.isNumber()) {
+        return F.NIL;
+      }
 
       // note: not a general rule
       // if (arg1.isMinusOne() && arg2.isPlus()) {

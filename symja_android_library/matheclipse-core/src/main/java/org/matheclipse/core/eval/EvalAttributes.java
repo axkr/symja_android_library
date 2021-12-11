@@ -1,10 +1,8 @@
 package org.matheclipse.core.eval;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
@@ -464,26 +462,28 @@ public class EvalAttributes {
     }
     if (ast.size() > 2) {
       if (!isSorted(ast, comparator)) {
-        final IExpr[] a = ast.toArray();
-        int end = a.length;
-        if (Config.FUZZ_TESTING) {
-          try {
-            Arrays.sort(a, 1, ast.size(), comparator);
-            for (int j = 1; j < end; j++) {
-              ast.set(j, a[j]);
-            }
-          } catch (java.lang.IllegalArgumentException iae) {
-            // java.util.TimSort.mergeHi(TimSort.java:899) - Comparison method violates its general
-            // contract!
-            LOGGER.error(ast, iae);
-            throw iae;
-          }
-        } else {
-          Arrays.sort(a, 1, ast.size(), comparator);
-          for (int j = 1; j < end; j++) {
-            ast.set(j, a[j]);
-          }
-        }
+        ast.sortInplace(comparator);
+        //        final IExpr[] a = ast.toArray();
+        //        int end = a.length;
+        //        if (Config.FUZZ_TESTING) {
+        //          try {
+        //            Arrays.sort(a, 1, ast.size(), comparator);
+        //            for (int j = 1; j < end; j++) {
+        //              ast.set(j, a[j]);
+        //            }
+        //          } catch (java.lang.IllegalArgumentException iae) {
+        //            // java.util.TimSort.mergeHi(TimSort.java:899) - Comparison method violates
+        // its general
+        //            // contract!
+        //            LOGGER.error(ast, iae);
+        //            throw iae;
+        //          }
+        //        } else {
+        //          Arrays.sort(a, 1, ast.size(), comparator);
+        //          for (int j = 1; j < end; j++) {
+        //            ast.set(j, a[j]);
+        //          }
+        //        }
         return true;
       }
     }

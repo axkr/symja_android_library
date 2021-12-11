@@ -4,7 +4,9 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +45,8 @@ import org.organicdesign.fp.collections.RrbTree.MutRrbt;
  *
  * @see AST
  */
-public class ASTRRBTree extends AbstractAST implements IASTAppendable, Externalizable, RandomAccess {
+public class ASTRRBTree extends AbstractAST
+    implements IASTAppendable, Externalizable, RandomAccess {
 
   /** The underlying RRB Tree */
   protected RrbTree<IExpr> rrbTree;
@@ -104,6 +107,14 @@ public class ASTRRBTree extends AbstractAST implements IASTAppendable, Externali
     }
 
     this.rrbTree = list;
+  }
+
+  public ASTRRBTree(IExpr[] array) {
+    super();
+    if (Config.MAX_AST_SIZE < array.length) {
+      throw new ASTElementLimitExceeded(array.length);
+    }
+    this.rrbTree = StaticImports.rrb(array);
   }
 
   /**
@@ -366,7 +377,7 @@ public class ASTRRBTree extends AbstractAST implements IASTAppendable, Externali
     hashValue = 0;
     if (location < rrbTree.size()) {
       IExpr value = rrbTree.get(location);
-      rrbTree = rrbTree.toMutRrbt().replace(location, object).immutable();
+      rrbTree = rrbTree.replace(location, object);
       return value;
     }
     throw new IndexOutOfBoundsException("Index: " + location + ", Size: " + rrbTree.size());
@@ -377,6 +388,14 @@ public class ASTRRBTree extends AbstractAST implements IASTAppendable, Externali
     IASTMutable ast = copy();
     ast.set(i, expr);
     return ast;
+  }
+
+  @Override
+  public void sortInplace(Comparator<IExpr> comparator) {
+    hashValue = 0;
+    final IExpr[] a = toArray();
+    Arrays.sort(a, 1, a.length, comparator);
+    this.rrbTree = StaticImports.rrb(a);
   }
 
   /**
@@ -420,18 +439,7 @@ public class ASTRRBTree extends AbstractAST implements IASTAppendable, Externali
         append(expr);
         return;
       }
-      MutRrbt<IExpr> mutRrbt = rrbTree.toMutRrbt();
-      mutRrbt.insert(location, expr);
-      rrbTree = mutRrbt.immutable();
-      //      MutRrbt<IExpr> mutable = StaticImports.mutableRrb();
-      //      for (int i = 0; i < location; i++) {
-      //        mutable.append(vector.get(i));
-      //      }
-      //      mutable.append(expr);
-      //      for (int i = location; i < vector.size(); i++) {
-      //        mutable.append(vector.get(i));
-      //      }
-      //      vector = mutable.immutable();
+      rrbTree = rrbTree.insert(location, expr);
       return;
     }
     throw new IndexOutOfBoundsException(
@@ -594,15 +602,8 @@ public class ASTRRBTree extends AbstractAST implements IASTAppendable, Externali
       MutRrbt<IExpr> mutRrbt = rrbTree.toMutRrbt();
       mutRrbt = mutRrbt.without(location);
       rrbTree = mutRrbt.immutable();
-      //      vector = vector.immutable();
-      //      MutRrbt<IExpr> mutable = StaticImports.mutableRrb();
-      //      for (int i = 0; i < location; i++) {
-      //        mutable.append(vector.get(i));
-      //      }
-      //      for (int i = location + 1; i < size; i++) {
-      //        mutable.append(vector.get(i));
-      //      }
-      //      vector = mutable.immutable();
+      // deprecated?
+      // rrbTree = rrbTree.without(location);
       return expr;
     }
     throw new IndexOutOfBoundsException("Index: " + location);
