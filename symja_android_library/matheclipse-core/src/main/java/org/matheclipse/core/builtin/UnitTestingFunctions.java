@@ -53,7 +53,7 @@ public class UnitTestingFunctions {
         if (ast.arg1().isList()) {
           IAST listOfVerificationTest = (IAST) ast.arg1();
           if (listOfVerificationTest.forAll(x -> x.isAST(S.VerificationTest))) {
-            IAssociation testResults = F.assoc(listOfVerificationTest.size());
+            IAssociation testResults = F.assoc(); // listOfVerificationTest.size());
             int testCounter = 1;
             for (int j = 1; j < listOfVerificationTest.size(); j++) {
               IAST verificationTest = (IAST) listOfVerificationTest.get(j);
@@ -62,7 +62,7 @@ public class UnitTestingFunctions {
                 testResults.appendRule(F.Rule(F.ZZ(testCounter++), result));
               }
             }
-            IAssociation testReportObject = F.assoc(10);
+            IAssociation testReportObject = F.assoc();
             testReportObject.appendRule(F.Rule("TestResults", testResults));
             return TestReportObjectExpr.newInstance(testReportObject);
           }
@@ -133,7 +133,7 @@ public class UnitTestingFunctions {
     private static IExpr runTests(EvalEngine engine, String str) {
       final List<ASTNode> node = FileFunctions.parseReader(str, engine);
       IAssociation testResults = evaluatePackage(node, engine);
-      IAssociation testResultObject = F.assoc(node.size());
+      IAssociation testResultObject = F.assoc(); // node.size());
       testResultObject.appendRule(F.Rule("TestResults", testResults));
       return TestReportObjectExpr.newInstance(testResultObject);
     }
@@ -143,7 +143,7 @@ public class UnitTestingFunctions {
       int i = 0;
       AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
       IExpr result = S.Null;
-      IAssociation assoc = F.assoc(node.size());
+      IAssociation assoc = F.assoc(); // node.size());
       int testCounter = 1;
       while (i < node.size()) {
         temp = ast2Expr.convert(node.get(i++));
@@ -221,7 +221,7 @@ public class UnitTestingFunctions {
         IExpr result =
             engine.evaluate(F.binaryAST2(sameTest, tempActualOutput, tempExpectedOutput));
 
-        IAssociation assoc = F.assoc(12);
+        IAssociation assoc = F.assoc();
         if (result.isTrue()) {
           success(assoc);
         } else {

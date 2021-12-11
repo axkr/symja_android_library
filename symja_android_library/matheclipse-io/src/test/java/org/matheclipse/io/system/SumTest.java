@@ -419,6 +419,10 @@ public class SumTest extends AbstractTestCase {
 
   public void testSum009() {
     check(
+        "Sum(4*i^2, {i, 0, n})", //
+        "4*(n/6+n^2/2+n^3/3)");
+
+    check(
         "Sum(c, {i, 1, j}, {j, 1, 2})", //
         "2*c*j");
 

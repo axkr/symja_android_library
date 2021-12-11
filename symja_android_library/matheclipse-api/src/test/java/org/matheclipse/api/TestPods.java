@@ -115,6 +115,55 @@ public class TestPods {
     }
   }
 
+  // @Test
+  //  public void testAsk001() {
+  //    ObjectNode messageJSON =
+  //        TestPods.createJUnitResult("what is ten pounds to milligrams", formatsHTML);
+  //    final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
+  //
+  //    assertEquals(
+  //        jsonStr, //
+  //        "{\n"
+  //            + "  \"queryresult\" : {\n"
+  //            + "    \"success\" : \"true\",\n"
+  //            + "    \"error\" : \"false\",\n"
+  //            + "    \"numpods\" : 2,\n"
+  //            + "    \"version\" : \"0.1\",\n"
+  //            + "    \"pods\" : [ {\n"
+  //            + "      \"title\" : \"Input\",\n"
+  //            + "      \"scanner\" : \"Identity\",\n"
+  //            + "      \"error\" : \"false\",\n"
+  //            + "      \"numsubpods\" : 1,\n"
+  //            + "      \"subpods\" : [ {\n"
+  //            + "        \"plaintext\" : \"conv(10,pound,milligrams)\",\n"
+  //            + "        \"sinput\" : \"conv(10,pound,milligrams)\"\n"
+  //            + "      } ]\n"
+  //            + "    }, {\n"
+  //            + "      \"title\" : \"Evaluated result\",\n"
+  //            + "      \"scanner\" : \"Expression\",\n"
+  //            + "      \"error\" : \"false\",\n"
+  //            + "      \"numsubpods\" : 1,\n"
+  //            + "      \"subpods\" : [ {\n"
+  //            + "        \"plaintext\" : \"conv(10,pound,milligrams)\",\n"
+  //            + "        \"sinput\" : \"conv(10,pound,milligrams)\"\n"
+  //            + "      } ]\n"
+  //            + "    } ]\n"
+  //            + "  }\n"
+  //            + "}"); //
+  //  }
+
+  //  @Test
+  //  public void testAsk002() {
+  //
+  //    ObjectNode messageJSON = TestPods.createJUnitResult("solve x^3+sqrt(x^3+3)=10",
+  // formatsHTML);
+  //    final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
+  //
+  //    assertEquals(
+  //        jsonStr, //
+  //        ""); //
+  //  }
+
   @Test
   public void testSyntaxError001() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
@@ -2070,13 +2119,13 @@ public class TestPods {
             + "      \"error\" : \"false\",\n"
             + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n"
-            + "        \"markdown\" : \"## Chop\\n\\n```\\nChop(numerical-expr)\\n```\\n\\n> replaces numerical values in the `numerical-expr` which are close to zero with symbolic value `0`.\\n\\n### Examples\\n\\n```\\n>> Chop(0.00000000001)\\n0\\n```\\n\\n### Github\\n\\n* [Implementation of Chop](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L694) \\n[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L695)\\n\\n\"\n"
+            + "        \"markdown\" : \"## Chop\\n\\n```\\nChop(numerical-expr)\\n```\\n\\n> replaces numerical values in the `numerical-expr` which are close to zero with symbolic value `0`.\\n\\n### Examples\\n\\n```\\n>> Chop(0.00000000001)\\n0\\n```\\n\\n### Github\\n\\n* [Implementation of Chop](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L695) \\n[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L695)\\n\\n\"\n"
             + "      } ]\n"
             + "    } ]\n"
             + "  }\n"
             + "}"); //
   }
- 
+
   @Test
   public void testSimplify() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));

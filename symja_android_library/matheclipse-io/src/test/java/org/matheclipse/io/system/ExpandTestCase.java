@@ -13,6 +13,7 @@ import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.S.a;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -84,7 +85,18 @@ public class ExpandTestCase extends AbstractTestCase {
     assertEquals(temp.toString(), "Tan[x]^2");
   }
 
+  //  public void testExpandPerformance() {
+  //    IAST ast = Power(Plus(F.Times(C2, w), x, y, F.Times(F.C3, z)), F.ZZ(400));
+  //    IExpr temp = Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
+  //    //    assertEquals(temp.toString(), " ");
+  //  }
+
   public void testRationalFunction001() {
     check("PolynomialQ(x^2*(a+b*x^3)^16,x)", "True");
+  }
+
+  protected void setUp() {
+    super.setUp();
+    Config.MAX_AST_SIZE = Integer.MAX_VALUE;
   }
 }
