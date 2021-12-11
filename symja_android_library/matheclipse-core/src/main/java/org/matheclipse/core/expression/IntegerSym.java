@@ -9,7 +9,6 @@ import java.util.function.Function;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.ArithmeticUtils;
-import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
@@ -894,15 +893,7 @@ public class IntegerSym extends AbstractIntegerSym {
 
   @Override
   public String toString() {
-    try {
-      StringBuilder sb = new StringBuilder();
-      OutputFormFactory.get()
-          .convertInteger(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
-      return sb.toString();
-    } catch (Exception e1) {
-      // fall back to simple output format
-      return Integer.toString(fIntValue);
-    }
+    return Integer.toString(fIntValue);
   }
 
   @Override
