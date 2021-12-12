@@ -2,7 +2,6 @@ package org.matheclipse.core.visit;
 
 import java.util.Map;
 import java.util.function.Function;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
@@ -278,8 +277,7 @@ public class VisitorReplaceAll extends VisitorExpr {
     } else {
       // (`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for
       // replacing.
-      String str = IOFunctions.getMessage("reps", F.List(arg2));
-      throw new ArgumentTypeException(str);
+      throw new ArgumentTypeException("reps", F.List(arg2));
     }
     return visitor;
   }

@@ -657,7 +657,7 @@ public class AssociationFunctions {
               list.append(rule);
             } else {
               // The argument `1` is not a vaild Association or list of rules.
-              throw new ArgumentTypeException(IOFunctions.getMessage("invrl", F.List(rule)));
+              throw new ArgumentTypeException("invrl", F.List(rule));
             }
           }
           return mapHeadIfPresent(list, head);

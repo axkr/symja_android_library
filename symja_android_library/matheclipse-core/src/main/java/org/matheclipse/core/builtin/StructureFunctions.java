@@ -87,22 +87,8 @@ public class StructureFunctions {
       S.SymbolName.setEvaluator(new SymbolName());
       S.Thread.setEvaluator(new Thread());
       S.Through.setEvaluator(new Through());
-      ISymbol[] logicEquationHeads = {
-        S.And,
-        S.Or,
-        S.Xor,
-        S.Nand,
-        S.Nor,
-        S.Not,
-        S.Implies,
-        S.Equivalent,
-        S.Equal,
-        S.Unequal,
-        S.Less,
-        S.Greater,
-        S.LessEqual,
-        S.GreaterEqual
-      };
+      ISymbol[] logicEquationHeads = {S.And, S.Or, S.Xor, S.Nand, S.Nor, S.Not, S.Implies,
+          S.Equivalent, S.Equal, S.Unequal, S.Less, S.Greater, S.LessEqual, S.GreaterEqual};
       for (int i = 0; i < logicEquationHeads.length; i++) {
         LOGIC_EQUATION_HEADS.add(logicEquationHeads[i]);
       }
@@ -124,13 +110,15 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>replaces the head of <code>expr</code> with <code>f</code>.
+   * <p>
+   * replaces the head of <code>expr</code> with <code>f</code>.
    *
    * <pre>
    * Apply(f, expr, levelspec)
    * </pre>
    *
-   * <p>applies <code>f</code> on the parts specified by <code>levelspec</code>.
+   * <p>
+   * applies <code>f</code> on the parts specified by <code>levelspec</code>.
    *
    * </blockquote>
    *
@@ -143,42 +131,48 @@ public class StructureFunctions {
    * 6
    * </pre>
    *
-   * <p>The head of $expr$ need not be 'List':
+   * <p>
+   * The head of $expr$ need not be 'List':
    *
    * <pre>
    * &gt;&gt; f @@ (a + b + c)
    * f(a, b, c)
    * </pre>
    *
-   * <p>Apply on level 1:
+   * <p>
+   * Apply on level 1:
    *
    * <pre>
    * &gt;&gt; Apply(f, {a + b, g(c, d, e * f), 3}, {1})
    * {f(a, b), f(c, d, e*f), 3}
    * </pre>
    *
-   * <p>The default level is 0:
+   * <p>
+   * The default level is 0:
    *
    * <pre>
    * &gt;&gt; Apply(f, {a, b, c}, {0})
    * f(a, b, c)
    * </pre>
    *
-   * <p>Range of levels, including negative level (counting from bottom):
+   * <p>
+   * Range of levels, including negative level (counting from bottom):
    *
    * <pre>
    * &gt;&gt; Apply(f, {{{{{a}}}}}, {2, -3})
    * {{f(f({a}))}}
    * </pre>
    *
-   * <p>Convert all operations to lists:
+   * <p>
+   * Convert all operations to lists:
    *
    * <pre>
    * &gt;&gt; Apply(List, a + b * c ^ e * f(g), {0, Infinity})
    * {a,{b,{c,e},{g}}}
    * </pre>
    *
-   * <p>Level specification x + y is not of the form n, {n}, or {m, n}.
+   * <p>
+   * Level specification x + y is not of the form n, {n}, or {m, n}.
    *
    * <pre>
    * &gt;&gt; Apply(f, {a, b, c}, x+y)
@@ -223,8 +217,8 @@ public class StructureFunctions {
       return ARGS_1_4_2;
     }
 
-    public static IExpr evalApply(
-        IExpr f, IExpr expr, IAST evaledAST, int lastIndex, boolean heads, EvalEngine engine) {
+    public static IExpr evalApply(IExpr f, IExpr expr, IAST evaledAST, int lastIndex, boolean heads,
+        EvalEngine engine) {
 
       java.util.function.Function<IExpr, IExpr> af =
           x -> x.isAST() ? ((IAST) x).setAtCopy(0, f) : F.NIL;
@@ -281,11 +275,13 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the depth of <code>expr</code>.
+   * <p>
+   * gives the depth of <code>expr</code>.
    *
    * </blockquote>
    *
-   * <p>The depth of an expression is defined as one plus the maximum number of <code>Part</code>
+   * <p>
+   * The depth of an expression is defined as one plus the maximum number of <code>Part</code>
    * indices required to reach any part of <code>expr</code>, except for heads.
    *
    * <h3>Examples</h3>
@@ -301,14 +297,16 @@ public class StructureFunctions {
    * 5
    * </pre>
    *
-   * <p>Complex numbers are atomic, and hence have depth 1:
+   * <p>
+   * Complex numbers are atomic, and hence have depth 1:
    *
    * <pre>
    * &gt;&gt; Depth(1 + 2*I)
    * 1
    * </pre>
    *
-   * <p><code>Depth</code> ignores heads:
+   * <p>
+   * <code>Depth</code> ignores heads:
    *
    * <pre>
    * &gt;&gt; Depth(f(a, b)[c])
@@ -320,9 +318,9 @@ public class StructureFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = engine.evaluate(ast.arg1());
-      //      if (!(arg1.isASTOrAssociation())) {
-      //        return F.C1;
-      //      }
+      // if (!(arg1.isASTOrAssociation())) {
+      // return F.C1;
+      // }
       return F.ZZ(arg1.depth());
     }
 
@@ -341,7 +339,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>flattens out nested lists in <code>expr</code>.
+   * <p>
+   * flattens out nested lists in <code>expr</code>.
    *
    * </blockquote>
    *
@@ -351,7 +350,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>stops flattening at level <code>n</code>.
+   * <p>
+   * stops flattening at level <code>n</code>.
    *
    * </blockquote>
    *
@@ -361,7 +361,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>flattens expressions with head <code>h</code> instead of 'List'.
+   * <p>
+   * flattens expressions with head <code>h</code> instead of 'List'.
    *
    * </blockquote>
    *
@@ -380,7 +381,8 @@ public class StructureFunctions {
    * {a, b, c, d}
    * </pre>
    *
-   * <p>Flatten also works in irregularly shaped arrays
+   * <p>
+   * Flatten also works in irregularly shaped arrays
    *
    * <pre>
    * &gt;&gt; Flatten({{1, 2, 3}, {4}, {6, 7}, {8, 9, 10}}, {{2}, {1}})
@@ -399,22 +401,25 @@ public class StructureFunctions {
    * {1, 2, 3, 4}
    * </pre>
    *
-   * <p>Levels to be flattened together in {{-1, 2}} should be lists of positive integers.
+   * <p>
+   * Levels to be flattened together in {{-1, 2}} should be lists of positive integers.
    *
    * <pre>
    * &gt;&gt; Flatten({{1, 2}, {3, 4}}, {{-1, 2}})
    * Flatten({{1, 2}, {3, 4}}, {{-1, 2}}, List)
    * </pre>
    *
-   * <p>Level 2 specified in {{1}, {2}} exceeds the levels, 1, which can be flattened together in
-   * {a, b}.
+   * <p>
+   * Level 2 specified in {{1}, {2}} exceeds the levels, 1, which can be flattened together in {a,
+   * b}.
    *
    * <pre>
    * &gt;&gt; Flatten({a, b}, {{1}, {2}})
    * Flatten({a, b}, {{1}, {2}}, List)
    * </pre>
    *
-   * <p>Check <code>n</code> completion
+   * <p>
+   * Check <code>n</code> completion
    *
    * <pre>
    * &gt;&gt; m = {{{1, 2}, {3}}, {{4}, {5, 6}}}
@@ -428,7 +433,8 @@ public class StructureFunctions {
    * {{{1, 2}, {4}}, {{3}, {5, 6}}}
    * </pre>
    *
-   * <p>Level 4 specified in {{2}, {1}, {3}, {4}} exceeds the levels, 3, which can be flattened
+   * <p>
+   * Level 4 specified in {{2}, {1}, {3}, {4}} exceeds the levels, 3, which can be flattened
    * together in {{{1, 2}, {3}}, {{4}, {5, 6}}}.
    *
    * <pre>
@@ -538,7 +544,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>flattens out nested lists at the given <code>position</code> in <code>expr</code>.
+   * <p>
+   * flattens out nested lists at the given <code>position</code> in <code>expr</code>.
    *
    * </blockquote>
    *
@@ -556,12 +563,12 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
+      // if (ast.isAST1()) {
+      // ast = F.operatorForm1Append(ast);
+      // if (!ast.isPresent()) {
+      // return F.NIL;
+      // }
+      // }
       IExpr arg1 = engine.evaluate(ast.arg1());
       IExpr arg2 = engine.evaluate(ast.arg2());
       if (arg1.isAST()) {
@@ -631,25 +638,22 @@ public class StructureFunctions {
             }
             if (symbolSlots.size() > ast.size()) {
               // To many parameters in `1` to be filled from `2`.
-              return IOFunctions.printMessage(
-                  S.Function, "fpct", F.List(symbolSlots, function), engine);
+              return IOFunctions.printMessage(S.Function, "fpct", F.List(symbolSlots, function),
+                  engine);
             }
             java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables =
                 new IdentityHashMap<ISymbol, IExpr>();
             // final long moduleCounter = engine.incModuleCounter();
-            IExpr subst =
-                arg2.accept(
-                    new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
+            IExpr subst = arg2
+                .accept(new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
             if (subst.isPresent()) {
               arg2 = subst;
             }
 
-            return arg2.replaceAll(
-                    x -> {
-                      IExpr temp = getRulesMap(symbolSlots, ast).get(x);
-                      return temp != null ? temp : F.NIL;
-                    })
-                .orElse(arg2);
+            return arg2.replaceAll(x -> {
+              IExpr temp = getRulesMap(symbolSlots, ast).get(x);
+              return temp != null ? temp : F.NIL;
+            }).orElse(arg2);
           }
         }
       }
@@ -688,7 +692,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the head of the expression or atom <code>expr</code>.
+   * <p>
+   * returns the head of the expression or atom <code>expr</code>.
    *
    * </blockquote>
    *
@@ -699,7 +704,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>newHead(Head(expr))</code>.
+   * <p>
+   * returns <code>newHead(Head(expr))</code>.
    *
    * </blockquote>
    *
@@ -804,7 +810,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>applies <code>f</code> to each part on the first level of <code>expr</code>.
+   * <p>
+   * applies <code>f</code> to each part on the first level of <code>expr</code>.
    *
    * </blockquote>
    *
@@ -814,7 +821,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>applies f to each level specified by <code>levelspec</code> of <code>expr</code>.
+   * <p>
+   * applies f to each level specified by <code>levelspec</code> of <code>expr</code>.
    *
    * </blockquote>
    *
@@ -827,21 +835,24 @@ public class StructureFunctions {
    * {1,4,9,16}
    * </pre>
    *
-   * <p>Map <code>f</code> on the second level:
+   * <p>
+   * Map <code>f</code> on the second level:
    *
    * <pre>
    * &gt;&gt; Map(f, {{a, b}, {c, d, e}}, {2})
    * {{f(a),f(b)},{f(c),f(d),f(e)}}
    * </pre>
    *
-   * <p>Include heads:
+   * <p>
+   * Include heads:
    *
    * <pre>
    * &gt;&gt; Map(f, a + b + c, Heads-&gt;True)
    * f(Plus)[f(a),f(b),f(c)]
    * </pre>
    *
-   * <p>Level specification a + b is not of the form n, {n}, or {m, n}.
+   * <p>
+   * Level specification a + b is not of the form n, {n}, or {m, n}.
    *
    * <pre>
    * &gt;&gt; Map(f, expr, a+b, Heads-&gt;True)
@@ -872,9 +883,8 @@ public class StructureFunctions {
       }
       VisitorLevelSpecification level;
       if (lastIndex == 3) {
-        level =
-            new VisitorLevelSpecification(
-                x -> F.unaryAST1(arg1, x), ast.get(lastIndex), heads, engine);
+        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), ast.get(lastIndex), heads,
+            engine);
       } else {
         level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, heads);
       }
@@ -958,8 +968,8 @@ public class StructureFunctions {
       return F.NIL;
     }
 
-    private static IExpr mapAtRecursive(
-        java.util.function.Function<IExpr, IExpr> f, IAST result, IAST positions, int index) {
+    private static IExpr mapAtRecursive(java.util.function.Function<IExpr, IExpr> f, IAST result,
+        IAST positions, int index) {
       IExpr pos = positions.get(index);
       if (pos.equals(S.All)) {
         IASTMutable subResult;
@@ -1010,16 +1020,14 @@ public class StructureFunctions {
             }
           }
           // Part `1` of `2` does not exist.
-          throw new ArgumentTypeException(
-              IOFunctions.getMessage("partw", F.List(F.List(pos), result)));
+          throw new ArgumentTypeException("partw", F.List(F.List(pos), result));
         }
       }
 
       int p = pos.toIntDefault();
       if (p == Integer.MIN_VALUE) {
         // Part `1` of `2` does not exist.
-        throw new ArgumentTypeException(
-            IOFunctions.getMessage("partw", F.List(F.List(pos), result)));
+        throw new ArgumentTypeException("partw", F.List(F.List(pos), result));
       }
       if (p < 0) {
         p = result.size() + p;
@@ -1047,7 +1055,7 @@ public class StructureFunctions {
         }
       }
       // Part `1` of `2` does not exist.
-      throw new ArgumentTypeException(IOFunctions.getMessage("partw", F.List(F.List(pos), result)));
+      throw new ArgumentTypeException("partw", F.List(F.List(pos), result));
     }
 
     @Override
@@ -1065,8 +1073,9 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>applies <code>f</code> to each part on the first level of <code>expr</code> and appending
-   * the elements position as a list in the second argument.
+   * <p>
+   * applies <code>f</code> to each part on the first level of <code>expr</code> and appending the
+   * elements position as a list in the second argument.
    *
    * </blockquote>
    *
@@ -1076,7 +1085,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>applies <code>f</code> to each level specified by <code>levelspec</code> of <code>expr
+   * <p>
+   * applies <code>f</code> to each level specified by <code>levelspec</code> of <code>expr
    * </code> and appending the elements position as a list in the second argument.
    *
    * </blockquote>
@@ -1108,9 +1118,8 @@ public class StructureFunctions {
         IExpr arg1 = ast.arg1();
         IndexedLevel level;
         if (lastIndex == 3) {
-          level =
-              new IndexedLevel(
-                  (x, y) -> F.binaryAST2(arg1, x, y), ast.get(lastIndex), heads, engine);
+          level = new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), ast.get(lastIndex), heads,
+              engine);
         } else {
           level = new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), 1, heads);
         }
@@ -1142,7 +1151,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>returns '{<code>f</code>(<code>a1</code>, <code>b1</code>, &hellip;), <code>f</code>(<code>
+   * <p>
+   * returns '{<code>f</code>(<code>a1</code>, <code>b1</code>, &hellip;), <code>f</code>(<code>
    * a2</code>, <code>b2</code>, &hellip;), &hellip;}'.<br>
    *
    * </blockquote>
@@ -1153,7 +1163,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>applies <code>f</code> at level <code>n</code>.<br>
+   * <p>
+   * applies <code>f</code> at level <code>n</code>.<br>
    *
    * </blockquote>
    *
@@ -1167,7 +1178,8 @@ public class StructureFunctions {
    * {{f(a, e), f(b, f)}, {f(c, g), f(d, h)}}
    * </pre>
    *
-   * <p>Non-negative machine-sized integer expected at position 3 in MapThread(f, {{a, b}, {c, d}},
+   * <p>
+   * Non-negative machine-sized integer expected at position 3 in MapThread(f, {{a, b}, {c, d}},
    * {1}).<br>
    *
    * <pre>
@@ -1175,15 +1187,17 @@ public class StructureFunctions {
    * MapThread(f, {{a, b}, {c, d}}, {1})
    * </pre>
    *
-   * <p>Object {a, b} at position {2, 1} in MapThread(f, {{a, b}, {c, d}}, 2) has only 1 of required
-   * 2 dimensions.<br>
+   * <p>
+   * Object {a, b} at position {2, 1} in MapThread(f, {{a, b}, {c, d}}, 2) has only 1 of required 2
+   * dimensions.<br>
    *
    * <pre>
    * &gt;&gt; MapThread(f, {{a, b}, {c, d}}, 2)
    * MapThread(f, {{a, b}, {c, d}}, 2)
    * </pre>
    *
-   * <p>Incompatible dimensions of objects at positions {2, 1} and {2, 2} of MapThread(f, {{a}, {b,
+   * <p>
+   * Incompatible dimensions of objects at positions {2, 1} and {2, 2} of MapThread(f, {{a}, {b,
    * c}}); dimensions are 1 and 2.<br>
    *
    * <pre>
@@ -1197,7 +1211,8 @@ public class StructureFunctions {
    * f(a, b)
    * </pre>
    *
-   * <p>Object a at position {2, 1} in MapThread(f, {a, b}, 1) has only 0 of required 1 dimensions.
+   * <p>
+   * Object a at position {2, 1} in MapThread(f, {a, b}, 1) has only 0 of required 1 dimensions.
    *
    * <pre>
    * &gt;&gt; MapThread(f, {a, b}, 1)
@@ -1247,12 +1262,12 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm2Prepend(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
+      // if (ast.isAST1()) {
+      // ast = F.operatorForm2Prepend(ast);
+      // if (!ast.isPresent()) {
+      // return F.NIL;
+      // }
+      // }
       if (ast.arg2().isAST()) {
         int level = 1;
         if (ast.isAST3()) {
@@ -1296,7 +1311,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>is <code>0</code> if <code>a</code> equals <code>b</code>. Is <code>-1</code> or <code>1
+   * <p>
+   * is <code>0</code> if <code>a</code> equals <code>b</code>. Is <code>-1</code> or <code>1
    * </code> according to canonical order of <code>a</code> and <code>b</code>.
    *
    * </blockquote>
@@ -1348,7 +1364,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>is <code>True</code> if <code>a</code> sorts before <code>b</code> according to canonical
+   * <p>
+   * is <code>True</code> if <code>a</code> sorts before <code>b</code> according to canonical
    * ordering.
    *
    * </blockquote>
@@ -1393,7 +1410,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>applies <code>p</code> to the head of <code>expr</code>.
+   * <p>
+   * applies <code>p</code> to the head of <code>expr</code>.
    *
    * </blockquote>
    *
@@ -1403,7 +1421,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>applies <code>p</code> to the <code>n</code>th head of <code>expr</code>.
+   * <p>
+   * applies <code>p</code> to the <code>n</code>th head of <code>expr</code>.
    *
    * </blockquote>
    *
@@ -1414,14 +1433,16 @@ public class StructureFunctions {
    * p(f)[a,b]
    * </pre>
    *
-   * <p>The default value of <code>n</code> is <code>1</code>:
+   * <p>
+   * The default value of <code>n</code> is <code>1</code>:
    *
    * <pre>
    * &gt;&gt; Operate(p, f(a, b), 1)
    * p(f)[a,b]
    * </pre>
    *
-   * <p>With <code>n = 0</code>, <code>Operate</code> acts like <code>Apply</code>:
+   * <p>
+   * With <code>n = 0</code>, <code>Operate</code> acts like <code>Apply</code>:
    *
    * <pre>
    * &gt;&gt; Operate(p, f(a)[b][c], 0)
@@ -1449,7 +1470,8 @@ public class StructureFunctions {
    * p(f)
    * </pre>
    *
-   * <p>Non-negative integer expected at position <code>3</code> in <code>Operate(p, f, -1)</code>.
+   * <p>
+   * Non-negative integer expected at position <code>3</code> in <code>Operate(p, f, -1)</code>.
    *
    * <pre>
    * &gt;&gt; Operate(p, f, -1)
@@ -1469,10 +1491,10 @@ public class StructureFunctions {
         if (depth.isNegative()) {
           // Non-negative integer expected.
           return IOFunctions.printMessage(ast.topHead(), "intnn", F.List(), engine);
-          //          LOGGER.log(
-          //              engine.getLogLevel(), "Non-negative integer expected at position 3 in
+          // LOGGER.log(
+          // engine.getLogLevel(), "Non-negative integer expected at position 3 in
           // Operate()");
-          //          return F.NIL;
+          // return F.NIL;
         }
 
         headDepth = depth.toIntDefault();
@@ -1572,14 +1594,8 @@ public class StructureFunctions {
     }
 
     private static IExpr quitEngine(final IAST ast, EvalEngine engine) {
-      EvalEngine newEngine =
-          new EvalEngine(
-              "",
-              engine.getRecursionLimit(),
-              engine.getIterationLimit(),
-              null,
-              null,
-              engine.isRelaxedSyntax());
+      EvalEngine newEngine = new EvalEngine("", engine.getRecursionLimit(),
+          engine.getIterationLimit(), null, null, engine.isRelaxedSyntax());
       engine.setPrintStreamsOf(engine);
 
       EvalHistory lch = engine.getEvalHistory();
@@ -1619,7 +1635,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>applies <code>f</code> to each element of <code>expr</code> and returns 'Null'.
+   * <p>
+   * applies <code>f</code> to each element of <code>expr</code> and returns 'Null'.
    *
    * </blockquote>
    *
@@ -1629,7 +1646,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>applies <code>f</code> to each level specified by <code>levelspec</code> of <code>expr
+   * <p>
+   * applies <code>f</code> to each level specified by <code>levelspec</code> of <code>expr
    * </code>.
    *
    * </blockquote>
@@ -1675,12 +1693,11 @@ public class StructureFunctions {
           IExpr arg2 = ast.arg2();
           if (lastIndex == 3) {
             IASTAppendable result = F.ListAlloc(10);
-            java.util.function.Function<IExpr, IExpr> sf =
-                x -> {
-                  IAST a = F.unaryAST1(arg1, x);
-                  result.append(a);
-                  return F.NIL;
-                };
+            java.util.function.Function<IExpr, IExpr> sf = x -> {
+              IAST a = F.unaryAST1(arg1, x);
+              result.append(a);
+              return F.NIL;
+            };
             VisitorLevelSpecification level =
                 new VisitorLevelSpecification(sf, ast.get(lastIndex), heads, engine);
             arg2.accept(level);
@@ -1714,7 +1731,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>sorts $list$ (or the leaves of any other expression) according to canonical ordering.
+   * <p>
+   * sorts $list$ (or the leaves of any other expression) according to canonical ordering.
    *
    * </blockquote>
    *
@@ -1724,7 +1742,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>sorts using <code>p</code> to determine the order of two elements.
+   * <p>
+   * sorts using <code>p</code> to determine the order of two elements.
    *
    * </blockquote>
    *
@@ -1789,8 +1808,9 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>sorts <code>list</code> (or the leaves of any other expression) according to canonical
-   * ordering of the keys that are extracted from the <code>list</code>'s elements using <code>f
+   * <p>
+   * sorts <code>list</code> (or the leaves of any other expression) according to canonical ordering
+   * of the keys that are extracted from the <code>list</code>'s elements using <code>f
    * </code>. Chunks of leaves that appear the same under <code>f</code> are sorted according to
    * their natural order (without applying <code>f</code>).
    *
@@ -1803,7 +1823,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>creates an operator function that, when applied, sorts by <code>f</code>.
+   * <p>
+   * creates an operator function that, when applied, sorts by <code>f</code>.
    *
    * </blockquote>
    *
@@ -1822,12 +1843,12 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
+      // if (ast.isAST1()) {
+      // ast = F.operatorForm1Append(ast);
+      // if (!ast.isPresent()) {
+      // return F.NIL;
+      // }
+      // }
       if (ast.isAST2()) {
         try {
           if (ast.arg1().isDataset()) {
@@ -1885,7 +1906,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>is the head of symbols.
+   * <p>
+   * is the head of symbols.
    *
    * </blockquote>
    *
@@ -1896,7 +1918,8 @@ public class StructureFunctions {
    * Symbol
    * </pre>
    *
-   * <p>You can use <code>Symbol</code> to create symbols from strings:
+   * <p>
+   * You can use <code>Symbol</code> to create symbols from strings:
    *
    * <pre>
    * &gt;&gt; Symbol("x") + Symbol("x")
@@ -1930,7 +1953,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the name of the symbol <code>s</code> (without any leading context name).
+   * <p>
+   * returns the name of the symbol <code>s</code> (without any leading context name).
    *
    * </blockquote>
    *
@@ -1968,7 +1992,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>threads <code>f</code> over any lists that appear in <code>args</code>.
+   * <p>
+   * threads <code>f</code> over any lists that appear in <code>args</code>.
    *
    * </blockquote>
    *
@@ -1978,7 +2003,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>threads over any parts with head <code>h</code>.
+   * <p>
+   * threads over any parts with head <code>h</code>.
    *
    * </blockquote>
    *
@@ -1995,7 +2021,8 @@ public class StructureFunctions {
    * f(a)+f(b)+f(c)
    * </pre>
    *
-   * <p>Functions with attribute <code>Listable</code> are automatically threaded over lists:
+   * <p>
+   * Functions with attribute <code>Listable</code> are automatically threaded over lists:
    *
    * <pre>
    * &gt;&gt; {a, b, c} + {d, e, f} + g
@@ -2075,7 +2102,8 @@ public class StructureFunctions {
    *
    * <blockquote>
    *
-   * <p>gives <code>p(f(x))</code>.
+   * <p>
+   * gives <code>p(f(x))</code>.
    *
    * </blockquote>
    *
@@ -2143,7 +2171,7 @@ public class StructureFunctions {
    *
    * @param expr typically the first element of <code>replacement</code> ast.
    * @param replacement an IAST there the argument at the given position is replaced by the
-   *     currently mapped argument of this IAST.
+   *        currently mapped argument of this IAST.
    * @param position
    * @return
    */
@@ -2167,7 +2195,7 @@ public class StructureFunctions {
    *
    * @param expr typically the first element of <code>replacement</code> ast.
    * @param replacement an IAST there the argument at the given position is replaced by the
-   *     currently mapped argument of this IAST.
+   *        currently mapped argument of this IAST.
    * @param position
    * @return
    */
@@ -2191,7 +2219,7 @@ public class StructureFunctions {
    *
    * @param expr typically the first element of <code>replacement</code> ast.
    * @param replacement an IAST there the argument at the given position is replaced by the
-   *     currently mapped argument of this IAST.
+   *        currently mapped argument of this IAST.
    * @param position
    * @return
    */

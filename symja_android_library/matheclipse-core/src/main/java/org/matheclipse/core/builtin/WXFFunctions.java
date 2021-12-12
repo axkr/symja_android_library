@@ -57,8 +57,7 @@ public class WXFFunctions {
           if (bArray == null) {
             // The argument at position `1` in `2` should be a vector of unsigned byte values or a
             // Base64 encoded string.
-            String message = IOFunctions.getMessage("lend", F.List(F.C1, ast));
-            throw new ArgumentTypeStopException(message);
+            throw new ArgumentTypeStopException("lend", F.List(F.C1, ast));
           }
           return ByteArrayExpr.newInstance(bArray);
         } else if (arg1.isString()) {
@@ -75,8 +74,7 @@ public class WXFFunctions {
         }
         // The argument at position `1` in `2` should be a vector of unsigned byte values or a
         // Base64 encoded string.
-        String message = IOFunctions.getMessage("lend", F.List(F.C1, ast));
-        throw new ArgumentTypeStopException(message);
+        throw new ArgumentTypeStopException("lend", F.List(F.C1, ast));
       }
       return F.NIL;
     }

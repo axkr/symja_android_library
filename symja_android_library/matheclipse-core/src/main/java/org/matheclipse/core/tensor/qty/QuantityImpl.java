@@ -6,7 +6,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Objects;
 import java.util.function.Function;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.DataExpr;
@@ -251,14 +250,14 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
   @Override
   public IExpr times(IExpr scalar) {
     return times(scalar, false);
-    //    if (scalar instanceof IQuantity) {
-    //      IQuantity quantity = (IQuantity) scalar;
-    //      return of(arg1.times(quantity.value()), fData.add(quantity.unit()));
-    //    }
-    //    if (scalar.isReal()) {
-    //      return ofUnit(arg1.times(scalar));
-    //    }
-    //    return F.Times(this, scalar);
+    // if (scalar instanceof IQuantity) {
+    // IQuantity quantity = (IQuantity) scalar;
+    // return of(arg1.times(quantity.value()), fData.add(quantity.unit()));
+    // }
+    // if (scalar.isReal()) {
+    // return ofUnit(arg1.times(scalar));
+    // }
+    // return F.Times(this, scalar);
   }
 
   @Override
@@ -290,44 +289,44 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
   @Override
   public IExpr plus(final IExpr scalar) {
     return plus(scalar, false);
-    //    boolean azero = isZero();
-    //    boolean bzero = scalar.isZero();
-    //    if (azero && !bzero) {
-    //      return scalar; // 0[m] + X(X!=0) gives X(X!=0)
-    //    }
-    //    if (!azero && bzero) {
-    //      return this; // X(X!=0) + 0[m] gives X(X!=0)
-    //    }
-    //    /** at this point the implication holds: azero == bzero */
-    //    if (scalar instanceof IQuantity) {
-    //      IQuantity quantity = (IQuantity) scalar;
-    //      IUnit unit = quantity.unit();
-    //      if (!fData.equals(unit)) {
-    //        IExpr lhs = UnitSystem.SI().apply(this);
-    //        IExpr rhs = UnitSystem.SI().apply(quantity);
-    //        if (!this.equals(lhs) || !quantity.equals(rhs)) {
-    //          return lhs.plus(rhs);
-    //        }
-    //        String str =
-    //            IOFunctions.getMessage(
-    //                "compat", F.List(F.stringx(fData.toString()), F.stringx(unit.toString())));
-    //        throw new ArgumentTypeException(str);
-    //        // quantity = (IQuantity) UnitConvert.SI().to(unit).apply(quantity);
-    //      }
-    //      if (fData.equals(unit)) {
-    //        return ofUnit(arg1.plus(quantity.value())); // 0[m] + 0[m] gives 0[m]
-    //      } else if (azero) {
-    //        // explicit addition of zeros to ensure symmetry
-    //        // for instance when numeric precision is different
-    //        return arg1.plus(quantity.value()); // 0[m] + 0[s] gives 0
-    //      }
-    //    } else // <- scalar is not an instance of Quantity
-    //    if (azero) {
-    //      // return of value.add(scalar) is not required for symmetry
-    //      // precision of this.value prevails over given scalar
-    //      return this; // 0[kg] + 0 gives 0[kg]
-    //    }
-    //    return F.NIL;
+    // boolean azero = isZero();
+    // boolean bzero = scalar.isZero();
+    // if (azero && !bzero) {
+    // return scalar; // 0[m] + X(X!=0) gives X(X!=0)
+    // }
+    // if (!azero && bzero) {
+    // return this; // X(X!=0) + 0[m] gives X(X!=0)
+    // }
+    // /** at this point the implication holds: azero == bzero */
+    // if (scalar instanceof IQuantity) {
+    // IQuantity quantity = (IQuantity) scalar;
+    // IUnit unit = quantity.unit();
+    // if (!fData.equals(unit)) {
+    // IExpr lhs = UnitSystem.SI().apply(this);
+    // IExpr rhs = UnitSystem.SI().apply(quantity);
+    // if (!this.equals(lhs) || !quantity.equals(rhs)) {
+    // return lhs.plus(rhs);
+    // }
+    // String str =
+    // IOFunctions.getMessage(
+    // "compat", F.List(F.stringx(fData.toString()), F.stringx(unit.toString())));
+    // throw new ArgumentTypeException(str);
+    // // quantity = (IQuantity) UnitConvert.SI().to(unit).apply(quantity);
+    // }
+    // if (fData.equals(unit)) {
+    // return ofUnit(arg1.plus(quantity.value())); // 0[m] + 0[m] gives 0[m]
+    // } else if (azero) {
+    // // explicit addition of zeros to ensure symmetry
+    // // for instance when numeric precision is different
+    // return arg1.plus(quantity.value()); // 0[m] + 0[s] gives 0
+    // }
+    // } else // <- scalar is not an instance of Quantity
+    // if (azero) {
+    // // return of value.add(scalar) is not required for symmetry
+    // // precision of this.value prevails over given scalar
+    // return this; // 0[kg] + 0 gives 0[kg]
+    // }
+    // return F.NIL;
   }
 
   @Override
@@ -350,10 +349,9 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
         if (!this.equals(lhs) || !quantity.equals(rhs)) {
           return lhs.plus(rhs);
         }
-        String str = IOFunctions.getMessage("compat",
+        // `1` and `2` are incompatible units
+        throw new ArgumentTypeException("compat",
             F.List(F.stringx(fData.toString()), F.stringx(unit.toString())));
-        throw new ArgumentTypeException(str);
-        // quantity = (IQuantity) UnitConvert.SI().to(unit).apply(quantity);
       }
       if (fData.equals(unit)) {
         return ofUnit(arg1.plus(quantity.value())); // 0[m] + 0[m] gives 0[m]

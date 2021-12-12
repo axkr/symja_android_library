@@ -19,8 +19,8 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -247,7 +247,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
    * @param radix the radix to be used while parsing.
    * @return the corresponding large integer.
    * @throws NumberFormatException if the specified character sequence does not contain a parsable
-   *     large integer.
+   *         large integer.
    */
   public static IInteger valueOf(final String integerString, final int radix) {
     final int length = integerString.length();
@@ -535,8 +535,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return factorBigInteger(number, isNegative, numerator, root, map);
   }
 
-  protected static IAST factorBigInteger(
-      BigInteger number, boolean isNegative, int numerator, int denominator, Int2IntMap map) {
+  protected static IAST factorBigInteger(BigInteger number, boolean isNegative, int numerator,
+      int denominator, Int2IntMap map) {
     if (number.compareTo(BigInteger.valueOf(7)) <= 0) {
       return F.NIL;
     }
@@ -564,8 +564,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
         result.append(F.Power(F.Power(valueOf(key), valueOf(value)), F.QQ(1, denominator)));
       }
     }
-    if (denominator == 2
-        && numerator == 1
+    if (denominator == 2 && numerator == 1
         && rest.compareTo(BigInteger.valueOf(Short.MAX_VALUE - 20)) > 0) {
       // exponent 1/2 ==> special case - try to get exact square root of rest
       IInteger[] sr = F.ZZ(rest).sqrtAndRemainder();
@@ -671,23 +670,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (ni > Integer.MIN_VALUE) {
       return NumberTheory.factorial(ni);
     }
-
-    int iterationLimit = EvalEngine.get().getIterationLimit();
-    if (iterationLimit <= ni) {
-      IterationLimitExceeded.throwIt(iterationLimit, F.Factorial(this));
-    }
-    IInteger result = F.C1;
-    if (compareTo(F.C0) == -1) {
-      result = F.CN1;
-      for (IInteger i = F.CN2; i.compareTo(this) >= 0; i = i.add(F.CN1)) {
-        result = result.multiply(i);
-      }
-    } else {
-      for (IInteger i = F.C2; i.compareTo(this) <= 0; i = i.add(F.C1)) {
-        result = result.multiply(i);
-      }
-    }
-    return result;
+    // Machine-sized integer expected at position `2` in `1`.
+    throw new ArgumentTypeException("intm", F.List(F.Factorial(this), F.C1));
   }
 
   /** {@inheritDoc} */

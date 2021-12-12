@@ -4769,8 +4769,7 @@ public final class NumberTheory {
         return temp;
       }
       // Machine-sized integer expected at position `2` in `1`.
-      String str = IOFunctions.getMessage("intm", F.List(F.ZZ(1), F.StirlingS1(n, m)));
-      throw new ArgumentTypeException(str);
+      throw new ArgumentTypeException("intm", F.List(F.ZZ(1), F.StirlingS1(n, m)));
     }
 
     /** {@inheritDoc} */

@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.exception;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -14,6 +15,11 @@ public class ArgumentTypeException extends ValidateException {
   final String fMessage;
 
   public ArgumentTypeException(String message) {
+    fMessage = message;
+  }
+
+  public ArgumentTypeException(String messageShortcut, final IAST listOfArgs) {
+    String message = IOFunctions.getMessage(messageShortcut, listOfArgs);
     fMessage = message;
   }
 

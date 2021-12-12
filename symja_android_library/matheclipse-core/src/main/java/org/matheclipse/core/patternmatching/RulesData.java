@@ -29,7 +29,8 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
  * The pattern matching rules associated with a symbol. Contains <code>DownValues</code> and <code>
  * UpValues</code> rules for pattern matching.
  *
- * <p><b>Note:</b> <code>OwnValues</code> are directly stored in a symbol.
+ * <p>
+ * <b>Note:</b> <code>OwnValues</code> are directly stored in a symbol.
  */
 public final class RulesData implements Serializable {
   private static final long serialVersionUID = -7747268035549814899L;
@@ -210,8 +211,8 @@ public final class RulesData implements Serializable {
    * @param pmEvaluator
    * @return
    */
-  private PatternMatcher addSimplePatternUpRule(
-      final IExpr leftHandSide, final PatternMatcher pmEvaluator) {
+  private PatternMatcher addSimplePatternUpRule(final IExpr leftHandSide,
+      final PatternMatcher pmEvaluator) {
     IExpr head = ((IAST) leftHandSide).head();
     if (head.isFreeOfPatterns()) {
       final int hash = ((IAST) leftHandSide).topHead().hashCode();
@@ -357,26 +358,37 @@ public final class RulesData implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
 
     RulesData other = (RulesData) obj;
 
     if (fEqualDownRules == null) {
-      if (other.fEqualDownRules != null) return false;
-    } else if (!fEqualDownRules.equals(other.fEqualDownRules)) return false;
+      if (other.fEqualDownRules != null)
+        return false;
+    } else if (!fEqualDownRules.equals(other.fEqualDownRules))
+      return false;
     if (fEqualUpRules == null) {
-      if (other.fEqualUpRules != null) return false;
-    } else if (!fEqualUpRules.equals(other.fEqualUpRules)) return false;
+      if (other.fEqualUpRules != null)
+        return false;
+    } else if (!fEqualUpRules.equals(other.fEqualUpRules))
+      return false;
 
     if (fPatternDownRules == null) {
-      if (other.fPatternDownRules != null) return false;
-    } else if (!fPatternDownRules.equals(other.fPatternDownRules)) return false;
+      if (other.fPatternDownRules != null)
+        return false;
+    } else if (!fPatternDownRules.equals(other.fPatternDownRules))
+      return false;
 
     if (fSimplePatternUpRules == null) {
-      if (other.fSimplePatternUpRules != null) return false;
-    } else if (!fSimplePatternUpRules.equals(other.fSimplePatternUpRules)) return false;
+      if (other.fSimplePatternUpRules != null)
+        return false;
+    } else if (!fSimplePatternUpRules.equals(other.fSimplePatternUpRules))
+      return false;
 
     return true;
   }
@@ -455,16 +467,16 @@ public final class RulesData implements Serializable {
 
             result = pmEvaluator.eval(expr, engine);
             if (result.isPresent()) {
-              //              if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
-              //                LOGGER.info(((IPatternMatcher) patternEvaluator));
-              //                // if (((IPatternMatcher) patternEvaluator).getLHSPriority() ==
+              // if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
+              // LOGGER.info(((IPatternMatcher) patternEvaluator));
+              // // if (((IPatternMatcher) patternEvaluator).getLHSPriority() ==
               // 6686) {
-              //                LOGGER.info(
-              //                    "Rule number: " + ((IPatternMatcher)
+              // LOGGER.info(
+              // "Rule number: " + ((IPatternMatcher)
               // patternEvaluator).getLHSPriority());
-              //                // }
-              //                LOGGER.info("Result: "+result);
-              //              }
+              // // }
+              // LOGGER.info("Result: "+result);
+              // }
               if (LOGGER.isDebugEnabled()) {
                 if (isShowPriority(pmEvaluator)) {
                   LOGGER.debug("matched: {}: {}", pmEvaluator.getLHSPriority(), pmEvaluator);
@@ -548,10 +560,7 @@ public final class RulesData implements Serializable {
   /** @return Returns the equalRules. */
   public final Map<String, IStringX> getMessages() {
     if (fMessages == null) {
-      fMessages =
-          Config.TRIE_STRING2STRINGX_BUILDER
-              .withMatch(TrieMatch.EXACT)
-              .build(); // Tries.forStrings();
+      fMessages = Config.TRIE_STRING2STRINGX_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
     }
     return fMessages;
   }
@@ -574,8 +583,7 @@ public final class RulesData implements Serializable {
 
   private List<IPatternMatcher> getSimplePatternUpRules() {
     if (fSimplePatternUpRules == null) {
-      fSimplePatternUpRules =
-          new ArrayList<IPatternMatcher>(); // IPatternMatcher.EQUIVALENCE_COMPARATOR);
+      fSimplePatternUpRules = new ArrayList<IPatternMatcher>(); // IPatternMatcher.EQUIVALENCE_COMPARATOR);
     }
     return fSimplePatternUpRules;
   }
@@ -593,33 +601,18 @@ public final class RulesData implements Serializable {
   }
 
   public final IPatternMatcher putDownRule(final IExpr leftHandSide, final IExpr rightHandSide) {
-    return putDownRule(
-        IPatternMatcher.SET_DELAYED,
-        false,
-        leftHandSide,
-        rightHandSide,
+    return putDownRule(IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
         IPatternMap.DEFAULT_RULE_PRIORITY);
   }
 
-  public final IPatternMatcher putDownRule(
-      final int setSymbol,
-      final boolean equalRule,
-      final IExpr leftHandSide,
-      final IExpr rightHandSide) {
-    return putDownRule(
-        IPatternMatcher.SET_DELAYED,
-        false,
-        leftHandSide,
-        rightHandSide,
+  public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
+      final IExpr leftHandSide, final IExpr rightHandSide) {
+    return putDownRule(IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
         IPatternMap.DEFAULT_RULE_PRIORITY);
   }
 
-  public final IPatternMatcher putDownRule(
-      final int setSymbol,
-      final boolean equalRule,
-      final IExpr leftHandSide,
-      final IExpr rightHandSide,
-      final int priority) {
+  public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
+      final IExpr leftHandSide, final IExpr rightHandSide, final int priority) {
     if (equalRule || leftHandSide.isSymbol()) {
       fEqualDownRules = getEqualDownRules();
       PatternMatcherEquals pmEquals =
@@ -650,15 +643,22 @@ public final class RulesData implements Serializable {
     return insertMatcher(pmEvaluator);
   }
 
-  public final IPatternMatcher integrate(
-      final IExpr leftHandSide, final IExpr rightHandSide, final int priority) {
+  /**
+   * Create a <code>Integrate</code> pattern matching rule.
+   * 
+   * @param leftHandSide left hand side rule with patterns
+   * @param rightHandSide right hand side term rewriting rule
+   * @param priority the priority of the rule
+   * @return
+   */
+  public final IPatternMatcher integrate(final IExpr leftHandSide, final IExpr rightHandSide,
+      final int priority) {
     int patternHash = 0;
     if (!isComplicatedPatternRule(leftHandSide)) {
       patternHash = ((IAST) leftHandSide).patternHashCode();
     }
-    final PatternMatcherAndEvaluator pmEvaluator =
-        new PatternMatcherAndEvaluator(
-            IPatternMatcher.SET_DELAYED, leftHandSide, rightHandSide, false, patternHash);
+    final PatternMatcherAndEvaluator pmEvaluator = new PatternMatcherAndEvaluator(
+        IPatternMatcher.SET_DELAYED, leftHandSide, rightHandSide, false, patternHash);
     pmEvaluator.setLHSPriority(priority);
     if (fPatternDownRules == null) {
       fPatternDownRules = new ArrayList<IPatternMatcher>(7000);
@@ -734,17 +734,14 @@ public final class RulesData implements Serializable {
    * @param matcher the existing pattern matcher in the RulesData structure
    * @param newNumberOfPatterns the number of patterns which the new rule contains
    * @param newSlotValuesLHS the left-hand-side of the new rule with patterns replaced by slot
-   *     values
+   *        values
    * @param newSlotValuesRHS the right-hand-side of the new rule with pattern symbols replaced by
-   *     slot values
+   *        slot values
    * @return <code>true</code> if the <code>matcher</code>'s LHS and RHS-condition are equivalent to
-   *     the new matcher parameters
+   *         the new matcher parameters
    */
-  private static boolean equivalentSlots(
-      IPatternMatcher matcher,
-      int newNumberOfPatterns,
-      IExpr newSlotValuesLHS,
-      IExpr newSlotValuesRHS) {
+  private static boolean equivalentSlots(IPatternMatcher matcher, int newNumberOfPatterns,
+      IExpr newSlotValuesLHS, IExpr newSlotValuesRHS) {
     IPatternMap oldMap = matcher.getPatternMap();
     if (oldMap.size() != newNumberOfPatterns) {
       return false;
@@ -774,11 +771,8 @@ public final class RulesData implements Serializable {
     fDefaultValues.put(pos, expr);
   }
 
-  public IPatternMatcher putUpRule(
-      final int setSymbol,
-      final boolean equalRule,
-      final IAST leftHandSide,
-      final IExpr rightHandSide) {
+  public IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule,
+      final IAST leftHandSide, final IExpr rightHandSide) {
     if (equalRule) {
       fEqualUpRules = getEqualUpRules();
       PatternMatcherEquals pmEquals =
@@ -802,8 +796,8 @@ public final class RulesData implements Serializable {
     return addSimplePatternUpRule(leftHandSide, pmEvaluator);
   }
 
-  public boolean removeRule(
-      final int setSymbol, final boolean equalRule, final IExpr leftHandSide) {
+  public boolean removeRule(final int setSymbol, final boolean equalRule,
+      final IExpr leftHandSide) {
     if (equalRule) {
       if (fEqualDownRules != null) {
         return fEqualDownRules.remove(leftHandSide) != null;

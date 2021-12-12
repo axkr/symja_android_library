@@ -13,7 +13,6 @@ import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -75,8 +74,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
       return super.append(expr);
     }
     // The argument `1` is not a rule or a list of rules.
-    String mess = IOFunctions.getMessage("invdt2", F.List(expr));
-    throw new ArgumentTypeException(mess);
+    throw new ArgumentTypeException("invdt2", F.List(expr));
   }
 
   /**
