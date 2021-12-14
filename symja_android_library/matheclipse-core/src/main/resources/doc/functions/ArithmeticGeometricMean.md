@@ -7,7 +7,7 @@ ArithmeticGeometricMean({a, b, c,...})
 > returns the arithmetic geometric mean of `{a, b, c,...}`. 
 
 See:
-* [Wikipedia - Arithmetic-geometric mean)](https://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean)
+* [Wikipedia - Arithmetic-geometric mean](https://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean)
 * [Fungrim - Arithmetic-geometric mean](http://fungrim.org/topic/Arithmetic-geometric_mean/)
 
 ### Examples

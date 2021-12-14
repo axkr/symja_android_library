@@ -8,7 +8,7 @@ HarmonicMean({a, b, c,...})
    
 
 See:
-* [Wikipedia - Harmonic mean)](https://en.wikipedia.org/wiki/Harmonic_mean)
+* [Wikipedia - Harmonic mean](https://en.wikipedia.org/wiki/Harmonic_mean)
 
 
 ### Examples

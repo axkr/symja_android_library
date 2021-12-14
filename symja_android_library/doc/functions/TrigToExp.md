@@ -7,7 +7,7 @@ TrigToExp(expr)
 > converts trigonometric functions in `expr` to exponentials.
 
 See
-* [Wikipedia - Euler's formula)](https://en.wikipedia.org/wiki/Euler%27s_formula)  
+* [Wikipedia - Euler's formula](https://en.wikipedia.org/wiki/Euler%27s_formula)  
 
 ### Examples
 

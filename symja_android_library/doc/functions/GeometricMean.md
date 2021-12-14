@@ -8,7 +8,7 @@ GeometricMean({a, b, c,...})
    
 
 See:
-* [Wikipedia - Geometric mean)](https://en.wikipedia.org/wiki/Geometric_mean)
+* [Wikipedia - Geometric mean](https://en.wikipedia.org/wiki/Geometric_mean)
 
 
 ### Examples
