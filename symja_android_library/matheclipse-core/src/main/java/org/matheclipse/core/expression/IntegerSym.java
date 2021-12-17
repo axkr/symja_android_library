@@ -124,15 +124,13 @@ public class IntegerSym extends AbstractIntegerSym {
    */
   @Override
   public int compareTo(final IExpr expr) {
-    if (expr instanceof IntegerSym) {
-      final int num = ((IntegerSym) expr).fIntValue;
-      return (fIntValue < num) ? -1 : ((num == fIntValue) ? 0 : 1);
-    }
     if (expr instanceof IRational) {
-      if (expr instanceof AbstractFractionSym) {
+      if (expr instanceof IntegerSym) {
+        final int num = ((IntegerSym) expr).fIntValue;
+        return (fIntValue < num) ? -1 : ((num == fIntValue) ? 0 : 1);
+      } else if (expr instanceof AbstractFractionSym) {
         return -((AbstractFractionSym) expr).compareTo(AbstractFractionSym.valueOf(fIntValue));
-      }
-      if (expr instanceof BigIntegerSym) {
+      } else if (expr instanceof BigIntegerSym) {
         return -expr.compareTo(this);
       }
     } else if (expr.isReal()) {
@@ -311,9 +309,7 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public CharSequence internalJavaString(
-      SourceCodeProperties properties,
-      int depth,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<IExpr, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
     StringBuilder javaForm = new StringBuilder(prefix);
@@ -654,10 +650,8 @@ public class IntegerSym extends AbstractIntegerSym {
    * Returns the nth-root of this integer.
    *
    * @return <code>k<code> such as <code>k^n <= this < (k + 1)^n</code>
-   * @throws IllegalArgumentException
-   *             if {@code this < 0}
-   * @throws ArithmeticException
-   *             if this integer is negative and n is even.
+   * @throws IllegalArgumentException if {@code this < 0}
+   * @throws ArithmeticException if this integer is negative and n is even.
    */
   @Override
   public IExpr nthRoot(int n) throws ArithmeticException {
@@ -682,10 +676,9 @@ public class IntegerSym extends AbstractIntegerSym {
       IInteger temp = this;
       do {
         result = temp;
-        temp =
-            divideAndRemainder(temp.powerRational(((long) n) - 1))[0].add(
-                    temp.multiply(AbstractIntegerSym.valueOf(n - 1)))
-                .divideAndRemainder(AbstractIntegerSym.valueOf(n))[0];
+        temp = divideAndRemainder(temp.powerRational(((long) n) - 1))[0]
+            .add(temp.multiply(AbstractIntegerSym.valueOf(n - 1)))
+            .divideAndRemainder(AbstractIntegerSym.valueOf(n))[0];
       } while (temp.compareTo(result) < 0);
       return result;
     }
@@ -818,8 +811,8 @@ public class IntegerSym extends AbstractIntegerSym {
   /**
    * Returns the integer square root of this integer.
    *
-   * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative or it's
-   *         impossible to find a square root return <code>F.Sqrt(this)</code>.
+   * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative
+   *         or it's impossible to find a square root return <code>F.Sqrt(this)</code>.
    */
   @Override
   public IExpr sqrt() {

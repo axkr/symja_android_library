@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.function.IntFunction;
+import java.util.function.ObjIntConsumer;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
@@ -21,8 +22,9 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.organicdesign.fp.StaticImports;
-import org.organicdesign.fp.collections.RrbTree;
+import org.organicdesign.fp.collections.RrbTree.ImRrbt;
 import org.organicdesign.fp.collections.RrbTree.MutRrbt;
+import org.organicdesign.fp.collections.UnmodSortedIterator;
 
 /**
  * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>no argument</b>.
@@ -49,7 +51,7 @@ public class ASTRRBTree extends AbstractAST
     implements IASTAppendable, Externalizable, RandomAccess {
 
   /** The underlying RRB Tree */
-  protected RrbTree<IExpr> rrbTree;
+  protected ImRrbt<IExpr> rrbTree;
 
   public ASTRRBTree() {
     super();
@@ -100,7 +102,7 @@ public class ASTRRBTree extends AbstractAST
     this.rrbTree = list.immutable();
   }
 
-  public ASTRRBTree(RrbTree<IExpr> list) {
+  public ASTRRBTree(ImRrbt<IExpr> list) {
     super();
     if (Config.MAX_AST_SIZE < list.size()) {
       throw new ASTElementLimitExceeded(list.size());
@@ -272,6 +274,14 @@ public class ASTRRBTree extends AbstractAST
   }
 
   @Override
+  public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
+    UnmodSortedIterator<IExpr> iter = rrbTree.listIterator(start);
+    for (int i = start; i < end; i++) {
+      action.accept(iter.next(), i);
+    }
+  }
+
+  @Override
   public IExpr get(int location) {
     return rrbTree.get(location);
   }
@@ -360,7 +370,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
     this.fEvalFlags = objectInput.readShort();
-    this.rrbTree = (RrbTree) objectInput.readObject();
+    this.rrbTree = (ImRrbt) objectInput.readObject();
   }
 
   /**
