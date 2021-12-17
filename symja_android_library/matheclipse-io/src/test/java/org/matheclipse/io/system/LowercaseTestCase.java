@@ -20652,6 +20652,11 @@ public class LowercaseTestCase extends AbstractTestCase {
     // ",-I, I" + //
     // "}) // N", //
     // "");
+
+    check("ProductLog(3*E^3)", //
+        "3");
+    check("ProductLog(-1, -3*E^(-3))", //
+        "-3");
     check("ProductLog(2*Log(2))", //
         "Log(2)");
     check("ProductLog(-Log(2)/2)", //

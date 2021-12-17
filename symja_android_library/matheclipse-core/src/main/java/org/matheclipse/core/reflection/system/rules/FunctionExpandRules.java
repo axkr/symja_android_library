@@ -140,6 +140,9 @@ public interface FunctionExpandRules {
     // Log(1/2*(1+I*Sqrt(3)))=I*Pi/3
     Set(Log(Times(C1D2,Plus(C1,Times(CI,CSqrt3)))),
       Times(CC(0L,1L,1L,3L),Pi)),
+    // Log(ProductLog(x_))=x
+    Set(Log(ProductLog(x_)),
+      x),
     // LogisticSigmoid(x_):=1/(1+E^(-x))
     SetDelayed(LogisticSigmoid(x_),
       Power(Plus(C1,Exp(Negate(x))),CN1)),

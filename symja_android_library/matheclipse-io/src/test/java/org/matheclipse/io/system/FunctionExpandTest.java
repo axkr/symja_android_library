@@ -11,6 +11,8 @@ public class FunctionExpandTest extends AbstractTestCase {
   }
 
   public void testFunctionExpand() {
+    check("FunctionExpand(Log(ProductLog(x)))", //
+        "x");
     check(
         "FunctionExpand(ArcCot(1/x))", //
         "ArcTan(x)");

@@ -17,5 +17,9 @@ ProductLog(ComplexInfinity) = Infinity,
 ProductLog(x_*Log(x_)) = Log(x) 
   /; x>(1/E),
 ProductLog(a_*Log(x_)) = -Log(x) 
-  /; 0<x && x<=E && a<0 && (-x*a==1)
+  /; 0<x && x<=E && a<0 && (-x*a==1),
+ProductLog(x_*E^x_) = x 
+  /; x>=-1,
+ProductLog(-1, x_*E^x_) = x 
+  /; x<=-1 
 }
