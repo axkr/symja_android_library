@@ -352,7 +352,7 @@ public class SolveTest extends AbstractTestCase {
   public void testSolveProductLog() {
     check(
         "Solve(x^2==2^x,x)", //
-        "{{x->(-2*ProductLog(-Log(2)/2))/Log(2)},{x->(-2*ProductLog(Log(2)/2))/Log(2)}}");
+        "{{x->2},{x->(-2*ProductLog(Log(2)/2))/Log(2)}}");
   }
 
   public void testSolveIssue329() {

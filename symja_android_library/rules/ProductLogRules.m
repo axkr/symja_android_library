@@ -12,6 +12,10 @@ ProductLog(Infinity) = Infinity,
 ProductLog(-Infinity) = Infinity,
 ProductLog(I*Infinity) = Infinity,
 ProductLog(-I*Infinity) = Infinity,
-ProductLog(ComplexInfinity) = Infinity
+ProductLog(ComplexInfinity) = Infinity,
 
+ProductLog(x_*Log(x_)) = Log(x) 
+  /; x>(1/E),
+ProductLog(a_*Log(x_)) = -Log(x) 
+  /; 0<x && x<=E && a<0 && (-x*a==1)
 }

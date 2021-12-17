@@ -15,7 +15,7 @@ public interface ProductLogRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 12, 0 };
+  final public static int[] SIZES = { 14, 0 };
 
   final public static IAST RULES = List(
     IInit(ProductLog, SIZES),
@@ -54,6 +54,12 @@ public interface ProductLogRules {
       oo),
     // ProductLog(ComplexInfinity)=Infinity
     ISet(ProductLog(CComplexInfinity),
-      oo)
+      oo),
+    // ProductLog(Log(x_)*x_)=Log(x)/;x>1/E
+    ISet(ProductLog(Times(Log(x_),x_)),
+      Condition(Log(x),Greater(x,Exp(CN1)))),
+    // ProductLog(Log(x_)*a_)=-Log(x)/;0<x&&x<=E&&a<0&&-x*a==1
+    ISet(ProductLog(Times(Log(x_),a_)),
+      Condition(Negate(Log(x)),And(Less(C0,x),LessEqual(x,E),Less(a,C0),Equal(Times(CN1,x,a),C1))))
   );
 }
