@@ -42,6 +42,7 @@ import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -4462,7 +4463,7 @@ public final class NumberTheory {
    * 1/4+I*33333/100000
    * </pre>
    */
-  private static final class Rationalize extends AbstractFunctionEvaluator {
+  private static final class Rationalize extends AbstractCoreFunctionEvaluator {
 
     static class RationalizeNumericsVisitor extends VisitorExpr {
       double epsilon;
@@ -4490,7 +4491,7 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
+      IExpr arg1 = engine.evaluate(ast.arg1());
       double epsilon = Config.DOUBLE_EPSILON;
       try {
         if (ast.isAST2()) {
@@ -4520,7 +4521,7 @@ public final class NumberTheory {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      // newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
 
