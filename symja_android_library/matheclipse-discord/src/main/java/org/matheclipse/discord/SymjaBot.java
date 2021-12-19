@@ -1,6 +1,8 @@
 package org.matheclipse.discord;
 
 import java.io.StringWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import org.matheclipse.core.basic.Config;
@@ -12,6 +14,7 @@ import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IExpr;
@@ -30,6 +33,8 @@ import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
 
 public class SymjaBot {
+  private static final DateTimeFormatter TIME_FORMATTER =
+      DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
   public static void main(String[] args) {
     if (args.length > 0) {
@@ -58,25 +63,18 @@ public class SymjaBot {
       GatewayDiscordClient client =
           DiscordClientBuilder.create(theDiscordToken).build().login().block();
 
-      client
-          .getEventDispatcher()
-          .on(ReadyEvent.class)
-          .subscribe(
-              event -> {
-                final User self = event.getSelf();
-                System.out.println(
-                    String.format(
-                        "Logged in as %s#%s", self.getUsername(), self.getDiscriminator()));
-              });
-      client
-          .on(MessageCreateEvent.class)
-          .subscribe(
-              event -> {
-                final Message message = event.getMessage();
-                if (filterMessage(message)) {
-                  createMessage(message);
-                }
-              });
+      client.getEventDispatcher().on(ReadyEvent.class).subscribe(event -> {
+        LocalDateTime now = LocalDateTime.now();
+        final User self = event.getSelf();
+        System.out.println(String.format(TIME_FORMATTER.format(now) + ": Logged in as %s#%s",
+            self.getUsername(), self.getDiscriminator()));
+      });
+      client.on(MessageCreateEvent.class).subscribe(event -> {
+        final Message message = event.getMessage();
+        if (filterMessage(message)) {
+          createMessage(message);
+        }
+      });
       client.onDisconnect().block();
     } else {
       System.out.println("The discord bot token has to be set as the first argument.");
@@ -90,9 +88,18 @@ public class SymjaBot {
       content = content.substring(3);
       String postfix = Scanner.balanceCode(content);
       if (postfix != null && postfix.length() > 0) {
-        //        stderr.println("Automatically closing brackets: " + postfix);
+        // there are open brackets which needs to be balanced
         content = content + postfix;
       }
+      // if (start.equals("!@@")) {
+      // IExpr result = parseExpr(content);
+      // double[] v = result.toDoubleVector();
+      // if (v != null) {
+      // String str = ASCIIGraph.fromSeries(v).plot();
+      // final MessageChannel channel = message.getChannel().block();
+      // channel.createMessage("```\n" + str + "\n```").block();
+      // }
+      // } else
       if (start.equals("!~~")) {
         String result = interpreter("N(" + content + ")");
         final MessageChannel channel = message.getChannel().block();
@@ -109,7 +116,7 @@ public class SymjaBot {
     String content = message.getContent().trim();
     if (content.length() > 3) {
       String start = content.substring(0, 3);
-      if (start.equals("!>>") || start.equals("!~~")) {
+      if (start.equals("!>>") || start.equals("!~~") || start.equals("!@@")) {
         return true;
       }
     }
@@ -143,41 +150,36 @@ public class SymjaBot {
         }
         return "No help page found";
       }
-      //      System.out.println(trimmedInput);
+      System.out.println(trimmedInput);
 
-      result =
-          evaluator.evaluateWithTimeout(
-              trimmedInput,
-              30,
-              TimeUnit.SECONDS,
-              true,
-              new EvalControlledCallable(evaluator.getEvalEngine()));
+      result = evaluator.evaluateWithTimeout(trimmedInput, 30, TimeUnit.SECONDS, true,
+          new EvalControlledCallable(evaluator.getEvalEngine()));
 
       if (result != null) {
         return printResultShortened(result);
       }
     } catch (final AbortException re) {
-      //      try {
+      // try {
       return printResultShortened(S.$Aborted);
-      //      } catch (IOException e) {
-      //      Validate.printException(buf, e);
-      //        stderr.println(buf.toString());
-      //        stderr.flush();
-      //        return "";
-      //      }
+      // } catch (IOException e) {
+      // Validate.printException(buf, e);
+      // stderr.println(buf.toString());
+      // stderr.flush();
+      // return "";
+      // }
     } catch (final FailedException re) {
-      //      try {
+      // try {
       return printResultShortened(S.$Failed);
-      //      } catch (IOException e) {
-      //        Validate.printException(buf, e);
-      //        stderr.println(buf.toString());
-      //        stderr.flush();
-      //        return "";
-      //      }
+      // } catch (IOException e) {
+      // Validate.printException(buf, e);
+      // stderr.println(buf.toString());
+      // stderr.flush();
+      // return "";
+      // }
     } catch (final SyntaxError se) {
       String msg = se.getMessage();
-      //      stderr.println(msg);
-      //      stderr.flush();
+      // stderr.println(msg);
+      // stderr.flush();
       return msg;
     } catch (final RuntimeException re) {
       Throwable me = re.getCause();
@@ -186,13 +188,23 @@ public class SymjaBot {
       } else {
         Validate.printException(buf, re);
       }
-      //      stderr.println(buf.toString());
-      //      stderr.flush();
+      // stderr.println(buf.toString());
+      // stderr.flush();
       return "";
-    } catch (final Exception | OutOfMemoryError | StackOverflowError e) {
+    } catch (final Exception e) {
       Validate.printException(buf, e);
-      //      stderr.println(buf.toString());
-      //      stderr.flush();
+      // stderr.println(buf.toString());
+      // stderr.flush();
+      return "";
+    } catch (final OutOfMemoryError e) {
+      Validate.printException(buf, e);
+      // stderr.println(buf.toString());
+      // stderr.flush();
+      return "";
+    } catch (final StackOverflowError e) {
+      Validate.printException(buf, e);
+      // stderr.println(buf.toString());
+      // stderr.flush();
       return "";
     }
     return buf.toString();

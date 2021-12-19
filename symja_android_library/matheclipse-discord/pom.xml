@@ -28,27 +28,37 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>matheclipse-io</artifactId>
+			<artifactId>matheclipse-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-gpl</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.discord4j</groupId>
-			<artifactId>discord4j-core</artifactId>
-			<version>3.1.7</version>
+			<artifactId>discord4j-core</artifactId> 
+			<version>3.2.1</version>
+		</dependency> 
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-logging</artifactId>
+			<version>${project.version}</version>
 		</dependency>
+
 	</dependencies>
 
 	<build>
 		<pluginManagement>
 			<plugins>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<configuration>
 						<archive>
 							<manifest>
-								<mainClass>org.matheclipse.io.eval.Console</mainClass>
+								<mainClass>Class>org.matheclipse.discord.SymjaBot</mainClass>
 							</manifest>
 						</archive>
 						<descriptorRefs>
@@ -71,44 +81,16 @@
 					<artifactId>exec-maven-plugin</artifactId>
 					<executions>
 						<execution>
-							<id>server</id>
+							<id>symjabot</id>
 							<goals>
 								<goal>java</goal>
 							</goals>
 							<configuration>
-								<mainClass>org.matheclipse.io.servlet.ServletServer</mainClass>
+								<mainClass>org.matheclipse.discord.SymjaBot</mainClass>
 							</configuration>
-						</execution>
-						<execution>
-							<id>mmaserver</id>
-							<goals>
-								<goal>java</goal>
-							</goals>
-							<configuration>
-								<mainClass>org.matheclipse.io.servlet.MMAServletServer</mainClass>
-							</configuration>
-						</execution>
-						<execution>
-							<id>symja</id>
-							<goals>
-								<goal>java</goal>
-							</goals>
-							<configuration>
-								<mainClass>org.matheclipse.io.eval.Console</mainClass>
-							</configuration>
-						</execution>
-						<execution>
-							<id>mma</id>
-							<goals>
-								<goal>java</goal>
-							</goals>
-							<configuration>
-								<mainClass>org.matheclipse.io.eval.MMAConsole</mainClass>
-							</configuration>
-						</execution>
+						</execution> 
 					</executions>
 				</plugin>
-
 			</plugins>
 		</pluginManagement>
 	</build>
