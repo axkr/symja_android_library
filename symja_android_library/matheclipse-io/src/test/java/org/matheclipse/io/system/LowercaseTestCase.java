@@ -15554,6 +15554,13 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testMatchQ() {
+    check("MatchQ(22/7, _Rational)", //
+        "True");
+    check("MatchQ(42, _Rational)", //
+        "False");
+    check("MatchQ(1.1+2.3*I, _Complex)", //
+        "True");
+
     check("MatchQ(_Integer)[123]", //
         "True");
 
@@ -17698,7 +17705,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check("Numerator(a^-b/x)", //
         "1");
 
-    // github #151
+    check("N( Cos(Pi)/Pi )", //
+        "-0.31831");
+    // see github #151
     check("N(Numerator(Cos(Pi)/Pi))", //
         "-1.0");
 
@@ -20652,6 +20661,12 @@ public class LowercaseTestCase extends AbstractTestCase {
     // ",-I, I" + //
     // "}) // N", //
     // "");
+    check("ProductLog(9/3*Sqrt(5)*Log(5))", //
+        "ProductLog(3*Sqrt(5)*Log(5))");
+    check("ProductLog(9/2*Sqrt(3)*Log(3))", //
+        "3/2*Log(3)");
+    check("ProductLog(1/2*Sqrt(7)*Log(7))", //
+        "Log(7)/2");
 
     check("ProductLog(3*E^3)", //
         "3");
@@ -21566,8 +21581,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testRationalize() {
-    check("Rationalize(-11.5,1)", //
-        "-11");
+    check("Rationalize(Sin(3.0),0)", //
+        "50734004/359509645");
+    check("Rationalize(N(Pi),0)", //
+        "245850922/78256779");
     check("Rationalize(x+E)", //
         "E+x");
     check("Rationalize(E)", //
@@ -28082,6 +28099,13 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testWith() {
     EvalEngine.resetModuleCounter4JUnit();
 
+    // print message: Set: Cannot unset object 2.0.
+    check("With({x = 2.0}, x=3.0;Sqrt(x) + 1 )", //
+        "2.41421");
+    check("With({x = 2.0}, Sqrt(x) + 1)", //
+        "2.41421");
+
+    EvalEngine.resetModuleCounter4JUnit();
     check("With({x = 2 + y}, Hold(With({y = 4}, x + y)))", //
         "Hold(With({y$1=4},2+y+y$1))");
     EvalEngine.resetModuleCounter4JUnit();

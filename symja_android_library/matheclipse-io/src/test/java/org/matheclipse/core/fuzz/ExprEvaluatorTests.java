@@ -454,6 +454,13 @@ public class ExprEvaluatorTests extends TestCase {
             b0a, //
             nae, //
             // F.NIL, //
+            S.$Aborted, //
+            S.False, //
+            S.True, //
+            S.E, //
+            S.Pi, //
+            S.Indeterminate, //
+            F.Missing("test"), //
             F.complex(-0.5, 0.5), //
             F.complex(0.0, 0.5), //
             F.complex(0.0, -1.0), //
@@ -483,6 +490,7 @@ public class ExprEvaluatorTests extends TestCase {
             F.C1D2, //
             F.CNI, //
             F.CI, //
+            F.ZZ(42),
             F.CC(Long.MAX_VALUE, Long.MIN_VALUE, Long.MIN_VALUE, Long.MAX_VALUE), //
             F.QQ(Long.MAX_VALUE, Long.MIN_VALUE),
             F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
@@ -499,8 +507,21 @@ public class ExprEvaluatorTests extends TestCase {
             F.ZZ(101),
             F.ZZ(1009),
             F.ZZ(10007), //
+            F.CN2, //
+            F.CN3, //
+            F.CN5, //
+            F.CN7, //
+            F.ZZ(-11), //
+            F.ZZ(-13), //
+            F.ZZ(-17), //
+            F.ZZ(-19), //
+            F.ZZ(-101), //
+            F.ZZ(-1009), //
+            F.ZZ(-10007), //
             F.ZZ(Integer.MIN_VALUE), //
             F.ZZ(Integer.MAX_VALUE), //
+            F.ZZ(Byte.MIN_VALUE), //
+            F.ZZ(Byte.MAX_VALUE), //
             F.CInfinity, //
             F.CNInfinity, //
             F.Null, //
