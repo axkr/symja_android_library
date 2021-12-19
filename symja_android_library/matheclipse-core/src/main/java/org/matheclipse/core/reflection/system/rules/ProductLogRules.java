@@ -15,7 +15,7 @@ public interface ProductLogRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 16, 0 };
+  final public static int[] SIZES = { 12, 5 };
 
   final public static IAST RULES = List(
     IInit(ProductLog, SIZES),
@@ -55,17 +55,20 @@ public interface ProductLogRules {
     // ProductLog(ComplexInfinity)=Infinity
     ISet(ProductLog(CComplexInfinity),
       oo),
-    // ProductLog(Log(x_)*x_)=Log(x)/;x>1/E
-    ISet(ProductLog(Times(Log(x_),x_)),
+    // ProductLog(Log(x_)*x_):=Log(x)/;x>1/E
+    ISetDelayed(ProductLog(Times(Log(x_),x_)),
       Condition(Log(x),Greater(x,Exp(CN1)))),
-    // ProductLog(Log(x_)*a_)=-Log(x)/;0<x&&x<=E&&a<0&&-x*a==1
-    ISet(ProductLog(Times(Log(x_),a_)),
+    // ProductLog(Log(x_)*a_):=-Log(x)/;0<x&&x<=E&&a<0&&-x*a==1
+    ISetDelayed(ProductLog(Times(Log(x_),a_)),
       Condition(Negate(Log(x)),And(Less(C0,x),LessEqual(x,E),Less(a,C0),Equal(Times(CN1,x,a),C1)))),
-    // ProductLog(E^x_*x_)=x/;x>=-1
-    ISet(ProductLog(Times(Exp(x_),x_)),
+    // ProductLog(E^x_*x_):=x/;x>=-1
+    ISetDelayed(ProductLog(Times(Exp(x_),x_)),
       Condition(x,GreaterEqual(x,CN1))),
-    // ProductLog(-1,E^x_*x_)=x/;x<=-1
-    ISet(ProductLog(CN1,Times(Exp(x_),x_)),
-      Condition(x,LessEqual(x,CN1)))
+    // ProductLog(-1,E^x_*x_):=x/;x<=-1
+    ISetDelayed(ProductLog(CN1,Times(Exp(x_),x_)),
+      Condition(x,LessEqual(x,CN1))),
+    // ProductLog(Log(b_)*k_/n_*b_^(c_/n_)):=Module({a,v},a=N((n*ProductLog((b^(c/n)*k*Log(b))/n))/Log(b));v=Rationalize(a,0);v*Log(b)/n/;IntegerQ(v)&&v>=1&&PossibleZeroQ(((-b^(c/n)*k+b^(v/n)*v)*Log(b))/n))
+    ISetDelayed(ProductLog(Times(Log(b_),Rational(k_,n_),Power(b_,Rational(c_,n_)))),
+      Module(List(a,v),CompoundExpression(Set(a,N(Times(n,Power(Log(b),CN1),ProductLog(Times(Power(b,Times(c,Power(n,CN1))),k,Power(n,CN1),Log(b)))))),Set(v,Rationalize(a,C0)),Condition(Times(v,Power(n,CN1),Log(b)),And(IntegerQ(v),GreaterEqual(v,C1),PossibleZeroQ(Times(Power(n,CN1),Plus(Times(CN1,Power(b,Times(c,Power(n,CN1))),k),Times(Power(b,Times(Power(n,CN1),v)),v)),Log(b))))))))
   );
 }
