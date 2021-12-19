@@ -947,6 +947,7 @@ public class AST2Expr {
     "MatrixExp",
     "MatrixLog",
     "MatrixForm",
+    "MatrixFunction",
     "MatrixMinimalPolynomial",
     "MatrixPlot",
     "MatrixPower",

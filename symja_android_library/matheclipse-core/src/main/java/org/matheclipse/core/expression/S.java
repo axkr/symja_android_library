@@ -5862,6 +5862,9 @@ public class S {
    */
   public static final IBuiltInSymbol MatrixForm = F.initFinalSymbol("MatrixForm", ID.MatrixForm);
 
+  public static final IBuiltInSymbol MatrixFunction =
+      F.initFinalSymbol("MatrixFunction", ID.MatrixFunction);
+
   public static final IBuiltInSymbol MatrixLog = F.initFinalSymbol("MatrixLog", ID.MatrixLog);
 
   /**
