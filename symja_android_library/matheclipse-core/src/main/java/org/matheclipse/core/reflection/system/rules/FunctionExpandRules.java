@@ -158,6 +158,9 @@ public interface FunctionExpandRules {
     // ProductLog(x_*Log(x_)):=Log(x)/;x>1/E
     SetDelayed(ProductLog(Times(Log(x_),x_)),
       Condition(Log(x),Greater(x,Exp(CN1)))),
+    // E^ProductLog(x_):=x/ProductLog(x)
+    SetDelayed(Exp(ProductLog(x_)),
+      Times(x,Power(ProductLog(x),CN1))),
     // Sin(n_Integer*ArcSin(z_)):=z*ChebyshevU(-1+n,Sqrt(1-z^2))/;n>0
     SetDelayed(Sin(Times(ArcSin(z_),$p(n, Integer))),
       Condition(Times(z,ChebyshevU(Plus(CN1,n),Sqrt(Subtract(C1,Sqr(z))))),Greater(n,C0))),

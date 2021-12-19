@@ -77,6 +77,8 @@
   
  ProductLog(x_*Log(x_)) := Log(x) 
   /; x > 1/E,
+ E^ProductLog(x_) := x/ProductLog(x),
+  
   
  Sin(n_Integer*ArcSin(z_)) := z*ChebyshevU(n - 1, Sqrt(1 - z^2))
   /; n > 0,
