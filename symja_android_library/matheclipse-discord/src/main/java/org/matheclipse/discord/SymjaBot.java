@@ -156,11 +156,11 @@ public class SymjaBot {
           new EvalControlledCallable(evaluator.getEvalEngine()));
 
       if (result != null) {
-        return printResultShortened(result);
+        return printResultShortened(trimmedInput, result);
       }
     } catch (final AbortException re) {
       // try {
-      return printResultShortened(S.$Aborted);
+      return printResultShortened(trimmedInput, S.$Aborted);
       // } catch (IOException e) {
       // Validate.printException(buf, e);
       // stderr.println(buf.toString());
@@ -169,7 +169,7 @@ public class SymjaBot {
       // }
     } catch (final FailedException re) {
       // try {
-      return printResultShortened(S.$Failed);
+      return printResultShortened(trimmedInput, S.$Failed);
       // } catch (IOException e) {
       // Validate.printException(buf, e);
       // stderr.println(buf.toString());
@@ -210,11 +210,14 @@ public class SymjaBot {
     return buf.toString();
   }
 
-  private static String printResultShortened(IExpr result) {
+  private static String printResultShortened(String strInput, IExpr result) {
+    StringBuilder buf = new StringBuilder("\nInput:\n```mma\n" + strInput + "\n```");
+
     String output;
     if (result.isASTSizeGE(S.JSFormData, 2)) {
       output = IOFunctions.shorten(result.first());
-      return "\n```javascript\n" + output + "\n```\n";
+      buf.append("\n```javascript\n" + output + "\n```\n");
+      return buf.toString();
     }
     if (result.isPresent()) {
       output = IOFunctions.shorten(result);
@@ -226,18 +229,26 @@ public class SymjaBot {
       int mimeType = str.getMimeType();
       switch (mimeType) {
         case IStringX.APPLICATION_JAVA:
-          return "\n```java\n" + output + "\n```\n";
+          buf.append("\nOutput:\n```java\n" + output + "\n```\n");
+          return buf.toString();
         case IStringX.APPLICATION_JAVASCRIPT:
-          return "\n```javascript\n" + output + "\n```\n";
+          buf.append("\nOutput:\n```javascript\n" + output + "\n```\n");
+          return buf.toString();
         case IStringX.APPLICATION_SYMJA:
-          return "\n```\n" + output + "\n```\n";
+          buf.append("\nOutput:\n```\n" + output + "\n```\n");
+          return buf.toString();
         case IStringX.TEXT_LATEX:
-          return "\n```LaTeX\n" + output + "\n```\n";
+          buf.append("\nOutput:\n```LaTeX\n" + output + "\n```\n");
+          return buf.toString();
         case IStringX.TEXT_MATHML:
-          return "\n```xml\n" + output + "\n```\n";
+          buf.append("\nOutput:\n```xml\n" + output + "\n```\n");
+          return buf.toString();
       }
-      return output;
+      buf.append(output);
+      return buf.toString();
     }
-    return "\n```mma\n" + output + "\n```\n";
+    buf.append("\nOutput:\n```mma\n" + output + "\n```\n");
+    return buf.toString();
   }
+ 
 }
