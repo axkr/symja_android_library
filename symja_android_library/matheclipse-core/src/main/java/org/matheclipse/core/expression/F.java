@@ -144,8 +144,8 @@ public class F extends S {
    * In computing, memoization or memoisation is an optimization technique used primarily to speed
    * up computer programs by storing the results of expensive function calls and returning the
    * cached result when the same inputs occur again. This cache is especially used for recursive
-   * integer functions to remember the results of the recursive call. See: <a
-   * href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
+   * integer functions to remember the results of the recursive call. See:
+   * <a href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
    */
   public static final Cache<IAST, IExpr> REMEMBER_INTEGER_CACHE =
       CacheBuilder.newBuilder().maximumSize(500).build();
@@ -155,10 +155,11 @@ public class F extends S {
    * up computer programs by storing the results of expensive function calls and returning the
    * cached result when the same inputs occur again.
    *
-   * <p>This cache is especially used for expensive functions like <code>FullSimplify, Factor,...
+   * <p>
+   * This cache is especially used for expensive functions like <code>FullSimplify, Factor,...
    * </code> to remember the results of the function call. It often also stores the <code>F.NIL
-   * </code> result to indicate that a new evaluation of a function is unnecessary. See: <a
-   * href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
+   * </code> result to indicate that a new evaluation of a function is unnecessary. See:
+   * <a href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
    */
   public static final Cache<IAST, IExpr> REMEMBER_AST_CACHE =
       CacheBuilder.newBuilder().maximumSize(500).build();
@@ -197,16 +198,15 @@ public class F extends S {
     return PREDEFINED_PATTERNSEQUENCE_MAP.get(key);
   }
 
-  public static final ISymbolObserver SYMBOL_OBSERVER =
-      new ISymbolObserver() {
-        @Override
-        public final boolean createPredefinedSymbol(String symbol) {
-          return false;
-        }
+  public static final ISymbolObserver SYMBOL_OBSERVER = new ISymbolObserver() {
+    @Override
+    public final boolean createPredefinedSymbol(String symbol) {
+      return false;
+    }
 
-        @Override
-        public void createUserSymbol(ISymbol symbol) {}
-      };
+    @Override
+    public void createUserSymbol(ISymbol symbol) {}
+  };
 
   /**
    * The constant object <code>NIL</code> (not in list) indicates in the evaluation process that no
@@ -595,8 +595,8 @@ public class F extends S {
   public static final IAST CListC1;
 
   /**
-   * Represents <code>List(-1)</code>. Can be used to specify the &quot;leaf&quot; {@link
-   * VisitorLevelSpecification} of an expression.
+   * Represents <code>List(-1)</code>. Can be used to specify the &quot;leaf&quot;
+   * {@link VisitorLevelSpecification} of an expression.
    */
   public static final IAST CListCN1;
 
@@ -841,178 +841,23 @@ public class F extends S {
       Slot2 = unaryAST1(Slot, C2);
       Slot3 = unaryAST1(Slot, C3);
 
-      COMMON_IDS =
-          new IExpr[] {
-            CN1,
-            CN2,
-            CN3,
-            CN4,
-            CN5,
-            CN6,
-            CN7,
-            CN8,
-            CN9,
-            CN10,
-            C0,
-            C1,
-            C2,
-            C3,
-            C4,
-            C5,
-            C6,
-            C7,
-            C8,
-            C9,
-            C10,
-            CI,
-            CNI,
-            C1D2,
-            CN1D2,
-            C1D3,
-            CN1D3,
-            C1D4,
-            CN1D4,
-            CD0,
-            CD1,
-            CInfinity,
-            CNInfinity,
-            CComplexInfinity,
-            CSqrt2,
-            CSqrt3,
-            CSqrt5,
-            CSqrt6,
-            CSqrt7,
-            CSqrt10,
-            C1DSqrt2,
-            C1DSqrt3,
-            C1DSqrt5,
-            C1DSqrt6,
-            C1DSqrt7,
-            C1DSqrt10,
-            Slot1,
-            Slot2,
-            // start symbols
-            a,
-            b,
-            c,
-            d,
-            e,
-            f,
-            g,
-            h,
-            i,
-            j,
-            k,
-            l,
-            m,
-            n,
-            o,
-            p,
-            q,
-            r,
-            s,
-            t,
-            u,
-            v,
-            w,
-            x,
-            y,
-            z,
-            ASymbol,
-            BSymbol,
-            CSymbol,
-            FSymbol,
-            GSymbol,
-            // start pattern
-            a_,
-            b_,
-            c_,
-            d_,
-            e_,
-            f_,
-            g_,
-            h_,
-            i_,
-            j_,
-            k_,
-            l_,
-            m_,
-            n_,
-            o_,
-            p_,
-            q_,
-            r_,
-            s_,
-            t_,
-            u_,
-            v_,
-            w_,
-            x_,
-            y_,
-            z_,
-            A_,
-            B_,
-            C_,
-            F_,
-            G_,
-            a_Symbol,
-            b_Symbol,
-            c_Symbol,
-            d_Symbol,
-            e_Symbol,
-            f_Symbol,
-            g_Symbol,
-            h_Symbol,
-            i_Symbol,
-            j_Symbol,
-            k_Symbol,
-            l_Symbol,
-            m_Symbol,
-            n_Symbol,
-            o_Symbol,
-            p_Symbol,
-            q_Symbol,
-            r_Symbol,
-            s_Symbol,
-            t_Symbol,
-            u_Symbol,
-            v_Symbol,
-            w_Symbol,
-            x_Symbol,
-            y_Symbol,
-            z_Symbol,
-            a_DEFAULT,
-            b_DEFAULT,
-            c_DEFAULT,
-            d_DEFAULT,
-            e_DEFAULT,
-            f_DEFAULT,
-            g_DEFAULT,
-            h_DEFAULT,
-            i_DEFAULT,
-            j_DEFAULT,
-            k_DEFAULT,
-            l_DEFAULT,
-            m_DEFAULT,
-            n_DEFAULT,
-            o_DEFAULT,
-            p_DEFAULT,
-            q_DEFAULT,
-            r_DEFAULT,
-            s_DEFAULT,
-            t_DEFAULT,
-            u_DEFAULT,
-            v_DEFAULT,
-            w_DEFAULT,
-            x_DEFAULT,
-            y_DEFAULT,
-            z_DEFAULT,
-            A_DEFAULT,
-            B_DEFAULT,
-            C_DEFAULT,
-            F_DEFAULT,
-            G_DEFAULT
-          };
+      COMMON_IDS = new IExpr[] {CN1, CN2, CN3, CN4, CN5, CN6, CN7, CN8, CN9, CN10, C0, C1, C2, C3,
+          C4, C5, C6, C7, C8, C9, C10, CI, CNI, C1D2, CN1D2, C1D3, CN1D3, C1D4, CN1D4, CD0, CD1,
+          CInfinity, CNInfinity, CComplexInfinity, CSqrt2, CSqrt3, CSqrt5, CSqrt6, CSqrt7, CSqrt10,
+          C1DSqrt2, C1DSqrt3, C1DSqrt5, C1DSqrt6, C1DSqrt7, C1DSqrt10, Slot1, Slot2,
+          // start symbols
+          a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, ASymbol,
+          BSymbol, CSymbol, FSymbol, GSymbol,
+          // start pattern
+          a_, b_, c_, d_, e_, f_, g_, h_, i_, j_, k_, l_, m_, n_, o_, p_, q_, r_, s_, t_, u_, v_,
+          w_, x_, y_, z_, A_, B_, C_, F_, G_, a_Symbol, b_Symbol, c_Symbol, d_Symbol, e_Symbol,
+          f_Symbol, g_Symbol, h_Symbol, i_Symbol, j_Symbol, k_Symbol, l_Symbol, m_Symbol, n_Symbol,
+          o_Symbol, p_Symbol, q_Symbol, r_Symbol, s_Symbol, t_Symbol, u_Symbol, v_Symbol, w_Symbol,
+          x_Symbol, y_Symbol, z_Symbol, a_DEFAULT, b_DEFAULT, c_DEFAULT, d_DEFAULT, e_DEFAULT,
+          f_DEFAULT, g_DEFAULT, h_DEFAULT, i_DEFAULT, j_DEFAULT, k_DEFAULT, l_DEFAULT, m_DEFAULT,
+          n_DEFAULT, o_DEFAULT, p_DEFAULT, q_DEFAULT, r_DEFAULT, s_DEFAULT, t_DEFAULT, u_DEFAULT,
+          v_DEFAULT, w_DEFAULT, x_DEFAULT, y_DEFAULT, z_DEFAULT, A_DEFAULT, B_DEFAULT, C_DEFAULT,
+          F_DEFAULT, G_DEFAULT};
       short exprID = EXPRID_MAX_BUILTIN_LENGTH;
       for (short i = 0; i < COMMON_IDS.length; i++) {
         GLOBAL_IDS_MAP.put(COMMON_IDS[i], exprID++);
@@ -1226,7 +1071,7 @@ public class F extends S {
    *
    * @param condition additional condition which should be checked in pattern-matching
    * @param def if <code>true</code> use a default value in pattern-matching if an argument is
-   *     optional
+   *        optional
    * @return IPattern
    */
   public static IPattern $b(final IExpr condition, boolean def) {
@@ -1248,7 +1093,7 @@ public class F extends S {
    *
    * @param symbol
    * @param matchDefaultValue if <code>true</code>, the pattern can match to a default value
-   *     associated with the AST's head the pattern is used in
+   *        associated with the AST's head the pattern is used in
    * @return IPattern
    */
   public static IPattern $p(final ISymbol symbol, boolean matchDefaultValue) {
@@ -1260,7 +1105,7 @@ public class F extends S {
    *
    * @param symbol
    * @param headerCheck additional condition which should be checked for the header of an expression
-   *     in pattern-matching
+   *        in pattern-matching
    * @return IPattern
    */
   public static IPattern $p(final ISymbol symbol, final IExpr headerCheck) {
@@ -1273,11 +1118,11 @@ public class F extends S {
    * @param symbol
    * @param headerCheck additional condition which should be checked for the header of an expression
    * @param matchDefaultValue if <code>true</code>, the pattern can match to a default value
-   *     associated with the AST's head the pattern is used in
+   *        associated with the AST's head the pattern is used in
    * @return IPattern
    */
-  public static IPattern $p(
-      final ISymbol symbol, final IExpr headerCheck, final boolean matchDefaultValue) {
+  public static IPattern $p(final ISymbol symbol, final IExpr headerCheck,
+      final boolean matchDefaultValue) {
     return org.matheclipse.core.expression.Pattern.valueOf(symbol, headerCheck, matchDefaultValue);
   }
 
@@ -1347,7 +1192,7 @@ public class F extends S {
    * @param symbol
    * @param check additional condition which should be checked in pattern-matching
    * @param def if <code>true</code>, the pattern can match to a default value associated with the
-   *     AST's head the pattern is used in.
+   *        AST's head the pattern is used in.
    * @return IPattern
    */
   public static IPattern pattern(final ISymbol symbol, final IExpr check, final boolean def) {
@@ -1369,7 +1214,7 @@ public class F extends S {
    *
    * @param symbol the associated symbol of the pattern sequence. Maybe <code>null</code>.
    * @param zeroArgsAllowed if <code>true</code>, 0 arguments are allowed, otherwise the number of
-   *     args has to be >= 1.
+   *        args has to be >= 1.
    * @return
    */
   public static IPatternSequence $ps(final ISymbol symbol, boolean zeroArgsAllowed) {
@@ -1393,12 +1238,12 @@ public class F extends S {
    * @param symbol
    * @param check additional condition which should be checked in pattern-matching
    * @param def if <code>true</code>, the pattern can match to a default value associated with the
-   *     AST's head the pattern is used in.
+   *        AST's head the pattern is used in.
    * @param zeroArgsAllowed if <code>true</code> 0 argument sequences are allowed for this pattern
    * @return IPattern
    */
-  public static IPatternSequence $ps(
-      final ISymbol symbol, final IExpr check, final boolean def, boolean zeroArgsAllowed) {
+  public static IPatternSequence $ps(final ISymbol symbol, final IExpr check, final boolean def,
+      boolean zeroArgsAllowed) {
     return PatternSequence.valueOf(symbol, check, def, zeroArgsAllowed);
   }
 
@@ -1421,11 +1266,11 @@ public class F extends S {
    * @param engine
    * @return
    */
-  public static IPatternSequence $Repeated(
-      final IExpr patternExpr, int min, int max, EvalEngine engine) {
+  public static IPatternSequence $Repeated(final IExpr patternExpr, int min, int max,
+      EvalEngine engine) {
     boolean nullAllowed = (min <= 0);
-    return org.matheclipse.core.expression.RepeatedPattern.valueOf(
-        patternExpr, min, max, nullAllowed, engine);
+    return org.matheclipse.core.expression.RepeatedPattern.valueOf(patternExpr, min, max,
+        nullAllowed, engine);
   }
 
   /**
@@ -1447,7 +1292,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>is <code>True</code> if <code>x</code> is a symbol, or <code>False</code> otherwise.
+   * <p>
+   * is <code>True</code> if <code>x</code> is a symbol, or <code>False</code> otherwise.
    *
    * </blockquote>
    *
@@ -1612,7 +1458,8 @@ public class F extends S {
    * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or
    * created or retrieved from the SYSTEM context variables map.
    *
-   * <p><b>Note:</b> user defined variables on the context path are defined with method <code>
+   * <p>
+   * <b>Note:</b> user defined variables on the context path are defined with method <code>
    * userSymbol()</code>
    *
    * @param symbolName the name of the symbol
@@ -1745,12 +1592,13 @@ public class F extends S {
   }
 
   /**
-   * <code>expr1 && expr2 && expr3 ...</code> evaluates each expression in turn, returning {@link
-   * S#False} as soon as an expression evaluates to {@link S#False}. If all expressions evaluate to
-   * {@link S#True}, it returns {@link S#True}.
+   * <code>expr1 && expr2 && expr3 ...</code> evaluates each expression in turn, returning
+   * {@link S#False} as soon as an expression evaluates to {@link S#False}. If all expressions
+   * evaluate to {@link S#True}, it returns {@link S#True}.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/And.md">And</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/And.md">And</a>
    *
    * @param expr
    * @return
@@ -1761,11 +1609,12 @@ public class F extends S {
 
   /**
    * <code>expr1 && expr2</code> evaluates each expression in turn, returning {@link S#False} as
-   * soon as an expression evaluates to {@link S#False}. If all expressions evaluate to {@link
-   * S#True}, it returns {@link S#True}.
+   * soon as an expression evaluates to {@link S#False}. If all expressions evaluate to
+   * {@link S#True}, it returns {@link S#True}.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/And.md">And</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/And.md">And</a>
    *
    * @param expr1
    * @param expr2
@@ -1776,12 +1625,13 @@ public class F extends S {
   }
 
   /**
-   * <code>expr1 && expr2 && expr3</code> evaluates each expression in turn, returning {@link
-   * S#False} as soon as an expression evaluates to {@link S#False}. If all expressions evaluate to
-   * {@link S#True}, it returns {@link S#True}.
+   * <code>expr1 && expr2 && expr3</code> evaluates each expression in turn, returning
+   * {@link S#False} as soon as an expression evaluates to {@link S#False}. If all expressions
+   * evaluate to {@link S#True}, it returns {@link S#True}.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/And.md">And</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/And.md">And</a>
    *
    * @param expr1
    * @param expr2
@@ -1808,13 +1658,8 @@ public class F extends S {
     return new AST2(Apart, a0, a1);
   }
 
-  public static IAST AppellF1(
-      final IExpr a,
-      final IExpr b1,
-      final IExpr b2,
-      final IExpr c,
-      final IExpr z1,
-      final IExpr z2) {
+  public static IAST AppellF1(final IExpr a, final IExpr b1, final IExpr b2, final IExpr c,
+      final IExpr z1, final IExpr z2) {
     IExpr[] arr = new IExpr[] {a, b1, b2, c, z1, z2};
     return new AST(AppellF1, arr);
   }
@@ -1951,7 +1796,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>tests whether expr is a full array.
+   * <p>
+   * tests whether expr is a full array.
    *
    * </blockquote>
    *
@@ -1961,7 +1807,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>also tests whether the array depth of expr matches pattern.
+   * <p>
+   * also tests whether the array depth of expr matches pattern.
    *
    * </blockquote>
    *
@@ -1971,8 +1818,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>furthermore tests whether <code>test</code> yields <code>True</code> for all elements of
-   * expr.
+   * <p>
+   * furthermore tests whether <code>test</code> yields <code>True</code> for all elements of expr.
    *
    * </blockquote>
    *
@@ -2033,8 +1880,9 @@ public class F extends S {
   /**
    * Create an association from a list of rules.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Association.md">Association</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Association.md">Association</a>
    *
    * @param listOfRules
    * @return
@@ -2053,8 +1901,9 @@ public class F extends S {
   /**
    * Create a sparse array from the given rules list.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SparseArray.md">SparseArray</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SparseArray.md">SparseArray</a>
    *
    * @param arrayRulesList
    * @return
@@ -2069,8 +1918,8 @@ public class F extends S {
    * new list if <code>include</code> is set to <code> false </code> all arguments excluded from
    * index first to last-1 are copied in the new list
    */
-  public static IAST ast(
-      final IAST f, final IExpr head, final boolean include, final int first, final int last) {
+  public static IAST ast(final IAST f, final IExpr head, final boolean include, final int first,
+      final int last) {
     AST ast = null;
     if (include) {
       ast = AST.newInstance(last - first, head, false);
@@ -2111,7 +1960,7 @@ public class F extends S {
    * @param head the header expression of the function. If the ast represents a function like <code>
    *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
    * @param initialCapacity the initial capacity (i.e. number of arguments without the header
-   *     element) of the list.
+   *        element) of the list.
    * @return
    */
   public static IASTAppendable ast(final IExpr head, final int initialCapacity) {
@@ -2127,14 +1976,14 @@ public class F extends S {
    * @param head the header expression of the function. If the ast represents a function like <code>
    *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
    * @param initialCapacity the initial capacity (i.e. number of arguments without the header
-   *     element) of the list.
+   *        element) of the list.
    * @param initNull initialize all elements with <code>null</code>.
    * @return
    * @deprecated use {@link #ast(IExpr, int)} or {@link #astMutable(IExpr, int)}
    */
   @Deprecated
-  public static IASTAppendable ast(
-      final IExpr head, final int initialCapacity, final boolean initNull) {
+  public static IASTAppendable ast(final IExpr head, final int initialCapacity,
+      final boolean initNull) {
     return AST.newInstance(initialCapacity, head, initNull);
   }
 
@@ -2156,11 +2005,11 @@ public class F extends S {
    *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
    * @param collection the collection which holds the elements which should be appended
    * @param initialCapacity the additional capacity added to the collections size (i.e. number of
-   *     arguments without the header element) of the list.
+   *        arguments without the header element) of the list.
    * @return
    */
-  public static IASTAppendable ast(
-      final IExpr head, Collection<? extends IExpr> collection, int initialCapacity) {
+  public static IASTAppendable ast(final IExpr head, Collection<? extends IExpr> collection,
+      int initialCapacity) {
     IASTAppendable result = ast(head, collection.size() + initialCapacity);
     result.appendAll(collection);
     return result;
@@ -2174,7 +2023,7 @@ public class F extends S {
    * @param head the header expression of the function. If the ast represents a function like <code>
    *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
    * @param initialCapacity the initial capacity (i.e. number of arguments without the header
-   *     element) of the list.
+   *        element) of the list.
    * @return
    */
   public static IASTMutable astMutable(final IExpr head, final int initialCapacity) {
@@ -2187,7 +2036,7 @@ public class F extends S {
    *
    * @param value initialize all elements with <code>value</code>.
    * @param copies the initial capacity (i.e. number of arguments without the header element) of the
-   *     list.
+   *        list.
    * @return
    */
   public static IASTAppendable constantArray(final IExpr value, final int copies) {
@@ -2202,11 +2051,11 @@ public class F extends S {
    *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
    * @param value initialize all elements with <code>value</code>.
    * @param copies the initial capacity (i.e. number of arguments without the header element) of the
-   *     list.
+   *        list.
    * @return
    */
-  public static IASTAppendable constantArray(
-      final IExpr head, final IExpr value, final int copies) {
+  public static IASTAppendable constantArray(final IExpr head, final IExpr value,
+      final int copies) {
     return value.constantArray(head, 0, copies);
   }
 
@@ -2254,12 +2103,12 @@ public class F extends S {
    *
    * @param head
    * @param evalComplex if <code>true</code> test if the imaginary part of the complex number is
-   *     zero and insert a {@link Num} real value.
+   *        zero and insert a {@link Num} real value.
    * @param arr the complex number arguments
    * @return
    */
-  public static IASTAppendable ast(
-      final ISymbol head, boolean evalComplex, org.hipparchus.complex.Complex[] arr) {
+  public static IASTAppendable ast(final ISymbol head, boolean evalComplex,
+      org.hipparchus.complex.Complex[] arr) {
     return AST.newInstance(head, evalComplex, arr);
   }
 
@@ -2272,7 +2121,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>is true if <code>x</code> is an atom (an object such as a number or string, which cannot be
+   * <p>
+   * is true if <code>x</code> is an atom (an object such as a number or string, which cannot be
    * divided into subexpressions using 'Part').
    *
    * </blockquote>
@@ -2370,13 +2220,13 @@ public class F extends S {
     return new AST2(head, arg1, arg2);
   }
 
-  public static final IASTMutable binaryAST2(
-      final IExpr head, final String arg1, final IExpr arg2) {
+  public static final IASTMutable binaryAST2(final IExpr head, final String arg1,
+      final IExpr arg2) {
     return new AST2(head, $str(arg1), arg2);
   }
 
-  public static final IASTMutable binaryAST2(
-      final IExpr head, final String arg1, final String arg2) {
+  public static final IASTMutable binaryAST2(final IExpr head, final String arg1,
+      final String arg2) {
     return new AST2(head, $str(arg1), $str(arg2));
   }
 
@@ -2423,7 +2273,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>expr</code> is either <code>True</code> or <code>False
+   * <p>
+   * returns <code>True</code> if <code>expr</code> is either <code>True</code> or <code>False
    * </code>.
    *
    * </blockquote>
@@ -2489,8 +2340,8 @@ public class F extends S {
     return new AST3(BetaRegularized, a0, a1, a2);
   }
 
-  public static IAST BetaRegularized(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST BetaRegularized(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(BetaRegularized, a0, a1, a2, a3);
   }
 
@@ -2604,11 +2455,8 @@ public class F extends S {
    * @param imagDenominator
    * @return
    */
-  public static IComplex CC(
-      final long realNumerator,
-      final long realDenominator,
-      final long imagNumerator,
-      final long imagDenominator) {
+  public static IComplex CC(final long realNumerator, final long realDenominator,
+      final long imagNumerator, final long imagDenominator) {
     return ComplexSym.valueOf(realNumerator, realDenominator, imagNumerator, imagDenominator);
   }
 
@@ -2694,8 +2542,8 @@ public class F extends S {
    * @param delta the delta for which the number should be set to zero
    * @return <code>arg</code> if the argument couldn't be chopped
    */
-  public static org.hipparchus.complex.Complex chopComplex(
-      org.hipparchus.complex.Complex arg, double delta) {
+  public static org.hipparchus.complex.Complex chopComplex(org.hipparchus.complex.Complex arg,
+      double delta) {
     org.hipparchus.complex.Complex c = arg;
     if (isZero(c.getReal(), delta)) {
       if (isZero(c.getImaginary(), delta)) {
@@ -2835,10 +2683,9 @@ public class F extends S {
    * @param epsilon
    * @return IFraction
    */
-  public static IComplex complex(
-      final double realPart, final double imagPart, final double epsilon) {
-    return ComplexSym.valueOf(
-        AbstractFractionSym.valueOfEpsilon(realPart, epsilon),
+  public static IComplex complex(final double realPart, final double imagPart,
+      final double epsilon) {
+    return ComplexSym.valueOf(AbstractFractionSym.valueOfEpsilon(realPart, epsilon),
         AbstractFractionSym.valueOfEpsilon(imagPart, epsilon));
   }
 
@@ -2872,11 +2719,8 @@ public class F extends S {
    * @param imag_denominator
    * @return
    */
-  public static IComplex complex(
-      final long real_numerator,
-      final long real_denominator,
-      final long imag_numerator,
-      final long imag_denominator) {
+  public static IComplex complex(final long real_numerator, final long real_denominator,
+      final long imag_numerator, final long imag_denominator) {
     return ComplexSym.valueOf(real_numerator, real_denominator, imag_numerator, imag_denominator);
   }
 
@@ -2933,11 +2777,8 @@ public class F extends S {
     final IRational imagFraction = value.getImaginaryPart();
     final EvalEngine engine = EvalEngine.get();
     if (engine.isArbitraryMode()) {
-      return ApcomplexNum.valueOf(
-          realFraction.toBigNumerator(),
-          realFraction.toBigDenominator(),
-          imagFraction.toBigNumerator(),
-          imagFraction.toBigDenominator());
+      return ApcomplexNum.valueOf(realFraction.toBigNumerator(), realFraction.toBigDenominator(),
+          imagFraction.toBigNumerator(), imagFraction.toBigDenominator());
     }
     // double precision complex number
     double nr = realFraction.numerator().doubleValue();
@@ -2951,8 +2792,8 @@ public class F extends S {
   public static IComplexNum complexNum(final IFraction value) {
     final EvalEngine engine = EvalEngine.get();
     if (engine.isArbitraryMode()) {
-      return ApcomplexNum.valueOf(
-          value.toBigNumerator(), value.toBigDenominator(), BigInteger.ZERO, BigInteger.ONE);
+      return ApcomplexNum.valueOf(value.toBigNumerator(), value.toBigDenominator(), BigInteger.ZERO,
+          BigInteger.ONE);
     }
     return complexNum(value.doubleValue(), 0.0d);
   }
@@ -2960,8 +2801,8 @@ public class F extends S {
   public static IComplexNum complexNum(final IInteger value) {
     final EvalEngine engine = EvalEngine.get();
     if (engine.isArbitraryMode()) {
-      return ApcomplexNum.valueOf(
-          value.toBigNumerator(), BigInteger.ONE, BigInteger.ZERO, BigInteger.ONE);
+      return ApcomplexNum.valueOf(value.toBigNumerator(), BigInteger.ONE, BigInteger.ZERO,
+          BigInteger.ONE);
     }
     return complexNum(value.doubleValue(), 0.0d);
   }
@@ -2969,8 +2810,9 @@ public class F extends S {
   /**
    * Evaluates its arguments in turn, returning the last result.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CompoundExpression.md">CompoundExpression</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CompoundExpression.md">CompoundExpression</a>
    *
    * @param expr a list of expressions
    * @return
@@ -3005,8 +2847,9 @@ public class F extends S {
    * Places an additional constraint on <code>pattern</code> that only allows it to match if <code>
    * test</code> evaluates to {@link S#True}.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Condition.md">Condition</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Condition.md">Condition</a>
    *
    * @param pattern
    * @param test
@@ -3057,11 +2900,12 @@ public class F extends S {
   }
 
   /**
-   * Returns the cosine of <code>z</code> (measured in <a
-   * href="https://en.wikipedia.org/wiki/Radian">Radians</a>).
+   * Returns the cosine of <code>z</code> (measured in
+   * <a href="https://en.wikipedia.org/wiki/Radian">Radians</a>).
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cos.md">Cos</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cos.md">Cos</a>
    *
    * @param z
    * @return
@@ -3083,11 +2927,12 @@ public class F extends S {
   }
 
   /**
-   * Returns the cotangent of <code>z</code> (measured in <a
-   * href="https://en.wikipedia.org/wiki/Radian">Radians</a>).
+   * Returns the cotangent of <code>z</code> (measured in
+   * <a href="https://en.wikipedia.org/wiki/Radian">Radians</a>).
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cot.md">Cot</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cot.md">Cot</a>
    *
    * @param z
    * @return
@@ -3203,7 +3048,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>str</code> is a string which contains only digits.
+   * <p>
+   * returns <code>True</code> if <code>str</code> is a string which contains only digits.
    *
    * </blockquote>
    *
@@ -3227,34 +3073,39 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>returns a list of the dimensions of the expression <code>expr</code>.
+   * <p>
+   * returns a list of the dimensions of the expression <code>expr</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>A vector of length 3:
+   * <p>
+   * A vector of length 3:
    *
    * <pre>
    * &gt;&gt; Dimensions({a, b, c})
    *  = {3}
    * </pre>
    *
-   * <p>A 3x2 matrix:
+   * <p>
+   * A 3x2 matrix:
    *
    * <pre>
    * &gt;&gt; Dimensions({{a, b}, {c, d}, {e, f}})
    *  = {3, 2}
    * </pre>
    *
-   * <p>Ragged arrays are not taken into account:
+   * <p>
+   * Ragged arrays are not taken into account:
    *
    * <pre>
    * &gt;&gt; Dimensions({{a, b}, {b, c}, {c, d, e}})
    * {3}
    * </pre>
    *
-   * <p>The expression can have any head:
+   * <p>
+   * The expression can have any head:
    *
    * <pre>
    * &gt;&gt; Dimensions[f[f[a, b, c]]]
@@ -3274,11 +3125,12 @@ public class F extends S {
   }
 
   /**
-   * <code>DirectedEdge</code> is a directed edge from vertex <code>a</code to vertex <code>b
-   * </code in a `graph` object.
+   * <code>DirectedEdge</code> is a directed edge from vertex <code>a</code to vertex <code>b </code
+   * in a `graph` object.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirectedEdge.md">DirectedEdge</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirectedEdge.md">DirectedEdge</a>
    *
    * @param a
    * @param b
@@ -3454,11 +3306,12 @@ public class F extends S {
   }
 
   /**
-   * Yields {@link S#True} if <code>lhs</code> and <code>rhs</code> are known to be equal, or {@link
-   * S#False} if <code>lhs</code> and <code>rhs</code> are known to be unequal.
+   * Yields {@link S#True} if <code>lhs</code> and <code>rhs</code> are known to be equal, or
+   * {@link S#False} if <code>lhs</code> and <code>rhs</code> are known to be unequal.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Equal.md">Equal</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Equal.md">Equal</a>
    *
    * @param lhs
    * @param rhs
@@ -3469,11 +3322,12 @@ public class F extends S {
   }
 
   /**
-   * Yields {@link S#True} if <code>lhs</code> and <code>rhs</code> are known to be equal, or {@link
-   * S#False} if <code>lhs</code> and <code>rhs</code> are known to be unequal.
+   * Yields {@link S#True} if <code>lhs</code> and <code>rhs</code> are known to be equal, or
+   * {@link S#False} if <code>lhs</code> and <code>rhs</code> are known to be unequal.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Equal.md">Equal</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Equal.md">Equal</a>
    *
    * @param lhs
    * @param rhs
@@ -3648,7 +3502,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>x</code> is even, and <code>False</code> otherwise.
+   * <p>
+   * returns <code>True</code> if <code>x</code> is even, and <code>False</code> otherwise.
    *
    * </blockquote>
    *
@@ -3676,7 +3531,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>expr</code> is an exact number, and <code>False</code>
+   * <p>
+   * returns <code>True</code> if <code>expr</code> is an exact number, and <code>False</code>
    * otherwise.
    *
    * </blockquote>
@@ -3713,20 +3569,21 @@ public class F extends S {
   }
 
   /**
-   * depending on the derived class of the given {@link Number}, the value is encoded as {@link
-   * IInteger}, {@link INum}
+   * depending on the derived class of the given {@link Number}, the value is encoded as
+   * {@link IInteger}, {@link INum}
    *
    * @param number non-null
    * @return scalar with best possible accuracy to encode given number
    * @throws Exception if number is null, or instance of an unsupported type
    */
   public static ISignedNumber expr(Number number) {
-    if (number instanceof Integer
-        || number instanceof Long
-        || number instanceof Short
-        || number instanceof Byte) return ZZ(number.longValue());
-    if (number instanceof Double || number instanceof Float) return num(number.doubleValue());
-    if (number instanceof BigInteger) return ZZ((BigInteger) number);
+    if (number instanceof Integer || number instanceof Long || number instanceof Short
+        || number instanceof Byte)
+      return ZZ(number.longValue());
+    if (number instanceof Double || number instanceof Float)
+      return num(number.doubleValue());
+    if (number instanceof BigInteger)
+      return ZZ((BigInteger) number);
     throw new IllegalArgumentException(number.getClass().getName());
   }
 
@@ -3745,8 +3602,9 @@ public class F extends S {
   /**
    * The exponential function <code>E^z</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Exp.md">Exp</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Exp.md">Exp</a>
    *
    * @param z
    * @return
@@ -3770,8 +3628,8 @@ public class F extends S {
    * @return the evaluated expression
    * @see EvalEngine#evaluate(IExpr)
    */
-  public static IExpr expand(
-      IExpr a, boolean expandNegativePowers, boolean distributePlus, boolean evalParts) {
+  public static IExpr expand(IExpr a, boolean expandNegativePowers, boolean distributePlus,
+      boolean evalParts) {
     if (a.isAST()) {
       EvalEngine engine = EvalEngine.get();
       IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a).orElse((IAST) a);
@@ -3783,8 +3641,9 @@ public class F extends S {
   /**
    * Expands out positive rational powers and products of sums in <code>expr</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Expand.md">Expand</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Expand.md">Expand</a>
    *
    * @param expr
    * @return
@@ -3796,8 +3655,9 @@ public class F extends S {
   /**
    * Expands out positive rational powers and products of sums in <code>expr</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Expand.md">Expand</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Expand.md">Expand</a>
    *
    * @param expr
    * @param pattern
@@ -3997,6 +3857,10 @@ public class F extends S {
     return AbstractFractionSym.valueOfEpsilon(value, epsilon);
   }
 
+  // public static IFraction fractionConvergent(final double value) {
+  // return AbstractFractionSym.valueOfConvergent(value);
+  // }
+
   /**
    * Create a "fractional" number
    *
@@ -4030,8 +3894,9 @@ public class F extends S {
   /**
    * Returns {@link S#True} if <code>expr</code> does not contain the pattern <code>form</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FreeQ.md">FreeQ</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FreeQ.md">FreeQ</a>
    *
    * @param expr
    * @param form
@@ -4105,8 +3970,8 @@ public class F extends S {
     return new AST2(GammaDistribution, a0, a1);
   }
 
-  public static IAST GammaDistribution(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST GammaDistribution(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(GammaDistribution, a0, a1, a2, a3);
   }
 
@@ -4170,11 +4035,20 @@ public class F extends S {
     return ast(Graphics);
   }
 
+  public static IAST Graphics3D(final IExpr a0) {
+    return new AST1(Graphics3D, a0);
+  }
+
+  public static IAST Graphics3D(final IExpr a0, final IExpr a1) {
+    return new AST2(Graphics3D, a0, a1);
+  }
+
   /**
    * Yields {@link S#True} if <code>x</code> is known to be greater than <code>y</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Greater.md">Greater</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Greater.md">Greater</a>
    *
    * @param x
    * @param y
@@ -4187,8 +4061,9 @@ public class F extends S {
   /**
    * Yields {@link S#True} if <code>x</code> is known to be greater than <code>y</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Greater.md">Greater</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Greater.md">Greater</a>
    *
    * @param x
    * @param y
@@ -4201,8 +4076,9 @@ public class F extends S {
   /**
    * Yields {@link S#True} if <code>x</code> is known to be greater equal than <code>y</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GreaterEqual.md">GreaterEqual</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GreaterEqual.md">GreaterEqual</a>
    *
    * @param x
    * @param y
@@ -4215,8 +4091,9 @@ public class F extends S {
   /**
    * Yields {@link S#True} if <code>x</code> is known to be greater equal than <code>y</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GreaterEqual.md">GreaterEqual</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GreaterEqual.md">GreaterEqual</a>
    *
    * @param x
    * @param y
@@ -4316,8 +4193,8 @@ public class F extends S {
     return new AST3(Hypergeometric1F1Regularized, a0, a1, a2);
   }
 
-  public static IAST Hypergeometric2F1(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST Hypergeometric2F1(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(Hypergeometric2F1, a0, a1, a2, a3);
   }
 
@@ -4340,8 +4217,9 @@ public class F extends S {
   /**
    * Returns <code>trueExpr</code> if <code>condition</code> evaluates to {@link S#True}.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/If.md">If</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/If.md">If</a>
    *
    * @param condition
    * @param trueExpr
@@ -4355,8 +4233,9 @@ public class F extends S {
    * Returns <code>trueExpr</code> if <code>condition</code> evaluates to {@link S#True} and <code>
    * falseExpr</code> if it evaluates to {@link S#False}.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/If.md">If</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/If.md">If</a>
    *
    * @param condition
    * @param trueExpr
@@ -4372,18 +4251,16 @@ public class F extends S {
    * falseExpr</code> if it evaluates to {@link S#False} or <code>
    * undefinedExpr</code> if condition don't evakluate to {@link S#True} or {@link S#False}.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/If.md">If</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/If.md">If</a>
    *
    * @param condition
    * @param trueExpr
    * @param falseExpr
    * @return
    */
-  public static IAST If(
-      final IExpr condition,
-      final IExpr trueExpr,
-      final IExpr falseExpr,
+  public static IAST If(final IExpr condition, final IExpr trueExpr, final IExpr falseExpr,
       final IExpr undefinedExpr) {
     return quaternary(If, condition, trueExpr, falseExpr, undefinedExpr);
   }
@@ -4425,7 +4302,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>expr</code> is not an exact number, and <code>False
+   * <p>
+   * returns <code>True</code> if <code>expr</code> is not an exact number, and <code>False
    * </code> otherwise.
    *
    * </blockquote>
@@ -4443,7 +4321,8 @@ public class F extends S {
    * False
    * </pre>
    *
-   * <p><code>InexactNumberQ</code> can be applied to complex numbers:
+   * <p>
+   * <code>InexactNumberQ</code> can be applied to complex numbers:
    *
    * <pre>
    * &gt;&gt; InexactNumberQ(4.0+I)
@@ -4472,8 +4351,8 @@ public class F extends S {
     return initPredefinedPatternSequence(symbol, false);
   }
 
-  public static IPatternSequence initPredefinedPatternSequence(
-      final ISymbol symbol, boolean zeroArgsAllowed) {
+  public static IPatternSequence initPredefinedPatternSequence(final ISymbol symbol,
+      boolean zeroArgsAllowed) {
     PatternSequence temp = PatternSequence.valueOf(symbol, zeroArgsAllowed);
     PREDEFINED_PATTERNSEQUENCE_MAP.put(symbol.toString(), temp);
     return temp;
@@ -4601,8 +4480,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>expr</code> is an integer, and <code>False</code>
-   * otherwise.
+   * <p>
+   * returns <code>True</code> if <code>expr</code> is an integer, and <code>False</code> otherwise.
    *
    * </blockquote>
    *
@@ -4624,8 +4503,9 @@ public class F extends S {
    * Integrates <code>f</code> with respect to <code>x</code>. The result does not contain the
    * additive integration constant.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Integrate.md">Integrate</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Integrate.md">Integrate</a>
    *
    * @param f
    * @param x
@@ -4651,7 +4531,7 @@ public class F extends S {
    * Create a new <code>List</code> with the given <code>capacity</code>.
    *
    * @param capacity the assumed number of arguments (+ 1 for the header expression is added
-   *     internally).
+   *        internally).
    * @return
    */
   public static IASTAppendable IntervalAlloc(int capacity) {
@@ -4682,21 +4562,15 @@ public class F extends S {
   /**
    * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code>.
    *
-   * @param head
-   *            the header symbol of the result
-   * @param function
-   *            the function which should be applied on each iterator value
+   * @param head the header symbol of the result
+   * @param function the function which should be applied on each iterator value
    * @param from
    * @param to
    * @param step
    * @return
    */
-  public static IAST intIterator(
-      ISymbol head,
-      final Function<IExpr, IExpr> function,
-      final int from,
-      final int to,
-      final int step) {
+  public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function,
+      final int from, final int to, final int step) {
     IASTAppendable result = ast(head, to - from + 1);
     long numberOfLeaves = 0;
     for (int i = from; i <= to; i += step) {
@@ -4710,8 +4584,8 @@ public class F extends S {
     return result;
   }
 
-  public static IRational sumRational(
-      final IntFunction<IRational> function, final int from, final int to, final int step) {
+  public static IRational sumRational(final IntFunction<IRational> function, final int from,
+      final int to, final int step) {
     IRational result = C0;
     for (int i = from; i <= to; i += step) {
       result = result.add(function.apply(i));
@@ -4719,8 +4593,8 @@ public class F extends S {
     return result;
   }
 
-  public static IRational productRational(
-      final IntFunction<IRational> function, final int from, final int to, final int step) {
+  public static IRational productRational(final IntFunction<IRational> function, final int from,
+      final int to, final int step) {
     IRational result = C1;
     for (int i = from; i <= to; i += step) {
       result = result.multiply(function.apply(i));
@@ -4731,21 +4605,15 @@ public class F extends S {
   /**
    * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code>.
    *
-   * @param head
-   *            the header symbol of the result
-   * @param function
-   *            the integer function which should be applied on each iterator value
+   * @param head the header symbol of the result
+   * @param function the integer function which should be applied on each iterator value
    * @param from
    * @param to
    * @param step
    * @return
    */
-  public static IAST intIterator(
-      ISymbol head,
-      final IntFunction<IExpr> function,
-      final int from,
-      final int to,
-      final int step) {
+  public static IAST intIterator(ISymbol head, final IntFunction<IExpr> function, final int from,
+      final int to, final int step) {
     IASTAppendable result = ast(head, to - from + 1);
     for (int i = from; i <= to; i += step) {
       result.append(function.apply(i));
@@ -4753,8 +4621,8 @@ public class F extends S {
     return result;
   }
 
-  public static IAST intIterator(
-      ISymbol head, final Function<IExpr, IExpr> function, final IAST list) {
+  public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function,
+      final IAST list) {
     IASTAppendable result = ast(head, list.size());
     for (int i = 1; i < list.size(); i++) {
       result.append(function.apply(list.get(i)));
@@ -4774,8 +4642,8 @@ public class F extends S {
     return new AST3(InverseBetaRegularized, a0, a1, a2);
   }
 
-  public static IAST InverseBetaRegularized(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST InverseBetaRegularized(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(InverseBetaRegularized, a0, a1, a2, a3);
   }
 
@@ -4857,8 +4725,8 @@ public class F extends S {
 
   public static IExpr IIntegrate(int priority, final IAST lhs, final IExpr rhs) {
     lhs.setEvalFlags(lhs.getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
-    org.matheclipse.core.reflection.system.Integrate.INTEGRATE_RULES_DATA.integrate(
-        lhs, rhs, priority);
+    org.matheclipse.core.reflection.system.Integrate.INTEGRATE_RULES_DATA.integrate(lhs, rhs,
+        priority);
     return NIL;
   }
 
@@ -4910,13 +4778,17 @@ public class F extends S {
   /**
    * Check difference is less than a constant
    *
-   * <p>infinity == infinity returns true eg 1/0
+   * <p>
+   * infinity == infinity returns true eg 1/0
    *
-   * <p>-infinity == infinity returns false eg -1/0
+   * <p>
+   * -infinity == infinity returns false eg -1/0
    *
-   * <p>-infinity == -infinity returns true
+   * <p>
+   * -infinity == -infinity returns true
    *
-   * <p>undefined == undefined returns false eg 0/0
+   * <p>
+   * undefined == undefined returns false eg 0/0
    *
    * @return whether x is equal to y
    */
@@ -4924,8 +4796,8 @@ public class F extends S {
     return isFuzzyEquals(x, y, Config.MACHINE_EPSILON);
   }
 
-  public static final boolean isEqual(
-      org.hipparchus.complex.Complex x, org.hipparchus.complex.Complex y) {
+  public static final boolean isEqual(org.hipparchus.complex.Complex x,
+      org.hipparchus.complex.Complex y) {
     return isFuzzyEquals(x, y, Config.MACHINE_EPSILON);
   }
 
@@ -4933,23 +4805,26 @@ public class F extends S {
    * Returns {@code true} if {@code a} and {@code b} are within {@code tolerance} (exclusive) of
    * each other.
    *
-   * <p>Technically speaking, this is equivalent to {@code Math.abs(a - b) <= tolerance ||
+   * <p>
+   * Technically speaking, this is equivalent to {@code Math.abs(a - b) <= tolerance ||
    * Double.valueOf(a).equals(Double.valueOf(b))}.
    *
-   * <p>Notable special cases include:
+   * <p>
+   * Notable special cases include:
    *
    * <ul>
-   *   <li>All NaNs are fuzzily equal.
-   *   <li>If {@code a == b}, then {@code a} and {@code b} are always fuzzily equal.
-   *   <li>Positive and negative zero are always fuzzily equal.
-   *   <li>If {@code tolerance} is zero, and neither {@code a} nor {@code b} is NaN, then {@code a}
-   *       and {@code b} are fuzzily equal if and only if {@code a == b}.
-   *   <li>With {@link Double#POSITIVE_INFINITY} tolerance, all non-NaN values are fuzzily equal.
-   *   <li>With finite tolerance, {@code Double.POSITIVE_INFINITY} and {@code
+   * <li>All NaNs are fuzzily equal.
+   * <li>If {@code a == b}, then {@code a} and {@code b} are always fuzzily equal.
+   * <li>Positive and negative zero are always fuzzily equal.
+   * <li>If {@code tolerance} is zero, and neither {@code a} nor {@code b} is NaN, then {@code a}
+   * and {@code b} are fuzzily equal if and only if {@code a == b}.
+   * <li>With {@link Double#POSITIVE_INFINITY} tolerance, all non-NaN values are fuzzily equal.
+   * <li>With finite tolerance, {@code Double.POSITIVE_INFINITY} and {@code
    *       Double.NEGATIVE_INFINITY} are fuzzily equal only to themselves.
    * </ul>
    *
-   * <p>This is reflexive and symmetric, but <em>not</em> transitive, so it is <em>not</em> an
+   * <p>
+   * This is reflexive and symmetric, but <em>not</em> transitive, so it is <em>not</em> an
    * equivalence relation and <em>not</em> suitable for use in {@link Object#equals}
    * implementations.
    *
@@ -4962,11 +4837,12 @@ public class F extends S {
         || (Double.isNaN(a) && Double.isNaN(b));
   }
 
-  public static final boolean isFuzzyEquals(
-      org.hipparchus.complex.Complex x, org.hipparchus.complex.Complex y, double tolerance) {
+  public static final boolean isFuzzyEquals(org.hipparchus.complex.Complex x,
+      org.hipparchus.complex.Complex y, double tolerance) {
     return isFuzzyEquals(x.getReal(), y.getReal(), tolerance) //
         && isFuzzyEquals(x.getImaginary(), y.getImaginary(), tolerance);
   }
+
   /**
    * Calculate the relative difference between x and y. In case |x+y|/2 is zero the absolute
    * difference is returned.
@@ -5010,8 +4886,8 @@ public class F extends S {
    * @return
    */
   public static boolean isZero(org.hipparchus.complex.Complex value) {
-    return org.hipparchus.complex.Complex.equals(
-        value, org.hipparchus.complex.Complex.ZERO, Config.MACHINE_EPSILON);
+    return org.hipparchus.complex.Complex.equals(value, org.hipparchus.complex.Complex.ZERO,
+        Config.MACHINE_EPSILON);
     // return isZero(value.getReal(), Config.MACHINE_EPSILON) && isZero(value.getImaginary(),
     // Config.MACHINE_EPSILON);
   }
@@ -5173,8 +5049,9 @@ public class F extends S {
   /**
    * Yields {@link S#True} if <code>x</code> is known to be less than <code>y</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Less.md">Less</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Less.md">Less</a>
    *
    * @param x
    * @param y
@@ -5187,8 +5064,9 @@ public class F extends S {
   /**
    * Yields {@link S#True} if <code>x</code> is known to be less than <code>y</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Less.md">Less</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Less.md">Less</a>
    *
    * @param x
    * @param y
@@ -5202,8 +5080,9 @@ public class F extends S {
    * Yields {@link S#True} if <code>x1</code> is known to be less than <code>x2</code> and <code>x2
    * </code> is known to be less than <code>x3</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Less.md">Less</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Less.md">Less</a>
    *
    * @param x1
    * @param x2
@@ -5218,16 +5097,17 @@ public class F extends S {
     return quaternary(Less, a0, a1, a2, a3);
   }
 
-  public static IAST Less(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+  public static IAST Less(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
+      final IExpr a4) {
     return quinary(Less, a0, a1, a2, a3, a4);
   }
 
   /**
    * Yields {@link S#True} if <code>x</code> is known to be less equal than <code>y</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LessEqual.md">LessEqual</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LessEqual.md">LessEqual</a>
    *
    * @param x
    * @param y
@@ -5240,8 +5120,9 @@ public class F extends S {
   /**
    * Yields {@link S#True} if <code>x</code> is known to be less equal than <code>y</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LessEqual.md">LessEqual</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LessEqual.md">LessEqual</a>
    *
    * @param x
    * @param y
@@ -5255,8 +5136,9 @@ public class F extends S {
    * Yields {@link S#True} if <code>x1</code> is known to be less equal than <code>x2</code> and
    * <code>x2</code> is known to be less equal than <code>x3</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LessEqual.md">LessEqual</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LessEqual.md">LessEqual</a>
    *
    * @param x1
    * @param x2
@@ -5303,8 +5185,8 @@ public class F extends S {
     return new AST3(LinearModelFit, a0, a1, a2);
   }
 
-  public static IAST LinearModelFit(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST LinearModelFit(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(LinearModelFit, a0, a1, a2, a3);
   }
 
@@ -5335,6 +5217,7 @@ public class F extends S {
     }
     return allocSize;
   }
+
   /**
    * Determine the minimum of the <code>ast</code> {@link IAST#argSize()} and integer number 7
    *
@@ -5459,7 +5342,7 @@ public class F extends S {
    * Create a new <code>List</code> with the given <code>initial capacity</code>.
    *
    * @param initialCapacity the assumed number of arguments (+ 1 for the header expression is added
-   *     internally).
+   *        internally).
    * @return
    */
   public static IASTAppendable ListAlloc(int initialCapacity) {
@@ -5711,7 +5594,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>tests whether <code>expr</code> is a <code>List</code>.
+   * <p>
+   * tests whether <code>expr</code> is a <code>List</code>.
    *
    * </blockquote>
    *
@@ -5745,8 +5629,9 @@ public class F extends S {
   /**
    * Returns the natural logarithm of <code>z</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Log.md">Log</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Log.md">Log</a>
    *
    * @param z
    * @return
@@ -5758,8 +5643,9 @@ public class F extends S {
   /**
    * Returns the logarithm of <code>z</code> for the <code>base</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Log.md">Log</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Log.md">Log</a>
    *
    * @param z
    * @return
@@ -5813,8 +5699,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>expr</code> is a machine-precision real or complex
-   * number.
+   * <p>
+   * returns <code>True</code> if <code>expr</code> is a machine-precision real or complex number.
    *
    * </blockquote>
    *
@@ -5934,11 +5820,12 @@ public class F extends S {
   }
 
   /**
-   * Returns {@link S#True} if <code>form</code> matches any element of <code>list</code>, or {@link
-   * S#False} otherwise.
+   * Returns {@link S#True} if <code>form</code> matches any element of <code>list</code>, or
+   * {@link S#False} otherwise.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MemberQ.md">MemberQ</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MemberQ.md">MemberQ</a>
    *
    * @param list
    * @param form
@@ -6013,7 +5900,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>expr</code> is a <code>Missing()</code> expression.
+   * <p>
+   * returns <code>True</code> if <code>expr</code> is a <code>Missing()</code> expression.
    *
    * </blockquote>
    *
@@ -6056,8 +5944,9 @@ public class F extends S {
    * Evaluates <code>expr</code> for the <code>listOfLocalVariables</code> by first renaming the
    * local variables in <code>expr</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Module.md">Module</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Module.md">Module</a>
    *
    * @param listOfLocalVariables
    * @param expr
@@ -6098,6 +5987,7 @@ public class F extends S {
   public static IASTMutable MultiplySides(final IExpr equationOrInequality, final IExpr x) {
     return new AST2(MultiplySides, equationOrInequality, x);
   }
+
   /**
    * Evaluate the given expression in numeric mode
    *
@@ -6187,11 +6077,12 @@ public class F extends S {
   }
 
   /**
-   * Logical Not function (negation). Returns {@link S#True} if <code>expr</code> is {@link
-   * S#False}. Returns {@link S#False} if <code>expr</code> is {@link S#True}.
+   * Logical Not function (negation). Returns {@link S#True} if <code>expr</code> is
+   * {@link S#False}. Returns {@link S#False} if <code>expr</code> is {@link S#True}.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Not.md">Not</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Not.md">Not</a>
    *
    * @param expr
    * @return
@@ -6263,7 +6154,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>expr</code> is an explicit number, and <code>False</code>
+   * <p>
+   * returns <code>True</code> if <code>expr</code> is an explicit number, and <code>False</code>
    * otherwise.
    *
    * </blockquote>
@@ -6298,7 +6190,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>expr</code> is an explicit numeric expression, and <code>
+   * <p>
+   * returns <code>True</code> if <code>expr</code> is an explicit numeric expression, and <code>
    * False</code> otherwise.
    *
    * </blockquote>
@@ -6330,7 +6223,8 @@ public class F extends S {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>x</code> is odd, and <code>False</code> otherwise.
+   * <p>
+   * returns <code>True</code> if <code>x</code> is odd, and <code>False</code> otherwise.
    *
    * </blockquote>
    *
@@ -6389,8 +6283,9 @@ public class F extends S {
    * as an expression evaluates to {@link S#True}. If all expressions evaluate to {@link S#False},
    * it returns {@link S#False}.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Or.md">Or</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Or.md">Or</a>
    *
    * @param expr1
    * @param expr2
@@ -6401,12 +6296,13 @@ public class F extends S {
   }
 
   /**
-   * <code>expr1 || expr2 || expr3</code> evaluates each expression in turn, returning {@link
-   * S#True} as soon as an expression evaluates to {@link S#True}. If all expressions evaluate to
-   * {@link S#False}, it returns {@link S#False}.
+   * <code>expr1 || expr2 || expr3</code> evaluates each expression in turn, returning
+   * {@link S#True} as soon as an expression evaluates to {@link S#True}. If all expressions
+   * evaluate to {@link S#False}, it returns {@link S#False}.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Or.md">Or</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Or.md">Or</a>
    *
    * @param expr1
    * @param expr2
@@ -6442,8 +6338,8 @@ public class F extends S {
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
    */
   public static IASTAppendable Part() {
     return ast(Part);
@@ -6452,8 +6348,9 @@ public class F extends S {
   /**
    * Returns part <code>i</code> of <code>expr</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
    *
    * @param expr
    * @param i
@@ -6466,8 +6363,9 @@ public class F extends S {
   /**
    * Returns the part <code>i, j</code> of <code>expr</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
    *
    * @param expr
    * @param i
@@ -6479,16 +6377,16 @@ public class F extends S {
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
    */
   public static IASTAppendable Part(final IExpr... a) {
     return Part(0, a);
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
    */
   public static IASTAppendable Part(final int extraSize, final IExpr... a) {
     IASTAppendable part = ast(Part, a.length + extraSize + 1);
@@ -6510,8 +6408,9 @@ public class F extends S {
    * Constrains <code>pattern</code> to match <code>expr</code> only if the evaluation of <code>
    * test(expr)</code> yields {@link S#True}.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PatternTest.md">PatternTest</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PatternTest.md">PatternTest</a>
    *
    * @param pattern
    * @param test
@@ -6522,40 +6421,40 @@ public class F extends S {
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PDF.md">PDF</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PDF.md">PDF</a>
    */
   public static IAST PDF(final IExpr distribution) {
     return new AST1(PDF, distribution);
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PDF.md">PDF</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PDF.md">PDF</a>
    */
   public static IAST PDF(final IExpr distribution, final IExpr x) {
     return new AST2(PDF, distribution, x);
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Piecewise.md">Piecewise</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Piecewise.md">Piecewise</a>
    */
   public static IAST Piecewise(final IExpr listOfConditions) {
     return new AST1(Piecewise, listOfConditions);
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Piecewise.md">Piecewise</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Piecewise.md">Piecewise</a>
    */
   public static IAST Piecewise(final IExpr listOfConditions, final IExpr defaultValue) {
     return new AST2(Piecewise, listOfConditions, defaultValue);
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PiecewiseExpand.md">PiecewiseExpand</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PiecewiseExpand.md">PiecewiseExpand</a>
    */
   public static IAST PiecewiseExpand(final IExpr expr) {
     return new AST1(PiecewiseExpand, expr);
@@ -6590,16 +6489,16 @@ public class F extends S {
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IASTAppendable Plus() {
     return ast(Plus);
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    *
    * @param initialCapacity the initialCapacity of this AST
    * @return
@@ -6609,8 +6508,8 @@ public class F extends S {
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IASTAppendable Plus(final IExpr a0) {
     return unary(Plus, a0);
@@ -6619,8 +6518,9 @@ public class F extends S {
   /**
    * Define a <code>Plus()</code> expression <code>a0 + a1 + a2 ...</code> for addition.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IAST Plus(final IExpr... a) {
     switch (a.length) {
@@ -6638,8 +6538,9 @@ public class F extends S {
   /**
    * Define a <code>Plus()</code> expression <code>x + y</code> for addition.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    *
    * @param x
    * @param y
@@ -6655,8 +6556,9 @@ public class F extends S {
   /**
    * Define a <code>Plus()</code> expression <code>x + y + z</code> for addition.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IAST Plus(final IExpr x, final IExpr y, final IExpr z) {
     return new AST3(Plus, x, y, z);
@@ -6665,8 +6567,9 @@ public class F extends S {
   /**
    * Define a <code>Plus()</code> expression <code>num + a0 + a1 + a2 ...</code> for addition.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IAST Plus(final long num, final IExpr... a) {
     IASTAppendable ast = ast(Plus, a.length + 1);
@@ -6691,6 +6594,10 @@ public class F extends S {
     return new AST2(PolyGamma, a0, a1);
   }
 
+  public static IAST Polygon(final IExpr a0) {
+    return new AST1(Polygon, a0);
+  }
+
   public static IAST PolyLog(final IExpr a0, final IExpr a1) {
     return new AST2(PolyLog, a0, a1);
   }
@@ -6703,8 +6610,9 @@ public class F extends S {
    * Return {@link S#True} if <code>expr</code> is a polynomial for the <code>variable</code>.
    * Return {@link S#False} in all other cases.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolynomialQ.md">PolynomialQ</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolynomialQ.md">PolynomialQ</a>
    *
    * @param expr
    * @param variable
@@ -6741,8 +6649,9 @@ public class F extends S {
   /**
    * Define a power expression <code>base ^ exponent</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Power.md">Power</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Power.md">Power</a>
    *
    * @param base
    * @param exponent
@@ -6755,8 +6664,9 @@ public class F extends S {
   /**
    * Define a power expression <code>base ^ exponent</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Power.md">Power</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Power.md">Power</a>
    *
    * @param base
    * @param exponent
@@ -6917,16 +6827,17 @@ public class F extends S {
     return new AST1(QRDecomposition, a0);
   }
 
-  public static final IASTAppendable quaternary(
-      final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static final IASTAppendable quaternary(final IExpr head, final IExpr a0, final IExpr a1,
+      final IExpr a2, final IExpr a3) {
     return new AST(new IExpr[] {head, a0, a1, a2, a3});
   }
 
   /**
    * Returns the Quantile of the <code>distribution</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantile.md">Quantile</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantile.md">Quantile</a>
    *
    * @param distribution
    * @return
@@ -6938,8 +6849,9 @@ public class F extends S {
   /**
    * Returns the <code>q</code>-Quantile of <code>list</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantile.md">Quantile</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantile.md">Quantile</a>
    *
    * @param list
    * @param q
@@ -6954,8 +6866,9 @@ public class F extends S {
    * definition</code>. The default parameters for the quantile definition are <code>{{0,0},{1,0}}
    * </code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantile.md">Quantile</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantile.md">Quantile</a>
    *
    * @param list
    * @param q
@@ -6969,8 +6882,9 @@ public class F extends S {
   /**
    * Returns the quantity for <code>magnitude</code> and <code>unit</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantity.md">Quantity</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantity.md">Quantity</a>
    *
    * @param magnitude
    * @param unit
@@ -6983,8 +6897,9 @@ public class F extends S {
   /**
    * Returns the value of the <code>quantity</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QuantityMagnitude.md">QuantityMagnitude</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QuantityMagnitude.md">QuantityMagnitude</a>
    *
    * @param quantity
    * @return
@@ -6996,8 +6911,9 @@ public class F extends S {
   /**
    * Returns the value of the <code>quantity</code> for the given <code>unit</code>
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QuantityMagnitude.md">QuantityMagnitude</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QuantityMagnitude.md">QuantityMagnitude</a>
    *
    * @param quantity
    * @param unit
@@ -7015,13 +6931,8 @@ public class F extends S {
     return new AST1(Quiet, a0);
   }
 
-  public static final IASTMutable quinary(
-      final IExpr head,
-      final IExpr a0,
-      final IExpr a1,
-      final IExpr a2,
-      final IExpr a3,
-      final IExpr a4) {
+  public static final IASTMutable quinary(final IExpr head, final IExpr a0, final IExpr a1,
+      final IExpr a2, final IExpr a3, final IExpr a4) {
     return new AST(new IExpr[] {head, a0, a1, a2, a3, a4});
   }
 
@@ -7186,7 +7097,7 @@ public class F extends S {
    *
    * @param symbolName the name of the symbol
    * @param assumptionAST the assumptions which should be set for the symbol. Use <code>#1</code> or
-   *     {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
+   *        {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
    * @return the symbol object from the context path
    */
   public static ISymbol symbol(final String symbolName, IAST assumptionAST) {
@@ -7200,7 +7111,7 @@ public class F extends S {
    *
    * @param symbolName the name of the symbol
    * @param assumptionAST the assumptions which should be set for the symbol. Use <code>#1</code> or
-   *     {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
+   *        {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
    * @param engine the evaluation engine
    * @return the symbol object from the context path
    */
@@ -7222,8 +7133,8 @@ public class F extends S {
     return symbol;
   }
 
-  public static ISymbol symbol(
-      final String symbolName, final String contextStr, IAST assumptionAST, EvalEngine engine) {
+  public static ISymbol symbol(final String symbolName, final String contextStr, IAST assumptionAST,
+      EvalEngine engine) {
     if (contextStr.length() == 0) {
       return symbol(symbolName, assumptionAST, engine);
     }
@@ -7250,7 +7161,7 @@ public class F extends S {
   }
 
   public static ISymbol symbol(final Context context, final String symbolName, EvalEngine engine) {
-    //    ContextPath contextPath = engine.getContextPath();
+    // ContextPath contextPath = engine.getContextPath();
     return ContextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
   }
 
@@ -7304,29 +7215,26 @@ public class F extends S {
     return Dummy(EvalEngine.uniqueName("$"));
   }
 
-  public static IBuiltInSymbol localBiFunction(
-      final String symbolName, BiFunction<IExpr, IExpr, IExpr> function) {
+  public static IBuiltInSymbol localBiFunction(final String symbolName,
+      BiFunction<IExpr, IExpr, IExpr> function) {
     IBuiltInSymbol localBuittIn = new BuiltInSymbol(symbolName, java.lang.Integer.MAX_VALUE);
-    localBuittIn.setEvaluator(
-        new AbstractCoreFunctionEvaluator() {
-          @Override
-          public IExpr evaluate(IAST ast, EvalEngine engine) {
-            return function.apply(ast.arg1(), ast.arg2());
-          }
-        });
+    localBuittIn.setEvaluator(new AbstractCoreFunctionEvaluator() {
+      @Override
+      public IExpr evaluate(IAST ast, EvalEngine engine) {
+        return function.apply(ast.arg1(), ast.arg2());
+      }
+    });
     return localBuittIn;
   }
 
-  public static IBuiltInSymbol localFunction(
-      final String symbolName, Function<IExpr, IExpr> function) {
-    return localFunction(
-        symbolName,
-        new AbstractCoreFunctionEvaluator() {
-          @Override
-          public IExpr evaluate(IAST ast, EvalEngine engine) {
-            return function.apply(ast.arg1());
-          }
-        });
+  public static IBuiltInSymbol localFunction(final String symbolName,
+      Function<IExpr, IExpr> function) {
+    return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
+      @Override
+      public IExpr evaluate(IAST ast, EvalEngine engine) {
+        return function.apply(ast.arg1());
+      }
+    });
   }
 
   public static IBuiltInSymbol localFunction(final String symbolName, IEvaluator evaluator) {
@@ -7335,27 +7243,23 @@ public class F extends S {
     return localBuittIn;
   }
 
-  public static IBuiltInSymbol localBiPredicate(
-      final String symbolName, BiPredicate<IExpr, IExpr> function) {
-    return localFunction(
-        symbolName,
-        new AbstractCoreFunctionEvaluator() {
-          @Override
-          public IExpr evaluate(IAST ast, EvalEngine engine) {
-            return bool(function.test(ast.arg1(), ast.arg2()));
-          }
-        });
+  public static IBuiltInSymbol localBiPredicate(final String symbolName,
+      BiPredicate<IExpr, IExpr> function) {
+    return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
+      @Override
+      public IExpr evaluate(IAST ast, EvalEngine engine) {
+        return bool(function.test(ast.arg1(), ast.arg2()));
+      }
+    });
   }
 
   public static IBuiltInSymbol localPredicate(final String symbolName, Predicate<IExpr> function) {
-    return localFunction(
-        symbolName,
-        new AbstractCoreFunctionEvaluator() {
-          @Override
-          public IExpr evaluate(IAST ast, EvalEngine engine) {
-            return bool(function.test(ast.arg1()));
-          }
-        });
+    return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
+      @Override
+      public IExpr evaluate(IAST ast, EvalEngine engine) {
+        return bool(function.test(ast.arg1()));
+      }
+    });
   }
 
   /**
@@ -7415,8 +7319,9 @@ public class F extends S {
   /**
    * Represents a rule replacing <code>lhsStr</code> with <code>rhs</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
    *
    * @param lhsStr
    * @param rhs
@@ -7429,8 +7334,9 @@ public class F extends S {
   /**
    * Represents a rule replacing <code>lhsStr</code> with <code>rhsStr</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
    *
    * @param lhsStr
    * @param rhsStr
@@ -7443,8 +7349,9 @@ public class F extends S {
   /**
    * Represents a rule replacing <code>lhs</code> with <code>rhs</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
    *
    * @param lhs
    * @param rhs
@@ -7457,8 +7364,9 @@ public class F extends S {
   /**
    * Represents a rule replacing <code>lhs</code> with <code>rhsStr</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
    *
    * @param lhs
    * @param rhsStr
@@ -7472,8 +7380,9 @@ public class F extends S {
    * Represents a rule replacing <code>lhs</code> with <code>rhs</code>, with <code>rhs</code> held
    * unevaluated.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RuleDelayed.md">RuleDelayed</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RuleDelayed.md">RuleDelayed</a>
    *
    * @param lhs
    * @param rhs
@@ -7486,8 +7395,9 @@ public class F extends S {
   /**
    * Returns {@link S#True} if <code>lhs</code> and <code>rhs</code> are structurally identical.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SameQ.md">SameQ</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SameQ.md">SameQ</a>
    *
    * @param lhs
    * @param rhs
@@ -7525,14 +7435,8 @@ public class F extends S {
     return new AST2(Select, a0, a1);
   }
 
-  public static final IAST senary(
-      final IExpr head,
-      final IExpr a0,
-      final IExpr a1,
-      final IExpr a2,
-      final IExpr a3,
-      final IExpr a4,
-      final IExpr a5) {
+  public static final IAST senary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3, final IExpr a4, final IExpr a5) {
     return new AST(new IExpr[] {head, a0, a1, a2, a3, a4, a5});
   }
 
@@ -7563,8 +7467,9 @@ public class F extends S {
   /**
    * Evaluates <code>rhs</code> and assigns it to <code>lhs</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Set.md">Set</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Set.md">Set</a>
    *
    * @param lhs
    * @param rhs
@@ -7581,8 +7486,9 @@ public class F extends S {
   /**
    * Assigns <code>rhs</code> to <code>lhs</code>, without evaluating <code>rhs</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SetDelayed.md">SetDelayed</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SetDelayed.md">SetDelayed</a>
    *
    * @param lhs
    * @param rhs
@@ -7617,11 +7523,12 @@ public class F extends S {
   }
 
   /**
-   * Returns the sine of <code>z</code> (measured in <a
-   * href="https://en.wikipedia.org/wiki/Radian">Radians</a>).
+   * Returns the sine of <code>z</code> (measured in
+   * <a href="https://en.wikipedia.org/wiki/Radian">Radians</a>).
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sin.md">Sin</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sin.md">Sin</a>
    *
    * @param z
    * @return
@@ -7674,11 +7581,12 @@ public class F extends S {
   /**
    * Solve an equation for a single variable.
    *
-   * <p>Solve <code>100-x==0</code> for variable <code>x</code>
+   * <p>
+   * Solve <code>100-x==0</code> for variable <code>x</code>
    *
    * <pre>
-   *   ISymbol x = F.Dummy(engine);
-   *   IExpr[] solutions = F.solve(F.Equal(F.Subtract(F.ZZ(100), x), F.C0), x);
+   * ISymbol x = F.Dummy(engine);
+   * IExpr[] solutions = F.solve(F.Equal(F.Subtract(F.ZZ(100), x), F.C0), x);
    * </pre>
    *
    * See <a href=
@@ -7742,8 +7650,8 @@ public class F extends S {
     return new AST2(SphericalHankelH2, n, z);
   }
 
-  public static IAST SphericalHarmonicY(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST SphericalHarmonicY(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return function(SphericalHarmonicY, a0, a1, a2, a3);
   }
 
@@ -7760,8 +7668,9 @@ public class F extends S {
   /**
    * Create a &quot;square root&quot; expression: <code>Power(x, 1/2)</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sqrt.md">Sqrt</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sqrt.md">Sqrt</a>
    *
    * @param x
    * @return
@@ -7773,8 +7682,9 @@ public class F extends S {
   /**
    * Create a &quot;square root&quot; expression: <code>Power(n, 1/2)</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sqrt.md">Sqrt</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sqrt.md">Sqrt</a>
    *
    * @param n
    * @return
@@ -7910,7 +7820,7 @@ public class F extends S {
    * @param x the subexpression which should be replaced
    * @param y the expression which replaces <code>x</code>
    * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or
-   *     the substituted expression.
+   *         the substituted expression.
    */
   public static IExpr subs(final IExpr expr, final IExpr x, final IExpr y) {
     return expr.replaceAll(Rule(x, y)).orElse(expr);
@@ -7922,9 +7832,9 @@ public class F extends S {
    *
    * @param expr
    * @param function if the unary functions <code>apply()</code> method returns <code>F.NIL</code>
-   *     the expression isn't substituted.
+   *        the expression isn't substituted.
    * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or
-   *     the substituted expression.
+   *         the substituted expression.
    */
   public static IExpr subst(IExpr expr, final Function<IExpr, IExpr> function) {
     return expr.replaceAll(function).orElse(expr);
@@ -7936,9 +7846,9 @@ public class F extends S {
    *
    * @param expr
    * @param map if the maps <code>get()</code> method returns <code>null</code> the expression isn't
-   *     substituted.
+   *        substituted.
    * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or
-   *     the substituted expression.
+   *         the substituted expression.
    */
   public static IExpr subst(IExpr expr, final Map<? extends IExpr, ? extends IExpr> map) {
     return expr.replaceAll(map).orElse(expr);
@@ -7950,9 +7860,9 @@ public class F extends S {
    *
    * @param expr
    * @param astRules rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code>; the
-   *     left-hand-side of the rule can contain pattern objects.
+   *        left-hand-side of the rule can contain pattern objects.
    * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or
-   *     the substituted expression.
+   *         the substituted expression.
    */
   public static IExpr subst(IExpr expr, final IAST astRules) {
     if (astRules.isListOfLists()) {
@@ -7973,7 +7883,7 @@ public class F extends S {
    * @param subExpr
    * @param replacementExpr
    * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or
-   *     the substituted expression.
+   *         the substituted expression.
    */
   public static IExpr subst(IExpr expr, IExpr subExpr, IExpr replacementExpr) {
     return expr.replaceAll(Functors.rules(Rule(subExpr, replacementExpr), EvalEngine.get()))
@@ -8008,22 +7918,19 @@ public class F extends S {
     return new AST2(Sum, expr, iterationSpecification);
   }
 
-  public static IAST Sum(
-      final IExpr expr, final IExpr iterationSpecification1, final IExpr iterationSpecification2) {
+  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification1,
+      final IExpr iterationSpecification2) {
     return new AST3(Sum, expr, iterationSpecification1, iterationSpecification2);
   }
 
-  public static IAST Sum(
-      final IExpr expr,
-      final IExpr iterationSpecification1,
-      final IExpr iterationSpecification2,
-      final IExpr iterationSpecification3) {
-    return quaternary(
-        Sum, expr, iterationSpecification1, iterationSpecification2, iterationSpecification3);
+  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification1,
+      final IExpr iterationSpecification2, final IExpr iterationSpecification3) {
+    return quaternary(Sum, expr, iterationSpecification1, iterationSpecification2,
+        iterationSpecification3);
   }
 
-  public static IRational sumRational(
-      final IntFunction<IRational> function, final int iMin, final int iMax) {
+  public static IRational sumRational(final IntFunction<IRational> function, final int iMin,
+      final int iMax) {
     return sumRational(function, iMin, iMax, 1);
   }
 
@@ -8052,8 +7959,8 @@ public class F extends S {
    * @param iStep
    * @return
    */
-  public static IAST sum(
-      final Function<IExpr, IExpr> function, final int iMin, final int iMax, final int iStep) {
+  public static IAST sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax,
+      final int iStep) {
     return intIterator(Plus, function, iMin, iMax, iStep);
   }
 
@@ -8115,11 +8022,12 @@ public class F extends S {
   }
 
   /**
-   * Returns the tangent of <code>z</code> (measured in <a
-   * href="https://en.wikipedia.org/wiki/Radian">Radians</a>).
+   * Returns the tangent of <code>z</code> (measured in
+   * <a href="https://en.wikipedia.org/wiki/Radian">Radians</a>).
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Tan.md">Tan</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Tan.md">Tan</a>
    *
    * @param z
    * @return
@@ -8170,8 +8078,8 @@ public class F extends S {
    * @param arg3
    * @return
    */
-  public static final IASTMutable ternaryAST3(
-      final IExpr head, final IExpr arg1, final IExpr arg2, final IExpr arg3) {
+  public static final IASTMutable ternaryAST3(final IExpr head, final IExpr arg1, final IExpr arg2,
+      final IExpr arg3) {
     return new AST3(head, arg1, arg2, arg3);
   }
 
@@ -8214,8 +8122,8 @@ public class F extends S {
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    *
    * @return
    */
@@ -8224,8 +8132,8 @@ public class F extends S {
   }
 
   /**
-   * Create a Times() function with allocated space for size elements. See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
+   * Create a Times() function with allocated space for size elements. See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    *
    * @param initialCapacity the initialCapacity of this AST
    * @return
@@ -8235,8 +8143,8 @@ public class F extends S {
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IASTAppendable Times(final IExpr x) {
     return unary(Times, x);
@@ -8245,8 +8153,9 @@ public class F extends S {
   /**
    * Define a <code>Times()</code> expression <code>a1 * a2 * ...</code> for multiplication.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IAST Times(final IExpr... a) {
     switch (a.length) {
@@ -8264,8 +8173,9 @@ public class F extends S {
   /**
    * Define a <code>Times()</code> expression <code>x * y</code> for multiplication.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IASTMutable Times(final IExpr x, final IExpr y) {
     if (x != null && y != null) {
@@ -8277,8 +8187,9 @@ public class F extends S {
   /**
    * Define a <code>Times()</code> expression <code>a0 * a1 * a2</code> for multiplication.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IAST Times(final IExpr x, final IExpr y, final IExpr z) {
     return new AST3(Times, x, y, z);
@@ -8339,8 +8250,8 @@ public class F extends S {
   }
 
   /**
-   * See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IAST Times(final long num, final IExpr... a) {
     IASTAppendable ast = ast(Times, a.length + 1);
@@ -8452,8 +8363,9 @@ public class F extends S {
    * <code>UndirectedEdge</code> is an undirected edge between the vertices <code>a</code> and
    * <code>b</code> in a `graph` object.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UndirectedEdge.md">UndirectedEdge</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UndirectedEdge.md">UndirectedEdge</a>
    *
    * @param a
    * @param b
@@ -8467,8 +8379,9 @@ public class F extends S {
    * Yields {@link S#False} if <code>lhs</code> and <code>rhs</code> are known to be equal, or
    * {@link S#True} if <code>lhs</code> and <code>rhs</code> are known to be unequal.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Unequal.md">Unequal</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Unequal.md">Unequal</a>
    *
    * @param lhs
    * @param rhs
@@ -8497,8 +8410,9 @@ public class F extends S {
   /**
    * Convert the <code>quantity</code> to the base unit.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UnitConvert.md">UnitConvert</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UnitConvert.md">UnitConvert</a>
    *
    * @param quantity
    * @return
@@ -8510,8 +8424,9 @@ public class F extends S {
   /**
    * Convert the <code>quantity</code> to the given <code>unit</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UnitConvert.md">UnitConvert</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UnitConvert.md">UnitConvert</a>
    *
    * @param quantity
    * @param unit
@@ -8532,8 +8447,9 @@ public class F extends S {
   /**
    * Returns {@link S#True} if <code>lhs</code> and <code>rhs</code> are not structurally identical.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UnsameQ.md">UnsameQ</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UnsameQ.md">UnsameQ</a>
    *
    * @param lhs
    * @param rhs
@@ -8582,8 +8498,9 @@ public class F extends S {
   /**
    * Evaluates <code>body</code> as long as <code>test</code> evaluates to {@link S#True}.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/While.md">While</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/While.md">While</a>
    *
    * @param test
    * @param body
@@ -8605,8 +8522,9 @@ public class F extends S {
    * Evaluates <code>expr</code> for the<code>listOfLocalVariables</code> by replacing the local
    * variables in <code>expr</code>.
    *
-   * <p>See: <a
-   * href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/With.md">With</a>
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/With.md">With</a>
    *
    * @param listOfLocalVariables
    * @param expr
@@ -8709,10 +8627,7 @@ public class F extends S {
    */
   public static IAST operatorFormAppend2(final IAST astArg) {
     if (astArg.head().isAST2() && astArg.isAST1()) {
-      return new AST3(
-          astArg.topHead(),
-          astArg.arg1(),
-          ((IAST) astArg.head()).arg1(),
+      return new AST3(astArg.topHead(), astArg.arg1(), ((IAST) astArg.head()).arg1(),
           ((IAST) astArg.head()).arg2());
     }
     return NIL;
@@ -8814,7 +8729,8 @@ public class F extends S {
   /**
    * Parses a given string to an instance of {@link IExpr}
    *
-   * <p>Examples:
+   * <p>
+   * Examples:
    *
    * <pre>
    * "7/9" -> RationalScalar.of(7, 9)
@@ -8826,7 +8742,8 @@ public class F extends S {
    * If the parsing logic encounters an inconsistency, the return type is a {@link IStringX} that
    * holds the input string.
    *
-   * <p>Scalar types that are not supported include {@link GaussScalar}.
+   * <p>
+   * Scalar types that are not supported include {@link GaussScalar}.
    *
    * @param string
    * @return scalar
@@ -8917,15 +8834,15 @@ public class F extends S {
       } catch (Exception ex) {
         LOGGER.debug("F.printJSFormData() failed", ex);
       }
-      //    } else if (jsFormData.arg2().toString().equals("graphics3d")) {
-      //      try {
-      //        String graphics3dStr = jsFormData.arg1().toString();
-      //        String html = Config.GRAPHICS3D_PAGE;
-      //        html = StringUtils.replace(html, "`1`", graphics3dStr);
-      //        return openHTMLOnDesktop(html);
-      //      } catch (Exception ex) {
-      //        LOGGER.debug("F.printJSFormData() failed", ex);
-      //      }
+      // } else if (jsFormData.arg2().toString().equals("graphics3d")) {
+      // try {
+      // String graphics3dStr = jsFormData.arg1().toString();
+      // String html = Config.GRAPHICS3D_PAGE;
+      // html = StringUtils.replace(html, "`1`", graphics3dStr);
+      // return openHTMLOnDesktop(html);
+      // } catch (Exception ex) {
+      // LOGGER.debug("F.printJSFormData() failed", ex);
+      // }
     } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
       try {
         String manipulateStr = jsFormData.arg1().toString();
@@ -8947,29 +8864,16 @@ public class F extends S {
         String manipulateStr = jsFormData.arg1().toString();
         String html = Config.VISJS_PAGE;
         html = StringUtils.replace(html, "`1`", manipulateStr);
-        html =
-            StringUtils.replace(
-                html,
-                "`2`", //
-                "  var options = {\n"
-                    + "          edges: {\n"
-                    + "              smooth: {\n"
-                    + "                  type: 'cubicBezier',\n"
-                    + "                  forceDirection:  'vertical',\n"
-                    + "                  roundness: 0.4\n"
-                    + "              }\n"
-                    + "          },\n"
-                    + "          layout: {\n"
-                    + "              hierarchical: {\n"
-                    + "                  direction: \"UD\"\n"
-                    + "              }\n"
-                    + "          },\n"
-                    + "          nodes: {\n"
-                    + "            shape: 'box'\n"
-                    + "          },\n"
-                    + "          physics:false\n"
-                    + "      }; " //
-                );
+        html = StringUtils.replace(html, "`2`", //
+            "  var options = {\n" + "          edges: {\n" + "              smooth: {\n"
+                + "                  type: 'cubicBezier',\n"
+                + "                  forceDirection:  'vertical',\n"
+                + "                  roundness: 0.4\n" + "              }\n" + "          },\n"
+                + "          layout: {\n" + "              hierarchical: {\n"
+                + "                  direction: \"UD\"\n" + "              }\n" + "          },\n"
+                + "          nodes: {\n" + "            shape: 'box'\n" + "          },\n"
+                + "          physics:false\n" + "      }; " //
+        );
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
         LOGGER.debug("F.printJSFormData() failed", ex);
@@ -9004,7 +8908,7 @@ public class F extends S {
 
   public static String openHTMLOnDesktop(String html) throws IOException {
     File temp = java.io.File.createTempFile("tempfile", ".html");
-    try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp)); ) {
+    try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp));) {
       bw.write(html);
     }
     if (Desktop.isDesktopSupported()) {
@@ -9035,17 +8939,14 @@ public class F extends S {
       final int extraSize = list.get(indx).size();
       final IASTAppendable seqResult = F.ast(list.head(), list.size() + extraSize + 1);
       seqResult.appendArgs(list, indx);
-      list.forEach(
-          indx,
-          list.size(),
-          x -> {
-            if (x.isSequence()) {
-              seqResult.appendArgs((IAST) x);
-            } else if (isList && x == Nothing) {
-            } else {
-              seqResult.append(x);
-            }
-          });
+      list.forEach(indx, list.size(), x -> {
+        if (x.isSequence()) {
+          seqResult.appendArgs((IAST) x);
+        } else if (isList && x == Nothing) {
+        } else {
+          seqResult.append(x);
+        }
+      });
       return seqResult;
     }
     list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
