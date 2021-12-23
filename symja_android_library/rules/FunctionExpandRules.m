@@ -1,4 +1,6 @@
 {
+ Abs(x_^n_Integer) := (Im(x)^2+Re(x)^2)^(n/2)
+   /; EvenQ(n),
  ArcCos(x_^(-1)) := ArcSec(x),
  ArcSec(x_^(-1)) := ArcCos(x),
  ArcCot(Sqrt(x_^2)) := (Sqrt(x^2)*ArcCot(x))/x,
@@ -108,6 +110,8 @@
  
  WhittakerM(k_, m_, z_) := (z^(1/2+m) * Hypergeometric1F1(1/2-k+m, 1+ 2*m, z))/E^(z/2),
 
- WhittakerW(k_, m_, z_) := (z^(1/2+m) * HypergeometricU(1/2-k+m, 1+2*m, z))/E^(z/2)
+ WhittakerW(k_, m_, z_) := (z^(1/2+m) * HypergeometricU(1/2-k+m, 1+2*m, z))/E^(z/2),
 
+ Zeta(n_Integer, x_) := 1/((-1)^n*(n-1)!) * PolyGamma(n-1,x)
+   /; EvenQ(n) && n>1
 }

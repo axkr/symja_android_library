@@ -11,6 +11,9 @@ import org.matheclipse.core.patternmatching.Matcher;
  */
 public interface FunctionExpandRules {
   final public static IAST RULES = List(
+    // Abs(x_^n_Integer):=(Im(x)^2+Re(x)^2)^(n/2)/;EvenQ(n)
+    SetDelayed(Abs(Power(x_,$p(n, Integer))),
+      Condition(Power(Plus(Sqr(Im(x)),Sqr(Re(x))),Times(C1D2,n)),EvenQ(n))),
     // ArcCos(1/x_):=ArcSec(x)
     SetDelayed(ArcCos(Power(x_,CN1)),
       ArcSec(x)),
@@ -214,6 +217,9 @@ public interface FunctionExpandRules {
       Times(Power(Exp(Times(C1D2,z)),CN1),Power(z,Plus(C1D2,m)),Hypergeometric1F1(Plus(C1D2,Negate(k),m),Plus(C1,Times(C2,m)),z))),
     // WhittakerW(k_,m_,z_):=(z^(1/2+m)*HypergeometricU(1/2-k+m,1+2*m,z))/E^(z/2)
     SetDelayed(WhittakerW(k_,m_,z_),
-      Times(Power(Exp(Times(C1D2,z)),CN1),Power(z,Plus(C1D2,m)),HypergeometricU(Plus(C1D2,Negate(k),m),Plus(C1,Times(C2,m)),z)))
+      Times(Power(Exp(Times(C1D2,z)),CN1),Power(z,Plus(C1D2,m)),HypergeometricU(Plus(C1D2,Negate(k),m),Plus(C1,Times(C2,m)),z))),
+    // Zeta(n_Integer,x_):=PolyGamma(-1+n,x)/((-1)^n*(-1+n)!)/;EvenQ(n)&&n>1
+    SetDelayed(Zeta($p(n, Integer),x_),
+      Condition(Times(Power(Times(Power(CN1,n),Factorial(Plus(CN1,n))),CN1),PolyGamma(Plus(CN1,n),x)),And(EvenQ(n),Greater(n,C1))))
   );
 }

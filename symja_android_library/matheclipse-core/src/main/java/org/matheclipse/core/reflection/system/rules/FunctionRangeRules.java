@@ -16,6 +16,18 @@ public interface FunctionRangeRules {
       True),
     // FunctionRange(ExpIntegralEi(x_),x_,y_):=True
     SetDelayed(FunctionRange(ExpIntegralEi(x_),x_,y_),
-      True)
+      True),
+    // FunctionRange(Re(x_),x_,y_):=True
+    SetDelayed(FunctionRange(Re(x_),x_,y_),
+      True),
+    // FunctionRange(Re(x_),x_,y_,Complexes):=Im(y)==0
+    SetDelayed(FunctionRange(Re(x_),x_,y_,Complexes),
+      Equal(Im(y),C0)),
+    // FunctionRange(Im(x_),x_,y_):=y==0
+    SetDelayed(FunctionRange(Im(x_),x_,y_),
+      Equal(y,C0)),
+    // FunctionRange(Im(x_),x_,y_,Complexes):=Im(y)==0
+    SetDelayed(FunctionRange(Im(x_),x_,y_,Complexes),
+      Equal(Im(y),C0))
   );
 }
