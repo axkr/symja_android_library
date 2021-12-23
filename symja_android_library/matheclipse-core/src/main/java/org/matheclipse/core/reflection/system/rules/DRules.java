@@ -15,7 +15,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 137 };
+  final public static int[] SIZES = { 0, 138 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -208,6 +208,9 @@ public interface DRules {
     // D(CoshIntegral(f_),x_?NotListQ):=D(f,x)*Cosh(f)/f
     ISetDelayed(D(CoshIntegral(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Power(f,CN1),Cosh(f))),
+    // D(LogIntegral(f_),x_?NotListQ):=D(f,x)/Log(f)
+    ISetDelayed(D(LogIntegral(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),Power(Log(f),CN1))),
     // D(SinIntegral(f_),x_?NotListQ):=D(f,x)*Sinc(f)
     ISetDelayed(D(SinIntegral(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Sinc(f))),

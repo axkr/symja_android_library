@@ -505,6 +505,7 @@ public class RulePreprocessor {
                 }
                 System.out.println(className);
                 if (className.equals("FunctionExpandRules")
+                    || className.equals("FunctionRangeRules")
                     || className.equals("PodDefaultsRules")) {
                   out = createHeader(className, targetFile, createMatcher);
                   convertList(expr, "", buffer, out, symbolName, engine);

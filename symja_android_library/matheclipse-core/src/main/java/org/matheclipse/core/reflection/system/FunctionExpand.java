@@ -3,8 +3,6 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.Beta;
 import static org.matheclipse.core.expression.F.BetaRegularized;
 import static org.matheclipse.core.expression.F.Binomial;
-import static org.matheclipse.core.expression.F.ChebyshevT;
-import static org.matheclipse.core.expression.F.ChebyshevU;
 import static org.matheclipse.core.expression.F.Factorial;
 import static org.matheclipse.core.expression.F.a_;
 import static org.matheclipse.core.expression.F.b_;
@@ -145,18 +143,18 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
               F.Power(F.C2, F.Times(F.C2, n)),
               F.Gamma(F.Plus(F.C1D2, n)),
               F.Power(F.Times(F.Sqrt(S.Pi), F.Gamma(F.Plus(F.C2, n))), F.CN1))); // $$);
-      // ChebyshevT
-      MATCHER.caseOf(
-          ChebyshevT(n_, x_), //
-          // [$ Cos(n*ArcCos(x)) $]
-          F.Cos(F.Times(n, F.ArcCos(x)))); // $$);
-      // ChebyshevU
-      MATCHER.caseOf(
-          ChebyshevU(n_, x_), //
-          // [$ Sin((1 + n)*ArcCos(x))/(Sqrt(1 - x)*Sqrt(1 + x)) $]
-          F.Times(
-              F.Power(F.Times(F.Sqrt(F.Subtract(F.C1, x)), F.Sqrt(F.Plus(F.C1, x))), F.CN1),
-              F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(x))))); // $$);
+      // // ChebyshevT
+      // MATCHER.caseOf(
+      // ChebyshevT(n_, x_), //
+      // // [$ Cos(n*ArcCos(x)) $]
+      // F.Cos(F.Times(n, F.ArcCos(x)))); // $$);
+      // // ChebyshevU
+      // MATCHER.caseOf(
+      // ChebyshevU(n_, x_), //
+      // // [$ Sin((1 + n)*ArcCos(x))/(Sqrt(1 - x)*Sqrt(1 + x)) $]
+      // F.Times(
+      // F.Power(F.Times(F.Sqrt(F.Subtract(F.C1, x)), F.Sqrt(F.Plus(F.C1, x))), F.CN1),
+      // F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(x))))); // $$);
 
       // Cos
       MATCHER.caseOf(

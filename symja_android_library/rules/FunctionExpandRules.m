@@ -19,7 +19,11 @@
  Cos(n_Integer*ArcSin(z_)) := ChebyshevT(n, Sqrt(1 - z^2))
   /; n>0,
  
+ CosIntegral(Sqrt(z_^n_)) := CosIntegral(z^(n/2)) - Log(z^(n/2)) + Log(z^n)/2,
+ CoshIntegral(Sqrt(z_^n_)) :=  CoshIntegral(z^(n/2)) - Log(z^(n/2)) + Log(z^n)/2,
+ 
  ExpIntegralE(n_,z_) := z^(-1 + n)*Gamma(1 - n, z),
+ ExpIntegralEi(Log(z_)) := LogIntegral(z),
  
  Factorial(z_) := Gamma(1+z),  
  Factorial2(n_) := 2^(n/2 + (1/4)*(1 - Cos(n*Pi)))*Pi^((1/4)*(-1 + Cos(n*Pi)))*Gamma(1 + n/2),
@@ -84,10 +88,12 @@
   /; n > 0,
  Sin(n_Integer*ArcTan(z_)) := Sum((-1)^k*Binomial(n, 2*k + 1)*z^(2*k + 1), {k, 0, Floor((n-1)/2)}) / (1 + z^2)^(n/2) 
    /; n > 0,
-  
+
  Sinc(z_) := Sin(z) / z 
   /; z!=0,
-
+ SinIntegral(Sqrt(z_^n_)) := (Sqrt(z^n)*SinIntegral(z^(n/2)))/z^(n/2), 
+ SinhIntegral(Sqrt(z_^n_)) := (Sqrt(z^n)*SinhIntegral(z^(n/2)))/z^(n/2),
+ 
  SphericalBesselJ(a_,b_) := (Sqrt(Pi/2)*BesselJ((1/2)*(1 + 2*a), b))/Sqrt(b),
  SphericalBesselY(a_,b_) := (Sqrt(Pi/2)*BesselY((1/2)*(1 + 2*a), b))/Sqrt(b),
  

@@ -56,9 +56,18 @@ public interface FunctionExpandRules {
     // Cos(n_Integer*ArcSin(z_)):=ChebyshevT(n,Sqrt(1-z^2))/;n>0
     SetDelayed(Cos(Times(ArcSin(z_),$p(n, Integer))),
       Condition(ChebyshevT(n,Sqrt(Subtract(C1,Sqr(z)))),Greater(n,C0))),
+    // CosIntegral(Sqrt(z_^n_)):=CosIntegral(z^(n/2))-Log(z^(n/2))+Log(z^n)/2
+    SetDelayed(CosIntegral(Sqrt(Power(z_,n_))),
+      Plus(CosIntegral(Power(z,Times(C1D2,n))),Negate(Log(Power(z,Times(C1D2,n)))),Times(C1D2,Log(Power(z,n))))),
+    // CoshIntegral(Sqrt(z_^n_)):=CoshIntegral(z^(n/2))-Log(z^(n/2))+Log(z^n)/2
+    SetDelayed(CoshIntegral(Sqrt(Power(z_,n_))),
+      Plus(CoshIntegral(Power(z,Times(C1D2,n))),Negate(Log(Power(z,Times(C1D2,n)))),Times(C1D2,Log(Power(z,n))))),
     // ExpIntegralE(n_,z_):=Gamma(1-n,z)/z^(1-n)
     SetDelayed(ExpIntegralE(n_,z_),
       Times(Power(z,Plus(CN1,n)),Gamma(Subtract(C1,n),z))),
+    // ExpIntegralEi(Log(z_)):=LogIntegral(z)
+    SetDelayed(ExpIntegralEi(Log(z_)),
+      LogIntegral(z)),
     // z_!:=Gamma(1+z)
     SetDelayed(Factorial(z_),
       Gamma(Plus(C1,z))),
@@ -170,6 +179,12 @@ public interface FunctionExpandRules {
     // Sinc(z_):=Sin(z)/z/;z!=0
     SetDelayed(Sinc(z_),
       Condition(Times(Power(z,CN1),Sin(z)),Unequal(z,C0))),
+    // SinIntegral(Sqrt(z_^n_)):=(Sqrt(z^n)*SinIntegral(z^(n/2)))/z^(n/2)
+    SetDelayed(SinIntegral(Sqrt(Power(z_,n_))),
+      Times(Power(Power(z,Times(C1D2,n)),CN1),Sqrt(Power(z,n)),SinIntegral(Power(z,Times(C1D2,n))))),
+    // SinhIntegral(Sqrt(z_^n_)):=(Sqrt(z^n)*SinhIntegral(z^(n/2)))/z^(n/2)
+    SetDelayed(SinhIntegral(Sqrt(Power(z_,n_))),
+      Times(Power(Power(z,Times(C1D2,n)),CN1),Sqrt(Power(z,n)),SinhIntegral(Power(z,Times(C1D2,n))))),
     // SphericalBesselJ(a_,b_):=(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)
     SetDelayed(SphericalBesselJ(a_,b_),
       Times(Power(b,CN1D2),Sqrt(CPiHalf),BesselJ(Times(C1D2,Plus(C1,Times(C2,a))),b))),

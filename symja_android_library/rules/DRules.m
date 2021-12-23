@@ -63,6 +63,7 @@
   D(Sech(f_),x_?NotListQ):=D(f,x)*(-1)*Tanh(f)*Sech(f),
   D(CosIntegral(f_),x_?NotListQ):=D(f,x)*Cos(f)/f,
   D(CoshIntegral(f_),x_?NotListQ):=D(f,x)*Cosh(f)/f,
+  D(LogIntegral(f_),x_?NotListQ):=D(f,x)*1/Log(f),
   D(SinIntegral(f_),x_?NotListQ):=D(f,x)*Sinc(f),
   D(SinhIntegral(f_),x_?NotListQ):=D(f,x)*Sinh(f)/f,
   D(UnitStep(f_),x_?NotListQ):=D(f,x)*Piecewise({{Indeterminate,f==0}}, 0),

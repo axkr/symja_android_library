@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.S.Power;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.optim.OptimizationData;
@@ -19,7 +20,6 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -31,11 +31,14 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.core.reflection.system.rules.FunctionRangeRules;
 import org.matheclipse.core.visit.VisitorExpr;
+import com.google.common.base.Suppliers;
 
 public class MinMaxFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -67,14 +70,16 @@ public class MinMaxFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a maximizer point for a univariate <code>function</code>.
+   * <p>
+   * returns a maximizer point for a univariate <code>function</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Arg_max">Wikipedia - Arg max</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Arg_max">Wikipedia - Arg max</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -118,14 +123,16 @@ public class MinMaxFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a minimizer point for a univariate <code>function</code>.
+   * <p>
+   * returns a minimizer point for a univariate <code>function</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Arg_max">Wikipedia - Arg max</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Arg_max">Wikipedia - Arg max</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -159,8 +166,27 @@ public class MinMaxFunctions {
     }
   }
 
-  private static final class FunctionRange extends AbstractCoreFunctionEvaluator {
+  private static final class FunctionRange extends AbstractFunctionEvaluator
+      implements FunctionRangeRules {
+    private static Supplier<Matcher> LAZY_MATCHER;
 
+    private static class Initializer {
+
+      private static Matcher init() {
+        Matcher MATCHER = new Matcher();
+        IAST list = RULES;
+
+        for (int i = 1; i < list.size(); i++) {
+          IExpr arg = list.get(i);
+          if (arg.isAST(S.SetDelayed, 3)) {
+            MATCHER.caseOf(arg.first(), arg.second());
+          } else if (arg.isAST(S.Set, 3)) {
+            MATCHER.caseOf(arg.first(), arg.second());
+          }
+        }
+        return MATCHER;
+      }
+    }
     private static final class FunctionRangeRealsVisitor extends VisitorExpr {
       final EvalEngine engine;
 
@@ -169,20 +195,20 @@ public class MinMaxFunctions {
         this.engine = engine;
       }
 
-      //      @Override
-      //      public IExpr visit2(IExpr head, IExpr arg1) {
-      //        boolean evaled = false;
-      //        IExpr x = arg1;
-      //        IExpr result = arg1.accept(this);
-      //        if (result.isPresent()) {
-      //          evaled = true;
-      //          x = result;
-      //        }
-      //         if (evaled) {
-      //          return F.unaryAST1(head, x);
-      //        }
-      //        return F.NIL;
-      //      }
+      // @Override
+      // public IExpr visit2(IExpr head, IExpr arg1) {
+      // boolean evaled = false;
+      // IExpr x = arg1;
+      // IExpr result = arg1.accept(this);
+      // if (result.isPresent()) {
+      // evaled = true;
+      // x = result;
+      // }
+      // if (evaled) {
+      // return F.unaryAST1(head, x);
+      // }
+      // return F.NIL;
+      // }
 
       /** {@inheritDoc} */
       @Override
@@ -237,6 +263,10 @@ public class MinMaxFunctions {
       IBuiltInSymbol domain = S.Reals;
       try {
         if (xExpr.isSymbol() && yExpr.isSymbol()) {
+          IExpr match = callMatcher(ast, function);
+          if (match.isPresent()) {
+            return match;
+          }
           boolean evaled = true;
           ISymbol x = (ISymbol) xExpr;
           ISymbol y = (ISymbol) yExpr;
@@ -256,10 +286,8 @@ public class MinMaxFunctions {
           if (evaled) {
             return convertMinMaxList(minMaxList, y);
           }
-          IExpr f =
-              function
-                  .replaceAll(F.Rule(x, F.Interval(F.CNInfinity, F.CInfinity)))
-                  .orElse(function);
+          IExpr f = function.replaceAll(F.Rule(x, F.Interval(F.CNInfinity, F.CInfinity)))
+              .orElse(function);
           IExpr result = engine.evaluate(f);
           if (result.isInterval1()) {
             return convertInterval(result, y);
@@ -277,7 +305,9 @@ public class MinMaxFunctions {
             }
           }
         }
+
       } catch (RuntimeException rex) {
+        rex.printStackTrace();
         LOGGER.debug("FunctionRange.evaluate() failed", rex);
       }
       return F.NIL;
@@ -309,6 +339,24 @@ public class MinMaxFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
+
+    private static Matcher getMatcher() {
+      return LAZY_MATCHER.get();
+    }
+
+    public static IExpr callMatcher(final IAST ast, IExpr arg1) {
+      IExpr temp = getMatcher().replaceAll(ast);
+      if (temp.isPresent()) {
+        F.REMEMBER_AST_CACHE.put(ast, temp);
+      }
+      return temp;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      // Initializer.init();
+      LAZY_MATCHER = Suppliers.memoize(Initializer::init);
+    }
   }
 
   /**
@@ -321,14 +369,16 @@ public class MinMaxFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the maximum of the unary function for the given <code>variable</code>.
+   * <p>
+   * returns the maximum of the unary function for the given <code>variable</code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Derivative_test">Wikipedia - Derivative test</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Derivative_test">Wikipedia - Derivative test</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -339,7 +389,8 @@ public class MinMaxFunctions {
    * </code>
    * </pre>
    *
-   * <p>Print a message if no maximum can be found
+   * <p>
+   * Print a message if no maximum can be found
    *
    * <pre>
    * <code>&gt;&gt; Maximize(x^4+7*x^3-2*x^2 + 42, x)
@@ -349,7 +400,8 @@ public class MinMaxFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Minimize.md">Minimize</a>
+   * <p>
+   * <a href="Minimize.md">Minimize</a>
    */
   private static final class Maximize extends AbstractFunctionEvaluator {
 
@@ -385,14 +437,16 @@ public class MinMaxFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the minimum of the unary function for the given <code>variable</code>.
+   * <p>
+   * returns the minimum of the unary function for the given <code>variable</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Derivative_test">Wikipedia - Derivative test</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Derivative_test">Wikipedia - Derivative test</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -405,7 +459,8 @@ public class MinMaxFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Maximize.md">Maximize</a>
+   * <p>
+   * <a href="Maximize.md">Maximize</a>
    */
   private static final class Minimize extends AbstractFunctionEvaluator {
 
@@ -440,22 +495,25 @@ public class MinMaxFunctions {
    *
    * <blockquote>
    *
-   * <p>the <code>NMaximize</code> function provides an implementation of <a
-   * href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a>
+   * <p>
+   * the <code>NMaximize</code> function provides an implementation of
+   * <a href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a>
    * for solving linear optimization problems with linear equality and inequality constraints and
    * implicit non-negative variables.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Linear_programming">Wikipedia - Linear
-   *       programming</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Linear_programming">Wikipedia - Linear
+   * programming</a>
    * </ul>
    *
-   * <p>See also: <a href="LinearProgramming.md">LinearProgramming</a>, <a
-   * href="NMinimize.md">NMinimize</a>
+   * <p>
+   * See also: <a href="LinearProgramming.md">LinearProgramming</a>,
+   * <a href="NMinimize.md">NMinimize</a>
    *
    * <h3>Examples</h3>
    *
@@ -464,13 +522,15 @@ public class MinMaxFunctions {
    * {-2.0,{x-&gt;0.0,y-&gt;3.0}}
    * </pre>
    *
-   * <p>solves the linear problem:
+   * <p>
+   * solves the linear problem:
    *
    * <pre>
    * Maximize -2x + y - 5
    * </pre>
    *
-   * <p>with the constraints:
+   * <p>
+   * with the constraints:
    *
    * <pre>
    *   x  + 2y &lt;=  6
@@ -495,14 +555,9 @@ public class MinMaxFunctions {
               // lc1 && lc2 && lc3...
               LinearObjectiveFunction objectiveFunction = getObjectiveFunction(vars, function);
               List<LinearConstraint> constraints = getConstraints(vars, (IAST) listOfconstraints);
-              return simplexSolver(
-                  vars,
-                  objectiveFunction,
-                  objectiveFunction,
-                  new LinearConstraintSet(constraints),
-                  GoalType.MAXIMIZE,
-                  new NonNegativeConstraint(true),
-                  PivotSelectionRule.BLAND);
+              return simplexSolver(vars, objectiveFunction, objectiveFunction,
+                  new LinearConstraintSet(constraints), GoalType.MAXIMIZE,
+                  new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
             }
           }
         }
@@ -529,22 +584,25 @@ public class MinMaxFunctions {
    *
    * <blockquote>
    *
-   * <p>the <code>NMinimize</code> function provides an implementation of <a
-   * href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a>
+   * <p>
+   * the <code>NMinimize</code> function provides an implementation of
+   * <a href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a>
    * for solving linear optimization problems with linear equality and inequality constraints and
    * implicit non-negative variables.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Linear_programming">Wikipedia - Linear
-   *       programming</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Linear_programming">Wikipedia - Linear
+   * programming</a>
    * </ul>
    *
-   * <p>See also: <a href="LinearProgramming.md">LinearProgramming</a>, <a
-   * href="NMaximize.md">NMaximize</a>
+   * <p>
+   * See also: <a href="LinearProgramming.md">LinearProgramming</a>,
+   * <a href="NMaximize.md">NMaximize</a>
    *
    * <h3>Examples</h3>
    *
@@ -553,13 +611,15 @@ public class MinMaxFunctions {
    * {-13.0,{x-&gt;4.0,y-&gt;0.0}
    * </pre>
    *
-   * <p>solves the linear problem:
+   * <p>
+   * solves the linear problem:
    *
    * <pre>
    * Minimize -2x + y - 5
    * </pre>
    *
-   * <p>with the constraints:
+   * <p>
+   * with the constraints:
    *
    * <pre>
    *   x  + 2y &lt;=  6
@@ -590,14 +650,9 @@ public class MinMaxFunctions {
               // lc1 && lc2 && lc3...
               LinearObjectiveFunction objectiveFunction = getObjectiveFunction(vars, function);
               List<LinearConstraint> constraints = getConstraints(vars, (IAST) listOfconstraints);
-              return simplexSolver(
-                  vars,
-                  objectiveFunction,
-                  objectiveFunction,
-                  new LinearConstraintSet(constraints),
-                  GoalType.MINIMIZE,
-                  new NonNegativeConstraint(true),
-                  PivotSelectionRule.BLAND);
+              return simplexSolver(vars, objectiveFunction, objectiveFunction,
+                  new LinearConstraintSet(constraints), GoalType.MINIMIZE,
+                  new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
             }
           }
         }
@@ -614,27 +669,25 @@ public class MinMaxFunctions {
       return ARGS_2_2;
     }
 
-    protected static LinearObjectiveFunction getObjectiveFunction(
-        VariablesSet vars, IExpr objectiveFunction) {
+    protected static LinearObjectiveFunction getObjectiveFunction(VariablesSet vars,
+        IExpr objectiveFunction) {
       Expr2LP x2LP = new Expr2LP(objectiveFunction, vars);
       return x2LP.expr2ObjectiveFunction();
     }
 
-    protected static List<LinearConstraint> getConstraints(
-        VariablesSet vars, IAST listOfconstraints) {
+    protected static List<LinearConstraint> getConstraints(VariablesSet vars,
+        IAST listOfconstraints) {
       List<LinearConstraint> constraints =
           new ArrayList<LinearConstraint>(listOfconstraints.size());
-      listOfconstraints.forEach(
-          x -> {
-            Expr2LP x2LP = new Expr2LP(x, vars);
-            constraints.add(x2LP.expr2Constraint());
-          });
+      listOfconstraints.forEach(x -> {
+        Expr2LP x2LP = new Expr2LP(x, vars);
+        constraints.add(x2LP.expr2Constraint());
+      });
       return constraints;
     }
 
-    protected static IExpr simplexSolver(
-        VariablesSet vars, LinearObjectiveFunction f, OptimizationData... optData)
-        throws org.hipparchus.exception.MathRuntimeException {
+    protected static IExpr simplexSolver(VariablesSet vars, LinearObjectiveFunction f,
+        OptimizationData... optData) throws org.hipparchus.exception.MathRuntimeException {
 
       SimplexSolver solver = new SimplexSolver();
       PointValuePair solution = solver.optimize(optData);
@@ -706,7 +759,7 @@ public class MinMaxFunctions {
       ePoly = ePoly.multiplyByMinimumNegativeExponents();
       result = maximizeCubicPolynomial(ePoly, varList.arg1());
 
-      //      result = QuarticSolver.sortASTArguments(result);
+      // result = QuarticSolver.sortASTArguments(result);
       return result;
     } catch (ArithmeticException | JASConversionException e2) {
       LOGGER.debug("MinMaxFunctions.maximizeExprPolynomial() failed", e2);
@@ -753,36 +806,21 @@ public class MinMaxFunctions {
               return F.List(e, F.List());
             } else {
               // linear
-              return F.List(
-                  F.Piecewise(F.List(F.List(e, F.Equal(d, F.C0))), F.CInfinity),
-                  F.List(
-                      F.Rule(
-                          x,
-                          F.Piecewise(F.List(F.List(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
+              return F.List(F.Piecewise(F.List(F.List(e, F.Equal(d, F.C0))), F.CInfinity), F.List(
+                  F.Rule(x, F.Piecewise(F.List(F.List(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
             }
           } else {
             return F.List(
-                F.Piecewise(
-                    F.List(
-                        F.List(e, F.And(F.Equal(d, 0), F.LessEqual(c, 0))),
-                        F.List(
-                            F.Times(
-                                F.C1D4,
-                                F.Power(c, -1),
-                                F.Plus(F.Times(-1, F.Power(d, 2)), F.Times(4, c, e))),
-                            F.Or(
-                                F.And(F.Greater(d, 0), F.Less(c, 0)),
-                                F.And(F.Less(d, 0), F.Less(c, 0))))),
+                F.Piecewise(F.List(F.List(e, F.And(F.Equal(d, 0), F.LessEqual(c, 0))), F.List(
+                    F.Times(F.C1D4, F.Power(c, -1),
+                        F.Plus(F.Times(-1, F.Power(d, 2)), F.Times(4, c, e))),
+                    F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)), F.And(F.Less(d, 0), F.Less(c, 0))))),
                     F.CInfinity),
-                F.List(
-                    F.Rule(
-                        x,
+                F.List(F.Rule(x,
                         F.Piecewise(
                             F.List(
-                                F.List(
-                                    F.Times(F.CN1D2, F.Power(c, -1), d),
-                                    F.Or(
-                                        F.And(F.Greater(d, 0), F.Less(c, 0)),
+                            F.List(F.Times(F.CN1D2, F.Power(c, -1), d),
+                                F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)),
                                         F.And(F.Less(d, 0), F.Less(c, 0)))),
                                 F.List(F.C0, F.And(F.Equal(d, 0), F.LessEqual(c, 0)))),
                             S.Indeterminate))));
@@ -792,36 +830,24 @@ public class MinMaxFunctions {
           return F.List(
               F.Piecewise(
                   F.List(
-                      F.List(
-                          e,
-                          F.Or(
-                              F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
+                      F.List(e, F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
                               F.And(F.Equal(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
                       F.List(
-                          F.Times(
-                              F.C1D4,
-                              F.Power(c, F.CN1),
+                          F.Times(F.C1D4, F.Power(c, F.CN1),
                               F.Plus(F.Negate(F.Sqr(d)), F.Times(F.C4, c, e))),
-                          F.Or(
-                              F.And(F.Greater(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)),
+                          F.Or(F.And(F.Greater(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)),
                               F.And(F.Less(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0))))),
                   F.oo),
-              F.List(
-                  F.Rule(
-                      x,
-                      F.Piecewise(
-                          F.List(
-                              F.List(
-                                  F.Times(F.CN1D2, F.Power(c, F.CN1), d),
-                                  F.Or(
-                                      F.And(F.Greater(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)),
-                                      F.And(F.Less(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
-                              F.List(
-                                  F.C0,
-                                  F.Or(
-                                      F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
-                                      F.And(F.Equal(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0))))),
-                          F.Indeterminate))));
+              F.List(F.Rule(x,
+                  F.Piecewise(
+                      F.List(
+                          F.List(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
+                              F.Or(F.And(F.Greater(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)),
+                                  F.And(F.Less(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
+                          F.List(F.C0,
+                              F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
+                                  F.And(F.Equal(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0))))),
+                      F.Indeterminate))));
         }
       }
     }
@@ -886,7 +912,7 @@ public class MinMaxFunctions {
       ePoly = ePoly.multiplyByMinimumNegativeExponents();
       result = minimizeCubicPolynomial(ePoly, varList.arg1());
 
-      //      result = QuarticSolver.sortASTArguments(result);
+      // result = QuarticSolver.sortASTArguments(result);
       return result;
     } catch (ArithmeticException | JASConversionException e2) {
       LOGGER.debug("MinMaxFunctions.minimizeExprPolynomial() failed", e2);
@@ -933,36 +959,24 @@ public class MinMaxFunctions {
               return F.List(e, F.List());
             } else {
               // linear
-              return F.List(
-                  F.Piecewise(F.List(F.List(e, F.Equal(d, F.C0))), F.CNInfinity),
-                  F.List(
-                      F.Rule(
-                          x,
-                          F.Piecewise(F.List(F.List(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
+              return F.List(F.Piecewise(F.List(F.List(e, F.Equal(d, F.C0))), F.CNInfinity), F.List(
+                  F.Rule(x, F.Piecewise(F.List(F.List(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
             }
           } else {
-            return F.List(
-                F.Piecewise(
-                    F.List(
-                        F.List(e, F.And(F.Equal(d, 0), F.GreaterEqual(c, 0))),
+            return F.List(F.Piecewise(
                         F.List(
-                            F.Times(
-                                F.C1D4,
-                                F.Power(c, -1),
-                                F.Plus(F.Times(-1, F.Power(d, 2)), F.Times(4, c, e))),
-                            F.Or(
-                                F.And(F.Greater(d, 0), F.Greater(c, 0)),
-                                F.And(F.Less(d, 0), F.Greater(c, 0))))),
-                    F.CNInfinity),
-                F.List(
-                    F.Rule(
-                        x,
+                    F.List(e, F.And(F.Equal(d, 0), F.GreaterEqual(c, 0))),
+                    F.List(
+                        F.Times(F.C1D4, F.Power(c, -1),
+                            F.Plus(F.Times(-1, F.Power(d, 2)), F.Times(4, c, e))),
+                        F.Or(F.And(F.Greater(d, 0), F.Greater(c, 0)),
+                            F.And(F.Less(d, 0), F.Greater(c, 0))))),
+                F.CNInfinity),
+                F.List(F.Rule(x,
                         F.Piecewise(
                             F.List(
-                                F.List(
-                                    F.Times(F.CN1D2, F.Power(c, -1), d),
-                                    F.Or(
-                                        F.And(F.Greater(d, 0), F.Greater(c, 0)),
+                            F.List(F.Times(F.CN1D2, F.Power(c, -1), d),
+                                F.Or(F.And(F.Greater(d, 0), F.Greater(c, 0)),
                                         F.And(F.Less(d, 0), F.Greater(c, 0)))),
                                 F.List(F.C0, F.And(F.Equal(d, 0), F.GreaterEqual(c, 0)))),
                             S.Indeterminate))));
@@ -972,41 +986,24 @@ public class MinMaxFunctions {
           return F.List(
               F.Piecewise(
                   F.List(
-                      F.List(
-                          e,
-                          F.Or(
-                              F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
+                      F.List(e, F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
                               F.And(F.Equal(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
                       F.List(
-                          F.Times(
-                              F.C1D4,
-                              F.Power(c, F.CN1),
+                          F.Times(F.C1D4, F.Power(c, F.CN1),
                               F.Plus(F.Negate(F.Sqr(d)), F.Times(F.C4, c, e))),
-                          F.Or(
-                              F.And(F.Greater(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)),
+                          F.Or(F.And(F.Greater(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)),
                               F.And(F.Less(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0))))),
                   F.Noo),
-              F.List(
-                  F.Rule(
-                      x,
-                      F.Piecewise(
-                          F.List(
-                              F.List(
-                                  F.Times(F.CN1D2, F.Power(c, F.CN1), d),
-                                  F.Or(
-                                      F.And(
-                                          F.Greater(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)),
-                                      F.And(
-                                          F.Less(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
-                              F.List(
-                                  F.C0,
-                                  F.Or(
-                                      F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
-                                      F.And(
-                                          F.Equal(d, F.C0),
-                                          F.Greater(c, F.C0),
-                                          F.Equal(b, F.C0))))),
-                          F.Indeterminate))));
+              F.List(F.Rule(x,
+                  F.Piecewise(
+                      F.List(
+                          F.List(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
+                              F.Or(F.And(F.Greater(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)),
+                                  F.And(F.Less(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
+                          F.List(F.C0,
+                              F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
+                                  F.And(F.Equal(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0))))),
+                      F.Indeterminate))));
         }
       }
     }
