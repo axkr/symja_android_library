@@ -2678,15 +2678,32 @@ public class F extends S {
   /**
    * Create a symbolic complex number
    *
-   * @param realPart the real double value part which should be converted to a complex number
-   * @param imagPart the imaginary double value part which should be converted to a complex number
+   * @param realPart the real double value which should be converted to the real part of symbolic a
+   *        complex number
+   * @param imagPart the imaginary double value which should be converted to the imaginary part of
+   *        symbolic a complex number
    * @param epsilon
-   * @return IFraction
+   * @return
    */
   public static IComplex complex(final double realPart, final double imagPart,
       final double epsilon) {
     return ComplexSym.valueOf(AbstractFractionSym.valueOfEpsilon(realPart, epsilon),
         AbstractFractionSym.valueOfEpsilon(imagPart, epsilon));
+  }
+
+
+  /**
+   * Create a symbolic complex number.
+   * 
+   * @param realPart the real double value which should be converted to the real part of symbolic a
+   *        complex number
+   * @param imagPart the imaginary double value which should be converted to the imaginary part of
+   *        symbolic a complex number
+   * @return
+   */
+  public static IComplex complexConvergent(final double realPart, final double imagPart) {
+    return ComplexSym.valueOf(AbstractFractionSym.valueOfConvergent(realPart),
+        AbstractFractionSym.valueOfConvergent(imagPart));
   }
 
   /**
@@ -3853,13 +3870,26 @@ public class F extends S {
     return AbstractFractionSym.valueOfEpsilon(value);
   }
 
+  /**
+   * Create a "fractional" number from a double number.
+   *
+   * @param value numerator of the fractional number
+   * @param epsilon
+   * @return
+   */
   public static IFraction fraction(final double value, final double epsilon) {
     return AbstractFractionSym.valueOfEpsilon(value, epsilon);
   }
 
-  // public static IFraction fractionConvergent(final double value) {
-  // return AbstractFractionSym.valueOfConvergent(value);
-  // }
+  /**
+   * Create a "fractional" number from a double number.
+   *
+   * @param value numerator of the fractional number
+   * @return
+   */
+  public static IFraction fractionConvergent(final double value) {
+    return AbstractFractionSym.valueOfConvergent(value);
+  }
 
   /**
    * Create a "fractional" number
@@ -3934,12 +3964,28 @@ public class F extends S {
     return new AST2(Function, a0, a1);
   }
 
+  public static IAST FunctionDomain(final IExpr a0, final IExpr a1) {
+    return new AST2(FunctionDomain, a0, a1);
+  }
+
+  public static IAST FunctionDomain(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(FunctionDomain, a0, a1, a2);
+  }
+
   public static IAST FunctionExpand(final IExpr a0) {
     return new AST1(FunctionExpand, a0);
   }
 
   public static IAST FunctionExpand(final IExpr a0, final IExpr a1) {
     return new AST2(FunctionExpand, a0, a1);
+  }
+
+  public static IAST FunctionRange(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(FunctionRange, a0, a1, a2);
+  }
+
+  public static IAST FunctionRange(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+    return quaternary(FunctionRange, a0, a1, a2, a3);
   }
 
   public static IAST FunctionURL(final IExpr a0) {

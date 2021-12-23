@@ -1,14 +1,21 @@
 package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
+import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.ArithmeticUtils;
+import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -39,6 +46,76 @@ import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
  * @see BigFractionSym
  */
 public abstract class AbstractFractionSym implements IFraction {
+  /**
+   * Generate a {@link Stream stream} of convergents from a real number.
+   * <p>
+   * See:
+   * <a href="https://github.com/Hipparchus-Math/hipparchus/issues/176">hipparchus/issues/176</a>
+   * 
+   * @param value value to approximate
+   * @param maxConbvergents maximum number of convergents.
+   * @return stream of {@link BigFraction} convergents approximating {@code value}
+   */
+  public static Stream<BigFraction> convergents(final double value, final int maxConvergents) {
+    if (FastMath.abs(value) > Integer.MAX_VALUE) {
+      throw new MathIllegalStateException(LocalizedCoreFormats.FRACTION_CONVERSION_OVERFLOW, value,
+          value, 1l);
+    }
+    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
+        generatingIterator(value, maxConvergents), Spliterator.DISTINCT), false);
+  }
+
+  /**
+   * Iterator for generating continuous fractions.
+   * 
+   * @param value value to approximate
+   * @param maxConbvergents maximum number of convergents.
+   * @return iterator iterating over continuous fractions aproximating {@code value}
+   * @since 2.1
+   */
+  private static Iterator<BigFraction> generatingIterator(final double value,
+      final int maxConvergents) {
+    return new Iterator<BigFraction>() {
+      private static final long OVERFLOW = Integer.MAX_VALUE;
+      private long p0 = 0;
+      private long q0 = 1;
+      private long p1 = 1;
+      private long q1 = 0;
+      private double r1 = value;
+      private boolean stop = false;
+      private int n = 0;
+
+      /** {@inheritDoc} */
+      @Override
+      public boolean hasNext() {
+        return n < maxConvergents && !stop;
+      }
+
+      /** {@inheritDoc} */
+      @Override
+      public BigFraction next() {
+        ++n;
+
+        final long a1 = (long) FastMath.floor(r1);
+        long p2 = (a1 * p1) + p0;
+        long q2 = (a1 * q1) + q0;
+
+        final double convergent = (double) p2 / (double) q2;
+        // stop = Precision.equals(convergent, value, 1);
+        // if ((p2 > OVERFLOW || q2 > OVERFLOW) && !stop) {
+        // throw new MathIllegalStateException(LocalizedCoreFormats.FRACTION_CONVERSION_OVERFLOW,
+        // value, p2, q2);
+        // }
+        p0 = p1;
+        p1 = p2;
+        q0 = q1;
+        q1 = q2;
+        r1 = 1.0 / (r1 - a1);
+        return new BigFraction(p2, q2);
+      }
+
+    };
+  }
   private static final Logger LOGGER = LogManager.getLogger();
 
   public static final FractionSym ZERO = new FractionSym(0, 1);
@@ -228,6 +305,35 @@ public abstract class AbstractFractionSym implements IFraction {
     }
     return valueOf(fraction);
   }
+
+  public static IFraction valueOfConvergent(final double value) {
+    BigFraction fraction;
+    try {
+      if (value < 0.0) {
+        double v = -value;
+        fraction = convergents(v, 20).filter(f -> convergencePredicate(v, f))
+            .findFirst().get();
+        return valueOf(fraction.negate());
+      } else {
+        fraction =
+            convergents(value, 20)
+            .filter(f -> convergencePredicate(value, f)).findFirst().get();
+        return valueOf(fraction);
+      }
+    } catch (MathIllegalStateException e) {
+      fraction = new BigFraction(value);
+    }
+    return valueOf(fraction);
+  }
+
+  private static boolean convergencePredicate(final double value, BigFraction result) {
+    BigInteger denominator = result.getDenominator();
+    double qSquared =
+        denominator.multiply(denominator).doubleValue();
+    double lhs = FastMath.abs(result.doubleValue() - value) * qSquared;
+    return lhs < (1E-4);
+  }
+
 
   /**
    * Compute the absolute of this rational.

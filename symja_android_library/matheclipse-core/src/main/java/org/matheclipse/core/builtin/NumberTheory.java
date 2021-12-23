@@ -81,83 +81,15 @@ import edu.jas.ufd.FactorFactory;
 public final class NumberTheory {
   private static final Logger LOGGER = LogManager.getLogger();
 
-  private static final int[] FIBONACCI_45 = {
-    0,
-    1,
-    1,
-    2,
-    3,
-    5,
-    8,
-    13,
-    21,
-    34,
-    55,
-    89,
-    144,
-    233,
-    377,
-    610,
-    987,
-    1597,
-    2584,
-    4181,
-    6765,
-    10946,
-    17711,
-    28657,
-    46368,
-    75025,
-    121393,
-    196418,
-    317811,
-    514229,
-    832040,
-    1346269,
-    2178309,
-    3524578,
-    5702887,
-    9227465,
-    14930352,
-    24157817,
-    39088169,
-    63245986,
-    102334155,
-    165580141,
-    267914296,
-    433494437,
-    701408733,
-    1134903170
-  };
+  private static final int[] FIBONACCI_45 = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377,
+      610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811,
+      514229, 832040, 1346269, 2178309, 3524578, 5702887, 9227465, 14930352, 24157817, 39088169,
+      63245986, 102334155, 165580141, 267914296, 433494437, 701408733, 1134903170};
 
-  private static final long[] BELLB_25 = {
-    1,
-    1,
-    2,
-    5,
-    15,
-    52,
-    203,
-    877,
-    4140,
-    21147,
-    115975,
-    678570,
-    4213597,
-    27644437,
-    190899322L,
-    1382958545L,
-    10480142147L,
-    82864869804L,
-    682076806159L,
-    5832742205057L,
-    51724158235372L,
-    474869816156751L,
-    4506715738447323L,
-    44152005855084346L,
-    445958869294805289L,
-    4638590332229999353L
-  };
+  private static final long[] BELLB_25 = {1, 1, 2, 5, 15, 52, 203, 877, 4140, 21147, 115975, 678570,
+      4213597, 27644437, 190899322L, 1382958545L, 10480142147L, 82864869804L, 682076806159L,
+      5832742205057L, 51724158235372L, 474869816156751L, 4506715738447323L, 44152005855084346L,
+      445958869294805289L, 4638590332229999353L};
 
   /**
    *
@@ -168,15 +100,17 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>the Bell number function counts the number of different ways to partition a set that has
+   * <p>
+   * the Bell number function counts the number of different ways to partition a set that has
    * exactly <code>n</code> elements
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Bell_number">Wikipedia - Bell number</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Bell_number">Wikipedia - Bell number</a>
    * </ul>
    *
    * <pre>
@@ -304,14 +238,16 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>computes the Bernoulli number of the first kind.
+   * <p>
+   * computes the Bernoulli number of the first kind.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>
    * </ul>
    */
   private static class BernoulliB extends AbstractFunctionEvaluator {
@@ -359,8 +295,7 @@ public final class NumberTheory {
             if (bn >= 0) {
               // http://fungrim.org/entry/555e10/
               return F.sum(
-                  k -> F.Times(F.Binomial(n, k), F.BernoulliB(F.Subtract(n, k)), F.Power(x, k)),
-                  0,
+                  k -> F.Times(F.Binomial(n, k), F.BernoulliB(F.Subtract(n, k)), F.Power(x, k)), 0,
                   bn);
             }
           }
@@ -391,15 +326,17 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the binomial coefficient of the 2 integers <code>n</code> and <code>k</code>
+   * <p>
+   * returns the binomial coefficient of the 2 integers <code>n</code> and <code>k</code>
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Binomial_coefficient">Wikipedia - Binomial
-   *       coefficient</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Binomial_coefficient">Wikipedia - Binomial
+   * coefficient</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -491,9 +428,7 @@ public final class NumberTheory {
       if (n.isNumber() && k.isNumber()) {
         IExpr n1 = ((INumber) n).add(F.C1);
         // (n,k) ==> Gamma(n+1)/(Gamma(k+1)*Gamma(n-k+1))
-        return F.Times(
-            F.Gamma(n1),
-            F.Power(F.Gamma(F.Plus(F.C1, k)), -1),
+        return F.Times(F.Gamma(n1), F.Power(F.Gamma(F.Plus(F.C1, k)), -1),
             F.Power(F.Gamma(F.Plus(n1, F.Negate(k))), -1));
       }
       IExpr difference = F.eval(F.Subtract(n, F.C1));
@@ -543,15 +478,17 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>the Carmichael function of <code>n</code>
+   * <p>
+   * the Carmichael function of <code>n</code>
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Carmichael_function">Wikipedia - Carmichael
-   *       function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Carmichael_function">Wikipedia - Carmichael
+   * function</a>
    * </ul>
    *
    * <pre>
@@ -593,14 +530,16 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the catalan number for the integer argument <code>n</code>.
+   * <p>
+   * returns the catalan number for the integer argument <code>n</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Catalan_number">Wikipedia - Catalan number</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Catalan_number">Wikipedia - Catalan number</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -636,17 +575,19 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>the chinese remainder function.
+   * <p>
+   * the chinese remainder function.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href= "https://en.wikipedia.org/wiki/Chinese_remainder_theorem">Wikipedia -
-   *       Chinese_remainder_theorem</a>
-   *   <li><a href="https://rosettacode.org/wiki/Chinese_remainder_theorem">Rosetta Code - Chinese
-   *       remainder theorem</a>
+   * <li><a href= "https://en.wikipedia.org/wiki/Chinese_remainder_theorem">Wikipedia -
+   * Chinese_remainder_theorem</a>
+   * <li><a href="https://rosettacode.org/wiki/Chinese_remainder_theorem">Rosetta Code - Chinese
+   * remainder theorem</a>
    * </ul>
    *
    * <pre>
@@ -737,12 +678,9 @@ public final class NumberTheory {
         long bezout = bezout0(iModulus, primes[i]);
         result =
             floorMod(
-                addExact(
-                    result,
-                    floorMod(
-                        multiplyExact(
-                            iModulus, floorMod(multiplyExact(bezout, remainders[i]), primes[i])),
-                        modulus)),
+                addExact(result,
+                    floorMod(multiplyExact(iModulus,
+                        floorMod(multiplyExact(bezout, remainders[i]), primes[i])), modulus)),
                 modulus);
       }
       return result;
@@ -755,8 +693,8 @@ public final class NumberTheory {
      * @param remainders remainder
      * @return the result
      */
-    private static BigInteger chineseRemainders(
-        final BigInteger[] primes, final BigInteger[] remainders) {
+    private static BigInteger chineseRemainders(final BigInteger[] primes,
+        final BigInteger[] remainders) {
       if (primes.length != remainders.length) {
         // The arguments to `1` must be two lists of integers of identical length, with the second
         // list only
@@ -790,7 +728,8 @@ public final class NumberTheory {
     /**
      * Calculate the chinese remainder of 2 integer lists.
      *
-     * <p>See <a href="https://rosettacode.org/wiki/Chinese_remainder_theorem">Rosetta Code: Chinese
+     * <p>
+     * See <a href="https://rosettacode.org/wiki/Chinese_remainder_theorem">Rosetta Code: Chinese
      * remainder theorem</a><br>
      * <a href=
      * "https://github.com/PoslavskySV/rings/blob/master/rings/src/main/java/cc/redberry/rings/bigint/ChineseRemainders.java">cc/redberry/rings/bigint/ChineseRemainders.java</a>
@@ -862,16 +801,18 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>return the list of convergents which represents the continued fraction list <code>
+   * <p>
+   * return the list of convergents which represents the continued fraction list <code>
    * {n1, n2, ...}</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Continued_fraction">Wikipedia - Continued
-   *       fraction</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Continued_fraction">Wikipedia - Continued
+   * fraction</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -936,15 +877,17 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>get the continued fraction representation of <code>number</code>.
+   * <p>
+   * get the continued fraction representation of <code>number</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Continued_fraction">Wikipedia - Continued
-   *       fraction</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Continued_fraction">Wikipedia - Continued
+   * fraction</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -960,7 +903,8 @@ public final class NumberTheory {
    * {2,1,4,3}
    * </pre>
    *
-   * <p>For square roots of non-negative integer arguments <code>ContinuedFraction</code> determines
+   * <p>
+   * For square roots of non-negative integer arguments <code>ContinuedFraction</code> determines
    * the periodic part:
    *
    * <pre>
@@ -977,11 +921,12 @@ public final class NumberTheory {
      * Find the periodic continued fraction expansion of a quadratic irrational of the form <code>
      * (p + s*Sqrt(d)) / q</code>
      *
-     * <p>Compute the continued fraction expansion of a rational or a quadratic irrational number,
-     * i.e. <code>(p + s*Sqrt(d)) / q</code>, where `p`, `q != 0` and `d != 0` are integers. Returns
-     * the continued fraction representation (canonical form) as a list of integers, optionally
-     * ending (for quadratic irrationals) with list of integers representing the repeating
-     * (periodic) digits.
+     * <p>
+     * Compute the continued fraction expansion of a rational or a quadratic irrational number, i.e.
+     * <code>(p + s*Sqrt(d)) / q</code>, where `p`, `q != 0` and `d != 0` are integers. Returns the
+     * continued fraction representation (canonical form) as a list of integers, optionally ending
+     * (for quadratic irrationals) with list of integers representing the repeating (periodic)
+     * digits.
      *
      * @param p
      * @param q
@@ -992,14 +937,8 @@ public final class NumberTheory {
      * @param engine
      * @return {@link F#NIL} if the evaluation into integers wasn't possible
      */
-    private IAST continuedFractionPeriodic(
-        IInteger p,
-        IInteger q,
-        IInteger d,
-        IInteger s,
-        boolean negate,
-        int maxIterations,
-        EvalEngine engine) {
+    private IAST continuedFractionPeriodic(IInteger p, IInteger q, IInteger d, IInteger s,
+        boolean negate, int maxIterations, EvalEngine engine) {
       // https://github.com/sympy/sympy/blob/07a6388bc237a2c43e65dc3cf932373e4d06d91b/sympy/ntheory/continued_fraction.py#L71
       IExpr sd = F.Sqrt(d);
       if (q.isNegative()) {
@@ -1089,8 +1028,8 @@ public final class NumberTheory {
           maxIterations = ast.arg2().toIntDefault();
           if (maxIterations <= 0) {
             // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-            return IOFunctions.printMessage(
-                S.ContinuedFraction, "intpm", F.List(ast, F.C2), engine);
+            return IOFunctions.printMessage(S.ContinuedFraction, "intpm", F.List(ast, F.C2),
+                engine);
           }
         } else {
           return F.NIL;
@@ -1099,14 +1038,8 @@ public final class NumberTheory {
 
       IAST list4 = quadraticIrrational(ast.arg1());
       if (list4.isPresent()) {
-        return continuedFractionPeriodic(
-            (IInteger) list4.arg1(),
-            (IInteger) list4.arg2(),
-            (IInteger) list4.arg3(),
-            (IInteger) list4.arg4(),
-            false,
-            maxIterations,
-            engine);
+        return continuedFractionPeriodic((IInteger) list4.arg1(), (IInteger) list4.arg2(),
+            (IInteger) list4.arg3(), (IInteger) list4.arg4(), false, maxIterations, engine);
       }
 
       if (arg1 instanceof INum) {
@@ -1166,8 +1099,7 @@ public final class NumberTheory {
       continuedFractionList.append(aNow);
       for (int i = 0; i < iterationLimit - 1; i++) {
         if (i >= 99) {
-          LOGGER.log(
-              engine.getLogLevel(),
+          LOGGER.log(engine.getLogLevel(),
               "ContinuedFraction: calculations of double number values require a iteration limit less equal 100.");
           return F.NIL;
         }
@@ -1204,15 +1136,17 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>tests whether <code>x</code> and <code>y</code> are coprime by computing their greatest
-   * common divisor.
+   * <p>
+   * tests whether <code>x</code> and <code>y</code> are coprime by computing their greatest common
+   * divisor.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Coprime">Wikipedia - Coprime</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Coprime">Wikipedia - Coprime</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1236,7 +1170,8 @@ public final class NumberTheory {
      * The integers a and b are said to be <i>coprime</i> or <i>relatively prime</i> if they have no
      * common factor other than 1.
      *
-     * <p>See <a href="http://en.wikipedia.org/wiki/Coprime">Wikipedia:Coprime</a>
+     * <p>
+     * See <a href="http://en.wikipedia.org/wiki/Coprime">Wikipedia:Coprime</a>
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1271,7 +1206,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p><code>DiracDelta</code> function returns <code>0</code> for all real numbers <code>x</code>
+   * <p>
+   * <code>DiracDelta</code> function returns <code>0</code> for all real numbers <code>x</code>
    * where <code>x != 0</code>.
    *
    * </blockquote>
@@ -1283,7 +1219,8 @@ public final class NumberTheory {
    * 0
    * </pre>
    *
-   * <p><code>DiracDelta</code> doesn't evaluate for <code>0</code>:
+   * <p>
+   * <code>DiracDelta</code> doesn't evaluate for <code>0</code>:
    *
    * <pre>
    * &gt;&gt; DiracDelta(0)
@@ -1340,7 +1277,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p><code>DiscreteDelta</code> function returns <code>1</code> if all the <code>ni</code> are
+   * <p>
+   * <code>DiscreteDelta</code> function returns <code>1</code> if all the <code>ni</code> are
    * <code>0</code>. Returns <code>0</code> otherwise.
    *
    * </blockquote>
@@ -1436,7 +1374,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>n</code> could be divide by <code>m</code>.
+   * <p>
+   * returns <code>True</code> if <code>n</code> could be divide by <code>m</code>.
    *
    * </blockquote>
    *
@@ -1484,6 +1423,7 @@ public final class NumberTheory {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
+
     /**
      * Return S.True or S.False if result is divisible. Return <code>F.NIL</code>, if the result
      * could not be determined.
@@ -1517,7 +1457,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns all integers that divide the integer <code>n</code>.
+   * <p>
+   * returns all integers that divide the integer <code>n</code>.
    *
    * </blockquote>
    *
@@ -1612,14 +1553,16 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the sum of the <code>k</code>-th powers of the divisors of <code>n</code>.
+   * <p>
+   * returns the sum of the <code>k</code>-th powers of the divisors of <code>n</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Divisor_function">Wikipedia - Divisor function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Divisor_function">Wikipedia - Divisor function</a>
    * </ul>
    *
    * <pre>
@@ -1703,14 +1646,16 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>gives the euler number <code>En</code>.
+   * <p>
+   * gives the euler number <code>En</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Euler_number">Wikipedia - Euler number</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Euler_number">Wikipedia - Euler number</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1767,12 +1712,16 @@ public final class NumberTheory {
         for (int i = thisn - 1; i > 0; i--) {
           IInteger f = a.get(i);
           f = f.multiply(AbstractIntegerSym.valueOf(BigIntegerMath.binomial(2 * thisn, 2 * i)));
-          if (sigPos) val = val.add(f);
-          else val = val.subtract(f);
+          if (sigPos)
+            val = val.add(f);
+          else
+            val = val.subtract(f);
           sigPos = !sigPos;
         }
-        if (thisn % 2 == 0) val = val.subtract(F.C1);
-        else val = val.add(F.C1);
+        if (thisn % 2 == 0)
+          val = val.subtract(F.C1);
+        else
+          val = val.add(F.C1);
         a.add(val);
       }
     }
@@ -1804,15 +1753,17 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>compute Euler's totient function.
+   * <p>
+   * compute Euler's totient function.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href= "http://en.wikipedia.org/wiki/Euler%27s_totient_function">Wikipedia - Euler's
-   *       totient function</a>
+   * <li><a href= "http://en.wikipedia.org/wiki/Euler%27s_totient_function">Wikipedia - Euler's
+   * totient function</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1833,8 +1784,7 @@ public final class NumberTheory {
           // integer to large?
         }
       } else {
-        if (arg1.isPower()
-            && arg1.exponent().isIntegerResult()
+        if (arg1.isPower() && arg1.exponent().isIntegerResult()
             && AbstractAssumptions.assumePrime(arg1.base()).isTrue()) {
           IExpr p = arg1.base();
           IExpr n = arg1.exponent();
@@ -1864,17 +1814,19 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>computes the extended greatest common divisor of the given integers.
+   * <p>
+   * computes the extended greatest common divisor of the given integers.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href= "https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">Wikipedia: Extended
-   *       Euclidean algorithm</a>
-   *   <li><a href= "https://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Wikipedia: Bézout's
-   *       identity</a>
+   * <li><a href= "https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">Wikipedia: Extended
+   * Euclidean algorithm</a>
+   * <li><a href= "https://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Wikipedia: Bézout's
+   * identity</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1884,14 +1836,16 @@ public final class NumberTheory {
    * {5,{-1,1}}
    * </pre>
    *
-   * <p><code>ExtendedGCD</code> works with any number of arguments:
+   * <p>
+   * <code>ExtendedGCD</code> works with any number of arguments:
    *
    * <pre>
    * &gt;&gt; ExtendedGCD(10, 15, 7)
    * {1,{-3,3,-2}}
    * </pre>
    *
-   * <p>Compute the greatest common divisor and check the result:
+   * <p>
+   * Compute the greatest common divisor and check the result:
    *
    * <pre>
    * &gt;&gt; numbers = {10, 20, 14};
@@ -1908,9 +1862,10 @@ public final class NumberTheory {
     /**
      * Returns the gcd of two positive numbers plus the bezout relations
      *
-     * <p>See <a href="http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">Extended Euclidean
-     * algorithm</a> and See <a
-     * href="http://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Bézout's identity</a>
+     * <p>
+     * See <a href="http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">Extended Euclidean
+     * algorithm</a> and See
+     * <a href="http://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Bézout's identity</a>
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1960,8 +1915,8 @@ public final class NumberTheory {
      * @param bezoutsCoefficients returns the Bezout Coefficients
      * @return
      */
-    public static BigInteger extendedGCD(
-        final BigInteger[] gcdArgs, BigInteger[] bezoutsCoefficients) {
+    public static BigInteger extendedGCD(final BigInteger[] gcdArgs,
+        BigInteger[] bezoutsCoefficients) {
       BigInteger factor;
       BigInteger gcd = gcdArgs[0];
       Object[] stepResult = extendedGCD(gcdArgs[1], gcd);
@@ -2006,7 +1961,7 @@ public final class NumberTheory {
       yValue = BigInteger.ONE;
       lastyValue = BigInteger.ZERO;
       if ((!((numberOne.compareTo(BigInteger.ZERO) == 0)
-              || (numberTwo.compareTo(BigInteger.ZERO) == 0)))
+          || (numberTwo.compareTo(BigInteger.ZERO) == 0)))
           && (((numberOne.compareTo(BigInteger.ZERO) == 1)
               && (numberTwo.compareTo(BigInteger.ZERO) == 1)))) {
         if (numberOne.compareTo(numberTwo) == 1) {
@@ -2073,7 +2028,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the factorial number of the integer <code>n</code>
+   * <p>
+   * returns the factorial number of the integer <code>n</code>
    *
    * </blockquote>
    *
@@ -2121,7 +2077,8 @@ public final class NumberTheory {
     /**
      * Returns the factorial of an integer n
      *
-     * <p>See <a href="http://en.wikipedia.org/wiki/Factorial">Factorial</a>
+     * <p>
+     * See <a href="http://en.wikipedia.org/wiki/Factorial">Factorial</a>
      */
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
@@ -2351,15 +2308,17 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the double factorial number of the integer <code>n</code>.
+   * <p>
+   * returns the double factorial number of the integer <code>n</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href= "http://en.wikipedia.org/wiki/Factorial#Double_factorial">Wikipedia - Double
-   *       Factorial</a>
+   * <li><a href= "http://en.wikipedia.org/wiki/Factorial#Double_factorial">Wikipedia - Double
+   * Factorial</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -2449,7 +2408,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the factorization of <code>n</code> as a list of factors and exponents.
+   * <p>
+   * returns the factorization of <code>n</code> as a list of factors and exponents.
    *
    * </blockquote>
    *
@@ -2472,14 +2432,16 @@ public final class NumberTheory {
    * {{2, 1}, {3, 1}, {5, 1}, {67, 1}}
    * </pre>
    *
-   * <p>To get back the original number:
+   * <p>
+   * To get back the original number:
    *
    * <pre>
    * &gt;&gt; Times @@ Power @@@ factors
    * 2010
    * </pre>
    *
-   * <p><code>FactorInteger</code> factors rationals using negative exponents:
+   * <p>
+   * <code>FactorInteger</code> factors rationals using negative exponents:
    *
    * <pre>
    * &gt;&gt; FactorInteger(2010 / 2011)
@@ -2537,7 +2499,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the Fibonacci number of the integer <code>n</code>
+   * <p>
+   * returns the Fibonacci number of the integer <code>n</code>
    *
    * </blockquote>
    *
@@ -2560,9 +2523,9 @@ public final class NumberTheory {
   private static class Fibonacci extends AbstractFunctionEvaluator {
 
     /**
-     * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time.F See: <a href=
-     * "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28"> Roseatta code: Fibonacci
-     * sequence.</a>
+     * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time.F See:
+     * <a href= "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28"> Roseatta code:
+     * Fibonacci sequence.</a>
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2584,26 +2547,18 @@ public final class NumberTheory {
           INumber x = ((INumber) ast.arg2()).evaluatePrecision(engine);
           return
           // [$ ((x + Sqrt(4 + x^2))^n/2^n - (2^n*Cos(n*Pi))/(x + Sqrt(4 + x^2))^n)/Sqrt(4 + x^2) $]
-          F.Times(
-              F.Power(F.Plus(F.C4, F.Sqr(x)), F.CN1D2),
+          F.Times(F.Power(F.Plus(F.C4, F.Sqr(x)), F.CN1D2),
               F.Plus(
-                  F.Times(
-                      F.Power(F.Power(F.C2, n), F.CN1),
+                  F.Times(F.Power(F.Power(F.C2, n), F.CN1),
                       F.Power(F.Plus(x, F.Sqrt(F.Plus(F.C4, F.Sqr(x)))), n)),
-                  F.Times(
-                      F.CN1,
-                      F.Power(F.C2, n),
+                  F.Times(F.CN1, F.Power(F.C2, n),
                       F.Power(F.Power(F.Plus(x, F.Sqrt(F.Plus(F.C4, F.Sqr(x)))), n), F.CN1),
                       F.Cos(F.Times(n, S.Pi))))); // $$;
         }
         return
         // [$ ( GoldenRatio^n - Cos(Pi*n) * GoldenRatio^(-n) ) / Sqrt(5) $]
-        F.Times(
-            F.C1DSqrt5,
-            F.Plus(
-                F.Power(S.GoldenRatio, n),
-                F.Times(
-                    F.CN1, F.Power(S.GoldenRatio, F.Negate(n)), F.Cos(F.Times(S.Pi, n))))); // $$;
+        F.Times(F.C1DSqrt5, F.Plus(F.Power(S.GoldenRatio, n),
+            F.Times(F.CN1, F.Power(S.GoldenRatio, F.Negate(n)), F.Cos(F.Times(S.Pi, n))))); // $$;
       }
       return F.NIL;
     }
@@ -2673,20 +2628,23 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the Frobenius number of the nonnegative integers <code>{a1, ... ,aN}</code>
+   * <p>
+   * returns the Frobenius number of the nonnegative integers <code>{a1, ... ,aN}</code>
    *
    * </blockquote>
    *
-   * <p>The Frobenius problem, also known as the postage-stamp problem or the money-changing
-   * problem, is an integer programming problem that seeks nonnegative integer solutions to <code>
+   * <p>
+   * The Frobenius problem, also known as the postage-stamp problem or the money-changing problem,
+   * is an integer programming problem that seeks nonnegative integer solutions to <code>
    * x1*a1 + ... + xN*aN = M</code> where <code>ai</code> and <code>M</code> are positive integers.
    * In particular, the Frobenius number <code>FrobeniusNumber({a1, ... ,aN})</code>, is the largest
    * <code>M</code> so that this equation fails to have a solution.
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Coin_problem">Wikipedia - Coin problem</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Coin_problem">Wikipedia - Coin problem</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -2728,7 +2686,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>return the number which represents the continued fraction list <code>{n1, n2, ...}</code>.
+   * <p>
+   * return the number which represents the continued fraction list <code>{n1, n2, ...}</code>.
    *
    * </blockquote>
    *
@@ -2745,8 +2704,8 @@ public final class NumberTheory {
   private static final class FromContinuedFraction extends AbstractEvaluator {
 
     /**
-     * Convert a list of numbers to a fraction. See <a
-     * href="http://en.wikipedia.org/wiki/Continued_fraction">Continued fraction</a>
+     * Convert a list of numbers to a fraction. See
+     * <a href="http://en.wikipedia.org/wiki/Continued_fraction">Continued fraction</a>
      *
      * @see org.matheclipse.core.reflection.system.ContinuedFraction
      */
@@ -2760,8 +2719,8 @@ public final class NumberTheory {
             if (period.isNonEmptyList()) {
               if (!((IAST) period).forAll(x -> x.isInteger())) {
                 // Unable to determine the appropriate root for the periodic continued fraction.
-                return IOFunctions.printMessage(
-                    S.FromContinuedFraction, "root", F.CEmptyList, engine);
+                return IOFunctions.printMessage(S.FromContinuedFraction, "root", F.CEmptyList,
+                    engine);
               }
               boolean nonNegative = ((IAST) period).forAll(x -> x.isNonNegativeResult());
 
@@ -2784,8 +2743,8 @@ public final class NumberTheory {
                 }
               }
               // Unable to determine the appropriate root for the periodic continued fraction.
-              return IOFunctions.printMessage(
-                  S.FromContinuedFraction, "root", F.CEmptyList, engine);
+              return IOFunctions.printMessage(S.FromContinuedFraction, "root", F.CEmptyList,
+                  engine);
             }
 
             return continuedFractionReduce(list, engine);
@@ -2803,9 +2762,10 @@ public final class NumberTheory {
      * Rationalize the denominator of the <code>expr</code> by removing square roots. This method
      * handles only very simple cases.
      *
-     * <p><b>Note:</b> the expression returned from <code>radSimplify</code> must be used with
-     * caution since if the denominator contains symbols, it will be possible to make substitutions
-     * that violate the assumptions of the simplification process: that for a denominator matching
+     * <p>
+     * <b>Note:</b> the expression returned from <code>radSimplify</code> must be used with caution
+     * since if the denominator contains symbols, it will be possible to make substitutions that
+     * violate the assumptions of the simplification process: that for a denominator matching
      * <code>a + b*sqrt(c), a != +/-b*sqrt(c)</code>.
      *
      * @param expr the expression which denominator should be rationalized
@@ -2834,7 +2794,8 @@ public final class NumberTheory {
     /**
      * Reduce a continued fraction to a rational or quadratic irrational.
      *
-     * <p>Compute the rational or quadratic irrational number from its terminating or periodic
+     * <p>
+     * Compute the rational or quadratic irrational number from its terminating or periodic
      * continued fraction expansion.
      *
      * @param continuedFractionList the list of integers
@@ -2880,14 +2841,16 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>calculates the Jacobi symbol.
+   * <p>
+   * calculates the Jacobi symbol.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi symbol</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi symbol</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -2928,7 +2891,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>if all arguments <code>arg1</code> to <code>argN</code> are equal return <code>1</code>,
+   * <p>
+   * if all arguments <code>arg1</code> to <code>argN</code> are equal return <code>1</code>,
    * otherwise return <code>0</code>.
    *
    * </blockquote>
@@ -3177,22 +3141,16 @@ public final class NumberTheory {
           INumber x = ((INumber) ast.arg2()).evaluatePrecision(engine);
           return
           // [$ (x/2 + Sqrt(1 + x^2/4))^n + Cos(n*Pi)/(x/2 + Sqrt(1 + x^2/4))^n $]
-          F.Plus(
-              F.Power(
-                  F.Plus(F.Times(F.C1D2, x), F.Sqrt(F.Plus(F.C1, F.Times(F.C1D4, F.Sqr(x))))), n),
-              F.Times(
-                  F.Power(
-                      F.Power(
-                          F.Plus(
-                              F.Times(F.C1D2, x), F.Sqrt(F.Plus(F.C1, F.Times(F.C1D4, F.Sqr(x))))),
-                          n),
-                      F.CN1),
-                  F.Cos(F.Times(n, S.Pi)))); // $$;
+          F.Plus(F.Power(F.Plus(F.Times(F.C1D2, x),
+              F.Sqrt(F.Plus(F.C1, F.Times(F.C1D4, F.Sqr(x))))), n), F
+                  .Times(
+                      F.Power(F.Power(F.Plus(F.Times(F.C1D2, x),
+                          F.Sqrt(F.Plus(F.C1, F.Times(F.C1D4, F.Sqr(x))))), n), F.CN1),
+                      F.Cos(F.Times(n, S.Pi)))); // $$;
         }
         return
         // [$ GoldenRatio^n + Cos(Pi*n) * GoldenRatio^(-n) $]
-        F.Plus(
-            F.Power(S.GoldenRatio, n),
+        F.Plus(F.Power(S.GoldenRatio, n),
             F.Times(F.Cos(F.Times(S.Pi, n)), F.Power(S.GoldenRatio, F.Negate(n)))); // $$;
       }
       return F.NIL;
@@ -3205,8 +3163,8 @@ public final class NumberTheory {
      * @param x the variable expression of the polynomial
      * @return
      */
-    private static IExpr lucasLPolynomialIterative(
-        int n, IExpr x, final IAST ast, final EvalEngine engine) {
+    private static IExpr lucasLPolynomialIterative(int n, IExpr x, final IAST ast,
+        final EvalEngine engine) {
       int iArg = n;
       if (n < 0) {
         n *= (-1);
@@ -3266,15 +3224,17 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>the von Mangoldt function of <code>n</code>
+   * <p>
+   * the von Mangoldt function of <code>n</code>
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Von_Mangoldt_function">Wikipedia - Von Mangoldt
-   *       function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Von_Mangoldt_function">Wikipedia - Von Mangoldt
+   * function</a>
    * </ul>
    *
    * <pre>
@@ -3322,18 +3282,20 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the <code>n</code>th mersenne prime exponent. <code>2^n - 1</code> must be a prime
+   * <p>
+   * returns the <code>n</code>th mersenne prime exponent. <code>2^n - 1</code> must be a prime
    * number. Currently <code>0 &lt;= n &lt;= 47</code> can be computed, otherwise the function
    * returns unevaluated.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Mersenne_prime">Wikipedia - Mersenne prime</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/List_of_perfect_numbers">Wikipedia - List of
-   *       perfect numbers</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Mersenne_prime">Wikipedia - Mersenne prime</a>
+   * <li><a href="https://en.wikipedia.org/wiki/List_of_perfect_numbers">Wikipedia - List of perfect
+   * numbers</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -3369,17 +3331,19 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>2^n - 1</code> is a prime number. Currently <code>
+   * <p>
+   * returns <code>True</code> if <code>2^n - 1</code> is a prime number. Currently <code>
    * 0 &lt;= n &lt;= 47</code> can be computed in reasonable time.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Mersenne_prime">Wikipedia - Mersenne prime</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/List_of_perfect_numbers">Wikipedia - List of
-   *       perfect numbers</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Mersenne_prime">Wikipedia - Mersenne prime</a>
+   * <li><a href="https://en.wikipedia.org/wiki/List_of_perfect_numbers">Wikipedia - List of perfect
+   * numbers</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -3433,15 +3397,16 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>calculate the Möbius function.
+   * <p>
+   * calculate the Möbius function.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/M%C3%B6bius_function">Wikipedia - Möbius
-   *       function</a>
+   * <li><a href="http://en.wikipedia.org/wiki/M%C3%B6bius_function">Wikipedia - Möbius function</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -3488,15 +3453,17 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>gives the multinomial coefficient <code>(n1+n2+...)!/(n1! n2! ...)</code>.
+   * <p>
+   * gives the multinomial coefficient <code>(n1+n2+...)!/(n1! n2! ...)</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Multinomial_coefficient">Wikipedia: Multinomial
-   *       coefficient</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Multinomial_coefficient">Wikipedia: Multinomial
+   * coefficient</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -3509,7 +3476,8 @@ public final class NumberTheory {
    * 1
    * </pre>
    *
-   * <p><code>Multinomial(n-k, k)</code> is equivalent to <code>Binomial(n, k)</code>.
+   * <p>
+   * <code>Multinomial(n-k, k)</code> is equivalent to <code>Binomial(n, k)</code>.
    *
    * <pre>
    * &gt;&gt; Multinomial(2, 3)
@@ -3558,8 +3526,8 @@ public final class NumberTheory {
         // Multinomial(n1+n2+n3+...+ni, k) * Multinomial(n1, n2, n3,..., ni)
         IAST reducedMultinomial = ast.removeFromEnd(argSize);
         IAST reducedPlus = reducedMultinomial.apply(S.Plus);
-        return F.Times(
-            F.Multinomial(reducedPlus, ast.get(argSize)), multinomial(reducedMultinomial));
+        return F.Times(F.Multinomial(reducedPlus, ast.get(argSize)),
+            multinomial(reducedMultinomial));
       }
       return F.NIL;
     }
@@ -3584,20 +3552,23 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>gives the multiplicative order <code>a</code> modulo <code>n</code>.
+   * <p>
+   * gives the multiplicative order <code>a</code> modulo <code>n</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Multiplicative_order">Wikipedia: Multiplicative
-   *       order</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Multiplicative_order">Wikipedia: Multiplicative
+   * order</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <p>The <a href="https://oeis.org/A023394">A023394 Prime factors of Fermat numbers</a> integer
+   * <p>
+   * The <a href="https://oeis.org/A023394">A023394 Prime factors of Fermat numbers</a> integer
    * sequence
    *
    * <pre>
@@ -3644,7 +3615,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>gives the next prime after <code>n</code>.
+   * <p>
+   * gives the next prime after <code>n</code>.
    *
    * </blockquote>
    *
@@ -3654,7 +3626,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>gives the <code>k</code>th prime after <code>n</code>.
+   * <p>
+   * gives the <code>k</code>th prime after <code>n</code>.
    *
    * </blockquote>
    *
@@ -3727,7 +3700,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>gives the number of unrestricted partitions of the integer <code>n</code>.
+   * <p>
+   * gives the number of unrestricted partitions of the integer <code>n</code>.
    *
    * </blockquote>
    *
@@ -3806,15 +3780,12 @@ public final class NumberTheory {
             return F.C3;
           }
           try {
-            IExpr result =
-                F.REMEMBER_INTEGER_CACHE.get(
-                    ast,
-                    new Callable<IExpr>() {
-                      @Override
-                      public IExpr call() {
-                        return sumPartitionsP(engine, (IInteger) arg1);
-                      }
-                    });
+            IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
+              @Override
+              public IExpr call() {
+                return sumPartitionsP(engine, (IInteger) arg1);
+              }
+            });
             if (result != null) {
               return result;
             }
@@ -3873,7 +3844,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>gives the number of partitions of the integer <code>n</code> into distinct parts
+   * <p>
+   * gives the number of partitions of the integer <code>n</code> into distinct parts
    *
    * </blockquote>
    *
@@ -3910,15 +3882,12 @@ public final class NumberTheory {
           try {
             IInteger n = (IInteger) arg1;
             if (n.isLT(F.ZZ(201))) {
-              IExpr result =
-                  F.REMEMBER_INTEGER_CACHE.get(
-                      ast,
-                      new Callable<IExpr>() {
-                        @Override
-                        public IExpr call() {
-                          return partitionsQ(engine, (IInteger) arg1);
-                        }
-                      });
+              IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
+                @Override
+                public IExpr call() {
+                  return partitionsQ(engine, (IInteger) arg1);
+                }
+              });
               if (result != null) {
                 return result;
               }
@@ -4019,8 +3988,8 @@ public final class NumberTheory {
     private static IExpr termPartitionsQ2(EvalEngine engine, IInteger n, int k) {
       // DivisorSigma(1, k)*PartitionsQ(n - 2*k)
       IInteger k2 = F.ZZ(k);
-      return engine.evaluate(
-          Times(F.DivisorSigma(C1, k2), F.PartitionsQ(Plus(Times(F.CN2, k2), n))));
+      return engine
+          .evaluate(Times(F.DivisorSigma(C1, k2), F.PartitionsQ(Plus(Times(F.CN2, k2), n))));
     }
 
     @Override
@@ -4105,7 +4074,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the <code>n</code>th prime number.
+   * <p>
+   * returns the <code>n</code>th prime number.
    *
    * </blockquote>
    *
@@ -4220,7 +4190,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the sum of the exponents of the prime factorization of <code>n</code>.
+   * <p>
+   * returns the sum of the exponents of the prime factorization of <code>n</code>.
    *
    * </blockquote>
    *
@@ -4261,7 +4232,7 @@ public final class NumberTheory {
         if (arg1.isNegative()) {
           arg1 = arg1.negate();
         }
-        //        SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
+        // SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
         SortedMap<BigInteger, Integer> map =
             Config.PRIME_FACTORS.factorInteger(((IInteger) arg1).toBigNumerator());
         BigInteger sum = BigInteger.ZERO;
@@ -4293,7 +4264,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>n</code> is a power of a prime number.
+   * <p>
+   * returns <code>True</code> if <code>n</code> is a power of a prime number.
    *
    * </blockquote>
    *
@@ -4376,7 +4348,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the list of the primitive roots of <code>n</code>.
+   * <p>
+   * returns the list of the primitive roots of <code>n</code>.
    *
    * </blockquote>
    *
@@ -4393,9 +4366,9 @@ public final class NumberTheory {
   private static class PrimitiveRootList extends AbstractTrigArg1 {
 
     /**
-     * See: <a href=
-     * "http://exploringnumbertheory.wordpress.com/2013/09/09/finding-primitive-roots/"> Exploring
-     * Number Theory - Finding Primitive Roots</a>
+     * See:
+     * <a href= "http://exploringnumbertheory.wordpress.com/2013/09/09/finding-primitive-roots/">
+     * Exploring Number Theory - Finding Primitive Roots</a>
      */
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
@@ -4449,7 +4422,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>convert numerical real or imaginary parts in (sub-)expressions into rational numbers.
+   * <p>
+   * convert numerical real or imaginary parts in (sub-)expressions into rational numbers.
    *
    * </blockquote>
    *
@@ -4467,10 +4441,12 @@ public final class NumberTheory {
 
     static class RationalizeNumericsVisitor extends VisitorExpr {
       double epsilon;
+      boolean useConvergenceMethod;
 
-      public RationalizeNumericsVisitor(double epsilon) {
+      public RationalizeNumericsVisitor(double epsilon, boolean useConvergenceMethod) {
         super();
         this.epsilon = epsilon;
+        this.useConvergenceMethod = useConvergenceMethod;
       }
 
       @Override
@@ -4480,11 +4456,17 @@ public final class NumberTheory {
 
       @Override
       public IExpr visit(IComplexNum element) {
+        if (useConvergenceMethod) {
+          return F.complexConvergent(element.getRealPart(), element.getImaginaryPart());
+        }
         return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
       }
 
       @Override
       public IExpr visit(INum element) {
+        if (useConvergenceMethod) {
+          return F.fractionConvergent(element.getRealPart());
+        }
         return F.fraction(element.getRealPart(), epsilon);
       }
     }
@@ -4493,12 +4475,14 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       double epsilon = Config.DOUBLE_EPSILON;
+      boolean useConvergenceMethod = true;
       try {
         if (ast.isAST2()) {
           ISignedNumber epsilonExpr = ast.arg2().evalReal();
           if (epsilonExpr == null) {
             return F.NIL;
           }
+          useConvergenceMethod = false;
           epsilon = epsilonExpr.doubleValue();
           if (arg1.isNumericFunction(true)) {
             // works more similar to MMA if we do this step:
@@ -4506,9 +4490,10 @@ public final class NumberTheory {
           }
         }
         // try to convert into a fractional number
-        return rationalize(arg1, epsilon).orElse(arg1);
-      } catch (Exception e) {
-        LOGGER.debug("Rationalize.evaluate() failed", e);
+        return rationalize(arg1, epsilon, useConvergenceMethod).orElse(arg1);
+      } catch (Exception ex) {
+//        ex.printStackTrace();
+        LOGGER.debug("Rationalize.evaluate() failed", ex);
       }
 
       return F.NIL;
@@ -4537,14 +4522,11 @@ public final class NumberTheory {
           IExpr p1 = base.first();
           IExpr p2 = base.second();
           if (base.size() == 3 //
-              && (p1.isRational() || p1.isFactorSqrtExpr())
-              && p2.isFactorSqrtExpr()) {
+              && (p1.isRational() || p1.isFactorSqrtExpr()) && p2.isFactorSqrtExpr()) {
             IRational denominator = (IRational) F.Subtract.of(F.Sqr(p1), F.Sqr(p2));
             IAST numerator = F.Subtract(p1, p2);
-            IExpr temp =
-                F.Divide(
-                    numerator, //
-                    denominator);
+            IExpr temp = F.Divide(numerator, //
+                denominator);
             return temp;
           }
         }
@@ -4572,7 +4554,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>n</code> a square free integer number or a square free
+   * <p>
+   * returns <code>True</code> if <code>n</code> a square free integer number or a square free
    * univariate polynomial.
    *
    * </blockquote>
@@ -4605,10 +4588,8 @@ public final class NumberTheory {
         }
       }
       if (!eVar.isSize(1)) {
-        LOGGER.log(
-            engine.getLogLevel(),
-            "{}: only implemented for univariate polynomials at position 1",
-            ast.topHead());
+        LOGGER.log(engine.getLogLevel(),
+            "{}: only implemented for univariate polynomials at position 1", ast.topHead());
         return F.NIL;
       }
       try {
@@ -4640,9 +4621,8 @@ public final class NumberTheory {
       return factorAbstract.isSquarefree(poly);
     }
 
-    public static boolean isSquarefreeWithOption(
-        final IAST lst, IExpr expr, List<IExpr> varList, final EvalEngine engine)
-        throws JASConversionException {
+    public static boolean isSquarefreeWithOption(final IAST lst, IExpr expr, List<IExpr> varList,
+        final EvalEngine engine) throws JASConversionException {
       final OptionArgs options = new OptionArgs(lst.topHead(), lst, 2, engine);
       IExpr option = options.getOption(S.Modulus);
       if (option.isReal()) {
@@ -4704,15 +4684,17 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the Stirling numbers of the first kind.
+   * <p>
+   * returns the Stirling numbers of the first kind.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href= "https://en.wikipedia.org/wiki/Stirling_numbers_of_the_first_kind">Wikipedia -
-   *       Stirling numbers of the first kind</a>
+   * <li><a href= "https://en.wikipedia.org/wiki/Stirling_numbers_of_the_first_kind">Wikipedia -
+   * Stirling numbers of the first kind</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -4757,9 +4739,7 @@ public final class NumberTheory {
             factorPlusMinus1 = F.C1;
           }
           temp.append(
-              Times(
-                  factorPlusMinus1,
-                  F.Binomial(Plus(value, nSubtract1), Plus(value, nSubtractm)),
+              Times(factorPlusMinus1, F.Binomial(Plus(value, nSubtract1), Plus(value, nSubtractm)),
                   F.Binomial(nTimes2Subtractm, F.Subtract(nSubtractm, value)),
                   F.StirlingS2(Plus(value, nSubtractm), value)));
           leafCount += temp.leafCount();
@@ -4818,15 +4798,17 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the Stirling numbers of the second kind.
+   * <p>
+   * returns the Stirling numbers of the second kind.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href= "http://en.wikipedia.org/wiki/Stirling_numbers_of_the_second_kind">Wikipedia -
-   *       Stirling numbers of the second kind</a>
+   * <li><a href= "http://en.wikipedia.org/wiki/Stirling_numbers_of_the_second_kind">Wikipedia -
+   * Stirling numbers of the second kind</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -4902,14 +4884,16 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>returns the subfactorial number of the integer <code>n</code>
+   * <p>
+   * returns the subfactorial number of the integer <code>n</code>
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia - Derangement</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia - Derangement</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -4923,8 +4907,8 @@ public final class NumberTheory {
 
     /**
      * Iterative subfactorial algorithm based on the recurrence: <code>
-     * Subfactorial(n) = n * Subfactorial(n-1) + (-1)^n</code> See <a
-     * href="http://en.wikipedia.org/wiki/Derangement">Wikipedia - Derangement</a>
+     * Subfactorial(n) = n * Subfactorial(n-1) + (-1)^n</code> See
+     * <a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia - Derangement</a>
      *
      * <pre>
      * result = 1;
@@ -4990,7 +4974,8 @@ public final class NumberTheory {
    *
    * <blockquote>
    *
-   * <p>maps a non-zero <code>expr</code> to <code>1</code>, and a zero <code>expr</code> to <code>0
+   * <p>
+   * maps a non-zero <code>expr</code> to <code>1</code>, and a zero <code>expr</code> to <code>0
    * </code>.
    *
    * </blockquote>
@@ -5155,9 +5140,9 @@ public final class NumberTheory {
   }
 
   /**
-   * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time. See: <a href=
-   * "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28"> Roseatta code: Fibonacci
-   * sequence.</a>
+   * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time. See:
+   * <a href= "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28"> Roseatta code:
+   * Fibonacci sequence.</a>
    *
    * @param iArg
    * @return
@@ -5207,8 +5192,8 @@ public final class NumberTheory {
   }
 
   /**
-   * Calculate integer binomial number. See definitions by <a
-   * href="https://arxiv.org/abs/1105.3689">Kronenburg 2011</a>
+   * Calculate integer binomial number. See definitions by
+   * <a href="https://arxiv.org/abs/1105.3689">Kronenburg 2011</a>
    *
    * @param n
    * @param k
@@ -5311,10 +5296,11 @@ public final class NumberTheory {
   /**
    * Compute the Bernoulli number of the first kind.
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli
-   * number</a>. <br>
-   * For better performing implementations see <a href=
-   * "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>.
+   * <br>
+   * For better performing implementations see
+   * <a href= "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
    * >ComputationAndAsymptoticsOfBernoulliNumbers</a>
    *
    * @param n
@@ -5427,7 +5413,7 @@ public final class NumberTheory {
    * @param k the number of non-empty subsets
    * @param ki the number of non-empty subsets as int value
    * @return {@code S2(nArg1,kArg2)} or throw <code>ArithmeticException</code> if <code>n</code>
-   *     cannot be converted into a positive int number
+   *         cannot be converted into a positive int number
    */
   public static IInteger stirlingS2(int n, IInteger k, int ki) throws MathRuntimeException {
     if (n != 0 && n <= 25) { // S(26,9) = 11201516780955125625 is larger than Long.MAX_VALUE
@@ -5449,26 +5435,29 @@ public final class NumberTheory {
   /**
    * The first 8 perfect numbers fitting into a Java long
    *
-   * <p>See <a href=
-   * "https://en.wikipedia.org/wiki/List_of_perfect_numbers">List_of_perfect_numbers</a>
+   * <p>
+   * See
+   * <a href= "https://en.wikipedia.org/wiki/List_of_perfect_numbers">List_of_perfect_numbers</a>
    */
-  private static final long[] PN_8 = {
-    6, 28, 496, 8128, 33550336L, 8589869056L, 137438691328L, 2305843008139952128L
-  };
+  private static final long[] PN_8 =
+      {6, 28, 496, 8128, 33550336L, 8589869056L, 137438691328L, 2305843008139952128L};
 
   /**
    * The first 47 mersenne prime exponents.
    *
-   * <p>See <a href="https://en.wikipedia.org/wiki/Mersenne_prime">Mersenne prime</a>
+   * <p>
+   * See <a href="https://en.wikipedia.org/wiki/Mersenne_prime">Mersenne prime</a>
    */
-  private static final int[] MPE_47 = {
-    2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279, 2203, 2281, 3217, 4253, 4423,
-    9689, 9941, 11213, 19937, 21701, 23209, 44497, 86243, 110503, 132049, 216091, 756839, 859433,
-    1257787, 1398269, 2976221, 3021377, 6972593, 13466917, 20996011, 24036583, 25964951, 30402457,
-    32582657, 37156667, 42643801, 43112609
-  };
+  private static final int[] MPE_47 = {2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279,
+      2203, 2281, 3217, 4253, 4423, 9689, 9941, 11213, 19937, 21701, 23209, 44497, 86243, 110503,
+      132049, 216091, 756839, 859433, 1257787, 1398269, 2976221, 3021377, 6972593, 13466917,
+      20996011, 24036583, 25964951, 30402457, 32582657, 37156667, 42643801, 43112609};
 
   private NumberTheory() {}
+
+  public static IExpr rationalize(IExpr arg1) {
+    return NumberTheory.rationalize(arg1, Config.DOUBLE_EPSILON, true);
+  }
 
   /**
    * Rationalize only pure numeric numbers in expression <code>arg</code>.
@@ -5476,8 +5465,8 @@ public final class NumberTheory {
    * @param arg1
    * @return <code>F.NIL</code> if no expression was transformed
    */
-  public static IExpr rationalize(IExpr arg1) {
-    return NumberTheory.rationalize(arg1, Config.DOUBLE_EPSILON);
+  public static IExpr rationalize(IExpr arg1, boolean useConvergenceMethod) {
+    return NumberTheory.rationalize(arg1, Config.DOUBLE_EPSILON, useConvergenceMethod);
   }
 
   /**
@@ -5485,11 +5474,12 @@ public final class NumberTheory {
    *
    * @param arg1
    * @param epsilon
+   * @param useConvergenceMethod
    * @return <code>F.NIL</code> if no expression was transformed
    */
-  public static IExpr rationalize(IExpr arg1, double epsilon) {
+  public static IExpr rationalize(IExpr arg1, double epsilon, boolean useConvergenceMethod) {
     Rationalize.RationalizeNumericsVisitor rationalizeVisitor =
-        new Rationalize.RationalizeNumericsVisitor(epsilon);
+        new Rationalize.RationalizeNumericsVisitor(epsilon, useConvergenceMethod);
     return arg1.accept(rationalizeVisitor);
   }
 
