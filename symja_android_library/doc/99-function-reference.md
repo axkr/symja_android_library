@@ -724,6 +724,7 @@
 * [RegularExpression](functions/RegularExpression.md)
 * [ReleaseHold](functions/ReleaseHold.md)
 * [RemoveDiacritics](functions/RemoveDiacritics.md)
+* [RepeatedTiming](functions/RepeatedTiming.md)
 * [Replace](functions/Replace.md)
 * [ReplaceAll](functions/ReplaceAll.md)
 * [ReplaceList](functions/ReplaceList.md)

@@ -3790,6 +3790,9 @@ public class S {
    */
   public static final IBuiltInSymbol Function = F.initFinalSymbol("Function", ID.Function);
 
+  public static final IBuiltInSymbol FunctionDomain =
+      F.initFinalSymbol("FunctionDomain", ID.FunctionDomain);
+
   /**
    * FunctionExpand(expression) - expands the special function `expression`. `FunctionExpand`
    * expands simple nested radicals.
@@ -7939,6 +7942,9 @@ public class S {
 
   public static final IBuiltInSymbol RepeatedNull =
       F.initFinalSymbol("RepeatedNull", ID.RepeatedNull);
+
+  public static final IBuiltInSymbol RepeatedTiming =
+      F.initFinalSymbol("RepeatedTiming", ID.RepeatedTiming);
 
   /**
    * Replace(expr, lhs -> rhs) - replaces the left-hand-side pattern expression `lhs` in `expr` with
