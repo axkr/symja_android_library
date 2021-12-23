@@ -14,6 +14,7 @@ import java.util.function.Function;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -90,6 +91,7 @@ public final class Programming {
       S.Pause.setEvaluator(new Pause());
       S.Quiet.setEvaluator(new Quiet());
       S.Reap.setEvaluator(new Reap());
+      S.RepeatedTiming.setEvaluator(new RepeatedTiming());
       S.Return.setEvaluator(new Return());
       S.Sow.setEvaluator(new Sow());
       S.Stack.setEvaluator(new Stack());
@@ -2481,6 +2483,35 @@ public final class Programming {
     }
   }
 
+  private static class RepeatedTiming extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        int n = 10;
+        IExpr result = F.Null;
+        double[] r = new double[n];
+        for (int i = 0; i < n; i++) {
+          final long begin = System.currentTimeMillis();
+          result = engine.evaluate(ast.arg1());
+          r[i] = (System.currentTimeMillis() - begin) / 1000.0;
+        }
+        DescriptiveStatistics descriptiveStatistics = new DescriptiveStatistics(r);
+        return F.List(F.num(descriptiveStatistics.getMean()), F.HoldForm(result));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.SEQUENCEHOLD);
+    }
+  }
   /**
    *
    *
