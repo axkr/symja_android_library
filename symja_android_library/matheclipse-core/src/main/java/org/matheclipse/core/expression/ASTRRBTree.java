@@ -29,7 +29,8 @@ import org.organicdesign.fp.collections.UnmodSortedIterator;
 /**
  * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>no argument</b>.
  *
- * <p>In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
+ * <p>
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
  * structure of the Symja source code. Each node of the tree denotes a construct occurring in the
  * source code. The syntax is 'abstract' in the sense that it does not represent every detail that
  * appears in the real syntax. For instance, grouping parentheses are implicit in the tree
@@ -38,9 +39,9 @@ import org.organicdesign.fp.collections.UnmodSortedIterator;
  * <code>x</code>. Internally an AST is represented as a <code>java.util.List</code> which contains
  *
  * <ul>
- *   <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
- *       Times,...) at index <code>0</code> and
- *   <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
+ * Times,...) at index <code>0</code> and
+ * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
  * </ul>
  *
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
@@ -51,20 +52,20 @@ public class ASTRRBTree extends AbstractAST
     implements IASTAppendable, Externalizable, RandomAccess {
 
   /** The underlying RRB Tree */
-  protected ImRrbt<IExpr> rrbTree;
+  protected MutRrbt<IExpr> rrbTree;
 
   public ASTRRBTree() {
     super();
     // When Externalizable objects are deserialized, they first need to be constructed by invoking
-    // the void  constructor. Since this class does not have one, serialization and deserialization
+    // the void constructor. Since this class does not have one, serialization and deserialization
     // will fail
     // at runtime.
-    rrbTree = StaticImports.rrb();
+    rrbTree = StaticImports.mutableRrb();
   }
 
   public ASTRRBTree(int size, boolean test) {
     super();
-    rrbTree = StaticImports.rrb();
+    rrbTree = StaticImports.mutableRrb();
   }
 
   public void ensureCapacity(int size) {}
@@ -86,11 +87,10 @@ public class ASTRRBTree extends AbstractAST
       throw new ASTElementLimitExceeded(ast.size());
     }
 
-    MutRrbt<IExpr> mutable = StaticImports.mutableRrb();
+    rrbTree = StaticImports.mutableRrb();
     for (int i = 0; i < ast.size(); i++) {
-      mutable.append(ast.getRule(i));
+      rrbTree.append(ast.getRule(i));
     }
-    this.rrbTree = mutable.immutable();
   }
 
   public ASTRRBTree(MutRrbt<IExpr> list) {
@@ -99,7 +99,7 @@ public class ASTRRBTree extends AbstractAST
       throw new ASTElementLimitExceeded(list.size());
     }
 
-    this.rrbTree = list.immutable();
+    this.rrbTree = list.toMutRrbt();
   }
 
   public ASTRRBTree(ImRrbt<IExpr> list) {
@@ -108,7 +108,7 @@ public class ASTRRBTree extends AbstractAST
       throw new ASTElementLimitExceeded(list.size());
     }
 
-    this.rrbTree = list;
+    this.rrbTree = list.toMutRrbt();
   }
 
   public ASTRRBTree(IExpr[] array) {
@@ -116,7 +116,7 @@ public class ASTRRBTree extends AbstractAST
     if (Config.MAX_AST_SIZE < array.length) {
       throw new ASTElementLimitExceeded(array.length);
     }
-    this.rrbTree = StaticImports.rrb(array);
+    this.rrbTree = StaticImports.mutableRrb(array);
   }
 
   /**
@@ -232,7 +232,7 @@ public class ASTRRBTree extends AbstractAST
   /** {@inheritDoc} */
   @Override
   public ASTRRBTree copy() {
-    return new ASTRRBTree(rrbTree);
+    return new ASTRRBTree(rrbTree.toMutRrbt());
   }
 
   @Override
@@ -291,7 +291,7 @@ public class ASTRRBTree extends AbstractAST
     MutRrbt<IExpr> mutableRrb = StaticImports.mutableRrb();
     mutableRrb.append(head());
     for (int i = 0; i < length; i++) {
-      mutableRrb.append(get(items[i]));
+      mutableRrb = mutableRrb.append(get(items[i]));
     }
     return new ASTRRBTree(mutableRrb);
   }
@@ -308,7 +308,7 @@ public class ASTRRBTree extends AbstractAST
   }
 
   @Override
-  public final IExpr head() {
+  public IExpr head() {
     return rrbTree.get(0);
   }
 
@@ -370,7 +370,8 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
     this.fEvalFlags = objectInput.readShort();
-    this.rrbTree = (ImRrbt) objectInput.readObject();
+    // MutRrbt is not serializable
+    this.rrbTree = ((ImRrbt) objectInput.readObject()).toMutRrbt();
   }
 
   /**
@@ -405,7 +406,7 @@ public class ASTRRBTree extends AbstractAST
     hashValue = 0;
     final IExpr[] a = toArray();
     Arrays.sort(a, 1, a.length, comparator);
-    this.rrbTree = StaticImports.rrb(a);
+    this.rrbTree = StaticImports.mutableRrb(a);
   }
 
   /**
@@ -414,14 +415,15 @@ public class ASTRRBTree extends AbstractAST
    * @return the number of elements in this {@code ArrayList}.
    */
   @Override
-  public int size() {
+  public final int size() {
     return rrbTree.size();
   }
 
   @Override
   public void writeExternal(ObjectOutput objectOutput) throws IOException {
     objectOutput.writeShort(fEvalFlags);
-    objectOutput.writeObject(rrbTree);
+    // MutRrbt is not serializable
+    objectOutput.writeObject(rrbTree.immutable());
   }
 
   @Override
@@ -459,20 +461,16 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public boolean appendAll(Collection<? extends IExpr> collection) {
     hashValue = 0;
-    MutRrbt<IExpr> mutable = rrbTree.toMutRrbt();
-    mutable.addAll(collection);
-    rrbTree = mutable.immutable();
+    rrbTree.addAll(collection);
     return true;
   }
 
   @Override
   public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map) {
     hashValue = 0;
-    MutRrbt<IExpr> mutable = rrbTree.toMutRrbt();
     for (Map.Entry<? extends IExpr, ? extends IExpr> entry : map.entrySet()) {
-      mutable.append(F.Rule(entry.getKey(), entry.getValue()));
+      rrbTree.append(F.Rule(entry.getKey(), entry.getValue()));
     }
-    rrbTree = mutable.immutable();
     return true;
   }
 
@@ -480,11 +478,9 @@ public class ASTRRBTree extends AbstractAST
   public boolean appendAll(IAST ast, int startPosition, int endPosition) {
     if (ast.size() > 0 && startPosition < endPosition) {
       hashValue = 0;
-      MutRrbt<IExpr> mutable = rrbTree.toMutRrbt();
       for (int i = startPosition; i < endPosition; i++) {
-        mutable.append(ast.get(i));
+        rrbTree = rrbTree.append(ast.get(i));
       }
-      rrbTree = mutable.immutable();
       return true;
     }
     return false;
@@ -504,13 +500,13 @@ public class ASTRRBTree extends AbstractAST
     }
     MutRrbt<IExpr> mutable = StaticImports.mutableRrb();
     for (int i = 0; i < location; i++) {
-      mutable.append(rrbTree.get(i));
+      mutable = mutable.append(rrbTree.get(i));
     }
     mutable.addAll(collection);
     for (int i = location; i < rrbTree.size(); i++) {
-      mutable.append(rrbTree.get(i));
+      mutable = mutable.append(rrbTree.get(i));
     }
-    rrbTree = mutable.immutable();
+    rrbTree = mutable;
     return true;
   }
 
@@ -518,11 +514,9 @@ public class ASTRRBTree extends AbstractAST
   public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition) {
     if (list.size() > 0 && startPosition < endPosition) {
       hashValue = 0;
-      MutRrbt<IExpr> mutable = rrbTree.toMutRrbt();
       for (int i = startPosition; i < endPosition; i++) {
-        mutable.append(list.get(i));
+        rrbTree = rrbTree.append(list.get(i));
       }
-      rrbTree = mutable.immutable();
       return true;
     }
     return false;
@@ -532,11 +526,9 @@ public class ASTRRBTree extends AbstractAST
   public boolean appendAll(IExpr[] args, int startPosition, int endPosition) {
     if (args.length > 0 && startPosition < endPosition) {
       hashValue = 0;
-      MutRrbt<IExpr> mutable = rrbTree.toMutRrbt();
       for (int i = startPosition; i < endPosition; i++) {
-        mutable.append(args[i]);
+        rrbTree = rrbTree.append(args[i]);
       }
-      rrbTree = mutable.immutable();
       return true;
     }
     return false;
@@ -551,11 +543,9 @@ public class ASTRRBTree extends AbstractAST
   public boolean appendArgs(IAST ast, int untilPosition) {
     if (untilPosition > 1) {
       hashValue = 0;
-      MutRrbt<IExpr> mutable = rrbTree.toMutRrbt();
       for (int i = 1; i < untilPosition; i++) {
-        mutable.append(ast.get(i));
+        rrbTree = rrbTree.append(ast.get(i));
       }
-      rrbTree = mutable.immutable();
       return true;
     }
     return false;
@@ -567,16 +557,14 @@ public class ASTRRBTree extends AbstractAST
       return this;
     }
     hashValue = 0;
-    MutRrbt<IExpr> mutable = rrbTree.toMutRrbt();
     for (int i = start; i < end; i++) {
       IExpr temp = function.apply(i);
       if (temp.isPresent()) {
-        mutable.append(temp);
+        rrbTree = rrbTree.append(temp);
         continue;
       }
       break;
     }
-    rrbTree = mutable.immutable();
     return this;
   }
 
@@ -599,7 +587,7 @@ public class ASTRRBTree extends AbstractAST
   public void clear() {
     hashValue = 0;
     fEvalFlags = NO_FLAG;
-    rrbTree = StaticImports.rrb();
+    rrbTree = StaticImports.mutableRrb();
   }
 
   @Override
@@ -609,9 +597,7 @@ public class ASTRRBTree extends AbstractAST
     final int size = rrbTree.size();
     if (location >= 0 && location < size) {
       IExpr expr = rrbTree.get(location);
-      MutRrbt<IExpr> mutRrbt = rrbTree.toMutRrbt();
-      mutRrbt = mutRrbt.without(location);
-      rrbTree = mutRrbt.immutable();
+      rrbTree = rrbTree.without(location);
       // deprecated?
       // rrbTree = rrbTree.without(location);
       return expr;
@@ -627,20 +613,18 @@ public class ASTRRBTree extends AbstractAST
       if (start == end) {
         return;
       }
-      MutRrbt<IExpr> mutRrbt = rrbTree.toMutRrbt();
-      for (int i = start; i < end; i++) {
-        mutRrbt = mutRrbt.without(i);
+      for (int i = end - 1; i >= start; i--) {
+        rrbTree = rrbTree.without(i);
       }
-      rrbTree = mutRrbt.immutable();
 
-      //      MutRrbt<IExpr> mutable = StaticImports.mutableRrb();
-      //      for (int i = 0; i < start; i++) {
-      //        mutable.append(vector.get(i));
-      //      }
-      //      for (int i = end; i < size; i++) {
-      //        mutable.append(vector.get(i));
-      //      }
-      //      vector = mutable.immutable();
+      // MutRrbt<IExpr> mutable = StaticImports.mutableRrb();
+      // for (int i = 0; i < start; i++) {
+      // mutable.append(vector.get(i));
+      // }
+      // for (int i = end; i < size; i++) {
+      // mutable.append(vector.get(i));
+      // }
+      // vector = mutable.immutable();
     } else {
       throw new IndexOutOfBoundsException("Index: " + size());
     }

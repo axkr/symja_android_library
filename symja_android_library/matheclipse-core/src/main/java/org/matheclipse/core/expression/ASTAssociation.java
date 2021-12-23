@@ -201,7 +201,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
   public ASTAssociation copy() {
     ASTAssociation ast = new ASTAssociation();
     //    ast.fProperties = null;
-    ast.rrbTree = rrbTree;
+    ast.rrbTree = rrbTree.toMutRrbt();
     ast.hashValue = 0;
     ast.keyToIndexMap = keyToIndexMap.mutable().immutable();
     return ast;
@@ -740,7 +740,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
         for (int i = 1; i < rrbTree.size(); i++) {
           mutableList.append(rrbTree.get(i));
         }
-        rrbTree = mutableList.immutable();
+        rrbTree = mutableList.toMutRrbt();
 
         MutMap<IExpr, Integer> mutableMap = keyToIndexMap.mutable();
         ImSet<Entry<IExpr, Integer>> set = keyToIndexMap.entrySet();
