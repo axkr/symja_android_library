@@ -40,7 +40,7 @@ public class SolveUtils {
       } else if (arg.isEqual()) {
         // arg must be Equal(_, 0)
         IExpr arg1 = arg.first();
-        IExpr temp = NumberTheory.rationalize(arg1);
+        IExpr temp = NumberTheory.rationalize(arg1, false);
         if (temp.isPresent()) {
           isNumeric[0] = true;
           termsEqualZero.append(temp);

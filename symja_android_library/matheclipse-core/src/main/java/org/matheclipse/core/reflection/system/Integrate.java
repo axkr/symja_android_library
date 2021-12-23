@@ -237,7 +237,7 @@ public class Integrate extends AbstractFunctionEvaluator {
         return F.NIL;
       }
       final IExpr arg1Holdall = holdallAST.arg1();
-      final IExpr a1 = NumberTheory.rationalize(arg1Holdall).orElse(arg1Holdall);
+      final IExpr a1 = NumberTheory.rationalize(arg1Holdall, false).orElse(arg1Holdall);
       IExpr arg1 = engine.evaluateNIL(a1);
       if (arg1.isPresent()) {
         evaled = true;
