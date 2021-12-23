@@ -302,8 +302,10 @@ public class MainTestCase extends AbstractTestCase {
   }
 
   public void testSystem000a() {
+    check("Rationalize(0.33333)", //
+        "1/3");
     check("Rationalize(0.25+I*0.33333)", //
-        "1/4+I*33333/100000");
+        "1/4+I*1/3");
     check("Rational(2,3)", //
         "2/3");
     check("Rational(3,1)", //
