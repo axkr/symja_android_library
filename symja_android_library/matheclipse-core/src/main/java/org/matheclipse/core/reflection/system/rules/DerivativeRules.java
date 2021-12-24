@@ -15,7 +15,7 @@ public interface DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 107 };
+  final public static int[] SIZES = { 0, 108 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -205,18 +205,21 @@ public interface DerivativeRules {
     // Derivative(1)[Sech]:=-Tanh(#1)*Sech(#1)&
     ISetDelayed($(Derivative(C1),Sech),
       Function(Times(CN1,Tanh(Slot1),Sech(Slot1)))),
-    // Derivative(1)[SinIntegral]:=Sinc(#1)&
-    ISetDelayed($(Derivative(C1),SinIntegral),
-      Function(Sinc(Slot1))),
-    // Derivative(1)[SinhIntegral]:=Sinh(#1)/#1&
-    ISetDelayed($(Derivative(C1),SinhIntegral),
-      Function(Times(Sinh(Slot1),Power(Slot1,CN1)))),
     // Derivative(1)[CosIntegral]:=Cos(#1)/#1&
     ISetDelayed($(Derivative(C1),CosIntegral),
       Function(Times(Cos(Slot1),Power(Slot1,CN1)))),
     // Derivative(1)[CoshIntegral]:=Cosh(#1)/#1&
     ISetDelayed($(Derivative(C1),CoshIntegral),
       Function(Times(Cosh(Slot1),Power(Slot1,CN1)))),
+    // Derivative(1)[LogIntegral]:=1/Log(#1)&
+    ISetDelayed($(Derivative(C1),LogIntegral),
+      Function(Power(Log(Slot1),CN1))),
+    // Derivative(1)[SinIntegral]:=Sinc(#1)&
+    ISetDelayed($(Derivative(C1),SinIntegral),
+      Function(Sinc(Slot1))),
+    // Derivative(1)[SinhIntegral]:=Sinh(#1)/#1&
+    ISetDelayed($(Derivative(C1),SinhIntegral),
+      Function(Times(Sinh(Slot1),Power(Slot1,CN1)))),
     // Derivative(n_Symbol)[Cos]:=Cos(1/2*n*Pi+#1)&
     ISetDelayed($(Derivative(n_Symbol),Cos),
       Function(Cos(Plus(Times(C1D2,n,Pi),Slot1)))),
