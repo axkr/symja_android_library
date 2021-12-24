@@ -1109,7 +1109,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   public static final HashMap<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>();
 
   private boolean fRelaxedSyntax;
-
+  private boolean fUseSignificantFigures = false;
   private int fExponentFigures;
   private int fSignificantFigures;
 
@@ -1245,10 +1245,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     // convertApfloat(buf, realPart);
   }
 
-  private static String convertApfloatToFormattedString(Apfloat value) {
+  private String convertApfloatToFormattedString(Apfloat value) {
     StringBuilder buf = new StringBuilder();
     int numericPrecision = (int) EvalEngine.get().getNumericPrecision();
-    ApfloatToMMA.apfloatToMathML(buf, value, numericPrecision, numericPrecision);
+    ApfloatToMMA.apfloatToMathML(buf, value, numericPrecision, numericPrecision,
+        fUseSignificantFigures);
     return buf.toString();
   }
   // public void convertApfloat(StringBuilder buf, Apfloat num) {

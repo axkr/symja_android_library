@@ -491,7 +491,7 @@ public class Console {
         return result.internalJavaString(JAVA_FORM_PROPERTIES, -1, F.CNullFunction).toString();
       case TRADITIONALFORM:
         StringBuilder traditionalBuffer = new StringBuilder();
-        fOutputTraditionalFactory.reset();
+        fOutputTraditionalFactory.reset(false);
         if (fOutputTraditionalFactory.convert(traditionalBuffer, result)) {
           return traditionalBuffer.toString();
         } else {
@@ -506,7 +506,7 @@ public class Console {
         return "";
       case INPUTFORM:
         StringBuilder inputBuffer = new StringBuilder();
-        fInputFactory.reset();
+        fInputFactory.reset(false);
         if (fInputFactory.convert(inputBuffer, result)) {
           return inputBuffer.toString();
         } else {
@@ -529,7 +529,7 @@ public class Console {
 
   private String exprToString(IExpr result) {
     StringBuilder strBuffer = new StringBuilder();
-    fOutputFactory.reset();
+    fOutputFactory.reset(false);
     if (fOutputFactory.convert(strBuffer, result)) {
       return strBuffer.toString();
     }

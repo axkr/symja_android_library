@@ -1294,6 +1294,7 @@ public class TeXFormFactory {
   private int plusPrec;
 
   // protected NumberFormat fNumberFormat = null;
+  private boolean fUseSignificantFigures = false;
   private int fExponentFigures;
   private int fSignificantFigures;
 
@@ -1356,10 +1357,11 @@ public class TeXFormFactory {
     }
   }
 
-  private static String convertApfloatToFormattedString(Apfloat value) {
+  private String convertApfloatToFormattedString(Apfloat value) {
     StringBuilder buf = new StringBuilder();
     int numericPrecision = (int) EvalEngine.get().getNumericPrecision();
-    ApfloatToMMA.apfloatToTeX(buf, value, numericPrecision, numericPrecision);
+    ApfloatToMMA.apfloatToTeX(buf, value, numericPrecision, numericPrecision,
+        fUseSignificantFigures);
     return buf.toString();
   }
 

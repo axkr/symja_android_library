@@ -313,13 +313,11 @@ public class GetTestSingleRunJUnit extends TestCase {
     result = fEvaluator.eval("DotProduct[{a,b,c},{d,e,f}, Cartesian]");
     assertEquals(
         "a*d+b*e+c*f", //
-        //
         fOutputFactory.toString(result));
 
     result = fEvaluator.eval("DotProduct[{a,b,c},{d,e,f}, Spherical]");
     assertEquals(
         "a*d*Cos[b]*Cos[e]+a*d*Cos[c]*Cos[f]*Sin[b]*Sin[e]+a*d*Sin[b]*Sin[c]*Sin[e]*Sin[f]", //
-        //
         fOutputFactory.toString(result));
 
     result = fEvaluator.eval("DotProduct[{a,b,c},{d,e,f}, Cylindrical]");

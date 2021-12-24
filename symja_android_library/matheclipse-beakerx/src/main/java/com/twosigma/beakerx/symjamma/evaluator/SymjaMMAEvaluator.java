@@ -250,7 +250,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
         return TryResult.createResult(((IExpr) result).internalJavaString(JAVA_FORM_PROPERTIES, -1, F.CNullFunction));
       case SymjaMMAEvaluator.TRADITIONALFORM:
         StringBuilder traditionalBuffer = new StringBuilder();
-        fOutputTraditionalFactory.reset();
+        fOutputTraditionalFactory.reset(false);
         if (fOutputTraditionalFactory.convert(traditionalBuffer, (IExpr) result)) {
           return TryResult.createResult(traditionalBuffer.toString());
         } else {
@@ -265,7 +265,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
         // return "";
       case SymjaMMAEvaluator.INPUTFORM:
         StringBuilder inputBuffer = new StringBuilder();
-        fInputFactory.reset();
+        fInputFactory.reset(false);
         if (fInputFactory.convert(inputBuffer, (IExpr) result)) {
           return TryResult.createResult(inputBuffer.toString());
         } else {

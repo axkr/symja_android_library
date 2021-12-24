@@ -518,7 +518,7 @@ public class MMAConsole {
               .toString();
         case TRADITIONALFORM:
           StringBuilder traditionalBuffer = new StringBuilder();
-          fOutputTraditionalFactory.reset();
+          fOutputTraditionalFactory.reset(false);
           if (fOutputTraditionalFactory.convert(traditionalBuffer, result)) {
             return traditionalBuffer.toString();
           } else {
@@ -533,7 +533,7 @@ public class MMAConsole {
           return "";
         case INPUTFORM:
           StringBuilder inputBuffer = new StringBuilder();
-          fInputFactory.reset();
+          fInputFactory.reset(false);
           if (fInputFactory.convert(inputBuffer, result)) {
             return inputBuffer.toString();
           } else {
@@ -560,7 +560,7 @@ public class MMAConsole {
 
   private String exprToString(IExpr result) {
     StringBuilder strBuffer = new StringBuilder();
-    fOutputFactory.reset();
+    fOutputFactory.reset(false);
     if (fOutputFactory.convert(strBuffer, result)) {
       return strBuffer.toString();
     }

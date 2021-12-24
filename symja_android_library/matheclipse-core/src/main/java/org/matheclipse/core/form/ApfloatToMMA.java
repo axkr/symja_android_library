@@ -121,18 +121,26 @@ public class ApfloatToMMA {
    * @param exponent use scientific notation for all numbers with exponents outside the range <code>
    *     -exponent</code> to <code>exponent</code>.
    * @param significantFigures
-   * @param style TODO
+   * @param useSignificantFiguresInApfloat if <code>true</code> shorten an Apfloat to the number of
+   *        significantFigures if possible
+   * @param style {@link OutputStyle#OUTPUT}, {@link OutputStyle#MATHML} or {@link OutputStyle#TEX}
    */
-  public static void apfloatToMMA(
-      Appendable buf, Apfloat value, int exponent, long significantFigures, OutputStyle style)
+  public static void apfloatToMMA(Appendable buf, Apfloat value, int exponent,
+      long significantFigures, boolean useSignificantFiguresInApfloat, OutputStyle style)
       throws IOException {
-    // final long precision = EvalEngine.get().getNumericPrecision();
     final long scale = value.scale();
     if (exponent > 0 && -exponent <= scale && scale <= exponent) {
       if (style == OutputStyle.MATHML) {
         buf.append("<mn>");
       }
-      buf.append(value.toString(true));
+      String str = value.toString(true);
+      if (useSignificantFiguresInApfloat) {
+        int indx = str.indexOf('.');
+        if (indx > 0 && indx + (int) significantFigures <= str.length()) {
+          str = str.substring(0, indx + 1 + (int) significantFigures);
+        }
+      }
+      buf.append(str);
       if (style == OutputStyle.MATHML) {
         buf.append("</mn>");
       }
@@ -144,14 +152,25 @@ public class ApfloatToMMA {
       StringWriter stw = new StringWriter();
       try {
         toMMA(value, stw, significantFigures, style);
-        buf.append(stw.toString());
+        str = stw.toString();
+        if (useSignificantFiguresInApfloat) {
+          int firstIndex = str.indexOf('.');
+          if (firstIndex > 0) {
+            int lastIndex = str.indexOf('*', firstIndex + 1);
+            if (lastIndex > 0 && (lastIndex - firstIndex) > significantFigures) {
+              String preStr = str.substring(0, firstIndex + 1);
+              String infixStr =
+                  str.substring(firstIndex + 1, firstIndex + 1 + (int) significantFigures);
+              String postStr = str.substring(lastIndex, str.length());
+              str = preStr + infixStr + postStr;
+            }
+          }
+        }
+        buf.append(str);
         return;
       } catch (IOException e) {
         LOGGER.error("ApfloatToMMA.apfloatToMMA() failed", e);
       }
-      // String exponentStr = str.substring(index + 1);
-      // String result = str.substring(0, index);
-      // return result + "*10^" + exponentStr;
     }
     if (style == OutputStyle.MATHML) {
       buf.append("<mn>");
@@ -160,75 +179,6 @@ public class ApfloatToMMA {
     if (style == OutputStyle.MATHML) {
       buf.append("</mn>");
     }
-
-    // String s = value.toString(); // String.format(Locale.US, "%16.16E", value);
-    // int start = s.indexOf('e');
-    // if (start < 0) {
-    // start = s.indexOf('E');
-    // }
-    // String expStr = s.substring(start + 1);
-    // // on Android you may receive a '+' sign: 1.2345123456789000E+04
-    // if (expStr.startsWith("+")) {
-    // expStr = expStr.substring(1);
-    // }
-    // int exp = Integer.parseInt(expStr);
-    // if (-exponent <= exp && exp <= exponent) {
-    // DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
-    // DecimalFormat format;
-    // int hashSize;
-    // if (exp > 0) {
-    // hashSize = significantFigures - exp - 1;
-    // if (hashSize <= 0) {
-    // hashSize = 1;
-    // }
-    // if (hashSize >= HASH_STR.length()) {
-    // hashSize = HASH_STR.length();
-    // }
-    // format = new DecimalFormat(//
-    // HASH_STR.substring(0, exp) + //
-    // "0." + //
-    // HASH_STR.substring(0, hashSize),
-    // usSymbols);
-    // } else {
-    // hashSize = -exp + significantFigures - 2;
-    // if (hashSize <= 0) {
-    // hashSize = 1;
-    // }
-    // if (hashSize >= HASH_STR.length()) {
-    // hashSize = HASH_STR.length();
-    // }
-    // format = new DecimalFormat(//
-    // "#." + //
-    // HASH_STR.substring(0, -exp + significantFigures - 2),
-    // usSymbols);
-    // }
-    // String test = format.format(value);
-    // start = test.indexOf('E');
-    // if (start > 0) {
-    // test = test.substring(0, start);
-    // }
-    // test = test.trim();
-    // if (test.contains(".")) {
-    // for (int i = test.length() - 1; i >= 0; i--) {
-    // if (test.charAt(i) != '0') {
-    // if (test.charAt(i) == '.') {
-    // // ensure trailing zero after decimal point
-    // test = test.substring(0, i + 2);
-    // break;
-    // }
-    // test = test.substring(0, i + 1);
-    // break;
-    // }
-    // }
-    // }
-    //
-    // buf.append(test);
-    // if (test.indexOf(".") < 0) {
-    // buf.append(".0");
-    // }
-    // return;
-    // }
-    // apfloatToScientific(buf, value, significantFigures - 1, exp, texScientificNotation);
   }
 
   /**
@@ -239,37 +189,62 @@ public class ApfloatToMMA {
    * @param exponent use scientific notation for all numbers with exponents outside the range <code>
    *     -exponent</code> to <code>exponent</code>.
    * @param significantFigures the number of significant figures which should be printed
+   * @param useSignificantFiguresInApfloat if <code>true</code> shorten an Apfloat to the number of
+   *        significantFigures if possible
    */
-  public static void apfloatToMMA(
-      StringBuilder buf, Apfloat value, int exponent, long significantFigures) {
+  public static void apfloatToMMA(StringBuilder buf, Apfloat value, int exponent,
+      long significantFigures, boolean useSignificantFiguresInApfloat) {
     try {
-      apfloatToMMA(buf, value, exponent, significantFigures, OutputStyle.OUTPUT);
+      apfloatToMMA(buf, value, exponent, significantFigures, useSignificantFiguresInApfloat,
+          OutputStyle.OUTPUT);
     } catch (IOException ioex) {
       LOGGER.error("ApfloatToMMA.apfloatToMMA() failed", ioex);
     }
   }
 
-  public static void apfloatToTeX(
-      StringBuilder buf, Apfloat value, int exponent, long significantFigures) {
+  /**
+   * Convert a <code>Apfloat</code> value into a TeX string.
+   * 
+   * @param buf
+   * @param value
+   * @param exponent
+   * @param significantFigures
+   * @param useSignificantFiguresInApfloat if <code>true</code> shorten an Apfloat to the number of
+   *        significantFigures if possible
+   */
+  public static void apfloatToTeX(StringBuilder buf, Apfloat value, int exponent,
+      long significantFigures, boolean useSignificantFiguresInApfloat) {
     try {
-      apfloatToMMA(buf, value, exponent, significantFigures, OutputStyle.TEX);
+      apfloatToMMA(buf, value, exponent, significantFigures, useSignificantFiguresInApfloat,
+          OutputStyle.TEX);
     } catch (IOException ioex) {
       LOGGER.error("ApfloatToMMA.apfloatToTeX() failed", ioex);
     }
   }
 
-  public static void apfloatToMathML(
-      StringBuilder buf, Apfloat value, int exponent, long significantFigures) {
+  /**
+   * Convert a <code>Apfloat</code> value into a MathML string.
+   * 
+   * @param buf
+   * @param value
+   * @param exponent
+   * @param significantFigures
+   * @param useSignificantFiguresInApfloat if <code>true</code> shorten an Apfloat to the number of
+   *        significantFigures if possible
+   */
+  public static void apfloatToMathML(StringBuilder buf, Apfloat value, int exponent,
+      long significantFigures, boolean useSignificantFiguresInApfloat) {
     try {
-      apfloatToMMA(buf, value, exponent, significantFigures, OutputStyle.MATHML);
+      apfloatToMMA(buf, value, exponent, significantFigures, useSignificantFiguresInApfloat,
+          OutputStyle.MATHML);
     } catch (IOException ioex) {
       LOGGER.error("ApfloatToMMA.apfloatToMathML() failed", ioex);
     }
   }
 
-  public static void apfloatToMMA(
-      StringBuilder buf, double value, int exponent, int significantFigures) {
-    apfloatToMMA(buf, new Apfloat(value), exponent, significantFigures);
+  public static void apfloatToMMA(StringBuilder buf, double value, int exponent,
+      int significantFigures) {
+    apfloatToMMA(buf, new Apfloat(value), exponent, significantFigures, false);
   }
 
   private ApfloatToMMA() {}

@@ -58,10 +58,13 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   public static ApcomplexNum valueOf(final Complex c, long precision) {
-    return valueOf(
-        new Apcomplex(
-            new Apfloat(new BigDecimal(c.getReal()), precision),
-            new Apfloat(new BigDecimal(c.getImaginary()), precision)));
+    return valueOf(new Apcomplex(new Apfloat(new BigDecimal(c.getReal()), precision),
+        new Apfloat(new BigDecimal(c.getImaginary()), precision)));
+  }
+
+  public static ApcomplexNum valueOf(final String realPart, final String imaginaryPart,
+      long precision) {
+    return new ApcomplexNum(realPart, imaginaryPart, precision);
   }
 
   /**
@@ -74,10 +77,8 @@ public class ApcomplexNum implements IComplexNum {
    * @param imagDenominator the imaginary numbers denominator part
    * @return a new <code>ApcomplexNum</code> complex number object
    */
-  public static ApcomplexNum valueOf(
-      final BigInteger realNumerator,
-      final BigInteger realDenominator,
-      final BigInteger imagNumerator,
+  public static ApcomplexNum valueOf(final BigInteger realNumerator,
+      final BigInteger realDenominator, final BigInteger imagNumerator,
       final BigInteger imagDenominator) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     long prec = h.precision();
@@ -117,6 +118,10 @@ public class ApcomplexNum implements IComplexNum {
 
   private ApcomplexNum(Apfloat real, Apfloat imag) {
     fApcomplex = new Apcomplex(real, imag);
+  }
+
+  private ApcomplexNum(final String realPart, String imaginaryPart, long precision) {
+    fApcomplex = new Apcomplex(new Apfloat(realPart, precision), new Apfloat(imaginaryPart, precision));
   }
 
   /** @return */
@@ -570,8 +575,8 @@ public class ApcomplexNum implements IComplexNum {
   public INumber roundExpr() {
     Apfloat re = ApfloatMath.round(fApcomplex.real(), 1, RoundingMode.HALF_EVEN);
     Apfloat im = ApfloatMath.round(fApcomplex.imag(), 1, RoundingMode.HALF_EVEN);
-    return F.complex(
-        F.ZZ(ApfloatMath.floor(re).toBigInteger()), F.ZZ(ApfloatMath.floor(im).toBigInteger()));
+    return F.complex(F.ZZ(ApfloatMath.floor(re).toBigInteger()),
+        F.ZZ(ApfloatMath.floor(im).toBigInteger()));
   }
 
   @Override
@@ -581,8 +586,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public INumber ceilFraction() throws ArithmeticException {
-    return F.complex(
-        F.ZZ(ApfloatMath.ceil(fApcomplex.real()).toBigInteger()),
+    return F.complex(F.ZZ(ApfloatMath.ceil(fApcomplex.real()).toBigInteger()),
         F.ZZ(ApfloatMath.ceil(fApcomplex.imag()).toBigInteger()));
   }
 
@@ -594,8 +598,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public INumber floorFraction() throws ArithmeticException {
-    return F.complex(
-        F.ZZ(ApfloatMath.floor(fApcomplex.real()).toBigInteger()),
+    return F.complex(F.ZZ(ApfloatMath.floor(fApcomplex.real()).toBigInteger()),
         F.ZZ(ApfloatMath.floor(fApcomplex.imag()).toBigInteger()));
   }
 
@@ -738,8 +741,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr ceil() {
-    return valueOf(
-        ApfloatMath.ceil(fApcomplex.real()), //
+    return valueOf(ApfloatMath.ceil(fApcomplex.real()), //
         ApfloatMath.ceil(fApcomplex.imag()));
   }
 
@@ -747,8 +749,7 @@ public class ApcomplexNum implements IComplexNum {
   public IExpr copySign(double d) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     Apfloat sign = new Apfloat(d);
-    return valueOf(
-        h.copySign(fApcomplex.real(), sign), //
+    return valueOf(h.copySign(fApcomplex.real(), sign), //
         h.copySign(fApcomplex.imag(), sign));
   }
 
@@ -776,8 +777,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr floor() {
-    return valueOf(
-        ApfloatMath.floor(fApcomplex.real()), //
+    return valueOf(ApfloatMath.floor(fApcomplex.real()), //
         ApfloatMath.floor(fApcomplex.imag()));
   }
 
@@ -839,8 +839,7 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr remainder(double value) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    return valueOf(
-        h.mod(fApcomplex.real(), new Apfloat(value)), //
+    return valueOf(h.mod(fApcomplex.real(), new Apfloat(value)), //
         h.mod(fApcomplex.imag(), new Apfloat(value)));
   }
 
@@ -920,14 +919,14 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr toDegrees() {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    return valueOf(
-        ApfloatNum.toDegrees(fApcomplex.real(), h), ApfloatNum.toDegrees(fApcomplex.imag(), h));
+    return valueOf(ApfloatNum.toDegrees(fApcomplex.real(), h),
+        ApfloatNum.toDegrees(fApcomplex.imag(), h));
   }
 
   @Override
   public IExpr toRadians() {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    return valueOf(
-        ApfloatNum.toRadians(fApcomplex.real(), h), ApfloatNum.toRadians(fApcomplex.imag(), h));
+    return valueOf(ApfloatNum.toRadians(fApcomplex.real(), h),
+        ApfloatNum.toRadians(fApcomplex.imag(), h));
   }
 }
