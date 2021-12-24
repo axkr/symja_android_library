@@ -404,7 +404,9 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public void sortInplace(Comparator<IExpr> comparator) {
     hashValue = 0;
-    final IExpr[] a = toArray();
+    int size = rrbTree.size();
+    IExpr[] a = new IExpr[size];
+    rrbTree.toArray(a);
     Arrays.sort(a, 1, a.length, comparator);
     this.rrbTree = StaticImports.mutableRrb(a);
   }
@@ -430,10 +432,7 @@ public class ASTRRBTree extends AbstractAST
   public IExpr[] toArray() {
     int size = rrbTree.size();
     IExpr[] result = new IExpr[size];
-    for (int i = 0; i < rrbTree.size(); i++) {
-      result[i] = rrbTree.get(i);
-    }
-    return result;
+    return rrbTree.toArray(result);
   }
 
   @Override
