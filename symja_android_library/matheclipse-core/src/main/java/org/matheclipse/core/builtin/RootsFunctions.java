@@ -14,6 +14,7 @@ import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -129,6 +130,7 @@ public class RootsFunctions {
             resultList.append(rectangleList);
           }
         }
+        EvalAttributes.sort(resultList);
         return resultList;
       } catch (InvalidBoundaryException | JASConversionException e) {
         LOGGER.debug("RootIntervals.croots() failed", e);
@@ -434,8 +436,11 @@ public class RootsFunctions {
     if (coefficients != null) {
       try {
         LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
-        org.hipparchus.complex.Complex[] roots = solver.solveAllComplex(coefficients, 0);
-        return Object2Expr.convertComplex(true, roots);
+        // see https://github.com/Hipparchus-Math/hipparchus/issues/177 for initial value
+        org.hipparchus.complex.Complex[] roots = solver.solveAllComplex(coefficients, 1.0);
+        IASTMutable list = Object2Expr.convertComplex(true, roots);
+        EvalAttributes.sort(list);
+        return list;
       } catch (org.hipparchus.exception.MathRuntimeException mrex) {
         LOGGER.debug("RootsFunctions.roots() failed", mrex);
         return F.NIL;

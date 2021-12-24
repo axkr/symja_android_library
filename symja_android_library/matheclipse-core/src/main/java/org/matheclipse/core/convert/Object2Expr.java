@@ -16,8 +16,8 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.JavaObjectExpr;
 import org.matheclipse.core.expression.data.TimeObjectExpr;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -214,7 +214,8 @@ public class Object2Expr {
     }
   }
 
-  public static IAST convertComplex(boolean evalComplex, org.hipparchus.complex.Complex[] array) {
+  public static IASTMutable convertComplex(boolean evalComplex,
+      org.hipparchus.complex.Complex[] array) {
     return F.ast(S.List, evalComplex, array);
   }
 }
