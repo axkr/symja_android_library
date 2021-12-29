@@ -1193,7 +1193,7 @@ public final class Arithmetic {
      * </code>.
      *
      * @param arg1
-     * @return <code>F.NIL</code> if the evaluation wasn't possible
+     * @return {@link F#NIL} if the evaluation wasn't possible
      */
     private IExpr conjugate(IExpr arg1) {
       if (arg1.isNumber()) {
@@ -4250,7 +4250,7 @@ public final class Arithmetic {
      *
      * @param directedInfinity
      * @param exponent
-     * @return <code>F.NIL</code> if evaluation is not possible
+     * @return {@link F#NIL} if evaluation is not possible
      */
     private static IExpr evalDirectedInfinityArg1(final IAST directedInfinity,
         final IExpr exponent) {
@@ -4280,7 +4280,7 @@ public final class Arithmetic {
      *
      * @param base
      * @param directedInfinity
-     * @return <code>F.NIL</code> if evaluation is not possible
+     * @return {@link F#NIL} if evaluation is not possible
      */
     private static IExpr evalDirectedInfinityArg2(final IExpr base, final IAST directedInfinity) {
       if (directedInfinity.isComplexInfinity()) {
@@ -4368,7 +4368,7 @@ public final class Arithmetic {
      *
      * @param timesAST a <code>Times(...)</code> expression
      * @param arg2 equals <code>-1</code> or <code>-1.0</code>
-     * @return <code>F.NIL</code> if the transformation isn't possible.
+     * @return {@link F#NIL} if the transformation isn't possible.
      */
     private static IExpr powerTimesInverse(final IAST timesAST, final ISignedNumber arg2) {
       IASTAppendable resultAST = F.NIL;
@@ -5954,6 +5954,20 @@ public final class Arithmetic {
       if (arg1.isNumber() && arg2.isNumber()) {
         return F.NIL;
       }
+      if (arg1.isSymbol() || arg2.isSymbol()) {
+        if (arg1 == arg2) {
+          return F.Power(arg1, C2);
+        }
+        if (arg1.isSymbol()) {
+          if (arg2.isAtom()) {
+            return F.NIL;
+          }
+        } else if (arg2.isSymbol()) {
+          if (arg1.isAtom()) {
+            return F.NIL;
+          }
+        }
+      }
 
       // note: not a general rule
       // if (arg1.isMinusOne() && arg2.isPlus()) {
@@ -5982,16 +5996,6 @@ public final class Arithmetic {
 
       if (arg1.equals(arg2)) {
         return F.Power(arg1, C2);
-      }
-
-      if (arg1.isSymbol()) {
-        if (arg2.isAtom()) {
-          return F.NIL;
-        }
-      } else if (arg2.isSymbol()) {
-        if (arg1.isAtom()) {
-          return F.NIL;
-        }
       }
 
       if (arg1.isQuantity()) {
