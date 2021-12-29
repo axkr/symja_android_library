@@ -1259,8 +1259,7 @@ public final class BooleanFunctions {
      * @param equalOrUnequalSymbol symbol for which the simplification was started
      * @param a1 left-hand-side of the comparator expression
      * @param a2 right-hand-side of the comparator expression
-     * @return the simplified comparator expression or <code>F.NIL</code> if no simplification was
-     *     found
+     * @return the simplified comparator expression or {@link F#NIL} if no simplification was found
      */
     protected static IExpr simplifyCompare(
         IBuiltInSymbol equalOrUnequalSymbol, IExpr a1, IExpr a2) {
@@ -1859,12 +1858,11 @@ public final class BooleanFunctions {
      * @param a1 left-hand-side of the comparator expression
      * @param a2 right-hand-side of the comparator expression
      * @param originalHead symbol of the comparator operator for which the simplification was
-     *     started
+     *        started
      * @param oppositeHead opposite of the symbol of the comparator operator for which the
-     *     comparison was started
+     *        comparison was started
      * @param setTrue if <code>true</code> return S.True otherwise S.False
-     * @return the simplified comparator expression or <code>F.NIL</code> if no simplification was
-     *     found
+     * @return the simplified comparator expression or {@link F#NIL} if no simplification was found
      */
     protected final IExpr simplifyCompare(
         IExpr a1,
@@ -4314,7 +4312,7 @@ public final class BooleanFunctions {
    *
    * @param a1 first argument
    * @param a2 second argument
-   * @return <code>F.NIL</code> or the simplified expression, if equality couldn't be determined.
+   * @return {@link F#NIL} or the simplified expression, if equality couldn't be determined.
    */
   private static IExpr equalNull(final IExpr a1, final IExpr a2, EvalEngine engine) {
     if ((a1.isExactNumber() || a1.isString()) //
@@ -4343,11 +4341,11 @@ public final class BooleanFunctions {
   /**
    * If the <code>IQuantity#equals()</code> method could be executed because the same unit types
    * could be derived for comparison, return the result <code>S.True or S.False</code> otherwise
-   * return <code>F.NIL</code>.
+   * return {@link F#NIL}.
    *
    * @param q1
    * @param q2
-   * @return <code>F.NIL</code> is the evaluation wasn't possible
+   * @return {@link F#NIL} is the evaluation wasn't possible
    */
   private static IExpr quantityEquals(IQuantity q1, IQuantity q2) {
     try {
@@ -4368,11 +4366,11 @@ public final class BooleanFunctions {
   /**
    * If the <code>IQuantity#equals()</code> method could be executed because the same unit types
    * could be derived for comparison, return the result <code>S.True or S.False</code> otherwise
-   * return <code>F.NIL</code>.
+   * return {@link F#NIL}.
    *
    * @param q1
    * @param q2
-   * @return <code>F.NIL</code> is the evaluation wasn't possible
+   * @return {@link F#NIL} is the evaluation wasn't possible
    */
   private static IExpr quantityUnequals(IQuantity q1, IQuantity q2) {
     try {
@@ -4421,7 +4419,7 @@ public final class BooleanFunctions {
    *
    * @param a1 first argument
    * @param a2 second argument
-   * @return <code>F.NIL</code> or the simplified expression, if equality couldn't be determined.
+   * @return {@link F#NIL} or the simplified expression, if equality couldn't be determined.
    */
   public static IExpr unequalNull(IExpr a1, IExpr a2, EvalEngine engine) {
     if ((a1.isExactNumber() || a1.isString()) //

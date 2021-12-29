@@ -5397,7 +5397,7 @@ public final class ListFunctions {
 
     /**
      * @param size
-     * @return <code>F.NIL</code> if <code>size > Integer.MAX_VALUE-3</code>
+     * @return {@link F#NIL} if <code>size > Integer.MAX_VALUE-3</code>
      */
     public static IAST range(int size) {
       if (size > Integer.MAX_VALUE - 3) {
@@ -6950,7 +6950,7 @@ public final class ListFunctions {
      * @param resultList the result list to which the generated expressions should be appended.
      * @param defaultValue the default value used in the iterator
      * @param engine the current evaluation engine
-     * @return <code>F.NIL</code> if no evaluation is possible
+     * @return {@link F#NIL} if no evaluation is possible
      */
     protected static IExpr evaluateTable(
         final IAST ast, final IAST resultList, IExpr defaultValue, EvalEngine engine) {
@@ -7019,7 +7019,7 @@ public final class ListFunctions {
      * @param iter the iterator function
      * @param resultList the result list to which the generated expressions should be appended.
      * @param defaultValue the default value used if the iterator is invalid
-     * @return <code>F.NIL</code> if no evaluation is possible
+     * @return {@link F#NIL} if no evaluation is possible
      * @see Product
      * @see Sum
      */

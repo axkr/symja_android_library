@@ -5596,7 +5596,7 @@ public final class LinearAlgebra {
    * @param matrix
    * @param quiet suppress warning messages if <code>true</code>
    * @param engine the evaluation engine
-   * @return <code>F.NIL</code> if the linear system is inconsistent and has no solution
+   * @return {@link F#NIL} if the linear system is inconsistent and has no solution
    */
   public static IAST rowReduced2List(FieldMatrix<IExpr> matrix, boolean quiet, EvalEngine engine) {
 

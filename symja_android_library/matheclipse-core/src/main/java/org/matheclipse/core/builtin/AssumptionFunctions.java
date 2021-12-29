@@ -173,7 +173,7 @@ public class AssumptionFunctions {
      * @param arg1
      * @param domain
      * @return S.True or S.False if expr is assumed to be in the <code>domain</code> or not to be in
-     *     the <code>domain</code>. In all other cases return <code>F.NIL</code>.
+     *         the <code>domain</code>. In all other cases return {@link F#NIL}.
      */
     private IExpr assumeDomain(final IExpr arg1, final ISymbol domain) {
       if (domain.isBuiltInSymbol()) {

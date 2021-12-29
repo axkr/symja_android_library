@@ -783,14 +783,12 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
     if (obj instanceof AbstractAST) {
       final IAST list = (IAST) obj;
-      if (list.isPresent()) {
-        ISymbol head = head();
-        if (head != ((AbstractAST) list).head()) {
-          // compared with ISymbol object identity
-          return false;
-        }
-        return list.size() == SIZE && arg1.equals(list.arg1()) && arg2.equals(list.arg2());
+      final ISymbol head = head();
+      if (head != ((AbstractAST) list).head()) {
+        // compared with IBuiltInSymbol object identity
+        return false;
       }
+      return list.size() == SIZE && arg1.equals(list.arg1()) && arg2.equals(list.arg2());
     }
     return false;
   }
@@ -829,8 +827,8 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
   /** {@inheritDoc} */
   @Override
-  public IAST filter(
-      IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
+  public IAST filter(IASTAppendable filterAST, IASTAppendable restAST,
+      Predicate<? super IExpr> predicate) {
     if (predicate.test(arg1)) {
       filterAST.append(arg1);
     } else {
@@ -858,8 +856,8 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
   /** {@inheritDoc} */
   @Override
-  public IAST filterFunction(
-      IASTAppendable filterAST, IASTAppendable restAST, final Function<IExpr, IExpr> function) {
+  public IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+      final Function<IExpr, IExpr> function) {
     IExpr expr = function.apply(arg1);
     if (expr.isPresent()) {
       filterAST.append(expr);
@@ -1045,6 +1043,12 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
   @Override
   public abstract ISymbol head();
+
+
+  public int headID() {
+    final IExpr head = head();
+    return head instanceof IBuiltInSymbol ? ((IBuiltInSymbol) head).ordinal() : ID.UNKNOWN;
+  }
 
   @Override
   public int hashCode() {

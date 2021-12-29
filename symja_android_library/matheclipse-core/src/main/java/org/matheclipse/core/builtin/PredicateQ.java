@@ -1469,7 +1469,7 @@ public class PredicateQ {
       } else {
         if (function.isNumericFunction(varSet)) {
 
-          if (function.isFreeAST(h -> specialNumericFunction(h))) {
+          if (function.isFreeAST(h -> isSpecialNumericFunction(h))) {
             int trueCounter = 0;
 
             // 1. step test some special complex numeric values
@@ -1570,7 +1570,7 @@ public class PredicateQ {
     return false;
   }
 
-  private static boolean specialNumericFunction(IExpr head) {
+  private static boolean isSpecialNumericFunction(IExpr head) {
     if (head.isPower()) {
       if (!head.exponent().isNumber()) {
         return false;

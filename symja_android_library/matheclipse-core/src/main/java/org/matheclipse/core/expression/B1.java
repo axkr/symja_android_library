@@ -468,8 +468,8 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
 
   /** {@inheritDoc} */
   @Override
-  public IAST filter(
-      IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
+  public IAST filter(IASTAppendable filterAST, IASTAppendable restAST,
+      Predicate<? super IExpr> predicate) {
     if (predicate.test(arg1)) {
       filterAST.append(arg1);
     } else {
@@ -489,8 +489,8 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
 
   /** {@inheritDoc} */
   @Override
-  public IAST filterFunction(
-      IASTAppendable filterAST, IASTAppendable restAST, final Function<IExpr, IExpr> function) {
+  public IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+      final Function<IExpr, IExpr> function) {
     IExpr expr = function.apply(arg1);
     if (expr.isPresent()) {
       filterAST.append(expr);
@@ -627,6 +627,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
 
   @Override
   public abstract ISymbol head();
+
+  public int headID() {
+    final IExpr head = head();
+    return head instanceof IBuiltInSymbol ? ((IBuiltInSymbol) head).ordinal() : ID.UNKNOWN;
+  }
 
   @Override
   public int hashCode() {
