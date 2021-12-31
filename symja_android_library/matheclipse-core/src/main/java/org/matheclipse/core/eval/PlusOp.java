@@ -17,15 +17,16 @@ import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.tensor.qty.IQuantity;
 
 /**
  * Plus operator for adding multiple arguments with the <code>plus(argument)</code> method and
  * returning the result, with the <code>getSum()</code> method, if <code>isEvaled()</code> returns
- * <code>true</code>. See: <a
- * href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">Experiments in Hash-coded Algebraic
- * Simplification</a>
+ * <code>true</code>. See:
+ * <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">Experiments in Hash-coded
+ * Algebraic Simplification</a>
  */
 public final class PlusOp {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -113,18 +114,35 @@ public final class PlusOp {
       result.append(numberValue);
     }
     for (Map.Entry<IExpr, IExpr> element : plusMap.entrySet()) {
-      final IExpr temp = element.getKey();
-      if (element.getValue().isOne()) {
-        if (temp.isPlus()) {
-          result.appendArgs((IAST) temp);
+      final IExpr key = element.getKey();
+      final IExpr value = element.getValue();
+      if (value.isOne()) {
+        if (key.isPlus()) {
+          result.appendArgs((IAST) key);
         } else {
-          result.append(temp);
+          if (key.isTimes()) {
+            EvalAttributes.sortWithFlags((IASTMutable) key);
+          }
+          result.append(key);
         }
-        continue;
+      } else if (key.isTimes()) {
+        IASTAppendable times = F.TimesAlloc(((IAST) key).size());
+        times.append(value);
+        times.appendArgs((IAST) key);
+        EvalAttributes.sortWithFlags(times);
+        result.append(times);
+      } else {
+        IASTMutable times = F.Times(value, key);
+        EvalAttributes.sortWithFlags(times);
+        result.append(times);
       }
-      result.append(F.Times(element.getValue(), temp));
+
     }
-    return result.oneIdentity0();
+    IExpr temp = result.oneIdentity0();
+    if (temp.isPlus()) {
+      EvalAttributes.sortWithFlags((IASTMutable) temp);
+    }
+    return temp;
   }
 
   /**
@@ -151,7 +169,7 @@ public final class PlusOp {
    *
    * @param arg
    * @return <code>F.Indeterminate</code> if the result is indeterminated, <code>F.NIL</code>
-   *     otherwise.
+   *         otherwise.
    */
   public IExpr plus(final IExpr arg) {
     // if (arg.isPlus()) {
@@ -191,8 +209,8 @@ public final class PlusOp {
           }
           if (arg.isDirectedInfinity()) {
             // Indeterminate expression `1` encountered.
-            IOFunctions.printMessage(
-                S.Infinity, "indet", F.List(F.Plus(numberValue, arg)), EvalEngine.get());
+            IOFunctions.printMessage(S.Infinity, "indet", F.List(F.Plus(numberValue, arg)),
+                EvalEngine.get());
             return S.Indeterminate;
           }
           if (arg.isRealResult()) {
@@ -219,8 +237,8 @@ public final class PlusOp {
         if (numberValue.isInfinity()) {
           if (arg.isNegativeInfinity()) {
             // Indeterminate expression `1` encountered.
-            IOFunctions.printMessage(
-                S.Infinity, "indet", F.List(F.Plus(numberValue, arg)), EvalEngine.get());
+            IOFunctions.printMessage(S.Infinity, "indet", F.List(F.Plus(numberValue, arg)),
+                EvalEngine.get());
             return S.Indeterminate;
           }
           numberValue = F.CInfinity;
@@ -284,8 +302,8 @@ public final class PlusOp {
                 if (arg.isInfinity()) {
                   if (numberValue.isNegativeInfinity()) {
                     // Indeterminate expression `1` encountered.
-                    IOFunctions.printMessage(
-                        S.Infinity, "indet", F.List(F.Plus(arg, numberValue)), EvalEngine.get());
+                    IOFunctions.printMessage(S.Infinity, "indet", F.List(F.Plus(arg, numberValue)),
+                        EvalEngine.get());
                     return S.Indeterminate;
                   }
                   numberValue = F.CInfinity;
@@ -301,8 +319,8 @@ public final class PlusOp {
                 } else if (arg.isComplexInfinity()) {
                   if (numberValue.isDirectedInfinity()) {
                     // Indeterminate expression `1` encountered.
-                    IOFunctions.printMessage(
-                        S.Infinity, "indet", F.List(F.Plus(arg, numberValue)), EvalEngine.get());
+                    IOFunctions.printMessage(S.Infinity, "indet", F.List(F.Plus(arg, numberValue)),
+                        EvalEngine.get());
                     return S.Indeterminate;
                   }
                   numberValue = F.CComplexInfinity;
@@ -347,20 +365,20 @@ public final class PlusOp {
                 return F.NIL;
               }
               break;
-              // case ID.Quantity:
-              // if (arg.isQuantity()) {
-              // if (!numberValue.isPresent()) {
-              // numberValue = arg;
-              // return F.NIL;
-              // }
-              // IQuantity q = (IQuantity) arg;
-              // numberValue = q.plus(numberValue);
-              // if (numberValue.isPresent()) {
-              // evaled = true;
-              // }
-              // return F.NIL;
-              // }
-              // break;
+            // case ID.Quantity:
+            // if (arg.isQuantity()) {
+            // if (!numberValue.isPresent()) {
+            // numberValue = arg;
+            // return F.NIL;
+            // }
+            // IQuantity q = (IQuantity) arg;
+            // numberValue = q.plus(numberValue);
+            // if (numberValue.isPresent()) {
+            // evaled = true;
+            // }
+            // return F.NIL;
+            // }
+            // break;
             case ID.SeriesData:
               if (arg instanceof ASTSeriesData) {
                 if (!numberValue.isPresent()) {

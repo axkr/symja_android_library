@@ -1577,7 +1577,8 @@ public class Algebra {
 
       private IExpr addExpanded(IExpr expr) {
         if (expr.isAST()) {
-          if (expandNegativePowers && !distributePlus && !factorTerms && matcher == null) {
+          if (expandNegativePowers && evalParts && !distributePlus && !factorTerms
+              && matcher == null) {
             ((IAST) expr).addEvalFlags(IAST.IS_EXPANDED);
           } else {
             expandedASTs.add((IAST) expr);
@@ -1628,11 +1629,15 @@ public class Algebra {
        */
       private IExpr expandPowerNIL(final IAST powerAST) {
         IExpr base = powerAST.arg1();
+        IExpr exponent = powerAST.arg2();
+        IExpr temp = F.NIL;
         if (base.isPlusTimesPower()) {
-          base = expandAST((IAST) base).orElse(base);
+          temp = expandAST((IAST) base);
+          if (temp.isPresent()) {
+            base = temp;
+          }
         }
         if ((base.isPlus())) {
-          IExpr exponent = powerAST.arg2();
           if (exponent.isFraction()) {
             IFraction fraction = (IFraction) exponent;
             if (fraction.isPositive()) {
@@ -1659,6 +1664,11 @@ public class Algebra {
             return F.NIL;
           }
           return expandPower(plusAST, exp);
+        }
+        if (temp.isPresent()) {
+          temp = F.Power(base, exponent);
+          addExpanded(temp);
+          return temp;
         }
         addExpanded(powerAST);
         return F.NIL;
@@ -1786,7 +1796,7 @@ public class Algebra {
        * @return
        */
       private IExpr expandPlusTimesPlus(final IAST plusAST0, final IAST plusAST1) {
-        final EvalEngine engine = EvalEngine.get(); 
+        final EvalEngine engine = EvalEngine.get();
         if (isPatternFree(plusAST0)) {
           if (isPatternFree(plusAST1)) {
             return F.NIL;
