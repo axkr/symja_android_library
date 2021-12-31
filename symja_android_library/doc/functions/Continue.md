@@ -22,4 +22,4 @@ Continue()
 
 ### Github
 
-* [Implementation of Continue](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L541) 
+* [Implementation of Continue](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L545) 

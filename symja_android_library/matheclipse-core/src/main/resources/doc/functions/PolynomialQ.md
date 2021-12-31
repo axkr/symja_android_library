@@ -30,4 +30,4 @@ False
 
 ### Github
 
-* [Implementation of PolynomialQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L3285) 
+* [Implementation of PolynomialQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L3343) 

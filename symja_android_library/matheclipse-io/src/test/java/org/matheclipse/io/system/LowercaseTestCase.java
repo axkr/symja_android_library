@@ -14176,6 +14176,8 @@ public class LowercaseTestCase extends AbstractTestCase {
         "6");
     check("LengthWhile({10, 1, 2, 3, 5, 8, 13, 21}, # < 10 &)", //
         "0");
+    check("LengthWhile({1, 2, 3, 10, 5, 8, 42, 11}, # < 10 &)", //
+        "3");
     check("LengthWhile({a, Pi, 3, 2, {1, 2, 3}, {a, b}, 10}, Head(#1) =!= List &)", //
         "4");
     check("LengthWhile({E, 8, a, b, 20, 1.4}, If(NumericQ(#1), True, #1) &)", //
@@ -18122,6 +18124,13 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{Flat,Orderless}");
     check("f(a, b, c) /. f(a, c) -> d", //
         "f(b,d)");
+
+    check("SetAttributes(f1, Orderless)", //
+        "");
+    check("f1(x_Symbol, y_Integer, z_Real) := {x,y,z}", //
+        "");
+    check("{f1(x,3.0,2),f1(3.0,x,2),f1(2,3.0,x)}", //
+        "{{x,2,3.0},{x,2,3.0},{x,2,3.0}}");
   }
 
   public void testOrthogonalize() {
@@ -18973,6 +18982,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPlus() {
+    check("(1*Plus+0)[10,20]", //
+        "30");
+
     check("-2*Cosh(x)^2+5*Sinh(x)^2", //
         "-2+3*Sinh(x)^2");
     check("a+3*Cos(x)^2-2*Cosh(x)^2+11*Sin(x)^2+5*Sinh(x)^2", //
@@ -24264,6 +24276,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testSin() {
+    check("trigs={Sin,Cos,Tan,Cot}", //
+        "{Sin,Cos,Tan,Cot}");
+    check("trigs[[1]][10.0]", //
+        "-0.544021");
     check("Sin[SparseArray[{{2,3},{4,5}}]]//MatrixForm", //
         "{{Sin(2),Sin(3)},\n" + " {Sin(4),Sin(5)}}");
     check("Sin(Interval({-Infinity,Infinity}))", //
@@ -25472,6 +25488,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check(
         "b := 3 ; a := 1+b ; Length(Table(a*x^2,{x,-1.0,1.0605456,0.060606062},{y,-a+b^2,a+b^2,0.160606062}))", //
         "34");
+
+    check("x=2;Table(x^2,{x,0,10,1})", //
+        "{0,1,4,9,16,25,36,49,64,81,100}");
   }
 
   public void testTableForm() {
@@ -25617,6 +25636,9 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{1,1,2,3,5,8}");
     check("Take({1, 1, 2, 3, 5, 8, 13, 21}, LengthWhile({1, 1, 2, 3, 5, 8, 13, 21}, #1 < 10 &))", //
         "{1,1,2,3,5,8}");
+
+    check("TakeWhile({1, 2, 3, 10, 5, 8, 42, 11}, # < 10 &)", //
+        "{1,2,3}");
 
   }
 
