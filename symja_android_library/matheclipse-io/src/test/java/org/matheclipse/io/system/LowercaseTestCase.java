@@ -14171,6 +14171,19 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{2,3,1}");
   }
 
+  public void testLengthWhile() {
+    check("LengthWhile({1, 1, 2, 3, 5, 8, 13, 21}, # < 10 &)", //
+        "6");
+    check("LengthWhile({10, 1, 2, 3, 5, 8, 13, 21}, # < 10 &)", //
+        "0");
+    check("LengthWhile({a, Pi, 3, 2, {1, 2, 3}, {a, b}, 10}, Head(#1) =!= List &)", //
+        "4");
+    check("LengthWhile({E, 8, a, b, 20, 1.4}, If(NumericQ(#1), True, #1) &)", //
+        "2");
+    check("LengthWhile(h(1, 1, 2, 3, a, 8, 13, b, c, d), IntegerQ)", //
+        "4");
+  }
+
   public void testLess() {
     check("Infinity<Infinity", //
         "False");
@@ -25592,6 +25605,19 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{1,-2,2,3}");
     check("TakeSmallestBy(<|a -> \"\", b -> \"xxx\", c -> \"xx\"|>, StringLength, 2)", //
         "<|a->,c->xx|>");
+  }
+
+  public void testTakeWhile() {
+    check("TakeWhile({2, 4, 6, 1, 2, 3}, EvenQ)", //
+        "{2,4,6}");
+    check("TakeWhile(h(1, 1, 2, 3, a, 8, 13, b, c, d), IntegerQ)", //
+        "h(1,1,2,3)");
+
+    check("TakeWhile({1, 1, 2, 3, 5, 8, 13, 21}, #1 < 10 &)", //
+        "{1,1,2,3,5,8}");
+    check("Take({1, 1, 2, 3, 5, 8, 13, 21}, LengthWhile({1, 1, 2, 3, 5, 8, 13, 21}, #1 < 10 &))", //
+        "{1,1,2,3,5,8}");
+
   }
 
   public void testTally() {

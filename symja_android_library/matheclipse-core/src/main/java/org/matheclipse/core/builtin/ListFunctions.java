@@ -211,6 +211,7 @@ public final class ListFunctions {
       S.Join.setEvaluator(new Join());
       S.Last.setEvaluator(new Last());
       S.Length.setEvaluator(new Length());
+      S.LengthWhile.setEvaluator(new LengthWhile());
       S.LevelQ.setEvaluator(new LevelQ());
       S.Level.setEvaluator(new Level());
       S.Most.setEvaluator(new Most());
@@ -247,6 +248,7 @@ public final class ListFunctions {
       S.TakeLargestBy.setEvaluator(new TakeLargestBy());
       S.TakeSmallest.setEvaluator(new TakeSmallest());
       S.TakeSmallestBy.setEvaluator(new TakeSmallestBy());
+      S.TakeWhile.setEvaluator(new TakeWhile());
       S.Tally.setEvaluator(new Tally());
       S.Total.setEvaluator(new Total());
       S.Union.setEvaluator(new Union());
@@ -3956,6 +3958,33 @@ public final class ListFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+  }
+
+  private static final class LengthWhile extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isAST()) {
+        IAST list = (IAST) arg1;
+        final int[] n = new int[] {0};
+        list.forAll(x -> {
+          if (engine.evalTrue(F.unaryAST1(arg2, x))) {
+            n[0]++;
+            return true;
+          }
+          return false;
+        }, 1);
+        return F.ZZ(n[0]);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
   }
 
@@ -7678,6 +7707,33 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static final class TakeWhile extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isAST()) {
+        IAST list = (IAST) arg1;
+        IASTAppendable result = F.ast(list.head());
+        list.forAll(x -> {
+          if (engine.evalTrue(F.unaryAST1(arg2, x))) {
+            result.append(x);
+            return true;
+          }
+          return false;
+        }, 1);
+        return result;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
   }
 
   /**

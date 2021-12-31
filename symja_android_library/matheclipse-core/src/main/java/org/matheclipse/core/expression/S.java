@@ -5325,6 +5325,8 @@ public class S {
    */
   public static final IBuiltInSymbol Length = F.initFinalSymbol("Length", ID.Length);
 
+  public static final IBuiltInSymbol LengthWhile = F.initFinalSymbol("LengthWhile", ID.LengthWhile);
+
   /**
    * Less(x, y) - yields `True` if `x` is known to be less than `y`.
    *
@@ -9360,6 +9362,8 @@ public class S {
    */
   public static final IBuiltInSymbol TakeSmallestBy =
       F.initFinalSymbol("TakeSmallestBy", ID.TakeSmallestBy);
+
+  public static final IBuiltInSymbol TakeWhile = F.initFinalSymbol("TakeWhile", ID.TakeWhile);
 
   /**
    * Tally(list) - return the elements and their number of occurrences in `list` in a new result
