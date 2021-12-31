@@ -48,7 +48,8 @@ import com.google.common.base.Suppliers;
  *
  * <blockquote>
  *
- * <p>evaluates the discrete sum of <code>expr</code> with <code>i</code> ranging from <code>imin
+ * <p>
+ * evaluates the discrete sum of <code>expr</code> with <code>i</code> ranging from <code>imin
  * </code> to <code>imax</code>.
  *
  * </blockquote>
@@ -59,7 +60,8 @@ import com.google.common.base.Suppliers;
  *
  * <blockquote>
  *
- * <p><code>i</code> ranges from <code>imin</code> to <code>imax</code> in steps of <code>di</code>.
+ * <p>
+ * <code>i</code> ranges from <code>imin</code> to <code>imax</code> in steps of <code>di</code>.
  *
  * </blockquote>
  *
@@ -71,8 +73,9 @@ import com.google.common.base.Suppliers;
  *
  * <blockquote>
  *
- * <p>evaluates <code>expr</code> as a multiple sum, with <code>{i, ...}, {j, ...}, ...</code> being
- * in outermost-to-innermost order.
+ * <p>
+ * evaluates <code>expr</code> as a multiple sum, with <code>{i, ...}, {j, ...}, ...</code> being in
+ * outermost-to-innermost order.
  *
  * </blockquote>
  *
@@ -85,14 +88,16 @@ import com.google.common.base.Suppliers;
  * 55
  * </pre>
  *
- * <p>Double sum:<br>
+ * <p>
+ * Double sum:<br>
  *
  * <pre>
  * &gt;&gt; Sum(i * j, {i, 1, 10}, {j, 1, 10})
  * 3025
  * </pre>
  *
- * <p>Symbolic sums are evaluated:
+ * <p>
+ * Symbolic sums are evaluated:
  *
  * <pre>
  * &gt;&gt; Sum(k, {k, 1, n})
@@ -108,14 +113,16 @@ import com.google.common.base.Suppliers;
  * HarmonicNumber(n, 2)
  * </pre>
  *
- * <p>Verify algebraic identities:<br>
+ * <p>
+ * Verify algebraic identities:<br>
  *
  * <pre>
  * &gt;&gt; Simplify(Sum(x ^ 2, {x, 1, y}) - y * (y + 1) * (2 * y + 1) / 6)
  * 0
  * </pre>
  *
- * <p>Infinite sums:<br>
+ * <p>
+ * Infinite sums:<br>
  *
  * <pre>
  * &gt;&gt; Sum(1 / 2 ^ i, {i, 1, Infinity})
@@ -147,7 +154,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
   private static Matcher matcher1() {
     return MATCHER1.get();
   }
- 
+
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
@@ -203,8 +210,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
               iterator = Iterator.create(F.List(argN), preevaledSum.argSize(), engine);
             } else {
               // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
-              return IOFunctions.printMessage(
-                  preevaledSum.topHead(), "nliter", F.List(argN, F.ZZ(preevaledSum.size() - 1)), engine);
+              return IOFunctions.printMessage(preevaledSum.topHead(), "nliter",
+                  F.List(argN, F.ZZ(preevaledSum.size() - 1)), engine);
             }
           }
         }
@@ -310,8 +317,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
     return IFunctionEvaluator.ARGS_2_INFINITY;
   }
 
-  private static IExpr collectConstantFactors(
-      final IAST ast, IAST prod, VariablesSet variablesSet) {
+  private static IExpr collectConstantFactors(final IAST ast, IAST prod,
+      VariablesSet variablesSet) {
     IASTAppendable filterAST = F.TimesAlloc(16);
     IASTAppendable restAST = F.TimesAlloc(16);
     prod.filter(filterAST, restAST, VariablesSet.isFree(variablesSet));
@@ -331,8 +338,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
    * @param engine the evaluation engine
    * @return
    */
-  private static IExpr definiteSum(
-      final IExpr expr, final IIterator<IExpr> iterator, IAST list, EvalEngine engine) {
+  private static IExpr definiteSum(final IExpr expr, final IIterator<IExpr> iterator, IAST list,
+      EvalEngine engine) {
     final ISymbol var = iterator.getVariable();
     final IExpr from = iterator.getLowerLimit();
     final IExpr to = iterator.getUpperLimit();
@@ -352,16 +359,12 @@ public class Sum extends ListFunctions.Table implements SumRules {
         // Sum[ Times[a,b,c,...], {var, from, to} ]
         IASTAppendable filterCollector = F.TimesAlloc(16);
         IASTAppendable restCollector = F.TimesAlloc(16);
-        ((IAST) expr)
-            .filter(
-                filterCollector,
-                restCollector,
-                new Predicate<IExpr>() {
-                  @Override
-                  public boolean test(IExpr input) {
-                    return input.isFree(var, true);
-                  }
-                });
+        ((IAST) expr).filter(filterCollector, restCollector, new Predicate<IExpr>() {
+          @Override
+          public boolean test(IExpr input) {
+            return input.isFree(var, true);
+          }
+        });
         if (filterCollector.size() > 1) {
           IExpr temp = engine.evalQuiet(F.Sum(restCollector.oneIdentity1(), list));
           if (temp.isFreeAST(S.Sum)) {
@@ -378,7 +381,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
         }
       }
 
-      if (!engine.evalTrue(F.Greater(C0, from)) && !engine.evalTrue(F.Greater(from, to))) {
+      if (!engine.evalGreater(C0, from) && !engine.evalGreater(from, to)) {
         IExpr temp = F.NIL;
         if (expr.isPower()) {
           temp = sumPower((IAST) expr, var, from, to);
@@ -390,9 +393,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
         }
       }
 
-      if (expr.isPower()
-          && !engine.evalTrue(F.Greater(C1, from))
-          && !engine.evalTrue(F.Greater(from, to))) {
+      if (expr.isPower() && !engine.evalGreater(C1, from) && !engine.evalGreater(from, to)) {
         IAST powAST = (IAST) expr;
         if (powAST.equalsAt(1, var) && powAST.arg2().isFree(var) && to.isFree(var)) {
           if (from.isOne()) {
@@ -400,8 +401,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
             return F.HarmonicNumber(to, powAST.arg2().negate());
           }
           // i^k,{i,n,m} ==> HurwitzZeta(-k, n)-HurwitzZeta(-k,1+m)
-          return F.Subtract(
-              F.HurwitzZeta(F.Negate(powAST.arg2()), from),
+          return F.Subtract(F.HurwitzZeta(F.Negate(powAST.arg2()), from),
               F.HurwitzZeta(F.Negate(powAST.arg2()), F.Plus(1, to)));
         }
       }
@@ -458,8 +458,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
    * @param engine the evaluation engine
    * @return
    */
-  private static IExpr definiteSumInfinity(
-      final IExpr expr, final IIterator<IExpr> iterator, IAST list, EvalEngine engine) {
+  private static IExpr definiteSumInfinity(final IExpr expr, final IIterator<IExpr> iterator,
+      IAST list, EvalEngine engine) {
     final ISymbol var = iterator.getVariable();
     final IExpr from = iterator.getLowerLimit();
     final IExpr to = iterator.getUpperLimit();
@@ -493,16 +493,12 @@ public class Sum extends ListFunctions.Table implements SumRules {
       // Sum[ Times[a,b,c,...], var ]
       IASTAppendable filterCollector = F.TimesAlloc(16);
       IASTAppendable restCollector = F.TimesAlloc(16);
-      ((IAST) arg1)
-          .filter(
-              filterCollector,
-              restCollector,
-              new Predicate<IExpr>() {
-                @Override
-                public boolean test(IExpr input) {
-                  return input.isFree(var, true);
-                }
-              });
+      ((IAST) arg1).filter(filterCollector, restCollector, new Predicate<IExpr>() {
+        @Override
+        public boolean test(IExpr input) {
+          return input.isFree(var, true);
+        }
+      });
       if (filterCollector.size() > 1) {
         if (restCollector.isAST1()) {
           filterCollector.append(F.Sum(restCollector.arg1(), var));
@@ -520,9 +516,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
   }
 
   /**
-   * See <a href=
-   * "http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions"> Wikipedia -
-   * Summation#Some_summations_of_polynomial_expressions</a>.
+   * See
+   * <a href= "http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">
+   * Wikipedia - Summation#Some_summations_of_polynomial_expressions</a>.
    *
    * @param powAST an AST of the form <code>Power[var, i_Integer]</code>
    * @param var
@@ -541,9 +537,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
   }
 
   /**
-   * See <a href=
-   * "http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions"> Wikipedia -
-   * Summation#Some_summations_of_polynomial_expressions</a>.
+   * See
+   * <a href= "http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">
+   * Wikipedia - Summation#Some_summations_of_polynomial_expressions</a>.
    *
    * @param from TODO
    * @param to
@@ -562,22 +558,11 @@ public class Sum extends ListFunctions.Table implements SumRules {
       if (p.isOne()) {
         term1 = Times(C1D2, fromMinusOne, Plus(C1, fromMinusOne));
       } else {
-        term1 =
-            F.eval(
-                ExpandAll(
-                    Plus(
-                        Times(Power(Plus(fromMinusOne, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
-                        Sum(
-                            Times(
-                                Times(
-                                    Times(
-                                        Power(
-                                            Plus(fromMinusOne, C1),
-                                            Plus(Plus(p, Times(CN1, k)), C1)),
-                                        Binomial(p, k)),
-                                    BernoulliB(k)),
-                                Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)),
-                            List(k, C1, p)))));
+        term1 = F.eval(ExpandAll(Plus(
+            Times(Power(Plus(fromMinusOne, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
+            Sum(Times(Times(Times(Power(Plus(fromMinusOne, C1), Plus(Plus(p, Times(CN1, k)), C1)),
+                Binomial(p, k)), BernoulliB(k)), Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)),
+                List(k, C1, p)))));
       }
     }
     IExpr term2;
@@ -586,18 +571,11 @@ public class Sum extends ListFunctions.Table implements SumRules {
     } else {
       term2 =
           F.eval(
-              ExpandAll(
-                  Plus(
-                      Times(Power(Plus(to, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
-                      Sum(
-                          Times(
-                              Times(
-                                  Times(
-                                      Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)),
-                                      Binomial(p, k)),
-                                  BernoulliB(k)),
-                              Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)),
-                          List(k, C1, p)))));
+              ExpandAll(Plus(Times(Power(Plus(to, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
+                  Sum(Times(
+                      Times(Times(Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)),
+                          Binomial(p, k)), BernoulliB(k)),
+                      Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
     }
     return term1.isPresent() ? Subtract(term2, term1) : term2;
   }

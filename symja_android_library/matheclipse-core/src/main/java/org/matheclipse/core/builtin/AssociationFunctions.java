@@ -722,7 +722,7 @@ public class AssociationFunctions {
         if (arg1.isListOfRulesOrAssociation(false)) {
           IAST list = (IAST) arg1;
           IExpr predicateHead = ast.arg2();
-          return keySelect(list, x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
+          return keySelect(list, x -> engine.evalTrue(predicateHead, x));
         }
         // The argument `1` is not a valid Association or a list of rules.
         return IOFunctions.printMessage(ast.topHead(), "invrl", F.List(arg1), engine);

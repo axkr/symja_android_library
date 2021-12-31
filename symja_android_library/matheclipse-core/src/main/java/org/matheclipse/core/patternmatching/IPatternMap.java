@@ -1779,15 +1779,10 @@ public interface IPatternMap {
   default boolean isPatternTest(IExpr expr, IExpr patternTest, EvalEngine engine) {
     final IExpr temp = substitutePatternOrSymbols(expr, false).orElse(expr);
     if (temp.isSequence()) {
-      final IASTMutable test = F.unaryAST1(patternTest, null);
       return ((IAST) temp)
-          .forAll(
-              x -> {
-                test.set(1, x);
-                return engine.evalTrue(test);
-              });
+          .forAll(x -> engine.evalTrue(patternTest, x));
     }
-    return engine.evalTrue(F.unaryAST1(patternTest, temp));
+    return engine.evalTrue(patternTest, temp);
   }
 
   /**

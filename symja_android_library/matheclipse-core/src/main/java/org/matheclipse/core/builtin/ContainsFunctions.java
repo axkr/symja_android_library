@@ -73,7 +73,7 @@ public class ContainsFunctions {
       for (int i = 1; i < list1.size(); i++) {
         IExpr list1Arg = list1.get(i);
 
-        if (list2.exists(x -> engine.evalTrue(F.binaryAST2(sameTest, list1Arg, x)))) {
+        if (list2.exists(x -> engine.evalTrue(sameTest, list1Arg, x))) {
           return S.True;
         }
       }
@@ -116,7 +116,7 @@ public class ContainsFunctions {
         evaledTrue = false;
         for (int j = 1; j < list1.size(); j++) {
           IExpr list1Arg = list1.get(j);
-          if (engine.evalTrue(F.binaryAST2(sameTest, list1Arg, list2Arg))) {
+          if (engine.evalTrue(sameTest, list1Arg, list2Arg)) {
             evaledTrue = true;
             break;
           }
@@ -140,7 +140,7 @@ public class ContainsFunctions {
         evaledTrue = false;
         for (int j = 1; j < list2.size(); j++) {
           IExpr list2Arg = list2.get(j);
-          if (engine.evalTrue(F.binaryAST2(sameTest, list1Arg, list2Arg))) {
+          if (engine.evalTrue(sameTest, list1Arg, list2Arg)) {
             evaledTrue = true;
             break;
           }
@@ -160,7 +160,7 @@ public class ContainsFunctions {
     public IExpr containsFunction(IAST list1, IAST list2, IExpr sameTest, EvalEngine engine) {
       for (int i = 1; i < list1.size(); i++) {
         IExpr list1Arg = list1.get(i);
-        if (list2.exists(x -> engine.evalTrue(F.binaryAST2(sameTest, list1Arg, x)))) {
+        if (list2.exists(x -> engine.evalTrue(sameTest, list1Arg, x))) {
           return S.False;
         }
       }

@@ -263,14 +263,14 @@ public class SpecialFunctions {
           return F.C0;
         }
         if (z.isZero()) {
-          if (engine.evalTrue(F.Greater(F.Re(a), F.C0))) {
+          if (engine.evalGreater(F.Re(a), F.C0)) {
             return F.C0;
           }
-          if (engine.evalTrue(F.Less(F.Re(a), F.C0))) {
+          if (engine.evalLess(F.Re(a), F.C0)) {
             return F.CComplexInfinity;
           }
         } else if (z.isOne()) {
-          if (engine.evalTrue(F.Greater(F.Re(n), F.C0))) {
+          if (engine.evalGreater(F.Re(n), F.C0)) {
             return F.C1;
           }
         }

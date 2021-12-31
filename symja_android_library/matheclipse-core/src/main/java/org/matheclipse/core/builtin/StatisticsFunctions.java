@@ -4648,10 +4648,10 @@ public class StatisticsFunctions {
         IExpr arg1 = ast.get(index1);
         IExpr arg2 = ast.get(index2);
         if (arg1.isNumericFunction(true) && arg2.isNumericFunction(true)) {
-          if (engine.evalTrue(F.Greater(arg1, arg2))) {
+          if (engine.evalGreater(arg1, arg2)) {
             return 1;
           }
-          if (engine.evalTrue(F.Less(arg1, arg2))) {
+          if (engine.evalLess(arg1, arg2)) {
             return -1;
           }
         }
@@ -5292,7 +5292,7 @@ public class StatisticsFunctions {
               // Sum( Boole(predicate), data ) / data.argSize()
               int sum = 0;
               for (int i = 1; i < data.size(); i++) {
-                if (engine.evalTrue(F.unaryAST1(predicate, data.get(i)))) {
+                if (engine.evalTrue(predicate, data.get(i))) {
                   sum++;
                 }
               }

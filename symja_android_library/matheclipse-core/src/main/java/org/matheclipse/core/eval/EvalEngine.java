@@ -2095,7 +2095,7 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Test if <code>expr</code> could be evaluated to <code>True</code>. If a <code>
+   * Test if <code>expr</code> can be evaluated to <code>True</code>. If a <code>
    * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
    * False</code>.
    *
@@ -2115,7 +2115,163 @@ public class EvalEngine implements Serializable {
     try {
       return evaluate(expr).isTrue();
     } catch (MathException fce) {
-      LOGGER.debug("EvalEngine.evalTrue() failed", fce);
+      return false;
+    }
+  }
+
+  /**
+   * Test if <code>head[arg1]</code> can be evaluated to <code>True</code>. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   * 
+   * @param head
+   * @param arg1
+   * @return
+   */
+  public final boolean evalTrue(final IExpr head, final IExpr arg1) {
+    try {
+      return evaluate(F.unaryAST1(head, arg1)).isTrue();
+    } catch (MathException fce) {
+      return false;
+    }
+  }
+
+  /**
+   * Test if <code>head[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   * 
+   * @param head
+   * @param arg1
+   * @param arg2
+   * @return
+   */
+  public final boolean evalTrue(final IExpr head, final IExpr arg1, final IExpr arg2) {
+    try {
+      return evaluate(F.binaryAST2(head, arg1, arg2)).isTrue();
+    } catch (MathException fce) {
+      return false;
+    }
+  }
+
+  /**
+   * Test if <code>Equal[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   * 
+   * @param lhs
+   * @param rhs
+   * @return
+   */
+  public final boolean evalEqual(final IExpr lhs, final IExpr rhs) {
+    try {
+      return evaluate(F.Equal(lhs, rhs)).isTrue();
+    } catch (MathException fce) {
+      return false;
+    }
+  }
+
+  /**
+   * Test if <code>Less[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   * 
+   * @param lhs
+   * @param rhs
+   * @return
+   */
+  public final boolean evalLess(final IExpr lhs, final IExpr rhs) {
+    try {
+      return evaluate(F.Less(lhs, rhs)).isTrue();
+    } catch (MathException fce) {
+      return false;
+    }
+  }
+
+  /**
+   * Test if <code>Less[arg1, arg2, arg3]</code> can be evaluated to <code>True</code>. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   * 
+   * @param arg1
+   * @param arg2
+   * @param arg3
+   * @return
+   */
+  public final boolean evalLess(final IExpr arg1, final IExpr arg2, final IExpr arg3) {
+    try {
+      return evaluate(F.ternaryAST3(S.Less, arg1, arg2, arg3)).isTrue();
+    } catch (MathException fce) {
+      return false;
+    }
+  }
+
+  /**
+   * Test if <code>LessEqual[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   * 
+   * @param lhs
+   * @param rhs
+   * @return
+   */
+  public final boolean evalLessEqual(final IExpr lhs, final IExpr rhs) {
+    try {
+      return evaluate(F.LessEqual(lhs, rhs)).isTrue();
+    } catch (MathException fce) {
+      return false;
+    }
+  }
+
+  /**
+   * Test if <code>Greater[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   * 
+   * @param lhs
+   * @param rhs
+   * @return
+   */
+  public final boolean evalGreater(final IExpr lhs, final IExpr rhs) {
+    try {
+      return evaluate(F.Greater(lhs, rhs)).isTrue();
+    } catch (MathException fce) {
+      return false;
+    }
+  }
+
+  /**
+   * Test if <code>Greater[arg1, arg2,arg3]</code> can be evaluated to <code>True</code>. If a
+   * <code>org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return
+   * <code>False</code>.
+   * 
+   * @param arg1
+   * @param arg2
+   * @param arg3
+   * @return
+   */
+  public final boolean evalGreater(final IExpr arg1, final IExpr arg2, final IExpr arg3) {
+    try {
+      return evaluate(F.ternaryAST3(S.Greater, arg1, arg2, arg3)).isTrue();
+    } catch (MathException fce) {
+      return false;
+    }
+  }
+
+  /**
+   * Test if <code>GreaterEqual[arg1, arg2]</code> can be evaluated to <code>True</code>. If a
+   * <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   * 
+   * @param lhs
+   * @param rhs
+   * @return
+   */
+  public final boolean evalGreaterEqual(final IExpr lhs, final IExpr rhs) {
+    try {
+      return evaluate(F.GreaterEqual(lhs, rhs)).isTrue();
+    } catch (MathException fce) {
       return false;
     }
   }

@@ -21,19 +21,18 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class IntervalSym {
   private static final Logger LOGGER = LogManager.getLogger();
 
-  private static final Comparator<IExpr> INTERVAL_COMPARATOR =
-      new Comparator<IExpr>() {
-        @Override
-        public int compare(IExpr o1, IExpr o2) {
-          if (o1.first().equals(o2.first())) {
-            if (o1.second().equals(o2.second())) {
-              return 0;
-            }
-            return (S.Greater.ofQ(o1.second(), o2.second())) ? 1 : -1;
-          }
-          return (S.Greater.ofQ(o1.first(), o2.first())) ? 1 : -1;
+  private static final Comparator<IExpr> INTERVAL_COMPARATOR = new Comparator<IExpr>() {
+    @Override
+    public int compare(IExpr o1, IExpr o2) {
+      if (o1.first().equals(o2.first())) {
+        if (o1.second().equals(o2.second())) {
+          return 0;
         }
-      };
+        return (S.Greater.ofQ(o1.second(), o2.second())) ? 1 : -1;
+      }
+      return (S.Greater.ofQ(o1.first(), o2.first())) ? 1 : -1;
+    }
+  };
 
   /**
    * IExprProcessor interface method boolean process (IExpr min, IExpr max, IASTAppendable result,
@@ -49,7 +48,7 @@ public class IntervalSym {
      * @param result the resulting list of interval parts
      * @param index
      * @return <code>true</code> if a new interval could be appended to result; <code>false</code>
-     *     otherwise.
+     *         otherwise.
      */
     boolean apply(IExpr min, IExpr max, IASTAppendable result, int index);
   }
@@ -189,13 +188,11 @@ public class IntervalSym {
       if (arg instanceof ApfloatNum) {
         Apfloat apfloat = ((ApfloatNum) arg).fApfloat;
         Apfloat[] values = interval(apfloat);
-        return F.List(
-            F.num(values[0]), //
+        return F.List(F.num(values[0]), //
             F.num(values[1]));
       }
       double value = ((ISignedNumber) arg).doubleValue();
-      return F.List(
-          F.num(Math.nextDown(value)), //
+      return F.List(F.num(Math.nextDown(value)), //
           F.num(Math.nextUp(value)));
     }
     return F.List(arg, arg);
@@ -210,10 +207,10 @@ public class IntervalSym {
    * @return
    */
   private static IExpr mag(IExpr inf, IExpr sup, EvalEngine engine) {
-    if (engine.evalTrue(F.GreaterEqual(inf, F.C0))) {
+    if (engine.evalGreaterEqual(inf, F.C0)) {
       // inf >= 0
       return sup;
-    } else if (engine.evalTrue(F.LessEqual(sup, F.C0))) {
+    } else if (engine.evalLessEqual(sup, F.C0)) {
       // sup <= 0
       return inf.negate();
     }
@@ -243,10 +240,10 @@ public class IntervalSym {
    * @return
    */
   private static IExpr mig(IExpr inf, IExpr sup, EvalEngine engine) {
-    if (engine.evalTrue(F.Greater(inf, F.C0))) {
+    if (engine.evalGreater(inf, F.C0)) {
       // inf > 0
       return inf;
-    } else if (engine.evalTrue(F.Less(sup, F.C0))) {
+    } else if (engine.evalLess(sup, F.C0)) {
       // sup < 0
       return sup.negate();
     }
@@ -329,243 +326,192 @@ public class IntervalSym {
 
   public static IExpr arccosh(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (engine.evalTrue(F.GreaterEqual(min, F.C1))
-              && engine.evalTrue(F.LessEqual(max, F.CInfinity))) {
-            result.append(index, F.List(F.ArcCosh(min), F.ArcCosh(max)));
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.C1) && engine.evalLessEqual(max, F.CInfinity)) {
+        result.append(index, F.List(F.ArcCosh(min), F.ArcCosh(max)));
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IExpr arcsinh(final IAST ast) {
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (min.isRealResult() && max.isRealResult()) {
-            result.append(index, F.List(F.ArcSinh(min), F.ArcSinh(max)));
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult()) {
+        result.append(index, F.List(F.ArcSinh(min), F.ArcSinh(max)));
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IExpr arctanh(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (engine.evalTrue(F.GreaterEqual(min, F.CN1))
-              && engine.evalTrue(F.LessEqual(max, F.C1))) {
-            result.append(index, F.List(F.ArcTanh(min), F.ArcTanh(max)));
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.CN1) && engine.evalLessEqual(max, F.C1)) {
+        result.append(index, F.List(F.ArcTanh(min), F.ArcTanh(max)));
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IExpr arccos(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (engine.evalTrue(F.GreaterEqual(min, F.CN1))
-              && engine.evalTrue(F.LessEqual(max, F.C1))) {
-            result.append(index, F.List(F.ArcCos(min), F.ArcCos(max)));
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.CN1) && engine.evalLessEqual(max, F.C1)) {
+        result.append(index, F.List(F.ArcCos(min), F.ArcCos(max)));
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IExpr arccot(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (engine.evalTrue(F.GreaterEqual(min, F.C0))
-              && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-            result.append(F.List(F.ArcCot(min), F.ArcCot(max)));
-            return true;
-          }
-          return false;
-        },
-        (min, max, result, index) -> {
-          if (engine.evalTrue(F.Less(min, F.C0)) && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-            result.append(F.List(F.CNPiHalf, F.ArcCot(min)));
-            result.append(F.List(F.ArcCot(max), F.CPiHalf));
-            return true;
-          }
-          return false;
-        },
-        (min, max, result, index) -> {
-          if (engine.evalTrue(F.Less(min, F.C0)) && engine.evalTrue(F.Less(max, F.C0))) {
-            result.append(F.List(F.ArcCot(min), F.ArcCot(max)));
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+        result.append(F.List(F.ArcCot(min), F.ArcCot(max)));
+        return true;
+      }
+      return false;
+    }, (min, max, result, index) -> {
+      if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+        result.append(F.List(F.CNPiHalf, F.ArcCot(min)));
+        result.append(F.List(F.ArcCot(max), F.CPiHalf));
+        return true;
+      }
+      return false;
+    }, (min, max, result, index) -> {
+      if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
+        result.append(F.List(F.ArcCot(min), F.ArcCot(max)));
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IExpr arcsin(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (engine.evalTrue(F.GreaterEqual(min, F.CN1))
-              && engine.evalTrue(F.LessEqual(max, F.C1))) {
-            result.append(index, F.List(F.ArcSin(min), F.ArcSin(max)));
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.CN1) && engine.evalLessEqual(max, F.C1)) {
+        result.append(index, F.List(F.ArcSin(min), F.ArcSin(max)));
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IExpr arctan(final IAST ast) {
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (min.isRealResult() && max.isRealResult()) {
-            result.append(index, F.List(F.ArcTan(min), F.ArcTan(max)));
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult()) {
+        result.append(index, F.List(F.ArcTan(min), F.ArcTan(max)));
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IAST coth(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (engine.evalTrue(F.GreaterEqual(min, F.C0))
-              && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-            result.append(F.List(F.Coth(max), F.Coth(min)));
-            return true;
-          }
-          return false;
-        },
-        (min, max, result, index) -> {
-          if (engine.evalTrue(F.Less(min, F.C0)) && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-            result.append(F.List(F.CNInfinity, F.Coth(min)));
-            result.append(F.List(F.Coth(max), F.CInfinity));
-            return true;
-          }
-          return false;
-        },
-        (min, max, result, index) -> {
-          if (engine.evalTrue(F.Less(min, F.C0)) && engine.evalTrue(F.Less(max, F.C0))) {
-            result.append(F.List(F.Coth(min), F.Coth(max)));
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+        result.append(F.List(F.Coth(max), F.Coth(min)));
+        return true;
+      }
+      return false;
+    }, (min, max, result, index) -> {
+      if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+        result.append(F.List(F.CNInfinity, F.Coth(min)));
+        result.append(F.List(F.Coth(max), F.CInfinity));
+        return true;
+      }
+      return false;
+    }, (min, max, result, index) -> {
+      if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
+        result.append(F.List(F.Coth(min), F.Coth(max)));
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IAST cosh(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (min.isRealResult() && max.isRealResult()) {
-            if (engine.evalTrue(F.GreaterEqual(min, F.C0))
-                && //
-                engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-              result.append(F.List(F.Cosh(min), F.Cosh(max)));
-            } else if (engine.evalTrue(F.Less(min, F.C0))
-                && //
-                engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-              result.append(F.List(F.C1, F.Max(F.Cosh(min), F.Cosh(max))));
-            } else if (engine.evalTrue(F.Less(min, F.C0))
-                && //
-                engine.evalTrue(F.Less(max, F.C0))) {
-              result.append(F.List(F.Cosh(min), F.Cosh(max)));
-            }
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult()) {
+        if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+          result.append(F.List(F.Cosh(min), F.Cosh(max)));
+        } else if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+          result.append(F.List(F.C1, F.Max(F.Cosh(min), F.Cosh(max))));
+        } else if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
+          result.append(F.List(F.Cosh(min), F.Cosh(max)));
+        }
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IAST csch(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (engine.evalTrue(F.GreaterEqual(min, F.C0))
-              && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-            result.append(F.List(F.Csch(max), F.Csch(min)));
-            return true;
-          }
-          return false;
-        },
-        (min, max, result, index) -> {
-          if (engine.evalTrue(F.Less(min, F.C0)) && engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-            result.append(F.List(F.CNInfinity, F.Csch(min)));
-            result.append(F.List(F.Csch(max), F.CInfinity));
-            return true;
-          }
-          return false;
-        },
-        (min, max, result, index) -> {
-          if (engine.evalTrue(F.Less(min, F.C0)) && engine.evalTrue(F.Less(max, F.C0))) {
-            result.append(F.List(F.Csch(min), F.Csch(max)));
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+        result.append(F.List(F.Csch(max), F.Csch(min)));
+        return true;
+      }
+      return false;
+    }, (min, max, result, index) -> {
+      if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+        result.append(F.List(F.CNInfinity, F.Csch(min)));
+        result.append(F.List(F.Csch(max), F.CInfinity));
+        return true;
+      }
+      return false;
+    }, (min, max, result, index) -> {
+      if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
+        result.append(F.List(F.Csch(min), F.Csch(max)));
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IAST sech(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (min.isRealResult() && max.isRealResult()) {
-            if (engine.evalTrue(F.GreaterEqual(min, F.C0))
-                && //
-                engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-              result.append(F.List(F.Sech(max), F.Sech(min)));
-            } else if (engine.evalTrue(F.Less(min, F.C0))
-                && //
-                engine.evalTrue(F.GreaterEqual(max, F.C0))) {
-              result.append(F.List(F.Min(F.Sech(min), F.Sech(max)), F.C1));
-            } else if (engine.evalTrue(F.Less(min, F.C0))
-                && //
-                engine.evalTrue(F.Less(max, F.C0))) {
-              result.append(F.List(F.Sech(min), F.Sech(max)));
-            }
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult()) {
+        if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+          result.append(F.List(F.Sech(max), F.Sech(min)));
+        } else if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+          result.append(F.List(F.Min(F.Sech(min), F.Sech(max)), F.C1));
+        } else if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
+          result.append(F.List(F.Sech(min), F.Sech(max)));
+        }
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IAST sinh(final IAST ast) {
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (min.isRealResult() && max.isRealResult()) {
-            result.append(index, F.List(F.Sinh(min), F.Sinh(max)));
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult()) {
+        result.append(index, F.List(F.Sinh(min), F.Sinh(max)));
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IAST tanh(final IAST ast) {
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (min.isRealResult() && max.isRealResult()) {
-            result.append(index, F.List(F.Tanh(min), F.Tanh(max)));
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult()) {
+        result.append(index, F.List(F.Tanh(min), F.Tanh(max)));
+        return true;
+      }
+      return false;
+    });
   }
 
   /**
@@ -620,103 +566,99 @@ public class IntervalSym {
 
   public static IAST cos(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          IAST difference = F.Subtract(max, min);
-          if (engine.evalTrue(F.GreaterEqual(difference, F.C2Pi))) {
-            // difference >= 2 * Pi
-            result.append(index, F.List(F.CN1, F.C1));
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      IAST difference = F.Subtract(max, min);
+      if (engine.evalGreaterEqual(difference, F.C2Pi)) {
+        // difference >= 2 * Pi
+        result.append(index, F.List(F.CN1, F.C1));
+      } else {
+        // slope from 1st derivative
+        double dMin = engine.evalDouble(F.Sin(min).negate());
+        double dMax = engine.evalDouble(F.Sin(max).negate());
+        if (engine.evalLessEqual(difference, S.Pi)) {
+          if (dMin >= 0) {
+            if (dMax >= 0) {
+              result.append(index, F.List(F.Cos(min), F.Cos(max)));
+            } else {
+              result.append(index, F.List(F.Min(F.Cos(min), F.Cos(max)), F.C1));
+            }
           } else {
-            // slope from 1st derivative
-            double dMin = engine.evalDouble(F.Sin(min).negate());
-            double dMax = engine.evalDouble(F.Sin(max).negate());
-            if (engine.evalTrue(F.LessEqual(difference, S.Pi))) {
-              if (dMin >= 0) {
-                if (dMax >= 0) {
-                  result.append(index, F.List(F.Cos(min), F.Cos(max)));
-                } else {
-                  result.append(index, F.List(F.Min(F.Cos(min), F.Cos(max)), F.C1));
-                }
-              } else {
-                if (dMax < 0) {
-                  result.append(index, F.List(F.Cos(max), F.Cos(min)));
-                } else {
-                  result.append(index, F.List(F.CN1, F.Max(F.Cos(min), F.Cos(max))));
-                }
-              }
-            } else { // difference between {Pi, 2*Pi}
-              if (dMin >= 0) {
-                if (dMax > 0) {
-                  result.append(index, F.List(F.CN1, F.C1));
-                } else {
-                  result.append(index, F.List(F.Min(F.Cos(min), F.Cos(max)), F.C1));
-                }
-              } else {
-                if (dMax < 0) {
-                  result.append(index, F.List(F.CN1, F.C1));
-                } else {
-                  result.append(index, F.List(F.CN1, F.Max(F.Cos(min), F.Cos(max))));
-                }
-              }
+            if (dMax < 0) {
+              result.append(index, F.List(F.Cos(max), F.Cos(min)));
+            } else {
+              result.append(index, F.List(F.CN1, F.Max(F.Cos(min), F.Cos(max))));
             }
           }
-          return true;
-        });
+        } else { // difference between {Pi, 2*Pi}
+          if (dMin >= 0) {
+            if (dMax > 0) {
+              result.append(index, F.List(F.CN1, F.C1));
+            } else {
+              result.append(index, F.List(F.Min(F.Cos(min), F.Cos(max)), F.C1));
+            }
+          } else {
+            if (dMax < 0) {
+              result.append(index, F.List(F.CN1, F.C1));
+            } else {
+              result.append(index, F.List(F.CN1, F.Max(F.Cos(min), F.Cos(max))));
+            }
+          }
+        }
+      }
+      return true;
+    });
   }
 
   public static IAST cot(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          IAST difference = F.Subtract(max, min);
-          if (engine.evalTrue(F.GreaterEqual(difference, S.Pi))) {
-            result.append(F.List(F.CNInfinity, F.CInfinity));
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      IAST difference = F.Subtract(max, min);
+      if (engine.evalGreaterEqual(difference, S.Pi)) {
+        result.append(F.List(F.CNInfinity, F.CInfinity));
+      } else {
+        double dMin = engine.evalDouble(F.Cot(min));
+        double dMax = engine.evalDouble(F.Cot(max));
+        if (engine.evalLessEqual(difference, F.CPiHalf)) {
+          // difference <= 1/2*Pi
+          if (dMin < 0) {
+            if (dMax >= 0) {
+              result.append(F.List(F.CNInfinity, F.Cot(min)));
+              result.append(F.List(F.Cot(max), F.CInfinity));
+            } else {
+              result.append(F.List(F.Cot(max), F.Cot(min)));
+            }
           } else {
-            double dMin = engine.evalDouble(F.Cot(min));
-            double dMax = engine.evalDouble(F.Cot(max));
-            if (engine.evalTrue(F.LessEqual(difference, F.CPiHalf))) {
-              // difference <= 1/2*Pi
-              if (dMin < 0) {
-                if (dMax >= 0) {
-                  result.append(F.List(F.CNInfinity, F.Cot(min)));
-                  result.append(F.List(F.Cot(max), F.CInfinity));
-                } else {
-                  result.append(F.List(F.Cot(max), F.Cot(min)));
-                }
+            result.append(F.List(F.Cot(min), F.Cot(max)));
+          }
+        } else { // difference between {Pi/2, Pi}
+          if (dMin >= 0) {
+            if (dMax < 0) {
+              result.append(F.List(F.CNInfinity, F.Cot(max)));
+              result.append(F.List(F.Cot(min), F.CInfinity));
+            } else {
+              if (dMin < dMax) {
+                result.append(F.List(F.CNInfinity, F.Cot(min)));
+                result.append(F.List(F.Cot(max), F.CInfinity));
               } else {
-                result.append(F.List(F.Cot(min), F.Cot(max)));
-              }
-            } else { // difference between {Pi/2, Pi}
-              if (dMin >= 0) {
-                if (dMax < 0) {
-                  result.append(F.List(F.CNInfinity, F.Cot(max)));
-                  result.append(F.List(F.Cot(min), F.CInfinity));
-                } else {
-                  if (dMin < dMax) {
-                    result.append(F.List(F.CNInfinity, F.Cot(min)));
-                    result.append(F.List(F.Cot(max), F.CInfinity));
-                  } else {
-                    result.append(F.List(F.CNInfinity, F.CInfinity));
-                  }
-                }
-              } else {
-                if (dMax < 0) {
-                  if (dMin < dMax) {
-                    result.append(F.List(F.Cot(max), F.CInfinity));
-                    result.append(F.List(F.CNInfinity, F.Cot(min)));
-                  } else {
-                    result.append(F.List(F.CNInfinity, F.CInfinity));
-                  }
-                } else {
-                  result.append(F.List(F.CNInfinity, F.CInfinity));
-                }
+                result.append(F.List(F.CNInfinity, F.CInfinity));
               }
             }
+          } else {
+            if (dMax < 0) {
+              if (dMin < dMax) {
+                result.append(F.List(F.Cot(max), F.CInfinity));
+                result.append(F.List(F.CNInfinity, F.Cot(min)));
+              } else {
+                result.append(F.List(F.CNInfinity, F.CInfinity));
+              }
+            } else {
+              result.append(F.List(F.CNInfinity, F.CInfinity));
+            }
           }
-          return true;
-        });
+        }
+      }
+      return true;
+    });
   }
 
   /**
@@ -745,17 +687,15 @@ public class IntervalSym {
 
   public static IAST log(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          if (min.isNonNegativeResult() && max.isNonNegativeResult()) {
-            min = S.Log.of(engine, min);
-            max = S.Log.of(engine, max);
-            result.append(index, F.List(min, max));
-            return true;
-          }
-          return false;
-        });
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (min.isNonNegativeResult() && max.isNonNegativeResult()) {
+        min = S.Log.of(engine, min);
+        max = S.Log.of(engine, max);
+        result.append(index, F.List(min, max));
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IAST sec(final IAST ast) {
@@ -768,98 +708,94 @@ public class IntervalSym {
 
   public static IAST sin(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          IAST difference = F.Subtract(max, min);
-          if (engine.evalTrue(F.GreaterEqual(difference, F.C2Pi))) {
-            // difference >= 2 * Pi
-            result.append(index, F.List(F.CN1, F.C1));
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      IAST difference = F.Subtract(max, min);
+      if (engine.evalGreaterEqual(difference, F.C2Pi)) {
+        // difference >= 2 * Pi
+        result.append(index, F.List(F.CN1, F.C1));
+      } else {
+        // slope from 1st derivative
+        double dMin = engine.evalDouble(F.Cos(min));
+        double dMax = engine.evalDouble(F.Cos(max));
+        if (engine.evalLessEqual(difference, S.Pi)) {
+          if (dMin >= 0) {
+            if (dMax >= 0) {
+              result.append(index, F.List(F.Sin(min), F.Sin(max)));
+            } else {
+              result.append(index, F.List(F.Min(F.Sin(min), F.Sin(max)), F.C1));
+            }
           } else {
-            // slope from 1st derivative
-            double dMin = engine.evalDouble(F.Cos(min));
-            double dMax = engine.evalDouble(F.Cos(max));
-            if (engine.evalTrue(F.LessEqual(difference, S.Pi))) {
-              if (dMin >= 0) {
-                if (dMax >= 0) {
-                  result.append(index, F.List(F.Sin(min), F.Sin(max)));
-                } else {
-                  result.append(index, F.List(F.Min(F.Sin(min), F.Sin(max)), F.C1));
-                }
-              } else {
-                if (dMax < 0) {
-                  result.append(index, F.List(F.Sin(max), F.Sin(min)));
-                } else {
-                  result.append(index, F.List(F.CN1, F.Max(F.Sin(min), F.Sin(max))));
-                }
-              }
-            } else { // difference between {Pi, 2*Pi}
-              if (dMin >= 0) {
-                if (dMax > 0) {
-                  result.append(index, F.List(F.CN1, F.C1));
-                } else {
-                  result.append(index, F.List(F.Min(F.Sin(min), F.Sin(max)), F.C1));
-                }
-              } else {
-                if (dMax < 0) {
-                  result.append(index, F.List(F.CN1, F.C1));
-                } else {
-                  result.append(index, F.List(F.CN1, F.Max(F.Sin(min), F.Sin(max))));
-                }
-              }
+            if (dMax < 0) {
+              result.append(index, F.List(F.Sin(max), F.Sin(min)));
+            } else {
+              result.append(index, F.List(F.CN1, F.Max(F.Sin(min), F.Sin(max))));
             }
           }
-          return true;
-        });
+        } else { // difference between {Pi, 2*Pi}
+          if (dMin >= 0) {
+            if (dMax > 0) {
+              result.append(index, F.List(F.CN1, F.C1));
+            } else {
+              result.append(index, F.List(F.Min(F.Sin(min), F.Sin(max)), F.C1));
+            }
+          } else {
+            if (dMax < 0) {
+              result.append(index, F.List(F.CN1, F.C1));
+            } else {
+              result.append(index, F.List(F.CN1, F.Max(F.Sin(min), F.Sin(max))));
+            }
+          }
+        }
+      }
+      return true;
+    });
   }
 
   public static IAST tan(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
-    return mutableProcessorConditions(
-        ast,
-        (min, max, result, index) -> {
-          IAST difference = F.Subtract(max, min);
-          if (engine.evalTrue(F.GreaterEqual(difference, S.Pi))) {
-            result.append(F.List(F.CNInfinity, F.CInfinity));
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      IAST difference = F.Subtract(max, min);
+      if (engine.evalGreaterEqual(difference, S.Pi)) {
+        result.append(F.List(F.CNInfinity, F.CInfinity));
+      } else {
+        double dMin = engine.evalDouble(F.Tan(min));
+        double dMax = engine.evalDouble(F.Tan(max));
+        if (engine.evalLessEqual(difference, F.CPiHalf)) {
+          // difference <= 1/2*Pi
+          if (dMin >= 0) {
+            if (dMax < 0) {
+              result.append(F.List(F.CNInfinity, F.Tan(max)));
+              result.append(F.List(F.Tan(min), F.CInfinity));
+            } else {
+              result.append(F.List(F.Tan(min), F.Tan(max)));
+            }
           } else {
-            double dMin = engine.evalDouble(F.Tan(min));
-            double dMax = engine.evalDouble(F.Tan(max));
-            if (engine.evalTrue(F.LessEqual(difference, F.CPiHalf))) {
-              // difference <= 1/2*Pi
-              if (dMin >= 0) {
-                if (dMax < 0) {
-                  result.append(F.List(F.CNInfinity, F.Tan(max)));
-                  result.append(F.List(F.Tan(min), F.CInfinity));
-                } else {
-                  result.append(F.List(F.Tan(min), F.Tan(max)));
-                }
+            result.append(F.List(F.Tan(min), F.Tan(max)));
+          }
+        } else { // difference between {Pi/2, Pi}
+          if (dMin >= 0) {
+            if ((dMax < 0) || (dMin > dMax)) {
+              result.append(F.List(F.CNInfinity, F.Tan(max)));
+              result.append(F.List(F.Tan(min), F.CInfinity));
+            } else {
+              result.append(F.List(F.CNInfinity, F.CInfinity));
+            }
+          } else {
+            if (dMax < 0) {
+              if (dMin <= dMax) {
+                result.append(F.List(F.CNInfinity, F.CInfinity));
               } else {
-                result.append(F.List(F.Tan(min), F.Tan(max)));
+                result.append(F.List(F.CNInfinity, F.Tan(max)));
+                result.append(F.List(F.Tan(min), F.CInfinity));
               }
-            } else { // difference between {Pi/2, Pi}
-              if (dMin >= 0) {
-                if ((dMax < 0) || (dMin > dMax)) {
-                  result.append(F.List(F.CNInfinity, F.Tan(max)));
-                  result.append(F.List(F.Tan(min), F.CInfinity));
-                } else {
-                  result.append(F.List(F.CNInfinity, F.CInfinity));
-                }
-              } else {
-                if (dMax < 0) {
-                  if (dMin <= dMax) {
-                    result.append(F.List(F.CNInfinity, F.CInfinity));
-                  } else {
-                    result.append(F.List(F.CNInfinity, F.Tan(max)));
-                    result.append(F.List(F.Tan(min), F.CInfinity));
-                  }
-                } else {
-                  result.append(F.List(F.Tan(min), F.Tan(max)));
-                }
-              }
+            } else {
+              result.append(F.List(F.Tan(min), F.Tan(max)));
             }
           }
-          return true;
-        });
+        }
+      }
+      return true;
+    });
   }
 
   public static IExpr plus(final IAST ast1, final IAST ast2) {
@@ -877,10 +813,8 @@ public class IntervalSym {
           IExpr min2 = list2.arg1();
           IExpr max2 = list2.arg2();
 
-          IAST list =
-              F.List(
-                  min1.plus(min2), //
-                  max1.plus(max2));
+          IAST list = F.List(min1.plus(min2), //
+              max1.plus(max2));
           result.append(list);
         }
       }
@@ -898,10 +832,8 @@ public class IntervalSym {
         IExpr min2 = list2.arg1();
         IExpr max2 = list2.arg2();
 
-        IAST list =
-            F.List(
-                scalar.plus(min2), //
-                scalar.plus(max2));
+        IAST list = F.List(scalar.plus(min2), //
+            scalar.plus(max2));
         result.append(list);
       }
       return result;
@@ -924,10 +856,9 @@ public class IntervalSym {
           IExpr min2 = list2.arg1();
           IExpr max2 = list2.arg2();
 
-          IAST list =
-              F.List( //
-                  F.Min(min1.times(min2), min1.times(max2), max1.times(min2), max1.times(max2)), //
-                  F.Max(min1.times(min2), min1.times(max2), max1.times(min2), max1.times(max2)));
+          IAST list = F.List( //
+              F.Min(min1.times(min2), min1.times(max2), max1.times(min2), max1.times(max2)), //
+              F.Max(min1.times(min2), min1.times(max2), max1.times(min2), max1.times(max2)));
           result.append(list);
         }
       }
@@ -945,18 +876,9 @@ public class IntervalSym {
         IExpr min2 = list2.arg1();
         IExpr max2 = list2.arg2();
 
-        IAST list =
-            F.List( //
-                F.Min(
-                    scalar.times(min2),
-                    scalar.times(max2),
-                    scalar.times(min2),
-                    scalar.times(max2)), //
-                F.Max(
-                    scalar.times(min2),
-                    scalar.times(max2),
-                    scalar.times(min2),
-                    scalar.times(max2)));
+        IAST list = F.List( //
+            F.Min(scalar.times(min2), scalar.times(max2), scalar.times(min2), scalar.times(max2)), //
+            F.Max(scalar.times(min2), scalar.times(max2), scalar.times(min2), scalar.times(max2)));
         result.append(list);
       }
       return result;
@@ -967,9 +889,9 @@ public class IntervalSym {
   /**
    * Calculate <code>Interval({lower, upper},...,...) ^ exponent</code>.
    *
-   * <p>See: <a href=
-   * "https://en.wikipedia.org/wiki/Interval_arithmetic#Elementary_functions">Interval arithmetic -
-   * Elementary functions</a>
+   * <p>
+   * See: <a href= "https://en.wikipedia.org/wiki/Interval_arithmetic#Elementary_functions">Interval
+   * arithmetic - Elementary functions</a>
    *
    * @param baseInterval
    * @param exponent
@@ -1023,9 +945,9 @@ public class IntervalSym {
   /**
    * Calculate <code>Interval({lower, upper},...,...) ^ exponent</code>.
    *
-   * <p>See: <a href=
-   * "https://en.wikipedia.org/wiki/Interval_arithmetic#Elementary_functions">Interval arithmetic -
-   * Elementary functions</a>
+   * <p>
+   * See: <a href= "https://en.wikipedia.org/wiki/Interval_arithmetic#Elementary_functions">Interval
+   * arithmetic - Elementary functions</a>
    *
    * @param baseInterval
    * @param exponent

@@ -1954,9 +1954,9 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
-  public final IAST filter(IASTAppendable filterAST, IExpr expr) {
+  public final IAST filter(IASTAppendable filterAST, IExpr unaryHead) {
     EvalEngine engine = EvalEngine.get();
-    return filter(filterAST, x -> engine.evalTrue(F.unaryAST1(expr, x)));
+    return filter(filterAST, x -> engine.evalTrue(unaryHead, x));
   }
 
   /** {@inheritDoc} */

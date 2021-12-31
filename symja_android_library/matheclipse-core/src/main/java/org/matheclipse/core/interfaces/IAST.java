@@ -570,11 +570,11 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    *
    * @param filterAST the elements where the <code>predicate#apply()</code> method returns <code>
    *     true</code>
-   * @param expr create a <code>Predicates.isTrue(expr)</code> predicate which filters each element
-   *     in this AST.
+   * @param unaryHead create a <code>Predicates.isTrue(unaryHead)</code> predicate which filters
+   *        each element in this AST.
    * @return the <code>filterAST</code>
    */
-  public IAST filter(IASTAppendable filterAST, IExpr expr);
+  public IAST filter(IASTAppendable filterAST, IExpr unaryHead);
 
   /**
    * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST

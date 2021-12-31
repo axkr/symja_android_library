@@ -1521,7 +1521,7 @@ public final class NumberTheory {
             for (int i = 1; i < list.size(); i++) {
               IExpr divisor = list.get(i);
               // apply condition on divisor
-              if (condition.isPresent() && !engine.evalTrue(F.unaryAST1(condition, divisor))) {
+              if (condition.isPresent() && !engine.evalTrue(condition, divisor)) {
                 continue;
               }
               sum.append(F.unaryAST1(head, divisor));
@@ -2159,7 +2159,7 @@ public final class NumberTheory {
         IExpr result = F.C1;
 
         // x*(x-1)* (x-(n-1))
-        if (engine.evalTrue(F.Less(n, F.C0))) {
+        if (engine.evalLess(n, F.C0)) {
           return F.NIL;
         } else if (n.isZero()) {
           return F.C1;
@@ -4492,7 +4492,7 @@ public final class NumberTheory {
         // try to convert into a fractional number
         return rationalize(arg1, epsilon, useConvergenceMethod).orElse(arg1);
       } catch (Exception ex) {
-//        ex.printStackTrace();
+        // ex.printStackTrace();
         LOGGER.debug("Rationalize.evaluate() failed", ex);
       }
 
@@ -5091,7 +5091,7 @@ public final class NumberTheory {
   }
 
   public static boolean check(IExpr n, IExpr k, IExpr delta, EvalEngine engine) {
-    return engine.evalTrue(F.Equal(n, k.plus(delta)));
+    return engine.evalEqual(n, k.plus(delta));
   }
 
   public static IInteger factorial(int ni) {

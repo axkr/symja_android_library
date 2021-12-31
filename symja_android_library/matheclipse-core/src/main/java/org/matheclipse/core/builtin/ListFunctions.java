@@ -102,13 +102,13 @@ public final class ListFunctions {
       IExpr arg1 = ast.get(index1);
       IExpr arg2 = ast.get(index2);
       if (arg1.isNumericFunction(false) && arg2.isNumericFunction(false)) {
-        if (engine.evalTrue(F.Greater(arg1, arg2))) {
+        if (engine.evalGreater(arg1, arg2)) {
           return -1;
         }
-        if (engine.evalTrue(F.Less(arg1, arg2))) {
+        if (engine.evalLess(arg1, arg2)) {
           return 1;
         }
-        if (engine.evalTrue(F.Equal(arg1, arg2))) {
+        if (engine.evalEqual(arg1, arg2)) {
           return 0;
         }
       }
@@ -126,13 +126,13 @@ public final class ListFunctions {
       IExpr arg1 = ast.get(index1);
       IExpr arg2 = ast.get(index2);
       if (arg1.isNumericFunction(false) && arg2.isNumericFunction(false)) {
-        if (engine.evalTrue(F.Less(arg1, arg2))) {
+        if (engine.evalLess(arg1, arg2)) {
           return -1;
         }
-        if (engine.evalTrue(F.Greater(arg1, arg2))) {
+        if (engine.evalGreater(arg1, arg2)) {
           return 1;
         }
-        if (engine.evalTrue(F.Equal(arg1, arg2))) {
+        if (engine.evalEqual(arg1, arg2)) {
           return 0;
         }
       }
@@ -3971,7 +3971,7 @@ public final class ListFunctions {
         IAST list = (IAST) arg1;
         final int[] n = new int[] {0};
         list.forAll(x -> {
-          if (engine.evalTrue(F.unaryAST1(arg2, x))) {
+          if (engine.evalTrue(arg2, x)) {
             n[0]++;
             return true;
           }
@@ -6584,13 +6584,13 @@ public final class ListFunctions {
             IAST list = (IAST) ast.arg1();
             IExpr predicateHead = ast.arg2();
             if (size == 3) {
-              return list.select(x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
+              return list.select(x -> engine.evalTrue(predicateHead, x));
             } else if ((size == 4) && ast.arg3().isInteger()) {
               final int resultLimit = Validate.checkIntType(ast, 3);
               if (resultLimit == 0) {
                 return F.CEmptyList;
               }
-              return list.select(x -> engine.evalTrue(F.unaryAST1(predicateHead, x)), resultLimit);
+              return list.select(x -> engine.evalTrue(predicateHead, x), resultLimit);
             }
           }
         } catch (IllegalArgumentException iae) {
@@ -6623,7 +6623,7 @@ public final class ListFunctions {
           if (argSize == 3) {
             defaultValue = ast.arg3();
           }
-          int index = list.indexOf(x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
+          int index = list.indexOf(x -> engine.evalTrue(predicateHead, x));
           if (index > 0) {
             return list.get(index);
           }
@@ -7719,7 +7719,7 @@ public final class ListFunctions {
         IAST list = (IAST) arg1;
         IASTAppendable result = F.ast(list.head());
         list.forAll(x -> {
-          if (engine.evalTrue(F.unaryAST1(arg2, x))) {
+          if (engine.evalTrue(arg2, x)) {
             result.append(x);
             return true;
           }

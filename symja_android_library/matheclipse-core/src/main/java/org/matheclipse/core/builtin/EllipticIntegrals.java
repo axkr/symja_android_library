@@ -434,7 +434,7 @@ public class EllipticIntegrals {
         }
         if (m.isOne()) {
           // Abs(Re(z)) <= Pi/2
-          if (engine.evalTrue(F.LessEqual(F.Abs(F.Re(z)), F.CPiHalf))) {
+          if (engine.evalLessEqual(F.Abs(F.Re(z)), F.CPiHalf)) {
             return F.Sin(z);
           }
         }
@@ -1550,7 +1550,7 @@ public class EllipticIntegrals {
       }
       if (m.isOne()) {
         // Abs(Re(z)) <= Pi/2
-        if (engine.evalTrue(F.LessEqual(F.Abs(F.Re(z)), F.CPiHalf))) {
+        if (engine.evalLessEqual(F.Abs(F.Re(z)), F.CPiHalf)) {
           return F.Sin(z);
         }
       }

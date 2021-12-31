@@ -85,8 +85,7 @@ public class GraphicsFunctions {
           return IOFunctions.printMessage(
               ast.topHead(), "invidx2", F.list(nArg2, F.C0, di), engine);
         }
-        IExpr condition = F.Less(F.C0, x, F.C1);
-        if (engine.evalTrue(condition)) {
+        if (engine.evalLess(F.C0, x, F.C1)) {
           IInteger ni = F.ZZ(n);
           // Binomial(d, ni) * x^ni * (1 - x)^(di - ni)
           return F.Times(

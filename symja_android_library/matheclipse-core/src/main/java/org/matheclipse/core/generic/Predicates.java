@@ -232,7 +232,7 @@ public class Predicates {
         return (Predicate<IExpr>) eval;
       }
     }
-    return x -> engine.evalTrue(F.unaryAST1(head, x));
+    return x -> engine.evalTrue(head, x);
   }
 
   /** @return a <code>java.util.function.Predicate</code> predicate of one argument. */
