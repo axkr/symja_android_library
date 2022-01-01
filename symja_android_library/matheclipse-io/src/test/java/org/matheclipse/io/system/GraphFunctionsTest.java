@@ -146,6 +146,22 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "{}");
   }
 
+  public void testFindGraphIsomorphism() {
+    check("g=Graph({1,2,3,4},{1<->2,1<->4,2<->3,3<->4})", //
+        "Graph({1,2,3,4},{1<->2,1<->4,2<->3,3<->4})");
+    check("h=Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4})", //
+        "Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4})");
+    check(" FindGraphIsomorphism(g, h)", //
+        "{<|1->2,2->3,3->1,4->4|>}");
+
+    check("g=Graph({a,b,c,d},{a<->b,a<->d,b<->c,c<->d})", //
+        "Graph({a,b,c,d},{a<->b,a<->d,b<->c,c<->d})");
+    check("h=Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4})", //
+        "Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4})");
+    check(" FindGraphIsomorphism(g, h)", //
+        "{<|a->2,b->3,c->1,d->4|>}");
+  }
+
   public void testFindHamiltonianCycle() {
     check(
         "FindHamiltonianCycle( {1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1} )", //
@@ -261,6 +277,15 @@ public class GraphFunctionsTest extends AbstractTestCase {
             + " {0,0,0,0,0,1,0,0,0,1,0,0,1,0,0,1},\n"
             + " {0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,1},\n"
             + " {0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0}}");
+  }
+
+  public void testIsomorphicGraphQ() {
+    check("g=Graph({a,b,c,d},{a<->b,a<->d,b<->c,c<->d})", //
+        "Graph({a,b,c,d},{a<->b,a<->d,b<->c,c<->d})");
+    check("h=Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4})", //
+        "Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4})");
+    check(" IsomorphicGraphQ(g, h)", //
+        "True");
   }
 
   public void testGraphFullForm() {

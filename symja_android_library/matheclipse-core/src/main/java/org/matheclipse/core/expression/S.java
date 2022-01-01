@@ -3411,6 +3411,9 @@ public class S {
   public static final IBuiltInSymbol FindInstance =
       F.initFinalSymbol("FindInstance", ID.FindInstance);
 
+  public static final IBuiltInSymbol FindGraphIsomorphism =
+      F.initFinalSymbol("FindGraphIsomorphism", ID.FindGraphIsomorphism);
+
   /**
    * FindPermutation(list1, list2) - create a `Cycles({{...},{...}, ...})` permutation expression,
    * for two lists whose arguments are the same but may be differently arranged.
@@ -4929,6 +4932,10 @@ public class S {
 
   public static final IBuiltInSymbol InverseWeierstrassP =
       F.initFinalSymbol("InverseWeierstrassP", ID.InverseWeierstrassP);
+
+  public static final IBuiltInSymbol IsomorphicGraphQ =
+      F.initFinalSymbol("IsomorphicGraphQ", ID.IsomorphicGraphQ);
+
 
   /**
    * JSForm(expr) - returns the JavaScript form of the `expr`.

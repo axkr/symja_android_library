@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,6 +24,8 @@ import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.interfaces.VertexCoverAlgorithm;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
+import org.jgrapht.alg.isomorphism.AHUUnrootedTreeIsomorphismInspector;
+import org.jgrapht.alg.isomorphism.IsomorphicGraphMapping;
 import org.jgrapht.alg.planar.BoyerMyrvoldPlanarityInspector;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.alg.shortestpath.GraphMeasurer;
@@ -82,12 +85,14 @@ public class GraphFunctions {
       S.EulerianGraphQ.setEvaluator(new EulerianGraphQ());
       S.FindEulerianCycle.setEvaluator(new FindEulerianCycle());
       S.FindHamiltonianCycle.setEvaluator(new FindHamiltonianCycle());
+      S.FindGraphIsomorphism.setEvaluator(new FindGraphIsomorphism());
       S.FindVertexCover.setEvaluator(new FindVertexCover());
       S.FindShortestPath.setEvaluator(new FindShortestPath());
       S.FindShortestTour.setEvaluator(new FindShortestTour());
       S.FindSpanningTree.setEvaluator(new FindSpanningTree());
       S.GraphQ.setEvaluator(new GraphQ());
       S.HamiltonianGraphQ.setEvaluator(new HamiltonianGraphQ());
+      S.IsomorphicGraphQ.setEvaluator(new IsomorphicGraphQ());
       S.LineGraph.setEvaluator(new LineGraph());
       S.PlanarGraphQ.setEvaluator(new PlanarGraphQ());
       S.VertexEccentricity.setEvaluator(new VertexEccentricity());
@@ -108,35 +113,39 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>create a graph from the given edges <code>edge1,...,edgeN</code>.
+   * <p>
+   * create a graph from the given edges <code>edge1,...,edgeN</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)">Wikipedia -
-   *       Graph</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)">Wikipedia - Graph</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <p>A directed graph:
+   * <p>
+   * A directed graph:
    *
    * <pre>
    * <code>&gt;&gt; Graph({1 -&gt; 2, 2 -&gt; 3, 3 -&gt; 4, 4 -&gt; 1})
    * </code>
    * </pre>
    *
-   * <p>An undirected graph:
+   * <p>
+   * An undirected graph:
    *
    * <pre>
    * <code>&gt;&gt; Graph({1 &lt;-&gt; 2, 2 &lt;-&gt; 3, 3 &lt;-&gt; 4, 4 &lt;-&gt; 1})
    * </code>
    * </pre>
    *
-   * <p>An undirected weighted graph:
+   * <p>
+   * An undirected weighted graph:
    *
    * <pre>
    * <code>&gt;&gt; Graph({1 &lt;-&gt; 2, 2 &lt;-&gt; 3, 3 &lt;-&gt; 4, 4 &lt;-&gt; 1},{EdgeWeight-&gt;{2.0,3.0,4.0, 5.0}})
@@ -199,8 +208,7 @@ public class GraphFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(
-          newSymbol, //
+      setOptions(newSymbol, //
           F.List(F.Rule(S.EdgeWeight, S.Automatic)));
     }
 
@@ -220,16 +228,18 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>compute the <code>graph</code> center. The center of a <code>graph</code> is the set of
+   * <p>
+   * compute the <code>graph</code> center. The center of a <code>graph</code> is the set of
    * vertices of graph eccentricity equal to the <code>graph</code> radius.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Graph_center">Wikipedia - Graph center</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Graph_center">Wikipedia - Graph center</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
    * </ul>
    */
   private static class GraphCenter extends AbstractEvaluator {
@@ -269,17 +279,18 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>return the diameter of the <code>graph</code>.
+   * <p>
+   * return the diameter of the <code>graph</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a
-   *       href="https://en.wikipedia.org/wiki/Distance_(graph_theory)#Related_concepts">Wikipedia -
-   *       Distance (graph theory) - Related concepts</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Distance_(graph_theory)#Related_concepts">Wikipedia
+   * - Distance (graph theory) - Related concepts</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
    * </ul>
    */
   private static class GraphDiameter extends AbstractEvaluator {
@@ -324,8 +335,9 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>compute the <code>graph</code> periphery. The periphery of a <code>graph</code> is the set
-   * of vertices of graph eccentricity equal to the graph diameter.
+   * <p>
+   * compute the <code>graph</code> periphery. The periphery of a <code>graph</code> is the set of
+   * vertices of graph eccentricity equal to the graph diameter.
    *
    * </blockquote>
    */
@@ -376,16 +388,17 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>test if <code>expr</code> is a graph object.
+   * <p>
+   * test if <code>expr</code> is a graph object.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)">Wikipedia -
-   *       Graph</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)">Wikipedia - Graph</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -432,14 +445,14 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>return the radius of the <code>graph</code>.
+   * <p>
+   * return the radius of the <code>graph</code>.
    *
    * </blockquote>
    *
    * <ul>
-   *   <li><a
-   *       href="https://en.wikipedia.org/wiki/Distance_(graph_theory)#Related_concepts">Wikipedia -
-   *       Distance (graph theory) - Related concepts</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Distance_(graph_theory)#Related_concepts">Wikipedia
+   * - Distance (graph theory) - Related concepts</a>
    * </ul>
    */
   private static class GraphRadius extends AbstractEvaluator {
@@ -479,25 +492,25 @@ public class GraphFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      //      try {
-      //        GraphExpr<ExprEdge> gex1 = createGraph(ast.arg1());
-      //        if (gex1 == null) {
-      //          return F.NIL;
-      //        }
-      //        Graph<IExpr, ExprEdge> g1 = gex1.toData();
-      //        GraphExpr<ExprEdge> gex2 = createGraph(ast.arg2());
-      //        if (gex2 == null) {
-      //          return F.NIL;
-      //        }
-      //        Graph<IExpr, ExprEdge> g2 = gex2.toData();
-      //        if (g1 == g2) {
-      //          return gex1;
-      //        }
-      //        AsGraphUnion<IExpr, ExprEdge> gu = new AsGraphUnion<IExpr, ExprEdge>(g1, g2);
-      //        return GraphExpr.newInstance(gu);
-      //      } catch (RuntimeException rex) {
-      //        LOGGER.debug("GraphUnion.evaluate() failed", rex);
-      //      }
+      // try {
+      // GraphExpr<ExprEdge> gex1 = createGraph(ast.arg1());
+      // if (gex1 == null) {
+      // return F.NIL;
+      // }
+      // Graph<IExpr, ExprEdge> g1 = gex1.toData();
+      // GraphExpr<ExprEdge> gex2 = createGraph(ast.arg2());
+      // if (gex2 == null) {
+      // return F.NIL;
+      // }
+      // Graph<IExpr, ExprEdge> g2 = gex2.toData();
+      // if (g1 == g2) {
+      // return gex1;
+      // }
+      // AsGraphUnion<IExpr, ExprEdge> gu = new AsGraphUnion<IExpr, ExprEdge>(g1, g2);
+      // return GraphExpr.newInstance(gu);
+      // } catch (RuntimeException rex) {
+      // LOGGER.debug("GraphUnion.evaluate() failed", rex);
+      // }
       return F.NIL;
     }
 
@@ -517,15 +530,17 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>find a shortest tour in the <code>graph</code> with minimum <code>EuclideanDistance</code>.
+   * <p>
+   * find a shortest tour in the <code>graph</code> with minimum <code>EuclideanDistance</code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Travelling_salesman_problem">Wikipedia -
-   *       Travelling salesman problem</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Travelling_salesman_problem">Wikipedia - Travelling
+   * salesman problem</a>
    * </ul>
    *
    * <h3>Related terms</h3>
@@ -555,8 +570,7 @@ public class GraphFunctions {
                   // create all possible edges between the given vertices
                   for (int i = 0; i < rowDim; i++) {
                     for (int j = i + 1; j < rowDim; j++) {
-                      g.setEdgeWeight(
-                          g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)), // EuclideanDistance
+                      g.setEdgeWeight(g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)), // EuclideanDistance
                           MathArrays.distance(matrix[i], matrix[j]));
                     }
                   }
@@ -599,8 +613,7 @@ public class GraphFunctions {
                 for (int j = i + 1; j < rowDim; j++) {
                   GlobalPosition p2 = ((GeoPositionExpr) list.get(j + 1)).toData();
                   GeodeticMeasurement gm = geoCalc.calculateGeodeticMeasurement(reference, p1, p2);
-                  g.setEdgeWeight(
-                      g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)), // GeoDistance
+                  g.setEdgeWeight(g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)), // GeoDistance
                       gm.getPointToPointDistance());
                 }
               }
@@ -669,15 +682,17 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>find the minimum spanning tree in the <code>graph</code>.
+   * <p>
+   * find the minimum spanning tree in the <code>graph</code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Minimum_spanning_tree">Wikipedia - Minimum
-   *       spanning tree</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Minimum_spanning_tree">Wikipedia - Minimum spanning
+   * tree</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -739,14 +754,16 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>convert the <code>graph</code> into a adjacency matrix.
+   * <p>
+   * convert the <code>graph</code> into a adjacency matrix.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Adjacency_matrix">Wikipedia - Adjacency matrix</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Adjacency_matrix">Wikipedia - Adjacency matrix</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -799,14 +816,16 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>convert the <code>graph</code> into a list of edges.
+   * <p>
+   * convert the <code>graph</code> into a list of edges.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -852,14 +871,16 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>test if <code>edge</code> is an edge in the <code>graph</code> object.
+   * <p>
+   * test if <code>edge</code> is an edge in the <code>graph</code> object.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1001,7 +1022,8 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>graph</code> is an eulerian graph, and <code>False</code>
+   * <p>
+   * returns <code>True</code> if <code>graph</code> is an eulerian graph, and <code>False</code>
    * otherwise.
    *
    * </blockquote>
@@ -1017,22 +1039,22 @@ public class GraphFunctions {
             return F.NIL;
           }
 
-          //          if (gex.isWeightedGraph()) {
-          //            Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>)
+          // if (gex.isWeightedGraph()) {
+          // Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>)
           // gex.toData();
-          //            GraphPath<IExpr, ExprWeightedEdge> path = weightedEulerianCycle(g);
-          //            if (path != null) {
-          //              // Graph is Eulerian
-          //              return S.True;
-          //            }
-          //          } else {
-          //            Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
+          // GraphPath<IExpr, ExprWeightedEdge> path = weightedEulerianCycle(g);
+          // if (path != null) {
+          // // Graph is Eulerian
+          // return S.True;
+          // }
+          // } else {
+          // Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
           GraphPath<IExpr, ?> path = eulerianCycle(gex);
           if (path != null) {
             // Graph is Eulerian
             return S.True;
           }
-          //          }
+          // }
         }
       } catch (RuntimeException rex) {
         LOGGER.debug("EulerianGraphQ.evaluate() failed", rex);
@@ -1056,17 +1078,19 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>graph</code> is an hamiltonian graph, and <code>False
+   * <p>
+   * returns <code>True</code> if <code>graph</code> is an hamiltonian graph, and <code>False
    * </code> otherwise.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Hamiltonian_path">Wikipedia - Hamiltonian path</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Hamiltonian_path_problem">Wikipedia - Hamiltonian
-   *       path problem</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Hamiltonian_path">Wikipedia - Hamiltonian path</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Hamiltonian_path_problem">Wikipedia - Hamiltonian
+   * path problem</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1088,7 +1112,7 @@ public class GraphFunctions {
             return F.NIL;
           }
 
-          //          Graph<IExpr, ?> g = gex.toData();
+          // Graph<IExpr, ?> g = gex.toData();
           GraphPath<IExpr, ?> path = hamiltonianCycle(gex);
           if (path != null) {
             // Graph is Hamiltonian
@@ -1107,6 +1131,35 @@ public class GraphFunctions {
     }
   }
 
+  private static class IsomorphicGraphQ extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        GraphExpr<?> gex1 = createGraph(ast.arg1());
+        if (gex1 == null) {
+          return F.NIL;
+        }
+        GraphExpr<?> gex2 = createGraph(ast.arg2());
+        if (gex2 == null) {
+          return F.NIL;
+        }
+        AHUUnrootedTreeIsomorphismInspector<IExpr, ExprEdge> isomorphism =
+            new AHUUnrootedTreeIsomorphismInspector<>((Graph<IExpr, ExprEdge>) gex1.toData(),
+                (Graph<IExpr, ExprEdge>) gex2.toData());
+        return F.bool(isomorphism.isomorphismExists());
+      } catch (RuntimeException rex) {
+        LOGGER.debug("IsomorphicGraphQ.evaluate() failed", rex);
+      }
+      return S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
   /**
    *
    *
@@ -1117,14 +1170,16 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>find an eulerian cycle in the <code>graph</code>.
+   * <p>
+   * find an eulerian cycle in the <code>graph</code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Eulerian_path">Wikipedia - Eulerian path</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Eulerian_path">Wikipedia - Eulerian path</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1186,16 +1241,18 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>find an hamiltonian cycle in the <code>graph</code>.
+   * <p>
+   * find an hamiltonian cycle in the <code>graph</code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Hamiltonian_path">Wikipedia - Hamiltonian path</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Hamiltonian_path_problem">Wikipedia - Hamiltonian
-   *       path problem</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Hamiltonian_path">Wikipedia - Hamiltonian path</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Hamiltonian_path_problem">Wikipedia - Hamiltonian
+   * path problem</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1240,6 +1297,40 @@ public class GraphFunctions {
     }
   }
 
+  private static class FindGraphIsomorphism extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        GraphExpr<?> gex1 = createGraph(ast.arg1());
+        if (gex1 == null) {
+          return F.NIL;
+        }
+        GraphExpr<?> gex2 = createGraph(ast.arg2());
+        if (gex2 == null) {
+          return F.NIL;
+        }
+        AHUUnrootedTreeIsomorphismInspector<IExpr, ExprEdge> isomorphism =
+            new AHUUnrootedTreeIsomorphismInspector<>((Graph<IExpr, ExprEdge>) gex1.toData(),
+                (Graph<IExpr, ExprEdge>) gex2.toData());
+        IsomorphicGraphMapping<IExpr, ExprEdge> mapping = isomorphism.getMapping();
+        Map<IExpr, IExpr> forwardMapping = mapping.getForwardMapping();
+        IASTAppendable list = F.ListAlloc(forwardMapping.size());
+        for (Entry<IExpr, IExpr> entry : forwardMapping.entrySet()) {
+          list.append(F.Rule(entry.getKey(), entry.getValue()));
+        }
+        return F.List(F.assoc(list));
+      } catch (RuntimeException rex) {
+        LOGGER.debug("FindGraphIsomorphism.evaluate() failed", rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
   /**
    *
    *
@@ -1250,15 +1341,17 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>algorithm to find a vertex cover for a <code>graph</code>. A vertex cover is a set of
-   * vertices that touches all the edges in the graph.
+   * <p>
+   * algorithm to find a vertex cover for a <code>graph</code>. A vertex cover is a set of vertices
+   * that touches all the edges in the graph.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Vertex_cover">Wikipedia - Vertex cover</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Vertex_cover">Wikipedia - Vertex cover</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1315,17 +1408,19 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>find a shortest path in the <code>graph</code> from <code>source</code> to <code>destination
+   * <p>
+   * find a shortest path in the <code>graph</code> from <code>source</code> to <code>destination
    * </code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Pathfinding">Wikipedia - Pathfinding</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Shortest_path_problem">Wikipedia - Shortest path
-   *       problem</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Pathfinding">Wikipedia - Pathfinding</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Shortest_path_problem">Wikipedia - Shortest path
+   * problem</a>
    * </ul>
    */
   private static class FindShortestPath extends AbstractEvaluator {
@@ -1362,20 +1457,20 @@ public class GraphFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // TODO
-      //      try {
-      //        GraphExpr<ExprEdge> gex1 = createGraph(ast.arg1());
-      //        if (gex1 == null) {
-      //          return F.NIL;
-      //        }
-      //        Graph<IExpr, ExprEdge> g1 = gex1.toData();
-      //        LineGraphConverter<IExpr, ExprEdge, ExprEdge> lgc =
-      //            new LineGraphConverter<IExpr, ExprEdge, ExprEdge>(g1);
-      //        Graph<ExprEdge, ExprEdge> target = new SimpleGraph<>(ExprEdge.class);
-      //        lgc.convertToLineGraph(target);
-      //        //	              return GraphExpr.newInstance(target);
-      //      } catch (RuntimeException rex) {
-      //        LOGGER.debug("LineGraph.evaluate() failed", rex);
-      //      }
+      // try {
+      // GraphExpr<ExprEdge> gex1 = createGraph(ast.arg1());
+      // if (gex1 == null) {
+      // return F.NIL;
+      // }
+      // Graph<IExpr, ExprEdge> g1 = gex1.toData();
+      // LineGraphConverter<IExpr, ExprEdge, ExprEdge> lgc =
+      // new LineGraphConverter<IExpr, ExprEdge, ExprEdge>(g1);
+      // Graph<ExprEdge, ExprEdge> target = new SimpleGraph<>(ExprEdge.class);
+      // lgc.convertToLineGraph(target);
+      // // return GraphExpr.newInstance(target);
+      // } catch (RuntimeException rex) {
+      // LOGGER.debug("LineGraph.evaluate() failed", rex);
+      // }
       return F.NIL;
     }
 
@@ -1430,17 +1525,19 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>compute the eccentricity of <code>vertex</code> in the <code>graph</code>. It's the length
-   * of the longest shortest path from the <code>vertex</code> to every other vertex in the <code>
+   * <p>
+   * compute the eccentricity of <code>vertex</code> in the <code>graph</code>. It's the length of
+   * the longest shortest path from the <code>vertex</code> to every other vertex in the <code>
    * graph</code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Distance_(graph_theory)">Wikipedia - Distance
-   *       (graph_theory)</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Distance_(graph_theory)">Wikipedia - Distance
+   * (graph_theory)</a>
    * </ul>
    */
   private static class VertexEccentricity extends AbstractEvaluator {
@@ -1491,14 +1588,16 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>convert the <code>graph</code> into a list of vertices.
+   * <p>
+   * convert the <code>graph</code> into a list of vertices.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1551,14 +1650,16 @@ public class GraphFunctions {
    *
    * <blockquote>
    *
-   * <p>test if <code>vertex</code> is a vertex in the <code>graph</code> object.
+   * <p>
+   * test if <code>vertex</code> is a vertex in the <code>graph</code> object.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Graph_theory">Wikipedia - Graph theory</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1687,8 +1788,8 @@ public class GraphFunctions {
    * @param arg1
    * @return
    */
-  private static GraphExpr<ExprWeightedEdge> createWeightedGraph(
-      final IAST vertices, final IAST arg1, final IAST edgeWeight) {
+  private static GraphExpr<ExprWeightedEdge> createWeightedGraph(final IAST vertices,
+      final IAST arg1, final IAST edgeWeight) {
     if (arg1.size() != edgeWeight.size()) {
       return null;
     }
@@ -1904,7 +2005,7 @@ public class GraphFunctions {
    *
    * @param graph
    * @return an array of 2 lists. At index 0 the list of edges. At index 1 the list of corresponding
-   *     weights.
+   *         weights.
    */
   private static IASTAppendable[] weightedEdgesToIExpr(Graph<IExpr, ExprWeightedEdge> graph) {
 
@@ -2017,14 +2118,14 @@ public class GraphFunctions {
     return buf.toString();
   }
 
-  public static void graphToVisjs(
-      Map<IExpr, Integer> map, StringBuilder buf, AbstractBaseGraph<IExpr, ExprEdge> g) {
+  public static void graphToVisjs(Map<IExpr, Integer> map, StringBuilder buf,
+      AbstractBaseGraph<IExpr, ExprEdge> g) {
     vertexToVisjs(map, buf, g);
     edgesToVisjs(map, buf, g);
   }
 
-  public static void weightedGraphToVisjs(
-      Map<IExpr, Integer> map, StringBuilder buf, AbstractBaseGraph<IExpr, ExprWeightedEdge> g) {
+  public static void weightedGraphToVisjs(Map<IExpr, Integer> map, StringBuilder buf,
+      AbstractBaseGraph<IExpr, ExprWeightedEdge> g) {
     vertexToVisjs(map, buf, g);
     weightedEdgesToVisjs(map, buf, g);
   }
@@ -2052,8 +2153,8 @@ public class GraphFunctions {
     buf.append("]);\n");
   }
 
-  private static void edgesToVisjs(
-      Map<IExpr, Integer> map, StringBuilder buf, Graph<IExpr, ExprEdge> g) {
+  private static void edgesToVisjs(Map<IExpr, Integer> map, StringBuilder buf,
+      Graph<IExpr, ExprEdge> g) {
     Set<ExprEdge> edgeSet = g.edgeSet();
     GraphType type = g.getType();
     boolean first = true;
@@ -2128,8 +2229,8 @@ public class GraphFunctions {
     buf.append("]);\n");
   }
 
-  private static void weightedEdgesToVisjs(
-      Map<IExpr, Integer> map, StringBuilder buf, Graph<IExpr, ExprWeightedEdge> graph) {
+  private static void weightedEdgesToVisjs(Map<IExpr, Integer> map, StringBuilder buf,
+      Graph<IExpr, ExprWeightedEdge> graph) {
 
     Set<ExprWeightedEdge> edgeSet = graph.edgeSet();
     GraphType type = graph.getType();
