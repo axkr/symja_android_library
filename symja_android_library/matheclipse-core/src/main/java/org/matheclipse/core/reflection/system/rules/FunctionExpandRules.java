@@ -119,6 +119,12 @@ public interface FunctionExpandRules {
     // HypergeometricPFQ({1/2},{1,1},z_):=BesselI(0,Sqrt(z))^2
     SetDelayed(HypergeometricPFQ(List(C1D2),List(C1,C1),z_),
       Sqr(BesselI(C0,Sqrt(z)))),
+    // Hypergeometric2F1(2,b_,c_,-1/2):=1/3*(3-b)/;5/2-b/2==Expand(c)
+    SetDelayed(Hypergeometric2F1(C2,b_,c_,CN1D2),
+      Condition(Times(C1D3,Subtract(C3,b)),Equal(Plus(QQ(5L,2L),Times(CN1D2,b)),Expand(c)))),
+    // Hypergeometric2F1(a_,a_+1/2,c_,z_):=(1+Sqrt(1-z))^(1-2*a)/(2^(1-2*a)*Sqrt(1-z))/;2*a==c
+    SetDelayed(Hypergeometric2F1(a_,Plus(C1D2,a_),c_,z_),
+      Condition(Times(Power(C2,Plus(CN1,Times(C2,a))),Power(Plus(C1,Sqrt(Subtract(C1,z))),Plus(C1,Times(CN2,a))),Power(Subtract(C1,z),CN1D2)),Equal(Times(C2,a),c))),
     // Hypergeometric2F1(a_,b_,b_+n_Integer,z_):=Sum((z^k*Pochhammer(n,k)*Pochhammer(-a+b+n,k))/(Pochhammer(b+n,k)*k!),{k,0,-n})/(1-z)^(a-n)/;n<0
     SetDelayed(Hypergeometric2F1(a_,b_,Plus(b_,$p(n, Integer)),z_),
       Condition(Times(Power(Subtract(C1,z),Plus(Negate(a),n)),Sum(Times(Power(z,k),Power(Times(Pochhammer(Plus(b,n),k),Factorial(k)),CN1),Pochhammer(n,k),Pochhammer(Plus(Negate(a),b,n),k)),List(k,C0,Negate(n)))),Less(n,C0))),

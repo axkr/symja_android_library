@@ -53,6 +53,10 @@
   /; n>1,
    
  HypergeometricPFQ({1/2}, {1, 1}, z_) := BesselI(0, Sqrt(z))^2,
+ Hypergeometric2F1(2, b_, c_, -1/2) := (3-b)/3
+  /; (5/2 - 1/2*b)==Expand(c), 
+ Hypergeometric2F1(a_, a_ + 1/2, c_, z_) := (2^(-1+2*a)*(1+Sqrt(1-z))^(1-2*a))/Sqrt(1-z)
+  /; 2*a==c, 
  Hypergeometric2F1(a_, b_, b_ + n_Integer, z_) := (1-z)^(-a+n) * Sum((Pochhammer(n, k)*Pochhammer(b-a+n,k)*z^k) / (Pochhammer(b+n,k)*k!), {k, 0, -n})  
   /; n<0,
  
