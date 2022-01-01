@@ -147,11 +147,8 @@ public class GraphFunctionsTest extends AbstractTestCase {
   }
 
   public void testFindGraphIsomorphism() {
-    check("g=Graph({1,2,3,4},{1<->2,1<->4,2<->3,3<->4})", //
-        "Graph({1,2,3,4},{1<->2,1<->4,2<->3,3<->4})");
-    check("h=Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4})", //
-        "Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4})");
-    check(" FindGraphIsomorphism(g, h)", //
+    check(
+        "FindGraphIsomorphism(Graph({1,2,3,4},{1<->2,1<->4,2<->3,3<->4}), Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4}))", //
         "{<|1->2,2->3,3->1,4->4|>}");
 
     check("g=Graph({a,b,c,d},{a<->b,a<->d,b<->c,c<->d})", //
@@ -280,6 +277,10 @@ public class GraphFunctionsTest extends AbstractTestCase {
   }
 
   public void testIsomorphicGraphQ() {
+    check(
+        "IsomorphicGraphQ(Graph({1,2,3,4},{1<->2,1<->4,2<->3,3<->4}), Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4}))", //
+        "True");
+
     check("g=Graph({a,b,c,d},{a<->b,a<->d,b<->c,c<->d})", //
         "Graph({a,b,c,d},{a<->b,a<->d,b<->c,c<->d})");
     check("h=Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4})", //

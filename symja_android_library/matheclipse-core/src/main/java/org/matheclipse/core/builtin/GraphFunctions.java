@@ -1314,6 +1314,9 @@ public class GraphFunctions {
             new AHUUnrootedTreeIsomorphismInspector<>((Graph<IExpr, ExprEdge>) gex1.toData(),
                 (Graph<IExpr, ExprEdge>) gex2.toData());
         IsomorphicGraphMapping<IExpr, ExprEdge> mapping = isomorphism.getMapping();
+        if (mapping == null) {
+          return F.CEmptyList;
+        }
         Map<IExpr, IExpr> forwardMapping = mapping.getForwardMapping();
         IASTAppendable list = F.ListAlloc(forwardMapping.size());
         for (Entry<IExpr, IExpr> entry : forwardMapping.entrySet()) {
