@@ -10742,7 +10742,7 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
   // {1590}
   public void test1379() {
-    fSeconds = 80;
+    fSeconds = 200;
     check( //
         "Integrate[x*(a + b*x + c*x^2)^m*(d + e*x + f*x^2 + g*x^3)^n*(2*a*d + (3*b*d + 3*a*e + b*d*m + a*e*n)*x + (4*c*d + 4*b*e + 4*a*f + 2*c*d*m + b*e*m + b*e*n + 2*a*f*n)*x^2 + (5*c*e + 5*b*f + 5*a*g + 2*c*e*m + b*f*m + c*e*n + 2*b*f*n + 3*a*g*n)*x^3 + (6*c*f + 6*b*g + 2*c*f*m + b*g*m + 2*c*f*n + 3*b*g*n)*x^4 + c*g*(7 + 2*m + 3*n)*x^5), x]", //
         "x^2*(a + b*x + c*x^2)^(1 + m)*(d + e*x + f*x^2 + g*x^3)^(1 + n)", //
@@ -10760,15 +10760,19 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
 
   // {1590}
   public void test1381() {
-    fSeconds = 60;
+    fSeconds = 500;
     // check(//
     // "Rubi`PseudoBinomialParts[(a+b*x+c*x^2)^m*(d+e*x+f*x^2+g*x^3)^n,x]", //
     // "False", //
     // 1590);
-    check( //
-        "Rubi`PseudoBinomialParts[b*d+a*e+b*d*m+a*e*n+(2*c*d+2*b*e+2*a*f+2*c*d*m+b*e*m+b*e*n+2*a*f*n)*x+(3*c*e+3*b*f+3*a*g+2*c*e*m+b*f*m+c*e*n+2*b*f*n+3*a*g*n)*x^2+(4*c*f+4*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n)*x^3+c*g*(5+2*m+3*n)*x^4,x]", //
-        "False", //
-        1590);
+
+    // check( //
+    // "Rubi`PseudoBinomialParts[b*d+a*e+b*d*m+a*e*n+(2*c*d+2*b*e+2*a*f+2*c*d*m+b*e*m+b*e*n+2*a*f*n)*x+(3*c*e+3*b*f+3*a*g+2*c*e*m+b*f*m+c*e*n+2*b*f*n+3*a*g*n)*x^2+(4*c*f+4*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n)*x^3+c*g*(5+2*m+3*n)*x^4,x]",
+    // //
+    // "False", //
+    // 1590);
+
+
     // check(//
     // "Rubi`PseudoBinomialPairQ[b*d+a*e+b*d*m+a*e*n+(2*c*d+2*b*e+2*a*f+2*c*d*m+b*e*m+b*e*n+2*a*f*n)*x+(3*c*e+3*b*f+3*a*g+2*c*e*m+b*f*m+c*e*n+2*b*f*n+3*a*g*n)*x^2+(4*c*f+4*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n)*x^3+c*g*(5+2*m+3*n)*x^4,(a+b*x+c*x^2)^m*(d+e*x+f*x^2+g*x^3)^n,x]",
     // //

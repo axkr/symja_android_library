@@ -5928,9 +5928,7 @@ public final class Arithmetic {
             return S.Indeterminate;
           }
           return F.C0;
-        }
-
-        if (arg2.isZero()) {
+        } else if (arg2.isZero()) {
           if (arg1.isQuantity()) {
             return ((IQuantity) arg1).ofUnit(F.C0);
           }
@@ -5941,13 +5939,9 @@ public final class Arithmetic {
             return S.Indeterminate;
           }
           return F.C0;
-        }
-
-        if (arg1.isOne()) {
+        } else if (arg1.isOne()) {
           return arg2;
-        }
-
-        if (arg2.isOne()) {
+        } else if (arg2.isOne()) {
           return arg1;
         }
       }
@@ -5957,8 +5951,7 @@ public final class Arithmetic {
       if (arg1.isSymbol() || arg2.isSymbol()) {
         if (arg1 == arg2) {
           return F.Power(arg1, C2);
-        }
-        if (arg1.isSymbol()) {
+        } else if (arg1.isSymbol()) {
           if (arg2.isAtom()) {
             return F.NIL;
           }
@@ -5984,17 +5977,14 @@ public final class Arithmetic {
         }
         // donn't create Power(...,...)
         return F.NIL;
-      }
-      if (arg2.isInterval()) {
+      } else if (arg2.isInterval()) {
         if (arg1.isRealResult()) {
           // return timesInterval(arg1, arg2);
           return IntervalSym.times(arg1, (IAST) arg2);
         }
         // donn't create Power(...,...)
         return F.NIL;
-      }
-
-      if (arg1.equals(arg2)) {
+      } else if (arg1.equals(arg2)) {
         return F.Power(arg1, C2);
       }
 

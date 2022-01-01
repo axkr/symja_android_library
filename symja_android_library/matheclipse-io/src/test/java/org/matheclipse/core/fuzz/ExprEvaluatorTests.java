@@ -553,8 +553,10 @@ public class ExprEvaluatorTests extends TestCase {
             SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
             F.Function(F.EvenQ(F.Slot1)), //
             F.Function(F.Expand(F.Power(F.Plus(F.C2, F.Slot1), F.C3))), //
-            F.Graph(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C2, F.C3), F.Rule(F.C3, F.C1))), //
-            F.Graph(F.List()), //
+            S.Graph.of(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C2, F.C3), F.Rule(F.C3, F.C1))), //
+            S.Graph.of(F.List()), //
+            S.Graph.of(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C2, F.C3), F.Rule(F.C3, F.C1)),
+                F.List(F.Rule(S.EdgeWeight, F.List(F.CD0, F.CD1, F.CD1)))), //
             F.CEmptySequence, //
             F.CEmptyList, //
             F.List(F.List(F.C0)), //

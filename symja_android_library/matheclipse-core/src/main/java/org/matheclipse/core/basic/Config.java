@@ -48,7 +48,7 @@ public class Config {
 
   /** Copyright message */
   public static final String COPYRIGHT = //
-      "\nCopyright (C) 2009 - 2021 - the Symja team.\n"
+      "\nCopyright (C) 2009 - 2022 - the Symja team.\n"
           + "This program comes with ABSOLUTELY NO WARRANTY.\n"
           + "Distributed under the GNU Public License.\n"
           + "See the file license.txt\n\n";

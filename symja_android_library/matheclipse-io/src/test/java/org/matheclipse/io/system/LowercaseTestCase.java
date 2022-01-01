@@ -21868,6 +21868,8 @@ public class LowercaseTestCase extends AbstractTestCase {
     // "True");
     // check("Refine((-1)^(x+y), Element(k/2, Integers))", //
     // "(-1)^y");
+    check("Refine(7+2*m+3*n>0)", //
+        "2*m+3*n>-7");
     check("Refine(Sqrt(x^2), x>0)", //
         "x");
     check("Refine(2*Im(x)+3, x>3)", //
@@ -26281,6 +26283,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testTogether() {
+    check("Together(6/5*c*f+6/5*b*g+2/5*c*f*m+1/5*b*g*m+2/5*c*f*n+3/5*b*g*n)", //
+        "1/5*(6*c*f+6*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n)");
+
     check("Together(Sqrt(2)+SparseArray({{0,1},{1,0}}))", //
         "SparseArray(Number of elements: 4 Dimensions: {2,2} Default value: 0)");
 
