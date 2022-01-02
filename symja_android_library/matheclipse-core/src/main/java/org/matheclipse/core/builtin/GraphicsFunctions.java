@@ -1294,14 +1294,14 @@ public class GraphicsFunctions {
             }
           }
           if (!lightingDone) {
-            graphics3DBuffer.append("\nlighting: [{");
-            graphics3DBuffer.append("type: 'ambient',");
-            // white
-            graphics3DBuffer.append("color: [1, 1, 1]");
-            graphics3DBuffer.append("}");
-            graphics3DBuffer.append("],");
+            graphics3DBuffer.append("\nlighting: [");
+            graphics3DBuffer.append("\n{ type: 'ambient', color: [0.3, 0.2, 0.4] }");
+            graphics3DBuffer.append("\n{ type: 'directional', color: [0.8, 0, 0], coords: [[2, 0, 2]] },");
+            graphics3DBuffer.append("\n{ type: 'directional', color: [0, 0.8, 0], coords: [[2, 2, 2]] },");
+            graphics3DBuffer.append("\n{ type: 'directional', color: [0, 0, 0.8], coords: [[0, 2, 2]] }");
+            graphics3DBuffer.append("\n],");
           }
-          graphics3DBuffer.append("\nviewpoint: [1.3,-2.4,2.0]");
+          graphics3DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
           graphics3DBuffer.append("}\n");
           graphics3DBuffer.append(");");
           return true;
