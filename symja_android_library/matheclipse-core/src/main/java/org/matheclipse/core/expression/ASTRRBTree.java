@@ -24,7 +24,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.organicdesign.fp.StaticImports;
 import org.organicdesign.fp.collections.RrbTree.ImRrbt;
 import org.organicdesign.fp.collections.RrbTree.MutRrbt;
-import org.organicdesign.fp.collections.UnmodSortedIterator;
+import org.organicdesign.fp.collections.UnmodListIterator; 
 
 /**
  * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>no argument</b>.
@@ -275,7 +275,7 @@ public class ASTRRBTree extends AbstractAST
 
   @Override
   public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
-    UnmodSortedIterator<IExpr> iter = rrbTree.listIterator(start);
+    UnmodListIterator<IExpr> iter = rrbTree.listIterator(start);
     for (int i = start; i < end; i++) {
       action.accept(iter.next(), i);
     }
@@ -300,8 +300,9 @@ public class ASTRRBTree extends AbstractAST
   public int hashCode() {
     if (hashValue == 0) {
       hashValue = 0x811c9dc5; // decimal 2166136261;
-      for (int i = 0; i < size(); i++) {
-        hashValue = (hashValue * 16777619) ^ (get(i).hashCode() & 0xff);
+      UnmodListIterator<IExpr> iter = rrbTree.listIterator(0);
+      while (iter.hasNext()) {
+        hashValue = (hashValue * 16777619) ^ (iter.next().hashCode() & 0xff);
       }
     }
     return hashValue;
