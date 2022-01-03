@@ -43,15 +43,15 @@ var md = new showdown.Converter();
 </div>
 <div class="input">
 		<form action="/v1/api" method="post" id="calc">
-			<textarea name="i" id="id_i" rows="4" cols="50" autofocus></textarea> 
+			<textarea name="i" id="id_i" rows="4" cols="40" autofocus></textarea> 
 			<div> 
 <input type="hidden" name="appid" value="DEMO" />
 <input class="input_field" type="submit" id="submit" value="=" />
-<i>(or press SHIFT+ENTER to submit)</i>
+<i>SHIFT+ENTER</i>
 			</div>	    
 			<div>
 <label><input type="checkbox" name="f" value="plaintext" checked />Plain text</label>
-<label><input type="checkbox" name="f" value="sinput" checked />Symja input</label> 
+<label><input type="checkbox" name="f" value="sinput" checked />Symja input</label><br/>
 <label><input type="checkbox" name="f" value="mathml" />MathML</label>
 <label><input type="checkbox" name="f" value="latex" />LaTeX</label> 
 			</div>
@@ -68,7 +68,7 @@ setupExamples();
 <div class="footer">
 <p>Symja Talk version 0.1.</p>
 <p>
-&copy; 2020 Symja API Developer Team. This project is
+&copy; 2022 Symja API Developer Team. This project is
 open-source: <a href="https://github.com/axkr/symja_android_library">Symja on Github</a>.
 </p>
 </div>
