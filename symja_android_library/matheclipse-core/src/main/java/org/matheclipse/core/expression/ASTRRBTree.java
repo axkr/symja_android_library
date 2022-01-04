@@ -12,10 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.RandomAccess;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.ObjIntConsumer;
+import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -24,7 +27,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.organicdesign.fp.StaticImports;
 import org.organicdesign.fp.collections.RrbTree.ImRrbt;
 import org.organicdesign.fp.collections.RrbTree.MutRrbt;
-import org.organicdesign.fp.collections.UnmodListIterator; 
+import org.organicdesign.fp.collections.UnmodListIterator;
 
 /**
  * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>no argument</b>.
@@ -58,8 +61,7 @@ public class ASTRRBTree extends AbstractAST
     super();
     // When Externalizable objects are deserialized, they first need to be constructed by invoking
     // the void constructor. Since this class does not have one, serialization and deserialization
-    // will fail
-    // at runtime.
+    // will fail at runtime.
     rrbTree = StaticImports.mutableRrb();
   }
 
@@ -273,11 +275,70 @@ public class ASTRRBTree extends AbstractAST
     return false;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
+    final int size = size();
+    UnmodListIterator<IExpr> iter = rrbTree.listIterator(startOffset);
+    for (int i = startOffset; i < size; i++) {
+      if (predicate.test(iter.next(), i)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
+    final int size = size();
+    UnmodListIterator<IExpr> iter = rrbTree.listIterator(startOffset);
+    for (int i = startOffset; i < size; i++) {
+      if (predicate.test(iter.next())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
+    final int size = size();
+    UnmodListIterator<IExpr> iter = rrbTree.listIterator(startOffset);
+    for (int i = startOffset; i < size; i++) {
+      if (!predicate.test(iter.next(), i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
+    final int size = size();
+    UnmodListIterator<IExpr> iter = rrbTree.listIterator(startOffset);
+    for (int i = startOffset; i < size; i++) {
+      if (!predicate.test(iter.next())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Override
   public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
     UnmodListIterator<IExpr> iter = rrbTree.listIterator(start);
     for (int i = start; i < end; i++) {
       action.accept(iter.next(), i);
+    }
+  }
+
+  public void forEach(int start, int end, Consumer<? super IExpr> action) {
+    UnmodListIterator<IExpr> iter = rrbTree.listIterator(start);
+    for (int i = start; i < end; i++) {
+      action.accept(iter.next());
     }
   }
 
