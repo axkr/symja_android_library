@@ -38,9 +38,9 @@
 		</dependency>
 		<dependency>
 			<groupId>com.discord4j</groupId>
-			<artifactId>discord4j-core</artifactId> 
+			<artifactId>discord4j-core</artifactId>
 			<version>3.2.1</version>
-		</dependency> 
+		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-logging</artifactId>
@@ -52,20 +52,6 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-assembly-plugin</artifactId>
-					<configuration>
-						<archive>
-							<manifest>
-								<mainClass>org.matheclipse.discord.SymjaBot</mainClass>
-							</manifest>
-						</archive>
-						<descriptorRefs>
-							<descriptorRef>jar-with-dependencies</descriptorRef>
-						</descriptorRefs>
-					</configuration>
-				</plugin>
 
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
@@ -79,9 +65,10 @@
 							<configuration>
 								<mainClass>org.matheclipse.discord.SymjaBot</mainClass>
 							</configuration>
-						</execution> 
+						</execution>
 					</executions>
 				</plugin>
+
 			</plugins>
 		</pluginManagement>
 	</build>
