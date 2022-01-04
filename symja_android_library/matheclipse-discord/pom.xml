@@ -58,22 +58,13 @@
 					<configuration>
 						<archive>
 							<manifest>
-								<mainClass>Class>org.matheclipse.discord.SymjaBot</mainClass>
+								<mainClass>org.matheclipse.discord.SymjaBot</mainClass>
 							</manifest>
 						</archive>
 						<descriptorRefs>
 							<descriptorRef>jar-with-dependencies</descriptorRef>
 						</descriptorRefs>
 					</configuration>
-					<executions>
-						<execution>
-							<id>make-assembly</id> <!-- this is used for inheritance merges -->
-							<goals>
-								<goal>single</goal>
-							</goals>
-							<phase>package</phase> <!-- bind to the packaging phase -->
-						</execution>
-					</executions>
 				</plugin>
 
 				<plugin>
