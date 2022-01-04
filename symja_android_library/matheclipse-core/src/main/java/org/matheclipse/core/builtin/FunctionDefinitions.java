@@ -32,6 +32,7 @@ import static org.matheclipse.core.expression.S.LinearProgramming;
 import static org.matheclipse.core.expression.S.ListLinePlot;
 import static org.matheclipse.core.expression.S.ListPlot;
 import static org.matheclipse.core.expression.S.ListPlot3D;
+import static org.matheclipse.core.expression.S.ListPointPlot3D;
 import static org.matheclipse.core.expression.S.MatrixD;
 import static org.matheclipse.core.expression.S.ND;
 import static org.matheclipse.core.expression.S.NDSolve;
@@ -102,6 +103,7 @@ public final class FunctionDefinitions {
       ListLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot());
       ListPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot());
       ListPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot3D());
+      ListPointPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPointPlot3D());
       MatrixD.setEvaluator(new org.matheclipse.core.reflection.system.MatrixD());
       ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
       NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());

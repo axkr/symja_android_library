@@ -5577,15 +5577,19 @@ public class S {
    */
   public static final IBuiltInSymbol ListPlot = F.initFinalSymbol("ListPlot", ID.ListPlot);
 
+
+  public static final IBuiltInSymbol ListPlot3D = F.initFinalSymbol("ListPlot3D", ID.ListPlot3D);
+
   /**
-   * ListPlot3D( { list-of-points } ) - generate a JavaScript list plot 3D control for the
+   * ListPointPlot3D( { list-of-points } ) - generate a JavaScript list plot 3D control for the
    * `list-of-points`.
    *
-   * @see <a
-   *     href="https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListPlot3D.md">ListPlot3D
-   *     documentation</a>
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListPlot3D.md">ListPlot3D
+   *      documentation</a>
    */
-  public static final IBuiltInSymbol ListPlot3D = F.initFinalSymbol("ListPlot3D", ID.ListPlot3D);
+  public static final IBuiltInSymbol ListPointPlot3D =
+      F.initFinalSymbol("ListPointPlot3D", ID.ListPointPlot3D);
 
   /**
    * ListQ(expr) - tests whether `expr` is a `List`.

@@ -5631,6 +5631,14 @@ public class F extends S {
     return new AST1(ListPlot, a);
   }
 
+  public static IAST ListPlot3D(final IExpr a) {
+    return new AST1(ListPlot3D, a);
+  }
+
+  public static IAST ListPointPlot3D(final IExpr a) {
+    return new AST1(ListPointPlot3D, a);
+  }
+
   /**
    *
    *

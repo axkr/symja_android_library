@@ -915,6 +915,7 @@ public class AST2Expr {
     "ListLinePlot",
     "ListPlot",
     "ListPlot3D",
+      "ListPointPlot3D",
     "ListQ",
     "Literal",
     "LoadJavaClass",

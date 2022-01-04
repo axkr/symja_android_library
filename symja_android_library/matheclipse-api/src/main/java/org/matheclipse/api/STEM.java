@@ -393,6 +393,7 @@ public class STEM {
     STEM_MAP.put("listlineplot", F.ListLinePlot);
     STEM_MAP.put("listplot", F.ListPlot);
     STEM_MAP.put("listplot3d", F.ListPlot3D);
+    STEM_MAP.put("listpointplot3d", F.ListPointPlot3D);
     STEM_MAP.put("listq", F.ListQ);
     STEM_MAP.put("log10", F.Log10);
     STEM_MAP.put("log2", F.Log2);
