@@ -224,7 +224,7 @@ public class ManipulateFunction {
 
             return F.JSFormData(js, "mathcell");
           }
-          if (dimension[0] == dimension[1] && dimension[0] > 3) {
+          if (dimension[0] > 3 && dimension[1] > 3) {
             if (manipulateAST.arg1().isAST(S.ListPointPlot3D)) {
               return listPointPlot3DHeightValues(pointList, js, toJS);
             }

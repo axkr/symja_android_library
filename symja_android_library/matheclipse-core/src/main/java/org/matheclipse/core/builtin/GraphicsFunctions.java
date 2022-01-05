@@ -1219,7 +1219,7 @@ public class GraphicsFunctions {
     if (!arg1.isList()) {
       arg1 = F.List(arg1);
     }
-    IAST lighting = F.List(F.$str("Ambient"), F.RGBColor(F.C1, F.C1, F.C1));
+    IAST lighting = F.List(F.$str("Auto"), F.RGBColor(F.C1, F.C1, F.C1));
     OptionArgs options = OptionArgs.createOptionArgs(graphics3DAST, engine);
     if (options != null) {
       IExpr option = options.getOption(S.Lighting);
@@ -1295,7 +1295,7 @@ public class GraphicsFunctions {
           }
           if (!lightingDone) {
             graphics3DBuffer.append("\nlighting: [");
-            graphics3DBuffer.append("\n{ type: 'ambient', color: [0.3, 0.2, 0.4] }");
+            graphics3DBuffer.append("\n{ type: 'ambient', color: [0.3, 0.2, 0.4] },");
             graphics3DBuffer.append("\n{ type: 'directional', color: [0.8, 0, 0], coords: [[2, 0, 2]] },");
             graphics3DBuffer.append("\n{ type: 'directional', color: [0, 0.8, 0], coords: [[2, 2, 2]] },");
             graphics3DBuffer.append("\n{ type: 'directional', color: [0, 0, 0.8], coords: [[0, 2, 2]] }");
