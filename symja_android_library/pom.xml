@@ -9,7 +9,7 @@
 
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Symja Java Symbolic Math library.</description>
-	<url>https://github.com/axkr/symja_android_library.git</url>
+	<url>https://github.com/axkr/symja_android_library</url>
 
 	<licenses>
 		<license>
@@ -50,6 +50,7 @@
 		<connection>scm:git:git://github.com/axkr/symja_android_library.git</connection>
 		<developerConnection>scm:git:git@github.com:axkr/symja_android_library.git</developerConnection>
 		<url>https://github.com/axkr/symja_android_library.git</url>
+		<tag>HEAD</tag>
 	</scm>
 
 	<issueManagement>
@@ -59,12 +60,11 @@
 
 	<distributionManagement>
 		<repository>
-			<id>sonatype-oss-staging</id>
-			<url>https://oss.sonatype.org/content/repositories/staging</url>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
 		</repository>
 		<snapshotRepository>
-			<uniqueVersion>false</uniqueVersion>
-			<id>sonatype-oss-snapshots</id>
+			<id>ossrh</id>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
@@ -469,8 +469,8 @@
 					<version>1.6.8</version>
 					<extensions>true</extensions>
 					<configuration>
+						<serverId>ossrh</serverId>
 						<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-						<serverId>sonatype-oss-staging</serverId>
 					</configuration>
 				</plugin>
 
