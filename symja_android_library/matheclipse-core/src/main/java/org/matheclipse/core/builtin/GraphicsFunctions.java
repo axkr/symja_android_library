@@ -737,7 +737,7 @@ public class GraphicsFunctions {
         setColor(buf, color, F.RGBColor(F.C0, F.C0, F.C0), true);
         setOpacity(buf, opacity.orElse(F.C1));
         if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
-          buf.append(",pointSize: 0.03}");
+          buf.append(",pointSize: 0.02}");
           return true;
         }
       }
@@ -1338,7 +1338,7 @@ public class GraphicsFunctions {
         buf.append(blue);
         buf.append("]");
       } else {
-        buf.append("color: [1.0, 1.0, 1.0]");
+        buf.append("color: [1.0, 0.5, 0.0]");
       }
     }
     if (setComma) {
