@@ -1,0 +1,114 @@
+# This workflow will build and a release Java project to the Maven-Central repository
+
+name: Release to Maven-Central
+
+on:
+  workflow_dispatch
+
+jobs:
+  maven-perform-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.ref == 'refs/heads/master'
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Java for deployment
+      uses: ./.github/actions/setup-java-for-deployment
+      with:
+        gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+    
+    - name: Configure git user
+      run: |
+        git config user.email "actions-bot@github.com"
+        git config user.name "GitHub Actions (run by ${{ github.actor }})"
+
+    # Perform the usual maven-release-plugin procedure, but prevent the release commits
+    # and tag from being pushed to the master immediately. They are only pushed after
+    # the release is performed successfully. This avoids to have the release
+    # commits on the master in case release publication fails in the last step).
+    # All file-system/git-operations are performed on the runnner's clone of this repo
+
+    - run: mvn -f symja_android_library -B release:clean release:prepare -DpushChanges=false
+
+    - name: Read release version and date
+      run: | # Create environment variables associcated to release version, derived from the release tag
+        releaseGitTag=$(git describe --abbrev=0)
+        echo "release_tag=${releaseGitTag}" >> $GITHUB_ENV
+        echo "release_version=${releaseGitTag#v}" >> $GITHUB_ENV
+        echo "release_date=$(date +"%Y-%m-%d")" >> $GITHUB_ENV
+
+    # Edit the 'release' commit with updates of the changelog:
+    - name: Checkout release commit
+      run: git checkout ${{ env.release_tag }} # headless checkout!
+
+    - name: Finalize changelog entry
+      uses: jacobtomlinson/gha-find-replace@v2
+      with:
+        include: "**CHANGELOG.md"
+        find: '## \[Unreleased\]'
+        replace: "
+          ## [Unreleased](https://github.com/${{ github.repository }}/compare/${{ env.release_tag }}...HEAD)\n
+          \n
+          \n
+          ## [${{ env.release_version }}](https://github.com/${{ github.repository }}/releases/tag/${{ env.release_tag }}) - ${{ env.release_date }}
+          "
+
+    - name: Compose release entry marker
+      run: |
+        text="${{ env.release_version }} - ${{ env.release_date }}"
+        marker=${text//./}		# remove dots
+        marker=${marker// /-}	# replace space by dash
+        echo "release_marker=${marker}" >> $GITHUB_ENV
+
+    - name: Amend release commit and tag and cherry-pick preparation commit
+      run: |
+        git add CHANGELOG.md
+        git commit --amend --no-edit
+        git tag -a ${{ env.release_tag }} -f -m "Symja ${{ env.release_version }}" # reset tag to amended release commit
+        git cherry-pick master
+
+    - name: Push ${{ env.release_version }} release commits to draft branch
+      # Save the commits from which the release is build in the main repository
+      # but only on a temporary draft branch. This way the release commits 
+      # are not on the master in case performing/publishing the release fails
+      run: git push origin HEAD:refs/heads/draft_${{ env.release_version }}
+
+    - run: mvn -f symja_android_library -B release:perform -DlocalCheckout=true
+      # Deployment of all modules is deferred to the last module by nexus-staging-maven-plugin
+      env:
+        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
+    - name: Publish release commits and tag to master
+      run: | # the release was published successfully
+        git push origin HEAD:master		# push release commits to master 
+        git push origin refs/tags/${{ env.release_tag }}	# push release tag
+        git push origin --delete draft_${{ env.release_version }}	# delete draft branch
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Symja ${{ env.release_version }}
+        tag_name: ${{ env.release_tag }}
+        draft: false
+        prerelease: false
+        files: ./symja_android_library/target/checkout/symja_android_library/target/nexus-staging/**/*.jar
+        body: |
+          We are pleased to announce the release of Symja ${{ env.release_version }}.
+          
+          This release is available on Maven central using the following coordinates:
+          ```
+          <dependencies>
+          	<dependency>
+          		<groupId>org.matheclipse</groupId>
+          		<artifactId>matheclipse</artifactId>
+          		<version>${{ env.release_version }}</version>
+          	</dependency>
+          </dependencies>
+          ```
+          For more informations see the [changelog of Symja ${{ env.release_version }}](CHANGELOG.md#${{ env.release_marker }}).
+          
+          Thanks to everyone who contributed to this release!
