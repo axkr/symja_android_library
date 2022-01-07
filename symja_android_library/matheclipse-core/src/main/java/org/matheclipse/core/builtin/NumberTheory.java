@@ -552,12 +552,32 @@ public final class NumberTheory {
   private static class CatalanNumber extends AbstractTrigArg1 {
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-      if (arg1.isInteger()) {
-        return catalanNumber((IInteger) arg1);
+    public IExpr evaluateArg1(final IExpr n, EvalEngine engine) {
+      if (n.isInteger()) {
+        return catalanNumber((IInteger) n);
       }
-
       return F.NIL;
+    }
+
+    public IExpr numericEval(final IAST ast, final EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      try {
+        if (arg1.isInexactNumber()) {
+          return functionExpand(arg1);
+        }
+      } catch (LimitException le) {
+        throw le;
+      } catch (RuntimeException rex) {
+        LOGGER.log(EvalEngine.get().getLogLevel(), ast.topHead(), rex);
+        return F.NIL;
+      }
+      return evaluateArg1(arg1, engine);
+    }
+
+    private static IExpr functionExpand(final IExpr n) {
+      // (2^(2*n)*Gamma(1/2+n))/(Sqrt(Pi)*Gamma(2+n))
+      return F.Times(F.Power(F.C2, F.Times(F.C2, n)), F.Gamma(F.Plus(n, F.C1D2)),
+          F.Power(F.Times(F.Sqrt(S.Pi), F.Gamma(F.Plus(n, F.C2))), F.CN1));
     }
 
     @Override
@@ -2089,11 +2109,16 @@ public final class NumberTheory {
         return factorial((IInteger) arg1);
       }
       if (arg1.isFraction()) {
+        IFraction frac = (IFraction) arg1;
         if (arg1.equals(F.C1D2)) {
           return F.Times(F.C1D2, F.Sqrt(S.Pi));
         }
         if (arg1.equals(F.CN1D2)) {
           return F.Sqrt(S.Pi);
+        }
+
+        if (frac.denominator().equals(F.C2)) {
+          return F.Gamma(frac.inc());
         }
       }
       if (arg1.isInfinity()) {
