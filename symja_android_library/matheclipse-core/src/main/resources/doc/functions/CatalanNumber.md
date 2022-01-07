@@ -4,7 +4,7 @@
 CatalanNumber(n)
 ```
 
-> returns the catalan number for the integer argument `n`.
+> returns the catalan number for the argument `n`.
  
 See:  
 * [Wikipedia - Catalan number](http://en.wikipedia.org/wiki/Catalan_number)
