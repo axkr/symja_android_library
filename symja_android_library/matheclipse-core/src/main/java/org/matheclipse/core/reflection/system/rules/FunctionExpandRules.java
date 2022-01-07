@@ -50,6 +50,9 @@ public interface FunctionExpandRules {
     // BetaRegularized(y_,z_,a_,b_):=((-Beta(y,a,b)+Beta(z,a,b))*Gamma(a+b))/(Gamma(a)*Gamma(b))
     SetDelayed(BetaRegularized(y_,z_,a_,b_),
       Times(Plus(Negate(Beta(y,a,b)),Beta(z,a,b)),Power(Times(Gamma(a),Gamma(b)),CN1),Gamma(Plus(a,b)))),
+    // CatalanNumber(n_):=(2^(2*n)*Gamma(1/2+n))/(Sqrt(Pi)*Gamma(2+n))
+    SetDelayed(CatalanNumber(n_),
+      Times(Power(C2,Times(C2,n)),Gamma(Plus(C1D2,n)),Power(Times(Sqrt(Pi),Gamma(Plus(C2,n))),CN1))),
     // ChebyshevT(n_,x_):=Cos(n*ArcCos(x))
     SetDelayed(ChebyshevT(n_,x_),
       Cos(Times(n,ArcCos(x)))),

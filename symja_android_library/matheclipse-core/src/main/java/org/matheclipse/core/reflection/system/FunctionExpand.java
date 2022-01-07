@@ -135,14 +135,6 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
                           F.Times(F.Gamma(F.Plus(F.C1, b)), F.Gamma(F.Plus(F.C1, F.Negate(b), a))),
                           F.CN1))))); // $$);
 
-      // CatalanNumber
-      MATCHER.caseOf(
-          F.CatalanNumber(n_), //
-          // [$ (2^(2*n)*Gamma(1/2 + n))/(Sqrt(Pi)*Gamma(2 + n)) $]
-          F.Times(
-              F.Power(F.C2, F.Times(F.C2, n)),
-              F.Gamma(F.Plus(F.C1D2, n)),
-              F.Power(F.Times(F.Sqrt(S.Pi), F.Gamma(F.Plus(F.C2, n))), F.CN1))); // $$);
       // // ChebyshevT
       // MATCHER.caseOf(
       // ChebyshevT(n_, x_), //

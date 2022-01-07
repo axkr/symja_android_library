@@ -15,10 +15,11 @@
  BetaRegularized(z_, a_, b_) := (Beta(z, a, b)*Gamma(a + b))/(Gamma(a)*Gamma(b)),
  BetaRegularized(y_, z_, a_, b_) := ((-Beta(y, a, b) + Beta(z, a, b))*Gamma(a + b))/(Gamma(a)*Gamma(b)),
   
+ CatalanNumber(n_) := (2^(2*n)*Gamma(1/2+n))/(Sqrt(Pi)*Gamma(2+n)),
  ChebyshevT(n_,x_) :=  Cos(n*ArcCos(x)),
  ChebyshevU(n_,x_) :=  Sin((1 + n)*ArcCos(x))/(Sqrt(1 - x)*Sqrt(1 + x)),
  
- Cos(n_Integer*ArcSin(z_)) := ChebyshevT(n, Sqrt(1 - z^2))
+ Cos(n_Integer*ArcSin(z_)) := ChebyshevT(n, Sqrt(1-z^2))
   /; n>0,
  
  CosIntegral(Sqrt(z_^n_)) := CosIntegral(z^(n/2)) - Log(z^(n/2)) + Log(z^n)/2,
