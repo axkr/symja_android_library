@@ -369,6 +369,12 @@
 			<plugins>
 
 				<plugin>
+					<groupId>org.apache.felix</groupId>
+					<artifactId>maven-bundle-plugin</artifactId>
+					<version>5.1.3</version>
+				</plugin>
+
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-clean-plugin</artifactId>
 					<version>3.1.0</version>
@@ -408,6 +414,11 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
 					<version>3.2.1</version>
+					<configuration>
+						<archive>
+							<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+						</archive>
+					</configuration>
 				</plugin>
 
 				<plugin>
@@ -524,6 +535,26 @@
 								</requireSnapshotVersion>
 							</rules>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<configuration>
+					<instructions>
+						<Bundle-Name>${project.artifactId}</Bundle-Name>
+						<!-- Suppress import of own exported packages -->
+						<Export-Package>*;-noimport:=true</Export-Package>
+					</instructions>
+					<niceManifest>true</niceManifest>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>manifest</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
