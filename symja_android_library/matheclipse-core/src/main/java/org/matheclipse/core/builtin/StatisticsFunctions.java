@@ -108,6 +108,7 @@ public class StatisticsFunctions {
       S.Median.setEvaluator(new Median());
       S.NakagamiDistribution.setEvaluator(new NakagamiDistribution());
       S.NormalDistribution.setEvaluator(new NormalDistribution());
+      S.ParetoDistribution.setEvaluator(new ParetoDistribution());
       S.PoissonDistribution.setEvaluator(new PoissonDistribution());
       S.Probability.setEvaluator(new Probability());
       S.Quantile.setEvaluator(new Quantile());
@@ -135,7 +136,7 @@ public class StatisticsFunctions {
   }
 
   /** Capability to produce random variate. */
-  /*package*/ interface IRandomVariate {
+  /* package */ interface IRandomVariate {
     /**
      * @param distribution the distribution
      * @param size the size of the sample
@@ -162,8 +163,9 @@ public class StatisticsFunctions {
    * Any distribution for which an analytic expression of the variance exists should implement
    * {@link IStatistics}.
    *
-   * <p>The function is used in {@link Expectation} to provide the variance of a given {@link
-   * IDistribution}.
+   * <p>
+   * The function is used in {@link Expectation} to provide the variance of a given
+   * {@link IDistribution}.
    */
   private interface IStatistics {
     /** @return mean of distribution */
@@ -185,7 +187,8 @@ public class StatisticsFunctions {
   /**
    * Cumulative distribution function
    *
-   * <p>ICDF extends the capabilities of {@link IPDF}
+   * <p>
+   * ICDF extends the capabilities of {@link IPDF}
    */
   private interface ICDF extends IDistribution {
     static final IExpr CDF_NUMERIC_THRESHOLD = F.num(1e-14);
@@ -261,11 +264,12 @@ public class StatisticsFunctions {
      * For {@link IExpectationDiscreteDistribution}, the function returns the P(X == x), i.e.
      * probability of random variable X == x
      *
-     * <p>For continuous distributions, the function
+     * <p>
+     * For continuous distributions, the function
      *
      * <ul>
-     *   <li>returns the value of the probability density function, which is <em>not</em> identical
-     *       to P(X == x)]
+     * <li>returns the value of the probability density function, which is <em>not</em> identical to
+     * P(X == x)]
      * </ul>
      *
      * @param x
@@ -309,15 +313,17 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the arithmetic geometric mean of <code>a</code> and <code>b</code>.
+   * <p>
+   * returns the arithmetic geometric mean of <code>a</code> and <code>b</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean">Wikipedia -
-   *       Arithmetic-geometric mean)</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean">Wikipedia -
+   * Arithmetic-geometric mean)</a>
    * </ul>
    */
   private static class ArithmeticGeometricMean extends AbstractArg2 {
@@ -351,9 +357,8 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr e2DblArg(final INum a, final INum b) {
-      return F.num(
-          ApfloatMath.agm(new Apfloat(a.doubleValue()), new Apfloat(b.doubleValue()))
-              .doubleValue());
+      return F.num(ApfloatMath.agm(new Apfloat(a.doubleValue()), new Apfloat(b.doubleValue()))
+          .doubleValue());
       // double a1 = a.doubleValue();
       // double b1 = b.doubleValue();
       // while (Math.abs(a1 - b1) >= Config.DOUBLE_TOLERANCE) {
@@ -393,7 +398,8 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the cumulative distribution function of <code>value</code>.
+   * <p>
+   * returns the cumulative distribution function of <code>value</code>.
    *
    * </blockquote>
    *
@@ -403,37 +409,41 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the cumulative distribution function of the values of list.
+   * <p>
+   * returns the cumulative distribution function of the values of list.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Cumulative_distribution_function">Wikipedia -
-   *       cumulative distribution function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Cumulative_distribution_function">Wikipedia -
+   * cumulative distribution function</a>
    * </ul>
    *
-   * <p><code>CDF</code> can be applied to the following distributions:
+   * <p>
+   * <code>CDF</code> can be applied to the following distributions:
    *
    * <blockquote>
    *
-   * <p><a href="BernoulliDistribution.md">BernoulliDistribution</a>, <a
-   * href="BinomialDistribution.md">BinomialDistribution</a>, <a
-   * href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>, <a
-   * href="ErlangDistribution.md">ErlangDistribution</a>, <a
-   * href="ExponentialDistribution.md">ExponentialDistribution</a>, <a
-   * href="FrechetDistribution.md">FrechetDistribution</a>, <a
-   * href="GammaDistribution.md">GammaDistribution</a>, <a
-   * href="GeometricDistribution.md">GeometricDistribution</a>, <a
-   * href="GumbelDistribution.md">GumbelDistribution</a>, <a
-   * href="HypergeometricDistribution.md">HypergeometricDistribution</a>, <a
-   * href="LogNormalDistribution.md">LogNormalDistribution</a>, <a
-   * href="NakagamiDistribution.md">NakagamiDistribution</a>, <a
-   * href="NormalDistribution.md">NormalDistribution</a>, <a
-   * href="PoissonDistribution.md">PoissonDistribution</a>, <a
-   * href="StudentTDistribution.md">StudentTDistribution</a>, <a
-   * href="WeibullDistribution.md">WeibullDistribution</a>
+   * <p>
+   * <a href="BernoulliDistribution.md">BernoulliDistribution</a>,
+   * <a href="BinomialDistribution.md">BinomialDistribution</a>,
+   * <a href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>,
+   * <a href="ErlangDistribution.md">ErlangDistribution</a>,
+   * <a href="ExponentialDistribution.md">ExponentialDistribution</a>,
+   * <a href="FrechetDistribution.md">FrechetDistribution</a>,
+   * <a href="GammaDistribution.md">GammaDistribution</a>,
+   * <a href="GeometricDistribution.md">GeometricDistribution</a>,
+   * <a href="GumbelDistribution.md">GumbelDistribution</a>,
+   * <a href="HypergeometricDistribution.md">HypergeometricDistribution</a>,
+   * <a href="LogNormalDistribution.md">LogNormalDistribution</a>,
+   * <a href="NakagamiDistribution.md">NakagamiDistribution</a>,
+   * <a href="NormalDistribution.md">NormalDistribution</a>,
+   * <a href="PoissonDistribution.md">PoissonDistribution</a>,
+   * <a href="StudentTDistribution.md">StudentTDistribution</a>,
+   * <a href="WeibullDistribution.md">WeibullDistribution</a>
    *
    * </blockquote>
    *
@@ -492,55 +502,63 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the Bernoulli distribution.
+   * <p>
+   * returns the Bernoulli distribution.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Bernoulli_distribution">Wikipedia - Bernoulli
-   *       distribution</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Bernoulli_distribution">Wikipedia - Bernoulli
+   * distribution</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <p>The probability density function of the Bernoulli distribution is
+   * <p>
+   * The probability density function of the Bernoulli distribution is
    *
    * <pre>
    * &gt;&gt; PDF(BernoulliDistribution(p), x)
    * Piecewise({{1-p,x==0},{p,x==1}},0)
    * </pre>
    *
-   * <p>The cumulative distribution function of the Bernoulli distribution is
+   * <p>
+   * The cumulative distribution function of the Bernoulli distribution is
    *
    * <pre>
    * &gt;&gt; CDF(BernoulliDistribution(p), x)
    * Piecewise({{0,x&lt;0},{1-p,0&lt;=x&amp;&amp;x&lt;1}},1)
    * </pre>
    *
-   * <p>The mean of the Bernoulli distribution is
+   * <p>
+   * The mean of the Bernoulli distribution is
    *
    * <pre>
    * &gt;&gt; Mean(BernoulliDistribution(p))
    * p
    * </pre>
    *
-   * <p>The standard deviation of the Bernoulli distribution is
+   * <p>
+   * The standard deviation of the Bernoulli distribution is
    *
    * <pre>
    * &gt;&gt; StandardDeviation(BernoulliDistribution(p))
    * Sqrt((1-p)*p)
    * </pre>
    *
-   * <p>The variance of the Bernoulli distribution is
+   * <p>
+   * The variance of the Bernoulli distribution is
    *
    * <pre>
    * &gt;&gt; Variance(BernoulliDistribution(p))
    * (1-p)*p
    * </pre>
    *
-   * <p>The random variates of a Bernoulli distribution can be generated with function <code>
+   * <p>
+   * The random variates of a Bernoulli distribution can be generated with function <code>
    * RandomVariate</code>
    *
    * <pre>
@@ -550,9 +568,10 @@ public class StatisticsFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a
-   * href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>, <a
-   * href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
+   * <p>
+   * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>,
+   * <a href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>,
+   * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class BernoulliDistribution extends AbstractEvaluator
       implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate {
@@ -591,13 +610,8 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ (Piecewise({{0, # < 0}, {1 - p, 0<=#<1 }}, 1)) & $]
             F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(F.C0, F.Less(F.Slot1, F.C0)),
-                        F.List(
-                            F.Subtract(F.C1, p),
-                            F.And(F.LessEqual(F.C0, F.Slot1), F.Less(F.Slot1, F.C1)))),
-                    F.C1)); // $$;
+                F.Piecewise(F.List(F.List(F.C0, F.Less(F.Slot1, F.C0)), F.List(F.Subtract(F.C1, p),
+                    F.And(F.LessEqual(F.C0, F.Slot1), F.Less(F.Slot1, F.C1)))), F.C1)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -609,11 +623,9 @@ public class StatisticsFunctions {
         IExpr p = dist.arg1();
         IExpr function =
             // [$ ( ConditionalExpression(Piecewise({{1, # > 1 - p}}, 0), 0 <= # <= 1)& ) $]
-            F.Function(
-                F.ConditionalExpression(
-                    F.Piecewise(
-                        F.List(F.List(F.C1, F.Greater(F.Slot1, F.Subtract(F.C1, p)))), F.C0),
-                    F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+            F.Function(F.ConditionalExpression(
+                F.Piecewise(F.List(F.List(F.C1, F.Greater(F.Slot1, F.Subtract(F.C1, p)))), F.C0),
+                F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -626,12 +638,8 @@ public class StatisticsFunctions {
         //
         IExpr function =
             // [$ Piecewise({{1 - p, # == 0}, {p, # == 1}}, 0) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(F.Subtract(F.C1, p), F.Equal(F.Slot1, F.C0)),
-                        F.List(p, F.Equal(F.Slot1, F.C1))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(F.Subtract(F.C1, p), F.Equal(F.Slot1, F.C0)),
+                F.List(p, F.Equal(F.Slot1, F.C1))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -651,8 +659,8 @@ public class StatisticsFunctions {
       if (dist.isAST1()) {
         IExpr s = dist.arg1();
         // (1 - 2*s)/Sqrt((1 - s)*s)
-        return F.Divide(
-            F.Subtract(F.C1, F.Times(F.C2, s)), F.Sqrt(F.Times(F.Subtract(F.C1, s), s)));
+        return F.Divide(F.Subtract(F.C1, F.Times(F.C2, s)),
+            F.Sqrt(F.Times(F.Subtract(F.C1, s), s)));
       }
       return F.NIL;
     }
@@ -664,9 +672,8 @@ public class StatisticsFunctions {
         double p = dist.arg1().evalDouble();
         if (0 <= p && p <= 1) {
           RandomDataGenerator rdg = new RandomDataGenerator();
-          int[] vector =
-              rdg.nextDeviates(
-                  new org.hipparchus.distribution.discrete.BinomialDistribution(1, p), size);
+          int[] vector = rdg.nextDeviates(
+              new org.hipparchus.distribution.discrete.BinomialDistribution(1, p), size);
           return F.List(vector);
         }
       }
@@ -692,13 +699,11 @@ public class StatisticsFunctions {
         //
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.BetaDistribution(
-                        a.evalDouble(), b.evalDouble()) //
+            return F.num(new org.hipparchus.distribution.continuous.BetaDistribution(a.evalDouble(),
+                b.evalDouble()) //
                     .cumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -706,12 +711,10 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ (Piecewise({{BetaRegularized(#, a, b), 0 < # < 1}, {1, # >= 1}}, 0)&) $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(F.BetaRegularized(F.Slot1, a, b), F.Less(F.C0, F.Slot1, F.C1)),
-                        F.List(F.C1, F.GreaterEqual(F.Slot1, F.C1))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(
+                F.List(F.List(F.BetaRegularized(F.Slot1, a, b), F.Less(F.C0, F.Slot1, F.C1)),
+                    F.List(F.C1, F.GreaterEqual(F.Slot1, F.C1))),
+                F.C0)); // $$;
         return callFunction(function, k);
       }
 
@@ -724,13 +727,11 @@ public class StatisticsFunctions {
         //
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.BetaDistribution(
-                        a.evalDouble(), b.evalDouble()) //
+            return F.num(new org.hipparchus.distribution.continuous.BetaDistribution(a.evalDouble(),
+                b.evalDouble()) //
                     .inverseCumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -744,8 +745,7 @@ public class StatisticsFunctions {
                 F.ConditionalExpression(
                     F.Piecewise(
                         F.List(
-                            F.List(
-                                F.InverseBetaRegularized(F.Slot1, a, b),
+                            F.List(F.InverseBetaRegularized(F.Slot1, a, b),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.C1),
@@ -786,10 +786,8 @@ public class StatisticsFunctions {
         if (a != null && b != null) {
           RandomDataGenerator rdg = new RandomDataGenerator();
           double[] vector =
-              rdg.nextDeviates(
-                  new org.hipparchus.distribution.continuous.BetaDistribution(
-                      a.doubleValue(), b.doubleValue()),
-                  size);
+              rdg.nextDeviates(new org.hipparchus.distribution.continuous.BetaDistribution(
+                  a.doubleValue(), b.doubleValue()), size);
           return new ASTRealVector(vector, false);
         }
       }
@@ -813,8 +811,8 @@ public class StatisticsFunctions {
       if (dist.isAST1()) {
         IExpr s = dist.arg1();
         // (1 - 2*s)/Sqrt((1 - s)*s)
-        return F.Divide(
-            F.Subtract(F.C1, F.Times(F.C2, s)), F.Sqrt(F.Times(F.Subtract(F.C1, s), s)));
+        return F.Divide(F.Subtract(F.C1, F.Times(F.C2, s)),
+            F.Sqrt(F.Times(F.Subtract(F.C1, s), s)));
       }
       return F.NIL;
     }
@@ -825,13 +823,11 @@ public class StatisticsFunctions {
         //
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.BetaDistribution(
-                        a.evalDouble(), b.evalDouble()) //
+            return F.num(new org.hipparchus.distribution.continuous.BetaDistribution(a.evalDouble(),
+                b.evalDouble()) //
                     .density(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -839,16 +835,9 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ ( Piecewise({{((1 - #)^(-1 + b)*#^(-1 + a))/Beta(a, b), 0 < #< 1}}, 0)&) $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(
-                                F.Power(F.Beta(a, b), F.CN1),
-                                F.Power(F.Subtract(F.C1, F.Slot1), F.Plus(F.CN1, b)),
-                                F.Power(F.Slot1, F.Plus(F.CN1, a))),
-                            F.Less(F.C0, F.Slot1, F.C1))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(F.Times(F.Power(F.Beta(a, b), F.CN1),
+                F.Power(F.Subtract(F.C1, F.Slot1), F.Plus(F.CN1, b)),
+                F.Power(F.Slot1, F.Plus(F.CN1, a))), F.Less(F.C0, F.Slot1, F.C1))), F.C0)); // $$;
         return callFunction(function, k);
       }
 
@@ -866,7 +855,8 @@ public class StatisticsFunctions {
    * BinCounts(list, width - of - bin)
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * BinCounts(list, {min, max, width-of-bin} )
@@ -874,8 +864,9 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>count the number of elements, if <code>list</code>, is divided into successive bins with
-   * width <code>width-of-bin</code>.
+   * <p>
+   * count the number of elements, if <code>list</code>, is divided into successive bins with width
+   * <code>width-of-bin</code>.
    *
    * </blockquote>
    *
@@ -997,18 +988,16 @@ public class StatisticsFunctions {
      * @return
      */
     private static IAST dropNonReals(EvalEngine engine, IAST vector) {
-      IAST[] filter =
-          vector.filterNIL(
-              x -> {
-                if (x.isReal()) {
-                  return x;
-                }
-                IExpr d = engine.evalN(x);
-                if (d.isReal()) {
-                  return d;
-                }
-                return F.NIL;
-              });
+      IAST[] filter = vector.filterNIL(x -> {
+        if (x.isReal()) {
+          return x;
+        }
+        IExpr d = engine.evalN(x);
+        if (d.isReal()) {
+          return d;
+        }
+        return F.NIL;
+      });
       vector = filter[0];
       return vector;
     }
@@ -1023,55 +1012,63 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the binomial distribution.
+   * <p>
+   * returns the binomial distribution.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Binomial_distribution">Wikipedia - Binomial
-   *       distribution</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Binomial_distribution">Wikipedia - Binomial
+   * distribution</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <p>The probability density function of the binomial distribution is
+   * <p>
+   * The probability density function of the binomial distribution is
    *
    * <pre>
    * &gt;&gt; PDF(BinomialDistribution(n, p), x)
    * Piecewise({{(1-p)^(n-x)*p^x*Binomial(n,x),0&lt;=x&lt;=n}},0)
    * </pre>
    *
-   * <p>The cumulative distribution function of the binomial distribution is
+   * <p>
+   * The cumulative distribution function of the binomial distribution is
    *
    * <pre>
    * &gt;&gt; CDF(BinomialDistribution(n, p), x)
    * Piecewise({{BetaRegularized(1-p,n-Floor(x),1+Floor(x)),0&lt;=x&amp;&amp;x&lt;n},{1,x&gt;=n}},0)
    * </pre>
    *
-   * <p>The mean of the binomial distribution is
+   * <p>
+   * The mean of the binomial distribution is
    *
    * <pre>
    * &gt;&gt; Mean(BinomialDistribution(n, p))
    * n*p
    * </pre>
    *
-   * <p>The standard deviation of the binomial distribution is
+   * <p>
+   * The standard deviation of the binomial distribution is
    *
    * <pre>
    * &gt;&gt; StandardDeviation(BinomialDistribution(n, p))
    * Sqrt(n*(1-p)*p)
    * </pre>
    *
-   * <p>The variance of the binomial distribution is
+   * <p>
+   * The variance of the binomial distribution is
    *
    * <pre>
    * &gt;&gt; Variance(BinomialDistribution(n, p))
    * n*(1-p)*p
    * </pre>
    *
-   * <p>The random variates of a binomial distribution can be generated with function <code>
+   * <p>
+   * The random variates of a binomial distribution can be generated with function <code>
    * RandomVariate</code>
    *
    * <pre>
@@ -1081,9 +1078,10 @@ public class StatisticsFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a
-   * href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>, <a
-   * href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
+   * <p>
+   * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>,
+   * <a href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>,
+   * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class BinomialDistribution extends AbstractEvaluator
       implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
@@ -1115,17 +1113,12 @@ public class StatisticsFunctions {
             // [$ (Piecewise({{BetaRegularized(1 - m, n - Floor(#), 1 + Floor(#)), 0<=#<n}, {1, # >=
             // n}},
             // 0)) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.BetaRegularized(
-                                F.Subtract(F.C1, m),
-                                F.Subtract(n, F.Floor(F.Slot1)),
-                                F.Plus(F.C1, F.Floor(F.Slot1))),
-                            F.And(F.LessEqual(F.C0, F.Slot1), F.Less(F.Slot1, n))),
-                        F.List(F.C1, F.GreaterEqual(F.Slot1, n))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(
+                F.List(
+                    F.BetaRegularized(F.Subtract(F.C1, m), F.Subtract(n, F.Floor(F.Slot1)),
+                        F.Plus(F.C1, F.Floor(F.Slot1))),
+                    F.And(F.LessEqual(F.C0, F.Slot1), F.Less(F.Slot1, n))),
+                F.List(F.C1, F.GreaterEqual(F.Slot1, n))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -1145,15 +1138,10 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{(1 - m)^(-# + n)*m^#*Binomial(n, #), 0 <= # <= n}}, 0) & $]
             F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(
-                                F.Power(F.Subtract(F.C1, m), F.Plus(F.Negate(F.Slot1), n)),
-                                F.Power(m, F.Slot1),
-                                F.Binomial(n, F.Slot1)),
-                            F.LessEqual(F.C0, F.Slot1, n))),
-                    F.C0)); // $$;
+                F.Piecewise(F.List(F.List(
+                    F.Times(F.Power(F.Subtract(F.C1, m), F.Plus(F.Negate(F.Slot1), n)),
+                        F.Power(m, F.Slot1), F.Binomial(n, F.Slot1)),
+                    F.LessEqual(F.C0, F.Slot1, n))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -1174,8 +1162,8 @@ public class StatisticsFunctions {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         // (1 - 2*m)/Sqrt((1 - m)*m*n)
-        return F.Divide(
-            F.Subtract(F.C1, F.Times(F.C2, m)), F.Sqrt(F.Times(F.Subtract(F.C1, m), m, n)));
+        return F.Divide(F.Subtract(F.C1, F.Times(F.C2, m)),
+            F.Sqrt(F.Times(F.Subtract(F.C1, m), m, n)));
       }
       return F.NIL;
     }
@@ -1189,9 +1177,8 @@ public class StatisticsFunctions {
           double p = dist.arg2().evalDouble();
           if (0 <= p && p <= 1) {
             RandomDataGenerator rdg = new RandomDataGenerator();
-            int[] vector =
-                rdg.nextDeviates(
-                    new org.hipparchus.distribution.discrete.BinomialDistribution(n, p), size);
+            int[] vector = rdg.nextDeviates(
+                new org.hipparchus.distribution.discrete.BinomialDistribution(n, p), size);
             return F.List(vector);
             // return F.ZZ(new BinomialGenerator(n, p, random).nextValue());
           }
@@ -1210,15 +1197,17 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the the <code>r</code>th central moment (i.e. the <code>r</code>th moment about the
-   * mean) of <code>list</code>.
+   * <p>
+   * gives the the <code>r</code>th central moment (i.e. the <code>r</code>th moment about the mean)
+   * of <code>list</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Central_moment">Wikipedia - Central moment</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Central_moment">Wikipedia - Central moment</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1280,13 +1269,11 @@ public class StatisticsFunctions {
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr v = dist.arg1();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (v.isNumericArgument() || k.isNumericArgument())) {
           try {
             return F.num(
-                new org.hipparchus.distribution.continuous.ChiSquaredDistribution(
-                        v.evalDouble()) //
+                new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalDouble()) //
                     .cumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -1294,13 +1281,10 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ Piecewise({{GammaRegularized(v/2, 0, #/2), # > 0}}, 0) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.GammaRegularized(F.Times(F.C1D2, v), F.C0, F.Times(F.C1D2, F.Slot1)),
-                            F.Greater(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F
+                .List(F.List(F.GammaRegularized(F.Times(F.C1D2, v), F.C0, F.Times(F.C1D2, F.Slot1)),
+                    F.Greater(F.Slot1, F.C0))),
+                F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -1310,13 +1294,11 @@ public class StatisticsFunctions {
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr v = dist.arg1();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (v.isNumericArgument() || k.isNumericArgument())) {
           try {
             return F.num(
-                new org.hipparchus.distribution.continuous.ChiSquaredDistribution(
-                        v.evalDouble()) //
+                new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalDouble()) //
                     .inverseCumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -1331,8 +1313,7 @@ public class StatisticsFunctions {
                     F.Piecewise(
                         F.List(
                             F.List(
-                                F.Times(
-                                    F.C2,
+                                F.Times(F.C2,
                                     F.InverseGammaRegularized(F.Times(F.C1D2, v), F.C0, F.Slot1)),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
@@ -1347,13 +1328,11 @@ public class StatisticsFunctions {
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr v = dist.arg1();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (v.isNumericArgument() || k.isNumericArgument())) {
           try {
             return F.num(
-                new org.hipparchus.distribution.continuous.ChiSquaredDistribution(
-                        v.evalDouble()) //
+                new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalDouble()) //
                     .density(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -1361,20 +1340,12 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ Piecewise({{#^(-1 + v/2)/(2^(v/2)*E^(#/2)*Gamma(v/2)), # > 0}}, 0) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(
-                                F.Power(
-                                    F.Times(
-                                        F.Power(F.C2, F.Times(F.C1D2, v)),
-                                        F.Exp(F.Times(F.C1D2, F.Slot1)),
-                                        F.Gamma(F.Times(F.C1D2, v))),
-                                    F.CN1),
-                                F.Power(F.Slot1, F.Plus(F.CN1, F.Times(F.C1D2, v)))),
-                            F.Greater(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(
+                F.Times(
+                    F.Power(F.Times(F.Power(F.C2, F.Times(F.C1D2, v)),
+                        F.Exp(F.Times(F.C1D2, F.Slot1)), F.Gamma(F.Times(F.C1D2, v))), F.CN1),
+                    F.Power(F.Slot1, F.Plus(F.CN1, F.Times(F.C1D2, v)))),
+                F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -1396,9 +1367,8 @@ public class StatisticsFunctions {
         double v = dist.arg1().evalDouble();
         // see exception handling in RandonmVariate() function
         RandomDataGenerator rdg = new RandomDataGenerator();
-        double[] vector =
-            rdg.nextDeviates(
-                new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v), size);
+        double[] vector = rdg.nextDeviates(
+            new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v), size);
         return new ASTRealVector(vector, false);
       }
       return F.NIL;
@@ -1428,15 +1398,17 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>computes Pearson's correlation of two equal-sized vectors <code>a</code> and <code>b</code>.
+   * <p>
+   * computes Pearson's correlation of two equal-sized vectors <code>a</code> and <code>b</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">Wikipedia -
-   *       Pearson correlation coefficient</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">Wikipedia - Pearson
+   * correlation coefficient</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1486,8 +1458,7 @@ public class StatisticsFunctions {
               }
             }
           }
-          return F.Divide(
-              F.Covariance(arg1, arg2),
+          return F.Divide(F.Covariance(arg1, arg2),
               F.Times(F.StandardDeviation(arg1), F.StandardDeviation(arg2)));
         }
       } catch (MathRuntimeException mrex) {
@@ -1546,13 +1517,8 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ 1/2+ArcTan((-a+#)/b)/Pi & $]
-            F.Function(
-                F.Plus(
-                    F.C1D2,
-                    F.Times(
-                        F.Power(F.Pi, F.CN1),
-                        F.ArcTan(
-                            F.Times(F.Power(b, F.CN1), F.Plus(F.Negate(a), F.Slot1)))))); // $$;
+            F.Function(F.Plus(F.C1D2, F.Times(F.Power(F.Pi, F.CN1),
+                F.ArcTan(F.Times(F.Power(b, F.CN1), F.Plus(F.Negate(a), F.Slot1)))))); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -1568,15 +1534,15 @@ public class StatisticsFunctions {
           b = dist.arg2();
         }
         IExpr function =
-            // [$ (  ConditionalExpression( Piecewise({{a+b*Tan((-(1/2)+#)*Pi), 0 <#< 1},
+            // [$ ( ConditionalExpression( Piecewise({{a+b*Tan((-(1/2)+#)*Pi), 0 <#< 1},
             // {-Infinity,#<= 0}}, Infinity), 0 <=#<= 1) & ) $]
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
                         F.List(
                             F.List(
-                                F.Plus(
-                                    a, F.Times(b, F.Tan(F.Times(F.Plus(F.CN1D2, F.Slot1), F.Pi)))),
+                                F.Plus(a,
+                                    F.Times(b, F.Tan(F.Times(F.Plus(F.CN1D2, F.Slot1), F.Pi)))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.List(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
@@ -1599,11 +1565,9 @@ public class StatisticsFunctions {
             // [$ 1/(b*Pi*(1+(-a+#)^2/b^2))& $]
             F.Function(
                 F.Power(
-                    F.Times(
-                        b,
-                        F.Pi,
-                        F.Plus(
-                            F.C1, F.Times(F.Power(b, F.CN2), F.Sqr(F.Plus(F.Negate(a), F.Slot1))))),
+                    F.Times(b, F.Pi,
+                        F.Plus(F.C1,
+                            F.Times(F.Power(b, F.CN2), F.Sqr(F.Plus(F.Negate(a), F.Slot1))))),
                     F.CN1)); // $$;
         return callFunction(function, k);
       }
@@ -1639,9 +1603,8 @@ public class StatisticsFunctions {
         double ad = a.evalDouble();
         double bd = b.evalDouble();
         RandomDataGenerator rdg = new RandomDataGenerator();
-        double[] vector =
-            rdg.nextDeviates(
-                new org.hipparchus.distribution.continuous.CauchyDistribution(ad, bd), size);
+        double[] vector = rdg.nextDeviates(
+            new org.hipparchus.distribution.continuous.CauchyDistribution(ad, bd), size);
         return new ASTRealVector(vector, false);
       }
       return F.NIL;
@@ -1660,24 +1623,26 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>the Tuckey five-number summary is a set of descriptive statistics that provide information
+   * <p>
+   * the Tuckey five-number summary is a set of descriptive statistics that provide information
    * about a <code>dataset</code>. It consists of the five most important sample percentiles:
    *
    * <ol>
-   *   <li>the sample minimum (smallest observation)
-   *   <li>the lower quartile or first quartile
-   *   <li>the median (the middle value)
-   *   <li>the upper quartile or third quartile
-   *   <li>the sample maximum (largest observation)
+   * <li>the sample minimum (smallest observation)
+   * <li>the lower quartile or first quartile
+   * <li>the median (the middle value)
+   * <li>the upper quartile or third quartile
+   * <li>the sample maximum (largest observation)
    * </ol>
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Five-number_summary">Wikipedia - Five-number
-   *       summary</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Five-number_summary">Wikipedia - Five-number
+   * summary</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1693,10 +1658,8 @@ public class StatisticsFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int size = ast.arg1().isVector();
       if (size >= 0) {
-        IAST param =
-            F.List(
-                F.List(F.C1D2, F.C0), //
-                F.List(F.C0, F.C1));
+        IAST param = F.List(F.List(F.C1D2, F.C0), //
+            F.List(F.C0, F.C1));
 
         IExpr list = ast.arg1();
         // if (engine.isDoubleMode()) {
@@ -1762,11 +1725,8 @@ public class StatisticsFunctions {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         // [$ (m*(-1 + 1/InverseBetaRegularized(1, -(1/2), m/2, n/2)))/n $]
-        F.Times(
-            m,
-            F.Power(n, F.CN1),
-            F.Plus(
-                F.CN1,
+        F.Times(m, F.Power(n, F.CN1),
+            F.Plus(F.CN1,
                 F.Power(
                     F.InverseBetaRegularized(F.C1, F.CN1D2, F.Times(F.C1D2, m), F.Times(F.C1D2, n)),
                     F.CN1))); // $$;
@@ -1779,13 +1739,11 @@ public class StatisticsFunctions {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.FDistribution(
-                        n.evalDouble(), m.evalDouble()) //
+            return F.num(new org.hipparchus.distribution.continuous.FDistribution(n.evalDouble(),
+                m.evalDouble()) //
                     .cumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -1793,16 +1751,9 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ Piecewise({{BetaRegularized((#*n)/(m + #*n), n/2, m/2), # > 0}}, 0) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.BetaRegularized(
-                                F.Times(n, F.Power(F.Plus(m, F.Times(F.Slot1, n)), F.CN1), F.Slot1),
-                                F.Times(F.C1D2, n),
-                                F.Times(F.C1D2, m)),
-                            F.Greater(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(F.BetaRegularized(
+                F.Times(n, F.Power(F.Plus(m, F.Times(F.Slot1, n)), F.CN1), F.Slot1),
+                F.Times(F.C1D2, n), F.Times(F.C1D2, m)), F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -1813,13 +1764,11 @@ public class StatisticsFunctions {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.FDistribution(
-                        n.evalDouble(), m.evalDouble()) //
+            return F.num(new org.hipparchus.distribution.continuous.FDistribution(n.evalDouble(),
+                m.evalDouble()) //
                     .inverseCumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -1833,18 +1782,10 @@ public class StatisticsFunctions {
                     F.Piecewise(
                         F.List(
                             F.List(
-                                F.Times(
-                                    m,
-                                    F.Power(n, F.CN1),
-                                    F.Plus(
-                                        F.CN1,
-                                        F.Power(
-                                            F.InverseBetaRegularized(
-                                                F.C1,
-                                                F.Negate(F.Slot1),
-                                                F.Times(F.C1D2, m),
-                                                F.Times(F.C1D2, n)),
-                                            F.CN1))),
+                                F.Times(m, F.Power(n, F.CN1),
+                                    F.Plus(F.CN1,
+                                        F.Power(F.InverseBetaRegularized(F.C1, F.Negate(F.Slot1),
+                                            F.Times(F.C1D2, m), F.Times(F.C1D2, n)), F.CN1))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
@@ -1859,13 +1800,11 @@ public class StatisticsFunctions {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.FDistribution(
-                        n.evalDouble(), m.evalDouble()) //
+            return F.num(new org.hipparchus.distribution.continuous.FDistribution(n.evalDouble(),
+                m.evalDouble()) //
                     .density(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -1875,20 +1814,13 @@ public class StatisticsFunctions {
             // [$ Piecewise({{(#^(-1 + n/2)*m^(m/2)*n^(n/2)*(m + #*n)^((1/2)*(-m - n)))/Beta(n/2,
             // m/2), # >
             // 0}}, 0) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(
-                                F.Power(m, F.Times(F.C1D2, m)),
-                                F.Power(n, F.Times(F.C1D2, n)),
-                                F.Power(
-                                    F.Plus(m, F.Times(F.Slot1, n)),
-                                    F.Times(F.C1D2, F.Subtract(F.Negate(m), n))),
-                                F.Power(F.Beta(F.Times(F.C1D2, n), F.Times(F.C1D2, m)), F.CN1),
-                                F.Power(F.Slot1, F.Plus(F.CN1, F.Times(F.C1D2, n)))),
-                            F.Greater(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(
+                F.Times(F.Power(m, F.Times(F.C1D2, m)), F.Power(n, F.Times(F.C1D2, n)),
+                    F.Power(F.Plus(m, F.Times(F.Slot1, n)),
+                        F.Times(F.C1D2, F.Subtract(F.Negate(m), n))),
+                    F.Power(F.Beta(F.Times(F.C1D2, n), F.Times(F.C1D2, m)), F.CN1),
+                    F.Power(F.Slot1, F.Plus(F.CN1, F.Times(F.C1D2, n)))),
+                F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -1901,16 +1833,10 @@ public class StatisticsFunctions {
         IExpr m = dist.arg2();
         return
         // [$ Piecewise({{(2*m^2*(-2 + m + n))/((-4 + m)*(-2 + m)^2*n), m > 4}}, Indeterminate) $]
-        F.Piecewise(
-            F.List(
-                F.List(
-                    F.Times(
-                        F.C2,
-                        F.Sqr(m),
-                        F.Plus(F.CN2, m, n),
-                        F.Power(F.Times(F.Plus(F.CN4, m), F.Sqr(F.Plus(F.CN2, m)), n), F.CN1)),
-                    F.Greater(m, F.C4))),
-            F.Indeterminate); // $$;
+        F.Piecewise(F.List(F.List(
+            F.Times(F.C2, F.Sqr(m), F.Plus(F.CN2, m, n),
+                F.Power(F.Times(F.Plus(F.CN4, m), F.Sqr(F.Plus(F.CN2, m)), n), F.CN1)),
+            F.Greater(m, F.C4))), F.Indeterminate); // $$;
       }
       return F.NIL;
     }
@@ -1925,17 +1851,11 @@ public class StatisticsFunctions {
         // n)), m > 6}},
         // Indeterminate) $]
         F.Piecewise(
-            F.List(
-                F.List(
-                    F.Times(
-                        F.C2,
-                        F.CSqrt2,
-                        F.Sqrt(F.Plus(F.CN4, m)),
-                        F.Plus(F.CN2, m, F.Times(F.C2, n)),
-                        F.Power(
-                            F.Times(F.Plus(F.CN6, m), F.Sqrt(n), F.Sqrt(F.Plus(F.CN2, m, n))),
-                            F.CN1)),
-                    F.Greater(m, F.C6))),
+            F.List(F.List(
+                F.Times(F.C2, F.CSqrt2, F.Sqrt(F.Plus(F.CN4, m)),
+                    F.Plus(F.CN2, m, F.Times(F.C2, n)), F.Power(
+                        F.Times(F.Plus(F.CN6, m), F.Sqrt(n), F.Sqrt(F.Plus(F.CN2, m, n))), F.CN1)),
+                F.Greater(m, F.C6))),
             F.Indeterminate); // $$;
       }
       return F.NIL;
@@ -1951,22 +1871,25 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a Frechet distribution.
+   * <p>
+   * returns a Frechet distribution.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distribution">Wikipedia - Frechet
-   *       distribution</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distribution">Wikipedia - Frechet
+   * distribution</a>
    * </ul>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a
-   * href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>, <a
-   * href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
+   * <p>
+   * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>,
+   * <a href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>,
+   * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class FrechetDistribution extends AbstractEvaluator
       implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate {
@@ -2013,15 +1936,10 @@ public class StatisticsFunctions {
         IExpr m = dist.arg2();
         IExpr function =
             // [$ (Piecewise({{E^(-(#/m)^(-n)), # > 0}}, 0)) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Exp(
-                                F.Negate(
-                                    F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), F.Negate(n)))),
-                            F.Greater(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(
+                F.List(F.Exp(F.Negate(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), F.Negate(n)))),
+                    F.Greater(F.Slot1, F.C0))),
+                F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -2039,12 +1957,9 @@ public class StatisticsFunctions {
                 F.ConditionalExpression(
                     F.Piecewise(
                         F.List(
-                            F.List(
-                                F.Times(
-                                    m,
-                                    F.Power(
-                                        F.Power(F.Negate(F.Log(F.Slot1)), F.Power(n, F.CN1)),
-                                        F.CN1)),
+                            F.List(F.Times(m,
+                                F.Power(F.Power(F.Negate(F.Log(F.Slot1)), F.Power(n, F.CN1)),
+                                    F.CN1)),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
@@ -2067,13 +1982,10 @@ public class StatisticsFunctions {
                     F.List(
                         F.List(
                             F.Times(
-                                F.Power(
-                                    F.Times(
-                                        F.Exp(
-                                            F.Power(
-                                                F.Times(F.Power(m, F.CN1), F.Slot1), F.Negate(n))),
-                                        m),
-                                    F.CN1),
+                                F.Power(F.Times(
+                                    F.Exp(
+                                        F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), F.Negate(n))),
+                                    m), F.CN1),
                                 n,
                                 F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), F.Subtract(F.CN1, n))),
                             F.Greater(F.Slot1, F.C0))),
@@ -2089,16 +2001,11 @@ public class StatisticsFunctions {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         // Piecewise({{m^2*(Gamma(1 - 2/n) - Gamma(1 - 1/n)^2), n > 2}}, Infinity)
-        return F.Piecewise(
-            F.List(
-                F.List(
-                    F.Times(
-                        F.Sqr(m),
-                        F.Plus(
-                            F.Gamma(F.Plus(F.C1, F.Times(F.CN2, F.Power(n, -1)))),
-                            F.Negate(F.Sqr(F.Gamma(F.Plus(F.C1, F.Negate(F.Power(n, -1)))))))),
-                    F.Greater(n, F.C2))),
-            F.CInfinity);
+        return F.Piecewise(F.List(F.List(
+            F.Times(F.Sqr(m),
+                F.Plus(F.Gamma(F.Plus(F.C1, F.Times(F.CN2, F.Power(n, -1)))),
+                    F.Negate(F.Sqr(F.Gamma(F.Plus(F.C1, F.Negate(F.Power(n, -1)))))))),
+            F.Greater(n, F.C2))), F.CInfinity);
       }
       return F.NIL;
     }
@@ -2117,16 +2024,16 @@ public class StatisticsFunctions {
                 F.List(
                     F.Times(
                         F.Plus(
-                            F.Gamma(F.Plus(F.C1, F.Times(F.CN3, F.Power(n, F.CN1)))),
+                            F.Gamma(F.Plus(F.C1,
+                                F.Times(F.CN3, F.Power(n, F.CN1)))),
                             F.Times(
-                                F.CN3,
-                                F.Gamma(F.Plus(F.C1, F.Times(F.CN2, F.Power(n, F.CN1)))),
+                                F.CN3, F.Gamma(F.Plus(F.C1,
+                                    F.Times(F.CN2, F.Power(n, F.CN1)))),
                                 F.Gamma(F.Subtract(F.C1, F.Power(n, F.CN1)))),
-                            F.Times(
-                                F.C2, F.Power(F.Gamma(F.Subtract(F.C1, F.Power(n, F.CN1))), F.C3))),
+                            F.Times(F.C2,
+                                F.Power(F.Gamma(F.Subtract(F.C1, F.Power(n, F.CN1))), F.C3))),
                         F.Power(
-                            F.Subtract(
-                                F.Gamma(F.Plus(F.C1, F.Times(F.CN2, F.Power(n, F.CN1)))),
+                            F.Subtract(F.Gamma(F.Plus(F.C1, F.Times(F.CN2, F.Power(n, F.CN1)))),
                                 F.Sqr(F.Gamma(F.Subtract(F.C1, F.Power(n, F.CN1))))),
                             F.QQ(-3L, 2L))),
                     F.Greater(n, F.C3))),
@@ -2169,27 +2076,23 @@ public class StatisticsFunctions {
         //
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.GammaDistribution(
-                        a.evalDouble(), b.evalDouble()) //
-                    .cumulativeProbability(k.evalDouble()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.GammaDistribution(a.evalDouble(),
+                    b.evalDouble()) //
+                        .cumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
         }
         IExpr function =
             // [$ (Piecewise({{GammaRegularized(a, 0, #/b), # > 0}}, 0)&) $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.GammaRegularized(a, F.C0, F.Times(F.Power(b, F.CN1), F.Slot1)),
-                            F.Greater(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(
+                F.List(F.List(F.GammaRegularized(a, F.C0, F.Times(F.Power(b, F.CN1), F.Slot1)),
+                    F.Greater(F.Slot1, F.C0))),
+                F.C0)); // $$;
         return callFunction(function, k);
       } else if (dist.isAST(S.GammaDistribution, 5)) {
         //
@@ -2199,17 +2102,10 @@ public class StatisticsFunctions {
         IExpr d = dist.arg4();
         IExpr function =
             // [$ (Piecewise({{GammaRegularized(a, 0, ((# - d)/b)^g), # > d}}, 0)&) $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.GammaRegularized(
-                                a,
-                                F.C0,
-                                F.Power(
-                                    F.Times(F.Power(b, F.CN1), F.Plus(F.Negate(d), F.Slot1)), g)),
-                            F.Greater(F.Slot1, d))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(
+                F.GammaRegularized(a, F.C0,
+                    F.Power(F.Times(F.Power(b, F.CN1), F.Plus(F.Negate(d), F.Slot1)), g)),
+                F.Greater(F.Slot1, d))), F.C0)); // $$;
         return callFunction(function, k);
       }
 
@@ -2222,14 +2118,13 @@ public class StatisticsFunctions {
         //
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.GammaDistribution(
-                        a.evalDouble(), b.evalDouble()) //
-                    .inverseCumulativeProbability(k.evalDouble()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.GammaDistribution(a.evalDouble(),
+                    b.evalDouble()) //
+                        .inverseCumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
@@ -2242,8 +2137,7 @@ public class StatisticsFunctions {
                 F.ConditionalExpression(
                     F.Piecewise(
                         F.List(
-                            F.List(
-                                F.Times(b, F.InverseGammaRegularized(a, F.C0, F.Slot1)),
+                            F.List(F.Times(b, F.InverseGammaRegularized(a, F.C0, F.Slot1)),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
@@ -2259,22 +2153,15 @@ public class StatisticsFunctions {
             // [$ ( ConditionalExpression(Piecewise({{d + b*InverseGammaRegularized(a, 0, #)^(1/g),
             // 0 < # <
             // 1}, {d, # <= 0}}, Infinity), 0 <= # <= 1)& ) $]
-            F.Function(
-                F.ConditionalExpression(
-                    F.Piecewise(
-                        F.List(
-                            F.List(
-                                F.Plus(
-                                    d,
-                                    F.Times(
-                                        b,
-                                        F.Power(
-                                            F.InverseGammaRegularized(a, F.C0, F.Slot1),
-                                            F.Power(g, F.CN1)))),
-                                F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(d, F.LessEqual(F.Slot1, F.C0))),
-                        F.oo),
-                    F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+            F.Function(F.ConditionalExpression(
+                F.Piecewise(F.List(
+                    F.List(F.Plus(d,
+                        F.Times(b,
+                            F.Power(F.InverseGammaRegularized(a, F.C0, F.Slot1),
+                                F.Power(g, F.CN1)))),
+                        F.Less(F.C0, F.Slot1, F.C1)),
+                    F.List(d, F.LessEqual(F.Slot1, F.C0))), F.oo),
+                F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -2294,9 +2181,7 @@ public class StatisticsFunctions {
         IExpr g = dist.arg3();
         IExpr d = dist.arg4();
         return // [$ d + (b*Gamma(a + 1/g))/Gamma(a) $]
-        F.Plus(
-            d,
-            F.Times(b, F.Power(F.Gamma(a), F.CN1), F.Gamma(F.Plus(a, F.Power(g, F.CN1))))); // $$;
+        F.Plus(d, F.Times(b, F.Power(F.Gamma(a), F.CN1), F.Gamma(F.Plus(a, F.Power(g, F.CN1))))); // $$;
       }
       return F.NIL;
     }
@@ -2329,10 +2214,9 @@ public class StatisticsFunctions {
 
         // TODO cache RandomDataGenerator instance
         RandomDataGenerator rdg = new RandomDataGenerator();
-        double[] vector =
-            rdg.nextDeviates( //
-                new org.hipparchus.distribution.continuous.GammaDistribution(a, b), //
-                size);
+        double[] vector = rdg.nextDeviates( //
+            new org.hipparchus.distribution.continuous.GammaDistribution(a, b), //
+            size);
         return new ASTRealVector(vector, false);
       }
       return F.NIL;
@@ -2364,14 +2248,13 @@ public class StatisticsFunctions {
         //
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.GammaDistribution(
-                        a.evalDouble(), b.evalDouble()) //
-                    .density(k.evalDouble()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.GammaDistribution(a.evalDouble(),
+                    b.evalDouble()) //
+                        .density(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
@@ -2384,10 +2267,8 @@ public class StatisticsFunctions {
                         F.List(
                             F.Times(
                                 F.Power(
-                                    F.Times(
-                                        F.Power(b, a),
-                                        F.Exp(F.Times(F.Power(b, F.CN1), F.Slot1)),
-                                        F.Gamma(a)),
+                                    F.Times(F.Power(b, a),
+                                        F.Exp(F.Times(F.Power(b, F.CN1), F.Slot1)), F.Gamma(a)),
                                     F.CN1),
                                 F.Power(F.Slot1, F.Plus(F.CN1, a))),
                             F.Greater(F.Slot1, F.C0))),
@@ -2403,28 +2284,13 @@ public class StatisticsFunctions {
             // [$ ( Piecewise( {{(((# - d)/b)^(-1 + a*g)*g)/(E^((# - d)/b)^g*(b*Gamma(a))), # > d}},
             // 0) & )
             // $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(
-                                g,
-                                F.Power(
-                                    F.Times(
-                                        F.Exp(
-                                            F.Power(
-                                                F.Times(
-                                                    F.Power(b, F.CN1),
-                                                    F.Plus(F.Negate(d), F.Slot1)),
-                                                g)),
-                                        b,
-                                        F.Gamma(a)),
-                                    F.CN1),
-                                F.Power(
-                                    F.Times(F.Power(b, F.CN1), F.Plus(F.Negate(d), F.Slot1)),
-                                    F.Plus(F.CN1, F.Times(a, g)))),
-                            F.Greater(F.Slot1, d))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(F.Times(g,
+                F.Power(F.Times(
+                    F.Exp(F.Power(F.Times(F.Power(b, F.CN1), F.Plus(F.Negate(d), F.Slot1)), g)), b,
+                    F.Gamma(a)), F.CN1),
+                F.Power(F.Times(F.Power(b, F.CN1), F.Plus(F.Negate(d), F.Slot1)),
+                    F.Plus(F.CN1, F.Times(a, g)))),
+                F.Greater(F.Slot1, d))), F.C0)); // $$;
         return callFunction(function, k);
       }
 
@@ -2511,14 +2377,9 @@ public class StatisticsFunctions {
         IExpr n = dist.arg1();
         IExpr function =
             // [$ (Piecewise({{1 - (1 - n)^(1 + Floor(#)), # >= 0}}, 0)) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Subtract(
-                                F.C1, F.Power(F.Subtract(F.C1, n), F.Plus(F.C1, F.Floor(F.Slot1)))),
-                            F.GreaterEqual(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(
+                F.Subtract(F.C1, F.Power(F.Subtract(F.C1, n), F.Plus(F.C1, F.Floor(F.Slot1)))),
+                F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -2536,13 +2397,8 @@ public class StatisticsFunctions {
         //
         IExpr function =
             // [$ (Piecewise({{(1 - n)^#*n, # >= 0}}, 0)) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(F.Power(F.Subtract(F.C1, n), F.Slot1), n),
-                            F.GreaterEqual(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(F.Times(F.Power(F.Subtract(F.C1, n), F.Slot1), n),
+                F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -2601,8 +2457,7 @@ public class StatisticsFunctions {
         IExpr n = dist.arg2();
         return
         // [$ Log(1 + Log(2)/n)/m $]
-        F.Times(
-            F.Power(m, F.CN1), F.Log(F.Plus(F.C1, F.Times(F.Power(n, F.CN1), F.Log(F.C2))))); // $$;
+        F.Times(F.Power(m, F.CN1), F.Log(F.Plus(F.C1, F.Times(F.Power(n, F.CN1), F.Log(F.C2))))); // $$;
       }
       return F.NIL;
     }
@@ -2614,15 +2469,9 @@ public class StatisticsFunctions {
         IExpr n = dist.arg2();
         IExpr function =
             // [$ Piecewise({{1 - E^((1 - E^(#*m))*n), # >= 0}}, 0) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Subtract(
-                                F.C1,
-                                F.Exp(F.Times(F.Subtract(F.C1, F.Exp(F.Times(F.Slot1, m))), n))),
-                            F.GreaterEqual(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(
+                F.Subtract(F.C1, F.Exp(F.Times(F.Subtract(F.C1, F.Exp(F.Times(F.Slot1, m))), n))),
+                F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -2642,15 +2491,10 @@ public class StatisticsFunctions {
                     F.Piecewise(
                         F.List(
                             F.List(
-                                F.Times(
-                                    F.Power(m, F.CN1),
-                                    F.Log(
-                                        F.Plus(
-                                            F.C1,
-                                            F.Times(
-                                                F.CN1,
-                                                F.Power(n, F.CN1),
-                                                F.Log(F.Subtract(F.C1, F.Slot1)))))),
+                                F.Times(F.Power(m, F.CN1),
+                                    F.Log(F.Plus(F.C1,
+                                        F.Times(F.CN1, F.Power(n, F.CN1),
+                                            F.Log(F.Subtract(F.C1, F.Slot1)))))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
@@ -2667,19 +2511,10 @@ public class StatisticsFunctions {
         IExpr n = dist.arg2();
         IExpr function =
             // [$ Piecewise({{E^(#*m + (1 - E^(#*m))*n)*m*n, # >= 0}}, 0) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(
-                                F.Exp(
-                                    F.Plus(
-                                        F.Times(F.Slot1, m),
-                                        F.Times(F.Subtract(F.C1, F.Exp(F.Times(F.Slot1, m))), n))),
-                                m,
-                                n),
-                            F.GreaterEqual(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(
+                F.Times(F.Exp(F.Plus(F.Times(F.Slot1, m),
+                    F.Times(F.Subtract(F.C1, F.Exp(F.Times(F.Slot1, m))), n))), m, n),
+                F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -2694,21 +2529,13 @@ public class StatisticsFunctions {
         // [$ -((E^n*(-6*EulerGamma^2 - Pi^2 + 6*E^n*ExpIntegralEi(-n)^2 +
         // 12*n*HypergeometricPFQ({1, 1, 1}, {2,
         // 2, 2}, -n) - 12*EulerGamma*Log(n) - 6*Log(n)^2))/(6*m^2)) $]
-        F.Times(
-            F.CN1,
-            F.Exp(n),
-            F.Power(F.Times(F.C6, F.Sqr(m)), F.CN1),
-            F.Plus(
-                F.Times(F.CN6, F.Sqr(F.EulerGamma)),
-                F.Negate(F.Sqr(F.Pi)),
+        F.Times(F.CN1, F.Exp(n), F.Power(F.Times(F.C6, F.Sqr(m)), F.CN1),
+            F.Plus(F.Times(F.CN6, F.Sqr(F.EulerGamma)), F.Negate(F.Sqr(F.Pi)),
                 F.Times(F.C6, F.Exp(n), F.Sqr(F.ExpIntegralEi(F.Negate(n)))),
-                F.Times(
-                    F.ZZ(12L),
-                    n,
-                    F.HypergeometricPFQ(
-                        F.List(F.C1, F.C1, F.C1), F.List(F.C2, F.C2, F.C2), F.Negate(n))),
-                F.Times(F.ZZ(-12L), F.EulerGamma, F.Log(n)),
-                F.Times(F.CN6, F.Sqr(F.Log(n))))); // $$;
+                F.Times(F.ZZ(12L), n,
+                    F.HypergeometricPFQ(F.List(F.C1, F.C1, F.C1), F.List(F.C2, F.C2, F.C2),
+                        F.Negate(n))),
+                F.Times(F.ZZ(-12L), F.EulerGamma, F.Log(n)), F.Times(F.CN6, F.Sqr(F.Log(n))))); // $$;
       }
       return F.NIL;
     }
@@ -2755,22 +2582,25 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a Gumbel distribution.
+   * <p>
+   * returns a Gumbel distribution.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Gumbel_distribution">Wikipedia - Gumbel
-   *       distribution</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Gumbel_distribution">Wikipedia - Gumbel
+   * distribution</a>
    * </ul>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a
-   * href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>, <a
-   * href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
+   * <p>
+   * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>,
+   * <a href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>,
+   * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class GumbelDistribution extends AbstractEvaluator
       implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate {
@@ -2816,8 +2646,7 @@ public class StatisticsFunctions {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
             final double z = (k.evalDouble() - n.evalDouble()) / m.evalDouble();
@@ -2832,14 +2661,8 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ (1 - E^(-E^((# - n)/m))) & $]
-            F.Function(
-                F.Subtract(
-                    F.C1,
-                    F.Exp(
-                        F.Negate(
-                            F.Exp(
-                                F.Times(
-                                    F.Power(m, F.CN1), F.Plus(F.Negate(n), F.Slot1))))))); // $$;
+            F.Function(F.Subtract(F.C1,
+                F.Exp(F.Negate(F.Exp(F.Times(F.Power(m, F.CN1), F.Plus(F.Negate(n), F.Slot1))))))); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -2850,8 +2673,7 @@ public class StatisticsFunctions {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
             double p = k.evalDouble();
@@ -2876,15 +2698,12 @@ public class StatisticsFunctions {
             // 0}}, Infinity), 0 <= # <= 1)& ) $]
             F.Function(
                 F.ConditionalExpression(
-                    F.Piecewise(
+                    F.Piecewise(F.List(
                         F.List(
-                            F.List(
-                                F.Plus(
-                                    n,
-                                    F.Times(m, F.Log(F.Negate(F.Log(F.Subtract(F.C1, F.Slot1)))))),
-                                F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))),
-                        F.oo),
+                            F.Plus(n,
+                                F.Times(m, F.Log(F.Negate(F.Log(F.Subtract(F.C1, F.Slot1)))))),
+                            F.Less(F.C0, F.Slot1, F.C1)),
+                        F.List(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))), F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       }
@@ -2900,11 +2719,9 @@ public class StatisticsFunctions {
             // [$ (E^(-E^((# - n)/m) + (# - n)/m)/m) & $]
             F.Function(
                 F.Times(
-                    F.Exp(
-                        F.Plus(
-                            F.Negate(
-                                F.Exp(F.Times(F.Power(m, F.CN1), F.Plus(F.Negate(n), F.Slot1)))),
-                            F.Times(F.Power(m, F.CN1), F.Plus(F.Negate(n), F.Slot1)))),
+                    F.Exp(F.Plus(
+                        F.Negate(F.Exp(F.Times(F.Power(m, F.CN1), F.Plus(F.Negate(n), F.Slot1)))),
+                        F.Times(F.Power(m, F.CN1), F.Plus(F.Negate(n), F.Slot1)))),
                     F.Power(m, F.CN1))); // $$;
         return callFunction(function, k);
       }
@@ -2943,9 +2760,8 @@ public class StatisticsFunctions {
         // uniform = Math.log(-Math.log(uniform));
         // return m.add(n.times(F.num(uniform)));
         RandomDataGenerator rdg = new RandomDataGenerator();
-        double[] vector =
-            rdg.nextDeviates(
-                new org.hipparchus.distribution.continuous.GumbelDistribution(n, m), size);
+        double[] vector = rdg.nextDeviates(
+            new org.hipparchus.distribution.continuous.GumbelDistribution(n, m), size);
         return new ASTRealVector(vector, false);
       }
       return F.NIL;
@@ -2994,22 +2810,25 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a hypergeometric distribution.
+   * <p>
+   * returns a hypergeometric distribution.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Hypergeometric_distribution">Wikipedia -
-   *       Hypergeometric distribution</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Hypergeometric_distribution">Wikipedia -
+   * Hypergeometric distribution</a>
    * </ul>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a
-   * href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>, <a
-   * href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
+   * <p>
+   * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>,
+   * <a href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>,
+   * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class HypergeometricDistribution extends AbstractEvaluator
       implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
@@ -3076,46 +2895,27 @@ public class StatisticsFunctions {
             // Floor(#))!*(-1 + ns - Floor(#))!), 0 <= # && n + ns - nt <= # && # < n && # < ns},
             // {1, # >= n
             // || # >= ns}}, 0) & $]
-            F.Function(
-                F.Piecewise(
+            F.Function(F.Piecewise(
+                F.List(
                     F.List(
-                        F.List(
-                            F.Plus(
-                                F.C1,
-                                F.Times(
-                                    F.CN1,
-                                    F.Factorial(ns),
-                                    F.Factorial(F.Plus(F.Negate(ns), nt)),
-                                    F.Power(
-                                        F.Times(
-                                            F.Binomial(nt, n),
-                                            F.Factorial(
-                                                F.Plus(F.CN1, n, F.Negate(F.Floor(F.Slot1)))),
-                                            F.Factorial(
-                                                F.Plus(F.CN1, ns, F.Negate(F.Floor(F.Slot1))))),
-                                        F.CN1),
-                                    F.HypergeometricPFQRegularized(
-                                        F.List(
-                                            F.C1,
-                                            F.Plus(F.C1, F.Negate(n), F.Floor(F.Slot1)),
-                                            F.Plus(F.C1, F.Negate(ns), F.Floor(F.Slot1))),
-                                        F.List(
-                                            F.Plus(F.C2, F.Floor(F.Slot1)),
-                                            F.Plus(
-                                                F.C2,
-                                                F.Negate(n),
-                                                F.Negate(ns),
-                                                nt,
-                                                F.Floor(F.Slot1))),
-                                        F.C1))),
-                            F.And(
-                                F.LessEqual(F.C0, F.Slot1),
-                                F.LessEqual(F.Plus(n, ns, F.Negate(nt)), F.Slot1),
-                                F.Less(F.Slot1, n),
-                                F.Less(F.Slot1, ns))),
-                        F.List(
-                            F.C1, F.Or(F.GreaterEqual(F.Slot1, n), F.GreaterEqual(F.Slot1, ns)))),
-                    F.C0)); // $$;
+                        F.Plus(F.C1, F.Times(F.CN1, F.Factorial(ns),
+                            F.Factorial(F.Plus(F.Negate(ns), nt)),
+                            F.Power(
+                                F.Times(F.Binomial(nt, n),
+                                    F.Factorial(F.Plus(F.CN1, n, F.Negate(F.Floor(F.Slot1)))),
+                                    F.Factorial(F.Plus(F.CN1, ns, F.Negate(F.Floor(F.Slot1))))),
+                                F.CN1),
+                            F.HypergeometricPFQRegularized(
+                                F.List(F.C1, F.Plus(F.C1, F.Negate(n), F.Floor(F.Slot1)),
+                                    F.Plus(F.C1, F.Negate(ns), F.Floor(F.Slot1))),
+                                F.List(F.Plus(F.C2, F.Floor(F.Slot1)),
+                                    F.Plus(F.C2, F.Negate(n), F.Negate(ns), nt, F.Floor(F.Slot1))),
+                                F.C1))),
+                        F.And(F.LessEqual(F.C0, F.Slot1),
+                            F.LessEqual(F.Plus(n, ns, F.Negate(nt)), F.Slot1), F.Less(F.Slot1, n),
+                            F.Less(F.Slot1, ns))),
+                    F.List(F.C1, F.Or(F.GreaterEqual(F.Slot1, n), F.GreaterEqual(F.Slot1, ns)))),
+                F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -3136,20 +2936,14 @@ public class StatisticsFunctions {
             // [$ (Piecewise({{(Binomial(ns, #)*Binomial(-ns + nt, -# + n))/Binomial(nt, n), 0 <= #
             // <= n &&
             // n + ns - nt <= # <= n && 0 <= # <= ns && n + ns - nt <= # <= ns}}, 0)) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(
-                                F.Binomial(ns, F.Slot1),
-                                F.Power(F.Binomial(nt, n), F.CN1),
-                                F.Binomial(F.Plus(F.Negate(ns), nt), F.Plus(F.Negate(F.Slot1), n))),
-                            F.And(
-                                F.LessEqual(F.C0, F.Slot1, n),
-                                F.LessEqual(F.Plus(n, ns, F.Negate(nt)), F.Slot1, n),
-                                F.LessEqual(F.C0, F.Slot1, ns),
-                                F.LessEqual(F.Plus(n, ns, F.Negate(nt)), F.Slot1, ns)))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(
+                F.Times(F.Binomial(ns, F.Slot1), F.Power(F.Binomial(nt, n), F.CN1),
+                    F.Binomial(F.Plus(F.Negate(ns), nt), F.Plus(F.Negate(F.Slot1), n))),
+                F.And(F.LessEqual(F.C0, F.Slot1, n),
+                    F.LessEqual(F.Plus(n, ns, F.Negate(nt)), F.Slot1, n),
+                    F.LessEqual(F.C0, F.Slot1, ns),
+                    F.LessEqual(F.Plus(n, ns, F.Negate(nt)), F.Slot1, ns)))),
+                F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -3173,13 +2967,8 @@ public class StatisticsFunctions {
         IExpr n = dist.arg2();
         IExpr mn = dist.arg3();
         // (n*(1 - n/m_n)*(m_n - N)*N)/((-1 + m_n)*m_n)
-        return F.Times(
-            F.Power(F.Plus(F.CN1, mn), -1),
-            F.Power(mn, -1),
-            n,
-            F.Plus(F.C1, F.Times(F.CN1, F.Power(mn, -1), n)),
-            F.Plus(mn, F.Negate(N)),
-            N);
+        return F.Times(F.Power(F.Plus(F.CN1, mn), -1), F.Power(mn, -1), n,
+            F.Plus(F.C1, F.Times(F.CN1, F.Power(mn, -1), n)), F.Plus(mn, F.Negate(N)), N);
       }
       return F.NIL;
     }
@@ -3202,10 +2991,8 @@ public class StatisticsFunctions {
         if (param != null) {
           RandomDataGenerator rdg = new RandomDataGenerator();
           int[] vector =
-              rdg.nextDeviates(
-                  new org.hipparchus.distribution.discrete.HypergeometricDistribution(
-                      param[2], param[1], param[0]),
-                  size);
+              rdg.nextDeviates(new org.hipparchus.distribution.discrete.HypergeometricDistribution(
+                  param[2], param[1], param[0]), size);
           return F.List(vector);
         }
       }
@@ -3226,14 +3013,16 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>computes the covariance between the equal-sized vectors <code>a</code> and <code>b</code>.
+   * <p>
+   * computes the covariance between the equal-sized vectors <code>a</code> and <code>b</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Covariance">Wikipedia - Covariance</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Covariance">Wikipedia - Covariance</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -3294,24 +3083,17 @@ public class StatisticsFunctions {
       return F.NIL;
     }
 
-    private static IExpr vectorCovarianceSymbolic(
-        final IAST arg1, final IAST arg2, int arg1Length) {
+    private static IExpr vectorCovarianceSymbolic(final IAST arg1, final IAST arg2,
+        int arg1Length) {
       if (arg1Length == 2) {
-        return F.Times(
-            F.C1D2,
-            F.Subtract(arg1.arg1(), arg1.arg2()),
+        return F.Times(F.C1D2, F.Subtract(arg1.arg1(), arg1.arg2()),
             F.Subtract(F.Conjugate(arg2.arg1()), F.Conjugate(arg2.arg2())));
       }
       IAST num1 = arg1.apply(S.Plus);
       IExpr factor = F.ZZ(-1 * (arg1.size() - 2));
       IASTAppendable v1 = F.PlusAlloc(arg1.size());
-      v1.appendArgs(
-          arg1.size(),
-          i ->
-              F.Times(
-                  F.CN1,
-                  num1.setAtCopy(i, F.Times(factor, arg1.get(i))),
-                  F.Conjugate(arg2.get(i))));
+      v1.appendArgs(arg1.size(), i -> F.Times(F.CN1,
+          num1.setAtCopy(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
       return F.Divide(v1, F.ZZ((arg1.argSize()) * ((arg1.size()) - 2L)));
     }
 
@@ -3350,22 +3132,25 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a discrete uniform distribution.
+   * <p>
+   * returns a discrete uniform distribution.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Discrete_uniform_distribution">Wikipedia -
-   *       Discrete uniform distribution</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Discrete_uniform_distribution">Wikipedia - Discrete
+   * uniform distribution</a>
    * </ul>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a
-   * href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>, <a
-   * href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
+   * <p>
+   * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>,
+   * <a href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>,
+   * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class DiscreteUniformDistribution extends AbstractEvaluator
       implements IDiscreteDistribution, IStatistics, ICDF, IPDF, IRandomVariate {
@@ -3397,8 +3182,8 @@ public class StatisticsFunctions {
         IExpr l = minMax[0];
         IExpr r = minMax[1];
         // (l,r) => -1 + l + Max(1, Ceiling((1/2)*(1 - l + r)))
-        return F.Plus(
-            F.CN1, l, F.Max(F.C1, F.Ceiling(F.Times(F.C1D2, F.Plus(F.C1, F.Negate(l), r)))));
+        return F.Plus(F.CN1, l,
+            F.Max(F.C1, F.Ceiling(F.Times(F.C1D2, F.Plus(F.C1, F.Negate(l), r)))));
       }
       return F.NIL;
     }
@@ -3408,8 +3193,8 @@ public class StatisticsFunctions {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         // (1/12)*(-1+(1+max-min)^2)
-        return F.Times(
-            F.QQ(1L, 12L), F.Plus(F.CN1, F.Sqr(F.Plus(F.C1, minMax[1], F.Negate(minMax[0])))));
+        return F.Times(F.QQ(1L, 12L),
+            F.Plus(F.CN1, F.Sqr(F.Plus(F.C1, minMax[1], F.Negate(minMax[0])))));
       }
 
       return F.NIL;
@@ -3444,16 +3229,12 @@ public class StatisticsFunctions {
         IExpr b = minMax[1];
         IExpr function =
             // [$ (Piecewise({{(1 - a + Floor(#))/(1 - a + b), a<=#<b}, {1, # >= b}}, 0)) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(
-                                F.Power(F.Plus(F.C1, F.Negate(a), b), F.CN1),
-                                F.Plus(F.C1, F.Negate(a), F.Floor(F.Slot1))),
-                            F.And(F.LessEqual(a, F.Slot1), F.Less(F.Slot1, b))),
-                        F.List(F.C1, F.GreaterEqual(F.Slot1, b))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(
+                F.List(
+                    F.Times(F.Power(F.Plus(F.C1, F.Negate(a), b), F.CN1),
+                        F.Plus(F.C1, F.Negate(a), F.Floor(F.Slot1))),
+                    F.And(F.LessEqual(a, F.Slot1), F.Less(F.Slot1, b))),
+                F.List(F.C1, F.GreaterEqual(F.Slot1, b))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -3474,11 +3255,8 @@ public class StatisticsFunctions {
                     F.Piecewise(
                         F.List(
                             F.List(
-                                F.Plus(
-                                    F.CN1,
-                                    a,
-                                    F.Max(
-                                        F.C1,
+                                F.Plus(F.CN1, a,
+                                    F.Max(F.C1,
                                         F.Ceiling(F.Times(F.Slot1, F.Plus(F.C1, F.Negate(a), b))))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.List(a, F.LessEqual(F.Slot1, F.C0))),
@@ -3497,13 +3275,9 @@ public class StatisticsFunctions {
         IExpr b = minMax[1];
         IExpr function =
             // [$ ( Piecewise({{1/(1 - a + b), a <= # <= b}}, 0) & ) $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Power(F.Plus(F.C1, F.Negate(a), b), F.CN1),
-                            F.LessEqual(a, F.Slot1, b))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(
+                F.List(F.Power(F.Plus(F.C1, F.Negate(a), b), F.CN1), F.LessEqual(a, F.Slot1, b))),
+                F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -3517,10 +3291,8 @@ public class StatisticsFunctions {
         int max = minMax[1].toIntDefault();
         if (min < max && min != Integer.MIN_VALUE) {
           RandomDataGenerator rdg = new RandomDataGenerator();
-          int[] vector =
-              rdg.nextDeviates(
-                  new org.hipparchus.distribution.discrete.UniformIntegerDistribution(min, max),
-                  size);
+          int[] vector = rdg.nextDeviates(
+              new org.hipparchus.distribution.discrete.UniformIntegerDistribution(min, max), size);
           return F.List(vector);
           // return F.ZZ(new DiscreteUniformGenerator(min, max, random).nextValue());
         }
@@ -3538,22 +3310,25 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a Erlang distribution.
+   * <p>
+   * returns a Erlang distribution.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Erlang_distribution">Wikipedia - Erlang
-   *       distribution</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Erlang_distribution">Wikipedia - Erlang
+   * distribution</a>
    * </ul>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a
-   * href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>, <a
-   * href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
+   * <p>
+   * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>,
+   * <a href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>,
+   * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class ErlangDistribution extends AbstractEvaluator
       implements ICDF, IDistribution, IPDF, IStatistics {
@@ -3595,13 +3370,9 @@ public class StatisticsFunctions {
         IExpr m = dist.arg2();
         IExpr function =
             // [$ (Piecewise({{GammaRegularized(n, 0, #*m), # > 0}}, 0)) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.GammaRegularized(n, F.C0, F.Times(F.Slot1, m)),
-                            F.Greater(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(
+                F.List(F.GammaRegularized(n, F.C0, F.Times(F.Slot1, m)), F.Greater(F.Slot1, F.C0))),
+                F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -3621,8 +3392,8 @@ public class StatisticsFunctions {
                     F.Piecewise(
                         F.List(
                             F.List(
-                                F.Times(
-                                    F.Power(m, F.CN1), F.InverseGammaRegularized(n, F.C0, F.Slot1)),
+                                F.Times(F.Power(m, F.CN1),
+                                    F.InverseGammaRegularized(n, F.C0, F.Slot1)),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
@@ -3640,16 +3411,9 @@ public class StatisticsFunctions {
         //
         IExpr function =
             // [$ Piecewise({{(#^(-1 + n)*m^n)/(E^(#*m)*Gamma(n)), # > 0}}, 0) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(
-                                F.Power(m, n),
-                                F.Power(F.Times(F.Exp(F.Times(F.Slot1, m)), F.Gamma(n)), F.CN1),
-                                F.Power(F.Slot1, F.Plus(F.CN1, n))),
-                            F.Greater(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(F.Times(F.Power(m, n),
+                F.Power(F.Times(F.Exp(F.Times(F.Slot1, m)), F.Gamma(n)), F.CN1),
+                F.Power(F.Slot1, F.Plus(F.CN1, n))), F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -3688,15 +3452,17 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the expected value of the <code>pure-function</code> for the given <code>data-set
+   * <p>
+   * returns the expected value of the <code>pure-function</code> for the given <code>data-set
    * </code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Expected_value">Wikipedia - Expected value</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Expected_value">Wikipedia - Expected value</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -3840,8 +3606,7 @@ public class StatisticsFunctions {
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || k.isNumericArgument())) {
           try {
             double x = k.evalDouble();
@@ -3860,12 +3625,8 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ (Piecewise({{1 - E^((-#)*n), # >= 0}}, 0)) & $]
             F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Subtract(F.C1, F.Exp(F.Times(F.CN1, F.Slot1, n))),
-                            F.GreaterEqual(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+                F.Piecewise(F.List(F.List(F.Subtract(F.C1, F.Exp(F.Times(F.CN1, F.Slot1, n))),
+                    F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -3875,8 +3636,7 @@ public class StatisticsFunctions {
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || k.isNumericArgument())) {
           try {
             double x = k.evalDouble();
@@ -3895,15 +3655,10 @@ public class StatisticsFunctions {
             // [$ ( ConditionalExpression(Piecewise({{-(Log(1 - #)/n), # < 1}}, Infinity), 0 <= # <=
             // 1)& )
             // $]
-            F.Function(
-                F.ConditionalExpression(
-                    F.Piecewise(
-                        F.List(
-                            F.List(
-                                F.Times(F.CN1, F.Power(n, F.CN1), F.Log(F.Subtract(F.C1, F.Slot1))),
-                                F.Less(F.Slot1, F.C1))),
-                        F.oo),
-                    F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+            F.Function(F.ConditionalExpression(F.Piecewise(
+                F.List(F.List(F.Times(F.CN1, F.Power(n, F.CN1), F.Log(F.Subtract(F.C1, F.Slot1))),
+                    F.Less(F.Slot1, F.C1))),
+                F.oo), F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -3917,12 +3672,8 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{n/E^(#*n), # >= 0}}, 0) & $]
             F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(F.Power(F.Exp(F.Times(F.Slot1, n)), F.CN1), n),
-                            F.GreaterEqual(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+                F.Piecewise(F.List(F.List(F.Times(F.Power(F.Exp(F.Times(F.Slot1, n)), F.CN1), n),
+                    F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -3936,9 +3687,8 @@ public class StatisticsFunctions {
         if (rate > 0.0) {
           // return F.num(new ExponentialGenerator(rate, random).nextValue());
           RandomDataGenerator rdg = new RandomDataGenerator();
-          double[] vector =
-              rdg.nextDeviates(
-                  new org.hipparchus.distribution.continuous.ExponentialDistribution(rate), size);
+          double[] vector = rdg.nextDeviates(
+              new org.hipparchus.distribution.continuous.ExponentialDistribution(rate), size);
           return new ASTRealVector(vector, false);
         }
       }
@@ -3993,8 +3743,9 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>Computes the <code>p-value</code>, or <i>observed significance level</i>, of a one-sample <a
-   * href="http://en.wikipedia.org/wiki/Kolmogorov-Smirnov_test">Wikipedia:Kolmogorov-Smirnov
+   * <p>
+   * Computes the <code>p-value</code>, or <i>observed significance level</i>, of a one-sample
+   * <a href="http://en.wikipedia.org/wiki/Kolmogorov-Smirnov_test">Wikipedia:Kolmogorov-Smirnov
    * test</a> evaluating the null hypothesis that <code>data</code> conforms to the <code>
    * NormalDistribution()</code>.
    *
@@ -4007,8 +3758,9 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>Computes the <code>p-value</code>, or <i>observed significance level</i>, of a one-sample <a
-   * href="http://en.wikipedia.org/wiki/Kolmogorov-Smirnov_test">Wikipedia:Kolmogorov-Smirnov
+   * <p>
+   * Computes the <code>p-value</code>, or <i>observed significance level</i>, of a one-sample
+   * <a href="http://en.wikipedia.org/wiki/Kolmogorov-Smirnov_test">Wikipedia:Kolmogorov-Smirnov
    * test</a> evaluating the null hypothesis that <code>data</code> conforms to the (continuous)
    * <code>distribution</code>.
    *
@@ -4021,9 +3773,10 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>Computes the <code>test statistic</code> and the <code>p-value</code>, or <i>observed
-   * significance level</i>, of a one-sample <a
-   * href="http://en.wikipedia.org/wiki/Kolmogorov-Smirnov_test">Wikipedia:Kolmogorov-Smirnov
+   * <p>
+   * Computes the <code>test statistic</code> and the <code>p-value</code>, or <i>observed
+   * significance level</i>, of a one-sample
+   * <a href="http://en.wikipedia.org/wiki/Kolmogorov-Smirnov_test">Wikipedia:Kolmogorov-Smirnov
    * test</a> evaluating the null hypothesis that <code>data</code> conforms to the (continuous)
    * <code>distribution</code>.
    *
@@ -4060,9 +3813,8 @@ public class StatisticsFunctions {
           if (data1 != null && data1.length > 0) {
             org.hipparchus.stat.inference.KolmogorovSmirnovTest test =
                 new org.hipparchus.stat.inference.KolmogorovSmirnovTest();
-            double d =
-                test.kolmogorovSmirnovTest(
-                    new org.hipparchus.distribution.continuous.NormalDistribution(), data1, false);
+            double d = test.kolmogorovSmirnovTest(
+                new org.hipparchus.distribution.continuous.NormalDistribution(), data1, false);
             return F.num(d);
           }
         } else if (ast.size() == 3 || ast.size() == 4) {
@@ -4147,8 +3899,8 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the Pearson measure of kurtosis for <code>list</code> (a measure of existing
-   * outliers).
+   * <p>
+   * gives the Pearson measure of kurtosis for <code>list</code> (a measure of existing outliers).
    *
    * </blockquote>
    *
@@ -4188,22 +3940,25 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a log-normal distribution.
+   * <p>
+   * returns a log-normal distribution.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Log-normal_distribution">Wikipedia - Log-normal
-   *       distribution</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Log-normal_distribution">Wikipedia - Log-normal
+   * distribution</a>
    * </ul>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a
-   * href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>, <a
-   * href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
+   * <p>
+   * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>,
+   * <a href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>,
+   * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class LogNormalDistribution extends AbstractEvaluator
       implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate {
@@ -4239,13 +3994,11 @@ public class StatisticsFunctions {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         //
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.LogNormalDistribution(
-                        n.evalDouble(), m.evalDouble()) //
+            return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(
+                n.evalDouble(), m.evalDouble()) //
                     .cumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -4256,13 +4009,9 @@ public class StatisticsFunctions {
             F.Function(
                 F.Piecewise(
                     F.List(
-                        F.List(
-                            F.Times(
-                                F.C1D2,
-                                F.Erfc(
-                                    F.Times(
-                                        F.Power(F.Times(F.CSqrt2, m), F.CN1),
-                                        F.Subtract(n, F.Log(F.Slot1))))),
+                        F.List(F.Times(F.C1D2,
+                            F.Erfc(F.Times(F.Power(F.Times(F.CSqrt2, m), F.CN1),
+                                F.Subtract(n, F.Log(F.Slot1))))),
                             F.Greater(F.Slot1, F.C0))),
                     F.C0)); // $$;
         return callFunction(function, k);
@@ -4275,13 +4024,11 @@ public class StatisticsFunctions {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.LogNormalDistribution(
-                        n.evalDouble(), m.evalDouble()) //
+            return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(
+                n.evalDouble(), m.evalDouble()) //
                     .inverseCumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -4296,14 +4043,9 @@ public class StatisticsFunctions {
                     F.Piecewise(
                         F.List(
                             F.List(
-                                F.Exp(
-                                    F.Plus(
-                                        n,
-                                        F.Times(
-                                            F.CN1,
-                                            F.CSqrt2,
-                                            m,
-                                            F.InverseErfc(F.Times(F.C2, F.Slot1))))),
+                                F.Exp(F.Plus(n,
+                                    F.Times(F.CN1, F.CSqrt2, m,
+                                        F.InverseErfc(F.Times(F.C2, F.Slot1))))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
@@ -4319,13 +4061,11 @@ public class StatisticsFunctions {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         //
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.LogNormalDistribution(
-                        n.evalDouble(), m.evalDouble()) //
+            return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(
+                n.evalDouble(), m.evalDouble()) //
                     .density(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -4333,22 +4073,10 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ (Piecewise({{1/(E^((-n + Log(#))^2/(2*m^2))*(#*m*Sqrt(2*Pi))), # > 0}}, 0)) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Power(
-                                F.Times(
-                                    F.Exp(
-                                        F.Times(
-                                            F.Power(F.Times(F.C2, F.Sqr(m)), F.CN1),
-                                            F.Sqr(F.Plus(F.Negate(n), F.Log(F.Slot1))))),
-                                    F.Slot1,
-                                    m,
-                                    F.Sqrt(F.C2Pi)),
-                                F.CN1),
-                            F.Greater(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(F.Power(
+                F.Times(F.Exp(F.Times(F.Power(F.Times(F.C2, F.Sqr(m)), F.CN1),
+                    F.Sqr(F.Plus(F.Negate(n), F.Log(F.Slot1))))), F.Slot1, m, F.Sqrt(F.C2Pi)),
+                F.CN1), F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -4360,8 +4088,7 @@ public class StatisticsFunctions {
         IExpr m = dist.arg1();
         IExpr s = dist.arg2();
         // E^(2*m+s^2)*(-1+E^(s^2))
-        return F.Times(
-            F.Plus(F.CN1, F.Power(S.E, F.Sqr(s))),
+        return F.Times(F.Plus(F.CN1, F.Power(S.E, F.Sqr(s))),
             F.Power(S.E, F.Plus(F.Times(F.C2, m), F.Sqr(s))));
       }
       return F.NIL;
@@ -4390,10 +4117,8 @@ public class StatisticsFunctions {
         double sigma = dist.arg2().evalDouble();
         if (sigma > 0) {
           RandomDataGenerator rdg = new RandomDataGenerator();
-          double[] vector =
-              rdg.nextDeviates(
-                  new org.hipparchus.distribution.continuous.LogNormalDistribution(mean, sigma),
-                  size);
+          double[] vector = rdg.nextDeviates(
+              new org.hipparchus.distribution.continuous.LogNormalDistribution(mean, sigma), size);
           return new ASTRealVector(vector, false);
           // return F.num(Math.exp(new GaussianGenerator(mean, sigma, random).nextValue()));
         }
@@ -4411,36 +4136,40 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the statistical mean of <code>list</code>.
+   * <p>
+   * returns the statistical mean of <code>list</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Mean">Wikipedia - Mean</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Mean">Wikipedia - Mean</a>
    * </ul>
    *
-   * <p><code>Mean</code> can be applied to the following distributions:
+   * <p>
+   * <code>Mean</code> can be applied to the following distributions:
    *
    * <blockquote>
    *
-   * <p><a href="BernoulliDistribution.md">BernoulliDistribution</a>, <a
-   * href="BinomialDistribution.md">BinomialDistribution</a>, <a
-   * href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>, <a
-   * href="ErlangDistribution.md">ErlangDistribution</a>, <a
-   * href="ExponentialDistribution.md">ExponentialDistribution</a>, <a
-   * href="FrechetDistribution.md">FrechetDistribution</a>, <a
-   * href="GammaDistribution.md">GammaDistribution</a>, <a
-   * href="GeometricDistribution.md">GeometricDistribution</a>, <a
-   * href="GumbelDistribution.md">GumbelDistribution</a>, <a
-   * href="HypergeometricDistribution.md">HypergeometricDistribution</a>, <a
-   * href="LogNormalDistribution.md">LogNormalDistribution</a>, <a
-   * href="NakagamiDistribution.md">NakagamiDistribution</a>, <a
-   * href="NormalDistribution.md">NormalDistribution</a>, <a
-   * href="PoissonDistribution.md">PoissonDistribution</a>, <a
-   * href="StudentTDistribution.md">StudentTDistribution</a>, <a
-   * href="WeibullDistribution.md">WeibullDistribution</a>
+   * <p>
+   * <a href="BernoulliDistribution.md">BernoulliDistribution</a>,
+   * <a href="BinomialDistribution.md">BinomialDistribution</a>,
+   * <a href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>,
+   * <a href="ErlangDistribution.md">ErlangDistribution</a>,
+   * <a href="ExponentialDistribution.md">ExponentialDistribution</a>,
+   * <a href="FrechetDistribution.md">FrechetDistribution</a>,
+   * <a href="GammaDistribution.md">GammaDistribution</a>,
+   * <a href="GeometricDistribution.md">GeometricDistribution</a>,
+   * <a href="GumbelDistribution.md">GumbelDistribution</a>,
+   * <a href="HypergeometricDistribution.md">HypergeometricDistribution</a>,
+   * <a href="LogNormalDistribution.md">LogNormalDistribution</a>,
+   * <a href="NakagamiDistribution.md">NakagamiDistribution</a>,
+   * <a href="NormalDistribution.md">NormalDistribution</a>,
+   * <a href="PoissonDistribution.md">PoissonDistribution</a>,
+   * <a href="StudentTDistribution.md">StudentTDistribution</a>,
+   * <a href="WeibullDistribution.md">WeibullDistribution</a>
    *
    * </blockquote>
    *
@@ -4457,7 +4186,8 @@ public class StatisticsFunctions {
    * 1/2*(a+b)
    * </pre>
    *
-   * <p>The <a href="https://en.wikipedia.org/wiki/Mean">mean</a> of the normal distribution is
+   * <p>
+   * The <a href="https://en.wikipedia.org/wiki/Mean">mean</a> of the normal distribution is
    *
    * <pre>
    * &gt;&gt; Mean(NormalDistribution(m, s))
@@ -4564,35 +4294,39 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the median of <code>list</code>.
+   * <p>
+   * returns the median of <code>list</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Median">Wikipedia - Median</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Median">Wikipedia - Median</a>
    * </ul>
    *
-   * <p><code>Median</code> can be applied to the following distributions:
+   * <p>
+   * <code>Median</code> can be applied to the following distributions:
    *
    * <blockquote>
    *
-   * <p><a href="BernoulliDistribution.md">BernoulliDistribution</a>, <a
-   * href="BinomialDistribution.md">BinomialDistribution</a>, <a
-   * href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>, <a
-   * href="ErlangDistribution.md">ErlangDistribution</a>, <a
-   * href="ExponentialDistribution.md">ExponentialDistribution</a>, <a
-   * href="FrechetDistribution.md">FrechetDistribution</a>, <a
-   * href="GammaDistribution.md">GammaDistribution</a>, <a
-   * href="GeometricDistribution.md">GeometricDistribution</a>, <a
-   * href="GumbelDistribution.md">GumbelDistribution</a>, <a
-   * href="HypergeometricDistribution.md">HypergeometricDistribution</a>, <a
-   * href="LogNormalDistribution.md">LogNormalDistribution</a>, <a
-   * href="NakagamiDistribution.md">NakagamiDistribution</a>, <a
-   * href="NormalDistribution.md">NormalDistribution</a>, <a
-   * href="StudentTDistribution.md">StudentTDistribution</a>, <a
-   * href="WeibullDistribution.md">WeibullDistribution</a>
+   * <p>
+   * <a href="BernoulliDistribution.md">BernoulliDistribution</a>,
+   * <a href="BinomialDistribution.md">BinomialDistribution</a>,
+   * <a href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>,
+   * <a href="ErlangDistribution.md">ErlangDistribution</a>,
+   * <a href="ExponentialDistribution.md">ExponentialDistribution</a>,
+   * <a href="FrechetDistribution.md">FrechetDistribution</a>,
+   * <a href="GammaDistribution.md">GammaDistribution</a>,
+   * <a href="GeometricDistribution.md">GeometricDistribution</a>,
+   * <a href="GumbelDistribution.md">GumbelDistribution</a>,
+   * <a href="HypergeometricDistribution.md">HypergeometricDistribution</a>,
+   * <a href="LogNormalDistribution.md">LogNormalDistribution</a>,
+   * <a href="NakagamiDistribution.md">NakagamiDistribution</a>,
+   * <a href="NormalDistribution.md">NormalDistribution</a>,
+   * <a href="StudentTDistribution.md">StudentTDistribution</a>,
+   * <a href="WeibullDistribution.md">WeibullDistribution</a>
    *
    * </blockquote>
    *
@@ -4603,14 +4337,16 @@ public class StatisticsFunctions {
    * 36
    * </pre>
    *
-   * <p>For lists with an even number of elements, Median returns the mean of the two middle values:
+   * <p>
+   * For lists with an even number of elements, Median returns the mean of the two middle values:
    *
    * <pre>
    * &gt;&gt; Median({-11, 38, 501, 1183})
    * 539/2
    * </pre>
    *
-   * <p>Passing a matrix returns the medians of the respective columns:
+   * <p>
+   * Passing a matrix returns the medians of the respective columns:
    *
    * <pre>
    * &gt;&gt; Median({{100, 1, 10, 50}, {-1, 1, -2, 2}})
@@ -4710,7 +4446,7 @@ public class StatisticsFunctions {
      * @param weightedData
      * @param engine
      * @return <code>F.NIL</code> if the input <code>data, weight</code> lists aren't of the same
-     *     length.
+     *         length.
      */
     private static IExpr median(final IAST weightedData, EvalEngine engine) {
       IAST data = (IAST) weightedData.arg1();
@@ -4751,7 +4487,7 @@ public class StatisticsFunctions {
      * @param weights
      * @param engine the evaluation engine
      * @return the sorted data at offset <code>0</code> and the new associated weights in the same
-     *     order at offset <code>1</code>
+     *         order at offset <code>1</code>
      */
     private static IASTAppendable[] sortWeightedData(IAST data, IAST weights, EvalEngine engine) {
       final int size = data.size();
@@ -4809,28 +4545,23 @@ public class StatisticsFunctions {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.NakagamiDistribution(
-                        n.evalDouble(), m.evalDouble()) //
-                    .cumulativeProbability(k.evalDouble()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalDouble(),
+                    m.evalDouble()) //
+                        .cumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
         }
         IExpr function =
             // [$ Piecewise({{GammaRegularized(n, 0, (#^2*n)/m), # > 0}}, 0) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.GammaRegularized(
-                                n, F.C0, F.Times(F.Power(m, F.CN1), n, F.Sqr(F.Slot1))),
-                            F.Greater(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(
+                F.List(F.GammaRegularized(n, F.C0, F.Times(F.Power(m, F.CN1), n, F.Sqr(F.Slot1))),
+                    F.Greater(F.Slot1, F.C0))),
+                F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -4841,14 +4572,13 @@ public class StatisticsFunctions {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.NakagamiDistribution(
-                        n.evalDouble(), m.evalDouble()) //
-                    .inverseCumulativeProbability(k.evalDouble()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalDouble(),
+                    m.evalDouble()) //
+                        .inverseCumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
@@ -4862,11 +4592,8 @@ public class StatisticsFunctions {
                     F.Piecewise(
                         F.List(
                             F.List(
-                                F.Sqrt(
-                                    F.Times(
-                                        m,
-                                        F.Power(n, F.CN1),
-                                        F.InverseGammaRegularized(n, F.C0, F.Slot1))),
+                                F.Sqrt(F.Times(m, F.Power(n, F.CN1),
+                                    F.InverseGammaRegularized(n, F.C0, F.Slot1))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
@@ -4882,14 +4609,13 @@ public class StatisticsFunctions {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         //
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.NakagamiDistribution(
-                        n.evalDouble(), m.evalDouble()) //
-                    .density(k.evalDouble()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalDouble(),
+                    m.evalDouble()) //
+                        .density(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
@@ -4897,20 +4623,12 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ (Piecewise({{(2*#^(-1 + 2*n)*(n/m)^n)/(E^((#^2*n)/m)*Gamma(n)), # > 0}}, 0)) & $]
             F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(
-                                F.C2,
-                                F.Power(F.Times(F.Power(m, F.CN1), n), n),
-                                F.Power(
-                                    F.Times(
-                                        F.Exp(F.Times(F.Power(m, F.CN1), n, F.Sqr(F.Slot1))),
-                                        F.Gamma(n)),
-                                    F.CN1),
-                                F.Power(F.Slot1, F.Plus(F.CN1, F.Times(F.C2, n)))),
-                            F.Greater(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+                F.Piecewise(F.List(F.List(
+                    F.Times(F.C2, F.Power(F.Times(F.Power(m, F.CN1), n), n),
+                        F.Power(F.Times(F.Exp(F.Times(F.Power(m, F.CN1), n, F.Sqr(F.Slot1))),
+                            F.Gamma(n)), F.CN1),
+                        F.Power(F.Slot1, F.Plus(F.CN1, F.Times(F.C2, n)))),
+                    F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -4936,8 +4654,7 @@ public class StatisticsFunctions {
         return
         // [$ (Pochhammer(n,1/2)*(1/2 - 2*(n - Pochhammer(n, 1/2)^2)))/(n-Pochhammer(n,
         // 1/2)^2)^(3/2) $]
-        F.Times(
-            F.Pochhammer(n, F.C1D2),
+        F.Times(F.Pochhammer(n, F.C1D2),
             F.Plus(F.C1D2, F.Times(F.CN2, F.Subtract(n, F.Sqr(F.Pochhammer(n, F.C1D2))))),
             F.Power(F.Subtract(n, F.Sqr(F.Pochhammer(n, F.C1D2))), F.QQ(-3L, 2L))); // $$;
       }
@@ -4957,7 +4674,8 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the normal distribution of mean <code>m</code> and sigma <code>s</code>.
+   * <p>
+   * returns the normal distribution of mean <code>m</code> and sigma <code>s</code>.
    *
    * </blockquote>
    *
@@ -4967,20 +4685,23 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the standard normal distribution for <code>m = 0</code> and <code>s = 1</code>.
+   * <p>
+   * returns the standard normal distribution for <code>m = 0</code> and <code>s = 1</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Normal_distribution">Wikipedia - Normal
-   *       distribution</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Normal_distribution">Wikipedia - Normal
+   * distribution</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <p>The <a href="https://en.wikipedia.org/wiki/Probability_density">probability density
+   * <p>
+   * The <a href="https://en.wikipedia.org/wiki/Probability_density">probability density
    * function</a> of the normal distribution is
    *
    * <pre>
@@ -4988,7 +4709,8 @@ public class StatisticsFunctions {
    * 1/(Sqrt(2)*E^((-m+x)^2/(2*s^2))*Sqrt(Pi)*s)
    * </pre>
    *
-   * <p>The <a href="https://en.wikipedia.org/wiki/Cumulative_distribution_function">cumulative
+   * <p>
+   * The <a href="https://en.wikipedia.org/wiki/Cumulative_distribution_function">cumulative
    * distribution function</a> of the standard normal distribution is
    *
    * <pre>
@@ -4996,14 +4718,16 @@ public class StatisticsFunctions {
    * 1/2*(2-Erfc(x/Sqrt(2)))
    * </pre>
    *
-   * <p>The <a href="https://en.wikipedia.org/wiki/Mean">mean</a> of the normal distribution is
+   * <p>
+   * The <a href="https://en.wikipedia.org/wiki/Mean">mean</a> of the normal distribution is
    *
    * <pre>
    * &gt;&gt; Mean(NormalDistribution(m, s))
    * m
    * </pre>
    *
-   * <p>The <a href="https://en.wikipedia.org/wiki/Standard_deviation">standard deviation</a> of the
+   * <p>
+   * The <a href="https://en.wikipedia.org/wiki/Standard_deviation">standard deviation</a> of the
    * normal distribution is
    *
    * <pre>
@@ -5011,16 +4735,17 @@ public class StatisticsFunctions {
    * s
    * </pre>
    *
-   * <p>The <a href="https://en.wikipedia.org/wiki/Variance">variance</a> of the normal distribution
-   * is
+   * <p>
+   * The <a href="https://en.wikipedia.org/wiki/Variance">variance</a> of the normal distribution is
    *
    * <pre>
    * &gt;&gt; Variance(NormalDistribution(m, s))
    * s^2
    * </pre>
    *
-   * <p>The <a
-   * href="https://en.wikipedia.org/wiki/Normal_distribution#Generating_values_from_normal_distribution">random
+   * <p>
+   * The <a href=
+   * "https://en.wikipedia.org/wiki/Normal_distribution#Generating_values_from_normal_distribution">random
    * variates</a> of a normal distribution can be generated with function <code>RandomVariate</code>
    *
    * <pre>
@@ -5052,8 +4777,8 @@ public class StatisticsFunctions {
         if (v <= 0.0) {
           if (v != Double.MIN_VALUE) {
             // Parameter `1` at position `2` in `3` is expected to be positive.
-            return IOFunctions.printMessage(
-                S.NormalDistribution, "posprm", F.List(dist.arg2(), F.C2, dist), EvalEngine.get());
+            return IOFunctions.printMessage(S.NormalDistribution, "posprm",
+                F.List(dist.arg2(), F.C2, dist), EvalEngine.get());
           }
           return F.NIL;
         }
@@ -5095,27 +4820,21 @@ public class StatisticsFunctions {
         //
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.NormalDistribution(
-                        n.evalDouble(), m.evalDouble()) //
-                    .cumulativeProbability(k.evalDouble()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.NormalDistribution(n.evalDouble(),
+                    m.evalDouble()) //
+                        .cumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
         }
         IExpr function =
             // [$ ( (1/2)*Erfc((-# + n)/(Sqrt(2)*m)) &) $]
-            F.Function(
-                F.Times(
-                    F.C1D2,
-                    F.Erfc(
-                        F.Times(
-                            F.Power(F.Times(F.CSqrt2, m), F.CN1),
-                            F.Plus(F.Negate(F.Slot1), n))))); // $$;
+            F.Function(F.Times(F.C1D2, F.Erfc(
+                F.Times(F.Power(F.Times(F.CSqrt2, m), F.CN1), F.Plus(F.Negate(F.Slot1), n))))); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -5126,32 +4845,29 @@ public class StatisticsFunctions {
       if (dist.isAST0()) {
         IExpr function =
             // [$ (ConditionalExpression((-Sqrt(2))*InverseErfc(2*#1), 0 <= #1 <= 1) & ) $]
-            F.Function(
-                F.ConditionalExpression(
-                    F.Times(F.CN1, F.CSqrt2, F.InverseErfc(F.Times(F.C2, F.Slot1))),
-                    F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+            F.Function(F.ConditionalExpression(
+                F.Times(F.CN1, F.CSqrt2, F.InverseErfc(F.Times(F.C2, F.Slot1))),
+                F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       } else if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.NormalDistribution(
-                        n.evalDouble(), m.evalDouble()) //
-                    .inverseCumulativeProbability(k.evalDouble()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.NormalDistribution(n.evalDouble(),
+                    m.evalDouble()) //
+                        .inverseCumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
         }
         IExpr function =
             // [$ ( ConditionalExpression(n - Sqrt(2)*m*InverseErfc(2*#1), 0 <= #1 <= 1) &) $]
-            F.Function(
-                F.ConditionalExpression(
-                    F.Plus(n, F.Times(F.CN1, F.CSqrt2, m, F.InverseErfc(F.Times(F.C2, F.Slot1)))),
-                    F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+            F.Function(F.ConditionalExpression(
+                F.Plus(n, F.Times(F.CN1, F.CSqrt2, m, F.InverseErfc(F.Times(F.C2, F.Slot1)))),
+                F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -5163,37 +4879,27 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ ( 1/(E^(#^2/2)*Sqrt(2*Pi)) & ) $]
             F.Function(
-                F.Power(
-                    F.Times(F.Exp(F.Times(F.C1D2, F.Sqr(F.Slot1))), F.Sqrt(F.C2Pi)), F.CN1)); // $$;
+                F.Power(F.Times(F.Exp(F.Times(F.C1D2, F.Sqr(F.Slot1))), F.Sqrt(F.C2Pi)), F.CN1)); // $$;
         return callFunction(function, k);
       } else if (dist.isAST2()) {
         //
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.NormalDistribution(
-                        n.evalDouble(), m.evalDouble()) //
-                    .density(k.evalDouble()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.NormalDistribution(n.evalDouble(),
+                    m.evalDouble()) //
+                        .density(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
         }
         IExpr function =
             // [$ ( 1/(E^((# - n)^2/(2*m^2))*(m*Sqrt(2*Pi))) & ) $]
-            F.Function(
-                F.Power(
-                    F.Times(
-                        F.Exp(
-                            F.Times(
-                                F.Power(F.Times(F.C2, F.Sqr(m)), F.CN1),
-                                F.Sqr(F.Plus(F.Negate(n), F.Slot1)))),
-                        m,
-                        F.Sqrt(F.C2Pi)),
-                    F.CN1)); // $$;
+            F.Function(F.Power(F.Times(F.Exp(F.Times(F.Power(F.Times(F.C2, F.Sqr(m)), F.CN1),
+                F.Sqr(F.Plus(F.Negate(n), F.Slot1)))), m, F.Sqrt(F.C2Pi)), F.CN1)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -5238,9 +4944,8 @@ public class StatisticsFunctions {
           // double sigma = dist.arg2().evalDouble();
           // return F.num(new GaussianGenerator(mean, sigma, random).nextValue());
           RandomDataGenerator rdg = new RandomDataGenerator();
-          double[] vector =
-              rdg.nextDeviates(
-                  new org.hipparchus.distribution.continuous.NormalDistribution(mean, sigma), size);
+          double[] vector = rdg.nextDeviates(
+              new org.hipparchus.distribution.continuous.NormalDistribution(mean, sigma), size);
           return new ASTRealVector(vector, false);
         }
       }
@@ -5257,15 +4962,17 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the probability of the <code>pure-function</code> for the given <code>data-set
+   * <p>
+   * returns the probability of the <code>pure-function</code> for the given <code>data-set
    * </code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Probability">Wikipedia - Probability</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Probability">Wikipedia - Probability</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -5345,7 +5052,8 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the probability density function of <code>value</code>.
+   * <p>
+   * returns the probability density function of <code>value</code>.
    *
    * </blockquote>
    *
@@ -5355,37 +5063,41 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the probability density function of the values of list.
+   * <p>
+   * returns the probability density function of the values of list.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Probability_density_function">Wikipedia -
-   *       probability density function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Probability_density_function">Wikipedia -
+   * probability density function</a>
    * </ul>
    *
-   * <p><code>PDF</code> can be applied to the following distributions:
+   * <p>
+   * <code>PDF</code> can be applied to the following distributions:
    *
    * <blockquote>
    *
-   * <p><a href="BernoulliDistribution.md">BernoulliDistribution</a>, <a
-   * href="BinomialDistribution.md">BinomialDistribution</a>, <a
-   * href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>, <a
-   * href="ErlangDistribution.md">ErlangDistribution</a>, <a
-   * href="ExponentialDistribution.md">ExponentialDistribution</a>, <a
-   * href="FrechetDistribution.md">FrechetDistribution</a>, <a
-   * href="GammaDistribution.md">GammaDistribution</a>, <a
-   * href="GeometricDistribution.md">GeometricDistribution</a>, <a
-   * href="GumbelDistribution.md">GumbelDistribution</a>, <a
-   * href="HypergeometricDistribution.md">HypergeometricDistribution</a>, <a
-   * href="LogNormalDistribution.md">LogNormalDistribution</a>, <a
-   * href="NakagamiDistribution.md">NakagamiDistribution</a>, <a
-   * href="NormalDistribution.md">NormalDistribution</a>, <a
-   * href="PoissonDistribution.md">PoissonDistribution</a>, <a
-   * href="StudentTDistribution.md">StudentTDistribution</a>, <a
-   * href="WeibullDistribution.md">WeibullDistribution</a>
+   * <p>
+   * <a href="BernoulliDistribution.md">BernoulliDistribution</a>,
+   * <a href="BinomialDistribution.md">BinomialDistribution</a>,
+   * <a href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>,
+   * <a href="ErlangDistribution.md">ErlangDistribution</a>,
+   * <a href="ExponentialDistribution.md">ExponentialDistribution</a>,
+   * <a href="FrechetDistribution.md">FrechetDistribution</a>,
+   * <a href="GammaDistribution.md">GammaDistribution</a>,
+   * <a href="GeometricDistribution.md">GeometricDistribution</a>,
+   * <a href="GumbelDistribution.md">GumbelDistribution</a>,
+   * <a href="HypergeometricDistribution.md">HypergeometricDistribution</a>,
+   * <a href="LogNormalDistribution.md">LogNormalDistribution</a>,
+   * <a href="NakagamiDistribution.md">NakagamiDistribution</a>,
+   * <a href="NormalDistribution.md">NormalDistribution</a>,
+   * <a href="PoissonDistribution.md">PoissonDistribution</a>,
+   * <a href="StudentTDistribution.md">StudentTDistribution</a>,
+   * <a href="WeibullDistribution.md">WeibullDistribution</a>
    *
    * </blockquote>
    *
@@ -5441,6 +5153,372 @@ public class StatisticsFunctions {
     }
   }
 
+  private static final class ParetoDistribution extends AbstractEvaluator
+      implements IContinuousDistribution, IStatistics, IPDF, ICDF {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // 2 up to 4 args are allowed
+      return F.NIL;
+    }
+
+    @Override
+    public IAST checkParameters(IAST dist) {
+      if (dist.isAST2()) {
+        return dist;
+      }
+      if (dist.isAST3()) {
+        return dist;
+      }
+      if (dist.argSize() == 4) {
+        return dist;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      if (dist.isAST2()) {
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        //
+        IExpr function =
+            // [$ Piecewise({{(k*a)/(-1 + a), a > 1}}, Indeterminate) $]
+            F.Piecewise(
+                F.List(F.List(F.Times(F.Power(F.Plus(F.CN1, a), F.CN1), a, k), F.Greater(a, F.C1))),
+                F.Indeterminate); // $$;
+        //
+        return function;
+      } else if (dist.isAST3()) {
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        IExpr m = dist.arg3();
+        //
+        IExpr function =
+            // [$ Piecewise({{k/(-1 + a) + m, a > 1}}, Indeterminate) $]
+            F.Piecewise(F.List(F.List(F.Plus(F.Times(F.Power(F.Plus(F.CN1, a), F.CN1), k), m),
+                F.Greater(a, F.C1))), F.Indeterminate); // $$;
+        //
+        return function;
+      } else if (dist.argSize() == 4) {
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        IExpr g = dist.arg3();
+        IExpr m = dist.arg4();
+        //
+        IExpr function =
+            // [$ Piecewise({{m + (k*Gamma(a - g)*Gamma(1 + g))/Gamma(a), a > g}}, Indeterminate) $]
+            F.Piecewise(
+                F.List(F.List(F.Plus(m, F.Times(k, F.Power(F.Gamma(a), F.CN1),
+                    F.Gamma(F.Subtract(a, g)), F.Gamma(F.Plus(F.C1, g)))), F.Greater(a, g))),
+                F.Indeterminate); // $$;
+        //
+        return function;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      if (dist.isAST2()) {
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        //
+        IExpr function =
+            // [$ 2^(1/a)*k $]
+            F.Times(F.Power(F.C2, F.Power(a, F.CN1)), k); // $$;
+        //
+        return function;
+      } else if (dist.isAST3()) {
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        IExpr m = dist.arg3();
+        //
+        IExpr function =
+            // [$ (-1 + 2^(1/a))*k + m $]
+            F.Plus(F.Times(F.Plus(F.CN1, F.Power(F.C2, F.Power(a, F.CN1))), k), m); // $$;
+        //
+        return function;
+      } else if (dist.argSize() == 4) {
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        IExpr g = dist.arg3();
+        IExpr m = dist.arg4();
+        //
+        IExpr function =
+            // [$ (-1 + 2^(1/a))^g*k + m $]
+            F.Plus(F.Times(F.Power(F.Plus(F.CN1, F.Power(F.C2, F.Power(a, F.CN1))), g), k), m); // $$;
+        //
+        return function;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      if (dist.isAST2() || dist.isAST3()) {
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        //
+        IExpr function =
+            // [$ Piecewise({{(a*k^2)/((-2 + a)*(-1 + a)^2), a > 2}}, Indeterminate) $]
+            F.Piecewise(F.List(
+                F.List(F.Times(F.Power(F.Times(F.Plus(F.CN2, a), F.Sqr(F.Plus(F.CN1, a))), F.CN1),
+                    a, F.Sqr(k)), F.Greater(a, F.C2))),
+                F.Indeterminate); // $$;
+        return function;
+      } else if (dist.argSize() == 4) {
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        IExpr g = dist.arg3();
+        //
+        IExpr function =
+            // [$ Piecewise({{(k^2*((-Gamma(a - g)^2)*Gamma(1 + g)^2 + Gamma(a)*Gamma(a - 2*g)*
+            // Gamma(1 + 2*g)))/Gamma(a)^2, a > 2*g}}, Indeterminate) $]
+            F.Piecewise(F.List(F.List(F.Times(F.Sqr(k), F.Power(F.Gamma(a), F.CN2), F.Plus(
+                F.Times(F.CN1, F.Sqr(F.Gamma(F.Subtract(a, g))), F.Sqr(F.Gamma(F.Plus(F.C1, g)))),
+                F.Times(F.Gamma(a), F.Gamma(F.Plus(a, F.Times(F.CN2, g))),
+                    F.Gamma(F.Plus(F.C1, F.Times(F.C2, g)))))),
+                F.Greater(a, F.Times(F.C2, g)))), F.Indeterminate); // $$;
+        return function;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr skewness(IAST dist) {//
+      if (dist.isAST2() || dist.isAST3()) {
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        //
+        IExpr function =
+            // [$ Piecewise({{(2*Sqrt[(-2 + a)/a]*(1 + a))/(-3 + a), a > 3}}, Indeterminate) $]
+            F.Piecewise(F.List(F.List(
+                F.Times(F.C2, F.Power(F.Plus(F.CN3, a), F.CN1),
+                    F.Sqrt(F.Times(F.Power(a, F.CN1), F.Plus(F.CN2, a))), F.Plus(F.C1, a)),
+                F.Greater(a, F.C3))), F.Indeterminate); // $$;
+        return function;
+      } else if (dist.argSize() == 4) {
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        IExpr g = dist.arg3();
+        IExpr m = dist.arg4();
+        //
+        IExpr function =
+            // [$ Piecewise({{(k^3*(2*Gamma(a - g)^3*Gamma(1 + g)^3 - 3*Gamma(a)*Gamma(a -
+            // 2*g)*Gamma(a - g)*Gamma(1 + g)*Gamma(1 + 2*g) + Gamma(a)^2*Gamma(a - 3*g)*Gamma(1 +
+            // 3*g)))/(k^2*((-Gamma(a - g)^2)*Gamma(1 + g)^2+Gamma(a)*Gamma(a - 2*g)*Gamma(1 +
+            // 2*g)))^(3/2), a > 3*g}}, Indeterminate) $]
+            F.Piecewise(
+                F.List(F.List(
+                    F.Times(
+                        F.Power(k, F.C3), F
+                            .Power(
+                                F.Times(F.Sqr(k),
+                                    F.Plus(
+                                        F.Times(F.CN1, F.Sqr(F.Gamma(F.Subtract(a, g))),
+                                            F.Sqr(F.Gamma(F.Plus(F.C1, g)))),
+                                        F.Times(F.Gamma(a), F.Gamma(F.Plus(a, F.Times(F.CN2, g))),
+                                            F.Gamma(F.Plus(F.C1, F.Times(F.C2, g)))))),
+                                F.QQ(-3L, 2L)),
+                        F.Plus(
+                            F.Times(F.C2, F.Power(F.Gamma(F.Subtract(a, g)), F.C3),
+                                F.Power(F.Gamma(F.Plus(F.C1, g)), F.C3)),
+                            F.Times(F.CN3, F.Gamma(a), F.Gamma(F.Plus(a, F.Times(F.CN2, g))),
+                                F.Gamma(F.Subtract(a, g)), F.Gamma(F.Plus(F.C1, g)),
+                                F.Gamma(F.Plus(F.C1, F.Times(F.C2, g)))),
+                            F.Times(F.Sqr(F.Gamma(a)), F.Gamma(F.Plus(a, F.Times(F.CN3, g))),
+                                F.Gamma(F.Plus(F.C1, F.Times(F.C3, g)))))),
+                    F.Greater(a, F.Times(F.C3, g)))),
+                F.Indeterminate); // $$;
+        //
+        return function;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
+      if (dist.isAST2()) {
+        //
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+
+        IExpr function =
+            // [$ Piecewise({{1-(k/#)^a, #>=k}}, 0) & $]
+            F.Function(F.Piecewise(
+                F.List(F.List(F.Subtract(F.C1, F.Power(F.Times(k, F.Power(F.Slot1, F.CN1)), a)),
+                    F.GreaterEqual(F.Slot1, k))),
+                F.C0)); // $$;
+        return callFunction(function, x);
+      } else if (dist.isAST3()) {
+        //
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        IExpr m = dist.arg3();
+        IExpr function =
+            // [$ Piecewise({{1-(1+(-m+#)/k)^(-a),#>=m}},0) & $]
+            F.Function(F.Piecewise(F.List(F.List(F.Subtract(F.C1,
+                F.Power(F.Plus(F.C1, F.Times(F.Power(k, F.CN1), F.Plus(F.Negate(m), F.Slot1))),
+                    F.Negate(a))),
+                F.GreaterEqual(F.Slot1, m))), F.C0)); // $$;
+        return callFunction(function, x);
+      } else if (dist.argSize() == 4) {
+        //
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        IExpr g = dist.arg3();
+        IExpr m = dist.arg4();
+        IExpr function =
+            // [$ Piecewise({{1-(1+((-m+#)/k)^(1/g))^(-a), #>=m}}, 0) & $]
+            F.Function(
+                F.Piecewise(
+                    F.List(
+                        F.List(
+                            F.Subtract(F.C1,
+                                F.Power(
+                                    F.Plus(F.C1,
+                                        F.Power(F.Times(F.Power(k, F.CN1),
+                                            F.Plus(F.Negate(m), F.Slot1)), F.Power(g, F.CN1))),
+                                    F.Negate(a))),
+                            F.GreaterEqual(F.Slot1, m))),
+                    F.C0)); // $$;
+        return callFunction(function, x);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr x, EvalEngine engine) {
+      if (dist.isAST2()) {
+        //
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+
+        IExpr function =
+            // [$ ConditionalExpression(Piecewise({{k/(1-#)^a^(-1), #<1}}, Infinity), 0 <=#<=1) & $]
+            F.Function(F.ConditionalExpression(F.Piecewise(F.List(F.List(
+                F.Times(k, F.Power(F.Power(F.Subtract(F.C1, F.Slot1), F.Power(a, F.CN1)), F.CN1)),
+                F.Less(F.Slot1, F.C1))), F.oo), F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+        return callFunction(function, x);
+      } else if (dist.isAST3()) {
+        //
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        IExpr m = dist.arg3();
+        IExpr function =
+            // [$ ConditionalExpression(Piecewise({{m + k*(-1 + (1 -#)^(-a^(-1))), 0 <#< 1}, {m,
+            // #<=0}}, Infinity), 0 <=#<= 1) & $]
+            F.Function(
+                F.ConditionalExpression(
+                    F.Piecewise(
+                        F.List(
+                            F.List(
+                                F.Plus(m,
+                                    F.Times(k,
+                                        F.Plus(F.CN1,
+                                            F.Power(F.Subtract(F.C1, F.Slot1),
+                                                F.Negate(F.Power(a, F.CN1)))))),
+                                F.Less(F.C0, F.Slot1, F.C1)),
+                            F.List(m, F.LessEqual(F.Slot1, F.C0))),
+                        F.oo),
+                    F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+        return callFunction(function, x);
+      } else if (dist.argSize() == 4) {
+        //
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        IExpr g = dist.arg3();
+        IExpr m = dist.arg4();
+        IExpr function =
+            // [$ ConditionalExpression[Piecewise[{{m + k*(-1 + (1 - #)^(-a^(-1)))^g, 0<#< 1},
+            // {m, #<=0}}, Infinity], 0 <=#<= 1] & $]
+            F.Function(
+                F.ConditionalExpression(
+                    F.Piecewise(
+                        F.List(
+                            F.List(
+                                F.Plus(m,
+                                    F.Times(k,
+                                        F.Power(F.Plus(F.CN1,
+                                            F.Power(F.Subtract(F.C1, F.Slot1),
+                                                F.Negate(F.Power(a, F.CN1)))),
+                                            g))),
+                                F.Less(F.C0, F.Slot1, F.C1)),
+                            F.List(m, F.LessEqual(F.Slot1, F.C0))),
+                        F.oo),
+                    F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+        return callFunction(function, x);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
+      if (dist.isAST2()) {
+        //
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+
+        IExpr function =
+            // [$ Piecewise({{a*k^a*#^(-1 - a), # >= k}}, 0) & $]
+            F.Function(F.Piecewise(
+                F.List(F.List(F.Times(a, F.Power(k, a), F.Power(F.Slot1, F.Subtract(F.CN1, a))),
+                    F.GreaterEqual(F.Slot1, k))),
+                F.C0)); // $$;
+        return callFunction(function, x);
+      } else if (dist.isAST3()) {
+        //
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        IExpr m = dist.arg3();
+        IExpr function =
+            // [$ Piecewise({{(a*((k-m+#)/k)^(-1-a))/k, #>=m}}, 0) & $]
+            F.Function(F.Piecewise(F.List(F.List(F.Times(a, F.Power(k, F.CN1), F.Power(
+                F.Times(F.Power(k, F.CN1), F.Plus(k, F.Negate(m), F.Slot1)), F.Subtract(F.CN1, a))),
+                F.GreaterEqual(F.Slot1, m))), F.C0)); // $$;
+        return callFunction(function, x);
+      } else if (dist.argSize() == 4) {
+        //
+        IExpr k = dist.arg1();
+        IExpr a = dist.arg2();
+        IExpr g = dist.arg3();
+        IExpr m = dist.arg4();
+        IExpr function =
+            // [$ Piecewise({{(a*(-m+#)^(-1+1/g)*(1+(k/(-m+#))^(-g^(-1)))^(-1-a))/(k^g^(-1)*g),
+            // #>=m}}, 0) & $]
+            F.Function(
+                F.Piecewise(
+                    F.List(
+                        F.List(
+                            F.Times(
+                                a, F.Power(F.Times(F.Power(k, F.Power(g, F.CN1)),
+                                    g), F.CN1),
+                                F.Power(F.Plus(F
+                                    .Negate(m), F.Slot1), F.Plus(F.CN1,
+                                        F.Power(g, F.CN1))),
+                                F.Power(F.Plus(F.C1,
+                                    F.Power(
+                                        F.Times(k, F.Power(F.Plus(F.Negate(m), F.Slot1), F.CN1)),
+                                        F.Negate(F.Power(g, F.CN1)))),
+                                    F.Subtract(F.CN1, a))),
+                            F.GreaterEqual(F.Slot1, m))),
+                    F.C0)); // $$;
+        return callFunction(function, x);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_4;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+
+  }
   /**
    *
    *
@@ -5450,22 +5528,25 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a Poisson distribution.
+   * <p>
+   * returns a Poisson distribution.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Poisson_distribution">Wikipedia - Poisson
-   *       distribution</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Poisson_distribution">Wikipedia - Poisson
+   * distribution</a>
    * </ul>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a
-   * href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>, <a
-   * href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
+   * <p>
+   * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>,
+   * <a href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>,
+   * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class PoissonDistribution extends AbstractEvaluator
       implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
@@ -5501,12 +5582,8 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{GammaRegularized(1 + Floor(#), p), # >= 0}}, 0) & $]
             F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.GammaRegularized(F.Plus(F.C1, F.Floor(F.Slot1)), p),
-                            F.GreaterEqual(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+                F.Piecewise(F.List(F.List(F.GammaRegularized(F.Plus(F.C1, F.Floor(F.Slot1)), p),
+                    F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -5524,15 +5601,10 @@ public class StatisticsFunctions {
         //
         IExpr function =
             // [$ Piecewise({{p^#/(E ^ p * #!), # >= 0}}, 0) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(
-                                F.Power(p, F.Slot1),
-                                F.Power(F.Times(F.Exp(p), F.Factorial(F.Slot1)), F.CN1)),
-                            F.GreaterEqual(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(
+                F.Times(F.Power(p, F.Slot1),
+                    F.Power(F.Times(F.Exp(p), F.Factorial(F.Slot1)), F.CN1)),
+                F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -5571,9 +5643,8 @@ public class StatisticsFunctions {
         double mean = dist.arg1().evalDouble();
         // return F.ZZ(new PoissonGenerator(mean, random).nextValue());
         RandomDataGenerator rdg = new RandomDataGenerator();
-        int[] vector =
-            rdg.nextDeviates(
-                new org.hipparchus.distribution.discrete.PoissonDistribution(mean), size);
+        int[] vector = rdg
+            .nextDeviates(new org.hipparchus.distribution.discrete.PoissonDistribution(mean), size);
         return F.List(vector);
       }
       return F.NIL;
@@ -5589,7 +5660,8 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the <code>q</code>-Quantile of <code>list</code>.
+   * <p>
+   * returns the <code>q</code>-Quantile of <code>list</code>.
    *
    * </blockquote>
    *
@@ -5599,14 +5671,16 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a list of the <code>q</code>-Quantiles of <code>list</code>.
+   * <p>
+   * returns a list of the <code>q</code>-Quantiles of <code>list</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Quantile">Wikipedia - Quantile</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Quantile">Wikipedia - Quantile</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -5678,8 +5752,8 @@ public class StatisticsFunctions {
                 if (q.isReal()) {
                   ISignedNumber qi = (ISignedNumber) q;
                   if (!qi.isRange(F.C0, F.C1)) {
-                    return IOFunctions.printMessage(
-                        ast.topHead(), "nquan", F.List(qi, F.C0, F.C1), engine);
+                    return IOFunctions.printMessage(ast.topHead(), "nquan", F.List(qi, F.C0, F.C1),
+                        engine);
                   }
                   // x = a + (length + b) * q
                   IExpr x = q.isZero() ? a : S.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
@@ -5706,14 +5780,11 @@ public class StatisticsFunctions {
                         xCeiling = s.argSize();
                       }
                       // factor = c + d * FractionalPart(x);
-                      IExpr factor =
-                          d.isZero() || xi.isZero()
-                              ? c
-                              : S.Plus.of(engine, c, F.Times(d, xi.fractionalPart()));
+                      IExpr factor = d.isZero() || xi.isZero() ? c
+                          : S.Plus.of(engine, c, F.Times(d, xi.fractionalPart()));
                       // s[[Floor(x)]]+(s[[Ceiling(x)]]-s[[Floor(x)]]) * (c + d *
                       // FractionalPart(x))
-                      return F.Plus(
-                          s.get(xFloor), //
+                      return F.Plus(s.get(xFloor), //
                           F.Times(F.Subtract(s.get(xCeiling), s.get(xFloor)), factor));
                     }
                   }
@@ -5825,8 +5896,8 @@ public class StatisticsFunctions {
                     int sampleSize = indx[indx.length - 1];
                     System.arraycopy(indx, 0, indx, 1, indx.length - 1);
                     IASTAppendable list = F.ListAlloc(indx[0]);
-                    return createTensorRecursive(
-                        indx, 1, list, () -> variate.randomVariate(random, dist, sampleSize));
+                    return createTensorRecursive(indx, 1, list,
+                        () -> variate.randomVariate(random, dist, sampleSize));
                   } else {
                     int n = arg2.toIntDefault();
                     if (n >= 0) {
@@ -5856,7 +5927,8 @@ public class StatisticsFunctions {
     /**
      * Print the <code>udist</code> message:
      *
-     * <p><code>The specification `1` is not a random distribution recognized by the system.</code>
+     * <p>
+     * <code>The specification `1` is not a random distribution recognized by the system.</code>
      *
      * @param head
      * @param ast
@@ -5864,8 +5936,8 @@ public class StatisticsFunctions {
      * @param engine
      * @return
      */
-    private static IExpr printMessageUdist(
-        ISymbol head, final IAST ast, IAST dist, EvalEngine engine) {
+    private static IExpr printMessageUdist(ISymbol head, final IAST ast, IAST dist,
+        EvalEngine engine) {
       // The specification `1` is not a random distribution recognized by the system.
       if (head.getSymbolName().toLowerCase().endsWith("distribution")) {
         return IOFunctions.printMessage(ast.topHead(), "udist", F.List(dist), engine);
@@ -5878,8 +5950,8 @@ public class StatisticsFunctions {
       return ARGS_1_2;
     }
 
-    private static IAST createTensorRecursive(
-        int[] indx, int offset, IASTAppendable list, Supplier<IExpr> s) {
+    private static IAST createTensorRecursive(int[] indx, int offset, IASTAppendable list,
+        Supplier<IExpr> s) {
       if (indx.length <= offset) {
         list.append(s.get());
         return list;
@@ -5905,7 +5977,8 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>Rescale(list,{Min(list), Max(list)})</code>.
+   * <p>
+   * returns <code>Rescale(list,{Min(list), Max(list)})</code>.
    *
    * </blockquote>
    *
@@ -5915,7 +5988,8 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>x/(xmax-xmin)-xmin/(xmax-xmin)</code>.
+   * <p>
+   * returns <code>x/(xmax-xmin)-xmin/(xmax-xmin)</code>.
    *
    * </blockquote>
    *
@@ -5925,7 +5999,8 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>(x*(ymax-ymin))/(xmax-xmin)-(xmin*ymax-xmax*ymin)/(xmax-xmin)</code>.
+   * <p>
+   * returns <code>(x*(ymax-ymin))/(xmax-xmin)-(xmin*ymax-xmax*ymin)/(xmax-xmin)</code>.
    *
    * </blockquote>
    *
@@ -5963,14 +6038,10 @@ public class StatisticsFunctions {
               IExpr ymin = list2.first();
               IExpr ymax = list2.second();
               // (arg1*(ymax - ymin))/(max - min) - (min*ymax - max*ymin)/(max - min)
-              return engine.evaluate(
-                  F.Plus(
-                      F.Times(
-                          x, F.Power(F.Plus(max, F.Negate(min)), -1), F.Plus(ymax, F.Negate(ymin))),
-                      F.Times(
-                          F.CN1,
-                          F.Power(F.Plus(max, F.Negate(min)), -1),
-                          F.Plus(F.Times(min, ymax), F.Times(F.CN1, max, ymin)))));
+              return engine.evaluate(F.Plus(
+                  F.Times(x, F.Power(F.Plus(max, F.Negate(min)), -1), F.Plus(ymax, F.Negate(ymin))),
+                  F.Times(F.CN1, F.Power(F.Plus(max, F.Negate(min)), -1),
+                      F.Plus(F.Times(min, ymax), F.Times(F.CN1, max, ymin)))));
             }
             return F.NIL;
           }
@@ -5989,8 +6060,8 @@ public class StatisticsFunctions {
 
     private static IExpr rescale(IExpr x, IExpr min, IExpr max, EvalEngine engine) {
       IExpr sum = engine.evaluate(F.Subtract(max, min));
-      return engine.evaluate(
-          F.Plus(F.Times(F.CN1, F.Power(sum, -1), min), F.Times(F.Power(sum, -1), x)));
+      return engine
+          .evaluate(F.Plus(F.Times(F.CN1, F.Power(sum, -1), min), F.Times(F.Power(sum, -1), x)));
     }
 
     @Override
@@ -6006,7 +6077,8 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>gives Pearson's moment coefficient of skewness for $list$ (a measure for estimating the
+   * <p>
+   * gives Pearson's moment coefficient of skewness for $list$ (a measure for estimating the
    * symmetry of a distribution).
    *
    * </blockquote>
@@ -6061,34 +6133,38 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>computes the standard deviation of <code>list</code>. <code>list</code> may consist of
+   * <p>
+   * computes the standard deviation of <code>list</code>. <code>list</code> may consist of
    * numerical values or symbols. Numerical values may be real or complex.
    *
    * </blockquote>
    *
-   * <p><code>StandardDeviation({{a1, a2, ...}, {b1, b2, ...}, ...})</code> will yield <code>
+   * <p>
+   * <code>StandardDeviation({{a1, a2, ...}, {b1, b2, ...}, ...})</code> will yield <code>
    * {StandardDeviation({a1, b1, ...}, StandardDeviation({a2, b2, ...}), ...}</code>.
    *
-   * <p><code>StandardDeviation</code> can be applied to the following distributions:
+   * <p>
+   * <code>StandardDeviation</code> can be applied to the following distributions:
    *
    * <blockquote>
    *
-   * <p><a href="BernoulliDistribution.md">BernoulliDistribution</a>, <a
-   * href="BinomialDistribution.md">BinomialDistribution</a>, <a
-   * href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>, <a
-   * href="ErlangDistribution.md">ErlangDistribution</a>, <a
-   * href="ExponentialDistribution.md">ExponentialDistribution</a>, <a
-   * href="FrechetDistribution.md">FrechetDistribution</a>, <a
-   * href="GammaDistribution.md">GammaDistribution</a>, <a
-   * href="GeometricDistribution.md">GeometricDistribution</a>, <a
-   * href="GumbelDistribution.md">GumbelDistribution</a>, <a
-   * href="HypergeometricDistribution.md">HypergeometricDistribution</a>, <a
-   * href="LogNormalDistribution.md">LogNormalDistribution</a>, <a
-   * href="NakagamiDistribution.md">NakagamiDistribution</a>, <a
-   * href="NormalDistribution.md">NormalDistribution</a>, <a
-   * href="PoissonDistribution.md">PoissonDistribution</a>, <a
-   * href="StudentTDistribution.md">StudentTDistribution</a>, <a
-   * href="WeibullDistribution.md">WeibullDistribution</a>
+   * <p>
+   * <a href="BernoulliDistribution.md">BernoulliDistribution</a>,
+   * <a href="BinomialDistribution.md">BinomialDistribution</a>,
+   * <a href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>,
+   * <a href="ErlangDistribution.md">ErlangDistribution</a>,
+   * <a href="ExponentialDistribution.md">ExponentialDistribution</a>,
+   * <a href="FrechetDistribution.md">FrechetDistribution</a>,
+   * <a href="GammaDistribution.md">GammaDistribution</a>,
+   * <a href="GeometricDistribution.md">GeometricDistribution</a>,
+   * <a href="GumbelDistribution.md">GumbelDistribution</a>,
+   * <a href="HypergeometricDistribution.md">HypergeometricDistribution</a>,
+   * <a href="LogNormalDistribution.md">LogNormalDistribution</a>,
+   * <a href="NakagamiDistribution.md">NakagamiDistribution</a>,
+   * <a href="NormalDistribution.md">NormalDistribution</a>,
+   * <a href="PoissonDistribution.md">PoissonDistribution</a>,
+   * <a href="StudentTDistribution.md">StudentTDistribution</a>,
+   * <a href="WeibullDistribution.md">WeibullDistribution</a>
    *
    * </blockquote>
    *
@@ -6203,8 +6279,8 @@ public class StatisticsFunctions {
       }
       if (dist.isAST3()) {
         // (m,s,v) -> Piecewise({{m, v > 1}}, Indeterminate)
-        return F.Piecewise(
-            F.List(F.List(dist.arg1(), F.Greater(dist.arg3(), F.C1))), S.Indeterminate);
+        return F.Piecewise(F.List(F.List(dist.arg1(), F.Greater(dist.arg3(), F.C1))),
+            S.Indeterminate);
       }
       return F.NIL;
     }
@@ -6227,13 +6303,11 @@ public class StatisticsFunctions {
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.TDistribution(n.evalDouble()) //
-                    .cumulativeProbability(k.evalDouble()));
+            return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalDouble()) //
+                .cumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
@@ -6242,25 +6316,16 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{(1/2)*BetaRegularized(n/(#^2 + n), n/2, 1/2), # <= 0}}, (1/2)*(1 +
             // BetaRegularized(#^2/(#^2 + n), 1/2, n/2))) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(
-                                F.C1D2,
-                                F.BetaRegularized(
-                                    F.Times(n, F.Power(F.Plus(F.Sqr(F.Slot1), n), F.CN1)),
-                                    F.Times(F.C1D2, n),
-                                    F.C1D2)),
-                            F.LessEqual(F.Slot1, F.C0))),
-                    F.Times(
-                        F.C1D2,
-                        F.Plus(
-                            F.C1,
-                            F.BetaRegularized(
-                                F.Times(F.Power(F.Plus(F.Sqr(F.Slot1), n), F.CN1), F.Sqr(F.Slot1)),
-                                F.C1D2,
-                                F.Times(F.C1D2, n)))))); // $$;
+            F.Function(F.Piecewise(
+                F.List(F.List(F.Times(F.C1D2,
+                    F.BetaRegularized(F.Times(n, F.Power(F.Plus(F.Sqr(F.Slot1), n), F.CN1)),
+                        F.Times(F.C1D2, n), F.C1D2)),
+                    F.LessEqual(F.Slot1, F.C0))),
+                F.Times(F.C1D2,
+                    F.Plus(F.C1,
+                        F.BetaRegularized(
+                            F.Times(F.Power(F.Plus(F.Sqr(F.Slot1), n), F.CN1), F.Sqr(F.Slot1)),
+                            F.C1D2, F.Times(F.C1D2, n)))))); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -6270,13 +6335,11 @@ public class StatisticsFunctions {
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.TDistribution(n.evalDouble()) //
-                    .inverseCumulativeProbability(k.evalDouble()));
+            return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalDouble()) //
+                .inverseCumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
@@ -6289,38 +6352,25 @@ public class StatisticsFunctions {
             // #), n/2, 1/2)), 1/2 < # < 1}, {-Infinity, # <= 0}}, Infinity), 0 <= # <= 1)& ) $]
             F.Function(
                 F.ConditionalExpression(
-                    F.Piecewise(
+                    F.Piecewise(F.List(
                         F.List(
-                            F.List(
-                                F.Times(
-                                    F.CN1,
-                                    F.Sqrt(n),
-                                    F.Sqrt(
-                                        F.Plus(
-                                            F.CN1,
-                                            F.Power(
-                                                F.InverseBetaRegularized(
-                                                    F.Times(F.C2, F.Slot1),
-                                                    F.Times(F.C1D2, n),
-                                                    F.C1D2),
-                                                F.CN1)))),
-                                F.Less(F.C0, F.Slot1, F.C1D2)),
-                            F.List(F.C0, F.Equal(F.Slot1, F.C1D2)),
-                            F.List(
-                                F.Times(
-                                    F.Sqrt(n),
-                                    F.Sqrt(
-                                        F.Plus(
-                                            F.CN1,
-                                            F.Power(
-                                                F.InverseBetaRegularized(
-                                                    F.Times(F.C2, F.Subtract(F.C1, F.Slot1)),
-                                                    F.Times(F.C1D2, n),
-                                                    F.C1D2),
-                                                F.CN1)))),
-                                F.Less(F.C1D2, F.Slot1, F.C1)),
-                            F.List(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))),
-                        F.oo),
+                            F.Times(F.CN1, F.Sqrt(n),
+                                F.Sqrt(
+                                    F.Plus(F.CN1,
+                                        F.Power(
+                                            F.InverseBetaRegularized(F.Times(F.C2, F.Slot1),
+                                                F.Times(F.C1D2, n), F.C1D2),
+                                            F.CN1)))),
+                            F.Less(F.C0, F.Slot1, F.C1D2)),
+                        F.List(F.C0, F.Equal(F.Slot1, F.C1D2)),
+                        F.List(
+                            F.Times(F.Sqrt(n),
+                                F.Sqrt(F.Plus(F.CN1,
+                                    F.Power(F.InverseBetaRegularized(
+                                        F.Times(F.C2, F.Subtract(F.C1, F.Slot1)),
+                                        F.Times(F.C1D2, n), F.C1D2), F.CN1)))),
+                            F.Less(F.C1D2, F.Slot1, F.C1)),
+                        F.List(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))), F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       }
@@ -6332,25 +6382,21 @@ public class StatisticsFunctions {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         //
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.TDistribution(n.evalDouble()) //
-                    .density(k.evalDouble()));
+            return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalDouble()) //
+                .density(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
         }
         IExpr function =
             // [$ (n/(#^2 + n))^((1 + n)/2)/(Sqrt(n)*Beta(n/2, 1/2)) & $]
-            F.Function(
-                F.Times(
-                    F.Power(
-                        F.Times(n, F.Power(F.Plus(F.Sqr(F.Slot1), n), F.CN1)),
-                        F.Times(F.C1D2, F.Plus(F.C1, n))),
-                    F.Power(F.Times(F.Sqrt(n), F.Beta(F.Times(F.C1D2, n), F.C1D2)), F.CN1))); // $$;
+            F.Function(F.Times(
+                F.Power(F.Times(n, F.Power(F.Plus(F.Sqr(F.Slot1), n), F.CN1)),
+                    F.Times(F.C1D2, F.Plus(F.C1, n))),
+                F.Power(F.Times(F.Sqrt(n), F.Beta(F.Times(F.C1D2, n), F.C1D2)), F.CN1))); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -6360,8 +6406,8 @@ public class StatisticsFunctions {
     public IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
-        return F.Piecewise(
-            F.List(F.List(F.Divide(n, F.Plus(F.CN2, n)), F.Greater(n, F.C2))), S.Indeterminate);
+        return F.Piecewise(F.List(F.List(F.Divide(n, F.Plus(F.CN2, n)), F.Greater(n, F.C2))),
+            S.Indeterminate);
       }
       return F.NIL;
     }
@@ -6444,8 +6490,8 @@ public class StatisticsFunctions {
                   // numbers with length greater than the dimension of the array or two such arrays
                   // with
                   // of equal dimension.
-                  return IOFunctions.printMessage(
-                      ast.topHead(), "rctndm1", F.List(arg1, F.C1), engine);
+                  return IOFunctions.printMessage(ast.topHead(), "rctndm1", F.List(arg1, F.C1),
+                      engine);
                 }
                 org.hipparchus.stat.inference.TTest tTest =
                     new org.hipparchus.stat.inference.TTest();
@@ -6494,7 +6540,8 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a uniform distribution.
+   * <p>
+   * returns a uniform distribution.
    *
    * </blockquote>
    *
@@ -6505,22 +6552,25 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a uniform distribution with <code>min = 0</code> and <code>max = 1</code>.
+   * <p>
+   * returns a uniform distribution with <code>min = 0</code> and <code>max = 1</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)">Wikipedia -
-   *       Uniform distribution (continous)1</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)">Wikipedia -
+   * Uniform distribution (continous)1</a>
    * </ul>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a
-   * href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>, <a
-   * href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
+   * <p>
+   * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>,
+   * <a href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>,
+   * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class UniformDistribution extends AbstractEvaluator
       implements IDistribution, IStatistics, ICDF, IPDF, IRandomVariate {
@@ -6603,13 +6653,11 @@ public class StatisticsFunctions {
       if (minMax != null) {
         IExpr a = minMax[0];
         IExpr b = minMax[1];
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.UniformRealDistribution(
-                        a.evalDouble(), b.evalDouble()) //
+            return F.num(new org.hipparchus.distribution.continuous.UniformRealDistribution(
+                a.evalDouble(), b.evalDouble()) //
                     .cumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -6618,15 +6666,10 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{(# - a)/(b - a), a <= # <= b}, {1, # > b}}, 0) & $]
             F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Times(
-                                F.Power(F.Plus(F.Negate(a), b), F.CN1),
-                                F.Plus(F.Negate(a), F.Slot1)),
-                            F.LessEqual(a, F.Slot1, b)),
-                        F.List(F.C1, F.Greater(F.Slot1, b))),
-                    F.C0)); // $$;
+                F.Piecewise(F.List(
+                    F.List(F.Times(F.Power(F.Plus(F.Negate(a), b), F.CN1),
+                        F.Plus(F.Negate(a), F.Slot1)), F.LessEqual(a, F.Slot1, b)),
+                    F.List(F.C1, F.Greater(F.Slot1, b))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -6638,13 +6681,11 @@ public class StatisticsFunctions {
       if (minMax != null) {
         IExpr a = minMax[0];
         IExpr b = minMax[1];
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.UniformRealDistribution(
-                        a.evalDouble(), b.evalDouble()) //
+            return F.num(new org.hipparchus.distribution.continuous.UniformRealDistribution(
+                a.evalDouble(), b.evalDouble()) //
                     .inverseCumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
@@ -6655,15 +6696,12 @@ public class StatisticsFunctions {
             // 0 <= #
             // <= 1)& ) $]
             F.Function(
-                F.ConditionalExpression(
-                    F.Piecewise(
-                        F.List(
-                            F.List(
-                                F.Plus(F.Times(F.Subtract(F.C1, F.Slot1), a), F.Times(F.Slot1, b)),
-                                F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(a, F.LessEqual(F.Slot1, F.C0))),
-                        b),
-                    F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+                F.ConditionalExpression(F.Piecewise(
+                    F.List(
+                        F.List(F.Plus(F.Times(F.Subtract(F.C1, F.Slot1), a), F.Times(F.Slot1, b)),
+                            F.Less(F.C0, F.Slot1, F.C1)),
+                        F.List(a, F.LessEqual(F.Slot1, F.C0))),
+                    b), F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -6677,11 +6715,9 @@ public class StatisticsFunctions {
         IExpr b = minMax[1];
         IExpr function =
             // [$ Piecewise({{1/(b - a), a <= # <= b}}, 0)& $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(F.Power(F.Plus(F.Negate(a), b), F.CN1), F.LessEqual(a, F.Slot1, b))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(
+                F.List(F.List(F.Power(F.Plus(F.Negate(a), b), F.CN1), F.LessEqual(a, F.Slot1, b))),
+                F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -6695,9 +6731,8 @@ public class StatisticsFunctions {
         double min = minMax[0].evalDouble();
         double max = minMax[1].evalDouble();
         RandomDataGenerator rdg = new RandomDataGenerator();
-        double[] vector =
-            rdg.nextDeviates(
-                new org.hipparchus.distribution.continuous.UniformRealDistribution(min, max), size);
+        double[] vector = rdg.nextDeviates(
+            new org.hipparchus.distribution.continuous.UniformRealDistribution(min, max), size);
         return new ASTRealVector(vector, false);
       }
       return F.NIL;
@@ -6713,34 +6748,38 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>computes the variance of <code>list</code>. <code>list</code> may consist of numerical
-   * values or symbols. Numerical values may be real or complex.
+   * <p>
+   * computes the variance of <code>list</code>. <code>list</code> may consist of numerical values
+   * or symbols. Numerical values may be real or complex.
    *
    * </blockquote>
    *
-   * <p><code>Variance({{a1, a2, ...}, {b1, b2, ...}, ...})</code> will yield <code>
+   * <p>
+   * <code>Variance({{a1, a2, ...}, {b1, b2, ...}, ...})</code> will yield <code>
    * {Variance({a1, b1, ...}, Variance({a2, b2, ...}), ...}</code>.
    *
-   * <p><code>Variance</code> can be applied to the following distributions:
+   * <p>
+   * <code>Variance</code> can be applied to the following distributions:
    *
    * <blockquote>
    *
-   * <p><a href="BernoulliDistribution.md">BernoulliDistribution</a>, <a
-   * href="BinomialDistribution.md">BinomialDistribution</a>, <a
-   * href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>, <a
-   * href="ErlangDistribution.md">ErlangDistribution</a>, <a
-   * href="ExponentialDistribution.md">ExponentialDistribution</a>, <a
-   * href="FrechetDistribution.md">FrechetDistribution</a>, <a
-   * href="GammaDistribution.md">GammaDistribution</a>, <a
-   * href="GeometricDistribution.md">GeometricDistribution</a>, <a
-   * href="GumbelDistribution.md">GumbelDistribution</a>, <a
-   * href="HypergeometricDistribution.md">HypergeometricDistribution</a>, <a
-   * href="LogNormalDistribution.md">LogNormalDistribution</a>, <a
-   * href="NakagamiDistribution.md">NakagamiDistribution</a>, <a
-   * href="NormalDistribution.md">NormalDistribution</a>, <a
-   * href="PoissonDistribution.md">PoissonDistribution</a>, <a
-   * href="StudentTDistribution.md">StudentTDistribution</a>, <a
-   * href="WeibullDistribution.md">WeibullDistribution</a>
+   * <p>
+   * <a href="BernoulliDistribution.md">BernoulliDistribution</a>,
+   * <a href="BinomialDistribution.md">BinomialDistribution</a>,
+   * <a href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>,
+   * <a href="ErlangDistribution.md">ErlangDistribution</a>,
+   * <a href="ExponentialDistribution.md">ExponentialDistribution</a>,
+   * <a href="FrechetDistribution.md">FrechetDistribution</a>,
+   * <a href="GammaDistribution.md">GammaDistribution</a>,
+   * <a href="GeometricDistribution.md">GeometricDistribution</a>,
+   * <a href="GumbelDistribution.md">GumbelDistribution</a>,
+   * <a href="HypergeometricDistribution.md">HypergeometricDistribution</a>,
+   * <a href="LogNormalDistribution.md">LogNormalDistribution</a>,
+   * <a href="NakagamiDistribution.md">NakagamiDistribution</a>,
+   * <a href="NormalDistribution.md">NormalDistribution</a>,
+   * <a href="PoissonDistribution.md">PoissonDistribution</a>,
+   * <a href="StudentTDistribution.md">StudentTDistribution</a>,
+   * <a href="WeibullDistribution.md">WeibullDistribution</a>
    *
    * </blockquote>
    *
@@ -6842,22 +6881,25 @@ public class StatisticsFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a Weibull distribution.
+   * <p>
+   * returns a Weibull distribution.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Weibull_distribution">Wikipedia - Weibull
-   *       distribution</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Weibull_distribution">Wikipedia - Weibull
+   * distribution</a>
    * </ul>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a
-   * href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>, <a
-   * href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
+   * <p>
+   * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>,
+   * <a href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>,
+   * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class WeibullDistribution extends AbstractEvaluator
       implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate {
@@ -6881,8 +6923,8 @@ public class StatisticsFunctions {
       }
       if (dist.isAST3()) {
         // (a,b,m) -> m + b*Gamma(1 + 1/a)
-        return F.Plus(
-            dist.arg3(), F.Times(dist.arg2(), F.Gamma(F.Plus(F.C1, F.Power(dist.arg1(), F.CN1)))));
+        return F.Plus(dist.arg3(),
+            F.Times(dist.arg2(), F.Gamma(F.Plus(F.C1, F.Power(dist.arg1(), F.CN1)))));
       }
 
       return F.NIL;
@@ -6914,29 +6956,22 @@ public class StatisticsFunctions {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         //
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.WeibullDistribution(
-                        n.evalDouble(), m.evalDouble()) //
-                    .cumulativeProbability(k.evalDouble()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalDouble(),
+                    m.evalDouble()) //
+                        .cumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
         }
         IExpr function =
             // [$ Piecewise({{1 - E^(-(#/m)^n),# > 0}}, 0) & $]
-            F.Function(
-                F.Piecewise(
-                    F.List(
-                        F.List(
-                            F.Subtract(
-                                F.C1,
-                                F.Exp(F.Negate(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), n)))),
-                            F.Greater(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+            F.Function(F.Piecewise(F.List(F.List(
+                F.Subtract(F.C1, F.Exp(F.Negate(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), n)))),
+                F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -6947,14 +6982,13 @@ public class StatisticsFunctions {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.WeibullDistribution(
-                        n.evalDouble(), m.evalDouble()) //
-                    .inverseCumulativeProbability(k.evalDouble()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalDouble(),
+                    m.evalDouble()) //
+                        .inverseCumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
@@ -6967,12 +7001,9 @@ public class StatisticsFunctions {
                 F.ConditionalExpression(
                     F.Piecewise(
                         F.List(
-                            F.List(
-                                F.Times(
-                                    m,
-                                    F.Power(
-                                        F.Negate(F.Log(F.Subtract(F.C1, F.Slot1))),
-                                        F.Power(n, F.CN1))),
+                            F.List(F.Times(m,
+                                F.Power(F.Negate(F.Log(F.Subtract(F.C1, F.Slot1))),
+                                    F.Power(n, F.CN1))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
                             F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
@@ -6988,14 +7019,13 @@ public class StatisticsFunctions {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         //
-        if (!engine.isArbitraryMode()
-            && //
+        if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.WeibullDistribution(
-                        n.evalDouble(), m.evalDouble()) //
-                    .density(k.evalDouble()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalDouble(),
+                    m.evalDouble()) //
+                        .density(k.evalDouble()));
           } catch (RuntimeException rex) {
             //
           }
@@ -7008,11 +7038,10 @@ public class StatisticsFunctions {
                         F.List(
                             F.Times(
                                 F.Power(
-                                    F.Times(
-                                        F.Exp(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), n)), m),
+                                    F.Times(F.Exp(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), n)),
+                                        m),
                                     F.CN1),
-                                n,
-                                F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), F.Plus(F.CN1, n))),
+                                n, F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), F.Plus(F.CN1, n))),
                             F.Greater(F.Slot1, F.C0))),
                     F.C0)); // $$;
         return callFunction(function, k);
@@ -7026,11 +7055,8 @@ public class StatisticsFunctions {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         // m^2*(-Gamma(1 + 1/n)^2 + Gamma(1 + 2/n))
-        return F.Times(
-            F.Sqr(m),
-            F.Plus(
-                F.Negate(F.Sqr(F.Gamma(F.Plus(F.C1, F.Power(n, -1))))),
-                F.Gamma(F.Plus(F.C1, F.Times(F.C2, F.Power(n, -1))))));
+        return F.Times(F.Sqr(m), F.Plus(F.Negate(F.Sqr(F.Gamma(F.Plus(F.C1, F.Power(n, -1))))),
+            F.Gamma(F.Plus(F.C1, F.Times(F.C2, F.Power(n, -1))))));
       }
       return F.NIL;
     }
@@ -7042,9 +7068,8 @@ public class StatisticsFunctions {
         double m = dist.arg2().evalDouble();
         // see exception handling in RandonmVariate() function
         RandomDataGenerator rdg = new RandomDataGenerator();
-        double[] vector =
-            rdg.nextDeviates(
-                new org.hipparchus.distribution.continuous.WeibullDistribution(n, m), size);
+        double[] vector = rdg.nextDeviates(
+            new org.hipparchus.distribution.continuous.WeibullDistribution(n, m), size);
         return new ASTRealVector(vector, false);
       }
       return F.NIL;
@@ -7060,16 +7085,10 @@ public class StatisticsFunctions {
         // [$ (2*Gamma(1+1/n)^3 - 3*Gamma(1+1/n)*Gamma(1+2/n) + Gamma(1+3/n))/ (-Gamma(1+1/n)^2 +
         // Gamma(1+2/n))^(3/2) $]
         F.Times(
-            F.Power(
-                F.Plus(
-                    F.Negate(F.Sqr(F.Gamma(F.Plus(F.C1, F.Power(n, F.CN1))))),
-                    F.Gamma(F.Plus(F.C1, F.Times(F.C2, F.Power(n, F.CN1))))),
-                F.QQ(-3L, 2L)),
-            F.Plus(
-                F.Times(F.C2, F.Power(F.Gamma(F.Plus(F.C1, F.Power(n, F.CN1))), F.C3)),
-                F.Times(
-                    F.CN3,
-                    F.Gamma(F.Plus(F.C1, F.Power(n, F.CN1))),
+            F.Power(F.Plus(F.Negate(F.Sqr(F.Gamma(F.Plus(F.C1, F.Power(n, F.CN1))))),
+                F.Gamma(F.Plus(F.C1, F.Times(F.C2, F.Power(n, F.CN1))))), F.QQ(-3L, 2L)),
+            F.Plus(F.Times(F.C2, F.Power(F.Gamma(F.Plus(F.C1, F.Power(n, F.CN1))), F.C3)),
+                F.Times(F.CN3, F.Gamma(F.Plus(F.C1, F.Power(n, F.CN1))),
                     F.Gamma(F.Plus(F.C1, F.Times(F.C2, F.Power(n, F.CN1))))),
                 F.Gamma(F.Plus(F.C1, F.Times(F.C3, F.Power(n, F.CN1)))))); // $$;
       }

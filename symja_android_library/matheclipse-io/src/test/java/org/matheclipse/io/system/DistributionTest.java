@@ -203,6 +203,59 @@ public class DistributionTest extends AbstractTestCase {
             + "0,1/2))/m),Sqrt((w*InverseGammaRegularized(m,0,3/4))/m)}");
   }
 
+  public void testParetoDistribution() {
+    check("CDF(ParetoDistribution(k,a))", //
+        "Piecewise({{1-(k/#1)^a,#1>=k}},0)&");
+    check("CDF(ParetoDistribution(k,a,m))", //
+        "Piecewise({{1-1/(1+(-m+#1)/k)^a,#1>=m}},0)&");
+    check("CDF(ParetoDistribution(k,a,g,m))", //
+        "Piecewise({{1-1/(1+((-m+#1)/k)^(1/g))^a,#1>=m}},0)&");
+
+    check("InverseCDF(ParetoDistribution(k,a))", //
+        "ConditionalExpression(Piecewise({{k/(1-#1)^(1/a),#1<1}},Infinity),0<=#1<=1)&");
+    check("InverseCDF(ParetoDistribution(k,a,m))", //
+        "ConditionalExpression(Piecewise({{m+k*(-1+(1-#1)^(-1/a)),0<#1<1},{m,#1<=0}},Infinity),\n"
+            + "0<=#1<=1)&");
+    check("InverseCDF(ParetoDistribution(k,a,g,m))", //
+        "ConditionalExpression(Piecewise({{m+k*(-1+(1-#1)^(-1/a))^g,0<#1<1},{m,#1<=0}},Infinity),\n"
+            + "0<=#1<=1)&");
+
+    check("PDF(ParetoDistribution(k,a))", //
+        "Piecewise({{(a*k^a)/#1^(1+a),#1>=k}},0)&");
+    check("PDF(ParetoDistribution(k,a,m))", //
+        "Piecewise({{a/(k*((k-m+#1)/k)^(1+a)),#1>=m}},0)&");
+    check("PDF(ParetoDistribution(k,a,g,m))", //
+        "Piecewise({{a/(g*k^(1/g)*(-m+#1)^(1-1/g)*(1+(k/(-m+#1))^(-1/g))^(1+a)),#1>=m}},0)&");
+
+    check("Mean(ParetoDistribution(k,a))", //
+        "Piecewise({{(a*k)/(-1+a),a>1}},Indeterminate)");
+    check("Mean(ParetoDistribution(k,a,m))", //
+        "Piecewise({{k/(-1+a)+m,a>1}},Indeterminate)");
+    check("Mean(ParetoDistribution(k,a,g,m))", //
+        "Piecewise({{m+(k*Gamma(a-g)*Gamma(1+g))/Gamma(a),a>g}},Indeterminate)");
+    check("Median(ParetoDistribution(k,a))", //
+        "2^(1/a)*k");
+    check("Median(ParetoDistribution(k,a,m))", //
+        "(-1+2^(1/a))*k+m");
+    check("Median(ParetoDistribution(k,a,g,m))", //
+        "(-1+2^(1/a))^g*k+m");
+    check("Skewness(ParetoDistribution(k,a))", //
+        "Piecewise({{(2*Sqrt((-2+a)/a)*(1+a))/(-3+a),a>3}},Indeterminate)");
+    check("Skewness(ParetoDistribution(k,a,m))", //
+        "Piecewise({{(2*Sqrt((-2+a)/a)*(1+a))/(-3+a),a>3}},Indeterminate)");
+    check("Skewness(ParetoDistribution(k,a,g,m))", //
+        "Piecewise({{(k^3*(2*Gamma(a-g)^3*Gamma(1+g)^3-3*Gamma(a)*Gamma(a-2*g)*Gamma(a-g)*Gamma(\n"
+            + "1+g)*Gamma(1+2*g)+Gamma(a)^2*Gamma(a-3*g)*Gamma(1+3*g)))/(k^2*(-Gamma(a-g)^2*Gamma(\n"
+            + "1+g)^2+Gamma(a)*Gamma(a-2*g)*Gamma(1+2*g)))^(3/2),a>3*g}},Indeterminate)");
+    check("Variance(ParetoDistribution(k,a))", //
+        "Piecewise({{(a*k^2)/((1-a)^2*(-2+a)),a>2}},Indeterminate)");
+    check("Variance(ParetoDistribution(k,a,m))", //
+        "Piecewise({{(a*k^2)/((1-a)^2*(-2+a)),a>2}},Indeterminate)");
+    check("Variance(ParetoDistribution(k,a,g,m))", //
+        "Piecewise({{(k^2*(-Gamma(a-g)^2*Gamma(1+g)^2+Gamma(a)*Gamma(a-2*g)*Gamma(1+2*g)))/Gamma(a)^\n"
+            + "2,a>2*g}},Indeterminate)");
+  }
+
   public void testPoissonDistribution() {
     check(
         "Mean(PoissonDistribution(m))", //
