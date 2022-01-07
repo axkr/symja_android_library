@@ -6126,6 +6126,19 @@ public class F extends S {
     return new AST2(NormalDistribution, a0, a1);
   }
 
+  public static IAST ParetoDistribution(final IExpr a0, final IExpr a1) {
+    return new AST2(ParetoDistribution, a0, a1);
+  }
+
+  public static IAST ParetoDistribution(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(ParetoDistribution, a0, a1, a2);
+  }
+
+  public static IAST ParetoDistribution(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
+    return quaternary(ParetoDistribution, a0, a1, a2, a3);
+  }
+
   public static IAST Normalize(final IExpr a) {
     return new AST1(Normalize, a);
   }
