@@ -32,7 +32,7 @@ jobs:
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
-    - run: mvn -f symja_android_library -B -U -P publish-to-maven-central verify
+    - run: mvn -f symja_android_library -B -U -P publish-to-maven-central deploy
       # Deployment of all modules is deferred to the last module by nexus-staging-maven-plugin
       env:
         MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
