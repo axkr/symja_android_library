@@ -15,7 +15,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 138 };
+  final public static int[] SIZES = { 0, 139 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -73,6 +73,9 @@ public interface DRules {
     // D(ArcSech(f_),x_?NotListQ):=(D(f,x)*(-1))/(f*Sqrt(1-f^2))
     ISetDelayed(D(ArcSech(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),CN1,Power(f,CN1),Power(Subtract(C1,Sqr(f)),CN1D2))),
+    // D(CatalanNumber(f_),x_?NotListQ):=D(f,x)*CatalanNumber(f)*(Log(4)+PolyGamma(1/2+f)-PolyGamma(2+f))
+    ISetDelayed(D(CatalanNumber(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),CatalanNumber(f),Plus(Log(C4),PolyGamma(Plus(C1D2,f)),Negate(PolyGamma(Plus(C2,f)))))),
     // D(Ceiling(f_),x_?NotListQ):=D(f,x)*Piecewise({{0,f<Ceiling(f)}},Indeterminate)
     ISetDelayed(D(Ceiling(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Piecewise(List(List(C0,Less(f,Ceiling(f)))),Indeterminate))),

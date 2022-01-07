@@ -2688,17 +2688,21 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCatalanNumber() {
-    checkNumeric("CatalanNumber(-10)", //
+    check("N(CatalanNumber(I),20)", //
+        "0.39764993382373624266+I*(-0.0208843416208425557)");
+    check("N(CatalanNumber(1/4),20)", //
+        "0.86296416190140697066");
+    check("CatalanNumber(-10)", //
         "0");
-    checkNumeric("CatalanNumber(-1)", //
+    check("CatalanNumber(-1)", //
         "-1");
-    checkNumeric("CatalanNumber(0)", //
+    check("CatalanNumber(0)", //
         "1");
-    checkNumeric("CatalanNumber(1)", //
+    check("CatalanNumber(1)", //
         "1");
-    checkNumeric("CatalanNumber(3)", //
+    check("CatalanNumber(3)", //
         "5");
-    checkNumeric("CatalanNumber(10)", //
+    check("CatalanNumber(10)", //
         "16796");
   }
 
@@ -5111,6 +5115,9 @@ public class LowercaseTestCase extends AbstractTestCase {
         "((x*(-1+y)+EllipticE(JacobiAmplitude(x,y),y))*JacobiDN(x,y)-y*JacobiCN(x,y)*JacobiSN(x,y))/(\n"
             + //
             "2*(-1+y)*y)");
+
+    check("D(CatalanNumber(x),x)", //
+        "CatalanNumber(x)*(Log(4)+PolyGamma(0,1/2+x)-PolyGamma(0,2+x))");
   }
 
   public void testDefault() {
@@ -5630,6 +5637,9 @@ public class LowercaseTestCase extends AbstractTestCase {
         "1");
     check("y'", //
         "0&");
+
+    check("Derivative(1)[CatalanNumber]", //
+        "CatalanNumber(#1)*(Log(4)+PolyGamma(1/2+#1)-PolyGamma(2+#1))&");
   }
 
   public void testDesignMatrix() {
@@ -8637,6 +8647,13 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFactorial() {
+    check("(5/2)!", //
+        "15/8*Sqrt(Pi)");
+    check("(-7/2)!", //
+        "-8/15*Sqrt(Pi)");
+    check("(-121/2)!", //
+        "1152921504606846976/6972993461801137628817411854132406856519268086997480719774989309037307630499025\\\n"
+            + "82163482720947265625*Sqrt(Pi)");
     check("Factorial(I*Infinity)", //
         "0");
     check("Factorial(-I*Infinity)", //

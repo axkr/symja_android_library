@@ -17,6 +17,7 @@
   D(ArcTanh(f_),x_?NotListQ):=D(f,x)*(1-f^2)^(-1),
   D(ArcSec(f_),x_?NotListQ):=D(f,x)*x^(-2)*(1-f^(-2))^(-1/2),
   D(ArcSech(f_),x_?NotListQ):=D(f,x)*(-1)*f^(-1)*(1-f^2)^(-1/2),
+  D(CatalanNumber(f_),x_?NotListQ):=D(f,x)*CatalanNumber(f)*(Log(4)+PolyGamma(1/2+f)-PolyGamma(2+f)),
   D(Ceiling(f_),x_?NotListQ):=D(f,x)*Piecewise({{0, f<Ceiling(f)}}, Indeterminate),
   D(EllipticE(f_),x_?NotListQ):=((EllipticE(f) - EllipticK(f))*D(f,x))/(2*f),
   D(EllipticK(f_),x_?NotListQ):=((EllipticE(f) - EllipticK(f)*(1 - f))*D(f,x))/(2*(1 - f)*f),

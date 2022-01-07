@@ -15,7 +15,7 @@ public interface DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 108 };
+  final public static int[] SIZES = { 0, 109 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -67,6 +67,9 @@ public interface DerivativeRules {
     // Derivative(1)[ArcSech]:=-1/(#1*Sqrt(1-#1^2))&
     ISetDelayed($(Derivative(C1),ArcSech),
       Function(Times(CN1,Power(Slot1,CN1),Power(Subtract(C1,Sqr(Slot1)),CN1D2)))),
+    // Derivative(1)[CatalanNumber]:=CatalanNumber(#1)*(Log(4)+PolyGamma(1/2+#1)-PolyGamma(2+#1))&
+    ISetDelayed($(Derivative(C1),CatalanNumber),
+      Function(Times(CatalanNumber(Slot1),Plus(Log(C4),PolyGamma(Plus(C1D2,Slot1)),Negate(PolyGamma(Plus(C2,Slot1))))))),
     // Derivative(1)[Ceiling]:=Piecewise({{0,#1<Ceiling(#1)}},Indeterminate)&
     ISetDelayed($(Derivative(C1),Ceiling),
       Function(Piecewise(List(List(C0,Less(Slot1,Ceiling(Slot1)))),Indeterminate))),
