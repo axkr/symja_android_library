@@ -245,7 +245,7 @@ If you have any questions about using or developing for this project, send me an
 * the complete Symja system is published under the GNU GENERAL PUBLIC LICENSE Version 3 (GPL) starting with Symja version 2.0.0 parts are published under the Lesser GNU GENERAL PUBLIC LICENSE Version 3 (LGPL).
 
 If you would like to use parts of the system here are some Maven module licenses:
-* the maven modules: `frontend, external, core` are published under LGPL license.
+* the maven modules: `parser, external, core` are published under LGPL license.
 * the maven modules: `gpl, api, io` are published under GPL license.
 
 Here are some of the associated **Java** library dependency licenses:
