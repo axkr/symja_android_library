@@ -8,10 +8,10 @@
 		<version>2.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>matheclipse-frontend</artifactId>
+	<artifactId>matheclipse-parser</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
-	<description>The Symja frontend module</description>
+	<description>The Symja parser module</description>
 
 	<licenses>
 		<license>

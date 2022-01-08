@@ -12,7 +12,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 import junit.framework.TestCase;
@@ -31,7 +31,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
     // System.out.println(">>>" + name);
     this.isRelaxedSyntax = isRelaxedSyntax;
     Config.SERVER_MODE = false;
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = isRelaxedSyntax;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = isRelaxedSyntax;
   }
 
   private String printResult(IExpr result, String expectedResult, String manuallyCheckedResult) {

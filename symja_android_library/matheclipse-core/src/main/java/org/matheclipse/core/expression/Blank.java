@@ -17,7 +17,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 /**
  * A &quot;blank pattern&quot; with no assigned &quot;pattern name&quot; (i.e. &quot;<code>_</code>
@@ -180,14 +180,14 @@ public class Blank implements IPattern {
     StringBuilder buf = new StringBuilder();
     if (fDefault) {
       buf.append("Optional");
-      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
         buf.append('(');
       } else {
         buf.append('[');
       }
     }
     buf.append("Blank");
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       buf.append('(');
     } else {
       buf.append('[');
@@ -195,13 +195,13 @@ public class Blank implements IPattern {
     if (fHeadTest != null) {
       buf.append(fHeadTest.fullFormString());
     }
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       buf.append(')');
     } else {
       buf.append(']');
     }
     if (fDefault) {
-      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
         buf.append(')');
       } else {
         buf.append(']');

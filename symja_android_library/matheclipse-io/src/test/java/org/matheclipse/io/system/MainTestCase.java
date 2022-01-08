@@ -9,7 +9,7 @@ import org.matheclipse.core.eval.TimeConstrainedEvaluator;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 /** Tests system.reflection classes */
 public class MainTestCase extends AbstractTestCase {
@@ -605,7 +605,7 @@ public class MainTestCase extends AbstractTestCase {
     // check("1.6969545188681513E4", "1.6969545188681513e4");
     // check("1.6969545188681513*^4", "1.69695451886815129e4");
     // check("1.6969545188681513*^-10", "1.6969545188681513e-10");
-    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+    if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       // implicit times operator '*' allowed
       check("1.6969545188681513E4", "1.69695*e4");
       check("1.6969545188681513*^-10", "1.69695*10^-10");
@@ -629,7 +629,7 @@ public class MainTestCase extends AbstractTestCase {
     check("1.0-(1.0-1*(2))", "2.0");
     check("1-(1-1*(2))", "2");
 
-    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+    if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       // implicit times operator '*' allowed
       check("Chop((-2.4492935982947064E-16)+I*(-1.0E-19))", "-22.65787+I*(-21.71828)");
       check("Chop(2.0+I*(-2.4492935982947064E-16))", "2.0+I*(-22.65787)");
@@ -4181,20 +4181,20 @@ public class MainTestCase extends AbstractTestCase {
 
   public void testGithub18() {
     // github issue #18
-    boolean old = FEConfig.EXPLICIT_TIMES_OPERATOR;
+    boolean old = ParserConfig.EXPLICIT_TIMES_OPERATOR;
     try {
-      FEConfig.EXPLICIT_TIMES_OPERATOR = false;
-      if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
-        FEConfig.DOMINANT_IMPLICIT_TIMES = true;
-        if (FEConfig.DOMINANT_IMPLICIT_TIMES) {
+      ParserConfig.EXPLICIT_TIMES_OPERATOR = false;
+      if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
+        ParserConfig.DOMINANT_IMPLICIT_TIMES = true;
+        if (ParserConfig.DOMINANT_IMPLICIT_TIMES) {
           check("Hold(1/2Pi) // FullForm", "Hold(Power(Times(2, Pi), -1))");
           check("1/2Pi // FullForm", "Times(Rational(1,2), Power(Pi, -1))");
           check("1/2(a+b) // FullForm", "Times(Rational(1,2), Power(Plus(a, b), -1))");
           check("1/(a+b)2 // FullForm", "Times(Rational(1,2), Power(Plus(a, b), -1))");
           check("a^(b)(c) // FullForm", "Power(a, Times(b, c))");
         }
-        FEConfig.DOMINANT_IMPLICIT_TIMES = false;
-        if (!FEConfig.DOMINANT_IMPLICIT_TIMES) {
+        ParserConfig.DOMINANT_IMPLICIT_TIMES = false;
+        if (!ParserConfig.DOMINANT_IMPLICIT_TIMES) {
           check("Hold(1/2Pi) // FullForm", "Hold(Times(Times(Rational(1,2), 1), Pi))");
           check("1/2Pi // FullForm", "Times(Rational(1,2), Pi)");
           check("1/2(a+b) // FullForm", "Times(Rational(1,2), Plus(a, b))");
@@ -4226,8 +4226,8 @@ public class MainTestCase extends AbstractTestCase {
         check("0xf  // FullForm", "0");
         check("0y1  // FullForm ", "0");
       }
-      FEConfig.EXPLICIT_TIMES_OPERATOR = true;
-      if (FEConfig.EXPLICIT_TIMES_OPERATOR) {
+      ParserConfig.EXPLICIT_TIMES_OPERATOR = true;
+      if (ParserConfig.EXPLICIT_TIMES_OPERATOR) {
         check("0.1758368*0.4112540785271148*0.0*9.986163076795545E-11", //
             "0");
         check("2(b+c)", //
@@ -4263,7 +4263,7 @@ public class MainTestCase extends AbstractTestCase {
             "-3.143455569405777E-11");
       }
     } finally {
-      FEConfig.EXPLICIT_TIMES_OPERATOR = old;
+      ParserConfig.EXPLICIT_TIMES_OPERATOR = old;
     }
   }
 

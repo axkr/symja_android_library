@@ -28,7 +28,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.io.IOInit;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
@@ -92,7 +92,7 @@ public class Console {
 
   public static void main(final String args[]) {
     Locale.setDefault(Locale.US);
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
     ToggleFeature.COMPILE = true;
     Config.JAVA_UNSAFE = true;
     Config.SHORTEN_STRING_LENGTH = 1024;

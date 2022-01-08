@@ -33,7 +33,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.trie.SuggestTree;
 import org.matheclipse.parser.trie.SuggestTree.Node;
 import com.mitchellbosecke.pebble.PebbleEngine;
@@ -396,7 +396,7 @@ public class IOFunctions {
       }
 
       IExpr arg1 = ast.arg1();
-      boolean ignoreCase = FEConfig.PARSER_USE_LOWERCASE_SYMBOLS;
+      boolean ignoreCase = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS;
       if (ast.size() > 2) {
         final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine, true);
         IExpr option = options.getOption(S.IgnoreCase);
@@ -1235,7 +1235,7 @@ public class IOFunctions {
         String fullName = context.completeContextName() + entry.getKey();
         java.util.regex.Matcher matcher = pattern.matcher(fullName);
         if (matcher.matches()) {
-          if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
+          if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
             String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(entry.getValue().getSymbolName());
             if (str != null) {
               list.append(F.$str(str));
@@ -1259,7 +1259,7 @@ public class IOFunctions {
           String fullName = completeContextName + entry.getKey();
           java.util.regex.Matcher matcher = pattern.matcher(fullName);
           if (matcher.matches()) {
-            if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
+            if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
               String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(entry.getValue().getSymbolName());
               if (str != null) {
                 list.append(F.$str(str));
@@ -1293,7 +1293,7 @@ public class IOFunctions {
       exact = false;
     }
     SuggestTree suggestTree = AST2Expr.getSuggestTree();
-    //    name = FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
+    // name = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
     name = name.toLowerCase();
     Node n = suggestTree.getAutocompleteSuggestions(name);
     if (n != null) {
@@ -1323,7 +1323,7 @@ public class IOFunctions {
       return list;
     }
     SuggestTree suggestTree = AST2Expr.getSuggestTree();
-    namePrefix = FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase() : namePrefix;
+    namePrefix = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase() : namePrefix;
     Node n = suggestTree.getAutocompleteSuggestions(namePrefix);
     if (n != null) {
       for (int i = 0; i < n.listLength(); i++) {

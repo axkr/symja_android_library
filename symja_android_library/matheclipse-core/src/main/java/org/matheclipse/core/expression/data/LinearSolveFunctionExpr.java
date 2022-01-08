@@ -9,7 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class LinearSolveFunctionExpr<T extends FieldElement<T>>
     extends DataExpr<FieldDecompositionSolver<T>> {
@@ -18,7 +18,7 @@ public class LinearSolveFunctionExpr<T extends FieldElement<T>>
 
   public static LinearSolveFunctionExpr<Complex> createComplex(
       final FieldDecompositionSolver<Complex> solver) {
-    return new LinearSolveFunctionExpr<Complex>(solver, true, FEConfig.MACHINE_PRECISION);
+    return new LinearSolveFunctionExpr<Complex>(solver, true, ParserConfig.MACHINE_PRECISION);
   }
 
   public static LinearSolveFunctionExpr<IExpr> createIExpr(
@@ -39,7 +39,7 @@ public class LinearSolveFunctionExpr<T extends FieldElement<T>>
 
   @Override
   public IExpr copy() {
-    return new LinearSolveFunctionExpr(fData, complexNumeric, FEConfig.MACHINE_PRECISION);
+    return new LinearSolveFunctionExpr(fData, complexNumeric, ParserConfig.MACHINE_PRECISION);
   }
 
   @Override

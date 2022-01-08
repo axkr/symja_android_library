@@ -40,7 +40,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.IParserFactory;
@@ -132,7 +132,7 @@ public class ExprParser extends Scanner {
         ExprParserFactory.MMA_STYLE_FACTORY,
         engine.isRelaxedSyntax(),
         false,
-        FEConfig.EXPLICIT_TIMES_OPERATOR);
+        ParserConfig.EXPLICIT_TIMES_OPERATOR);
   }
 
   /**
@@ -157,7 +157,7 @@ public class ExprParser extends Scanner {
    * @throws SyntaxError
    */
   public ExprParser(final EvalEngine engine, IParserFactory factory, final boolean relaxedSyntax) {
-    this(engine, factory, relaxedSyntax, false, FEConfig.EXPLICIT_TIMES_OPERATOR);
+    this(engine, factory, relaxedSyntax, false, ParserConfig.EXPLICIT_TIMES_OPERATOR);
   }
 
   public ExprParser(
@@ -427,7 +427,7 @@ public class ExprParser extends Scanner {
         if (fToken == TT_PRECEDENCE_OPEN) {
           if (!fExplicitTimes) {
             Operator oper = fFactory.get("Times");
-            if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+            if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
               return getTimesImplicit(temp);
             }
           }
@@ -540,7 +540,7 @@ public class ExprParser extends Scanner {
           if (fToken == TT_PRECEDENCE_OPEN) {
             if (!fExplicitTimes) {
               Operator oper = fFactory.get("Times");
-              if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+              if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
                 return getTimesImplicit(temp);
               }
             }
@@ -941,16 +941,16 @@ public class ExprParser extends Scanner {
           } else if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
             fCurrentPosition += 2;
             long precision = getJavaLong();
-            if (precision < FEConfig.MACHINE_PRECISION) {
-              precision = FEConfig.MACHINE_PRECISION;
+            if (precision < ParserConfig.MACHINE_PRECISION) {
+              precision = ParserConfig.MACHINE_PRECISION;
             }
             return F.num(new Apfloat(numberStr, precision));
           } else {
             if (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
               fCurrentPosition++;
               long precision = getJavaLong();
-              if (precision < FEConfig.MACHINE_PRECISION) {
-                precision = FEConfig.MACHINE_PRECISION;
+              if (precision < ParserConfig.MACHINE_PRECISION) {
+                precision = ParserConfig.MACHINE_PRECISION;
               }
               return F.num(new Apfloat(numberStr, precision));
             } else {
@@ -1214,7 +1214,7 @@ public class ExprParser extends Scanner {
       }
       if (fRelaxedSyntax) {
         if (fToken == TT_ARGUMENTS_OPEN) {
-          if (FEConfig.PARSER_USE_STRICT_SYNTAX) {
+          if (ParserConfig.PARSER_USE_STRICT_SYNTAX) {
             if (head.isSymbolOrPattern()) {
               throwSyntaxError("'(' expected after symbol or pattern instead of '['.");
             }
@@ -1387,7 +1387,7 @@ public class ExprParser extends Scanner {
         if (!fExplicitTimes) {
           // lazy evaluation of multiplication
           oper = fFactory.get("Times");
-          if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+          if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
             rhs = parseLookaheadOperator(oper.getPrecedence());
             lhs = F.$(S.Times, lhs, rhs);
             ((IAST) lhs).addEvalFlags(IAST.TIMES_PARSED_IMPLICIT);
@@ -1560,7 +1560,7 @@ public class ExprParser extends Scanner {
         if (!fExplicitTimes) {
           // lazy evaluation of multiplication
           InfixExprOperator timesOperator = (InfixExprOperator) fFactory.get("Times");
-          if (FEConfig.DOMINANT_IMPLICIT_TIMES || timesOperator.getPrecedence() > min_precedence) {
+          if (ParserConfig.DOMINANT_IMPLICIT_TIMES || timesOperator.getPrecedence() > min_precedence) {
             rhs = parseExpression(rhs, timesOperator.getPrecedence());
             continue;
           } else if ((timesOperator.getPrecedence() == min_precedence)

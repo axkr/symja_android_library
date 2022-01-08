@@ -26,7 +26,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class ConstantDefinitions {
 
@@ -358,7 +358,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      return F.ZZ(FEConfig.MACHINE_PRECISION);
+      return F.ZZ(ParserConfig.MACHINE_PRECISION);
     }
   }
 

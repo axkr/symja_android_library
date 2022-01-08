@@ -28,7 +28,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import com.google.common.math.DoubleMath;
 
 /**
@@ -363,7 +363,7 @@ public class ComplexNum implements IComplexNum {
   /** {@inheritDoc} */
   @Override
   public long determinePrecision() {
-    return FEConfig.MACHINE_PRECISION;
+    return ParserConfig.MACHINE_PRECISION;
   }
 
   @Override
@@ -438,14 +438,14 @@ public class ComplexNum implements IComplexNum {
     double re = fComplex.getReal();
     double im = fComplex.getImaginary();
     StringBuilder buf = new StringBuilder("Complex");
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       buf.append('(');
     } else {
       buf.append('[');
     }
 
     String str = Double.toString(re);
-    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+    if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       int indx = str.indexOf("E");
       if (indx > 0) {
         str = str.replace("E", "`*^");
@@ -456,7 +456,7 @@ public class ComplexNum implements IComplexNum {
     buf.append(str);
     buf.append(',');
     str = Double.toString(im);
-    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+    if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       int indx = str.indexOf("E");
       //    `*^
       if (indx > 0) {
@@ -466,7 +466,7 @@ public class ComplexNum implements IComplexNum {
       }
     }
     buf.append(str);
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       buf.append(')');
     } else {
       buf.append(']');
@@ -814,7 +814,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public String toString() {
-    if (FEConfig.EXPLICIT_TIMES_OPERATOR) {
+    if (ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       return fComplex.toString();
     }
     StringBuilder buf = new StringBuilder();

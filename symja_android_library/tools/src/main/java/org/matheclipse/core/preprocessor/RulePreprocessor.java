@@ -18,7 +18,7 @@ import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.RulesData;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 /** Generate java sources for Symja rule files. */
 public class RulePreprocessor {
@@ -602,7 +602,7 @@ public class RulePreprocessor {
   }
 
   public static void main(final String[] args) {
-    FEConfig.EXPLICIT_TIMES_OPERATOR = true;
+    ParserConfig.EXPLICIT_TIMES_OPERATOR = true;
 
     // Slot is considered as variable if we enable this check the processor will
     // fail:

@@ -23,7 +23,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FloatNode;
 import org.matheclipse.parser.client.ast.FractionNode;
@@ -294,7 +294,7 @@ public class AST2Expr {
 
   /** Map the lower case identifier name to the upper case Wolfram language function name. */
   public static final Map<String, String> PREDEFINED_SYMBOLS_MAP =
-      FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+      ParserConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   /** The alias name of some functions */
   private static final String[] ALIASES_STRINGS =
@@ -308,10 +308,10 @@ public class AST2Expr {
 
   /** Aliases which are mapped to the standard function symbols. */
   public static final Map<String, String> PREDEFINED_ALIASES_MAP =
-      FEConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+      ParserConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   public static final String TIMES_STRING =
-      FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? "times" : "Times";
+      ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? "times" : "Times";
   public static final String TRUE_STRING = "true"; // : "True";
 
   /** SuggestTree for all <code>DOLLAR_STRINGS, SYMBOL_STRINGS, FUNCTION_STRINGS</code> */
@@ -364,7 +364,7 @@ public class AST2Expr {
       for (String str : FUNCTION_STRINGS) {
         PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
       }
-      if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
         for (int i = 0; i < ALIASES_STRINGS.length; i++) {
           PREDEFINED_ALIASES_MAP.put(ALIASES_STRINGS[i].toLowerCase(Locale.ENGLISH),
               ALIASES_SUBSTITUTES[i]); // YMBOLS[i]);
@@ -710,7 +710,7 @@ public class AST2Expr {
   }
 
   public IExpr convertSymbol(final String nodeStr) {
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       if (nodeStr.length() == 1) {
         if (nodeStr.equals("I")) {
           // special - convert on input

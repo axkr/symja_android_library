@@ -20,7 +20,7 @@ import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
@@ -39,7 +39,7 @@ public class SymjaBot {
   public static void main(String[] args) {
     if (args.length > 0) {
       Locale.setDefault(Locale.US);
-      FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+      ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
       ToggleFeature.COMPILE = false;
       Config.JAVA_UNSAFE = true;
       Config.SHORTEN_STRING_LENGTH = 512;

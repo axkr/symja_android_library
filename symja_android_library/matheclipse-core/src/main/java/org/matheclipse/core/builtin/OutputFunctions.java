@@ -280,7 +280,7 @@ public final class OutputFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr arg1 = engine.evaluate(ast.arg1());
-        // if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+        // if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
         // return F.stringx(StringFunctions.inputForm(arg1, true), IStringX.APPLICATION_SYMJA);
         // }
         return F.stringx(StringFunctions.inputForm(arg1), IStringX.APPLICATION_SYMJA);

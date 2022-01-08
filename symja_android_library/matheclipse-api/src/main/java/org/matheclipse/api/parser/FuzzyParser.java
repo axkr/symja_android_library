@@ -42,7 +42,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.IParserFactory;
@@ -126,7 +126,7 @@ public class FuzzyParser extends Scanner {
    * @throws SyntaxError
    */
   public FuzzyParser(final EvalEngine engine, IParserFactory factory) {
-    this(engine, factory, false, FEConfig.EXPLICIT_TIMES_OPERATOR);
+    this(engine, factory, false, ParserConfig.EXPLICIT_TIMES_OPERATOR);
   }
 
   public FuzzyParser(
@@ -459,7 +459,7 @@ public class FuzzyParser extends Scanner {
         if (fToken == TT_PRECEDENCE_OPEN) {
           if (!fExplicitTimes) {
             Operator oper = fFactory.get("Times");
-            if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+            if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
               return getTimesImplicit(temp);
             }
           }
@@ -570,7 +570,7 @@ public class FuzzyParser extends Scanner {
           if (fToken == TT_PRECEDENCE_OPEN) {
             if (!fExplicitTimes) {
               Operator oper = fFactory.get("Times");
-              if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+              if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
                 return getTimesImplicit(temp);
               }
             }
@@ -945,15 +945,15 @@ public class FuzzyParser extends Scanner {
           if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
             fCurrentPosition += 2;
             long precision = getJavaLong();
-            if (precision < FEConfig.MACHINE_PRECISION) {
-              precision = FEConfig.MACHINE_PRECISION;
+            if (precision < ParserConfig.MACHINE_PRECISION) {
+              precision = ParserConfig.MACHINE_PRECISION;
             }
             return F.num(new Apfloat(number, precision));
           } else {
             fCurrentPosition++;
             long precision = getJavaLong();
-            if (precision < FEConfig.MACHINE_PRECISION) {
-              precision = FEConfig.MACHINE_PRECISION;
+            if (precision < ParserConfig.MACHINE_PRECISION) {
+              precision = ParserConfig.MACHINE_PRECISION;
             }
             return F.num(new Apfloat(number, precision));
           }
@@ -1193,7 +1193,7 @@ public class FuzzyParser extends Scanner {
 
   private IExpr parseArguments(IExpr head) {
     if (fToken == TT_ARGUMENTS_OPEN) {
-      if (FEConfig.PARSER_USE_STRICT_SYNTAX) {
+      if (ParserConfig.PARSER_USE_STRICT_SYNTAX) {
         if (head.isSymbolOrPattern()) {
           throwSyntaxError("'(' expected after symbol or pattern instead of '['.");
         }
@@ -1324,7 +1324,7 @@ public class FuzzyParser extends Scanner {
         if (!fExplicitTimes) {
           // lazy evaluation of multiplication
           oper = fFactory.get("Times");
-          if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+          if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
             if (Config.FUZZY_PARSER && fToken == TT_IDENTIFIER) {
               rhs = parseExpression();
             } else {
@@ -1504,7 +1504,7 @@ public class FuzzyParser extends Scanner {
         if (!fExplicitTimes) {
           // lazy evaluation of multiplication
           FuzzyInfixExprOperator timesOperator = (FuzzyInfixExprOperator) fFactory.get("Times");
-          if (FEConfig.DOMINANT_IMPLICIT_TIMES || timesOperator.getPrecedence() > min_precedence) {
+          if (ParserConfig.DOMINANT_IMPLICIT_TIMES || timesOperator.getPrecedence() > min_precedence) {
             rhs = parseExpression(rhs, timesOperator.getPrecedence());
             continue;
           } else if ((timesOperator.getPrecedence() == min_precedence)

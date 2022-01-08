@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 public final class ContextPath implements Iterable<Context> {
 
@@ -202,7 +202,7 @@ public final class ContextPath implements Iterable<Context> {
 
   public ISymbol removeSymbol(String symbolName) {
     String name = symbolName;
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       if (symbolName.length() == 1) {
         name = symbolName;
       } else {

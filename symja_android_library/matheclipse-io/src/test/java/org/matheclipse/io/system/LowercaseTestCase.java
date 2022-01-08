@@ -7,7 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -9391,7 +9391,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
     check("FindRoot(Exp(x)-1 == 0,{x,-50,100}, Method->Muller)", //
         "{x->0.0}");
-    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+    if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       // implicit times operator '*' allowed
       check("Exp(1.243624090168953 * E - 16) - 1", //
           "-0.999997");

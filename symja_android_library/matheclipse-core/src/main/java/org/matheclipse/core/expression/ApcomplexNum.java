@@ -26,7 +26,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 /**
  * <code>IComplexNum</code> implementation which wraps a <code>
@@ -458,7 +458,7 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public String toString() {
     String str = fApcomplex.toString();
-    if (FEConfig.EXPLICIT_TIMES_OPERATOR) {
+    if (ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       return str.replace("e", "E");
     }
     int index = str.indexOf('e');
@@ -608,7 +608,7 @@ public class ApcomplexNum implements IComplexNum {
     StringBuilder buf = new StringBuilder();
     long precision = fApcomplex.precision();
     String str = fApcomplex.real().toString();
-    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+    if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       int indx = str.indexOf("e");
       if (indx > 0) {
         str = str.substring(0, indx) + "`" + precision + "*^" + str.substring(indx + 1);
@@ -619,7 +619,7 @@ public class ApcomplexNum implements IComplexNum {
     buf.append(str);
     buf.append(',');
     str = fApcomplex.imag().toString();
-    if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+    if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       int indx = str.indexOf("e");
       if (indx > 0) {
         str = str.substring(0, indx) + "``" + precision + "*^" + str.substring(indx + 1);
@@ -628,7 +628,7 @@ public class ApcomplexNum implements IComplexNum {
       }
     }
     buf.append(str);
-    if (FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       buf.append(')');
     } else {
       buf.append(']');

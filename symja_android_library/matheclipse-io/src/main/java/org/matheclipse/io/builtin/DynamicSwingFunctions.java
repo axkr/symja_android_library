@@ -10,7 +10,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.JavaObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class DynamicSwingFunctions {
 	
@@ -22,7 +22,7 @@ public class DynamicSwingFunctions {
 
     private static void init() {
       if (!Config.FUZZY_PARSER) {
-        if (!FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+        if (!ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
           S.JavaShow.setEvaluator(new JavaShow());
         }
       }

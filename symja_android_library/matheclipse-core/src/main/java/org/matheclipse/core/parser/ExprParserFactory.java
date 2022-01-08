@@ -26,7 +26,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
@@ -544,9 +544,9 @@ public class ExprParserFactory implements IParserFactory {
           };
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 
-      fOperatorMap = FEConfig.TRIE_STRING2OPERATOR_BUILDER.withMatch(TrieMatch.EXACT).build();
+      fOperatorMap = ParserConfig.TRIE_STRING2OPERATOR_BUILDER.withMatch(TrieMatch.EXACT).build();
       fOperatorTokenStartSet =
-          FEConfig.TRIE_STRING2OPERATORLIST_BUILDER.withMatch(TrieMatch.EXACT).build();
+          ParserConfig.TRIE_STRING2OPERATORLIST_BUILDER.withMatch(TrieMatch.EXACT).build();
 
       // if (fuzzyParser) {
       // for (int i = 0; i < HEADER_STRINGS.length; i++) {
@@ -642,7 +642,7 @@ public class ExprParserFactory implements IParserFactory {
   }
 
   // private String toRubiString(final String nodeStr) {
-  // if (!FEConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+  // if (!ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
   // if (nodeStr.length() == 1) {
   // return nodeStr;
   // }

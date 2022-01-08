@@ -5,7 +5,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 public final class NumStr extends Num {
   /** */
@@ -42,8 +42,8 @@ public final class NumStr extends Num {
     } else if (fFloatStr.indexOf(".") > 0) {
       fPrecision--;
     }
-    if (fPrecision < FEConfig.MACHINE_PRECISION) {
-      fPrecision = FEConfig.MACHINE_PRECISION;
+    if (fPrecision < ParserConfig.MACHINE_PRECISION) {
+      fPrecision = ParserConfig.MACHINE_PRECISION;
     }
   }
 

@@ -1,7 +1,7 @@
 package org.matheclipse.parser.test;
 
 import java.util.List;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 import junit.framework.TestCase;
@@ -83,7 +83,7 @@ public class ParserTestCase extends TestCase {
   public void testParser5() {
     try {
       Parser p = new Parser();
-      if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+      if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
         ASTNode obj = p.parse("4.7942553860420304E-1");
         assertEquals(obj.toString(), "Plus(Times(4.7942553860420304, E), Times(-1, 1))");
 

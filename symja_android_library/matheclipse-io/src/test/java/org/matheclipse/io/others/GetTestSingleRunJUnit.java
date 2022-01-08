@@ -7,7 +7,7 @@ import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 import junit.framework.TestCase;
@@ -285,7 +285,7 @@ public class GetTestSingleRunJUnit extends TestCase {
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     // wait for initializing of Integrate() rules:
     F.await();
   }

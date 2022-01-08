@@ -119,7 +119,7 @@ public class SyntaxError extends MathException {
 
   @Override
   public synchronized Throwable fillInStackTrace() {
-    if (FEConfig.SHOW_STACKTRACE) {
+    if (ParserConfig.SHOW_STACKTRACE) {
       // doesn't fill the stack for FlowControlExceptions
       return super.fillInStackTrace();
     } else {

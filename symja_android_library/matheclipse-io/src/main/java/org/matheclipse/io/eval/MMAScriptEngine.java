@@ -4,7 +4,7 @@ import javax.script.ScriptEngine;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.io.IOInit;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.script.engine.MathScriptEngineFactory;
 
 public class MMAScriptEngine {
@@ -13,7 +13,7 @@ public class MMAScriptEngine {
   public static void main(String[] args) {
     try {
       // ScriptEngineManager manager = new ScriptEngineManager();
-      FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+      ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
       MathScriptEngineFactory f = new MathScriptEngineFactory();
       ScriptEngine engine = f.getScriptEngine();
       IOInit.init();

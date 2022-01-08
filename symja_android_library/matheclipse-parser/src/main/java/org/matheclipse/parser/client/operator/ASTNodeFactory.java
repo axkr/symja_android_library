@@ -18,7 +18,7 @@ package org.matheclipse.parser.client.operator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FloatNode;
@@ -551,9 +551,9 @@ public class ASTNodeFactory implements INodeParserFactory {
           };
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 
-      fOperatorMap = FEConfig.TRIE_STRING2OPERATOR_BUILDER.withMatch(TrieMatch.EXACT).build();
+      fOperatorMap = ParserConfig.TRIE_STRING2OPERATOR_BUILDER.withMatch(TrieMatch.EXACT).build();
       fOperatorTokenStartSet =
-          FEConfig.TRIE_STRING2OPERATORLIST_BUILDER.withMatch(TrieMatch.EXACT).build();
+          ParserConfig.TRIE_STRING2OPERATORLIST_BUILDER.withMatch(TrieMatch.EXACT).build();
       for (int i = 0; i < HEADER_STRINGS.length; i++) {
         addOperator(
             fOperatorMap,
@@ -744,7 +744,7 @@ public class ASTNodeFactory implements INodeParserFactory {
         name = symbolName.toLowerCase();
       }
     }
-    // if (FEConfig.RUBI_CONVERT_SYMBOLS) {
+    // if (ParserConfig.RUBI_CONVERT_SYMBOLS) {
     // name = toRubiString(name);
     // }
     // if (fIgnoreCase) {

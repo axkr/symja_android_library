@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.io.IOInit;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class FunctionIDGenerator {
 
@@ -68,7 +68,7 @@ public class FunctionIDGenerator {
 
   public static void printGithubSymjaFunctionLineNumber() {
     try {
-      FEConfig.EXPLICIT_TIMES_OPERATOR = true;
+      ParserConfig.EXPLICIT_TIMES_OPERATOR = true;
       F.initSymbols();
       ArrayList<String> list = new ArrayList<String>();
       for (int i = 0; i < AST2Expr.UPPERCASE_SYMBOL_STRINGS.length; i++) {

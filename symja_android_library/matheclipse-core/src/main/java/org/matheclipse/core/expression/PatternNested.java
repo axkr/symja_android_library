@@ -6,7 +6,7 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 
 /**
  * A pattern with assigned &quot;pattern name&quot; (i.e. <code>x: -nested-pattern-expression-
@@ -108,11 +108,11 @@ public class PatternNested extends Pattern {
   public String fullFormString() {
     StringBuilder buf = new StringBuilder();
     buf.append("Pattern");
-    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
+    buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
     buf.append(fSymbol.toString());
     buf.append(", ");
     buf.append(fPatternExpr.fullFormString());
-    buf.append(FEConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
+    buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
     return buf.toString();
   }
 

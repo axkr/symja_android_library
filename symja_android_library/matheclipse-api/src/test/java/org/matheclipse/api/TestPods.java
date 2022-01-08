@@ -10,7 +10,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.parser.client.FEConfig;
+import org.matheclipse.parser.client.ParserConfig;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
 
@@ -24,7 +24,7 @@ public class TestPods {
 
   static {
     ToggleFeature.COMPILE = false;
-    FEConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
     Config.FUZZY_PARSER = true;
     Config.UNPROTECT_ALLOWED = false;
     Config.USE_MANIPULATE_JS = true;

@@ -109,7 +109,7 @@ public class Parser extends Scanner {
    *     ASTNodes
    */
   public Parser(INodeParserFactory factory, final boolean relaxedSyntax, boolean packageMode) {
-    super(packageMode, FEConfig.EXPLICIT_TIMES_OPERATOR);
+    super(packageMode, ParserConfig.EXPLICIT_TIMES_OPERATOR);
     this.fRelaxedSyntax = relaxedSyntax;
     this.fFactory = factory;
     if (packageMode) {
@@ -293,9 +293,9 @@ public class Parser extends Scanner {
         }
         getNextToken();
         if (fToken == TT_PRECEDENCE_OPEN) {
-          if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+          if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
             Operator oper = fFactory.get("Times");
-            if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+            if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
               return getTimesImplicit(temp);
             }
           }
@@ -389,7 +389,7 @@ public class Parser extends Scanner {
           if (fToken == TT_PRECEDENCE_OPEN) {
             if (!fExplicitTimes) {
               Operator oper = fFactory.get("Times");
-              if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+              if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
                 return getTimesImplicit(temp);
               }
             }
@@ -800,16 +800,16 @@ public class Parser extends Scanner {
           } else if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
             fCurrentPosition += 2;
             long precision = getJavaLong();
-            if (precision < FEConfig.MACHINE_PRECISION) {
-              precision = FEConfig.MACHINE_PRECISION;
+            if (precision < ParserConfig.MACHINE_PRECISION) {
+              precision = ParserConfig.MACHINE_PRECISION;
             }
             return fFactory.createDouble(numberStr);
           } else {
             if (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
               fCurrentPosition++;
               long precision = getJavaLong();
-              if (precision < FEConfig.MACHINE_PRECISION) {
-                precision = FEConfig.MACHINE_PRECISION;
+              if (precision < ParserConfig.MACHINE_PRECISION) {
+                precision = ParserConfig.MACHINE_PRECISION;
               }
               return fFactory.createDouble(numberStr);
             } else {
@@ -1007,7 +1007,7 @@ public class Parser extends Scanner {
   private ASTNode parseArguments(ASTNode lhs) {
     if (fRelaxedSyntax) {
       if (fToken == TT_ARGUMENTS_OPEN) {
-        if (FEConfig.PARSER_USE_STRICT_SYNTAX) {
+        if (ParserConfig.PARSER_USE_STRICT_SYNTAX) {
           if (lhs instanceof SymbolNode || lhs instanceof PatternNode) {
             throwSyntaxError("'(' expected after symbol or pattern instead of '['.");
           }
@@ -1174,10 +1174,10 @@ public class Parser extends Scanner {
           || (fToken == TT_DIGIT)
           || (fToken == TT_SLOT)
           || (fToken == TT_SLOTSEQUENCE)) {
-        if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+        if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
           // lazy evaluation of multiplication
           oper = fFactory.get("Times");
-          if (FEConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+          if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
             rhs = parseLookaheadOperator(oper.getPrecedence());
             lhs = fFactory.createFunction(fFactory.createSymbol(oper.getFunctionName()), lhs, rhs);
             continue;
@@ -1340,10 +1340,10 @@ public class Parser extends Scanner {
           || (fToken == TT_STRING)
           || (fToken == TT_DIGIT)
           || (fToken == TT_SLOT)) {
-        if (!FEConfig.EXPLICIT_TIMES_OPERATOR) {
+        if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
           // lazy evaluation of multiplication
           InfixOperator timesOperator = (InfixOperator) fFactory.get("Times");
-          if (FEConfig.DOMINANT_IMPLICIT_TIMES || timesOperator.getPrecedence() > min_precedence) {
+          if (ParserConfig.DOMINANT_IMPLICIT_TIMES || timesOperator.getPrecedence() > min_precedence) {
             rhs = parseExpression(rhs, timesOperator.getPrecedence());
             continue;
           } else if ((timesOperator.getPrecedence() == min_precedence)
