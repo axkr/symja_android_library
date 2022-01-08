@@ -22,6 +22,11 @@
 		</license>
 	</licenses>
 
+	<properties>
+		<!-- This project is not intended to be published -->
+		<deployment.suppress>true</deployment.suppress>
+	</properties>
+
 	<dependencies>
 
 		<dependency>

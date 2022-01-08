@@ -36,6 +36,15 @@
 	</developers>
 
 	<modules>
+
+		<!-- Internal modules (not deployed).
+		Must not be last to not break deployment entirely.
+		See description of ''skipNexusStagingDeployMojo' in 
+		https://github.com/sonatype/nexus-maven-plugins/blob/master/staging/maven-plugin/README.md#plugin-flags-->
+		<module>matheclipse-beakerx</module>
+		<module>matheclipse-jar</module>
+
+		<!-- Deployed modules -->
 		<module>matheclipse-external</module>
 		<module>matheclipse-frontend</module>
 		<module>matheclipse-core</module>
@@ -44,6 +53,7 @@
 		<module>matheclipse-io</module>
 		<module>matheclipse-discord</module>
 		<module>matheclipse-logging</module>
+
 	</modules>
 
 	<scm>
@@ -73,6 +83,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>11</java.version>
 		<release.build>false</release.build>
+		<deployment.suppress>false</deployment.suppress> <!-- child modules can set this true to not be published -->
 	</properties>
 
 	<dependencyManagement>
@@ -572,6 +583,7 @@
 						<artifactId>nexus-staging-maven-plugin</artifactId>
 						<extensions>true</extensions>
 						<configuration>
+							<skipNexusStagingDeployMojo>${deployment.suppress}</skipNexusStagingDeployMojo>
 							<autoReleaseAfterClose>false</autoReleaseAfterClose>
 						</configuration>
 					</plugin>
