@@ -238,6 +238,7 @@
 * [ListLinePlot](functions/ListLinePlot.md)
 * [ListPlot](functions/ListPlot.md)
 * [ListPlot3D](functions/ListPlot3D.md)
+* [ListPointPlot3D](functions/ListPointPlot3D.md)
 * [Manipulate](functions/Manipulate.md)
 * [ParametricPlot](functions/ParametricPlot.md) 
 * [Plot](functions/Plot.md) 
