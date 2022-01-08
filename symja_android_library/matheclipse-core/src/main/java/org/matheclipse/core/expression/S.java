@@ -369,6 +369,9 @@ public class S {
   public final static IBuiltInSymbol Alternatives =
       F.initFinalSymbol("Alternatives", ID.Alternatives);
 
+  public final static IBuiltInSymbol AmbientLight =
+      F.initFinalSymbol("AmbientLight", ID.AmbientLight);
+
   /**
    * And(expr1, expr2, ...) - `expr1 && expr2 && ...` evaluates each expression in turn, returning
    * `False` as soon as an expression evaluates to `False`. If all expressions evaluate to `True`,
@@ -2547,6 +2550,9 @@ public class S {
 
   public final static IBuiltInSymbol Direction = F.initFinalSymbol("Direction", ID.Direction);
 
+  public final static IBuiltInSymbol DirectionalLight =
+      F.initFinalSymbol("DirectionalLight", ID.DirectionalLight);
+
   public final static IBuiltInSymbol Directive = F.initFinalSymbol("Directive", ID.Directive);
 
   public final static IBuiltInSymbol DirichletEta =
@@ -4505,6 +4511,8 @@ public class S {
 
   public final static IBuiltInSymbol ImageRotate = F.initFinalSymbol("ImageRotate", ID.ImageRotate);
 
+  public final static IBuiltInSymbol ImageScaled = F.initFinalSymbol("ImageScaled", ID.ImageScaled);
+
   public final static IBuiltInSymbol ImageSize = F.initFinalSymbol("ImageSize", ID.ImageSize);
 
   public final static IBuiltInSymbol ImageType = F.initFinalSymbol("ImageType", ID.ImageType);
@@ -5611,6 +5619,9 @@ public class S {
    */
   public final static IBuiltInSymbol ListLinePlot =
       F.initFinalSymbol("ListLinePlot", ID.ListLinePlot);
+
+  public final static IBuiltInSymbol ListLinePlot3D =
+      F.initFinalSymbol("ListLinePlot3D", ID.ListLinePlot3D);
 
   /**
    * ListPlot( { list-of-points } ) - generate a JavaScript list plot control for the
@@ -7275,6 +7286,8 @@ public class S {
    */
   public final static IBuiltInSymbol Point = F.initFinalSymbol("Point", ID.Point);
 
+  public final static IBuiltInSymbol PointLight = F.initFinalSymbol("PointLight", ID.PointLight);
+
   /**
    * PoissonDistribution(m) - returns a Poisson distribution.
    * 
@@ -8767,6 +8780,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol SplitBy = F.initFinalSymbol("SplitBy", ID.SplitBy);
+
+  public final static IBuiltInSymbol SpotLight = F.initFinalSymbol("SpotLight", ID.SpotLight);
 
   /**
    * Sqrt(expr) - returns the square root of `expr`.

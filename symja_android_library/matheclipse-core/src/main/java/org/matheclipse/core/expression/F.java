@@ -4081,12 +4081,17 @@ public class F extends S {
     return ast(Graphics);
   }
 
-  public static IAST Graphics3D(final IExpr a0) {
-    return new AST1(Graphics3D, a0);
+  public static IASTAppendable Graphics3D(final IExpr graphicPrimitives) {
+    IASTAppendable ast = ast(Graphics3D);
+    ast.append(graphicPrimitives);
+    return ast;
   }
 
-  public static IAST Graphics3D(final IExpr a0, final IExpr a1) {
-    return new AST2(Graphics3D, a0, a1);
+  public static IAST Graphics3D(final IExpr graphicPrimitives, final IExpr option) {
+    IASTAppendable ast = ast(Graphics3D);
+    ast.append(graphicPrimitives);
+    ast.append(option);
+    return ast;
   }
 
   /**
