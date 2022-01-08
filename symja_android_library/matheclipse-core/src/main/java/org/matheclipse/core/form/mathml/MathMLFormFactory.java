@@ -284,8 +284,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       return false;
     }
 
-    public boolean iteratorStep(
-        final StringBuilder buf, final String mathSymbol, final IAST f, int i) {
+    public boolean iteratorStep(final StringBuilder buf, final String mathSymbol, final IAST f,
+        int i) {
       if (i >= f.size()) {
         fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
         return true;
@@ -602,8 +602,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       for (int i = size; i > 0; i--) {
         expr = f.get(i);
         if ((i < size) && expr.isAST(S.Times)) {
-          timesConverter.convertTimesFraction(
-              buf, (IAST) expr, fPrecedence, MathMLFormFactory.PLUS_CALL);
+          timesConverter.convertTimesFraction(buf, (IAST) expr, fPrecedence,
+              MathMLFormFactory.PLUS_CALL);
         } else {
           if (i < size) {
             if (expr.isReal() && expr.isNegative()) {
@@ -799,15 +799,13 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       if (f.isAST2()) {
         IExpr arg1 = f.arg1();
         IExpr arg2 = f.arg2();
-        precedenceOpen(buf, precedence);
         fFactory.tagStart(buf, "msub");
         fFactory.convertInternal(buf, arg1, fPrecedence, false);
         fFactory.convertInternal(buf, arg2, fPrecedence, false);
         fFactory.tagEnd(buf, "msub");
-        precedenceClose(buf, precedence);
         return true;
       }
-      precedenceOpen(buf, precedence);
+
       fFactory.tagStart(buf, "msub");
       fFactory.convertInternal(buf, f.arg1(), fPrecedence, false);
       fFactory.tagStart(buf, "mrow");
@@ -819,7 +817,6 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       }
       fFactory.tagEnd(buf, "mrow");
       fFactory.tagEnd(buf, "msub");
-      precedenceClose(buf, precedence);
       return true;
     }
   }
@@ -843,12 +840,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       }
       IExpr arg1 = f.arg1();
       IExpr arg2 = f.arg2();
-      precedenceOpen(buf, precedence);
       fFactory.tagStart(buf, "msup");
       fFactory.convertInternal(buf, arg1, fPrecedence, false);
       fFactory.convertInternal(buf, arg2, fPrecedence, false);
       fFactory.tagEnd(buf, "msup");
-      precedenceClose(buf, precedence);
       return true;
     }
   }
@@ -867,8 +862,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       return false;
     }
 
-    public boolean iteratorStep(
-        final StringBuilder buf, final String mathSymbol, final IAST f, int i) {
+    public boolean iteratorStep(final StringBuilder buf, final String mathSymbol, final IAST f,
+        int i) {
       if (i >= f.size()) {
         fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
         return true;
@@ -948,8 +943,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
      * @precedence
      * @caller
      */
-    public boolean convertTimesFraction(
-        final StringBuilder buf, final IAST f, final int precedence, final boolean caller) {
+    public boolean convertTimesFraction(final StringBuilder buf, final IAST f, final int precedence,
+        final boolean caller) {
       IExpr[] parts = Algebra.fractionalPartsTimesPower(f, false, true, false, false, false, false);
       if (parts == null) {
         convertTimesOperator(buf, f, precedence, caller);
@@ -966,14 +961,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
         fFactory.tagStart(buf, "mfrac");
         // insert numerator in buffer:
         if (numerator.isTimes()) {
-          convertTimesOperator(
-              buf, (IAST) numerator, Integer.MIN_VALUE, MathMLFormFactory.NO_PLUS_CALL);
+          convertTimesOperator(buf, (IAST) numerator, Integer.MIN_VALUE,
+              MathMLFormFactory.NO_PLUS_CALL);
         } else {
           fFactory.convertInternal(buf, numerator, Integer.MIN_VALUE, false);
         }
         if (denominator.isTimes()) {
-          convertTimesOperator(
-              buf, (IAST) denominator, Integer.MIN_VALUE, MathMLFormFactory.NO_PLUS_CALL);
+          convertTimesOperator(buf, (IAST) denominator, Integer.MIN_VALUE,
+              MathMLFormFactory.NO_PLUS_CALL);
         } else {
           fFactory.convertInternal(buf, denominator, Integer.MIN_VALUE, false);
         }
@@ -999,8 +994,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
      * @param caller
      * @return
      */
-    private boolean convertTimesOperator(
-        final StringBuilder buf, final IAST timesAST, final int precedence, final boolean caller) {
+    private boolean convertTimesOperator(final StringBuilder buf, final IAST timesAST,
+        final int precedence, final boolean caller) {
       int size = timesAST.size();
       boolean noPrecedenceOpenCall = false;
       if (size > 1) {
@@ -1098,8 +1093,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   public static final Map<String, Object> CONSTANT_SYMBOLS =
       constantBuilder.withMatch(TrieMatch.EXACT).build();
 
-  private static final TrieBuilder<String, AbstractConverter, ArrayList<AbstractConverter>>
-      converterBuilder = TrieBuilder.create();
+  private static final TrieBuilder<String, AbstractConverter, ArrayList<AbstractConverter>> converterBuilder =
+      TrieBuilder.create();
 
   /** Description of the Field */
   public static final Map<String, AbstractConverter> OPERATORS =
@@ -1122,10 +1117,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     this(tagPrefix, null, -1, -1);
   }
 
-  public MathMLFormFactory(
-      final String tagPrefix,
-      NumberFormat numberFormat,
-      int exponentFigures,
+  public MathMLFormFactory(final String tagPrefix, NumberFormat numberFormat, int exponentFigures,
       int significantFigures) {
     super(tagPrefix, numberFormat);
     fRelaxedSyntax = true;
@@ -1134,12 +1126,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     init();
   }
 
-  public MathMLFormFactory(
-      final String tagPrefix,
-      boolean relaxedSyntax,
-      NumberFormat numberFormat,
-      int exponentFigures,
-      int significantFigures) {
+  public MathMLFormFactory(final String tagPrefix, boolean relaxedSyntax, NumberFormat numberFormat,
+      int exponentFigures, int significantFigures) {
     super(tagPrefix, numberFormat);
     fRelaxedSyntax = relaxedSyntax;
     fExponentFigures = exponentFigures;
@@ -1148,8 +1136,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   }
 
   @Override
-  public boolean convert(
-      final StringBuilder buf, final IExpr o, final int precedence, boolean isASTHead) {
+  public boolean convert(final StringBuilder buf, final IExpr o, final int precedence,
+      boolean isASTHead) {
     try {
       convertInternal(buf, o, precedence, isASTHead);
       if (buf.length() >= Config.MAX_OUTPUT_SIZE) {
@@ -1164,8 +1152,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   }
 
   @Override
-  void convertInternal(
-      final StringBuilder buf, final IExpr o, final int precedence, boolean isASTHead) {
+  void convertInternal(final StringBuilder buf, final IExpr o, final int precedence,
+      boolean isASTHead) {
     String str = CONSTANT_EXPRS.get(o);
     if (str != null) {
       buf.append(str);
@@ -1239,8 +1227,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     tagEnd(buf, "mrow");
   }
 
-  public void convertApfloat(
-      final StringBuilder buf, final Apfloat realPart, final int precedence) {
+  public void convertApfloat(final StringBuilder buf, final Apfloat realPart,
+      final int precedence) {
     buf.append(convertApfloatToFormattedString(realPart));
     // convertApfloat(buf, realPart);
   }
@@ -1321,8 +1309,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       if (derivStruct != null) {
         IAST a1Head = derivStruct[0];
         IAST headAST = derivStruct[1];
-        if (a1Head.isAST1()
-            && headAST.isAST1()
+        if (a1Head.isAST1() && headAST.isAST1()
             && (headAST.arg1().isSymbol() || headAST.arg1().isAST())) {
           try {
             int n = a1Head.arg1().toIntDefault();
@@ -1505,8 +1492,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     tagEnd(buf, "mrow");
   }
 
-  private boolean convertInequality(
-      final StringBuilder buf, final IAST inequality, final int precedence) {
+  private boolean convertInequality(final StringBuilder buf, final IAST inequality,
+      final int precedence) {
     StringBuilder tempBuffer = new StringBuilder();
 
     tagStart(tempBuffer, "mrow");
@@ -1567,8 +1554,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   }
 
   @Override
-  public void convertComplex(
-      final StringBuilder buf, final IComplex c, final int precedence, boolean caller) {
+  public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence,
+      boolean caller) {
     boolean isReZero = c.getRealPart().isZero();
 
     IRational imaginaryPart = c.getImaginaryPart();
@@ -1642,8 +1629,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   }
 
   @Override
-  public void convertDouble(
-      final StringBuilder buf, final INum d, final int precedence, boolean caller) {
+  public void convertDouble(final StringBuilder buf, final INum d, final int precedence,
+      boolean caller) {
     if (d instanceof Num && F.isZero(d.doubleValue(), Config.MACHINE_EPSILON)) {
       tagStart(buf, "mn");
       buf.append(convertDoubleToFormattedString(0.0));
@@ -1671,8 +1658,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   }
 
   @Override
-  public void convertDoubleComplex(
-      final StringBuilder buf, final IComplexNum dc, final int precedence, boolean caller) {
+  public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc,
+      final int precedence, boolean caller) {
     if (dc instanceof ApcomplexNum) {
       convertApcomplex(buf, ((ApcomplexNum) dc).apcomplexValue(), precedence);
       return;
@@ -1723,12 +1710,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     return Double.toString(dValue);
   }
 
-  public void convertFraction(
-      final StringBuilder buf,
-      final BigInteger n,
-      BigInteger denominator,
-      final int precedence,
-      boolean caller) {
+  public void convertFraction(final StringBuilder buf, final BigInteger n, BigInteger denominator,
+      final int precedence, boolean caller) {
     boolean isInteger = denominator.compareTo(BigInteger.ONE) == 0;
     BigInteger numerator = n;
     final boolean isNegative = numerator.compareTo(BigInteger.ZERO) < 0;
@@ -1829,8 +1812,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   // }
   // }
 
-  public void convertFraction(
-      final StringBuilder buf, final IRational f, final int precedence, boolean caller) {
+  public void convertFraction(final StringBuilder buf, final IRational f, final int precedence,
+      boolean caller) {
     convertFraction(buf, f.toBigNumerator(), f.toBigDenominator(), precedence, caller);
   }
 
@@ -1865,8 +1848,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     convertInternal(buf, obj, Integer.MIN_VALUE, false);
   }
 
-  public void convertInfixOperator(
-      final StringBuilder buf, final IAST list, final InfixOperator oper, final int precedence) {
+  public void convertInfixOperator(final StringBuilder buf, final IAST list,
+      final InfixOperator oper, final int precedence) {
 
     if (list.isAST2()) {
       IExpr arg1 = list.arg1();
@@ -1968,8 +1951,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   }
 
   @Override
-  public void convertInteger(
-      final StringBuilder buf, final IInteger i, final int precedence, boolean caller) {
+  public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence,
+      boolean caller) {
     if (i.isNegative() && (precedence > Precedence.PLUS)) {
       tagStart(buf, "mrow");
       tag(buf, "mo", "(");
@@ -2075,8 +2058,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     return false;
   }
 
-  public boolean convertNumber(
-      final StringBuilder buf, final IExpr o, final int precedence, boolean caller) {
+  public boolean convertNumber(final StringBuilder buf, final IExpr o, final int precedence,
+      boolean caller) {
     if (o instanceof INum) {
       convertDouble(buf, (INum) o, precedence, caller);
       return true;
@@ -2100,12 +2083,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     return false;
   }
 
-  private boolean convertOperator(
-      final org.matheclipse.parser.client.operator.Operator operator,
-      final IAST list,
-      final StringBuilder buf,
-      final int precedence,
-      ISymbol head) {
+  private boolean convertOperator(final org.matheclipse.parser.client.operator.Operator operator,
+      final IAST list, final StringBuilder buf, final int precedence, ISymbol head) {
     if ((operator instanceof PrefixOperator) && (list.isAST1())) {
       convertPrefixOperator(buf, list, (PrefixOperator) operator, precedence);
       return true;
@@ -2182,8 +2161,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     tagEnd(buf, "mrow");
   }
 
-  public void convertPostfixOperator(
-      final StringBuilder buf, final IAST list, final PostfixOperator oper, final int precedence) {
+  public void convertPostfixOperator(final StringBuilder buf, final IAST list,
+      final PostfixOperator oper, final int precedence) {
     tagStart(buf, "mrow");
     if (oper.getPrecedence() <= precedence) {
       // append(buf, "(");
@@ -2199,8 +2178,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     tagEnd(buf, "mrow");
   }
 
-  public void convertPrefixOperator(
-      final StringBuilder buf, final IAST list, final PrefixOperator oper, final int precedence) {
+  public void convertPrefixOperator(final StringBuilder buf, final IAST list,
+      final PrefixOperator oper, final int precedence) {
     tagStart(buf, "mrow");
     if (oper.getPrecedence() <= precedence) {
       // append(buf, "(");
@@ -2225,8 +2204,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
    * @return <code>true</code> if the conversion was successful
    * @throws IOException
    */
-  public boolean convertSeriesData(
-      final StringBuilder buf, final ASTSeriesData seriesData, final int precedence) {
+  public boolean convertSeriesData(final StringBuilder buf, final ASTSeriesData seriesData,
+      final int precedence) {
     StringBuilder tempBuffer = new StringBuilder();
     tagStart(tempBuffer, "mrow");
     if (Precedence.PLUS < precedence) {
@@ -2288,8 +2267,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
    * @param call
    * @return the current call status
    */
-  private boolean convertSeriesDataArg(
-      StringBuilder buf, IExpr coefficient, IExpr pow, boolean call) {
+  private boolean convertSeriesDataArg(StringBuilder buf, IExpr coefficient, IExpr pow,
+      boolean call) {
     IExpr plusArg;
     if (coefficient.isZero()) {
       plusArg = F.C0;
@@ -2335,11 +2314,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     final int splittedStrLength = splittedStr.length;
     for (int i = 0; i < splittedStrLength; i++) {
       tagStart(buf, "mtext");
-      String text =
-          splittedStr[i]
-              .replaceAll("\\&", "&amp;")
-              .replaceAll("\\<", "&lt;")
-              .replaceAll("\\>", "&gt;");
+      String text = splittedStr[i].replaceAll("\\&", "&amp;").replaceAll("\\<", "&lt;")
+          .replaceAll("\\>", "&gt;");
       text = text.replaceAll("\\\"", "&quot;").replaceAll(" ", "&nbsp;");
       appendUnicodeMapped(buf, text);
       tagEnd(buf, "mtext");
