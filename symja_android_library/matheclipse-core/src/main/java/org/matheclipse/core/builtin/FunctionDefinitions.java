@@ -30,6 +30,7 @@ import static org.matheclipse.core.expression.S.InverseLaplaceTransform;
 import static org.matheclipse.core.expression.S.LaplaceTransform;
 import static org.matheclipse.core.expression.S.LinearProgramming;
 import static org.matheclipse.core.expression.S.ListLinePlot;
+import static org.matheclipse.core.expression.S.ListLinePlot3D;
 import static org.matheclipse.core.expression.S.ListPlot;
 import static org.matheclipse.core.expression.S.ListPlot3D;
 import static org.matheclipse.core.expression.S.ListPointPlot3D;
@@ -88,30 +89,31 @@ public final class FunctionDefinitions {
       Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
       ImportString.setEvaluator(new org.matheclipse.core.reflection.system.ImportString());
       In.setEvaluator(new org.matheclipse.core.reflection.system.In());
-      InterpolatingFunction.setEvaluator(
-          new org.matheclipse.core.reflection.system.InterpolatingFunction());
-      InterpolatingPolynomial.setEvaluator(
-          new org.matheclipse.core.reflection.system.InterpolatingPolynomial());
+      InterpolatingFunction
+          .setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingFunction());
+      InterpolatingPolynomial
+          .setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingPolynomial());
       Interpolation.setEvaluator(new org.matheclipse.core.reflection.system.Interpolation());
       InverseFourier.setEvaluator(new org.matheclipse.core.reflection.system.InverseFourier());
       InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
-      InverseLaplaceTransform.setEvaluator(
-          new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
+      InverseLaplaceTransform
+          .setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
       LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
-      LinearProgramming.setEvaluator(
-          new org.matheclipse.core.reflection.system.LinearProgramming());
+      LinearProgramming
+          .setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
       ListLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot());
+      ListLinePlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot3D());
       ListPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot());
       ListPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot3D());
       ListPointPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPointPlot3D());
       MatrixD.setEvaluator(new org.matheclipse.core.reflection.system.MatrixD());
       ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
       NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
-      NFourierTransform.setEvaluator(
-          new org.matheclipse.core.reflection.system.NFourierTransform());
+      NFourierTransform
+          .setEvaluator(new org.matheclipse.core.reflection.system.NFourierTransform());
       NIntegrate.setEvaluator(new org.matheclipse.core.reflection.system.NIntegrate());
-      NonCommutativeMultiply.setEvaluator(
-          new org.matheclipse.core.reflection.system.NonCommutativeMultiply());
+      NonCommutativeMultiply
+          .setEvaluator(new org.matheclipse.core.reflection.system.NonCommutativeMultiply());
       NSolve.setEvaluator(new org.matheclipse.core.reflection.system.NSolve());
       Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
       Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
@@ -131,8 +133,8 @@ public final class FunctionDefinitions {
 
       if (!Config.FUZZY_PARSER) {
         Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
-        OptimizeExpression.setEvaluator(
-            new org.matheclipse.core.reflection.system.OptimizeExpression());
+        OptimizeExpression
+            .setEvaluator(new org.matheclipse.core.reflection.system.OptimizeExpression());
         Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
       }
     }

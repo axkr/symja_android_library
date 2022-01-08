@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -19,13 +17,13 @@ public class ListPlot3D extends AbstractEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.argSize() > 0) {
-      if (ast.argSize() > 1) {
-        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-        IExpr colorFunction = options.getOption(S.ColorFunction);
-        if (colorFunction.isPresent()) {
-          // ... color function is set...
-        }
-      }
+      // if (ast.argSize() > 1) {
+      // final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+      // IExpr colorFunction = options.getOption(S.ColorFunction);
+      // if (colorFunction.isPresent()) {
+      // // ... color function is set...
+      // }
+      // }
       if (ast.arg1().isList()) {
         IAST values = (IAST) ast.arg1();
 
@@ -40,7 +38,12 @@ public class ListPlot3D extends AbstractEvaluator {
               F.List(//
                   ((IAST) values.arg1()).arg3(), ((IAST) values.arg2()).arg3(),
                   ((IAST) values.arg3()).arg3())));
-          return F.Graphics3D(polygons);
+          IASTAppendable result = F.Graphics3D(polygons);
+          if (ast.argSize() > 1) {
+            // add same options to Graphics3D
+            result.appendAll(ast, 2, ast.size());
+          }
+          return result;
         } else {
           int[] dimension = values.isMatrix(false);
           if (dimension != null && dimension[1] == 4) {
@@ -94,7 +97,12 @@ public class ListPlot3D extends AbstractEvaluator {
                 }
               }
             }
-            return F.Graphics3D(polygonList);
+            IASTAppendable result = F.Graphics3D(polygonList);
+            if (ast.argSize() > 1) {
+              // add same options to Graphics3D
+              result.appendAll(ast, 2, ast.size());
+            }
+            return result;
           }
         }
       }

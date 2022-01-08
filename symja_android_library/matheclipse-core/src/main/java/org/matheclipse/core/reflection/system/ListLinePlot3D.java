@@ -8,20 +8,13 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-/** Plot a list of Points in 3 dimensions */
-public class ListPointPlot3D extends AbstractEvaluator {
-  public ListPointPlot3D() {}
+/** Plot a list of Lines in 3 dimensions */
+public class ListLinePlot3D extends AbstractEvaluator {
+  public ListLinePlot3D() {}
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.argSize() > 0) {
-      // if (ast.argSize() > 1) {
-      // final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-      // IExpr colorFunction = options.getOption(S.ColorFunction);
-      // if (colorFunction.isPresent()) {
-      // // ... color function is set...
-      // }
-      // }
       if (ast.arg1().isList()) {
         IAST heightValueMatrix = (IAST) ast.arg1();
         int[] dimension = heightValueMatrix.isMatrix(false);
@@ -33,22 +26,24 @@ public class ListPointPlot3D extends AbstractEvaluator {
                 IAST rowList = (IAST) heightValueMatrix.get(i);
                 pointList.append(rowList);
               }
-              IASTAppendable result = F.Graphics3D(F.Point(pointList));
+              IASTAppendable result = F.Graphics3D(F.Line(pointList));
               if (ast.argSize() > 1) {
                 // add same options to Graphics3D
                 result.appendAll(ast, 2, ast.size());
               }
               return result;
             } else if (dimension[1] > 3) {
-              IASTAppendable pointList = F.ListAlloc(dimension[0] * dimension[1]);
+              IASTAppendable resultList = F.ListAlloc(dimension[0]);
               for (int i = 1; i < heightValueMatrix.size(); i++) {
                 IAST rowList = (IAST) heightValueMatrix.get(i);
+                IASTAppendable lineList = F.ListAlloc(dimension[1]);
                 for (int j = 1; j < rowList.size(); j++) {
-                  pointList.append(//
+                  lineList.append(//
                       F.List(F.ZZ(i), F.ZZ(j), rowList.get(j)));
                 }
+                resultList.append(F.Line(lineList));
               }
-              IASTAppendable result = F.Graphics3D(F.Point(pointList));
+              IASTAppendable result = F.Graphics3D(resultList);
               if (ast.argSize() > 1) {
                 // add same options to Graphics3D
                 result.appendAll(ast, 2, ast.size());
