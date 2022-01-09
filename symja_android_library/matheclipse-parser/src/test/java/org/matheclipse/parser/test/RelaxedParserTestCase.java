@@ -1,152 +1,99 @@
 package org.matheclipse.parser.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
-import junit.framework.TestCase;
 
 /** Tests parser functions for the simple parser style */
-public class RelaxedParserTestCase extends TestCase {
+class RelaxedParserTestCase {
 
-  public RelaxedParserTestCase(String name) {
-    super(name);
+  @Test
+  void testParser0() {
+    Parser p = new Parser(true);
+    ASTNode obj = p.parse("Integrate(Sin(x)^2+3*x^4, x)");
+    assertEquals("Integrate(Plus(Power(Sin(x), 2), Times(3, Power(x, 4))), x)", obj.toString());
   }
 
-  public void testParser0() {
-    try {
-      Parser p = new Parser(true);
-      ASTNode obj = p.parse("Integrate(Sin(x)^2+3*x^4, x)");
-      assertEquals(obj.toString(), "Integrate(Plus(Power(Sin(x), 2), Times(3, Power(x, 4))), x)");
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("1", "0");
-    }
+  @Test
+  void testParser1() {
+    Parser p = new Parser(true);
+    ASTNode obj = p.parse("a()(0)(1)f[[x]]");
+    assertEquals("Times(Times(a(), Times(0, 1)), Part(f, x))", obj.toString());
   }
 
-  public void testParser1() {
-    try {
-      Parser p = new Parser(true);
-      ASTNode obj = p.parse("a()(0)(1)f[[x]]");
-      assertEquals(obj.toString(), "Times(Times(a(), Times(0, 1)), Part(f, x))");
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("1", "0");
-    }
+  @Test
+  void testParser2() {
+    Parser p = new Parser(true);
+    ASTNode obj = p.parse("1; 2; 3;");
+    assertEquals("CompoundExpression(1, 2, 3, Null)", obj.toString());
+
+    obj = p.parse("1; 2; 3");
+    assertEquals("CompoundExpression(1, 2, 3)", obj.toString());
   }
 
-  public void testParser2() {
-    try {
-      Parser p = new Parser(true);
-      ASTNode obj = p.parse("1; 2; 3;");
-      assertEquals(obj.toString(), "CompoundExpression(1, 2, 3, Null)");
-
-      obj = p.parse("1; 2; 3");
-      assertEquals(obj.toString(), "CompoundExpression(1, 2, 3)");
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("1", "0");
-    }
+  @Test
+  void testParser3() {
+    Parser p = new Parser(true);
+    ASTNode obj = p.parse("a sin()cos()x()y z");
+    assertEquals("Times(Times(Times(Times(Times(a, sin()), cos()), x()), y), z)", obj.toString());
   }
 
-  public void testParser3() {
-    try {
-      Parser p = new Parser(true);
-      ASTNode obj = p.parse("a sin()cos()x()y z");
-      assertEquals(obj.toString(), "Times(Times(Times(Times(Times(a, sin()), cos()), x()), y), z)");
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("1", "0");
-    }
+  @Test
+  void testParser4() {
+    Parser p = new Parser(true);
+    ASTNode obj = p.parse("#1.#123");
+    assertEquals("Dot(Slot(1), Slot(123))", obj.toString());
   }
 
-  public void testParser4() {
-    try {
-      Parser p = new Parser(true);
-      ASTNode obj = p.parse("#1.#123");
-      assertEquals(obj.toString(), "Dot(Slot(1), Slot(123))");
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("", e.getMessage());
-    }
+  @Test
+  void testParse5() {
+    Parser p = new Parser(true);
+    ASTNode obj = p.parse("f@ g@ h");
+    assertEquals("f(g(h))", obj.toString());
   }
 
-  public void testParse5() {
-    try {
-      Parser p = new Parser(true);
-      ASTNode obj = p.parse("f@ g@ h");
-      assertEquals(obj.toString(), "f(g(h))");
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("", e.getMessage());
-    }
+  @Test
+  void testParser6() {
+    Parser p = new Parser(true);
+    ASTNode obj = p.parse("#\"Column Type\"");
+    assertEquals("Slot(Column Type)", obj.toString());
   }
 
-  public void testParser6() {
-    try {
-      Parser p = new Parser(true);
-      ASTNode obj = p.parse("#\"Column Type\"");
-      assertEquals(obj.toString(), "Slot(Column Type)");
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("", e.getMessage());
-    }
+  @Test
+  void testParser7() {
+    Parser p = new Parser(true);
+    ASTNode obj = p.parse("#identifier");
+    assertEquals("Slot(identifier)", obj.toString());
   }
 
-  public void testParser7() {
-    try {
-      Parser p = new Parser(true);
-      ASTNode obj = p.parse("#identifier");
-      assertEquals(obj.toString(), "Slot(identifier)");
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("", e.getMessage());
-    }
+  @Test
+  void testParser8() {
+    Parser p = new Parser(true);
+    ASTNode obj = p.parse("Fibonacci(1007,Null)");
+    assertEquals("Fibonacci(1007, Null)", obj.toString());
   }
 
-  public void testParser8() {
-    try {
-      Parser p = new Parser(true);
-      ASTNode obj = p.parse("Fibonacci(1007,Null)");
-      assertEquals(obj.toString(), "Fibonacci(1007, Null)");
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("", e.getMessage());
-    }
+  @Test
+  void testParser9() {
+    Parser p = new Parser(true);
+    ASTNode obj = p.parse("2.33`");
+    assertEquals("2.33", obj.toString());
   }
 
-  public void testParser9() {
-    try {
-      Parser p = new Parser(true);
-      ASTNode obj = p.parse("2.33`");
-      assertEquals(obj.toString(), "2.33");
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("", e.getMessage());
-    }
+  @Test
+  void testParser10() {
+    Parser p = new Parser(true);
+    ASTNode obj = p.parse("f(t_) = Simplify( r'(t) / Norm( r'(t)), t ∈ Reals);");
+    assertEquals(
+        "CompoundExpression(Set(f(t_), Simplify(Times(Derivative(1)[r][t], Power(Norm(Derivative(1)[r][t]), -1)), Element(t, Reals))), Null)",
+        obj.toString());
   }
 
-  public void testParser10() {
-    try {
-      Parser p = new Parser(true);
-      ASTNode obj = p.parse("f(t_) = Simplify( r'(t) / Norm( r'(t)), t ∈ Reals);");
-      assertEquals(
-          obj.toString(), //
-          "CompoundExpression(Set(f(t_), Simplify(Times(Derivative(1)[r][t], Power(Norm(Derivative(1)[r][t]), -1)), Element(t, Reals))), Null)");
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("", e.getMessage());
-    }
-  }
-
-  public void testParser11() {
-    try {
-      Parser p = new Parser(true);
-      ASTNode obj = p.parse("x[ [ ] ]");
-      assertEquals(
-          obj.toString(), //
-          "Part(x)");
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("", e.getMessage());
-    }
+  @Test
+  void testParser11() {
+    Parser p = new Parser(true);
+    ASTNode obj = p.parse("x[ [ ] ]");
+    assertEquals("Part(x)", obj.toString());
   }
 }
