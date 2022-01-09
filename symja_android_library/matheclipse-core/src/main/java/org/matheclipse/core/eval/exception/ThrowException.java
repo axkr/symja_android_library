@@ -10,18 +10,14 @@ import org.matheclipse.core.interfaces.IExpr;
  */
 public class ThrowException extends FlowControlException {
 
+  private static final long serialVersionUID = -8468658696375569705L;
+
   public static final ThrowException THROW_FALSE = new ThrowException(S.False);
 
   public static final ThrowException THROW_TRUE = new ThrowException(S.True);
-  /** */
-  private static final long serialVersionUID = -8468658696375569705L;
 
   private final IExpr value;
   private final IExpr tag;
-
-  public ThrowException() {
-    this(null);
-  }
 
   public ThrowException(final IExpr val) {
     this(val, S.None);

@@ -5,7 +5,7 @@ public class PolynomialDegreeLimitExceeded extends LimitException {
 
   private static final long serialVersionUID = 8925451277545397036L;
 
-  long fLimit;
+  private final long fLimit;
 
   public PolynomialDegreeLimitExceeded(final long limit) {
     fLimit = limit;

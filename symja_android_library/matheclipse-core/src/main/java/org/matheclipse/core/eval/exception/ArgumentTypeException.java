@@ -7,12 +7,11 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-/** */
 public class ArgumentTypeException extends ValidateException {
 
   private static final long serialVersionUID = 4017342168597803850L;
 
-  final String fMessage;
+  private final String fMessage;
 
   public ArgumentTypeException(String message) {
     fMessage = message;
@@ -42,6 +41,6 @@ public class ArgumentTypeException extends ValidateException {
 
   @Override
   public String getMessage(ISymbol symbol) {
-    return symbol.toString() + ": " + fMessage;
+    return symbol + ": " + fMessage;
   }
 }

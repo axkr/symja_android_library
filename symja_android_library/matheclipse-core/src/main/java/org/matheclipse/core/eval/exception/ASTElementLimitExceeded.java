@@ -5,7 +5,7 @@ public class ASTElementLimitExceeded extends LimitException {
 
   private static final long serialVersionUID = 8925451277545397036L;
 
-  long fRequestedCapacity;
+  private final long fRequestedCapacity;
 
   public ASTElementLimitExceeded(final long requestedCapacity) {
     fRequestedCapacity = requestedCapacity;
@@ -17,8 +17,8 @@ public class ASTElementLimitExceeded extends LimitException {
    * @param rowDimension
    * @param columnDimension
    */
-  public ASTElementLimitExceeded(final int rowDimension, final int columnDimension) {
-    fRequestedCapacity = (long) rowDimension * (long) columnDimension;
+  public ASTElementLimitExceeded(int rowDimension, int columnDimension) {
+    fRequestedCapacity = rowDimension * (long) columnDimension;
   }
 
   @Override

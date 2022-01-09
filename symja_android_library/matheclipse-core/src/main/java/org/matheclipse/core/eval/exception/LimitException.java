@@ -6,7 +6,6 @@ package org.matheclipse.core.eval.exception;
  */
 public abstract class LimitException extends SymjaMathException {
 
-  /** */
   private static final long serialVersionUID = -8898766046639353179L;
 
   /**
@@ -14,11 +13,10 @@ public abstract class LimitException extends SymjaMathException {
    * cause=null</code>, <code>enableSuppression=false</code>, and <code>writableStackTrace=false
    * </code> .
    */
-  public LimitException() {
-    super();
+  protected LimitException() {
   }
 
-  public LimitException(String message) {
+  protected LimitException(String message) {
     super(message);
   }
 }
