@@ -7,8 +7,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Parser;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 /** Tests built-in functions */
@@ -4139,7 +4139,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void test$Version() {
     check("$Version", //
-        "2.0.0-SNAPSHOT");
+        Config.getVersion());
   }
 
   public void testContinue() {
