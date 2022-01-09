@@ -343,6 +343,13 @@
 				<artifactId>Paguro</artifactId>
 				<version>3.8.0</version>
 			</dependency>
+
+			<dependency>
+				<groupId>tech.tablesaw</groupId>
+				<artifactId>tablesaw-jsplot</artifactId>
+				<version>0.42.0</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 

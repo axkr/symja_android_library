@@ -117,6 +117,11 @@
 			<artifactId>Paguro</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>tech.tablesaw</groupId>
+			<artifactId>tablesaw-jsplot</artifactId>
+		</dependency>
+
 		<!-- logging dependencies -->
 
 		<dependency>
