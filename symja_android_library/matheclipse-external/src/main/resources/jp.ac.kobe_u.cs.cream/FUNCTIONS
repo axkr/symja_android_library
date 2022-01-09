@@ -1,0 +1,82 @@
+================================================================
+Summary of operators and constraints of Cream
+
+The following conventions are used.
+
+- v, v0, v1, ... represent an IntVariable
+- x, x0, x1, ... represent an IntVariable or an integer
+- vs, vs0, ... represent an array of IntVariable's
+- cs, cs0, ... represent an array of integers
+- rel represents a two dimensional array of booleans
+
+================
+* Arithmetic operators
+
+  - Absolute value function
+	v = v0.abs();			// v = |v0|
+
+  - Negation function
+	v = v0.negate();		// v = -v0
+
+  - Sign function
+ 	v = v0.sign();			// v = -1 or 0 or 1 depending the sign of v0
+
+  - Addition operator
+	v = v0.add(x1);			// v = v0 + x1
+
+  - Subtraction operator
+	v = v0.subtract(x1);		// v = v0 - x1
+
+  - Multiplication operator
+	v = v0.multiply(x1);		// v = v0 * x1
+
+  - Min operator
+	v = v0.min(x1);			// v = min(v0, x1)
+
+  - Max operator
+	v = v0.max(x1);			// v = max(v0, x1)
+
+================
+* Comparison operators
+
+  - Arithmetic comparisons
+	v0.equals(x1);			// v0 == x1
+
+	v0.notEquals(x1);		// v0 != x1
+
+	v0.lt(x1);			// v0 < x1
+
+	v0.le(x1);			// v0 <= x1
+
+	v0.gt(x1);			// v0 > x1
+
+	v0.ge(x1);			// v0 >= x1
+
+================
+* Other constraints (global constraints)
+
+  - All equals
+    vs[0] == vs[1] == ... = vs[n-1]
+	new Equals(net, vs);
+
+  - All different (mutually distinct)
+    vs[i] != vs[j] for each 0 <= i < j < n.
+	new NotEquals(net, vs);
+
+  - Sequential constraint
+    vs[i-1]+cs[i-1] <= vs[i] for each 1 <= i < n.
+	new Sequential(net, vs, cs);
+
+  - Serialized constraint
+    vs[i]+cs[i] <= vs[j] or vs[j]+cs[j] <= vs[i] for each 0 <= i < j < n.
+	new Serialized(net, vs, cs);
+
+  - Element constraint
+    Choosing an array element (see examples/Examples.java)
+	new Element(net, v0, v1, vs);	// v0 == vs[v1]
+
+  - Relation constraint
+    Defines an extensional constraint (see examples/Examples.java)
+	new Relation(net, v0, rel, v1);	// rel[v0][v1]
+
+================================================================
