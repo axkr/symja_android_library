@@ -54,6 +54,7 @@
 		<module>matheclipse-io</module>
 		<module>matheclipse-discord</module>
 		<module>matheclipse-logging</module>
+		<module>matheclipse-script</module>
 
 	</modules>
 

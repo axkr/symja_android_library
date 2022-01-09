@@ -24,10 +24,18 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.math.MathException;
 
 public class MathScriptEngine extends AbstractScriptEngine {
+  @Override
+  public Object get(String key) {
+    if ("EVAL_ENGINE".equals(key)) {
+      return fEngine;
+    }
+    return super.get(key);
+  }
+
   private static final Logger LOGGER = LogManager.getLogger();
   public static final String RETURN_OBJECT = "RETURN_OBJECT";
 
-  private EvalUtilities fUtility;
+  private EvalUtilities fUtility = null;
   private EvalEngine fEngine;
   private String fDecimalFormat;
 
@@ -37,16 +45,15 @@ public class MathScriptEngine extends AbstractScriptEngine {
   // }
 
   public MathScriptEngine() {
-    this(new EvalEngine());
+    fEngine = new EvalEngine();
   }
 
-  public MathScriptEngine(EvalEngine engine) {
-    // get the thread local evaluation engine
-    fEngine = engine;
-    // fEngine.setRecursionLimit(256);
-    // fEngine.setIterationLimit(256);
-    fUtility = new EvalUtilities(fEngine, false, false);
-  }
+  // public MathScriptEngine(EvalEngine engine) {
+  // get the thread local evaluation engine
+  // fEngine = engine;
+  // fEngine.setRecursionLimit(256);
+  // fEngine.setIterationLimit(256);
+  // }
 
   @Override
   public Bindings createBindings() {
@@ -74,6 +81,10 @@ public class MathScriptEngine extends AbstractScriptEngine {
   public Object eval(final String script, final ScriptContext context) {
     // final ArrayList<ISymbol> list = new ArrayList<ISymbol>();
     boolean relaxedSyntax = false;
+
+    if (fUtility == null) {
+      fUtility = new EvalUtilities(fEngine, false, false);
+    }
     final Object enableStackTraceBoolean = get("PRINT_STACKTRACE");
     Level stackLogLevel = Boolean.TRUE.equals(enableStackTraceBoolean) ? Level.ERROR : Level.DEBUG;
 
@@ -169,9 +180,8 @@ public class MathScriptEngine extends AbstractScriptEngine {
 
     if (fDecimalFormat != null) {
       int significantFigures = engine.getSignificantFigures();
-      off =
-          OutputFormFactory.get(
-              relaxedSyntax, false, significantFigures - 1, significantFigures + 1);
+      off = OutputFormFactory.get(relaxedSyntax, false, significantFigures - 1,
+          significantFigures + 1);
     } else {
       off = OutputFormFactory.get(relaxedSyntax);
     }

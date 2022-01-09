@@ -22,7 +22,7 @@
 		</license>
 	</licenses>
 
-	<dependencies>
+	<dependencies> 
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -99,7 +99,13 @@
 		</dependency>
 
 		<!-- test dependencies -->
-
+        <dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-script</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
 		<dependency>
 			<groupId>com.tngtech.archunit</groupId>
 			<artifactId>archunit-junit4</artifactId>

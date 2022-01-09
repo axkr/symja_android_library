@@ -8,67 +8,36 @@
 		<version>2.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>matheclipse-api</artifactId>
+	<artifactId>matheclipse-script</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
-	<description>The Symja api module</description>
+	<description>The Symja javax.script engine</description>
 
 	<licenses>
 		<license>
 			<name>GNU General Public License, Version 3</name>
-			<url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+			<url>http://www.gnu.org/licenses/gpl-3.0.html</url>
 			<distribution>repo</distribution>
 			<comments>A free, copyleft license for software and other kinds of works</comments>
 		</license>
 	</licenses>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
-		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>io.undertow</groupId>
-			<artifactId>undertow-core</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-analyzers-common</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.commonmark</groupId>
-			<artifactId>commonmark-ext-gfm-tables</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.owasp.encoder</groupId>
-			<artifactId>encoder</artifactId>
-		</dependency>
-
-		<!-- logging dependencies -->
-
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-logging</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
-		<!-- test dependencies -->
-        <dependency>
+		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>matheclipse-script</artifactId>
+			<artifactId>matheclipse-gpl</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
+ 
 </project>

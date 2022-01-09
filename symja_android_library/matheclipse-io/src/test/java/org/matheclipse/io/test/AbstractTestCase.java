@@ -72,8 +72,8 @@ public abstract class AbstractTestCase extends TestCase {
     check(fScriptEngine, evalString, expectedResult, resultLength);
   }
 
-  public void check(
-      ScriptEngine scriptEngine, String evalString, String expectedResult, int resultLength) {
+  public void check(ScriptEngine scriptEngine, String evalString, String expectedResult,
+      int resultLength) {
     try {
       if (evalString.length() == 0 && expectedResult.length() == 0) {
         return;
@@ -152,15 +152,14 @@ public abstract class AbstractTestCase extends TestCase {
     checkSVGGraphics(fScriptEngine, evalString, expectedResult);
   }
 
-  public void checkSVGGraphics(
-      ScriptEngine scriptEngine, String evalString, String expectedResult) {
+  public void checkSVGGraphics(ScriptEngine scriptEngine, String evalString,
+      String expectedResult) {
     try {
       if (evalString.length() == 0 && expectedResult.length() == 0) {
         return;
       }
-      scriptEngine
-          .getContext()
-          .setAttribute("RETURN_OBJECT", Boolean.TRUE, ScriptContext.ENGINE_SCOPE);
+      scriptEngine.getContext().setAttribute("RETURN_OBJECT", Boolean.TRUE,
+          ScriptContext.ENGINE_SCOPE);
       IExpr result = (IExpr) scriptEngine.eval(evalString);
       if (result.isAST() && result.size() > 1 && result.first().isAST()) {
         StringBuilder buf = new StringBuilder(2048);
@@ -185,8 +184,8 @@ public abstract class AbstractTestCase extends TestCase {
         Config.MAX_BIT_LENGTH = 200000;
         Config.MAX_POLYNOMIAL_DEGREE = 100;
         Config.FILESYSTEM_ENABLED = true;
-        EvalEngine engine = new EvalEngine();
-        fScriptEngine = new MathScriptEngine(engine); // fScriptManager.getEngineByExtension("m");
+        // EvalEngine engine = new EvalEngine();
+        fScriptEngine = fScriptManager.getEngineByExtension("m");
         fScriptEngine.put("PRINT_STACKTRACE", Boolean.TRUE);
         fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
         fScriptEngine.put("DECIMAL_FORMAT", "0.0####");
@@ -195,11 +194,18 @@ public abstract class AbstractTestCase extends TestCase {
         fNumericScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
         F.await();
         IOInit.init();
-
+        EvalEngine engine = (EvalEngine) fScriptEngine.get("EVAL_ENGINE");
         EvalEngine.set(engine);
         engine.init();
         engine.setRecursionLimit(256);
         engine.setIterationLimit(500);
+        engine.setOutListDisabled(false, (short) 10);
+
+        EvalEngine numericEngine = (EvalEngine) fScriptEngine.get("EVAL_ENGINE");
+        numericEngine.init();
+        numericEngine.setRecursionLimit(512);
+        numericEngine.setIterationLimit(500);
+        numericEngine.setOutListDisabled(false, (short) 10);
       }
     } catch (Exception e) {
       e.printStackTrace();
