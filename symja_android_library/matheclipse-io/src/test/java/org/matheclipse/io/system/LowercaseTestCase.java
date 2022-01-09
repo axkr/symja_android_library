@@ -10870,7 +10870,8 @@ public class LowercaseTestCase extends AbstractTestCase {
       check("Get(\"noopen-file-test.m\")", //
           "True");
 
-      String pathToVectorAnalysis = getClass().getResource("/symja/VectorAnalysis.m").getFile();
+      String pathToVectorAnalysis =
+          LowercaseTestCase.class.getResource("/symja/VectorAnalysis.m").getFile();
       // remove 'file:/'
       // pathToVectorAnalysis = pathToVectorAnalysis.substring(6);
       System.out.println(pathToVectorAnalysis);

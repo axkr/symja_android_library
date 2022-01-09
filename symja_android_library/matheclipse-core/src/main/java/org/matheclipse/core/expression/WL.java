@@ -1063,8 +1063,7 @@ public class WL {
    * @return {@link F#NIL} if the resource cannot be found or the derialization failed.
    */
   public static IExpr deserializeResource(String resourceName, boolean internal) {
-    try {
-      InputStream resourceAsStream = new Config().getClass().getResourceAsStream(resourceName);
+    try (InputStream resourceAsStream = Config.class.getResourceAsStream(resourceName)) {
       if (resourceAsStream == null) {
         return F.NIL;
       } else {
