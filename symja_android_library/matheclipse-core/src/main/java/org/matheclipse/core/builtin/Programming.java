@@ -269,11 +269,6 @@ public final class Programming {
         final int size = ast.size();
         switch (size) {
           case 2:
-            if (ThrowException.THROW_FALSE == e) {
-              return S.False;
-            } else if (ThrowException.THROW_TRUE == e) {
-              return S.True;
-            }
             return e.getValue();
           case 3:
             {
@@ -763,7 +758,6 @@ public final class Programming {
               } catch (final BreakException e) {
                 return S.Null;
               } catch (final ContinueException e) {
-                continue;
               }
             }
           } finally {
@@ -1094,7 +1088,6 @@ public final class Programming {
           }
         } catch (final ReturnException e) {
           return e.getValue();
-        } finally {
         }
         if (iterationLimit > 0 && iterationLimit <= ++iterationCounter) {
           IterationLimitExceeded.throwIt(iterationCounter, ast);
@@ -1309,8 +1302,7 @@ public final class Programming {
       if (leftHandSide.isList()) {
         // thread over lists
         IExpr temp =
-            engine.threadASTListArgs(
-                (IASTMutable) F.Set(leftHandSide, rightHandSide), S.Thread, "tdlen");
+            engine.threadASTListArgs(F.Set(leftHandSide, rightHandSide), S.Thread, "tdlen");
         if (temp.isPresent()) {
           return engine.evaluate(temp);
         }
@@ -1601,10 +1593,7 @@ public final class Programming {
         final Function<IExpr, IExpr> fn,
         final IExpr n,
         EvalEngine engine) {
-      int extraTimes = Integer.MAX_VALUE;
-      if (n != S.All) {
-        extraTimes = n.toIntDefault();
-      } else {
+      if (n == S.All) {
         IExpr temp = expr;
         IASTAppendable testFunction = F.ast(test);
         testFunction.append(temp);
@@ -1614,6 +1603,7 @@ public final class Programming {
         }
         return temp;
       }
+      int extraTimes = n.toIntDefault();
       if (extraTimes <= 0) {
         return F.NIL;
       }
@@ -1713,10 +1703,7 @@ public final class Programming {
         final Function<IExpr, IExpr> fn,
         final IASTAppendable resultList,
         EvalEngine engine) {
-      int extraTimes = Integer.MAX_VALUE;
-      if (n != S.All) {
-        extraTimes = n.toIntDefault();
-      } else {
+      if (n == S.All) {
         IExpr temp = expr;
         IASTAppendable testFunction = F.ast(test);
         testFunction.append(temp);
@@ -1728,6 +1715,7 @@ public final class Programming {
         resultList.append(temp);
         return resultList;
       }
+      int extraTimes = n.toIntDefault();
       if (extraTimes <= 0) {
         return F.NIL;
       }
@@ -2422,7 +2410,7 @@ public final class Programming {
         engine.setReapList(reapList);
         if (ast.isAST1()) {
           IExpr expr = engine.evaluate(ast.arg1());
-          if (reapList.size() == 0) {
+          if (reapList.isEmpty()) {
             return F.List(expr, F.CEmptyList);
           }
           IASTAppendable result = F.ListAlloc(reapList.size() / 2);
@@ -2448,7 +2436,7 @@ public final class Programming {
           } else {
             matcher = new IPatternMatcher[] {engine.evalPatternMatcher(arg2)};
           }
-          if (reapList.size() == 0) {
+          if (reapList.isEmpty()) {
             return F.List(expr, F.CEmptyList);
           }
           IASTAppendable result = F.ListAlloc(reapList.size() / 2);
@@ -3329,7 +3317,6 @@ public final class Programming {
         } catch (final BreakException e) {
           return S.Null;
         } catch (final ContinueException e) {
-          continue;
         } catch (final ReturnException e) {
           return e.getValue();
         }
@@ -3511,13 +3498,11 @@ public final class Programming {
       final RulesData[] assignedRules,
       final EvalEngine engine) {
     ISymbol variableSymbol;
-    ISymbol substitute;
     for (int i = 1; i < variablesList.size(); i++) {
-      substitute = null;
       if (variablesList.get(i).isSymbol()) {
         variableSymbol = (ISymbol) variablesList.get(i);
         if (variableSymbol.isBuiltInSymbol()) {
-          substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
+          ISymbol substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
           if (substitute != null) {
             variableSymbol = substitute;
           }
@@ -3530,7 +3515,7 @@ public final class Programming {
         if (setFun.arg1().isSymbol()) {
           variableSymbol = (ISymbol) setFun.arg1();
           if (variableSymbol.isBuiltInSymbol()) {
-            substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
+            ISymbol substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
             if (substitute != null) {
               variableSymbol = substitute;
             }
@@ -3649,19 +3634,6 @@ public final class Programming {
       return IOFunctions.printMessage(S.Part, "partw", F.List(F.ZZ(pos), ast), engine);
     }
     return ast.getRule(position);
-  }
-
-  private static IExpr getSparseIndex(ISparseArray ast, final int pos, EvalEngine engine) {
-    // int position = pos;
-    // if (position < 0) {
-    // position = ast.size() + position;
-    // }
-    // if ((position < 0) || (position >= ast.size())) {
-    // // Part `1` of `2` does not exist.
-    // return IOFunctions.printMessage(F.Part, "partw", F.List(F.ZZ(pos), ast), engine);
-    // }
-    // return ast.get(position);
-    return F.NIL;
   }
 
   /**
