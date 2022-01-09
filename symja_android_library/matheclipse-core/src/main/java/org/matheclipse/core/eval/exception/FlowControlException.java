@@ -16,4 +16,8 @@ public abstract class FlowControlException extends SymjaMathException {
    */
   protected FlowControlException() {
   }
+
+  protected FlowControlException(String message) {
+    super(message);
+  }
 }

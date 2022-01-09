@@ -12,7 +12,6 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.FlowControlException;
-import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -358,12 +357,6 @@ public class ExprEvaluatorTests extends TestCase {
             if (!quietMode) {
               System.err.println(mutant.toString());
               mex.printStackTrace();
-              System.err.println();
-            }
-          } catch (LimitException ile) {
-            if (!quietMode) {
-              System.err.println(mutant.toString());
-              ile.printStackTrace();
               System.err.println();
             }
           } catch (SyntaxError se) {
@@ -1048,12 +1041,6 @@ public class ExprEvaluatorTests extends TestCase {
         if (!quietMode) {
           System.err.println(ast.toString());
           mex.printStackTrace();
-          System.err.println();
-        }
-      } catch (LimitException ile) {
-        if (!quietMode) {
-          System.err.println(ast.toString());
-          ile.printStackTrace();
           System.err.println();
         }
       } catch (SyntaxError se) {

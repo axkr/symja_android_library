@@ -2,6 +2,7 @@ package org.matheclipse.core.visit;
 
 import java.util.function.Function;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -17,7 +18,7 @@ import org.matheclipse.core.interfaces.IExpr;
  */
 public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
   /** StopException will be thrown, if maximum number of Cases results are reached */
-  public static class StopException extends SymjaMathException {
+  public static class StopException extends FlowControlException {
     private static final long serialVersionUID = -8839477630696222675L;
 
     public StopException() {

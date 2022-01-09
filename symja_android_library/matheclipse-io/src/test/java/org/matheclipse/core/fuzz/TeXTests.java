@@ -9,7 +9,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.FlowControlException;
-import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -153,10 +152,6 @@ public class TeXTests extends TestCase {
               mex.printStackTrace();
               System.err.println();
             }
-          } catch (LimitException ile) {
-            System.err.println(mutantStr);
-            ile.printStackTrace();
-            System.err.println();
           } catch (SyntaxError se) {
             if (!quietMode) {
               System.err.println(mutantStr);

@@ -44,7 +44,6 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.FlowControlException;
-import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -1881,7 +1880,7 @@ public abstract class AbstractAST implements IASTMutable {
             return functionEvaluator.evaluate(ast, engine);
           } catch (ValidateException ve) {
             return IOFunctions.printMessage(topHead(), ve, engine);
-          } catch (FlowControlException | LimitException e) {
+          } catch (FlowControlException e) {
             throw e;
           } catch (SymjaMathException ve) {
             LOGGER.log(engine.getLogLevel(), topHead(), ve);

@@ -27,7 +27,6 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
-import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.TimeoutException;
@@ -954,7 +953,7 @@ public class EvalEngine implements Serializable {
           }
         } catch (ValidateException ve) {
           return IOFunctions.printMessage(ast.topHead(), ve, this);
-        } catch (FlowControlException | LimitException e) {
+        } catch (FlowControlException e) {
           throw e;
         } catch (SymjaMathException ve) {
           LOGGER.log(getLogLevel(), ast.topHead(), ve);
