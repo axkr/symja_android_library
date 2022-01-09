@@ -56,7 +56,6 @@ public class SyntaxError extends MathException {
       final String currentLine,
       final String error,
       final int length) {
-    super(null, null, false, false);
     fStartOffset = startOffset;
     fRowIndex = rowIndx;
     fColumnIndex = columnIndx;
@@ -115,15 +114,5 @@ public class SyntaxError extends MathException {
   /** offset where the error occurred */
   public int getStartOffset() {
     return fStartOffset;
-  }
-
-  @Override
-  public synchronized Throwable fillInStackTrace() {
-    if (ParserConfig.SHOW_STACKTRACE) {
-      // doesn't fill the stack for FlowControlExceptions
-      return super.fillInStackTrace();
-    } else {
-      return this;
-    }
   }
 }
