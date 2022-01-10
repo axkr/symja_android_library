@@ -687,7 +687,7 @@ public class Config {
     } catch (IOException e) {
       LOGGER.error("Config.getVersion() failed", e);
     }
-    throw new IllegalStateException("Failed to read Symja version");
+    return "0.0.0";
   }
 
   /** A trie builder for mapping int[] sequences to IExpr. */
