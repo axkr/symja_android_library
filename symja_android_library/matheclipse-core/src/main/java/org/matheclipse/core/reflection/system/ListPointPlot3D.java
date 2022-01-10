@@ -15,48 +15,41 @@ public class ListPointPlot3D extends AbstractEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.argSize() > 0) {
-      // if (ast.argSize() > 1) {
-      // final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-      // IExpr colorFunction = options.getOption(S.ColorFunction);
-      // if (colorFunction.isPresent()) {
-      // // ... color function is set...
-      // }
-      // }
-      if (ast.arg1().isList()) {
-        IAST heightValueMatrix = (IAST) ast.arg1();
-        int[] dimension = heightValueMatrix.isMatrix(false);
-        if (dimension != null) {
-          if (dimension[0] > 3) {
-            if (dimension[1] == 3) {
-              IASTAppendable pointList = F.ListAlloc(dimension[0]);
-              for (int i = 1; i < heightValueMatrix.size(); i++) {
-                IAST rowList = (IAST) heightValueMatrix.get(i);
-                pointList.append(rowList);
-              }
-              IASTAppendable result = F.Graphics3D(F.Point(pointList));
-              if (ast.argSize() > 1) {
-                // add same options to Graphics3D
-                result.appendAll(ast, 2, ast.size());
-              }
-              return result;
-            } else if (dimension[1] > 3) {
-              IASTAppendable pointList = F.ListAlloc(dimension[0] * dimension[1]);
-              for (int i = 1; i < heightValueMatrix.size(); i++) {
-                IAST rowList = (IAST) heightValueMatrix.get(i);
-                for (int j = 1; j < rowList.size(); j++) {
-                  pointList.append(//
-                      F.List(F.ZZ(i), F.ZZ(j), rowList.get(j)));
-                }
-              }
-              IASTAppendable result = F.Graphics3D(F.Point(pointList));
-              if (ast.argSize() > 1) {
-                // add same options to Graphics3D
-                result.appendAll(ast, 2, ast.size());
-              }
-              return result;
+      int[] dimension = ast.arg1().isMatrix(false);
+      if (dimension != null) {
+        // convert possible sparse array expression:
+        IAST heightValueMatrix = (IAST) ast.arg1().normal(false);
+        if (dimension[0] > 3) {
+          if (dimension[1] == 3) {
+            IASTAppendable pointList = F.ListAlloc(dimension[0]);
+            for (int i = 1; i < heightValueMatrix.size(); i++) {
+              IAST rowList = (IAST) heightValueMatrix.get(i);
+              pointList.append(rowList);
             }
+            IASTAppendable result = F.Graphics3D(F.Point(pointList));
+            if (ast.argSize() > 1) {
+              // add same options to Graphics3D
+              result.appendAll(ast, 2, ast.size());
+            }
+            return result;
+          } else if (dimension[1] > 3) {
+            IASTAppendable pointList = F.ListAlloc(dimension[0] * dimension[1]);
+            for (int i = 1; i < heightValueMatrix.size(); i++) {
+              IAST rowList = (IAST) heightValueMatrix.get(i);
+              for (int j = 1; j < rowList.size(); j++) {
+                pointList.append(//
+                    F.List(F.ZZ(i), F.ZZ(j), rowList.get(j)));
+              }
+            }
+            IASTAppendable result = F.Graphics3D(F.Point(pointList));
+            if (ast.argSize() > 1) {
+              // add same options to Graphics3D
+              result.appendAll(ast, 2, ast.size());
+            }
+            return result;
           }
         }
+
       }
     }
     return F.NIL;

@@ -24,10 +24,12 @@ public class ListPlot3D extends AbstractEvaluator {
       // // ... color function is set...
       // }
       // }
-      if (ast.arg1().isList()) {
-        IAST values = (IAST) ast.arg1();
+      int[] dimension = ast.arg1().isMatrix(false);
+      if (dimension != null && dimension.length == 2) {
+        // convert possible sparse array expression:
+        IAST values = (IAST) ast.arg1().normal(false);
 
-        if (values.argSize() == 3 && ((IAST) values.arg1()).argSize() == 3) {
+        if (dimension[0] == 3 && dimension[1] == 3) {
           // Draw a triangle with x, y and z coordinates.
           IAST polygons = F.Polygon(F.List(F.List(//
               ((IAST) values.arg1()).arg1(), ((IAST) values.arg2()).arg1(),
@@ -44,67 +46,65 @@ public class ListPlot3D extends AbstractEvaluator {
             result.appendAll(ast, 2, ast.size());
           }
           return result;
-        } else {
-          int[] dimension = values.isMatrix(false);
-          if (dimension != null && dimension[1] == 4) {
-            // Draw polygons given just the z value in a grid of size
-            // (heights.argSize() - 1) * (heights.arg1().argSize() - 1)
-            // 2 polygons per square
-            IASTAppendable polygonList =
-                F.ListAlloc((values.argSize() - 1) * (((IAST) values).arg1().argSize() - 1) * 2);
+        } else if (dimension[1] == 4) {
+          // Draw polygons given just the z value in a grid of size
+          // (heights.argSize() - 1) * (heights.arg1().argSize() - 1)
+          // 2 polygons per square
+          IASTAppendable polygonList =
+              F.ListAlloc((values.argSize() - 1) * (((IAST) values).arg1().argSize() - 1) * 2);
 
-            double minHeight = (((IAST) values.arg1()).arg1()).evalDouble();
-            double maxHeight = minHeight;
+          double minHeight = (((IAST) values.arg1()).arg1()).evalDouble();
+          double maxHeight = minHeight;
 
-            ArrayList<double[]> heightRows = new ArrayList<double[]>();
-            for (int i = 1; i <= values.argSize(); i++) {
-              IAST row = ((IAST) values.get(i));
-              try {
-                heightRows.add(new double[0]);
-                double[] heights = new double[row.argSize()];
-                for (int j = 1; j <= row.argSize(); j++) {
-                  // evalDouble may throw ArgumentTypeException
-                  heights[j - 1] = row.get(j).evalDouble();
-                  double height = heights[j - 1];
-                  if (height < minHeight)
-                    minHeight = height;
-                  if (height > maxHeight)
-                    maxHeight = height;
-                }
-                heightRows.set(i - 1, heights);
-              } catch (ArgumentTypeException ate) {
-                // ignore this row
+          ArrayList<double[]> heightRows = new ArrayList<double[]>();
+          for (int i = 1; i <= values.argSize(); i++) {
+            IAST row = ((IAST) values.get(i));
+            try {
+              heightRows.add(new double[0]);
+              double[] heights = new double[row.argSize()];
+              for (int j = 1; j <= row.argSize(); j++) {
+                // evalDouble may throw ArgumentTypeException
+                heights[j - 1] = row.get(j).evalDouble();
+                double height = heights[j - 1];
+                if (height < minHeight)
+                  minHeight = height;
+                if (height > maxHeight)
+                  maxHeight = height;
               }
+              heightRows.set(i - 1, heights);
+            } catch (ArgumentTypeException ate) {
+              // ignore this row
             }
-
-            // deltaHeight is used to normalize the heights.
-            double deltaHeight = maxHeight - minHeight;
-
-            // As i and j start at 0, the last element is ignored (as it should be).
-            for (int i = 0; i < heightRows.size() - 1; i++) {
-              double[] heights = heightRows.get(i);
-              double[] nextHeights = heightRows.get(i + 1);
-              if (heights.length > 0 && nextHeights.length == heights.length) {
-                for (int j = 0; j < heights.length - 1; j++) {
-                  polygonList.append(F.Polygon(F.List(//
-                      F.List(F.num(i + 1), F.num(j + 1), F.num(heights[j] / deltaHeight)),
-                      F.List(F.num(i + 2), F.num(j + 2), F.num(nextHeights[j + 1] / deltaHeight)),
-                      F.List(F.num(i + 1), F.num(j + 2), F.num(heights[j + 1] / deltaHeight)))));
-                  polygonList.append(F.Polygon(F.List(
-                      F.List(F.num(i + 1), F.num(j + 1), F.num(heights[j] / deltaHeight)),
-                      F.List(F.num(i + 2), F.num(j + 2), F.num(nextHeights[j + 1] / deltaHeight)),
-                      F.List(F.num(i + 2), F.num(j + 1), F.num(nextHeights[j] / deltaHeight)))));
-                }
-              }
-            }
-            IASTAppendable result = F.Graphics3D(polygonList);
-            if (ast.argSize() > 1) {
-              // add same options to Graphics3D
-              result.appendAll(ast, 2, ast.size());
-            }
-            return result;
           }
+
+          // deltaHeight is used to normalize the heights.
+          double deltaHeight = maxHeight - minHeight;
+
+          // As i and j start at 0, the last element is ignored (as it should be).
+          for (int i = 0; i < heightRows.size() - 1; i++) {
+            double[] heights = heightRows.get(i);
+            double[] nextHeights = heightRows.get(i + 1);
+            if (heights.length > 0 && nextHeights.length == heights.length) {
+              for (int j = 0; j < heights.length - 1; j++) {
+                polygonList.append(F.Polygon(F.List(//
+                    F.List(F.num(i + 1), F.num(j + 1), F.num(heights[j] / deltaHeight)),
+                    F.List(F.num(i + 2), F.num(j + 2), F.num(nextHeights[j + 1] / deltaHeight)),
+                    F.List(F.num(i + 1), F.num(j + 2), F.num(heights[j + 1] / deltaHeight)))));
+                polygonList.append(F.Polygon(
+                    F.List(F.List(F.num(i + 1), F.num(j + 1), F.num(heights[j] / deltaHeight)),
+                        F.List(F.num(i + 2), F.num(j + 2), F.num(nextHeights[j + 1] / deltaHeight)),
+                        F.List(F.num(i + 2), F.num(j + 1), F.num(nextHeights[j] / deltaHeight)))));
+              }
+            }
+          }
+          IASTAppendable result = F.Graphics3D(polygonList);
+          if (ast.argSize() > 1) {
+            // add same options to Graphics3D
+            result.appendAll(ast, 2, ast.size());
+          }
+          return result;
         }
+
       }
     }
     return F.NIL;
