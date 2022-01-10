@@ -120,8 +120,9 @@ public class EvalEngine implements Serializable {
 
   private static AtomicLong MODULE_COUNTER = new AtomicLong();
 
-  private static final transient ThreadLocal<EvalEngine> INSTANCE =
-      ThreadLocal.withInitial(() -> new EvalEngine("ThreadLocal", 0, System.out, true));
+  private static final transient ThreadLocal<EvalEngine> INSTANCE = ThreadLocal.withInitial(
+      () -> new EvalEngine("ThreadLocal", Config.DEFAULT_RECURSION_LIMIT, System.out, true));
+
 
   /**
    * Get the thread local evaluation engine instance
@@ -334,7 +335,7 @@ public class EvalEngine implements Serializable {
    * <a href="https://en.wikipedia.org/wiki/Thread-local_storage">ThreadLocal</a> mechanism.
    */
   public EvalEngine() {
-    this("", 0, System.out, false);
+    this("", Config.DEFAULT_RECURSION_LIMIT, System.out, false);
   }
 
   /**
@@ -346,7 +347,7 @@ public class EvalEngine implements Serializable {
    *        lower case identifiers
    */
   public EvalEngine(boolean relaxedSyntax) {
-    this("", 0, System.out, relaxedSyntax);
+    this("", Config.DEFAULT_RECURSION_LIMIT, System.out, relaxedSyntax);
   }
 
   // static public int MAX_THREADS_COUNT = 10;
@@ -392,11 +393,12 @@ public class EvalEngine implements Serializable {
    */
   public EvalEngine(final String sessionID, final int recursionLimit, final PrintStream out,
       boolean relaxedSyntax) {
-    this(sessionID, recursionLimit, 1000, out, null, relaxedSyntax);
+    this(sessionID, recursionLimit, Config.DEFAULT_ITERATION_LIMIT, out, null, relaxedSyntax);
   }
 
   public EvalEngine(final String sessionID, final PrintStream out) {
-    this(sessionID, -1, -1, out, null, false);
+    this(sessionID, Config.DEFAULT_RECURSION_LIMIT, Config.DEFAULT_ITERATION_LIMIT, out, null,
+        false);
   }
 
   /**

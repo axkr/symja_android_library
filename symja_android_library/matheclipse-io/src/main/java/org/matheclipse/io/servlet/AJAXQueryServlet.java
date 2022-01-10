@@ -49,52 +49,27 @@ public class AJAXQueryServlet extends HttpServlet {
   static final Map<String, EvalEngine> ENGINES = new HashMap<String, EvalEngine>();
 
   protected static final String VISJS_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
           + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>VIS-NetWork</title>\n"
-          + "\n"
+          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>VIS-NetWork</title>\n" + "\n"
           + "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
-          + "</head>\n"
-          + "<body>\n"
-          + "\n"
+          + "</head>\n" + "<body>\n" + "\n"
           + "<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + "<script type=\"text/javascript\">\n"
-          + "`1`\n"
-          + "  var container = document.getElementById('vis');\n"
-          + "  var data = {\n"
-          + "    nodes: nodes,\n"
-          + "    edges: edges\n"
-          + "  };\n"
-          + "`2`\n"
-          + "  var network = new vis.Network(container, data, options);\n"
-          + "</script>\n"
-          + "</div>\n"
-          + "</body>\n"
-          + "</html>"; //
+          + "<script type=\"text/javascript\">\n" + "`1`\n"
+          + "  var container = document.getElementById('vis');\n" + "  var data = {\n"
+          + "    nodes: nodes,\n" + "    edges: edges\n" + "  };\n" + "`2`\n"
+          + "  var network = new vis.Network(container, data, options);\n" + "</script>\n"
+          + "</div>\n" + "</body>\n" + "</html>"; //
 
   protected static final String HTML_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
           + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>HTML</title>\n"
-          + "</head>\n"
-          + "<body>\n"
-          + "`1`\n"
-          + "</body>\n"
-          + "</html>";
+          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>HTML</title>\n" + "</head>\n"
+          + "<body>\n" + "`1`\n" + "</body>\n" + "</html>";
 
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -156,12 +131,8 @@ public class AJAXQueryServlet extends HttpServlet {
     }
   }
 
-  private String evaluate(
-      HttpServletRequest request,
-      String expression,
-      String numericMode,
-      String function,
-      int counter) {
+  private String evaluate(HttpServletRequest request, String expression, String numericMode,
+      String function, int counter) {
     if (expression == null || expression.length() == 0) {
       return JSONBuilder.createJSONErrorString("No input expression posted!");
     }
@@ -181,7 +152,7 @@ public class AJAXQueryServlet extends HttpServlet {
     WriterOutputStream werrors = new WriterOutputStream(errorWriter);
     try (PrintStream outs = new PrintStream(wouts);
         PrintStream errors = new PrintStream(werrors);
-        ThreadLocalNotifierClosable c = ServletServer.setLogEventNotifier(outs, errors); ) {
+        ThreadLocalNotifierClosable c = ServletServer.setLogEventNotifier(outs, errors);) {
 
       EvalEngine engine = ENGINES.get(session.getId());
       if (engine == null) {
@@ -204,12 +175,8 @@ public class AJAXQueryServlet extends HttpServlet {
     return result[1].toString();
   }
 
-  private String[] evaluateString(
-      EvalEngine engine,
-      final String inputString,
-      final String numericMode,
-      final String function,
-      StringWriter outWriter,
+  private String[] evaluateString(EvalEngine engine, final String inputString,
+      final String numericMode, final String function, StringWriter outWriter,
       StringWriter errorWriter) {
     String input = inputString.trim();
     if (input.length() > 1 && input.charAt(0) == '?') {
@@ -242,10 +209,8 @@ public class AJAXQueryServlet extends HttpServlet {
               GraphicsFunctions.graphicsToSVG((IAST) outExpr, stw);
               html = StringUtils.replace(html, "`1`", stw.toString());
               html = StringEscapeUtils.escapeHtml4(html);
-              return JSONBuilder.createJSONJavaScript(
-                  "<iframe srcdoc=\""
-                      + html
-                      + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+              return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
+                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
             } catch (Exception ex) {
               LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
             }
@@ -253,8 +218,8 @@ public class AJAXQueryServlet extends HttpServlet {
             StringBuilder buf = new StringBuilder();
             if (GraphicsFunctions.renderGraphics3D(buf, (IAST) outExpr, engine)) {
               try {
-                return JSONBuilder.createGraphics3DIFrame(
-                    JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE, buf.toString());
+                return JSONBuilder.createGraphics3DIFrame(JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE,
+                    buf.toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
@@ -268,30 +233,25 @@ public class AJAXQueryServlet extends HttpServlet {
             if (javaScriptStr != null) {
               String html = VISJS_IFRAME;
               html = StringUtils.replace(html, "`1`", javaScriptStr);
-              html =
-                  StringUtils.replace(
-                      html,
-                      "`2`", //
-                      "  var options = { };\n" //
-                      );
+              html = StringUtils.replace(html, "`2`", //
+                  "  var options = { };\n" //
+              );
               html = StringEscapeUtils.escapeHtml4(html);
-              return JSONBuilder.createJSONJavaScript(
-                  "<iframe srcdoc=\""
-                      + html
-                      + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+              return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
+                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
             }
           } else if (outExpr instanceof ASTDataset) {
             String javaScriptStr = ((ASTDataset) outExpr).datasetToJSForm();
             if (javaScriptStr != null) {
               String htmlSnippet = javaScriptStr.trim();
-              //              String html = HTML_IFRAME;
-              //              html = StringUtils.replace(html, "`1`", htmlSnippet);
-              //              html = StringEscapeUtils.escapeHtml4(html);
+              // String html = HTML_IFRAME;
+              // html = StringUtils.replace(html, "`1`", htmlSnippet);
+              // html = StringEscapeUtils.escapeHtml4(html);
               return JSONBuilder.createJSONHTML(engine, htmlSnippet, outWriter, errorWriter);
-              //              return JSONBuilder.createJSONJavaScript(
-              //                  "<iframe srcdoc=\""
-              //                      + html
-              //                      + "\" style=\"display: block; width: 100%; height: 100%;
+              // return JSONBuilder.createJSONJavaScript(
+              // "<iframe srcdoc=\""
+              // + html
+              // + "\" style=\"display: block; width: 100%; height: 100%;
               // border: none;\"></iframe>");
             }
           } else if (outExpr.isAST(S.JSFormData, 3)) {
@@ -299,22 +259,22 @@ public class AJAXQueryServlet extends HttpServlet {
             String jsLibraryType = jsFormData.arg2().toString();
             if (jsLibraryType.equals("mathcell")) {
               try {
-                return JSONBuilder.createMathcellIFrame(
-                    JSBuilder.MATHCELL_IFRAME_TEMPLATE, jsFormData.arg1().toString());
+                return JSONBuilder.createMathcellIFrame(JSBuilder.MATHCELL_IFRAME_TEMPLATE,
+                    jsFormData.arg1().toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
             } else if (jsLibraryType.equals("jsxgraph")) {
               try {
-                return JSONBuilder.createJSXGraphIFrame(
-                    JSBuilder.JSXGRAPH_IFRAME_TEMPLATE, jsFormData.arg1().toString());
+                return JSONBuilder.createJSXGraphIFrame(JSBuilder.JSXGRAPH_IFRAME_TEMPLATE,
+                    jsFormData.arg1().toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
             } else if (jsLibraryType.equals("plotly")) {
               try {
-                return JSONBuilder.createPlotlyIFrame(
-                    JSBuilder.PLOTLY_IFRAME_TEMPLATE, jsFormData.arg1().toString());
+                return JSONBuilder.createPlotlyIFrame(JSBuilder.PLOTLY_IFRAME_TEMPLATE,
+                    jsFormData.arg1().toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
@@ -323,34 +283,20 @@ public class AJAXQueryServlet extends HttpServlet {
                 String manipulateStr = jsFormData.arg1().toString();
                 String html = VISJS_IFRAME;
                 html = StringUtils.replace(html, "`1`", manipulateStr);
-                html =
-                    StringUtils.replace(
-                        html,
-                        "`2`", //
-                        "  var options = {\n"
-                            + "		  edges: {\n"
-                            + "              smooth: {\n"
-                            + "                  type: 'cubicBezier',\n"
-                            + "                  forceDirection:  'vertical',\n"
-                            + "                  roundness: 0.4\n"
-                            + "              }\n"
-                            + "          },\n"
-                            + "          layout: {\n"
-                            + "              hierarchical: {\n"
-                            + "                  direction: \"UD\"\n"
-                            + "              }\n"
-                            + "          },\n"
-                            + "          nodes: {\n"
-                            + "            shape: 'box'\n"
-                            + "          },\n"
-                            + "          physics:false\n"
-                            + "      }; " //
-                        );
+                html = StringUtils.replace(html, "`2`", //
+                    "  var options = {\n" + "		  edges: {\n" + "              smooth: {\n"
+                        + "                  type: 'cubicBezier',\n"
+                        + "                  forceDirection:  'vertical',\n"
+                        + "                  roundness: 0.4\n" + "              }\n"
+                        + "          },\n" + "          layout: {\n"
+                        + "              hierarchical: {\n"
+                        + "                  direction: \"UD\"\n" + "              }\n"
+                        + "          },\n" + "          nodes: {\n" + "            shape: 'box'\n"
+                        + "          },\n" + "          physics:false\n" + "      }; " //
+                );
                 html = StringEscapeUtils.escapeHtml4(html);
-                return JSONBuilder.createJSONJavaScript(
-                    "<iframe srcdoc=\""
-                        + html
-                        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+                return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
+                    + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
@@ -361,10 +307,8 @@ public class AJAXQueryServlet extends HttpServlet {
               String htmlSnippet = str.toString();
               String htmlPage = HTML_IFRAME;
               htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
-              return JSONBuilder.createJSONJavaScript(
-                  "<iframe srcdoc=\""
-                      + htmlPage
-                      + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+              return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + htmlPage
+                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
             }
           }
           return JSONBuilder.createJSONResult(engine, outExpr, outWriter, errorWriter);
@@ -395,13 +339,13 @@ public class AJAXQueryServlet extends HttpServlet {
       if (msg != null) {
         return JSONBuilder.createJSONError("Error in evaluateString: " + msg);
       }
-      return JSONBuilder.createJSONError(
-          "Error in evaluateString: " + e.getClass().getSimpleName());
+      return JSONBuilder
+          .createJSONError("Error in evaluateString: " + e.getClass().getSimpleName());
     }
   }
 
-  private static IExpr evalTopLevel(
-      EvalEngine engine, final StringWriter buf, final IExpr parsedExpression) {
+  private static IExpr evalTopLevel(EvalEngine engine, final StringWriter buf,
+      final IExpr parsedExpression) {
     IExpr result;
     EvalEngine[] engineRef = new EvalEngine[] {engine};
     result = ExprEvaluator.evalTopLevel(parsedExpression, engineRef);
@@ -429,8 +373,8 @@ public class AJAXQueryServlet extends HttpServlet {
     return new String[] {"expr", bldr.toString()};
   }
 
-  private static String[] createOutput(
-      StringWriter buffer, IExpr rhsExpr, EvalEngine engine, String function) {
+  private static String[] createOutput(StringWriter buffer, IExpr rhsExpr, EvalEngine engine,
+      String function) {
 
     boolean textEval = true;
     // if (rhsExpr != null && rhsExpr instanceof IAST &&
@@ -608,28 +552,28 @@ public class AJAXQueryServlet extends HttpServlet {
     // disable threads for JAS only on google appengine
     Config.JAS_NO_THREADS = false;
     Config.JAVA_UNSAFE = true;
-    //		Config.THREAD_FACTORY =
+    // Config.THREAD_FACTORY =
     // com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
     Config.MATHML_TRIG_LOWERCASE = false;
-    //    Config.MAX_AST_SIZE = ((int) Short.MAX_VALUE) * 8;
-    //    Config.MAX_OUTPUT_SIZE = Short.MAX_VALUE;
-    //    Config.MAX_BIT_LENGTH = ((int) Short.MAX_VALUE) * 8;
-    //    Config.MAX_INPUT_LEAVES = 1000L;
-    //    Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-    //    Config.MAX_POLYNOMIAL_DEGREE = 100;
+    // Config.MAX_AST_SIZE = ((int) Short.MAX_VALUE) * 8;
+    // Config.MAX_OUTPUT_SIZE = Short.MAX_VALUE;
+    // Config.MAX_BIT_LENGTH = ((int) Short.MAX_VALUE) * 8;
+    // Config.MAX_INPUT_LEAVES = 1000L;
+    // Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+    // Config.MAX_POLYNOMIAL_DEGREE = 100;
 
     EvalEngine engine = new EvalEngine(isRelaxedSyntax());
     EvalEngine.set(engine);
     Config.FILESYSTEM_ENABLED = true;
     F.initSymbols();
     IOInit.init();
-    engine.setRecursionLimit(256);
-    engine.setIterationLimit(500);
+    engine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
+    engine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
 
     S.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
     S.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
     // F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
     // Config.JAS_NO_THREADS = true;
-    //    AJAXQueryServlet.log.info(servlet + " initialized");
+    // AJAXQueryServlet.log.info(servlet + " initialized");
   }
 }

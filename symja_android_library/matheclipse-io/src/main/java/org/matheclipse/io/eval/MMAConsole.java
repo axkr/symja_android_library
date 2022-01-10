@@ -36,7 +36,8 @@ import org.matheclipse.parser.client.math.MathException;
 /**
  * A read-eval-print loop console for Mathematica like syntax input of expressions.
  *
- * <p>See {@link Console}
+ * <p>
+ * See {@link Console}
  */
 public class MMAConsole {
   /** No timeout limit as the default value for Symja expression evaluation. */
@@ -84,8 +85,8 @@ public class MMAConsole {
   private static PrintWriter stderr =
       new PrintWriter(new OutputStreamWriter(System.err, StandardCharsets.UTF_8), true);
 
-  /* package private */ static void runConsole(
-      final String args[], PrintWriter out, PrintWriter err) {
+  /* package private */ static void runConsole(final String args[], PrintWriter out,
+      PrintWriter err) {
     stdout = out;
     stderr = err;
     main(args);
@@ -228,10 +229,8 @@ public class MMAConsole {
     final StringBuilder msg = new StringBuilder();
     msg.append(Config.SYMJA);
     msg.append(Config.COPYRIGHT);
-    msg.append(
-        "Symja Console Wiki: "
-            + "https://github.com/axkr/symja_android_library/wiki/Console-apps"
-            + lineSeparator);
+    msg.append("Symja Console Wiki: "
+        + "https://github.com/axkr/symja_android_library/wiki/Console-apps" + lineSeparator);
     msg.append(lineSeparator);
     msg.append("org.matheclipse.io.eval.MMAConsole [options]" + lineSeparator);
     msg.append(lineSeparator);
@@ -316,8 +315,8 @@ public class MMAConsole {
     fEvaluator = new ExprEvaluator(engine, false, (short) 100);
     EvalEngine evalEngine = fEvaluator.getEvalEngine();
     evalEngine.setFileSystemEnabled(true);
-    evalEngine.setRecursionLimit(256);
-    evalEngine.setIterationLimit(500);
+    evalEngine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
+    evalEngine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
     fOutputFactory = OutputFormFactory.get(false, false, 5, 7);
     fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
     fInputFactory = OutputFormFactory.get(false, false, 5, 7);
@@ -454,13 +453,8 @@ public class MMAConsole {
       if (fSeconds <= 0) {
         result = fEvaluator.eval(trimmedInput);
       } else {
-        result =
-            fEvaluator.evaluateWithTimeout(
-                trimmedInput,
-                fSeconds,
-                TimeUnit.SECONDS,
-                true,
-                new EvalControlledCallable(fEvaluator.getEvalEngine()));
+        result = fEvaluator.evaluateWithTimeout(trimmedInput, fSeconds, TimeUnit.SECONDS, true,
+            new EvalControlledCallable(fEvaluator.getEvalEngine()));
       }
       if (result != null) {
         return printResult(result);
@@ -542,9 +536,9 @@ public class MMAConsole {
         default:
           if (Desktop.isDesktopSupported()) {
             IExpr outExpr = result;
-            if (result.isAST(S.Graphics)  || result.isAST(F.Graphics3D)) {
+            if (result.isAST(S.Graphics) || result.isAST(F.Graphics3D)) {
               outExpr = F.Show(outExpr);
-            } 
+            }
             String html = F.show(outExpr);
             if (html != null && html.length() > 0) {
               return html;

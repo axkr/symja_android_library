@@ -14,6 +14,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalControlledCallable;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
@@ -36,7 +37,8 @@ import org.matheclipse.parser.client.math.MathException;
 /**
  * A read-eval-print loop console for Symja syntax math expressions.
  *
- * <p>See {@link MMAConsole}
+ * <p>
+ * See {@link MMAConsole}
  */
 public class Console {
   /** No timeout limit as the default value for Symja expression evaluation. */
@@ -83,8 +85,8 @@ public class Console {
   private static PrintWriter stderr =
       new PrintWriter(new OutputStreamWriter(System.err, StandardCharsets.UTF_8), true);
 
-  /* package private */ static void runConsole(
-      final String args[], PrintWriter out, PrintWriter err) {
+  /* package private */ static void runConsole(final String args[], PrintWriter out,
+      PrintWriter err) {
     stdout = out;
     stderr = err;
     main(args);
@@ -129,7 +131,7 @@ public class Console {
             stdout.println(doc.toString());
             continue;
           }
- 
+
           if (trimmedInput.length() >= 4 && trimmedInput.charAt(0) == '/') {
             String command = trimmedInput.substring(1).toLowerCase(Locale.ENGLISH);
             if (command.equals("exit")) {
@@ -241,10 +243,8 @@ public class Console {
     final StringBuilder msg = new StringBuilder();
     msg.append(Config.SYMJA);
     msg.append(Config.COPYRIGHT);
-    msg.append(
-        "Symja Console Wiki: "
-            + "https://github.com/axkr/symja_android_library/wiki/Console-apps"
-            + lineSeparator);
+    msg.append("Symja Console Wiki: "
+        + "https://github.com/axkr/symja_android_library/wiki/Console-apps" + lineSeparator);
     msg.append(lineSeparator);
     msg.append("org.matheclipse.io.eval.Console [options]" + lineSeparator);
     msg.append(lineSeparator);
@@ -303,6 +303,10 @@ public class Console {
   /** Create a console which appends each evaluation output in a history list. */
   public Console() {
     fEvaluator = new ExprEvaluator(false, (short) 100);
+    EvalEngine evalEngine = fEvaluator.getEvalEngine();
+    evalEngine.setFileSystemEnabled(true);
+    evalEngine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
+    evalEngine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
     fOutputFactory = OutputFormFactory.get(true, false, 5, 7);
     fEvaluator.getEvalEngine().setFileSystemEnabled(true);
     fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
@@ -439,13 +443,8 @@ public class Console {
       if (fSeconds <= 0) {
         result = fEvaluator.eval(trimmedInput);
       } else {
-        result =
-            fEvaluator.evaluateWithTimeout(
-                trimmedInput,
-                fSeconds,
-                TimeUnit.SECONDS,
-                true,
-                new EvalControlledCallable(fEvaluator.getEvalEngine()));
+        result = fEvaluator.evaluateWithTimeout(trimmedInput, fSeconds, TimeUnit.SECONDS, true,
+            new EvalControlledCallable(fEvaluator.getEvalEngine()));
       }
       if (result != null) {
         return printResult(result);
@@ -611,7 +610,7 @@ public class Console {
     final StringBuilder input = new StringBuilder();
     final BufferedReader in =
         new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
-  
+
     boolean done = false;
 
     try {
