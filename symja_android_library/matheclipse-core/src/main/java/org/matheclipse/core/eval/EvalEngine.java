@@ -120,13 +120,8 @@ public class EvalEngine implements Serializable {
 
   private static AtomicLong MODULE_COUNTER = new AtomicLong();
 
-  private static final transient ThreadLocal<EvalEngine> instance = new ThreadLocal<EvalEngine>() {
-
-    @Override
-    public EvalEngine initialValue() {
-      return new EvalEngine("ThreadLocal", 0, System.out, true);
-    }
-  };
+  private static final transient ThreadLocal<EvalEngine> INSTANCE =
+      ThreadLocal.withInitial(() -> new EvalEngine("ThreadLocal", 0, System.out, true));
 
   /**
    * Get the thread local evaluation engine instance
@@ -134,7 +129,7 @@ public class EvalEngine implements Serializable {
    * @return the current {@link EvalEngine} for this thread.
    */
   public static EvalEngine get() {
-    return instance.get();
+    return INSTANCE.get();
   }
 
   /**
@@ -158,7 +153,7 @@ public class EvalEngine implements Serializable {
    * @see java.lang.ThreadLocal#remove()
    */
   public static void remove() {
-    instance.remove();
+    INSTANCE.remove();
   }
 
   /**
@@ -167,7 +162,7 @@ public class EvalEngine implements Serializable {
    * @param engine the evaluation engine
    */
   public static void set(final EvalEngine engine) {
-    instance.set(engine);
+    INSTANCE.set(engine);
   }
 
   /**
@@ -180,7 +175,7 @@ public class EvalEngine implements Serializable {
    * @param engine
    */
   public static void setReset(final EvalEngine engine) {
-    instance.set(engine);
+    INSTANCE.set(engine);
     engine.reset();
   }
 

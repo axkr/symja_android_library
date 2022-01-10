@@ -21,24 +21,18 @@ import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
 /** Provides primality probabilistic methods for BigInteger numbers */
 public class BigIntegerPrimality extends Primality {
 
-  public BigIntegerPrimality() {}
-
-  private static final transient ThreadLocal<CombinedFactorAlgorithm> instance =
-      new ThreadLocal<CombinedFactorAlgorithm>() {
-
-        @Override
-        public CombinedFactorAlgorithm initialValue() {
-          if (Config.JAVA_UNSAFE) {
-            final int cores = Runtime.getRuntime().availableProcessors();
-            return new CombinedFactorAlgorithm(cores / 2 + 1, null, true);
-          } else {
-            return new CombinedFactorAlgorithm(1, null, false);
-          }
+  private static final transient ThreadLocal<CombinedFactorAlgorithm> INSTANCE =
+      ThreadLocal.withInitial(() -> {
+        if (Config.JAVA_UNSAFE) {
+          int cores = Runtime.getRuntime().availableProcessors();
+          return new CombinedFactorAlgorithm(cores / 2 + 1, null, true);
+        } else {
+          return new CombinedFactorAlgorithm(1, null, false);
         }
-      };
+      });
 
   public static CombinedFactorAlgorithm getFactorizer() {
-    return instance.get();
+    return INSTANCE.get();
   }
 
   /**
