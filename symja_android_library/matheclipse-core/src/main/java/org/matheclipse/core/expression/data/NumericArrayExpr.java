@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -572,7 +572,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
   private static NumericArrayExpr newList(final IAST list, byte type)
       throws RangeException, TypeException {
     int[] dimension = null;
-    ArrayList<Integer> dims = LinearAlgebra.dimensions(list);
+    List<Integer> dims = LinearAlgebra.dimensions(list);
     if (dims != null && dims.size() > 0) {
       int size = 1;
       dimension = new int[dims.size()];

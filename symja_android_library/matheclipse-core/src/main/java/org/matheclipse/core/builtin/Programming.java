@@ -3,8 +3,8 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.List;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -2671,7 +2671,7 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      ArrayDeque<IExpr> stack = engine.getStack();
+      Deque<IExpr> stack = engine.getStack();
       java.util.Iterator<IExpr> iter = stack.descendingIterator();
       IASTAppendable result = F.ListAlloc(stack.size());
       if (ast.isAST1()) {
@@ -2720,7 +2720,7 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      ArrayDeque<IExpr> stack = engine.getStack();
+      Deque<IExpr> stack = engine.getStack();
       try {
         engine.stackBegin();
         return engine.evaluate(ast.arg1());

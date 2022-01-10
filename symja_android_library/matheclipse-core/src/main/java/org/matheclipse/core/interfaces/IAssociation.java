@@ -1,7 +1,7 @@
 package org.matheclipse.core.interfaces;
 
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.Supplier;
 
 public interface IAssociation extends IASTAppendable {
@@ -93,7 +93,7 @@ public interface IAssociation extends IASTAppendable {
    *
    * @return
    */
-  public ArrayList<String> keyNames();
+  public List<String> keyNames();
 
   /**
    * Get the keys of this association as a<code>List(key1, key2,...)</code>
