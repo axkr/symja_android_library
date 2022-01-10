@@ -52,7 +52,7 @@ public class ExpandTestCase extends AbstractTestCase {
     if (!temp.isPresent()) {
       temp = ast;
     }
-    assertEquals(temp.toString(), "1+Sow[a^2]");
+    assertEquals(temp.toString(), "1+Sow(a^2)");
   }
 
   public void testExpand005() {
@@ -81,7 +81,7 @@ public class ExpandTestCase extends AbstractTestCase {
     IAST ast = Times(Power(Sec(x), C2), Power(Sin(x), 2));
     IExpr temp = Algebra.expand(ast, null, true, false, true);
     if (!temp.isPresent()) {
-      assertEquals(ast.toString(), "Sec[x]^2*Sin[x]^2");
+      assertEquals(ast.toString(), "Sec(x)^2*Sin(x)^2");
       return;
     }
     assertEquals(temp.toString(), "Tan[x]^2");

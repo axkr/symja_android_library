@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import javax.script.AbstractScriptEngine;
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -34,26 +35,29 @@ public class MathScriptEngine extends AbstractScriptEngine {
 
   private static final Logger LOGGER = LogManager.getLogger();
   public static final String RETURN_OBJECT = "RETURN_OBJECT";
+  private static volatile boolean initialized = false;
 
   private EvalUtilities fUtility = null;
   private EvalEngine fEngine;
   private String fDecimalFormat;
 
-  // static {
-  // run the static groovy code for the MathEclipse domain specific language
-  // DSL groovyDSL = new DSL();
-  // }
-
   public MathScriptEngine() {
-    fEngine = new EvalEngine();
+    fEngine = new EvalEngine(true);
+    if (!initialized) {
+      initialized = true;
+      try {
+        // try if we can dynamically call method IOInit#init() from Maven module matheclipse-io
+        Class<?> clazz = Class.forName("org.matheclipse.io.IOInit");
+        Method initMethod = clazz.getDeclaredMethod("init");
+        initMethod.invoke(null);
+      } catch (ReflectiveOperationException e) {
+        LOGGER.log(Level.INFO, "Method IOInit#init() not called.", e);
+      }
+    }
+    fUtility = new EvalUtilities(fEngine, false, false);
+    fEngine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
+    fEngine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
   }
-
-  // public MathScriptEngine(EvalEngine engine) {
-  // get the thread local evaluation engine
-  // fEngine = engine;
-  // fEngine.setRecursionLimit(256);
-  // fEngine.setIterationLimit(256);
-  // }
 
   @Override
   public Bindings createBindings() {
@@ -79,12 +83,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 
   @Override
   public Object eval(final String script, final ScriptContext context) {
-    // final ArrayList<ISymbol> list = new ArrayList<ISymbol>();
     boolean relaxedSyntax = false;
-
-    if (fUtility == null) {
-      fUtility = new EvalUtilities(fEngine, false, false);
-    }
     final Object enableStackTraceBoolean = get("PRINT_STACKTRACE");
     Level stackLogLevel = Boolean.TRUE.equals(enableStackTraceBoolean) ? Level.ERROR : Level.DEBUG;
 
@@ -121,6 +120,10 @@ public class MathScriptEngine extends AbstractScriptEngine {
       // evaluate an expression
       final Object stepwise = get("STEPWISE");
       IExpr result;
+      String trimmedScript = script.trim();
+      if (trimmedScript.length() == 0) {
+        return "";
+      }
       if (Boolean.TRUE.equals(stepwise)) {
         result = fUtility.evalTrace(script, null);
       } else {
