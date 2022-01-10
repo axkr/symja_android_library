@@ -1,0 +1,85 @@
+================================================================
+README for Cream
+2008/04/16 written for version 1.05
+
+Cream: Class Library for Constraint Programming in Java
+
+http://bach.istc.kobe-u.ac.jp/cream/
+
+		Please try Java with Cream.
+		Although I personally prefer black coffee in real life...
+		JAVA+CREAM=SOLVER
+
+================
+Features
+
+Cream is a class library helping Java programmers to develop
+intelligent programs requiring constraint satisfaction or optimization
+on finite domains.  The followings are features of Cream.
+
+* 100% Pure Java:
+  Whole programs are written in Java.
+
+* Open source:
+  Cream is distributed as a free software with source code.
+  Please refer to the LICENSE file for more details about licensing
+  issue.
+
+* Natural description of constraints:
+  Various constraints can be naturally described within Java syntax.
+
+* Easy enhancements:
+  Programmers can easily enhance/extend constraint descriptions and
+  satisfaction algorithms.
+
+* Various optimization algorithms:
+  Various optimization algorithms are available, such as Simulated
+  Annealing, Taboo Search, etc.
+
+================
+Requirements
+
+* Java J2SE 6
+
+================
+Installation
+
+There is nothing special for installation.  Please unzip the
+downloaded zip file from the web page, then you are ready to run
+example programs as follows.
+
+* on Unix-like systems:
+
+	cd build
+	java -classpath cream105.jar:examples.jar examples.FourColor
+
+* on Windows systems:
+
+	cd build
+	java -classpath cream105.jar;examples.jar examples.FourColor
+
+================
+Acknowledgement
+
+Cream was developed as a part of HECS (HEterogeneous Constraint
+Solver) system which was supported in part by METI and IPA (The
+Information-technology Promotion Agency) under grant of 2002
+Exploratory Software Project and 2003 Exploratory Software Project.
+Some improvement ideas of Cream are obtained through the discussion
+with Mr. Kino, a project manager of IPA Exploratory Software Project
+and also a developer of K-Prolog and ICS in Java.  I would like to
+give special thanks to Shuji Ohnishi and other contributers listed
+below.
+
+* Shuji Ohnishi
+* Muneyuki Kawatani
+* Jerry James
+
+================
+Naoyuki Tamura 
+Information Science and Technology Center, Kobe University
+1-1 Rokkodai, Nada, Kobe 657-8501 Japan
+E-mail: tamura @ kobe-u.ac.jp
+WWW: http://bach.istc.kobe-u.ac.jp/tamura.html
+
+================================================================
