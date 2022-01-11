@@ -112,12 +112,11 @@ public interface IExpr
    * </code> (&quot;state&quot; <code>TRUE</code>) or <code>S.False</code> (&quot;state&quot; <code>
    * FALSE</code>) it can get the &quot;state&quot; <code>UNDECIDABLE</code>.
    *
-   * <p>See: <a href"https://en.wikipedia.org/wiki/Three-valued_logic">Three-valued logic</a>
+   * <p>
+   * See: <a href"https://en.wikipedia.org/wiki/Three-valued_logic">Three-valued logic</a>
    */
   public static enum COMPARE_TERNARY {
-    TRUE,
-    FALSE,
-    UNDECIDABLE
+    TRUE, FALSE, UNDECIDABLE
   }
 
   public static final int ASTID = 1024;
@@ -208,7 +207,7 @@ public interface IExpr
    *
    * @param value the possibly-null value to describe
    * @return an {@code IExpr} with a present value if the specified value is non-null, otherwise an
-   *     empty {@code Optional}
+   *         empty {@code Optional}
    */
   public static IExpr ofNullable(IExpr value) {
     return value == null ? F.NIL : value;
@@ -540,10 +539,10 @@ public interface IExpr
     if (this.isMinusOne()) {
       return inverse.negate();
     }
-    //    if (this.isPlus()) {
-    //      IExpr plusAST = ((IAST) this).mapThread(F.binaryAST2(S.Times, F.Slot1, inverse), 1);
-    //      return engine.evaluate(plusAST);
-    //    }
+    // if (this.isPlus()) {
+    // IExpr plusAST = ((IAST) this).mapThread(F.binaryAST2(S.Times, F.Slot1, inverse), 1);
+    // return engine.evaluate(plusAST);
+    // }
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || inverse.isPlusTimesPower())) {
       if (this.isNumber() && inverse.isPlus()) {
         return engine.evaluate(F.Expand(F.Times(this, inverse)));
@@ -729,7 +728,7 @@ public interface IExpr
    *
    * @param engine the evaluation engine
    * @return the evaluated Object or <code>F.NIL</code> if the evaluation is not possible (i.e. the
-   *     evaluation doesn't change the object).
+   *         evaluation doesn't change the object).
    */
   default IExpr evaluate(EvalEngine engine) {
     return F.NIL;
@@ -898,7 +897,7 @@ public interface IExpr
    *
    * @param pattern a pattern-matching expression
    * @param heads if set to <code>false</code>, only the arguments of an IAST should be tested and
-   *     not the <code>Head[]</code> element.
+   *        not the <code>Head[]</code> element.
    * @return
    */
   default boolean has(IExpr pattern, boolean heads) {
@@ -915,7 +914,7 @@ public interface IExpr
    *
    * @param predicate a unary predicate
    * @param heads if set to <code>false</code>, only the arguments of an IAST should be tested and
-   *     not the <code>Head[]</code> element.
+   *        not the <code>Head[]</code> element.
    * @return
    */
   default boolean has(Predicate<IExpr> predicate, boolean heads) {
@@ -928,11 +927,10 @@ public interface IExpr
    * number arguments.
    *
    * @return <code>true</code> if this expression is a complex number or a structure with complex
-   *     number arguments.
+   *         number arguments.
    */
   default boolean hasComplexNumber() {
-    return !isFree(
-        x -> (x.isComplex() || x.isComplexNumeric() || x == S.I || x.isAST(S.Complex)), //
+    return !isFree(x -> (x.isComplex() || x.isComplexNumeric() || x == S.I || x.isAST(S.Complex)), //
         false);
   }
 
@@ -955,10 +953,8 @@ public interface IExpr
    */
   default int headID() {
     final IExpr head = head();
-    return head.isBuiltInSymbol()
-        ? //
-        ((IBuiltInSymbol) head).ordinal()
-        : //
+    return head.isBuiltInSymbol() ? //
+        ((IBuiltInSymbol) head).ordinal() : //
         ID.UNKNOWN;
   }
 
@@ -1005,8 +1001,8 @@ public interface IExpr
    * If this is of type {@link IAST}, find the first argument position, which equals <code>expr
    * </code>. The search starts at index <code>1</code>. Otherwise return <code>-1</code>.
    *
-   * <p><b>Note</b>: If this is an <code>IAssociation</code> the position of the rule will be
-   * searched.
+   * <p>
+   * <b>Note</b>: If this is an <code>IAssociation</code> the position of the rule will be searched.
    *
    * @param expr
    * @return <code>-1</code> if no position was found
@@ -1019,12 +1015,12 @@ public interface IExpr
    * If this is of type {@link IAST}, find the first argument position, which fulfills the <code>
    * predicate</code>. The search starts at index <code>1</code>. Otherwise return <code>-1</code>.
    *
-   * <p><b>Note</b>: If this is an <code>IAssociation</code> the position of the rule will be
-   * searched.
+   * <p>
+   * <b>Note</b>: If this is an <code>IAssociation</code> the position of the rule will be searched.
    *
    * @param predicate
    * @return the index of the first occurrence of the specified predicate, or <code>-1</code> if no
-   *     position was found
+   *         position was found
    */
   default int indexOf(Predicate<? super IExpr> predicate) {
     return indexOf(predicate, 1);
@@ -1038,7 +1034,7 @@ public interface IExpr
    * @param predicate
    * @param fromIndex
    * @return the index of the first occurrence of the specified predicate, starting at the specified
-   *     index, or <code>-1</code> if no position was found
+   *         index, or <code>-1</code> if no position was found
    */
   default int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
     return -1;
@@ -1048,9 +1044,9 @@ public interface IExpr
    * Return the internal Java form of this expression.
    *
    * @param symbolsAsFactoryMethod if <code>true</code> use the <code>F.symbol()</code> method,
-   *     otherwise print the symbol name.
+   *        otherwise print the symbol name.
    * @param depth the recursion depth of this call. <code>0</code> indicates &quot;recurse without a
-   *     limit&quot;.
+   *        limit&quot;.
    * @return the internal Java form of this expression
    */
   default CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
@@ -1059,9 +1055,7 @@ public interface IExpr
 
   public static class SourceCodeProperties {
     public enum Prefix {
-      NONE,
-      CLASS_NAME,
-      FULLY_QUALIFIED_CLASS_NAME;
+      NONE, CLASS_NAME, FULLY_QUALIFIED_CLASS_NAME;
     }
 
     /**
@@ -1084,11 +1078,8 @@ public interface IExpr
      */
     public final boolean noSymbolPrefix;
 
-    private SourceCodeProperties(
-        boolean symbolsAsFactoryMethod,
-        boolean useOperators,
-        Prefix prefix,
-        boolean noSymbolPrefix) {
+    private SourceCodeProperties(boolean symbolsAsFactoryMethod, boolean useOperators,
+        Prefix prefix, boolean noSymbolPrefix) {
       this.symbolsAsFactoryMethod = symbolsAsFactoryMethod;
       this.useOperators = useOperators;
       this.prefix = Objects.requireNonNull(prefix, "Method prefix must not be null");
@@ -1099,20 +1090,17 @@ public interface IExpr
      * Reaturns a {@link SourceCodeProperties} object with the specified parameters.
      *
      * @param symbolsAsFactoryMethod if <code>true</code> use the <code>F.symbol()</code> method,
-     *     otherwise print the symbol name.
+     *        otherwise print the symbol name.
      * @param useOperators use operators instead of function names for representation of Plus,
-     *     Times, Power,...
+     *        Times, Power,...
      * @param prefix if {@link Prefix#CLASS_NAME} use the <code>F....</code> class prefix for
-     *     generating Java code, if {@link Prefix#FULLY_QUALIFIED_CLASS_NAME} use the fully
-     *     qualified class name, if {@link Prefix#NONE} use no prefix.
+     *        generating Java code, if {@link Prefix#FULLY_QUALIFIED_CLASS_NAME} use the fully
+     *        qualified class name, if {@link Prefix#NONE} use no prefix.
      * @param noSymbolPrefix for symbols like <code>x,y,z,...</code> don't use the <code>F....
      *     </code> class prefix for code generation
      */
-    public static SourceCodeProperties of(
-        boolean symbolsAsFactoryMethod,
-        boolean useOperators,
-        Prefix prefix,
-        boolean noSymbolPrefix) {
+    public static SourceCodeProperties of(boolean symbolsAsFactoryMethod, boolean useOperators,
+        Prefix prefix, boolean noSymbolPrefix) {
       return new SourceCodeProperties(symbolsAsFactoryMethod, useOperators, prefix, noSymbolPrefix);
     }
 
@@ -1122,8 +1110,7 @@ public interface IExpr
      * </code>.
      */
     public static SourceCodeProperties copyWithoutSymbolsAsFactoryMethod(SourceCodeProperties o) {
-      return !o.symbolsAsFactoryMethod
-          ? o
+      return !o.symbolsAsFactoryMethod ? o
           : new SourceCodeProperties(false, o.useOperators, o.prefix, o.noSymbolPrefix);
     }
   }
@@ -1133,13 +1120,11 @@ public interface IExpr
    *
    * @param properties the settings to use for code generation.
    * @param depth the recursion depth of this call. <code>0</code> indicates &quot;recurse without a
-   *     limit&quot;.
+   *        limit&quot;.
    * @param variables TODO
    * @return the internal Java form of this expression
    */
-  default CharSequence internalJavaString(
-      SourceCodeProperties properties,
-      int depth,
+  default CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<IExpr, ? extends CharSequence> variables) {
     return toString();
   }
@@ -1148,9 +1133,9 @@ public interface IExpr
    * Return the internal Scala form of this expression.
    *
    * @param symbolsAsFactoryMethod if <code>true</code> use the <code>F.symbol()</code> method,
-   *     otherwise print the symbol name.
+   *        otherwise print the symbol name.
    * @param depth the recursion depth of this call. <code>0</code> indicates &quot;recurse without a
-   *     limit&quot;.
+   *        limit&quot;.
    * @return the internal Scala form of this expression
    */
   default CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
@@ -1314,6 +1299,11 @@ public interface IExpr
     return false;
   }
 
+  default boolean isRGBColor() {
+    return isAST(S.RGBColor, 4, 5)
+        || (isAST(S.RGBColor, 1) && ((IAST) this).arg1().isAST(S.List, 4, 5));
+  }
+
   /**
    * Test if this expression is an AST function, which contains the given <b>header element</b> at
    * index position <code>0</code> and optional <b>argument elements</b> at the index positions
@@ -1353,9 +1343,11 @@ public interface IExpr
    * optional <b>argument elements</b> at the index positions <code>1..(size()-1)</code>. If this
    * test gives <code>true</code> this expression is not an <b>atomic expression</b>.
    *
-   * <p>Example: <code>isAST("Sin")</code> gives <code>true</code> for <code>Sin(Pi/2)</code>.
+   * <p>
+   * Example: <code>isAST("Sin")</code> gives <code>true</code> for <code>Sin(Pi/2)</code>.
    *
-   * <p><b>Note:</b> this is a performance critical method, only use it in special cases like for
+   * <p>
+   * <b>Note:</b> this is a performance critical method, only use it in special cases like for
    * example UI handling etc.
    *
    * @param headerStr string representation of the <b>header element</b> at index position <code>0
@@ -1689,16 +1681,17 @@ public interface IExpr
    * structures.
    *
    * <ul>
-   *   <li>The expression at index <code>[0]</code> contains the <code>Derivative[number, ...]
+   * <li>The expression at index <code>[0]</code> contains the <code>Derivative[number, ...]
    *       </code> AST part.
-   *   <li>The expression at index <code>[1]</code> contains the <code>Derivative[...][symbol]
+   * <li>The expression at index <code>[1]</code> contains the <code>Derivative[...][symbol]
    *       </code> AST part.
-   *   <li>The expression at index <code>[2]</code> contains the <code>
+   * <li>The expression at index <code>[2]</code> contains the <code>
    *       Derivative[...][...][arg, ...]</code> AST part, if available.
    * </ul>
    *
-   * <p><b>Note:</b> the result at index <code>[2]</code> maybe <code>null</code> , if no argument
-   * is available.
+   * <p>
+   * <b>Note:</b> the result at index <code>[2]</code> maybe <code>null</code> , if no argument is
+   * available.
    *
    * @return <code>null</code> if the expression is not a <code>
    *     Derivative[number, ...][symbol][arg, ...]</code> or <code>Derivative[number, ...][symbol]
@@ -1714,16 +1707,17 @@ public interface IExpr
    * <code>IAST</code> structures.
    *
    * <ul>
-   *   <li>The expression at index <code>[0]</code> contains the <code>Derivative[number,...]</code>
-   *       AST part.
-   *   <li>The expression at index <code>[1]</code> contains the <code>Derivative[...][symbol]
+   * <li>The expression at index <code>[0]</code> contains the <code>Derivative[number,...]</code>
+   * AST part.
+   * <li>The expression at index <code>[1]</code> contains the <code>Derivative[...][symbol]
    *       </code> AST part.
-   *   <li>The expression at index <code>[2]</code> contains the <code>Derivative[...][...][arg]
+   * <li>The expression at index <code>[2]</code> contains the <code>Derivative[...][...][arg]
    *       </code> AST part, if available.
    * </ul>
    *
-   * <p><b>Note:</b> the result at index <code>[2]</code> maybe <code>null</code> , if no argument
-   * is available.
+   * <p>
+   * <b>Note:</b> the result at index <code>[2]</code> maybe <code>null</code> , if no argument is
+   * available.
    *
    * @return <code>null</code> if the expression is not a <code>Derivative[number][symbol][arg]
    *     </code> or <code>Derivative[number][symbol]</code> expression.
@@ -1946,7 +1940,7 @@ public interface IExpr
    *
    * @param pattern a pattern-matching expression
    * @param heads if set to <code>false</code>, only the arguments of an IAST should be tested and
-   *     not the <code>Head[]</code> element.
+   *        not the <code>Head[]</code> element.
    * @return
    */
   default boolean isFree(IExpr pattern, boolean heads) {
@@ -1960,7 +1954,7 @@ public interface IExpr
    *
    * @param predicate a unary predicate
    * @param heads if set to <code>false</code>, only the arguments of an IAST should be tested and
-   *     not the <code>Head[]</code> element.
+   *        not the <code>Head[]</code> element.
    * @return
    */
   default boolean isFree(IPatternMatcher predicate, boolean heads) {
@@ -1973,7 +1967,7 @@ public interface IExpr
    *
    * @param predicate a unary predicate
    * @param heads if set to <code>false</code>, only the arguments of an IAST should be tested and
-   *     not the <code>Head[]</code> element.
+   *        not the <code>Head[]</code> element.
    * @return
    */
   default boolean isFree(Predicate<IExpr> predicate, boolean heads) {
@@ -2078,7 +2072,8 @@ public interface IExpr
   /**
    * Test if this expression is a hyperbolic function.
    *
-   * <p><b> Note</b>: All detected function types have 1 argument.
+   * <p>
+   * <b> Note</b>: All detected function types have 1 argument.
    *
    * @return
    */
@@ -2287,7 +2282,7 @@ public interface IExpr
    * Test if this expression is a list of rules (head Rule or RuleDelayed)
    *
    * @param ignoreEmptySublists if <code>true</code>, ignore elements which equals an empty list
-   *     <code>
+   *        <code>
    *     { }</code>
    * @return
    * @see #isList()
@@ -2302,7 +2297,7 @@ public interface IExpr
    * Test if this expression is a list of rules (head Rule or RuleDelayed) or an Association.
    *
    * @param ignoreEmptySublists if <code>true</code>, ignore elements which equals an empty list
-   *     <code>
+   *        <code>
    *     { }</code> but only in lists.
    * @return
    */
@@ -2417,7 +2412,7 @@ public interface IExpr
    *
    * @param pattern a pattern-matching expression
    * @param heads if set to <code>false</code>, only the arguments of an IAST should be tested and
-   *     not the <code>Head[]</code> element.
+   *        not the <code>Head[]</code> element.
    * @param visitor if <code>null</code> use <code>
    *     VisitorBooleanLevelSpecification(predicate, 1, heads)</code>
    * @return
@@ -2672,9 +2667,7 @@ public interface IExpr
    * @return
    */
   default boolean isNumericArgument() {
-    return this instanceof INum
-        || this instanceof IComplexNum
-        || this instanceof ASTRealVector
+    return this instanceof INum || this instanceof IComplexNum || this instanceof ASTRealVector
         || this instanceof ASTRealMatrix;
   }
 
@@ -2704,7 +2697,7 @@ public interface IExpr
    * (with attribute NumericFunction) where all arguments are also &quot;numeric functions&quot;)
    *
    * @param allowList if <code>true</code> a <code>List(...)</code> AST is seen, as if it has
-   *     attribute {@link ISymbol#NUMERICFUNCTION}
+   *        attribute {@link ISymbol#NUMERICFUNCTION}
    * @return <code>true</code>, if the given expression is a numeric function or value.
    * @see #isRealResult()
    */
@@ -2718,7 +2711,7 @@ public interface IExpr
    * under the assumption, that all variables contained in <code>varSet</code> are also numeric.
    *
    * @return <code>true</code>, if the given expression is a numeric function or value, assuming all
-   *     variables contained in <code>varSet</code> are also numeric.
+   *         variables contained in <code>varSet</code> are also numeric.
    */
   default boolean isNumericFunction(VariablesSet varSet) {
     return isNumericFunction(true) || varSet.contains(this);
@@ -2938,7 +2931,7 @@ public interface IExpr
    * elements are lists with the header <code>List</code> and have the same size.
    *
    * @return <code>null</code> if the expression is not a <code>Piecewise({{...}}},...)</code>
-   *     function or if the first argument is not a matrix
+   *         function or if the first argument is not a matrix
    */
   default int[] isPiecewise() {
     return null;
@@ -3023,7 +3016,7 @@ public interface IExpr
    * Test if this expression has a polynomial structiure, i.e. no built-in function as head
    *
    * @return <code>true</code> if this expression has a polynomial structure; <code>false</code>
-   *     otherwise
+   *         otherwise
    */
   default boolean isPolynomialStruct() {
     return isExactNumber();
@@ -3062,8 +3055,8 @@ public interface IExpr
 
   /**
    * Test if this expression is the function <code>Power[&lt;arg1&gt;, -1]</code> (i.e. <code>
-   * 1 / &lt;arg1&gt;</code>). See: <a
-   * href="https://en.wikipedia.org/wiki/Multiplicative_inverse">Wikipedia - Multiplicative
+   * 1 / &lt;arg1&gt;</code>). See:
+   * <a href="https://en.wikipedia.org/wiki/Multiplicative_inverse">Wikipedia - Multiplicative
    * inverse</a>
    *
    * @return
@@ -3537,8 +3530,9 @@ public interface IExpr
   /**
    * Test if this expression is a trigonometric function.
    *
-   * <p><b> Note</b>: ArcTan(x,y) can have 2 arguments and is considered as a trigonometric
-   * function. All other detected function types have 1 argument.
+   * <p>
+   * <b> Note</b>: ArcTan(x,y) can have 2 arguments and is considered as a trigonometric function.
+   * All other detected function types have 1 argument.
    *
    * @return
    */
@@ -3599,7 +3593,7 @@ public interface IExpr
    * dimension <code>1</code>;
    *
    * @return <code>-1</code> if the expression is no vector or <code>size()-1</code> of this vector
-   *     AST.
+   *         AST.
    */
   default int isVector() {
     // default: no vector
@@ -3639,7 +3633,8 @@ public interface IExpr
   /**
    * {@inheritDoc}
    *
-   * <p>Calls <code>PossibleZeroQ()</code>
+   * <p>
+   * Calls <code>PossibleZeroQ()</code>
    */
   @Override
   default boolean isZERO() {
@@ -3781,7 +3776,7 @@ public interface IExpr
    *
    * @param mapper a mapping function to apply to the value, if present
    * @return an IExpr describing the result of applying a mapping function to the value of this
-   *     object, if a value is present, otherwise return <code>F.NIL</code>.
+   *         object, if a value is present, otherwise return <code>F.NIL</code>.
    */
   default IExpr mapExpr(Function<? super IExpr, ? extends IExpr> mapper) {
     return mapper.apply(this);
@@ -3824,7 +3819,7 @@ public interface IExpr
    * </code>.
    *
    * @return the argument of the function represented by this <code>AST</code> with the last element
-   *     removed or {@link F#NIL}
+   *         removed or {@link F#NIL}
    * @see IExpr#head()
    */
   default IExpr most() {
@@ -3929,13 +3924,13 @@ public interface IExpr
    * this</code>.
    *
    * <pre>
-   *   this.nest(h, 4)
+   * this.nest(h, 4)
    * </pre>
    *
    * gives
    *
    * <pre>
-   *   h(h(h(h(this))))
+   * h(h(h(h(this))))
    * </pre>
    *
    * @param head the head which should be applied to this n times
@@ -3961,7 +3956,7 @@ public interface IExpr
    * </pre>
    *
    * @param nilIfUnevaluated if <code>true</code> return <code>F.NIL</code>, if no evaluation is
-   *     necessary, otherwise <code>this</code>.
+   *        necessary, otherwise <code>this</code>.
    * @return the standard expression for <b>special expression</b> or <code>F.NIL</code> otherwise
    */
   default IExpr normal(boolean nilIfUnevaluated) {
@@ -4010,7 +4005,7 @@ public interface IExpr
    *
    * @param other
    * @return <code>this</code> if <code>this</code> unequals <code>F.NIL</code>, otherwise return
-   *     <code>other</code>.
+   *         <code>other</code>.
    * @see java.util.Optional#orElse(Object)
    */
   default IExpr orElse(final IExpr other) {
@@ -4023,7 +4018,7 @@ public interface IExpr
    *
    * @param other a {@code Supplier} whose result is returned if no value is present
    * @return <code>this</code> if <code>this</code> unequals <code>F.NIL</code>, otherwise the
-   *     result of {@code other.get()}
+   *         result of {@code other.get()}
    */
   default IExpr orElseGet(Supplier<? extends IExpr> other) {
     return this;
@@ -4034,11 +4029,11 @@ public interface IExpr
    * exception to be created by the provided supplier.
    *
    * @apiNote A method reference to the exception constructor with an empty argument list can be
-   *     used as the supplier. For example, {@code IllegalStateException::new}
+   *          used as the supplier. For example, {@code IllegalStateException::new}
    * @param <X> Type of the exception to be thrown
    * @param exceptionSupplier The supplier which will return the exception to be thrown
    * @return <code>this</code> if <code>this</code> unequals <code>F.NIL</code> or throw an
-   *     exception
+   *         exception
    * @throws X if there is no value present
    */
   default <X extends Throwable> IExpr orElseThrow(Supplier<? extends X> exceptionSupplier)
@@ -4062,11 +4057,12 @@ public interface IExpr
    * </code> and append the arguments which satisfy the predicate to the <code>1st element</code> of
    * the resulting AST, or otherwise append it to the <code>2nd element</code> of the resulting AST.
    *
-   * <p>See: <a href= "https://people.eecs.berkeley.edu/~fateman/papers/partition.pdf">Fateman -
+   * <p>
+   * See: <a href= "https://people.eecs.berkeley.edu/~fateman/papers/partition.pdf">Fateman -
    * Partitioning of Algebraic Subexpressions in Computer Algebra Systems</a>
    *
    * @param operator the if the head of this expression equals <code>operator</code>, otherwise
-   *     return <code>F.NIL</code>.
+   *        return <code>F.NIL</code>.
    * @param predicate the predicate which filters each element in this AST
    * @param initTrue the result for the 1st result element, if the predicate doesn't give <code>true
    *     </code> for any of the arguments in this AST.
@@ -4075,13 +4071,8 @@ public interface IExpr
    * @param combiner the 1st and 2md results element head
    * @return <code>F.NIL</code> if partitioning wasn't possible
    */
-  default IAST partition(
-      ISymbol operator,
-      Predicate<? super IExpr> predicate,
-      IExpr initTrue,
-      IExpr initFalse,
-      ISymbol combiner,
-      ISymbol action) {
+  default IAST partition(ISymbol operator, Predicate<? super IExpr> predicate, IExpr initTrue,
+      IExpr initFalse, ISymbol combiner, ISymbol action) {
     return F.NIL;
   }
 
@@ -4091,7 +4082,8 @@ public interface IExpr
    * 1st element</code> of the resulting AST, or otherwise append it to the <code>2nd element</code>
    * of the resulting AST.
    *
-   * <p>See: <a href= "https://people.eecs.berkeley.edu/~fateman/papers/partition.pdf">Fateman -
+   * <p>
+   * See: <a href= "https://people.eecs.berkeley.edu/~fateman/papers/partition.pdf">Fateman -
    * Partitioning of Algebraic Subexpressions in Computer Algebra Systems</a>
    *
    * @param predicate the predicate which filters each element in this AST
@@ -4101,8 +4093,8 @@ public interface IExpr
    *     false</code> for any of the arguments in this AST.
    * @return <code>F.NIL</code> if partitioning wasn't possible
    */
-  default IAST partitionPlus(
-      Predicate<? super IExpr> predicate, IExpr initTrue, IExpr initFalse, ISymbol action) {
+  default IAST partitionPlus(Predicate<? super IExpr> predicate, IExpr initTrue, IExpr initFalse,
+      ISymbol action) {
     return F.NIL;
   }
 
@@ -4112,7 +4104,8 @@ public interface IExpr
    * 1st element</code> of the resulting AST, or otherwise append it to the <code>2nd element</code>
    * of the resulting AST.
    *
-   * <p>See: <a href= "https://people.eecs.berkeley.edu/~fateman/papers/partition.pdf">Fateman -
+   * <p>
+   * See: <a href= "https://people.eecs.berkeley.edu/~fateman/papers/partition.pdf">Fateman -
    * Partitioning of Algebraic Subexpressions in Computer Algebra Systems</a>
    *
    * @param predicate the predicate which filters each element in this AST
@@ -4122,8 +4115,8 @@ public interface IExpr
    *     false</code> for any of the arguments in this AST.
    * @return <code>F.NIL</code> if partitioning wasn't possible
    */
-  default IAST partitionTimes(
-      Predicate<? super IExpr> predicate, IExpr initTrue, IExpr initFalse, ISymbol action) {
+  default IAST partitionTimes(Predicate<? super IExpr> predicate, IExpr initTrue, IExpr initFalse,
+      ISymbol action) {
     return F.NIL;
   }
 
@@ -4162,8 +4155,7 @@ public interface IExpr
     } else if (that.isOne()) {
       return this;
     } else if (that.isMinusOne()) {
-      if (this.isPlus()
-          && this.size() == 3
+      if (this.isPlus() && this.size() == 3
           && (this.first().isRational() || this.first().isFactorSqrtExpr())
           && this.second().isFactorSqrtExpr()) {
         // rat1 + rat2 * Sqrt( rat3 );
@@ -4275,7 +4267,7 @@ public interface IExpr
    *
    * @param predicate
    * @param function if the unary functions <code>apply()</code> method returns <code>F.NIL</code>
-   *     the expression isn't substituted.
+   *        the expression isn't substituted.
    * @return <code>this</code> if no substitution of a (sub-)expression was possible.
    */
   default IExpr replace(final Predicate<IExpr> predicate, final Function<IExpr, IExpr> function) {
@@ -4287,7 +4279,7 @@ public interface IExpr
    * method returns <code>F.NIL</code>.
    *
    * @param function if the unary functions <code>apply()</code> method returns <code>F.NIL</code>
-   *     the expression isn't substituted.
+   *        the expression isn't substituted.
    * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
    */
   default IExpr replaceAll(final Function<IExpr, IExpr> function) {
@@ -4299,7 +4291,7 @@ public interface IExpr
    * returns <code>F.NIL</code>.
    *
    * @param listOfRules rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code>;
-   *     the left-hand-side of the rule can contain pattern objects.
+   *        the left-hand-side of the rule can contain pattern objects.
    * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
    */
   default IExpr replaceAll(final IAST listOfRules) {
@@ -4311,7 +4303,7 @@ public interface IExpr
    * matches, the method returns <code>F.NIL</code>.
    *
    * @param map if the maps <code>get()</code> method returns <code>F.NIL</code> the expression
-   *     isn't substituted.
+   *        isn't substituted.
    * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
    */
   default IExpr replaceAll(final Map<? extends IExpr, ? extends IExpr> map) {
@@ -4341,7 +4333,7 @@ public interface IExpr
    * matches, the method returns <code>this</code>.
    *
    * @param function if the unary functions <code>apply()</code> method returns <code>null</code>
-   *     the expression isn't substituted.
+   *        the expression isn't substituted.
    * @return <code>this</code> if no substitution of a (sub-)expression was possible.
    */
   default IExpr replaceRepeated(final Function<IExpr, IExpr> function) {
@@ -4353,7 +4345,7 @@ public interface IExpr
    * the method returns <code>this</code>.
    *
    * @param astRules rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code>; the
-   *     left-hand-side of the rule can contain pattern objects.
+   *        left-hand-side of the rule can contain pattern objects.
    * @return <code>this</code> if no substitution of a (sub-)expression was possible.
    */
   default IExpr replaceRepeated(final IAST astRules) {
@@ -4381,8 +4373,8 @@ public interface IExpr
       result = engine.evaluate(temp);
       if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
         // Exiting after `1` scanned `2` times.
-        IOFunctions.printMessage(
-            S.ReplaceRepeated, "rrlim", F.List(this, F.ZZ(iterationLimit)), engine);
+        IOFunctions.printMessage(S.ReplaceRepeated, "rrlim", F.List(this, F.ZZ(iterationLimit)),
+            engine);
         return result;
       }
 
@@ -4395,7 +4387,8 @@ public interface IExpr
    * Replace all occurrences of Slot[&lt;index&gt;] expressions with the expression at the
    * appropriate <code>index</code> in the given <code>slotsList</code>.
    *
-   * <p><b>Note:</b> If a slot value is <code>null</code> the Slot will not be substituted.
+   * <p>
+   * <b>Note:</b> If a slot value is <code>null</code> the Slot will not be substituted.
    *
    * @param slotsList the values for the slots.
    * @return <code>null</code> if no substitution occurred.
@@ -4411,7 +4404,7 @@ public interface IExpr
    * Return <code>F.NIL</code> if this object isn't an <code>AST</code>.
    *
    * @return the rest arguments of the function represented by this <code>AST</code> with the first
-   *     argument removed.
+   *         argument removed.
    * @see IExpr#head()
    */
   default IAST rest() {
@@ -4471,17 +4464,17 @@ public interface IExpr
     if (isPower()) {
       return F.Power(base(), F.Times(C1D2, exponent()));
     } else {
-      //      if (isAST(S.Plus, 3)) {
-      //        IAST plus = (IAST) this;
-      //        final IExpr arg1 = plus.arg1();
-      //        final IExpr arg2 = plus.arg2();
-      //        if (arg1.isRational()) {
-      //          IExpr temp = FunctionExpand.sqrtDenest((IRational) arg1, arg2);
-      //          if (temp.isPresent()) {
-      //            return temp;
-      //          }
-      //        }
-      //      }
+      // if (isAST(S.Plus, 3)) {
+      // IAST plus = (IAST) this;
+      // final IExpr arg1 = plus.arg1();
+      // final IExpr arg2 = plus.arg2();
+      // if (arg1.isRational()) {
+      // IExpr temp = FunctionExpand.sqrtDenest((IRational) arg1, arg2);
+      // if (temp.isPresent()) {
+      // return temp;
+      // }
+      // }
+      // }
       if (isTimes()) {
         // see github issue #2: Get only real results
         IAST times = (IAST) this;
@@ -4492,10 +4485,9 @@ public interface IExpr
           final IExpr arg = times.get(i);
           if (arg.isPower()) {
             timesRest.append( //
-                F.Power(
-                    arg.base(), //
+                F.Power(arg.base(), //
                     F.Times(C1D2, arg.exponent())) //
-                );
+            );
           } else {
             timesSqrt.append(arg);
           }
@@ -4568,25 +4560,27 @@ public interface IExpr
    * Convert this object into a <code>Complex[]</code> vector.
    *
    * @return <code>null</code> if this object can not be converted into a <code>Complex[]</code>
-   *     vector
+   *         vector
    */
   default Complex[] toComplexVector() {
     return null;
   }
+
   /**
    * Convert this object into a <code>byte[][]</code> matrix.
    *
    * @return <code>null</code> if this object can not be converted into a <code>byte[][]</code>
-   *     matrix
+   *         matrix
    */
   default byte[][] toByteMatrix() {
     return null;
   }
+
   /**
    * Convert this object into a <code>double[][]</code> matrix.
    *
    * @return <code>null</code> if this object can not be converted into a <code>double[]</code>
-   *     matrix
+   *         matrix
    */
   default double[][] toDoubleMatrix() {
     return null;
@@ -4597,7 +4591,7 @@ public interface IExpr
    * vector ignore the row.
    *
    * @return <code>null</code> if this object can not be converted into a <code>double[]</code>
-   *     matrix
+   *         matrix
    */
   default double[][] toDoubleMatrixIgnore() {
     return toDoubleMatrix();
@@ -4607,7 +4601,7 @@ public interface IExpr
    * Convert this object into a <code>double[]</code> vector.
    *
    * @return <code>null</code> if this object can not be converted into a <code>double[]</code>
-   *     vector
+   *         vector
    */
   default double[] toDoubleVector() {
     return null;
@@ -4618,15 +4612,15 @@ public interface IExpr
    * double ignore the value.
    *
    * @return <code>null</code> if this object can not be converted into a <code>double[]</code>
-   *     vector
+   *         vector
    */
   default double[] toDoubleVectorIgnore() {
     return toDoubleVector();
   }
 
   /**
-   * Converts this number to a <code>doube</code> value; this method returns {@link
-   * Double#MIN_VALUE} if the value of this expression isn't in the range <code>
+   * Converts this number to a <code>doube</code> value; this method returns
+   * {@link Double#MIN_VALUE} if the value of this expression isn't in the range <code>
    * Double.MIN_VALUE</code> to <code>Double.MAX_VALUE</code> or the expression is not convertible
    * to the <code>double</code> range.
    *
@@ -4651,17 +4645,17 @@ public interface IExpr
   default double toDoubleDefault(double defaultValue) {
     return EvalEngine.get().evalDouble(this, defaultValue);
   }
-  
+
   /**
    * Convert this object into a <code>byte[][]</code> matrix.
    *
    * @return <code>null</code> if this object can not be converted into a <code>byte[][]</code>
-   *     matrix
+   *         matrix
    */
   default int[][] toIntMatrix() {
     return null;
   }
-  
+
   /**
    * Converts this number to an <code>int</code> value; unlike {@link #intValue} this method returns
    * <code>Integer.MIN_VALUE</code> if the value of this integer isn't in the range <code>
@@ -4844,8 +4838,8 @@ public interface IExpr
    * @param variableCollector collects the variables which are used in the replacement process
    * @return <code>F.NIL</code> if no variable symbol was found.
    */
-  default IExpr variables2Slots(
-      final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
+  default IExpr variables2Slots(final Map<IExpr, IExpr> map,
+      final Collection<IExpr> variableCollector) {
     return this;
   }
 
@@ -4942,7 +4936,7 @@ public interface IExpr
    *
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @return the <code>true</code> if the predicate is true the first time or <code>false</code>
-   *     otherwise
+   *         otherwise
    */
   default boolean exists(Predicate<? super IExpr> predicate) {
     return false;
@@ -4970,7 +4964,7 @@ public interface IExpr
    *
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @return <code>true</code> if the predicate is true for <b>all</b elements or <code>false</code>
-   *     otherwise
+   *         otherwise
    */
   default boolean forAll(Predicate<? super IExpr> predicate) {
     return false;
@@ -4982,8 +4976,8 @@ public interface IExpr
   }
 
   @Override
-  default IExpr linearCombination(
-      double a1, IExpr b1, double a2, IExpr b2, double a3, IExpr b3, double a4, IExpr b4) {
+  default IExpr linearCombination(double a1, IExpr b1, double a2, IExpr b2, double a3, IExpr b3,
+      double a4, IExpr b4) {
     return linearCombination(new double[] {a1, a2, a3, a4}, new IExpr[] {b1, b2, b3, b4});
   }
 
@@ -5007,8 +5001,8 @@ public interface IExpr
   }
 
   @Override
-  default IExpr linearCombination(
-      IExpr a1, IExpr b1, IExpr a2, IExpr b2, IExpr a3, IExpr b3, IExpr a4, IExpr b4) {
+  default IExpr linearCombination(IExpr a1, IExpr b1, IExpr a2, IExpr b2, IExpr a3, IExpr b3,
+      IExpr a4, IExpr b4) {
     return linearCombination(new IExpr[] {a1, a2, a3, a4}, new IExpr[] {b1, b2, b3, b4});
   }
 

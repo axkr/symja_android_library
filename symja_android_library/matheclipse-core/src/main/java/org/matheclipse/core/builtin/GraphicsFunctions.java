@@ -1140,7 +1140,7 @@ public class GraphicsFunctions {
         IExpr arg = list.get(i);
         if (arg.isAST()) {
           IAST ast = (IAST) arg;
-          if (ast.isAST(S.RGBColor, 4)) {
+          if (ast.isRGBColor()) {
             rgbColor = ast;
             continue;
           }
@@ -1194,11 +1194,27 @@ public class GraphicsFunctions {
     return true;
   }
 
-  private static boolean graphics3DSingleCoords(StringBuilder buf, IAST coords, String coordStr) {
+  private static boolean graphics3DCoordsOrListOfCoords(StringBuilder buf,
+      IAST coordsOrListOfCoords, String coordStr) {
     buf.append(coordStr + ": ");
-    buf.append("[[");
-    coords.joinToString(buf, ",");
-    buf.append("]]");
+    buf.append("[");
+    if (coordsOrListOfCoords.isListOfLists()) {
+      final int size = coordsOrListOfCoords.size();
+      for (int i = 1; i < size; i++) {
+        buf.append("[");
+        IAST subList = (IAST) coordsOrListOfCoords.get(i);
+        subList.joinToString(buf, ",");
+        buf.append("]");
+        if (i < size - 1) {
+          buf.append(",");
+        }
+      }
+    } else {
+      buf.append("[");
+      coordsOrListOfCoords.joinToString(buf, ",");
+      buf.append("]");
+    }
+    buf.append("]");
     return true;
   }
 
@@ -1212,13 +1228,14 @@ public class GraphicsFunctions {
     if (!arg1.isList()) {
       arg1 = F.List(arg1);
     }
-    IAST lighting = F.List(F.$str("Auto"), F.RGBColor(F.C1, F.C1, F.C1));
+    IExpr lighting = S.Automatic; // .List(F.$str("Auto"), F.RGBColor(F.C1, F.C1, F.C1));
     OptionArgs options = OptionArgs.createOptionArgs(graphics3DAST, engine);
     if (options != null) {
-      IExpr option = options.getOption(S.Lighting);
-      if (option.isList1() && option.first().isList() && option.first().first().isString()) {
-        lighting = (IAST) option.first();
-      }
+      lighting = options.getOption(S.Lighting).orElse(lighting);
+
+      // if (option.isList1() && option.first().isList() && option.first().first().isString()) {
+      // lighting = option.first();
+      // }
     }
     IExpr data3D = engine.evaluate(F.N(arg1));
     if (data3D.isAST() && data3D.head().isBuiltInSymbol()) {
@@ -1232,70 +1249,7 @@ public class GraphicsFunctions {
           graphics3DBuffer.append("\nelements: [");
           graphics3DBuffer.append(jsonPrimitives.toString());
           graphics3DBuffer.append("],");
-          boolean lightingDone = false;
-          String name = lighting.arg1().toString();
-          if (lighting.isList2()) {
-            IExpr color = lighting.arg2();
-            if (color.isAST(S.RGBColor, 4)) {
-              if (name.equals("Ambient")) {
-                graphics3DBuffer.append("\nlighting: [{");
-                graphics3DBuffer.append("type: 'ambient',");
-                setColor(graphics3DBuffer, (IAST) color, F.RGBColor(F.C1, F.C1, F.C1), false);
-                graphics3DBuffer.append("}],");
-                lightingDone = true;
-              }
-            }
-          } else if (lighting.isAST(S.List, 4, 5) && lighting.arg3().isList()
-              && lighting.size() > 2) {
-            double angle = 1.0;
-            if (lighting.size() == 5) {
-              angle = lighting.arg4().toDoubleDefault(1.0);
-            }
-            IExpr color = lighting.arg2();
-            IAST list = (IAST) lighting.arg3();
-            if (color.isAST(S.RGBColor, 4)) {
-              if (name.equals("Directional") && list.isList3()) {
-                graphics3DBuffer.append("\nlighting: [{");
-                graphics3DBuffer.append("type: 'directional',");
-                setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
-                graphics3DSingleCoords(graphics3DBuffer, list, "coords");
-                graphics3DBuffer.append("}],");
-                lightingDone = true;
-              } else if (name.equals("Point") && list.isList3()) {
-                graphics3DBuffer.append("\nlighting: [{");
-                graphics3DBuffer.append("type: 'point',");
-                setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
-                graphics3DSingleCoords(graphics3DBuffer, list, "coords");
-                graphics3DBuffer.append("}],");
-                lightingDone = true;
-              } else if (name.equals("Spot") && list.isList2() && list.isListOfLists()) {
-                IAST coords = (IAST) list.arg1();
-                IAST target = (IAST) list.arg2();
-                if (coords.isList3() && target.isList3()) {
-                  graphics3DBuffer.append("\nlighting: [{");
-                  graphics3DBuffer.append("type: 'spot',");
-                  graphics3DBuffer.append("angle: " + angle + ",");
-                  setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
-                  graphics3DSingleCoords(graphics3DBuffer, coords, "coords");
-                  graphics3DBuffer.append(",");
-                  graphics3DSingleCoords(graphics3DBuffer, target, "target");
-                  graphics3DBuffer.append("}],");
-                  lightingDone = true;
-                }
-              }
-            }
-          }
-          if (!lightingDone) {
-            graphics3DBuffer.append("\nlighting: [");
-            graphics3DBuffer.append("\n{ type: 'ambient', color: [0.3, 0.2, 0.4] },");
-            graphics3DBuffer
-                .append("\n{ type: 'directional', color: [0.8, 0, 0], coords: [[2, 0, 2]] },");
-            graphics3DBuffer
-                .append("\n{ type: 'directional', color: [0, 0.8, 0], coords: [[2, 2, 2]] },");
-            graphics3DBuffer
-                .append("\n{ type: 'directional', color: [0, 0, 0.8], coords: [[0, 2, 2]] }");
-            graphics3DBuffer.append("\n],");
-          }
+          graphics3DLigthing(graphics3DBuffer, lighting);
           graphics3DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
           graphics3DBuffer.append("}\n");
           graphics3DBuffer.append(");");
@@ -1308,11 +1262,208 @@ public class GraphicsFunctions {
     return false;
   }
 
+  private static void graphics3DLigthing(StringBuilder graphics3DBuffer, IExpr lighting) {
+    IAST automatic = F.List(F.AmbientLight(F.RGBColor(0.4, 0.2, 0.2)),
+        F.DirectionalLight(F.RGBColor(0., 0.18, 0.5), F.List(2, 0, 2)),
+        F.DirectionalLight(F.RGBColor(0.18, 0.5, 0.18), F.List(2, 2, 3)),
+        F.DirectionalLight(F.RGBColor(0.5, 0.18, 0.), F.List(0, 2, 2)),
+        F.DirectionalLight(F.RGBColor(0., 0., 0.18), F.List(0, 0, 2)));
+    IAST result = F.NIL;
+    if (lighting.equals(S.Automatic)) {
+      result = automatic;
+    } else if (lighting.equals(F.$str("Neutral"))) {
+      result = F.List(F.AmbientLight(F.RGBColor(0.35, 0.35, 0.35)),
+          F.DirectionalLight(F.RGBColor(0.37, 0.37, 0.37), F.List(2, 0, 2)),
+          F.DirectionalLight(F.RGBColor(0.37, 0.37, 0.37), F.List(2, 2, 3)),
+          F.DirectionalLight(F.RGBColor(0.37, 0.37, 0.37), F.List(0, 2, 2)));
+    } else if (lighting.isAST()) {
+      result = (IAST) lighting;
+    }
+
+    boolean lightingDone = false;
+    graphics3DBuffer.append("\nlighting: [");
+    if (result.isPresent()) {
+      if (result.isList()) {
+        for (int i = 1; i < result.size(); i++) {
+          if (result.get(i).isAST()) {
+            if (lightingDone) {
+              graphics3DBuffer.append(",");
+            }
+            if (graphics3DSingleLight(graphics3DBuffer, (IAST) result.get(i))) {
+
+              lightingDone = true;
+            }
+          }
+        }
+      } else {
+        lightingDone = graphics3DSingleLight(graphics3DBuffer, result);
+      }
+    }
+
+    if (!lightingDone) {
+      lightingDone = graphics3DSingleLight(graphics3DBuffer, automatic);
+    }
+    graphics3DBuffer.append("\n],");
+  }
+
+  private static boolean graphics3DSingleLight(StringBuilder graphics3DBuffer, IAST result) {
+    if (result.isAST1()) {
+      IExpr color = result.arg1();
+      if (color.isRGBColor()) {
+        if (result.head().equals(S.AmbientLight)) {
+          graphics3DBuffer.append("\n{");
+          graphics3DBuffer.append("type: 'ambient',");
+          setColor(graphics3DBuffer, (IAST) color, F.RGBColor(F.C1, F.C1, F.C1), false);
+          graphics3DBuffer.append("}");
+          return true;
+        }
+      }
+    } else if (result.isAST2()) {
+      String name = result.arg1().toString();
+      if (name.equals("Ambient")) {
+        IExpr color = result.arg2();
+        if (color.isRGBColor()) {
+          graphics3DBuffer.append("\n{");
+          graphics3DBuffer.append("type: 'ambient',");
+          setColor(graphics3DBuffer, (IAST) color, F.NIL, false);
+          graphics3DBuffer.append("}");
+          return true;
+        }
+      } else {
+        IExpr color = result.arg1();
+        if (color.isRGBColor() && result.arg2().isList()) {
+          IAST list = (IAST) result.arg2();
+          if (result.head().equals(S.DirectionalLight) && list.isList()) {
+            graphics3DBuffer.append("\n{");
+            graphics3DBuffer.append("type: 'directional',");
+            setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
+            graphics3DCoordsOrListOfCoords(graphics3DBuffer, list, "coords");
+            graphics3DBuffer.append("}");
+            return true;
+          } else if (result.head().equals(S.PointLight) && list.isList3()) {
+            graphics3DBuffer.append("\n{");
+            graphics3DBuffer.append("type: 'point',");
+            setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
+            graphics3DCoordsOrListOfCoords(graphics3DBuffer, list, "coords");
+            graphics3DBuffer.append("}");
+            return true;
+          } else if (result.head().equals(S.SpotLight) && list.isList2() && list.isListOfLists()) {
+            IAST coords = (IAST) list.arg1();
+            IAST target = (IAST) list.arg2();
+            if (coords.isList3() && target.isList3()) {
+              double angle = 1.0;
+              if (result.size() == 5) {
+                angle = result.arg4().toDoubleDefault(1.0);
+              }
+              graphics3DBuffer.append("\n{");
+              graphics3DBuffer.append("type: 'spot',");
+              graphics3DBuffer.append("angle: " + angle + ",");
+              setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
+              graphics3DCoordsOrListOfCoords(graphics3DBuffer, coords, "coords");
+              graphics3DBuffer.append(",");
+              graphics3DCoordsOrListOfCoords(graphics3DBuffer, target, "target");
+              graphics3DBuffer.append("}");
+              return true;
+            }
+          }
+        }
+      }
+    } else if (result.isAST(S.List, 4, 5) && result.arg3().isList() && result.size() > 2) {
+      String name = result.arg1().toString();
+
+      IExpr color = result.arg2();
+      IAST list = (IAST) result.arg3();
+      if (color.isRGBColor()) {
+        if (name.equals("Directional") && list.isList()) {
+          graphics3DBuffer.append("\n{");
+          graphics3DBuffer.append("type: 'directional',");
+          setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
+          graphics3DCoordsOrListOfCoords(graphics3DBuffer, list, "coords");
+          graphics3DBuffer.append("}");
+          return true;
+        } else if (name.equals("Point") && list.isList3()) {
+          graphics3DBuffer.append("\n{");
+          graphics3DBuffer.append("type: 'point',");
+          setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
+          graphics3DCoordsOrListOfCoords(graphics3DBuffer, list, "coords");
+          graphics3DBuffer.append("}");
+          return true;
+        } else if (name.equals("Spot") && list.isList2() && list.isListOfLists()) {
+          IAST coords = (IAST) list.arg1();
+          IAST target = (IAST) list.arg2();
+          if (coords.isList3() && target.isList3()) {
+            double angle = 1.0;
+            if (result.size() == 5) {
+              angle = result.arg4().toDoubleDefault(1.0);
+            }
+            graphics3DBuffer.append("\n{");
+            graphics3DBuffer.append("type: 'spot',");
+            graphics3DBuffer.append("angle: " + angle + ",");
+            setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
+            graphics3DCoordsOrListOfCoords(graphics3DBuffer, coords, "coords");
+            graphics3DBuffer.append(",");
+            graphics3DCoordsOrListOfCoords(graphics3DBuffer, target, "target");
+            graphics3DBuffer.append("}");
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+
+  }
+
   private static void setColor(StringBuilder buf, IAST color, IAST defaultColor, boolean setComma) {
-    if (color.isAST(S.RGBColor, 4)) {
-      double red = color.arg1().toDoubleDefault(0.0);
-      double green = color.arg2().toDoubleDefault(0.0);
-      double blue = color.arg3().toDoubleDefault(0.0);
+    if (color.isPresent()) {
+      if (color.isAST(S.RGBColor, 4, 5)) {
+        if (color.size() == 5) {
+          double opacity = color.arg4().toDoubleDefault(1.0);
+          buf.append("opacity: ");
+          buf.append(opacity);
+          buf.append(",");
+        }
+        double red = color.arg1().toDoubleDefault(0.0);
+        double green = color.arg2().toDoubleDefault(0.0);
+        double blue = color.arg3().toDoubleDefault(0.0);
+        buf.append("color: [");
+        buf.append(red);
+        buf.append(",");
+        buf.append(green);
+        buf.append(",");
+        buf.append(blue);
+        buf.append("]");
+        if (setComma) {
+          buf.append(",");
+        }
+        return;
+      } else if (color.isAST(S.RGBColor, 1) && color.arg1().isAST(S.List, 4, 5)) {
+        IAST list = (IAST) color.arg1();
+        if (color.size() == 5) {
+          double opacity = list.arg4().toDoubleDefault(1.0);
+          buf.append("opacity: ");
+          buf.append(opacity);
+          buf.append(",");
+        }
+        double red = list.arg1().toDoubleDefault(0.0);
+        double green = list.arg2().toDoubleDefault(0.0);
+        double blue = list.arg3().toDoubleDefault(0.0);
+        buf.append("color: [");
+        buf.append(red);
+        buf.append(",");
+        buf.append(green);
+        buf.append(",");
+        buf.append(blue);
+        buf.append("]");
+        if (setComma) {
+          buf.append(",");
+        }
+        return;
+      }
+    }
+    if (defaultColor.isAST(S.RGBColor, 4)) {
+      double red = defaultColor.arg1().toDoubleDefault(0.0);
+      double green = defaultColor.arg2().toDoubleDefault(0.0);
+      double blue = defaultColor.arg3().toDoubleDefault(0.0);
       buf.append("color: [");
       buf.append(red);
       buf.append(",");
@@ -1321,21 +1472,9 @@ public class GraphicsFunctions {
       buf.append(blue);
       buf.append("]");
     } else {
-      if (defaultColor.isAST(S.RGBColor, 4)) {
-        double red = defaultColor.arg1().toDoubleDefault(0.0);
-        double green = defaultColor.arg2().toDoubleDefault(0.0);
-        double blue = defaultColor.arg3().toDoubleDefault(0.0);
-        buf.append("color: [");
-        buf.append(red);
-        buf.append(",");
-        buf.append(green);
-        buf.append(",");
-        buf.append(blue);
-        buf.append("]");
-      } else {
-        buf.append("color: [1.0, 0.5, 0.0]");
-      }
+      buf.append("color: [1.0, 0.5, 0.0]");
     }
+
     if (setComma) {
       buf.append(",");
     }

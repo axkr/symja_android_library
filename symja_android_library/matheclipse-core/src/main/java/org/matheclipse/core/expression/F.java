@@ -1591,6 +1591,10 @@ public class F extends S {
     return ast(And);
   }
 
+  public static IASTMutable AmbientLight(final IExpr color) {
+    return new AST1(AmbientLight, color);
+  }
+
   /**
    * <code>expr1 && expr2 && expr3 ...</code> evaluates each expression in turn, returning
    * {@link S#False} as soon as an expression evaluates to {@link S#False}. If all expressions
@@ -3206,6 +3210,11 @@ public class F extends S {
 
   public static IExpr div(java.math.BigInteger i, IExpr b) {
     return Times(ZZ(i), Power(b, CN1));
+  }
+
+
+  public static IASTMutable DirectionalLight(final IExpr color, final IExpr point) {
+    return new AST2(DirectionalLight, color, point);
   }
 
   /**
@@ -7131,13 +7140,14 @@ public class F extends S {
     return new AST3(Resultant, a0, a1, a2);
   }
 
-  public static IAST RGBColor(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(RGBColor, a0, a1, a2);
+  public static IAST RGBColor(final IExpr red, final IExpr green, final IExpr blue) {
+    return new AST3(RGBColor, red, green, blue);
   }
 
-  public static IAST RGBColor(final double a0, final double a1, final double a2) {
-    return new AST3(RGBColor, num(a0), num(a1), num(a2));
+  public static IAST RGBColor(final double red, final double green, final double blue) {
+    return new AST3(RGBColor, num(red), num(green), num(blue));
   }
+
 
   /**
    * Get or create a user defined symbol which is retrieved from the evaluation engines context
