@@ -1724,7 +1724,7 @@ public final class NumberTheory {
      * @param a list of integers
      * @param n the zero-based index of the coefficient. n=0 for the E_0 term.
      */
-    protected void set(ArrayList<IInteger> a, final int n) {
+    protected void set(List<IInteger> a, final int n) {
       while (n >= a.size()) {
         IInteger val = F.C0;
         boolean sigPos = true;
@@ -1753,7 +1753,7 @@ public final class NumberTheory {
      * @param n the index, non-negative.
      * @return the E_0=E_1=1 , E_2=5, E_3=61 etc
      */
-    public IInteger eulerE(ArrayList<IInteger> a, int n) {
+    public IInteger eulerE(List<IInteger> a, int n) {
       set(a, n);
       return (a.get(n));
     }

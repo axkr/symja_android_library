@@ -1,6 +1,7 @@
 package org.matheclipse.core.visit;
 
 import java.util.IdentityHashMap;
+import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -17,20 +18,20 @@ import org.matheclipse.core.interfaces.ISymbol;
  * F.NIL</code> if no substitution occurred.
  */
 public class ModuleReplaceAll extends VisitorExpr {
-  final IdentityHashMap<ISymbol, ? extends IExpr> fModuleVariables;
+  final Map<ISymbol, ? extends IExpr> fModuleVariables;
   final int fOffset;
   final EvalEngine fEngine;
   final String moduleCounter;
 
   public ModuleReplaceAll(
-      IdentityHashMap<ISymbol, ? extends IExpr> moduleVariables,
+      Map<ISymbol, ? extends IExpr> moduleVariables,
       EvalEngine engine,
       String moduleCounter) {
     this(moduleVariables, engine, moduleCounter, 0);
   }
 
   public ModuleReplaceAll(
-      IdentityHashMap<ISymbol, ? extends IExpr> moduleVariables,
+      Map<ISymbol, ? extends IExpr> moduleVariables,
       EvalEngine engine,
       String moduleCounter,
       int offset) {
@@ -163,12 +164,12 @@ public class ModuleReplaceAll extends VisitorExpr {
     IExpr temp = fModuleVariables.get(symbol);
     if (isFunction) {
       if (variables == null) {
-        variables = (IdentityHashMap<ISymbol, IExpr>) fModuleVariables.clone();
+        variables = new IdentityHashMap<>(fModuleVariables);
       }
       variables.put(symbol, F.Dummy(symbol.toString() + varAppend));
     } else if (temp != null) {
       if (variables == null) {
-        variables = (IdentityHashMap<ISymbol, IExpr>) fModuleVariables.clone();
+        variables = new IdentityHashMap<>(fModuleVariables);
       }
       variables.remove(symbol);
       if (!temp.isPresent()) {

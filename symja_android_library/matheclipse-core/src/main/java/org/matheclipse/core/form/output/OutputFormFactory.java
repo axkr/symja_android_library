@@ -2,7 +2,7 @@ package org.matheclipse.core.form.output;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -1183,7 +1183,7 @@ public class OutputFormFactory {
                 // see also MatrixForm in MathML or TeX format for "graphical representation".
                 IExpr normal = list.arg1().normal(false);
                 if (normal.isList()) { // && normal.isMatrix() != null) {
-                  ArrayList<Integer> dims = LinearAlgebra.dimensions((IAST) normal, S.List);
+                  List<Integer> dims = LinearAlgebra.dimensions((IAST) normal, S.List);
                   convertList(buf, (IAST) normal, dims.size() >= 2);
                   return;
                 }

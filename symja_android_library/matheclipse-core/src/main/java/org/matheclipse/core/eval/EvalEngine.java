@@ -3,9 +3,11 @@ package org.matheclipse.core.eval;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -114,7 +116,7 @@ public class EvalEngine implements Serializable {
 
   public transient Cache<IAST, IExpr> rememberASTCache = null;
 
-  public transient IdentityHashMap<Object, IExpr> rememberMap = null;
+  public transient Map<Object, IExpr> rememberMap = null;
 
   public static final boolean DEBUG = false;
 
@@ -266,7 +268,7 @@ public class EvalEngine implements Serializable {
    * is defined in <code>Sow()</code> tag <code>F.None</code> is used. The odd indices in <code>
    * java.util.List</code> contain the associated reap list for the tag.
    */
-  private transient java.util.List<IExpr> fReapList = null;
+  private transient List<IExpr> fReapList = null;
 
   public transient Set<ISymbol> fModifiedVariablesList;
 
@@ -285,15 +287,15 @@ public class EvalEngine implements Serializable {
    * If <code>fOnOffUnique==true</code> this map contains the unique expressions which occurred
    * during evaluation
    */
-  transient HashMap<IExpr, IExpr> fOnOffUniqueMap = null;
+  transient Map<IExpr, IExpr> fOnOffUniqueMap = null;
 
   /**
    * If not null, this map contains the header symbols for which the interactive trace should be
    * printed.
    */
-  transient IdentityHashMap<ISymbol, ISymbol> fOnOffMap = null;
+  transient Map<ISymbol, ISymbol> fOnOffMap = null;
 
-  transient ArrayDeque<IExpr> fStack;
+  transient Deque<IExpr> fStack;
 
   /** The history list for the <code>Out[]</code> function. */
   private transient EvalHistory fEvalHistory = null;
@@ -2569,7 +2571,7 @@ public class EvalEngine implements Serializable {
    *
    * @return
    */
-  public ArrayDeque<IExpr> getStack() {
+  public Deque<IExpr> getStack() {
     return fStack;
   }
 
@@ -2654,7 +2656,7 @@ public class EvalEngine implements Serializable {
     rememberMap = new IdentityHashMap<Object, IExpr>();
   }
 
-  public ArrayDeque<IExpr> stackBegin() {
+  public Deque<IExpr> stackBegin() {
     fStack = new ArrayDeque<IExpr>(256);
     return fStack;
   }
@@ -2975,7 +2977,7 @@ public class EvalEngine implements Serializable {
    *        expression and _evaluated_ output expression.
    */
   public void setOnOffMode(final boolean onOffMode,
-      IdentityHashMap<ISymbol, ISymbol> headSymbolsMap, boolean uniqueTrace) {
+      Map<ISymbol, ISymbol> headSymbolsMap, boolean uniqueTrace) {
     fOnOffMode = onOffMode;
     fOnOffMap = headSymbolsMap;
     fOnOffUnique = uniqueTrace;
@@ -3073,7 +3075,7 @@ public class EvalEngine implements Serializable {
    *
    * @param stack
    */
-  public void setStack(ArrayDeque<IExpr> stack) {
+  public void setStack(Deque<IExpr> stack) {
     fStack = stack;
   }
 

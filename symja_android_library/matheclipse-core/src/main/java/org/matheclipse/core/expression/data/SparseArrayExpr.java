@@ -4,8 +4,8 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1244,7 +1244,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created.
    */
   public static SparseArrayExpr newDenseList(IAST denseList, IExpr defaultValue) {
-    ArrayList<Integer> dims = LinearAlgebra.dimensions(denseList);
+    List<Integer> dims = LinearAlgebra.dimensions(denseList);
     if (dims != null && dims.size() > 0) {
       defaultValue = defaultValue.orElse(F.C0);
       IAST listOfRules = SparseArrayExpr.arrayRules(denseList, defaultValue);

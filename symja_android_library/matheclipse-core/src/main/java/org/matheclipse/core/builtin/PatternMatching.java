@@ -5,7 +5,7 @@ import static org.matheclipse.core.expression.F.RuleDelayed;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
-import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -1638,7 +1638,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      ArrayDeque<IExpr> stack = engine.getStack();
+      Deque<IExpr> stack = engine.getStack();
       if (stack.size() == 1 && ast.head() == S.Sequence) {
         return ast.setAtClone(0, S.Identity);
       }

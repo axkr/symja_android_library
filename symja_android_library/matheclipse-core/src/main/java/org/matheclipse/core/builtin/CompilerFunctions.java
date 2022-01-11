@@ -388,7 +388,7 @@ public class CompilerFunctions {
       }
     }
 
-    public static final HashMap<ISymbol, IConverter> CONVERTERS =
+    public static final Map<ISymbol, IConverter> CONVERTERS =
         new HashMap<ISymbol, IConverter>(199);
 
     static {
