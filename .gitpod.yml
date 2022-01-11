@@ -16,4 +16,4 @@ github:
     addLabel: prebuilt-in-gitpod
 tasks:
   - init: mvn -f symja_android_library/pom.xml clean install -DskipTests
-    command: mvn -f symja_android_library/pom.xml exec:java -pl matheclipse-io -Dexec.mainClass="org.matheclipse.io.eval.Console"
+  - command: mvn -f symja_android_library/pom.xml exec:java -pl matheclipse-io -Dexec.mainClass="org.matheclipse.io.eval.Console"
