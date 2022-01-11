@@ -13,8 +13,10 @@
  */
 package de.tilman_neumann.jml;
 
-import static de.tilman_neumann.jml.base.BigIntConstants.*;
-
+import static de.tilman_neumann.jml.base.BigIntConstants.I_0;
+import static de.tilman_neumann.jml.base.BigIntConstants.I_1;
+import static de.tilman_neumann.jml.base.BigIntConstants.I_1E4;
+import static de.tilman_neumann.jml.base.BigIntConstants.I_2;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -23,9 +25,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
-
 import org.apache.log4j.Logger;
-
 import de.tilman_neumann.jml.combinatorics.Factorial;
 import de.tilman_neumann.jml.factor.CombinedFactorAlgorithm;
 import de.tilman_neumann.jml.factor.FactorAlgorithm;

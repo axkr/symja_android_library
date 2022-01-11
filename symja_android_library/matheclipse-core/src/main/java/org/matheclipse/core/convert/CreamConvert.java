@@ -1,5 +1,6 @@
 package org.matheclipse.core.convert;
 
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
@@ -184,7 +185,7 @@ public class CreamConvert {
         expr.toString() + " is no int variable found for Solve(..., Integers)");
   }
 
-  public TreeMap<ISymbol, IntVariable> variableMap() {
+  public Map<ISymbol, IntVariable> variableMap() {
     return map;
   }
 

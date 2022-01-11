@@ -1283,10 +1283,10 @@ public class TeXFormFactory {
       ParserConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   /** Table for constant expressions */
-  public static final HashMap<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>(199);
+  public static final Map<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>(199);
 
   /** Description of the Field */
-  public static final HashMap<ISymbol, AbstractConverter> operTab =
+  public static final Map<ISymbol, AbstractConverter> operTab =
       new HashMap<ISymbol, AbstractConverter>(199);
 
   public static final boolean USE_IDENTIFIERS = false;

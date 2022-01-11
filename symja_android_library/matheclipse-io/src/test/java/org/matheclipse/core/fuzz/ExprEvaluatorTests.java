@@ -1,5 +1,7 @@
 package org.matheclipse.core.fuzz;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -34,18 +36,17 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
-import junit.framework.TestCase;
 
 /**
  * See: <a href="https://en.wikipedia.org/wiki/Fuzzing">Wikipedia - Fuzzing</a>: Fuzz testing is an
  * automated software testing technique that involves providing invalid, unexpected, or random data
  * as inputs to a computer program.
  */
-public class ExprEvaluatorTests extends TestCase {
+public class ExprEvaluatorTests {
 
   private static List<ASTNode> parseFileToList() {
     try {
-      File file = new File("./data/harvest.sym");
+      File file = new File("../data/harvest.sym");
       final BufferedReader f = new BufferedReader(new FileReader(file));
       final StringBuffer buff = new StringBuffer(1024);
       String line;
@@ -76,7 +77,7 @@ public class ExprEvaluatorTests extends TestCase {
    * for the input expressions in file <code>./data/harvest.sym</code> harvested from existing JUnit
    * tests of built-in functions.
    */
-  public void testSmartFuzz() {
+  public static void smartFuzz() {
     Config.MAX_AST_SIZE = 10000;
     Config.MAX_OUTPUT_SIZE = 10000;
     Config.MAX_INPUT_LEAVES = 100L;
@@ -107,187 +108,167 @@ public class ExprEvaluatorTests extends TestCase {
     double[] doubleArr = new double[] {1.0, -1.0, 0.0, 2.0, 100.0, 200.0};
     int[] dims = new int[] {2, 3};
     NumericArrayExpr nae = new NumericArrayExpr(doubleArr, dims, NumericArrayExpr.Real64);
-    IAST seedList =
-        F.List( //
-            ba, //
-            b0a, //
-            nae, //
-            // F.NIL, //
-            F.complex(-0.5, 0.5), //
-            F.complex(0.0, 0.5), //
-            F.complex(0.0, -1.0), //
-            F.complex(0.0, 1.0), //
-            F.complex(2.0, -1.0), //
-            F.complex(2.0, 1.0), //
-            F.complex(-2.0, -2.0), //
-            F.complex(-2.0, 2.0), //
-            F.complexNum(new Apfloat("-0.8", 30), new Apfloat("1.2", 30)), //
-            //            F.complexNum(new Apfloat(Long.MIN_VALUE, 30), new Apfloat(Long.MAX_VALUE,
-            // 30)), //
-            F.num(0.5), //
-            F.num(-0.5), //
-            F.num(Math.PI * (-0.5)), //
-            F.num(Math.PI * 0.5), //
-            F.num(-Math.PI), //
-            F.num(Math.PI), //
-            F.num(-Math.E), //
-            F.num(Math.E), //
-            F.num(new Apfloat("-0.8", 30)), //
-            //            F.num(new Apfloat(Long.MAX_VALUE, 30)), //
-            //            F.num(new Apfloat(Long.MIN_VALUE, 30)), //
-            F.C0, //
-            F.C1, //
-            F.CN1, //
-            F.CN1D2, //
-            F.C1D2, //
-            F.CNI, //
-            F.CI, //
-            F.CC(Long.MAX_VALUE, Long.MIN_VALUE, Long.MIN_VALUE, Long.MAX_VALUE), //
-            F.QQ(Long.MAX_VALUE, Long.MIN_VALUE),
-            F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
-            F.Slot2, //
-            // some primes
-            F.C2,
-            F.C3,
-            F.C5,
-            F.C7,
-            F.ZZ(11),
-            F.ZZ(13),
-            F.ZZ(17),
-            F.ZZ(19),
-            F.ZZ(101),
-            F.ZZ(1009),
-            F.ZZ(10007), //
-            F.ZZ(Integer.MIN_VALUE), //
-            F.ZZ(Integer.MAX_VALUE), //
-            F.CInfinity, //
-            F.CNInfinity, //
-            F.Null, //
-            F.Power(F.x, F.C2), //
-            F.Indeterminate, //
-            F.ComplexInfinity, //
-            F.x_, //
-            F.y_, //
-            F.x__, // any sequence of one or more expressions
-            F.y__, // any sequence of one or more expressions
-            F.x___, // any sequence of zero or more expressions
-            F.y___, // any sequence of zero or more expressions
-            F.CEmptyList, //
-            F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), //
-            F.assoc(F.List()), //
-            F.assoc(
-                F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))), //
-            F.assoc(
-                F.List(
-                    F.Rule(
-                        F.stringx("s1"),
-                        F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1)))),
-                    F.RuleDelayed(
-                        F.stringx("s2"),
-                        F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1)))))), //
-            SparseArrayExpr.newDenseList(F.List(F.C0, F.C0), F.C0), //
-            SparseArrayExpr.newDenseList(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
-            SparseArrayExpr.newDenseList(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
-            SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
-            F.Function(F.EvenQ(F.Slot1)), //
-            F.Function(F.Expand(F.Power(F.Plus(F.C2, F.Slot1), F.C3))), //
-            F.Graph(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C2, F.C3), F.Rule(F.C3, F.C1))), //
-            F.Graph(F.List()), //
-            F.CEmptySequence, //
-            F.CEmptyList, //
-            F.List(F.List(F.C0)), //
-            F.List(F.List(F.C1)), //
-            F.List(F.List(F.CN1)), //
-            F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), //
-            F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
-            F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
-            F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
-            F.List(
-                F.num(new Apfloat("-3.1415", 30)),
-                F.num(new Apfloat("2.987", 30)),
-                F.num(new Apfloat(-1, 30)),
-                F.num(new Apfloat("0.0", 30)),
-                F.num(new Apfloat(1, 30))), //
-            F.List(F.CN1, F.CN2, F.C3), //
-            F.List(F.CN1D2, F.CN2, F.C3), //
-            F.List(F.x, F.CN2, F.C3), //
-            F.List(F.x, F.C5, F.CN3), //
-            F.List(F.x, F.CN3, F.CN1D2), //
-            F.List(F.x, F.CN1D2, F.C1D2, F.C1D4), //
-            F.List(F.C0, F.C0), //
-            F.List(F.C0, F.C0, F.C0), //
-            F.List(F.C1, F.C2, F.C3), //
-            F.List(F.C1, F.C1, F.C1), //
-            F.List(F.C1, F.C2, F.C3, F.a), //
-            F.List(F.C0, F.C0, F.C0, F.C0), //
-            F.List(F.C1, F.C1, F.C1, F.C1), //
-            F.List(F.x, F.CN1, F.C1, F.C1), //
-            F.List(F.x, F.C0, F.C0, F.C0), //
-            F.List(F.x, F.C1, F.CN1, F.CN1), //
-            F.List(F.CN1), //
-            F.List(F.C0), //
-            F.List(F.C1), //
-            F.List(F.CN5), // simulate level spec
-            F.List(F.C7), // simulate level spec
-            F.List(F.complex(0.0, -1.0)), //
-            F.List(F.complex(0.0, 1.0)), //
-            F.List(F.x), //
-            F.List(F.CN3D2), //
-            F.List(F.C3D2), //
-            F.List(F.C3D4), //
-            F.Part(F.x, F.C1), //
-            F.Part(F.x, F.C2), //
-            F.Part(F.x, F.ZZ(Integer.MAX_VALUE)), //
-            F.Part(F.x, F.CN1, F.C1, F.C1), //
-            F.Part(F.x, F.C1, F.C1, F.C1, F.C1), //
-            F.C1DSqrt5, //
-            F.Divide(F.Plus(F.C1, F.Sqrt(5)), F.C2), // GoldenRatio
-            F.Divide(F.C2, F.Plus(F.C1, F.Sqrt(5))), // 1/GoldenRatio
-            F.Negate(F.Sqrt(2)), //
-            F.Divide(F.Sqrt(2), F.C2), //
-            F.Negate(F.Divide(F.Sqrt(2), F.C2)), //
-            F.Plus(F.Sqrt(2), F.C1), //
-            F.Plus(F.Sqrt(2), F.CN1), //
-            F.Exp(F.Times(F.Pi, F.CI, F.C1D3)), //
-            F.Plus(F.C1, F.CI), //
-            F.Plus(F.CN1, F.CI), //
-            F.Times(F.Sqrt(2), F.C7), //
-            F.Times(F.Sqrt(2), F.Sqrt(5)), //
-            F.CSqrt2, //
-            F.C2Pi, //
-            F.CN3D2, //
-            F.C3D2, //
-            F.C3D4, //
-            F.QQ(Long.MAX_VALUE, 7L), //
-            F.QQ(Long.MIN_VALUE, 11L), //
-            F.QQ(7, Long.MAX_VALUE), //
-            F.QQ(11, Long.MAX_VALUE), //
-            F.QQ(Long.MAX_VALUE, Long.MAX_VALUE), //
-            F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
-            F.Slot2, //
-            F.Slot(Integer.MAX_VALUE), //
-            IQuantity.of(1.2, "m"), //
-            // throws PatternSyntaxException
-            F.RegularExpression("?i)"), //
-            F.CEmptyString, //
-            F.stringx("\\"), //
-            F.stringx("\r"), //
-            F.stringx("\t"), //
-            F.stringx("\n"), //
-            F.stringx("\r\n"), //
-            F.stringx("\n   "), //
-            F.stringx("\uffff"), //
-            F.Power(F.C0, F.CN1), // division by zero problem
-            F.Subtract(F.C1, F.C1), //
-            F.Rule(S.Modulus, F.C2), //
-            F.Rule(S.Modulus, F.C10), //
-            F.Rule(S.Heads, S.True), //
-            F.Rule(S.Heads, S.False), //
-            F.$OptionsPattern(), //
-            F.OptionValue(F.a), //
-            F.OptionValue(F.b), //
-            F.OptionValue(F.x), //
-            F.OptionValue(F.y));
+    IAST seedList = F.List( //
+        ba, //
+        b0a, //
+        nae, //
+        // F.NIL, //
+        F.complex(-0.5, 0.5), //
+        F.complex(0.0, 0.5), //
+        F.complex(0.0, -1.0), //
+        F.complex(0.0, 1.0), //
+        F.complex(2.0, -1.0), //
+        F.complex(2.0, 1.0), //
+        F.complex(-2.0, -2.0), //
+        F.complex(-2.0, 2.0), //
+        F.complexNum(new Apfloat("-0.8", 30), new Apfloat("1.2", 30)), //
+        // F.complexNum(new Apfloat(Long.MIN_VALUE, 30), new Apfloat(Long.MAX_VALUE,
+        // 30)), //
+        F.num(0.5), //
+        F.num(-0.5), //
+        F.num(Math.PI * (-0.5)), //
+        F.num(Math.PI * 0.5), //
+        F.num(-Math.PI), //
+        F.num(Math.PI), //
+        F.num(-Math.E), //
+        F.num(Math.E), //
+        F.num(new Apfloat("-0.8", 30)), //
+        // F.num(new Apfloat(Long.MAX_VALUE, 30)), //
+        // F.num(new Apfloat(Long.MIN_VALUE, 30)), //
+        F.C0, //
+        F.C1, //
+        F.CN1, //
+        F.CN1D2, //
+        F.C1D2, //
+        F.CNI, //
+        F.CI, //
+        F.CC(Long.MAX_VALUE, Long.MIN_VALUE, Long.MIN_VALUE, Long.MAX_VALUE), //
+        F.QQ(Long.MAX_VALUE, Long.MIN_VALUE), F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
+        F.Slot2, //
+        // some primes
+        F.C2, F.C3, F.C5, F.C7, F.ZZ(11), F.ZZ(13), F.ZZ(17), F.ZZ(19), F.ZZ(101), F.ZZ(1009),
+        F.ZZ(10007), //
+        F.ZZ(Integer.MIN_VALUE), //
+        F.ZZ(Integer.MAX_VALUE), //
+        F.CInfinity, //
+        F.CNInfinity, //
+        F.Null, //
+        F.Power(F.x, F.C2), //
+        F.Indeterminate, //
+        F.ComplexInfinity, //
+        F.x_, //
+        F.y_, //
+        F.x__, // any sequence of one or more expressions
+        F.y__, // any sequence of one or more expressions
+        F.x___, // any sequence of zero or more expressions
+        F.y___, // any sequence of zero or more expressions
+        F.CEmptyList, //
+        F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), //
+        F.assoc(F.List()), //
+        F.assoc(F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))), //
+        F.assoc(F.List(
+            F.Rule(F.stringx("s1"), F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1)))),
+            F.RuleDelayed(F.stringx("s2"),
+                F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1)))))), //
+        SparseArrayExpr.newDenseList(F.List(F.C0, F.C0), F.C0), //
+        SparseArrayExpr.newDenseList(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
+        SparseArrayExpr.newDenseList(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
+        SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
+        F.Function(F.EvenQ(F.Slot1)), //
+        F.Function(F.Expand(F.Power(F.Plus(F.C2, F.Slot1), F.C3))), //
+        F.Graph(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C2, F.C3), F.Rule(F.C3, F.C1))), //
+        F.Graph(F.List()), //
+        F.CEmptySequence, //
+        F.CEmptyList, //
+        F.List(F.List(F.C0)), //
+        F.List(F.List(F.C1)), //
+        F.List(F.List(F.CN1)), //
+        F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), //
+        F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
+        F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
+        F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
+        F.List(F.num(new Apfloat("-3.1415", 30)), F.num(new Apfloat("2.987", 30)),
+            F.num(new Apfloat(-1, 30)), F.num(new Apfloat("0.0", 30)), F.num(new Apfloat(1, 30))), //
+        F.List(F.CN1, F.CN2, F.C3), //
+        F.List(F.CN1D2, F.CN2, F.C3), //
+        F.List(F.x, F.CN2, F.C3), //
+        F.List(F.x, F.C5, F.CN3), //
+        F.List(F.x, F.CN3, F.CN1D2), //
+        F.List(F.x, F.CN1D2, F.C1D2, F.C1D4), //
+        F.List(F.C0, F.C0), //
+        F.List(F.C0, F.C0, F.C0), //
+        F.List(F.C1, F.C2, F.C3), //
+        F.List(F.C1, F.C1, F.C1), //
+        F.List(F.C1, F.C2, F.C3, F.a), //
+        F.List(F.C0, F.C0, F.C0, F.C0), //
+        F.List(F.C1, F.C1, F.C1, F.C1), //
+        F.List(F.x, F.CN1, F.C1, F.C1), //
+        F.List(F.x, F.C0, F.C0, F.C0), //
+        F.List(F.x, F.C1, F.CN1, F.CN1), //
+        F.List(F.CN1), //
+        F.List(F.C0), //
+        F.List(F.C1), //
+        F.List(F.CN5), // simulate level spec
+        F.List(F.C7), // simulate level spec
+        F.List(F.complex(0.0, -1.0)), //
+        F.List(F.complex(0.0, 1.0)), //
+        F.List(F.x), //
+        F.List(F.CN3D2), //
+        F.List(F.C3D2), //
+        F.List(F.C3D4), //
+        F.Part(F.x, F.C1), //
+        F.Part(F.x, F.C2), //
+        F.Part(F.x, F.ZZ(Integer.MAX_VALUE)), //
+        F.Part(F.x, F.CN1, F.C1, F.C1), //
+        F.Part(F.x, F.C1, F.C1, F.C1, F.C1), //
+        F.C1DSqrt5, //
+        F.Divide(F.Plus(F.C1, F.Sqrt(5)), F.C2), // GoldenRatio
+        F.Divide(F.C2, F.Plus(F.C1, F.Sqrt(5))), // 1/GoldenRatio
+        F.Negate(F.Sqrt(2)), //
+        F.Divide(F.Sqrt(2), F.C2), //
+        F.Negate(F.Divide(F.Sqrt(2), F.C2)), //
+        F.Plus(F.Sqrt(2), F.C1), //
+        F.Plus(F.Sqrt(2), F.CN1), //
+        F.Exp(F.Times(F.Pi, F.CI, F.C1D3)), //
+        F.Plus(F.C1, F.CI), //
+        F.Plus(F.CN1, F.CI), //
+        F.Times(F.Sqrt(2), F.C7), //
+        F.Times(F.Sqrt(2), F.Sqrt(5)), //
+        F.CSqrt2, //
+        F.C2Pi, //
+        F.CN3D2, //
+        F.C3D2, //
+        F.C3D4, //
+        F.QQ(Long.MAX_VALUE, 7L), //
+        F.QQ(Long.MIN_VALUE, 11L), //
+        F.QQ(7, Long.MAX_VALUE), //
+        F.QQ(11, Long.MAX_VALUE), //
+        F.QQ(Long.MAX_VALUE, Long.MAX_VALUE), //
+        F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
+        F.Slot2, //
+        F.Slot(Integer.MAX_VALUE), //
+        IQuantity.of(1.2, "m"), //
+        // throws PatternSyntaxException
+        F.RegularExpression("?i)"), //
+        F.CEmptyString, //
+        F.stringx("\\"), //
+        F.stringx("\r"), //
+        F.stringx("\t"), //
+        F.stringx("\n"), //
+        F.stringx("\r\n"), //
+        F.stringx("\n   "), //
+        F.stringx("\uffff"), //
+        F.Power(F.C0, F.CN1), // division by zero problem
+        F.Subtract(F.C1, F.C1), //
+        F.Rule(S.Modulus, F.C2), //
+        F.Rule(S.Modulus, F.C10), //
+        F.Rule(S.Heads, S.True), //
+        F.Rule(S.Heads, S.False), //
+        F.$OptionsPattern(), //
+        F.OptionValue(F.a), //
+        F.OptionValue(F.b), //
+        F.OptionValue(F.x), //
+        F.OptionValue(F.y));
     ThreadLocalRandom random = ThreadLocalRandom.current();
     SlowComputationThread thread = null;
     for (int j = 1; j < 10000; j++) {
@@ -301,20 +282,10 @@ public class ExprEvaluatorTests extends TestCase {
           IASTMutable mutant = ((IAST) temp).copy();
           try {
             ISymbol sym = mutant.topHead();
-            if (sym == S.PolynomialGCD
-                || sym == S.TestReport
-                || sym == S.VerificationTest
-                || sym == S.On
-                || sym == S.Off
-                || sym == S.Compile
-                || sym == S.CompiledFunction
-                || sym == S.FactorialPower
-                || sym == S.Pause
-                || sym == S.OptimizeExpression
-                || sym == S.Share
-                || sym == S.Set
-                || sym == S.SetDelayed
-                || sym == S.UpSet
+            if (sym == S.PolynomialGCD || sym == S.TestReport || sym == S.VerificationTest
+                || sym == S.On || sym == S.Off || sym == S.Compile || sym == S.CompiledFunction
+                || sym == S.FactorialPower || sym == S.Pause || sym == S.OptimizeExpression
+                || sym == S.Share || sym == S.Set || sym == S.SetDelayed || sym == S.UpSet
                 || sym == S.UpSetDelayed) {
               continue;
             }
@@ -401,22 +372,31 @@ public class ExprEvaluatorTests extends TestCase {
     // return result;
   }
 
-  @Override
-  protected void setUp() throws Exception {
+  static {
     Config.UNPROTECT_ALLOWED = false;
-    super.setUp();
     // wait for initializing of Integrate() rules:
-    F.await();
+    try {
+      F.await();
+    } catch (InterruptedException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
     // define after initialization
     Config.FUZZ_TESTING = true;
     Config.MAX_LOOP_COUNT = Short.MAX_VALUE;
+  }
+
+  public static void main(String[] args) {
+    builtinFunctionFuzz();
+    // smartFuzz();
+    // nonBuiltinFunctionFuzz();
   }
 
   /**
    * Fuzz testing - automated software testing that involves providing random arguments as inputs
    * for the Symja built-in functions.
    */
-  public void testBuiltinFunctionFuzz() {
+  public static void builtinFunctionFuzz() {
     Config.FILESYSTEM_ENABLED = false;
 
     EvalEngine engine = new EvalEngine(true);
@@ -441,232 +421,200 @@ public class ExprEvaluatorTests extends TestCase {
     Config.MAX_BIT_LENGTH = 20000;
     Config.MAX_POLYNOMIAL_DEGREE = 100;
 
-    IAST seedList =
-        F.List( //
-            ba, //
-            b0a, //
-            nae, //
-            // F.NIL, //
-            S.$Aborted, //
-            S.False, //
-            S.True, //
-            S.E, //
-            S.Pi, //
-            S.Indeterminate, //
-            F.Missing("test"), //
-            F.complex(-0.5, 0.5), //
-            F.complex(0.0, 0.5), //
-            F.complex(0.0, -1.0), //
-            F.complex(0.0, 1.0), //
-            F.complex(2.0, -1.0), //
-            F.complex(2.0, 1.0), //
-            F.complex(-2.0, -2.0), //
-            F.complex(-2.0, 2.0), //
-            F.complexNum(new Apfloat("-0.8", 30), new Apfloat("1.2", 30)), //
-            //            F.complexNum(new Apfloat(Long.MIN_VALUE, 30), new Apfloat(Long.MAX_VALUE,
-            // 30)), //
-            F.num(0.5), //
-            F.num(-0.5), //
-            F.num(Math.PI * (-0.5)), //
-            F.num(Math.PI * 0.5), //
-            F.num(-Math.PI), //
-            F.num(Math.PI), //
-            F.num(-Math.E), //
-            F.num(Math.E), //
-            F.num(new Apfloat("-0.8", 30)), //
-            //            F.num(new Apfloat(Long.MAX_VALUE, 30)), //
-            //            F.num(new Apfloat(Long.MIN_VALUE, 30)), //
-            F.C0, //
-            F.C1, //
-            F.CN1, //
-            F.CN1D2, //
-            F.C1D2, //
-            F.CNI, //
-            F.CI, //
-            F.ZZ(42),
-            F.CC(Long.MAX_VALUE, Long.MIN_VALUE, Long.MIN_VALUE, Long.MAX_VALUE), //
-            F.QQ(Long.MAX_VALUE, Long.MIN_VALUE),
-            F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
-            F.Slot2, //
-            // some primes
-            F.C2,
-            F.C3,
-            F.C5,
-            F.C7,
-            F.ZZ(11),
-            F.ZZ(13),
-            F.ZZ(17),
-            F.ZZ(19),
-            F.ZZ(101),
-            F.ZZ(1009),
-            F.ZZ(10007), //
-            F.CN2, //
-            F.CN3, //
-            F.CN5, //
-            F.CN7, //
-            F.ZZ(-11), //
-            F.ZZ(-13), //
-            F.ZZ(-17), //
-            F.ZZ(-19), //
-            F.ZZ(-101), //
-            F.ZZ(-1009), //
-            F.ZZ(-10007), //
-            F.ZZ(Integer.MIN_VALUE), //
-            F.ZZ(Integer.MAX_VALUE), //
-            F.ZZ(Byte.MIN_VALUE), //
-            F.ZZ(Byte.MAX_VALUE), //
-            F.CInfinity, //
-            F.CNInfinity, //
-            F.Null, //
-            F.Power(F.x, F.C2), //
-            F.Indeterminate, //
-            F.ComplexInfinity, //
-            F.x_, //
-            F.y_, //
-            F.x__, // any sequence of one or more expressions
-            F.y__, // any sequence of one or more expressions
-            F.x___, // any sequence of zero or more expressions
-            F.y___, // any sequence of zero or more expressions
-            F.CEmptyList, //
-            F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), //
-            F.assoc(F.List()), //
-            F.assoc(
-                F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))), //
-            F.assoc(
-                F.List(
-                    F.Rule(
-                        F.stringx("s1"),
-                        F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1)))),
-                    F.RuleDelayed(
-                        F.stringx("s2"),
-                        F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1)))))), //
-            SparseArrayExpr.newDenseList(F.List(F.C0, F.C0), F.C0), //
-            SparseArrayExpr.newDenseList(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
-            SparseArrayExpr.newDenseList(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
-            SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
-            F.Function(F.EvenQ(F.Slot1)), //
-            F.Function(F.Expand(F.Power(F.Plus(F.C2, F.Slot1), F.C3))), //
-            S.Graph.of(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C2, F.C3), F.Rule(F.C3, F.C1))), //
-            S.Graph.of(F.List()), //
-            S.Graph.of(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C2, F.C3), F.Rule(F.C3, F.C1)),
-                F.List(F.Rule(S.EdgeWeight, F.List(F.CD0, F.CD1, F.CD1)))), //
-            F.CEmptySequence, //
-            F.CEmptyList, //
-            F.List(F.List(F.C0)), //
-            F.List(F.List(F.C1)), //
-            F.List(F.List(F.CN1)), //
-            F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), //
-            F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
-            F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
-            F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
-            F.List(
-                F.num(new Apfloat("-3.1415", 30)),
-                F.num(new Apfloat("2.987", 30)),
-                F.num(new Apfloat(-1, 30)),
-                F.num(new Apfloat("0.0", 30)),
-                F.num(new Apfloat(1, 30))), //
-            F.List(F.CN1, F.CN2, F.C3), //
-            F.List(F.CN1D2, F.CN2, F.C3), //
-            F.List(F.x, F.CN2, F.C3), //
-            F.List(F.x, F.C5, F.CN3), //
-            F.List(F.x, F.CN3, F.CN1D2), //
-            F.List(F.x, F.CN1D2, F.C1D2, F.C1D4), //
-            F.List(F.C0, F.C0), //
-            F.List(F.C0, F.C0, F.C0), //
-            F.List(F.C1, F.C2, F.C3), //
-            F.List(F.C1, F.C1, F.C1), //
-            F.List(F.C1, F.C2, F.C3, F.a), //
-            F.List(F.C0, F.C0, F.C0, F.C0), //
-            F.List(F.C1, F.C1, F.C1, F.C1), //
-            F.List(F.x, F.CN1, F.C1, F.C1), //
-            F.List(F.x, F.C0, F.C0, F.C0), //
-            F.List(F.x, F.C1, F.CN1, F.CN1), //
-            F.List(F.CN1), //
-            F.List(F.C0), //
-            F.List(F.C1), //
-            F.List(F.CN5), // simulate level spec
-            F.List(F.C7), // simulate level spec
-            F.List(F.complex(0.0, -1.0)), //
-            F.List(F.complex(0.0, 1.0)), //
-            F.List(F.x), //
-            F.List(F.CN3D2), //
-            F.List(F.C3D2), //
-            F.List(F.C3D4), //
-            F.Part(F.x, F.C1), //
-            F.Part(F.x, F.C2), //
-            F.Part(F.x, F.ZZ(Integer.MAX_VALUE)), //
-            F.Part(F.x, F.CN1, F.C1, F.C1), //
-            F.Part(F.x, F.C1, F.C1, F.C1, F.C1), //
-            F.C1DSqrt5, //
-            F.Divide(F.Plus(F.C1, F.Sqrt(5)), F.C2), // GoldenRatio
-            F.Divide(F.C2, F.Plus(F.C1, F.Sqrt(5))), // 1/GoldenRatio
-            F.Negate(F.Sqrt(2)), //
-            F.Divide(F.Sqrt(2), F.C2), //
-            F.Negate(F.Divide(F.Sqrt(2), F.C2)), //
-            F.Plus(F.Sqrt(2), F.C1), //
-            F.Plus(F.Sqrt(2), F.CN1), //
-            F.Exp(F.Times(F.Pi, F.CI, F.C1D3)), //
-            F.Plus(F.C1, F.CI), //
-            F.Plus(F.CN1, F.CI), //
-            F.Times(F.Sqrt(2), F.C7), //
-            F.Times(F.Sqrt(2), F.Sqrt(5)), //
-            F.CSqrt2, //
-            F.C2Pi, //
-            F.CN3D2, //
-            F.C3D2, //
-            F.C3D4, //
-            F.QQ(Long.MAX_VALUE, 7L), //
-            F.QQ(Long.MIN_VALUE, 11L), //
-            F.QQ(7, Long.MAX_VALUE), //
-            F.QQ(11, Long.MAX_VALUE), //
-            F.QQ(Long.MAX_VALUE, Long.MAX_VALUE), //
-            F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
-            F.Slot2, //
-            F.Slot(Integer.MAX_VALUE), //
-            IQuantity.of(1.2, "m"), //
-            // throws PatternSyntaxException
-            F.RegularExpression("?i)"), //
-            F.CEmptyString, //
-            F.stringx("\\"), //
-            F.stringx("\r"), //
-            F.stringx("\t"), //
-            F.stringx("\n"), //
-            F.stringx("\r\n"), //
-            F.stringx("\n   "), //
-            F.stringx("\uffff"), //
-            F.Power(F.C0, F.CN1), // division by zero problem
-            F.Subtract(F.C1, F.C1), //
-            F.Rule(S.Modulus, F.C2), //
-            F.Rule(S.Modulus, F.C10), //
-            F.Rule(S.Heads, S.True), //
-            F.Rule(S.Heads, S.False), //
-            F.$OptionsPattern(), //
-            F.OptionValue(F.a), //
-            F.OptionValue(F.b), //
-            F.OptionValue(F.x), //
-            F.OptionValue(F.y));
+    IAST seedList = F.List( //
+        ba, //
+        b0a, //
+        nae, //
+        // F.NIL, //
+        S.$Aborted, //
+        S.False, //
+        S.True, //
+        S.E, //
+        S.Pi, //
+        S.Indeterminate, //
+        F.Missing("test"), //
+        F.complex(-0.5, 0.5), //
+        F.complex(0.0, 0.5), //
+        F.complex(0.0, -1.0), //
+        F.complex(0.0, 1.0), //
+        F.complex(2.0, -1.0), //
+        F.complex(2.0, 1.0), //
+        F.complex(-2.0, -2.0), //
+        F.complex(-2.0, 2.0), //
+        F.complexNum(new Apfloat("-0.8", 30), new Apfloat("1.2", 30)), //
+        // F.complexNum(new Apfloat(Long.MIN_VALUE, 30), new Apfloat(Long.MAX_VALUE,
+        // 30)), //
+        F.num(0.5), //
+        F.num(-0.5), //
+        F.num(Math.PI * (-0.5)), //
+        F.num(Math.PI * 0.5), //
+        F.num(-Math.PI), //
+        F.num(Math.PI), //
+        F.num(-Math.E), //
+        F.num(Math.E), //
+        F.num(new Apfloat("-0.8", 30)), //
+        // F.num(new Apfloat(Long.MAX_VALUE, 30)), //
+        // F.num(new Apfloat(Long.MIN_VALUE, 30)), //
+        F.C0, //
+        F.C1, //
+        F.CN1, //
+        F.CN1D2, //
+        F.C1D2, //
+        F.CNI, //
+        F.CI, //
+        F.ZZ(42), F.CC(Long.MAX_VALUE, Long.MIN_VALUE, Long.MIN_VALUE, Long.MAX_VALUE), //
+        F.QQ(Long.MAX_VALUE, Long.MIN_VALUE), F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
+        F.Slot2, //
+        // some primes
+        F.C2, F.C3, F.C5, F.C7, F.ZZ(11), F.ZZ(13), F.ZZ(17), F.ZZ(19), F.ZZ(101), F.ZZ(1009),
+        F.ZZ(10007), //
+        F.CN2, //
+        F.CN3, //
+        F.CN5, //
+        F.CN7, //
+        F.ZZ(-11), //
+        F.ZZ(-13), //
+        F.ZZ(-17), //
+        F.ZZ(-19), //
+        F.ZZ(-101), //
+        F.ZZ(-1009), //
+        F.ZZ(-10007), //
+        F.ZZ(Integer.MIN_VALUE), //
+        F.ZZ(Integer.MAX_VALUE), //
+        F.ZZ(Byte.MIN_VALUE), //
+        F.ZZ(Byte.MAX_VALUE), //
+        F.CInfinity, //
+        F.CNInfinity, //
+        F.Null, //
+        F.Power(F.x, F.C2), //
+        F.Indeterminate, //
+        F.ComplexInfinity, //
+        F.x_, //
+        F.y_, //
+        F.x__, // any sequence of one or more expressions
+        F.y__, // any sequence of one or more expressions
+        F.x___, // any sequence of zero or more expressions
+        F.y___, // any sequence of zero or more expressions
+        F.CEmptyList, //
+        F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), //
+        F.assoc(F.List()), //
+        F.assoc(F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))), //
+        F.assoc(F.List(
+            F.Rule(F.stringx("s1"), F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1)))),
+            F.RuleDelayed(F.stringx("s2"),
+                F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1)))))), //
+        SparseArrayExpr.newDenseList(F.List(F.C0, F.C0), F.C0), //
+        SparseArrayExpr.newDenseList(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
+        SparseArrayExpr.newDenseList(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
+        SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
+        F.Function(F.EvenQ(F.Slot1)), //
+        F.Function(F.Expand(F.Power(F.Plus(F.C2, F.Slot1), F.C3))), //
+        S.Graph.of(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C2, F.C3), F.Rule(F.C3, F.C1))), //
+        S.Graph.of(F.List()), //
+        S.Graph.of(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C2, F.C3), F.Rule(F.C3, F.C1)),
+            F.List(F.Rule(S.EdgeWeight, F.List(F.CD0, F.CD1, F.CD1)))), //
+        F.CEmptySequence, //
+        F.CEmptyList, //
+        F.List(F.List(F.C0)), //
+        F.List(F.List(F.C1)), //
+        F.List(F.List(F.CN1)), //
+        F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), //
+        F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
+        F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
+        F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
+        F.List(F.num(new Apfloat("-3.1415", 30)), F.num(new Apfloat("2.987", 30)),
+            F.num(new Apfloat(-1, 30)), F.num(new Apfloat("0.0", 30)), F.num(new Apfloat(1, 30))), //
+        F.List(F.CN1, F.CN2, F.C3), //
+        F.List(F.CN1D2, F.CN2, F.C3), //
+        F.List(F.x, F.CN2, F.C3), //
+        F.List(F.x, F.C5, F.CN3), //
+        F.List(F.x, F.CN3, F.CN1D2), //
+        F.List(F.x, F.CN1D2, F.C1D2, F.C1D4), //
+        F.List(F.C0, F.C0), //
+        F.List(F.C0, F.C0, F.C0), //
+        F.List(F.C1, F.C2, F.C3), //
+        F.List(F.C1, F.C1, F.C1), //
+        F.List(F.C1, F.C2, F.C3, F.a), //
+        F.List(F.C0, F.C0, F.C0, F.C0), //
+        F.List(F.C1, F.C1, F.C1, F.C1), //
+        F.List(F.x, F.CN1, F.C1, F.C1), //
+        F.List(F.x, F.C0, F.C0, F.C0), //
+        F.List(F.x, F.C1, F.CN1, F.CN1), //
+        F.List(F.CN1), //
+        F.List(F.C0), //
+        F.List(F.C1), //
+        F.List(F.CN5), // simulate level spec
+        F.List(F.C7), // simulate level spec
+        F.List(F.complex(0.0, -1.0)), //
+        F.List(F.complex(0.0, 1.0)), //
+        F.List(F.x), //
+        F.List(F.CN3D2), //
+        F.List(F.C3D2), //
+        F.List(F.C3D4), //
+        F.Part(F.x, F.C1), //
+        F.Part(F.x, F.C2), //
+        F.Part(F.x, F.ZZ(Integer.MAX_VALUE)), //
+        F.Part(F.x, F.CN1, F.C1, F.C1), //
+        F.Part(F.x, F.C1, F.C1, F.C1, F.C1), //
+        F.C1DSqrt5, //
+        F.Divide(F.Plus(F.C1, F.Sqrt(5)), F.C2), // GoldenRatio
+        F.Divide(F.C2, F.Plus(F.C1, F.Sqrt(5))), // 1/GoldenRatio
+        F.Negate(F.Sqrt(2)), //
+        F.Divide(F.Sqrt(2), F.C2), //
+        F.Negate(F.Divide(F.Sqrt(2), F.C2)), //
+        F.Plus(F.Sqrt(2), F.C1), //
+        F.Plus(F.Sqrt(2), F.CN1), //
+        F.Exp(F.Times(F.Pi, F.CI, F.C1D3)), //
+        F.Plus(F.C1, F.CI), //
+        F.Plus(F.CN1, F.CI), //
+        F.Times(F.Sqrt(2), F.C7), //
+        F.Times(F.Sqrt(2), F.Sqrt(5)), //
+        F.CSqrt2, //
+        F.C2Pi, //
+        F.CN3D2, //
+        F.C3D2, //
+        F.C3D4, //
+        F.QQ(Long.MAX_VALUE, 7L), //
+        F.QQ(Long.MIN_VALUE, 11L), //
+        F.QQ(7, Long.MAX_VALUE), //
+        F.QQ(11, Long.MAX_VALUE), //
+        F.QQ(Long.MAX_VALUE, Long.MAX_VALUE), //
+        F.QQ(Long.MIN_VALUE, Long.MAX_VALUE), //
+        F.Slot2, //
+        F.Slot(Integer.MAX_VALUE), //
+        IQuantity.of(1.2, "m"), //
+        // throws PatternSyntaxException
+        F.RegularExpression("?i)"), //
+        F.CEmptyString, //
+        F.stringx("\\"), //
+        F.stringx("\r"), //
+        F.stringx("\t"), //
+        F.stringx("\n"), //
+        F.stringx("\r\n"), //
+        F.stringx("\n   "), //
+        F.stringx("\uffff"), //
+        F.Power(F.C0, F.CN1), // division by zero problem
+        F.Subtract(F.C1, F.C1), //
+        F.Rule(S.Modulus, F.C2), //
+        F.Rule(S.Modulus, F.C10), //
+        F.Rule(S.Heads, S.True), //
+        F.Rule(S.Heads, S.False), //
+        F.$OptionsPattern(), //
+        F.OptionValue(F.a), //
+        F.OptionValue(F.b), //
+        F.OptionValue(F.x), //
+        F.OptionValue(F.y));
     ThreadLocalRandom random = ThreadLocalRandom.current();
     String[] functionStrs = AST2Expr.FUNCTION_STRINGS;
     int[] counter = new int[] {0};
     for (int loop = 0; loop < 20000; loop++) {
       for (int i = 0; i < functionStrs.length; i++) {
         IBuiltInSymbol sym = (IBuiltInSymbol) F.symbol(functionStrs[i]);
-        if (sym == S.PolynomialGCD
-            || sym == S.TestReport
-            || sym == S.VerificationTest
-            || sym == S.On
-            || sym == S.Off
-            || sym == S.Compile
-            || sym == S.CompiledFunction
-            || sym == S.FactorialPower
-            || sym == S.Pause
-            || sym == S.Power
-            || sym == S.OptimizeExpression
-            || sym == S.Share
-            || sym == S.Set
-            || sym == S.SetDelayed
-            || sym == S.UpSet
-            || sym == S.UpSetDelayed) {
+        if (sym == S.PolynomialGCD || sym == S.TestReport || sym == S.VerificationTest
+            || sym == S.On || sym == S.Off || sym == S.Compile || sym == S.CompiledFunction
+            || sym == S.FactorialPower || sym == S.Pause || sym == S.Power
+            || sym == S.OptimizeExpression || sym == S.Share || sym == S.Set || sym == S.SetDelayed
+            || sym == S.UpSet || sym == S.UpSetDelayed) {
           continue;
         }
         IEvaluator evaluator = sym.getEvaluator();
@@ -679,155 +627,47 @@ public class ExprEvaluatorTests extends TestCase {
               if (start == 0) {
                 start = 1;
               }
-              generateASTs(
-                  sym,
-                  start,
-                  end,
-                  seedList,
-                  random,
-                  counter,
-                  (IFunctionEvaluator) evaluator,
-                  engine,
-                  false,
-                  false);
-              generateASTs(
-                  sym,
-                  start,
-                  end,
-                  seedList,
-                  random,
-                  counter,
-                  (IFunctionEvaluator) evaluator,
-                  engine,
-                  true,
-                  false);
+              generateASTs(sym, start, end, seedList, random, counter,
+                  (IFunctionEvaluator) evaluator, engine, false, false);
+              generateASTs(sym, start, end, seedList, random, counter,
+                  (IFunctionEvaluator) evaluator, engine, true, false);
               if (argSize.length > 2) {
-                generateASTs(
-                    sym,
-                    start,
-                    end,
-                    seedList,
-                    random,
-                    counter,
-                    (IFunctionEvaluator) evaluator,
-                    engine,
-                    false,
-                    true);
-                generateASTs(
-                    sym,
-                    start,
-                    end,
-                    seedList,
-                    random,
-                    counter,
-                    (IFunctionEvaluator) evaluator,
-                    engine,
-                    true,
-                    true);
+                generateASTs(sym, start, end, seedList, random, counter,
+                    (IFunctionEvaluator) evaluator, engine, false, true);
+                generateASTs(sym, start, end, seedList, random, counter,
+                    (IFunctionEvaluator) evaluator, engine, true, true);
               }
               continue;
             } else {
               int start = random.nextInt(argSize[0], 10);
-              generateASTs(
-                  sym,
-                  start,
-                  start + 4,
-                  seedList,
-                  random,
-                  counter,
-                  (IFunctionEvaluator) evaluator,
-                  engine,
-                  false,
-                  false);
-              generateASTs(
-                  sym,
-                  start,
-                  start + 4,
-                  seedList,
-                  random,
-                  counter,
-                  (IFunctionEvaluator) evaluator,
-                  engine,
-                  true,
-                  false);
+              generateASTs(sym, start, start + 4, seedList, random, counter,
+                  (IFunctionEvaluator) evaluator, engine, false, false);
+              generateASTs(sym, start, start + 4, seedList, random, counter,
+                  (IFunctionEvaluator) evaluator, engine, true, false);
               if (argSize.length > 2) {
-                generateASTs(
-                    sym,
-                    start,
-                    start + 4,
-                    seedList,
-                    random,
-                    counter,
-                    (IFunctionEvaluator) evaluator,
-                    engine,
-                    false,
-                    true);
-                generateASTs(
-                    sym,
-                    start,
-                    start + 4,
-                    seedList,
-                    random,
-                    counter,
-                    (IFunctionEvaluator) evaluator,
-                    engine,
-                    true,
-                    true);
+                generateASTs(sym, start, start + 4, seedList, random, counter,
+                    (IFunctionEvaluator) evaluator, engine, false, true);
+                generateASTs(sym, start, start + 4, seedList, random, counter,
+                    (IFunctionEvaluator) evaluator, engine, true, true);
               }
             }
           } else {
             int start = random.nextInt(1, 7);
-            generateASTs(
-                sym,
-                start,
-                start + 4,
-                seedList,
-                random,
-                counter,
-                (IFunctionEvaluator) evaluator,
-                engine,
-                false,
-                false);
-            generateASTs(
-                sym,
-                start,
-                start + 4,
-                seedList,
-                random,
-                counter,
-                (IFunctionEvaluator) evaluator,
-                engine,
-                false,
-                true);
-            generateASTs(
-                sym,
-                start,
-                start + 4,
-                seedList,
-                random,
-                counter,
-                (IFunctionEvaluator) evaluator,
-                engine,
-                true,
-                false);
-            generateASTs(
-                sym,
-                start,
-                start + 4,
-                seedList,
-                random,
-                counter,
-                (IFunctionEvaluator) evaluator,
-                engine,
-                true,
-                true);
+            generateASTs(sym, start, start + 4, seedList, random, counter,
+                (IFunctionEvaluator) evaluator, engine, false, false);
+            generateASTs(sym, start, start + 4, seedList, random, counter,
+                (IFunctionEvaluator) evaluator, engine, false, true);
+            generateASTs(sym, start, start + 4, seedList, random, counter,
+                (IFunctionEvaluator) evaluator, engine, true, false);
+            generateASTs(sym, start, start + 4, seedList, random, counter,
+                (IFunctionEvaluator) evaluator, engine, true, true);
           }
         }
       }
     }
   }
 
-  public void testNonBuiltinFunctionFuzz() {
+  public static void nonBuiltinFunctionFuzz() {
     Config.MAX_AST_SIZE = 10000;
     Config.MAX_OUTPUT_SIZE = 10000;
     Config.MAX_INPUT_LEAVES = 100L;
@@ -847,77 +687,74 @@ public class ExprEvaluatorTests extends TestCase {
     ByteArrayExpr b0a = ByteArrayExpr.newInstance(b0Array);
     F.x.setAttributes(ISymbol.PROTECTED);
     F.y.setAttributes(ISymbol.PROTECTED);
-    IAST seedList =
-        F.List( //
-            ba, //
-            b0a, //
-            // F.NIL, //
-            F.complex(-0.5, 0.5), //
-            F.complex(0.0, 0.5), //
-            F.complex(0.0, -1.0), //
-            F.complex(0.0, 1.0), //
-            F.num(0.5), //
-            F.num(-0.5), //
-            F.num(Math.PI * (-0.5)), //
-            F.num(Math.PI * 0.5), //
-            F.num(-Math.PI), //
-            F.num(Math.PI), //
-            F.num(-Math.E), //
-            F.num(Math.E), //
-            F.C0, //
-            F.C1, //
-            F.CN1, //
-            F.CN1D2, //
-            F.C1D2, //
-            F.CNI, //
-            F.CI, //
-            // F.ZZ(Integer.MIN_VALUE), //
-            F.CInfinity, //
-            F.CNInfinity, //
-            F.Null, //
-            F.Power(F.x, F.C2), //
-            F.Indeterminate, //
-            F.ComplexInfinity, //
-            F.x_, //
-            F.y_, //
-            F.CEmptyList, //
-            F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))),
-            F.assoc(F.List()), //
-            F.assoc(
-                F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))), //
-            SparseArrayExpr.newDenseList(F.List(F.C0, F.C0), F.C0), //
-            SparseArrayExpr.newDenseList(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
-            SparseArrayExpr.newDenseList(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
-            SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
-            F.List(F.List(F.C0)), //
-            F.List(F.List(F.C1)), //
-            F.List(F.List(F.CN1)), //
-            F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), //
-            F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
-            F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
-            F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
-            F.List(F.CN1, F.CN2, F.C3), //
-            F.List(F.CN1D2, F.CN2, F.C3), //
-            F.List(F.x, F.CN2, F.C3), //
-            F.List(F.x, F.C5, F.CN3), //
-            F.List(F.x, F.CN3, F.CN1D2), //
-            F.List(F.CN5), // simulate level spec
-            F.List(F.C7), // simulate level spec
-            F.C1DSqrt5, //
-            F.C2Pi, //
-            F.CN3D2, //
-            F.C3D2, //
-            F.C3D4, //
-            F.Slot2, //
-            F.stringx(""), //
-            F.stringx("\\"), //
-            F.stringx("\r"), //
-            F.stringx("\t"), //
-            F.stringx("\n"), //
-            F.stringx("\r\n"), //
-            F.stringx("\n   "), //
-            F.stringx("\uffff"), //
-            F.Subtract(F.C1, F.C1));
+    IAST seedList = F.List( //
+        ba, //
+        b0a, //
+        // F.NIL, //
+        F.complex(-0.5, 0.5), //
+        F.complex(0.0, 0.5), //
+        F.complex(0.0, -1.0), //
+        F.complex(0.0, 1.0), //
+        F.num(0.5), //
+        F.num(-0.5), //
+        F.num(Math.PI * (-0.5)), //
+        F.num(Math.PI * 0.5), //
+        F.num(-Math.PI), //
+        F.num(Math.PI), //
+        F.num(-Math.E), //
+        F.num(Math.E), //
+        F.C0, //
+        F.C1, //
+        F.CN1, //
+        F.CN1D2, //
+        F.C1D2, //
+        F.CNI, //
+        F.CI, //
+        // F.ZZ(Integer.MIN_VALUE), //
+        F.CInfinity, //
+        F.CNInfinity, //
+        F.Null, //
+        F.Power(F.x, F.C2), //
+        F.Indeterminate, //
+        F.ComplexInfinity, //
+        F.x_, //
+        F.y_, //
+        F.CEmptyList, //
+        F.assoc(F.List(F.Rule(F.a, F.C0), F.RuleDelayed(F.b, F.C1))), F.assoc(F.List()), //
+        F.assoc(F.List(F.Rule(F.stringx("s1"), F.C0), F.RuleDelayed(F.stringx("s2"), F.C1))), //
+        SparseArrayExpr.newDenseList(F.List(F.C0, F.C0), F.C0), //
+        SparseArrayExpr.newDenseList(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
+        SparseArrayExpr.newDenseList(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
+        SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
+        F.List(F.List(F.C0)), //
+        F.List(F.List(F.C1)), //
+        F.List(F.List(F.CN1)), //
+        F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), //
+        F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
+        F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
+        F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
+        F.List(F.CN1, F.CN2, F.C3), //
+        F.List(F.CN1D2, F.CN2, F.C3), //
+        F.List(F.x, F.CN2, F.C3), //
+        F.List(F.x, F.C5, F.CN3), //
+        F.List(F.x, F.CN3, F.CN1D2), //
+        F.List(F.CN5), // simulate level spec
+        F.List(F.C7), // simulate level spec
+        F.C1DSqrt5, //
+        F.C2Pi, //
+        F.CN3D2, //
+        F.C3D2, //
+        F.C3D4, //
+        F.Slot2, //
+        F.stringx(""), //
+        F.stringx("\\"), //
+        F.stringx("\r"), //
+        F.stringx("\t"), //
+        F.stringx("\n"), //
+        F.stringx("\r\n"), //
+        F.stringx("\n   "), //
+        F.stringx("\uffff"), //
+        F.Subtract(F.C1, F.C1));
 
     String[] functionStrs = AST2Expr.FUNCTION_STRINGS;
     ThreadLocalRandom random = ThreadLocalRandom.current();
@@ -972,17 +809,9 @@ public class ExprEvaluatorTests extends TestCase {
     }
   }
 
-  private void generateASTs(
-      IBuiltInSymbol sym,
-      int start,
-      int end,
-      IAST seedList,
-      ThreadLocalRandom random,
-      int[] counter,
-      IFunctionEvaluator evaluator,
-      EvalEngine engine,
-      boolean nestedChaos,
-      boolean headerExpr) {
+  private static void generateASTs(IBuiltInSymbol sym, int start, int end, IAST seedList,
+      ThreadLocalRandom random, int[] counter, IFunctionEvaluator evaluator, EvalEngine engine,
+      boolean nestedChaos, boolean headerExpr) {
     boolean quietMode = true;
     ExprEvaluator eval;
     System.out.flush();
@@ -1030,7 +859,7 @@ public class ExprEvaluatorTests extends TestCase {
         // System.out.print(".");
         thread = new SlowComputationThread(">> " + ast.toString(), engine);
         thread.start();
-        //        engine.evaluate(ast);
+        // engine.evaluate(ast);
         if (evaluator != null) {
           evaluator.evaluate(ast, engine);
         } else {
@@ -1087,8 +916,7 @@ public class ExprEvaluatorTests extends TestCase {
   public void testLucasL() {
     // LucasL(19,{x,{1,2,3,a},-1/2})
     IAST expr = F.LucasL(F.ZZ(19), F.List(F.x, F.List(F.C1, F.C2, F.C3, F.a), F.CN1D2));
-    checkEvaluator(
-        expr, //
+    checkEvaluator(expr, //
         "{19*x+285*x^3+1254*x^5+2508*x^7+2717*x^9+1729*x^11+665*x^13+152*x^15+19*x^17+x^\n"
             + "19,{9349,18738638,7222746567,19*a+285*a^3+1254*a^5+2508*a^7+2717*a^9+1729*a^11+\n"
             + "665*a^13+152*a^15+19*a^17+a^19},-57746701/524288}");
@@ -1097,8 +925,7 @@ public class ExprEvaluatorTests extends TestCase {
   public void testTogether() {
     // Together(1+SparseArray(Number of elements: 0 Dimensions: {2,2} Default value: 0))
     IExpr sa = SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0);
-    checkEvaluator(
-        F.Together(F.Plus(F.C1, sa)), //
+    checkEvaluator(F.Together(F.Plus(F.C1, sa)), //
         "1+SparseArray(Number of elements: 2 Dimensions: {2,2} Default value: 0)");
   }
 

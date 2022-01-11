@@ -58,6 +58,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
 import org.matheclipse.core.tensor.qty.IQuantity;
+import org.matheclipse.parser.client.math.MathException;
 
 public final class BooleanFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -68,24 +69,23 @@ public final class BooleanFunctions {
   public static final GreaterEqual CONST_GREATER_EQUAL = new GreaterEqual();
   public static final LessEqual CONST_LESS_EQUAL = new LessEqual();
 
-  private static final int[] FULL_BITSETS =
-      new int[] { //
-        0b1, //
-        0b11, //
-        0b111, //
-        0b1111, //
-        0b11111, //
-        0b111111, //
-        0b1111111, //
-        0b11111111, //
-        0b111111111, //
-        0b1111111111, //
-        0b11111111111, //
-        0b111111111111, //
-        0b1111111111111, //
-        0b11111111111111, //
-        0b111111111111111 //
-      };
+  private static final int[] FULL_BITSETS = new int[] { //
+      0b1, //
+      0b11, //
+      0b111, //
+      0b1111, //
+      0b11111, //
+      0b111111, //
+      0b1111111, //
+      0b11111111, //
+      0b111111111, //
+      0b1111111111, //
+      0b11111111111, //
+      0b111111111111, //
+      0b1111111111111, //
+      0b11111111111111, //
+      0b111111111111111 //
+  };
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -250,11 +250,8 @@ public final class BooleanFunctions {
         return F.Not(mapToSymbol(a.variable()));
       }
       // illegal arguments: \"`1`\" in `2`
-      String str =
-          IOFunctions.getMessage(
-              "argillegal",
-              F.List(F.stringx(formula.toString()), F.stringx("LogicFormula")),
-              EvalEngine.get());
+      String str = IOFunctions.getMessage("argillegal",
+          F.List(F.stringx(formula.toString()), F.stringx("LogicFormula")), EvalEngine.get());
       throw new ArgumentTypeException(str);
     }
 
@@ -295,9 +292,9 @@ public final class BooleanFunctions {
      *
      * @param logicExpr the expression which should be converted
      * @param substituteExpressions if <code>false</code> substitute only symbols with a virtual new
-     *     {@link FormulaFactory#variable(String)} variable. if <code>true</code> substitute non
-     *     boolean expressions with a virtual new {@link FormulaFactory#variable(String)} variable
-     *     by the string of their {@link IExpr#fullFormString()}
+     *        {@link FormulaFactory#variable(String)} variable. if <code>true</code> substitute non
+     *        boolean expressions with a virtual new {@link FormulaFactory#variable(String)}
+     *        variable by the string of their {@link IExpr#fullFormString()}
      * @return
      * @throws ArgumentTypeException
      * @see {@link #booleanFunction2Expr(Formula)}
@@ -322,10 +319,9 @@ public final class BooleanFunctions {
             case ID.Nand:
               if (ast.isSameHeadSizeGE(S.Nand, 3)) {
                 final Formula[] result = new Formula[ast.argSize()];
-                ast.forEach(
-                    (x, i) -> {
-                      result[i - 1] = factory.not(expr2BooleanFunction(x, substituteExpressions));
-                    });
+                ast.forEach((x, i) -> {
+                  result[i - 1] = factory.not(expr2BooleanFunction(x, substituteExpressions));
+                });
                 // for (int i = 1; i < ast.size(); i++) {
                 // result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
                 // }
@@ -335,10 +331,9 @@ public final class BooleanFunctions {
             case ID.Nor:
               if (ast.isSameHeadSizeGE(S.Nor, 3)) {
                 Formula[] result = new Formula[ast.argSize()];
-                ast.forEach(
-                    (x, i) -> {
-                      result[i - 1] = factory.not(expr2BooleanFunction(x, substituteExpressions));
-                    });
+                ast.forEach((x, i) -> {
+                  result[i - 1] = factory.not(expr2BooleanFunction(x, substituteExpressions));
+                });
                 // for (int i = 1; i < ast.size(); i++) {
                 // result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
                 // }
@@ -364,8 +359,7 @@ public final class BooleanFunctions {
               break;
             case ID.Implies:
               if (ast.isAST(S.Implies, 3)) {
-                return factory.implication(
-                    expr2BooleanFunction(ast.arg1(), substituteExpressions),
+                return factory.implication(expr2BooleanFunction(ast.arg1(), substituteExpressions),
                     expr2BooleanFunction(ast.arg2(), substituteExpressions));
               }
               break;
@@ -409,28 +403,25 @@ public final class BooleanFunctions {
         }
         return v;
       }
-      //       illegal arguments: \"`1`\" in `2`
-      String str =
-          IOFunctions.getMessage(
-              "argillegal", F.List(logicExpr, F.stringx("LogicFormula")), EvalEngine.get());
+      // illegal arguments: \"`1`\" in `2`
+      String str = IOFunctions.getMessage("argillegal",
+          F.List(logicExpr, F.stringx("LogicFormula")), EvalEngine.get());
       throw new ArgumentTypeException(str);
     }
 
     private Formula convertOr(final IAST ast, boolean substituteExpressions) {
       final Formula[] result = new Formula[ast.argSize()];
-      ast.forEach(
-          (x, i) -> {
-            result[i - 1] = expr2BooleanFunction(x, substituteExpressions);
-          });
+      ast.forEach((x, i) -> {
+        result[i - 1] = expr2BooleanFunction(x, substituteExpressions);
+      });
       return factory.or(result);
     }
 
     private Formula convertAnd(final IAST ast, boolean substituteExpressions) {
       final Formula[] result = new Formula[ast.argSize()];
-      ast.forEach(
-          (x, i) -> {
-            result[i - 1] = expr2BooleanFunction(x, substituteExpressions);
-          });
+      ast.forEach((x, i) -> {
+        result[i - 1] = expr2BooleanFunction(x, substituteExpressions);
+      });
       return factory.and(result);
     }
 
@@ -516,12 +507,12 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
+      // if (ast.isAST1()) {
+      // ast = F.operatorForm1Append(ast);
+      // if (!ast.isPresent()) {
+      // return F.NIL;
+      // }
+      // }
       if (ast.arg1().isAST()) {
         IAST list = (IAST) ast.arg1();
         IExpr head = ast.arg2();
@@ -548,17 +539,16 @@ public final class BooleanFunctions {
     public IExpr allTrue(IAST list, IExpr head, EvalEngine engine) {
       IASTAppendable logicalAnd = F.And();
 
-      if (!list.forAll(
-          x -> {
-            IExpr temp = engine.evaluate(F.unaryAST1(head, x));
-            if (temp.isTrue()) {
-              return true;
-            } else if (temp.isFalse()) {
-              return false;
-            }
-            logicalAnd.append(temp);
-            return true;
-          })) {
+      if (!list.forAll(x -> {
+        IExpr temp = engine.evaluate(F.unaryAST1(head, x));
+        if (temp.isTrue()) {
+          return true;
+        } else if (temp.isFalse()) {
+          return false;
+        }
+        logicalAnd.append(temp);
+        return true;
+      })) {
         return S.False;
       }
 
@@ -581,9 +571,10 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p><code>expr1 &amp;&amp; expr2 &amp;&amp; ...</code> evaluates each expression in turn,
-   * returning <code>False</code> as soon as an expression evaluates to <code>False</code>. If all
-   * expressions evaluate to <code>True</code>, <code>And</code> returns <code>True</code>.
+   * <p>
+   * <code>expr1 &amp;&amp; expr2 &amp;&amp; ...</code> evaluates each expression in turn, returning
+   * <code>False</code> as soon as an expression evaluates to <code>False</code>. If all expressions
+   * evaluate to <code>True</code>, <code>And</code> returns <code>True</code>.
    *
    * </blockquote>
    *
@@ -594,7 +585,8 @@ public final class BooleanFunctions {
    * False
    * </pre>
    *
-   * <p>If an expression does not evaluate to <code>True</code> or <code>False</code>, <code>And
+   * <p>
+   * If an expression does not evaluate to <code>True</code> or <code>False</code>, <code>And
    * </code> returns a result in symbolic form:
    *
    * <pre>
@@ -694,8 +686,7 @@ public final class BooleanFunctions {
       for (int i = 1; i < symbols.length; i++) {
         if (symbols[i] != 0) {
           for (int j = 1; j < notSymbols.length; j++) {
-            if (i != j
-                && symbols[i] == notSymbols[j]
+            if (i != j && symbols[i] == notSymbols[j]
                 && (result.equalsAt(i, result.get(j).first()))) {
               // And[a, Not[a]] => False
               return S.False;
@@ -731,7 +722,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if any application of <code>test</code> to <code>expr1, expr2, ...
+   * <p>
+   * returns <code>True</code> if any application of <code>test</code> to <code>expr1, expr2, ...
    * </code> evaluates to <code>True</code>.
    *
    * </blockquote>
@@ -742,7 +734,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if any application of <code>test</code> to items of <code>list
+   * <p>
+   * returns <code>True</code> if any application of <code>test</code> to items of <code>list
    * </code> at <code>level</code> evaluates to <code>True</code>.
    *
    * </blockquote>
@@ -753,7 +746,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>gives an operator that may be applied to expressions.
+   * <p>
+   * gives an operator that may be applied to expressions.
    *
    * </blockquote>
    *
@@ -772,12 +766,12 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
+      // if (ast.isAST1()) {
+      // ast = F.operatorForm1Append(ast);
+      // if (!ast.isPresent()) {
+      // return F.NIL;
+      // }
+      // }
       if (ast.arg1().isAST()) {
         IAST list = (IAST) ast.arg1();
         IExpr head = ast.arg2();
@@ -809,8 +803,8 @@ public final class BooleanFunctions {
       return logicalOr.isAST0() ? S.False : logicalOr;
     }
 
-    private static boolean anyTrueArgument(
-        IExpr x, IExpr head, IASTAppendable resultCollector, EvalEngine engine) {
+    private static boolean anyTrueArgument(IExpr x, IExpr head, IASTAppendable resultCollector,
+        EvalEngine engine) {
       IExpr temp = engine.evaluate(F.unaryAST1(head, x));
       if (temp.isTrue()) {
         return true;
@@ -833,7 +827,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>1</code> if <code>expr</code> evaluates to <code>True</code>; returns <code>0
+   * <p>
+   * returns <code>1</code> if <code>expr</code> evaluates to <code>True</code>; returns <code>0
    * </code> if <code>expr</code> evaluates to <code>False</code>; and gives no result otherwise.
    *
    * </blockquote>
@@ -894,8 +889,9 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>convert the <code>logical-expr</code> to <a
-   * href="https://en.wikipedia.org/wiki/Disjunctive_normal_form">disjunctive normal form</a>
+   * <p>
+   * convert the <code>logical-expr</code> to
+   * <a href="https://en.wikipedia.org/wiki/Disjunctive_normal_form">disjunctive normal form</a>
    *
    * </blockquote>
    *
@@ -905,8 +901,9 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>convert the <code>logical-expr</code> to <a
-   * href="https://en.wikipedia.org/wiki/Conjunctive_normal_form">conjunctive normal form</a>
+   * <p>
+   * convert the <code>logical-expr</code> to
+   * <a href="https://en.wikipedia.org/wiki/Conjunctive_normal_form">conjunctive normal form</a>
    *
    * </blockquote>
    *
@@ -916,8 +913,9 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>convert the <code>logical-expr</code> to <a
-   * href="https://en.wikipedia.org/wiki/Disjunctive_normal_form">disjunctive normal form</a>
+   * <p>
+   * convert the <code>logical-expr</code> to
+   * <a href="https://en.wikipedia.org/wiki/Disjunctive_normal_form">disjunctive normal form</a>
    *
    * </blockquote>
    *
@@ -961,8 +959,9 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>minimizes a boolean function with the <a
-   * href="https://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm">Quine McCluskey
+   * <p>
+   * minimizes a boolean function with the
+   * <a href="https://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm">Quine McCluskey
    * algorithm</a>
    *
    * </blockquote>
@@ -1023,7 +1022,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>generate <a href="https://en.wikipedia.org/wiki/Truth_table">truth values</a> from the
+   * <p>
+   * generate <a href="https://en.wikipedia.org/wiki/Truth_table">truth values</a> from the
    * <code>logical-expr</code>
    *
    * </blockquote>
@@ -1118,7 +1118,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>gives a list of the boolean variables that appear in the <code>logical-expr</code>.
+   * <p>
+   * gives a list of the boolean variables that appear in the <code>logical-expr</code>.
    *
    * </blockquote>
    *
@@ -1165,7 +1166,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>yields <code>True</code> if <code>x</code> and <code>y</code> are known to be equal, or
+   * <p>
+   * yields <code>True</code> if <code>x</code> and <code>y</code> are known to be equal, or
    * <code>False</code> if <code>x</code> and <code>y</code> are known to be unequal.
    *
    * </blockquote>
@@ -1176,7 +1178,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>represents the equation <code>lhs = rhs</code>.
+   * <p>
+   * represents the equation <code>lhs = rhs</code>.
    *
    * </blockquote>
    *
@@ -1193,7 +1196,8 @@ public final class BooleanFunctions {
    * True
    * </pre>
    *
-   * <p>Lists are compared based on their elements:
+   * <p>
+   * Lists are compared based on their elements:
    *
    * <pre>
    * &gt;&gt; {{1}, {2}} == {{1}, {2}}
@@ -1202,7 +1206,8 @@ public final class BooleanFunctions {
    * False
    * </pre>
    *
-   * <p>Symbolic constants are compared numerically:
+   * <p>
+   * Symbolic constants are compared numerically:
    *
    * <pre>
    * &gt;&gt; E &gt; 1
@@ -1247,8 +1252,8 @@ public final class BooleanFunctions {
      * @param rhs
      * @return
      */
-    private static IExpr createComparatorResult(
-        IBuiltInSymbol equalOrUnequalSymbol, IAST lhsAST, IExpr rhs) {
+    private static IExpr createComparatorResult(IBuiltInSymbol equalOrUnequalSymbol, IAST lhsAST,
+        IExpr rhs) {
       return F.binaryAST2(equalOrUnequalSymbol, lhsAST.rest(), rhs);
     }
 
@@ -1261,8 +1266,8 @@ public final class BooleanFunctions {
      * @param a2 right-hand-side of the comparator expression
      * @return the simplified comparator expression or {@link F#NIL} if no simplification was found
      */
-    protected static IExpr simplifyCompare(
-        IBuiltInSymbol equalOrUnequalSymbol, IExpr a1, IExpr a2) {
+    protected static IExpr simplifyCompare(IBuiltInSymbol equalOrUnequalSymbol, IExpr a1,
+        IExpr a2) {
       IExpr lhs, rhs;
       if (a2.isNumber()) {
         lhs = a1;
@@ -1306,7 +1311,7 @@ public final class BooleanFunctions {
         IExpr arg1 = F.expandAll(result.arg1(), true, true);
         while (i < result.size()) {
           IExpr arg2 = F.expandAll(result.get(i), true, true);
-          //          b = compareTernary(arg1, arg2);
+          // b = compareTernary(arg1, arg2);
           b = arg1.equalTernary(arg2, engine);
           if (b == IExpr.COMPARE_TERNARY.FALSE) {
             return S.False;
@@ -1343,8 +1348,9 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>Equivalence relation. <code>Equivalent(A, B)</code> is <code>True</code> iff <code>A</code>
-   * and <code>B</code> are both <code>True</code> or both <code>False</code>. Returns <code>True
+   * <p>
+   * Equivalence relation. <code>Equivalent(A, B)</code> is <code>True</code> iff <code>A</code> and
+   * <code>B</code> are both <code>True</code> or both <code>False</code>. Returns <code>True
    * </code> if all of the arguments are logically equivalent. Returns <code>False</code> otherwise.
    * <code>Equivalent(arg1, arg2, ...)</code> is equivalent to <code>
    * (arg1 &amp;&amp; arg2 &amp;&amp; ...) || (!arg1 &amp;&amp; !arg2 &amp;&amp; ...)</code>.
@@ -1361,7 +1367,8 @@ public final class BooleanFunctions {
    * True
    * </pre>
    *
-   * <p>If all expressions do not evaluate to 'True' or 'False', 'Equivalent' returns a result in
+   * <p>
+   * If all expressions do not evaluate to 'True' or 'False', 'Equivalent' returns a result in
    * symbolic form:
    *
    * <pre>
@@ -1369,7 +1376,8 @@ public final class BooleanFunctions {
    * Equivalent(a,b,c)
    * </pre>
    *
-   * <p>Otherwise, 'Equivalent' returns a result in DNF
+   * <p>
+   * Otherwise, 'Equivalent' returns a result in DNF
    *
    * <pre>
    * &gt;&gt; Equivalent(a, b, True, c)
@@ -1561,7 +1569,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>yields <code>True</code> if <code>x</code> is known to be greater than <code>y</code>.
+   * <p>
+   * yields <code>True</code> if <code>x</code> is known to be greater than <code>y</code>.
    *
    * </blockquote>
    *
@@ -1571,7 +1580,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>represents the inequality <code>lhs &gt; rhs</code>.
+   * <p>
+   * represents the inequality <code>lhs &gt; rhs</code>.
    *
    * </blockquote>
    *
@@ -1594,8 +1604,8 @@ public final class BooleanFunctions {
      * GreaterEqual, Less, LessEqual</code>.
      *
      * @param arg1 the left-hand-side of the comparison
-     * @param arg2 the right-hand-side of the comparison which is tested with {@link
-     *     IExpr#isNumericFunction(boolean)} equals <code>true</code>.
+     * @param arg2 the right-hand-side of the comparison which is tested with
+     *        {@link IExpr#isNumericFunction(boolean)} equals <code>true</code>.
      * @return
      */
     protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
@@ -1629,9 +1639,9 @@ public final class BooleanFunctions {
      * Compare two intervals if they are greater.
      *
      * <ul>
-     *   <li>Return TRUE if the comparison is <code>true</code>
-     *   <li>Return FALSE if the comparison is <code>false</code>
-     *   <li>Return UNDEFINED if the comparison is undetermined (i.e. could not be evaluated)
+     * <li>Return TRUE if the comparison is <code>true</code>
+     * <li>Return FALSE if the comparison is <code>false</code>
+     * <li>Return UNDEFINED if the comparison is undetermined (i.e. could not be evaluated)
      * </ul>
      *
      * @param lower0 the lower bound of the first interval
@@ -1640,8 +1650,8 @@ public final class BooleanFunctions {
      * @param upper1 the upper bound of the second interval
      * @return
      */
-    private static IExpr.COMPARE_TERNARY compareGreaterIntervalTernary(
-        final IExpr lower0, final IExpr upper0, final IExpr lower1, final IExpr upper1) {
+    private static IExpr.COMPARE_TERNARY compareGreaterIntervalTernary(final IExpr lower0,
+        final IExpr upper0, final IExpr lower1, final IExpr upper1) {
       if (lower0.greaterThan(upper1).isTrue()) {
         return IExpr.COMPARE_TERNARY.TRUE;
       } else {
@@ -1658,8 +1668,7 @@ public final class BooleanFunctions {
       // don't compare strings
       if (a0.isReal()) {
         if (a1.isReal()) {
-          return ((ISignedNumber) a0).isGT((ISignedNumber) a1)
-              ? IExpr.COMPARE_TERNARY.TRUE
+          return ((ISignedNumber) a0).isGT((ISignedNumber) a1) ? IExpr.COMPARE_TERNARY.TRUE
               : IExpr.COMPARE_TERNARY.FALSE;
         } else if (a1.isInfinity()) {
           return IExpr.COMPARE_TERNARY.FALSE;
@@ -1712,17 +1721,13 @@ public final class BooleanFunctions {
      * @param rhs right-hand-side of the comparator expression
      * @param useOppositeHeader use the opposite header to create the result
      * @param originalHead symbol of the comparator operator for which the simplification was
-     *     started
+     *        started
      * @param oppositeHead opposite of the symbol of the comparator operator for which the
-     *     comparison was started
+     *        comparison was started
      * @return
      */
-    private IAST createComparatorResult(
-        IExpr lhs,
-        IExpr rhs,
-        boolean useOppositeHeader,
-        ISymbol originalHead,
-        ISymbol oppositeHead) {
+    private IAST createComparatorResult(IExpr lhs, IExpr rhs, boolean useOppositeHeader,
+        ISymbol originalHead, ISymbol oppositeHead) {
       return F.binaryAST2(useOppositeHeader ? oppositeHead : originalHead, lhs, rhs);
     }
 
@@ -1845,7 +1850,7 @@ public final class BooleanFunctions {
      * @param a1 left-hand-side of the comparator expression
      * @param a2 right-hand-side of the comparator expression
      * @return the simplified comparator expression or <code>null</code> if no simplification was
-     *     found
+     *         found
      */
     protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
       return simplifyCompare(a1, a2, S.Greater, S.Less, true);
@@ -1864,12 +1869,8 @@ public final class BooleanFunctions {
      * @param setTrue if <code>true</code> return S.True otherwise S.False
      * @return the simplified comparator expression or {@link F#NIL} if no simplification was found
      */
-    protected final IExpr simplifyCompare(
-        IExpr a1,
-        IExpr a2,
-        IBuiltInSymbol originalHead,
-        IBuiltInSymbol oppositeHead,
-        boolean setTrue) {
+    protected final IExpr simplifyCompare(IExpr a1, IExpr a2, IBuiltInSymbol originalHead,
+        IBuiltInSymbol oppositeHead, boolean setTrue) {
       if (a1.isInfinity() && a2.isInfinity()) {
         return S.False;
       }
@@ -1918,26 +1919,26 @@ public final class BooleanFunctions {
           IAST result = lhsAST.partitionTimes(x -> x.isNumericFunction(true), F.C0, F.C1, S.List);
           if (!result.arg1().isZero()) {
             if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
-              return IOFunctions.printMessage(
-                  originalHead, "nord", F.List(result.arg1()), EvalEngine.get());
+              return IOFunctions.printMessage(originalHead, "nord", F.List(result.arg1()),
+                  EvalEngine.get());
             }
             if (result.arg1().isNegative()) {
               useOppositeHeader = !useOppositeHeader;
             }
             rhs = rhs.divide(result.arg1());
-            return createComparatorResult(
-                result.arg2(), rhs, useOppositeHeader, originalHead, oppositeHead);
+            return createComparatorResult(result.arg2(), rhs, useOppositeHeader, originalHead,
+                oppositeHead);
           }
         } else if (lhsAST.isPlus()) {
           IAST result = lhsAST.partitionPlus(x -> x.isNumericFunction(true), F.C0, F.C0, S.List);
           if (!result.arg1().isZero()) {
             if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
-              return IOFunctions.printMessage(
-                  originalHead, "nord", F.List(result.arg1()), EvalEngine.get());
+              return IOFunctions.printMessage(originalHead, "nord", F.List(result.arg1()),
+                  EvalEngine.get());
             }
             rhs = rhs.subtract(result.arg1());
-            return createComparatorResult(
-                result.arg2(), rhs, useOppositeHeader, originalHead, oppositeHead);
+            return createComparatorResult(result.arg2(), rhs, useOppositeHeader, originalHead,
+                oppositeHead);
           }
         }
       }
@@ -1956,7 +1957,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>yields <code>True</code> if <code>x</code> is known to be greater than or equal to <code>y
+   * <p>
+   * yields <code>True</code> if <code>x</code> is known to be greater than or equal to <code>y
    * </code>.
    *
    * </blockquote>
@@ -1967,7 +1969,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>represents the inequality <code>lhs &gt;= rhs</code>.
+   * <p>
+   * represents the inequality <code>lhs &gt;= rhs</code>.
    *
    * </blockquote>
    *
@@ -2050,7 +2053,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>Logical implication. <code>Implies(A, B)</code> is equivalent to <code>!A || B</code>.
+   * <p>
+   * Logical implication. <code>Implies(A, B)</code> is equivalent to <code>!A || B</code>.
    * <code>Implies(expr1, expr2)</code> evaluates each argument in turn, returning <code>True</code>
    * as soon as the first argument evaluates to <code>False</code>. If the first argument evaluates
    * to <code>True</code>, <code>Implies</code> returns the second argument.
@@ -2066,7 +2070,8 @@ public final class BooleanFunctions {
    * a
    * </pre>
    *
-   * <p>If an expression does not evaluate to <code>True</code> or <code>False</code>, <code>Implies
+   * <p>
+   * If an expression does not evaluate to <code>True</code> or <code>False</code>, <code>Implies
    * </code> returns a result in symbolic form:
    *
    * <pre>
@@ -2126,9 +2131,8 @@ public final class BooleanFunctions {
   }
 
   private static final class Inequality extends AbstractEvaluator implements IComparatorFunction {
-    static final IBuiltInSymbol[] COMPARATOR_SYMBOLS = {
-      F.Equal, F.Greater, F.GreaterEqual, F.Less, F.LessEqual, F.Unequal
-    };
+    static final IBuiltInSymbol[] COMPARATOR_SYMBOLS =
+        {F.Equal, F.Greater, F.GreaterEqual, F.Less, F.LessEqual, F.Unequal};
 
     private static final int UNKNOWN = -3;
     private static final int UNEQUAL = -2;
@@ -2257,7 +2261,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>yields <code>True</code> if <code>x</code> is known to be less than <code>y</code>.
+   * <p>
+   * yields <code>True</code> if <code>x</code> is known to be less than <code>y</code>.
    *
    * </blockquote>
    *
@@ -2267,7 +2272,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>represents the inequality <code>lhs &lt; rhs</code>.
+   * <p>
+   * represents the inequality <code>lhs &lt; rhs</code>.
    *
    * </blockquote>
    *
@@ -2344,7 +2350,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>yields <code>True</code> if <code>x</code> is known to be less than or equal <code>y</code>.
+   * <p>
+   * yields <code>True</code> if <code>x</code> is known to be less than or equal <code>y</code>.
    *
    * </blockquote>
    *
@@ -2354,7 +2361,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>represents the inequality <code>lhs ≤ rhs</code>.
+   * <p>
+   * represents the inequality <code>lhs ≤ rhs</code>.
    *
    * </blockquote>
    *
@@ -2479,9 +2487,9 @@ public final class BooleanFunctions {
           if (x.isNot() && x.first().isOr()) {
             IAST result = ((IAST) x.first()).apply(S.And);
             result = result.map(arg -> F.Not(arg));
-            //            for (int i = 1; i < result.size(); i++) {
-            //              result.set(i, F.Not(result.get(i)));
-            //            }
+            // for (int i = 1; i < result.size(); i++) {
+            // result.set(i, F.Not(result.get(i)));
+            // }
             return engine.evaluate(result);
           }
           if (formula.isSameHeadSizeGE(S.Xor, 3)) {
@@ -2515,27 +2523,31 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the expression with the greatest value among the <code>e_i</code>.
+   * <p>
+   * returns the expression with the greatest value among the <code>e_i</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>Maximum of a series of numbers:
+   * <p>
+   * Maximum of a series of numbers:
    *
    * <pre>
    * &gt;&gt; Max(4, -8, 1)
    * 4
    * </pre>
    *
-   * <p><code>Max</code> flattens lists in its arguments:
+   * <p>
+   * <code>Max</code> flattens lists in its arguments:
    *
    * <pre>
    * &gt;&gt; Max({1,2},3,{-3,3.5,-Infinity},{{1/2}})
    * 3.5
    * </pre>
    *
-   * <p><code>Max</code> with symbolic arguments remains in symbolic form:
+   * <p>
+   * <code>Max</code> with symbolic arguments remains in symbolic form:
    *
    * <pre>
    * &gt;&gt; Max(x, y)
@@ -2545,7 +2557,8 @@ public final class BooleanFunctions {
    * Max(40,x,y)
    * </pre>
    *
-   * <p>With no arguments, <code>Max</code> gives <code>-Infinity</code>:
+   * <p>
+   * With no arguments, <code>Max</code> gives <code>-Infinity</code>:
    *
    * <pre>
    * &gt;&gt; Max()
@@ -2653,27 +2666,31 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the expression with the lowest value among the <code>e_i</code>.
+   * <p>
+   * returns the expression with the lowest value among the <code>e_i</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>Minimum of a series of numbers:
+   * <p>
+   * Minimum of a series of numbers:
    *
    * <pre>
    * &gt;&gt; Max(4, -8, 1)
    * -8
    * </pre>
    *
-   * <p><code>Min</code> flattens lists in its arguments:
+   * <p>
+   * <code>Min</code> flattens lists in its arguments:
    *
    * <pre>
    * &gt;&gt; Min({1,2},3,{-3,3.5,-Infinity},{{1/2}})
    * -Infinity
    * </pre>
    *
-   * <p><code>Min</code> with symbolic arguments remains in symbolic form:
+   * <p>
+   * <code>Min</code> with symbolic arguments remains in symbolic form:
    *
    * <pre>
    * &gt;&gt; Min(x, y)
@@ -2683,7 +2700,8 @@ public final class BooleanFunctions {
    * Min(-3,x,y)
    * </pre>
    *
-   * <p>With no arguments, <code>Min</code> gives <code>Infinity</code>:
+   * <p>
+   * With no arguments, <code>Min</code> gives <code>Infinity</code>:
    *
    * <pre>
    * &gt;&gt; Min()
@@ -2817,18 +2835,15 @@ public final class BooleanFunctions {
         IExpr arg2 = ast.arg2();
         if (arg1.isList() || arg1.isAssociation()) {
           if (arg2.isList()) {
-            if (arg2.size() == 3
-                && //
-                arg2.first().isNumericFunction(true)
-                && //
+            if (arg2.size() == 3 && //
+                arg2.first().isNumericFunction(true) && //
                 arg2.second().isNumericFunction(true)) {
-              return F.List(
-                  F.Subtract(F.Min(arg1), arg2.first()), F.Plus(F.Max(arg1), arg2.second()));
+              return F.List(F.Subtract(F.Min(arg1), arg2.first()),
+                  F.Plus(F.Max(arg1), arg2.second()));
             }
           } else if (arg2.isNumericFunction(true)) {
             return F.List(F.Subtract(F.Min(arg1), arg2), F.Plus(F.Max(arg1), arg2));
-          } else if (arg2.isAST(S.Scaled, 2)
-              && //
+          } else if (arg2.isAST(S.Scaled, 2) && //
               arg2.first().isNumericFunction(true)) {
             IExpr delta =
                 engine.evaluate(F.Times(arg2.first(), F.Subtract(F.Max(arg1), F.Min(arg1))));
@@ -2858,7 +2873,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>Logical NAND function. It evaluates its arguments in order, giving <code>True</code>
+   * <p>
+   * Logical NAND function. It evaluates its arguments in order, giving <code>True</code>
    * immediately if any of them are <code>False</code>, and <code>False</code> if they are all
    * <code>True</code>.
    *
@@ -2924,7 +2940,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>x</code> is a negative real number.
+   * <p>
+   * returns <code>True</code> if <code>x</code> is a negative real number.
    *
    * </blockquote>
    *
@@ -2998,7 +3015,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if no application of <code>test</code> to <code>expr1, expr2, ...
+   * <p>
+   * returns <code>True</code> if no application of <code>test</code> to <code>expr1, expr2, ...
    * </code> evaluates to <code>True</code>.
    *
    * </blockquote>
@@ -3009,7 +3027,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if no application of <code>test</code> to items of <code>list
+   * <p>
+   * returns <code>True</code> if no application of <code>test</code> to items of <code>list
    * </code> at <code>level</code> evaluates to <code>True</code>.
    *
    * </blockquote>
@@ -3020,7 +3039,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>gives an operator that may be applied to expressions.
+   * <p>
+   * gives an operator that may be applied to expressions.
    *
    * </blockquote>
    *
@@ -3039,12 +3059,12 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
+      // if (ast.isAST1()) {
+      // ast = F.operatorForm1Append(ast);
+      // if (!ast.isPresent()) {
+      // return F.NIL;
+      // }
+      // }
       if (ast.arg1().isAST()) {
         IAST list = (IAST) ast.arg1();
         IExpr head = ast.arg2();
@@ -3076,8 +3096,8 @@ public final class BooleanFunctions {
       return logicalNor.isAST0() ? S.True : logicalNor;
     }
 
-    private static boolean noneTrueArgument(
-        IExpr x, IExpr head, IASTAppendable resultCollector, EvalEngine engine) {
+    private static boolean noneTrueArgument(IExpr x, IExpr head, IASTAppendable resultCollector,
+        EvalEngine engine) {
       IExpr temp = engine.evaluate(F.unaryAST1(head, x));
       if (temp.isTrue()) {
         return true;
@@ -3100,7 +3120,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>x</code> is a positive real number or zero.
+   * <p>
+   * returns <code>True</code> if <code>x</code> is a positive real number or zero.
    *
    * </blockquote>
    *
@@ -3156,7 +3177,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>x</code> is a negative real number or zero.
+   * <p>
+   * returns <code>True</code> if <code>x</code> is a negative real number or zero.
    *
    * </blockquote>
    *
@@ -3206,7 +3228,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>Logical NOR function. It evaluates its arguments in order, giving <code>False</code>
+   * <p>
+   * Logical NOR function. It evaluates its arguments in order, giving <code>False</code>
    * immediately if any of them are <code>True</code>, and <code>True</code> if they are all <code>
    * False</code>.
    *
@@ -3270,7 +3293,8 @@ public final class BooleanFunctions {
    * Not(expr)
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * !expr
@@ -3278,7 +3302,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>Logical Not function (negation). Returns <code>True</code> if the statement is <code>False
+   * <p>
+   * Logical Not function (negation). Returns <code>True</code> if the statement is <code>False
    * </code>. Returns <code>False</code> if the <code>expr</code> is <code>True</code>
    *
    * </blockquote>
@@ -3348,7 +3373,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p><code>expr1 || expr2 || ...</code> evaluates each expression in turn, returning <code>True
+   * <p>
+   * <code>expr1 || expr2 || ...</code> evaluates each expression in turn, returning <code>True
    * </code> as soon as an expression evaluates to <code>True</code>. If all expressions evaluate to
    * <code>False</code>, <code>Or</code> returns <code>False</code>.
    *
@@ -3361,7 +3387,8 @@ public final class BooleanFunctions {
    * True
    * </pre>
    *
-   * <p>If an expression does not evaluate to <code>True</code> or <code>False</code>, <code>Or
+   * <p>
+   * If an expression does not evaluate to <code>True</code> or <code>False</code>, <code>Or
    * </code> returns a result in symbolic form:
    *
    * <pre>
@@ -3431,8 +3458,7 @@ public final class BooleanFunctions {
       for (int i = 1; i < symbols.length; i++) {
         if (symbols[i] != 0) {
           for (int j = 1; j < notSymbols.length; j++) {
-            if (i != j
-                && symbols[i] == notSymbols[j]
+            if (i != j && symbols[i] == notSymbols[j]
                 && (result.equalsAt(i, result.get(j).first()))) {
               // Or[a, Not[a]] => True
               return S.True;
@@ -3467,7 +3493,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>x</code> is a positive real number.
+   * <p>
+   * returns <code>True</code> if <code>x</code> is a positive real number.
    *
    * </blockquote>
    *
@@ -3478,8 +3505,8 @@ public final class BooleanFunctions {
    * True
    * </pre>
    *
-   * <p><code>Positive</code> returns <code>False</code> if <code>x</code> is zero or a complex
-   * number:
+   * <p>
+   * <code>Positive</code> returns <code>False</code> if <code>x</code> is zero or a complex number:
    *
    * <pre>
    * &gt;&gt; Positive(0)
@@ -3545,20 +3572,23 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>x</code> and <code>y</code> are structurally identical.
+   * <p>
+   * returns <code>True</code> if <code>x</code> and <code>y</code> are structurally identical.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>Any object is the same as itself:
+   * <p>
+   * Any object is the same as itself:
    *
    * <pre>
    * &gt;&gt; a===a
    * True
    * </pre>
    *
-   * <p>Unlike <code>Equal</code>, <code>SameQ</code> only yields <code>True</code> if <code>x
+   * <p>
+   * Unlike <code>Equal</code>, <code>SameQ</code> only yields <code>True</code> if <code>x
    * </code> and <code>y</code> have the same type:
    *
    * <pre>
@@ -3593,7 +3623,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>
+   * <p>
+   * test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>
    * False</code> and <code>True</code> values for the variables of the boolean expression and
    * return the number of possible combinations.
    *
@@ -3605,7 +3636,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>
+   * <p>
+   * test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>
    * False</code> and <code>True</code> values for the <code>list-of-variables</code> and return the
    * number of possible combinations.
    *
@@ -3677,7 +3709,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>
+   * <p>
+   * test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>
    * False</code> and <code>True</code> values for the <code>list-of-variables</code> and return
    * exactly one instance of <code>True, False</code> combinations if possible.
    *
@@ -3689,7 +3722,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>
+   * <p>
+   * test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>
    * False</code> and <code>True</code> values for the <code>list-of-variables</code> and return up
    * to <code>combinations</code> instances of <code>True, False</code> combinations if possible.
    *
@@ -3767,7 +3801,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>
+   * <p>
+   * test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>
    * False</code> and <code>True</code> values for the <code>list-of-variables</code>.
    *
    * </blockquote>
@@ -3786,33 +3821,38 @@ public final class BooleanFunctions {
       IASTMutable userDefinedVariables;
       IExpr arg1 = ast.arg1();
 
-      // currently only SAT is available
-      String method = "SAT";
-      if (ast.size() > 2) {
-        if (ast.arg2().isList()) {
-          userDefinedVariables = ((IAST) ast.arg2()).copy();
-          EvalAttributes.sort(userDefinedVariables);
-        } else {
-          userDefinedVariables = F.ListAlloc(ast.arg2());
-        }
-        if (ast.size() > 3) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-          // "BDD" (binary decision diagram), "SAT", "TREE" ?
-          IExpr optionMethod = options.getOption(S.Method);
-          if (optionMethod.isString()) {
-            method = optionMethod.toString();
+      try {
+        // currently only SAT is available
+        String method = "SAT";
+        if (ast.size() > 2) {
+          if (ast.arg2().isList()) {
+            userDefinedVariables = ((IAST) ast.arg2()).copy();
+            EvalAttributes.sort(userDefinedVariables);
+          } else {
+            userDefinedVariables = F.ListAlloc(ast.arg2());
           }
-        }
-        VariablesSet vSet = new VariablesSet(arg1);
-        IAST variables = vSet.getVarList();
-        if (variables.equals(userDefinedVariables)) {
+          if (ast.size() > 3) {
+            final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+            // "BDD" (binary decision diagram), "SAT", "TREE" ?
+            IExpr optionMethod = options.getOption(S.Method);
+            if (optionMethod.isString()) {
+              method = optionMethod.toString();
+            }
+          }
+          VariablesSet vSet = new VariablesSet(arg1);
+          IAST variables = vSet.getVarList();
+          if (variables.equals(userDefinedVariables)) {
+            return logicNGSatisfiableQ(arg1);
+          }
+
+        } else {
           return logicNGSatisfiableQ(arg1);
         }
-
-      } else {
-        return logicNGSatisfiableQ(arg1);
+        return bruteForceSatisfiableQ(arg1, userDefinedVariables, 1) ? S.True : S.False;
+      } catch (MathException me) {
+        // fall through
       }
-      return bruteForceSatisfiableQ(arg1, userDefinedVariables, 1) ? S.True : S.False;
+      return S.False;
     }
 
     @Override
@@ -3893,16 +3933,17 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>test whether the <code>boolean-expr</code> is satisfiable by all combinations of boolean
+   * <p>
+   * test whether the <code>boolean-expr</code> is satisfiable by all combinations of boolean
    * <code>False</code> and <code>True</code> values for the <code>list-of-variables</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Tautology_(logic)">Wikipedia - Tautology
-   *       (logic)</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Tautology_(logic)">Wikipedia - Tautology (logic)</a>
    * </ul>
    */
   private static class TautologyQ extends AbstractFunctionEvaluator implements IPredicate {
@@ -3912,23 +3953,28 @@ public final class BooleanFunctions {
       IASTMutable userDefinedVariables;
       IExpr arg1 = ast.arg1();
 
-      if (ast.isAST2()) {
-        if (ast.arg2().isList()) {
-          userDefinedVariables = ((IAST) ast.arg2()).copy();
-          EvalAttributes.sort(userDefinedVariables);
+      try {
+        if (ast.isAST2()) {
+          if (ast.arg2().isList()) {
+            userDefinedVariables = ((IAST) ast.arg2()).copy();
+            EvalAttributes.sort(userDefinedVariables);
+          } else {
+            userDefinedVariables = F.ListAlloc(ast.arg2());
+          }
+          VariablesSet vSet = new VariablesSet(arg1);
+          IAST variables = vSet.getVarList();
+          if (variables.equals(userDefinedVariables)) {
+            return logicNGTautologyQ(arg1);
+          }
         } else {
-          userDefinedVariables = F.ListAlloc(ast.arg2());
-        }
-        VariablesSet vSet = new VariablesSet(arg1);
-        IAST variables = vSet.getVarList();
-        if (variables.equals(userDefinedVariables)) {
           return logicNGTautologyQ(arg1);
         }
-      } else {
-        return logicNGTautologyQ(arg1);
-      }
 
-      return bruteForceTautologyQ(arg1, userDefinedVariables, 1) ? S.True : S.False;
+        return bruteForceTautologyQ(arg1, userDefinedVariables, 1) ? S.True : S.False;
+      } catch (MathException me) {
+        // fall through
+      }
+      return S.False;
     }
 
     @Override
@@ -3939,7 +3985,8 @@ public final class BooleanFunctions {
     /**
      * Use LogicNG MiniSAT method.
      *
-     * <p><b>Note:</b> <code>TautologyQ(formula)</code> is equivalent to <code>
+     * <p>
+     * <b>Note:</b> <code>TautologyQ(formula)</code> is equivalent to <code>
      * !SatisfiableQ(!formula)</code>.
      *
      * @param arg1
@@ -4004,7 +4051,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if and only if <code>expr</code> is <code>True</code>.
+   * <p>
+   * returns <code>True</code> if and only if <code>expr</code> is <code>True</code>.
    *
    * </blockquote>
    *
@@ -4046,7 +4094,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>yields <code>False</code> if <code>x</code> and <code>y</code> are known to be equal, or
+   * <p>
+   * yields <code>False</code> if <code>x</code> and <code>y</code> are known to be equal, or
    * <code>True</code> if <code>x</code> and <code>y</code> are known to be unequal.
    *
    * </blockquote>
@@ -4057,7 +4106,8 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>represents the inequality <code>lhs &lt;&gt; rhs</code>.
+   * <p>
+   * represents the inequality <code>lhs &lt;&gt; rhs</code>.
    *
    * </blockquote>
    *
@@ -4068,7 +4118,8 @@ public final class BooleanFunctions {
    * False
    * </pre>
    *
-   * <p>Lists are compared based on their elements:
+   * <p>
+   * Lists are compared based on their elements:
    *
    * <pre>
    * &gt;&gt; {1} != {2}
@@ -4128,7 +4179,7 @@ public final class BooleanFunctions {
         while (i < result.size()) {
           j = i;
           while (j < result.size()) {
-            //            b = compareTernary(result.get(i - 1), result.get(j++));
+            // b = compareTernary(result.get(i - 1), result.get(j++));
             b = result.get(i - 1).equalTernary(result.get(j++), engine);
             if (b == IExpr.COMPARE_TERNARY.TRUE) {
               return S.False;
@@ -4154,14 +4205,15 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>x</code> and <code>y</code> are not structurally
-   * identical.
+   * <p>
+   * returns <code>True</code> if <code>x</code> and <code>y</code> are not structurally identical.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>Any object is the same as itself:
+   * <p>
+   * Any object is the same as itself:
    *
    * <pre>
    * &gt;&gt; a=!=a
@@ -4209,13 +4261,15 @@ public final class BooleanFunctions {
    *
    * <blockquote>
    *
-   * <p>Logical XOR (exclusive OR) function. Returns <code>True</code> if an odd number of the
+   * <p>
+   * Logical XOR (exclusive OR) function. Returns <code>True</code> if an odd number of the
    * arguments are <code>True</code> and the rest are <code>False</code>. Returns <code>False</code>
    * if an even number of the arguments are <code>True</code> and the rest are <code>False</code>.
    *
    * </blockquote>
    *
-   * <p>See: <a href="https://en.wikipedia.org/wiki/Exclusive_or">Wikipedia: Exclusive or</a>
+   * <p>
+   * See: <a href="https://en.wikipedia.org/wiki/Exclusive_or">Wikipedia: Exclusive or</a>
    *
    * <h3>Examples</h3>
    *
@@ -4226,7 +4280,8 @@ public final class BooleanFunctions {
    * False
    * </pre>
    *
-   * <p>If an expression does not evaluate to <code>True</code> or <code>False</code>, <code>Xor
+   * <p>
+   * If an expression does not evaluate to <code>True</code> or <code>False</code>, <code>Xor
    * </code> returns a result in symbolic form:
    *
    * <pre>
@@ -4326,7 +4381,7 @@ public final class BooleanFunctions {
     IExpr arg1 = F.expandAll(a1, true, true);
     IExpr arg2 = F.expandAll(a2, true, true);
 
-    //    b = CONST_EQUAL.compareTernary(arg1, arg2);
+    // b = CONST_EQUAL.compareTernary(arg1, arg2);
     b = arg1.equalTernary(arg2, engine);
     if (b == IExpr.COMPARE_TERNARY.FALSE) {
       return S.False;
@@ -4396,7 +4451,7 @@ public final class BooleanFunctions {
    * @param q1
    * @param q2
    * @return <code>Integer.MIN_VALUE</code> if the <code>compareTo()</code> method could not be
-   *     executed, because of different unit types
+   *         executed, because of different unit types
    */
   private static int quantityCompareTo(IQuantity q1, IQuantity q2) {
     try {
@@ -4432,7 +4487,7 @@ public final class BooleanFunctions {
     IExpr.COMPARE_TERNARY b;
     IExpr arg1 = F.expandAll(a1, true, true);
     IExpr arg2 = F.expandAll(a2, true, true);
-    //    b = CONST_EQUAL.compareTernary(arg1, arg2);
+    // b = CONST_EQUAL.compareTernary(arg1, arg2);
     b = arg1.equalTernary(arg2, engine);
     if (b == IExpr.COMPARE_TERNARY.FALSE) {
       return S.True;
@@ -4465,7 +4520,8 @@ public final class BooleanFunctions {
   /**
    * Use LogicNG MiniSAT method.
    *
-   * <p>Example: Create a list of rules in the form <code>
+   * <p>
+   * Example: Create a list of rules in the form <code>
    * {{False,True,False,False},{True,False,False,False},...}</code> for the variables <code>
    * {a,b,c,d}</code>
    *
@@ -4475,8 +4531,8 @@ public final class BooleanFunctions {
    * @param maxChoices maximum number of choices, which satisfy the given boolean expression
    * @return
    */
-  public static IAST satisfiabilityInstances(
-      IExpr booleanExpression, IAST variables, int maxChoices) {
+  public static IAST satisfiabilityInstances(IExpr booleanExpression, IAST variables,
+      int maxChoices) {
     LogicFormula lf = new LogicFormula();
     Variable[] vars = lf.ast2Variable(variables);
     List<Assignment> assignments =
@@ -4489,7 +4545,7 @@ public final class BooleanFunctions {
       }
       list.append( //
           lf.literals2BooleanList(assignments.get(i).literals(), map) //
-          );
+      );
     }
     EvalAttributes.sort(list, Comparators.REVERSE_CANONICAL_COMPARATOR);
     return list;
@@ -4506,8 +4562,8 @@ public final class BooleanFunctions {
    * @param maximumNumberOfResults
    * @return
    */
-  public static IAST solveInstances(
-      IExpr booleanExpression, IAST variables, int maximumNumberOfResults) {
+  public static IAST solveInstances(IExpr booleanExpression, IAST variables,
+      int maximumNumberOfResults) {
     LogicFormula lf = new LogicFormula();
     Variable[] vars = lf.ast2Variable(variables);
     List<Assignment> assignments =
@@ -4520,7 +4576,7 @@ public final class BooleanFunctions {
       }
       list.append( //
           lf.literals2VariableList(assignments.get(i).literals(), map) //
-          );
+      );
     }
     EvalAttributes.sort(list, Comparators.REVERSE_CANONICAL_COMPARATOR);
     return list;
@@ -4562,8 +4618,8 @@ public final class BooleanFunctions {
     return F.NIL;
   }
 
-  public static List<Assignment> logicNGSatisfiabilityInstances(
-      IExpr booleanExpression, Variable[] vars, LogicFormula lf, int maxChoices) {
+  public static List<Assignment> logicNGSatisfiabilityInstances(IExpr booleanExpression,
+      Variable[] vars, LogicFormula lf, int maxChoices) {
 
     final Formula formula = lf.expr2BooleanFunction(booleanExpression, false);
     // MiniSatConfig config = new MiniSatConfig.Builder().initialPhase(true).build();
@@ -4624,48 +4680,48 @@ public final class BooleanFunctions {
     Initializer.init();
   }
 
-  //  public static IExpr.COMPARE_TERNARY compareEqual(final IExpr o0, final IExpr o1) {
-  //    if (o0.isSame(o1)) {
-  //      return IExpr.COMPARE_TERNARY.TRUE;
-  //    }
+  // public static IExpr.COMPARE_TERNARY compareEqual(final IExpr o0, final IExpr o1) {
+  // if (o0.isSame(o1)) {
+  // return IExpr.COMPARE_TERNARY.TRUE;
+  // }
   //
-  //    if (o0.isTrue()) {
-  //      if (o1.isTrue()) {
-  //        return IExpr.COMPARE_TERNARY.TRUE;
-  //      } else if (o1.isFalse()) {
-  //        return IExpr.COMPARE_TERNARY.FALSE;
-  //      }
-  //    } else if (o0.isFalse()) {
-  //      if (o1.isTrue()) {
-  //        return IExpr.COMPARE_TERNARY.FALSE;
-  //      } else if (o1.isFalse()) {
-  //        return IExpr.COMPARE_TERNARY.TRUE;
-  //      }
-  //    }
-  //    if (o0.isConstantAttribute() && o1.isConstantAttribute()) {
-  //      return IExpr.COMPARE_TERNARY.FALSE;
-  //    }
+  // if (o0.isTrue()) {
+  // if (o1.isTrue()) {
+  // return IExpr.COMPARE_TERNARY.TRUE;
+  // } else if (o1.isFalse()) {
+  // return IExpr.COMPARE_TERNARY.FALSE;
+  // }
+  // } else if (o0.isFalse()) {
+  // if (o1.isTrue()) {
+  // return IExpr.COMPARE_TERNARY.FALSE;
+  // } else if (o1.isFalse()) {
+  // return IExpr.COMPARE_TERNARY.TRUE;
+  // }
+  // }
+  // if (o0.isConstantAttribute() && o1.isConstantAttribute()) {
+  // return IExpr.COMPARE_TERNARY.FALSE;
+  // }
   //
-  //    if ((o0 instanceof StringX) && (o1 instanceof StringX)) {
-  //      return IExpr.COMPARE_TERNARY.FALSE;
-  //    }
-  //    IExpr difference = F.eval(F.Subtract(o0, o1));
-  //    if (difference.isNumber()) {
-  //      if (difference.isZero()) {
-  //        return IExpr.COMPARE_TERNARY.TRUE;
-  //      }
-  //      return IExpr.COMPARE_TERNARY.FALSE;
-  //    }
-  //    if (difference.isConstantAttribute()) {
-  //      return IExpr.COMPARE_TERNARY.FALSE;
-  //    }
+  // if ((o0 instanceof StringX) && (o1 instanceof StringX)) {
+  // return IExpr.COMPARE_TERNARY.FALSE;
+  // }
+  // IExpr difference = F.eval(F.Subtract(o0, o1));
+  // if (difference.isNumber()) {
+  // if (difference.isZero()) {
+  // return IExpr.COMPARE_TERNARY.TRUE;
+  // }
+  // return IExpr.COMPARE_TERNARY.FALSE;
+  // }
+  // if (difference.isConstantAttribute()) {
+  // return IExpr.COMPARE_TERNARY.FALSE;
+  // }
   //
-  //    if (o0.isNumber() && o1.isNumber()) {
-  //      return IExpr.COMPARE_TERNARY.FALSE;
-  //    }
+  // if (o0.isNumber() && o1.isNumber()) {
+  // return IExpr.COMPARE_TERNARY.FALSE;
+  // }
   //
-  //    return IExpr.COMPARE_TERNARY.UNDECIDABLE;
-  //  }
+  // return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+  // }
 
   private BooleanFunctions() {}
 }

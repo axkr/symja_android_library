@@ -1084,7 +1084,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
    */
   public static final boolean PLUS_CALL = true;
 
-  public static final HashMap<ISymbol, IConverter> CONVERTERS =
+  public static final Map<ISymbol, IConverter> CONVERTERS =
       new HashMap<ISymbol, IConverter>(199);
 
   private static final TrieBuilder<String, Object, ArrayList<Object>> constantBuilder =
@@ -1101,7 +1101,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       converterBuilder.withMatch(TrieMatch.EXACT).build();
 
   /** Table for constant expressions */
-  public static final HashMap<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>();
+  public static final Map<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>();
 
   private boolean fRelaxedSyntax;
   private boolean fUseSignificantFigures = false;
@@ -2316,7 +2316,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       tagStart(buf, "mtext");
       String text = splittedStr[i].replaceAll("\\&", "&amp;").replaceAll("\\<", "&lt;")
           .replaceAll("\\>", "&gt;");
-      text = text.replaceAll("\\\"", "&quot;").replaceAll(" ", "&nbsp;");
+      text = text.replaceAll("\\\"", "&quot;").replace(" ", "&nbsp;");
       appendUnicodeMapped(buf, text);
       tagEnd(buf, "mtext");
       if (splittedStrLength > 1) {
