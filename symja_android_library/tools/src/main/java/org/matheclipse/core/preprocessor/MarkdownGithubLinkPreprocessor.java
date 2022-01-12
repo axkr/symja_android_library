@@ -5,12 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
-
 import org.matheclipse.core.builtin.SourceCodeFunctions;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.ISymbol;
-
 import com.google.common.base.Charsets;
 import com.google.common.io.CharSink;
 import com.google.common.io.Files;
@@ -82,7 +80,7 @@ public class MarkdownGithubLinkPreprocessor {
                   result.add("### Github");
                   result.add("");
                   result.add("* [Implementation of " + functionName + "](" + functionURL + ") ");
-                  
+
                   // write target file
                   File targetFile = new File(targetLocation, functionName + ".md");
                   CharSink sink = Files.asCharSink(targetFile, Charsets.UTF_8);
@@ -105,8 +103,11 @@ public class MarkdownGithubLinkPreprocessor {
 
     System.out.println("Append Github link to the Symja functions markdown file.");
 
-    File sourceLocation = new File("..\\symja_android_library\\doc\\functions");
-    File targetLocation = new File("..\\symja_android_library\\doc\\functions");
+    String userHome = System.getProperty("user.home");
+    File sourceLocation =
+        new File(userHome + "\\git\\symja_android_library\\symja_android_library\\doc\\functions");
+    File targetLocation =
+        new File(userHome + "\\git\\symja_android_library\\symja_android_library\\doc\\functions");
     generateFunctionStrings(sourceLocation, targetLocation);
   }
 }

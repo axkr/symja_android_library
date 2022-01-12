@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.List;
 import java.util.Map;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -19,8 +18,8 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Parser;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 /**
@@ -765,8 +764,10 @@ public class ConvertRubi {
     EvalEngine.set(engine);
     addPredefinedSymbols();
     // use same order as in Rubi.m
+    String userHome = System.getProperty("user.home");
     String[] fileNames = { //
-      "./Rubi/RubiRules4.16.0_FullLHS.m",
+        userHome
+            + "/git/symja_android_library/symja_android_library/Rubi/RubiRules4.16.0_FullLHS.m",
     };
     IASTAppendable listOfRules = F.ListAlloc(10000);
     int fcnt = 0;

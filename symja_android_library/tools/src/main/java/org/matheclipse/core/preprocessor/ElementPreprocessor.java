@@ -25,8 +25,9 @@ public class ElementPreprocessor {
     try {
       EvalEngine engine = EvalEngine.get();
       boolean relaxedSyntax = false;
-      String fileName =
-          "..\\symja_android_library\\tools\\src\\main\\java\\org\\matheclipse\\core\\preprocessor\\element.csv";
+      String userHome = System.getProperty("user.home");
+      String fileName = userHome
+          + "/git/symja_android_library/symja_android_library/tools/src/main/java/org/matheclipse/core/preprocessor/element.csv";
       reader = new FileReader(fileName);
       AST2Expr ast2Expr = new AST2Expr(relaxedSyntax, engine);
       final Parser parser = new Parser(relaxedSyntax, true);

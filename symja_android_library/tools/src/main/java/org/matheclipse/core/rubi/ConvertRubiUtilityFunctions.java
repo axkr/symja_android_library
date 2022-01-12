@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -21,8 +20,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Parser;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 /**
@@ -163,7 +162,10 @@ public class ConvertRubiUtilityFunctions {
     ConvertRubi.addPredefinedSymbols();
 
     IASTAppendable listOfRules = F.ListAlloc(10000);
-    String[] fileNames = {"./Rubi/IntegrationUtilityFunctions.m"};
+    String userHome = System.getProperty("user.home");
+    String[] fileNames = { //
+        userHome
+            + "/git/symja_android_library/symja_android_library/Rubi/IntegrationUtilityFunctions.m"};
     for (int i = 0; i < fileNames.length; i++) {
       System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
       System.out.println(">>>>> File name: " + fileNames[i]);
@@ -303,7 +305,8 @@ public class ConvertRubiUtilityFunctions {
       System.out.println(entry.getKey() + "  >>>  " + entry.getValue());
     }
 
-    File file = new File("./Rubi/IntegrationUtilityFunctions.ser");
+    File file = new File(userHome
+        + "/git/symja_android_library/symja_android_library/Rubi/IntegrationUtilityFunctions.ser");
     byte[] byteArray = WL.serialize(listOfRules);
     try {
       com.google.common.io.Files.write(byteArray, file);

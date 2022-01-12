@@ -3,15 +3,12 @@ package org.matheclipse.core.preprocessor;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.analysis.core.StopFilter;
@@ -51,9 +48,11 @@ public class KeywordStemmer {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
+      if (this == o)
+        return true;
 
-      if (!(o instanceof Keyword)) return false;
+      if (!(o instanceof Keyword))
+        return false;
 
       Keyword that = (Keyword) o;
 
@@ -87,8 +86,7 @@ public class KeywordStemmer {
         stdToken.setReader(new StringReader(fullText));
 
         tokenStream =
-            new StopFilter(
-                new ASCIIFoldingFilter(new ClassicFilter(new LowerCaseFilter(stdToken))),
+            new StopFilter(new ASCIIFoldingFilter(new ClassicFilter(new LowerCaseFilter(stdToken))),
                 EnglishAnalyzer.getDefaultStopSet());
         tokenStream.reset();
 
@@ -204,10 +202,10 @@ public class KeywordStemmer {
   public static void main(String[] args) {
     try {
       F.initSymbols();
-      File sourceLocation =
-          new File(
-              // C:\\Users\\dev\\git\\symja_android_library\\
-              "../symja_android_library/doc/functions");
+      String userHonme = System.getProperty("user.home");
+      File sourceLocation = new File(
+          // C:\\Users\\dev\\git\\symja_android_library\\
+          userHonme + "/git/symja_android_library/symja_android_library/doc/functions");
       if (sourceLocation.exists()) {
         // Get the list of the files contained in the package
         final String[] files = sourceLocation.list();

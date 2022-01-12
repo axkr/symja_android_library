@@ -2,7 +2,12 @@ package org.matheclipse.core.preprocessor;
 
 import java.io.File;
 
-/** Generate java init sources for Symja symbol names. */
+/**
+ * Generate java init sources for Symja symbol names.
+ * 
+ * @deprecated
+ */
+@Deprecated
 public class SymbolnamePreprocessor {
 
   public SymbolnamePreprocessor() {}
@@ -114,13 +119,14 @@ public class SymbolnamePreprocessor {
   }
 
   public static void main(final String[] args) {
+    String userHome = System.getProperty("user.home");
     File sourceLocation1 =
-        new File(
-            "..\\symja_android_library\\matheclipse-core\\src\\main\\java\\org\\matheclipse\\core\\builtin\\function");
+        new File(userHome
+            + "/git/symja_android_library/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/function");
 
     File sourceLocation2 =
-        new File(
-            "..\\symja_android_library\\matheclipse-core\\src\\main\\java\\org\\matheclipse\\core\\reflection\\system");
+        new File(userHome
+            + "/git/symja_android_library/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system");
 
     generateFunctionStrings1(sourceLocation1, true);
 

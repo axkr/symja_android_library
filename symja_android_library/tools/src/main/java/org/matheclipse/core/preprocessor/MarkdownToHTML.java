@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Set;
-
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Node;
@@ -16,7 +15,6 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
-
 import com.google.common.io.Files;
 
 /** Generate HTML code from markdown files. */
@@ -29,8 +27,8 @@ public class MarkdownToHTML {
    *
    * @param sourceLocation source directory for funtions (*.md) files
    */
-  public static void generateHTMLString(
-      final File sourceLocation, String function, boolean javadoc) {
+  public static void generateHTMLString(final File sourceLocation, String function,
+      boolean javadoc) {
     if (sourceLocation.exists()) {
       // Get the list of the files contained in the package
       final String[] files = sourceLocation.list();
@@ -108,8 +106,12 @@ public class MarkdownToHTML {
   }
 
   public static void main(final String[] args) {
+    System.out.println(
+        "Create a Javadoc string from the existing *.md functions file.\nFor example type 'Integrate' in input line to get the Javadoc for 'Integrate'.");
     F.initSymbols();
-    File sourceLocation = new File("..\\symja_android_library\\doc\\functions");
+    String userHome = System.getProperty("user.home");
+    File sourceLocation =
+        new File(userHome + "/git/symja_android_library/symja_android_library/doc/functions");
     String inputExpression;
     String trimmedInput;
     while (true) {

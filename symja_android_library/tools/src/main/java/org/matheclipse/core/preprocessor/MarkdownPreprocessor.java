@@ -1,7 +1,6 @@
 package org.matheclipse.core.preprocessor;
 
 import java.io.File;
-
 import org.matheclipse.core.expression.F;
 
 /** Generate markdown links for Symja function reference in file index.md */
@@ -38,10 +37,10 @@ public class MarkdownPreprocessor {
 
   public static void main(final String[] args) {
     F.initSymbols();
-    File sourceLocation =
-        new File(
-            // C:\\Users\\dev\\git\\symja_android_library\\
-            "../symja_android_library/doc/functions");
+    String userHome = System.getProperty("user.home");
+    File sourceLocation = new File(
+        // C:\\Users\\dev\\git\\symja_android_library\\
+        userHome + "/git/symja_android_library/symja_android_library/doc/functions");
 
     generateFunctionStrings(sourceLocation);
   }
