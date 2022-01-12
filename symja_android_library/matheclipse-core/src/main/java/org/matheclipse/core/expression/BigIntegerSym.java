@@ -17,6 +17,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
 import com.google.common.math.BigIntegerMath;
 
@@ -354,7 +355,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
-      Function<IExpr, ? extends CharSequence> variables) {
+      Function<ISymbol, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
     StringBuilder javaForm = new StringBuilder(prefix);
     int value = toIntDefault(); // NumberUtil.toInt(fBigIntValue);

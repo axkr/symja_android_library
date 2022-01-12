@@ -64,7 +64,7 @@ public class ElementPreprocessor {
       }
       for (int i = 2; i < rowList.size(); i++) {
         IAST columnList = (IAST) rowList.get(i);
-        System.out.print(columnList.internalJavaString(JAVA_FORM_PROPERTIES, 1, F.CNullFunction));
+        System.out.print(columnList.internalJavaString(JAVA_FORM_PROPERTIES, 1, x -> null));
         System.out.println(", ");
       }
       // return rowList;

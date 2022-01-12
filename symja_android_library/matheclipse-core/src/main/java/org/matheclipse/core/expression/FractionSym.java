@@ -11,6 +11,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
 
 /**
@@ -404,12 +405,12 @@ public class FractionSym extends AbstractFractionSym {
   @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
     SourceCodeProperties p = AbstractAST.stringFormProperties(symbolsAsFactoryMethod);
-    return internalJavaString(p, depth, F.CNullFunction);
+    return internalJavaString(p, depth, x -> null);
   }
 
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
-      Function<IExpr, ? extends CharSequence> variables) {
+      Function<ISymbol, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
     StringBuilder javaForm = new StringBuilder(prefix);
     if (fNumerator == 1) {
@@ -440,7 +441,7 @@ public class FractionSym extends AbstractFractionSym {
   @Override
   public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
     SourceCodeProperties p = AbstractAST.scalaFormProperties(symbolsAsFactoryMethod);
-    return internalJavaString(p, depth, F.CNullFunction);
+    return internalJavaString(p, depth, x -> null);
   }
 
   /**

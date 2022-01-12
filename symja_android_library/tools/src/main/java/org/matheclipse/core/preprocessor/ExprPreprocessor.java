@@ -43,7 +43,7 @@ public class ExprPreprocessor extends AbstractCodeGenerator {
   public boolean apply(String command, StringBuilder buf) {
     ExprParser p = new ExprParser(EvalEngine.get(), true);
     IExpr expr = p.parse(command);
-    buf.append(expr.internalJavaString(JAVA_FORM_PROPERTIES, 1, F.CNullFunction));
+    buf.append(expr.internalJavaString(JAVA_FORM_PROPERTIES, 1, x -> null));
     return true;
   }
 }

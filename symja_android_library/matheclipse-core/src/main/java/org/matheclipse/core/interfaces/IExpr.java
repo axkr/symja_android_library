@@ -1125,7 +1125,7 @@ public interface IExpr
    * @return the internal Java form of this expression
    */
   default CharSequence internalJavaString(SourceCodeProperties properties, int depth,
-      Function<IExpr, ? extends CharSequence> variables) {
+      Function<ISymbol, ? extends CharSequence> variables) {
     return toString();
   }
 
