@@ -555,7 +555,7 @@
 						<Bundle-Name>${project.artifactId}</Bundle-Name>
 						<!-- Suppress import of own exported packages -->
 						<Export-Package>*;-noimport:=true</Export-Package>
-						<Import-Package>!net.sf.saxon,*</Import-Package>
+						<_nouses>true</_nouses>
 					</instructions>
 					<niceManifest>true</niceManifest>
 				</configuration>
