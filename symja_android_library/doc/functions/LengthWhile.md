@@ -13,3 +13,7 @@ LengthWhile({e1, e2, ...}, head)
 >> LengthWhile({1, 2, 3, 10, 5, 8, 42, 11}, # < 10 &)
 3
 ```
+
+### Github
+
+* [Implementation of LengthWhile](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L3964) 

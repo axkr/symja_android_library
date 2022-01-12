@@ -19,4 +19,4 @@ TTest({real-vector1, real-vector2})
 
 ### Github
 
-* [Implementation of TTest](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L6427) 
+* [Implementation of TTest](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L6473) 
