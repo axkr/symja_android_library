@@ -530,16 +530,10 @@ public class CompilerFunctions {
                 JAVA_FORM_PROPERTIES,
                 -1,
                 x -> {
-                  if (x.isSymbol()) {
-                    if (localVariables.contains(x.toString())) {
-                      return "vars.get(\"" + x.toString() + "\")";
-                    }
+                  if (localVariables.contains(x.toString())) {
+                    return "vars.get(\"" + x.toString() + "\")";
                   }
-                  String str = numericVariables.apply(x);
-                  if (x.isSymbol() && str != null) {
-                    return str;
-                  }
-                  return null;
+                  return numericVariables.apply(x);
                 }));
         return true;
       } catch (RuntimeException rex) {

@@ -554,7 +554,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   public CharSequence internalJavaString(
       SourceCodeProperties properties,
       int depth,
-      Function<IExpr, ? extends CharSequence> variables) {
+      Function<ISymbol, ? extends CharSequence> variables) {
     CharSequence result = variables.apply(this);
     if (result != null) {
       return result;

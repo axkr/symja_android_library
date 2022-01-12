@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.math.MathException;
 
 public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, Externalizable {
@@ -137,7 +138,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
 
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
-      Function<IExpr, ? extends CharSequence> variables) {
+      Function<ISymbol, ? extends CharSequence> variables) {
 
     CharSequence value = value().internalJavaString(properties, depth, variables);
 

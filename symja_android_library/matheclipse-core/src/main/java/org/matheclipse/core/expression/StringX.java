@@ -398,7 +398,7 @@ public class StringX implements IStringX {
   /** {@inheritDoc} */
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
-      Function<IExpr, ? extends CharSequence> variables) {
+      Function<ISymbol, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
     return new StringBuilder(prefix).append("$str(\"").append(fString).append("\")");
   }

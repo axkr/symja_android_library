@@ -433,7 +433,7 @@ public abstract class AbstractAST implements IASTMutable {
     /** {@inheritDoc} */
     @Override
     public final CharSequence internalJavaString(SourceCodeProperties properties, int depth,
-        Function<IExpr, ? extends CharSequence> variables) {
+        Function<ISymbol, ? extends CharSequence> variables) {
       switch (properties.prefix) {
         case FULLY_QUALIFIED_CLASS_NAME:
           return "org.matheclipse.core.expression.F.NIL";
@@ -1215,7 +1215,7 @@ public abstract class AbstractAST implements IASTMutable {
 
   private static void internalFormOrderless(IAST ast, StringBuilder text, final String sep,
       SourceCodeProperties properties, int depth,
-      Function<IExpr, ? extends CharSequence> variables) {
+      Function<ISymbol, ? extends CharSequence> variables) {
     for (int i = 1; i < ast.size(); i++) {
       if ((ast.get(i) instanceof IAST) && ast.head().equals(ast.get(i).head())) {
         internalFormOrderless((IAST) ast.get(i), text, sep, properties, depth, variables);
@@ -2458,7 +2458,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
-      Function<IExpr, ? extends CharSequence> variables) {
+      Function<ISymbol, ? extends CharSequence> variables) {
     final String sep = ",";
     final IExpr temp = head();
     if (temp.equals(S.HoldForm) && size() == 2) {
@@ -2692,7 +2692,7 @@ public abstract class AbstractAST implements IASTMutable {
     if (isLowerPrecedence) {
       text.append('(');
     }
-    text.append(arg1.internalJavaString(properties, depth + 1, F.CNullFunction));
+    text.append(arg1.internalJavaString(properties, depth + 1, x -> null));
     if (isLowerPrecedence) {
       text.append(')');
     }

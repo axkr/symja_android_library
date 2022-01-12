@@ -583,8 +583,6 @@ public class F extends S {
   /** Represents <code>List()</code> (i.e. the constant empty list) */
   public static final IAST CEmptyList;
 
-  public static final Function<IExpr, String> CNullFunction = x -> null;
-
   /** Represents <code>Missing("NotFound")</code> */
   public static final IAST CMissingNotFound;
 

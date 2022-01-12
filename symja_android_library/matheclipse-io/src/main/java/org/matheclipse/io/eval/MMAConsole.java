@@ -508,7 +508,7 @@ public class MMAConsole {
       }
       switch (fUsedForm) {
         case JAVAFORM:
-          return result.internalJavaString(Console.JAVA_FORM_PROPERTIES, -1, F.CNullFunction)
+          return result.internalJavaString(Console.JAVA_FORM_PROPERTIES, -1, x -> null)
               .toString();
         case TRADITIONALFORM:
           StringBuilder traditionalBuffer = new StringBuilder();

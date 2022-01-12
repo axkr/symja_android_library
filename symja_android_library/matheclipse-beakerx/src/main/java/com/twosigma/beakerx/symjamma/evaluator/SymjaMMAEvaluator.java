@@ -247,7 +247,7 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
   TryResult printForm(final SymjaMMACodeRunner symjaMMACodeRunner, final Object result) {
     switch (fUsedForm) {
       case SymjaMMAEvaluator.JAVAFORM:
-        return TryResult.createResult(((IExpr) result).internalJavaString(JAVA_FORM_PROPERTIES, -1, F.CNullFunction));
+        return TryResult.createResult(((IExpr) result).internalJavaString(JAVA_FORM_PROPERTIES, -1, x -> null));
       case SymjaMMAEvaluator.TRADITIONALFORM:
         StringBuilder traditionalBuffer = new StringBuilder();
         fOutputTraditionalFactory.reset(false);

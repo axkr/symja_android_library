@@ -489,12 +489,12 @@ public class ComplexSym implements IComplex {
   @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
     SourceCodeProperties p = AbstractAST.stringFormProperties(symbolsAsFactoryMethod);
-    return internalJavaString(p, depth, F.CNullFunction);
+    return internalJavaString(p, depth, x -> null);
   }
 
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
-      Function<IExpr, ? extends CharSequence> variables) {
+      Function<ISymbol, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
     if (fReal.isZero()) {
       if (fImaginary.isOne()) {
@@ -538,7 +538,7 @@ public class ComplexSym implements IComplex {
   @Override
   public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
     SourceCodeProperties p = AbstractAST.scalaFormProperties(symbolsAsFactoryMethod);
-    return internalJavaString(p, depth, F.CNullFunction);
+    return internalJavaString(p, depth, x -> null);
   }
 
   @Override

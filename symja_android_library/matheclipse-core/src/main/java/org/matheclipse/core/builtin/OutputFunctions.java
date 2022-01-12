@@ -460,7 +460,7 @@ public final class OutputFunctions {
       SourceCodeProperties p =
           SourceCodeProperties.of(
               strictJava, false, usePrefix ? Prefix.CLASS_NAME : Prefix.NONE, false);
-      return arg1.internalJavaString(p, 0, F.CNullFunction);
+      return arg1.internalJavaString(p, 0, x -> null);
     }
 
     @Override

@@ -232,7 +232,7 @@ public class Pattern extends Blank {
 
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
-      Function<IExpr, ? extends CharSequence> variables) {
+      Function<ISymbol, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
     final StringBuilder buffer = new StringBuilder(prefix);
     String symbolStr = fSymbol.toString();

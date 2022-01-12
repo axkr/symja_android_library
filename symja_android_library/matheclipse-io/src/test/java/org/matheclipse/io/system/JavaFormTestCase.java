@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CInfinity;
 import static org.matheclipse.core.expression.F.Sinc;
 import static org.matheclipse.core.expression.F.Times;
+import java.util.function.Function;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.expression.F;
@@ -11,6 +12,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.tensor.qty.IUnit;
 import org.matheclipse.parser.client.ParserConfig;
@@ -49,11 +51,11 @@ public class JavaFormTestCase extends AbstractTestCase {
 
     IExpr result = EvalEngine.get().evalHoldPattern(function);
     assertEquals("F.Sinc(F.DirectedInfinity(F.CI))",
-        result.internalJavaString(SYMBOL_FACTORY_PROPERTIES, -1, F.CNullFunction).toString());
+        result.internalJavaString(SYMBOL_FACTORY_PROPERTIES, -1, x -> null).toString());
 
     result = util.evaluate(function);
     assertEquals("F.oo",
-        result.internalJavaString(SYMBOL_FACTORY_PROPERTIES, -1, F.CNullFunction).toString());
+        result.internalJavaString(SYMBOL_FACTORY_PROPERTIES, -1, x -> null).toString());
   }
 
   public void testJavaForm002_fullyQualifiedName() {
@@ -65,12 +67,12 @@ public class JavaFormTestCase extends AbstractTestCase {
     IExpr result = EvalEngine.get().evalHoldPattern(function);
     assertEquals(
         "org.matheclipse.core.expression.F.Sinc(org.matheclipse.core.expression.F.DirectedInfinity(org.matheclipse.core.expression.F.CI))",
-        result.internalJavaString(SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, F.CNullFunction)
+        result.internalJavaString(SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, x -> null)
             .toString());
 
     result = util.evaluate(function);
     assertEquals("org.matheclipse.core.expression.F.oo", result
-        .internalJavaString(SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, F.CNullFunction).toString());
+        .internalJavaString(SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, x -> null).toString());
   }
 
   private static final SourceCodeProperties NO_SYMBOL_FACTORY_PROPERTIES =

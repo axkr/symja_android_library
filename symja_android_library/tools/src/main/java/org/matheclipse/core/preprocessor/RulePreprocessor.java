@@ -80,9 +80,9 @@ public class RulePreprocessor {
     if (evalRHS) {
       rightHandSide = F.eval(rightHandSide);
     }
-    buffer.append(leftHandSide.internalJavaString(p, 1, F.CNullFunction));
+    buffer.append(leftHandSide.internalJavaString(p, 1, x -> null));
     buffer.append(",\n      ");
-    buffer.append(rightHandSide.internalJavaString(p, 1, F.CNullFunction));
+    buffer.append(rightHandSide.internalJavaString(p, 1, x -> null));
     if (last) {
       buffer.append(")\n");
     } else {
@@ -110,9 +110,9 @@ public class RulePreprocessor {
     if (evalRHS) {
       rightHandSide = F.eval(rightHandSide);
     }
-    buffer.append(leftHandSide.internalJavaString(p, 1, F.CNullFunction));
+    buffer.append(leftHandSide.internalJavaString(p, 1, x -> null));
     buffer.append(",\n      ");
-    buffer.append(rightHandSide.internalJavaString(p, 1, F.CNullFunction));
+    buffer.append(rightHandSide.internalJavaString(p, 1, x -> null));
     buffer.append(");\n");
   }
 

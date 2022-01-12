@@ -230,7 +230,7 @@ public class PatternSequence implements IPatternSequence {
 
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
-      Function<IExpr, ? extends CharSequence> variables) {
+      Function<ISymbol, ? extends CharSequence> variables) {
     if (properties.symbolsAsFactoryMethod) {
       String prefix = AbstractAST.getPrefixF(properties);
       final StringBuilder buffer = new StringBuilder();
