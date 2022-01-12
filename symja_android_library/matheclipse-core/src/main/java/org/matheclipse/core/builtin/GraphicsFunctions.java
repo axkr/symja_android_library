@@ -6,6 +6,7 @@ import java.util.Locale;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -29,6 +30,26 @@ public class GraphicsFunctions {
 
   private static final DecimalFormatSymbols US_SYMBOLS = new DecimalFormatSymbols(Locale.US);
   protected static final DecimalFormat FORMATTER = new DecimalFormat("0.0####", US_SYMBOLS);
+
+
+  /** Default plot style colors for functions */
+  static final RGBColor[] PLOT_COLORS = new RGBColor[] { //
+      new RGBColor(0.368417f, 0.506779f, 0.709798f), //
+      new RGBColor(0.880722f, 0.611041f, 0.142051f), //
+      new RGBColor(0.560181f, 0.691569f, 0.194885f), //
+      new RGBColor(0.922526f, 0.385626f, 0.209179f), //
+      new RGBColor(0.528488f, 0.470624f, 0.701351f), //
+      new RGBColor(0.772079f, 0.431554f, 0.102387f), //
+      new RGBColor(0.363898f, 0.618501f, 0.782349f), //
+      new RGBColor(1.0f, 0.75f, 0.0f), //
+      new RGBColor(0.647624f, 0.37816f, 0.614037f), //
+      new RGBColor(0.571589f, 0.586483f, 0.0f), //
+      new RGBColor(0.915f, 0.3325f, 0.2125f), //
+      new RGBColor(0.40082222609352647f, 0.5220066643438841f, 0.85f), //
+      new RGBColor(0.9728288904374106f, 0.621644452187053f, 0.07336199581899142f), //
+      new RGBColor(0.736782672705901f, 0.358f, 0.5030266573755369f), //
+      new RGBColor(0.28026441037696703f, 0.715f, 0.4292089322474965f) //
+  };
 
   private static class Arrow extends AbstractEvaluator implements IGraphics3D {
 
@@ -1577,5 +1598,45 @@ public class GraphicsFunctions {
       }
     } finally {
     }
+  }
+
+  /**
+   * @param functionNumber the number of the function which should be plotted
+   * @param plotStyle if present a <code>List()</code> is expected
+   */
+  public static RGBColor plotStyleColor(int functionNumber, IAST plotStyle) {
+    if (plotStyle.isList() && plotStyle.size() > functionNumber) {
+      IExpr temp = plotStyle.get(functionNumber);
+      if (temp.isASTSizeGE(S.Directive, 2)) {
+        IAST directive = (IAST) temp;
+        for (int j = 1; j < directive.size(); j++) {
+          temp = directive.get(j);
+          RGBColor color = Convert.toAWTColor(temp);
+          if (color != null) {
+            return color;
+          }
+        }
+      } else {
+        RGBColor color = Convert.toAWTColor(temp);
+        if (color != null) {
+          return color;
+        }
+      }
+    }
+    return PLOT_COLORS[(functionNumber - 1) % PLOT_COLORS.length];
+  }
+
+  /**
+   * Get an {@link F#RGBColor(double, double, double)} color for the function number from the
+   * internal color wheel.
+   * 
+   * @param functionNumber the number of the function which should be plotted
+   * @param plotStyle if present a <code>List()</code> is expected
+   * @return
+   */
+  public static IAST plotStyleColorExpr(int functionNumber, IAST plotStyle) {
+    RGBColor color = plotStyleColor(functionNumber, plotStyle);
+    float[] rgbComponents = color.getRGBColorComponents(null);
+    return F.RGBColor(rgbComponents[0], rgbComponents[1], rgbComponents[2]);
   }
 }

@@ -56,25 +56,6 @@ public class ManipulateFunction {
 
   private static final int N = 100;
 
-  /** Default plot style colors for functions */
-  private static final RGBColor[] PLOT_COLORS = new RGBColor[] { //
-      new RGBColor(0.368417f, 0.506779f, 0.709798f), //
-      new RGBColor(0.880722f, 0.611041f, 0.142051f), //
-      new RGBColor(0.560181f, 0.691569f, 0.194885f), //
-      new RGBColor(0.922526f, 0.385626f, 0.209179f), //
-      new RGBColor(0.528488f, 0.470624f, 0.701351f), //
-      new RGBColor(0.772079f, 0.431554f, 0.102387f), //
-      new RGBColor(0.363898f, 0.618501f, 0.782349f), //
-      new RGBColor(1.0f, 0.75f, 0.0f), //
-      new RGBColor(0.647624f, 0.37816f, 0.614037f), //
-      new RGBColor(0.571589f, 0.586483f, 0.0f), //
-      new RGBColor(0.915f, 0.3325f, 0.2125f), //
-      new RGBColor(0.40082222609352647f, 0.5220066643438841f, 0.85f), //
-      new RGBColor(0.9728288904374106f, 0.621644452187053f, 0.07336199581899142f), //
-      new RGBColor(0.736782672705901f, 0.358f, 0.5030266573755369f), //
-      new RGBColor(0.28026441037696703f, 0.715f, 0.4292089322474965f) //
-  };
-
   private static final String JSXGRAPH = //
       "`1`\n" + //
           "`2`" + //
@@ -1200,7 +1181,7 @@ public class ManipulateFunction {
         JSXGraph.rangeArgs(function, plotRangeX, -1, toJS);
         function.append("]");
 
-        RGBColor color = plotStyleColor(colour[0]++, plotStyle);
+        RGBColor color = GraphicsFunctions.plotStyleColor(colour[0]++, plotStyle);
         function.append(",{strokecolor:'");
         function.append(Convert.toHex(color));
         function.append("'}");
@@ -1295,7 +1276,7 @@ public class ManipulateFunction {
           function.append(", ");
           JSXGraph.rangeArgs(function, plotRangeX, -1, toJS);
           function.append("]");
-          final RGBColor color = plotStyleColor(colour[0]++, plotStyle);
+          final RGBColor color = GraphicsFunctions.plotStyleColor(colour[0]++, plotStyle);
           function.append(",{strokecolor:'");
           function.append(Convert.toHex(color));
           function.append("'}");
@@ -1382,7 +1363,7 @@ public class ManipulateFunction {
         function.append("]");
         function.append(", {curveType:'polar'");
 
-        final RGBColor color = plotStyleColor(colour[0]++, plotStyle);
+        final RGBColor color = GraphicsFunctions.plotStyleColor(colour[0]++, plotStyle);
         function.append(",strokeWidth:2, strokecolor:'");
         function.append(Convert.toHex(color));
         function.append("'");
@@ -2158,7 +2139,7 @@ public class ManipulateFunction {
       JavaScriptFormFactory toJS, StringBuilder function, double[] boundingbox, int[] colour,
       EvalEngine engine) {
     // plot a list of 2D points
-    final RGBColor color = plotStyleColor(colour[0]++, F.NIL);
+    final RGBColor color = GraphicsFunctions.plotStyleColor(colour[0]++, F.NIL);
     if (ast.arg1().isAST(S.ListLinePlot) && pointList.size() > 2) {
       // IAST lastPoint = (IAST) pointList.arg1();
       IAST lastPoint = F.NIL;
@@ -2267,7 +2248,7 @@ public class ManipulateFunction {
   private static void sequenceYValuesListPlot(final IAST ast, int arg, IAST pointList,
       JavaScriptFormFactory toJS, StringBuilder function, double[] boundingbox, int[] colour,
       EvalEngine engine) {
-    final RGBColor color = plotStyleColor(colour[0]++, F.NIL);
+    final RGBColor color = GraphicsFunctions.plotStyleColor(colour[0]++, F.NIL);
     // StringBuilder function = new StringBuilder();
     // boundingbox = new double[] { 0.0, Double.MIN_VALUE, pointList.size(), Double.MAX_VALUE };
     xBoundingBox(engine, boundingbox, F.C0);
@@ -2505,32 +2486,6 @@ public class ManipulateFunction {
       }
     }
     return new double[] {vmin, vmax};
-  }
-
-  /**
-   * @param functionNumber the number of the function which should be plotted
-   * @param plotStyle if present a <code>List()</code> is expected
-   */
-  private static RGBColor plotStyleColor(int functionNumber, IAST plotStyle) {
-    if (plotStyle.isList() && plotStyle.size() > functionNumber) {
-      IExpr temp = plotStyle.get(functionNumber);
-      if (temp.isASTSizeGE(S.Directive, 2)) {
-        IAST directive = (IAST) temp;
-        for (int j = 1; j < directive.size(); j++) {
-          temp = directive.get(j);
-          RGBColor color = Convert.toAWTColor(temp);
-          if (color != null) {
-            return color;
-          }
-        }
-      } else {
-        RGBColor color = Convert.toAWTColor(temp);
-        if (color != null) {
-          return color;
-        }
-      }
-    }
-    return PLOT_COLORS[(functionNumber - 1) % PLOT_COLORS.length];
   }
 
   private static int[] calcHistogram(double[] data, double min, double max, int numBins) {

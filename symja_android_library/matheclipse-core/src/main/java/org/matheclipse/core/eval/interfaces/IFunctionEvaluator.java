@@ -65,13 +65,13 @@ public interface IFunctionEvaluator extends IEvaluator {
 
   /**
    * The function is allowed to have 1 or 2 arguments and the head must be the built-in symbol name
-   * of the function or can call <code>operatorForm1</code>.
+   * of the function or can call {@link F#operatorForm1Append(IAST)}.
    */
   int[] ARGS_1_2_1 = new int[] {1, 2, 1};
 
   /**
    * The function is allowed to have 1 or 2 arguments and the head must be the built-in symbol name
-   * of the function or can call <code>operatorForm2</code>.
+   * of the function or can call {@link F#operatorForm2Prepend(IAST, int[], EvalEngine)}.
    */
   int[] ARGS_1_2_2 = new int[] {1, 2, 2};
 
@@ -79,7 +79,7 @@ public interface IFunctionEvaluator extends IEvaluator {
 
   /**
    * The function is allowed to have 1 or 5 arguments and the head must be the built-in symbol name
-   * of the function or can be an <code>operatorForm1</code>.
+   * of the function or can be an {@link F#operatorForm1Append(IAST)}.
    */
   int[] ARGS_1_5_1 = new int[] {1, 5, 1};
 
@@ -91,7 +91,7 @@ public interface IFunctionEvaluator extends IEvaluator {
 
   /**
    * The function is allowed to have 2 arguments and the head must be the built-in symbol name of
-   * the function or can call <code>operatorForm1</code>.
+   * the function or can call {@link F#operatorForm1Append(IAST)}.
    */
   int[] ARGS_2_2_1 = new int[] {2, 2, 1};
 
@@ -115,7 +115,7 @@ public interface IFunctionEvaluator extends IEvaluator {
 
   /**
    * The function is allowed to have 1 or 3 arguments and the head must be the built-in symbol name
-   * of the function or can call {@link F#operatorForm2Prepend(IAST)}.
+   * of the function or can call {@link F#operatorForm2Prepend(IAST, int[], EvalEngine)}.
    */
   int[] ARGS_1_3_2 = new int[] {1, 3, 2};
 
@@ -139,7 +139,7 @@ public interface IFunctionEvaluator extends IEvaluator {
 
   /**
    * The function is allowed to have 1 or 4 arguments and the head must be the built-in symbol name
-   * of the function or can be an {@link F#operatorForm2Prepend(IAST)}.
+   * of the function or can be an {@link F#operatorForm2Prepend(IAST, int[], EvalEngine)}.
    */
   int[] ARGS_1_4_2 = new int[] {1, 4, 2};
 
@@ -163,7 +163,7 @@ public interface IFunctionEvaluator extends IEvaluator {
 
   /**
    * The function is allowed to have 2 or 3 arguments and the head must be the built-in symbol name
-   * of the function or can call {@link F#operatorForm2Prepend(IAST)}.
+   * of the function or can call {@link F#operatorForm2Prepend(IAST, int[], EvalEngine)}.
    */
   int[] ARGS_2_3_2 = new int[] {2, 3, 2};
 
@@ -181,7 +181,7 @@ public interface IFunctionEvaluator extends IEvaluator {
 
   /**
    * The function is allowed to have 2 or 4 arguments and the head must be the built-in symbol name
-   * of the function or can be an {@link F#operatorForm2Prepend(IAST)}.
+   * of the function or can be an {@link F#operatorForm2Prepend(IAST, int[], EvalEngine)}.
    */
   int[] ARGS_2_4_2 = new int[] {2, 4, 2};
 
@@ -262,18 +262,22 @@ public interface IFunctionEvaluator extends IEvaluator {
    * <code>ast.head()</code>) contains the <i>head</i> (i.e. the function symbol) of this abstract
    * syntax tree (AST).
    *
-   * <p>From <code>ast.get(1)</code> to <code>ast.get(n)</code> the <code>ast</code> contains the
-   * first to n-th argument of the function (alternatively you get the first to fifth argument with
-   * the methods <code>arg1()</code>, <code>arg2()</code>,... <code>arg5()</code>).
+   * <p>
+   * From <code>ast.get(1)</code> to <code>ast.get(n)</code> the <code>ast</code> contains the first
+   * to n-th argument of the function (alternatively you get the first to fifth argument with the
+   * methods <code>arg1()</code>, <code>arg2()</code>,... <code>arg5()</code>).
    *
-   * <p><b>Example:</b> the expression <code>Binomial(n,m)</code> is represented as AST with <code>
+   * <p>
+   * <b>Example:</b> the expression <code>Binomial(n,m)</code> is represented as AST with <code>
    * ast.head() <=> F.Binomial</code>, <code>ast.arg1() <=> n</code> and <code>ast.arg2() <=> m
    * </code>
    *
-   * <p>If necessary use the methods from the <code>Validate</code> class to check the number or
-   * types of arguments in the evaluate method.
+   * <p>
+   * If necessary use the methods from the <code>Validate</code> class to check the number or types
+   * of arguments in the evaluate method.
    *
-   * <p><b>Note:</b> if the symbolic evaluation isn't possible or no result is found the evaluate
+   * <p>
+   * <b>Note:</b> if the symbolic evaluation isn't possible or no result is found the evaluate
    * method returns with a <code>F#NIL</code> value without throwing an exception!
    *
    * @param ast the abstract syntax tree (AST) which should be evaluated
@@ -292,18 +296,22 @@ public interface IFunctionEvaluator extends IEvaluator {
    * <code>ast.head()</code>) contains the <i>head</i> (i.e. the function symbol) of this abstract
    * syntax tree (AST).
    *
-   * <p>From <code>ast.get(1)</code> to <code>ast.get(n)</code> the <code>ast</code> contains the
-   * first to n-th argument of the function (alternatively you get the first to fifth argument with
-   * the methods <code>arg1()</code>, <code>arg2()</code>,... <code>arg5()</code>).
+   * <p>
+   * From <code>ast.get(1)</code> to <code>ast.get(n)</code> the <code>ast</code> contains the first
+   * to n-th argument of the function (alternatively you get the first to fifth argument with the
+   * methods <code>arg1()</code>, <code>arg2()</code>,... <code>arg5()</code>).
    *
-   * <p><b>Example:</b> the expression <code>Binomial(n,m)</code> is represented as AST with <code>
+   * <p>
+   * <b>Example:</b> the expression <code>Binomial(n,m)</code> is represented as AST with <code>
    * ast.head() <=> F.Binomial</code>, <code>ast.arg1() <=> n</code> and <code>ast.arg2() <=> m
    * </code>
    *
-   * <p>If necessary use the methods from the <code>Validate</code> class to check the number or
-   * types of arguments in the evaluate method.
+   * <p>
+   * If necessary use the methods from the <code>Validate</code> class to check the number or types
+   * of arguments in the evaluate method.
    *
-   * <p><b>Note:</b> if the symbolic evaluation isn't possible or no result is found the evaluate
+   * <p>
+   * <b>Note:</b> if the symbolic evaluation isn't possible or no result is found the evaluate
    * method returns with a <code>F#NIL</code> value without throwing an exception!
    *
    * @param ast the abstract syntax tree (AST) which should be evaluated
@@ -340,7 +348,7 @@ public interface IFunctionEvaluator extends IEvaluator {
    */
   default IExpr print(IAST ast, int expected, EvalEngine engine) {
     // `1` called with `2` arguments; `3` arguments are expected.
-    return IOFunctions.printMessage(
-        ast.topHead(), "argrx", F.List(ast, F.ZZ(ast.argSize()), F.ZZ(expected)), engine);
+    return IOFunctions.printMessage(ast.topHead(), "argrx",
+        F.List(ast, F.ZZ(ast.argSize()), F.ZZ(expected)), engine);
   }
 }

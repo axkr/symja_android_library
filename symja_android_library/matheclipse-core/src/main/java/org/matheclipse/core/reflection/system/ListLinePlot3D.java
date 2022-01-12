@@ -1,9 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -21,6 +24,15 @@ public class ListLinePlot3D extends AbstractEvaluator {
         int[] dimension = heightValueMatrix.isMatrix(false);
 
         if (dimension != null && dimension.length == 2) {
+          IAST plotStyle = F.NIL;
+          if (ast.argSize() > 1) {
+            final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+            IExpr temp = options.getOption(S.PlotStyle);
+            if (temp.isAST()) {
+              plotStyle = (IAST) temp;
+            }
+          }
+
           // convert possible sparse array expression:
           IAST values = (IAST) ast.arg1().normal(false);
           if (dimension[0] > 3) {
@@ -34,6 +46,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
               double minZ = (((IAST) heightValueMatrix.arg1()).arg3()).evalDouble();
               double maxZ = minZ;
 
+              final IAST color = GraphicsFunctions.plotStyleColorExpr(1, plotStyle);
               for (int i = 1; i <= heightValueMatrix.argSize(); i++) {
                 IAST row = ((IAST) heightValueMatrix.get(i));
 
@@ -62,18 +75,15 @@ public class ListLinePlot3D extends AbstractEvaluator {
               }
 
               // ListLinePlot3D size is 2.5 × 2.5 × 1 independently from its coordinates
-              IAST deltaXYZ = F.List(
-                F.num((maxX - minX) / 2.5),
-                F.num((maxY - minY) / 2.5),
-                F.num(maxZ - minZ)
-              );
+              IAST deltaXYZ = F.List(F.num((maxX - minX) / 2.5), F.num((maxY - minY) / 2.5),
+                  F.num(maxZ - minZ));
 
               IASTAppendable pointList = F.ListAlloc(dimension[0]);
               for (int i = 1; i < values.size(); i++) {
                 IExpr rowList = values.get(i);
                 pointList.append(rowList.divide(deltaXYZ));
               }
-              IASTAppendable result = F.Graphics3D(F.Line(pointList));
+              IASTAppendable result = F.Graphics3D(F.List(color, F.Line(pointList)));
               if (ast.argSize() > 1) {
                 // add same options to Graphics3D
                 result.appendAll(ast, 2, ast.size());
@@ -87,14 +97,13 @@ public class ListLinePlot3D extends AbstractEvaluator {
               for (int i = 1; i < values.size(); i++) {
                 IAST rowList = (IAST) values.get(i);
                 IASTAppendable lineList = F.ListAlloc(dimension[1]);
+                final IAST color = GraphicsFunctions.plotStyleColorExpr(i, plotStyle);
                 for (int j = 1; j < rowList.size(); j++) {
                   // ListLinePlot3D size is 2.5 × 2.5 × 1 independently from its coordinates
-                  lineList.append(F.List(
-                    F.num(i * 2.5 / heightValueMatrix.size()),
-                    F.num(j * 2.5 / rowList.size()),
-                    rowList.get(j).divide(deltaHeight)
-                  ));
+                  lineList.append(F.List(F.num(i * 2.5 / heightValueMatrix.size()),
+                      F.num(j * 2.5 / rowList.size()), rowList.get(j).divide(deltaHeight)));
                 }
+                resultList.append(color);
                 resultList.append(F.Line(lineList));
               }
               IASTAppendable result = F.Graphics3D(resultList);
