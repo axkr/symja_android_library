@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.IAST;
  */
 class UtilityFunctions22 { 
   public static IAST RULES = List( 
-ISetDelayed(376,Dist(u_,Dist(v_,w_,x_),x_),
+ISetDelayed(376,Dist(u_,$(Defer($rubi("Dist")),v_,w_,x_),x_),
     Dist(Times(u,v),w,x)),
 ISetDelayed(377,Dist(u_,v_,x_),
     If(SameQ(u,C1),v,If(SameQ(u,C0),CompoundExpression(Print($str("*** Warning ***:  Dist[0,"),v,$str(","),x,$str("]")),C0),If(And(Less(NumericFactor(u),C0),Greater(NumericFactor(Negate(u)),C0)),Negate(Dist(Negate(u),v,x)),If(SumQ(v),Map(Function(Dist(u,Slot1,x)),v),If(IntegralFreeQ(v),Simp(Times(u,v),x),With(List(Set(w,Times(Simp(Times(u,Sqr(x)),x),Power(x,CN2)))),If(And(UnsameQ(w,u),FreeQ(w,x),SameQ(w,Simp(w,x)),SameQ(w,Times(Simp(Times(w,Sqr(x)),x),Power(x,CN2)))),Dist(w,v,x),If(UnsameQ($s("§$showsteps"),True),Simp(Times(u,v),x),$(Defer($rubi("Dist")),u,v,x)))))))))),
