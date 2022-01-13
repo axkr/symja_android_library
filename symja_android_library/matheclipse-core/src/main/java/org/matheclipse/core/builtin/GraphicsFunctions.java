@@ -70,7 +70,7 @@ public class GraphicsFunctions {
         buf.append("{type: \'arrow\',");
         setColor(buf, color, F.NIL, true);
         setOpacity(buf, opacity.orElse(F.C1));
-        if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
+        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
           buf.append("}");
           return true;
         }
@@ -389,7 +389,7 @@ public class GraphicsFunctions {
         setColor(buf, color, F.NIL, true);
         setOpacity(buf, opacity.orElse(F.C1D2));
         buf.append("radius: " + radius + ",");
-        if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
+        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
           buf.append("}");
           return true;
         }
@@ -431,7 +431,7 @@ public class GraphicsFunctions {
         setColor(buf, color, F.NIL, true);
         setOpacity(buf, opacity.orElse(F.C1D2));
         buf.append("radius: " + radius + ",");
-        if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
+        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
           buf.append("}");
           return true;
         }
@@ -619,7 +619,7 @@ public class GraphicsFunctions {
         buf.append("{type: \'line\',");
         setColor(buf, color, F.NIL, true);
         setOpacity(buf, opacity.orElse(F.C1));
-        if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
+        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
           buf.append("}");
           return true;
         }
@@ -754,7 +754,7 @@ public class GraphicsFunctions {
         buf.append("{type: \'point\',");
         setColor(buf, color, F.RGBColor(F.C0, F.C0, F.C0), true);
         setOpacity(buf, opacity.orElse(F.C1));
-        if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
+        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
           buf.append(",pointSize: 0.02}");
           return true;
         }
@@ -785,7 +785,7 @@ public class GraphicsFunctions {
         buf.append("{type: \'polygon\',");
         setColor(buf, color, F.NIL, true);
         setOpacity(buf, opacity.orElse(F.C1));
-        if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
+        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
           buf.append("}");
           return true;
         }
@@ -1021,7 +1021,7 @@ public class GraphicsFunctions {
       setColor(buf, color, F.NIL, true);
       setOpacity(buf, opacity.orElse(F.C1D2));
       addSubtypeThreejs(buf);
-      if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
+      if (list.isListOfLists() && graphics3DCoords(buf, list)) {
         buf.append("}");
         return true;
       }
@@ -1057,7 +1057,7 @@ public class GraphicsFunctions {
         setColor(buf, color, F.NIL, true);
         setOpacity(buf, opacity.orElse(F.C1));
         buf.append("radius: " + radius + ",");
-        if (list.isListOfLists() && graphics3DCoords(buf, (IAST) list)) {
+        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
           buf.append("}");
           return true;
         }
@@ -1137,8 +1137,7 @@ public class GraphicsFunctions {
               }
               first = false;
 
-              if (!((IGraphics3D) evaluator).graphics2D(buf, (IAST) primitive, dim, rgbColor,
-                  opacity)) {
+              if (!((IGraphics3D) evaluator).graphics2D(buf, primitive, dim, rgbColor, opacity)) {
                 return false;
               }
               continue;
@@ -1151,37 +1150,41 @@ public class GraphicsFunctions {
     return false;
   }
 
-  public static boolean exportGraphics3D(StringBuilder buf, IAST data3D) {
+  public static boolean exportGraphics3DRecursive(StringBuilder buf, IAST data3D) {
     if (data3D.isList()) {
       boolean first = true;
       IAST rgbColor = F.NIL;
       IExpr opacity = F.NIL;
-      IAST list = (IAST) data3D;
+      IAST list = data3D;
       for (int i = 1; i < list.size(); i++) {
         IExpr arg = list.get(i);
         if (arg.isAST()) {
           IAST ast = (IAST) arg;
-          if (ast.isRGBColor()) {
-            rgbColor = ast;
-            continue;
-          }
-          if (ast.isAST(S.Opacity, 2)) {
-            opacity = ast.arg1();
-            continue;
-          }
-          if (ast.head().isBuiltInSymbol()) {
-            IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
-            IEvaluator evaluator = symbol.getEvaluator();
-            if (evaluator instanceof IGraphics3D) {
+          if (ast.isList()) {
+            StringBuilder primitivesBuffer = new StringBuilder();
+            if (exportGraphics3DRecursive(primitivesBuffer, ast)) {
               if (!first) {
                 buf.append(",");
               }
               first = false;
-
-              if (!((IGraphics3D) evaluator).graphics3D(buf, (IAST) ast, rgbColor, opacity)) {
-                return false;
+              buf.append(primitivesBuffer);
+            }
+          } else if (ast.isRGBColor()) {
+            rgbColor = ast;
+          } else if (ast.isAST(S.Opacity, 2)) {
+            opacity = ast.arg1();
+          } else if (ast.head().isBuiltInSymbol()) {
+            IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
+            IEvaluator evaluator = symbol.getEvaluator();
+            if (evaluator instanceof IGraphics3D) {
+              StringBuilder primitivesBuffer = new StringBuilder();
+              if (((IGraphics3D) evaluator).graphics3D(primitivesBuffer, ast, rgbColor, opacity)) {
+                if (!first) {
+                  buf.append(",");
+                }
+                first = false;
+                buf.append(primitivesBuffer);
               }
-              continue;
             }
           }
         }
@@ -1261,7 +1264,7 @@ public class GraphicsFunctions {
     IExpr data3D = engine.evaluate(F.N(arg1));
     if (data3D.isAST() && data3D.head().isBuiltInSymbol()) {
       StringBuilder jsonPrimitives = new StringBuilder();
-      if (GraphicsFunctions.exportGraphics3D(jsonPrimitives, (IAST) data3D)) {
+      if (GraphicsFunctions.exportGraphics3DRecursive(jsonPrimitives, (IAST) data3D)) {
         try {
 
           graphics3DBuffer.append("drawGraphics3d(document.getElementById('graphics3d'),\n");
@@ -1601,12 +1604,12 @@ public class GraphicsFunctions {
   }
 
   /**
-   * @param functionNumber the number of the function which should be plotted
+   * @param functionColorNumber the number of the color the function should be plotted in
    * @param plotStyle if present a <code>List()</code> is expected
    */
-  public static RGBColor plotStyleColor(int functionNumber, IAST plotStyle) {
-    if (plotStyle.isList() && plotStyle.size() > functionNumber) {
-      IExpr temp = plotStyle.get(functionNumber);
+  public static RGBColor plotStyleColor(int functionColorNumber, IAST plotStyle) {
+    if (plotStyle.isList() && plotStyle.size() > functionColorNumber) {
+      IExpr temp = plotStyle.get(functionColorNumber);
       if (temp.isASTSizeGE(S.Directive, 2)) {
         IAST directive = (IAST) temp;
         for (int j = 1; j < directive.size(); j++) {
@@ -1623,19 +1626,19 @@ public class GraphicsFunctions {
         }
       }
     }
-    return PLOT_COLORS[(functionNumber - 1) % PLOT_COLORS.length];
+    return PLOT_COLORS[(functionColorNumber - 1) % PLOT_COLORS.length];
   }
 
   /**
    * Get an {@link F#RGBColor(double, double, double)} color for the function number from the
    * internal color wheel.
    * 
-   * @param functionNumber the number of the function which should be plotted
+   * @param functionColorNumber the number of the function which should be plotted
    * @param plotStyle if present a <code>List()</code> is expected
    * @return
    */
-  public static IAST plotStyleColorExpr(int functionNumber, IAST plotStyle) {
-    RGBColor color = plotStyleColor(functionNumber, plotStyle);
+  public static IAST plotStyleColorExpr(int functionColorNumber, IAST plotStyle) {
+    RGBColor color = plotStyleColor(functionColorNumber, plotStyle);
     float[] rgbComponents = color.getRGBColorComponents(null);
     return F.RGBColor(rgbComponents[0], rgbComponents[1], rgbComponents[2]);
   }
