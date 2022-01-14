@@ -28,29 +28,49 @@ public class ListLinePlot3D extends AbstractEvaluator {
           plotStyle = (IAST) temp;
         }
       }
+
       // the color number with which the line will be printed
       int[] lineColorNumber = new int[] {1};
+
+      // first try if arg1 is a matrix
+      int[] dimension = ast.arg1().isMatrix(false);
+
+      if (dimension != null && dimension.length == 2) {
+        IExpr flattenHeights = engine.evaluate(F.Flatten(ast.arg1()));
+        double deltaHeight =
+            engine.evaluate(F.Max(flattenHeights).subtract(F.Min(flattenHeights))).evalDouble();
+        IExpr temp =
+            matrixLinePlot(ast.arg1(), dimension, plotStyle, lineColorNumber, deltaHeight, engine);
+        if (temp.isPresent()) {
+          IASTAppendable result = F.Graphics3D(temp);
+          if (ast.argSize() > 1) {
+            // add same options to Graphics3D
+            result.appendAll(ast, 2, ast.size());
+          }
+          return result;
+        }
+        return F.NIL;
+      }
+
+      // second try if arg1 is a list of matrices
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        int[] dimension = list.isMatrix(false);
-        if (dimension != null && dimension.length == 2) {
-          IExpr temp = matrixLinePlot(list, dimension, plotStyle, lineColorNumber, engine);
-          if (temp.isPresent()) {
-            IASTAppendable result = F.Graphics3D(temp);
-            if (ast.argSize() > 1) {
-              // add same options to Graphics3D
-              result.appendAll(ast, 2, ast.size());
-            }
-            return result;
-          }
-          return F.NIL;
-        }
         IASTAppendable resultList = F.ListAlloc(list.size());
+        double deltaHeight = 1.0;
+        for (int i = 1; i < list.size(); i++) {
+          int[] dims = list.get(i).isMatrix(false);
+          if (dims != null && dims.length == 2) {
+            IExpr flattenHeights = engine.evaluate(F.Flatten(list.get(i)));
+            double tempHeight =
+                engine.evaluate(F.Max(flattenHeights).subtract(F.Min(flattenHeights))).evalDouble();
+            deltaHeight = Math.max(deltaHeight, tempHeight);
+          }
+        }
         for (int i = 1; i < list.size(); i++) {
           int[] dims = list.get(i).isMatrix(false);
           if (dims != null && dims.length == 2) {
             IExpr temp =
-                matrixLinePlot((IAST) list.get(i), dims, plotStyle, lineColorNumber, engine);
+                matrixLinePlot(list.get(i), dims, plotStyle, lineColorNumber, deltaHeight, engine);
             if (temp.isPresent()) {
               resultList.append(temp);
             }
@@ -63,14 +83,14 @@ public class ListLinePlot3D extends AbstractEvaluator {
         }
         return result;
       }
-
     }
+
     return F.NIL;
 
   }
 
-  private IExpr matrixLinePlot(IAST heightValueMatrix, int[] dimension, IAST plotStyle,
-      int[] lineColorNumber, EvalEngine engine) {
+  private IExpr matrixLinePlot(IExpr heightValueMatrix, int[] dimension, IAST plotStyle,
+      int[] lineColorNumber, double deltaHeight, EvalEngine engine) {
     // convert possible sparse array expression:
     IAST values = (IAST) heightValueMatrix.normal(false);
     if (dimension[0] > 3) {
@@ -123,10 +143,6 @@ public class ListLinePlot3D extends AbstractEvaluator {
         }
         return F.List(color, F.Line(pointList));
       } else if (dimension[1] > 3) {
-        IExpr flattenHeights = engine.evaluate(F.Flatten(values));
-        double deltaHeight =
-            engine.evaluate(F.Max.of(flattenHeights).subtract(F.Min(flattenHeights))).evalDouble();
-
         final int valuesSize = values.size();
         IASTAppendable resultList = F.ListAlloc(dimension[0]);
         for (int i = 1; i < valuesSize; i++) {
