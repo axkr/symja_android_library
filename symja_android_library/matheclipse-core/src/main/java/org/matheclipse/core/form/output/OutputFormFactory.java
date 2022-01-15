@@ -1771,6 +1771,10 @@ public class OutputFormFactory {
     fInputForm = inputForm;
   }
 
+  public void setSignificantFigures(int significantFigures) {
+    fSignificantFigures = significantFigures;
+  }
+
   public void setEmpty(final boolean empty) {
     fEmpty = empty;
   }
@@ -1778,6 +1782,10 @@ public class OutputFormFactory {
   /** @return Returns the columnCounter. */
   public int getColumnCounter() {
     return fColumnCounter;
+  }
+
+  public int getSignificantFigures() {
+    return fSignificantFigures;
   }
 
   /** @param columnCounter The columnCounter to set. */

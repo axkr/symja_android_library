@@ -16713,6 +16713,11 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testN() {
+    check("N(1/7,2)", //
+        "0.14");
+    check("N(1/7, 3)", //
+        "0.143");
+
     check("N(8 + 1*^28, 40) // InputForm", //
         "1.0000000000000000000000000008`40*^28");
     check("N(8 + 1*^28, 40)", //

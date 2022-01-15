@@ -500,8 +500,6 @@ public class MMAConsole {
   }
 
   private String printResult(IExpr result) {
-    EvalEngine engine = fEvaluator.getEvalEngine();
-    EvalEngine.setReset(engine);
     try {
       if (result.equals(S.Null)) {
         return "";
@@ -555,6 +553,7 @@ public class MMAConsole {
   private String exprToString(IExpr result) {
     StringBuilder strBuffer = new StringBuilder();
     fOutputFactory.reset(false);
+    fOutputFactory.setSignificantFigures(fEvaluator.getEvalEngine().getSignificantFigures() + 1);
     if (fOutputFactory.convert(strBuffer, result)) {
       return strBuffer.toString();
     }

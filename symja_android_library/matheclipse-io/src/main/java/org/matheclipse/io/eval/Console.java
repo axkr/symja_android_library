@@ -529,6 +529,7 @@ public class Console {
   private String exprToString(IExpr result) {
     StringBuilder strBuffer = new StringBuilder();
     fOutputFactory.reset(false);
+    fOutputFactory.setSignificantFigures(fEvaluator.getEvalEngine().getSignificantFigures() + 1);
     if (fOutputFactory.convert(strBuffer, result)) {
       return strBuffer.toString();
     }
