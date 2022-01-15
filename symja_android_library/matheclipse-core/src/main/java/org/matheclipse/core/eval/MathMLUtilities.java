@@ -59,7 +59,7 @@ public class MathMLUtilities {
   public MathMLUtilities(
       final EvalEngine evalEngine, final boolean mathMLTagPrefix, final boolean mathMLHeader) {
     fEvalEngine = evalEngine;
-    // EvalEngine.setReset(fEvalEngine);
+    EvalEngine.set(fEvalEngine);
     //		if (mathMLTagPrefix) {
     //			fMathMLFactory = new MathMLFormFactory("m:", numberFormat);
     //		} else {
