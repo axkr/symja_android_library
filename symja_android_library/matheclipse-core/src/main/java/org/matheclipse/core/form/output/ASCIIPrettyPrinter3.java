@@ -279,22 +279,26 @@ public class ASCIIPrettyPrinter3 {
    * @param prefix a prefix which should be placed before the <code>outputExpression</code>
    */
   public static void prettyPrinter(PrintWriter out, String[] outputExpression, String prefix) {
-    if (outputExpression == null) {
-      out.println(prefix);
-    } else {
+    out.print(prefix);
+    if (outputExpression != null) {
       if (outputExpression[0].trim().length() > 0) {
-        for (int i = 0; i < prefix.length(); i++) {
-          out.print(" ");
-        }
+        int length = prefix.length();
         out.println(outputExpression[0]);
-
-        for (int i = 0; i < prefix.length(); i++) {
-          out.print(" ");
-        }
+        emptyPrefix(out, length);
+        out.println(outputExpression[1]);
+        emptyPrefix(out, length);
         out.println(outputExpression[2]);
       } else {
-        out.println(prefix + outputExpression[1]);
+        out.println(outputExpression[1]);
       }
     }
+  }
+
+  private static void emptyPrefix(PrintWriter out, int length) {
+    StringBuilder s = new StringBuilder(length);
+    for (int i = 0; i < length; i++) {
+      s.append(' ');
+    }
+    out.print(s.toString());
   }
 }
