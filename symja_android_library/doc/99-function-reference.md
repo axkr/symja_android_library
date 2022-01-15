@@ -215,6 +215,7 @@
 * [Det](functions/Det.md)
 * [Diagonal](functions/Diagonal.md)
 * [DiagonalMatrix](functions/DiagonalMatrix.md)
+* [DiagonalMatrixQ](functions/DiagonalMatrixQ.md)
 * [DialogInput](functions/DialogInput.md)
 * [DiceDissimilarity](functions/DiceDissimilarity.md)
 * [Diff](functions/Diff.md)

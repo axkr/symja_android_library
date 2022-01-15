@@ -2443,6 +2443,10 @@ public class S {
   public final static IBuiltInSymbol DiagonalMatrix =
       F.initFinalSymbol("DiagonalMatrix", ID.DiagonalMatrix);
 
+  public final static IBuiltInSymbol DiagonalMatrixQ =
+      F.initFinalSymbol("DiagonalMatrixQ", ID.DiagonalMatrixQ);
+
+
   /**
    * DialogInput() - if the file system is enabled, the user can input a string in a dialog box.
    * 

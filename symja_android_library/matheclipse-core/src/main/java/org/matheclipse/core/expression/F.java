@@ -3058,6 +3058,22 @@ public class F extends S {
     return new AST1(DialogReturn, a0);
   }
 
+  public static IAST DiagonalMatrix(final IExpr a0) {
+    return new AST1(DiagonalMatrix, a0);
+  }
+
+  public static IAST DiagonalMatrix(final IExpr a0, final IExpr a1) {
+    return new AST2(DiagonalMatrix, a0, a1);
+  }
+
+  public static IAST DiagonalMatrixQ(final IExpr a0) {
+    return new AST1(DiagonalMatrixQ, a0);
+  }
+
+  public static IAST DiagonalMatrixQ(final IExpr a0, final IExpr a1) {
+    return new AST2(DiagonalMatrixQ, a0, a1);
+  }
+
   /**
    *
    *

@@ -2029,8 +2029,7 @@ public final class LinearAlgebra {
           return IOFunctions.printMessage(S.FourierMatrix, "intpm", F.List(ast, F.C1), engine);
         }
         IAST scalar = F.Sqrt(F.QQ(1, m));
-        return F.matrix(
-            (i, j) -> unit(F.QQ(2L * ((long) i) * ((long) j), m).times(S.Pi)).times(scalar), m, m);
+        return F.matrix((i, j) -> unit(F.QQ(2L * (i) * (j), m).times(S.Pi)).times(scalar), m, m);
       }
       return F.NIL;
     }
@@ -3140,8 +3139,7 @@ public final class LinearAlgebra {
             return new ASTRealMatrix(result, false);
           } catch (MathIllegalArgumentException miae) {
             return IOFunctions.printMessage(ast.topHead(), "error",
-                F.List(F.stringx(miae.getMessage())),
-                engine);
+                F.List(F.stringx(miae.getMessage())), engine);
           }
         }
       }

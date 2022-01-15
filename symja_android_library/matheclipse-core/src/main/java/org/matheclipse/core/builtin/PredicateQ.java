@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -53,6 +54,7 @@ public class PredicateQ {
       S.AtomQ.setPredicateQ(x -> x.isAtom());
       S.BooleanQ.setPredicateQ(x -> x.isTrue() || x.isFalse());
       S.ByteArrayQ.setPredicateQ(WXFFunctions::isByteArray);
+      S.DiagonalMatrixQ.setEvaluator(new DiagonalMatrixQ());
       S.DigitQ.setEvaluator(new DigitQ());
       S.EvenQ.setEvaluator(new EvenQ());
       S.ExactNumberQ.setPredicateQ(x -> x.isExactNumber());
@@ -296,6 +298,51 @@ public class PredicateQ {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
     }
+  }
+
+
+  private static class DiagonalMatrixQ extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final IExpr arg1 = ast.arg1();
+      int[] dims = arg1.isMatrix();
+      if (dims == null) {
+        // no square matrix
+        return S.False;
+      }
+
+      int diagonal = 0;
+      if (ast.isAST2()) {
+        int k = ast.arg2().toIntDefault();
+        if (k == Integer.MIN_VALUE) {
+          return F.NIL;
+        }
+        diagonal = k;
+      }
+      IAST matrix = (IAST) arg1.normal(false);
+      for (int i = 1; i <= dims[0]; i++) {
+        IAST row = matrix.getAST(i);
+        for (int j = 1; j <= dims[1]; j++) {
+          IExpr element = row.get(j);
+          if (i + diagonal != j) {
+            if (!element.isZero()) {
+              return S.False;
+            }
+          }
+        }
+      }
+
+      return S.True;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
   }
 
   /**
