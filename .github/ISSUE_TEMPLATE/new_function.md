@@ -20,6 +20,6 @@ Please check the list of already available functions and suggest improvements:
 
 - how can a converter from and to the libraries used internal format be created?
 
-If necessary discuss the new function in the [Gitter chat group][1].
+If necessary discuss the new function in the [Discord Symja server][1].
 
-[1]: https://gitter.im/symja_android_library/Lobby
+[1]: https://discord.gg/tYknzr2qam
