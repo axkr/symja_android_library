@@ -257,6 +257,7 @@ public class ExpandTestCase extends AbstractTestCase {
         "True");
   }
 
+  @Override
   protected void setUp() {
     super.setUp();
     Config.MAX_AST_SIZE = Integer.MAX_VALUE;

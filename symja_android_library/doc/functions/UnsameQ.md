@@ -8,6 +8,9 @@ x=!=y
 
 > returns `True` if `x` and `y` are not structurally identical.
 
+See
+* [Wikipedia - Computer algebra - Equality](https://en.wikipedia.org/wiki/Computer_algebra#Equality)
+
 ### Examples
 
 Any object is the same as itself:
@@ -20,6 +23,9 @@ False
 True
 ```
 
+
+### Related terms
+[Equal](Equal.md), [SameQ](SameQ.md) , [Unequal](Unequal.md)
 
 ### Github
 

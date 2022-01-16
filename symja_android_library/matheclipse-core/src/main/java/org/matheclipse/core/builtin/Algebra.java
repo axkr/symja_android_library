@@ -1483,7 +1483,6 @@ public class Algebra {
 
       /**
        * @param ast
-       * @param evalParts evaluate the determined numerator and denominator parts
        * @return
        */
       private IExpr expandAST(final IAST ast) {
@@ -1804,7 +1803,7 @@ public class Algebra {
           // result = F.ast(S.Plus, (int) plusAST1.argSize());
           PlusOp plusOp = new PlusOp(plusAST1.argSize());
           final IExpr t =
-              plusAST0.isPlusTimesPower() ? expandAST((IAST) plusAST0).orElse(plusAST0) : plusAST0;
+              plusAST0.isPlusTimesPower() ? expandAST(plusAST0).orElse(plusAST0) : plusAST0;
           plusAST1.forEach(x -> {
             evalAndExpandAST(t, false, x, true, plusOp, engine);
           });
@@ -1813,7 +1812,7 @@ public class Algebra {
           // result = F.ast(S.Plus, plusAST0.argSize());
           PlusOp plusOp = new PlusOp(plusAST0.argSize());
           final IExpr t =
-              plusAST1.isPlusTimesPower() ? expandAST((IAST) plusAST1).orElse(plusAST1) : plusAST1;
+              plusAST1.isPlusTimesPower() ? expandAST(plusAST1).orElse(plusAST1) : plusAST1;
           plusAST0.forEach(x -> {
             evalAndExpandAST(x, true, t, false, plusOp, engine);
           });
@@ -1866,6 +1865,17 @@ public class Algebra {
         return timesAST;
       }
 
+      /**
+       * Evaluate <code>expr1 * expr2</code> and expand the resulting expression, if it's an <code>
+       * IAST</code>.
+       * 
+       * @param expr1
+       * @param expr1Eval
+       * @param expr2
+       * @param expr2Eval
+       * @param engine
+       * @return
+       */
       private IExpr binaryFlatTimesExpr(IExpr expr1, boolean expr1Eval, IExpr expr2,
           boolean expr2Eval, EvalEngine engine) {
         if (expr1.isIndeterminate() || expr2.isIndeterminate()) {
@@ -1933,9 +1943,9 @@ public class Algebra {
        * IAST</code>. After that add the resulting expression to the <code>PlusOp</code>
        *
        * @param expr1
-       * @param expr1Eval TODO
+       * @param expr1Eval
        * @param expr2
-       * @param expr2Eval TODO
+       * @param expr2Eval
        * @param result
        */
       private void evalAndExpandAST(IExpr expr1, boolean expr1Eval, IExpr expr2, boolean expr2Eval,

@@ -14,7 +14,9 @@ lhs != rhs
 
 > represents the inequality  `lhs <> rhs`.
  
-	
+See
+* [Wikipedia - Computer algebra - Equality](https://en.wikipedia.org/wiki/Computer_algebra#Equality)
+
 ### Examples
  
 ```
@@ -61,6 +63,9 @@ a != b != a
 >> {Unequal(), Unequal(x), Unequal(1)}
 {True, True, True}
 ```
+
+### Related terms
+[Equal](Equal.md), [SameQ](SameQ.md) , [UnsameQ](UnsameQ.md)
 
 ### Github
 

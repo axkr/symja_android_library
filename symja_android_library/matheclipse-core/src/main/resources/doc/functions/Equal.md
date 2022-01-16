@@ -13,7 +13,9 @@ lhs == rhs
 ```
 
 > represents the equation `lhs = rhs`.
- 
+
+See
+* [Wikipedia - Computer algebra - Equality](https://en.wikipedia.org/wiki/Computer_algebra#Equality)
 	
 ### Examples
 
@@ -70,6 +72,10 @@ True
 >> {Equal(), Equal(x), Equal(1)}
 {True, True, True}
 ```
+
+
+### Related terms
+[SameQ](SameQ.md), [Unequal](Unequal.md), [UnsameQ](UnsameQ.md) 
 
 ### Github
 
