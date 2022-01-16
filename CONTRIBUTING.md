@@ -15,7 +15,7 @@ Read through these guidelines before you get started:
 
 ### Questions & Concerns
 
-If you have any questions about using or developing for this project, send a question in the [Gitter chat group][5] or directly via [email][1].
+If you have any questions about using or developing for this project, send a question in the [Discord Symja chat][5] or directly via [email][1].
 
 ### Issues & Bugs
 
@@ -52,4 +52,4 @@ to ensure you aren't duplicating anyone's work. Then, do the following:
 [2]: https://github.com/axkr/symja_android_library/issues/new
 [3]: https://github.com/axkr/symja_android_library/compare
 [4]: https://github.com/axkr/symja_android_library/pulls
-[5]: https://gitter.im/symja_android_library/Lobby
+[5]: https://discord.gg/tYknzr2qam
