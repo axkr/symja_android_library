@@ -550,6 +550,9 @@ public interface IExpr
       if (inverse.isNumber() && this.isPlus()) {
         return engine.evaluate(F.Expand(F.Times(inverse, this)));
       }
+      if ((this.isNumber() && inverse.isTimes()) || (inverse.isNumber() && this.isTimes())) {
+        return engine.evaluate(F.Times(this, inverse));
+      }
       return engine.evaluate(F.Together(F.Times(this, inverse)));
     }
     return engine.evaluate(F.Times(this, inverse));
@@ -676,6 +679,7 @@ public interface IExpr
    *
    * @return this expression converted to a Java <code>double</code> value.
    */
+  @Override
   default double getReal() throws ArgumentTypeException {
     if (isInfinity()) {
       return Double.POSITIVE_INFINITY;
@@ -4460,6 +4464,7 @@ public interface IExpr
    *
    * @return <code>Sqrt(this)</code>
    */
+  @Override
   default IExpr sqrt() {
     if (isPower()) {
       return F.Power(base(), F.Times(C1D2, exponent()));
@@ -4538,6 +4543,9 @@ public interface IExpr
       }
       if (that.isNumber() && this.isPlus()) {
         return engine.evaluate(F.Expand(F.Times(that, this)));
+      }
+      if ((this.isNumber() && that.isTimes()) || (that.isNumber() && this.isTimes())) {
+        return engine.evaluate(F.Times(that, this));
       }
       return engine.evaluate(F.Together(F.Times(this, that)));
     }
@@ -5125,6 +5133,7 @@ public interface IExpr
     return F.C0;
   }
 
+  @Override
   default IExpr getPi() {
     return S.Pi;
   }

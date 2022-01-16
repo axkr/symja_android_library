@@ -22512,7 +22512,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     check("f(a, Sequence(b, c), d)", //
         "f(a,b,c,d)");
     check("$u = Sequence(a, b, c)", //
-        "Sequence(a,b,c)");
+        "Identity(a,b,c)");
     check("$u = Sequence(a, b, c);{$u,$u,$u}", //
         "{a,b,c,a,b,c,a,b,c}");
     check("f({{a, b}, {c, d}, {a}}) /. List -> Sequence", //
@@ -22542,7 +22542,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     check("a = Sequence(b, c);", //
         "");
     check("a", //
-        "Sequence(b,c)");
+        "Identity(b,c)");
     check("lst = {1, 2, 3};", //
         "");
     check("f(Sequence @@ lst)", //

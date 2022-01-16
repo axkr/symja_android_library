@@ -1053,10 +1053,9 @@ public final class LinearAlgebra {
         } else if (x.isList()) {
           // DesignMatrix(m_, f_List, x_List) :=
           // Prepend(MapThread(Function({g, y, r}, g /. y -> r), {f, x, Most(#)}), 1)& /@ m
-          return Map(
-              Function(
-                  Prepend(MapThread(Function(List(S.g, S.y, S.r), ReplaceAll(S.g, Rule(S.y, S.r))),
-                      List(f, x, Most(Slot1))), C1)),
+          return Map(Function(
+              Prepend(MapThread(Function(List(S.g, S.y, S.r), ReplaceAll(S.g, Rule(S.y, S.r))),
+                  List(f, x, Most(Slot1))), C1)),
               m);
         }
       } else {
@@ -4167,26 +4166,29 @@ public final class LinearAlgebra {
 
       try {
         engine.setTogetherMode(true);
-        int[] dim = ast.arg1().isMatrix();
+        final IExpr arg1 = ast.arg1();
+        int[] dim = arg1.isMatrix();
         if (dim != null) {
-          // TODO improve for symbolic calculations
-          // TODO https://github.com/Hipparchus-Math/hipparchus/issues/137
-          // final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
-          // if (matrix != null) {
-          // engine.setTogetherMode(true);
-          // FieldQRDecomposition<IExpr> ed = new FieldQRDecomposition<IExpr>(matrix);
-          // FieldMatrix<IExpr> q = ed.getQ();
-          // if (Convert.matrix2List(q) != null) {
-          // q = q.transpose();
-          // FieldMatrix<IExpr> r = ed.getR();
-          // if (Convert.matrix2List(r) != null) {
-          // return F.List(Convert.matrix2List(q), Convert.matrix2List(r));
-          // }
-          // }
-          // return F.NIL;
-          // }
+          if (engine.isSymbolicMode(S.QRDecomposition.getAttributes())) {
+            // TODO improve for symbolic calculations
+            // TODO https://github.com/Hipparchus-Math/hipparchus/issues/137
+            final FieldMatrix<IExpr> matrix = Convert.list2Matrix(arg1);
+            if (matrix != null) {
+              engine.setTogetherMode(true);
+              FieldQRDecomposition<IExpr> ed = new FieldQRDecomposition<IExpr>(matrix);
+              FieldMatrix<IExpr> q = ed.getQ();
+              if (Convert.matrix2List(q) != null) {
+                q = q.transpose();
+                FieldMatrix<IExpr> r = ed.getR();
+                if (Convert.matrix2List(r) != null) {
+                  return F.List(Convert.matrix2List(q), Convert.matrix2List(r));
+                }
+              }
+              return F.NIL;
+            }
+          }
           if (engine.isArbitraryMode()) {
-            final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
+            final FieldMatrix<IExpr> matrix = Convert.list2Matrix(arg1);
             if (matrix != null) {
               engine.setTogetherMode(true);
               FieldQRDecomposition<IExpr> ed = new FieldQRDecomposition<IExpr>(matrix);
@@ -4200,7 +4202,7 @@ public final class LinearAlgebra {
               return F.NIL;
             }
           }
-          final FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(ast.arg1());
+          final FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(arg1);
           if (complexMatrix != null) {
             FieldQRDecomposition<Complex> ed = new FieldQRDecomposition<Complex>(complexMatrix);
             FieldMatrix<Complex> q = ed.getQ();
@@ -4214,7 +4216,9 @@ public final class LinearAlgebra {
           }
         }
 
-      } catch (final ClassCastException | IndexOutOfBoundsException e) {
+      } catch (final ClassCastException |
+
+          IndexOutOfBoundsException e) {
         LOGGER.debug("QRDecomposition.evaluate() failed", e);
       } finally {
         engine.setTogetherMode(togetherMode);
@@ -4248,6 +4252,7 @@ public final class LinearAlgebra {
     // return F.NIL;
     // }
   }
+
 
   private static class RiccatiSolve extends AbstractEvaluator {
 
@@ -4285,6 +4290,7 @@ public final class LinearAlgebra {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -4407,6 +4413,7 @@ public final class LinearAlgebra {
     }
   }
 
+
   /**
    *
    *
@@ -4494,6 +4501,7 @@ public final class LinearAlgebra {
       return ARGS_1_1;
     }
   }
+
 
   private static final class SingularValueList extends AbstractFunctionEvaluator {
 
