@@ -958,10 +958,11 @@ public class EvalEngine implements Serializable {
           LOGGER.log(getLogLevel(), ast.topHead(), ve);
           return F.NIL;
         }
-        if (isSymbolicMode(attributes)) {
-          ast.addEvalFlags(IAST.BUILT_IN_EVALED);
-          return F.NIL;
-        }
+        // cannot generally set the result as evaluated in built-in function. Especially problems in
+        // `togetherMode`
+        // if (isSymbolicMode(attributes) && !isTogetherMode()) {
+        // ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+        // }
       }
     }
     return F.NIL;
@@ -974,7 +975,7 @@ public class EvalEngine implements Serializable {
    * @param headAttributes the attributes of the built-in header function which should be evaluated
    * @return <code>true</code> if the engine is in symbolic mode evaluation
    */
-  private final boolean isSymbolicMode(final int headAttributes) {
+  public final boolean isSymbolicMode(final int headAttributes) {
     return !fNumericMode && fAssumptions == null
         && ((ISymbol.HOLDALLCOMPLETE & headAttributes) == ISymbol.NOATTRIBUTE);
   }
@@ -1869,15 +1870,15 @@ public class EvalEngine implements Serializable {
         IExpr arg1 = ((IAST) expr).arg1();
         if (expr.isSqrt()) {
           if (resultList.isPresent()) {
-            resultList.set(i, PowerOp.power(arg1, F.C1D2));
+            resultList.set(i, S.Power.of(this, arg1, F.C1D2));
           } else {
-            resultList = ast.setAtCopy(i, PowerOp.power(arg1, F.C1D2));
+            resultList = ast.setAtCopy(i, S.Power.of(this, arg1, F.C1D2));
           }
         } else if (expr.isAST(S.Exp, 2)) {
           if (resultList.isPresent()) {
-            resultList.set(i, PowerOp.power(S.E, arg1));
+            resultList.set(i, S.Power.of(this, S.E, arg1));
           } else {
-            resultList = ast.setAtCopy(i, PowerOp.power(S.E, arg1));
+            resultList = ast.setAtCopy(i, S.Power.of(this, S.E, arg1));
           }
         }
       }
@@ -2367,6 +2368,7 @@ public class EvalEngine implements Serializable {
    * @return
    * @deprecated use {@link #evaluateNIL(IExpr)}
    */
+  @Deprecated
   public final IExpr evaluateNull(final IExpr expr) {
     return evaluateNIL(expr);
   }
@@ -2781,6 +2783,14 @@ public class EvalEngine implements Serializable {
     return fStopRequested;
   }
 
+  /**
+   * Basic arithmetic operations (especially in linear algebra functions) like for example
+   * {@link IExpr#plus(IExpr)} and {@link IExpr#times(IExpr)} are tried to be simplified with a
+   * wrpped {@link S#Together} command during the evaluation of the multiplication.
+   * 
+   * @return
+   * @see #setTogetherMode(boolean)
+   */
   public final boolean isTogetherMode() {
     return fTogetherMode;
   }
@@ -2976,8 +2986,8 @@ public class EvalEngine implements Serializable {
    * @param uniqueTrace the output is printed only once for a combination of _unevaluated_ input
    *        expression and _evaluated_ output expression.
    */
-  public void setOnOffMode(final boolean onOffMode,
-      Map<ISymbol, ISymbol> headSymbolsMap, boolean uniqueTrace) {
+  public void setOnOffMode(final boolean onOffMode, Map<ISymbol, ISymbol> headSymbolsMap,
+      boolean uniqueTrace) {
     fOnOffMode = onOffMode;
     fOnOffMap = headSymbolsMap;
     fOnOffUnique = uniqueTrace;
@@ -3100,6 +3110,16 @@ public class EvalEngine implements Serializable {
     fCopiedEngine = null;
   }
 
+  /**
+   * Basic artihmetic operations (especially in linear algebra functions) like for example
+   * {@link IExpr#plus(IExpr)} and {@link IExpr#times(IExpr)} are tried to be simplified with a
+   * {@link S#Together} command during the evaluation of the multiplication if the parameter is set
+   * to <code>true</code>.
+   * 
+   * @param fTogetherMode if <code>true</code> the evaluation will be wrapped by a
+   *        {@link S#Together} function in basic multiplication
+   * @see #isTogetherMode()
+   */
   public void setTogetherMode(boolean fTogetherMode) {
     this.fTogetherMode = fTogetherMode;
   }

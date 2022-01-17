@@ -3171,6 +3171,9 @@ public final class Arithmetic {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       final int size = ast.size();
       if (size > 2) {
+        if (ast.head() != S.Plus) {
+          return F.NIL;
+        }
         if (ast.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
           IAST temp = engine.evalArgsOrderlessN(ast);
           if (temp.isPresent()) {
@@ -3194,11 +3197,20 @@ public final class Arithmetic {
         return temp;
       } else {
         if (size == 1) {
-          return F.C0;
+          if (ast.head() == S.Plus) {
+            return F.C0;
+          }
+          return F.NIL;
         }
-        if (size == 2 && ast.head() == S.Plus) {
-          return ast.arg1();
+        if (size == 2) {
+          if (ast.head() == S.Plus) {
+            return ast.arg1();
+          }
+          return F.NIL;
         }
+      }
+      if (engine.isSymbolicMode(S.Plus.getAttributes())) {
+        ast.addEvalFlags(IAST.BUILT_IN_EVALED);
       }
       return F.NIL;
     }
@@ -3507,7 +3519,8 @@ public final class Arithmetic {
    */
   public static class Power extends AbstractFunctionEvaluator implements INumeric, PowerRules {
 
-    public static IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent) {
+    public static IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent,
+        EvalEngine engine) {
       try {
         if (base.isInexactNumber() && exponent.isInexactNumber()) {
           IExpr result = e2NumericArg(ast, base, exponent);
@@ -3663,6 +3676,10 @@ public final class Arithmetic {
       } catch (OverflowException | InfiniteExpansionException | ArithmeticException aex) {
         // Overflow occurred in computation.
         return IOFunctions.printMessage(S.General, "ovfl", F.List(), EvalEngine.get());
+      }
+
+      if (engine.isSymbolicMode(S.Power.getAttributes())) {
+        ast.addEvalFlags(IAST.BUILT_IN_EVALED);
       }
       return F.NIL;
     }
@@ -4578,7 +4595,7 @@ public final class Arithmetic {
           case 2:
             return ast.arg1();
           case 3:
-            return binaryOperator(ast, ast.arg1(), ast.arg2());
+            return binaryOperator(ast, ast.arg1(), ast.arg2(), engine);
           default:
             return powerFoldRight(ast, engine);
         }
@@ -6166,53 +6183,60 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr evaluate(IAST ast1, EvalEngine engine) {
-      int size = ast1.size();
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      int size = ast.size();
       if (size == 1) {
-        return F.C1;
+        if (ast.head() == S.Times) {
+          return F.C1;
+        }
+        return F.NIL;
       }
-      if (size == 2 && ast1.head() == S.Times) {
-        // OneIdentity
-        return ast1.arg1();
+      final IExpr arg1 = ast.arg1();
+      if (size == 2) {
+        if (ast.head() == S.Times) {
+          // OneIdentity
+          return arg1;
+        }
+        return F.NIL;
       }
       if (size > 2) {
-        IAST temp = evaluateHashsRepeated(ast1, engine);
+        IAST temp = evaluateHashsRepeated(ast, engine);
         if (temp.isPresent()) {
           return temp.oneIdentity1();
         }
       }
-      if (ast1.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
-        IAST temp = engine.evalArgsOrderlessN(ast1);
+      if (ast.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
+        IAST temp = engine.evalArgsOrderlessN(ast);
         if (temp.isPresent()) {
-          ast1 = temp;
+          ast = temp;
         }
       }
       if (size == 3) {
         // if ((ast1.arg1().isNumeric() || ast1.arg1().isOne() || ast1.arg1().isMinusOne())
-        if ((ast1.arg1().isOne() || ast1.arg1().isMinusOne()) && ast1.arg2().isPlus()) {
-          if (ast1.arg1().isOne()) {
-            return ast1.arg2();
+        if ((arg1.isOne() || arg1.isMinusOne()) && ast.arg2().isPlus()) {
+          if (arg1.isOne()) {
+            return ast.arg2();
           }
+          final IAST arg2 = (IAST) ast.arg2();
           // distribute the number over the sum:
-          final IAST arg2 = (IAST) ast1.arg2();
-          return arg2.mapThread(F.Times(ast1.arg1(), F.Slot1), 2);
+          return arg2.mapThread(F.Times(arg1, F.Slot1), 2);
         }
-        IExpr temp =
-            distributeLeadingFactor(binaryOperator(ast1, ast1.arg1(), ast1.arg2(), engine), ast1);
+        final IExpr arg2 = ast.arg2();
+        IExpr temp = distributeLeadingFactor(binaryOperator(ast, arg1, arg2, engine), ast);
         if (temp.isPresent()) {
           return temp;
         }
-        return binaryOperator(ast1, ast1.arg1(), ast1.arg2(), engine);
+        return binaryOperator(ast, arg1, arg2, engine);
       }
 
       if (size > 3) {
-        final ISymbol sym = ast1.topHead();
+        final ISymbol sym = ast.topHead();
         IASTAppendable result = F.NIL;
-        IExpr tempArg1 = ast1.arg1();
+        IExpr tempArg1 = arg1;
         boolean evaled = false;
         int i = 2;
         boolean isIASTAppendable = false;
-        IAST astTimes = ast1;
+        IAST astTimes = ast;
         while (i < astTimes.size()) {
 
           IExpr binaryResult = binaryOperator(astTimes, tempArg1, astTimes.get(i), engine);
@@ -6274,6 +6298,9 @@ public final class Arithmetic {
         return distributeLeadingFactor(F.NIL, astTimes);
       }
 
+      if (engine.isSymbolicMode(S.Times.getAttributes())) {
+        ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+      }
       return F.NIL;
     }
 
@@ -7000,4 +7027,5 @@ public final class Arithmetic {
   }
 
   private Arithmetic() {}
+
 }
