@@ -618,6 +618,8 @@ public class IOFunctions {
     "Raw object `1` cannot be used as an iterator.", //
     "ivar",
     "`1` is not a valid variable.", //
+      "ldata", 
+      "`1` is not a valid dataset or a list of datasets.", //
     "lend",
     "The argument at position `1` in `2` should be a vector of unsigned byte values or a Base64 encoded string.", //
     "level",
