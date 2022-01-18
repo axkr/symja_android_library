@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.builtin.GraphicsFunctions;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -29,54 +30,51 @@ public class ListLinePlot3D extends AbstractEvaluator {
         }
       }
 
-      // the color number with which the line will be printed
-      int[] lineColorNumber = new int[] {1};
-
-      // first try if arg1 is a matrix
-      int[] dimension = ast.arg1().isMatrix(false);
-
-      if (dimension != null && dimension.length == 2) {
-        IExpr flattenHeights = engine.evaluate(F.Flatten(ast.arg1()));
-        double deltaHeight =
-            engine.evaluate(F.Max(flattenHeights).subtract(F.Min(flattenHeights))).evalDouble();
-        IExpr temp =
-            matrixLinePlot(ast.arg1(), dimension, plotStyle, lineColorNumber, deltaHeight, engine);
-        if (temp.isPresent()) {
-          IASTAppendable result = F.Graphics3D(temp);
-          if (ast.argSize() > 1) {
-            // add same options to Graphics3D
-            result.appendAll(ast, 2, ast.size());
-          }
-          return result;
+      // case 1: single line heights
+      // e.g.: ListLinePlot3D[{1, 2, 3, 4, 5}]
+      if (ast.arg1().isList() && ((IAST) ast.arg1()).arg1().isNumber()) {
+        IASTAppendable result = F.Graphics3D(heightLinePlot((IAST) F.List(ast.arg1()), plotStyle, engine));
+        if (ast.argSize() > 1) {
+          // add same options to Graphics3D
+          result.appendAll(ast, 2, ast.size());
         }
-        return F.NIL;
+        return result;
       }
 
-      // second try if arg1 is a list of matrices
-      if (ast.arg1().isList()) {
-        IAST list = (IAST) ast.arg1();
-        IASTAppendable resultList = F.ListAlloc(list.size());
-        double deltaHeight = 1.0;
-        for (int i = 1; i < list.size(); i++) {
-          int[] dims = list.get(i).isMatrix(false);
-          if (dims != null && dims.length == 2) {
-            IExpr flattenHeights = engine.evaluate(F.Flatten(list.get(i)));
-            double tempHeight =
-                engine.evaluate(F.Max(flattenHeights).subtract(F.Min(flattenHeights))).evalDouble();
-            deltaHeight = Math.max(deltaHeight, tempHeight);
-          }
+      // try if arg1 is a matrix
+      int[] dimension = ast.arg1().isMatrix(false);
+
+      // case 2: single line coordinates
+      // e.g.: ListLinePlot3D[{{x_1, y_1, z_1}, {x_2, y_2, z_2}}]
+      if (dimension != null && dimension.length == 2 && dimension[1] == 3) {
+        IASTAppendable result = F.Graphics3D(coordinateLinePlot((IAST) F.List(ast.arg1()), plotStyle, engine));
+        if (ast.argSize() > 1) {
+          // add same options to Graphics3D
+          result.appendAll(ast, 2, ast.size());
         }
-        for (int i = 1; i < list.size(); i++) {
-          int[] dims = list.get(i).isMatrix(false);
-          if (dims != null && dims.length == 2) {
-            IExpr temp =
-                matrixLinePlot(list.get(i), dims, plotStyle, lineColorNumber, deltaHeight, engine);
-            if (temp.isPresent()) {
-              resultList.append(temp);
-            }
-          }
+        return result;
+      }
+
+      // case 3: multiple line heights
+      // e.g.: ListLinePlot3D[{{1, 2, 3, 4}, {-1, -2, -3, -4}}]
+      if (
+        ast.arg1().isList() &&
+        ((IAST) ast.arg1()).arg1().isList() &&
+        ((IAST) ((IAST) ast.arg1()).arg1()).arg1().isNumber()
+      ) {
+        IASTAppendable result = F.Graphics3D(heightLinePlot((IAST) ast.arg1(), plotStyle, engine));
+        if (ast.argSize() > 1) {
+          // add same options to Graphics3D
+          result.appendAll(ast, 2, ast.size());
         }
-        IASTAppendable result = F.Graphics3D(resultList);
+        return result;
+      }
+
+      dimension = ((IAST) ast.arg1()).arg1().isMatrix(false);
+      // case 4: multiple line coordinates
+      // e.g.: ListLinePlot3D[{{coord1, coord2}, {coord3, coord4}}]
+      if (dimension != null && dimension.length == 2 && dimension[1] == 3) {
+        IASTAppendable result = F.Graphics3D(coordinateLinePlot((IAST) ast.arg1(), plotStyle, engine));
         if (ast.argSize() > 1) {
           // add same options to Graphics3D
           result.appendAll(ast, 2, ast.size());
@@ -85,84 +83,102 @@ public class ListLinePlot3D extends AbstractEvaluator {
       }
     }
 
-    return F.NIL;
-
+    // `1` is not a valid dataset or a list of datasets.
+    return IOFunctions.printMessage(ast.topHead(), "ldata", F.List(ast.arg1()), engine);
   }
 
-  private IExpr matrixLinePlot(IExpr heightValueMatrix, int[] dimension, IAST plotStyle,
-      int[] lineColorNumber, double deltaHeight, EvalEngine engine) {
-    // convert possible sparse array expression:
-    IAST values = (IAST) heightValueMatrix.normal(false);
-    if (dimension[0] > 3) {
-      if (dimension[1] == 3) {
-        double minX = (((IAST) values.arg1()).arg1()).evalDouble();
-        double maxX = minX;
+  private IExpr heightLinePlot(IAST heights, IAST plotStyle, EvalEngine engine) {
+    final int valuesSize = heights.size();
+    IASTAppendable resultList = F.ListAlloc(valuesSize);
 
-        double minY = (((IAST) values.arg1()).arg2()).evalDouble();
-        double maxY = minY;
+    IExpr flattenHeights = engine.evaluate(F.Flatten((IExpr) heights));
+    double deltaHeight =
+        engine.evaluate(F.Max(flattenHeights).subtract(F.Min(flattenHeights))).evalDouble();
 
-        double minZ = (((IAST) values.arg1()).arg3()).evalDouble();
-        double maxZ = minZ;
+    int lineColorNumber = 1;
 
-        final IAST color = GraphicsFunctions.plotStyleColorExpr(lineColorNumber[0]++, plotStyle);
-        for (int i = 1; i <= values.argSize(); i++) {
-          IAST row = ((IAST) values.get(i));
+    for (int i = 1; i < valuesSize; i++) {
+      IAST rowList = (IAST) heights.get(i);
+      final int rowListSize = rowList.size();
 
-          try {
-            // evalDouble may throw ArgumentTypeException
-            double x = row.arg1().evalDouble();
-            if (x < minX)
-              minX = x;
-            if (x > maxX)
-              maxX = x;
+      IASTAppendable lineList = F.ListAlloc(rowListSize);
 
-            double y = row.arg2().evalDouble();
-            if (y < minY)
-              minY = y;
-            if (y > maxY)
-              maxY = y;
-
-            double z = row.arg3().evalDouble();
-            if (z < minZ)
-              minZ = z;
-            if (z > maxZ)
-              maxZ = z;
-          } catch (ArgumentTypeException ate) {
-            // ignore this row
-          }
-        }
-
+      for (int j = 1; j < rowListSize; j++) {
         // ListLinePlot3D size is 2.5 × 2.5 × 1 independently from its coordinates
-        IAST deltaXYZ =
-            F.List(F.num((maxX - minX) / 2.5), F.num((maxY - minY) / 2.5), F.num(maxZ - minZ));
+        lineList.append(F.List(F.num(i * 2.5 / valuesSize), F.num(j * 2.5 / rowListSize),
+            rowList.get(j).divide(deltaHeight)));
+      }
 
-        IASTAppendable pointList = F.ListAlloc(dimension[0]);
-        for (int i = 1; i < values.size(); i++) {
-          IExpr rowList = values.get(i);
-          pointList.append(rowList.divide(deltaXYZ));
-        }
-        return F.List(color, F.Line(pointList));
-      } else if (dimension[1] > 3) {
-        final int valuesSize = values.size();
-        IASTAppendable resultList = F.ListAlloc(dimension[0]);
-        for (int i = 1; i < valuesSize; i++) {
-          IAST rowList = (IAST) values.get(i);
-          final int rowListSize = rowList.size();
-          IASTAppendable lineList = F.ListAlloc(dimension[1]);
-          final IAST color = GraphicsFunctions.plotStyleColorExpr(lineColorNumber[0]++, plotStyle);
+      final IAST color = GraphicsFunctions.plotStyleColorExpr(lineColorNumber++, plotStyle);
+      resultList.append(color);
+      resultList.append(F.Line(lineList));
+    }
+    return resultList;
+  }
 
-          for (int j = 1; j < rowListSize; j++) {
-            // ListLinePlot3D size is 2.5 × 2.5 × 1 independently from its coordinates
-            lineList.append(F.List(F.num(i * 2.5 / valuesSize), F.num(j * 2.5 / rowListSize),
-                rowList.get(j).divide(deltaHeight)));
-          }
-          resultList.append(color);
-          resultList.append(F.Line(lineList));
+  private IExpr coordinateLinePlot(IAST coordinates, IAST plotStyle, EvalEngine engine) {
+    double minX = ((IAST) (((IAST) coordinates.arg1()).arg1())).arg1().evalDouble();
+    double maxX = minX;
+
+    double minY = ((IAST) (((IAST) coordinates.arg1()).arg1())).arg2().evalDouble();
+    double maxY = minY;
+
+    double minZ = ((IAST) (((IAST) coordinates.arg1()).arg1())).arg3().evalDouble();
+    double maxZ = minZ;
+
+    for (int i = 1; i <= coordinates.argSize(); i++) {
+      IAST line = (IAST) coordinates.get(i);
+
+      for (int j = 1; j <= line.argSize(); j++) {
+        try {
+          IAST coordinate = (IAST) line.get(j);
+
+          // evalDouble may throw ArgumentTypeException
+          double x = coordinate.arg1().evalDouble();
+          if (x < minX)
+            minX = x;
+          if (x > maxX)
+            maxX = x;
+
+          double y = coordinate.arg2().evalDouble();
+          if (y < minY)
+            minY = y;
+          if (y > maxY)
+            maxY = y;
+
+          double z = coordinate.arg3().evalDouble();
+          if (z < minZ)
+            minZ = z;
+          if (z > maxZ)
+            maxZ = z;
+        } catch (ArgumentTypeException ate) {
+          // ignore this row
         }
-        return resultList;
       }
     }
-    return F.NIL;
+
+    // ListLinePlot3D size is 2.5 × 2.5 × 1 independently from its coordinates
+    IAST deltaXYZ =
+        F.List((maxX - minX) / 2.5, (maxY - minY) / 2.5, maxZ - minZ);
+
+    // the color number with which the line will be printed
+    int lineColorNumber = 1;
+
+    IASTAppendable lineList = F.ListAlloc(coordinates.size() * 2);
+
+    for (int i = 1; i <= coordinates.argSize(); i++) {
+      final IAST color = GraphicsFunctions.plotStyleColorExpr(lineColorNumber++, plotStyle);
+
+      lineList.append(color);
+      // (# / deltaXYZ)& /@ line
+      lineList.append(F.Line(S.Map.of(
+        engine,
+        F.Function(F.Divide(F.Slot1, deltaXYZ)),
+        coordinates.get(i)
+      )));
+    }
+
+    return lineList;
   }
 
   @Override
