@@ -495,9 +495,10 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * satisfy the predicate.
    *
    * @param predicate the predicate which filters each argument in this <code>AST</code>
-   * @return the <code>true</code> if the predicate is true the first time or <code>false</code>
-   *     otherwise
+   * @return <code>true</code> if the predicate is true the first time or <code>false</code>
+   *         otherwise
    */
+  @Override
   default boolean exists(Predicate<? super IExpr> predicate) {
     return exists(predicate, 1);
   }
@@ -737,6 +738,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @return <code>true</code> if the predicate is true for all elements or <code>false</code>
    *     otherwise
    */
+  @Override
   default boolean forAll(Predicate<? super IExpr> predicate) {
     return forAll(predicate, 1);
   }
@@ -1016,6 +1018,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    */
   public boolean isEmpty();
 
+  @Override
   default boolean isASTOrAssociation() {
     return true;
   }

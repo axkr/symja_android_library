@@ -19,7 +19,6 @@ import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Assumptions;
@@ -201,7 +200,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
       }
 
       IExpr optionMethod = options.getOption(S.Method);
-      if (optionMethod.isSymbol()) {
+      if (optionMethod.isSymbol() || optionMethod.isString()) {
         method = optionMethod.toString();
       } else {
         if (ast.arg3().isSymbol()) {
@@ -237,10 +236,10 @@ public class FindRoot extends AbstractFunctionEvaluator {
             IOFunctions.printMessage(
                 ast.topHead(), "error", F.List(F.$str(miae.getMessage())), engine);
             return F.CEmptyList;
-          } catch (ValidateException ve) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
           } catch (MathRuntimeException mre) {
-            LOGGER.log(engine.getLogLevel(), "FindRoot", mre);
+            IOFunctions.printMessage(ast.topHead(), "error", F.List(F.$str(mre.getMessage())),
+                engine);
+            return F.CEmptyList;
           }
         }
       }

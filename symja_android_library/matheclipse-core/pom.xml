@@ -65,6 +65,11 @@
 			<groupId>org.hipparchus</groupId>
 			<artifactId>hipparchus-ode</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.hipparchus</groupId>
+			<artifactId>hipparchus-optim</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.jgrapht</groupId>

@@ -270,12 +270,18 @@
 				<artifactId>hipparchus-ode</artifactId>
 				<version>2.0</version>
 			</dependency>
+			
+			<dependency>
+				<groupId>org.hipparchus</groupId>
+				<artifactId>hipparchus-optim</artifactId>
+				<version>2.0</version>
+			</dependency>
 
 			<dependency>
 				<groupId>org.jgrapht</groupId>
 				<artifactId>jgrapht-io</artifactId>
 				<version>1.5.1</version>
-			</dependency>
+			</dependency> 
 
 			<dependency>
 				<groupId>org.jsoup</groupId>
