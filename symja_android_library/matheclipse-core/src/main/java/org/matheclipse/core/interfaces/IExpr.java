@@ -4300,10 +4300,6 @@ public interface IExpr
     return accept(new VisitorReplaceAll(map));
   }
 
-  default IExpr replaceAll(VisitorReplaceAll visitor) {
-    return accept(visitor);
-  }
-
   /**
    * Replace all subexpressions with the given rule set. A rule must contain the position of the
    * subexpression which should be replaced on the left-hand-side. If no substitution matches, the
