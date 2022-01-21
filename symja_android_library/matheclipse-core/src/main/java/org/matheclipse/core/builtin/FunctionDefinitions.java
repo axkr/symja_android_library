@@ -13,6 +13,8 @@ import static org.matheclipse.core.expression.S.ExpToTrig;
 import static org.matheclipse.core.expression.S.Export;
 import static org.matheclipse.core.expression.S.ExportString;
 import static org.matheclipse.core.expression.S.FindInstance;
+import static org.matheclipse.core.expression.S.FindMaximum;
+import static org.matheclipse.core.expression.S.FindMinimum;
 import static org.matheclipse.core.expression.S.FindRoot;
 import static org.matheclipse.core.expression.S.Fourier;
 import static org.matheclipse.core.expression.S.FrobeniusSolve;
@@ -81,6 +83,8 @@ public final class FunctionDefinitions {
       ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
       ExpToTrig.setEvaluator(new org.matheclipse.core.reflection.system.ExpToTrig());
       FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
+      FindMaximum.setEvaluator(new org.matheclipse.core.reflection.system.FindMaximum());
+      FindMinimum.setEvaluator(new org.matheclipse.core.reflection.system.FindMinimum());
       FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
       Fourier.setEvaluator(new org.matheclipse.core.reflection.system.Fourier());
       FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());

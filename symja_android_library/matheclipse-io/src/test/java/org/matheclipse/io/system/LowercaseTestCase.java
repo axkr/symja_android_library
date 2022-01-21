@@ -4188,6 +4188,28 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCos() {
+
+    // {-(1/2), (1/4)*(1 - Sqrt(5)), -Sin(Pi/30), Sin(Pi/30), (1/4)*(-1 + Sqrt(5)),
+    // 1/2, Sin((7*Pi)/30), (1/4)*(1 + Sqrt(5)), Cos((2*Pi)/15), Cos(Pi/15), 1,
+    // Cos(Pi/15), Cos((2*Pi)/15), (1/4)*(1 + Sqrt(5)), Sin((7*Pi)/30), 1/2,
+    // (1/4)*(-1 + Sqrt(5)), Sin(Pi/30), -Sin(Pi/30), (1/4)*(1 - Sqrt(5)), -(1/2)}
+    check("Table(Cos(i/15*Pi),{i,-10,10})", //
+        "{-1/2,1/4*(1-Sqrt(5)),-Cos(7/15*Pi),Cos(7/15*Pi),1/4*(-1+Sqrt(5)),1/2,Cos(4/15*Pi),\n"
+        + "1/4*(1+Sqrt(5)),Cos(2/15*Pi),Cos(Pi/15),1,Cos(Pi/15),Cos(2/15*Pi),1/4*(1+Sqrt(5)),Cos(\n"
+        + "4/15*Pi),1/2,1/4*(-1+Sqrt(5)),Cos(7/15*Pi),-Cos(7/15*Pi),1/4*(1-Sqrt(5)),-1/2}");
+
+    // {Sin(a - Pi/6), Sin(a - Pi/10), Sin(a - Pi/30), Sin(a + Pi/30),
+    // Sin(a + Pi/10), Sin(a + Pi/6), Sin(a + (7*Pi)/30), Cos(a - Pi/5),
+    // Cos(a - (2*Pi)/15), Cos(a - Pi/15), Cos(a), Cos(a + Pi/15),
+    // Cos(a + (2*Pi)/15), Cos(a + Pi/5), -Sin(a - (7*Pi)/30), -Sin(a - Pi/6),
+    // -Sin(a - Pi/10), -Sin(a - Pi/30), -Sin(a + Pi/30), -Sin(a + Pi/10),
+    // -Sin(a + Pi/6)}
+    check("Table(Cos(a+i/15*Pi),{i,-10,10})", //
+        "{-Cos(a+Pi/3),-Cos(a+2/5*Pi),-Cos(a+7/15*Pi),Sin(a+Pi/30),Sin(a+Pi/10),Sin(a+Pi/\n"
+            + "6),Sin(a+7/30*Pi),Sin(a+3/10*Pi),Sin(a+11/30*Pi),Sin(a+13/30*Pi),Cos(a),Cos(a+Pi/\n"
+            + "15),Cos(a+2/15*Pi),Cos(a+Pi/5),Cos(a+4/15*Pi),Cos(a+Pi/3),Cos(a+2/5*Pi),Cos(a+7/\n"
+            + "15*Pi),-Sin(a+Pi/30),-Sin(a+Pi/10),-Sin(a+Pi/6)}");
+
     check("Cos(1.20000000000000000000000)", //
         "0.362357754476673577638373");
 
@@ -4409,6 +4431,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCot() {
+    // check("Cot(4/15*Pi)", //
+    // "Tan((7*Pi)/30)");
     check("Cot(0.0)", //
         "ComplexInfinity");
     check("Cot(0)", //
@@ -4539,6 +4563,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCsc() {
+
+    // check("Csc(8/15*Pi)", //
+    // "Sec(Pi/30)");
     check("Csc(z+Pi)", //
         "-Csc(z)");
 
@@ -8942,6 +8969,49 @@ public class LowercaseTestCase extends AbstractTestCase {
             + "0},{b,0},{c,0}},x)");
   }
 
+  public void testFindMaximum() {
+    check("FindMaximum(x*Cos(x), {x,2.0} )", //
+        "{0.561096,{x->0.860334}}");
+
+    check("FindMaximum(-Abs(x + 1) - Abs(x + 1.01) - Abs(y + 1),{x, y})", //
+        "{-0.01,{x->-1.00724,y->-1.0}}");
+    check("FindMaximum(Sin(x)*Sin(2*y), {{x, 2}, {y, 2}})", //
+        "{1.0,{x->4.71239,y->2.35619}}");
+
+    check("FindMaximum(Sin(x), {x, 0.5})", //
+        "{1.0,{x->1.5708}}");
+    check("FindMaximum(Sin(x)*Sin(2*y), {{x, 2}, {y, 2}}, Method -> \"ConjugateGradient\")", //
+        "{1.0,{x->-1.5708,y->-0.785398}}");
+  }
+
+  public void testFindMinimum() {
+
+    check("FindMinimum(Abs(x + 1) + Abs(x + 1.01) + Abs(y + 1),{x, y})", //
+        "{0.01,{x->-1.00724,y->-1.0}}");
+    check("FindMinimum(Sin(x), {x,1} )", //
+        "{-1.0,{x->-1.5708}}");
+    check("FindMinimum(x*Cos(x), {x,5.0} )", //
+        "{-3.28837,{x->3.42562}}");
+    check("FindMinimum(x*Cos(x), {x,10.0} )", //
+        "{-9.47729,{x->9.52933}}");
+
+    check("FindMinimum(Sin(x)*Sin(2*y), {{x, 2}, {y, 2}})", //
+        "{-1.0,{x->1.5708,y->2.35619}}");
+
+
+    check("FindMinimum(Sin(x), {x, 0.5})", //
+        "{-1.0,{x->-1.5708}}");
+    check("FindMinimum(Sin(x), {x,1}, Method -> \"ConjugateGradient\")", //
+        "{-1.0,{x->-7.85398}}");
+    check("FindMinimum(x*Cos(x), {x,5.0}, Method -> \"ConjugateGradient\")", //
+        "{-3.28837,{x->3.42562}}");
+    check("FindMinimum(x*Cos(x), {x,10.0}, Method -> \"ConjugateGradient\")", //
+        "{-9.47729,{x->9.52934}}");
+
+    check("FindMinimum(Sin(x)*Sin(2*y), {{x, 2}, {y, 2}}, Method -> \"ConjugateGradient\")", //
+        "{-1.0,{x->1.5708,y->2.35619}}");
+
+  }
   // https://github.com/Hipparchus-Math/hipparchus/issues/40
   // public void testBisection() {
   // BisectionSolver solver = new BisectionSolver();
@@ -22358,6 +22428,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testSec() {
+    // check("Sec(8/15*Pi)", //
+    // "-Csc(Pi/30)");
+    // check("Sec(4/15*Pi)", //
+    // "-Csc(1/30*Pi)");
     check("-Sec(Pi/4-x)", //
         "-Sec(Pi/4-x)");
     check("-Sec(Pi/3-x)", //
@@ -23035,6 +23109,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testSin() {
+    // check("Sin(4/15*Pi)", //
+    // "Cos(7/30*Pi)");
     check("trigs={Sin,Cos,Tan,Cot}", //
         "{Sin,Cos,Tan,Cot}");
     check("trigs[[1]][10.0]", //
@@ -24446,6 +24522,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testTan() {
+
+    // check("Tan(8/15*Pi)", //
+    // "-Cot(Pi/30)");
     check("Tan(Pi / 2.0)", //
         "1.63312*10^16");
     // TODO
