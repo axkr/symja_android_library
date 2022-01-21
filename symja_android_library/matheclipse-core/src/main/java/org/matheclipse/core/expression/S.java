@@ -3459,6 +3459,10 @@ public class S {
   public final static IBuiltInSymbol FindPermutation =
       F.initFinalSymbol("FindPermutation", ID.FindPermutation);
 
+  public final static IBuiltInSymbol FindMaximum = F.initFinalSymbol("FindMaximum", ID.FindMaximum);
+
+  public final static IBuiltInSymbol FindMinimum = F.initFinalSymbol("FindMinimum", ID.FindMinimum);
+
   /**
    * FindRoot(f, {x, xmin, xmax}) - searches for a numerical root of `f` for the variable `x`, in
    * the range `xmin` to `xmax`.

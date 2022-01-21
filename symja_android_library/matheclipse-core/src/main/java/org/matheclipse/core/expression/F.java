@@ -3818,6 +3818,10 @@ public class F extends S {
     return new AST3(FindShortestPath, a0, a1, a2);
   }
 
+  public static IAST FindRoot(final IExpr f, final IExpr x) {
+    return new AST2(FindRoot, f, x);
+  }
+
   public static IAST FindShortestTour(final IExpr a0) {
     return new AST1(FindShortestTour, a0);
   }
