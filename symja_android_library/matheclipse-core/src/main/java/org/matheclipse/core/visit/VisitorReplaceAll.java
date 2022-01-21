@@ -220,10 +220,9 @@ public class VisitorReplaceAll extends VisitorExpr {
         if (iRuleOrNIL.isPresent()) {
           result = assoc.setAtCopy(i, iRuleOrNIL.setAtCopy(2, temp));
         } else {
-          result = assoc.copy(); // setAtCopy(i, iRuleOrNIL.setAtCopy(2, temp));
+          result = assoc.copy();
         }
-        i++;
-        assoc.forEach(i, size, (x, j) -> {
+        assoc.forEach(i + 1, size, (x, j) -> {
           IExpr t = x.accept(this);
           if (t.isPresent()) {
             result.set(j, assoc.getRule(j).setAtCopy(2, t));
@@ -242,8 +241,8 @@ public class VisitorReplaceAll extends VisitorExpr {
       IExpr temp = ast.get(i).accept(this);
       if (temp.isPresent()) {
         // something was evaluated - return a new IAST:
-        IASTMutable result = ast.setAtCopy(i++, temp);
-        ast.forEach(i, size, (x, j) -> {
+        IASTMutable result = ast.setAtCopy(i, temp);
+        ast.forEach(i + 1, size, (x, j) -> {
           IExpr t = x.accept(this);
           if (t.isPresent()) {
             result.set(j, t);
