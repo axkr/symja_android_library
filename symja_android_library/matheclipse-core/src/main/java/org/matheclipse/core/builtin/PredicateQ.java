@@ -1579,13 +1579,13 @@ public class PredicateQ {
         }
       }
 
-      IExpr temp =
-          function.replace( //
-              x -> x.isNumericFunction(true), //
-              x -> {
-                IExpr t = x.evalNumber();
-                return t != null ? t : F.NIL;
-              });
+      IExpr temp = function.replaceAll(x -> {
+        if (!x.isNumericFunction(true)) {
+          return F.NIL;
+        }
+        IExpr t = x.evalNumber();
+        return t != null ? t : F.NIL;
+      });
       if (temp.isPresent()) {
         temp = engine.evaluate(temp);
         if (temp.isZero()) {
