@@ -5832,7 +5832,7 @@ public final class ListFunctions {
         }
 
         VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg2);
-        return arg1.replaceAll(visitor).orElse(arg1);
+        return arg1.accept(visitor).orElse(arg1);
       }
       return F.NIL;
     }

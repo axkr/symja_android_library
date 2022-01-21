@@ -50,7 +50,6 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
 import org.matheclipse.core.visit.VisitorReplaceAll;
-import org.matheclipse.core.visit.VisitorReplaceAllLambda;
 import org.matheclipse.core.visit.VisitorReplacePart;
 import org.matheclipse.core.visit.VisitorReplaceSlots;
 import edu.jas.structure.ElemFactory;
@@ -4266,19 +4265,6 @@ public interface IExpr
   }
 
   /**
-   * Replace all (sub-) expressions with the given unary function, if the given predicate yields
-   * <code>true</code>. If no substitution matches, the method returns <code>this</code>.
-   *
-   * @param predicate
-   * @param function if the unary functions <code>apply()</code> method returns <code>F.NIL</code>
-   *        the expression isn't substituted.
-   * @return <code>this</code> if no substitution of a (sub-)expression was possible.
-   */
-  default IExpr replace(final Predicate<IExpr> predicate, final Function<IExpr, IExpr> function) {
-    return accept(new VisitorReplaceAllLambda(predicate, function)).orElse(this);
-  }
-
-  /**
    * Replace all (sub-) expressions with the given unary function. If no substitution matches, the
    * method returns <code>F.NIL</code>.
    *
@@ -4312,10 +4298,6 @@ public interface IExpr
    */
   default IExpr replaceAll(final Map<? extends IExpr, ? extends IExpr> map) {
     return accept(new VisitorReplaceAll(map));
-  }
-
-  default IExpr replaceAll(VisitorReplaceAll visitor) {
-    return accept(visitor);
   }
 
   /**
