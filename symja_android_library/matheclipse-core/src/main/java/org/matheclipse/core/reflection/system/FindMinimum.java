@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.hipparchus.exception.MathIllegalArgumentException;
+import java.util.function.Supplier;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.optim.InitialGuess;
@@ -32,6 +32,65 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * <pre>
+ * <code>FindMinimum(f, {x, xstart})
+ * </code>
+ * </pre>
+ * 
+ * <p>
+ * searches for a local numerical minimum of <code>f</code> for the variable <code>x</code> and the
+ * start value <code>xstart</code>.
+ * </p>
+ * 
+ * <pre>
+ * <code>FindMinimum(f, {x, xstart}, Method-&gt;method_name)
+ * </code>
+ * </pre>
+ * 
+ * <p>
+ * searches for a local numerical minimum of <code>f</code> for the variable <code>x</code> and the
+ * start value <code>xstart</code>, with one of the following method names:
+ * </p>
+ * 
+ * <pre>
+ * <code>FindMinimum(f, {{x, xstart},{y, ystart},...})
+ * </code>
+ * </pre>
+ * 
+ * <p>
+ * searches for a local numerical minimum of the multivariate function <code>f</code> for the
+ * variables <code>x, y,...</code> and the corresponding start values
+ * <code>xstart, ystart,...</code>.
+ * </p>
+ * 
+ * <p>
+ * See
+ * </p>
+ * <ul>
+ * <li><a href="https://en.wikipedia.org/wiki/Mathematical_optimization">Wikipedia - Mathematical
+ * optimization</a></li>
+ * </ul>
+ * <h4>Powell</h4>
+ * <p>
+ * Implements the Powell optimizer.
+ * </p>
+ * <p>
+ * This is the default method, if no <code>method_name</code> is given.
+ * </p>
+ * <h4>ConjugateGradient</h4>
+ * <p>
+ * Implements the ConjugateGradient optimizer.<br />
+ * This is a derivative based method and the functions must be symbolically differentiatable.
+ * </p>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * <code>&gt;&gt; FindMinimum(Sin(x), {x, 0.5}) 
+ * {-1.0,{x-&gt;-1.5708}}
+ * </code>
+ * </pre>
+ */
 public class FindMinimum extends AbstractFunctionEvaluator {
 
   @Override
@@ -43,10 +102,6 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       // `1`.
       return IOFunctions.printMessage(ast.topHead(), "error", F.List(F.$str(miae.getMessage())),
           engine);
-    } catch (MathIllegalArgumentException miae) {
-      // `1`.
-      IOFunctions.printMessage(ast.topHead(), "error", F.List(F.$str(miae.getMessage())), engine);
-      return F.CEmptyList;
     } catch (MathRuntimeException mre) {
       IOFunctions.printMessage(ast.topHead(), "error", F.List(F.$str(mre.getMessage())), engine);
       return F.CEmptyList;
@@ -56,6 +111,9 @@ public class FindMinimum extends AbstractFunctionEvaluator {
   protected static IExpr findExtremum(IAST ast, EvalEngine engine, GoalType goalType) {
     IExpr function = ast.arg1();
     IExpr arg2 = ast.arg2();
+    if (!arg2.isList()) {
+      arg2 = engine.evaluate(arg2);
+    }
     if (arg2.isList() && arg2.argSize() >= 2) {
       String method = "Powell";
       int maxIterations = 100;
@@ -78,13 +136,13 @@ public class FindMinimum extends AbstractFunctionEvaluator {
           }
         }
       }
-      return optimizeGoal(method, maxIterations, goalType, function, (IAST) arg2);
+      return optimizeGoal(method, maxIterations, goalType, function, (IAST) arg2, engine);
     }
     return F.NIL;
   }
 
-  protected static IExpr optimizeGoal(String method, int maxIterations, GoalType goalType,
-      IExpr function, IAST list) {
+  private static IExpr optimizeGoal(String method, int maxIterations, GoalType goalType,
+      IExpr function, IAST list, EvalEngine engine) {
     double[] initialValues = null;
     IAST variableList = null;
     int[] dimension = list.isMatrix();
@@ -127,8 +185,36 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       }
     }
     if (initialValues != null) {
+      OptimizeSupplier optimizeSupplier =
+          new OptimizeSupplier(goalType, function, variableList, initialValues, method, engine);
+      return engine.evalBlock(optimizeSupplier, variableList);
+    }
+    return F.NIL;
+  }
+
+  private static class OptimizeSupplier implements Supplier<IExpr> {
+    final GoalType goalType;
+    final IExpr originalFunction;
+    final IAST variableList;
+    final double[] initialValues;
+    final String method;
+    final EvalEngine engine;
+
+    public OptimizeSupplier(GoalType goalType, IExpr function, IAST variableList,
+        double[] initialValues, String method, EvalEngine engine) {
+      this.goalType = goalType;
+      this.originalFunction = function;
+      this.variableList = variableList;
+      this.initialValues = initialValues;
+      this.method = method;
+      this.engine = engine;
+    }
+
+    @Override
+    public IExpr get() {
       PointValuePair optimum = null;
       InitialGuess initialGuess = new InitialGuess(initialValues);
+      IExpr function = engine.evaluate(originalFunction);
       if (method.equals("Powell")) {
         final PowellOptimizer optim = new PowellOptimizer(1e-10, Math.ulp(1d), 1e-10, Math.ulp(1d));
         optimum = optim.optimize( //
@@ -165,7 +251,6 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       }
 
       if ((optimum != null)) {
-        final double[] keys = optimum.getKey();
         final double[] point = optimum.getPointRef();
         final double value = optimum.getValue();
         IASTAppendable ruleList = F.ListAlloc(variableList.size());
@@ -174,10 +259,9 @@ public class FindMinimum extends AbstractFunctionEvaluator {
         }
         return F.List(F.num(value), ruleList);
       }
+      return F.NIL;
     }
-    return F.NIL;
   }
-
 
   @Override
   public int[] expectedArgSize(IAST ast) {

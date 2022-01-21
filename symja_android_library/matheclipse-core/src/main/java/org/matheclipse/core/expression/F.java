@@ -3814,12 +3814,20 @@ public class F extends S {
     return quaternary(FindFit, a0, a1, a2, a3);
   }
 
-  public static IAST FindShortestPath(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(FindShortestPath, a0, a1, a2);
+  public static IAST FindMaximum(final IExpr f, final IExpr x) {
+    return new AST2(FindMaximum, f, x);
+  }
+
+  public static IAST FindMinimum(final IExpr f, final IExpr x) {
+    return new AST2(FindMinimum, f, x);
   }
 
   public static IAST FindRoot(final IExpr f, final IExpr x) {
     return new AST2(FindRoot, f, x);
+  }
+
+  public static IAST FindShortestPath(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(FindShortestPath, a0, a1, a2);
   }
 
   public static IAST FindShortestTour(final IExpr a0) {

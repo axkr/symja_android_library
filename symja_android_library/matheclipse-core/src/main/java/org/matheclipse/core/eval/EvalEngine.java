@@ -1152,7 +1152,7 @@ public class EvalEngine implements Serializable {
     return F.NIL;
   }
 
-  public IExpr evalBlock(final IExpr expr, final IAST localVariablesList) {
+  public IExpr evalBlock(final Supplier<IExpr> supplier, final IAST localVariablesList) {
     ISymbol[] symbolList = new ISymbol[localVariablesList.size()];
     IExpr[] blockVariables = new IExpr[localVariablesList.size()];
     RulesData[] blockVariablesRulesData = new RulesData[localVariablesList.size()];
@@ -1160,7 +1160,7 @@ public class EvalEngine implements Serializable {
     try {
       Programming.rememberBlockVariables(localVariablesList, symbolList, blockVariables,
           blockVariablesRulesData, this);
-      result = evaluate(expr);
+      result = supplier.get();
     } finally {
       if (localVariablesList.size() > 0) {
         // reset local variables to global ones
@@ -1186,6 +1186,10 @@ public class EvalEngine implements Serializable {
       }
     }
     return result;
+  }
+
+  public IExpr evalBlock(final IExpr expr, final IAST localVariablesList) {
+    return evalBlock(() -> evaluate(expr), localVariablesList);
   }
 
   /**

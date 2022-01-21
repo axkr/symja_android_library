@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.UnivariateFunction;
@@ -14,7 +15,6 @@ import org.hipparchus.analysis.solvers.PegasusSolver;
 import org.hipparchus.analysis.solvers.RegulaFalsiSolver;
 import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
-import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -25,7 +25,6 @@ import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
@@ -182,6 +181,101 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class FindRoot extends AbstractFunctionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
 
+  private static class UnivariateSolverSupplier implements Supplier<IExpr> {
+    final IExpr originalFunction;
+    final IAST variableList;
+    final ISignedNumber min;
+    final ISignedNumber max;
+    final int maxIterations;
+    final String method;
+    final EvalEngine engine;
+
+    public UnivariateSolverSupplier(IExpr function, IAST variableList, ISignedNumber min,
+        ISignedNumber max, int maxIterations, String method, EvalEngine engine) {
+      this.originalFunction = function;
+      this.variableList = variableList;
+      this.min = min;
+      this.max = max;
+      this.maxIterations = maxIterations;
+      this.method = method;
+      this.engine = engine;
+    }
+
+    @Override
+    public IExpr get() {
+      ISymbol xVar = (ISymbol) variableList.arg1();
+      IAssumptions oldAssumptions = engine.getAssumptions();
+      try {
+        IAssumptions assum = Assumptions.getInstance(F.Element(xVar, S.Reals));
+        engine.setAssumptions(assum);
+        IExpr function = engine.evaluate(originalFunction);
+        if (function.isEqual()) {
+          IAST equalAST = (IAST) function;
+          function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
+        }
+        UnivariateDifferentiableFunction f = new UnaryNumerical(function, xVar, engine, true);
+        BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
+        if (method.equalsIgnoreCase("Bisection")) {
+          solver = new BisectionSolver();
+          // } else if (method.isSymbolName("Laguerre")) {
+          // solver = new LaguerreSolver();
+        } else if (method.equalsIgnoreCase("Muller")) {
+          solver = new MullerSolver();
+        } else if (method.equalsIgnoreCase("Ridders")) {
+          solver = new RiddersSolver();
+        } else if (method.equalsIgnoreCase("Secant")) {
+          solver = new SecantSolver();
+        } else if (method.equalsIgnoreCase("RegulaFalsi")) {
+          solver = new RegulaFalsiSolver();
+        } else if (method.equalsIgnoreCase("Illinois")) {
+          solver = new IllinoisSolver();
+        } else if (method.equalsIgnoreCase("Pegasus")) {
+          solver = new PegasusSolver();
+        } else if (max == null || method.equalsIgnoreCase("Newton")) {
+          try {
+            NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
+            if (max == null) {
+              return F.num(nrs.solve(maxIterations, f, min.doubleValue()));
+            }
+            return F.num(nrs.solve(maxIterations, f, min.doubleValue(), max.doubleValue()));
+          } catch (MathRuntimeException mex) {
+            // switch to BracketingNthOrderBrentSolver
+            solver = new BracketingNthOrderBrentSolver();
+          }
+        } else {
+          // default: BracketingNthOrderBrentSolver
+          try {
+            solver = new BracketingNthOrderBrentSolver();
+            return F.num(solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue()));
+          } catch (MathRuntimeException mex) {
+            // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a
+            // root
+
+            if (mex instanceof org.hipparchus.exception.MathIllegalArgumentException) {
+              if (min != null) {
+                try {
+                  NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
+                  return F.num(nrs.solve(maxIterations, f, min.doubleValue(), max.doubleValue()));
+                } catch (MathRuntimeException mre) {
+                }
+              }
+            }
+
+            // switch to BisectionSolver
+            solver = new BisectionSolver();
+          }
+        }
+
+        if (max == null) {
+          return F.num(solver.solve(maxIterations, f, min.doubleValue()));
+        }
+        return F.num(solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue()));
+      } finally {
+        engine.setAssumptions(oldAssumptions);
+      }
+    }
+  }
+
   public FindRoot() {}
 
   @Override
@@ -209,8 +303,11 @@ public class FindRoot extends AbstractFunctionEvaluator {
       }
     }
 
-    IExpr arg2 = engine.evaluate(ast.arg2());
-    if ((arg2.isList())) {
+    IExpr arg2 = ast.arg2();
+    if (!arg2.isList()) {
+      arg2 = engine.evaluate(arg2);
+    }
+    if (arg2.isList()) {
       IAST list = (IAST) arg2;
       if (list.size() >= 3 && list.arg1().isSymbol()) {
         ISignedNumber min = list.arg2().evalReal();
@@ -219,23 +316,15 @@ public class FindRoot extends AbstractFunctionEvaluator {
           if (list.size() > 3) {
             max = list.arg3().evalReal();
           }
-          IExpr function = engine.evaluate(ast.arg1());
-          if (function.isEqual()) {
-            IAST equalAST = (IAST) function;
-            function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
-          }
           try {
-            return F.List(F.Rule(list.arg1(),
-                Num.valueOf(findRoot(method, maxIterations, list, min, max, function, engine))));
+            UnivariateSolverSupplier optimizeSupplier = new UnivariateSolverSupplier(ast.arg1(),
+                list, min, max, maxIterations, method, engine);
+            IExpr result = engine.evalBlock(optimizeSupplier, list);
+            return F.List(F.Rule(list.arg1(), result));
           } catch (MathIllegalStateException miae) {
             // `1`.
-            return IOFunctions.printMessage(
-                ast.topHead(), "error", F.List(F.$str(miae.getMessage())), engine);
-          } catch (MathIllegalArgumentException miae) {
-            // `1`.
-            IOFunctions.printMessage(
-                ast.topHead(), "error", F.List(F.$str(miae.getMessage())), engine);
-            return F.CEmptyList;
+            return IOFunctions.printMessage(ast.topHead(), "error",
+                F.List(F.$str(miae.getMessage())), engine);
           } catch (MathRuntimeException mre) {
             IOFunctions.printMessage(ast.topHead(), "error", F.List(F.$str(mre.getMessage())),
                 engine);
@@ -250,75 +339,6 @@ public class FindRoot extends AbstractFunctionEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_INFINITY;
-  }
-
-  private double findRoot(String method, int maxIterations, IAST list, ISignedNumber min,
-      ISignedNumber max, IExpr function, EvalEngine engine) {
-    ISymbol xVar = (ISymbol) list.arg1();
-    IAssumptions oldAssumptions = engine.getAssumptions();
-    try {
-      IAssumptions assum = Assumptions.getInstance(F.Element(xVar, S.Reals));
-      engine.setAssumptions(assum);
-      function = engine.evaluate(function);
-      UnivariateDifferentiableFunction f = new UnaryNumerical(function, xVar, engine, true);
-      BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
-      if (method.equalsIgnoreCase("Bisection")) {
-        solver = new BisectionSolver();
-        // } else if (method.isSymbolName("Laguerre")) {
-        // solver = new LaguerreSolver();
-      } else if (method.equalsIgnoreCase("Muller")) {
-        solver = new MullerSolver();
-      } else if (method.equalsIgnoreCase("Ridders")) {
-        solver = new RiddersSolver();
-      } else if (method.equalsIgnoreCase("Secant")) {
-        solver = new SecantSolver();
-      } else if (method.equalsIgnoreCase("RegulaFalsi")) {
-        solver = new RegulaFalsiSolver();
-      } else if (method.equalsIgnoreCase("Illinois")) {
-        solver = new IllinoisSolver();
-      } else if (method.equalsIgnoreCase("Pegasus")) {
-        solver = new PegasusSolver();
-      } else if (max == null || method.equalsIgnoreCase("Newton")) {
-        try {
-          NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
-          if (max == null) {
-            return nrs.solve(maxIterations, f, min.doubleValue());
-          }
-          return nrs.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
-        } catch (MathRuntimeException mex) {
-          // switch to BracketingNthOrderBrentSolver
-          solver = new BracketingNthOrderBrentSolver();
-        }
-      } else {
-        // default: BracketingNthOrderBrentSolver
-        try {
-          solver = new BracketingNthOrderBrentSolver();
-          return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
-        } catch (MathRuntimeException mex) {
-          // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
-
-          if (mex instanceof org.hipparchus.exception.MathIllegalArgumentException) {
-            if (min != null) {
-              try {
-                NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
-                return nrs.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
-              } catch (MathRuntimeException mre) {
-              }
-            }
-          }
-
-          // switch to BisectionSolver
-          solver = new BisectionSolver();
-        }
-      }
-
-      if (max == null) {
-        return solver.solve(maxIterations, f, min.doubleValue());
-      }
-      return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
-    } finally {
-      engine.setAssumptions(oldAssumptions);
-    }
   }
 
   @Override
