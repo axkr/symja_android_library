@@ -8,8 +8,6 @@ import org.matheclipse.core.interfaces.IExpr;
 /** Visit every node of an <code>IExpr</code> expression. */
 public abstract class VisitorExpr extends AbstractVisitor {
 
-  public VisitorExpr() {}
-
   /**
    * Visit an <code>IAST</code> with the given head and no arguments (i.e. <code>head[]</code>).
    *
@@ -61,27 +59,20 @@ public abstract class VisitorExpr extends AbstractVisitor {
    *     </code>, if no evaluation is possible
    */
   protected IExpr visitAST(IAST ast) {
-    IExpr temp;
-    // IASTAppendable result = F.NIL;
-    int i = 1;
     int size = ast.size();
-    while (i < size) {
-      temp = ast.get(i).accept(this);
+    for (int i = 1; i < size; i++) {
+      IExpr temp = ast.get(i).accept(this);
       if (temp.isPresent()) {
         // something was evaluated - return a new IAST:
         IASTMutable result = ast.setAtCopy(i++, temp);
-        ast.forEach(
-            i,
-            size,
-            (x, j) -> {
-              IExpr t = x.accept(this);
-              if (t.isPresent()) {
-                result.set(j, t);
-              }
-            });
+        ast.forEach(i, size, (x, j) -> {
+          IExpr t = x.accept(this);
+          if (t.isPresent()) {
+            result.set(j, t);
+          }
+        });
         return result;
       }
-      i++;
     }
     return F.NIL;
   }

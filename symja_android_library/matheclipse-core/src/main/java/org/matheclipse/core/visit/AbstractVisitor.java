@@ -25,7 +25,7 @@ public abstract class AbstractVisitor implements IVisitor {
 
   /** @return <code>F.NIL</code>, if no evaluation is possible */
   @Override
-  public IExpr visit(IDataExpr data) {
+  public IExpr visit(IDataExpr<?> data) {
     return F.NIL;
   }
 

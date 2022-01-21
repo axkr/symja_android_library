@@ -33,21 +33,13 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
    * </code> method returns a non <code>F.NIL</code> value. The visitors <code>visit()</code>
    * methods return <code>
    * F.NIL</code> if no substitution occurred.
-   *
-   * @param predicate
-   * @param function
    */
   public VisitorReplaceAllLambda(Predicate<IExpr> predicate, Function<IExpr, IExpr> function) {
     this(predicate, function, 0);
   }
 
-  /**
-   * @param predicate
-   * @param function
-   * @param offset
-   */
-  public VisitorReplaceAllLambda(
-      Predicate<IExpr> predicate, Function<IExpr, IExpr> function, int offset) {
+  public VisitorReplaceAllLambda(Predicate<IExpr> predicate, Function<IExpr, IExpr> function,
+      int offset) {
     super();
     this.fPredicate = predicate;
     this.fFunction = function;
@@ -65,31 +57,13 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
   }
 
   @Override
-  public IExpr visit(IInteger element) {
-    return visistAtom(element);
-  }
-
-  /** @return <code>F.NIL</code>, if no evaluation is possible */
-  @Override
-  public IExpr visit(IDataExpr element) {
-    return visistAtom(element);
-  }
-
-  /** @return <code>F.NIL</code>, if no evaluation is possible */
-  @Override
-  public IExpr visit(IFraction element) {
-    return visistAtom(element);
+  public IExpr visit(IASTMutable ast) {
+    return visistAtom(ast).orElseGet(() -> visitAST(ast));
   }
 
   /** @return <code>F.NIL</code>, if no evaluation is possible */
   @Override
   public IExpr visit(IComplex element) {
-    return visistAtom(element);
-  }
-
-  /** @return <code>F.NIL</code>, if no evaluation is possible */
-  @Override
-  public IExpr visit(INum element) {
     return visistAtom(element);
   }
 
@@ -101,7 +75,36 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 
   /** @return <code>F.NIL</code>, if no evaluation is possible */
   @Override
+  public IExpr visit(IDataExpr<?> element) {
+    return visistAtom(element);
+  }
+
+  /** @return <code>F.NIL</code>, if no evaluation is possible */
+  @Override
+  public IExpr visit(IFraction element) {
+    return visistAtom(element);
+  }
+
+  @Override
+  public IExpr visit(IInteger element) {
+    return visistAtom(element);
+  }
+
+  /** @return <code>F.NIL</code>, if no evaluation is possible */
+  @Override
+  public IExpr visit(INum element) {
+    return visistAtom(element);
+  }
+
+  /** @return <code>F.NIL</code>, if no evaluation is possible */
+  @Override
   public IExpr visit(ISymbol element) {
+    return visistAtom(element);
+  }
+
+  /** @return <code>F.NIL</code>, if no evaluation is possible */
+  @Override
+  public IExpr visit(IStringX element) {
     return visistAtom(element);
   }
 
@@ -119,74 +122,46 @@ public class VisitorReplaceAllLambda extends VisitorExpr {
 
   /** @return <code>F.NIL</code>, if no evaluation is possible */
   @Override
-  public IExpr visit(IStringX element) {
-    return visistAtom(element);
-  }
-
-  /** @return <code>F.NIL</code>, if no evaluation is possible */
-  @Override
   public IExpr visit(IAssociation assoc) {
     IExpr replacement = fFunction.apply(assoc);
     if (replacement.isPresent()) {
       return replacement;
     }
-    int i = fOffset;
     int size = assoc.size();
-    while (i < size) {
+    for (int i = fOffset; i < size; i++) {
       IExpr temp = assoc.getValue(i).accept(this);
       if (temp.isPresent()) {
         // something was evaluated - return a new IAST:
         IASTMutable result = assoc.setAtCopy(i, assoc.getRule(i).setAtCopy(2, temp));
         i++;
-        assoc.forEach(
-            i,
-            size,
-            (x, j) -> {
-              IExpr t = x.accept(this);
-              if (t.isPresent()) {
-                result.set(j, assoc.getRule(j).setAtCopy(2, t));
-              }
-            });
+        assoc.forEach(i, size, (x, j) -> {
+          IExpr t = x.accept(this);
+          if (t.isPresent()) {
+            result.set(j, assoc.getRule(j).setAtCopy(2, t));
+          }
+        });
         return result;
       }
-      i++;
     }
     return F.NIL;
   }
 
   @Override
-  public IExpr visit(IASTMutable ast) {
-    if (fPredicate.test(ast)) {
-      IExpr temp = fFunction.apply(ast);
-      if (temp != null && temp.isPresent()) {
-        return temp;
-      }
-    }
-    return visitAST(ast);
-  }
-
-  @Override
   protected IExpr visitAST(IAST ast) {
-    IExpr temp;
-    int i = fOffset;
     int size = ast.size();
-    while (i < size) {
-      temp = ast.get(i).accept(this);
+    for (int i = fOffset; i < size; i++) {
+      IExpr temp = ast.get(i).accept(this);
       if (temp.isPresent()) {
         // something was evaluated - return a new IAST:
         IASTMutable result = ast.setAtCopy(i++, temp);
-        ast.forEach(
-            i,
-            size,
-            (x, j) -> {
-              IExpr t = x.accept(this);
-              if (t.isPresent()) {
-                result.set(j, t);
-              }
-            });
+        ast.forEach(i, size, (x, j) -> {
+          IExpr t = x.accept(this);
+          if (t.isPresent()) {
+            result.set(j, t);
+          }
+        });
         return result;
       }
-      i++;
     }
     return F.NIL;
   }

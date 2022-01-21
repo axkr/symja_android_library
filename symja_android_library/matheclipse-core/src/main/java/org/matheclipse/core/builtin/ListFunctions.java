@@ -5831,7 +5831,7 @@ public final class ListFunctions {
           return ((IAST) arg2).mapThread(ast, 2);
         }
 
-        VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg1, arg2, ast);
+        VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg2);
         return arg1.replaceAll(visitor).orElse(arg1);
       }
       return F.NIL;
@@ -6149,7 +6149,7 @@ public final class ListFunctions {
           return F.NIL;
         }
       }
-      VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg1, arg2, ast);
+      VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg2);
       return arg1.replaceRepeated(visitor, maxIterations);
     }
 
