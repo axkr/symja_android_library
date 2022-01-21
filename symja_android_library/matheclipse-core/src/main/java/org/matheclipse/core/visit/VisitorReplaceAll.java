@@ -1,6 +1,7 @@
 package org.matheclipse.core.visit;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -30,7 +31,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class VisitorReplaceAll extends VisitorExpr {
   final Function<IExpr, IExpr> fFunction;
 
-  Function<IASTMutable, IExpr> fPostProcessing;
+  private Function<IASTMutable, IExpr> fPostProcessing;
 
   final int fOffset;
 
@@ -64,31 +65,27 @@ public class VisitorReplaceAll extends VisitorExpr {
 
   public VisitorReplaceAll(Map<? extends IExpr, ? extends IExpr> map, int offset) {
     super();
-    this.fFunction =
-        x -> {
-          IExpr subst = map.get(x);
-          if (subst != null) {
-            return subst;
-          }
-          return F.NIL;
-        };
+    this.fFunction = x -> {
+      IExpr subst = map.get(x);
+      if (subst != null) {
+        return subst;
+      }
+      return F.NIL;
+    };
     this.fOffset = offset;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
+    if (this == obj) {
+      return true;
+    } else if (!(obj instanceof VisitorReplaceAll)) {
+      return false;
+    }
     VisitorReplaceAll other = (VisitorReplaceAll) obj;
-    if (fFunction == null) {
-      if (other.fFunction != null) return false;
-    } else if (!fFunction.equals(other.fFunction)) return false;
-    if (fOffset != other.fOffset) return false;
-    if (fPostProcessing == null) {
-      if (other.fPostProcessing != null) return false;
-    } else if (!fPostProcessing.equals(other.fPostProcessing)) return false;
-    return true;
+    return Objects.equals(this.fFunction, other.fFunction) //
+        && fOffset == other.fOffset //
+        && Objects.equals(this.fPostProcessing, other.fPostProcessing);
   }
 
   @Override
@@ -134,8 +131,9 @@ public class VisitorReplaceAll extends VisitorExpr {
     return fFunction.apply(element);
   }
 
+  /** @return <code>F.NIL</code>, if no evaluation is possible */
   @Override
-  public IExpr visit(IDataExpr element) {
+  public IExpr visit(IDataExpr<?> element) {
     return fFunction.apply(element);
   }
 
@@ -153,6 +151,19 @@ public class VisitorReplaceAll extends VisitorExpr {
   /** @return <code>F.NIL</code>, if no evaluation is possible */
   @Override
   public IExpr visit(INum element) {
+    return fFunction.apply(element);
+  }
+
+
+  /** @return <code>F.NIL</code>, if no evaluation is possible */
+  @Override
+  public IExpr visit(ISymbol element) {
+    return fFunction.apply(element);
+  }
+
+  /** @return <code>F.NIL</code>, if no evaluation is possible */
+  @Override
+  public IExpr visit(IStringX element) {
     return fFunction.apply(element);
   }
 
@@ -185,23 +196,11 @@ public class VisitorReplaceAll extends VisitorExpr {
     if (symbol != null) {
       IExpr expr = fFunction.apply(symbol);
       if (expr.isPresent() && expr.isSymbol()) {
-        return F.$ps(
-            (ISymbol) expr, element.getHeadTest(), element.isDefault(), element.isNullSequence());
+        return F.$ps((ISymbol) expr, element.getHeadTest(), element.isDefault(),
+            element.isNullSequence());
       }
     }
     return F.NIL;
-  }
-
-  /** @return <code>F.NIL</code>, if no evaluation is possible */
-  @Override
-  public IExpr visit(IStringX element) {
-    return fFunction.apply(element);
-  }
-
-  /** @return <code>F.NIL</code>, if no evaluation is possible */
-  @Override
-  public IExpr visit(ISymbol element) {
-    return fFunction.apply(element);
   }
 
   /** @return <code>F.NIL</code>, if no evaluation is possible */
@@ -211,9 +210,8 @@ public class VisitorReplaceAll extends VisitorExpr {
     if (replacement.isPresent()) {
       return replacement;
     }
-    int i = fOffset;
     int size = assoc.size();
-    while (i < size) {
+    for (int i = fOffset; i < size; i++) {
       IExpr temp = assoc.getValue(i).accept(this);
       if (temp.isPresent()) {
         // something was evaluated - return a new IAST:
@@ -225,60 +223,49 @@ public class VisitorReplaceAll extends VisitorExpr {
           result = assoc.copy(); // setAtCopy(i, iRuleOrNIL.setAtCopy(2, temp));
         }
         i++;
-        assoc.forEach(
-            i,
-            size,
-            (x, j) -> {
-              IExpr t = x.accept(this);
-              if (t.isPresent()) {
-                result.set(j, assoc.getRule(j).setAtCopy(2, t));
-              }
-            });
+        assoc.forEach(i, size, (x, j) -> {
+          IExpr t = x.accept(this);
+          if (t.isPresent()) {
+            result.set(j, assoc.getRule(j).setAtCopy(2, t));
+          }
+        });
         return postProcessing(result);
       }
-      i++;
     }
     return F.NIL;
   }
 
   @Override
   protected IExpr visitAST(IAST ast) {
-    int i = fOffset;
     int size = ast.size();
-    while (i < size) {
+    for (int i = fOffset; i < size; i++) {
       IExpr temp = ast.get(i).accept(this);
       if (temp.isPresent()) {
         // something was evaluated - return a new IAST:
         IASTMutable result = ast.setAtCopy(i++, temp);
-        ast.forEach(
-            i,
-            size,
-            (x, j) -> {
-              IExpr t = x.accept(this);
-              if (t.isPresent()) {
-                result.set(j, t);
-              }
-            });
+        ast.forEach(i, size, (x, j) -> {
+          IExpr t = x.accept(this);
+          if (t.isPresent()) {
+            result.set(j, t);
+          }
+        });
         return postProcessing(result);
       }
-      i++;
     }
     return F.NIL;
   }
 
-  public static VisitorReplaceAll createVisitor(IExpr arg1, IExpr arg2, IAST ast) {
-    VisitorReplaceAll visitor;
-    if (arg2 instanceof DispatchExpr) {
-      visitor = ((DispatchExpr) arg2).getVisitor();
-    } else if (arg2.isListOfRules(false) || arg2.isRuleAST()) {
-      visitor = new VisitorReplaceAll((IAST) arg2);
-    } else if (arg2.isAssociation()) {
-      visitor = new VisitorReplaceAll((IAST) arg2.normal(false));
+  public static VisitorReplaceAll createVisitor(IExpr arg) {
+    if (arg instanceof DispatchExpr) {
+      return ((DispatchExpr) arg).getVisitor();
+    } else if (arg.isListOfRules(false) || arg.isRuleAST()) {
+      return new VisitorReplaceAll((IAST) arg);
+    } else if (arg.isAssociation()) {
+      return new VisitorReplaceAll((IAST) arg.normal(false));
     } else {
       // (`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for
       // replacing.
-      throw new ArgumentTypeException("reps", F.List(arg2));
+      throw new ArgumentTypeException("reps", F.List(arg));
     }
-    return visitor;
   }
 }

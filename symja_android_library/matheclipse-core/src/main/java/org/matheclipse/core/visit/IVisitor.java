@@ -20,7 +20,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public interface IVisitor {
 
-  public abstract IExpr visit(IDataExpr data);
+  public abstract IExpr visit(IDataExpr<?> data);
 
   public abstract IExpr visit(IInteger element);
 

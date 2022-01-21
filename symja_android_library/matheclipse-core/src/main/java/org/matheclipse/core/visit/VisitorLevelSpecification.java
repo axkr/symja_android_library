@@ -251,7 +251,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 
   /** */
   @Override
-  public IExpr visit(IDataExpr element) {
+  public IExpr visit(IDataExpr<?> element) {
     return visitAtom(element);
   }
 
