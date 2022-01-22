@@ -215,8 +215,11 @@ public class EvalEngine implements Serializable {
 
   transient String fSessionID;
 
-  transient String fMessageShortcut;
-
+  private transient String fMessageShortcut;
+  
+  private transient IdentityHashMap<IBuiltInSymbol, Integer> experimatalSymbols =
+      new IdentityHashMap<IBuiltInSymbol, Integer>();
+  
   /**
    * If <code>true</code> the engine evaluates in &quot;Trace()&quot; function mode.
    *
@@ -1045,6 +1048,17 @@ public class EvalEngine implements Serializable {
       }
     }
     return opres;
+  }
+
+
+  /**
+   * Test if the experimental message was printed at least once for a symbol.
+   * 
+   * @param symbol
+   * @return
+   */
+  public boolean containsExperimental(IBuiltInSymbol symbol) {
+    return experimatalSymbols.containsKey(symbol);
   }
 
   private OptionsResult getOptions(AbstractFunctionOptionEvaluator optionEvaluator,
@@ -2620,6 +2634,20 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Increment the counter, how often the experimental message was printed.
+   * 
+   * @param symbol
+   */
+  public void incExperimentalCounter(IBuiltInSymbol symbol) {
+    Integer counter = experimatalSymbols.get(symbol);
+    if (counter == null) {
+      experimatalSymbols.put(symbol, 1);
+      return;
+    }
+    experimatalSymbols.put(symbol, ++counter);
+  }
+
+  /**
    * Increment the recursion counter by 1 and return the result.
    *
    * @return
@@ -3282,6 +3310,20 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Return the counter, how often the experimental message was printed.
+   * 
+   * @param symbol
+   * @return
+   */
+  public int getExperimentalCounter(IBuiltInSymbol symbol) {
+    Integer counter = experimatalSymbols.get(symbol);
+    if (counter == null) {
+      return 0;
+    }
+    return counter;
+  }
+
+  /**
    * Set the{@link FixedPrecisionApfloatHelper} instance.
    *
    * @param helper
@@ -3289,4 +3331,5 @@ public class EvalEngine implements Serializable {
   public static void setApfloat(final FixedPrecisionApfloatHelper helper) {
     get().fApfloatHelper = helper;
   }
+
 }

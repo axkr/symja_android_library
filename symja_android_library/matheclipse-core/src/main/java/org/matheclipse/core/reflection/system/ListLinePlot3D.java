@@ -19,6 +19,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IOFunctions.printExperimental(S.ListLinePlot3D);
     if (ast.argSize() > 0) {
 
       IAST plotStyle = F.NIL;
@@ -33,7 +34,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
       // case 1: single line heights
       // e.g.: ListLinePlot3D[{1, 2, 3, 4, 5}]
       if (ast.arg1().isList() && ((IAST) ast.arg1()).arg1().isNumber()) {
-        IASTAppendable result = F.Graphics3D(heightLinePlot((IAST) F.List(ast.arg1()), plotStyle, engine));
+        IASTAppendable result = F.Graphics3D(heightLinePlot(F.List(ast.arg1()), plotStyle, engine));
         if (ast.argSize() > 1) {
           // add same options to Graphics3D
           result.appendAll(ast, 2, ast.size());
@@ -47,7 +48,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
       // case 2: single line coordinates
       // e.g.: ListLinePlot3D[{{x_1, y_1, z_1}, {x_2, y_2, z_2}}]
       if (dimension != null && dimension.length == 2 && dimension[1] == 3) {
-        IASTAppendable result = F.Graphics3D(coordinateLinePlot((IAST) F.List(ast.arg1()), plotStyle, engine));
+        IASTAppendable result = F.Graphics3D(coordinateLinePlot(F.List(ast.arg1()), plotStyle, engine));
         if (ast.argSize() > 1) {
           // add same options to Graphics3D
           result.appendAll(ast, 2, ast.size());
@@ -91,7 +92,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
     final int valuesSize = heights.size();
     IASTAppendable resultList = F.ListAlloc(valuesSize);
 
-    IExpr flattenHeights = engine.evaluate(F.Flatten((IExpr) heights));
+    IExpr flattenHeights = engine.evaluate(F.Flatten(heights));
     double deltaHeight =
         engine.evaluate(F.Max(flattenHeights).subtract(F.Min(flattenHeights))).evalDouble();
 

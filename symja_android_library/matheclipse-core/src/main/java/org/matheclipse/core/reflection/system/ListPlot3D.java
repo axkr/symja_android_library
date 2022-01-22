@@ -1,10 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -16,6 +18,7 @@ public class ListPlot3D extends AbstractEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IOFunctions.printExperimental(S.ListPlot3D);
     if (ast.argSize() > 0) {
       // if (ast.argSize() > 1) {
       // final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
@@ -51,7 +54,7 @@ public class ListPlot3D extends AbstractEvaluator {
           // (heights.argSize() - 1) * (heights.arg1().argSize() - 1)
           // 2 polygons per square
           IASTAppendable polygonList =
-              F.ListAlloc((values.argSize() - 1) * (((IAST) values).arg1().argSize() - 1) * 2);
+              F.ListAlloc((values.argSize() - 1) * (values.arg1().argSize() - 1) * 2);
 
           double minHeight = (((IAST) values.arg1()).arg1()).evalDouble();
           double maxHeight = minHeight;

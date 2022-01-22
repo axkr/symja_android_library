@@ -24,15 +24,15 @@ public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
   }
 
   /**
-   * For the referenced formula numbers (XX) see: <a
-   * href="https://archive.org/details/imm3274/">Internet Archive - The Matrix Cookbook</a>
+   * For the referenced formula numbers (XX) see:
+   * <a href="https://archive.org/details/imm3274/">Internet Archive - The Matrix Cookbook</a>
    */
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IOFunctions.printExperimental(S.MatrixD);
     if (ast.size() < 3) {
       return F.NIL;
     }
-
     final IExpr fx = ast.arg1();
     if (fx.isIndeterminate()) {
       return S.Indeterminate;
@@ -121,7 +121,8 @@ public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
   /**
    * Evaluate <code>MatrixD(functionO>fX, x)</code> for some general cases.
    *
-   * <p>Rule numbers are from <a href="https://archive.org/details/imm3274">Internet Archive - The
+   * <p>
+   * Rule numbers are from <a href="https://archive.org/details/imm3274">Internet Archive - The
    * Matrix Cookbook</a>
    *
    * @param functionOfX the function of <code>x</code>
@@ -140,7 +141,7 @@ public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
 
     if (functionOfX.isAST() && functionOfX.size() >= 2) {
       final IAST function = (IAST) functionOfX;
-      //      final IExpr arg1 = function.arg1();
+      // final IExpr arg1 = function.arg1();
       if (function.isPlus()) {
         // MatrixD(a_+b_+c_,x_) -> MatrixD(a,x)+MatrixD(b,x)+MatrixD(c,x)
         return function.mapThread(F.MatrixD(F.Slot1, x), 1); // (35)

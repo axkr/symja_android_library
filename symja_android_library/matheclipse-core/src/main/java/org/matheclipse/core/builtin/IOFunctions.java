@@ -28,6 +28,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -52,6 +53,7 @@ public class IOFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
 
   private static PebbleEngine PEBBLE_ENGINE = new PebbleEngine.Builder().build();
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -84,7 +86,8 @@ public class IOFunctions {
    *
    * <blockquote>
    *
-   * <p>prints the <code>expr</code> to the default output stream and returns <code>expr</code>.
+   * <p>
+   * prints the <code>expr</code> to the default output stream and returns <code>expr</code>.
    *
    * </blockquote>
    *
@@ -95,7 +98,8 @@ public class IOFunctions {
    *
    * <blockquote>
    *
-   * <p>prints <code>label</code> before printing <code>expr</code>.
+   * <p>
+   * prints <code>label</code> before printing <code>expr</code>.
    *
    * </blockquote>
    *
@@ -106,7 +110,8 @@ public class IOFunctions {
    *
    * <blockquote>
    *
-   * <p>prints <code>label</code> before printing <code>head(expr)</code> and returns <code>expr
+   * <p>
+   * prints <code>label</code> before printing <code>head(expr)</code> and returns <code>expr
    * </code>.
    *
    * </blockquote>
@@ -119,7 +124,8 @@ public class IOFunctions {
    * </code>
    * </pre>
    *
-   * <p>prints
+   * <p>
+   * prints
    *
    * <pre>
    * <code>f(x,y)
@@ -127,7 +133,8 @@ public class IOFunctions {
    * </code>
    * </pre>
    *
-   * <p>and returns
+   * <p>
+   * and returns
    *
    * <pre>
    * <code>{f(x,y),Null}
@@ -176,7 +183,8 @@ public class IOFunctions {
    *
    * <blockquote>
    *
-   * <p>operator form of the <code>Echo</code>function. Print the <code>expr</code> to the default
+   * <p>
+   * operator form of the <code>Echo</code>function. Print the <code>expr</code> to the default
    * output stream and return <code>expr</code>.
    *
    * </blockquote>
@@ -188,7 +196,8 @@ public class IOFunctions {
    *
    * <blockquote>
    *
-   * <p>prints <code>head(expr)</code> and returns <code>expr</code>.
+   * <p>
+   * prints <code>head(expr)</code> and returns <code>expr</code>.
    *
    * </blockquote>
    *
@@ -199,7 +208,8 @@ public class IOFunctions {
    *
    * <blockquote>
    *
-   * <p>prints <code>label</code> before printing <code>head(expr)</code> and returns <code>expr
+   * <p>
+   * prints <code>label</code> before printing <code>head(expr)</code> and returns <code>expr
    * </code>.
    *
    * </blockquote>
@@ -212,7 +222,8 @@ public class IOFunctions {
    * </code>
    * </pre>
    *
-   * <p>prints
+   * <p>
+   * prints
    *
    * <pre>
    * <code>f(x,y)
@@ -220,7 +231,8 @@ public class IOFunctions {
    * </code>
    * </pre>
    *
-   * <p>and returns
+   * <p>
+   * and returns
    *
    * <pre>
    * <code>{f(x,y),Null}
@@ -274,7 +286,8 @@ public class IOFunctions {
    *
    * <blockquote>
    *
-   * <p>displays the specified message, replacing placeholders in the message text with the
+   * <p>
+   * displays the specified message, replacing placeholders in the message text with the
    * corresponding expressions.
    *
    * </blockquote>
@@ -341,9 +354,8 @@ public class IOFunctions {
           if (map != null) {
             IASTAppendable result = F.ListAlloc(map.size());
             for (Map.Entry<String, IStringX> entry : map.entrySet()) {
-              result.append(
-                  F.RuleDelayed(
-                      F.HoldPattern(F.MessageName(symbol, entry.getKey())), entry.getValue()));
+              result.append(F.RuleDelayed(F.HoldPattern(F.MessageName(symbol, entry.getKey())),
+                  entry.getValue()));
             }
             return result;
           }
@@ -436,11 +448,10 @@ public class IOFunctions {
       final StringBuilder buf = new StringBuilder();
       OutputFormFactory out = OutputFormFactory.get(engine.isRelaxedSyntax());
       boolean[] convert = new boolean[] {true};
-      ast.forEach(
-          x -> {
-            IExpr temp = engine.evaluate(x);
-            printExpression(temp, out, buf, convert, engine);
-          });
+      ast.forEach(x -> {
+        IExpr temp = engine.evaluate(x);
+        printExpression(temp, out, buf, convert, engine);
+      });
       if (!convert[0]) {
         stream.println("ERROR-IN-OUTPUTFORM");
         return S.Null;
@@ -449,12 +460,8 @@ public class IOFunctions {
       return S.Null;
     }
 
-    protected static void printExpression(
-        IExpr x,
-        OutputFormFactory out,
-        final StringBuilder buf,
-        boolean[] convert,
-        EvalEngine engine) {
+    protected static void printExpression(IExpr x, OutputFormFactory out, final StringBuilder buf,
+        boolean[] convert, EvalEngine engine) {
       if (x instanceof IStringX) {
         buf.append(x.toString());
       } else {
@@ -472,417 +479,238 @@ public class IOFunctions {
    * printed for that shortcut.
    */
   private static final String[] MESSAGES = { //
-    "argillegal",
-    "Illegal arguments: \"`1`\" in `2`", //
-    "argb",
-    "`1` called with `2` arguments; between `3` and `4` arguments are expected.", //
-    "argct",
-    "`1` called with `2` arguments.", //
-    "argctu",
-    "`1` called with 1 argument.", //
-    "argm",
-    "`1` called with `2` arguments; `3` or more arguments are expected.", //
-    "argr",
-    "`1` called with 1 argument; `2` arguments are expected.", //
-    "argrx",
-    "`1` called with `2` arguments; `3` arguments are expected.", //
-    "argx",
-    "`1` called with `2` arguments; 1 argument is expected.", //
-    "argt",
-    "`1` called with `2` arguments; `3` or `4` arguments are expected.", //
-    "argtu",
-    "`1` called with 1 argument; `2` or `3` arguments are expected.", //
-    "argtype",
-    "Arguments `1` and `2` of `3` should be either non-negative integers or one-character strings.", //
-    "arg2",
-    "Cannot divide sides of an equation or inequality by 0.", //
-    "base",
-    "Requested base `1` in `2` should be between 2 and `3`.", //
-    "boxfmt",
-    "`1` is not a box formatting type.", //
-    "cfn",
-    "Numerical error encountered, proceeding with uncompiled evaluation.", //
-    "coef",
-    "The first argument `1` of `2` should be a non-empty list of positive integers.", //
-    "color",
-    "`1` is not a valid color or gray-level specification.", //
-    "compat",
-    "`1` and `2` are incompatible units", //
-    "cxt",
-    "`1` is not a valid context name.", //
-    "divz",
-    "The argument `1` should be nonzero.", //
-    "digit",
-    "Digit at position `1` in `2` is too large to be used in base `3`.", //
-    "dmval",
-    "Input value `1` lies outside the range of data in the interpolating function. Extrapolation will be used.",
-    "dotdim",
-    "Dot contraction of `1` and `2` is invalid because dimensions `3` and `4` are incompatible.",
-    "dotsh",
-    "Tensors `1` and `2` have incompatible shapes.", //
-    "drop",
-    "Cannot drop positions `1` through `2` in `3`.", //
-    "dvar",
-    "Multiple derivative specifier `1` does not have the form {variable, n} where n is a symbolic expression or a non-negative integer.", //
-    "empt",
-    "Argument `1` should be a non-empty list.", //
-    "eqf",
-    "`1` is not a well-formed equation.", //
-    "eqin",
-    "`1` should be an equation or inequality.", //
-    "error",
-    "`1`.", //
-    "exact",
-    "Argument `1` is not an exact number.", //
-    "exdims",
-    "The dimensions cannot be determined from the position `1`.", //
-    "fdup",
-    "Duplicate parameter `1` found in `2`.", //
-    "fftl",
-    "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
-    "fpct",
-    "To many parameters in `1` to be filled from `2`.", //
-    "fnsym",
-    "First argument in `1` is not a symbol or a string naming a symbol.", //
-    "heads",
-    "Heads `1` and `2` are expected to be the same.", //
-    "idim",
-    "`1` and `2` must have the same length.", //
-    "ifun",
-    "Inverse functions are being used. Values may be lost for multivalued inverses.", //
-    "ilsmn",
-    "Single or list of non-negative machine-sized integers expected at position `1` of `2`.", //
-    "ilsnn",
-    "Single or list of non-negative integers expected at position `1`.", //
-    "incom",
-    "Length `1` of dimension `2` in `3` is incommensurate with length `4` of dimension `5` in `6`.", //
-    "incomp",
-    "Expressions `1` and `2` have incompatible shapes.", //
-    "incpt",
-    "incompatible elements in `1` cannot be joined.", //
-    "indet",
-    "Indeterminate expression `1` encountered.", //
-    "infy",
-    "Infinite expression `1` encountered.", //
-    "innf",
-    "Non-negative integer or Infinity expected at position `1` in `2`.", //
-    "ins",
-    "Cannot insert at position `1` in `2`.", //
-    "int",
-    "Integer expected at position `2` in `1`.", //
-    "intjava",
-    "Java int value greater equal `1` expected instead of `2`.", //
-    "intlevel",
-    "Level specification value greater equal `1` expected instead of `2`.", //
-    "intnn",
-    "Non-negative integer expected.", //
-    "intnm",
-    "Non-negative machine-sized integer expected at position `2` in `1`.", //
-    "intm",
-    "Machine-sized integer expected at position `2` in `1`.", //
-    "intp",
-    "Positive integer expected.", //
-    "intpm",
-    "Positive machine-sized integer expected at position `2` in `1`.", //
-    "intpoint",
-    "`1` is expected to contain a list of lists of integers.", //
-    "intpp",
-    "Positive integer argument expected in `1`.", //
-    "intrange",
-    "Integer expected in range `1` to `2`.", //
-    "inv",
-    "The argument `2`  in  `1`  is not valid. 0 or 2 arguments expected.", //
-    "invak",
-    "The argument is not a rule or a list of rules.", //
-    "invdt",
-    "The argument `1` is not a valid Association.", //
-    "invdt2",
-    "The argument `1` is not a rule or a list of rules.", //
-    "invidx2",
-    "Index `1` should be a machine sized integer between `2` and `3`.", //
-    "invrl",
-    "The argument `1` is not a valid Association or a list of rules.", //
-    "iopnf",
-    "Value of option `1` should be a non-negative integer or Infinity.", //
-    "iterb",
-    "Iterator does not have appropriate bounds.", //
-    "itform",
-    "Argument `1` at position `2` does not have the correct form for an iterator.", //
-    "itlim",
-    "Iteration limit of `1` exceeded.", //
-    "itlimpartial",
-    "Iteration limit of `1` exceeded. Returning partial results.", //
-    "itendless",
-    "Endless iteration detected in `1` in evaluation loop.", //
-    "itraw",
-    "Raw object `1` cannot be used as an iterator.", //
-    "ivar",
-    "`1` is not a valid variable.", //
-      "ldata", 
-      "`1` is not a valid dataset or a list of datasets.", //
-    "lend",
-    "The argument at position `1` in `2` should be a vector of unsigned byte values or a Base64 encoded string.", //
-    "level",
-    "Level specification `1` is not of the form n, {n}, or {m, n}.", //
-    "levelpad",
-    "The padding specification `1` involves `2` levels, the list `3` has only `4` level.", //
-    "limset",
-    "Cannot set $RecursionLimit to `1`; value must be Infinity or an integer at least 20.", //
-    "list",
-    "List expected at position `1` in `2`.", //
-    "listofbigints",
-    "List of Java BigInteger numbers expected in `1`.", //
-    "listofints",
-    "List of Java int numbers expected in `1`.", //
-    "listoflongs",
-    "List of Java long numbers expected in `1`.", //
-    "listrp",
-    "List or SparseArray or structured array expected at position `1` in `2`.", //
-    "locked",
-    "Symbol `1` is locked.", //
-    "lowlen",
-    "Required length `1` is smaller than maximum `2` of support of `3`.", //
-    "lslc",
-    "Coefficient matrix and target vector or matrix do not have the same dimensions.", //
-    "lvlist",
-    "Local variable specification `1` is not a List.", //
-    "lvws",
-    "Variable `1` in local variable specification `2` requires assigning a value", //
-    "lvset",
-    "Local variable specification `1` contains `2`, which is an assignment to `3`; only assignments to symbols are allowed.", //
-    "lvsym",
-    "Local variable specification `1` contains `2` which is not a symbol or an assignment to a symbol.", //
-    "matrix",
-    "Argument `1` at position `2` is not a non-empty rectangular matrix.", //
-    "matsq",
-    "Argument `1` at position `2` is not a non-empty square matrix.", //
-    "mseqs",
-    "Sequence specification or a list of sequence specifications expected at position `1` in `2`.", //
-    "nalph",
-    "The alphabet `1` is not known or not available.", //
-    "nas",
-    "The argument `1` is not a string.", //
-    "needsjdk",
-    "For compiling functions, Symja needs to be executed on a Java Development Kit with javax.tools.JavaCompiler installed.", //
-    "nconvss",
-    "The argument `1` cannot be converted to a NumericArray of type `2` using method `3`", //
-    "nliter",
-    "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
-    "nil",
-    "unexpected NIL expression encountered.", //
-    "ninv",
-    "`1` is not invertible modulo `2`.", //
-    "nocatch",
-    "Uncaught `1` returned to top level.", //
-    "nofirst",
-    "`1` has zero length and no first element.", //
-    "nofwd",
-    "No enclosing For, While or Do found for `1`.", //
-    "noneg",
-    "Argument `1` should be a real non-negative number.", //
-    "nonegs",
-    "Surd is not defined for even roots of negative values.", //
-    "nolast",
-    "`1` has zero length and no last element.", //
-    "nomost",
-    "Cannot take Most of expression `1` with length zero.", //
-    "nonn1",
-    "The arguments are expected to be vectors of equal length, and the number of arguments is expected to be 1 less than their length.", //
-    "noopen",
-    "Cannot open `1`.", //
-    "nonopt",
-    "Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.", //
-    "nord",
-    "Invalid comparison with `1` attempted.", //
-    "normal",
-    "Nonatomic expression expected at position `1` in `2`.", //
-    "nostr",
-    "`1` is not a string.", //
-    "notent",
-    "`2` is not a known entity, class, or tag for `1`.", //
-    "nquan",
-    "The Quantile specification `1` should be a number between `2` and `3`.",
-    "nvld",
-    "The expression `1` is not a valid interval.", //
-    "notunicode",
-    "A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
-    "noprime",
-    "There are no primes in the specified interval.", //
-    "norel",
-    "Expressions `1` and `2` cannot be related by a permutation.", //
-    "noval",
-    "Symbol `1` in part assignment does not have an immediate value.", //
-    "nsmet",
-    "This system cannot be solved with the methods available to `1`", //
-    "nvm",
-    "The first Norm argument should be a scalar, vector or matrix.", //
-    "openx",
-    "`1` is not open.", //
-    "optb",
-    "Optional object `1` in `2` is not a single blank.", //
-    "optnf",
-    "Option name `2` not found in defaults for `1`.", //
-    "opttf",
-    "Value of option `1`->`2` should be True or False.", //
-    "optx",
-    "Unknown option `1` in `2`.", //
-    "ovfl",
-    "Overflow occurred in computation.", //
-    "padlevel",
-    "The padding specification `1` involves `2` levels; the list `3` has only `4` level.", //
-    "pairs",
-    "The first argument `1` of `2` is not a list of pairs.", //
-    "partd",
-    "Part specification `1` is longer than depth of object.", //
-    "partw",
-    "Part `1` of `2` does not exist.", //
-    "patvar",
-    "First element in `1` is not a valid pattern name.", //
-    "perm",
-    "`1` is not a valid permutation.", //
-    "permlist",
-    "Invalid permutation list `1`.", //
-    "pilist",
-    "The arguments to `1` must be two lists of integers of identical length, with the second list only containing positive integers.", //
-    "plen",
-    "`1` and `2` should have the same length.", //
-    "plld",
-    "Endpoints in `1` must be distinct machine-size real numbers.", //
-    "pllim",
-    "Range specification `1` is not of the form {x, xmin, xmax}.", //
-    "plln",
-    "Limiting value `1` in `2` is not a machine-size real number.", //
-    "pkspec1",
-    "The expression `1` cannot be used as a part specification.", //
-    "prng",
-    "Value of option `1` is not All, Full, Automatic, a positive machine number, or an appropriate list of range specifications.",
-    "psl1",
-    "Position specification `1` in `2` is not applicable.", //
-    "pspec",
-    "Part specification `1` is neither an integer nor a list of integer.", //
-    "poly",
-    "`1` is not a polynomial.", //
-    "polynomial",
-    "Polynomial expected at position `1` in `2`.", //
-    "posdim",
-    "The dimension parameter `1` is expected to be a positive integer or a list of positive integers.", //
-    "pospoint",
-    "`1` contains integers that are not positive.", //
-    "posprm",
-    "Parameter `1` at position `2` in `3` is expected to be positive.", //
-    "posr",
-    "The left hand side of `2` in `1` doesn't match an int-array of depth `3`.", //
-    "preal",
-    "The parameter `1` should be real-valued.", //
-    "precsm",
-    "Requested precision `1` is smaller than `2`.", //
-    "precgt",
-    "Requested precision `1` is greater than `2`.", //
-    "pts",
-    "`1` should be a non-empty list of points.", //
-    "range",
-    "Range specification in `1` does not have appropriate bounds.", //
-    "rank",
-    "The rank `1` is not an integer between `2` and  `3`.", //
-    "rankl",
-    "The list `1` of dimensions must have length `2`.",
-    "rctndm1",
-    "The argument `1` at position `2` should be a rectangular array of real numbers with length greater than the dimension of the array or two such arrays with of equal dimension.",
-    "realx",
-    "The value `1` is not a real number.", //
-    "reclim2",
-    "Recursion depth of `1` exceeded during evaluation of `2`.", //
-    "rect",
-    "Nonrectangular tensor encountered", //
-    "rectt",
-    "Rectangular array expected at position `1` in `2`.", //
-    "reppoint",
-    "`1` contains repeated integers.", //
-    "reps",
-    "(`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for replacing.", //
-    "root",
-    "Unable to determine the appropriate root for the periodic continued fraction.", //
-    "rrlim",
-    "Exiting after `1` scanned `2` times.", //
-    "rvalue",
-    "`1` is not a variable with a value, so its value cannot be changed.", //
-    "rvec",
-    "Input `1` is not a vector of reals or integers.", //
-    "rvec2",
-    "Input `1` is not a real-valued vector.", //
-    "rubiendless",
-    "Endless iteration detected in `1` for Rubi pattern-matching rules.", //
-    "sdmint",
-    "The number of subdivisions given in position `1` of `2` should be a positive machine-sized integer.", //
-    "seqs",
-    "Sequence specification expected, but got `1`.", //
-    "setp",
-    "Part assignment to `1` could not be made", //
-    "setraw",
-    "Cannot assign to raw object `1`.", //
-    "setps",
-    "`1` in the part assignment is not a symbol.", //
-    "sing",
-    "Matrix `1` is singular.", //
-    "sing1",
-    "The matrix `1` is singular; a factorization will not be saved.", //
-    "span",
-    "`1` is not a valid Span specification.", //
-    "ssle",
-    "Symbol, string or HoldPattern(symbol) expected at position `2` in `1`.", //
-    "step",
-    "The step size `1` is expected to be positive", //
-    "stream",
-    "`1` is not string, InputStream[], or OutputStream[]", //
-    "string",
-    "String expected at position `1` in `2`.", //
-    "strse",
-    "String or list of strings expected at position `1` in `2`.", //
-    "sym",
-    "Argument `1` at position `2` is expected to be a symbol.", //
-    "tag",
-    "Rule for `1` can only be attached to `2`.", //
-    "tagnf",
-    "Tag `1` not found in `2`.", //
-    "take",
-    "Cannot take positions `1` through `2` in `3`.", //
-    "tbnval",
-    "Values `1` produced by the function `2` cannot be used for numerical sorting because they are not all real.", //
-    "tdlen",
-    "Objects of unequal length in `1` cannot be combined.", //
-    "tllen",
-    "Lists of unequal length in `1` cannot be added.", //
-    "toggle",
-    "ToggleFeature `1` is disabled.", //
-    "udist",
-    "The specification `1` is not a random distribution recognized by the system.", //
-    "unsupported",
-    "`1` currently not supported in `2`.", //
-    "usraw",
-    "Cannot unset object `1`.", //
-    "vloc",
-    "The variable `1` cannot be localized so that it can be assigned to numerical values.", //
-    "vpow2",
-    "Argument `1` is restricted to vectors with a length of power of 2.", //
-    "vrule",
-    "Cannot set `1` to `2`, which is not a valid list of replacement rules.", //
-    "write",
-    "Tag `1` in `2` is Protected.", //
-    "wrsym",
-    "Symbol `1` is Protected.", //
-    "ucdec",
-    "An invalid unicode sequence was encountered and ignored.", //
-    // Symja special
-    "zzmaxast",
-    "Maximum AST limit `1` exceeded.", //
-    "zznotimpl",
-    "Function `1` not implemented.", //
-    "zzprime",
-    "Maximum Prime limit `1` exceeded.", //
-    "zzregex",
-    "Regex expression `1` error message: `2`.", //
-    "zzapfloatcld",
-    "Complete loss of accurate digits (apfloat)." //
+      "argillegal", "Illegal arguments: \"`1`\" in `2`", //
+      "argb", "`1` called with `2` arguments; between `3` and `4` arguments are expected.", //
+      "argct", "`1` called with `2` arguments.", //
+      "argctu", "`1` called with 1 argument.", //
+      "argm", "`1` called with `2` arguments; `3` or more arguments are expected.", //
+      "argr", "`1` called with 1 argument; `2` arguments are expected.", //
+      "argrx", "`1` called with `2` arguments; `3` arguments are expected.", //
+      "argx", "`1` called with `2` arguments; 1 argument is expected.", //
+      "argt", "`1` called with `2` arguments; `3` or `4` arguments are expected.", //
+      "argtu", "`1` called with 1 argument; `2` or `3` arguments are expected.", //
+      "argtype",
+      "Arguments `1` and `2` of `3` should be either non-negative integers or one-character strings.", //
+      "arg2", "Cannot divide sides of an equation or inequality by 0.", //
+      "base", "Requested base `1` in `2` should be between 2 and `3`.", //
+      "boxfmt", "`1` is not a box formatting type.", //
+      "cfn", "Numerical error encountered, proceeding with uncompiled evaluation.", //
+      "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
+      "color", "`1` is not a valid color or gray-level specification.", //
+      "compat", "`1` and `2` are incompatible units", //
+      "cxt", "`1` is not a valid context name.", //
+      "divz", "The argument `1` should be nonzero.", //
+      "digit", "Digit at position `1` in `2` is too large to be used in base `3`.", //
+      "dmval",
+      "Input value `1` lies outside the range of data in the interpolating function. Extrapolation will be used.",
+      "dotdim",
+      "Dot contraction of `1` and `2` is invalid because dimensions `3` and `4` are incompatible.",
+      "dotsh", "Tensors `1` and `2` have incompatible shapes.", //
+      "drop", "Cannot drop positions `1` through `2` in `3`.", //
+      "dvar",
+      "Multiple derivative specifier `1` does not have the form {variable, n} where n is a symbolic expression or a non-negative integer.", //
+      "empt", "Argument `1` should be a non-empty list.", //
+      "eqf", "`1` is not a well-formed equation.", //
+      "eqin", "`1` should be an equation or inequality.", //
+      "error", "`1`.", //
+      "exact", "Argument `1` is not an exact number.", //
+      "exdims", "The dimensions cannot be determined from the position `1`.", //
+      "experimental", "Experimental implementation (search in Github issues for identifier `1`).",
+      "fdup", "Duplicate parameter `1` found in `2`.", //
+      "fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
+      "fpct", "To many parameters in `1` to be filled from `2`.", //
+      "fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //
+      "heads", "Heads `1` and `2` are expected to be the same.", //
+      "idim", "`1` and `2` must have the same length.", //
+      "ifun", "Inverse functions are being used. Values may be lost for multivalued inverses.", //
+      "ilsmn",
+      "Single or list of non-negative machine-sized integers expected at position `1` of `2`.", //
+      "ilsnn", "Single or list of non-negative integers expected at position `1`.", //
+      "incom",
+      "Length `1` of dimension `2` in `3` is incommensurate with length `4` of dimension `5` in `6`.", //
+      "incomp", "Expressions `1` and `2` have incompatible shapes.", //
+      "incpt", "incompatible elements in `1` cannot be joined.", //
+      "indet", "Indeterminate expression `1` encountered.", //
+      "infy", "Infinite expression `1` encountered.", //
+      "innf", "Non-negative integer or Infinity expected at position `1` in `2`.", //
+      "ins", "Cannot insert at position `1` in `2`.", //
+      "int", "Integer expected at position `2` in `1`.", //
+      "intjava", "Java int value greater equal `1` expected instead of `2`.", //
+      "intlevel", "Level specification value greater equal `1` expected instead of `2`.", //
+      "intnn", "Non-negative integer expected.", //
+      "intnm", "Non-negative machine-sized integer expected at position `2` in `1`.", //
+      "intm", "Machine-sized integer expected at position `2` in `1`.", //
+      "intp", "Positive integer expected.", //
+      "intpm", "Positive machine-sized integer expected at position `2` in `1`.", //
+      "intpoint", "`1` is expected to contain a list of lists of integers.", //
+      "intpp", "Positive integer argument expected in `1`.", //
+      "intrange", "Integer expected in range `1` to `2`.", //
+      "inv", "The argument `2`  in  `1`  is not valid. 0 or 2 arguments expected.", //
+      "invak", "The argument is not a rule or a list of rules.", //
+      "invdt", "The argument `1` is not a valid Association.", //
+      "invdt2", "The argument `1` is not a rule or a list of rules.", //
+      "invidx2", "Index `1` should be a machine sized integer between `2` and `3`.", //
+      "invrl", "The argument `1` is not a valid Association or a list of rules.", //
+      "iopnf", "Value of option `1` should be a non-negative integer or Infinity.", //
+      "iterb", "Iterator does not have appropriate bounds.", //
+      "itform", "Argument `1` at position `2` does not have the correct form for an iterator.", //
+      "itlim", "Iteration limit of `1` exceeded.", //
+      "itlimpartial", "Iteration limit of `1` exceeded. Returning partial results.", //
+      "itendless", "Endless iteration detected in `1` in evaluation loop.", //
+      "itraw", "Raw object `1` cannot be used as an iterator.", //
+      "ivar", "`1` is not a valid variable.", //
+      "ldata", "`1` is not a valid dataset or a list of datasets.", //
+      "lend",
+      "The argument at position `1` in `2` should be a vector of unsigned byte values or a Base64 encoded string.", //
+      "level", "Level specification `1` is not of the form n, {n}, or {m, n}.", //
+      "levelpad",
+      "The padding specification `1` involves `2` levels, the list `3` has only `4` level.", //
+      "limset",
+      "Cannot set $RecursionLimit to `1`; value must be Infinity or an integer at least 20.", //
+      "list", "List expected at position `1` in `2`.", //
+      "listofbigints", "List of Java BigInteger numbers expected in `1`.", //
+      "listofints", "List of Java int numbers expected in `1`.", //
+      "listoflongs", "List of Java long numbers expected in `1`.", //
+      "listrp", "List or SparseArray or structured array expected at position `1` in `2`.", //
+      "locked", "Symbol `1` is locked.", //
+      "lowlen", "Required length `1` is smaller than maximum `2` of support of `3`.", //
+      "lslc", "Coefficient matrix and target vector or matrix do not have the same dimensions.", //
+      "lvlist", "Local variable specification `1` is not a List.", //
+      "lvws", "Variable `1` in local variable specification `2` requires assigning a value", //
+      "lvset",
+      "Local variable specification `1` contains `2`, which is an assignment to `3`; only assignments to symbols are allowed.", //
+      "lvsym",
+      "Local variable specification `1` contains `2` which is not a symbol or an assignment to a symbol.", //
+      "matrix", "Argument `1` at position `2` is not a non-empty rectangular matrix.", //
+      "matsq", "Argument `1` at position `2` is not a non-empty square matrix.", //
+      "mseqs",
+      "Sequence specification or a list of sequence specifications expected at position `1` in `2`.", //
+      "nalph", "The alphabet `1` is not known or not available.", //
+      "nas", "The argument `1` is not a string.", //
+      "needsjdk",
+      "For compiling functions, Symja needs to be executed on a Java Development Kit with javax.tools.JavaCompiler installed.", //
+      "nconvss",
+      "The argument `1` cannot be converted to a NumericArray of type `2` using method `3`", //
+      "nliter", "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
+      "nil", "unexpected NIL expression encountered.", //
+      "ninv", "`1` is not invertible modulo `2`.", //
+      "nocatch", "Uncaught `1` returned to top level.", //
+      "nofirst", "`1` has zero length and no first element.", //
+      "nofwd", "No enclosing For, While or Do found for `1`.", //
+      "noneg", "Argument `1` should be a real non-negative number.", //
+      "nonegs", "Surd is not defined for even roots of negative values.", //
+      "nolast", "`1` has zero length and no last element.", //
+      "nomost", "Cannot take Most of expression `1` with length zero.", //
+      "nonn1",
+      "The arguments are expected to be vectors of equal length, and the number of arguments is expected to be 1 less than their length.", //
+      "noopen", "Cannot open `1`.", //
+      "nonopt",
+      "Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.", //
+      "nord", "Invalid comparison with `1` attempted.", //
+      "normal", "Nonatomic expression expected at position `1` in `2`.", //
+      "nostr", "`1` is not a string.", //
+      "notent", "`2` is not a known entity, class, or tag for `1`.", //
+      "nquan", "The Quantile specification `1` should be a number between `2` and `3`.", "nvld",
+      "The expression `1` is not a valid interval.", //
+      "notunicode",
+      "A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
+      "noprime", "There are no primes in the specified interval.", //
+      "norel", "Expressions `1` and `2` cannot be related by a permutation.", //
+      "noval", "Symbol `1` in part assignment does not have an immediate value.", //
+      "nsmet", "This system cannot be solved with the methods available to `1`", //
+      "nvm", "The first Norm argument should be a scalar, vector or matrix.", //
+      "openx", "`1` is not open.", //
+      "optb", "Optional object `1` in `2` is not a single blank.", //
+      "optnf", "Option name `2` not found in defaults for `1`.", //
+      "opttf", "Value of option `1`->`2` should be True or False.", //
+      "optx", "Unknown option `1` in `2`.", //
+      "ovfl", "Overflow occurred in computation.", //
+      "padlevel",
+      "The padding specification `1` involves `2` levels; the list `3` has only `4` level.", //
+      "pairs", "The first argument `1` of `2` is not a list of pairs.", //
+      "partd", "Part specification `1` is longer than depth of object.", //
+      "partw", "Part `1` of `2` does not exist.", //
+      "patvar", "First element in `1` is not a valid pattern name.", //
+      "perm", "`1` is not a valid permutation.", //
+      "permlist", "Invalid permutation list `1`.", //
+      "pilist",
+      "The arguments to `1` must be two lists of integers of identical length, with the second list only containing positive integers.", //
+      "plen", "`1` and `2` should have the same length.", //
+      "plld", "Endpoints in `1` must be distinct machine-size real numbers.", //
+      "pllim", "Range specification `1` is not of the form {x, xmin, xmax}.", //
+      "plln", "Limiting value `1` in `2` is not a machine-size real number.", //
+      "pkspec1", "The expression `1` cannot be used as a part specification.", //
+      "prng",
+      "Value of option `1` is not All, Full, Automatic, a positive machine number, or an appropriate list of range specifications.",
+      "psl1", "Position specification `1` in `2` is not applicable.", //
+      "pspec", "Part specification `1` is neither an integer nor a list of integer.", //
+      "poly", "`1` is not a polynomial.", //
+      "polynomial", "Polynomial expected at position `1` in `2`.", //
+      "posdim",
+      "The dimension parameter `1` is expected to be a positive integer or a list of positive integers.", //
+      "pospoint", "`1` contains integers that are not positive.", //
+      "posprm", "Parameter `1` at position `2` in `3` is expected to be positive.", //
+      "posr", "The left hand side of `2` in `1` doesn't match an int-array of depth `3`.", //
+      "preal", "The parameter `1` should be real-valued.", //
+      "precsm", "Requested precision `1` is smaller than `2`.", //
+      "precgt", "Requested precision `1` is greater than `2`.", //
+      "pts", "`1` should be a non-empty list of points.", //
+      "range", "Range specification in `1` does not have appropriate bounds.", //
+      "rank", "The rank `1` is not an integer between `2` and  `3`.", //
+      "rankl", "The list `1` of dimensions must have length `2`.", "rctndm1",
+      "The argument `1` at position `2` should be a rectangular array of real numbers with length greater than the dimension of the array or two such arrays with of equal dimension.",
+      "realx", "The value `1` is not a real number.", //
+      "reclim2", "Recursion depth of `1` exceeded during evaluation of `2`.", //
+      "rect", "Nonrectangular tensor encountered", //
+      "rectt", "Rectangular array expected at position `1` in `2`.", //
+      "reppoint", "`1` contains repeated integers.", //
+      "reps",
+      "(`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for replacing.", //
+      "root", "Unable to determine the appropriate root for the periodic continued fraction.", //
+      "rrlim", "Exiting after `1` scanned `2` times.", //
+      "rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
+      "rvec", "Input `1` is not a vector of reals or integers.", //
+      "rvec2", "Input `1` is not a real-valued vector.", //
+      "rubiendless", "Endless iteration detected in `1` for Rubi pattern-matching rules.", //
+      "sdmint",
+      "The number of subdivisions given in position `1` of `2` should be a positive machine-sized integer.", //
+      "seqs", "Sequence specification expected, but got `1`.", //
+      "setp", "Part assignment to `1` could not be made", //
+      "setraw", "Cannot assign to raw object `1`.", //
+      "setps", "`1` in the part assignment is not a symbol.", //
+      "sing", "Matrix `1` is singular.", //
+      "sing1", "The matrix `1` is singular; a factorization will not be saved.", //
+      "span", "`1` is not a valid Span specification.", //
+      "ssle", "Symbol, string or HoldPattern(symbol) expected at position `2` in `1`.", //
+      "step", "The step size `1` is expected to be positive", //
+      "stream", "`1` is not string, InputStream[], or OutputStream[]", //
+      "string", "String expected at position `1` in `2`.", //
+      "strse", "String or list of strings expected at position `1` in `2`.", //
+      "sym", "Argument `1` at position `2` is expected to be a symbol.", //
+      "tag", "Rule for `1` can only be attached to `2`.", //
+      "tagnf", "Tag `1` not found in `2`.", //
+      "take", "Cannot take positions `1` through `2` in `3`.", //
+      "tbnval",
+      "Values `1` produced by the function `2` cannot be used for numerical sorting because they are not all real.", //
+      "tdlen", "Objects of unequal length in `1` cannot be combined.", //
+      "tllen", "Lists of unequal length in `1` cannot be added.", //
+      "toggle", "ToggleFeature `1` is disabled.", //
+      "udist", "The specification `1` is not a random distribution recognized by the system.", //
+      "unsupported", "`1` currently not supported in `2`.", //
+      "usraw", "Cannot unset object `1`.", //
+      "vloc",
+      "The variable `1` cannot be localized so that it can be assigned to numerical values.", //
+      "vpow2", "Argument `1` is restricted to vectors with a length of power of 2.", //
+      "vrule", "Cannot set `1` to `2`, which is not a valid list of replacement rules.", //
+      "write", "Tag `1` in `2` is Protected.", //
+      "wrsym", "Symbol `1` is Protected.", //
+      "ucdec", "An invalid unicode sequence was encountered and ignored.", //
+      // Symja special
+      "zzmaxast", "Maximum AST limit `1` exceeded.", //
+      "zznotimpl", "Function `1` not implemented.", //
+      "zzprime", "Maximum Prime limit `1` exceeded.", //
+      "zzregex", "Regex expression `1` error message: `2`.", //
+      "zzapfloatcld", "Complete loss of accurate digits (apfloat)." //
   };
 
   public static void initialize() {
@@ -910,7 +738,8 @@ public class IOFunctions {
   /**
    * argr, argx, argrx, argt messages
    *
-   * <p><b>Example:</b> &quot;`1` called with 1 argument; `2` arguments are expected.&quot;
+   * <p>
+   * <b>Example:</b> &quot;`1` called with 1 argument; `2` arguments are expected.&quot;
    *
    * @param ast
    * @param expected
@@ -923,8 +752,8 @@ public class IOFunctions {
     int argSize = ast.argSize();
     if (expected[0] == expected[1]) {
       if (expected[0] == 1) {
-        return printMessage(
-            topHead, "argx", F.List(head, F.ZZ(argSize), F.ZZ(expected[0])), engine);
+        return printMessage(topHead, "argx", F.List(head, F.ZZ(argSize), F.ZZ(expected[0])),
+            engine);
       }
       if (argSize == 1) {
         return printMessage(topHead, "argr", F.List(head, F.ZZ(expected[0])), engine);
@@ -934,8 +763,8 @@ public class IOFunctions {
     if (expected[1] == Integer.MAX_VALUE) {
       return printMessage(topHead, "argm", F.List(head, F.ZZ(argSize), F.ZZ(expected[0])), engine);
     }
-    return printMessage(
-        topHead, "argt", F.List(head, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);
+    return printMessage(topHead, "argt",
+        F.List(head, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);
   }
 
   public static IExpr printMessage(ISymbol symbol, final ValidateException ve, EvalEngine engine) {
@@ -947,10 +776,27 @@ public class IOFunctions {
   }
 
   /**
+   * Print message <code>experimental</code> -
+   * <code>Experimental implementation (search in Github issues for identifier `1`).</code>
+   * 
+   * @param symbol
+   * @return
+   */
+  public static IAST printExperimental(IBuiltInSymbol symbol) {
+    EvalEngine engine = EvalEngine.get();
+    if (!engine.containsExperimental(symbol)) {
+      printMessage(symbol, "experimental", F.List(symbol), EvalEngine.get());
+      engine.incExperimentalCounter(symbol);
+    }
+    return F.NIL;
+  }
+
+  /**
    * Format a message according to the shortcut from the {@link #MESSAGES} array and print it to the
    * error stream with the <code>engine.printMessage()</code>method.
    *
-   * <p>Usage pattern:
+   * <p>
+   * Usage pattern:
    *
    * <pre>
    *    // corresponding long text of "&lt;message-shortcut&gt;" stored in the MESSAGES array
@@ -960,12 +806,12 @@ public class IOFunctions {
    * @param symbol
    * @param messageShortcut the message shortcut defined in the {@link #MESSAGES} array
    * @param listOfParameters a list of arguments which should be inserted into the message shortcuts
-   *     placeholder
+   *        placeholder
    * @param engine
    * @return always <code>F.NIL</code>
    */
-  public static IAST printMessage(
-      ISymbol symbol, String messageShortcut, final IAST listOfParameters, EvalEngine engine) {
+  public static IAST printMessage(ISymbol symbol, String messageShortcut,
+      final IAST listOfParameters, EvalEngine engine) {
     IExpr temp = symbol.evalMessage(messageShortcut);
     String message = null;
     if (temp.isPresent()) {
@@ -1004,8 +850,8 @@ public class IOFunctions {
     return getMessage(messageShortcut, listOfArgs, EvalEngine.get());
   }
 
-  public static String getMessage(
-      String messageShortcut, final IAST listOfArgs, EvalEngine engine) {
+  public static String getMessage(String messageShortcut, final IAST listOfArgs,
+      EvalEngine engine) {
     IExpr temp = S.General.evalMessage(messageShortcut);
     String message = null;
     if (temp.isPresent()) {
@@ -1078,8 +924,8 @@ public class IOFunctions {
   }
 
   /**
-   * Compile the template into an object hierarchy representation for the <a
-   * href="https://github.com/PebbleTemplates/pebble">Pebble template engine</a>.
+   * Compile the template into an object hierarchy representation for the
+   * <a href="https://github.com/PebbleTemplates/pebble">Pebble template engine</a>.
    *
    * @param templateStr
    * @return
@@ -1100,9 +946,8 @@ public class IOFunctions {
       }
       if (ch == '`') {
         if (lastPosition < currentPosition - 1) {
-          nodes.add(
-              new TextNode(
-                  templateStr.substring(lastPosition, currentPosition - 1), lastLineNumber));
+          nodes.add(new TextNode(templateStr.substring(lastPosition, currentPosition - 1),
+              lastLineNumber));
           lastPosition = currentPosition;
           lastLineNumber = lineNumber;
         }
@@ -1143,8 +988,8 @@ public class IOFunctions {
    * @param context the assigned variables which should be rendered in the template
    * @throws IOException
    */
-  private static void templateApply(
-      String templateString, Writer outputWriter, Map<String, Object> context) throws IOException {
+  private static void templateApply(String templateString, Writer outputWriter,
+      Map<String, Object> context) throws IOException {
     PebbleCache<Object, PebbleTemplate> cache = PEBBLE_ENGINE.getTemplateCache();
     PebbleTemplate template =
         cache.computeIfAbsent(templateString, x -> templateCompile(templateString));
