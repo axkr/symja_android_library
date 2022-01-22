@@ -1901,17 +1901,32 @@ public class F extends S {
   }
 
   /**
-   * Create a sparse array from the given rules list.
+   * Create a sparse array from the list of rules.
    *
    * <p>
    * See: <a href=
    * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SparseArray.md">SparseArray</a>
    *
    * @param arrayRulesList
-   * @return
+   * @return a ISparseArray instance
    */
   public static ISparseArray sparseArray(final IAST arrayRulesList) {
     return SparseArrayExpr.newArrayRules(arrayRulesList, null, -1, C0);
+  }
+
+  /**
+   * Create a sparse array in the given <code>dimension</code> from the list of rules.
+   *
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SparseArray.md">SparseArray</a>
+   *
+   * @param arrayRulesList
+   * @param dimension
+   * @return a ISparseArray instance
+   */
+  public static ISparseArray sparseArray(final IAST arrayRulesList, int[] dimension) {
+    return SparseArrayExpr.newArrayRules(arrayRulesList, dimension, 0, C0);
   }
 
   /**

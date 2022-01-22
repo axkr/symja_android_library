@@ -2219,6 +2219,14 @@ public final class LinearAlgebra {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.IdentityMatrix, "intpm", F.List(ast, F.C1), engine);
         }
+        if (ast.isAST2()) {
+          if (ast.arg2().equals(S.SparseArray)) {
+            int[] dimension = new int[] {m, m};
+            // {{i_,i_} -> 1}
+            return F.sparseArray(F.List(F.Rule(List(F.i_, F.i_), F.C1)), dimension);
+          }
+          return F.NIL;
+        }
         return F.matrix((i, j) -> i == j ? F.C1 : F.C0, m, m);
       }
       return F.NIL;
@@ -2226,7 +2234,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 

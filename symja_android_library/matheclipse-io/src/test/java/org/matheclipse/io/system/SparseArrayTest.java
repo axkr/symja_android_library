@@ -180,6 +180,15 @@ public class SparseArrayTest extends AbstractTestCase {
         "SparseArray(Automatic, List(2, 2, 3), 0, List(1, List(List(0, 4, 7), List(List(1, 3), List(2, 1), List(2, 2), List(2, 3), List(1, 2), List(2, 2), List(2, 3))), List(3, 1, 1, 5, 1, 1, 2)))");
   }
 
+  public void testIdentityMatrix() {
+    check("IdentityMatrix(4,SparseArray)", //
+        "SparseArray(Number of elements: 4 Dimensions: {4,4} Default value: 0)");
+    check("IdentityMatrix(3,SparseArray) // MatrixForm", //
+        "{{1,0,0},\n" //
+            + " {0,1,0},\n" //
+            + " {0,0,1}}");
+  }
+
   public void testNormal() {
     check(
         "s=SparseArray({11 -> a, 17 -> b})", //
