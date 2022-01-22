@@ -220,9 +220,7 @@ public class LinearAlgebraTestCase extends AbstractTestCase {
 
   public void testDiagonalMatrix() {
     check("DiagonalMatrix(SparseArray({1, 2, 3}))", //
-        "{{1,0,0},\n" + //
-            " {0,2,0},\n" + //
-            " {0,0,3}}");
+        "SparseArray(Number of elements: 3 Dimensions: {3,3} Default value: 0)");
     check("DiagonalMatrix({1, 2, 3})", //
         "{{1,0,0},\n" + //
             " {0,2,0},\n" + //

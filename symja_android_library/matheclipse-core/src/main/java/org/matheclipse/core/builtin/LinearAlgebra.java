@@ -1244,6 +1244,14 @@ public final class LinearAlgebra {
       int dimension = arg1.isVector();
       final IAST vector;
       if (dimension >= 0) {
+        if (arg1.isSparseArray()) {
+          // for sparse array vector input return a sparse array diagonal matrix
+          ISparseArray sparseArray = (ISparseArray) arg1;
+          int m = sparseArray.getDimension()[0] + 1;
+          final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Integer.MIN_VALUE) : 0;
+          return F.sparseMatrix((i, j) -> (i + offset) == j ? sparseArray.get(i + 1) : F.C0, m - 1,
+              m - 1);
+        }
         IExpr normal = arg1.normal(false);
         if (normal.isAST()) {
           vector = (IAST) normal;

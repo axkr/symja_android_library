@@ -131,4 +131,6 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
    * @return
    */
   public IExpr total(IExpr head);
+
+  public IExpr set(int[] positions, IExpr value);
 }

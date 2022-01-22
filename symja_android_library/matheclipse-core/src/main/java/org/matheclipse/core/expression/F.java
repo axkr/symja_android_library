@@ -1930,6 +1930,36 @@ public class F extends S {
   }
 
   /**
+   * Generate a <code>n x m</code> sparse matrix. The indices start in Java convention with
+   * <code>0</code>.
+   *
+   * @param binaryFunction if the returned value unequals <code>0</code>, the value will be stored
+   *        in the sparse matrix
+   * @param n the number of rows of the matrix.
+   * @param m the number of columns of the matrix.
+   * @return
+   */
+  public static ISparseArray sparseMatrix(BiIntFunction<? extends IExpr> binaryFunction,
+  int n,
+      int m) {
+    if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
+      ASTElementLimitExceeded.throwIt(((long) n) * ((long) m));
+    }
+    int[] dimension = new int[] {n, m};
+    SparseArrayExpr sparseMatrix = SparseArrayExpr.newArrayRules(F.CEmptyList, dimension, 0, C0);
+    for (int i = 0; i < n; i++) {
+      IASTAppendable row = ListAlloc(m);
+      for (int j = 0; j < m; j++) {
+        IExpr value = binaryFunction.apply(i, j);
+        if (!value.isZero()) {
+          sparseMatrix.set(new int[] {i + 1, j + 1}, value);
+        }
+      }
+    }
+    return sparseMatrix;
+  }
+
+  /**
    * Creates a new AST from the given <code>ast</code> and <code>head</code>. if <code>include
    * </code> is set to <code>true </code> all arguments from index first to last-1 are copied in the
    * new list if <code>include</code> is set to <code> false </code> all arguments excluded from

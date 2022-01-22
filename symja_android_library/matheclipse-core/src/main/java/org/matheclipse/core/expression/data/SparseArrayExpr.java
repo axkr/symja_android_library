@@ -54,7 +54,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * This class implements the {@link FieldMatrix} interface with a {@link SparseArrayExpr} backing
    * store.
    *
-   * <p><b>Note:</b> in Symja sparse arrays the offset is +1 compared to java arrays or hipparchus
+   * <p>
+   * <b>Note:</b> in Symja sparse arrays the offset is +1 compared to java arrays or hipparchus
    * <code>FieldMatrix</code>.
    */
   public static class SparseExprMatrix extends AbstractFieldMatrix<IExpr> {
@@ -66,16 +67,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      * @param rowDimension Number of rows in the new matrix.
      * @param columnDimension Number of columns in the new matrix.
      * @throws org.hipparchus.exception.MathIllegalArgumentException if row or column dimension is
-     *     not positive.
+     *         not positive.
      */
     public SparseExprMatrix(final int rowDimension, final int columnDimension, IExpr defaultValue) {
       super(F.EXPR_FIELD, rowDimension, columnDimension);
-      this.array =
-          new SparseArrayExpr(
-              Config.TRIE_INT2EXPR_BUILDER.build(),
-              new int[] {rowDimension, columnDimension},
-              defaultValue,
-              false);
+      this.array = new SparseArrayExpr(Config.TRIE_INT2EXPR_BUILDER.build(),
+          new int[] {rowDimension, columnDimension}, defaultValue, false);
     }
 
     /**
@@ -100,9 +97,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      */
     public SparseExprMatrix(SparseExprMatrix other) {
       super(F.EXPR_FIELD, other.array.fDimension[0], other.array.fDimension[1]);
-      this.array =
-          new SparseArrayExpr(
-              other.array.fData, other.array.fDimension, other.array.fDefaultValue, true);
+      this.array = new SparseArrayExpr(other.array.fData, other.array.fDimension,
+          other.array.fDefaultValue, true);
     }
 
     /**
@@ -186,7 +182,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      * @param m Matrix to postmultiply by.
      * @return {@code this} * {@code m}.
      * @throws MathIllegalArgumentException if the number of columns of {@code this} matrix is not
-     *     equal to the number of rows of matrix {@code m}.
+     *         equal to the number of rows of matrix {@code m}.
      */
     @Override
     public SparseExprMatrix multiply(final FieldMatrix<IExpr> m)
@@ -239,7 +235,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      * @param fv the vector to operate on
      * @return {@code this * fv}
      * @throws MathIllegalArgumentException if the number of columns of {@code this} matrix is not
-     *     equal to the size of the vector {@code fv}.
+     *         equal to the size of the vector {@code fv}.
      */
     @Override
     public SparseExprVector operate(final FieldVector<IExpr> fv)
@@ -249,8 +245,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         final int nRows = getRowDimension();
         final int nCols = getColumnDimension();
         if (v.getDimension() != nCols) {
-          throw new MathIllegalArgumentException(
-              LocalizedCoreFormats.DIMENSIONS_MISMATCH, v.getDimension(), nCols);
+          throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+              v.getDimension(), nCols);
         }
 
         SparseExprVector out = new SparseExprVector(nRows, array.fDefaultValue);
@@ -291,7 +287,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * This class implements the {@link FieldVector} interface with a {@link SparseArrayExpr} backing
    * store.
    *
-   * <p><b>Note:</b> in Symja sparse arrays the offset is +1 compared to java arrays or hipparchus
+   * <p>
+   * <b>Note:</b> in Symja sparse arrays the offset is +1 compared to java arrays or hipparchus
    * <code>FieldVector</code>.
    */
   public static class SparseExprVector implements FieldVector<IExpr> {
@@ -304,12 +301,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      *
      * @param dimension Number of elements in the new vector.
      * @throws org.hipparchus.exception.MathIllegalArgumentException if row or column dimension is
-     *     not positive.
+     *         not positive.
      */
     public SparseExprVector(final int dimension, IExpr defaultValue) {
-      this.array =
-          new SparseArrayExpr(
-              Config.TRIE_INT2EXPR_BUILDER.build(), new int[] {dimension}, defaultValue, false);
+      this.array = new SparseArrayExpr(Config.TRIE_INT2EXPR_BUILDER.build(), new int[] {dimension},
+          defaultValue, false);
       this.virtualSize = dimension;
     }
 
@@ -321,12 +317,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      */
     public SparseExprVector(SparseArrayExpr array, boolean copyArray) {
       if (copyArray) {
-        this.array =
-            new SparseArrayExpr(
-                Config.TRIE_INT2EXPR_BUILDER.build(),
-                new int[] {array.fDimension[0]},
-                array.fDefaultValue,
-                false);
+        this.array = new SparseArrayExpr(Config.TRIE_INT2EXPR_BUILDER.build(),
+            new int[] {array.fDimension[0]}, array.fDefaultValue, false);
       } else {
         this.array = array;
       }
@@ -350,9 +342,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      * @param other Instance to copy.
      */
     public SparseExprVector(SparseExprVector other) {
-      this.array =
-          new SparseArrayExpr(
-              other.array.fData, other.array.fDimension, other.array.fDefaultValue, true);
+      this.array = new SparseArrayExpr(other.array.fData, other.array.fDimension,
+          other.array.fDefaultValue, true);
       this.virtualSize = other.array.fDimension[0];
     }
 
@@ -443,8 +434,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         throw new MathIllegalArgumentException(LocalizedCoreFormats.INDEX, end, 0, dim - 1);
       }
       if (end < start) {
-        throw new MathIllegalArgumentException(
-            LocalizedCoreFormats.INITIAL_ROW_AFTER_FINAL_ROW, end, start, false);
+        throw new MathIllegalArgumentException(LocalizedCoreFormats.INITIAL_ROW_AFTER_FINAL_ROW,
+            end, start, false);
       }
     }
 
@@ -456,8 +447,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      */
     protected void checkVectorDimensions(int n) throws MathIllegalArgumentException {
       if (getDimension() != n) {
-        throw new MathIllegalArgumentException(
-            LocalizedCoreFormats.DIMENSIONS_MISMATCH, getDimension(), n);
+        throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+            getDimension(), n);
       }
     }
 
@@ -610,7 +601,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     /**
      * Map an addition operation to each entry.
      *
-     * <p>The instance <strong>is</strong> changed by this method.
+     * <p>
+     * The instance <strong>is</strong> changed by this method.
      *
      * @param d value to be added to each entry
      * @return for convenience, return {@code this}
@@ -640,7 +632,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     /**
      * Map a division operation to each entry.
      *
-     * <p>The instance <strong>is</strong> changed by this method.
+     * <p>
+     * The instance <strong>is</strong> changed by this method.
      *
      * @param d value to divide all entries by
      * @return for convenience, return {@code this}
@@ -673,7 +666,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     /**
      * Map the 1/x function to each entry.
      *
-     * <p>The instance <strong>is</strong> changed by this method.
+     * <p>
+     * The instance <strong>is</strong> changed by this method.
      *
      * @return for convenience, return {@code this}
      * @throws MathRuntimeException if one of the entries is zero.
@@ -701,7 +695,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     /**
      * Map a multiplication operation to each entry.
      *
-     * <p>The instance <strong>is</strong> changed by this method.
+     * <p>
+     * The instance <strong>is</strong> changed by this method.
      *
      * @param d value to multiply all entries by
      * @return for convenience, return {@code this}
@@ -733,7 +728,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     /**
      * Map a subtraction operation to each entry.
      *
-     * <p>The instance <strong>is</strong> changed by this method.
+     * <p>
+     * The instance <strong>is</strong> changed by this method.
      *
      * @param d value to be subtracted to each entry
      * @return for convenience, return {@code this}
@@ -876,7 +872,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     /**
      * Convert the vector to a IExpr array.
      *
-     * <p>The array is independent from vector data, it's elements are copied.
+     * <p>
+     * The array is independent from vector data, it's elements are copied.
      *
      * @return array containing a copy of vector elements
      */
@@ -909,21 +906,16 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     IASTAppendable result =
         F.ListAlloc(F.allocMin32(F.allocLevel1(nestedListsOfValues, x -> x.isList()) + 2));
     IASTMutable positions = F.constantArray(F.C1, depth);
-    if (SparseArrayExpr.arrayRulesRecursive(
-        nestedListsOfValues, depth + 1, depth, positions, defaultValue, result)) {
+    if (SparseArrayExpr.arrayRulesRecursive(nestedListsOfValues, depth + 1, depth, positions,
+        defaultValue, result)) {
       result.append(F.Rule(F.constantArray(F.$b(), depth), defaultValue));
       return result;
     }
     return F.NIL;
   }
 
-  private static boolean arrayRulesRecursive(
-      IAST nestedListsOfValues,
-      int count,
-      int level,
-      IASTMutable positions,
-      IExpr defaultValue,
-      IASTAppendable result) {
+  private static boolean arrayRulesRecursive(IAST nestedListsOfValues, int count, int level,
+      IASTMutable positions, IExpr defaultValue, IASTAppendable result) {
     final int position = count - level;
     level--;
     for (int i = 1; i < nestedListsOfValues.size(); i++) {
@@ -971,13 +963,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return null;
   }
 
-  private static int[] createTrie(
-      IAST arrayRulesList,
-      final Trie<int[], IExpr> trie,
-      int[] dimension,
-      int defaultDimension,
-      IExpr[] defaultValue,
-      EvalEngine engine) {
+  private static int[] createTrie(IAST arrayRulesList, final Trie<int[], IExpr> trie,
+      int[] dimension, int defaultDimension, IExpr[] defaultValue, EvalEngine engine) {
     boolean determineDimension = defaultDimension < 0 || dimension == null;
 
     int[] positions = null;
@@ -1002,8 +989,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         }
         positions = checkPositions(arrayRulesList, positionList, engine);
         if (positions == null) {
-          if (!checkPatternPositions(
-              trie, positionList, rule1.arg2(), dimension, defaultValue, arrayRulesList, engine)) {
+          if (!checkPatternPositions(trie, positionList, rule1.arg2(), dimension, defaultValue,
+              arrayRulesList, engine)) {
             return null;
           }
         }
@@ -1029,12 +1016,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
               defaultValue[0] = rule1.arg2();
             } else if (!defaultValue[0].equals(rule1.arg2())) {
               // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-              IOFunctions.printMessage(
-                  S.SparseArray, "posr", F.List(arrayRulesList, rule1.arg1(), F.ZZ(depth)), engine);
+              IOFunctions.printMessage(S.SparseArray, "posr",
+                  F.List(arrayRulesList, rule1.arg1(), F.ZZ(depth)), engine);
               return null;
             }
-          } else if (!patternPositionsList(
-              trie, rule1.arg1(), rule1.arg2(), dimension, arrayRulesList, engine)) {
+          } else if (!patternPositionsList(trie, rule1.arg1(), rule1.arg2(), dimension,
+              arrayRulesList, engine)) {
             return null;
           }
         }
@@ -1065,21 +1052,15 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           IAST positionList = (IAST) rule.arg1();
           positions = checkPositions(arrayRulesList, positionList, engine);
           if (positions == null) {
-            if (!checkPatternPositions(
-                trie,
-                positionList,
-                rule.arg2(),
-                dimension,
-                defaultValue,
-                arrayRulesList,
-                engine)) {
+            if (!checkPatternPositions(trie, positionList, rule.arg2(), dimension, defaultValue,
+                arrayRulesList, engine)) {
               return null;
             }
           } else {
             if (positions.length != depth) {
               // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-              IOFunctions.printMessage(
-                  S.SparseArray, "posr", F.List(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
+              IOFunctions.printMessage(S.SparseArray, "posr",
+                  F.List(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
               return null;
             }
             if (determineDimension) {
@@ -1109,15 +1090,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
                 defaultValue[0] = rule.arg2();
               } else if (!defaultValue[0].equals(rule.arg2())) {
                 // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-                IOFunctions.printMessage(
-                    S.SparseArray,
-                    "posr",
-                    F.List(arrayRulesList, rule.arg1(), F.ZZ(depth)),
-                    engine);
+                IOFunctions.printMessage(S.SparseArray, "posr",
+                    F.List(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
                 return null;
               }
-            } else if (!patternPositionsList(
-                trie, rule.arg1(), rule.arg2(), dimension, arrayRulesList, engine)) {
+            } else if (!patternPositionsList(trie, rule.arg1(), rule.arg2(), dimension,
+                arrayRulesList, engine)) {
               return null;
             }
           }
@@ -1141,14 +1119,9 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * @param engine
    * @return
    */
-  private static boolean checkPatternPositions(
-      final Trie<int[], IExpr> trie,
-      IAST ruleLHSPositionsList,
-      IExpr ruleRHS,
-      int[] dimension,
-      IExpr[] defaultValue,
-      IAST arrayRulesList,
-      EvalEngine engine) {
+  private static boolean checkPatternPositions(final Trie<int[], IExpr> trie,
+      IAST ruleLHSPositionsList, IExpr ruleRHS, int[] dimension, IExpr[] defaultValue,
+      IAST arrayRulesList, EvalEngine engine) {
     final int depth = dimension.length;
     if (ruleLHSPositionsList.forAll(x -> x.isBlank())) {
       if (!defaultValue[0].isPresent()) {
@@ -1156,27 +1129,21 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         return true;
       } else if (!defaultValue[0].equals(ruleRHS)) {
         // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-        IOFunctions.printMessage(
-            S.SparseArray,
-            "posr",
-            F.List(arrayRulesList, ruleLHSPositionsList, F.ZZ(depth)),
-            engine);
+        IOFunctions.printMessage(S.SparseArray, "posr",
+            F.List(arrayRulesList, ruleLHSPositionsList, F.ZZ(depth)), engine);
         return false;
       }
     } else {
       if (ruleLHSPositionsList.argSize() == depth) {
         // pattern matching
-        if (!patternPositionsList(
-            trie, ruleLHSPositionsList, ruleRHS, dimension, arrayRulesList, engine)) {
+        if (!patternPositionsList(trie, ruleLHSPositionsList, ruleRHS, dimension, arrayRulesList,
+            engine)) {
           return false;
         }
       } else {
         // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-        IOFunctions.printMessage(
-            S.SparseArray,
-            "posr",
-            F.List(arrayRulesList, ruleLHSPositionsList, F.ZZ(depth)),
-            engine);
+        IOFunctions.printMessage(S.SparseArray, "posr",
+            F.List(arrayRulesList, ruleLHSPositionsList, F.ZZ(depth)), engine);
         return false;
       }
     }
@@ -1210,8 +1177,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    *     </code> determine from '_' (Blank) rule.
    * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created.
    */
-  public static SparseArrayExpr newArrayRules(
-      IAST arrayRulesList, int[] dimension, int defaultDimension, IExpr defaultValue) {
+  public static SparseArrayExpr newArrayRules(IAST arrayRulesList, int[] dimension,
+      int defaultDimension, IExpr defaultValue) {
     IExpr[] defValue = new IExpr[] {defaultValue};
     final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
     int[] determinedDimension =
@@ -1274,12 +1241,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * @param nonZeroValues
    * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created.
    */
-  public static SparseArrayExpr newInputForm(
-      int[] dimension,
-      IExpr defaultValue,
-      int[] rowPointers,
-      IAST columnIndiceMatrix,
-      IAST nonZeroValues) {
+  public static SparseArrayExpr newInputForm(int[] dimension, IExpr defaultValue, int[] rowPointers,
+      IAST columnIndiceMatrix, IAST nonZeroValues) {
     int first = 0;
     final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
     final int depth = dimension.length;
@@ -1325,13 +1288,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * @param engine
    * @return
    */
-  private static boolean patternPositionsList(
-      final Trie<int[], IExpr> trie,
-      IExpr ruleLHS,
-      IExpr ruleRHS,
-      int[] dimension,
-      IAST arrayRulesList,
-      EvalEngine engine) {
+  private static boolean patternPositionsList(final Trie<int[], IExpr> trie, IExpr ruleLHS,
+      IExpr ruleRHS, int[] dimension, IAST arrayRulesList, EvalEngine engine) {
     if (dimension == null) {
       return false;
     }
@@ -1339,8 +1297,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     PatternMatcherAndEvaluator matcher = new PatternMatcherAndEvaluator(ruleLHS, ruleRHS);
     if (matcher.isRuleWithoutPatterns()) {
       // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-      IOFunctions.printMessage(
-          S.SparseArray, "posr", F.List(arrayRulesList, ruleLHS, F.ZZ(depth)), EvalEngine.get());
+      IOFunctions.printMessage(S.SparseArray, "posr", F.List(arrayRulesList, ruleLHS, F.ZZ(depth)),
+          EvalEngine.get());
       return false;
     }
     IASTMutable positionList = F.constantArray(F.C1, depth);
@@ -1349,30 +1307,15 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     IPatternMap patternMap = matcher.getPatternMap();
     IExpr[] patternValuesArray = patternMap.copyPattern();
 
-    patternPositionsRecursive(
-        trie,
-        dimension,
-        engine,
-        matcher,
-        positionList,
-        0,
-        positionsKey,
-        patternMap,
-        patternValuesArray);
+    patternPositionsRecursive(trie, dimension, engine, matcher, positionList, 0, positionsKey,
+        patternMap, patternValuesArray);
 
     return true;
   }
 
-  private static void patternPositionsRecursive(
-      final Trie<int[], IExpr> trie,
-      int[] dimension,
-      EvalEngine engine,
-      PatternMatcherAndEvaluator matcher,
-      IASTMutable positionList,
-      int pointer,
-      int[] positionsKey,
-      IPatternMap patternMap,
-      IExpr[] patternValuesArray) {
+  private static void patternPositionsRecursive(final Trie<int[], IExpr> trie, int[] dimension,
+      EvalEngine engine, PatternMatcherAndEvaluator matcher, IASTMutable positionList, int pointer,
+      int[] positionsKey, IPatternMap patternMap, IExpr[] patternValuesArray) {
     if (pointer == dimension.length) {
       try {
         IExpr result = matcher.eval(positionList, engine);
@@ -1386,16 +1329,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       for (int i = 1; i <= dimension[pointer]; i++) {
         positionsKey[pointer] = i;
         positionList.set(pointer + 1, F.ZZ(i));
-        patternPositionsRecursive(
-            trie,
-            dimension,
-            engine,
-            matcher,
-            positionList,
-            pointer + 1,
-            positionsKey,
-            patternMap,
-            patternValuesArray);
+        patternPositionsRecursive(trie, dimension, engine, matcher, positionList, pointer + 1,
+            positionsKey, patternMap, patternValuesArray);
       }
     }
   }
@@ -1433,15 +1368,16 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * Copy constructor. If a deep copy is required, the <code>trie</code> elements will be copied
    * into a new {@link Trie} and new allocated <code>dimension</code> array.
    *
-   * <p>See <a href="https://en.wikipedia.org/wiki/Trie">Wikipedia - Trie</a>.
+   * <p>
+   * See <a href="https://en.wikipedia.org/wiki/Trie">Wikipedia - Trie</a>.
    *
    * @param trie map positions of a sparse array to a value
    * @param dimension the dimensions of the positions
    * @param defaultValue default value for positions not specified in the trie
    * @param deepCopy if <code>true</code> create a deep copy.
    */
-  public SparseArrayExpr(
-      final Trie<int[], IExpr> trie, int[] dimension, IExpr defaultValue, boolean deepCopy) {
+  public SparseArrayExpr(final Trie<int[], IExpr> trie, int[] dimension, IExpr defaultValue,
+      boolean deepCopy) {
     super(S.SparseArray, trie);
     if (deepCopy) {
       this.fData = Config.TRIE_INT2EXPR_BUILDER.build();
@@ -1726,8 +1662,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           count++;
         } else if (partIndex[i - startPosition] > dims[i - startPosition]
             || partIndex[i - startPosition] <= 0) {
-          return IOFunctions.printMessage(
-              S.Part, "partw", F.List(ast.get(i), ast), EvalEngine.get());
+          return IOFunctions.printMessage(S.Part, "partw", F.List(ast.get(i), ast),
+              EvalEngine.get());
         }
       }
       for (int i = partSize; i < dims.length; i++) {
@@ -1774,6 +1710,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return IOFunctions.printMessage(S.Part, "partd", F.List(ast), EvalEngine.get());
   }
 
+  @Override
   public IExpr getPart(final int... partIndex) {
     int[] dims = getDimension();
 
@@ -1941,6 +1878,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * @param index
    * @return
    */
+  @Override
   public IExpr getIndex(int[] index) {
     IExpr expr = fData.get(index);
     if (expr == null) {
@@ -1976,6 +1914,23 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       return (old == null) ? fDefaultValue : old;
     }
     throw new IndexOutOfBoundsException("Index: " + i + ", Size: " + fDimension[0]);
+  }
+
+  @Override
+  public IExpr set(int[] positions, IExpr value) {
+    if (positions.length == fDimension.length) {
+      for (int i = 0; i < positions.length; i++) {
+        if (positions[i] <= 0 || positions[i] > fDimension[i]) {
+          throw new IndexOutOfBoundsException(
+              "Index: " + i + " Position: " + positions[i] + ", Size: " + fDimension[i]);
+        }
+      }
+      IExpr old = fData.get(positions);
+      fData.put(positions, value);
+      return (old == null) ? fDefaultValue : old;
+    }
+    throw new IndexOutOfBoundsException(
+        "Indeces: " + Arrays.toString(positions) + ", Size: " + fDimension[0]);
   }
 
   @Override
@@ -2134,8 +2089,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return totalAppendable(result);
   }
 
-  private void total(
-      Trie<int[], IExpr> trie, int[] dimension, int position, int[] index, IASTAppendable result) {
+  private void total(Trie<int[], IExpr> trie, int[] dimension, int position, int[] index,
+      IASTAppendable result) {
     if (dimension.length - 1 == position) {
       int size = dimension[position];
       for (int i = 1; i <= size; i++) {
