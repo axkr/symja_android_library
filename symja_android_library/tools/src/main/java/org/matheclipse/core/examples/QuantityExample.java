@@ -1,6 +1,5 @@
 package org.matheclipse.core.examples;
 
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -11,7 +10,6 @@ import org.matheclipse.parser.client.math.MathException;
 public class QuantityExample {
   public static void main(String[] args) {
     try {
-      ToggleFeature.QUANTITY = true;
       F.initSymbols();
       EvalEngine engine = new EvalEngine(false);
       // ExprEvaluator engine = new ExprEvaluator(false, 100);
