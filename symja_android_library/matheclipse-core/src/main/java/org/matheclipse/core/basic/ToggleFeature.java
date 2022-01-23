@@ -47,12 +47,6 @@ public class ToggleFeature {
    */
   public static boolean SERIES_DENOMINATOR = false;
 
-  /** If <code>true</code>, enable experimental Quantity functions */
-  public static boolean QUANTITY = true;
-
-  /** If <code>true</code>, enable experimental financial functions */
-  public static boolean FINANCE = true;
-
   /** If <code>true</code>, enable experimental f<code>MANIPULATE()</code> function */
   public static boolean MANIPULATE = true;
 }

@@ -14,7 +14,6 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -47,11 +46,9 @@ public class QuantityFunctions {
       S.DateValue.setEvaluator(new DateValue());
 
       S.TimeObject.setEvaluator(new TimeObject());
-      if (ToggleFeature.QUANTITY) {
-        S.Quantity.setEvaluator(new Quantity());
-        S.QuantityMagnitude.setEvaluator(new QuantityMagnitude());
-        S.UnitConvert.setEvaluator(new UnitConvert());
-      }
+      S.Quantity.setEvaluator(new Quantity());
+      S.QuantityMagnitude.setEvaluator(new QuantityMagnitude());
+      S.UnitConvert.setEvaluator(new UnitConvert());
 
       // integers
       DATEVALUE_MAP.put("Year", x -> F.ZZ(x.getYear()));

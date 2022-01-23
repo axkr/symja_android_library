@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -20,12 +19,10 @@ public class FinancialFunctions {
   private static class Initializer {
 
     private static void init() {
-      if (ToggleFeature.FINANCE) {
-        S.EffectiveInterest.setEvaluator(new EffectiveInterest());
-        S.TimeValue.setEvaluator(new TimeValue());
-        S.Annuity.setEvaluator(new Annuity());
-        S.AnnuityDue.setEvaluator(new AnnuityDue());
-      }
+      S.EffectiveInterest.setEvaluator(new EffectiveInterest());
+      S.TimeValue.setEvaluator(new TimeValue());
+      S.Annuity.setEvaluator(new Annuity());
+      S.AnnuityDue.setEvaluator(new AnnuityDue());
     }
   }
 
