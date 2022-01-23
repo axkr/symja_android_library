@@ -787,8 +787,8 @@ public class PatternsTest extends AbstractTestCase {
 
   public void testReplacePart() {
     // github #412
-    // check("ReplacePart({{a, b, c}, {d, e}, {f}}, {_, -1} -> test)", //
-    // "{{a,b,test},{d,test},{test}}");
+    // check("ReplacePart({{f},{a, b, c}, {d, e}}, {_, -1} -> test)", //
+    // "{{test},{a,b,test},{d,test}}");
 
     // github #135
     check("ReplacePart(f(x, y), 0 -> g, Heads -> False)", //
@@ -869,7 +869,8 @@ public class PatternsTest extends AbstractTestCase {
     //
     check("ReplacePart({{a, b, c}, {d, e}, {f}}, {1, _} -> xx)", //
         "{{xx,xx,xx},{d,e},{f}}");
-
+    check("ReplacePart({<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>}, {_, \"x\"} -> f)", //
+        "{<|x->f,y->2|>,<|x->f,y->4|>}");
     // github #412
     // check("ReplacePart({{a, b, c}, {d, e}, {f}}, {_, -1} -> xx)", //
     // "{{a,b,xx},{d,xx},{xx}}");
