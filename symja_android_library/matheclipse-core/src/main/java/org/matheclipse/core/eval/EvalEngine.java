@@ -358,7 +358,7 @@ public class EvalEngine implements Serializable {
    * <a href="https://en.wikipedia.org/wiki/Thread-local_storage">ThreadLocal</a> mechanism.
    */
   public EvalEngine() {
-    this("", Config.DEFAULT_RECURSION_LIMIT, System.out, false);
+    this(false);
   }
 
   /**
@@ -372,8 +372,6 @@ public class EvalEngine implements Serializable {
   public EvalEngine(boolean relaxedSyntax) {
     this("", Config.DEFAULT_RECURSION_LIMIT, System.out, relaxedSyntax);
   }
-
-  // static public int MAX_THREADS_COUNT = 10;
 
   /**
    * Constructor for an evaluation engine. A single <code>EvalEngine</code> is associated with the
@@ -390,8 +388,8 @@ public class EvalEngine implements Serializable {
    * @param relaxedSyntax if <code>true</code>, the parser doesn't distinguidh between upper and
    *        lower case identifiers
    */
-  public EvalEngine(final String sessionID, final int recursionLimit, final int iterationLimit,
-      final PrintStream outStream, PrintStream errorStream, boolean relaxedSyntax) {
+  public EvalEngine(String sessionID, int recursionLimit, int iterationLimit, PrintStream outStream,
+      PrintStream errorStream, boolean relaxedSyntax) {
     fSessionID = sessionID;
     fRecursionLimit = recursionLimit;
     fIterationLimit = iterationLimit;
@@ -414,14 +412,12 @@ public class EvalEngine implements Serializable {
    * @param relaxedSyntax if <code>true</code>, the parser doesn't distinguidh between upper and
    *        lower case identifiers
    */
-  public EvalEngine(final String sessionID, final int recursionLimit, final PrintStream out,
-      boolean relaxedSyntax) {
+  public EvalEngine(String sessionID, int recursionLimit, PrintStream out, boolean relaxedSyntax) {
     this(sessionID, recursionLimit, Config.DEFAULT_ITERATION_LIMIT, out, null, relaxedSyntax);
   }
 
-  public EvalEngine(final String sessionID, final PrintStream out) {
-    this(sessionID, Config.DEFAULT_RECURSION_LIMIT, Config.DEFAULT_ITERATION_LIMIT, out, null,
-        false);
+  public EvalEngine(String sessionID, PrintStream out) {
+    this(sessionID, Config.DEFAULT_RECURSION_LIMIT, out, false);
   }
 
   /**
