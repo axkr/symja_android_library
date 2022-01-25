@@ -27,8 +27,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
   protected transient IExpr fReturnResult = F.NIL;
 
-  private int fSetFlags;
-
   /** Public constructor for serialization. */
   public PatternMatcherAndEvaluator() {}
 
@@ -61,35 +59,13 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       final IExpr rightHandSide,
       boolean initAll,
       int patternHash) {
-    super(leftHandSide, initAll);
-    fSetFlags = setSymbol;
+    super(setSymbol, leftHandSide, initAll);
+    // fSetFlags = setSymbol;
     fRightHandSide = rightHandSide;
     fPatterHash = patternHash;
     //    if (initAll) {
     //      initRHSleafCountSimplify();
     //    }
-  }
-
-  /**
-   * Are the given flags disabled ?
-   *
-   * @param flags
-   * @return
-   * @see IAST#NO_FLAG
-   */
-  public final boolean isFlagOff(final int flags) {
-    return (fSetFlags & flags) == 0;
-  }
-
-  /**
-   * Are the given flags enabled ?
-   *
-   * @param flags
-   * @return
-   * @see IAST#NO_FLAG
-   */
-  public final boolean isFlagOn(int flags) {
-    return (fSetFlags & flags) == flags;
   }
 
   /**
@@ -107,7 +83,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   public Object clone() throws CloneNotSupportedException {
     PatternMatcherAndEvaluator v = (PatternMatcherAndEvaluator) super.clone();
     v.fRightHandSide = fRightHandSide;
-    v.fSetFlags = fSetFlags;
     v.fReturnResult = F.NIL;
     return v;
   }
@@ -160,15 +135,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       }
     }
     return 0;
-  }
-
-  /**
-   * Add a flag to the existing ones.
-   *
-   * @param i
-   */
-  public final void addFlags(final int i) {
-    fSetFlags |= i;
   }
 
   /**
@@ -362,15 +328,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     }
   }
 
-  /**
-   * Get the flags for this matcher.
-   *
-   * @return
-   */
-  public int getFlags() {
-    return fSetFlags;
-  }
-
   @Override
   public IExpr getRHS() {
     return IExpr.ofNullable(fRightHandSide);
@@ -414,16 +371,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     }
     return null;
   }
-
-  /**
-   * Set the evaluation flags for this list (i.e. replace all existing flags).
-   *
-   * @param i
-   */
-  public void setFlags(int i) {
-    fSetFlags = i;
-  }
-
   @Override
   public String toString() {
     if (fPatternMap == null) {
@@ -456,7 +403,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result + ((fRightHandSide == null) ? 0 : fRightHandSide.hashCode());
-    result = prime * result + fSetFlags;
     return result;
   }
 
@@ -479,6 +425,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     } else if (!fRightHandSide.equals(other.fRightHandSide)) {
       return false;
     }
-    return fSetFlags == other.fSetFlags;
+    return true;
   }
 }

@@ -341,6 +341,12 @@ public abstract class AbstractAST implements IASTMutable {
     }
 
     @Override
+    public IASTAppendable copyAST() {
+      ArgumentTypeException.throwNIL();
+      return null;
+    }
+
+    @Override
     public boolean equals(final Object obj) {
       return this == obj;
     }
@@ -844,14 +850,17 @@ public abstract class AbstractAST implements IASTMutable {
       return F.NIL;
     }
 
+    @Override
     public IExpr replaceAll(final Function<IExpr, IExpr> function) {
       return F.NIL;
     }
 
+    @Override
     public IExpr replaceAll(final IAST listOfRules) {
       return F.NIL;
     }
 
+    @Override
     public IExpr replaceAll(final Map<? extends IExpr, ? extends IExpr> map) {
       return F.NIL;
     }
@@ -860,6 +869,7 @@ public abstract class AbstractAST implements IASTMutable {
       return F.NIL;
     }
 
+    @Override
     public IExpr replacePart(final IAST astRules, IExpr.COMPARE_TERNARY heads) {
       return F.NIL;
     }
@@ -872,18 +882,22 @@ public abstract class AbstractAST implements IASTMutable {
      *        the expression isn't substituted.
      * @return <code>this</code> if no substitution of a (sub-)expression was possible.
      */
+    @Override
     public IExpr replaceRepeated(final Function<IExpr, IExpr> function) {
       return F.NIL;
     }
 
+    @Override
     public IExpr replaceRepeated(final IAST astRules) {
       return F.NIL;
     }
 
+    @Override
     public IExpr replaceRepeated(VisitorReplaceAll visitor, int maxIterations) {
       return F.NIL;
     }
 
+    @Override
     @Deprecated
     public IExpr replaceSlots(final IAST slotsList) {
       return F.NIL;
@@ -895,31 +909,37 @@ public abstract class AbstractAST implements IASTMutable {
       return F.NIL;
     }
 
+    @Override
     public IASTMutable setArgs(int start, int end, IntFunction<IExpr> function) {
       ArgumentTypeException.throwNIL();
       return F.NIL;
     }
 
+    @Override
     public IASTMutable setArgs(int end, IntFunction<IExpr> function) {
       ArgumentTypeException.throwNIL();
       return F.NIL;
     }
 
+    @Override
     public IExpr setValue(final int location, final IExpr value) {
       ArgumentTypeException.throwNIL();
       return F.NIL;
     }
 
+    @Override
     public IExpr setPart(IExpr value, final int... positions) {
       ArgumentTypeException.throwNIL();
       return F.NIL;
     }
 
+    @Override
     public IASTAppendable setAtClone(int i, IExpr expr) {
       ArgumentTypeException.throwNIL();
       return F.NIL;
     }
 
+    @Override
     public IASTMutable setAtCopy(int i, IExpr expr) {
       ArgumentTypeException.throwNIL();
       return F.NIL;
@@ -3268,6 +3288,7 @@ public abstract class AbstractAST implements IASTMutable {
     return isSameHeadSizeGE(S.List, 1);
   }
 
+  @Override
   public final boolean isListableAST() {
     return topHead().hasListableAttribute();
   }
@@ -4560,6 +4581,7 @@ public abstract class AbstractAST implements IASTMutable {
     return result.orElse(this);
   }
 
+  @Override
   public IAST mapReverse(final Function<IExpr, IExpr> function) {
     IASTMutable result = copy();
     final int size = size();
@@ -5170,6 +5192,7 @@ public abstract class AbstractAST implements IASTMutable {
     return null;
   }
 
+  @Override
   public byte[][] toByteMatrix() {
     int[] dim = isMatrix();
     if (dim == null) {

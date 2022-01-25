@@ -123,7 +123,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
   }
 
   private int getInt(IExpr key) {
-    Integer value = (Integer) keyToIndexMap.get(key);
+    Integer value = keyToIndexMap.get(key);
     if (value == null) {
       return 0;
     }
@@ -218,7 +218,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
   }
 
   @Override
-  public IASTMutable copyAST() {
+  public IASTAppendable copyAST() {
     IASTAppendable result = F.ast(S.Association, size());
     for (int i = 1; i < size(); i++) {
       result.append(getValue(i));
@@ -410,7 +410,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   @Override
   public IAST getRule(String key) {
-    int index = (Integer) keyToIndexMap.get(F.$str(key));
+    int index = keyToIndexMap.get(F.$str(key));
     if (index > 0) {
       return getRule(index);
     }
@@ -659,6 +659,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     return this;
   }
 
+  @Override
   public IAST mapReverse(final Function<IExpr, IExpr> function) {
     throw new UnsupportedOperationException();
   }

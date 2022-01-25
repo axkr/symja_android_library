@@ -4,24 +4,35 @@ import java.util.ArrayList;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 /** Visitor for the <code>ReplacePart()</code> function */
 public class VisitorReplacePart extends AbstractVisitor {
 
-  int offset;
+  /**
+   * A list of pattern matchers which should be matched against, for every possible position of an
+   * {@link IAST} structure.
+   */
+  private ArrayList<IPatternMatcher> patternMatcherList;
 
-  final IExpr replaceExpr;
-  ArrayList<int[]> positionList;
-  int[] maxMatcherDepth;
-  ArrayList<IPatternMatcher> patternMatcherList;
-  boolean useSimpleMatching;
-  EvalEngine engine;
+  /**
+   * <code>0</code> or <code>1</code>, depending if option <code>Heads->True</code> is set or the
+   * <code>0</code> index position is used in the left-hand-side of a rule.
+   */
+  private int offset;
+
+  /**
+   * The current evaluation engine for this thread.
+   */
+  final private EvalEngine engine;
 
   /**
    * Create a new visitor which replaces parts of an expression.
@@ -31,215 +42,200 @@ public class VisitorReplacePart extends AbstractVisitor {
    */
   public VisitorReplacePart(IAST rule, IExpr.COMPARE_TERNARY heads) {
     super();
-
-    IExpr fromPositions = rule.arg1();
-    this.replaceExpr = rule.arg2();
-    try {
-      // try extracting an integer list of expressions
-      offset = heads == COMPARE_TERNARY.FALSE ? 1 : 0;
-      if (fromPositions.isList()) {
-        IAST list = (IAST) fromPositions;
-        if (list.isListOfLists()) {
-          positionList = new ArrayList<int[]>(list.size());
-          for (int j = 1; j < list.size(); j++) {
-            IAST subList = list.getAST(j);
-            int[] fPositions = new int[subList.argSize()];
-            for (int k = 1; k < subList.size(); k++) {
-              fPositions[k - 1] = subList.get(k).toIntDefault();
-              if (fPositions[k - 1] == Integer.MIN_VALUE) {
-                throw ReturnException.RETURN_FALSE;
-              }
-            }
-            positionList.add(fPositions);
-          }
-        } else {
-          int[] fPositions = new int[list.argSize()];
-          positionList = new ArrayList<int[]>(1);
-          for (int j = 1; j < list.size(); j++) {
-            fPositions[j - 1] = list.get(j).toIntDefault();
-            if (fPositions[j - 1] == Integer.MIN_VALUE) {
-              throw ReturnException.RETURN_FALSE;
-            }
-          }
-          positionList.add(fPositions);
-        }
-
-      } else {
-        positionList = new ArrayList<int[]>(1);
-        int[] fPositions = new int[1];
-        fPositions[0] = rule.arg1().toIntDefault();
-        if (fPositions[0] == Integer.MIN_VALUE) {
-          throw ReturnException.RETURN_FALSE;
-        }
-        positionList.add(fPositions);
-      }
-    } catch (ReturnException rex) {
-      // use pattern-matching
+    engine = EvalEngine.get();
+    if (rule.isRuleAST()) {
+      rule = F.List(rule);
+    }
+    if (rule.isListOfRules()) {
+      IAST list = rule;
+      this.patternMatcherList = new ArrayList<IPatternMatcher>(list.argSize() + 3);
       offset = heads == IExpr.COMPARE_TERNARY.TRUE ? 0 : 1;
-      positionList = null;
-      engine = EvalEngine.get();
-      if (fromPositions.isList()) {
-        IAST list = (IAST) fromPositions;
-        maxMatcherDepth = new int[1];
-        maxMatcherDepth[0] = list.depth();
-        patternMatcherList = new ArrayList<IPatternMatcher>(1);
-        patternMatcherList.add(engine.evalPatternMatcher(list, replaceExpr));
-        useSimpleMatching = false;
-      } else {
-        maxMatcherDepth = new int[1];
-        maxMatcherDepth[0] = fromPositions.depth();
-        patternMatcherList = new ArrayList<IPatternMatcher>(1);
-        patternMatcherList.add(engine.evalPatternMatcher(fromPositions, replaceExpr));
-        useSimpleMatching = true;
+      for (int i = 1; i < list.size(); i++) {
+        rule = (IAST) list.get(i);
+        initPatternMatcher(rule, heads);
+      }
+      if (heads == COMPARE_TERNARY.FALSE) {
+        offset = 1;
       }
     }
   }
 
-  private IExpr visitPositionIndex(IAST ast, final int index) {
-    int[] fPositions;
-    IASTMutable result = F.NIL;
+  private void initPatternMatcher(IAST rule, IExpr.COMPARE_TERNARY heads) {
+    IExpr fromPositions = rule.arg1();
+    try {
+      // try extracting an int[] array of expressions
+      if (fromPositions.isList()) {
+        IAST list = (IAST) fromPositions;
+        if (list.isListOfLists()) {
+          for (int j = 1; j < list.size(); j++) {
+            IAST subList = list.getAST(j);
+            int[] positions = new int[subList.argSize()];
+            for (int k = 1; k < subList.size(); k++) {
+              positions[k - 1] = subList.get(k).toIntDefault();
+              if (positions[k - 1] == Integer.MIN_VALUE) {
+                throw ReturnException.RETURN_FALSE;
+              }
+              if (positions[k - 1] == 0) {
+                offset = 0;
+              }
+            }
+            IPatternMatcher evalPatternMatcher =
+                engine.evalPatternMatcher(F.Sequence(positions), rule.arg2());
+            this.patternMatcherList.add(evalPatternMatcher);
+          }
+        } else {
+          if (list.argSize() > 0) {
+            int[] positions = new int[list.argSize()];
 
-    for (int i = 0; i < positionList.size(); i++) {
-      fPositions = positionList.get(i);
-      if (index >= fPositions.length) {
-        continue;
+            for (int j = 1; j < list.size(); j++) {
+              positions[j - 1] = list.get(j).toIntDefault();
+              if (positions[j - 1] == Integer.MIN_VALUE) {
+                throw ReturnException.RETURN_FALSE;
+              }
+              if (positions[j - 1] == 0) {
+                offset = 0;
+              }
+            }
+            IPatternMatcher evalPatternMatcher =
+                engine.evalPatternMatcher(F.Sequence(positions), rule.arg2());
+            this.patternMatcherList.add(evalPatternMatcher);
+          }
+        }
+      } else {
+        int[] positions = new int[] {rule.arg1().toIntDefault()};
+        if (positions[0] == Integer.MIN_VALUE) {
+          throw ReturnException.RETURN_FALSE;
+        }
+        if (positions[0] == 0) {
+          offset = 0;
+        }
+        IPatternMatcher evalPatternMatcher =
+            engine.evalPatternMatcher(F.Sequence(positions), rule.arg2());
+        this.patternMatcherList.add(evalPatternMatcher);
+
+      }
+    } catch (ReturnException rex) {
+      if (fromPositions.isList()) {
+        IAST list = ((IAST) fromPositions).apply(S.Sequence, 1);
+        IPatternMatcher evalPatternMatcher = engine.evalPatternMatcher(list, rule.arg2());
+        this.patternMatcherList.add(evalPatternMatcher);
+      } else {
+        IPatternMatcher evalPatternMatcher = engine.evalPatternMatcher(fromPositions, rule.arg2());
+        this.patternMatcherList.add(evalPatternMatcher);
+      }
+    }
+  }
+
+  private IExpr visitPatternIndexList(IAST ast, IASTAppendable positions) {
+    IASTAppendable result = F.NIL;
+    for (int i = offset; i < ast.size(); i++) {
+      final IInteger position = F.ZZ(i);
+      for (int j = 0; j < patternMatcherList.size(); j++) {
+        IPatternMatcher matcher = patternMatcherList.get(j);
+        IASTAppendable positionsToMatch = positions.copyAppendable();
+        positionsToMatch.append(position);
+
+        IASTAppendable temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
+        if (temp.isPresent()) {
+          result = temp;
+          break;
+        }
+
+        IInteger negativePart = F.ZZ(i - ast.size());
+        positionsToMatch.set(positionsToMatch.size() - 1, negativePart);
+        temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
+        if (temp.isPresent()) {
+          IExpr ex = temp.replaceAll(x -> {
+            if (x == negativePart) {
+              // compare reference; don't use equals() method
+              return position;
+            }
+            return F.NIL;
+          });
+          if (ex.isPresent() && (ex instanceof IASTAppendable)) {
+            result = (IASTAppendable) ex;
+          } else {
+            result = temp;
+          }
+          break;
+        }
+
+        if (ast.isAssociation() && i > 0) {
+          // for associations the key instead of the position can also match
+          positionsToMatch.set(positionsToMatch.size() - 1, ast.getRule(i).first());
+          temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
+          if (temp.isPresent()) {
+            result = temp;
+            break;
+          }
+        }
+
       }
 
-      int position = fPositions[index];
-      if (position < 0) {
-        position = ast.size() + position;
-      }
-      if (position >= ast.size() || position < offset) {
-        continue;
-      }
+    }
+    return result;
+  }
 
-      if (index == fPositions.length - 1) {
+  /**
+   * @param matcher
+   * @param ast
+   * @param positionsToMatch the list of positions which should be matched
+   * @param position
+   * @param result
+   * @return {@link F#NIL} if no match was found
+   */
+  private IASTAppendable patternIndexRecursive(IPatternMatcher matcher, IAST ast,
+      IASTAppendable positionsToMatch, int position, IASTAppendable result) {
+    if (matcher.getLHS().isSequence()) {
+      IExpr temp = matcher.eval(positionsToMatch, engine);
+      if (temp.isPresent()) {
         if (!result.isPresent()) {
           result = ast.copyAppendable();
         }
         if (position == 0 && result.isAssociation()) {
-          result = result.copyAST();
+          result = ((IAssociation) result).copyAST();
         }
-        result.setValue(position, replaceExpr);
+        result.setValue(position, temp);
+        return result;
       } else {
-        IExpr arg = ast.get(position);
-        if (arg.isASTOrAssociation()) {
-          IExpr temp = visitPositionIndex((IAST) arg, index + 1);
+        if (ast.get(position).isASTOrAssociation()) {
+          temp = visitPatternIndexList((IAST) ast.get(position), positionsToMatch);
           if (temp.isPresent()) {
             if (!result.isPresent()) {
               result = ast.copyAppendable();
             }
             if (position == 0 && result.isAssociation()) {
-              result = result.copyAST();
+              result = ((IAssociation) result).copyAST();
             }
             result.setValue(position, temp);
+            return result;
           }
         }
       }
-    }
-
-    return result;
-  }
-
-  private IExpr visitPatternIndex(IAST ast) {
-
-    IASTAppendable result = F.NIL;
-
-    for (int i = offset; i < ast.size(); i++) {
-      for (int j = 0; j < patternMatcherList.size(); j++) {
-        IPatternMatcher matcher = patternMatcherList.get(j);
-        IExpr temp = matcher.eval(F.ZZ(i), engine);
-        if (temp.isPresent()) {
-          if (!result.isPresent()) {
-            result = ast.copyAppendable();
-          }
-          result.setValue(i, temp);
-          break;
+    } else {
+      IExpr temp = matcher.eval(F.ZZ(position), engine);
+      if (temp.isPresent()) {
+        if (!result.isPresent()) {
+          result = ast.copyAppendable();
         }
+        result.setValue(position, temp);
+        return result;
       }
     }
-
-    return result;
-  }
-
-  private IExpr visitPatternIndexList(IAST ast, IASTAppendable matchedPos,
-      final int recursionLevel) {
-    IASTAppendable result = F.NIL;
-
-    for (int i = offset; i < ast.size(); i++) {
-      try {
-        matchedPos.append(i);
-        for (int j = 0; j < patternMatcherList.size(); j++) {
-          if (recursionLevel <= maxMatcherDepth[j]) {
-            IPatternMatcher matcher = patternMatcherList.get(j);
-            IExpr temp = matcher.eval(matchedPos, engine);
-            if (temp.isPresent()) {
-              if (!result.isPresent()) {
-                result = ast.copyAppendable();
-              }
-              result.setValue(i, temp);
-              break;
-            } else {
-              if (ast.get(i).isASTOrAssociation()) {
-                temp = visitPatternIndexList((IAST) ast.get(i), matchedPos, recursionLevel + 1);
-                if (temp.isPresent()) {
-                  if (!result.isPresent()) {
-                    result = ast.copyAppendable();
-                  }
-                  result.setValue(i, temp);
-                }
-              }
-              continue;
-            }
-          }
-        }
-
-        if (i > 0 && ast.isAssociation()) {
-          // for associations the key instead of the position can also match
-          matchedPos.set(matchedPos.size() - 1, ast.getRule(i).first());
-          for (int j = 0; j < patternMatcherList.size(); j++) {
-            if (recursionLevel <= maxMatcherDepth[j]) {
-              IPatternMatcher matcher = patternMatcherList.get(j);
-              IExpr temp = matcher.eval(matchedPos, engine);
-              if (temp.isPresent()) {
-                if (!result.isPresent()) {
-                  result = ast.copyAppendable();
-                }
-                result.setValue(i, temp);
-                break;
-              } else {
-                if (ast.get(i).isASTOrAssociation()) {
-                  temp = visitPatternIndexList((IAST) ast.get(i), matchedPos, recursionLevel + 1);
-                  if (temp.isPresent()) {
-                    if (!result.isPresent()) {
-                      result = ast.copyAppendable();
-                    }
-                    result.setValue(i, temp);
-                  }
-                }
-                continue;
-              }
-            }
-          }
-        }
-      } finally {
-        matchedPos.remove(matchedPos.size() - 1);
-      }
-    }
-
-    return result;
+    return F.NIL;
   }
 
   @Override
   public IExpr visit(IASTMutable ast) {
-    if (positionList != null) {
-      return visitPositionIndex(ast, 0);
+    IASTAppendable positionsToMatch = F.ast(S.Sequence);
+    for (int j = 0; j < patternMatcherList.size(); j++) {
+      IPatternMatcher matcher = patternMatcherList.get(j);
+      IExpr lhs = matcher.getLHS();
+      if (lhs.isAST(S.Sequence, 1)) {
+        // empty sequence matches with complete expression
+        return matcher.getRHS();
+      }
     }
-    if (useSimpleMatching) {
-      return visitPatternIndex(ast);
-    } else {
-      IASTAppendable matchedPos = F.ListAlloc();
-      return visitPatternIndexList(ast, matchedPos, 1);
-    }
+    return visitPatternIndexList(ast, positionsToMatch);
   }
 }

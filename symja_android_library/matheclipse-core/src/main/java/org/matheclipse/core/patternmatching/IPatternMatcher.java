@@ -54,6 +54,8 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
   /** This rule is defined with the <code>Set[]</code> function */
   public static final int UPSET_DELAYED = 0x0020;
 
+  public final static int THROW_IF_TRUE = 0x01001;
+
   /** This rules left-hand-side is wrapped with a <code>Literal[]</code> function */
   public static final int LITERAL = 0x1000;
 

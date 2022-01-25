@@ -785,29 +785,32 @@ public class PatternsTest extends AbstractTestCase {
   }
 
 
-  public void testReplacePart() {
-    // github #412
-    // check("ReplacePart({{f},{a, b, c}, {d, e}}, {_, -1} -> test)", //
-    // "{{test},{a,b,test},{d,test}}");
+  public void testReplacePartPattern() {
+    check("ReplacePart({a, b, c, d, e}, {3 -> u, _ -> x})", //
+        "{x,x,u,x,x}");
 
-    // github #135
-    check("ReplacePart(f(x, y), 0 -> g, Heads -> False)", //
-        "f(x,y)");
-    check("ReplacePart(f(x, y), 0 -> g )", //
-        "g(x,y)");
+
+
+    check("ReplacePart(f(x, y), _ -> g, Heads -> True)", //
+        "g(g,g)");
+
+    // github #412
+    check("ReplacePart({{f},{a, b, c}, {d, e}}, {_, -1} -> test)", //
+        "{{test},{a,b,test},{d,test}}");
+
     check("ReplacePart(f(x, y), _ -> g)", //
         "f(g,g)");
     check("ReplacePart(f(x, y), _ -> g, Heads -> True)", //
         "g(g,g)");
 
-    check("ReplacePart(<|\"x\" -> 1, \"y\" -> 2|>, {0} -> f)", //
-        "f(1,2)");
-    check("ReplacePart({<|\"x\" -> 1, \"y\" -> 2|>}, {1, 1} -> g)", //
-        "{<|x->g,y->2|>}");
+    // check("ReplacePart(<|\"x\" -> 1, \"y\" -> 2|>, {0} -> f)", //
+    // "f(1,2)");
+    // check("ReplacePart({<|\"x\" -> 1, \"y\" -> 2|>}, {1, 1} -> g)", //
+    // "{<|x->g,y->2|>}");
     check("ReplacePart({{a, b, c}, {d, e}, {f}}, i__ -> s(i))", //
         "{s(1),s(2),s(3)}");
-    // check("ReplacePart({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}, {___, 2, ___} -> x)", //
-    // "{{0,x,0},x,{0,x,0}}");
+    check("ReplacePart({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}, {___, 2, ___} -> x)", //
+        "{{0,x,0},x,{0,x,0}}");
     check("ReplacePart({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}, {i_, i_} -> f(i))", //
         "{{f(1),0,0},{0,f(2),0},{0,0,f(3)}}");
     check("ReplacePart({a, b, c, d, e, f, g}, _?EvenQ -> xxx)", //
@@ -818,6 +821,105 @@ public class PatternsTest extends AbstractTestCase {
         "{xxx,b,xxx,d,xxx,f,g}");
     check("ReplacePart({{1, 2}, {3,4}}, {x_, x_} -> -1)", //
         "{{-1,2},{3,-1}}");
+
+    // check("ReplacePart({a, b, c}, 1 -> t)", //
+    // "{t,b,c}");
+    // check("ReplacePart({{a, b}, {c, d}}, {2, 1} -> t)", //
+    // "{{a,b},{t,d}}");
+    // check("ReplacePart({{a, b}, {c, d}}, {{2, 1} -> t, {1, 1} -> t})", //
+    // "{{t,b},{t,d}}");
+    // check("ReplacePart({a, b, c}, {{1}, {2}} -> t)", //
+    // "{t,t,c}");
+    //
+    // check("n = 1", "1");
+    // check("ReplacePart({a, b, c, d}, {{1}, {3}} :> n++)", //
+    // "{1,b,2,d}");
+
+    // check("ReplacePart({a, b, c}, 4 -> t)", //
+    // "{a,b,c}");
+    // check("ReplacePart({a, b, c}, 0 -> Times)", //
+    // "a*b*c");
+    // check("ReplacePart({a, b, c}, -1 -> t)", //
+    // "{a,b,t}");
+    //
+    // check("ReplacePart({a,b,c^n}, x+y, {{3, 2}, 2})", //
+    // "{a,x+y,c^(x+y)}");
+
+    // >>>
+    // check("ReplacePart({a, b, c, d, e}, {3 -> u, _ -> x})", //
+    // "{x,x,u,x,x}");
+
+
+    // check("ReplacePart({a, b, c, d, e}, 3 -> xxx)", //
+    // "{a,b,xxx,d,e}");
+    // check("ReplacePart({a, b, c, d, e}, {2 -> xx, 5 -> yy})", //
+    // "{a,xx,c,d,yy}");
+    // check("ReplacePart({{a, b}, {c, d}}, {2, 1} -> xx)", //
+    // "{{a,b},{xx,d}}");
+    check("ReplacePart({{a, b}, {c, d}}, {i_, i_} -> xx)", //
+        "{{xx,b},{c,xx}}");
+    // check("ReplacePart({a,b,c^n}, {{3, 2} -> x + y, 2 -> b^100})", //
+    // "{a,b^100,c^(x+y)}");
+    // check("ReplacePart(3 -> xxx)[{a, b, c, d, e}]", //
+    // "{a,b,xxx,d,e}");
+
+    // check("ReplacePart({a, b, c, d, e, f, g}, -3 -> xxx)", //
+    // "{a,b,c,d,xxx,f,g}");
+    // check("ReplacePart({a, b, c, d, e, f, g}, {{1}, {3}, {5}} -> xxx)", //
+    // "{xxx,b,xxx,d,xxx,f,g}");
+    check("ReplacePart({a, b, c, d, e, f, g}, (1 | 3 | 5) -> xxx)", //
+        "{xxx,b,xxx,d,xxx,f,g}");
+    check("ReplacePart({a, b, c, d, e, f, g}, Except[1 | 3 | 5] -> xxx)", //
+        "{a,xxx,c,xxx,e,xxx,xxx}");
+    check("ReplacePart({a, b, c, d, e, f, g}, _?EvenQ -> xxx)", //
+        "{a,xxx,c,xxx,e,xxx,g}");
+    //
+    check("ReplacePart({{a, b, c}, {d, e}, {f}}, {1, _} -> xx)", //
+        "{{xx,xx,xx},{d,e},{f}}");
+    // github #412
+    check("ReplacePart({{a, b, c}, {d, e}, {f}}, {_, -1} -> xx)", //
+        "{{a,b,xx},{d,xx},{xx}}");
+
+
+    check("ReplacePart({<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>}, {_, \"x\"} -> f)", //
+        "{<|x->f,y->2|>,<|x->f,y->4|>}");
+
+
+    //
+    // check("ReplacePart({a, b, c, d}, 5 -> x)", //
+    // "{a,b,c,d}");
+    // check("ReplacePart(ReplacePart(a + b + c, 1 -> x), 3 -> y)", //
+    // "b+c+y");
+
+    check("ReplacePart(h(a, b), {} -> x)", //
+        "h(a,b)");
+    // check("ReplacePart(h(a, b), {{}} -> x)", //
+    // "x");
+    // check("ReplacePart(<|\"x\" -> 1, \"y\" -> 2|>, {0} -> List)", //
+    // "{1,2}");
+    // check("Normal(<|\"x\" -> 1, \"y\" -> 2|>)", //
+    // "{x->1,y->2}");
+
+  }
+
+  public void testReplacePartIntegerPositions() {
+    check("ReplacePart({{a, b}, {c, d}}, {{2, 1} -> t, {1, 1} -> t})", //
+        "{{t,b},{t,d}}");
+
+    // github #135
+    check("ReplacePart(f(x, y), 0 -> g, Heads -> False)", //
+        "f(x,y)");
+    check("ReplacePart(f(x, y), 0 -> g )", //
+        "g(x,y)");
+    // check("ReplacePart(f(x, y), _ -> g)", //
+    // "f(g,g)");
+    // check("ReplacePart(f(x, y), _ -> g, Heads -> True)", //
+    // "g(g,g)");
+
+    check("ReplacePart(<|\"x\" -> 1, \"y\" -> 2|>, {0} -> f)", //
+        "f(1,2)");
+    check("ReplacePart({<|\"x\" -> 1, \"y\" -> 2|>}, {1, 1} -> g)", //
+        "{<|x->g,y->2|>}");
 
     check("ReplacePart({a, b, c}, 1 -> t)", //
         "{t,b,c}");
@@ -843,14 +945,18 @@ public class PatternsTest extends AbstractTestCase {
         "{a,x+y,c^(x+y)}");
 
     // >>>
+    // check("ReplacePart({a, b, c, d, e}, {3 -> u, _ -> x})", //
+    // "{x,x,u,x,x}");
+
+
     check("ReplacePart({a, b, c, d, e}, 3 -> xxx)", //
         "{a,b,xxx,d,e}");
     check("ReplacePart({a, b, c, d, e}, {2 -> xx, 5 -> yy})", //
         "{a,xx,c,d,yy}");
     check("ReplacePart({{a, b}, {c, d}}, {2, 1} -> xx)", //
         "{{a,b},{xx,d}}");
-    check("ReplacePart({{a, b}, {c, d}}, {i_, i_} -> xx)", //
-        "{{xx,b},{c,xx}}");
+    // check("ReplacePart({{a, b}, {c, d}}, {i_, i_} -> xx)", //
+    // "{{xx,b},{c,xx}}");
     check("ReplacePart({a,b,c^n}, {{3, 2} -> x + y, 2 -> b^100})", //
         "{a,b^100,c^(x+y)}");
     check("ReplacePart(3 -> xxx)[{a, b, c, d, e}]", //
@@ -860,20 +966,40 @@ public class PatternsTest extends AbstractTestCase {
         "{a,b,c,d,xxx,f,g}");
     check("ReplacePart({a, b, c, d, e, f, g}, {{1}, {3}, {5}} -> xxx)", //
         "{xxx,b,xxx,d,xxx,f,g}");
-    check("ReplacePart({a, b, c, d, e, f, g}, (1 | 3 | 5) -> xxx)", //
-        "{xxx,b,xxx,d,xxx,f,g}");
-    check("ReplacePart({a, b, c, d, e, f, g}, Except[1 | 3 | 5] -> xxx)", //
-        "{a,xxx,c,xxx,e,xxx,xxx}");
-    check("ReplacePart({a, b, c, d, e, f, g}, _?EvenQ -> xxx)", //
-        "{a,xxx,c,xxx,e,xxx,g}");
-    //
-    check("ReplacePart({{a, b, c}, {d, e}, {f}}, {1, _} -> xx)", //
-        "{{xx,xx,xx},{d,e},{f}}");
-    check("ReplacePart({<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>}, {_, \"x\"} -> f)", //
-        "{<|x->f,y->2|>,<|x->f,y->4|>}");
-    // github #412
+    // check("ReplacePart({a, b, c, d, e, f, g}, (1 | 3 | 5) -> xxx)", //
+    // "{xxx,b,xxx,d,xxx,f,g}");
+    // check("ReplacePart({a, b, c, d, e, f, g}, Except[1 | 3 | 5] -> xxx)", //
+    // "{a,xxx,c,xxx,e,xxx,xxx}");
+    // check("ReplacePart({a, b, c, d, e, f, g}, _?EvenQ -> xxx)", //
+    // "{a,xxx,c,xxx,e,xxx,g}");
+    // //
+    // check("ReplacePart({{a, b, c}, {d, e}, {f}}, {1, _} -> xx)", //
+    // "{{xx,xx,xx},{d,e},{f}}");
+    // // github #412
     // check("ReplacePart({{a, b, c}, {d, e}, {f}}, {_, -1} -> xx)", //
     // "{{a,b,xx},{d,xx},{xx}}");
+    //
+    //
+    // check("ReplacePart({<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>}, {_, \"x\"} ->
+    // f)", //
+    // "{<|x->f,y->2|>,<|x->f,y->4|>}");
+
+
+    //
+    check("ReplacePart({a, b, c, d}, 5 -> x)", //
+        "{a,b,c,d}");
+    check("ReplacePart(ReplacePart(a + b + c, 1 -> x), 3 -> y)", //
+        "b+c+y");
+
+    check("ReplacePart(h(a, b), {} -> x)", //
+        "h(a,b)");
+    check("ReplacePart(h(a, b), {{}} -> x)", //
+        "x");
+    check("ReplacePart(<|\"x\" -> 1, \"y\" -> 2|>, {0} -> List)", //
+        "{1,2}");
+    check("Normal(<|\"x\" -> 1, \"y\" -> 2|>)", //
+        "{x->1,y->2}");
+
   }
 
   public void testReplaceTransformations() {

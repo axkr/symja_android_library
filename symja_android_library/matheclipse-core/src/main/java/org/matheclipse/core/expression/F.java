@@ -7391,9 +7391,9 @@ public class F extends S {
   }
 
   public static IBuiltInSymbol localFunction(final String symbolName, IEvaluator evaluator) {
-    IBuiltInSymbol localBuittIn = new BuiltInDummy(symbolName);
-    localBuittIn.setEvaluator(evaluator);
-    return localBuittIn;
+    IBuiltInSymbol localBuiltIn = new BuiltInDummy(symbolName);
+    localBuiltIn.setEvaluator(evaluator);
+    return localBuiltIn;
   }
 
   public static IBuiltInSymbol localBiPredicate(final String symbolName,
@@ -7602,6 +7602,14 @@ public class F extends S {
   }
 
   public static IAST Sequence(final IExpr... a) {
+    return function(Sequence, a);
+  }
+
+  public static IASTMutable Sequence(final int... numbers) {
+    IInteger[] a = new IInteger[numbers.length];
+    for (int i = 0; i < numbers.length; i++) {
+      a[i] = ZZ(numbers[i]);
+    }
     return function(Sequence, a);
   }
 

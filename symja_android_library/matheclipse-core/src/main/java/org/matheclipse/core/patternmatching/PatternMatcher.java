@@ -413,9 +413,63 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
   protected transient boolean fThrowIfTrue;
 
+  protected int fSetFlags;
+
+  /**
+   * Are the given flags disabled ?
+   *
+   * @param flags
+   * @return
+   * @see IAST#NO_FLAG
+   */
+  public final boolean isFlagOff(final int flags) {
+    return (fSetFlags & flags) == 0;
+  }
+
+  /**
+   * Are the given flags enabled ?
+   *
+   * @param flags
+   * @return
+   * @see IAST#NO_FLAG
+   */
+  public final boolean isFlagOn(int flags) {
+    return (fSetFlags & flags) == flags;
+  }
+
+  /**
+   * Add a flag to the existing ones.
+   *
+   * @param i
+   */
+  public final void addFlags(final int i) {
+    fSetFlags |= i;
+  }
+
+  /**
+   * Get the flags for this matcher.
+   *
+   * @return
+   */
+  public int getFlags() {
+    return fSetFlags;
+  }
+
+
+  /**
+   * Set the evaluation flags for this list (i.e. replace all existing flags).
+   *
+   * @param i
+   */
+  public void setFlags(int i) {
+    fSetFlags = i;
+  }
+
+
   /** Needed for serialization */
   public PatternMatcher() {
     super(null);
+    this.fSetFlags = NOFLAG;
     this.fLHSPriority = IPatternMap.DEFAULT_RULE_PRIORITY;
     this.fThrowIfTrue = false;
     this.fLhsPatternExpr = null;
@@ -423,11 +477,12 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   }
 
   public PatternMatcher(final IExpr patternExpr) {
-    this(patternExpr, true);
+    this(NOFLAG, patternExpr, true);
   }
 
-  public PatternMatcher(final IExpr patternExpr, boolean initAll) {
+  public PatternMatcher(final int setSymbol, final IExpr patternExpr, boolean initAll) {
     super(patternExpr);
+    this.fSetFlags = setSymbol;
     this.fLHSPriority = IPatternMap.DEFAULT_RULE_PRIORITY;
     this.fThrowIfTrue = false;
     if (initAll) {
@@ -460,6 +515,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     IPatternMap patternMap = createPatternMap();
     v.fPatternMap = patternMap.copy();
     v.fLHSPriority = fLHSPriority;
+    v.fSetFlags = fSetFlags;
     return v;
   }
 
@@ -486,7 +542,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    return true;
+    return fSetFlags == ((PatternMatcher) obj).fSetFlags;
   }
 
   // package private
@@ -571,7 +627,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result;
+    result = prime * result + fSetFlags;
     return result;
   }
 
@@ -1553,6 +1609,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+    fSetFlags = objectInput.readShort();
     fLhsPatternExpr = (IExpr) objectInput.readObject();
     if (fLhsPatternExpr != null) {
       int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
@@ -1738,6 +1795,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     fLHSPriority = priority;
   }
 
+  @Override
   public void throwExceptionArgIfMatched(boolean throwIfMatched) {
     this.fThrowIfTrue = throwIfMatched;
   }
@@ -1777,6 +1835,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
   @Override
   public void writeExternal(ObjectOutput objectOutput) throws IOException {
+    objectOutput.writeShort((short) fSetFlags);
     objectOutput.writeObject(fLhsPatternExpr);
   }
 }

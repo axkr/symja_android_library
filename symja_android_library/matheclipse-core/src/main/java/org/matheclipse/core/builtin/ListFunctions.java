@@ -359,18 +359,13 @@ public final class ListFunctions {
 
     private ISymbol[] fCurrentVariable;
 
-    public TableGenerator(
-        final List<? extends IIterator<IExpr>> iterList,
-        final IAST prototypeList,
+    public TableGenerator(final List<? extends IIterator<IExpr>> iterList, final IAST prototypeList,
         final IVariablesFunction function) {
       this(iterList, prototypeList, function, F.NIL);
     }
 
-    public TableGenerator(
-        final List<? extends IIterator<IExpr>> iterList,
-        final IAST prototypeList,
-        final IVariablesFunction function,
-        IExpr defaultValue) {
+    public TableGenerator(final List<? extends IIterator<IExpr>> iterList, final IAST prototypeList,
+        final IVariablesFunction function, IExpr defaultValue) {
       fIterList = iterList;
       fPrototypeList = prototypeList;
       fFunction = function;
@@ -506,15 +501,10 @@ public final class ListFunctions {
      * @param index index
      * @return
      */
-    private IExpr createGenericTable(
-        final IIterator<IExpr> iter,
-        final int index,
-        final int allocationHint,
-        IExpr arg1,
-        IExpr arg2) {
-      final IASTAppendable result =
-          fPrototypeList.copyHead(
-              fPrototypeList.size() + (allocationHint > 0 ? allocationHint + 8 : 8));
+    private IExpr createGenericTable(final IIterator<IExpr> iter, final int index,
+        final int allocationHint, IExpr arg1, IExpr arg2) {
+      final IASTAppendable result = fPrototypeList
+          .copyHead(fPrototypeList.size() + (allocationHint > 0 ? allocationHint + 8 : 8));
       result.appendArgs(fPrototypeList);
       if (arg1 != null) {
         result.append(arg1);
@@ -545,7 +535,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>accumulate the values of <code>list</code> returning a new list.
+   * <p>
+   * accumulate the values of <code>list</code> returning a new list.
    *
    * </blockquote>
    *
@@ -585,7 +576,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>expr</code> with <code>item</code> appended to its leaves.
+   * <p>
+   * returns <code>expr</code> with <code>item</code> appended to its leaves.
    *
    * </blockquote>
    *
@@ -596,22 +588,24 @@ public final class ListFunctions {
    * {1,2,3,4}
    * </pre>
    *
-   * <p><code>Append</code> works on expressions with heads other than <code>List</code>:
+   * <p>
+   * <code>Append</code> works on expressions with heads other than <code>List</code>:
    *
    * <pre>
    * &gt;&gt; Append(f(a, b), c)
    * f(a,b,c)
    * </pre>
    *
-   * <p>Unlike <code>Join</code>, <code>Append</code> does not flatten lists in <code>item</code>:
-   * <br>
+   * <p>
+   * Unlike <code>Join</code>, <code>Append</code> does not flatten lists in <code>item</code>: <br>
    *
    * <pre>
    * &gt;&gt; Append({a, b}, {c, d})
    * {a,b,{c,d}}
    * </pre>
    *
-   * <p>Nonatomic expression expected.<br>
+   * <p>
+   * Nonatomic expression expected.<br>
    *
    * <pre>
    * &gt;&gt; Append(a, b)
@@ -656,7 +650,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>append <code>item</code> to value of <code>s</code> and sets <code>s</code> to the result.
+   * <p>
+   * append <code>item</code> to value of <code>s</code> and sets <code>s</code> to the result.
    *
    * </blockquote>
    *
@@ -671,7 +666,8 @@ public final class ListFunctions {
    * {1}
    * </pre>
    *
-   * <p>'Append' works on expressions with heads other than 'List':<br>
+   * <p>
+   * 'Append' works on expressions with heads other than 'List':<br>
    *
    * <pre>
    * &gt;&gt; y = f()
@@ -682,14 +678,16 @@ public final class ListFunctions {
    * f(x)
    * </pre>
    *
-   * <p>{} is not a variable with a value, so its value cannot be changed.
+   * <p>
+   * {} is not a variable with a value, so its value cannot be changed.
    *
    * <pre>
    * &gt;&gt; AppendTo({}, 1)
    * AppendTo({}, 1)
    * </pre>
    *
-   * <p>a is not a variable with a value, so its value cannot be changed.
+   * <p>
+   * a is not a variable with a value, so its value cannot be changed.
    *
    * <pre>
    * &gt;&gt; AppendTo(a, b)
@@ -764,7 +762,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the <code>n</code>-element list <code>{f(1), ..., f(n)}</code>.
+   * <p>
+   * returns the <code>n</code>-element list <code>{f(1), ..., f(n)}</code>.
    *
    * </blockquote>
    *
@@ -774,7 +773,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the n-element list <code>{f(a), ..., f(a + n)}</code>.
+   * <p>
+   * returns the n-element list <code>{f(a), ..., f(a + n)}</code>.
    *
    * </blockquote>
    *
@@ -784,7 +784,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns an <code>n</code>-by-<code>m</code> matrix created by applying <code>f</code> to
+   * <p>
+   * returns an <code>n</code>-by-<code>m</code> matrix created by applying <code>f</code> to
    * indices ranging from <code>(a, b)</code> to <code>(a + n, b + m)</code>.
    *
    * </blockquote>
@@ -795,7 +796,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns an expression with the specified dimensions and index origins, with head <code>h
+   * <p>
+   * returns an expression with the specified dimensions and index origins, with head <code>h
    * </code> (instead of <code>List</code>).
    *
    * </blockquote>
@@ -828,21 +830,24 @@ public final class ListFunctions {
    * f(1,1)+f(1,2)+f(1,3)+f(2,1)+f(2,2)+f(2,3)
    * </pre>
    *
-   * <p>{2, 3} and {1, 2, 3} should have the same length.
+   * <p>
+   * {2, 3} and {1, 2, 3} should have the same length.
    *
    * <pre>
    * &gt;&gt; Array(f, {2, 3}, {1, 2, 3})
    * Array(f, {2, 3}, {1, 2, 3})
    * </pre>
    *
-   * <p>Single or list of non-negative integers expected at position 2.
+   * <p>
+   * Single or list of non-negative integers expected at position 2.
    *
    * <pre>
    * &gt;&gt; Array(f, a)
    * Array(f, a)
    * </pre>
    *
-   * <p>Single or list of non-negative integers expected at position 3.
+   * <p>
+   * Single or list of non-negative integers expected at position 3.
    *
    * <pre>
    * &gt;&gt; Array(f, 2, b)
@@ -972,8 +977,8 @@ public final class ListFunctions {
             final IAST originIter = (IAST) arg3; // origins
             if (dimIter.size() != originIter.size()) {
               // `1` and `2` should have the same length.
-              return IOFunctions.printMessage(
-                  ast.topHead(), "plen", F.List(dimIter, originIter), engine);
+              return IOFunctions.printMessage(ast.topHead(), "plen", F.List(dimIter, originIter),
+                  engine);
             }
             for (int i = 1; i < dimIter.size(); i++) {
               int indx1 = Validate.checkIntType(originIter, i);
@@ -1026,7 +1031,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>adds <code>n</code> times <code>0</code> on the left and right of the <code>list</code>.
+   * <p>
+   * adds <code>n</code> times <code>0</code> on the left and right of the <code>list</code>.
    *
    * </blockquote>
    *
@@ -1036,8 +1042,9 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>adds <code>m</code> times <code>0</code> on the left and <code>n</code> times <code>0</code>
-   * on the right.
+   * <p>
+   * adds <code>m</code> times <code>0</code> on the left and <code>n</code> times <code>0</code> on
+   * the right.
    *
    * </blockquote>
    *
@@ -1047,8 +1054,9 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>adds <code>m</code> times <code>x</code> on the left and <code>n</code> times <code>x</code>
-   * on the right.
+   * <p>
+   * adds <code>m</code> times <code>x</code> on the left and <code>n</code> times <code>x</code> on
+   * the right.
    *
    * </blockquote>
    *
@@ -1134,7 +1142,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the elements of <code>list</code> that match <code>pattern</code>.
+   * <p>
+   * returns the elements of <code>list</code> that match <code>pattern</code>.
    *
    * </blockquote>
    *
@@ -1144,7 +1153,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the elements matching at levelspec <code>ls</code>.
+   * <p>
+   * returns the elements matching at levelspec <code>ls</code>.
    *
    * </blockquote>
    *
@@ -1192,8 +1202,8 @@ public final class ListFunctions {
        * @param resultCollection
        * @param maximumResults maximum number of results. -1 for for no limitation
        */
-      public CasesPatternMatcherFunctor(
-          final IPatternMatcher matcher, IASTAppendable resultCollection, int maximumResults) {
+      public CasesPatternMatcherFunctor(final IPatternMatcher matcher,
+          IASTAppendable resultCollection, int maximumResults) {
         this.matcher = matcher;
         this.resultCollection = resultCollection;
         this.maximumResults = maximumResults;
@@ -1226,10 +1236,8 @@ public final class ListFunctions {
        * @param resultCollection
        * @param maximumResults maximum number of results. -1 for for no limitation
        */
-      public CasesRulesFunctor(
-          final Function<IExpr, IExpr> function,
-          IASTAppendable resultCollection,
-          int maximumResults) {
+      public CasesRulesFunctor(final Function<IExpr, IExpr> function,
+          IASTAppendable resultCollection, int maximumResults) {
         this.function = function;
         this.resultCollection = resultCollection;
         this.maximumResults = maximumResults;
@@ -1321,8 +1329,8 @@ public final class ListFunctions {
       return ARGS_1_4_1;
     }
 
-    public static IAST cases(
-        final IAST ast, final IExpr pattern, boolean heads, EvalEngine engine) {
+    public static IAST cases(final IAST ast, final IExpr pattern, boolean heads,
+        EvalEngine engine) {
       if (pattern.isRuleAST()) {
         Function<IExpr, IExpr> function = Functors.rules((IAST) pattern, engine);
         IAST[] results = ast.filterNIL(function);
@@ -1343,8 +1351,8 @@ public final class ListFunctions {
      * @param resultAST
      * @return
      */
-    private static Consumer<? super IExpr> appendIfMatched(
-        final IPatternMatcher matcher, IASTAppendable resultAST) {
+    private static Consumer<? super IExpr> appendIfMatched(final IPatternMatcher matcher,
+        IASTAppendable resultAST) {
       return x -> {
         if (matcher.test(x)) {
           resultAST.append(x);
@@ -1355,8 +1363,7 @@ public final class ListFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
-      setOptions(
-          newSymbol, //
+      setOptions(newSymbol, //
           F.List(F.Rule(S.Heads, S.False)));
     }
   }
@@ -1370,7 +1377,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>concatenates the lists <code>l1, l2, ...</code>
+   * <p>
+   * concatenates the lists <code>l1, l2, ...</code>
    *
    * </blockquote>
    *
@@ -1430,7 +1438,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>the mode of a list of data values is the value that appears most often.
+   * <p>
+   * the mode of a list of data values is the value that appears most often.
    *
    * </blockquote>
    *
@@ -1441,15 +1450,16 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>return the <code>n</code> values that appears most often.
+   * <p>
+   * return the <code>n</code> values that appears most often.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Mode_(statistics)">Wikipedia - Mode
-   *       (statistics)</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Mode_(statistics)">Wikipedia - Mode (statistics)</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1460,9 +1470,10 @@ public final class ListFunctions {
    * </code>
    * </pre>
    *
-   * <p>Given the list of data <code>{1, 1, 2, 4, 4}</code> the mode is not unique – the dataset may
-   * be said to be <strong>bimodal</strong>, while a set with more than two modes may be described
-   * as <strong>multimodal</strong>.
+   * <p>
+   * Given the list of data <code>{1, 1, 2, 4, 4}</code> the mode is not unique – the dataset may be
+   * said to be <strong>bimodal</strong>, while a set with more than two modes may be described as
+   * <strong>multimodal</strong>.
    *
    * <pre>
    * <code>&gt;&gt; Commonest({1, 1, 2, 4, 4})
@@ -1483,7 +1494,7 @@ public final class ListFunctions {
         // The mode of a set of data is implemented as Commonest(data).
         return new ASTRealVector(StatUtils.mode(values), false);
       }
-      //      IAST list = Validate.checkListType(ast, 1, engine);
+      // IAST list = Validate.checkListType(ast, 1, engine);
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
         int n = -1;
@@ -1495,14 +1506,12 @@ public final class ListFunctions {
         }
 
         IASTAppendable tallyResult = Tally.tally1Arg(list);
-        EvalAttributes.sort(
-            tallyResult,
-            new Comparator<IExpr>() {
-              @Override
-              public int compare(IExpr o1, IExpr o2) {
-                return o2.second().compareTo(o1.second());
-              }
-            });
+        EvalAttributes.sort(tallyResult, new Comparator<IExpr>() {
+          @Override
+          public int compare(IExpr o1, IExpr o2) {
+            return o2.second().compareTo(o1.second());
+          }
+        });
 
         int size = tallyResult.size();
         if (size > 1) {
@@ -1510,15 +1519,13 @@ public final class ListFunctions {
             IInteger max = (IInteger) ((IAST) tallyResult.arg1()).arg2();
             IASTAppendable result = F.ListAlloc(size);
             result.append(((IAST) tallyResult.arg1()).arg1());
-            tallyResult.exists(
-                x -> {
-                  if (max.equals(x.second())) {
-                    result.append(x.first());
-                    return false;
-                  }
-                  return true;
-                },
-                2);
+            tallyResult.exists(x -> {
+              if (max.equals(x.second())) {
+                result.append(x.first());
+                return false;
+              }
+              return true;
+            }, 2);
             return result;
           } else {
             int counter = 0;
@@ -1557,15 +1564,17 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>get the complement set from <code>set1</code> and <code>set2</code>.
+   * <p>
+   * get the complement set from <code>set1</code> and <code>set2</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Complement_(set_theory)">Wikipedia - Complement
-   *       (set theory)</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Complement_(set_theory)">Wikipedia - Complement (set
+   * theory)</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1613,12 +1622,11 @@ public final class ListFunctions {
       Set<IExpr> set2 = arg2.asSet();
       if (set2 != null) {
         Set<IExpr> set3 = new HashSet<IExpr>();
-        arg1.forEach(
-            x -> {
-              if (!set2.contains(x)) {
-                set3.add(x);
-              }
-            });
+        arg1.forEach(x -> {
+          if (!set2.contains(x)) {
+            set3.add(x);
+          }
+        });
         IASTMutable result = F.ListAlloc(set3);
         EvalAttributes.sort(result);
         return result;
@@ -1636,7 +1644,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>creates a composition of the symbols applied at the arguments.
+   * <p>
+   * creates a composition of the symbols applied at the arguments.
    *
    * </blockquote>
    *
@@ -1691,7 +1700,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>creates a list of compositions of the symbols applied at the argument <code>x</code>.
+   * <p>
+   * creates a list of compositions of the symbols applied at the argument <code>x</code>.
    *
    * </blockquote>
    *
@@ -1715,17 +1725,11 @@ public final class ListFunctions {
           // final EvalEngine engine = EvalEngine.get();
           final IAST list = (IAST) ast.arg1();
           final IAST constant = F.ast(ast.arg1());
-          ListFunctions.foldLeft(
-              ast.arg2(),
-              list,
-              1,
-              list.size(),
-              (x, y) -> {
-                final IASTAppendable a = constant.apply(y);
-                a.append(x);
-                return a;
-              },
-              resultList);
+          ListFunctions.foldLeft(ast.arg2(), list, 1, list.size(), (x, y) -> {
+            final IASTAppendable a = constant.apply(y);
+            a.append(x);
+            return a;
+          }, resultList);
           return resultList;
         }
       } catch (final ArithmeticException e) {
@@ -1747,7 +1751,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a list of <code>n</code> copies of <code>expr</code>.
+   * <p>
+   * returns a list of <code>n</code> copies of <code>expr</code>.
    *
    * </blockquote>
    *
@@ -1805,9 +1810,8 @@ public final class ListFunctions {
             if (ast.size() == 5) {
               resultList = F.ast(ast.arg4());
             }
-            final TableGenerator generator =
-                new TableGenerator(
-                    iterList, resultList, new MultipleConstArrayFunction(constantExpr));
+            final TableGenerator generator = new TableGenerator(iterList, resultList,
+                new MultipleConstArrayFunction(constantExpr));
             return generator.table();
           }
         }
@@ -1841,7 +1845,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the number of times <code>pattern</code> appears in <code>list</code>.
+   * <p>
+   * returns the number of times <code>pattern</code> appears in <code>list</code>.
    *
    * </blockquote>
    *
@@ -1851,7 +1856,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>counts the elements matching at levelspec <code>ls</code>.
+   * <p>
+   * counts the elements matching at levelspec <code>ls</code>.
    *
    * </blockquote>
    *
@@ -1920,7 +1926,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the number of distinct entries in <code>list</code>.
+   * <p>
+   * returns the number of distinct entries in <code>list</code>.
    *
    * </blockquote>
    *
@@ -2014,20 +2021,19 @@ public final class ListFunctions {
      * @param engine the evaluation engine
      * @return
      */
-    private IAST deleteListOfPositions(
-        final IAST list, final IAST listOfIntPositions, EvalEngine engine) {
+    private IAST deleteListOfPositions(final IAST list, final IAST listOfIntPositions,
+        EvalEngine engine) {
       int[] indx;
       try {
-        indx =
-            Validate.checkListOfInts(
-                list, listOfIntPositions, Integer.MIN_VALUE, Integer.MAX_VALUE, engine);
+        indx = Validate.checkListOfInts(list, listOfIntPositions, Integer.MIN_VALUE,
+            Integer.MAX_VALUE, engine);
         if (indx == null) {
           return F.NIL;
         }
         return deletePartRecursive(list, indx, 0);
       } catch (final RuntimeException rex) {
-        LOGGER.log(
-            engine.getLogLevel(), "Cannot delete position {} in {}", listOfIntPositions, list, rex);
+        LOGGER.log(engine.getLogLevel(), "Cannot delete position {} in {}", listOfIntPositions,
+            list, rex);
         return F.NIL;
       }
     }
@@ -2038,7 +2044,7 @@ public final class ListFunctions {
      * @param list the list in which sub-positions should be removed
      * @param indx a list of int sub-positions from <code>list</code>
      * @param indxPosition the current position in <code>indx</code>. Increased by 1 in each
-     *     recursion step.
+     *        recursion step.
      * @return
      */
     private IAST deletePartRecursive(IAST list, int[] indx, int indxPosition) {
@@ -2081,7 +2087,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the elements of <code>list</code> that do not match <code>pattern</code>.
+   * <p>
+   * returns the elements of <code>list</code> that do not match <code>pattern</code>.
    *
    * </blockquote>
    *
@@ -2133,9 +2140,8 @@ public final class ListFunctions {
             }
 
             DeleteCasesPatternMatcherFunctor cpmf = new DeleteCasesPatternMatcherFunctor(matcher);
-            VisitorRemoveLevelSpecification level =
-                new VisitorRemoveLevelSpecification(
-                    cpmf, arg3, maximumRemoveOperations, false, engine);
+            VisitorRemoveLevelSpecification level = new VisitorRemoveLevelSpecification(cpmf, arg3,
+                maximumRemoveOperations, false, engine);
             arg1RemoveClone.accept(level);
             if (level.getRemovedCounter() == 0) {
               return arg1;
@@ -2178,7 +2184,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>deletes duplicates from <code>list</code>.
+   * <p>
+   * deletes duplicates from <code>list</code>.
    *
    * </blockquote>
    *
@@ -2210,8 +2217,7 @@ public final class ListFunctions {
         BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(test);
         int size = list.size();
         final IASTAppendable result = F.ListAlloc(size);
-        iLoop:
-        for (int i = 1; i < size; i++) {
+        iLoop: for (int i = 1; i < size; i++) {
           IExpr listElement = list.get(i);
           for (int j = 1; j < result.size(); j++) {
             if (biPredicate.test(result.get(j), listElement)) {
@@ -2295,12 +2301,12 @@ public final class ListFunctions {
             return DispatchExpr.newInstance(F.List(evaledArg1));
           } else if (evaledArg1.isAssociation()) {
             return DispatchExpr.newInstance((IAssociation) evaledArg1);
-            //          } else {
-            //            throw new ArgumentTypeException(
-            //                "rule expressions (x->y) expected instead of " + arg1.toString());
+            // } else {
+            // throw new ArgumentTypeException(
+            // "rule expressions (x->y) expected instead of " + arg1.toString());
           }
         } catch (ValidateException ve) {
-          //          return engine.printMessage(ast.topHead(), ve);
+          // return engine.printMessage(ast.topHead(), ve);
         }
       }
       return F.NIL;
@@ -2353,7 +2359,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>expr</code> with the first <code>n</code> leaves removed.
+   * <p>
+   * returns <code>expr</code> with the first <code>n</code> leaves removed.
    *
    * </blockquote>
    *
@@ -2370,7 +2377,8 @@ public final class ListFunctions {
    * {a,e}
    * </pre>
    *
-   * <p>Drop a submatrix:
+   * <p>
+   * Drop a submatrix:
    *
    * <pre>
    * &gt;&gt; A = Table(i*10 + j, {i, 4}, {j, 4})
@@ -2386,7 +2394,8 @@ public final class ListFunctions {
    * {2, 3, 5, 6, 8, 9}
    * </pre>
    *
-   * <p>Cannot drop positions -5 through -2 in {1, 2, 3, 4, 5, 6}.
+   * <p>
+   * Cannot drop positions -5 through -2 in {1, 2, 3, 4, 5, 6}.
    *
    * <pre>
    * &gt;&gt; Drop(Range(6), {-5, -2, -2})
@@ -2397,10 +2406,10 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      //      IAST evaledAST = (IAST) engine.evalAttributes(S.Drop, ast);
-      //      if (!evaledAST.isPresent()) {
-      //        evaledAST = ast;
-      //      }
+      // IAST evaledAST = (IAST) engine.evalAttributes(S.Drop, ast);
+      // if (!evaledAST.isPresent()) {
+      // evaledAST = ast;
+      // }
       final IExpr arg1 = ast.arg1();
       try {
         if (arg1.isASTOrAssociation()) {
@@ -2441,8 +2450,8 @@ public final class ListFunctions {
      * @param sequenceSpecifications one or more ISequence specifications
      * @return
      */
-    private static IAST drop(
-        final IASTAppendable list, final int level, final ISequence[] sequenceSpecifications) {
+    private static IAST drop(final IASTAppendable list, final int level,
+        final ISequence[] sequenceSpecifications) {
       sequenceSpecifications[level].setListSize(list.size());
       final int newLevel = level + 1;
       int j = sequenceSpecifications[level].getStart();
@@ -2452,22 +2461,14 @@ public final class ListFunctions {
         end--;
         if (j < end || end <= 0) {
           throw new ArgumentTypeException(
-              "cannot drop positions "
-                  + sequenceSpecifications[level].getStartOffset()
-                  + " through "
-                  + sequenceSpecifications[level].getEndOffset()
-                  + " in "
-                  + list);
+              "cannot drop positions " + sequenceSpecifications[level].getStartOffset()
+                  + " through " + sequenceSpecifications[level].getEndOffset() + " in " + list);
         }
         for (int i = j; i >= end; i += step) {
           if (j >= list.size()) {
             throw new ArgumentTypeException(
-                "cannot drop positions "
-                    + sequenceSpecifications[level].getStartOffset()
-                    + " through "
-                    + sequenceSpecifications[level].getEndOffset()
-                    + " in "
-                    + list);
+                "cannot drop positions " + sequenceSpecifications[level].getStartOffset()
+                    + " through " + sequenceSpecifications[level].getEndOffset() + " in " + list);
           }
           list.remove(j);
           j += step;
@@ -2475,22 +2476,14 @@ public final class ListFunctions {
       } else {
         if (j == 0) {
           throw new ArgumentTypeException(
-              "cannot drop positions "
-                  + sequenceSpecifications[level].getStartOffset()
-                  + " through "
-                  + sequenceSpecifications[level].getEndOffset()
-                  + " in "
-                  + list);
+              "cannot drop positions " + sequenceSpecifications[level].getStartOffset()
+                  + " through " + sequenceSpecifications[level].getEndOffset() + " in " + list);
         }
         for (int i = j; i < end; i += step) {
           if (j >= list.size()) {
             throw new ArgumentTypeException(
-                "cannot drop positions "
-                    + sequenceSpecifications[level].getStartOffset()
-                    + " through "
-                    + sequenceSpecifications[level].getEndOffset()
-                    + " in "
-                    + list);
+                "cannot drop positions " + sequenceSpecifications[level].getStartOffset()
+                    + " through " + sequenceSpecifications[level].getEndOffset() + " in " + list);
           }
           list.remove(j);
           j += step - 1;
@@ -2521,7 +2514,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>return the base <code>E</code> (Shannon) information entropy of the elements in <code>list
+   * <p>
+   * return the base <code>E</code> (Shannon) information entropy of the elements in <code>list
    * </code>.
    *
    * </blockquote>
@@ -2533,16 +2527,18 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>return the base <code>b</code> (Shannon) information entropy of the elements in <code>list
+   * <p>
+   * return the base <code>b</code> (Shannon) information entropy of the elements in <code>list
    * </code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)">Wikipedia - Entropy
-   *       (information theory)</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)">Wikipedia - Entropy
+   * (information theory)</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -2561,7 +2557,8 @@ public final class ListFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Commonest.md">Commonest</a>, <a href="Counts.md">Counts</a>, <a href="E.md">E</a>,
+   * <p>
+   * <a href="Commonest.md">Commonest</a>, <a href="Counts.md">Counts</a>, <a href="E.md">E</a>,
    * <a href="Tally.md">Tally</a>
    */
   private static final class Entropy extends AbstractEvaluator {
@@ -2621,7 +2618,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>extracts parts of <code>expr</code> specified by <code>list</code>.
+   * <p>
+   * extracts parts of <code>expr</code> specified by <code>list</code>.
    *
    * </blockquote>
    *
@@ -2631,13 +2629,15 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>extracts a list of parts.
+   * <p>
+   * extracts a list of parts.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p><code>Extract(expr, i, j, ...)</code> is equivalent to <code>Part(expr, {i, j, ...})</code>.
+   * <p>
+   * <code>Extract(expr, i, j, ...)</code> is equivalent to <code>Part(expr, {i, j, ...})</code>.
    *
    * <pre>
    * &gt;&gt; Extract(a + b + c, {2})
@@ -2797,13 +2797,15 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the first element in <code>expr</code>.
+   * <p>
+   * returns the first element in <code>expr</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p><code>First(expr)</code> is equivalent to <code>expr[[1]]</code>.
+   * <p>
+   * <code>First(expr)</code> is equivalent to <code>expr[[1]]</code>.
    *
    * <pre>
    * &gt;&gt; First({a, b, c})
@@ -2813,7 +2815,8 @@ public final class ListFunctions {
    * a
    * </pre>
    *
-   * <p>Nonatomic expression expected.
+   * <p>
+   * Nonatomic expression expected.
    *
    * <pre>
    * &gt;&gt; First(x)
@@ -2889,8 +2892,8 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
 
       boolean heads = option[0].isTrue();
 
@@ -2944,12 +2947,8 @@ public final class ListFunctions {
       return ARGS_1_4_1;
     }
 
-    private static IExpr firstCase(
-        final IAST list,
-        final IExpr pattern,
-        IExpr defaultValue,
-        boolean heads,
-        EvalEngine engine) {
+    private static IExpr firstCase(final IAST list, final IExpr pattern, IExpr defaultValue,
+        boolean heads, EvalEngine engine) {
       if (pattern.isRuleAST()) {
         Function<IExpr, IExpr> function = Functors.rules((IAST) pattern, engine);
         IExpr[] result = new IExpr[] {F.NIL};
@@ -2987,11 +2986,8 @@ public final class ListFunctions {
       final PositionConverter positionConverter;
       int headOffset;
 
-      private RecursionData(
-          final LevelSpec level,
-          final Predicate<? super IExpr> matcher,
-          final PositionConverter positionConverter,
-          int headOffset) {
+      private RecursionData(final LevelSpec level, final Predicate<? super IExpr> matcher,
+          final PositionConverter positionConverter, int headOffset) {
         this.level = level;
         this.matcher = matcher;
         this.positionConverter = positionConverter;
@@ -3046,8 +3042,8 @@ public final class ListFunctions {
      * @param level
      * @param engine
      */
-    private static void position(
-        final IAST ast, final IExpr pattern, final LevelSpec level, EvalEngine engine) {
+    private static void position(final IAST ast, final IExpr pattern, final LevelSpec level,
+        EvalEngine engine) {
       final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
       final PositionConverter positionConverter = new PositionConverter();
 
@@ -3062,8 +3058,8 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
 
       boolean heads = option[0].isTrue();
       if (argSize < 2) {
@@ -3120,8 +3116,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>f[f[x, a], b]</code>, and this nesting continues for lists of arbitrary
-   * length.
+   * <p>
+   * returns <code>f[f[x, a], b]</code>, and this nesting continues for lists of arbitrary length.
    *
    * </blockquote>
    *
@@ -3175,7 +3171,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>{x, f[x, a], f[f[x, a], b]}</code>
+   * <p>
+   * returns <code>{x, f[x, a], f[f[x, a], b]}</code>
    *
    * </blockquote>
    *
@@ -3236,6 +3233,7 @@ public final class ListFunctions {
       return F.NIL;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3_2;
     }
@@ -3254,7 +3252,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>gathers leaves of <code>list</code> into sub lists of items that are the same according to
+   * <p>
+   * gathers leaves of <code>list</code> into sub lists of items that are the same according to
    * <code>test</code>.
    *
    * </blockquote>
@@ -3266,13 +3265,15 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>gathers leaves of <code>list</code> into sub lists of items that are the same.
+   * <p>
+   * gathers leaves of <code>list</code> into sub lists of items that are the same.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>The order of the items inside the sub lists is the same as in the original list.
+   * <p>
+   * The order of the items inside the sub lists is the same as in the original list.
    *
    * <pre>
    * <code>&gt;&gt; Gather({1, 7, 3, 7, 2, 3, 9})
@@ -3334,7 +3335,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>gathers leaves of <code>list</code> into sub lists of items whose image under <code>f</code>
+   * <p>
+   * gathers leaves of <code>list</code> into sub lists of items whose image under <code>f</code>
    * identical.
    *
    * </blockquote>
@@ -3346,7 +3348,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>gathers leaves of <code>list</code> into sub lists of items whose image under <code>f</code>
+   * <p>
+   * gathers leaves of <code>list</code> into sub lists of items whose image under <code>f</code>
    * identical. Then, gathers these sub lists again into sub sub lists, that are identical under
    * <code>g</code>.
    *
@@ -3390,14 +3393,14 @@ public final class ListFunctions {
           case 1:
             return F.GatherBy(ast.arg1(), list2.arg1());
           case 2:
-            return F.Map(
-                F.Function(F.GatherBy(F.Slot1, list2.arg2())), F.GatherBy(list1, list2.arg1()));
+            return F.Map(F.Function(F.GatherBy(F.Slot1, list2.arg2())),
+                F.GatherBy(list1, list2.arg1()));
         }
         IAST r = list2.copyUntil(size2);
         IExpr f = list2.last();
         // GatherBy(l_, {r__, f_}) := Map(GatherBy(#, f)&, GatherBy(l, {r}), {Length({r})})
-        return F.Map(
-            F.Function(F.GatherBy(F.Slot1, f)), F.GatherBy(list1, r), F.List(F.ZZ(r.argSize())));
+        return F.Map(F.Function(F.GatherBy(F.Slot1, f)), F.GatherBy(list1, r),
+            F.List(F.ZZ(r.argSize())));
       }
       java.util.Map<IExpr, IASTAppendable> map = new TreeMap<IExpr, IASTAppendable>();
       IASTAppendable result = F.ListAlloc(F.allocMin8(list1.size()));
@@ -3458,8 +3461,8 @@ public final class ListFunctions {
      * @param engine
      * @return
      */
-    private IExpr recurseGroupBy(
-        IAST list, IAST listOfHeads, int positionOfHeads, IAST ast, EvalEngine engine) {
+    private IExpr recurseGroupBy(IAST list, IAST listOfHeads, int positionOfHeads, IAST ast,
+        EvalEngine engine) {
       IExpr arg = listOfHeads.get(positionOfHeads);
       IExpr rule;
       IExpr first = arg;
@@ -3537,15 +3540,17 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>get the intersection set from <code>set1</code> and <code>set2</code> &hellip;.
+   * <p>
+   * get the intersection set from <code>set1</code> and <code>set2</code> &hellip;.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Intersection_(set_theory)">Wikipedia - Intersection
-   *       (set theory)</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Intersection_(set_theory)">Wikipedia - Intersection
+   * (set theory)</a>
    * </ul>
    */
   private static final class Intersection extends AbstractFunctionEvaluator {
@@ -3681,13 +3686,15 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>concatenates the lists <code>l1</code> and <code>l2</code>.
+   * <p>
+   * concatenates the lists <code>l1</code> and <code>l2</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p><code>Join</code> concatenates lists:
+   * <p>
+   * <code>Join</code> concatenates lists:
    *
    * <pre>
    * &gt;&gt; Join({a, b}, {c, d, e})
@@ -3697,14 +3704,16 @@ public final class ListFunctions {
    * {{a,b},{c,d},{1,2},{3,4}}
    * </pre>
    *
-   * <p>The concatenated expressions may have any head:
+   * <p>
+   * The concatenated expressions may have any head:
    *
    * <pre>
    * &gt;&gt; Join(a + b, c + d, e + f)
    * a+b+c+d+e+f
    * </pre>
    *
-   * <p>However, it must be the same for all expressions:
+   * <p>
+   * However, it must be the same for all expressions:
    *
    * <pre>
    * &gt;&gt; Join(a + b, c * d)
@@ -3846,20 +3855,23 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the last element in <code>expr</code>.
+   * <p>
+   * returns the last element in <code>expr</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p><code>Last(expr)</code> is equivalent to <code>expr[[-1]]</code>.
+   * <p>
+   * <code>Last(expr)</code> is equivalent to <code>expr[[-1]]</code>.
    *
    * <pre>
    * &gt;&gt; Last({a, b, c})
    * c
    * </pre>
    *
-   * <p>Nonatomic expression expected.
+   * <p>
+   * Nonatomic expression expected.
    *
    * <pre>
    * &gt;&gt; Last(x)
@@ -3906,20 +3918,23 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the number of leaves in <code>expr</code>.
+   * <p>
+   * returns the number of leaves in <code>expr</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>Length of a list:
+   * <p>
+   * Length of a list:
    *
    * <pre>
    * &gt;&gt; Length({1, 2, 3})
    * 3
    * </pre>
    *
-   * <p>'Length' operates on the 'FullForm' of expressions:
+   * <p>
+   * 'Length' operates on the 'FullForm' of expressions:
    *
    * <pre>
    * &gt;&gt; Length(Exp(x))
@@ -3929,15 +3944,17 @@ public final class ListFunctions {
    * Power(E, x)
    * </pre>
    *
-   * <p>The length of atoms is 0:
+   * <p>
+   * The length of atoms is 0:
    *
    * <pre>
    * &gt;&gt; Length(a)
    * 0
    * </pre>
    *
-   * <p>Note that rational and complex numbers are atoms, although their 'FullForm' might suggest
-   * the opposite:
+   * <p>
+   * Note that rational and complex numbers are atoms, although their 'FullForm' might suggest the
+   * opposite:
    *
    * <pre>
    * &gt;&gt; Length(1/3)
@@ -3997,12 +4014,14 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>gives a list of all sub-expressions of <code>expr</code> at the level(s) specified by <code>
+   * <p>
+   * gives a list of all sub-expressions of <code>expr</code> at the level(s) specified by <code>
    * levelspec</code>.
    *
    * </blockquote>
    *
-   * <p>Level uses standard level specifications:
+   * <p>
+   * Level uses standard level specifications:
    *
    * <pre>
    * n
@@ -4010,7 +4029,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>levels <code>1</code> through <code>n</code>
+   * <p>
+   * levels <code>1</code> through <code>n</code>
    *
    * </blockquote>
    *
@@ -4020,36 +4040,41 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>all levels from level <code>1</code>
+   * <p>
+   * all levels from level <code>1</code>
    *
    * </blockquote>
    *
    * <pre>
-   * { n }
+   * {n}
    * </pre>
    *
    * <blockquote>
    *
-   * <p>level <code>n</code> only
+   * <p>
+   * level <code>n</code> only
    *
    * </blockquote>
    *
    * <pre>
-   * { m, n }
+   * {m, n}
    * </pre>
    *
    * <blockquote>
    *
-   * <p>levels <code>m</code> through <code>n</code>
+   * <p>
+   * levels <code>m</code> through <code>n</code>
    *
    * </blockquote>
    *
-   * <p>Level 0 corresponds to the whole expression. A negative level <code>-n</code> consists of
-   * parts with depth <code>n</code>.
+   * <p>
+   * Level 0 corresponds to the whole expression. A negative level <code>-n</code> consists of parts
+   * with depth <code>n</code>.
    *
    * <h3>Examples</h3>
    *
-   * <p>Level <code>-1</code> is the set of atoms in an expression:
+   * <p>
+   * Level <code>-1</code> is the set of atoms in an expression:
    *
    * <pre>
    * &gt;&gt; Level(a + b ^ 3 * f(2 x ^ 2), {-1})
@@ -4068,7 +4093,8 @@ public final class ListFunctions {
    * {a,h3(a),h2(h3(a)),h1(h2(h3(a))),h0(h1(h2(h3(a))))}
    * </pre>
    *
-   * <p>Use the option <code>Heads -&gt; True</code> to include heads:
+   * <p>
+   * Use the option <code>Heads -&gt; True</code> to include heads:
    *
    * <pre>
    * &gt;&gt; Level({{{{a}}}}, 3, Heads -&gt; True)
@@ -4090,8 +4116,8 @@ public final class ListFunctions {
   private static final class Level extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
 
       boolean heads = option[0].isTrue();
 
@@ -4101,15 +4127,10 @@ public final class ListFunctions {
         IASTAppendable resultList;
         IExpr head = (argSize == 3) ? ast.arg3() : S.List;
         resultList = F.ast(head, allocSize);
-        final VisitorLevelSpecification level =
-            new VisitorLevelSpecification(
-                x -> {
-                  resultList.append(x);
-                  return F.NIL;
-                },
-                ast.arg2(),
-                heads,
-                engine);
+        final VisitorLevelSpecification level = new VisitorLevelSpecification(x -> {
+          resultList.append(x);
+          return F.NIL;
+        }, ast.arg2(), heads, engine);
         arg1.accept(level);
 
         return resultList;
@@ -4137,7 +4158,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>tests whether <code>expr</code> is a valid level specification.
+   * <p>
+   * tests whether <code>expr</code> is a valid level specification.
    *
    * </blockquote>
    *
@@ -4188,11 +4210,13 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>expr</code> with the last element removed.
+   * <p>
+   * returns <code>expr</code> with the last element removed.
    *
    * </blockquote>
    *
-   * <p><code>Most(expr)</code> is equivalent to <code>expr[[;;-2]]</code>.
+   * <p>
+   * <code>Most(expr)</code> is equivalent to <code>expr[[;;-2]]</code>.
    *
    * <h3>Examples</h3>
    *
@@ -4204,7 +4228,8 @@ public final class ListFunctions {
    * a+b
    * </pre>
    *
-   * <p>Nonatomic expression expected.
+   * <p>
+   * Nonatomic expression expected.
    *
    * <pre>
    * &gt;&gt; Most(x)
@@ -4265,8 +4290,8 @@ public final class ListFunctions {
      * @param engine
      * @return the list of elements from <code>inputList</code> to which x is nearest
      */
-    private static IAST numericalNearest(
-        IAST inputList, INumber x, IExpr distanceFunction, EvalEngine engine) {
+    private static IAST numericalNearest(IAST inputList, INumber x, IExpr distanceFunction,
+        EvalEngine engine) {
       try {
         IASTAppendable nearest = null;
         IExpr distance = F.NIL;
@@ -4343,7 +4368,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>pads <code>list</code> to length <code>n</code> by adding <code>0</code> on the left.
+   * <p>
+   * pads <code>list</code> to length <code>n</code> by adding <code>0</code> on the left.
    *
    * </blockquote>
    *
@@ -4353,7 +4379,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>pads <code>list</code> to length <code>n</code> by adding <code>x</code> on the left.
+   * <p>
+   * pads <code>list</code> to length <code>n</code> by adding <code>x</code> on the left.
    *
    * </blockquote>
    *
@@ -4363,7 +4390,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>turns the ragged list <code>list</code> into a regular list by adding '0' on the left.
+   * <p>
+   * turns the ragged list <code>list</code> into a regular list by adding '0' on the left.
    *
    * </blockquote>
    *
@@ -4420,13 +4448,10 @@ public final class ListFunctions {
         if (levels != null && levels.length > 0) {
           int listLevel = list.depth() - 1;
           if (levels.length > listLevel) {
-            // The padding specification `1` involves `2` levels, the list `3` has only  `4`
+            // The padding specification `1` involves `2` levels, the list `3` has only `4`
             // level.
-            return IOFunctions.printMessage(
-                ast.topHead(),
-                "levelpad",
-                F.List(ast.arg2(), F.ZZ(levels.length), list, F.ZZ(listLevel)),
-                engine);
+            return IOFunctions.printMessage(ast.topHead(), "levelpad",
+                F.List(ast.arg2(), F.ZZ(levels.length), list, F.ZZ(listLevel)), engine);
           }
 
           IExpr defaultValue = F.C0;
@@ -4434,8 +4459,8 @@ public final class ListFunctions {
             defaultValue = ast.arg3();
           }
           IASTAppendable result = list.copyHead(levels[0]);
-          if (padLeftASTList(
-              list, list.head(), (IAST) ast.arg1(), defaultValue, levels, 1, levels[0], result)) {
+          if (padLeftASTList(list, list.head(), (IAST) ast.arg1(), defaultValue, levels, 1,
+              levels[0], result)) {
             return result;
           }
         }
@@ -4507,15 +4532,8 @@ public final class ListFunctions {
       return ast;
     }
 
-    private static boolean padLeftASTList(
-        IAST originalAST,
-        IExpr mainHead,
-        IAST list,
-        IExpr x,
-        int[] levels,
-        int position,
-        int length,
-        IASTAppendable result) {
+    private static boolean padLeftASTList(IAST originalAST, IExpr mainHead, IAST list, IExpr x,
+        int[] levels, int position, int length, IASTAppendable result) {
       if (position >= levels.length) {
         int padSize = length;
         if (list.isPresent()) {
@@ -4553,11 +4571,9 @@ public final class ListFunctions {
           if (list.isPresent() && list.get(j).isASTOrAssociation()) {
             subList = (IAST) list.get(j++);
           } else {
-            throw new ArgumentTypeException(
-                IOFunctions.getMessage(
-                    "padlevel",
-                    F.List(F.List(levels), F.ZZ(levels.length), originalAST, F.ZZ(position - 1)),
-                    EvalEngine.get()));
+            throw new ArgumentTypeException(IOFunctions.getMessage("padlevel",
+                F.List(F.List(levels), F.ZZ(levels.length), originalAST, F.ZZ(position - 1)),
+                EvalEngine.get()));
           }
         } else {
           subList = F.NIL;
@@ -4567,8 +4583,8 @@ public final class ListFunctions {
         } else {
           subResult = F.ast(mainHead, subLength);
         }
-        if (!padLeftASTList(
-            originalAST, mainHead, subList, x, levels, position, subLength, subResult)) {
+        if (!padLeftASTList(originalAST, mainHead, subList, x, levels, position, subLength,
+            subResult)) {
           return false;
         }
         result.append(subResult);
@@ -4586,7 +4602,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>pads <code>list</code> to length <code>n</code> by adding <code>0</code> on the right.
+   * <p>
+   * pads <code>list</code> to length <code>n</code> by adding <code>0</code> on the right.
    *
    * </blockquote>
    *
@@ -4596,7 +4613,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>pads <code>list</code> to length <code>n</code> by adding <code>x</code> on the right.
+   * <p>
+   * pads <code>list</code> to length <code>n</code> by adding <code>x</code> on the right.
    *
    * </blockquote>
    *
@@ -4606,7 +4624,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>turns the ragged list <code>list</code> into a regular list by adding '0' on the right.
+   * <p>
+   * turns the ragged list <code>list</code> into a regular list by adding '0' on the right.
    *
    * </blockquote>
    *
@@ -4648,8 +4667,8 @@ public final class ListFunctions {
           if (maxSize > 0) {
             IASTAppendable result = F.ListAlloc(list.size());
             final int mSize = maxSize;
-            return result.appendArgs(
-                list.size(), i -> padRightAtom(list.getAST(i), mSize - 1, F.C0));
+            return result.appendArgs(list.size(),
+                i -> padRightAtom(list.getAST(i), mSize - 1, F.C0));
           }
         }
         return ast.arg1();
@@ -4660,13 +4679,10 @@ public final class ListFunctions {
         if (levels != null && levels.length > 0) {
           int listLevel = list.depth() - 1;
           if (levels.length > listLevel) {
-            // The padding specification `1` involves `2` levels, the list `3` has only  `4`
+            // The padding specification `1` involves `2` levels, the list `3` has only `4`
             // level.
-            return IOFunctions.printMessage(
-                ast.topHead(),
-                "levelpad",
-                F.List(ast.arg2(), F.ZZ(levels.length), list, F.ZZ(listLevel)),
-                engine);
+            return IOFunctions.printMessage(ast.topHead(), "levelpad",
+                F.List(ast.arg2(), F.ZZ(levels.length), list, F.ZZ(listLevel)), engine);
           }
 
           IExpr defaultValue = F.C0;
@@ -4674,8 +4690,8 @@ public final class ListFunctions {
             defaultValue = ast.arg3();
           }
           IASTAppendable result = list.copyHead(levels[0]);
-          if (padRightASTList(
-              list, list.head(), (IAST) ast.arg1(), defaultValue, levels, 1, levels[0], result)) {
+          if (padRightASTList(list, list.head(), (IAST) ast.arg1(), defaultValue, levels, 1,
+              levels[0], result)) {
             return result;
           }
         }
@@ -4742,15 +4758,8 @@ public final class ListFunctions {
       return ast;
     }
 
-    private static boolean padRightASTList(
-        IAST originalAST,
-        IExpr mainHead,
-        IAST list,
-        IExpr x,
-        int[] levels,
-        int position,
-        int length,
-        IASTAppendable result) {
+    private static boolean padRightASTList(IAST originalAST, IExpr mainHead, IAST list, IExpr x,
+        int[] levels, int position, int length, IASTAppendable result) {
       if (position >= levels.length) {
         if (list.isPresent()) {
           int astLength = list.argSize() > length ? length : list.argSize();
@@ -4775,11 +4784,9 @@ public final class ListFunctions {
           if (list.isPresent() && list.get(i + 1).isASTOrAssociation()) {
             subList = (IAST) list.get(i + 1);
           } else {
-            throw new ArgumentTypeException(
-                IOFunctions.getMessage(
-                    "padlevel",
-                    F.List(F.List(levels), F.ZZ(levels.length), originalAST, F.ZZ(position - 1)),
-                    EvalEngine.get()));
+            throw new ArgumentTypeException(IOFunctions.getMessage("padlevel",
+                F.List(F.List(levels), F.ZZ(levels.length), originalAST, F.ZZ(position - 1)),
+                EvalEngine.get()));
           }
         } else {
           subList = F.NIL;
@@ -4789,8 +4796,8 @@ public final class ListFunctions {
         } else {
           subResult = F.ast(mainHead, subLength);
         }
-        if (!padRightASTList(
-            originalAST, mainHead, subList, x, levels, position, subLength, subResult)) {
+        if (!padRightASTList(originalAST, mainHead, subList, x, levels, position, subLength,
+            subResult)) {
           return false;
         }
         result.append(subResult);
@@ -4809,7 +4816,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the elements of <code>nested-list</code> that have value <code>True</code> in the
+   * <p>
+   * returns the elements of <code>nested-list</code> that have value <code>True</code> in the
    * corresponding position in <code>nested-selection</code>.
    *
    * </blockquote>
@@ -4821,8 +4829,9 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the elements of <code>nested-list</code> those values in the corresponding position
-   * in <code>nested-selection</code> match the <code>pattern</code>.
+   * <p>
+   * returns the elements of <code>nested-list</code> those values in the corresponding position in
+   * <code>nested-selection</code> match the <code>pattern</code>.
    *
    * </blockquote>
    *
@@ -4836,7 +4845,8 @@ public final class ListFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Cases.md">Cases</a>, <a href="Select.md">Select</a>
+   * <p>
+   * <a href="Cases.md">Cases</a>, <a href="Select.md">Select</a>
    */
   private static final class Pick extends AbstractEvaluator {
 
@@ -4875,8 +4885,8 @@ public final class ListFunctions {
 
     /**
      * Return the elements of <code>list</code> those values in the corresponding position in <code>
-     * selection</code> match with <code>matcher</code>. See: <a
-     * href="https://mathematica.stackexchange.com/a/119235/21734">Stackexchange - The Pick
+     * selection</code> match with <code>matcher</code>. See:
+     * <a href="https://mathematica.stackexchange.com/a/119235/21734">Stackexchange - The Pick
      * Process</a>
      *
      * @param list
@@ -4884,10 +4894,10 @@ public final class ListFunctions {
      * @param matcher
      * @param result append the matched elements to this <code>IASTAppendable</code>
      * @return the elements of <code>list</code> those values in the corresponding position in
-     *     <code>selection</code> match with <code>matcher</code>.
+     *         <code>selection</code> match with <code>matcher</code>.
      */
-    private static IExpr recursePick(
-        IAST list, IAST selection, IPatternMatcher matcher, IASTAppendable result) {
+    private static IExpr recursePick(IAST list, IAST selection, IPatternMatcher matcher,
+        IASTAppendable result) {
       for (int i = 1; i < list.size(); i++) {
         IExpr arg1 = list.getRule(i);
         IExpr arg2 = selection.getRule(i);
@@ -4920,7 +4930,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the list of positions for which <code>expr</code> matches <code>patt</code>.
+   * <p>
+   * returns the list of positions for which <code>expr</code> matches <code>patt</code>.
    *
    * </blockquote>
    *
@@ -4935,27 +4946,31 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>Position({1, 2, 2, 1, 2, 3, 2}, 2) {{2},{3},{5},{7}}
+   * <p>
+   * Position({1, 2, 2, 1, 2, 3, 2}, 2) {{2},{3},{5},{7}}
    *
    * </blockquote>
    *
    * </blockquote>
    *
-   * <p>Find positions upto 3 levels deep
+   * <p>
+   * Find positions upto 3 levels deep
    *
    * <pre>
    * &gt;&gt; Position({1 + Sin(x), x, (Tan(x) - y)^2}, x, 3)
    * {{1,2,1},{2}}
    * </pre>
    *
-   * <p>Find all powers of x
+   * <p>
+   * Find all powers of x
    *
    * <pre>
    * &gt;&gt; Position({1 + x^2, x y ^ 2,  4 y,  x ^ z}, x^_)
    * {{1,2},{4}}
    * </pre>
    *
-   * <p>Use Position as an operator
+   * <p>
+   * Use Position as an operator
    *
    * <pre>
    * &gt;&gt; Position(_Integer)({1.5, 2, 2.5})
@@ -4981,13 +4996,9 @@ public final class ListFunctions {
        * @param positionConverter
        * @param headOffset
        */
-      private RecursionData(
-          final IASTAppendable resultCollection,
-          int maxResults,
-          final LevelSpec level,
-          final Predicate<? super IExpr> matcher,
-          final PositionConverter positionConverter,
-          int headOffset) {
+      private RecursionData(final IASTAppendable resultCollection, int maxResults,
+          final LevelSpec level, final Predicate<? super IExpr> matcher,
+          final PositionConverter positionConverter, int headOffset) {
         this.resultCollection = resultCollection;
         this.maxResults = maxResults;
         this.level = level;
@@ -4995,6 +5006,7 @@ public final class ListFunctions {
         this.positionConverter = positionConverter;
         this.headOffset = headOffset;
       }
+
       /**
        * Add the positions to the <code>resultCollection</code> where the matching expressions
        * appear in <code>list</code>. The <code>positionConverter</code> converts the <code>int
@@ -5051,16 +5063,12 @@ public final class ListFunctions {
      * @param pattern
      * @param level
      * @param maxResults the maximum number of results which should be returned in the resulting
-     *     <code>List</code>
+     *        <code>List</code>
      * @param engine
      * @return a <code>F.List()</code> of result positions
      */
-    private static IAST position(
-        final IAST ast,
-        final IExpr pattern,
-        final LevelSpec level,
-        int maxResults,
-        EvalEngine engine) {
+    private static IAST position(final IAST ast, final IExpr pattern, final LevelSpec level,
+        int maxResults, EvalEngine engine) {
       final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
       final PositionConverter positionConverter = new PositionConverter();
 
@@ -5086,8 +5094,7 @@ public final class ListFunctions {
       if (ast.size() >= 5) {
         maxResults = engine.evaluate(ast.arg4()).toIntDefault();
         if (maxResults < 0) {
-          LOGGER.log(
-              engine.getLogLevel(),
+          LOGGER.log(engine.getLogLevel(),
               "Position: non-negative integer for maximum number of objects expected.");
           return F.NIL;
         }
@@ -5133,8 +5140,7 @@ public final class ListFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDREST);
-      setOptions(
-          newSymbol, //
+      setOptions(newSymbol, //
           F.List(F.Rule(S.Heads, S.True)));
     }
   }
@@ -5148,13 +5154,15 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>expr</code> with <code>item</code> prepended to its leaves.
+   * <p>
+   * returns <code>expr</code> with <code>item</code> prepended to its leaves.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p><code>Prepend</code> is similar to <code>Append</code>, but adds <code>item</code> to the
+   * <p>
+   * <code>Prepend</code> is similar to <code>Append</code>, but adds <code>item</code> to the
    * beginning of <code>expr</code>:
    *
    * <pre>
@@ -5162,14 +5170,16 @@ public final class ListFunctions {
    * {1,2,3,4}
    * </pre>
    *
-   * <p><code>Prepend</code> works on expressions with heads other than 'List':<br>
+   * <p>
+   * <code>Prepend</code> works on expressions with heads other than 'List':<br>
    *
    * <pre>
    * &gt;&gt; Prepend(f(b, c), a)
    * f(a,b,c)
    * </pre>
    *
-   * <p>Unlike <code>Join</code>, <code>Prepend</code> does not flatten lists in <code>item</code>:
+   * <p>
+   * Unlike <code>Join</code>, <code>Prepend</code> does not flatten lists in <code>item</code>:
    * <br>
    *
    * <pre>
@@ -5177,7 +5187,8 @@ public final class ListFunctions {
    * {{a,b},c,d}
    * </pre>
    *
-   * <p>Nonatomic expression expected.<br>
+   * <p>
+   * Nonatomic expression expected.<br>
    *
    * <pre>
    * &gt;&gt; Prepend(a, b)
@@ -5222,7 +5233,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>prepend <code>item</code> to value of <code>s</code> and sets <code>s</code> to the result.
+   * <p>
+   * prepend <code>item</code> to value of <code>s</code> and sets <code>s</code> to the result.
    *
    * </blockquote>
    *
@@ -5234,21 +5246,24 @@ public final class ListFunctions {
    * {1,2,4,9}
    * </pre>
    *
-   * <p>Add a new value at the beginning of the list:<br>
+   * <p>
+   * Add a new value at the beginning of the list:<br>
    *
    * <pre>
    * &gt;&gt; PrependTo(s, 0)
    * {0,1,2,4,9}
    * </pre>
    *
-   * <p>The value assigned to s has changed:<br>
+   * <p>
+   * The value assigned to s has changed:<br>
    *
    * <pre>
    * &gt;&gt; s
    * {0,1,2,4,9}
    * </pre>
    *
-   * <p>'PrependTo' works with a head other than 'List':
+   * <p>
+   * 'PrependTo' works with a head other than 'List':
    *
    * <pre>
    * &gt;&gt; y = f(a, b, c)
@@ -5259,14 +5274,16 @@ public final class ListFunctions {
    * f(x,a,b,c)
    * </pre>
    *
-   * <p>{a, b} is not a variable with a value, so its value cannot be changed.
+   * <p>
+   * {a, b} is not a variable with a value, so its value cannot be changed.
    *
    * <pre>
    * &gt;&gt; PrependTo({a, b}, 1)
    * PrependTo({a,b},1)
    * </pre>
    *
-   * <p>a is not a variable with a value, so its value cannot be changed.
+   * <p>
+   * a is not a variable with a value, so its value cannot be changed.
    *
    * <pre>
    * &gt;&gt; PrependTo(a, b)
@@ -5279,7 +5296,8 @@ public final class ListFunctions {
    * 3
    * </pre>
    *
-   * <p>Nonatomic expression expected at position 1 in PrependTo
+   * <p>
+   * Nonatomic expression expected at position 1 in PrependTo
    *
    * <pre>
    * &gt;&gt; PrependTo(x, {3, 4})
@@ -5355,7 +5373,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a list of integers from <code>1</code> to <code>n</code>.
+   * <p>
+   * returns a list of integers from <code>1</code> to <code>n</code>.
    *
    * </blockquote>
    *
@@ -5365,7 +5384,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a list of integers from <code>a</code> to <code>b</code>.
+   * <p>
+   * returns a list of integers from <code>a</code> to <code>b</code>.
    *
    * </blockquote>
    *
@@ -5404,8 +5424,7 @@ public final class ListFunctions {
         if (size != Integer.MIN_VALUE) {
           return range(size);
         }
-        LOGGER.log(
-            engine.getLogLevel(),
+        LOGGER.log(engine.getLogLevel(),
             "Range: argument {} is greater than Javas Integer.MAX_VALUE or no integer number.",
             ast.arg1());
         return F.NIL;
@@ -5413,8 +5432,8 @@ public final class ListFunctions {
       if (ast.isAST3()) {
         if (ast.arg3().isZero()) {
           // Infinite expression `1` encountered.
-          return IOFunctions.printMessage(
-              ast.topHead(), "infy", F.List(F.Divide(ast.arg2(), F.C0)), engine);
+          return IOFunctions.printMessage(ast.topHead(), "infy", F.List(F.Divide(ast.arg2(), F.C0)),
+              engine);
         }
         if (ast.arg3().isDirectedInfinity()) {
           return ast.arg1();
@@ -5430,10 +5449,8 @@ public final class ListFunctions {
      */
     public static IAST range(int size) {
       if (size > Integer.MAX_VALUE - 3) {
-        LOGGER.log(
-            EvalEngine.get().getLogLevel(),
-            "Range: argument {} is greater than Javas Integer.MAX_VALUE-3",
-            size);
+        LOGGER.log(EvalEngine.get().getLogLevel(),
+            "Range: argument {} is greater than Javas Integer.MAX_VALUE-3", size);
         return F.NIL;
       }
       return range(1, size + 1);
@@ -5506,17 +5523,17 @@ public final class ListFunctions {
             // nth smallest element
             int pn = -n;
             if (pn < 1 || pn > argSize) {
-              // The rank `1` is not an integer between `2` and  `3`.
-              return IOFunctions.printMessage(
-                  ast.topHead(), "rank", F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+              // The rank `1` is not an integer between `2` and `3`.
+              return IOFunctions.printMessage(ast.topHead(), "rank",
+                  F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
             }
             return rankedMin(list, pn, ast, engine);
           } else {
             // nth largest element
             if (n < 1 || n > argSize) {
-              // The rank `1` is not an integer between `2` and  `3`.
-              return IOFunctions.printMessage(
-                  ast.topHead(), "rank", F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+              // The rank `1` is not an integer between `2` and `3`.
+              return IOFunctions.printMessage(ast.topHead(), "rank",
+                  F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
             }
             return rankedMin(list, list.size() - n, ast, engine);
           }
@@ -5551,17 +5568,17 @@ public final class ListFunctions {
             // nth largest element
             int pn = -n;
             if (pn < 1 || pn > argSize) {
-              // The rank `1` is not an integer between `2` and  `3`.
-              return IOFunctions.printMessage(
-                  ast.topHead(), "rank", F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+              // The rank `1` is not an integer between `2` and `3`.
+              return IOFunctions.printMessage(ast.topHead(), "rank",
+                  F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
             }
             return rankedMin(list, list.size() + n, ast, engine);
           } else {
             // nth smallest element
             if (n < 1 || n > argSize) {
-              // The rank `1` is not an integer between `2` and  `3`.
-              return IOFunctions.printMessage(
-                  ast.topHead(), "rank", F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+              // The rank `1` is not an integer between `2` and `3`.
+              return IOFunctions.printMessage(ast.topHead(), "rank",
+                  F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
             }
             return rankedMin(list, n, ast, engine);
           }
@@ -5585,7 +5602,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>convert numerical real or imaginary parts in (sub-)expressions into rational numbers.
+   * <p>
+   * convert numerical real or imaginary parts in (sub-)expressions into rational numbers.
    *
    * </blockquote>
    *
@@ -5617,7 +5635,7 @@ public final class ListFunctions {
        *
        * @param input the expression which should be replaced by the given rules
        * @return the expression created by the replacements or <code>null</code> if no replacement
-       *     occurs
+       *         occurs
        */
       @Override
       public IExpr apply(IExpr input) {
@@ -5649,8 +5667,8 @@ public final class ListFunctions {
       }
     }
 
-    private static IExpr replaceExpr(
-        final IAST ast, IExpr arg1, IExpr rules, final EvalEngine engine) {
+    private static IExpr replaceExpr(final IAST ast, IExpr arg1, IExpr rules,
+        final EvalEngine engine) {
       // if (rules.isListOfLists()) {
       // IAST rulesList = (IAST) rules;
       // IASTAppendable result = F.ListAlloc(rulesList.size());
@@ -5698,8 +5716,8 @@ public final class ListFunctions {
           "rule expressions (x->y) expected instead of " + rules.toString());
     }
 
-    private static IExpr replaceExprWithLevelSpecification(
-        final IAST ast, IExpr arg1, IExpr rules, IExpr exprLevelSpecification, EvalEngine engine) {
+    private static IExpr replaceExprWithLevelSpecification(final IAST ast, IExpr arg1, IExpr rules,
+        IExpr exprLevelSpecification, EvalEngine engine) {
       // use replaceFunction#setRule() method to set the current rules which
       // are initialized with an empty list { }
       ReplaceFunction replaceFunction = new ReplaceFunction(F.CEmptyList, engine);
@@ -5786,7 +5804,8 @@ public final class ListFunctions {
    * ReplaceAll(expr, i -&gt; new)
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * expr /. i -&gt; new
@@ -5794,7 +5813,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>replaces all <code>i</code> in <code>expr</code> with <code>new</code>.
+   * <p>
+   * replaces all <code>i</code> in <code>expr</code> with <code>new</code>.
    *
    * </blockquote>
    *
@@ -5802,7 +5822,8 @@ public final class ListFunctions {
    * ReplaceAll(expr, {i1 -&gt; new1, i2 -&gt; new2, ... } )
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * expr /. {i1 -&gt; new1, i2 -&gt; new2, ... }
@@ -5810,7 +5831,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>replaces all <code>i</code>s in <code>expr</code> with <code>new</code>s.
+   * <p>
+   * replaces all <code>i</code>s in <code>expr</code> with <code>new</code>s.
    *
    * </blockquote>
    *
@@ -5854,7 +5876,8 @@ public final class ListFunctions {
    * </code>
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * <code>ReplaceList(expr, lhs :&gt; rhs)
@@ -5863,8 +5886,9 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>replaces the left-hand-side pattern expression <code>lhs</code> in <code>expr</code> with
-   * the right-hand-side <code>rhs</code>.
+   * <p>
+   * replaces the left-hand-side pattern expression <code>lhs</code> in <code>expr</code> with the
+   * right-hand-side <code>rhs</code>.
    *
    * </blockquote>
    *
@@ -5878,13 +5902,8 @@ public final class ListFunctions {
    */
   private static final class ReplaceList extends AbstractEvaluator {
 
-    private static IExpr replaceExpr(
-        final IAST ast,
-        IExpr arg1,
-        IExpr rules,
-        IASTAppendable result,
-        int maxNumberOfResults,
-        final EvalEngine engine) {
+    private static IExpr replaceExpr(final IAST ast, IExpr arg1, IExpr rules, IASTAppendable result,
+        int maxNumberOfResults, final EvalEngine engine) {
       if (rules.isList()) {
         IAST rulesList = (IAST) rules;
         for (IExpr element : rulesList) {
@@ -5949,7 +5968,8 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      if (!ToggleFeature.REPLACE_LIST) {}
+      if (!ToggleFeature.REPLACE_LIST) {
+      }
     }
   }
 
@@ -5962,7 +5982,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>replaces part <code>i</code> in <code>expr</code> with <code>new</code>.
+   * <p>
+   * replaces part <code>i</code> in <code>expr</code> with <code>new</code>.
    *
    * </blockquote>
    *
@@ -5972,7 +5993,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>replaces parts <code>i</code> and <code>j</code> with <code>e1</code>, and parts <code>k
+   * <p>
+   * replaces parts <code>i</code> and <code>j</code> with <code>e1</code>, and parts <code>k
    * </code> and <code>l</code> with <code>e2</code>.
    *
    * </blockquote>
@@ -5993,7 +6015,8 @@ public final class ListFunctions {
    * {t,t,c}
    * </pre>
    *
-   * <p>Delayed rules are evaluated once for each replacement:
+   * <p>
+   * Delayed rules are evaluated once for each replacement:
    *
    * <pre>
    * &gt;&gt; n = 1
@@ -6001,21 +6024,24 @@ public final class ListFunctions {
    * {1,b,2,d}
    * </pre>
    *
-   * <p>Non-existing parts are simply ignored:
+   * <p>
+   * Non-existing parts are simply ignored:
    *
    * <pre>
    * &gt;&gt; ReplacePart({a, b, c}, 4 -&gt; t)
    * {a,b,c}
    * </pre>
    *
-   * <p>You can replace heads by replacing part <code>0</code>:
+   * <p>
+   * You can replace heads by replacing part <code>0</code>:
    *
    * <pre>
    * &gt;&gt; ReplacePart({a, b, c}, 0 -&gt; Times)
    * a*b*c
    * </pre>
    *
-   * <p>Negative part numbers count from the end:
+   * <p>
+   * Negative part numbers count from the end:
    *
    * <pre>
    * &gt;&gt; ReplacePart({a, b, c}, -1 -&gt; t)
@@ -6051,16 +6077,20 @@ public final class ListFunctions {
         }
       }
 
-      if (ast.arg2().isList()) {
+      if (ast.arg2().isListOfRules()) {
         IExpr result = ast.arg1();
-        for (IExpr subList : (IAST) ast.arg2()) {
-          if (subList.isRuleAST()) {
-            IExpr expr = result.replacePart((IAST) subList, heads);
-            if (expr.isPresent()) {
-              result = expr;
-            }
-          }
+        IExpr expr = result.replacePart((IAST) ast.arg2(), heads);
+        if (expr.isPresent()) {
+          result = expr;
         }
+        // for (IExpr subList : (IAST) ast.arg2()) {
+        // if (subList.isRuleAST()) {
+        // IExpr expr = result.replacePart((IAST) subList, heads);
+        // if (expr.isPresent()) {
+        // result = expr;
+        // }
+        // }
+        // }
         return result;
       }
       IExpr result = ast.arg1();
@@ -6089,7 +6119,8 @@ public final class ListFunctions {
    * </code>
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * <code>ReplaceRepeated(expr, lhs :&gt; rhs)
@@ -6100,8 +6131,9 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>repeatedly applies the rule <code>lhs -&gt; rhs</code> to <code>expr</code> until the result
-   * no longer changes.
+   * <p>
+   * repeatedly applies the rule <code>lhs -&gt; rhs</code> to <code>expr</code> until the result no
+   * longer changes.
    *
    * </blockquote>
    *
@@ -6113,7 +6145,8 @@ public final class ListFunctions {
    * </code>
    * </pre>
    *
-   * <p>Simplification of logarithms:
+   * <p>
+   * Simplification of logarithms:
    *
    * <pre>
    * <code>&gt;&gt; logrules = {Log(x_ * y_) :&gt; Log(x) + Log(y), Log(x_^y_) :&gt; y * Log(x)};
@@ -6123,7 +6156,8 @@ public final class ListFunctions {
    * </code>
    * </pre>
    *
-   * <p><code>ReplaceAll</code> just performs a single replacement:
+   * <p>
+   * <code>ReplaceAll</code> just performs a single replacement:
    *
    * <pre>
    * <code>&gt;&gt; Log(a * (b * c) ^ d ^ e * f) /. logrules
@@ -6171,11 +6205,13 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>expr</code> with the first element removed.
+   * <p>
+   * returns <code>expr</code> with the first element removed.
    *
    * </blockquote>
    *
-   * <p><code>Rest(expr)</code> is equivalent to <code>expr[[2;;]]</code>.
+   * <p>
+   * <code>Rest(expr)</code> is equivalent to <code>expr[[2;;]]</code>.
    *
    * <h3>Examples</h3>
    *
@@ -6187,7 +6223,8 @@ public final class ListFunctions {
    * b+c
    * </pre>
    *
-   * <p>Nonatomic expression expected.
+   * <p>
+   * Nonatomic expression expected.
    *
    * <pre>
    * &gt;&gt; Rest(x)
@@ -6202,9 +6239,9 @@ public final class ListFunctions {
       if (rest.isPresent()) {
         return rest;
       }
-      //      if (arg1.isASTOrAssociation() && ((IAST) arg1).size() > 1) {
-      //        return arg1.rest();
-      //      }
+      // if (arg1.isASTOrAssociation() && ((IAST) arg1).size() > 1) {
+      // return arg1.rest();
+      // }
       // Nonatomic expression expected at position `1` in `2`.
       return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
     }
@@ -6224,7 +6261,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>reverse the elements of the <code>list</code>.
+   * <p>
+   * reverse the elements of the <code>list</code>.
    *
    * </blockquote>
    *
@@ -6308,7 +6346,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>insert elements of <code>list2</code> between the elements of <code>list1</code>.
+   * <p>
+   * insert elements of <code>list2</code> between the elements of <code>list1</code>.
    *
    * </blockquote>
    *
@@ -6394,7 +6433,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>rotates the items of <code>list</code> by one item to the left.
+   * <p>
+   * rotates the items of <code>list</code> by one item to the left.
    *
    * </blockquote>
    *
@@ -6404,7 +6444,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>rotates the items of <code>list</code> by <code>n</code> items to the left.
+   * <p>
+   * rotates the items of <code>list</code> by <code>n</code> items to the left.
    *
    * </blockquote>
    *
@@ -6469,7 +6510,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>rotates the items of <code>list</code> by one item to the right.
+   * <p>
+   * rotates the items of <code>list</code> by one item to the right.
    *
    * </blockquote>
    *
@@ -6479,7 +6521,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>rotates the items of <code>list</code> by <code>n</code> items to the right.
+   * <p>
+   * rotates the items of <code>list</code> by <code>n</code> items to the right.
    *
    * </blockquote>
    *
@@ -6544,28 +6587,32 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a list of the elements <code>ei</code> for which <code>f(ei)</code> returns <code>
+   * <p>
+   * returns a list of the elements <code>ei</code> for which <code>f(ei)</code> returns <code>
    * True</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>Find numbers greater than zero:
+   * <p>
+   * Find numbers greater than zero:
    *
    * <pre>
    * &gt;&gt; Select({-3, 0, 1, 3, a}, #&gt;0&amp;)
    * {1,3}
    * </pre>
    *
-   * <p><code>Select</code> works on an expression with any head:
+   * <p>
+   * <code>Select</code> works on an expression with any head:
    *
    * <pre>
    * &gt;&gt; Select(f(a, 2, 3), NumberQ)
    * f(2,3)
    * </pre>
    *
-   * <p>Nonatomic expression expected.
+   * <p>
+   * Nonatomic expression expected.
    *
    * <pre>
    * &gt;&gt; Select(a, True)
@@ -6653,7 +6700,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>splits <code>list</code> into collections of consecutive identical elements.
+   * <p>
+   * splits <code>list</code> into collections of consecutive identical elements.
    *
    * </blockquote>
    *
@@ -6663,7 +6711,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>splits <code>list</code> based on whether the function <code>test</code> yields 'True' on
+   * <p>
+   * splits <code>list</code> based on whether the function <code>test</code> yields 'True' on
    * consecutive elements.
    *
    * </blockquote>
@@ -6678,7 +6727,8 @@ public final class ListFunctions {
    * {{x},{x},{x},{y},{x},{y},{y},{z}}
    * </pre>
    *
-   * <p>Split into increasing or decreasing runs of elements
+   * <p>
+   * Split into increasing or decreasing runs of elements
    *
    * <pre>
    * &gt;&gt; Split({1, 5, 6, 3, 6, 1, 6, 3, 4, 5, 4}, Less)
@@ -6688,7 +6738,8 @@ public final class ListFunctions {
    * {{1},{5},{6,3},{6,1},{6,3},{4},{5,4}}
    * </pre>
    *
-   * <p>Split based on first element
+   * <p>
+   * Split based on first element
    *
    * <pre>
    * &gt;&gt; Split({x -&gt; a, x -&gt; y, 2 -&gt; a, z -&gt; c, z -&gt; a}, First(#1) === First(#2) &amp;)
@@ -6750,7 +6801,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>splits <code>list</code> into collections of consecutive elements that give the same result
+   * <p>
+   * splits <code>list</code> into collections of consecutive elements that give the same result
    * when <code>f</code> is applied.
    *
    * </blockquote>
@@ -6891,7 +6943,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>evaluates <code>expr</code> with <code>i</code> ranging from <code>1</code> to <code>n
+   * <p>
+   * evaluates <code>expr</code> with <code>i</code> ranging from <code>1</code> to <code>n
    * </code>, returning a list of the results.
    *
    * </blockquote>
@@ -6902,7 +6955,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>evaluates <code>expr</code> with <code>i</code> ranging from <code>start</code> to <code>
+   * <p>
+   * evaluates <code>expr</code> with <code>i</code> ranging from <code>start</code> to <code>
    * stop</code>, incrementing by <code>step</code>.
    *
    * </blockquote>
@@ -6913,7 +6967,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>evaluates <code>expr</code> with <code>i</code> taking on the values <code>e1, e2, ..., ei
+   * <p>
+   * evaluates <code>expr</code> with <code>i</code> taking on the values <code>e1, e2, ..., ei
    * </code>.
    *
    * </blockquote>
@@ -6947,7 +7002,8 @@ public final class ListFunctions {
    * {a^2,b^2,c^2}
    * </pre>
    *
-   * <p><code>Table</code> supports multi-dimensional tables:
+   * <p>
+   * <code>Table</code> supports multi-dimensional tables:
    *
    * <pre>
    * &gt;&gt; Table({i, j}, {i, {a, b}}, {j, 1, 2})
@@ -6981,8 +7037,8 @@ public final class ListFunctions {
      * @param engine the current evaluation engine
      * @return {@link F#NIL} if no evaluation is possible
      */
-    protected static IExpr evaluateTable(
-        final IAST ast, final IAST resultList, IExpr defaultValue, EvalEngine engine) {
+    protected static IExpr evaluateTable(final IAST ast, final IAST resultList, IExpr defaultValue,
+        EvalEngine engine) {
       try {
         if (ast.size() > 2) {
           final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
@@ -6996,15 +7052,14 @@ public final class ListFunctions {
                 iterList.add(Iterator.create(F.List(evaledArg), i, engine));
               } else {
                 // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
-                return IOFunctions.printMessage(
-                    ast.topHead(), "nliter", F.List(arg, F.ZZ(i)), engine);
+                return IOFunctions.printMessage(ast.topHead(), "nliter", F.List(arg, F.ZZ(i)),
+                    engine);
               }
             }
           }
 
-          final TableGenerator generator =
-              new TableGenerator(
-                  iterList, resultList, new TableFunction(engine, ast.arg1()), defaultValue);
+          final TableGenerator generator = new TableGenerator(iterList, resultList,
+              new TableFunction(engine, ast.arg1()), defaultValue);
           return generator.table();
         }
       } catch (final ArrayIndexOutOfBoundsException e) {
@@ -7016,8 +7071,8 @@ public final class ListFunctions {
       return F.NIL;
     }
 
-    protected static IExpr evaluateTableThrow(
-        final IAST ast, final IAST resultList, IExpr defaultValue, EvalEngine engine) {
+    protected static IExpr evaluateTableThrow(final IAST ast, final IAST resultList,
+        IExpr defaultValue, EvalEngine engine) {
       try {
         if (ast.size() > 2) {
           final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
@@ -7026,9 +7081,8 @@ public final class ListFunctions {
             iterList.add(Iterator.create(arg.isList() ? (IAST) arg : F.List(arg), i, engine));
           }
 
-          final TableGenerator generator =
-              new TableGenerator(
-                  iterList, resultList, new TableFunction(engine, ast.arg1()), defaultValue);
+          final TableGenerator generator = new TableGenerator(iterList, resultList,
+              new TableFunction(engine, ast.arg1()), defaultValue);
           return generator.tableThrow();
         }
       } catch (final ArrayIndexOutOfBoundsException e) {
@@ -7052,15 +7106,14 @@ public final class ListFunctions {
      * @see Product
      * @see Sum
      */
-    protected static IExpr evaluateLast(
-        final IExpr expr, final IIterator<IExpr> iter, final IAST resultList, IExpr defaultValue) {
+    protected static IExpr evaluateLast(final IExpr expr, final IIterator<IExpr> iter,
+        final IAST resultList, IExpr defaultValue) {
       try {
         final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
         iterList.add(iter);
 
-        final TableGenerator generator =
-            new TableGenerator(
-                iterList, resultList, new TableFunction(EvalEngine.get(), expr), defaultValue);
+        final TableGenerator generator = new TableGenerator(iterList, resultList,
+            new TableFunction(EvalEngine.get(), expr), defaultValue);
         return generator.table();
       } catch (final ArrayIndexOutOfBoundsException e) {
         LOGGER.debug("Table.evaluateLast() failed", e);
@@ -7127,7 +7180,7 @@ public final class ListFunctions {
      *
      * @param expr the expression which should be evaluated
      * @param localVariablesList a list of symbols which should be used as local variables inside
-     *     the block
+     *        the block
      * @return the evaluated object
      */
     public static IExpr evalBlockWithoutReap(IExpr expr, IAST localVariablesList) {
@@ -7156,7 +7209,8 @@ public final class ListFunctions {
    * </code>
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * <code>Tally(list, binary-predicate)
@@ -7165,8 +7219,9 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>return the elements and their number of occurrences in <code>list</code> in a new result
-   * list. The <code>binary-predicate</code> tests if two elements are equivalent. <code>SameQ
+   * <p>
+   * return the elements and their number of occurrences in <code>list</code> in a new result list.
+   * The <code>binary-predicate</code> tests if two elements are equivalent. <code>SameQ
    * </code> is used as the default <code>binary-predicate</code>.
    *
    * </blockquote>
@@ -7183,7 +7238,8 @@ public final class ListFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Commonest.md">Commonest</a>, <a href="Counts.md">Counts</a>
+   * <p>
+   * <a href="Commonest.md">Commonest</a>, <a href="Counts.md">Counts</a>
    */
   private static final class Tally extends AbstractEvaluator {
 
@@ -7231,8 +7287,7 @@ public final class ListFunctions {
 
     private static IAST tally2Args(IAST list, BiPredicate<IExpr, IExpr> test) {
       java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
-      iLoop:
-      for (int i = 1; i < list.size(); i++) {
+      iLoop: for (int i = 1; i < list.size(); i++) {
         IExpr arg = list.get(i);
         for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
           if (test.test(entry.getKey(), arg)) {
@@ -7255,7 +7310,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>expr</code> with all but the first <code>n</code> leaves removed.
+   * <p>
+   * returns <code>expr</code> with all but the first <code>n</code> leaves removed.
    *
    * </blockquote>
    *
@@ -7272,7 +7328,8 @@ public final class ListFunctions {
    * {b,c,d}
    * </pre>
    *
-   * <p>Take a submatrix:
+   * <p>
+   * Take a submatrix:
    *
    * <pre>
    * &gt;&gt; A = {{a, b, c}, {d, e, f}}
@@ -7280,7 +7337,8 @@ public final class ListFunctions {
    * {{a,b},{d,e}}
    * </pre>
    *
-   * <p>Take a single column:
+   * <p>
+   * Take a single column:
    *
    * <pre>
    * &gt;&gt; Take(A, All, {2})
@@ -7293,7 +7351,8 @@ public final class ListFunctions {
    * {8,6,4}
    * </pre>
    *
-   * <p>Cannot take positions <code>-5</code> through <code>-2</code> in <code>{1, 2, 3, 4, 5, 6}
+   * <p>
+   * Cannot take positions <code>-5</code> through <code>-2</code> in <code>{1, 2, 3, 4, 5, 6}
    * </code>.
    *
    * <pre>
@@ -7301,14 +7360,16 @@ public final class ListFunctions {
    * Take({1, 2, 3, 4, 5, 6}, {-5, -2, -2})
    * </pre>
    *
-   * <p>Nonatomic expression expected at position <code>1</code> in <code>Take(l, {-1})</code>.
+   * <p>
+   * Nonatomic expression expected at position <code>1</code> in <code>Take(l, {-1})</code>.
    *
    * <pre>
    * &gt;&gt; Take(l, {-1})
    * Take(l,{-1})
    * </pre>
    *
-   * <p>Empty case
+   * <p>
+   * Empty case
    *
    * <pre>
    * &gt;&gt; Take({1, 2, 3, 4, 5}, {-1, -2})
@@ -7327,7 +7388,8 @@ public final class ListFunctions {
    * {}
    * </pre>
    *
-   * <p>Cannot take positions <code>1</code> through <code>0</code> in <code>{1, 2, 3, 4, 5}</code>.
+   * <p>
+   * Cannot take positions <code>1</code> through <code>0</code> in <code>{1, 2, 3, 4, 5}</code>.
    *
    * <pre>
    * &gt;&gt; Take({1, 2, 3, 4, 5}, {1, 0, -1})
@@ -7338,10 +7400,10 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      //      IAST evaledAST = (IAST) engine.evalAttributes(S.Take, ast);
-      //      if (!evaledAST.isPresent()) {
-      //        evaledAST = ast;
-      //      }
+      // IAST evaledAST = (IAST) engine.evalAttributes(S.Take, ast);
+      // if (!evaledAST.isPresent()) {
+      // evaledAST = ast;
+      // }
       try {
         if (ast.arg1().isASTOrAssociation()) {
           final ISequence[] sequ = Sequence.createSequences(ast, 2, "take", engine);
@@ -7380,8 +7442,8 @@ public final class ListFunctions {
      * @param sequenceSpecifications one or more ISequence specifications
      * @return
      */
-    private static IAST take(
-        final IAST list, final int level, final ISequence[] sequenceSpecifications) {
+    private static IAST take(final IAST list, final int level,
+        final ISequence[] sequenceSpecifications) {
       ISequence sequ = sequenceSpecifications[level];
       int size = list.size();
       sequ.setListSize(size);
@@ -7394,9 +7456,8 @@ public final class ListFunctions {
         end--;
         if (start < end || end <= 0 || start >= list.size()) {
           // Cannot take positions `1` through `2` in `3`.
-          String str =
-              IOFunctions.getMessage(
-                  "take", F.List(F.ZZ(start), F.ZZ(end), list), EvalEngine.get());
+          String str = IOFunctions.getMessage("take", F.List(F.ZZ(start), F.ZZ(end), list),
+              EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
         // negative step used here
@@ -7421,9 +7482,8 @@ public final class ListFunctions {
         }
         if (end > list.size()) {
           // Cannot take positions `1` through `2` in `3`.
-          String str =
-              IOFunctions.getMessage(
-                  "take", F.List(F.ZZ(start), F.ZZ(end - 1), list), EvalEngine.get());
+          String str = IOFunctions.getMessage("take", F.List(F.ZZ(start), F.ZZ(end - 1), list),
+              EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
         for (int i = start; i < end; i += step) {
@@ -7446,8 +7506,8 @@ public final class ListFunctions {
       return resultList;
     }
 
-    private static IAST take(
-        final IAssociation assoc2, final int level, final ISequence[] sequenceSpecifications) {
+    private static IAST take(final IAssociation assoc2, final int level,
+        final ISequence[] sequenceSpecifications) {
       ISequence sequ = sequenceSpecifications[level];
       // IAST normal = assoc2.normal(false);
       int size = assoc2.size();
@@ -7461,9 +7521,8 @@ public final class ListFunctions {
         end--;
         if (start < end || end <= 0 || start >= assoc2.size()) {
           // Cannot take positions `1` through `2` in `3`.
-          String str =
-              IOFunctions.getMessage(
-                  "take", F.List(F.ZZ(start), F.ZZ(end), assoc2), EvalEngine.get());
+          String str = IOFunctions.getMessage("take", F.List(F.ZZ(start), F.ZZ(end), assoc2),
+              EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
         // negative step used here
@@ -7491,9 +7550,8 @@ public final class ListFunctions {
         }
         if (end > assoc2.size()) {
           // Cannot take positions `1` through `2` in `3`.
-          String str =
-              IOFunctions.getMessage(
-                  "take", F.List(F.ZZ(start), F.ZZ(end - 1), assoc2), EvalEngine.get());
+          String str = IOFunctions.getMessage("take", F.List(F.ZZ(start), F.ZZ(end - 1), assoc2),
+              EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
         for (int i = start; i < end; i += step) {
@@ -7596,8 +7654,8 @@ public final class ListFunctions {
               } catch (NoEvalException neex) {
                 // Values `1` produced by the function `2` cannot be used for numerical sorting
                 // because they are not all real.
-                return IOFunctions.printMessage(
-                    ast.topHead(), "tbnval", F.List(list, ast.arg2()), engine);
+                return IOFunctions.printMessage(ast.topHead(), "tbnval", F.List(list, ast.arg2()),
+                    engine);
               }
             }
           }
@@ -7688,8 +7746,8 @@ public final class ListFunctions {
               } catch (NoEvalException neex) {
                 // Values `1` produced by the function `2` cannot be used for numerical sorting
                 // because they are not all real.
-                return IOFunctions.printMessage(
-                    ast.topHead(), "tbnval", F.List(list, ast.arg2()), engine);
+                return IOFunctions.printMessage(ast.topHead(), "tbnval", F.List(list, ast.arg2()),
+                    engine);
               }
             }
           }
@@ -7745,7 +7803,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>adds all values in <code>list</code>.
+   * <p>
+   * adds all values in <code>list</code>.
    *
    * </blockquote>
    *
@@ -7755,7 +7814,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>adds all values up to level <code>n</code>.
+   * <p>
+   * adds all values up to level <code>n</code>.
    *
    * </blockquote>
    *
@@ -7765,7 +7825,8 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>totals only the values at level <code>{n}</code>.
+   * <p>
+   * totals only the values at level <code>{n}</code>.
    *
    * </blockquote>
    *
@@ -7788,16 +7849,13 @@ public final class ListFunctions {
   private static final class Total extends AbstractFunctionEvaluator {
 
     private static class TotalLevelSpecification extends VisitorLevelSpecification {
-      public TotalLevelSpecification(
-          final Function<IExpr, IExpr> function,
-          final IExpr unevaledLevelExpr,
-          boolean includeHeads,
-          final EvalEngine engine) {
+      public TotalLevelSpecification(final Function<IExpr, IExpr> function,
+          final IExpr unevaledLevelExpr, boolean includeHeads, final EvalEngine engine) {
         super(function, unevaledLevelExpr, includeHeads, engine);
       }
 
-      public TotalLevelSpecification(
-          final Function<IExpr, IExpr> function, final int level, final boolean includeHeads) {
+      public TotalLevelSpecification(final Function<IExpr, IExpr> function, final int level,
+          final boolean includeHeads) {
         super(function, level, includeHeads);
       }
 
@@ -7876,15 +7934,17 @@ public final class ListFunctions {
    *
    * <blockquote>
    *
-   * <p>get the union set from <code>set1</code> and <code>set2</code>.
+   * <p>
+   * get the union set from <code>set1</code> and <code>set2</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Union_(set_theory)">Wikipedia - Union (set
-   *       theory)</a><br>
+   * <li><a href="http://en.wikipedia.org/wiki/Union_(set_theory)">Wikipedia - Union (set
+   * theory)</a><br>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -7972,11 +8032,7 @@ public final class ListFunctions {
    * @param binaryFunction
    * @param resultCollection
    */
-  public static IAST foldLeft(
-      final IExpr expr,
-      final IAST list,
-      final int start,
-      final int end,
+  public static IAST foldLeft(final IExpr expr, final IAST list, final int start, final int end,
       final BiFunction<IExpr, IExpr, ? extends IExpr> binaryFunction,
       final IASTAppendable resultCollection) {
     if (start < end) {
@@ -7989,13 +8045,10 @@ public final class ListFunctions {
       }
       resultCollection.append(elem);
       final IExpr[] temp = {elem};
-      resultCollection.appendArgs(
-          from,
-          end,
-          i -> {
-            temp[0] = binaryFunction.apply(temp[0], list.get(i));
-            return temp[0];
-          });
+      resultCollection.appendArgs(from, end, i -> {
+        temp[0] = binaryFunction.apply(temp[0], list.get(i));
+        return temp[0];
+      });
     }
     return resultCollection;
   }
@@ -8010,8 +8063,8 @@ public final class ListFunctions {
    * @param engine
    * @return
    */
-  private static IExpr assignPartTo(
-      ISymbol symbol, IAST part, IBuiltInSymbol header, final IAST ast, EvalEngine engine) {
+  private static IExpr assignPartTo(ISymbol symbol, IAST part, IBuiltInSymbol header,
+      final IAST ast, EvalEngine engine) {
     if (symbol.hasAssignedSymbolValue()) {
       IExpr arg2 = engine.evaluate(ast.arg2());
       IExpr partAppend = engine.evaluate(F.binaryAST2(header, part, arg2));
@@ -8030,12 +8083,8 @@ public final class ListFunctions {
    * @return
    */
   private static IAST cleanList(IAST list) {
-    return list.select(
-        x ->
-            !(x.equals(S.Indeterminate)
-                || x.equals(S.Null)
-                || x.equals(S.None)
-                || x.isAST(S.Missing)));
+    return list.select(x -> !(x.equals(S.Indeterminate) || x.equals(S.Null) || x.equals(S.None)
+        || x.isAST(S.Missing)));
   }
 
   /**
@@ -8066,8 +8115,8 @@ public final class ListFunctions {
           element = listOrAssociation.get(j);
           if (element.isComplexNumeric() || element.isComplex()) {
             // Input `1` is not a vector of reals or integers.
-            return IOFunctions.printMessage(
-                ast.topHead(), "rvec", F.List(listOrAssociation), engine);
+            return IOFunctions.printMessage(ast.topHead(), "rvec", F.List(listOrAssociation),
+                engine);
           }
         }
         return F.NIL;

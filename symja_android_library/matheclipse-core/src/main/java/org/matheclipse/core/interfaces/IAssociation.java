@@ -30,6 +30,9 @@ public interface IAssociation extends IASTAppendable {
   @Override
   public IASTAppendable copyHead(final int intialCapacity);
 
+  @Override
+  public IASTAppendable copyAST();
+
   /**
    * Return the key which points to the <code>position</code>.
    *
