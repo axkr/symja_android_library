@@ -38,6 +38,15 @@ Matrix product:
 a.b
 ```
 
+Wrong dimensions print an error message:
+
+
+```
+{{a, b}, {c, d}}.{{x, y}}
+```
+
+**Dot: Tensors {{a,b},{c,d}} and {{x,y}} have incompatible shapes.**
+
 ### Related terms 
 [Flat](Flat.md), [MatrixPower](MatrixPower.md), [Orderless](Orderless.md), [Times](Times.md) 
 
