@@ -1939,8 +1939,7 @@ public class F extends S {
    * @param m the number of columns of the matrix.
    * @return
    */
-  public static ISparseArray sparseMatrix(BiIntFunction<? extends IExpr> binaryFunction,
-  int n,
+  public static ISparseArray sparseMatrix(BiIntFunction<? extends IExpr> binaryFunction, int n,
       int m) {
     if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
       ASTElementLimitExceeded.throwIt(((long) n) * ((long) m));
@@ -8724,13 +8723,25 @@ public class F extends S {
   }
 
   /**
-   * Create an integer number.
+   * Create an integer number by using the internal small integer number cache. The returned object
+   * references might be the same.
    *
    * @param integerValue
    * @return
    */
   public static IInteger ZZ(final int integerValue) {
     return AbstractIntegerSym.valueOf(integerValue);
+  }
+
+  /**
+   * Create a new integer number without using the internal small integer number cache. The returned
+   * object references will always be newly created.
+   *
+   * @param integerValue
+   * @return
+   */
+  public static IInteger ZZUniqueReference(final int integerValue) {
+    return AbstractIntegerSym.valueOfUniqueReference(integerValue);
   }
 
   /**

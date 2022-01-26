@@ -311,6 +311,13 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return new BigIntegerSym(new BigInteger(integerString, radix));
   }
 
+  public static IInteger valueOfUniqueReference(final int newnum) {
+    if (newnum == Integer.MIN_VALUE) {
+      return new BigIntegerSym(newnum);
+    }
+    return new IntegerSym(newnum);
+  }
+
   /** {@inheritDoc} */
   @Override
   public IExpr accept(IVisitor visitor) {
@@ -340,6 +347,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return ApcomplexNum.valueOf(apcomplexValue());
   }
 
+  @Override
   public Apcomplex apcomplexValue() {
     return new Apcomplex(new Apfloat(toBigNumerator(), EvalEngine.getApfloat().precision()));
   }

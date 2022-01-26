@@ -141,13 +141,13 @@ public class VisitorReplacePart extends AbstractVisitor {
           break;
         }
 
-        IInteger negativePart = F.ZZ(i - ast.size());
+        IInteger negativePart = F.ZZUniqueReference(i - ast.size());
         positionsToMatch.set(positionsToMatch.size() - 1, negativePart);
         temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
         if (temp.isPresent()) {
           IExpr ex = temp.replaceAll(x -> {
             if (x == negativePart) {
-              // compare reference; don't use equals() method
+              // compare unique reference from F.ZZUniqueReference(); don't use equals() method!
               return position;
             }
             return F.NIL;

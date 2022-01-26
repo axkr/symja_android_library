@@ -786,10 +786,6 @@ public class PatternsTest extends AbstractTestCase {
 
 
   public void testReplacePartPattern() {
-    check("ReplacePart({a, b, c, d, e}, {3 -> u, _ -> x})", //
-        "{x,x,u,x,x}");
-
-
 
     check("ReplacePart(f(x, y), _ -> g, Heads -> True)", //
         "g(g,g)");
@@ -797,6 +793,8 @@ public class PatternsTest extends AbstractTestCase {
     // github #412
     check("ReplacePart({{f},{a, b, c}, {d, e}}, {_, -1} -> test)", //
         "{{test},{a,b,test},{d,test}}");
+    check("ReplacePart({{-2, b, c, d}, {f, g, h}, {i, -2}}, {_, -2} -> xx)", //
+        "{{-2,b,xx,d},{f,xx,h},{xx,-2}}");
 
     check("ReplacePart(f(x, y), _ -> g)", //
         "f(g,g)");
@@ -822,6 +820,7 @@ public class PatternsTest extends AbstractTestCase {
     check("ReplacePart({{1, 2}, {3,4}}, {x_, x_} -> -1)", //
         "{{-1,2},{3,-1}}");
 
+
     // check("ReplacePart({a, b, c}, 1 -> t)", //
     // "{t,b,c}");
     // check("ReplacePart({{a, b}, {c, d}}, {2, 1} -> t)", //
@@ -846,8 +845,8 @@ public class PatternsTest extends AbstractTestCase {
     // "{a,x+y,c^(x+y)}");
 
     // >>>
-    // check("ReplacePart({a, b, c, d, e}, {3 -> u, _ -> x})", //
-    // "{x,x,u,x,x}");
+    check("ReplacePart({a, b, c, d, e}, {3 -> u, _ -> x})", //
+        "{x,x,u,x,x}");
 
 
     // check("ReplacePart({a, b, c, d, e}, 3 -> xxx)", //
@@ -943,11 +942,6 @@ public class PatternsTest extends AbstractTestCase {
 
     check("ReplacePart({a,b,c^n}, x+y, {{3, 2}, 2})", //
         "{a,x+y,c^(x+y)}");
-
-    // >>>
-    // check("ReplacePart({a, b, c, d, e}, {3 -> u, _ -> x})", //
-    // "{x,x,u,x,x}");
-
 
     check("ReplacePart({a, b, c, d, e}, 3 -> xxx)", //
         "{a,b,xxx,d,e}");
