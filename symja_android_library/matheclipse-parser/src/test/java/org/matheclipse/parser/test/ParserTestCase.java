@@ -694,7 +694,19 @@ class ParserTestCase {
   void testParser68() {
     Parser p = new Parser();
     ASTNode obj = p.parse("8 + 1*^-28");
-    assertEquals("Plus(8, Power(10000000000000000000000000000, -1))", obj.toString());
+    assertEquals("Plus(8, Times(1, Power(10000000000000000000000000000, -1)))", obj.toString());
+
+    // 6
+    obj = p.parse("6*^0");
+    assertEquals("Times(6, 1)", obj.toString());
+
+    // 3/5
+    obj = p.parse("6*^-1");
+    assertEquals("Times(6, Power(10, -1))", obj.toString());
+
+    // 6000
+    obj = p.parse("6*^3");
+    assertEquals("Times(6, 1000)", obj.toString());
   }
 
   @Test

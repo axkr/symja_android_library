@@ -20632,6 +20632,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testRational() {
+    check("6*^3", //
+        "6000");
+    check("6*^-1", //
+        "3/5");
+    check("6*^0", //
+        "6");
     check("Head(1/2)", //
         "Rational");
     check("Rational(1, 2)", //

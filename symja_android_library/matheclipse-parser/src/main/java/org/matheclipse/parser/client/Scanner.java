@@ -1,17 +1,15 @@
 /*
  * Copyright 2005-2008 Axel Kramer (axelclk@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.matheclipse.parser.client;
 
@@ -103,94 +101,34 @@ public abstract class Scanner {
   protected static final int TT_NEWLINE = 150;
 
   // ----------------optimized identifier management------------------
-  private static final String string_a = "a",
-      string_b = "b",
-      string_c = "c",
-      string_d = "d",
-      string_e = "e",
-      string_f = "f",
-      string_g = "g",
-      string_h = "h",
-      string_i = "i",
-      string_j = "j",
-      string_k = "k",
-      string_l = "l",
-      string_m = "m",
-      string_n = "n",
-      string_o = "o",
-      string_p = "p",
-      string_q = "q",
-      string_r = "r",
-      string_s = "s",
-      string_t = "t",
-      string_u = "u",
-      string_v = "v",
-      string_w = "w",
-      string_x = "x",
-      string_y = "y",
-      string_z = "z";
-  private static final String string_A = "A",
-      string_B = "B",
-      string_C = "C",
-      string_D = "D",
-      string_E = "E",
-      string_F = "F",
-      string_G = "G",
-      string_H = "H",
-      string_I = "I",
-      string_J = "J",
-      string_K = "K",
-      string_L = "L",
-      string_M = "M",
-      string_N = "N",
-      string_O = "O",
-      string_P = "P",
-      string_Q = "Q",
-      string_R = "R",
-      string_S = "S",
-      string_T = "T",
-      string_U = "U",
-      string_V = "V",
-      string_W = "W",
-      string_X = "X",
-      string_Y = "Y",
-      string_Z = "Z";
-  private static final String var_a = "$a",
-      var_b = "$b",
-      var_c = "$c",
-      var_d = "$d",
-      var_e = "$e",
-      var_f = "$f",
-      var_g = "$g",
-      var_h = "$h",
-      var_i = "$i",
-      var_j = "$j",
-      var_k = "$k",
-      var_l = "$l",
-      var_m = "$m",
-      var_n = "$n",
-      var_o = "$o",
-      var_p = "$p",
-      var_q = "$q",
-      var_r = "$r",
-      var_s = "$s",
-      var_t = "$t",
-      var_u = "$u",
-      var_v = "$v",
-      var_w = "$w",
-      var_x = "$x",
-      var_y = "$y",
-      var_z = "$z";
+  private static final String string_a = "a", string_b = "b", string_c = "c", string_d = "d",
+      string_e = "e", string_f = "f", string_g = "g", string_h = "h", string_i = "i",
+      string_j = "j", string_k = "k", string_l = "l", string_m = "m", string_n = "n",
+      string_o = "o", string_p = "p", string_q = "q", string_r = "r", string_s = "s",
+      string_t = "t", string_u = "u", string_v = "v", string_w = "w", string_x = "x",
+      string_y = "y", string_z = "z";
+  private static final String string_A = "A", string_B = "B", string_C = "C", string_D = "D",
+      string_E = "E", string_F = "F", string_G = "G", string_H = "H", string_I = "I",
+      string_J = "J", string_K = "K", string_L = "L", string_M = "M", string_N = "N",
+      string_O = "O", string_P = "P", string_Q = "Q", string_R = "R", string_S = "S",
+      string_T = "T", string_U = "U", string_V = "V", string_W = "W", string_X = "X",
+      string_Y = "Y", string_Z = "Z";
+  private static final String var_a = "$a", var_b = "$b", var_c = "$c", var_d = "$d", var_e = "$e",
+      var_f = "$f", var_g = "$g", var_h = "$h", var_i = "$i", var_j = "$j", var_k = "$k",
+      var_l = "$l", var_m = "$m", var_n = "$n", var_o = "$o", var_p = "$p", var_q = "$q",
+      var_r = "$r", var_s = "$s", var_t = "$t", var_u = "$u", var_v = "$v", var_w = "$w",
+      var_x = "$x", var_y = "$y", var_z = "$z";
 
   /**
    * Simple bracket balancer for pairs of &quot;( )&quot;, &quot;[ ]&quot;, &quot;{ }&quot;
    * brackets.
    *
-   * <p>Doesn't work for comments or strings at the moment.
+   * <p>
+   * Doesn't work for comments or strings at the moment.
    *
    * @param sourceCode the source which should be checked for balanced brackets
    * @return the resulting String which can close the "open brackets" or <code>null</code> if the
-   *     brackets are unbalanced.
+   *         brackets are unbalanced.
    */
   public static String balanceCode(CharSequence sourceCode) {
     Stack<Character> openBracketStack = new Stack<Character>();
@@ -275,9 +213,9 @@ public abstract class Scanner {
    *
    *
    * <ul>
-   *   <li><code>0</code> - means all bracket levels are balanced
-   *   <li><code>-1</code> - means a closing bracket is missing
-   *   <li><code>1</code> - means the brackets are not balanced brackets
+   * <li><code>0</code> - means all bracket levels are balanced
+   * <li><code>-1</code> - means a closing bracket is missing
+   * <li><code>1</code> - means the brackets are not balanced brackets
    * </ul>
    *
    * @param sourceCode
@@ -383,19 +321,21 @@ public abstract class Scanner {
    * expression. I.e. you cannot write <code>2(b+c)</code> anymore, but have to write <code>2*(b+c)
    * </code> to get <code>Times(2, Plus(b, c))</code>.
    *
-   * <p>You also enable <a
-   * href="https://en.wikipedia.org/wiki/Scientific_notation#E-notation">scientific E-notation</a>.
-   * I.e. <code>1E-2</code> is converted to a double value <code>0.01</code> for floating point
-   * numbers and not parsed as <code>Plus(-2, E)</code> anymore.
+   * <p>
+   * You also enable
+   * <a href="https://en.wikipedia.org/wiki/Scientific_notation#E-notation">scientific
+   * E-notation</a>. I.e. <code>1E-2</code> is converted to a double value <code>0.01</code> for
+   * floating point numbers and not parsed as <code>Plus(-2, E)</code> anymore.
    *
-   * <p>You also enable integer literal input with a prefix, similar to <a
-   * href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html">Java integer
+   * <p>
+   * You also enable integer literal input with a prefix, similar to
+   * <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html">Java integer
    * literals</a>
    *
    * <ul>
-   *   <li><code>0b</code> or <code>0B</code> for binary numbers
-   *   <li><code>0x</code> or <code>0X</code> for hexadecimal numbers
-   *   <li><code>0o</code> or <code>0O</code> for octal numbers
+   * <li><code>0b</code> or <code>0B</code> for binary numbers
+   * <li><code>0x</code> or <code>0X</code> for hexadecimal numbers
+   * <li><code>0o</code> or <code>0O</code> for octal numbers
    * </ul>
    */
   protected final boolean fExplicitTimes;
@@ -414,6 +354,22 @@ public abstract class Scanner {
    */
   protected final char charAtPosition() {
     return fInputString[fCurrentPosition];
+  }
+
+  /**
+   * Create a string with first character 1 appending exponent times 0.
+   * 
+   * @param nonNegativeExponent the number of <code>0</code> which should be appended; the number
+   *        must be a non-negative integer.
+   * @return
+   */
+  protected static StringBuilder createPowersOf10(int nonNegativeExponent) {
+    StringBuilder buf = new StringBuilder(nonNegativeExponent + 1);
+    buf.append("1");
+    for (int i = 0; i < nonNegativeExponent; i++) {
+      buf.append('0');
+    }
+    return buf;
   }
 
   /**
@@ -491,7 +447,7 @@ public abstract class Scanner {
    * if possible.
    *
    * @return an array which contains &quot;the main identifier&quot; at offset 0 and
-   *     &quot;context(or <code>null</code>)&quot; at offset 1.
+   *         &quot;context(or <code>null</code>)&quot; at offset 1.
    */
   protected String[] getIdentifier() {
     int startPosition = fCurrentPosition - 1;
@@ -533,9 +489,8 @@ public abstract class Scanner {
     if (length == 2 && fInputString[startPosition] == '$') {
       return new String[] {optimizedCurrentTokenSource2(startPosition), context};
     }
-    return new String[] {
-      new String(fInputString, startPosition, endPosition - startPosition), context
-    };
+    return new String[] {new String(fInputString, startPosition, endPosition - startPosition),
+        context};
   }
 
   /**
@@ -843,9 +798,9 @@ public abstract class Scanner {
               String str = Characters.unicodePoint(codePoint);
               if (str != null) {
                 throwSyntaxError("unexpected (named unicode) character: '\\[" + str + "]'");
-                //                fCurrentPosition++;
-                //                fToken = TT_IDENTIFIER;
-                //                return;
+                // fCurrentPosition++;
+                // fToken = TT_IDENTIFIER;
+                // return;
               }
             }
             String str = Characters.unicodeName(fCurrentChar);
@@ -874,11 +829,11 @@ public abstract class Scanner {
    * representing the integer exponent at index 2. The number format value can be
    *
    * <ul>
-   *   <li>-1 for floating point numbers
-   *   <li>2 for a binary coded integer number
-   *   <li>8 for an octal coded integer number
-   *   <li>10 for a decimal coded integer number
-   *   <li>16 for a hexadecimal coded integer number
+   * <li>-1 for floating point numbers
+   * <li>2 for a binary coded integer number
+   * <li>8 for an octal coded integer number
+   * <li>10 for a decimal coded integer number
+   * <li>16 for a hexadecimal coded integer number
    * </ul>
    *
    * @return
@@ -972,17 +927,14 @@ public abstract class Scanner {
             }
             numFormat = Integer.parseInt(numberStr);
             if (numFormat <= 0 || numFormat > 36) {
-              throwSyntaxError(
-                  "Base "
-                      + numFormat
-                      + "^^... is invalid. Only bases between 1 and 36 are allowed");
+              throwSyntaxError("Base " + numFormat
+                  + "^^... is invalid. Only bases between 1 and 36 are allowed");
             }
             fCurrentPosition++;
             startPosition = fCurrentPosition;
             boolean evaled = false;
             getChar();
-            while (Character.isDigit(fCurrentChar)
-                || (fCurrentChar >= 'a' && fCurrentChar <= 'z')
+            while (Character.isDigit(fCurrentChar) || (fCurrentChar >= 'a' && fCurrentChar <= 'z')
                 || (fCurrentChar >= 'A' && fCurrentChar <= 'Z')) {
               evaled = true;
               getChar();
@@ -1014,7 +966,7 @@ public abstract class Scanner {
       } else {
         if (numFormat < 0 || numFormat == 10) {
           if (fCurrentChar == '*') {
-            //            numFormat = -1;
+            // numFormat = -1;
             int lastPosition = fCurrentPosition;
             getChar();
             if (fCurrentChar == '^') {
@@ -1036,8 +988,7 @@ public abstract class Scanner {
         }
       }
     } else if (numFormat == 16) {
-      while (Character.isDigit(fCurrentChar)
-          || ((fCurrentChar >= 'a') && (fCurrentChar <= 'f'))
+      while (Character.isDigit(fCurrentChar) || ((fCurrentChar >= 'a') && (fCurrentChar <= 'f'))
           || ((fCurrentChar >= 'A') && (fCurrentChar <= 'F'))) {
         getChar();
       }
@@ -1214,19 +1165,15 @@ public abstract class Scanner {
   }
 
   protected static final boolean isComparatorOperator(String operatorString) {
-    return operatorString.equals("==")
-        || operatorString.equals("!=")
-        || operatorString.equals(">")
-        || operatorString.equals(">=")
-        || operatorString.equals("<")
-        || operatorString.equals("<=");
+    return operatorString.equals("==") || operatorString.equals("!=") || operatorString.equals(">")
+        || operatorString.equals(">=") || operatorString.equals("<") || operatorString.equals("<=");
   }
 
   /**
    * Test if the current position in the parsed input string is less than the input strings length.
    *
    * @return <code>true</code> if the current position in the parsed input string is less than the
-   *     input strings length.
+   *         input strings length.
    */
   protected boolean isValidPosition() {
     return fInputString.length > fCurrentPosition;
@@ -1445,23 +1392,13 @@ public abstract class Scanner {
   }
 
   public void throwSyntaxError(final String error) throws SyntaxError {
-    throw new SyntaxError(
-        fCurrentPosition - 1,
-        fRowCounter,
-        fCurrentPosition - fCurrentColumnStartPosition,
-        getErrorLine(),
-        error,
-        1);
+    throw new SyntaxError(fCurrentPosition - 1, fRowCounter,
+        fCurrentPosition - fCurrentColumnStartPosition, getErrorLine(), error, 1);
   }
 
   protected void throwSyntaxError(final String error, final int errorLength) throws SyntaxError {
-    throw new SyntaxError(
-        fCurrentPosition - errorLength,
-        fRowCounter,
-        fCurrentPosition - fCurrentColumnStartPosition,
-        getErrorLine(),
-        error,
-        errorLength);
+    throw new SyntaxError(fCurrentPosition - errorLength, fRowCounter,
+        fCurrentPosition - fCurrentColumnStartPosition, getErrorLine(), error, errorLength);
   }
 
   /** Shows the current line for debugging purposes. */
