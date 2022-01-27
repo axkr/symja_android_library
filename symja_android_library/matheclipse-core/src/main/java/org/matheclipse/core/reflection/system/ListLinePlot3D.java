@@ -51,7 +51,8 @@ public class ListLinePlot3D extends AbstractEvaluator {
       // case 2: single line coordinates
       // e.g.: ListLinePlot3D[{{x_1, y_1, z_1}, {x_2, y_2, z_2}}]
       if (dimension != null && dimension.length == 2 && dimension[1] == 3) {
-        IASTAppendable result = F.Graphics3D(coordinateLinePlot(F.List(ast.arg1()), plotStyle, engine));
+        IASTAppendable result =
+            F.Graphics3D(coordinateLinePlot(F.List(ast.arg1()), plotStyle, engine));
         if (ast.argSize() > 1) {
           // add same options to Graphics3D
           result.appendAll(ast, 2, ast.size());
@@ -61,11 +62,8 @@ public class ListLinePlot3D extends AbstractEvaluator {
 
       // case 3: multiple line heights
       // e.g.: ListLinePlot3D[{{1, 2, 3, 4}, {-1, -2, -3, -4}}]
-      if (
-        ast.arg1().isList() &&
-        ((IAST) ast.arg1()).arg1().isList() &&
-        ((IAST) ((IAST) ast.arg1()).arg1()).arg1().isNumber()
-      ) {
+      if (ast.arg1().isList() && ((IAST) ast.arg1()).arg1().isList()
+          && ((IAST) ((IAST) ast.arg1()).arg1()).arg1().isNumber()) {
         IASTAppendable result = F.Graphics3D(heightLinePlot((IAST) ast.arg1(), plotStyle, engine));
         if (ast.argSize() > 1) {
           // add same options to Graphics3D
@@ -74,16 +72,19 @@ public class ListLinePlot3D extends AbstractEvaluator {
         return result;
       }
 
-      dimension = ((IAST) ast.arg1()).arg1().isMatrix(false);
-      // case 4: multiple line coordinates
-      // e.g.: ListLinePlot3D[{{coord1, coord2}, {coord3, coord4}}]
-      if (dimension != null && dimension.length == 2 && dimension[1] == 3) {
-        IASTAppendable result = F.Graphics3D(coordinateLinePlot((IAST) ast.arg1(), plotStyle, engine));
-        if (ast.argSize() > 1) {
-          // add same options to Graphics3D
-          result.appendAll(ast, 2, ast.size());
+      if (ast.arg1().isList() && ast.arg1().size() > 1) {
+        dimension = ((IAST) ast.arg1()).arg1().isMatrix(false);
+        // case 4: multiple line coordinates
+        // e.g.: ListLinePlot3D[{{coord1, coord2}, {coord3, coord4}}]
+        if (dimension != null && dimension.length == 2 && dimension[1] == 3) {
+          IASTAppendable result =
+              F.Graphics3D(coordinateLinePlot((IAST) ast.arg1(), plotStyle, engine));
+          if (ast.argSize() > 1) {
+            // add same options to Graphics3D
+            result.appendAll(ast, 2, ast.size());
+          }
+          return result;
         }
-        return result;
       }
     }
 
@@ -162,8 +163,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
     }
 
     // ListLinePlot3D size is 2.5 × 2.5 × 1 independently from its coordinates
-    IAST deltaXYZ =
-        F.List((maxX - minX) / 2.5, (maxY - minY) / 2.5, maxZ - minZ);
+    IAST deltaXYZ = F.List((maxX - minX) / 2.5, (maxY - minY) / 2.5, maxZ - minZ);
 
     // the color number with which the line will be printed
     int lineColorNumber = 1;
@@ -175,11 +175,8 @@ public class ListLinePlot3D extends AbstractEvaluator {
 
       lineList.append(color);
       // (# / deltaXYZ)& /@ line
-      lineList.append(F.Line(S.Map.of(
-        engine,
-        F.Function(F.Divide(F.Slot1, deltaXYZ)),
-        coordinates.get(i)
-      )));
+      lineList.append(
+          F.Line(S.Map.of(engine, F.Function(F.Divide(F.Slot1, deltaXYZ)), coordinates.get(i))));
     }
 
     return lineList;
