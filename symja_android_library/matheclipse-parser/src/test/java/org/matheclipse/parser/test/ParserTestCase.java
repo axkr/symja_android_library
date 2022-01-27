@@ -253,13 +253,10 @@ class ParserTestCase {
   @Test
   void testParser26() {
     Parser p = new Parser(false, true);
-    List<ASTNode> obj = p.parsePackage(
-              "	SumSimplerAuxQ[u_,v_] :=\n"
-                  + "			  v=!=0 && \n"
-                  + "			  NonnumericFactors[u]===NonnumericFactors[v] &&\n"
-                  + "			  (NumericFactor[u]/NumericFactor[v]<-1/2 || NumericFactor[u]/NumericFactor[v]==-1/2 && NumericFactor[u]<0)\n"
-                  + "\n"
-                  + "");
+    List<ASTNode> obj = p.parsePackage("	SumSimplerAuxQ[u_,v_] :=\n" + "			  v=!=0 && \n"
+        + "			  NonnumericFactors[u]===NonnumericFactors[v] &&\n"
+        + "			  (NumericFactor[u]/NumericFactor[v]<-1/2 || NumericFactor[u]/NumericFactor[v]==-1/2 && NumericFactor[u]<0)\n"
+        + "\n" + "");
     assertEquals(
         "[SetDelayed(SumSimplerAuxQ(u_, v_), And(UnsameQ(v, 0), SameQ(NonnumericFactors(u), NonnumericFactors(v)), Or(Less(Times(NumericFactor(u), Power(NumericFactor(v), -1)), -1/2), And(Equal(Times(NumericFactor(u), Power(NumericFactor(v), -1)), -1/2), Less(NumericFactor(u), 0)))))]",
         obj.toString());
@@ -268,27 +265,21 @@ class ParserTestCase {
   @Test
   void testParser27() {
     Parser p = new Parser(false, true);
-    List<ASTNode> obj = p.parsePackage(
-              "\n"
-                  + "TryTanhSubst[u_,x_Symbol] :=\n"
-                  + "  FalseQ[FunctionOfLinear[u,x]] &&\n"
-                  + "  Not[MatchQ[u,r_.*(s_+t_)^n_. /; IntegerQ[n] && n>0]] &&\n"
-                  + "(*Not[MatchQ[u,Log[f_[x]^2] /; SinhCoshQ[f]]]  && *)\n"
-                  + "  Not[MatchQ[u,Log[v_]]]  &&\n"
-                  + "  Not[MatchQ[u,1/(a_+b_.*f_[x]^n_) /; SinhCoshQ[f] && IntegerQ[n] && n>2]] &&\n"
-                  + "  Not[MatchQ[u,f_[m_.*x]*g_[n_.*x] /; IntegersQ[m,n] && SinhCoshQ[f] && SinhCoshQ[g]]] &&\n"
-                  + "  Not[MatchQ[u,r_.*(a_.*s_^m_)^p_ /; FreeQ[{a,m,p},x] && Not[m===2 && (s===Sech[x] || s===Csch[x])]]] &&\n"
-                  + "  u===ExpandIntegrand[u,x]\n"
-                  + "\n"
-                  + "TryPureTanhSubst[u_,x_Symbol] :=\n"
-                  + "  Not[MatchQ[u,Log[v_]]]  &&\n"
-                  + "  Not[MatchQ[u,ArcTanh[a_.*Tanh[v_]] /; FreeQ[a,x]]] &&\n"
-                  + "  Not[MatchQ[u,ArcTanh[a_.*Coth[v_]] /; FreeQ[a,x]]] &&\n"
-                  + "  Not[MatchQ[u,ArcCoth[a_.*Tanh[v_]] /; FreeQ[a,x]]] &&\n"
-                  + "  Not[MatchQ[u,ArcCoth[a_.*Coth[v_]] /; FreeQ[a,x]]] &&\n"
-                  + "  u===ExpandIntegrand[u,x]\n"
-                  + "\n"
-                  + "");
+    List<ASTNode> obj = p.parsePackage("\n" + "TryTanhSubst[u_,x_Symbol] :=\n"
+        + "  FalseQ[FunctionOfLinear[u,x]] &&\n"
+        + "  Not[MatchQ[u,r_.*(s_+t_)^n_. /; IntegerQ[n] && n>0]] &&\n"
+        + "(*Not[MatchQ[u,Log[f_[x]^2] /; SinhCoshQ[f]]]  && *)\n"
+        + "  Not[MatchQ[u,Log[v_]]]  &&\n"
+        + "  Not[MatchQ[u,1/(a_+b_.*f_[x]^n_) /; SinhCoshQ[f] && IntegerQ[n] && n>2]] &&\n"
+        + "  Not[MatchQ[u,f_[m_.*x]*g_[n_.*x] /; IntegersQ[m,n] && SinhCoshQ[f] && SinhCoshQ[g]]] &&\n"
+        + "  Not[MatchQ[u,r_.*(a_.*s_^m_)^p_ /; FreeQ[{a,m,p},x] && Not[m===2 && (s===Sech[x] || s===Csch[x])]]] &&\n"
+        + "  u===ExpandIntegrand[u,x]\n" + "\n" + "TryPureTanhSubst[u_,x_Symbol] :=\n"
+        + "  Not[MatchQ[u,Log[v_]]]  &&\n"
+        + "  Not[MatchQ[u,ArcTanh[a_.*Tanh[v_]] /; FreeQ[a,x]]] &&\n"
+        + "  Not[MatchQ[u,ArcTanh[a_.*Coth[v_]] /; FreeQ[a,x]]] &&\n"
+        + "  Not[MatchQ[u,ArcCoth[a_.*Tanh[v_]] /; FreeQ[a,x]]] &&\n"
+        + "  Not[MatchQ[u,ArcCoth[a_.*Coth[v_]] /; FreeQ[a,x]]] &&\n"
+        + "  u===ExpandIntegrand[u,x]\n" + "\n" + "");
     assertEquals(
         "[SetDelayed(TryTanhSubst(u_, x_Symbol), And(FalseQ(FunctionOfLinear(u, x)), Not(MatchQ(u, Condition(Times(r_., Power(Plus(s_, t_), n_.)), And(IntegerQ(n), Greater(n, 0))))), Not(MatchQ(u, Log(v_))), Not(MatchQ(u, Condition(Power(Plus(a_, Times(b_., Power(f_(x), n_))), -1), And(SinhCoshQ(f), IntegerQ(n), Greater(n, 2))))), Not(MatchQ(u, Condition(Times(f_(Times(m_., x)), g_(Times(n_., x))), And(IntegersQ(m, n), SinhCoshQ(f), SinhCoshQ(g))))), Not(MatchQ(u, Condition(Times(r_., Power(Times(a_., Power(s_, m_)), p_)), And(FreeQ(List(a, m, p), x), Not(And(SameQ(m, 2), Or(SameQ(s, Sech(x)), SameQ(s, Csch(x))))))))), SameQ(u, ExpandIntegrand(u, x)))), SetDelayed(TryPureTanhSubst(u_, x_Symbol), And(Not(MatchQ(u, Log(v_))), Not(MatchQ(u, Condition(ArcTanh(Times(a_., Tanh(v_))), FreeQ(a, x)))), Not(MatchQ(u, Condition(ArcTanh(Times(a_., Coth(v_))), FreeQ(a, x)))), Not(MatchQ(u, Condition(ArcCoth(Times(a_., Tanh(v_))), FreeQ(a, x)))), Not(MatchQ(u, Condition(ArcCoth(Times(a_., Coth(v_))), FreeQ(a, x)))), SameQ(u, ExpandIntegrand(u, x))))]",
         obj.toString());
@@ -297,43 +288,23 @@ class ParserTestCase {
   @Test
   void testParser28() {
     Parser p = new Parser(false, true);
-    List<ASTNode> list = p.parsePackage(
-              "\n"
-                  + "TrigSimplifyAux[u_] := u\n"
-                  + "\n"
-                  + "\n"
-                  + "(* ::Section::Closed:: *)\n"
-                  + "(*Factoring functions*)\n"
-                  + "\n"
-                  + "\n"
-                  + "(* ::Subsection::Closed:: *)\n"
-                  + "(*ContentFactor*)\n"
-                  + "\n"
-                  + "\n"
-                  + "(* ContentFactor[expn] returns expn with the content of sum factors factored out. *)\n"
-                  + "(* Basis: a*b+a*c == a*(b+c) *)\n"
-                  + "ContentFactor[expn_] :=\n"
-                  + "  TimeConstrained[ContentFactorAux[expn],2.0,expn];\n"
-                  + "\n"
-                  + "ContentFactorAux[expn_] :=\n"
-                  + "  If[AtomQ[expn],\n"
-                  + "    expn,\n"
-                  + "  If[IntegerPowerQ[expn],\n"
-                  + "    If[SumQ[expn[[1]]] && NumericFactor[expn[[1,1]]]<0,\n"
-                  + "      (-1)^expn[[2]] * ContentFactorAux[-expn[[1]]]^expn[[2]],\n"
-                  + "    ContentFactorAux[expn[[1]]]^expn[[2]]],\n"
-                  + "  If[ProductQ[expn],\n"
-                  + "    Module[{num=1,tmp},\n"
-                  + "    tmp=Map[Function[If[SumQ[#] && NumericFactor[#[[1]]]<0, num=-num; ContentFactorAux[-#], ContentFactorAux[#]]], expn];\n"
-                  + "    num*UnifyNegativeBaseFactors[tmp]],\n"
-                  + "  If[SumQ[expn],\n"
-                  + "    With[{lst=CommonFactors[Apply[List,expn]]},\n"
-                  + "    If[lst[[1]]===1 || lst[[1]]===-1,\n"
-                  + "      expn,\n"
-                  + "    lst[[1]]*Apply[Plus,Rest[lst]]]],\n"
-                  + "  expn]]]]\n"
-                  + "\n"
-                  + "");
+    List<ASTNode> list = p.parsePackage("\n" + "TrigSimplifyAux[u_] := u\n" + "\n" + "\n"
+        + "(* ::Section::Closed:: *)\n" + "(*Factoring functions*)\n" + "\n" + "\n"
+        + "(* ::Subsection::Closed:: *)\n" + "(*ContentFactor*)\n" + "\n" + "\n"
+        + "(* ContentFactor[expn] returns expn with the content of sum factors factored out. *)\n"
+        + "(* Basis: a*b+a*c == a*(b+c) *)\n" + "ContentFactor[expn_] :=\n"
+        + "  TimeConstrained[ContentFactorAux[expn],2.0,expn];\n" + "\n"
+        + "ContentFactorAux[expn_] :=\n" + "  If[AtomQ[expn],\n" + "    expn,\n"
+        + "  If[IntegerPowerQ[expn],\n"
+        + "    If[SumQ[expn[[1]]] && NumericFactor[expn[[1,1]]]<0,\n"
+        + "      (-1)^expn[[2]] * ContentFactorAux[-expn[[1]]]^expn[[2]],\n"
+        + "    ContentFactorAux[expn[[1]]]^expn[[2]]],\n" + "  If[ProductQ[expn],\n"
+        + "    Module[{num=1,tmp},\n"
+        + "    tmp=Map[Function[If[SumQ[#] && NumericFactor[#[[1]]]<0, num=-num; ContentFactorAux[-#], ContentFactorAux[#]]], expn];\n"
+        + "    num*UnifyNegativeBaseFactors[tmp]],\n" + "  If[SumQ[expn],\n"
+        + "    With[{lst=CommonFactors[Apply[List,expn]]},\n"
+        + "    If[lst[[1]]===1 || lst[[1]]===-1,\n" + "      expn,\n"
+        + "    lst[[1]]*Apply[Plus,Rest[lst]]]],\n" + "  expn]]]]\n" + "\n" + "");
     assertEquals(3, list.size());
     assertEquals(
         "CompoundExpression(SetDelayed(ContentFactor(expn_), TimeConstrained(ContentFactorAux(expn), 2.0, expn)), Null)",
@@ -400,17 +371,11 @@ class ParserTestCase {
   void testParse35() {
     Parser p = new Parser();
     // http://oeis.org/A005132
-    ASTNode obj = p.parse(
-              "	If[!MatchQ[#,_\\[Rule]_],\n"
-                  + "       Message[Caller::\"UnknownOption\",#];\n"
-                  + "       (*else*),\n"
-                  + "       pos=Position[FullOptions,{#[[1]],_,_}];\n"
-                  + "       If[Length[pos]\\[Equal]0,\n"
-                  + "         Message[Caller::\"UnknownOption\",#]\n"
-                  + "         (*else*),\n"
-                  + "         FullOptions[[pos[[1,1]],3]]=#[[2]]\n"
-                  + "         ];\n"
-                  + "       ];");
+    ASTNode obj = p.parse("	If[!MatchQ[#,_\\[Rule]_],\n"
+        + "       Message[Caller::\"UnknownOption\",#];\n" + "       (*else*),\n"
+        + "       pos=Position[FullOptions,{#[[1]],_,_}];\n" + "       If[Length[pos]\\[Equal]0,\n"
+        + "         Message[Caller::\"UnknownOption\",#]\n" + "         (*else*),\n"
+        + "         FullOptions[[pos[[1,1]],3]]=#[[2]]\n" + "         ];\n" + "       ];");
     assertEquals(
         "CompoundExpression(If(Not(MatchQ(Slot(1), Rule(_, _))), CompoundExpression(Message(MessageName(Caller, UnknownOption), Slot(1)), Null), CompoundExpression(Set(pos, Position(FullOptions, List(Part(Slot(1), 1), _, _))), If(Equal(Length(pos), 0), Message(MessageName(Caller, UnknownOption), Slot(1)), Set(Part(FullOptions, Part(pos, 1, 1), 3), Part(Slot(1), 2))), Null)), Null)",
         obj.toString());
@@ -427,17 +392,11 @@ class ParserTestCase {
   @Test
   void testParse37() {
     Parser p = new Parser();
-    ASTNode obj = p.parse(
-              "      Do[\n"
-                  + "        serh=SeriesHead[ser,\\[Omega]];\n"
-                  + "        \n"
-                  + "        (* check for series term that run out of precision *)\n"
-                  + "        If[FreeQ[serh,HoldPattern[SeriesData[_,_,{},_,_,_]]],\n"
-                  + "          (* No: done. *)\n"
-                  + "          Break[];\n"
-                  + "          ];\n"
-                  + "        ,{i,1,30}\n"
-                  + "        ]");
+    ASTNode obj = p.parse("      Do[\n" + "        serh=SeriesHead[ser,\\[Omega]];\n" + "        \n"
+        + "        (* check for series term that run out of precision *)\n"
+        + "        If[FreeQ[serh,HoldPattern[SeriesData[_,_,{},_,_,_]]],\n"
+        + "          (* No: done. *)\n" + "          Break[];\n" + "          ];\n"
+        + "        ,{i,1,30}\n" + "        ]");
     assertEquals(
         "Do(CompoundExpression(Set(serh, SeriesHead(ser, ω)), If(FreeQ(serh, HoldPattern(SeriesData(_, _, List(), _, _, _))), CompoundExpression(Break(), Null)), Null), List(i, 1, 30))",
         obj.toString());
@@ -447,12 +406,10 @@ class ParserTestCase {
   void testParse38() {
     Parser p = new Parser();
     ASTNode obj =
-        p.parse(
-              "MakeGraph[Range[26],\n"
-                  + "                            Mod[#1-#2, 26] == 1 ||\n"
-                  + "                                (-1)^#1Mod[#1-#2, 26] == 11 ||\n"
-                  + "                                (-1)^#1Mod[#1-#2, 26] == 7&,\n"
-                  + "                            Type -> Directed]");
+        p.parse("MakeGraph[Range[26],\n" + "                            Mod[#1-#2, 26] == 1 ||\n"
+            + "                                (-1)^#1Mod[#1-#2, 26] == 11 ||\n"
+            + "                                (-1)^#1Mod[#1-#2, 26] == 7&,\n"
+            + "                            Type -> Directed]");
     assertEquals(
         "MakeGraph(Range(26), Function(Or(Equal(Mod(Plus(Slot(1), Times(-1, Slot(2))), 26), 1), Equal(Times(Power(-1, Slot(1)), Mod(Plus(Slot(1), Times(-1, Slot(2))), 26)), 11), Equal(Times(Power(-1, Slot(1)), Mod(Plus(Slot(1), Times(-1, Slot(2))), 26)), 7))), Rule(Type, Directed))",
         obj.toString());
@@ -727,11 +684,8 @@ class ParserTestCase {
   @Test
   void testParser71() {
     Parser p = new Parser();
-    ASTNode obj = p.parse(
-              "  \n"
-                  + "a = f[Rule, {#, RandomReal[1, Length[#]]}]&[\n"
-                  + "Flatten[constants[[All,2]]]"
-                  + "\n]");
+    ASTNode obj = p.parse("  \n" + "a = f[Rule, {#, RandomReal[1, Length[#]]}]&[\n"
+        + "Flatten[constants[[All,2]]]" + "\n]");
     assertEquals(
         "Set(a, Function(f(Rule, List(Slot(1), RandomReal(1, Length(Slot(1))))))[Flatten(Part(constants, All, 2))])",
         obj.toString());
@@ -740,11 +694,8 @@ class ParserTestCase {
   @Test
   void testParser72() {
     Parser p = new Parser();
-    ASTNode obj = p.parse(
-              "  \n"
-                  + "	constantRules = f[Rule, {#, RandomReal[1, Length[#]]}]&[\n"
-                  + "		Flatten[constants[[All,2]]]\n"
-                  + "	]");
+    ASTNode obj = p.parse("  \n" + "	constantRules = f[Rule, {#, RandomReal[1, Length[#]]}]&[\n"
+        + "		Flatten[constants[[All,2]]]\n" + "	]");
     assertEquals(
         "Set(constantRules, Function(f(Rule, List(Slot(1), RandomReal(1, Length(Slot(1))))))[Flatten(Part(constants, All, 2))])",
         obj.toString());
@@ -801,5 +752,19 @@ class ParserTestCase {
     assertEquals(
         "StringExpression(WordBoundary, Pattern(x, Repeated(DigitCharacter)), WordBoundary)",
         obj.toString());
+  }
+
+  @Test
+  void testParser79() {
+    Parser p = new Parser();
+    ASTNode obj = p.parse(" (* a test *) ");
+    assertEquals("Null", obj.toString());
+  }
+
+  @Test
+  void testParser80() {
+    Parser p = new Parser();
+    ASTNode obj = p.parse(" 2 *(* a test *) 4");
+    assertEquals("Times(2, 4)", obj.toString());
   }
 }

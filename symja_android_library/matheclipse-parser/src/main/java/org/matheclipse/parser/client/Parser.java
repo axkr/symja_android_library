@@ -179,7 +179,7 @@ public class Parser extends Scanner {
 
       getNextToken();
       if (fToken == TT_PRECEDENCE_CLOSE || fToken == TT_ARGUMENTS_CLOSE) {
-        function.add(new SymbolNode("Null"));
+        function.add(fFactory.createSymbol("Null"));
         break;
       }
 
@@ -972,6 +972,10 @@ public class Parser extends Scanner {
    */
   public ASTNode parse(final String expression) throws SyntaxError {
     initialize(expression);
+    if (fToken == TT_EOF) {
+      // empty expression string or only a comment available in the string
+      return fFactory.createSymbol("Null");
+    }
     final ASTNode temp = parseExpression();
     if (fToken != TT_EOF) {
       if (fToken == TT_PRECEDENCE_CLOSE) {
@@ -1378,6 +1382,7 @@ public class Parser extends Scanner {
     String input = expression.trim();
     initialize(input);
     if (fToken == TT_EOF) {
+      // empty expression string or only a comment available in the string
       return new ArrayList<ASTNode>(1);
     }
 

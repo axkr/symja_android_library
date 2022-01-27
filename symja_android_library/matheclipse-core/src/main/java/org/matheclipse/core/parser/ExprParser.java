@@ -1161,6 +1161,10 @@ public class ExprParser extends Scanner {
    */
   public IExpr parse(final String expression) throws SyntaxError {
     initialize(expression);
+    if (fToken == TT_EOF) {
+      // empty expression string or only a comment available in the string
+      return F.Null;
+    }
     final IExpr temp = parseExpression();
     if (fToken != TT_EOF) {
       if (fToken == TT_PRECEDENCE_CLOSE) {

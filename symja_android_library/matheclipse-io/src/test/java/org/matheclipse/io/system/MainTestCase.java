@@ -652,10 +652,18 @@ public class MainTestCase extends AbstractTestCase {
   }
 
   public void testSystem006() {
-    check("2/3*3/4", "1/2");
+    // test comments
+    check("(* atest *)", //
+        "");
+    check("(* atest *) 2", //
+        "2");
+    check("1+ (* atest *) 2", //
+        "3");
   }
 
   public void testSystem007() {
+    check("2/3*3/4", //
+        "1/2");
     check("-12528^(1/2)", //
         "-12*Sqrt(87)");
     check("32^(1/4)", //
