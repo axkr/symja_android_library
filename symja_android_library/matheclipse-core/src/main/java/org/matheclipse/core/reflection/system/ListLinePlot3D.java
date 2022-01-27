@@ -25,6 +25,9 @@ public class ListLinePlot3D extends AbstractEvaluator {
       IAST plotStyle = F.NIL;
       if (ast.argSize() > 1) {
         final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+        if (options.isInvalidPosition(1)) {
+          return options.printNonopt(ast, 1, engine);
+        }
         IExpr temp = options.getOption(S.PlotStyle);
         if (temp.isAST()) {
           plotStyle = (IAST) temp;

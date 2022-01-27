@@ -5,6 +5,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -20,12 +21,17 @@ public class ListPlot3D extends AbstractEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IOFunctions.printExperimental(S.ListPlot3D);
     if (ast.argSize() > 0) {
-      // if (ast.argSize() > 1) {
-      // final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-      // IExpr colorFunction = options.getOption(S.ColorFunction);
-      // if (colorFunction.isPresent()) {
-      // // ... color function is set...
-      // }
+      if (ast.argSize() > 1) {
+        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+        if (options.isInvalidPosition(1)) {
+          return options.printNonopt(ast, 1, engine);
+        }
+        // IExpr colorFunction = options.getOption(S.ColorFunction);
+        // if (colorFunction.isPresent()) {
+        // // ... color function is set...
+        // }
+      }
+
       // }
       int[] dimension = ast.arg1().isMatrix(false);
       if (dimension != null && dimension.length == 2) {
