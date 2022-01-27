@@ -792,6 +792,14 @@ public class IOFunctions {
   }
 
   /**
+   * Print: 'Inverse functions are being used. Values may be lost for multivalued inverses.'
+   */
+  public static void printIfunMessage(ISymbol symbol) {
+    // Inverse functions are being used. Values may be lost for multivalued inverses.
+    printMessage(symbol, "ifun", F.CEmptyList, EvalEngine.get());
+  }
+
+  /**
    * Format a message according to the shortcut from the {@link #MESSAGES} array and print it to the
    * error stream with the <code>engine.printMessage()</code>method.
    *
@@ -1187,4 +1195,5 @@ public class IOFunctions {
   }
 
   private IOFunctions() {}
+
 }

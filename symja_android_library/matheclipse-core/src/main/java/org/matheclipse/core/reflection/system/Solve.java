@@ -50,7 +50,8 @@ import org.matheclipse.core.polynomials.QuarticSolver;
  *
  * <blockquote>
  *
- * <p>attempts to solve <code>equations</code> for the variables <code>vars</code>.
+ * <p>
+ * attempts to solve <code>equations</code> for the variables <code>vars</code>.
  *
  * </blockquote>
  *
@@ -60,7 +61,8 @@ import org.matheclipse.core.polynomials.QuarticSolver;
  *
  * <blockquote>
  *
- * <p>attempts to solve <code>equations</code> for the variables <code>vars</code> in the given
+ * <p>
+ * attempts to solve <code>equations</code> for the variables <code>vars</code> in the given
  * <code>domain</code>.
  *
  * </blockquote>
@@ -80,9 +82,10 @@ import org.matheclipse.core.polynomials.QuarticSolver;
  *
  * <h3>Related terms</h3>
  *
- * <p><a href="DSolve.md">DSolve</a>, <a href="Eliminate.md">Eliminate</a>, <a
- * href="GroebnerBasis.md">GroebnerBasis</a>, <a href="FindRoot.md">FindRoot</a>, <a
- * href="NRoots.md">NRoots</a>
+ * <p>
+ * <a href="DSolve.md">DSolve</a>, <a href="Eliminate.md">Eliminate</a>,
+ * <a href="GroebnerBasis.md">GroebnerBasis</a>, <a href="FindRoot.md">FindRoot</a>,
+ * <a href="NRoots.md">NRoots</a>
  */
 public class Solve extends AbstractFunctionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -179,33 +182,52 @@ public class Solve extends AbstractFunctionEvaluator {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) return true;
-      if (obj == null) return false;
-      if (getClass() != obj.getClass()) return false;
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
       ExprAnalyzer other = (ExprAnalyzer) obj;
       if (fDenominator == null) {
-        if (other.fDenominator != null) return false;
-      } else if (!fDenominator.equals(other.fDenominator)) return false;
-      if (fEquationType != other.fEquationType) return false;
+        if (other.fDenominator != null)
+          return false;
+      } else if (!fDenominator.equals(other.fDenominator))
+        return false;
+      if (fEquationType != other.fEquationType)
+        return false;
       if (fExpr == null) {
-        if (other.fExpr != null) return false;
-      } else if (!fExpr.equals(other.fExpr)) return false;
-      if (fLeafCount != other.fLeafCount) return false;
+        if (other.fExpr != null)
+          return false;
+      } else if (!fExpr.equals(other.fExpr))
+        return false;
+      if (fLeafCount != other.fLeafCount)
+        return false;
       if (fMatrixRow == null) {
-        if (other.fMatrixRow != null) return false;
-      } else if (!fMatrixRow.equals(other.fMatrixRow)) return false;
+        if (other.fMatrixRow != null)
+          return false;
+      } else if (!fMatrixRow.equals(other.fMatrixRow))
+        return false;
       if (fNumerator == null) {
-        if (other.fNumerator != null) return false;
-      } else if (!fNumerator.equals(other.fNumerator)) return false;
+        if (other.fNumerator != null)
+          return false;
+      } else if (!fNumerator.equals(other.fNumerator))
+        return false;
       if (fPlusAST == null) {
-        if (other.fPlusAST != null) return false;
-      } else if (!fPlusAST.equals(other.fPlusAST)) return false;
+        if (other.fPlusAST != null)
+          return false;
+      } else if (!fPlusAST.equals(other.fPlusAST))
+        return false;
       if (fVariableSet == null) {
-        if (other.fVariableSet != null) return false;
-      } else if (!fVariableSet.equals(other.fVariableSet)) return false;
+        if (other.fVariableSet != null)
+          return false;
+      } else if (!fVariableSet.equals(other.fVariableSet))
+        return false;
       if (fListOfVariables == null) {
-        if (other.fListOfVariables != null) return false;
-      } else if (!fListOfVariables.equals(other.fListOfVariables)) return false;
+        if (other.fListOfVariables != null)
+          return false;
+      } else if (!fListOfVariables.equals(other.fListOfVariables))
+        return false;
       return true;
     }
 
@@ -410,14 +432,12 @@ public class Solve extends AbstractFunctionEvaluator {
      */
     private IExpr rewriteInverseFunction(IAST ast, IExpr arg1) {
       if (ast.isAbs() || ast.isAST(S.RealAbs, 2)) {
-        return fEngine.evaluate(
-            F.Expand(
-                F.Times(
-                    F.Subtract(ast.arg1(), F.Times(F.CN1, arg1)), F.Subtract(ast.arg1(), arg1))));
+        return fEngine.evaluate(F.Expand(
+            F.Times(F.Subtract(ast.arg1(), F.Times(F.CN1, arg1)), F.Subtract(ast.arg1(), arg1))));
       } else if (ast.isAST1()) {
         IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(ast, true);
         if (inverseFunction.isPresent()) {
-          LOGGER.log(fEngine.getLogLevel(), "Using inverse functions may omit some solutions.");
+          IOFunctions.printIfunMessage(S.InverseFunction);
           // rewrite fNumer
           inverseFunction.append(arg1);
           return fEngine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
@@ -426,18 +446,16 @@ public class Solve extends AbstractFunctionEvaluator {
       } else if (ast.isPower() && ast.base().isSymbol() && ast.exponent().isNumber()) {
         int position = fListOfVariables.indexOf(ast.base());
         if (position > 0) {
-          LOGGER.log(fEngine.getLogLevel(), "Using inverse functions may omit some solutions.");
+          IOFunctions.printIfunMessage(S.InverseFunction);
           IAST inverseFunction = F.Power(arg1, ast.exponent().inverse());
           return fEngine.evaluate(F.Subtract(ast.base(), inverseFunction));
         }
-      } else if (ast.isTimes()
-          && ast.size() == 3
-          && ast.first().isNumericFunction(true)
+      } else if (ast.isTimes() && ast.size() == 3 && ast.first().isNumericFunction(true)
           && ast.second().isAST1()) {
         IAST timesArg2 = (IAST) ast.second();
         IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(timesArg2, true);
         if (inverseFunction.isPresent()) {
-          LOGGER.log(fEngine.getLogLevel(), "Using inverse functions may omit some solutions.");
+          IOFunctions.printIfunMessage(S.InverseFunction);
           // rewrite fNumer
           inverseFunction.append(F.Divide(arg1, ast.first()));
           return fEngine.evaluate(F.Subtract(timesArg2.arg1(), inverseFunction));
@@ -453,7 +471,7 @@ public class Solve extends AbstractFunctionEvaluator {
      * @param plusAST the <code>Plus(..., ,...)</code> expression
      * @param position
      * @return <code>F.NIL</code> if no inverse function was found, otherwise return the rewritten
-     *     expression
+     *         expression
      */
     private IExpr rewriteInverseFunction(IAST plusAST, int position) {
       IAST ast = (IAST) plusAST.get(position);
@@ -495,15 +513,13 @@ public class Solve extends AbstractFunctionEvaluator {
           } else if (function.isPower()) {
             // function is Power(x, fraction)
             return rewritePowerFractions(plusAST, i, F.C1, function.base(), function.exponent());
-          } else if (function.isTimes()
-              && function.size() == 3
+          } else if (function.isTimes() && function.size() == 3
               && function.arg1().isNumericFunction(true)) {
             if (function.arg2().isPower()) {
               // function is num*Power(x, fraction)
               IAST power = (IAST) function.arg2();
-              IExpr temp =
-                  rewritePowerFractions(
-                      plusAST, i, function.arg1(), power.base(), power.exponent());
+              IExpr temp = rewritePowerFractions(plusAST, i, function.arg1(), power.base(),
+                  power.exponent());
               if (temp.isPresent()) {
                 return fEngine.evaluate(temp);
               }
@@ -520,10 +536,9 @@ public class Solve extends AbstractFunctionEvaluator {
           } else if (function.isAST(S.GammaRegularized, 3)) {
             IAST temp = plusAST.removeAtCopy(i);
             int position = fListOfVariables.indexOf(function.arg2());
-            if (position > 0
-                && function.arg1().isFree(fListOfVariables)
+            if (position > 0 && function.arg1().isFree(fListOfVariables)
                 && temp.isFree(fListOfVariables)) {
-              LOGGER.log(fEngine.getLogLevel(), "Using inverse functions may omit some solutions.");
+              IOFunctions.printIfunMessage(S.InverseFunction);
               return fEngine.evaluate(F.InverseGammaRegularized(function.arg1(), temp.negate()));
             }
           }
@@ -543,8 +558,8 @@ public class Solve extends AbstractFunctionEvaluator {
      * @param exponent
      * @return
      */
-    private IExpr rewritePowerFractions(
-        IAST plusAST, int i, IExpr num, IExpr base, IExpr exponent) {
+    private IExpr rewritePowerFractions(IAST plusAST, int i, IExpr num, IExpr base,
+        IExpr exponent) {
       if (exponent.isFraction() || (exponent.isReal() && !exponent.isNumIntValue())) {
         ISignedNumber arg2 = (ISignedNumber) exponent;
         if (arg2.isPositive()) {
@@ -555,12 +570,11 @@ public class Solve extends AbstractFunctionEvaluator {
           }
           fOriginalExpr = plusAST;
           if (num.isOne()) {
-            return fEngine.evaluate(
-                F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), base));
+            return fEngine
+                .evaluate(F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), base));
           }
-          return fEngine.evaluate(
-              F.Subtract(
-                  base, F.Expand(F.Power(F.Times(num.inverse(), F.Negate(plus)), arg2.inverse()))));
+          return fEngine.evaluate(F.Subtract(base,
+              F.Expand(F.Power(F.Times(num.inverse(), F.Negate(plus)), arg2.inverse()))));
         }
       } else if (base.isVariable() && base.equals(exponent)) {
         // rewrite num * x^x as ProductLog() (Lambert W function)
@@ -582,9 +596,9 @@ public class Solve extends AbstractFunctionEvaluator {
      * variable +  ((b)*Log(x) + a * ProductLog(-(Log(x)/(x^(b/a)*a))) ) / (a*Log(x))
      * </code>. ProductLog is the Lambert W function.
      *
-     * <p>See: <a
-     * href="https://en.wikipedia.org/wiki/Lambert_W_function#Solving_equations">Wikipedia - Lambert
-     * W function - Solving equations</a>
+     * <p>
+     * See: <a href="https://en.wikipedia.org/wiki/Lambert_W_function#Solving_equations">Wikipedia -
+     * Lambert W function - Solving equations</a>
      *
      * @param plusAST a <code>Plus(...)</code> expression
      * @param i the index in <code>plusAST</code> where the argument equals F<code>base ^ exponent
@@ -595,8 +609,8 @@ public class Solve extends AbstractFunctionEvaluator {
      * @param variable the variable for which <code>plusAST</code> should be solved
      * @return {@link F#NIL} if no solution was found
      */
-    private IExpr rewritePower2ProductLog(
-        IAST plusAST, int i, IExpr num, IExpr base, IExpr exponent, IExpr variable) {
+    private IExpr rewritePower2ProductLog(IAST plusAST, int i, IExpr num, IExpr base,
+        IExpr exponent, IExpr variable) {
       if (variable.equals(exponent) && base.isFree(variable)) {
         IExpr restOfPlus = plusAST.splice(i).oneIdentity0();
         IExpr a = F.NIL;
@@ -614,21 +628,14 @@ public class Solve extends AbstractFunctionEvaluator {
           a = determineFactor(restOfPlus, variable);
         }
         if (a.isPresent()) {
-          // variable +  ((b)*Log(x) + a * ProductLog(-(Log(x)/(x^(b/a)*a))) )/(a*Log(x))
-          IAST inverseFunction =
-              F.Plus(
-                  variable,
-                  F.Times(
-                      F.Plus(
-                          F.Times(b, F.Log(base)),
-                          F.Times(
-                              a,
-                              F.ProductLog(
-                                  F.Times(
-                                      num,
-                                      F.Log(base),
-                                      F.Power(F.Times(a, F.Power(base, F.Divide(b, a))), F.CN1))))),
-                      F.Power(F.Times(a, F.Log(base)), F.CN1)));
+          // variable + ((b)*Log(x) + a * ProductLog(-(Log(x)/(x^(b/a)*a))) )/(a*Log(x))
+          IAST inverseFunction = F.Plus(variable,
+              F.Times(
+                  F.Plus(F.Times(b, F.Log(base)),
+                      F.Times(a,
+                          F.ProductLog(F.Times(num, F.Log(base),
+                              F.Power(F.Times(a, F.Power(base, F.Divide(b, a))), F.CN1))))),
+                  F.Power(F.Times(a, F.Log(base)), F.CN1)));
           return fEngine.evaluate(inverseFunction);
         }
       }
@@ -766,7 +773,7 @@ public class Solve extends AbstractFunctionEvaluator {
    * Recursively solve the list of analyzers.
    *
    * @param analyzerList list of analyzers, which determine, if an expression has linear, polynomial
-   *     or other form
+   *        or other form
    * @param variables the list of variables
    * @param resultList the list of result values as rules assigned to each variable
    * @param maximumNumberOfResults the maximum number of results in <code>resultList</code>: <code>0
@@ -776,15 +783,9 @@ public class Solve extends AbstractFunctionEvaluator {
    * @param engine
    * @return throws NoSolution
    */
-  protected static IASTAppendable analyzeSublist(
-      ArrayList<ExprAnalyzer> analyzerList,
-      IAST variables,
-      IASTAppendable resultList,
-      int maximumNumberOfResults,
-      IASTAppendable matrix,
-      IASTAppendable vector,
-      EvalEngine engine)
-      throws NoSolution {
+  protected static IASTAppendable analyzeSublist(ArrayList<ExprAnalyzer> analyzerList,
+      IAST variables, IASTAppendable resultList, int maximumNumberOfResults, IASTAppendable matrix,
+      IASTAppendable vector, EvalEngine engine) throws NoSolution {
     ExprAnalyzer exprAnalyzer;
     Collections.sort(analyzerList);
     int currEquation = 0;
@@ -818,24 +819,15 @@ public class Solve extends AbstractFunctionEvaluator {
               // collect linear and univariate polynomial
               // equations:
               IAST kListOfSolveRules = listOfRules.getAST(k);
-              ArrayList<ExprAnalyzer> subAnalyzerList =
-                  substituteRulesInSubAnalyzerList(
-                      kListOfSolveRules, analyzerList, currEquation, variables, engine);
+              ArrayList<ExprAnalyzer> subAnalyzerList = substituteRulesInSubAnalyzerList(
+                  kListOfSolveRules, analyzerList, currEquation, variables, engine);
               try {
-                IAST subResultList =
-                    analyzeSublist(
-                        subAnalyzerList,
-                        variables,
-                        F.ListAlloc(),
-                        maximumNumberOfResults,
-                        matrix,
-                        vector,
-                        engine);
+                IAST subResultList = analyzeSublist(subAnalyzerList, variables, F.ListAlloc(),
+                    maximumNumberOfResults, matrix, vector, engine);
                 if (subResultList.isPresent()) {
                   evaled = true;
-                  IASTAppendable tempResult =
-                      addSubResultsToResultsList(
-                          resultList, subResultList, kListOfSolveRules, maximumNumberOfResults);
+                  IASTAppendable tempResult = addSubResultsToResultsList(resultList, subResultList,
+                      kListOfSolveRules, maximumNumberOfResults);
                   if (tempResult.isPresent()) {
                     return tempResult;
                   }
@@ -872,13 +864,10 @@ public class Solve extends AbstractFunctionEvaluator {
    * @param kListOfSolveRules
    * @param maximumNumberOfResults
    * @return if <code>maximumNumberOfResults</code> is reached return the resultList, otherwiaw
-   *     return <code>F#NIL</code>.
+   *         return <code>F#NIL</code>.
    */
-  private static IASTAppendable addSubResultsToResultsList(
-      IASTAppendable resultList,
-      IAST subResultList,
-      IAST kListOfSolveRules,
-      int maximumNumberOfResults) {
+  private static IASTAppendable addSubResultsToResultsList(IASTAppendable resultList,
+      IAST subResultList, IAST kListOfSolveRules, int maximumNumberOfResults) {
     for (IExpr expr : subResultList) {
       if (expr.isList()) {
         IASTAppendable list;
@@ -913,12 +902,8 @@ public class Solve extends AbstractFunctionEvaluator {
    * @param engine
    * @return
    */
-  private static ArrayList<ExprAnalyzer> substituteRulesInSubAnalyzerList(
-      IAST kListOfSolveRules,
-      ArrayList<ExprAnalyzer> analyzerList,
-      int position,
-      IAST variables,
-      EvalEngine engine) {
+  private static ArrayList<ExprAnalyzer> substituteRulesInSubAnalyzerList(IAST kListOfSolveRules,
+      ArrayList<ExprAnalyzer> analyzerList, int position, IAST variables, EvalEngine engine) {
     ExprAnalyzer exprAnalyzer;
     ArrayList<ExprAnalyzer> subAnalyzerList = new ArrayList<ExprAnalyzer>();
     for (int i = position; i < analyzerList.size(); i++) {
@@ -958,16 +943,15 @@ public class Solve extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  private static IAST rootsOfUnivariatePolynomial(
-      IExpr numerator, IExpr denominator, IExpr variable, EvalEngine engine) {
+  private static IAST rootsOfUnivariatePolynomial(IExpr numerator, IExpr denominator,
+      IExpr variable, EvalEngine engine) {
     IExpr temp = F.NIL;
     if (numerator.isNumericMode() && denominator.isOne()) {
       temp = RootsFunctions.roots(numerator, F.List(variable), engine);
     }
     if (!temp.isPresent()) {
-      temp =
-          RootsFunctions.rootsOfVariable(
-              numerator, denominator, F.List(variable), numerator.isNumericMode(), engine);
+      temp = RootsFunctions.rootsOfVariable(numerator, denominator, F.List(variable),
+          numerator.isNumericMode(), engine);
     }
     if (temp.isPresent()) {
       if (temp.isSameHeadSizeGE(S.List, 2)) {
@@ -989,11 +973,11 @@ public class Solve extends AbstractFunctionEvaluator {
    * @param expr
    * @param engine
    * @param evalTogether evaluate <code>Together[expr]</code> before determining numerator and
-   *     denominator of the expression.
+   *        denominator of the expression.
    * @return <code>List[numerator, denominator]</code>
    */
-  private static IAST splitNumeratorDenominator(
-      IAST expr, EvalEngine engine, boolean evalTogether) {
+  private static IAST splitNumeratorDenominator(IAST expr, EvalEngine engine,
+      boolean evalTogether) {
     IExpr numerator, denominator;
     if (evalTogether) {
       numerator = Algebra.together(expr, engine);
@@ -1044,64 +1028,59 @@ public class Solve extends AbstractFunctionEvaluator {
         ISymbol domain = S.Complexes;
         if (ast.isAST3()) {
           if (!ast.arg3().isSymbol()) {
-            LOGGER.log(
-                engine.getLogLevel(),
-                "{}: domain definition expected at position 3 instead of {}",
-                ast.topHead(),
+            LOGGER.log(engine.getLogLevel(),
+                "{}: domain definition expected at position 3 instead of {}", ast.topHead(),
                 ast.arg3());
             return F.NIL;
           }
           domain = (ISymbol) ast.arg3();
           if (domain.equals(S.Booleans)) {
-            return BooleanFunctions.solveInstances(
-                ast.arg1(), userDefinedVariables, Integer.MAX_VALUE);
+            return BooleanFunctions.solveInstances(ast.arg1(), userDefinedVariables,
+                Integer.MAX_VALUE);
           }
           if (domain.equals(S.Integers)) {
-            return solveIntegers(
-                ast, equationVariables, userDefinedVariables, Integer.MAX_VALUE, engine);
+            return solveIntegers(ast, equationVariables, userDefinedVariables, Integer.MAX_VALUE,
+                engine);
           }
 
-          //          if (domain.equals(S.Reals)) {
-          //            if (!userDefinedVariables.isEmpty()) {
-          //              IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast,
+          // if (domain.equals(S.Reals)) {
+          // if (!userDefinedVariables.isEmpty()) {
+          // IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast,
           // 1);
-          //              if (!equationsAndInequations.isEmpty()) {
-          //                try {
-          //                  // call choco solver
-          //                  try {
-          //                    IAST resultList =
-          //                        ChocoConvert.realSolve(
-          //                            equationsAndInequations,
-          //                            equationVariables,
-          //                            userDefinedVariables,
-          //                            engine);
-          //                    if (resultList.isPresent()) {
-          //                      EvalAttributes.sort((IASTMutable) resultList);
-          //                      return resultList;
-          //                    }
-          //                  } catch (RuntimeException rex) {
-          //                    // try 2nd solver
-          //                    LOGGER.error("Solve.of() failed", rex);
-          //                  }
-          //                } catch (LimitException le) {
-          //                  LOGGER.debug("Solve.of() failed", le);
-          //                  throw le;
-          //                } catch (RuntimeException rex) {
-          //                  LOGGER.debug("Solve.of() failed", rex);
-          //                  return engine.printMessage(
-          //                      "Solve: " + "Reals solution not found: " + rex.getMessage());
-          //                }
-          //              }
-          //            }
-          //          }
+          // if (!equationsAndInequations.isEmpty()) {
+          // try {
+          // // call choco solver
+          // try {
+          // IAST resultList =
+          // ChocoConvert.realSolve(
+          // equationsAndInequations,
+          // equationVariables,
+          // userDefinedVariables,
+          // engine);
+          // if (resultList.isPresent()) {
+          // EvalAttributes.sort((IASTMutable) resultList);
+          // return resultList;
+          // }
+          // } catch (RuntimeException rex) {
+          // // try 2nd solver
+          // LOGGER.error("Solve.of() failed", rex);
+          // }
+          // } catch (LimitException le) {
+          // LOGGER.debug("Solve.of() failed", le);
+          // throw le;
+          // } catch (RuntimeException rex) {
+          // LOGGER.debug("Solve.of() failed", rex);
+          // return engine.printMessage(
+          // "Solve: " + "Reals solution not found: " + rex.getMessage());
+          // }
+          // }
+          // }
+          // }
 
           if (!domain.equals(S.Reals) && !domain.equals(S.Complexes)) {
             Level level = engine.getLogLevel();
-            LOGGER.log(
-                level,
-                "{}: domain definition expected at position 3 instead of {}",
-                ast.topHead(),
-                domain);
+            LOGGER.log(level, "{}: domain definition expected at position 3 instead of {}",
+                ast.topHead(), domain);
             return F.NIL;
           }
         }
@@ -1133,46 +1112,37 @@ public class Solve extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  public static IExpr solveIntegers(
-      final IAST ast,
-      IAST equationVariables,
-      IAST userDefinedVariables,
-      int maximumNumberOfResults,
-      EvalEngine engine) {
+  public static IExpr solveIntegers(final IAST ast, IAST equationVariables,
+      IAST userDefinedVariables, int maximumNumberOfResults, EvalEngine engine) {
     if (!userDefinedVariables.isEmpty()) {
       IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
       if (equationsAndInequations.isEmpty()) {
         return F.NIL;
       }
       try {
-        //                if (ToggleFeature.CHOCO_SOLVER) {
-        //                  // try calling choco solver
-        //                  if (equationsAndInequations.isFreeAST(x -> x.equals(S.Power))) {
-        //                    try {
-        //                      IAST resultList =
-        //                          ChocoConvert.integerSolve(
-        //                              equationsAndInequations,
-        //                              equationVariables,
-        //                              userDefinedVariables,
-        //                              engine);
-        //                      if (resultList.isPresent()) {
-        //                        EvalAttributes.sort((IASTMutable) resultList);
-        //                        return resultList;
-        //                      }
-        //                    } catch (RuntimeException rex) {
-        //                      // try 2nd solver
-        //                    }
-        //                  }
-        //                }
+        // if (ToggleFeature.CHOCO_SOLVER) {
+        // // try calling choco solver
+        // if (equationsAndInequations.isFreeAST(x -> x.equals(S.Power))) {
+        // try {
+        // IAST resultList =
+        // ChocoConvert.integerSolve(
+        // equationsAndInequations,
+        // equationVariables,
+        // userDefinedVariables,
+        // engine);
+        // if (resultList.isPresent()) {
+        // EvalAttributes.sort((IASTMutable) resultList);
+        // return resultList;
+        // }
+        // } catch (RuntimeException rex) {
+        // // try 2nd solver
+        // }
+        // }
+        // }
         // call cream solver
         CreamConvert converter = new CreamConvert();
-        IAST resultList =
-            converter.integerSolve(
-                equationsAndInequations,
-                equationVariables,
-                userDefinedVariables,
-                maximumNumberOfResults,
-                engine);
+        IAST resultList = converter.integerSolve(equationsAndInequations, equationVariables,
+            userDefinedVariables, maximumNumberOfResults, engine);
         if (resultList.isPresent()) {
           EvalAttributes.sort((IASTMutable) resultList);
           return resultList;
@@ -1245,17 +1215,12 @@ public class Solve extends AbstractFunctionEvaluator {
    * @param variables the variables for which the equations should be solved
    * @param engine
    * @return a list of rules (typically NSolve) or a list of list of rules (typically Solve) of the
-   *     solutions, <code>F.NIL</code> otherwise.
+   *         solutions, <code>F.NIL</code> otherwise.
    */
-  private static IExpr solveRecursive(
-      IASTMutable termsEqualZeroList,
-      IASTMutable inequationsList,
-      boolean numericFlag,
-      IAST variables,
-      EvalEngine engine) {
-    IASTMutable temp =
-        solveTimesEquationsRecursively(
-            termsEqualZeroList, inequationsList, numericFlag, variables, true, engine);
+  private static IExpr solveRecursive(IASTMutable termsEqualZeroList, IASTMutable inequationsList,
+      boolean numericFlag, IAST variables, EvalEngine engine) {
+    IASTMutable temp = solveTimesEquationsRecursively(termsEqualZeroList, inequationsList,
+        numericFlag, variables, true, engine);
     if (temp.isPresent()) {
       return solveNumeric(QuarticSolver.sortASTArguments(temp), numericFlag, engine);
     }
@@ -1265,8 +1230,9 @@ public class Solve extends AbstractFunctionEvaluator {
       IExpr res = eliminateOneVariable(termsEqualZeroList, firstVariable, true, engine);
       if (!res.isPresent()) {
         if (numericFlag) {
-          // find numerically find start value 0
-          res = S.FindRoot.of(engine, termsEqualZeroList.arg1(), F.List(firstVariable, F.C0));
+          // find numerically with start value 0
+          res =
+              engine.evalQuiet(F.FindRoot(termsEqualZeroList.arg1(), F.List(firstVariable, F.C0)));
         }
       }
       if (!res.isList() || !res.isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
@@ -1279,9 +1245,8 @@ public class Solve extends AbstractFunctionEvaluator {
       // expensive recursion try
       IExpr firstEquation = termsEqualZeroList.arg1();
       IExpr firstVariable = variables.arg1();
-      IAST[] reduced =
-          Eliminate.eliminateOneVariable(
-              F.List(F.Equal(firstEquation, F.C0)), firstVariable, true, engine);
+      IAST[] reduced = Eliminate.eliminateOneVariable(F.List(F.Equal(firstEquation, F.C0)),
+          firstVariable, true, engine);
       if (reduced != null) {
         variables = variables.splice(1);
         termsEqualZeroList = termsEqualZeroList.removeAtCopy(1);
@@ -1289,9 +1254,8 @@ public class Solve extends AbstractFunctionEvaluator {
         IAST oneVariableRule = reduced[1];
         IExpr replaced = termsEqualZeroList.replaceAll(oneVariableRule);
         if (replaced.isList()) {
-          IExpr subResult =
-              solveRecursive(
-                  (IASTMutable) replaced, inequationsList, numericFlag, variables, engine);
+          IExpr subResult = solveRecursive((IASTMutable) replaced, inequationsList, numericFlag,
+              variables, engine);
           if (subResult.isListOfLists()) {
             IASTAppendable result = F.ListAlloc(subResult.size());
             IASTAppendable appendable;
@@ -1339,11 +1303,10 @@ public class Solve extends AbstractFunctionEvaluator {
    * @param variable the variable which should be eliminated in the term
    * @return
    */
-  private static IAST eliminateOneVariable(
-      IAST termsEqualZeroList, IExpr variable, boolean multipleValues, EvalEngine engine) {
-    if (!termsEqualZeroList
-        .arg1()
-        .isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
+  private static IAST eliminateOneVariable(IAST termsEqualZeroList, IExpr variable,
+      boolean multipleValues, EvalEngine engine) {
+    if (!termsEqualZeroList.arg1().isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(),
+        true)) {
       return F.NIL;
     }
     // copy the termsEqualZeroList back to a list of F.Equal(...) expressions
@@ -1357,7 +1320,7 @@ public class Solve extends AbstractFunctionEvaluator {
       }
       if (tempAST != null && tempAST[1] != null) {
         if (tempAST[1].isList()) {
-          IAST list = (IAST) tempAST[1];
+          IAST list = tempAST[1];
           IASTAppendable result = F.ListAlloc(list.size());
           list.forEach(x -> result.append(F.List(x)));
           return result;
@@ -1374,14 +1337,11 @@ public class Solve extends AbstractFunctionEvaluator {
    * @param maximumNumberOfResults the maximum number of results which should be returned
    * @param engine the evaluation engine
    * @return a &quot;list of rules list&quot; which solves the equations, or an empty list if no
-   *     solution exists, or <code>F.NIL</code> if the equations are not solvable by this algorithm.
+   *         solution exists, or <code>F.NIL</code> if the equations are not solvable by this
+   *         algorithm.
    */
-  protected static IASTMutable solveEquations(
-      IASTMutable termsEqualZeroList,
-      IAST inequationsList,
-      IAST variables,
-      int maximumNumberOfResults,
-      EvalEngine engine) {
+  protected static IASTMutable solveEquations(IASTMutable termsEqualZeroList, IAST inequationsList,
+      IAST variables, int maximumNumberOfResults, EvalEngine engine) {
     try {
       IASTMutable list = PolynomialFunctions.solveGroebnerBasis(termsEqualZeroList, variables);
       if (list.isPresent()) {
@@ -1401,11 +1361,8 @@ public class Solve extends AbstractFunctionEvaluator {
           if (arg1.isPlus2()) {
             if (arg1.first().isSqrtExpr() && arg1.second().isSqrtExpr()) {
               // Sqrt() + Sqrt() == constant
-              termsEqualZeroList.set(
-                  i,
-                  S.Subtract.of(
-                      S.Expand.of(F.Sqr(arg1.second())),
-                      S.Expand.of(F.Sqr(F.Subtract(eq.second(), arg1.first())))));
+              termsEqualZeroList.set(i, S.Subtract.of(S.Expand.of(F.Sqr(arg1.second())),
+                  S.Expand.of(F.Sqr(F.Subtract(eq.second(), arg1.first())))));
             }
           }
         }
@@ -1418,9 +1375,7 @@ public class Solve extends AbstractFunctionEvaluator {
     // collect linear and univariate polynomial equations:
     for (IExpr expr : termsEqualZeroList) {
       if (expr.has(predicate, true)) {
-        LOGGER.log(
-            engine.getLogLevel(),
-            "Solve: the system contains the wrong object: {}",
+        LOGGER.log(engine.getLogLevel(), "Solve: the system contains the wrong object: {}",
             predicate.getWrongExpr());
         throw new NoEvalException();
       }
@@ -1432,17 +1387,16 @@ public class Solve extends AbstractFunctionEvaluator {
     IASTAppendable vector = F.ListAlloc();
     try {
       IASTAppendable resultList = F.ListAlloc();
-      resultList =
-          analyzeSublist(
-              analyzerList, variables, resultList, maximumNumberOfResults, matrix, vector, engine);
+      resultList = analyzeSublist(analyzerList, variables, resultList, maximumNumberOfResults,
+          matrix, vector, engine);
       if (vector.size() > 1) {
         // solve a linear equation <code>matrix.x == vector</code>
         FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
         if (augmentedMatrix != null) {
           IAST subSolutionList =
               LinearAlgebra.rowReduced2RulesList(augmentedMatrix, variables, resultList, engine);
-          return solveInequations(
-              (IASTMutable) subSolutionList, inequationsList, maximumNumberOfResults, engine);
+          return solveInequations((IASTMutable) subSolutionList, inequationsList,
+              maximumNumberOfResults, engine);
         }
         return F.NIL;
       }
@@ -1456,11 +1410,8 @@ public class Solve extends AbstractFunctionEvaluator {
     }
   }
 
-  protected static IASTMutable solveInequations(
-      IASTMutable subSolutionList,
-      IAST inequationsList,
-      int maximumNumberOfResults,
-      EvalEngine engine) {
+  protected static IASTMutable solveInequations(IASTMutable subSolutionList, IAST inequationsList,
+      int maximumNumberOfResults, EvalEngine engine) {
     if (inequationsList.isEmpty()) {
       return QuarticSolver.sortASTArguments(subSolutionList);
     }
@@ -1500,12 +1451,8 @@ public class Solve extends AbstractFunctionEvaluator {
    * @param engine the evaluation engine
    * @return
    */
-  private static IASTMutable solveTimesEquationsRecursively(
-      IASTMutable termsEqualZeroList,
-      IAST inequationsList,
-      boolean numericFlag,
-      IAST variables,
-      boolean multipleValues,
+  private static IASTMutable solveTimesEquationsRecursively(IASTMutable termsEqualZeroList,
+      IAST inequationsList, boolean numericFlag, IAST variables, boolean multipleValues,
       EvalEngine engine) {
     try {
       IASTMutable resultList =
@@ -1517,16 +1464,8 @@ public class Solve extends AbstractFunctionEvaluator {
       for (int i = 1; i < termsEqualZeroList.size(); i++) {
         IExpr termEQZero = termsEqualZeroList.get(i);
         if (termEQZero.isTimes()) {
-          solveTimesAST(
-              (IAST) termEQZero,
-              termsEqualZeroList,
-              inequationsList,
-              numericFlag,
-              variables,
-              multipleValues,
-              engine,
-              subSolutionSet,
-              i);
+          solveTimesAST((IAST) termEQZero, termsEqualZeroList, inequationsList, numericFlag,
+              variables, multipleValues, engine, subSolutionSet, i);
 
         } else {
           if (termEQZero.isAST()) {
@@ -1534,16 +1473,8 @@ public class Solve extends AbstractFunctionEvaluator {
             termEQZero = S.Factor.of(engine, termEQZero);
 
             if (termEQZero.isTimes()) {
-              solveTimesAST(
-                  (IAST) termEQZero,
-                  termsEqualZeroList,
-                  inequationsList,
-                  numericFlag,
-                  variables,
-                  multipleValues,
-                  engine,
-                  subSolutionSet,
-                  i);
+              solveTimesAST((IAST) termEQZero, termsEqualZeroList, inequationsList, numericFlag,
+                  variables, multipleValues, engine, subSolutionSet, i);
             }
           }
         }
@@ -1564,16 +1495,9 @@ public class Solve extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  private static void solveTimesAST(
-      IAST times,
-      IAST termsEqualZeroList,
-      IAST inequationsList,
-      boolean numericFlag,
-      IAST variables,
-      boolean multipleValues,
-      EvalEngine engine,
-      Set<IExpr> subSolutionSet,
-      int i) {
+  private static void solveTimesAST(IAST times, IAST termsEqualZeroList, IAST inequationsList,
+      boolean numericFlag, IAST variables, boolean multipleValues, EvalEngine engine,
+      Set<IExpr> subSolutionSet, int i) {
     IAST temp;
     for (int j = 1; j < times.size(); j++) {
       if (!times.get(j).isFree(Predicates.in(variables), true)) {
@@ -1583,13 +1507,12 @@ public class Solve extends AbstractFunctionEvaluator {
         if (temp.size() > 1) {
           for (int k = 1; k < temp.size(); k++) {
             IExpr solution = temp.get(k);
-            IExpr replaceAll = engine.evaluate(F.ReplaceAll(times, solution));
+            IExpr replaceAll = engine.evalQuiet(F.ReplaceAll(times, solution));
             IExpr zeroCrossCheck = engine.evalN(replaceAll);
             if (zeroCrossCheck.isZero()) {
               subSolutionSet.add(solution);
             } else {
-              if (replaceAll.isPlusTimesPower()
-                  && //
+              if (replaceAll.isPlusTimesPower() && //
                   S.PossibleZeroQ.ofQ(engine, replaceAll)) {
                 subSolutionSet.add(solution);
               }
@@ -1604,9 +1527,8 @@ public class Solve extends AbstractFunctionEvaluator {
             if (!res.isPresent()) {
               if (numericFlag) {
                 // find numerically with start value 0
-                res =
-                    S.FindRoot.ofNIL(
-                        engine, clonedEqualZeroList.arg1(), F.List(firstVariable, F.C0));
+                res = S.FindRoot.ofNIL(engine, clonedEqualZeroList.arg1(),
+                    F.List(firstVariable, F.C0));
               }
             }
             if (!res.isList()
