@@ -176,7 +176,7 @@ public class OutputFormFactory {
       convertDoubleString(buf, str, precedence, isNegative);
       return;
     }
-    if (F.isZero(doubleValue, Config.MACHINE_EPSILON)) {
+    if (F.isZero(doubleValue, Config.ZERO_IN_OUTPUT_FORMAT)) {
       if (fInputForm) {
         convertDoubleString(buf, d.fullFormString(), precedence, false);
       } else {
@@ -199,14 +199,10 @@ public class OutputFormFactory {
   }
 
   private void convertDouble(final Appendable buf, final double doubleValue) throws IOException {
-    if (F.isZero(doubleValue, Config.MACHINE_EPSILON)) {
+    if (F.isZero(doubleValue, Config.ZERO_IN_OUTPUT_FORMAT)) {
       convertDoubleString(buf, convertDoubleToFormattedString(0.0), 0, false);
       return;
     }
-    // final boolean isNegative = doubleValue < 0.0;
-    // if (!isNegative && caller == PLUS_CALL) {
-    // append(buf, "+");
-    // }
     convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), 0, false);
   }
 

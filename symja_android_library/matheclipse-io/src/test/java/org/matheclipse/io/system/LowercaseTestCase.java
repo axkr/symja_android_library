@@ -4273,7 +4273,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     check("Cos(3*Pi)", //
         "-1");
     check("Cos(1.5*Pi)", //
-        "0.0");
+        "-1.83697*10^-16");
 
     check("Cos(z+1/2*Pi)", //
         "-Sin(z)");
@@ -9017,7 +9017,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testFindRoot() {
     check("FindRoot(sin(x)==x^2, {x, -6.6, 3.99999999})", //
-        "{x->0.0}");
+        "{x->-1.84448*10^-19}");
     check("v1:=  E^x - 3*x ;v2:={x, 2};", //
         "");
     check("FindRoot(v1,v2)", //
@@ -9052,10 +9052,10 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{}");
 
     checkNumeric("N(2^(-100))", //
-        "0.0");
+        "7.888609052210118E-31");
 
     check("FindRoot(Exp(x)-1 == 0,{x,-50,100}, Method->Muller)", //
-        "{x->0.0}");
+        "{x->1.24362*10^-16}");
     if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       // implicit times operator '*' allowed
       check("Exp(1.243624090168953 * E - 16) - 1", //
@@ -12308,7 +12308,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     check("Interval(0.)", //
         "Interval({0.0,0.0})");
     check("Interval(0.1)-0.1", //
-        "Interval({0.0,0.0})");
+        "Interval({-1.38778*10^-17,1.38778*10^-17})");
     check("Interval(100.)-100.0", //
         "Interval({-1.42109*10^-14,1.42109*10^-14})");
     check("Sin(Interval(N(Pi)))", //
@@ -16600,7 +16600,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     checkNumeric("NIntegrate (x, {x, 0,2}, Method->Simpson)", //
         "2.0");
     checkNumeric("NIntegrate(Cos(x), {x, 0, Pi})", //
-        "0.0");
+        "1.0E-16");
     checkNumeric("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", //
         "2.1108620052");
   }
@@ -20632,6 +20632,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testRational() {
+    check("1.29600*10^-17", //
+        "1.29600*10^-17");
+    check("1.29600*^-17", //
+        "1.29600*10^-17");
     check("6*^3", //
         "6000");
     check("6*^-1", //

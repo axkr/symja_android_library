@@ -12,7 +12,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -217,8 +220,17 @@ public class Config {
   /** See <a href="http://en.wikipedia.org/wiki/Machine_epsilon">Wikipedia: Machine epsilon</a> */
   public static double DOUBLE_EPSILON = Precision.EPSILON;
 
-  /** The double tolerance used for comparisons. */
+  /**
+   * The double tolerance used for comparisons. For example the {@link Num#isZero()} or
+   * {@link ComplexNum#isZero()} methods use this parameter.
+   */
   public static double DOUBLE_TOLERANCE = DOUBLE_EPSILON * 10d;
+
+  /**
+   * The double tolerance used to determine if a value is printed as 0.0 in output formatting. For
+   * example {@link OutputFormFactory}
+   */
+  public static double ZERO_IN_OUTPUT_FORMAT = 1.0e-100;
 
   /** The real which added to 1.0 gives the next double value greater than 1.0 */
   public static double MACHINE_EPSILON = Math.nextUp(1.0) - 1.0;

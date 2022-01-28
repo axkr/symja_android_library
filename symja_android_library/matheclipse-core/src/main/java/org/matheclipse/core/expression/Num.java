@@ -144,6 +144,7 @@ public class Num implements INum {
     return ApcomplexNum.valueOf(apcomplexValue());
   }
 
+  @Override
   public Apcomplex apcomplexValue() {
     return new Apcomplex(new Apfloat(fDouble));
   }
@@ -236,7 +237,7 @@ public class Num implements INum {
       return valueOf(fDouble / ((Num) that).fDouble);
     }
     if (that instanceof ApfloatNum) {
-      return (ISignedNumber) apfloatNumValue().divide(that.apfloatNumValue());
+      return apfloatNumValue().divide(that.apfloatNumValue());
     }
     return valueOf(fDouble / that.doubleValue());
   }
@@ -478,6 +479,7 @@ public class Num implements INum {
   }
 
   /** @return */
+  @Override
   public boolean isInfinite() {
     return Double.isInfinite(fDouble);
   }
@@ -494,6 +496,7 @@ public class Num implements INum {
   }
 
   /** @return */
+  @Override
   public boolean isNaN() {
     return Double.isNaN(fDouble);
   }
@@ -638,7 +641,7 @@ public class Num implements INum {
   public IExpr power(final IExpr that) {
     if (that instanceof Num) {
       if (fDouble < 0.0) {
-        return ComplexNum.valueOf(fDouble).power((Num) that);
+        return ComplexNum.valueOf(fDouble).power(that);
       }
       return valueOf(Math.pow(fDouble, ((Num) that).getRealPart()));
     }
@@ -647,7 +650,7 @@ public class Num implements INum {
         return F.complexNum(
             EvalEngine.getApfloat().pow(apcomplexValue(), ((ApcomplexNum) that).apcomplexValue()));
       }
-      return ComplexNum.valueOf(fDouble).power((ComplexNum) that);
+      return ComplexNum.valueOf(fDouble).power(that);
     }
     if (that instanceof ApfloatNum) {
       if (fDouble < 0.0) {
@@ -705,7 +708,7 @@ public class Num implements INum {
       return valueOf(fDouble - ((Num) that).fDouble);
     }
     if (that instanceof ApfloatNum) {
-      return (ISignedNumber) apfloatNumValue().subtract(that.apfloatNumValue());
+      return apfloatNumValue().subtract(that.apfloatNumValue());
     }
     return valueOf(doubleValue() - that.doubleValue());
   }

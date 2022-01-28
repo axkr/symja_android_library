@@ -89,7 +89,7 @@ public abstract class ComplexFormFactory {
       final INum d,
       final int precedence,
       boolean caller) {
-    if (F.isZero(doubleValue, Config.MACHINE_EPSILON)) {
+    if (F.isZero(doubleValue, Config.ZERO_IN_OUTPUT_FORMAT)) {
       convertDoubleString(buf, convertDoubleToFormattedString(0.0), precedence, false);
       return;
     }
@@ -105,7 +105,7 @@ public abstract class ComplexFormFactory {
   }
 
   private void convertDouble(final StringBuilder buf, final double doubleValue) {
-    if (F.isZero(doubleValue, Config.MACHINE_EPSILON)) {
+    if (F.isZero(doubleValue, Config.ZERO_IN_OUTPUT_FORMAT)) {
       convertDoubleString(buf, convertDoubleToFormattedString(0.0), 0, false);
       return;
     }

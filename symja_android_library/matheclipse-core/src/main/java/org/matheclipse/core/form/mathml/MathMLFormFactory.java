@@ -1631,7 +1631,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   @Override
   public void convertDouble(final StringBuilder buf, final INum d, final int precedence,
       boolean caller) {
-    if (d instanceof Num && F.isZero(d.doubleValue(), Config.MACHINE_EPSILON)) {
+    if (d instanceof Num && F.isZero(d.doubleValue(), Config.ZERO_IN_OUTPUT_FORMAT)) {
       tagStart(buf, "mn");
       buf.append(convertDoubleToFormattedString(0.0));
       tagEnd(buf, "mn");
