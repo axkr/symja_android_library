@@ -282,7 +282,7 @@ public class SolveTest extends AbstractTestCase {
     check("InverseFunction(#*a^#*d &)", //
         "ProductLog((#1*Log(a))/d)/Log(a)&");
     check("InverseFunction(#^2+2^# &)", //
-        "InverseFunction(#1^2+2^#1&)");
+        "InverseFunction(2^#1+#1^2&)");
   }
 
   public void testSolveSlot() {
@@ -745,6 +745,406 @@ public class SolveTest extends AbstractTestCase {
         "{{x->-81.08825721072822},{x->81.08825721072822}}");
   }
 
+  public void testNSolve() {
+    // github #261 - JUnit test for Apfloat switching to complex Power calculation
+    check("NSolve(0.00004244131815783 == x^5 , x)", //
+        "{{x->-0.10802279680851234+I*0.07848315587546605},{x->-0.10802279680851212+I*(-0.07848315587546605)},{x->0.04126103682102799+I*(-0.1269884137508598)}," //
+            + "{x->0.04126103682102799+I*0.1269884137508598},{x->0.1335235199749684}}");
+    // github #247
+    check("NSolve((k+3)/(4)==(k)/2,{k})", //
+        "{{k->3.0}}");
+    check("NSolve(k+3/(4)==(k)/2,{k})", //
+        "{{k->-1.5}}");
+
+    check("NSolve({{x,y}=={3,4}},{x,y})", //
+        "{{x->3.0,y->4.0}}");
+
+    // https://en.wikipedia.org/wiki/Lambert_W_function#Solving_equations
+    // TODO generate 2 solutions
+    check("NSolve(3^x==2*x+2, x)", //
+        "{{x->-0.79011}}");
+    check("NSolve(3^x==2*x, x)", //
+        "{{x->0.664769+I*(-0.797037)}}");
+    check("NSolve(3^x==-4*x, x)", //
+        "{{x->-0.200562}}");
+    check("NSolve(x^y==a*y, y)", //
+        "{{y->-ProductLog(-Log(x)/a)/Log(x)}}");
+    check("NSolve(x^y==y, y)", //
+        "{{y->-ProductLog(-Log(x))/Log(x)}}");
+    check("NSolve(x^y==-y, y)", //
+        "{{y->-ProductLog(Log(x))/Log(x)}}");
+
+    check("NSolve(2*Log(2)* x^2 - Log(4)*x^2 + x - 1 == 0, x)", //
+        "{{x->1.0}}");
+    // message - Solve: Maximum AST dimension 9223372036854775807 exceeded
+    check("NSolve(x^(1/7)-x^(1/5)==x^(1/3)-x^(1/2),x)", //
+        "NSolve(x^(1/7)-x^(1/5)==x^(1/3)-Sqrt(x),x)");
+    check("NSolve(Log(2,x)+4*Log(x,2)-5==0,x)", //
+        "{{x->2.0},{x->16.0}}");
+
+    check("NSolve({x+y+z==6, x+y-z==0, y+z==5}, {x,y,z})", //
+        "{{x->1.0,y->2.0,z->3.0}}");
+    // github #201 begin
+    check(
+        "NSolve({m1*u1^2 + m2*u2^2 == m1*v1^2 + m2*v2^2, m1*u1 + m2*u2 == m1*v1 + m2*v2}, {v1, v2})", //
+        "{{v2->u2,v1->u1},{v2->(2.0*m1*u1-m1*u2+m2*u2)/(m1+m2),v1->(m1*u1+m2*u2+(-m2*(2.0*m1*u1-m1*u2+m2*u2))/(m1+m2))/m1}}");
+    check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == v2 - v1}, {v1, v2})", //
+        "{{v1->(-m1*u1-m2*u2+m2*(-u1+u2))/(-m1-m2),v2->(-m1*u1+m1*(u1-u2)-m2*u2)/(-m1-m2)}}");
+    check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == -(v2 - v1)}, {v1, v2})", //
+        "{{v1->(m1*u1+m2*u2+m2*(-u1+u2))/(m1+m2),v2->(m1*u1+m1*(u1-u2)+m2*u2)/(m1+m2)}}");
+    // github #201 end
+
+    // github #200 begin
+    check("NSolve({x^2+y^2==5, x+y^2==-7, y>0}, {x,y})", //
+        "{}");
+    check("NSolve({x^2+y^2==5, x+y^2==-7, x>0}, {x,y})", //
+        "{{x->4.0,y->I*(-3.31662)},{x->4.0,y->I*3.31662}}");
+    check("NSolve({x^2+5x+3==0, x<0}, x)", //
+        "{{x->-4.30278},{x->-0.697224}}");
+    check("NSolve({x^2+5x+3==0, x>0}, x)", //
+        "{}");
+    check("NSolve({x^2 == 4, x > 0}, x)", //
+        "{{x->2.0}}");
+    // github #200 end
+
+
+    // prints error message / wrong result in numeric mode
+    check("NSolve(2*x^(x-3)==3^(x-2),x)", //
+        "{{x->0.0}}");
+
+    // https://github.com/tranleduy2000/ncalc/issues/79
+    // 0x + 50y + 2z = 20
+    // -6x - 12y + 20z = 8
+    // 6x + 62y - 18z = 12
+    check("NSolve({50*y+2*z==20, -6*x-12*y+20*z==8, 6*x+62*y-18*z==12},{x,y,z})", //
+        "{{x->0.0133333*(-160.0+256.0*z),y->0.04*(10.0-z)}}");
+    check("NSolve({50*y+2*z==20, -6*x-12*y+20*z==8, 6*x+62*y-18*z==12},{x,y,z}) // N", //
+        "{{x->0.0133333*(-160.0+256.0*z),y->0.04*(10.0-z)}}");
+
+    // 0x + 50y + 2z = 20
+    // -6x - 12y + 20z = 8
+    // 6x + 62y - 18z = 13
+    check("NSolve({50*y+2*z==20, -6*x-12*y+20*z==8, 6*x+62*y-18*z==13},{x,y,z})", //
+        "{}");
+    check("NSolve({50*y+2*z==20, -6*x-12*y+20*z==8, 6*x+62*y-18*z==13},{x,y,z}) // N", //
+        "{}");
+
+    check("-(-I*Pi-f(a))/b", //
+        "(I*Pi+f(a))/b");
+    check("NSolve(3*x^x==7,x)", //
+        "{{x->1.66397}}");
+    check("NSolve(3*x^x==-7,x)", //
+        "{{x->2.06626+I*1.7231}}");
+    check("NSolve(x^x==7,x)", //
+        "{{x->2.31645}}");
+    check("NSolve(x^x==-7,x)", //
+        "{{x->2.55836+I*1.57368}}");
+    check(
+        "ReplaceAll(x^3-89, {{x->-(-89)^(1/3)},{x->(-89)^(1/3)*(-1)^(1/3)},{x->-(-89)^(1/3)*(-1)^(2/3)}})", //
+        "{0,0,0}");
+
+    check("NSolve((5.0*x)/y==(0.8*y)/x,x)", //
+        "{{x->-0.4*y},{x->0.4*y}}");
+    check("NSolve(x==0,x)", //
+        "{{x->0.0}}");
+    check("NSolve(5*y^x==8,x)", //
+        "{{x->0.470004/Log(y)}}");
+    check("NSolve(x^y+8==a*b,x)", //
+        "{{x->(-8.0+a*b)^(1/y)}}");
+    check("NSolve(x^2==0,x)", //
+        "{{x->0.0}}");
+    check("NSolve(x^3==0,x)", //
+        "{{x->0.0}}");
+    check("NSolve(x+1==0,x)", //
+        "{{x->-1.0}}");
+    check("NSolve(x^2+1==0,x)", //
+        "{{x->I*(-1.0)},{x->I*1.0}}");
+    check("NSolve(2*x^2+1==0,x)", //
+        "{{x->I*(-0.707107)},{x->I*0.707107}}");
+    check("NSolve(3*(x+5)*(x-4)==0,x)", //
+        "{{x->-5.0},{x->4.0}}");
+    check("NSolve(3*(x+a)*(x-b)==0,x)", //
+        "{{x->-a},{x->b}}");
+    check("NSolve(a*x^2+b==0,x)", //
+        "{{x->((I*(-1.0))*Sqrt(b))/Sqrt(a)},{x->((I*1.0)*Sqrt(b))/Sqrt(a)}}");
+    check("NSolve(x^2+2*x+1==0,x)", //
+        "{{x->-1.0},{x->-1.0}}");
+
+    check("NSolve(-5*Sqrt(14)*x-14*x^2*Sqrt(83)-10==0,x)", //
+        "{{x->-0.0733393+I*(-0.27023)},{x->-0.0733393+I*0.27023}}");
+
+    check("NSolve(8*x^3-26x^2+3x+9==0,x)", //
+        "{{x->-0.5},{x->0.75},{x->3.0}}");
+
+    // check("NSolve((a*x^2+1)==0,x)", //
+    // "{{x->-I/Sqrt(a)},{x->I/Sqrt(a)}}");
+    // check("NSolve(Sqrt(x)-2*x+x^2==0,x)", //
+    // "{{x->0},{x->1}}");
+    // check("NSolve((2*x+x^2)^2-x==0,x)", //
+    // "{{x->0},{x->-4/3+(43/2+3/2*Sqrt(177))^(1/3)/3+4/3*2^(1/3)/(43+3*Sqrt(177))^(1/3)},{x->-\n"
+    // + "4/3-2/3*2^(1/3)/(43+3*Sqrt(177))^(1/3)+(I*2*2^(1/3))/(Sqrt(3)*(43+3*Sqrt(177))^(\n"
+    // + "1/3))-(43+3*Sqrt(177))^(1/3)/(6*2^(1/3))+(-I*1/2*(43+3*Sqrt(177))^(1/3))/(2^(1/3)*Sqrt(\n"
+    // + "3))},{x->-4/3-2/3*2^(1/3)/(43+3*Sqrt(177))^(1/3)+(-I*2*2^(1/3))/(Sqrt(3)*(43+3*Sqrt(\n"
+    // + "177))^(1/3))-(43+3*Sqrt(177))^(1/3)/(6*2^(1/3))+(I*1/2*(43+3*Sqrt(177))^(1/3))/(\n"
+    // + "2^(1/3)*Sqrt(3))}}");
+    //
+    // check("NSolve({x^2-11==y, x+y==-9}, {x,y})", //
+    // "{{x->-2,y->-7},{x->1,y->-10}}");
+    //
+    // check("NSolve(30*x/0.0002==30,{x})", //
+    // "{{x->0.0002}}");
+    // check("NSolve(30*x/0.000000002==30,x)", //
+    // "{{x->2.00000*10^-9}}");
+    //
+    // // check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
+    // // "((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
+    // check("NSolve((-3+E^(2*x))==0,x)", //
+    // "{{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(3)),C(1)∈Integers)}}");
+    // check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
+    // "{{x->ConditionalExpression(I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n" +
+    // //
+    // "I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(3)),C(\n" + //
+    // "1)∈Integers)}}");
+    // check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
+    // "{{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(0.5*(1.09861+(I*6.28319)*C(1.0)),C(\n"
+    // + //
+    // "1)∈Integers)},{x->ConditionalExpression((I*6.28319)*C(1.0),C(1)∈Integers)}}");
+    //
+    // check("NSolve(1+E^x==0,x)", //
+    // "{{x->ConditionalExpression(I*Pi+I*2*Pi*C(1),C(1)∈Integers)}}");
+    // check("NSolve(a+E^(b*x)==0,x)", //
+    // "{{x->ConditionalExpression((I*2*Pi*C(1)+Log(-a))/b,C(1)∈Integers)}}");
+    //
+    // check("NSolve(E^x==b,x)", //
+    // "{{x->ConditionalExpression(I*2*Pi*C(1)+Log(b),C(1)∈Integers)}}");
+    // check("NSolve(a^x==42,x)", //
+    // "{{x->Log(42)/Log(a)}}");
+    // //
+    // check("NSolve(2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-I*3*x)+E^(I*3*x))==0,x)",
+    // // //
+    // //
+    // "((2-I*2)*(I+(-1/2-I*1/2)*E^(I*2*x)+E^(I*4*x)))/((-1-I*E^(I*x)+E^(I*2*x))*(-1+I*E^(I*x)+E^(\n"
+    // // + "I*2*x)))");
+    //
+    // // check("NSolve(4^(2*x+1)*5^(x-2)-6^(1-x)==0,x)", //
+    // // "");
+    // check("NSolve(Log(2,x)+4*Log(x,2)-5==0,x)", //
+    // "{{x->2},{x->16}}");
+    // check("NSolve(x^(1/Log(2))-1==0,x)", //
+    // "{{x->1}}");
+    // check("NSolve(Log((x-1)*(x+1))==0,x)", //
+    // "{{x->-Sqrt(2)},{x->Sqrt(2)}}");
+    // check("{Re @ #, Im @ #} & /@ Last @@@ NSolve(x^3 + 3 == 0, x)", //
+    // "{{3^(1/3)/2,3^(5/6)/2},{-3^(1/3),0},{3^(1/3)/2,-3^(5/6)/2}}");
+    //
+    // // github #117
+    // check("NSolve({x+y^2==9.1, y==2*x+2}, {x,y})", //
+    // "{{x->-2.71893,y->-3.43787},{x->0.468934,y->2.93787}}");
+    //
+    // check("NSolve(-28 - 4*Sqrt(-1 + x) + 4*x==0,x)", //
+    // "{{x->10}}");
+    // check("NSolve(Sqrt(5*x-25)-Sqrt(x-1)==2,x)", //
+    // "{{x->10}}");
+    //
+    // check("NSolve(Sqrt(x+6)-Sqrt(x-1)==1,x)", //
+    // "{{x->10}}");
+    //
+    // check("NSolve(Sin((x+1)*(x-1))==2,x)", //
+    // "{{x->-Sqrt(1+ArcSin(2))},{x->Sqrt(1+ArcSin(2))}}"); //
+    // check("NSolve(Log((x+1)*(x-1))==2,x)", //
+    // "{{x->-Sqrt(1+E^2)},{x->Sqrt(1+E^2)}}");
+    // check("NSolve(Log(x^2-1)==3,x)", //
+    // "{{x->-Sqrt(1+E^3)},{x->Sqrt(1+E^3)}}");
+    //
+    // check("NSolve(a^x==b,x)", //
+    // "{{x->Log(b)/Log(a)}}");
+    //
+    // checkNumeric("Eliminate(Abs(x-1)==(-1),x)", //
+    // "True");
+    // checkNumeric("NSolve(Abs(x-1)==(-1),x)", //
+    // "{}");
+    // checkNumeric("NSolve(Abs(x-1)==1,x)", //
+    // "{{x->0},{x->2}}");
+    //
+    // checkNumeric("NSolve(30*x/0.000002==30,x)", //
+    // "{{x->2.0E-6}}");
+    // check("NSolve((a*x + b)/(c*x + d)==y,x)", //
+    // "{{x->(-b+d*y)/(a-c*y)}}");
+    //
+    // check("E^((Log(a)+Log(b))/m)", //
+    // "E^((Log(a)+Log(b))/m)");
+    // check("NSolve(a0*x^p+a1*x^q==0,x)", //
+    // "{{x->E^((-I*Pi+Log(a0)-Log(a1))/(-p+q))}}");
+    //
+    // check("NSolve(a*x^2+b*x==0, x)", //
+    // "{{x->0},{x->-b/a}}");
+    //
+    // check("NSolve({Cos(x)*x==0, x > 10}, x)", //
+    // "{{x->0},{x->Pi/2}}");
+    // // TODO select a better starting value for internally used FindRoot:
+    // check("NSolve({Cos(x)*x==0, x > 10}, x)", //
+    // "{{x->0.0},{x->1.5708}}");
+    //
+    // check("NSolve({Cos(x)*x==0, x==0}, x)", //
+    // "{{x->0}}");
+    // check("NSolve({Cos(x)*x==0, x < 10}, x)", //
+    // "{{x->0},{x->Pi/2}}");
+    //
+    // // check("NSolve((x^4 - 1)*(x^4 - 4) == 0, x, Integers)", "");
+    // check("NSolve(x == x, x)", //
+    // "{{}}");
+    // // check("NSolve(x == 1 && x == 2, x)", //
+    // // "{}");
+    //
+    // check("NSolve((5.0*x)/y==(0.8*y)/x,x)", //
+    // "{{x->-0.4*y},{x->0.4*y}}");
+    //
+    // // gh issue #2
+    // check("NSolve(x^2+y^2==5,x)", //
+    // "{{x->-Sqrt(5-y^2)},{x->Sqrt(5-y^2)}}");
+    //
+    // // check("x=20.796855124168776", "20.79686");
+    // // check("Clear(x);NSolve(x==(-1.0000000000000002)*Sqrt(y^2.0),y)",
+    // // "{{y->1.0*Sqrt(x^2.0)}}");
+    //
+    // // Issue #175
+    // check("NSolve(Sqrt(-16.0+a^2.0)/(20.0-2.0*92)==0.5,a)", //
+    // "{}");
+    //
+    // // Issue #166
+    // check("NSolve(2*x/y==x/z,x)", //
+    // "{{x->0}}");
+    // // Issue #165
+    // check("NSolve((3.0*y)/x==(1.5*y)/z,x)", //
+    // "{{x->2.0*z}}");
+    // // Issue #162
+    // check("NSolve((5.0*x)/y==(0.8*y)/x,x)", //
+    // "{{x->-0.4*y},{x->0.4*y}}");
+    // // Issue #161
+    // checkNumeric("NSolve((0.6000000000000001*2.5)/y==z/x,x)", //
+    // "{{x->0.6666666666666665*y*z}}");
+    // // Issue #160
+    // checkNumeric("NSolve((2.10937501*y)/(0.6923076944378698*z)==(0.6923076944378698*z)/x,x)", //
+    // "{{x->(0.2272189352323269*z^2.0)/y}}");
+    // // Issue #159
+    // check("NSolve(x==2*Sqrt(y)*Sqrt(z),y)", //
+    // "{{y->x^2/(4*z)}}");
+    // check("NSolve(x==2.0*Sqrt(y)*Sqrt(z),y)", //
+    // "{{y->(0.25*x^2.0)/z}}");
+    //
+    // // Issue #155
+    // check("NSolve(x==2*Sqrt(y)*Sqrt(z),y)", //
+    // "{{y->x^2/(4*z)}}");
+    //
+    // // Issue #151
+    // check("NSolve(60+abc==120.0,abc)", //
+    // "{{abc->60.0}}");
+    //
+    // // Issue #152
+    // checkNumeric("NSolve(Sqrt(x)==16.1,x)", //
+    // "{{x->259.21}}");
+    //
+    // // TODO check type of result in NSolve()
+    // // check("NSolve(x^3 == 1, x, Reals)", "{{x->1}}");
+    //
+    // check("NSolve(x+5.0==a,x)", //
+    // "{{x->-5.0+a}}");
+    //
+    // checkNumeric("NSolve(-8828.206-582.222*b+55.999*b^2.0+4.8*b^3.0==0, b)", //
+    // "{{b->11.805307105741173},{b->-11.735882719537255+I*(-4.250200714726687)},{b->-11.735882719537255+I*4.250200714726687}}");
+    // // check("NSolve(Abs((-3+x^2)/x) ==2,{x})",
+    // // "{{x->-3},{x->-1},{x->1},{x->3}}");
+    // check("NSolve(x^3==-2,x)", //
+    // "{{x->(-2)^(1/3)},{x->-2^(1/3)},{x->-(-1)^(2/3)*2^(1/3)}}");
+    //
+    // // timeouts in Cream engine
+    // // check("NSolve({x^2 + x y + y^2 == 109}, {x, y}, Integers)", "");
+    // // check("NSolve({x^12345 - 2 x^777 + 1 == 0}, {x}, Integers)", "");
+    // // check("NSolve({2 x + 3 y - 5 z == 1 , 3 x - 4 y + 7 z == 3}, {x,
+    // // y, z}, Integers)", "");
+    //
+    // check("NSolve((k*Q*q)/r^2+1/r^4==E,r)", //
+    // "{{r->Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(\n"
+    // + "4*E+k^2*q^2*Q^2))},{r->Sqrt(1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(\n"
+    // + "1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))}}");
+    // // issue #120
+    // check("NSolve(Sin(x)*x==0, x)", //
+    // "{{x->0}}");
+    // check("NSolve(Cos(x)*x==0, x)", //
+    // "{{x->0},{x->Pi/2}}");
+    // // issue #121
+    // check("NSolve(Sqrt(x)==-1, x)", //
+    // "{}");
+    // check("NSolve(x^2+1==0, x)", //
+    // "{{x->-I},{x->I}}");
+    // check("NSolve((k*Q*q)/r^2==E,r)", //
+    // "{{r->Sqrt(k*q*Q)/Sqrt(E)},{r->-Sqrt(k*q*Q)/Sqrt(E)}}");
+    // check("NSolve((k*Q*q)/r^2+1/r^4==E,r)", //
+    // "{{r->Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(\n"
+    // + "4*E+k^2*q^2*Q^2))},{r->Sqrt(1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(\n"
+    // + "1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))}}");
+    // check("NSolve((k*Q*q)/r^2+1/r^4==0,r)", //
+    // "{{r->-I/Sqrt(k*q*Q)},{r->I/Sqrt(k*q*Q)}}");
+    // check("NSolve(Abs(x-1) ==1,{x})", //
+    // "{{x->0},{x->2}}");
+    // check("NSolve(Abs(x^2-1) ==0,{x})", //
+    // "{{x->-1},{x->1}}");
+    // check("NSolve(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)", //
+    // "{{a->True,b->False,c->False,d->False},{a->False,b->True,c->False,d->False}}");
+    // check("NSolve({x^2-11==y, x+y==-9}, {x,y})", //
+    // "{{x->-2,y->-7},{x->1,y->-10}}");
+    //
+    // // issue 42
+    // // check("$sol=NSolve(x^3 + 2x^2 - 5x -3 ==0,x);N($sol)",
+    // // "{{x->-3.2534180395878516},{x->-0.5199693720627901},{x->1.773387411650642}}");
+    //
+    // // check("NSolve(x^3 + 2x^2 - 5x -3 ==0, x)",
+    // // "{{x->(-1/3)*((1/2)^(1/3)*(I*9*331^(1/2)+25)^(1/3)+(1/2)^(1/3)*(-I*9*331^(1/2)+25)^(\n"
+    // // +
+    // // "1/3)+2)},{x->(-1/3)*((-I*1/2*3^(1/2)-1/2)*(1/2)^(1/3)*(I*9*331^(1/2)+25)^(1/3)+(I*\n"
+    // // +
+    // // "1/2*3^(1/2)-1/2)*(1/2)^(1/3)*(-I*9*331^(1/2)+25)^(1/3)+2)},{x->(-1/3)*((I*1/2*3^(\n"
+    // // +
+    // // "1/2)-1/2)*(1/2)^(1/3)*(I*9*331^(1/2)+25)^(1/3)+(-I*1/2*3^(1/2)-1/2)*(1/2)^(1/3)*(-I*\n"
+    // // + "9*331^(1/2)+25)^(1/3)+2)}}");
+    // check("NSolve(2*Sin(x)==1/2,x)", //
+    // "{{x->ArcSin(1/4)}}");
+    // check("NSolve(3+2*Cos(x)==1/2,x)", //
+    // "{{x->ArcCos(-5/4)}}");
+    // check("NSolve(Sin(x)==0,x)", //
+    // "{{x->0}}");
+    // check("NSolve(Sin(x)==0.0,x)", //
+    // "{{x->0}}");
+    // check("NSolve(Sin(x)==1/2,x)", //
+    // "{{x->Pi/6}}");
+    // checkNumeric("NSolve(sin(x)==0.5,x)", //
+    // "{{x->0.5235987755982988}}");
+    // check("NSolve(x^2-2500.00==0,x)", //
+    // "{{x->-50.0},{x->50.0}}");
+    // check("NSolve(x^2+a*x+1 == 0, x)", //
+    // "{{x->1/2*(-a-Sqrt(-4+a^2))},{x->1/2*(-a+Sqrt(-4+a^2))}}");
+    // check("NSolve((-3)*x^3 +10*x^2-11*x == (-4), {x})", //
+    // "{{x->1},{x->4/3}}");
+    //
+    // checkNumeric("NSolve(x^2+50*x-2500.00==0,x)", //
+    // "{{x->-80.90169943749474},{x->30.90169943749474}}");
+    //
+    // check("NSolve(a*x + y == 7 && b*x - y == 1, {x, y})", //
+    // "{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
+    // check("NSolve({a*x + y == 7, b*x - y == 1}, {x, y})", //
+    // "{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
+    //
+    // check("NSolve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)", //
+    // "NSolve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)");
+    //
+    // // Issue #168
+    // checkNumeric("y=297.0004444386505", //
+    // "297.0004444386505");
+    // checkNumeric("z=22.13904248493947", // 7
+    // "22.13904248493947");
+    // checkNumeric("NSolve(x/y==z/x,x)", //
+    // "{{x->-81.08825721072822},{x->81.08825721072822}}");
+  }
 
   public void testSolveIntegers() {
     check("Solve({x > 0, y > 0, x^2 + 2*y^3 == 3681}, {x, y}, Integers)", //
@@ -882,6 +1282,15 @@ public class SolveTest extends AbstractTestCase {
         "{{x0->1.5708+I*(-2.29243)}}");
 
   }
+
+  public void testSolveCircleHyperbolic() {
+    check("Eliminate(-x-y+x*y==27,x)", //
+        "True");
+    check("Solve({-x+x^2-y+y^2==814,-x-y+x*y==27},{x,y})", //
+        "{{y->2,x->29},{y->29,x->2},{y->-14-Sqrt(197),x->-14+Sqrt(197)},{y->-14+Sqrt(197),x->-\n"
+            + "14-Sqrt(197)}}");
+  }
+
 
   /** The JUnit setup method */
   @Override
