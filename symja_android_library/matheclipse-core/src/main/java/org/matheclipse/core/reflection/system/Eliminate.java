@@ -442,18 +442,10 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
               predicate, variable, multipleValues, engine);
         } else if (ast.isTimes()) {
           // a * b * c....
-          IASTAppendable rest = F.TimesAlloc(size);
-          IASTAppendable timesClone = ast.copyAppendable();
-          int j = 1;
-          for (int i = 1; i < size; i++) {
-            if (ast.get(i).isFree(predicate, true)) {
-              j++;
-            } else {
-              rest.append(ast.get(i));
-              timesClone.remove(j);
-            }
-          }
-          if (timesClone.isAST0()) {
+          IAST[] timesFilter = ast.filter(x -> x.isFree(predicate, true));
+          IAST timesWithoutVariable = timesFilter[0];
+          IAST timesWithVariable = timesFilter[1];
+          if (timesWithoutVariable.isAST0()) {
             IExpr[] numerDenom = Algebra.getNumeratorDenominator(ast, EvalEngine.get());
             if (!numerDenom[1].isOne()) {
               IExpr[] numerLinear = numerDenom[0].linear(variable);
@@ -472,8 +464,8 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             // no change for given expression
             return F.NIL;
           }
-          IExpr value = F.Divide(exprWithoutVariable, timesClone);
-          return extractVariableRecursive(rest.oneIdentity1(), value, predicate, variable,
+          IExpr value = F.Divide(exprWithoutVariable, timesWithoutVariable);
+          return extractVariableRecursive(timesWithVariable.oneIdentity1(), value, predicate, variable,
               multipleValues, engine);
         } else if (ast.isPower()) {
           IExpr base = ast.base();
