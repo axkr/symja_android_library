@@ -382,6 +382,9 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr sqrt() {
+    if (isNegative()) {
+      return F.complexNum(EvalEngine.getApfloat().sqrt(apcomplexValue()));
+    }
     return valueOf(EvalEngine.getApfloat().sqrt(fApfloat));
   }
 
@@ -613,6 +616,7 @@ public class ApfloatNum implements INum {
     return Num.valueOf(doubleValue());
   }
 
+  @Override
   public Apcomplex apcomplexValue() {
     return new Apcomplex(fApfloat);
   }
@@ -877,6 +881,7 @@ public class ApfloatNum implements INum {
     return valueOf(EvalEngine.getApfloat().ulp(Apfloat.ONE));
   }
 
+  @Override
   public IExpr getPi() {
     return valueOf(EvalEngine.getApfloat().pi());
   }

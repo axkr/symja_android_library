@@ -26,13 +26,20 @@ public class DoubleToMMA {
    * @param significantFigures
    * @param texScientificNotation TODO
    */
-  public static void doubleToMMA(
-      Appendable buf,
-      double value,
-      int exponent,
-      int significantFigures,
-      boolean texScientificNotation)
-      throws IOException {
+  public static void doubleToMMA(Appendable buf, double value, int exponent, int significantFigures,
+      boolean texScientificNotation) throws IOException {
+    if (Double.isNaN(value)) {
+      buf.append("Indeterminate");
+      return;
+    }
+    if (Double.isInfinite(value)) {
+      if (value < 0) {
+        buf.append("-Infinity");
+      } else {
+        buf.append("Infinity");
+      }
+      return;
+    }
     String s = String.format(Locale.US, "%16.16E", value);
     int start = s.indexOf('E');
     String expStr = s.substring(start + 1);
@@ -53,14 +60,11 @@ public class DoubleToMMA {
         if (hashSize >= HASH_STR.length()) {
           hashSize = HASH_STR.length();
         }
-        format =
-            new DecimalFormat( //
-                HASH_STR.substring(0, exp)
-                    + //
-                    "0."
-                    + //
-                    HASH_STR.substring(0, hashSize),
-                usSymbols);
+        format = new DecimalFormat( //
+            HASH_STR.substring(0, exp) + //
+                "0." + //
+                HASH_STR.substring(0, hashSize),
+            usSymbols);
       } else {
         hashSize = -exp + significantFigures - 2;
         if (hashSize <= 0) {
@@ -69,12 +73,10 @@ public class DoubleToMMA {
         if (hashSize >= HASH_STR.length()) {
           hashSize = HASH_STR.length();
         }
-        format =
-            new DecimalFormat( //
-                "#."
-                    + //
-                    HASH_STR.substring(0, -exp + significantFigures - 2),
-                usSymbols);
+        format = new DecimalFormat( //
+            "#." + //
+                HASH_STR.substring(0, -exp + significantFigures - 2),
+            usSymbols);
       }
       String test = format.format(value);
       start = test.indexOf('E');
@@ -115,8 +117,8 @@ public class DoubleToMMA {
    *     -exponent</code> to <code>exponent</code>.
    * @param significantFigures the number of significant figures which should be printed
    */
-  public static void doubleToMMA(
-      StringBuilder buf, double value, int exponent, int significantFigures) {
+  public static void doubleToMMA(StringBuilder buf, double value, int exponent,
+      int significantFigures) {
     try {
       doubleToMMA(buf, value, exponent, significantFigures, false);
     } catch (IOException ioex) {
@@ -132,16 +134,11 @@ public class DoubleToMMA {
    * @param significantFigures
    * @param exponent
    * @param texScientificNotation if <code>true</code> use <code>123^{456}</code> style to write the
-   *     exponent
+   *        exponent
    * @throws IOException
    */
-  public static void doubleToScientific(
-      Appendable buf,
-      double value,
-      int significantFigures,
-      int exponent,
-      boolean texScientificNotation)
-      throws IOException {
+  public static void doubleToScientific(Appendable buf, double value, int significantFigures,
+      int exponent, boolean texScientificNotation) throws IOException {
     String s;
     int start;
     s = String.format(Locale.US, "%1." + (significantFigures - 1) + "E", value);

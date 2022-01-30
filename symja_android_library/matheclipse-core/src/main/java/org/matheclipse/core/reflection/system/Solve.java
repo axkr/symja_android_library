@@ -1012,7 +1012,7 @@ public class Solve extends AbstractFunctionEvaluator {
    * @return
    */
   public static IExpr of(final IAST ast, boolean numeric, EvalEngine engine) {
-    boolean[] isNumeric = new boolean[] {false};
+    boolean[] isNumeric = new boolean[] {numeric};
     try {
       if (ast.arg1().isEmptyList()) {
         return F.List(F.CEmptyList);
@@ -1166,6 +1166,9 @@ public class Solve extends AbstractFunctionEvaluator {
    * @return
    */
   private static IExpr checkDomain(IExpr expr, ISymbol domain) {
+    if (expr.isListOfRules() && expr.argSize() > 0) {
+      expr = F.List(expr);
+    }
     if (expr.isList() && domain.equals(S.Reals)) {
       if (expr.isListOfLists()) {
         IASTAppendable result = F.ListAlloc(expr.size());

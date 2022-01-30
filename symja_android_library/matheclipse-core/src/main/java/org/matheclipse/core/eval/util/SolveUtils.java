@@ -21,8 +21,10 @@ public class SolveUtils {
    * @param isNumeric set isNumeric[0] = true, if an expression must be rationalized
    * @return
    */
-  public static IASTMutable[] filterSolveLists(
-      IAST list, IASTMutable solution, boolean[] isNumeric) {
+  public static IASTMutable[] filterSolveLists(IAST list, IASTMutable solution,
+      boolean[] isNumeric) {
+    // if numeric is true we use NSolve instead of SOlve
+    boolean numeric = isNumeric[0];
     IASTMutable[] result = new IASTMutable[3];
     IASTAppendable termsEqualZero = F.ListAlloc(list.size());
     IASTAppendable inequalityTerms = F.ListAlloc(list.size());
@@ -40,12 +42,18 @@ public class SolveUtils {
       } else if (arg.isEqual()) {
         // arg must be Equal(_, 0)
         IExpr arg1 = arg.first();
-        IExpr temp = NumberTheory.rationalize(arg1, false);
-        if (temp.isPresent()) {
-          isNumeric[0] = true;
-          termsEqualZero.append(temp);
-        } else {
+        if (numeric) {
+          // NSolve
           termsEqualZero.append(arg1);
+        } else {
+          // Solve
+          IExpr temp = NumberTheory.rationalize(arg1, false);
+          if (temp.isPresent()) {
+            isNumeric[0] = true;
+            termsEqualZero.append(temp);
+          } else {
+            termsEqualZero.append(arg1);
+          }
         }
       } else {
         inequalityTerms.append(arg);

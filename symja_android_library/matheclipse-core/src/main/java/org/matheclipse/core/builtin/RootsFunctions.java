@@ -48,6 +48,7 @@ import edu.jas.ufd.SquarefreeFactory;
 
 public class RootsFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -79,7 +80,7 @@ public class RootsFunctions {
      *
      * @param arg
      * @param numeric if <code>true</code> create a numerically evaluated result. Otherwise return a
-     *     symbolic result.
+     *        symbolic result.
      * @return
      */
     public static IASTAppendable croots(final IExpr arg, boolean numeric) {
@@ -148,7 +149,8 @@ public class RootsFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the numerical roots of polynomial <code>poly</code>.
+   * <p>
+   * gives the numerical roots of polynomial <code>poly</code>.
    *
    * </blockquote>
    *
@@ -161,18 +163,20 @@ public class RootsFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="DSolve.md">DSolve</a>, <a href="Eliminate.md">Eliminate</a>, <a
-   * href="GroebnerBasis.md">GroebnerBasis</a>, <a href="FindRoot.md">FindRoot</a>, <a
-   * href="Solve.md">Solve</a>
+   * <p>
+   * <a href="DSolve.md">DSolve</a>, <a href="Eliminate.md">Eliminate</a>,
+   * <a href="GroebnerBasis.md">GroebnerBasis</a>, <a href="FindRoot.md">FindRoot</a>,
+   * <a href="Solve.md">Solve</a>
    */
   private static class NRoots extends AbstractFunctionEvaluator {
     /**
      * Determine the numerical roots of a univariate polynomial
      *
-     * <p>See Wikipedia entries for: <a
-     * href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation </a>, <a
-     * href="http://en.wikipedia.org/wiki/Cubic_function">Cubic function</a> and <a
-     * href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
+     * <p>
+     * See Wikipedia entries for:
+     * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation </a>,
+     * <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic function</a> and
+     * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
      *
      * @see Roots
      */
@@ -350,7 +354,8 @@ public class RootsFunctions {
    *
    * <blockquote>
    *
-   * <p>determine the roots of a univariate polynomial equation with respect to the variable <code>
+   * <p>
+   * determine the roots of a univariate polynomial equation with respect to the variable <code>
    * var</code>.
    *
    * </blockquote>
@@ -367,10 +372,11 @@ public class RootsFunctions {
     /**
      * Determine the roots of a univariate polynomial
      *
-     * <p>See Wikipedia entries for: <a
-     * href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation </a>, <a
-     * href="http://en.wikipedia.org/wiki/Cubic_function">Cubic function</a> and <a
-     * href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
+     * <p>
+     * See Wikipedia entries for:
+     * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation </a>,
+     * <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic function</a> and
+     * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -435,10 +441,26 @@ public class RootsFunctions {
     double[] coefficients = Expr2Object.toPolynomial(expr, variable);
     if (coefficients != null) {
       try {
-        LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
-        // see https://github.com/Hipparchus-Math/hipparchus/issues/177 for initial value
-        org.hipparchus.complex.Complex[] roots = solver.solveAllComplex(coefficients, 1.0);
-        IASTMutable list = Object2Expr.convertComplex(true, roots);
+        IASTMutable list;
+        if (coefficients.length <= 4) {
+          IASTAppendable p = F.PlusAlloc(coefficients.length);
+          for (int i = 0; i < coefficients.length; i++) {
+            p.append(F.Times(F.num(coefficients[i]), F.Power(variable, i)));
+          }
+          expr = engine.evaluate(p);
+          list = QuarticSolver.solve(p, variables.arg1());
+          for (int i = 1; i < list.size(); i++) {
+            expr = engine.evaluate(list.get(i));
+            if (expr.isInexactNumber()) {
+              list.set(i, F.chopNumber((INumber) expr, Config.DEFAULT_ROOTS_CHOP_DELTA));
+            }
+          }
+        } else {
+          LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
+          // see https://github.com/Hipparchus-Math/hipparchus/issues/177 for initial value
+          org.hipparchus.complex.Complex[] roots = solver.solveAllComplex(coefficients, 1.0);
+          list = Object2Expr.convertComplex(true, roots);
+        }
         EvalAttributes.sort(list);
         return list;
       } catch (org.hipparchus.exception.MathRuntimeException mrex) {
@@ -474,8 +496,8 @@ public class RootsFunctions {
     return F.NIL;
   }
 
-  protected static IAST roots(
-      final IExpr arg1, boolean numericSolutions, IAST variables, EvalEngine engine) {
+  protected static IAST roots(final IExpr arg1, boolean numericSolutions, IAST variables,
+      EvalEngine engine) {
 
     IExpr expr = evalExpandAll(arg1, engine);
 
@@ -522,12 +544,8 @@ public class RootsFunctions {
     double[] imagValues = ed.getImagEigenvalues();
 
     IASTAppendable roots = F.ListAlloc(N);
-    return roots.appendArgs(
-        0,
-        N,
-        i ->
-            F.chopExpr(
-                F.complexNum(realValues[i], imagValues[i]), Config.DEFAULT_ROOTS_CHOP_DELTA));
+    return roots.appendArgs(0, N, i -> F.chopExpr(F.complexNum(realValues[i], imagValues[i]),
+        Config.DEFAULT_ROOTS_CHOP_DELTA));
     // for (int i = 0; i < N; i++) {
     // roots.append(F.chopExpr(F.complexNum(realValues[i], imagValues[i]),
     // Config.DEFAULT_ROOTS_CHOP_DELTA));
@@ -536,8 +554,8 @@ public class RootsFunctions {
 
   }
 
-  public static IASTMutable rootsOfExprPolynomial(
-      final IExpr expr, IAST varList, boolean rootsOfQuartic) {
+  public static IASTMutable rootsOfExprPolynomial(final IExpr expr, IAST varList,
+      boolean rootsOfQuartic) {
     IASTMutable result = F.NIL;
     try {
       // try to generate a common expression polynomial
@@ -764,19 +782,11 @@ public class RootsFunctions {
       IASTAppendable result = F.ListAlloc(varDegree);
       for (int i = 0; i < varDegree; i++) {
         if (isNegative) {
-          result.append(
-              F.Times(
-                  F.Power(F.CN1, i + 1),
-                  F.Power(F.CN1, F.fraction(i, varDegree)),
-                  zNumerator,
-                  zDenominator));
+          result.append(F.Times(F.Power(F.CN1, i + 1), F.Power(F.CN1, F.fraction(i, varDegree)),
+              zNumerator, zDenominator));
         } else {
-          result.append(
-              F.Times(
-                  F.Power(F.CN1, i),
-                  F.Power(F.CN1, F.fraction(i, varDegree)),
-                  zNumerator,
-                  zDenominator));
+          result.append(F.Times(F.Power(F.CN1, i), F.Power(F.CN1, F.fraction(i, varDegree)),
+              zNumerator, zDenominator));
         }
       }
       return result;
@@ -878,12 +888,8 @@ public class RootsFunctions {
    * @param engine
    * @return <code>F.NIL</code> if no evaluation was possible.
    */
-  public static IAST rootsOfVariable(
-      final IExpr expr,
-      final IExpr denominator,
-      final IAST variables,
-      boolean numericSolutions,
-      EvalEngine engine) {
+  public static IAST rootsOfVariable(final IExpr expr, final IExpr denominator,
+      final IAST variables, boolean numericSolutions, EvalEngine engine) {
     IASTMutable result = F.NIL;
     // ASTRange r = new ASTRange(variables, 1);
     // List<IExpr> varList = r;
@@ -910,9 +916,8 @@ public class RootsFunctions {
         if (quarticResultList.isPresent()) {
           for (int j = 1; j < quarticResultList.size(); j++) {
             if (numericSolutions) {
-              newResult.append(
-                  F.chopExpr(
-                      engine.evalN(quarticResultList.get(j)), Config.DEFAULT_ROOTS_CHOP_DELTA));
+              newResult.append(F.chopExpr(engine.evalN(quarticResultList.get(j)),
+                  Config.DEFAULT_ROOTS_CHOP_DELTA));
             } else {
               newResult.append(quarticResultList.get(j));
             }
@@ -926,9 +931,8 @@ public class RootsFunctions {
             if (quarticResultList.isPresent()) {
               for (int j = 1; j < quarticResultList.size(); j++) {
                 if (numericSolutions) {
-                  newResult.append(
-                      F.chopExpr(
-                          engine.evalN(quarticResultList.get(j)), Config.DEFAULT_ROOTS_CHOP_DELTA));
+                  newResult.append(F.chopExpr(engine.evalN(quarticResultList.get(j)),
+                      Config.DEFAULT_ROOTS_CHOP_DELTA));
                 } else {
                   newResult.append(quarticResultList.get(j));
                 }

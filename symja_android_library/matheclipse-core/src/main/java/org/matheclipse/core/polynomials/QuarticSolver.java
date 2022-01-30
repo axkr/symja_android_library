@@ -43,7 +43,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class QuarticSolver {
 
-  public static IAST solve(IExpr exprPoly, IExpr x) throws ArithmeticException {
+  public static IASTMutable solve(IExpr exprPoly, IExpr x) throws ArithmeticException {
     IExpr[] coefficients = new IExpr[] {F.C0, F.C0, F.C0, F.C0, F.C0};
     if (convert2Coefficients(exprPoly, x, coefficients)) {
       return quarticSolve(

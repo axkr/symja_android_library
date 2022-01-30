@@ -211,6 +211,7 @@ public class ComplexNum implements IComplexNum {
     return ApcomplexNum.valueOf(apcomplexValue());
   }
 
+  @Override
   public Apcomplex apcomplexValue() {
     return new Apcomplex(new Apfloat(fComplex.getReal()), new Apfloat(fComplex.getImaginary()));
   }
@@ -619,11 +620,13 @@ public class ComplexNum implements IComplexNum {
   }
 
   /** @return */
+  @Override
   public boolean isInfinite() {
     return fComplex.isInfinite();
   }
 
   /** @return */
+  @Override
   public boolean isNaN() {
     return fComplex.isNaN();
   }
@@ -799,7 +802,7 @@ public class ComplexNum implements IComplexNum {
     }
     if (that instanceof ApfloatNum) {
       return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart()) //
-          .multiply((ApfloatNum) that);
+          .multiply(that);
     }
     if (that instanceof Num) {
       return multiply(ComplexNum.valueOf(((Num) that).getRealPart()));

@@ -699,6 +699,10 @@ public class Num implements INum {
 
   @Override
   public IExpr sqrt() {
+    if (fDouble < 0.0) {
+      org.hipparchus.complex.Complex c = new org.hipparchus.complex.Complex(fDouble);
+      return F.complexNum(c.sqrt());
+    }
     return valueOf(Math.sqrt(fDouble));
   }
 

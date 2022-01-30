@@ -5566,7 +5566,7 @@ public class F extends S {
     return ast(a, List);
   }
 
-  public static IAST List(final double... numbers) {
+  public static IASTMutable List(final double... numbers) {
     INum[] a = new INum[numbers.length];
     for (int i = 0; i < numbers.length; i++) {
       a[i] = num(numbers[i]);
@@ -5574,7 +5574,7 @@ public class F extends S {
     return function(List, a);
   }
 
-  public static IAST List(final String... strs) {
+  public static IASTMutable List(final String... strs) {
     IStringX[] a = new IStringX[strs.length];
     for (int i = 0; i < strs.length; i++) {
       a[i] = stringx(strs[i]);
