@@ -61,9 +61,9 @@ public class DoubleToMMA {
           hashSize = HASH_STR.length();
         }
         format = new DecimalFormat( //
-            HASH_STR.substring(0, exp) + //
-                "0." + //
-                HASH_STR.substring(0, hashSize),
+            HASH_STR.substring(0, exp) //
+                + "0." //
+                + HASH_STR.substring(0, hashSize),
             usSymbols);
       } else {
         hashSize = -exp + significantFigures - 2;

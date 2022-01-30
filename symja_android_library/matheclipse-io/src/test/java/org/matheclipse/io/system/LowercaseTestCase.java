@@ -6447,6 +6447,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testEliminate() {
+    check("Eliminate({x^2 + y^2 + z^2 == 1, x - y + z == 2, x^3 - y^2 == z + 1}, {y, z})",
+        "-4*x+2*x^2-4*z+2*x*z+2*z^2==-3&&4*x-x^2+x^3+3*z-2*x*z-z^2==5");
 
     // print: Eliminate: y>2 is not a well-formed equation.
     check("Eliminate({x==y,y>2},{x})", //
@@ -6464,8 +6466,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "x-z==2");
     check("Eliminate({2*x + 3*y + 4*z == 1, 9*x + 8*y + 7*z == 2}, z)", //
         "11/2*x+11/4*y==1/4");
-    check("Eliminate({x^2 + y^2 + z^2 == 1, x - y + z == 2, x^3 - y^2 == z + 1}, {y, z})",
-        "-4*x+2*x^2-4*z+2*x*z+2*z^2==-3&&4*x-x^2+x^3+3*z-2*x*z-z^2==5");
+
     check("Eliminate({x == 2 + y^3, y^2 == z}, y)", //
         "x-z^(3/2)==2");
 
@@ -9991,6 +9992,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFullSimplify() {
+    check("FullSimplify( Sqrt(-9+4*Sqrt(5)))", //
+        "I*(-2+Sqrt(5))");
+
+
     // MMA factorizes this to (-2 + x)*(-1 + x) ? Although the ComplexityFunction returns 9 for both
     // expressions
     check("2-3*x+x^2 // FullSimplify", //
@@ -16881,7 +16886,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     // "");
 
     checkNumeric("NSolve({2==x-0.091*y, y==0.054-0.0171*z, x==Exp(z)+1}, {x,y,z})", //
-        "{{z->0.004894386769039152,y->0.05391630598628882,x->2.0049063838447525}}");
+        "{{z->0.004894386769035739,y->0.053916305986249774,x->2.004906383844749}}");
 
     // check("Eliminate({sin(x)-11==y, x+y==-9}, {y,x})",
     // "x+Sin(x)==2");
@@ -16890,15 +16895,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
     // NSolve calls Solve in numeric mode
     checkNumeric("NSolve({Sin(x)-11==y, x+y==-9}, {y,x})", //
-        "{x->1.1060601577062719,y->-10.106060157706272}");
+        "{{x->1.1060601577062719,y->-10.106060157706272}}");
     // Solve doesn't get the result
     checkNumeric("Solve({Sin(x)-11==y, x+y==-9}, {y,x})", //
         "Solve({-11+Sin(x)==y,x+y==-9},{y,x})");
 
     checkNumeric("NSolve(x+Sin(x)==2, x)", //
-        "{x->1.1060601577062719}");
+        "{{x->1.1060601577062719}}");
     checkNumeric("NSolve(x^3 + 2.0*x^2 - 5*x -3.0 ==0,x)", //
-        "{{x->1.773387411650643},{x->-0.5199693720627907+I*2.220446049250313E-16},{x->-3.253418039587852}}");
+        "{{x->-3.253418039587852},{x->-0.5199693720627907},{x->1.7733874116506425}}");
     checkNumeric("NSolve(x^3 + 2*x^2 - 5*x -3 ==0,x)", //
         "{{x->1.773387411650643},{x->-0.5199693720627907+I*2.220446049250313E-16},{x->-3.253418039587852}}");
   }
@@ -20653,6 +20658,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testRationalize() {
+    check("Rationalize(0.1*^-11)", //
+        "0");
     // check("Rationalize(1.1/2147483647 *2.5,0)", //
     // "245850922/78256779");
     check("Rationalize(N(Pi), 0)", //
