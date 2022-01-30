@@ -69,6 +69,7 @@ public class PredicateQ {
       S.MemberQ.setEvaluator(new MemberQ());
       S.MissingQ.setPredicateQ(x -> x.isAST(S.Missing, 2));
       S.NotListQ.setPredicateQ(x -> !x.isList());
+      S.NameQ.setEvaluator(new NameQ());
       S.NumberQ.setPredicateQ(x -> x.isNumber());
       S.NumericQ.setPredicateQ(x -> x.isNumericFunction());
       S.OddQ.setEvaluator(new OddQ());
@@ -96,15 +97,17 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>m</code> is a anti hermitian matrix.
+   * <p>
+   * returns <code>True</code> if <code>m</code> is a anti hermitian matrix.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Skew-Hermitian_matrix">Wikipedia - Skew-Hermitian
-   *       matrix</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Skew-Hermitian_matrix">Wikipedia - Skew-Hermitian
+   * matrix</a>
    * </ul>
    */
   private static final class AntihermitianMatrixQ extends SymmetricMatrixQ {
@@ -130,15 +133,17 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>m</code> is a anti symmetric matrix.
+   * <p>
+   * returns <code>True</code> if <code>m</code> is a anti symmetric matrix.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Skew-symmetric_matrix">Wikipedia - Skew-symmetric
-   *       matrix</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Skew-symmetric_matrix">Wikipedia - Skew-symmetric
+   * matrix</a>
    * </ul>
    */
   private static final class AntisymmetricMatrixQ extends SymmetricMatrixQ {
@@ -164,7 +169,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>tests whether expr is a full array.
+   * <p>
+   * tests whether expr is a full array.
    *
    * </blockquote>
    *
@@ -174,7 +180,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>also tests whether the array depth of expr matches pattern.
+   * <p>
+   * also tests whether the array depth of expr matches pattern.
    *
    * </blockquote>
    *
@@ -184,8 +191,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>furthermore tests whether <code>test</code> yields <code>True</code> for all elements of
-   * expr.
+   * <p>
+   * furthermore tests whether <code>test</code> yields <code>True</code> for all elements of expr.
    *
    * </blockquote>
    *
@@ -211,7 +218,7 @@ public class PredicateQ {
      * @param expr
      * @param depth start depth of the full array
      * @param predicate an optional <code>Predicate</code> which would be applied to all elements
-     *     which aren't lists.
+     *        which aren't lists.
      * @return <code>-1</code> if the expression isn't a full array.
      */
     private static int determineDepth(final IExpr expr, int depth, Predicate<IExpr> predicate) {
@@ -354,7 +361,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>str</code> is a string which contains only digits.
+   * <p>
+   * returns <code>True</code> if <code>str</code> is a string which contains only digits.
    *
    * </blockquote>
    *
@@ -402,7 +410,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>x</code> is even, and <code>False</code> otherwise.
+   * <p>
+   * returns <code>True</code> if <code>x</code> is even, and <code>False</code> otherwise.
    *
    * </blockquote>
    *
@@ -464,7 +473,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns 'True' if <code>expr</code> does not contain the expression <code>x</code>.
+   * <p>
+   * returns 'True' if <code>expr</code> does not contain the expression <code>x</code>.
    *
    * </blockquote>
    *
@@ -512,14 +522,16 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>m</code> is a hermitian matrix.
+   * <p>
+   * returns <code>True</code> if <code>m</code> is a hermitian matrix.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Hermitian_matrix">Wikipedia - Hermitian matrix</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Hermitian_matrix">Wikipedia - Hermitian matrix</a>
    * </ul>
    */
   private static final class HermitianMatrixQ extends SymmetricMatrixQ {
@@ -550,7 +562,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>tests whether <code>expr</code> matches <code>form</code>.
+   * <p>
+   * tests whether <code>expr</code> matches <code>form</code>.
    *
    * </blockquote>
    *
@@ -571,12 +584,12 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      //      if (ast.isAST1()) {
-      //        ast = F.operatorForm1Append(ast);
-      //        if (!ast.isPresent()) {
-      //          return F.NIL;
-      //        }
-      //      }
+      // if (ast.isAST1()) {
+      // ast = F.operatorForm1Append(ast);
+      // if (!ast.isPresent()) {
+      // return F.NIL;
+      // }
+      // }
       if ((ast.isAST2())) {
         IExpr arg1 = ast.arg1();
         IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
@@ -615,7 +628,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>m</code> is a list of equal-length lists.
+   * <p>
+   * returns <code>True</code> if <code>m</code> is a list of equal-length lists.
    *
    * </blockquote>
    *
@@ -625,8 +639,9 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>only returns <code>True</code> if <code>f(x)</code> returns <code>True</code> for each
-   * element <code>x</code> of the matrix <code>m</code>.
+   * <p>
+   * only returns <code>True</code> if <code>f(x)</code> returns <code>True</code> for each element
+   * <code>x</code> of the matrix <code>m</code>.
    *
    * </blockquote>
    *
@@ -662,12 +677,10 @@ public class PredicateQ {
         if (arg1.isAST()) {
           IAST matrix = (IAST) arg1;
           for (int i = 1; i < dims[0]; i++) {
-            if (!((IAST) matrix.get(i))
-                .forAll(
-                    x -> {
-                      temp.set(1, x);
-                      return engine.evalTrue(temp);
-                    })) {
+            if (!((IAST) matrix.get(i)).forAll(x -> {
+              temp.set(1, x);
+              return engine.evalTrue(temp);
+            })) {
               return S.False;
             }
           }
@@ -709,7 +722,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if pattern matches any element of <code>list</code>, or <code>
+   * <p>
+   * returns <code>True</code> if pattern matches any element of <code>list</code>, or <code>
    * False</code> otherwise.
    *
    * </blockquote>
@@ -771,6 +785,27 @@ public class PredicateQ {
     }
   }
 
+  private static final class NameQ extends AbstractCoreFunctionEvaluator implements IPredicate {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isString()) {
+        arg1 = engine.evaluate(ast.arg1());
+      }
+      
+      if (arg1.isString()) { 
+        return F.bool(F.hasSymbol(arg1.toString(), engine));
+      }
+      return S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
   /**
    *
    *
@@ -780,7 +815,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>x</code> is odd, and <code>False</code> otherwise.
+   * <p>
+   * returns <code>True</code> if <code>x</code> is odd, and <code>False</code> otherwise.
    *
    * </blockquote>
    *
@@ -869,16 +905,14 @@ public class PredicateQ {
       if (dims[0] >= dims[1]) {
         identityMatrix = S.Dot.of(engine, F.Transpose(arg1), arg1);
         identityMatrixDims = identityMatrix.isMatrix();
-        if (identityMatrixDims == null
-            || identityMatrixDims[0] != dims[1]
+        if (identityMatrixDims == null || identityMatrixDims[0] != dims[1]
             || identityMatrixDims[1] != dims[1]) {
           return S.False;
         }
       } else {
         identityMatrix = S.Dot.of(engine, arg1, F.Transpose(arg1));
         identityMatrixDims = identityMatrix.isMatrix();
-        if (identityMatrixDims == null
-            || identityMatrixDims[0] != dims[0]
+        if (identityMatrixDims == null || identityMatrixDims[0] != dims[0]
             || identityMatrixDims[1] != dims[0]) {
           return S.False;
         }
@@ -938,7 +972,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>maps a (possible) zero <code>expr</code> to <code>True</code> and returns <code>False</code>
+   * <p>
+   * maps a (possible) zero <code>expr</code> to <code>True</code> and returns <code>False</code>
    * otherwise.
    *
    * </blockquote>
@@ -983,7 +1018,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>n</code> is a integer prime number.<br>
+   * <p>
+   * returns <code>True</code> if <code>n</code> is a integer prime number.<br>
    *
    * </blockquote>
    *
@@ -993,21 +1029,24 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>n</code> is a Gaussian prime number.<br>
+   * <p>
+   * returns <code>True</code> if <code>n</code> is a Gaussian prime number.<br>
    *
    * </blockquote>
    *
-   * <p>For very large numbers, <code>PrimeQ</code> uses <a
-   * href="https://en.wikipedia.org/wiki/Prime_number#Primality_testing_versus_primality_proving">probabilistic
+   * <p>
+   * For very large numbers, <code>PrimeQ</code> uses <a href=
+   * "https://en.wikipedia.org/wiki/Prime_number#Primality_testing_versus_primality_proving">probabilistic
    * prime testing</a>, so it might be wrong sometimes<br>
    * (a number might be composite even though <code>PrimeQ</code> says it is prime).
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Prime_number">Wikipedia - Prime number</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer#Gaussian_primes">Wikipedia -
-   *       Gaussian primes</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Prime_number">Wikipedia - Prime number</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer#Gaussian_primes">Wikipedia -
+   * Gaussian primes</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1027,21 +1066,24 @@ public class PredicateQ {
    * False
    * </pre>
    *
-   * <p>All prime numbers between 1 and 100:
+   * <p>
+   * All prime numbers between 1 and 100:
    *
    * <pre>
    * &gt;&gt; Select(Range(100), PrimeQ)
    *  = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}
    * </pre>
    *
-   * <p>'PrimeQ' has attribute 'Listable':
+   * <p>
+   * 'PrimeQ' has attribute 'Listable':
    *
    * <pre>
    * &gt;&gt; PrimeQ(Range(20))
    *  = {False, True, True, False, True, False, True, False, False, False, True, False, True, False, False, False, True, False, True, False}
    * </pre>
    *
-   * <p>The Gaussian integer <code>2 == (1 + i)*(1 − i)</code> isn't a Gaussian prime number:
+   * <p>
+   * The Gaussian integer <code>2 == (1 + i)*(1 − i)</code> isn't a Gaussian prime number:
    *
    * <pre>
    * &gt;&gt; PrimeQ(2, GaussianIntegers-&gt;True)
@@ -1112,7 +1154,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>expr</code> is an explicit number with no imaginary
+   * <p>
+   * returns <code>True</code> if <code>expr</code> is an explicit number with no imaginary
    * component.
    *
    * </blockquote>
@@ -1179,7 +1222,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>m</code> is a square matrix.
+   * <p>
+   * returns <code>True</code> if <code>m</code> is a square matrix.
    *
    * </blockquote>
    *
@@ -1224,14 +1268,16 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>m</code> is a symmetric matrix.
+   * <p>
+   * returns <code>True</code> if <code>m</code> is a symmetric matrix.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Symmetric_matrix">Wikipedia - Symmetric matrix</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Symmetric_matrix">Wikipedia - Symmetric matrix</a>
    * </ul>
    */
   private static class SymmetricMatrixQ extends AbstractCoreFunctionEvaluator
@@ -1302,7 +1348,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>is <code>True</code> if the given <code>str</code> is a string which has the correct syntax.
+   * <p>
+   * is <code>True</code> if the given <code>str</code> is a string which has the correct syntax.
    *
    * </blockquote>
    *
@@ -1330,7 +1377,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if and only if <code>expr</code> is defined.
+   * <p>
+   * returns <code>True</code> if and only if <code>expr</code> is defined.
    *
    * </blockquote>
    *
@@ -1381,7 +1429,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>v</code> is a list of elements which are not themselves
+   * <p>
+   * returns <code>True</code> if <code>v</code> is a list of elements which are not themselves
    * lists.
    *
    * </blockquote>
@@ -1392,7 +1441,8 @@ public class PredicateQ {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if <code>v</code> is a vector and <code>f(x)</code> returns <code>
+   * <p>
+   * returns <code>True</code> if <code>v</code> is a vector and <code>f(x)</code> returns <code>
    * True</code> for each element <code>x</code> of <code>v</code>.
    *
    * </blockquote>
@@ -1428,11 +1478,10 @@ public class PredicateQ {
 
         if (arg1.isAST()) {
           IAST vector = (IAST) arg1;
-          if (!vector.forAll(
-              x -> {
-                temp.set(1, x);
-                return engine.evalTrue(temp);
-              })) {
+          if (!vector.forAll(x -> {
+            temp.set(1, x);
+            return engine.evalTrue(temp);
+          })) {
             return S.False;
           }
           return S.True;
@@ -1460,11 +1509,11 @@ public class PredicateQ {
   }
 
   private static boolean isZeroTogether(IExpr expr, EvalEngine engine) {
-    //    expr = F.expandAll(expr, true, true);
-    //    expr = engine.evaluate(expr);
-    //    if (expr.isZero()) {
-    //      return true;
-    //    }
+    // expr = F.expandAll(expr, true, true);
+    // expr = engine.evaluate(expr);
+    // if (expr.isZero()) {
+    // return true;
+    // }
     long leafCount = expr.leafCount();
     if (leafCount > Config.MAX_POSSIBLE_ZERO_LEAFCOUNT) {
       return false;
@@ -1507,9 +1556,8 @@ public class PredicateQ {
 
       if (variables.isEmpty()) {
         INumber num = function.isNumericFunction(true) ? function.evalNumber() : null;
-        if (num == null
-            || !(F.isZero(num.reDoubleValue(), Config.SPECIAL_FUNCTIONS_TOLERANCE)
-                && F.isZero(num.imDoubleValue(), Config.SPECIAL_FUNCTIONS_TOLERANCE))) {
+        if (num == null || !(F.isZero(num.reDoubleValue(), Config.SPECIAL_FUNCTIONS_TOLERANCE)
+            && F.isZero(num.imDoubleValue(), Config.SPECIAL_FUNCTIONS_TOLERANCE))) {
           return false;
         }
         return true;
@@ -1589,22 +1637,22 @@ public class PredicateQ {
         }
       }
 
-      //      if (function.isPlus()) {
-      //        IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors(function,
+      // if (function.isPlus()) {
+      // IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors(function,
       // true);
-      //        if (commonFactors != null) {
-      //          temp = S.Simplify.of(engine, F.Times(commonFactors[0], commonFactors[1]));
-      //          if (temp.isNumber()) {
-      //            return temp.isZero();
-      //          }
-      //          temp = temp.evalNumber();
-      //          if (temp != null) {
-      //            if (temp.isZero()) {
-      //              return true;
-      //            }
-      //          }
-      //        }
-      //      }
+      // if (commonFactors != null) {
+      // temp = S.Simplify.of(engine, F.Times(commonFactors[0], commonFactors[1]));
+      // if (temp.isNumber()) {
+      // return temp.isZero();
+      // }
+      // temp = temp.evalNumber();
+      // if (temp != null) {
+      // if (temp.isZero()) {
+      // return true;
+      // }
+      // }
+      // }
+      // }
 
       return isZeroTogether(function, engine);
     } catch (ValidateException ve) {
@@ -1622,46 +1670,21 @@ public class PredicateQ {
     }
     int h = head.headID();
 
-    return h == ID.AppellF1
-        || h == ID.Clip
-        //        || h == ID.Cosh
-        || h == ID.Csch
-        || h == ID.Cot
-        || h == ID.Csc
-        || h == ID.Gamma
-        || h == ID.HankelH1
-        || h == ID.HankelH2
-        || h == ID.Hypergeometric0F1
-        || h == ID.Hypergeometric1F1
-        || h == ID.Hypergeometric2F1
-        || h == ID.Hypergeometric1F1Regularized
-        || h == ID.HypergeometricPFQ
-        || h == ID.HypergeometricPFQRegularized
-        || h == ID.HypergeometricU
-        || h == ID.JacobiAmplitude
-        || h == ID.JacobiCD
-        || h == ID.JacobiCN
-        || h == ID.JacobiDC
-        || h == ID.JacobiDN
-        || h == ID.JacobiNC
-        || h == ID.JacobiND
-        || h == ID.JacobiSC
-        || h == ID.JacobiSD
-        || h == ID.JacobiSN
-        || h == ID.JacobiZeta
-        || h == ID.KleinInvariantJ
-        || h == ID.Log
-        || h == ID.Piecewise
+    return h == ID.AppellF1 || h == ID.Clip
+    // || h == ID.Cosh
+        || h == ID.Csch || h == ID.Cot || h == ID.Csc || h == ID.Gamma || h == ID.HankelH1
+        || h == ID.HankelH2 || h == ID.Hypergeometric0F1 || h == ID.Hypergeometric1F1
+        || h == ID.Hypergeometric2F1 || h == ID.Hypergeometric1F1Regularized
+        || h == ID.HypergeometricPFQ || h == ID.HypergeometricPFQRegularized
+        || h == ID.HypergeometricU || h == ID.JacobiAmplitude || h == ID.JacobiCD
+        || h == ID.JacobiCN || h == ID.JacobiDC || h == ID.JacobiDN || h == ID.JacobiNC
+        || h == ID.JacobiND || h == ID.JacobiSC || h == ID.JacobiSD || h == ID.JacobiSN
+        || h == ID.JacobiZeta || h == ID.KleinInvariantJ || h == ID.Log || h == ID.Piecewise
         // || h == ID.Power
         || h == ID.ProductLog
-        //        || h == ID.Sinh
-        || h == ID.StruveH
-        || h == ID.StruveL
-        || h == ID.Tan
-        || h == ID.WeierstrassHalfPeriods
-        || h == ID.WeierstrassInvariants
-        || h == ID.WeierstrassP
-        || h == ID.WeierstrassPPrime
+        // || h == ID.Sinh
+        || h == ID.StruveH || h == ID.StruveL || h == ID.Tan || h == ID.WeierstrassHalfPeriods
+        || h == ID.WeierstrassInvariants || h == ID.WeierstrassP || h == ID.WeierstrassPPrime
         || h == ID.InverseWeierstrassP;
   }
 
@@ -1670,20 +1693,20 @@ public class PredicateQ {
    * approximates <code>0</code>.
    *
    * <ul>
-   *   <li><code>IExpr.COMPARE_TERNARY.TRUE</code> if the result approximates <code>0</code>
-   *   <li><code>IExpr.COMPARE_TERNARY.FALSE</code> if the result is a number and doesn't
-   *       approximate <code>0</code>
-   *   <li><code>IExpr.COMPARE_TERNARY.UNDECIDABLE</code> if the result isn't a number
+   * <li><code>IExpr.COMPARE_TERNARY.TRUE</code> if the result approximates <code>0</code>
+   * <li><code>IExpr.COMPARE_TERNARY.FALSE</code> if the result is a number and doesn't approximate
+   * <code>0</code>
+   * <li><code>IExpr.COMPARE_TERNARY.UNDECIDABLE</code> if the result isn't a number
    * </ul>
    *
    * @param function the function which should be evaluate for the <code>variables</code>
    * @param variables variables the symbols which will be replaced by <code>Complex(re, im)</code>
-   *     to evaluate <code>function</code>
+   *        to evaluate <code>function</code>
    * @param engine
    * @return
    */
-  private static IExpr.COMPARE_TERNARY isPossibeZero(
-      IAST function, IAST variables, EvalEngine engine) {
+  private static IExpr.COMPARE_TERNARY isPossibeZero(IAST function, IAST variables,
+      EvalEngine engine) {
     IASTAppendable listOfRules = F.ListAlloc(variables.size());
     ThreadLocalRandom tlr = ThreadLocalRandom.current();
     for (int i = 1; i < variables.size(); i++) {
@@ -1695,8 +1718,8 @@ public class PredicateQ {
     return isPossibleZeroApproximate(temp, engine);
   }
 
-  private static IExpr.COMPARE_TERNARY isPossibeZeroFixedValues(
-      INumber number, IAST function, IAST variables, EvalEngine engine) {
+  private static IExpr.COMPARE_TERNARY isPossibeZeroFixedValues(INumber number, IAST function,
+      IAST variables, EvalEngine engine) {
     IASTAppendable listOfRules = F.ListAlloc(variables.size());
     for (int i = 1; i < variables.size(); i++) {
       listOfRules.append(F.Rule(variables.get(i), number));
@@ -1716,9 +1739,9 @@ public class PredicateQ {
           return IExpr.COMPARE_TERNARY.FALSE;
         }
 
-        //        if (isZeroTogether(result, engine)) {
-        //          return IExpr.COMPARE_TERNARY.TRUE;
-        //        }
+        // if (isZeroTogether(result, engine)) {
+        // return IExpr.COMPARE_TERNARY.TRUE;
+        // }
       }
     } catch (RuntimeException rex) {
       //
@@ -1738,9 +1761,7 @@ public class PredicateQ {
           double imaginaryPart = ((INumber) result).imDoubleValue();
           if (!(F.isZero(realPart, Config.SPECIAL_FUNCTIONS_TOLERANCE)
               && F.isZero(imaginaryPart, Config.SPECIAL_FUNCTIONS_TOLERANCE))) {
-            if (Double.isNaN(realPart)
-                || Double.isNaN(imaginaryPart)
-                || Double.isInfinite(realPart)
+            if (Double.isNaN(realPart) || Double.isNaN(imaginaryPart) || Double.isInfinite(realPart)
                 || Double.isInfinite(imaginaryPart)) {
               return IExpr.COMPARE_TERNARY.UNDECIDABLE;
             }

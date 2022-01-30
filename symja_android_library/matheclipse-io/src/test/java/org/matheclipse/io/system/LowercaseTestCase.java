@@ -16051,6 +16051,17 @@ public class LowercaseTestCase extends AbstractTestCase {
     // check("N(1/7, 20)", "1.4285714285714285714e-1");
   }
 
+  public void testNameQ() {
+    check("NameQ(\"foo\")", //
+        "False");
+    check("NameQ(\"plot\")", //
+        "True");
+    check("NameQ(\"ArcTan\")", //
+        "True");
+    check("NameQ(\"ArcTan2\")", //
+        "False");
+  }
+
   public void testNames() {
     check("foo`f = 42", //
         "42");

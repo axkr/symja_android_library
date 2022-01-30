@@ -6140,6 +6140,14 @@ public class F extends S {
     return new AST2(NakagamiDistribution, a0, a1);
   }
 
+  public static IAST NameQ(final IExpr a0) {
+    return new AST1(NameQ, a0);
+  }
+
+  public static IAST NameQ(final String str) {
+    return new AST1(NameQ, F.stringx(str));
+  }
+
   public static IAST Needs(final IExpr a0) {
     return new AST1(Needs, a0);
   }
@@ -7283,6 +7291,18 @@ public class F extends S {
       }
     }
     return symbol;
+  }
+
+  /**
+   * Test if the <code>symbolName</code> is defined in the one of the contexts available on the
+   * context path.
+   * 
+   * @param symbolName the name of a symbol
+   * @param engine
+   * @return
+   */
+  public static boolean hasSymbol(final String symbolName, EvalEngine engine) {
+    return engine.getContextPath().hasSymbol(symbolName, engine.isRelaxedSyntax());
   }
 
   public static ISymbol symbol(final String symbolName, final String contextStr, IAST assumptionAST,

@@ -297,6 +297,35 @@ public final class ContextPath implements Iterable<Context> {
   }
 
   /**
+   * Test if the <code>symbolName</code> is defined in the one of the contexts available on the
+   * context path.
+   * 
+   * @param symbolName
+   * @param relaxedSyntax
+   * @return
+   */
+  public boolean hasSymbol(String symbolName, boolean relaxedSyntax) {
+    String name = symbolName;
+    if (relaxedSyntax) {
+      if (symbolName.length() == 1) {
+        name = symbolName;
+      } else {
+        name = symbolName.toLowerCase(Locale.ENGLISH);
+      }
+    }
+    Context context;
+    ISymbol symbol;
+    for (int i = 0; i < path.size(); i++) {
+      context = path.get(i);
+      symbol = context.get(name);
+      if (symbol != null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Synchronize the contexts back to this context map.
    *
    * @param path

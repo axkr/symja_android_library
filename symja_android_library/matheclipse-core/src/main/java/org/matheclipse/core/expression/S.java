@@ -6416,6 +6416,8 @@ public class S {
   public final static IBuiltInSymbol NakagamiDistribution =
       F.initFinalSymbol("NakagamiDistribution", ID.NakagamiDistribution);
 
+  public final static IBuiltInSymbol NameQ = F.initFinalSymbol("NameQ", ID.NameQ);
+
   /**
    * Names(string) - return the symbols from the context path matching the `string` or `pattern`.
    * 
