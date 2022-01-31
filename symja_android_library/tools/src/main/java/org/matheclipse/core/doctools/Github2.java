@@ -3,16 +3,7 @@ package org.matheclipse.core.doctools;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-
 import org.matheclipse.core.builtin.Arithmetic;
-import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.core.reflection.system.NIntegrate;
 
 public class Github2 {
   static final String BASE_POM_PATH = "..\\symja_android_library\\matheclipse-core\\";

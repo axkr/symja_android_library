@@ -2,7 +2,6 @@ package org.matheclipse.core.examples;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;

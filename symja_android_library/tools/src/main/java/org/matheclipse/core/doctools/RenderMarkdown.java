@@ -2,8 +2,8 @@ package org.matheclipse.core.doctools;
 
 import java.util.Collections;
 import java.util.Set;
-import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.Extension;
+import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;

@@ -1,7 +1,5 @@
 package org.matheclipse.core.examples;
 
-import java.util.Iterator;
-
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;

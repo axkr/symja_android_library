@@ -3,7 +3,19 @@
  */
 package examples;
 
-import jp.ac.kobe_u.cs.cream.*;
+import jp.ac.kobe_u.cs.cream.DefaultSolver;
+import jp.ac.kobe_u.cs.cream.IBBSearch;
+import jp.ac.kobe_u.cs.cream.IntDomain;
+import jp.ac.kobe_u.cs.cream.IntVariable;
+import jp.ac.kobe_u.cs.cream.LocalSearch;
+import jp.ac.kobe_u.cs.cream.Network;
+import jp.ac.kobe_u.cs.cream.ParallelSolver;
+import jp.ac.kobe_u.cs.cream.SASearch;
+import jp.ac.kobe_u.cs.cream.Sequential;
+import jp.ac.kobe_u.cs.cream.Serialized;
+import jp.ac.kobe_u.cs.cream.Solution;
+import jp.ac.kobe_u.cs.cream.Solver;
+import jp.ac.kobe_u.cs.cream.TabooSearch;
 
 /**
  * Job-shop scheduling benchmark problem of FT06. The optimum makespan is 55.

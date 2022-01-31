@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.AST0;
 import org.matheclipse.core.expression.AST1;

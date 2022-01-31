@@ -1,7 +1,6 @@
 package org.matheclipse.core.examples;
 
 import java.util.SortedMap;
-
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.TermOrder;

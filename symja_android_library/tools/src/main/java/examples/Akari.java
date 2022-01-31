@@ -7,8 +7,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-
-import jp.ac.kobe_u.cs.cream.*;
+import jp.ac.kobe_u.cs.cream.DefaultSolver;
+import jp.ac.kobe_u.cs.cream.IntVariable;
+import jp.ac.kobe_u.cs.cream.Network;
+import jp.ac.kobe_u.cs.cream.Solution;
+import jp.ac.kobe_u.cs.cream.Solver;
 
 /**
  * Akari puzzle by Nikoli http://www.nikoli.co.jp/en/puzzles/akari/

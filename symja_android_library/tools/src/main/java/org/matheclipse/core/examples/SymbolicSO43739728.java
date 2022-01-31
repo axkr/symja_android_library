@@ -1,7 +1,6 @@
 package org.matheclipse.core.examples;
 
 import java.io.StringWriter;
-
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;

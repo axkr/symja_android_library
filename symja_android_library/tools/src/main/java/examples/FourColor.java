@@ -11,8 +11,12 @@ import java.awt.Graphics;
 import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import jp.ac.kobe_u.cs.cream.*;
+import jp.ac.kobe_u.cs.cream.DefaultSolver;
+import jp.ac.kobe_u.cs.cream.IntDomain;
+import jp.ac.kobe_u.cs.cream.IntVariable;
+import jp.ac.kobe_u.cs.cream.Network;
+import jp.ac.kobe_u.cs.cream.Solution;
+import jp.ac.kobe_u.cs.cream.Solver;
 
 /**
  * Four color problem. See Martin Gardner: Mathematical Games, Scientific American, April, 1975.

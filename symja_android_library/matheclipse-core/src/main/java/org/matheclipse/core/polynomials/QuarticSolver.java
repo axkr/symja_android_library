@@ -18,6 +18,7 @@ import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.ZZ;
 import static org.matheclipse.core.expression.F.fraction;
+import static org.matheclipse.core.expression.S.Times;
 import java.util.Set;
 import java.util.TreeSet;
 import org.matheclipse.core.eval.EvalAttributes;
