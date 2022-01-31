@@ -15,8 +15,8 @@ import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Ported from JavaScript file <a
- * href="https://github.com/paulmasson/math/blob/master/src/functions/bessel.js">bessel.js</a>
+ * Ported from JavaScript file
+ * <a href="https://github.com/paulmasson/math/blob/master/src/functions/bessel.js">bessel.js</a>
  */
 public class BesselJS {
 
@@ -43,8 +43,7 @@ public class BesselJS {
       throw new ArgumentTypeException(x + " is less than 0.0");
     }
 
-    return Math.pow(x / 2.0, n)
-        * HypergeometricJS.hypergeometric0F1(n + 1, -0.25 * x * x)
+    return Math.pow(x / 2.0, n) * HypergeometricJS.hypergeometric0F1(n + 1, -0.25 * x * x)
         / GammaJS.gamma(n + 1);
   }
 
@@ -111,9 +110,8 @@ public class BesselJS {
       FiniteDifferencesDifferentiator differentiator =
           new FiniteDifferencesDifferentiator(15, 0.01);
       ISymbol nSymbol = F.Dummy("n");
-      UnivariateDifferentiableFunction f =
-          differentiator.differentiate(
-              new UnaryNumerical(F.BesselJ(nSymbol, F.num(x)), nSymbol, EvalEngine.get()));
+      UnivariateDifferentiableFunction f = differentiator.differentiate(
+          new UnaryNumerical(F.BesselJ(nSymbol, F.num(x)), nSymbol, EvalEngine.get()));
       DSFactory factory = new DSFactory(1, 1);
       double d1 = f.value(factory.variable(0, n)).getPartialDerivative(1);
       double d2 = f.value(factory.variable(0, -n)).getPartialDerivative(1);
@@ -205,14 +203,14 @@ public class BesselJS {
   }
 
   public static double besselIDouble(double n, double x) {
-    if (F.isNumIntValue(n) && n < 0) return besselIDouble(-n, x);
+    if (F.isNumIntValue(n) && n < 0)
+      return besselIDouble(-n, x);
 
     if (!F.isNumIntValue(n) && x < 0) {
       throw new ArgumentTypeException(x + " < 0.0");
     }
 
-    return Math.pow(x / 2.0, n)
-        * HypergeometricJS.hypergeometric0F1(n + 1.0, 0.25 * x * x)
+    return Math.pow(x / 2.0, n) * HypergeometricJS.hypergeometric0F1(n + 1.0, 0.25 * x * x)
         / GammaJS.gamma(n + 1.0);
   }
 
@@ -240,8 +238,7 @@ public class BesselJS {
     final int useAsymptotic = 10;
 
     if (x > useAsymptotic) {
-      return Math.sqrt(0.5 * Math.PI / x)
-          * Math.exp(-x)
+      return Math.sqrt(0.5 * Math.PI / x) * Math.exp(-x)
           * HypergeometricJS.hypergeometric2F0(n + 0.5, 0.5 - n, -0.5 / x);
     }
     if (x < 0) {
@@ -252,9 +249,8 @@ public class BesselJS {
       FiniteDifferencesDifferentiator differentiator =
           new FiniteDifferencesDifferentiator(15, 0.01);
       ISymbol nSymbol = F.Dummy("n");
-      UnivariateDifferentiableFunction f =
-          differentiator.differentiate(
-              new UnaryNumerical(F.BesselI(nSymbol, F.num(x)), nSymbol, EvalEngine.get()));
+      UnivariateDifferentiableFunction f = differentiator.differentiate(
+          new UnaryNumerical(F.BesselI(nSymbol, F.num(x)), nSymbol, EvalEngine.get()));
       DSFactory factory = new DSFactory(1, 1);
       double d1 = f.value(factory.variable(0, n)).getPartialDerivative(1);
       double d2 = f.value(factory.variable(0, -n)).getPartialDerivative(1);
@@ -280,9 +276,8 @@ public class BesselJS {
       // Complex t2 = HypergeometricJS.hypergeometricSeries(new Complex[] { n.add(0.5),
       // n.negate().add(0.5) },
       // new Complex[0], new Complex(-0.5).divide(x));
-      Complex t2 =
-          HypergeometricJS.hypergeometric2F0(
-              n.add(0.5), new Complex(0.5).subtract(n), new Complex(-0.5).divide(x));
+      Complex t2 = HypergeometricJS.hypergeometric2F0(n.add(0.5), new Complex(0.5).subtract(n),
+          new Complex(-0.5).divide(x));
       return t1.multiply(t2);
     }
 
@@ -299,8 +294,7 @@ public class BesselJS {
         double nRe = n.getReal();
         // TODO use complex differentiator here
         // see https://github.com/Hipparchus-Math/hipparchus/issues/67
-        return besselK(new Complex(nRe + delta), x)
-            .add(besselK(new Complex(nRe - delta), x))
+        return besselK(new Complex(nRe + delta), x).add(besselK(new Complex(nRe - delta), x))
             .divide(2.0);
       }
       Complex product = new Complex(Math.PI / 2.0).divide(n.multiply(Math.PI).sin());
@@ -393,9 +387,7 @@ public class BesselJS {
     if (x < 0) {
       Complex xMinus = new Complex(-x);
       Complex z = xMinus.pow(1.5).multiply(2.0 / 3.0);
-      return xMinus
-          .divide(3.0)
-          .sqrt()
+      return xMinus.divide(3.0).sqrt()
           .multiply(besselJ(-1.0 / 3.0, z).subtract(besselJ(1.0 / 3.0, z)));
     }
     Complex xc = new Complex(x);
@@ -411,9 +403,7 @@ public class BesselJS {
     if (x.getReal() < 0) {
       Complex xMinus = x.negate();
       Complex z = xMinus.pow(1.5).multiply(2.0 / 3.0);
-      return xMinus
-          .divide(3.0)
-          .sqrt()
+      return xMinus.divide(3.0).sqrt()
           .multiply(besselJ(-1.0 / 3.0, z).subtract(besselJ(1.0 / 3.0, z)));
     }
 
@@ -433,8 +423,7 @@ public class BesselJS {
     if (x.getReal() < 0) {
       Complex xMinus = x.negate();
       Complex z = xMinus.pow(1.5).multiply(2.0 / 3.0);
-      return xMinus
-          .multiply(1.0 / Math.sqrt(3.0))
+      return xMinus.multiply(1.0 / Math.sqrt(3.0))
           .multiply(besselJ(2.0 / 3.0, z).add(besselJ(-2.0 / 3.0, z)));
     }
 
@@ -474,9 +463,7 @@ public class BesselJS {
   public static double struveH(double n, double x) {
     // can also evaluate from hypergeometric0F1
     // could use to test hypergeometricPFQ
-    return Math.pow(x, n + 1.0)
-        / (Math.pow(2.0, n) * Math.sqrt(Math.PI) * GammaJS.gamma(n + 1.5))
-        * //
+    return Math.pow(x, n + 1.0) / (Math.pow(2.0, n) * Math.sqrt(Math.PI) * GammaJS.gamma(n + 1.5)) * //
         HypergeometricJS.hypergeometric1F2(1, 1.5, n + 1.5, (-0.25) * x * x);
   }
 
@@ -484,36 +471,25 @@ public class BesselJS {
     // can also evaluate from hypergeometric0F1
     // could use to test hypergeometricPFQ
     return x.pow(n.add(1.0))
-        .divide(
-            Complex.valueOf(2.0)
-                .pow(n)
-                .multiply(Math.sqrt(Math.PI))
-                .multiply(Arithmetic.lanczosApproxGamma(n.add(1.5))))
-        .multiply(
-            HypergeometricJS.hypergeometric1F2(
-                Complex.ONE, new Complex(1.5), n.add(1.5), x.multiply(x).multiply(-0.25)));
+        .divide(Complex.valueOf(2.0).pow(n).multiply(Math.sqrt(Math.PI))
+            .multiply(Arithmetic.lanczosApproxGamma(n.add(1.5))))
+        .multiply(HypergeometricJS.hypergeometric1F2(Complex.ONE, new Complex(1.5), n.add(1.5),
+            x.multiply(x).multiply(-0.25)));
   }
 
   public static double struveL(double n, double x) {
     // one sign different in 0.25 from struveH
-    return Math.pow(x, n + 1.0)
-        * 1
-        / (Math.pow(2.0, n) * Math.sqrt(Math.PI) * GammaJS.gamma(n + 1.5))
-        * //
+    return Math.pow(x, n + 1.0) * 1
+        / (Math.pow(2.0, n) * Math.sqrt(Math.PI) * GammaJS.gamma(n + 1.5)) * //
         HypergeometricJS.hypergeometric1F2(1, 1.5, n + 1.5, 0.25 * x * x);
   }
 
   public static Complex struveL(Complex n, Complex x) {
     // one sign different in 0.25 from struveH
     return x.pow(n.add(1.0))
-        .multiply(
-            Complex.valueOf(2.0)
-                .pow(n)
-                .multiply(Math.sqrt(Math.PI))
-                .multiply(Arithmetic.lanczosApproxGamma(n.add(1.5)))
-                .reciprocal())
-        .multiply(
-            HypergeometricJS.hypergeometric1F2(
-                Complex.ONE, new Complex(1.5), n.add(1.5), x.multiply(x).multiply(0.25)));
+        .multiply(Complex.valueOf(2.0).pow(n).multiply(Math.sqrt(Math.PI))
+            .multiply(Arithmetic.lanczosApproxGamma(n.add(1.5))).reciprocal())
+        .multiply(HypergeometricJS.hypergeometric1F2(Complex.ONE, new Complex(1.5), n.add(1.5),
+            x.multiply(x).multiply(0.25)));
   }
 }

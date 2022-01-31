@@ -37,11 +37,8 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR.put(S.Tanh, "Math.tanh");
   }
 
-  private JavaDoubleFormFactory(
-      final boolean relaxedSyntax,
-      final boolean reversed,
-      int exponentFigures,
-      int significantFigures) {
+  private JavaDoubleFormFactory(final boolean relaxedSyntax, final boolean reversed,
+      int exponentFigures, int significantFigures) {
     super(relaxedSyntax, reversed, exponentFigures, significantFigures);
   }
 
@@ -50,9 +47,9 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
    * readable string.
    *
    * @param relaxedSyntax If <code>true</code> use paranthesis instead of square brackets and ignore
-   *     case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
-   *     brackets instead of double square brackets for extracting parts of an expression, i.e.
-   *     {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+   *        case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
+   *        brackets instead of double square brackets for extracting parts of an expression, i.e.
+   *        {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
    * @return
    */
   public static JavaDoubleFormFactory get(final boolean relaxedSyntax) {
@@ -64,11 +61,11 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
    * readable string.
    *
    * @param relaxedSyntax if <code>true</code> use paranthesis instead of square brackets and ignore
-   *     case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
-   *     brackets instead of double square brackets for extracting parts of an expression, i.e.
-   *     {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+   *        case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
+   *        brackets instead of double square brackets for extracting parts of an expression, i.e.
+   *        {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
    * @param plusReversed if <code>true</code> the arguments of the <code>Plus()</code> function will
-   *     be printed in reversed order
+   *        be printed in reversed order
    * @return
    */
   public static JavaDoubleFormFactory get(final boolean relaxedSyntax, final boolean plusReversed) {
@@ -80,22 +77,19 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
    * readable string.
    *
    * @param relaxedSyntax if <code>true</code> use paranthesis instead of square brackets and ignore
-   *     case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
-   *     brackets instead of double square brackets for extracting parts of an expression, i.e.
-   *     {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+   *        case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
+   *        brackets instead of double square brackets for extracting parts of an expression, i.e.
+   *        {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
    * @param plusReversed if <code>true</code> the arguments of the <code>Plus()</code> function will
-   *     be printed in reversed order
+   *        be printed in reversed order
    * @param exponentFigures
    * @param significantFigures
    * @return
    */
-  public static JavaDoubleFormFactory get(
-      final boolean relaxedSyntax,
-      final boolean plusReversed,
-      int exponentFigures,
-      int significantFigures) {
-    return new JavaDoubleFormFactory(
-        relaxedSyntax, plusReversed, exponentFigures, significantFigures);
+  public static JavaDoubleFormFactory get(final boolean relaxedSyntax, final boolean plusReversed,
+      int exponentFigures, int significantFigures) {
+    return new JavaDoubleFormFactory(relaxedSyntax, plusReversed, exponentFigures,
+        significantFigures);
   }
 
   @Override
@@ -140,9 +134,7 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
       }
     }
     if (function.headID() > 0) {
-      if (function.isAST(S.Defer, 2)
-          || function.isAST(S.Evaluate, 2)
-          || function.isAST(S.Hold, 2)
+      if (function.isAST(S.Defer, 2) || function.isAST(S.Evaluate, 2) || function.isAST(S.Hold, 2)
           || function.isUnevaluated()) {
         convertInternal(buf, function.first());
         return;

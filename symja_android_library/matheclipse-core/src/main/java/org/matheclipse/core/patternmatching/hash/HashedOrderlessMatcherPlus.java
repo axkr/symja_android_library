@@ -48,14 +48,8 @@ public class HashedOrderlessMatcherPlus extends HashedOrderlessMatcher {
   }
 
   @Override
-  protected boolean updateHashValues(
-      IASTAppendable result,
-      final IAST orderlessAST,
-      AbstractHashedPatternRules hashRule,
-      int[] hashValues,
-      int i,
-      int j,
-      EvalEngine engine) {
+  protected boolean updateHashValues(IASTAppendable result, final IAST orderlessAST,
+      AbstractHashedPatternRules hashRule, int[] hashValues, int i, int j, EvalEngine engine) {
     IExpr temp;
     IExpr arg1 = orderlessAST.get(i + 1);
     ISignedNumber intFactor1 = F.C1;

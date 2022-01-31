@@ -38,6 +38,6 @@ public interface IPartialFractionGenerator {
    * @param Di_1
    * @param j
    */
-  public abstract void addSinglePartialFraction(
-      GenPolynomial<BigRational> genPolynomial, GenPolynomial<BigRational> Di_1, int j);
+  public abstract void addSinglePartialFraction(GenPolynomial<BigRational> genPolynomial,
+      GenPolynomial<BigRational> Di_1, int j);
 }

@@ -8,7 +8,8 @@ import junit.framework.TestCase;
 /**
  * Test <code>org.matheclipse.core.eval.MMAConsole</code> app.
  *
- * <p>Configure <code>org.matheclipse.parser.client.ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
+ * <p>
+ * Configure <code>org.matheclipse.parser.client.ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
  * </code> in the sources for running Symja in MMA mode, before running this test!
  */
 public class MMAConsoleTestSingleRun extends TestCase {
@@ -34,8 +35,7 @@ public class MMAConsoleTestSingleRun extends TestCase {
 
     System.out.flush();
     System.setOut(old);
-    assertEquals(
-        baos.toString(), //
+    assertEquals(baos.toString(), //
         result);
   }
 
@@ -80,8 +80,7 @@ public class MMAConsoleTestSingleRun extends TestCase {
   }
 
   public void testDoc() {
-    assertEquals(
-        "Sin, Sinc, SingularValueDecomposition, Sinh, SinIntegral, SinhIntegral",
+    assertEquals("Sin, Sinc, SingularValueDecomposition, Sinh, SinIntegral, SinhIntegral",
         console.interpreter("?Sin*"));
   }
 

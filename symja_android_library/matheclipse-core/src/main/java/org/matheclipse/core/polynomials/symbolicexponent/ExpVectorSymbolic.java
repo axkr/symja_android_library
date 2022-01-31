@@ -131,7 +131,7 @@ public final class ExpVectorSymbolic {
    *
    * @return true if this structure is finite, else false.
    * @see edu.jas.structure.ElemFactory#isFinite() <b>Note: </b> returns true because of finite set
-   *     of values in each index.
+   *      of values in each index.
    */
   public boolean isFinite() {
     return true;
@@ -422,14 +422,12 @@ public final class ExpVectorSymbolic {
       return "null";
     }
     StringBuilder s = new StringBuilder();
-    vars.forEach(
-        vars.size(),
-        (x, i) -> {
-          s.append(x);
-          if (i < vars.argSize()) {
-            s.append(",");
-          }
-        });
+    vars.forEach(vars.size(), (x, i) -> {
+      s.append(x);
+      if (i < vars.argSize()) {
+        s.append(",");
+      }
+    });
     return s.toString();
   }
 
@@ -615,7 +613,7 @@ public final class ExpVectorSymbolic {
    * ExpVectorLong signum.
    *
    * @return 0 if this is zero, -1 if some entry is negative, 1 if no entry is negative and at least
-   *     one entry is positive.
+   *         one entry is positive.
    */
   public int signum() {
     int t = 0;
@@ -924,8 +922,8 @@ public final class ExpVectorSymbolic {
    * @param end
    * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
    */
-  public static int EVIWLC(
-      IExpr[][] w, ExpVectorSymbolic U, ExpVectorSymbolic V, int begin, int end) {
+  public static int EVIWLC(IExpr[][] w, ExpVectorSymbolic U, ExpVectorSymbolic V, int begin,
+      int end) {
     return U.invWeightCompareTo(w, V, begin, end);
   }
 

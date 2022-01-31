@@ -13,20 +13,15 @@ public class UnitTestingJUnit extends AbstractTestCase {
   }
 
   public void testVerificationTest() {
-    check(
-        "VerificationTest(3! < 3^3)", //
+    check("VerificationTest(3! < 3^3)", //
         "TestResultObject(Outcome->Success,TestID->None)");
-    check(
-        "VerificationTest(3^3, 27)", //
+    check("VerificationTest(3^3, 27)", //
         "TestResultObject(Outcome->Success,TestID->None)");
-    check(
-        "VerificationTest(RandomInteger({1, 10}), _Integer, SameTest -> MatchQ)", //
+    check("VerificationTest(RandomInteger({1, 10}), _Integer, SameTest -> MatchQ)", //
         "TestResultObject(Outcome->Success,TestID->None)");
-    check(
-        "VerificationTest(2*2, 3)", //
+    check("VerificationTest(2*2, 3)", //
         "TestResultObject(Outcome->Failure,ExpectedOutput->3,ActualOutput->4,TestID->None)");
-    check(
-        "VerificationTest(Sin(E) > Cos(Pi))", //
+    check("VerificationTest(Sin(E) > Cos(Pi))", //
         "TestResultObject(Outcome->Success,TestID->None)");
   }
 

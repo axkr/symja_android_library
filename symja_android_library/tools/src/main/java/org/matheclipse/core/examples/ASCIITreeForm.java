@@ -80,7 +80,7 @@ public class ASCIITreeForm {
     // +-Times
     // | +-Pi
     // | +-Sin
-    // |  +-y
+    // | +-y
     // | +-z
 
     System.out.println(asciiDisplay(tn1));

@@ -94,8 +94,7 @@ public class Interpolation extends AbstractEvaluator {
     } else {
       if (j < size) {
         // matrix[i+1, 1] <= # < matrix[i+2, 1]
-        return F.And(
-            F.LessEqual(matrix.getPart(i + 1, 1), F.Slot1),
+        return F.And(F.LessEqual(matrix.getPart(i + 1, 1), F.Slot1),
             F.Less(F.Slot1, matrix.getPart(i + 2, 1)));
       } else {
         // # >= matrix[i+1, 1]
@@ -104,8 +103,8 @@ public class Interpolation extends AbstractEvaluator {
     }
   }
 
-  private InterpolatingFunctionExpr hermiteInterpolate(
-      IAST matrixAST, int[] dims, EvalEngine engine) {
+  private InterpolatingFunctionExpr hermiteInterpolate(IAST matrixAST, int[] dims,
+      EvalEngine engine) {
 
     // int rowDim = dims[0];
     int colDim = dims[1];

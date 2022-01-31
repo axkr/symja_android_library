@@ -185,10 +185,11 @@ public class ComplexNum implements IComplexNum {
    * Returns a {@code ComplexNum} whose value is {@code (this + addend)}. Uses the definitional
    * formula
    *
-   * <p>{@code (a + bi) + (c + di) = (a+c) + (b+d)i} If either {@code this} or {@code addend} has a
+   * <p>
+   * {@code (a + bi) + (c + di) = (a+c) + (b+d)i} If either {@code this} or {@code addend} has a
    * {@code NaN} value in either part, {@link #NaN} is returned; otherwise {@code Infinite} and
-   * {@code NaN} values are returned in the parts of the result according to the rules for {@link
-   * java.lang.Double} arithmetic.
+   * {@code NaN} values are returned in the parts of the result according to the rules for
+   * {@link java.lang.Double} arithmetic.
    *
    * @param addend Value to be added to this {@code Complex}.
    * @return {@code this + addend}.
@@ -219,8 +220,7 @@ public class ComplexNum implements IComplexNum {
   @Override
   public INumber ceilFraction() throws ArithmeticException {
     try {
-      return F.complex(
-          NumberUtil.toLong(Math.ceil(fComplex.getReal())),
+      return F.complex(NumberUtil.toLong(Math.ceil(fComplex.getReal())),
           NumberUtil.toLong(Math.ceil(fComplex.getImaginary())));
     } catch (ArithmeticException ae) {
       ArgumentTypeException.throwArg(this, F.Ceiling(this));
@@ -459,7 +459,7 @@ public class ComplexNum implements IComplexNum {
     str = Double.toString(im);
     if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       int indx = str.indexOf("E");
-      //    `*^
+      // `*^
       if (indx > 0) {
         str = str.replace("E", "`*^");
       } else {
@@ -499,8 +499,7 @@ public class ComplexNum implements IComplexNum {
   @Override
   public INumber floorFraction() throws ArithmeticException {
     try {
-      return F.complex(
-          NumberUtil.toLong(Math.floor(fComplex.getReal())),
+      return F.complex(NumberUtil.toLong(Math.floor(fComplex.getReal())),
           NumberUtil.toLong(Math.floor(fComplex.getImaginary())));
     } catch (ArithmeticException ae) {
       ArgumentTypeException.throwArg(this, F.Floor(this));
@@ -551,8 +550,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public INumber roundExpr() throws ArithmeticException {
-    return F.complex(
-        F.ZZ(DoubleMath.roundToBigInteger(fComplex.getReal(), RoundingMode.HALF_EVEN)), //
+    return F.complex(F.ZZ(DoubleMath.roundToBigInteger(fComplex.getReal(), RoundingMode.HALF_EVEN)), //
         F.ZZ(DoubleMath.roundToBigInteger(fComplex.getImaginary(), RoundingMode.HALF_EVEN)));
   }
 
@@ -587,17 +585,11 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
-  public CharSequence internalJavaString(
-      SourceCodeProperties properties,
-      int depth,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
-    return new StringBuilder(prefix)
-        .append("complexNum(")
-        .append(fComplex.getReal())
-        .append(",")
-        .append(fComplex.getImaginary())
-        .append(")");
+    return new StringBuilder(prefix).append("complexNum(").append(fComplex.getReal()).append(",")
+        .append(fComplex.getImaginary()).append(")");
   }
 
   @Override
@@ -608,9 +600,8 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr inverse() {
-    final double tmp =
-        (fComplex.getReal() * fComplex.getReal())
-            + (fComplex.getImaginary() * fComplex.getImaginary());
+    final double tmp = (fComplex.getReal() * fComplex.getReal())
+        + (fComplex.getImaginary() * fComplex.getImaginary());
     return valueOf(fComplex.getReal() / tmp, -fComplex.getImaginary() / tmp);
   }
 
@@ -657,16 +648,15 @@ public class ComplexNum implements IComplexNum {
   public boolean isSame(IExpr expression, double epsilon) {
     if (expression instanceof ComplexNum) {
       return F.isZero(fComplex.getReal() - ((ComplexNum) expression).fComplex.getReal(), epsilon)
-          && F.isZero(
-              fComplex.getImaginary() - ((ComplexNum) expression).fComplex.getImaginary(), epsilon);
+          && F.isZero(fComplex.getImaginary() - ((ComplexNum) expression).fComplex.getImaginary(),
+              epsilon);
     }
     return false;
   }
 
   @Override
   public boolean isZero() {
-    return F.isZero(fComplex.getReal(), Config.DOUBLE_TOLERANCE)
-        && //
+    return F.isZero(fComplex.getReal(), Config.DOUBLE_TOLERANCE) && //
         F.isZero(fComplex.getImaginary(), Config.DOUBLE_TOLERANCE);
   }
 
@@ -679,15 +669,18 @@ public class ComplexNum implements IComplexNum {
    * Returns a {@code ComplexNum} whose value is {@code this * factor}. Implements preliminary
    * checks for {@code NaN} and infinity followed by the definitional formula:
    *
-   * <p>{@code (a + bi)(c + di) = (ac - bd) + (ad + bc)i} Returns {@link #NaN} if either {@code
+   * <p>
+   * {@code (a + bi)(c + di) = (ac - bd) + (ad + bc)i} Returns {@link #NaN} if either {@code
    * this} or {@code factor} has one or more {@code NaN} parts.
    *
-   * <p>Returns {@link #INF} if neither {@code this} nor {@code factor} has one or more {@code NaN}
+   * <p>
+   * Returns {@link #INF} if neither {@code this} nor {@code factor} has one or more {@code NaN}
    * parts and if either {@code this} or {@code factor} has one or more infinite parts (same result
    * is returned regardless of the sign of the components).
    *
-   * <p>Returns finite values in components of the result per the definitional formula in all
-   * remaining cases.
+   * <p>
+   * Returns finite values in components of the result per the definitional formula in all remaining
+   * cases.
    *
    * @param factor value to be multiplied by this {@code ComplexNum}.
    * @return {@code this * factor}.
@@ -774,10 +767,11 @@ public class ComplexNum implements IComplexNum {
    * Returns a {@code ComplexNum} whose value is {@code (this - subtrahend)}. Uses the definitional
    * formula
    *
-   * <p>{@code (a + bi) - (c + di) = (a-c) + (b-d)i} If either {@code this} or {@code subtrahend}
-   * has a {@code NaN]} value in either part, {@link #NaN} is returned; otherwise infinite and
-   * {@code NaN} values are returned in the parts of the result according to the rules for {@link
-   * java.lang.Double} arithmetic.
+   * <p>
+   * {@code (a + bi) - (c + di) = (a-c) + (b-d)i} If either {@code this} or {@code subtrahend} has a
+   * {@code NaN]} value in either part, {@link #NaN} is returned; otherwise infinite and {@code NaN}
+   * values are returned in the parts of the result according to the rules for
+   * {@link java.lang.Double} arithmetic.
    *
    * @param subtrahend value to be subtracted from this {@code ComplexNum}.
    * @return {@code this - subtrahend}.
@@ -847,13 +841,14 @@ public class ComplexNum implements IComplexNum {
    * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the
    * division of <code>Complex</code> numbers <code>c1, c2</code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
-   *   <li><a
-   *       href="http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
-   *       Algorithm for Gaussian Integers </a>
+   * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
+   * <li><a href=
+   * "http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
+   * Algorithm for Gaussian Integers </a>
    * </ul>
    *
    * @param cn1
@@ -871,13 +866,14 @@ public class ComplexNum implements IComplexNum {
    * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the
    * division of <code>Complex</code> numbers <code>c1, c2</code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
-   *   <li><a
-   *       href="http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
-   *       Algorithm for Gaussian Integers </a>
+   * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
+   * <li><a href=
+   * "http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
+   * Algorithm for Gaussian Integers </a>
    * </ul>
    *
    * @param c1
@@ -891,27 +887,27 @@ public class ComplexNum implements IComplexNum {
     Complex quotient = c1.subtract(remainder).divide(c2).rint();
     return new Complex[] {quotient, remainder};
 
-    //		double numeratorReal = c1.getReal() * c2.getReal() + //
-    //				c1.getImaginary() * c2.getImaginary();
-    //		double numeratorImaginary = c1.getReal() * (-c2.getImaginary()) + //
-    //				c2.getReal() * c1.getImaginary();
-    //		double denominator = c2.getReal() * c2.getReal() + //
-    //				c2.getImaginary() * c2.getImaginary();
-    //		if (denominator == 0.0) {
-    //			throw new IllegalArgumentException("Denominator cannot be zero.");
-    //		}
+    // double numeratorReal = c1.getReal() * c2.getReal() + //
+    // c1.getImaginary() * c2.getImaginary();
+    // double numeratorImaginary = c1.getReal() * (-c2.getImaginary()) + //
+    // c2.getReal() * c1.getImaginary();
+    // double denominator = c2.getReal() * c2.getReal() + //
+    // c2.getImaginary() * c2.getImaginary();
+    // if (denominator == 0.0) {
+    // throw new IllegalArgumentException("Denominator cannot be zero.");
+    // }
     //
-    //		double divisionReal = Math.rint(numeratorReal / denominator);
-    //		double divisionImaginary = Math.rint(numeratorImaginary / denominator);
+    // double divisionReal = Math.rint(numeratorReal / denominator);
+    // double divisionImaginary = Math.rint(numeratorImaginary / denominator);
     //
-    //		double remainderReal = c1.getReal() - //
-    //				(c2.getReal() * divisionReal) + //
-    //				(c2.getImaginary() * divisionImaginary);
-    //		double remainderImaginary = c1.getImaginary() - //
-    //				(c2.getReal() * divisionImaginary) - //
-    //				(c2.getImaginary() * divisionReal);
-    //		return new Complex[] { new Complex(divisionReal, divisionImaginary),
-    //				new Complex(remainderReal, remainderImaginary) };
+    // double remainderReal = c1.getReal() - //
+    // (c2.getReal() * divisionReal) + //
+    // (c2.getImaginary() * divisionImaginary);
+    // double remainderImaginary = c1.getImaginary() - //
+    // (c2.getReal() * divisionImaginary) - //
+    // (c2.getImaginary() * divisionReal);
+    // return new Complex[] { new Complex(divisionReal, divisionImaginary),
+    // new Complex(remainderReal, remainderImaginary) };
   }
 
   @Override

@@ -23,7 +23,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * A level specification visitor for levels in abstract syntax trees (AST).
  *
- * <p>Example: the nested list <code>{x,{y}}</code> has depth <code>3</code>
+ * <p>
+ * Example: the nested list <code>{x,{y}}</code> has depth <code>3</code>
  */
 public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
   protected final Predicate<IExpr> fFunction;
@@ -54,13 +55,10 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
    * @param function the function which should be applied for an element
    * @param unevaledLevelExpr the given <i>level specification</i>
    * @param includeHeads set to <code>true</code>, if the header of an AST expression should be
-   *     included
+   *        included
    */
-  public VisitorBooleanLevelSpecification(
-      final Predicate<IExpr> function,
-      final IExpr unevaledLevelExpr,
-      boolean includeHeads,
-      final EvalEngine engine) {
+  public VisitorBooleanLevelSpecification(final Predicate<IExpr> function,
+      final IExpr unevaledLevelExpr, boolean includeHeads, final EvalEngine engine) {
     IExpr levelExpr = engine.evaluate(unevaledLevelExpr);
     fFromLevel = fToLevel = -1;
     fFromDepth = fToDepth = 0;
@@ -138,7 +136,7 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
             if (i0.isNegative()) {
               String str = IOFunctions.getMessage("level", F.List(levelExpr), EvalEngine.get());
               throw new ArgumentTypeException(str);
-              //							throw new MathException("Invalid Level specification: " +
+              // throw new MathException("Invalid Level specification: " +
               // levelExpr.toString());
             } else {
               fFromDepth = Integer.MIN_VALUE;
@@ -180,21 +178,18 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
     this(predicate, level, true);
   }
 
-  public VisitorBooleanLevelSpecification(
-      final Predicate<IExpr> predicate, final int level, final boolean includeHeads) {
+  public VisitorBooleanLevelSpecification(final Predicate<IExpr> predicate, final int level,
+      final boolean includeHeads) {
     this(predicate, level, level, includeHeads);
   }
 
-  public VisitorBooleanLevelSpecification(
-      final Predicate<IExpr> predicate, final int fromLevel, final int toLevel) {
+  public VisitorBooleanLevelSpecification(final Predicate<IExpr> predicate, final int fromLevel,
+      final int toLevel) {
     this(predicate, fromLevel, toLevel, true);
   }
 
-  public VisitorBooleanLevelSpecification(
-      final Predicate<IExpr> predicate,
-      final int fromLevel,
-      final int toLevel,
-      final boolean includeHeads) {
+  public VisitorBooleanLevelSpecification(final Predicate<IExpr> predicate, final int fromLevel,
+      final int toLevel, final boolean includeHeads) {
     this(predicate, fromLevel, toLevel, Integer.MIN_VALUE, -1, includeHeads);
   }
 
@@ -212,13 +207,8 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
    * @param toDepth
    * @param includeHeads
    */
-  public VisitorBooleanLevelSpecification(
-      final Predicate<IExpr> function,
-      final int fromLevel,
-      final int toLevel,
-      final int fromDepth,
-      final int toDepth,
-      final boolean includeHeads) {
+  public VisitorBooleanLevelSpecification(final Predicate<IExpr> function, final int fromLevel,
+      final int toLevel, final int fromDepth, final int toDepth, final boolean includeHeads) {
     fFunction = function;
     fFromLevel = fromLevel;
     fToLevel = toLevel;
@@ -238,9 +228,7 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
   }
 
   public boolean isInRange(int level, int depth) {
-    return (level >= fFromLevel)
-        && (level <= fToLevel)
-        && (depth >= fFromDepth)
+    return (level >= fFromLevel) && (level <= fToLevel) && (depth >= fFromDepth)
         && (depth <= fToDepth);
   }
 
@@ -322,15 +310,13 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
           return true;
         }
       }
-      final boolean exists =
-          ast.exists(
-              (x, i) -> {
-                final boolean temp = x.accept(this);
-                if (fCurrentDepth < minDepth[0]) {
-                  minDepth[0] = fCurrentDepth;
-                }
-                return temp;
-              });
+      final boolean exists = ast.exists((x, i) -> {
+        final boolean temp = x.accept(this);
+        if (fCurrentDepth < minDepth[0]) {
+          minDepth[0] = fCurrentDepth;
+        }
+        return temp;
+      });
       if (exists) {
         return true;
       }

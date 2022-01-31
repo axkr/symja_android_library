@@ -59,37 +59,26 @@ public class ServletServer {
    * @param port typical port <code>8080</code>
    * @param welcomeFile TODO
    */
-  protected static void runServer(
-      String deploymentName,
-      ClassLoader classLoader,
-      Class<? extends Servlet> ajaxServlet,
-      int port,
-      String welcomeFile) {
+  protected static void runServer(String deploymentName, ClassLoader classLoader,
+      Class<? extends Servlet> ajaxServlet, int port, String welcomeFile) {
     try {
       // https://stackoverflow.com/a/41652378/24819
       String host = LOCALHOST_STRING ? "localhost" : InetAddress.getLocalHost().getHostAddress();
-      DeploymentInfo servletBuilder =
-          deployment()
-              .setClassLoader(classLoader)
-              .setContextPath(MMAServletServer.MYAPP)
-              .setDeploymentName(deploymentName)
-              .addServlets(
-                  servlet("query", ajaxServlet).setLoadOnStartup(1).addMapping("/query/"),
-                  servlet("doc", AJAXDocServlet.class).addMapping("/doc/*"),
-                  servlet("search", AJAXSearchServlet.class).addMapping("/doc/search/"));
+      DeploymentInfo servletBuilder = deployment().setClassLoader(classLoader)
+          .setContextPath(MMAServletServer.MYAPP).setDeploymentName(deploymentName)
+          .addServlets(servlet("query", ajaxServlet).setLoadOnStartup(1).addMapping("/query/"),
+              servlet("doc", AJAXDocServlet.class).addMapping("/doc/*"),
+              servlet("search", AJAXSearchServlet.class).addMapping("/doc/search/"));
 
       DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);
       manager.deploy();
 
       HttpHandler servletHandler = manager.start();
 
-      PathHandler path =
-          Handlers.path() // Handlers.redirect(MYAPP)
-              .addPrefixPath("/ajax", servletHandler)
-              .addPrefixPath(
-                  "/",
-                  resource(new ClassPathResourceManager(classLoader, "public/"))
-                      .addWelcomeFiles(welcomeFile));
+      PathHandler path = Handlers.path() // Handlers.redirect(MYAPP)
+          .addPrefixPath("/ajax", servletHandler)
+          .addPrefixPath("/", resource(new ClassPathResourceManager(classLoader, "public/"))
+              .addWelcomeFiles(welcomeFile));
 
       Undertow server = Undertow.builder().addHttpListener(port, host).setHandler(path).build();
       server.start();
@@ -141,10 +130,8 @@ public class ServletServer {
     final StringBuilder msg = new StringBuilder();
     msg.append(Config.SYMJA);
     msg.append(Config.COPYRIGHT);
-    msg.append(
-        "Symja Browser Wiki: "
-            + "https://github.com/axkr/symja_android_library/wiki/Browser-apps"
-            + lineSeparator);
+    msg.append("Symja Browser Wiki: "
+        + "https://github.com/axkr/symja_android_library/wiki/Browser-apps" + lineSeparator);
     msg.append(lineSeparator);
     msg.append("org.matheclipse.io.servlet." + serverClass + " [options]" + lineSeparator);
     msg.append(lineSeparator);
@@ -161,21 +148,20 @@ public class ServletServer {
 
   static ThreadLocalNotifierClosable setLogEventNotifier(PrintStream outs, PrintStream errors) {
 
-    return ThreadLocalNotifyingAppender.addLogEventNotifier(
-        e -> {
-          if (e.getLevel().isMoreSpecificThan(Level.ERROR)) {
-            StringBuilder msg = new StringBuilder();
-            Message logMessage = e.getMessage();
-            if (logMessage != null) {
-              msg.append(logMessage.getFormattedMessage());
-            }
-            Throwable thrown = e.getThrown();
-            if (thrown != null) {
-              msg.append(": ").append(thrown.getMessage());
-            }
-            PrintStream stream = e.getLevel().isMoreSpecificThan(Level.ERROR) ? errors : outs;
-            stream.println(msg.toString());
-          }
-        });
+    return ThreadLocalNotifyingAppender.addLogEventNotifier(e -> {
+      if (e.getLevel().isMoreSpecificThan(Level.ERROR)) {
+        StringBuilder msg = new StringBuilder();
+        Message logMessage = e.getMessage();
+        if (logMessage != null) {
+          msg.append(logMessage.getFormattedMessage());
+        }
+        Throwable thrown = e.getThrown();
+        if (thrown != null) {
+          msg.append(": ").append(thrown.getMessage());
+        }
+        PrintStream stream = e.getLevel().isMoreSpecificThan(Level.ERROR) ? errors : outs;
+        stream.println(msg.toString());
+      }
+    });
   }
 }

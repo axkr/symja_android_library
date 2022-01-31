@@ -11,7 +11,7 @@ public class ExprUtil {
    *
    * @param value the possibly-null value to describe
    * @return an {@code IExpr} with a present value if the specified value is non-null, otherwise an
-   *     empty {@code Optional}
+   *         empty {@code Optional}
    */
   public static IExpr ofNullable(IExpr value) {
     return value == null ? F.NIL : value;

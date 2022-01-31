@@ -17,7 +17,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>exactly 3 arguments</b>.
  *
- * <p>In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
+ * <p>
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
  * structure of the Symja source code. Each node of the tree denotes a construct occurring in the
  * source code. The syntax is 'abstract' in the sense that it does not represent every detail that
  * appears in the real syntax. For instance, grouping parentheses are implicit in the tree
@@ -26,9 +27,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>x</code>. Internally an AST is represented as a <code>java.util.List</code> which contains
  *
  * <ul>
- *   <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
- *       Times,...) at index <code>0</code> and
- *   <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
+ * Times,...) at index <code>0</code> and
+ * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
  * </ul>
  *
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
@@ -145,9 +146,7 @@ public final class AST3 extends AST2 {
       if (list.size() != SIZE) {
         return false;
       }
-      return arg1.equals(list.arg1())
-          && arg2.equals(list.arg2())
-          && arg3.equals(list.arg3())
+      return arg1.equals(list.arg1()) && arg2.equals(list.arg2()) && arg3.equals(list.arg3())
           && (arg0 instanceof ISymbol || arg0.equals(list.head()));
     }
     return false;
@@ -158,9 +157,7 @@ public final class AST3 extends AST2 {
   public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
     switch (startOffset) {
       case 0:
-        return predicate.test(arg0, 0)
-            || predicate.test(arg1, 1)
-            || predicate.test(arg2, 2)
+        return predicate.test(arg0, 0) || predicate.test(arg1, 1) || predicate.test(arg2, 2)
             || predicate.test(arg3, 3);
       case 1:
         return predicate.test(arg1, 1) || predicate.test(arg2, 2) || predicate.test(arg3, 3);
@@ -177,9 +174,7 @@ public final class AST3 extends AST2 {
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
     switch (startOffset) {
       case 0:
-        return predicate.test(arg0)
-            || predicate.test(arg1)
-            || predicate.test(arg2)
+        return predicate.test(arg0) || predicate.test(arg1) || predicate.test(arg2)
             || predicate.test(arg3);
       case 1:
         return predicate.test(arg1) || predicate.test(arg2) || predicate.test(arg3);
@@ -203,8 +198,8 @@ public final class AST3 extends AST2 {
 
   /** {@inheritDoc} */
   @Override
-  public IAST filter(
-      IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
+  public IAST filter(IASTAppendable filterAST, IASTAppendable restAST,
+      Predicate<? super IExpr> predicate) {
     if (predicate.test(arg1)) {
       filterAST.append(arg1);
     } else {
@@ -240,8 +235,8 @@ public final class AST3 extends AST2 {
 
   /** {@inheritDoc} */
   @Override
-  public final IAST filterFunction(
-      IASTAppendable filterAST, IASTAppendable restAST, final Function<IExpr, IExpr> function) {
+  public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+      final Function<IExpr, IExpr> function) {
     IExpr expr = function.apply(arg1);
     if (expr.isPresent()) {
       filterAST.append(expr);
@@ -268,9 +263,7 @@ public final class AST3 extends AST2 {
   public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
     switch (startOffset) {
       case 0:
-        return predicate.test(arg0, 0)
-            && predicate.test(arg1, 1)
-            && predicate.test(arg2, 2)
+        return predicate.test(arg0, 0) && predicate.test(arg1, 1) && predicate.test(arg2, 2)
             && predicate.test(arg3, 3);
       case 1:
         return predicate.test(arg1, 1) && predicate.test(arg2, 2) && predicate.test(arg3, 3);
@@ -287,9 +280,7 @@ public final class AST3 extends AST2 {
   public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
     switch (startOffset) {
       case 0:
-        return predicate.test(arg0)
-            && predicate.test(arg1)
-            && predicate.test(arg2)
+        return predicate.test(arg0) && predicate.test(arg1) && predicate.test(arg2)
             && predicate.test(arg3);
       case 1:
         return predicate.test(arg1) && predicate.test(arg2) && predicate.test(arg3);

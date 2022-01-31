@@ -7,8 +7,8 @@ import org.matheclipse.parser.client.operator.Operator;
 
 class FuzzyPostfixExprOperator extends Operator {
 
-  public FuzzyPostfixExprOperator(
-      final String oper, final String functionName, final int precedence) {
+  public FuzzyPostfixExprOperator(final String oper, final String functionName,
+      final int precedence) {
     super(oper, functionName, precedence);
   }
 

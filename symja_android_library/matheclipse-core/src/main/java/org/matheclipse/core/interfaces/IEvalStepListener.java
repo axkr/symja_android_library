@@ -52,19 +52,15 @@ public interface IEvalStepListener {
    * @param listOfHints this hints will be used in the listener
    * @see IEvalStepListener#setHint(String)
    */
-  public abstract void add(
-      IExpr inputExpr,
-      IExpr resultExpr,
-      int recursionDepth,
-      long iterationCounter,
-      IExpr listOfHints);
+  public abstract void add(IExpr inputExpr, IExpr resultExpr, int recursionDepth,
+      long iterationCounter, IExpr listOfHints);
 
   /**
    * Solve a polynomial with degree &lt;= 2.
    *
    * @param polynomial the polynomial
    * @return <code>F.NIL</code> if no evaluation was possible, or if this method isn't interesting
-   *     for listening
+   *         for listening
    */
   default IASTAppendable rootsOfQuadraticPolynomial(ExprPolynomial polynomial) {
     return F.NIL;

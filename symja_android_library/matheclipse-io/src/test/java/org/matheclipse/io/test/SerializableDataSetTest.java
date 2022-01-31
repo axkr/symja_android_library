@@ -20,17 +20,10 @@ public class SerializableDataSetTest extends TestCase {
   }
 
   public void testDataset() {
-    Table table =
-        Table.read()
-            .csv(
-                "Products,Sales,Market_Share\n"
-                    + //
-                    "a,5500,3\n"
-                    + //
-                    "b,12200,4\n"
-                    + //
-                    "c,60000,33\n",
-                "");
+    Table table = Table.read().csv("Products,Sales,Market_Share\n" + //
+        "a,5500,3\n" + //
+        "b,12200,4\n" + //
+        "c,60000,33\n", "");
 
     ASTDataset ds = ASTDataset.newTablesawTable(table);
     equalsStringCopy(ds);

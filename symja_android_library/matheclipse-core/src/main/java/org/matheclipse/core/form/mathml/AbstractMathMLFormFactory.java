@@ -92,8 +92,8 @@ public abstract class AbstractMathMLFormFactory {
    * @param precedence
    * @param caller
    */
-  public abstract void convertDoubleComplex(
-      StringBuilder buf, IComplexNum dc, int precedence, boolean caller);
+  public abstract void convertDoubleComplex(StringBuilder buf, IComplexNum dc, int precedence,
+      boolean caller);
 
   /**
    * Convert an IInteger number
@@ -103,8 +103,8 @@ public abstract class AbstractMathMLFormFactory {
    * @param precedence
    * @param caller
    */
-  public abstract void convertInteger(
-      StringBuilder buf, IInteger i, int precedence, boolean caller);
+  public abstract void convertInteger(StringBuilder buf, IInteger i, int precedence,
+      boolean caller);
 
   /**
    * Convert a fraction nummber
@@ -114,8 +114,8 @@ public abstract class AbstractMathMLFormFactory {
    * @param precedence
    * @param caller
    */
-  public abstract void convertFraction(
-      StringBuilder buf, IRational f, int precedence, boolean caller);
+  public abstract void convertFraction(StringBuilder buf, IRational f, int precedence,
+      boolean caller);
 
   /**
    * Convert a complex nummber
@@ -125,8 +125,8 @@ public abstract class AbstractMathMLFormFactory {
    * @param precedence
    * @param caller
    */
-  public abstract void convertComplex(
-      StringBuilder buf, IComplex c, int precedence, boolean caller);
+  public abstract void convertComplex(StringBuilder buf, IComplex c, int precedence,
+      boolean caller);
 
   /**
    * Convert a string

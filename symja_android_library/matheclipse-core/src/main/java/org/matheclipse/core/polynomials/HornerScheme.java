@@ -17,20 +17,19 @@ public class HornerScheme {
   private TreeMap<ISignedNumber, IASTAppendable> map;
 
   public HornerScheme() {
-    Comparator<ISignedNumber> comp =
-        new Comparator<ISignedNumber>() {
+    Comparator<ISignedNumber> comp = new Comparator<ISignedNumber>() {
 
-          @Override
-          public int compare(ISignedNumber arg0, ISignedNumber arg1) {
-            if (arg0.isGT(arg1)) {
-              return 1;
-            }
-            if (arg0.isLT(arg1)) {
-              return -1;
-            }
-            return 0;
-          }
-        };
+      @Override
+      public int compare(ISignedNumber arg0, ISignedNumber arg1) {
+        if (arg0.isGT(arg1)) {
+          return 1;
+        }
+        if (arg0.isLT(arg1)) {
+          return -1;
+        }
+        return 0;
+      }
+    };
     map = new TreeMap<ISignedNumber, IASTAppendable>(comp);
   }
 
@@ -44,7 +43,7 @@ public class HornerScheme {
       IAST startResult = result;
       IASTAppendable temp;
       ISignedNumber start = F.CD0;
-      for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter.hasNext(); ) {
+      for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter.hasNext();) {
         ISignedNumber exponent = iter.next();
         IExpr coefficient = getCoefficient(exponent);
         if (exponent.isLT(F.CD1)) {
@@ -78,7 +77,7 @@ public class HornerScheme {
       IAST startResult = result;
       IASTAppendable temp;
       ISignedNumber start = F.C0;
-      for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter.hasNext(); ) {
+      for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter.hasNext();) {
         ISignedNumber exponent = iter.next();
         IExpr coefficient = getCoefficient(exponent);
         if (exponent.isLT(F.C1)) {

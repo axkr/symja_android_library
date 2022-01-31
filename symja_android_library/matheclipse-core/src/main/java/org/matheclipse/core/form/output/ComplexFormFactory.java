@@ -60,12 +60,8 @@ public abstract class ComplexFormFactory {
   private int fSignificantFigures;
   private boolean fPackagePrefix;
 
-  public ComplexFormFactory(
-      final boolean relaxedSyntax,
-      final boolean reversed,
-      int exponentFigures,
-      int significantFigures,
-      boolean packagePrefix) {
+  public ComplexFormFactory(final boolean relaxedSyntax, final boolean reversed,
+      int exponentFigures, int significantFigures, boolean packagePrefix) {
     fRelaxedSyntax = relaxedSyntax;
     fPlusReversed = reversed;
     fExponentFigures = exponentFigures;
@@ -77,18 +73,14 @@ public abstract class ComplexFormFactory {
     // fColumnCounter = 0;
   }
 
-  public void convertDouble(
-      final StringBuilder buf, final INum d, final int precedence, boolean caller) {
+  public void convertDouble(final StringBuilder buf, final INum d, final int precedence,
+      boolean caller) {
     final double doubleValue = d.doubleValue();
     convertDouble(buf, doubleValue, d, precedence, caller);
   }
 
-  private void convertDouble(
-      final StringBuilder buf,
-      final double doubleValue,
-      final INum d,
-      final int precedence,
-      boolean caller) {
+  private void convertDouble(final StringBuilder buf, final double doubleValue, final INum d,
+      final int precedence, boolean caller) {
     if (F.isZero(doubleValue, Config.ZERO_IN_OUTPUT_FORMAT)) {
       convertDoubleString(buf, convertDoubleToFormattedString(0.0), precedence, false);
       return;
@@ -125,8 +117,8 @@ public abstract class ComplexFormFactory {
     return Double.toString(dValue);
   }
 
-  protected void convertDoubleString(
-      final StringBuilder buf, final String d, final int precedence, final boolean isNegative) {
+  protected void convertDoubleString(final StringBuilder buf, final String d, final int precedence,
+      final boolean isNegative) {
     if (isNegative && (Precedence.PLUS < precedence)) {
       append(buf, "(");
     }
@@ -136,8 +128,8 @@ public abstract class ComplexFormFactory {
     }
   }
 
-  public void convertDoubleComplex(
-      final StringBuilder buf, final IComplexNum dc, final int precedence, boolean caller) {
+  public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc,
+      final int precedence, boolean caller) {
     if (dc instanceof ApcomplexNum) {
       convertApcomplex(buf, ((ApcomplexNum) dc).apcomplexValue(), precedence, caller);
       return;
@@ -161,8 +153,8 @@ public abstract class ComplexFormFactory {
         if (!imaginaryZero) {
           append(buf, "+I*");
           final boolean isNegative = imaginaryPart < 0;
-          convertDoubleString(
-              buf, convertDoubleToFormattedString(imaginaryPart), Precedence.TIMES, isNegative);
+          convertDoubleString(buf, convertDoubleToFormattedString(imaginaryPart), Precedence.TIMES,
+              isNegative);
         }
       } else {
         if (caller == PLUS_CALL) {
@@ -171,8 +163,8 @@ public abstract class ComplexFormFactory {
         }
         append(buf, "I*");
         final boolean isNegative = imaginaryPart < 0;
-        convertDoubleString(
-            buf, convertDoubleToFormattedString(imaginaryPart), Precedence.TIMES, isNegative);
+        convertDoubleString(buf, convertDoubleToFormattedString(imaginaryPart), Precedence.TIMES,
+            isNegative);
       }
     }
     if (Precedence.PLUS < precedence) {
@@ -180,8 +172,8 @@ public abstract class ComplexFormFactory {
     }
   }
 
-  public void convertApcomplex(
-      final StringBuilder buf, final Apcomplex dc, final int precedence, boolean caller) {
+  public void convertApcomplex(final StringBuilder buf, final Apcomplex dc, final int precedence,
+      boolean caller) {
     if (Precedence.PLUS < precedence) {
       if (caller == PLUS_CALL) {
         append(buf, "+");
@@ -229,8 +221,8 @@ public abstract class ComplexFormFactory {
     return str;
   }
 
-  public void convertInteger(
-      final StringBuilder buf, final IInteger i, final int precedence, boolean caller) {
+  public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence,
+      boolean caller) {
     final boolean isNegative = i.isNegative();
     if (!isNegative && caller == PLUS_CALL) {
       append(buf, "+");
@@ -261,17 +253,13 @@ public abstract class ComplexFormFactory {
     }
   }
 
-  public void convertFraction(
-      final StringBuilder buf, final IRational f, final int precedence, boolean caller) {
+  public void convertFraction(final StringBuilder buf, final IRational f, final int precedence,
+      boolean caller) {
     convertFraction(buf, f.toBigNumerator(), f.toBigDenominator(), precedence, caller);
   }
 
-  public void convertFraction(
-      final StringBuilder buf,
-      final BigInteger numerator,
-      BigInteger denominator,
-      final int precedence,
-      boolean caller) {
+  public void convertFraction(final StringBuilder buf, final BigInteger numerator,
+      BigInteger denominator, final int precedence, boolean caller) {
     boolean isInteger = denominator.compareTo(BigInteger.ONE) == 0;
     final boolean isNegative = numerator.compareTo(BigInteger.ZERO) < 0;
     final int prec = isNegative ? Precedence.PLUS : Precedence.TIMES;
@@ -392,8 +380,8 @@ public abstract class ComplexFormFactory {
     convertInternal(buf, obj);
   }
 
-  private void convertInfixOperator(
-      final StringBuilder buf, final IAST operatorAST, String operatorStr) {
+  private void convertInfixOperator(final StringBuilder buf, final IAST operatorAST,
+      String operatorStr) {
     int j = 0;
     for (int i = 1; i < operatorAST.size(); i++) {
       final IExpr plusArg = operatorAST.get(i);
@@ -408,8 +396,8 @@ public abstract class ComplexFormFactory {
     }
   }
 
-  private void convertInfixOperatorReversed(
-      final StringBuilder buf, final IAST operatorAST, String operatorStr) {
+  private void convertInfixOperatorReversed(final StringBuilder buf, final IAST operatorAST,
+      String operatorStr) {
 
     IExpr plusArg;
     int size = operatorAST.argSize();
@@ -428,8 +416,8 @@ public abstract class ComplexFormFactory {
     }
   }
 
-  public void convertPowerOperator(
-      final StringBuilder buf, final IAST list, final InfixOperator oper, final int precedence) {
+  public void convertPowerOperator(final StringBuilder buf, final IAST list,
+      final InfixOperator oper, final int precedence) {
     IExpr arg2 = list.arg2();
     if (arg2.isNumber()) {
       INumber exp = (INumber) arg2;
@@ -472,12 +460,8 @@ public abstract class ComplexFormFactory {
     convertInfixOperator(S.Power, buf, list, oper, precedence);
   }
 
-  public void convertInfixOperator(
-      ISymbol head,
-      final StringBuilder buf,
-      final IAST list,
-      final InfixOperator oper,
-      final int precedence) {
+  public void convertInfixOperator(ISymbol head, final StringBuilder buf, final IAST list,
+      final InfixOperator oper, final int precedence) {
 
     if (list.isAST2()) {
       if (oper.getPrecedence() < precedence) {
@@ -528,14 +512,9 @@ public abstract class ComplexFormFactory {
     if (oper.getPrecedence() < precedence) {
       append(buf, "(");
     }
-    if (list.size() > 3
-        && //
-        (head.equals(S.Equal)
-            || head.equals(S.Unequal)
-            || head.equals(S.Greater)
-            || head.equals(S.GreaterEqual)
-            || head.equals(S.Less)
-            || head.equals(S.LessEqual))) {
+    if (list.size() > 3 && //
+        (head.equals(S.Equal) || head.equals(S.Unequal) || head.equals(S.Greater)
+            || head.equals(S.GreaterEqual) || head.equals(S.Less) || head.equals(S.LessEqual))) {
       convertInternal(buf, list.arg1(), oper.getPrecedence(), false);
       for (int i = 2; i < list.size(); i++) {
         append(buf, oper.getOperatorString());
@@ -561,8 +540,8 @@ public abstract class ComplexFormFactory {
     }
   }
 
-  public void convertPrefixOperator(
-      final StringBuilder buf, final IAST list, final PrefixOperator oper, final int precedence) {
+  public void convertPrefixOperator(final StringBuilder buf, final IAST list,
+      final PrefixOperator oper, final int precedence) {
     if (oper.getPrecedence() <= precedence) {
       append(buf, "(");
     }
@@ -573,8 +552,8 @@ public abstract class ComplexFormFactory {
     }
   }
 
-  public void convertPostfixOperator(
-      final StringBuilder buf, final IAST list, final PostfixOperator oper, final int precedence) {
+  public void convertPostfixOperator(final StringBuilder buf, final IAST list,
+      final PostfixOperator oper, final int precedence) {
     if (oper.getPrecedence() <= precedence) {
       append(buf, "(");
     }
@@ -601,8 +580,8 @@ public abstract class ComplexFormFactory {
     convertInternal(buf, o, Integer.MIN_VALUE, false);
   }
 
-  private void convertInternal(
-      final StringBuilder buf, final IExpr o, final int precedence, boolean isASTHead) {
+  private void convertInternal(final StringBuilder buf, final IExpr o, final int precedence,
+      boolean isASTHead) {
     if (o instanceof IAST) {
       final IAST list = (IAST) o;
 
@@ -616,8 +595,8 @@ public abstract class ComplexFormFactory {
               return;
             }
           } else {
-            if (convertOperator(
-                operator, list, buf, isASTHead ? Integer.MAX_VALUE : precedence, head)) {
+            if (convertOperator(operator, list, buf, isASTHead ? Integer.MAX_VALUE : precedence,
+                head)) {
               return;
             }
           }
@@ -658,12 +637,8 @@ public abstract class ComplexFormFactory {
     convertString(buf, o.toString());
   }
 
-  protected boolean convertOperator(
-      final Operator operator,
-      final IAST list,
-      final StringBuilder buf,
-      final int precedence,
-      ISymbol head) {
+  protected boolean convertOperator(final Operator operator, final IAST list,
+      final StringBuilder buf, final int precedence, ISymbol head) {
     if ((operator instanceof PrefixOperator) && (list.isAST1())) {
       convertPrefixOperator(buf, list, (PrefixOperator) operator, precedence);
       return true;
@@ -708,17 +683,9 @@ public abstract class ComplexFormFactory {
 
   public Operator getOperator(ISymbol head) {
     // Operator operator = null;
-    if (head == S.Plus
-        || head == S.Times
-        || head == S.Equal
-        || head == S.Unequal
-        || head == S.Less
-        || head == S.LessEqual
-        || head == S.Greater
-        || head == S.GreaterEqual
-        || head == S.And
-        || head == S.Or
-        || head == S.Not) {
+    if (head == S.Plus || head == S.Times || head == S.Equal || head == S.Unequal || head == S.Less
+        || head == S.LessEqual || head == S.Greater || head == S.GreaterEqual || head == S.And
+        || head == S.Or || head == S.Not) {
       return OutputFormFactory.getOperator(head);
       // String str = head.toString();
       // operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
@@ -845,8 +812,8 @@ public abstract class ComplexFormFactory {
     append(buf, "]]");
   }
 
-  public boolean convertQuantityData(
-      final StringBuilder buf, final IQuantity quantity, final int precedence) {
+  public boolean convertQuantityData(final StringBuilder buf, final IQuantity quantity,
+      final int precedence) {
     StringBuilder tempBuffer = new StringBuilder();
     if (Precedence.PLUS < precedence) {
       append(tempBuffer, "(");
@@ -885,34 +852,34 @@ public abstract class ComplexFormFactory {
    * @throws IOException
    */
   public abstract void convertAST(final StringBuilder buf, final IAST function);
-  //  {
-  //    if (function.isNumericFunction(true)) {
-  //      try {
-  //        double value = EvalEngine.get().evalDouble(function);
-  //        buf.append("(" + value + ")");
-  //        return;
-  //      } catch (RuntimeException rex) {
-  //        //
-  //      }
-  //    }
-  //    IExpr head = function.head();
-  //    if (head.isSymbol()) {
-  //      String str = functionHead((ISymbol) head);
-  //      if (str != null) {
-  //        buf.append(str);
-  //        if (function.isAST(S.ArcTan, 3)) {
-  //          buf.append("2");
-  //        }
-  //        convertArgs(buf, head, function,1);
-  //        return;
-  //      }
-  //    }
-  //    convertInternal(buf, head);
-  //    convertArgs(buf, head, function, 1);
-  //  }
+  // {
+  // if (function.isNumericFunction(true)) {
+  // try {
+  // double value = EvalEngine.get().evalDouble(function);
+  // buf.append("(" + value + ")");
+  // return;
+  // } catch (RuntimeException rex) {
+  // //
+  // }
+  // }
+  // IExpr head = function.head();
+  // if (head.isSymbol()) {
+  // String str = functionHead((ISymbol) head);
+  // if (str != null) {
+  // buf.append(str);
+  // if (function.isAST(S.ArcTan, 3)) {
+  // buf.append("2");
+  // }
+  // convertArgs(buf, head, function,1);
+  // return;
+  // }
+  // }
+  // convertInternal(buf, head);
+  // convertArgs(buf, head, function, 1);
+  // }
 
-  public void convertArgs(
-      final StringBuilder buf, IExpr head, final IAST function, int startIndex) {
+  public void convertArgs(final StringBuilder buf, IExpr head, final IAST function,
+      int startIndex) {
     append(buf, "(");
     final int argumentSize = function.size() - 1;
     for (int i = startIndex; i <= argumentSize; i++) {

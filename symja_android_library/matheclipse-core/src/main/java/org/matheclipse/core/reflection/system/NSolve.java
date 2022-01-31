@@ -7,7 +7,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** Try to solve a set of equations (i.e. <code>Equal[...]</code> expressions). */
-public class NSolve extends AbstractFunctionEvaluator { 
+public class NSolve extends AbstractFunctionEvaluator {
   public NSolve() {}
 
   @Override

@@ -73,23 +73,28 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>CartesianProduct(list1, list2)
-   * </code></pre>
+   * <pre>
+   * <code>CartesianProduct(list1, list2)
+   * </code>
+   * </pre>
    *
-   * <p>returns the cartesian product for multiple lists.
+   * <p>
+   * returns the cartesian product for multiple lists.
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Cartesian_product">Wikipedia - Cartesian
-   *       product</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Cartesian_product">Wikipedia - Cartesian product</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; CartesianProduct({1,2},{3,4})
+   * <pre>
+   * <code>&gt;&gt; CartesianProduct({1,2},{3,4})
    * {{1,3},{1,4},{2,3},{2,4}}
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static final class CartesianProduct extends AbstractFunctionEvaluator {
 
@@ -255,25 +260,32 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>Cycles(a, b)
-   * </code></pre>
+   * <pre>
+   * <code>Cycles(a, b)
+   * </code>
+   * </pre>
    *
-   * <p>expression for defining canonical cycles of a permutation.
+   * <p>
+   * expression for defining canonical cycles of a permutation.
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Cyclic_permutation">Wikipedia: Cyclic
-   *       permutation</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Cyclic_permutation">Wikipedia: Cyclic
+   * permutation</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <p>The singletons <code>{2}</code> and <code>{5}</code> are deleted:
+   * <p>
+   * The singletons <code>{2}</code> and <code>{5}</code> are deleted:
    *
-   * <pre><code>&gt;&gt; PermutationCycles({4,2,7,6,5,8,1,3})
+   * <pre>
+   * <code>&gt;&gt; PermutationCycles({4,2,7,6,5,8,1,3})
    * Cycles({{1,4,6,8,3,7}})
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static final class Cycles extends AbstractFunctionEvaluator {
 
@@ -412,19 +424,24 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>DiceDissimilarity(u, v)
-   * </code></pre>
+   * <pre>
+   * <code>DiceDissimilarity(u, v)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Dice dissimilarity between the two boolean 1-D lists <code>u</code> and <code>v
+   * <p>
+   * returns the Dice dissimilarity between the two boolean 1-D lists <code>u</code> and <code>v
    * </code>, which is defined as <code>(c_tf + c_ft) / (2 * c_tt + c_ft + c_tf)</code>, where n is
    * <code>len(u)</code> and <code>c_ij</code> is the number of occurrences of <code>u(k)=i</code>
    * and <code>v(k)=j</code> for <code>k&lt;n</code>.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; DiceDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
+   * <pre>
+   * <code>&gt;&gt; DiceDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
    * 1/2
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static final class DiceDissimilarity extends AbstractEvaluator {
 
@@ -479,16 +496,20 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>FindPermutation(list1, list2)
-   * </code></pre>
+   * <pre>
+   * <code>FindPermutation(list1, list2)
+   * </code>
+   * </pre>
    *
-   * <p>create a <code>Cycles({{...},{...}, ...})</code> permutation expression, for two lists whose
+   * <p>
+   * create a <code>Cycles({{...},{...}, ...})</code> permutation expression, for two lists whose
    * arguments are the same but may be differently arranged.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -496,17 +517,19 @@ public final class Combinatoric {
    * <pre>
    * <code>&gt;&gt; FindPermutation(CharacterRange(&quot;a&quot;,&quot;d&quot;),{&quot;a&quot;,&quot;d&quot;,&quot;c&quot;,&quot;b&quot;})
    * Cycles({{2,4}})
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>, <a
-   * href="PermutationCycles.md">PermutationCycles</a>, <a
-   * href="PermutationCyclesQ.md">PermutationCyclesQ</a>, <a
-   * href="PermutationList.md">PermutationList</a>, <a
-   * href="PermutationListQ.md">PermutationListQ</a>, <a
-   * href="PermutationReplace.md">PermutationReplace</a>, <a
-   * href="Permutations.md">Permutations</a>, <a href="Permute.md">Permute</a>
+   * <p>
+   * <a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>,
+   * <a href="PermutationCycles.md">PermutationCycles</a>,
+   * <a href="PermutationCyclesQ.md">PermutationCyclesQ</a>,
+   * <a href="PermutationList.md">PermutationList</a>,
+   * <a href="PermutationListQ.md">PermutationListQ</a>,
+   * <a href="PermutationReplace.md">PermutationReplace</a>,
+   * <a href="Permutations.md">Permutations</a>, <a href="Permute.md">Permute</a>
    */
   private static final class FindPermutation extends AbstractFunctionEvaluator {
 
@@ -595,56 +618,72 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>IntegerPartitions(n)
-   * </code></pre>
+   * <pre>
+   * <code>IntegerPartitions(n)
+   * </code>
+   * </pre>
    *
-   * <p>returns all partitions of the integer <code>n</code>.
+   * <p>
+   * returns all partitions of the integer <code>n</code>.
    *
-   * <pre><code>IntegerPartitions(n, k)
-   * </code></pre>
+   * <pre>
+   * <code>IntegerPartitions(n, k)
+   * </code>
+   * </pre>
    *
-   * <p>lists the possible ways to partition <code>n</code> into smaller integers, using up to
+   * <p>
+   * lists the possible ways to partition <code>n</code> into smaller integers, using up to
    * <code>k</code> elements.
    *
-   * <pre><code>IntegerPartitions(n, {lower, upper}, {list-of-integers})
-   * </code></pre>
+   * <pre>
+   * <code>IntegerPartitions(n, {lower, upper}, {list-of-integers})
+   * </code>
+   * </pre>
    *
-   * <p>lists the possible ways to partition <code>n</code> with the numbers in <code>
+   * <p>
+   * lists the possible ways to partition <code>n</code> with the numbers in <code>
    * {list-of-integers}</code>, using between <code>lower</code> and <code>upper</code> number of
    * elements.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Partition_(number_theory)">Wikipedia - Partition
-   *       (number theory)</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Coin_problem">Wikipedia - Coin problem</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Diophantine_equation">Wikipedia - Diophantine
-   *       equation</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Partition_(number_theory)">Wikipedia - Partition
+   * (number theory)</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Coin_problem">Wikipedia - Coin problem</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Diophantine_equation">Wikipedia - Diophantine
+   * equation</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; IntegerPartitions(3)
+   * <pre>
+   * <code>&gt;&gt; IntegerPartitions(3)
    * {{3},{2,1},{1,1,1}}
    *
    * &gt;&gt; IntegerPartitions(10,2)
    * {{10},{9,1},{8,2},{7,3},{6,4},{5,5}}
-   * </code></pre>
+   * </code>
+   * </pre>
    *
-   * <p>The &quot;McNugget partitions&quot; <a href="https://oeis.org/A214772">OEIS - Number of
+   * <p>
+   * The &quot;McNugget partitions&quot; <a href="https://oeis.org/A214772">OEIS - Number of
    * partitions of n into parts 6, 9 or 20</a>.
    *
-   * <pre><code>&gt;&gt; Table(Length(IntegerPartitions(i, All, {6, 9, 20})), {i,0, 100, 1})
+   * <pre>
+   * <code>&gt;&gt; Table(Length(IntegerPartitions(i, All, {6, 9, 20})), {i,0, 100, 1})
    * {1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,2,0,1,1,0,0,2,0,1,2,0,1,2,0,1,2,0,1,3,0,2,2,
    * 1,1,3,0,2,3,1,2,3,1,2,3,1,2,4,1,3,3,2,2,5,1,3,4,2,3,5,2,3,5,2,3,6,2,4,5,3,3,7,2,
    * 5,6,3,4,7,3,5,7,3,5,8,3,6,7,4,5,9,3,7,8,5}
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="FrobeniusNumber.md">FrobeniusNumber</a>, <a
-   * href="FrobeniusSolve.md">FrobeniusSolve</a>
+   * <p>
+   * <a href="FrobeniusNumber.md">FrobeniusNumber</a>,
+   * <a href="FrobeniusSolve.md">FrobeniusSolve</a>
    */
   private static final class IntegerPartitions extends AbstractFunctionEvaluator {
 
@@ -652,7 +691,8 @@ public final class Combinatoric {
      * Returns all partitions of a given int number (i.e. NumberPartitions(3) => [3,0,0] [2,1,0]
      * [1,1,1] ).
      *
-     * <p>See <a href="http://en.wikipedia.org/wiki/Integer_partition">Wikipedia - Integer
+     * <p>
+     * See <a href="http://en.wikipedia.org/wiki/Integer_partition">Wikipedia - Integer
      * partition</a>
      */
     public static final class NumberPartitionsIterable implements Iterable<int[]> {
@@ -740,6 +780,7 @@ public final class Combinatoric {
           return fResultIndex != null;
         }
       }
+
       /**
        * @param n with <code>n > 1</code>
        * @param l
@@ -755,9 +796,9 @@ public final class Combinatoric {
         if (Config.MAX_AST_SIZE < size) {
           ASTElementLimitExceeded.throwIt(size);
         }
-        //        fPartititionsIndex = new int[size];
-        //        fCopiedResultIndex = new int[size];
-        //        fResultIndex = nextBeforehand();
+        // fPartititionsIndex = new int[size];
+        // fCopiedResultIndex = new int[size];
+        // fResultIndex = nextBeforehand();
       }
 
       @Override
@@ -848,16 +889,14 @@ public final class Combinatoric {
     private static IExpr frobeniusPartition(final IAST ast, EvalEngine engine) {
       if (ast.arg3().isNonEmptyList() && ast.arg1().isInteger()) {
         try {
-          int[] listInt =
-              Validate.checkListOfInts(
-                  ast, ast.arg3(), Integer.MIN_VALUE, Integer.MAX_VALUE, engine);
+          int[] listInt = Validate.checkListOfInts(ast, ast.arg3(), Integer.MIN_VALUE,
+              Integer.MAX_VALUE, engine);
           if (listInt != null) {
             IInteger lowerLimitOfCoins = F.C0;
             IInteger upperLimitOfCoins = F.ZZ(Integer.MAX_VALUE);
             if (ast.arg2().isInteger()) {
               upperLimitOfCoins = (IInteger) ast.arg2();
-            } else if (ast.arg2().isAST(S.List, 3)
-                && ast.arg2().first().isInteger()
+            } else if (ast.arg2().isAST(S.List, 3) && ast.arg2().first().isInteger()
                 && ast.arg2().second().isInteger()) {
               lowerLimitOfCoins = (IInteger) ast.arg2().first();
               upperLimitOfCoins = (IInteger) ast.arg2().second();
@@ -877,8 +916,8 @@ public final class Combinatoric {
             int iterationLimit = engine.getIterationLimit();
             while ((solution = solver.take()) != null) {
               if (iterationLimit > 0 && iterations > iterationLimit) {
-                IOFunctions.printMessage(
-                    ast.topHead(), "itlimpartial", F.List(F.ZZ(iterationLimit)), engine);
+                IOFunctions.printMessage(ast.topHead(), "itlimpartial",
+                    F.List(F.ZZ(iterationLimit)), engine);
                 return result;
               }
               if (numberOfSolutions >= 0) {
@@ -887,8 +926,8 @@ public final class Combinatoric {
                 }
               }
               iterations++;
-              if (createFrobeniusSolution(
-                  solution, listInt, lowerLimitOfCoins, upperLimitOfCoins, result)) {
+              if (createFrobeniusSolution(solution, listInt, lowerLimitOfCoins, upperLimitOfCoins,
+                  result)) {
                 continue;
               }
               return F.NIL;
@@ -913,11 +952,8 @@ public final class Combinatoric {
      * @param result
      * @return
      */
-    private static boolean createFrobeniusSolution(
-        IInteger[] frobeniusSolution,
-        int[] numberSpecification,
-        IInteger lowerLimitOfCoins,
-        IInteger upperLimitOfCoins,
+    private static boolean createFrobeniusSolution(IInteger[] frobeniusSolution,
+        int[] numberSpecification, IInteger lowerLimitOfCoins, IInteger upperLimitOfCoins,
         IASTAppendable result) {
       IInteger sum = F.C0;
       for (int i = 0; i < frobeniusSolution.length; i++) {
@@ -951,19 +987,24 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>JaccardDissimilarity(u, v)
-   * </code></pre>
+   * <pre>
+   * <code>JaccardDissimilarity(u, v)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Jaccard-Needham dissimilarity between the two boolean 1-D lists <code>u</code>
-   * and <code>v</code>, which is defined as <code>(c_tf + c_ft) / (c_tt + c_ft + c_tf)</code>,
-   * where n is <code>len(u)</code> and <code>c_ij</code> is the number of occurrences of <code>
+   * <p>
+   * returns the Jaccard-Needham dissimilarity between the two boolean 1-D lists <code>u</code> and
+   * <code>v</code>, which is defined as <code>(c_tf + c_ft) / (c_tt + c_ft + c_tf)</code>, where n
+   * is <code>len(u)</code> and <code>c_ij</code> is the number of occurrences of <code>
    * u(k)=i</code> and <code>v(k)=j</code> for <code>k&lt;n</code>.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; JaccardDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
+   * <pre>
+   * <code>&gt;&gt; JaccardDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
    * 2/3
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static class JaccardDissimilarity extends AbstractEvaluator {
 
@@ -1057,11 +1098,8 @@ public final class Combinatoric {
       return ARGS_2_2;
     }
 
-    private IAST createSinglePartition(
-        final IAST listArg0,
-        final ISymbol symbol,
-        final int[] permutationsIndex,
-        final int[] partitionsIndex) {
+    private IAST createSinglePartition(final IAST listArg0, final ISymbol symbol,
+        final int[] permutationsIndex, final int[] partitionsIndex) {
       IASTAppendable partitionElement;
       int partitionStartIndex;
       IASTAppendable partition = F.ListAlloc(partitionsIndex.length + 1);
@@ -1196,9 +1234,9 @@ public final class Combinatoric {
             return fPartitionsIndex;
           } else {
             int i = 0;
-            for (i = fNumberOfParts - 1;
-                (i >= 0) && (fPartitionsIndex[i] >= fLength - fNumberOfParts + i);
-                --i) {}
+            for (i = fNumberOfParts - 1; (i >= 0)
+                && (fPartitionsIndex[i] >= fLength - fNumberOfParts + i); --i) {
+            }
             if (i <= 0) {
               return null;
             }
@@ -1250,6 +1288,7 @@ public final class Combinatoric {
         private KPartitionsListIterator() {
           this.fIterable = new KPartitionsIterable(fList.size() - fOffset, fKParts).iterator();
         }
+
         /**
          * Get the index array for the next partition.
          *
@@ -1329,19 +1368,24 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>MatchingDissimilarity(u, v)
-   * </code></pre>
+   * <pre>
+   * <code>MatchingDissimilarity(u, v)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Matching dissimilarity between the two boolean 1-D lists <code>u</code> and
+   * <p>
+   * returns the Matching dissimilarity between the two boolean 1-D lists <code>u</code> and
    * <code>v</code>, which is defined as <code>(c_tf + c_ft) / n</code>, where <code>n</code> is
    * <code>len(u)</code> and <code>c_ij</code> is the number of occurrences of <code>u(k)=i</code>
    * and <code>v(k)=j</code> for <code>k&lt;n</code>.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; MatchingDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
+   * <pre>
+   * <code>&gt;&gt; MatchingDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
    * 4/7
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static final class MatchingDissimilarity extends AbstractEvaluator {
 
@@ -1391,27 +1435,35 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>Partition(list, n)
-   * </code></pre>
+   * <pre>
+   * <code>Partition(list, n)
+   * </code>
+   * </pre>
    *
-   * <p>partitions <code>list</code> into sublists of length <code>n</code>.
+   * <p>
+   * partitions <code>list</code> into sublists of length <code>n</code>.
    *
-   * <pre><code>Partition(list, n, d)
-   * </code></pre>
+   * <pre>
+   * <code>Partition(list, n, d)
+   * </code>
+   * </pre>
    *
-   * <p>partitions <code>list</code> into sublists of length <code>n</code> which overlap <code>d
+   * <p>
+   * partitions <code>list</code> into sublists of length <code>n</code> which overlap <code>d
    * </code> indices.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia - Partition of a
-   *       set</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia - Partition of a
+   * set</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; Partition({a, b, c, d, e, f}, 2)
+   * <pre>
+   * <code>&gt;&gt; Partition({a, b, c, d, e, f}, 2)
    * {{a,b},{c,d},{e,f}}
    *
    * &gt;&gt; Partition({a, b, c, d, e, f}, 3, 1)
@@ -1419,7 +1471,8 @@ public final class Combinatoric {
    *
    * &gt;&gt; Partition({a, b, c, d, e}, 2)
    * {{a,b},{c,d}}
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static class Partition extends AbstractFunctionEvaluator {
 
@@ -1461,7 +1514,7 @@ public final class Combinatoric {
             }
             return resultListOfPartitions;
           } else {
-            //  "Positive machine-sized integer expected at position `2` in `1`.", //
+            // "Positive machine-sized integer expected at position `2` in `1`.", //
             return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C3), engine);
           }
         }
@@ -1478,37 +1531,48 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>Permute(list, Cycles({permutation-cycles}))
-   * </code></pre>
+   * <pre>
+   * <code>Permute(list, Cycles({permutation-cycles}))
+   * </code>
+   * </pre>
    *
-   * <p>permutes the <code>list</code> from the cycles in <code>permutation-cycles</code>.
+   * <p>
+   * permutes the <code>list</code> from the cycles in <code>permutation-cycles</code>.
    *
-   * <pre><code>Permute(list, permutation-list)
-   * </code></pre>
+   * <pre>
+   * <code>Permute(list, permutation-list)
+   * </code>
+   * </pre>
    *
-   * <p>permutes the <code>list</code> from the permutations defined in <code>permutation-list
+   * <p>
+   * permutes the <code>list</code> from the permutations defined in <code>permutation-list
    * </code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; Permute(CharacterRange(&quot;v&quot;, &quot;z&quot;), Cycles({{1, 5, 3}}))
+   * <pre>
+   * <code>&gt;&gt; Permute(CharacterRange(&quot;v&quot;, &quot;z&quot;), Cycles({{1, 5, 3}}))
    * {x,w,z,y,v}
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>, <a
-   * href="PermutationCycles.md">PermutationCycles</a>, <a
-   * href="PermutationCyclesQ.md">PermutationCyclesQ</a>, <a
-   * href="PermutationList.md">PermutationList</a>, <a
-   * href="PermutationListQ.md">PermutationListQ</a>, <a
-   * href="PermutationReplace.md">PermutationReplace</a>, <a href="Permutations.md">Permutations</a>
+   * <p>
+   * <a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>,
+   * <a href="PermutationCycles.md">PermutationCycles</a>,
+   * <a href="PermutationCyclesQ.md">PermutationCyclesQ</a>,
+   * <a href="PermutationList.md">PermutationList</a>,
+   * <a href="PermutationListQ.md">PermutationListQ</a>,
+   * <a href="PermutationReplace.md">PermutationReplace</a>,
+   * <a href="Permutations.md">Permutations</a>
    */
   private static final class Permute extends AbstractFunctionEvaluator {
 
@@ -1540,8 +1604,8 @@ public final class Combinatoric {
       return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
     }
 
-    private static IExpr permute(
-        IAST list1, IAST cyclesMainList, final IAST ast, EvalEngine engine) {
+    private static IExpr permute(IAST list1, IAST cyclesMainList, final IAST ast,
+        EvalEngine engine) {
       IASTMutable result = list1.copy();
       boolean changed = false;
 
@@ -1554,8 +1618,8 @@ public final class Combinatoric {
           }
           if (fromPosition > list1.argSize()) {
             // Required length `1` is smaller than maximum `2` of support of `3`
-            return IOFunctions.printMessage(
-                S.Permute, "lowlen", F.list(F.ZZ(list1.argSize()), list.get(i), ast), engine);
+            return IOFunctions.printMessage(S.Permute, "lowlen",
+                F.list(F.ZZ(list1.argSize()), list.get(i), ast), engine);
           }
 
           int toPosition;
@@ -1569,8 +1633,8 @@ public final class Combinatoric {
           }
           if (toPosition > list1.argSize()) {
             // Required length `1` is smaller than maximum `2` of support of `3`
-            return IOFunctions.printMessage(
-                S.Permute, "lowlen", F.list(F.ZZ(list1.argSize()), F.ZZ(toPosition), ast), engine);
+            return IOFunctions.printMessage(S.Permute, "lowlen",
+                F.list(F.ZZ(list1.argSize()), F.ZZ(toPosition), ast), engine);
           }
           changed = true;
           IExpr from = list1.get(fromPosition);
@@ -1589,32 +1653,39 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>PermutationCycles(permutation-list)
-   * </code></pre>
+   * <pre>
+   * <code>PermutationCycles(permutation-list)
+   * </code>
+   * </pre>
    *
-   * <p>generate a <code>Cycles({{...},{...}, ...})</code> expression from the <code>
+   * <p>
+   * generate a <code>Cycles({{...},{...}, ...})</code> expression from the <code>
    * permutation-list</code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; PermutationCycles({3, 1, 2, 5, 4})
+   * <pre>
+   * <code>&gt;&gt; PermutationCycles({3, 1, 2, 5, 4})
    * Cycles({{1,3,2},{4,5}})
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Cycles.md">Cycles</a>, <a href="FindPermutations.md">FindPermutations</a>, <a
-   * href="PermutationCyclesQ.md">PermutationCyclesQ</a>, <a
-   * href="PermutationList.md">PermutationList</a>, <a
-   * href="PermutationListQ.md">PermutationListQ</a>, <a
-   * href="PermutationReplace.md">PermutationReplace</a>, <a
-   * href="Permutations.md">Permutations</a>, <a href="Permute.md">Permute</a>
+   * <p>
+   * <a href="Cycles.md">Cycles</a>, <a href="FindPermutations.md">FindPermutations</a>,
+   * <a href="PermutationCyclesQ.md">PermutationCyclesQ</a>,
+   * <a href="PermutationList.md">PermutationList</a>,
+   * <a href="PermutationListQ.md">PermutationListQ</a>,
+   * <a href="PermutationReplace.md">PermutationReplace</a>,
+   * <a href="Permutations.md">Permutations</a>, <a href="Permute.md">Permute</a>
    */
   private static final class PermutationCycles extends AbstractFunctionEvaluator {
 
@@ -1648,32 +1719,39 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>PermutationCyclesQ(cycles-expression)
-   * </code></pre>
+   * <pre>
+   * <code>PermutationCyclesQ(cycles-expression)
+   * </code>
+   * </pre>
    *
-   * <p>if <code>cycles-expression</code> is a valid <code>Cycles({{...},{...}, ...})</code>
-   * expression return <code>True</code>.
+   * <p>
+   * if <code>cycles-expression</code> is a valid <code>Cycles({{...},{...}, ...})</code> expression
+   * return <code>True</code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; PermutationCyclesQ(Cycles({{1, 6, 2}, {4, 11, 12, 3}}))
+   * <pre>
+   * <code>&gt;&gt; PermutationCyclesQ(Cycles({{1, 6, 2}, {4, 11, 12, 3}}))
    * True
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>, <a
-   * href="PermutationCycles.md">PermutationCycles</a>, <a
-   * href="PermutationList.md">PermutationList</a>, <a
-   * href="PermutationListQ.md">PermutationListQ</a>, <a
-   * href="PermutationReplace.md">PermutationReplace</a>, <a
-   * href="Permutations.md">Permutations</a>, <a href="Permute.md">Permute</a>
+   * <p>
+   * <a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>,
+   * <a href="PermutationCycles.md">PermutationCycles</a>,
+   * <a href="PermutationList.md">PermutationList</a>,
+   * <a href="PermutationListQ.md">PermutationListQ</a>,
+   * <a href="PermutationReplace.md">PermutationReplace</a>,
+   * <a href="Permutations.md">Permutations</a>, <a href="Permute.md">Permute</a>
    */
   private static final class PermutationCyclesQ extends AbstractFunctionEvaluator {
 
@@ -1696,32 +1774,39 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>PermutationList(Cycles({{...},{...}, ...}))
-   * </code></pre>
+   * <pre>
+   * <code>PermutationList(Cycles({{...},{...}, ...}))
+   * </code>
+   * </pre>
    *
-   * <p>get the permutation list representation from the <code>Cycles({{...},{...}, ...})</code>
+   * <p>
+   * get the permutation list representation from the <code>Cycles({{...},{...}, ...})</code>
    * expression.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; PermutationList(Cycles({{3, 2}, { 6, 7},{11,17}}))
+   * <pre>
+   * <code>&gt;&gt; PermutationList(Cycles({{3, 2}, { 6, 7},{11,17}}))
    * {1,3,2,4,5,7,6,8,9,10,17,12,13,14,15,16,11}
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>, <a
-   * href="PermutationCycles.md">PermutationCycles</a>, <a
-   * href="PermutationCyclesQ.md">PermutationCyclesQ</a>, <a
-   * href="PermutationListQ.md">PermutationListQ</a>, <a
-   * href="PermutationReplace.md">PermutationReplace</a>, <a
-   * href="Permutations.md">Permutations</a>, <a href="Permute.md">Permute</a>
+   * <p>
+   * <a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>,
+   * <a href="PermutationCycles.md">PermutationCycles</a>,
+   * <a href="PermutationCyclesQ.md">PermutationCyclesQ</a>,
+   * <a href="PermutationListQ.md">PermutationListQ</a>,
+   * <a href="PermutationReplace.md">PermutationReplace</a>,
+   * <a href="Permutations.md">Permutations</a>, <a href="Permute.md">Permute</a>
    */
   private static final class PermutationList extends AbstractFunctionEvaluator {
 
@@ -1753,11 +1838,8 @@ public final class Combinatoric {
               permutationsListLength = arg2;
             } else {
               // Required length `1` is smaller than maximum `2` of support of `3`
-              return IOFunctions.printMessage(
-                  ast.topHead(),
-                  "lowlen",
-                  F.list(ast.arg2(), F.ZZ(permutationsListLength), ast),
-                  engine);
+              return IOFunctions.printMessage(ast.topHead(), "lowlen",
+                  F.list(ast.arg2(), F.ZZ(permutationsListLength), ast), engine);
             }
           }
           IASTAppendable result = F.ListAlloc(permutationsListLength);
@@ -1799,31 +1881,38 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>PermutationListQ(permutation-list)
-   * </code></pre>
+   * <pre>
+   * <code>PermutationListQ(permutation-list)
+   * </code>
+   * </pre>
    *
-   * <p>if <code>permutation-list</code> is a valid permutation list return <code>True</code>.
+   * <p>
+   * if <code>permutation-list</code> is a valid permutation list return <code>True</code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; PermutationListQ({5, 7, 6, 1, 3, 4, 2, 8})
+   * <pre>
+   * <code>&gt;&gt; PermutationListQ({5, 7, 6, 1, 3, 4, 2, 8})
    * True
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>, <a
-   * href="PermutationCycles.md">PermutationCycles</a>, <a
-   * href="PermutationCyclesQ.md">PermutationCyclesQ</a>, <a
-   * href="PermutationList.md">PermutationList</a>, <a
-   * href="PermutationReplace.md">PermutationReplace</a>, <a
-   * href="Permutations.md">Permutations</a>, <a href="Permute.md">Permute</a>
+   * <p>
+   * <a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>,
+   * <a href="PermutationCycles.md">PermutationCycles</a>,
+   * <a href="PermutationCyclesQ.md">PermutationCyclesQ</a>,
+   * <a href="PermutationList.md">PermutationList</a>,
+   * <a href="PermutationReplace.md">PermutationReplace</a>,
+   * <a href="Permutations.md">Permutations</a>, <a href="Permute.md">Permute</a>
    */
   private static final class PermutationListQ extends AbstractFunctionEvaluator {
 
@@ -1847,32 +1936,39 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>PermutationReplace(list-or-integer, Cycles({{...},{...}, ...}))
-   * </code></pre>
+   * <pre>
+   * <code>PermutationReplace(list-or-integer, Cycles({{...},{...}, ...}))
+   * </code>
+   * </pre>
    *
-   * <p>replace the arguments of the first expression with the corresponding element from the <code>
+   * <p>
+   * replace the arguments of the first expression with the corresponding element from the <code>
    * Cycles({{...},{...}, ...})</code> expression.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; PermutationReplace({1, b, 3, 4, 5}, Cycles({{1, 5,8}, {2, 7}}))
+   * <pre>
+   * <code>&gt;&gt; PermutationReplace({1, b, 3, 4, 5}, Cycles({{1, 5,8}, {2, 7}}))
    * {5,b,3,4,8}
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>, <a
-   * href="PermutationCycles.md">PermutationCycles</a>, <a
-   * href="PermutationCyclesQ.md">PermutationCyclesQ</a>, <a
-   * href="PermutationList.md">PermutationList</a>, <a
-   * href="PermutationListQ.md">PermutationListQ</a>, <a href="Permutations.md">Permutations</a>, <a
-   * href="Permute.md">Permute</a>
+   * <p>
+   * <a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>,
+   * <a href="PermutationCycles.md">PermutationCycles</a>,
+   * <a href="PermutationCyclesQ.md">PermutationCyclesQ</a>,
+   * <a href="PermutationList.md">PermutationList</a>,
+   * <a href="PermutationListQ.md">PermutationListQ</a>, <a href="Permutations.md">Permutations</a>,
+   * <a href="Permute.md">Permute</a>
    */
   private static final class PermutationReplace extends AbstractFunctionEvaluator {
 
@@ -1938,30 +2034,41 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>Permutations(list)
-   * </code></pre>
+   * <pre>
+   * <code>Permutations(list)
+   * </code>
+   * </pre>
    *
-   * <p>gives all possible orderings of the items in <code>list</code>.
+   * <p>
+   * gives all possible orderings of the items in <code>list</code>.
    *
-   * <pre><code>Permutations(list, n)
-   * </code></pre>
+   * <pre>
+   * <code>Permutations(list, n)
+   * </code>
+   * </pre>
    *
-   * <p>gives permutations up to length <code>n</code>.
+   * <p>
+   * gives permutations up to length <code>n</code>.
    *
-   * <pre><code>Permutations(list, {n})
-   * </code></pre>
+   * <pre>
+   * <code>Permutations(list, {n})
+   * </code>
+   * </pre>
    *
-   * <p>finds a list of all possible permutations containing exactly <code>n</code> elements.
+   * <p>
+   * finds a list of all possible permutations containing exactly <code>n</code> elements.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; Permutations({a, b, c})
+   * <pre>
+   * <code>&gt;&gt; Permutations({a, b, c})
    * {{a,b,c},{a,c,b},{b,a,c},{b,c,a},{c,a,b},{c,b,a}}
    *
    * &gt;&gt; Permutations({1, 2, 3}, 2)
@@ -1969,23 +2076,26 @@ public final class Combinatoric {
    *
    * &gt;&gt; Permutations({a, b, c}, {2})
    * {{a,b},{a,c},{b,a},{b,c},{c,a},{c,b}}
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>, <a
-   * href="PermutationCycles.md">PermutationCycles</a>, <a
-   * href="PermutationCyclesQ.md">PermutationCyclesQ</a>, <a
-   * href="PermutationList.md">PermutationList</a>, <a
-   * href="PermutationListQ.md">PermutationListQ</a>, <a
-   * href="PermutationReplace.md">PermutationReplace</a>
+   * <p>
+   * <a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>,
+   * <a href="PermutationCycles.md">PermutationCycles</a>,
+   * <a href="PermutationCyclesQ.md">PermutationCyclesQ</a>,
+   * <a href="PermutationList.md">PermutationList</a>,
+   * <a href="PermutationListQ.md">PermutationListQ</a>,
+   * <a href="PermutationReplace.md">PermutationReplace</a>
    */
   private static final class Permutations extends AbstractFunctionEvaluator {
 
     /**
      * Generate an <code>java.lang.Iterable<IAST></code> for (multiset) permutations
      *
-     * <p>See <a href="http://en.wikipedia.org/wiki/Permutation">Permutation</a>
+     * <p>
+     * See <a href="http://en.wikipedia.org/wiki/Permutation">Permutation</a>
      */
     private static final class KPermutationsList implements Iterable<IAST> {
 
@@ -2037,9 +2147,9 @@ public final class Combinatoric {
        * @param resultList a template AST where the elements could be appended.
        * @param offset the offset from which to start the list of elements in the list
        */
-      public KPermutationsList(
-          final IAST list, final int parts, IAST resultList, final int offset) {
-        //        fIterable = new KPermutationsIterable(list, parts, offset).iterator();
+      public KPermutationsList(final IAST list, final int parts, IAST resultList,
+          final int offset) {
+        // fIterable = new KPermutationsIterable(list, parts, offset).iterator();
         fList = list;
         fResultList = resultList;
         fOffset = offset;
@@ -2112,8 +2222,8 @@ public final class Combinatoric {
      * @param result
      * @return
      */
-    private IAST createPermutationsWithNParts(
-        final IAST list, int parts, final IASTAppendable result) {
+    private IAST createPermutationsWithNParts(final IAST list, int parts,
+        final IASTAppendable result) {
       if (parts == 0) {
         result.append(F.List());
         return result;
@@ -2140,19 +2250,24 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>RogersTanimotoDissimilarity(u, v)
-   * </code></pre>
+   * <pre>
+   * <code>RogersTanimotoDissimilarity(u, v)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Rogers-Tanimoto dissimilarity between the two boolean 1-D lists <code>u</code>
-   * and <code>v</code>, which is defined as <code>R / (c_tt + c_ff + R)</code> where n is <code>
+   * <p>
+   * returns the Rogers-Tanimoto dissimilarity between the two boolean 1-D lists <code>u</code> and
+   * <code>v</code>, which is defined as <code>R / (c_tt + c_ff + R)</code> where n is <code>
    * len(u)</code>, <code>c_ij</code> is the number of occurrences of <code>u(k)=i</code> and <code>
    * v(k)=j</code> for <code>k&lt;n</code>, and <code>R = 2 * (c_tf + c_ft)</code>.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; RogersTanimotoDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
+   * <pre>
+   * <code>&gt;&gt; RogersTanimotoDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
    * 8/11
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static final class RogersTanimotoDissimilarity extends AbstractEvaluator {
 
@@ -2216,19 +2331,24 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>RussellRaoDissimilarity(u, v)
-   * </code></pre>
+   * <pre>
+   * <code>RussellRaoDissimilarity(u, v)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Russell-Rao dissimilarity between the two boolean 1-D lists <code>u</code> and
+   * <p>
+   * returns the Russell-Rao dissimilarity between the two boolean 1-D lists <code>u</code> and
    * <code>v</code>, which is defined as <code>(n - c_tt) / c_tt</code> where <code>n</code> is
    * <code>len(u)</code> and <code>c_ij</code> is the number of occurrences of <code>u(k)=i</code>
    * and <code>v(k)=j</code> for <code>k&lt;n</code>.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; RussellRaoDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
+   * <pre>
+   * <code>&gt;&gt; RussellRaoDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
    * 5/7
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static final class RussellRaoDissimilarity extends AbstractEvaluator {
 
@@ -2287,22 +2407,27 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>Signature(permutation-list)
-   * </code></pre>
+   * <pre>
+   * <code>Signature(permutation-list)
+   * </code>
+   * </pre>
    *
-   * <p>determine if the <code>permutation-list</code> has odd (<code>-1</code>) or even (<code>1
+   * <p>
+   * determine if the <code>permutation-list</code> has odd (<code>-1</code>) or even (<code>1
    * </code>) parity. Returns <code>0</code> if two elements in the <code>permutation-list</code>
    * are equal.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; Signature({1,2,3,4})
+   * <pre>
+   * <code>&gt;&gt; Signature({1,2,3,4})
    * 1
    *
    * &gt;&gt; Signature({1,4,3,2})
@@ -2310,7 +2435,8 @@ public final class Combinatoric {
    *
    * &gt;&gt; Signature({1,2,3,2})
    * 0
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static final class Signature extends AbstractFunctionEvaluator {
 
@@ -2347,19 +2473,24 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>SokalSneathDissimilarity(u, v)
-   * </code></pre>
+   * <pre>
+   * <code>SokalSneathDissimilarity(u, v)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Sokal-Sneath dissimilarity between the two boolean 1-D lists <code>u</code> and
+   * <p>
+   * returns the Sokal-Sneath dissimilarity between the two boolean 1-D lists <code>u</code> and
    * <code>v</code>, which is defined as <code>R / (c_tt + R)</code> where n is <code>len(u)</code>,
    * <code>c_ij</code> is the number of occurrences of <code>u(k)=i</code> and <code>v(k)=j</code>
    * for <code>k&lt;n</code>, and <code>R = 2 * (c_tf + c_ft)</code>.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; SokalSneathDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
+   * <pre>
+   * <code>&gt;&gt; SokalSneathDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
    * 4/5
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static final class SokalSneathDissimilarity extends AbstractEvaluator {
 
@@ -2423,30 +2554,41 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>Subsets(list)
-   * </code></pre>
+   * <pre>
+   * <code>Subsets(list)
+   * </code>
+   * </pre>
    *
-   * <p>finds a list of all possible subsets of <code>list</code>.
+   * <p>
+   * finds a list of all possible subsets of <code>list</code>.
    *
-   * <pre><code>Subsets(list, n)
-   * </code></pre>
+   * <pre>
+   * <code>Subsets(list, n)
+   * </code>
+   * </pre>
    *
-   * <p>finds a list of all possible subsets containing at most <code>n</code> elements.
+   * <p>
+   * finds a list of all possible subsets containing at most <code>n</code> elements.
    *
-   * <pre><code>Subsets(list, {n})
-   * </code></pre>
+   * <pre>
+   * <code>Subsets(list, {n})
+   * </code>
+   * </pre>
    *
-   * <p>finds a list of all possible subsets containing exactly <code>n</code> elements.
+   * <p>
+   * finds a list of all possible subsets containing exactly <code>n</code> elements.
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Combination">Wikipedia - Combination</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Combination">Wikipedia - Combination</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; Subsets({a, b, c})
+   * <pre>
+   * <code>&gt;&gt; Subsets({a, b, c})
    * {{},{a},{b},{c},{a,b},{a,c},{b,c},{a,b,c}}
    *
    * &gt;&gt; Subsets({a, b, c}, 2)
@@ -2460,21 +2602,26 @@ public final class Combinatoric {
    *
    * &gt;&gt; Subsets()
    * Subsets()
-   * </code></pre>
+   * </code>
+   * </pre>
    *
-   * <p>The <a href="https://oeis.org/A018900">A018900 Sum of two distinct powers of 2</a> integer
+   * <p>
+   * The <a href="https://oeis.org/A018900">A018900 Sum of two distinct powers of 2</a> integer
    * sequence
    *
-   * <pre><code>&gt;&gt; Union(Total/@Subsets(2^Range(0, 10), {2}))
+   * <pre>
+   * <code>&gt;&gt; Union(Total/@Subsets(2^Range(0, 10), {2}))
    * {3,5,6,9,10,12,17,18,20,24,33,34,36,40,48,65,66,68,72,80,96,129,130,132,136,144,160,192,257,258,260,264,272,288,320,384,513,514,516,520,528,544,576,640,768,1025,1026,1028,1032,1040,1056,1088,1152,1280,1536}
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static final class Subsets extends AbstractFunctionEvaluator {
 
     /**
      * Iterate over the lists of all k-combinations from a given list
      *
-     * <p>See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
+     * <p>
+     * See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
      */
     public static final class KSubsetsList implements Iterable<IAST> {
 
@@ -2505,15 +2652,12 @@ public final class Combinatoric {
           }
 
           IASTAppendable temp = fResultList.copyAppendable();
-          return temp.appendArgs(
-              0,
-              fK,
-              i -> {
-                if (j.length > i && fList.size() > (j[i] + fOffset)) {
-                  return fList.get(j[i] + fOffset);
-                }
-                return F.NIL;
-              });
+          return temp.appendArgs(0, fK, i -> {
+            if (j.length > i && fList.size() > (j[i] + fOffset)) {
+              return fList.get(j[i] + fOffset);
+            }
+            return F.NIL;
+          });
         }
 
         @Override
@@ -2523,11 +2667,8 @@ public final class Combinatoric {
       }
 
       private KSubsetsList(
-          //          final Iterator<int[]> iterable,
-          final IAST list,
-          final int k,
-          IAST resultList,
-          final int offset) {
+          // final Iterator<int[]> iterable,
+          final IAST list, final int k, IAST resultList, final int offset) {
         fList = list;
         fK = k;
         fResultList = resultList;
@@ -2594,8 +2735,8 @@ public final class Combinatoric {
       return ARGS_0_2;
     }
 
-    public static KSubsetsList createKSubsets(
-        final IAST list, final int k, IAST resultList, final int offset) {
+    public static KSubsetsList createKSubsets(final IAST list, final int k, IAST resultList,
+        final int offset) {
       return new KSubsetsList(list, k, resultList, offset);
     }
   }
@@ -2610,7 +2751,8 @@ public final class Combinatoric {
    *
    * <blockquote>
    *
-   * <p>creates a list of all <code>n</code>-tuples of elements in <code>list</code>.
+   * <p>
+   * creates a list of all <code>n</code>-tuples of elements in <code>list</code>.
    *
    * </blockquote>
    *
@@ -2621,14 +2763,16 @@ public final class Combinatoric {
    *
    * <blockquote>
    *
-   * <p>returns a list of tuples with elements from the given lists.
+   * <p>
+   * returns a list of tuples with elements from the given lists.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Tuple">Wikipedia - Tuple</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Tuple">Wikipedia - Tuple</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -2685,13 +2829,8 @@ public final class Combinatoric {
      * @param ast
      * @param engine
      */
-    private static void tuples(
-        final IAST originalList,
-        final int n,
-        IASTAppendable result,
-        IAST subResult,
-        IAST ast,
-        EvalEngine engine) {
+    private static void tuples(final IAST originalList, final int n, IASTAppendable result,
+        IAST subResult, IAST ast, EvalEngine engine) {
       if (n == 0) {
         result.append(subResult);
         return;
@@ -2729,13 +2868,8 @@ public final class Combinatoric {
      * @param ast
      * @param engine
      */
-    private void tuplesOfListsRecursive(
-        final IAST originalList,
-        final int k,
-        IASTAppendable result,
-        IAST subResult,
-        IAST ast,
-        EvalEngine engine) {
+    private void tuplesOfListsRecursive(final IAST originalList, final int k, IASTAppendable result,
+        IAST subResult, IAST ast, EvalEngine engine) {
       if (k == originalList.size()) {
         result.append(subResult);
         return;
@@ -2760,19 +2894,24 @@ public final class Combinatoric {
   /**
    *
    *
-   * <pre><code>YuleDissimilarity(u, v)
-   * </code></pre>
+   * <pre>
+   * <code>YuleDissimilarity(u, v)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Yule dissimilarity between the two boolean 1-D lists <code>u</code> and <code>v
+   * <p>
+   * returns the Yule dissimilarity between the two boolean 1-D lists <code>u</code> and <code>v
    * </code>, which is defined as <code>R / (c_tt * c_ff + R / 2)</code> where <code>n</code> is
    * <code>len(u)</code>, <code>c_ij</code> is the number of occurrences of <code>u(k)=i</code> and
    * <code>v(k)=j</code> for <code>k&lt;n</code>, and <code>R = 2 * c_tf * c_ft</code>.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; YuleDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
+   * <pre>
+   * <code>&gt;&gt; YuleDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})
    * 6/5
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static final class YuleDissimilarity extends AbstractEvaluator {
 
@@ -2836,7 +2975,8 @@ public final class Combinatoric {
   /**
    * Generate an <code>java.lang.Iterable</code> for (multiset) permutations
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Permutation">Permutation</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Permutation">Permutation</a>
    */
   public static final class KPermutationsIterable implements Iterable<int[]> {
 
@@ -2951,7 +3091,7 @@ public final class Combinatoric {
      *
      * @param data a list of integers which should be permutated.
      * @param len consider only the first <code>n</code> elements of <code>data</code> for
-     *     permutation
+     *        permutation
      * @param parts
      */
     public KPermutationsIterable(final int[] data, final int len, final int parts) {
@@ -2975,7 +3115,7 @@ public final class Combinatoric {
       }
       first = true;
       i = m - 1;
-      //      fResultIndex = nextBeforehand();
+      // fResultIndex = nextBeforehand();
     }
 
     @Override
@@ -2983,6 +3123,7 @@ public final class Combinatoric {
       return new KPermutationsIterator();
     }
   }
+
   /**
    * Check if cycles is a valid <code>Cycles({{...},{...},...})</code> , which contains disjoint
    * permutation cycles represented by integer lists.
@@ -2991,7 +3132,7 @@ public final class Combinatoric {
    * @param quiet if <code>true</code> suppress the output of error messages
    * @param engine
    * @return <code>F.NIL</code> if cycles is not a valid <code>Cycles({{...},{...},...})</code>
-   *     expression
+   *         expression
    */
   public static IAST checkCycles(final IAST cycles, boolean quiet, EvalEngine engine) {
     if (cycles.isAST(S.Cycles, 2)) {

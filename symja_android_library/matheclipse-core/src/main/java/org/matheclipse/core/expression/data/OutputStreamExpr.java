@@ -54,7 +54,7 @@ public class OutputStreamExpr extends DataExpr<OutputStream> implements External
   /**
    * @param fileName
    * @param append if <code>true</code>, then bytes will be written to the end of the file rather
-   *     than the beginning
+   *        than the beginning
    * @return
    * @throws IOException
    */
@@ -78,14 +78,14 @@ public class OutputStreamExpr extends DataExpr<OutputStream> implements External
   public static OutputStreamExpr newInstance(final RandomAccessFile file, String streamName) {
 
     OutputStream outputStream = Channels.newOutputStream(file.getChannel());
-    //    OutputStreamWriter osw = new OutputStreamWriter(outputStream);
+    // OutputStreamWriter osw = new OutputStreamWriter(outputStream);
     return new OutputStreamExpr(outputStream, streamName);
   }
 
   /**
    * @param file
    * @param append if <code>true</code>, then bytes will be written to the end of the file rather
-   *     than the beginning
+   *        than the beginning
    * @return
    * @throws IOException
    */
@@ -99,7 +99,7 @@ public class OutputStreamExpr extends DataExpr<OutputStream> implements External
         LOGGER.error("OutputStreamExpr.newInstance() failed", e);
       }
     }
-    //    OutputStreamWriter osw = new OutputStreamWriter(fos);
+    // OutputStreamWriter osw = new OutputStreamWriter(fos);
     return new OutputStreamExpr(fos, file.getCanonicalPath());
   }
 
@@ -109,11 +109,11 @@ public class OutputStreamExpr extends DataExpr<OutputStream> implements External
     this.streamName = streamName;
   }
 
-  //  protected OutputStreamExpr(final Writer value, String streamName) {
-  //    super(S.OutputStream, value);
-  //    this.uniqueID = InputStreamExpr.STREAM_COUNTER.getAndIncrement();
-  //    this.streamName = streamName;
-  //  }
+  // protected OutputStreamExpr(final Writer value, String streamName) {
+  // super(S.OutputStream, value);
+  // this.uniqueID = InputStreamExpr.STREAM_COUNTER.getAndIncrement();
+  // this.streamName = streamName;
+  // }
 
   @Override
   public boolean equals(final Object obj) {

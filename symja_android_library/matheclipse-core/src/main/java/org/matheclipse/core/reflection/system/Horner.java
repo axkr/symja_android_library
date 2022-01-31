@@ -10,8 +10,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
 
 /**
- * Generate the horner scheme for univariate polynomials. See: <a
- * href="http://en.wikipedia.org/wiki/Horner_scheme">Wikipedia:Horner scheme</a>
+ * Generate the horner scheme for univariate polynomials. See:
+ * <a href="http://en.wikipedia.org/wiki/Horner_scheme">Wikipedia:Horner scheme</a>
  *
  * @deprecated use HornerForm
  */

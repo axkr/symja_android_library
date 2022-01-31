@@ -64,9 +64,7 @@ public class Plot3D extends AbstractEvaluator {
           // final ISymbol y = (ISymbol) lst2.arg1();
           final IExpr yMin = engine.evalN(lst2.arg2());
           final IExpr yMax = engine.evalN(lst2.arg3());
-          if ((!(xMin instanceof INum))
-              || (!(xMax instanceof INum))
-              || (!(yMin instanceof INum))
+          if ((!(xMin instanceof INum)) || (!(xMax instanceof INum)) || (!(yMin instanceof INum))
               || (!(yMax instanceof INum))) {
             return F.NIL;
           }
@@ -84,16 +82,8 @@ public class Plot3D extends AbstractEvaluator {
           // double y1d = 10.0f;
           // double params[] = {ad, bd, cd, dd, -10.0, 10.0};
 
-          temp =
-              plotArray(
-                  xMinD,
-                  xMaxD,
-                  yMinD,
-                  yMaxD,
-                  ast.arg1(),
-                  (ISymbol) lst1.arg1(),
-                  (ISymbol) lst2.arg1(),
-                  engine);
+          temp = plotArray(xMinD, xMaxD, yMinD, yMaxD, ast.arg1(), (ISymbol) lst1.arg1(),
+              (ISymbol) lst2.arg1(), engine);
           graphics.append(temp);
 
           final IASTAppendable options = F.ListAlloc();
@@ -124,14 +114,8 @@ public class Plot3D extends AbstractEvaluator {
    * @param engine the evaluation engine
    * @return <code>F.NIL</code> is no conversion of the data into an <code>IExpr</code> was possible
    */
-  public static IExpr plotArray(
-      final double xMin,
-      final double xMax,
-      final double yMin,
-      final double yMax,
-      final IExpr function,
-      final ISymbol xVar,
-      final ISymbol yVar,
+  public static IExpr plotArray(final double xMin, final double xMax, final double yMin,
+      final double yMax, final IExpr function, final ISymbol xVar, final ISymbol yVar,
       final EvalEngine engine) {
     final double xStep = (xMax - xMin) / NUMBER_OF_DIVISIONS;
     final double yStep = (yMax - yMin) / NUMBER_OF_DIVISIONS;

@@ -57,11 +57,7 @@ public class PatternMatchingTestCase extends TestCase {
     check(engine, configMode, strEval, strResult, false);
   }
 
-  public void check(
-      EvalEngine engine,
-      boolean configMode,
-      String strEval,
-      String strResult,
+  public void check(EvalEngine engine, boolean configMode, String strEval, String strResult,
       boolean relaxedSyntax) {
     try {
       if (strEval.length() == 0 && strResult.length() == 0) {

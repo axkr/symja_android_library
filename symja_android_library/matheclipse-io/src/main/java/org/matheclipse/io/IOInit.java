@@ -12,7 +12,7 @@ import org.matheclipse.io.builtin.SwingFunctions;
 public class IOInit {
   public static void init() {
     // set for only small prime factorization
-    //    Config.PRIME_FACTORS = new Primality();
+    // Config.PRIME_FACTORS = new Primality();
 
     // set for BigInteger prime factorization
     Config.PRIME_FACTORS = new BigIntegerPrimality();

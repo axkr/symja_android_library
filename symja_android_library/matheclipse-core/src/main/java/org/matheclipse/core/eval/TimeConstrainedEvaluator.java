@@ -25,16 +25,13 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
 
   private boolean fTraceEvaluation;
 
-  public TimeConstrainedEvaluator(
-      final EvalEngine evalEngine, final boolean msie, final long milliSeconds) {
+  public TimeConstrainedEvaluator(final EvalEngine evalEngine, final boolean msie,
+      final long milliSeconds) {
     this(evalEngine, msie, milliSeconds, false);
   }
 
-  public TimeConstrainedEvaluator(
-      final EvalEngine evalEngine,
-      final boolean msie,
-      final long milliSeconds,
-      boolean relaxedSyntax) {
+  public TimeConstrainedEvaluator(final EvalEngine evalEngine, final boolean msie,
+      final long milliSeconds, boolean relaxedSyntax) {
     super(evalEngine, msie, relaxedSyntax);
     fMilliSeconds = milliSeconds;
     fRelaxedSyntax = relaxedSyntax;
@@ -45,7 +42,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
   public void run() {
     try {
       if (fTraceEvaluation) {
-        fEvaluationResult = evalTrace(fParsedExpression, null );
+        fEvaluationResult = evalTrace(fParsedExpression, null);
       } else {
         fEvaluationResult = evaluate(fParsedExpression);
       }
@@ -66,8 +63,8 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
    *
    * @param traceEvaluation
    */
-  public IExpr constrainedEval(
-      final Writer writer, final String inputString, boolean traceEvaluation) throws Exception {
+  public IExpr constrainedEval(final Writer writer, final String inputString,
+      boolean traceEvaluation) throws Exception {
 
     fEvaluationResult = F.NIL;
     fException = null;
@@ -110,10 +107,8 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
         }
       }
       if (fException != null) {
-        writer.write(
-            fException.getMessage() != null
-                ? fException.getMessage()
-                : "Exception: " + fException.getClass().getName());
+        writer.write(fException.getMessage() != null ? fException.getMessage()
+            : "Exception: " + fException.getClass().getName());
         writer.write('\n');
       }
 

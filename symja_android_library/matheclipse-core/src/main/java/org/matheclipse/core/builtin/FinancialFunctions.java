@@ -132,25 +132,18 @@ public class FinancialFunctions {
           if (c.isZero()) {
             return //
             // [$ -((p - p/((1 + b)^q)^(t/q))/(1 - (1 + b)^q)) $]
-            F.Times(
-                F.CN1,
-                F.Power(F.Subtract(F.C1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
-                F.Plus(
-                    p,
-                    F.Times(
-                        F.CN1,
-                        F.Power(
-                            F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t)),
+            F.Times(F.CN1, F.Power(F.Subtract(F.C1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
+                F.Plus(p,
+                    F.Times(F.CN1,
+                        F.Power(F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t)),
                             F.CN1),
                         p))); // $$;
           } else {
             return //
             // [$ (p*((1 + b)^q)^(-(t/q) + c/q)*(-1 + ((1 + b)^q)^(t/q)))/(-1 + (1 +
             // b)^q) $]
-            F.Times(
-                F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
-                F.Power(
-                    F.Power(F.Plus(F.C1, b), q),
+            F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
+                F.Power(F.Power(F.Plus(F.C1, b), q),
                     F.Plus(F.Times(F.CN1, F.Power(q, F.CN1), t), F.Times(c, F.Power(q, F.CN1)))),
                 F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t))),
                 p); // $$;
@@ -175,23 +168,19 @@ public class FinancialFunctions {
           if (c.isZero()) {
             return //
             // [$ (p*((1 + b)^q)^(1 - t/q)*(-1 + ((1 + b)^q)^(t/q)))/(-1 + (1 + b)^q) $]
-            F.Times(
-                F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
+            F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
                 F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t))),
-                F.Power(
-                    F.Power(F.Plus(F.C1, b), q),
+                F.Power(F.Power(F.Plus(F.C1, b), q),
                     F.Plus(F.C1, F.Times(F.CN1, F.Power(q, F.CN1), t))),
                 p); // $$;
           } else {
             return //
             // [$ (p*((1 + b)^q)^(1 - t/q + c/q)*(-1 + ((1 + b)^q)^(t/q)))/(-1 + (1 +
             // b)^q) $]
-            F.Times(
-                F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
-                F.Power(
-                    F.Power(F.Plus(F.C1, b), q),
-                    F.Plus(
-                        F.C1, F.Times(F.CN1, F.Power(q, F.CN1), t), F.Times(c, F.Power(q, F.CN1)))),
+            F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
+                F.Power(F.Power(F.Plus(F.C1, b), q),
+                    F.Plus(F.C1, F.Times(F.CN1, F.Power(q, F.CN1), t),
+                        F.Times(c, F.Power(q, F.CN1)))),
                 F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t))),
                 p); // $$;
           }

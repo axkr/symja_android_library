@@ -12,50 +12,36 @@ public class FunctionsTestCase extends AbstractTestCase {
     String s = System.getProperty("os.name");
 
     Config.FILESYSTEM_ENABLED = true;
-    //     check("ds=SemanticImport(\"./data/color2_data.csv\") //Normal //InputForm", //
-    //     "");
+    // check("ds=SemanticImport(\"./data/color2_data.csv\") //Normal //InputForm", //
+    // "");
     // check("ds=SemanticImport(\"./data/color2_data.csv\");ds(All, {\"r\",\"g\",\"b\"})//Normal
     // //Values
     // //InputForm", //
     // "");
 
     if (s.contains("Windows")) {
-      //                  check(
-      //                      "dset =
-      // SemanticImport(\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/data/whiskey.csv\")", //
-      //                      "");
-      check(
-          "dset = Dataset({\n"
-              + //
-              "<|\"a\" -> 1, \"b\" -> \"x\", \"c\" -> {1}|>,\n"
-              + //
-              "<|\"a\" -> 2, \"b\" -> \"y\", \"c\" -> {2, 3}|>,\n"
-              + //
-              "<|\"a\" -> 3, \"b\" -> \"z\", \"c\" -> {3}|>,\n"
-              + //
-              "<|\"a\" -> 4, \"b\" -> \"x\", \"c\" -> {4, 5}|>,\n"
-              + //
-              "<|\"a\" -> 5, \"b\" -> \"y\", \"c\" -> {5, 6, 7}|>,\n"
-              + //
-              "<|\"a\" -> 6, \"b\" -> \"z\", \"c\" -> {}|>})", //
-          " a  |  b  |     c     |\r\n"
-              + //
-              "-----------------------\r\n"
-              + //
-              " 1  |  x  |      {1}  |\r\n"
-              + //
-              " 2  |  y  |    {2,3}  |\r\n"
-              + //
-              " 3  |  z  |      {3}  |\r\n"
-              + //
-              " 4  |  x  |    {4,5}  |\r\n"
-              + //
-              " 5  |  y  |  {5,6,7}  |\r\n"
-              + //
+      // check(
+      // "dset =
+      // SemanticImport(\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/data/whiskey.csv\")",
+      // //
+      // "");
+      check("dset = Dataset({\n" + //
+          "<|\"a\" -> 1, \"b\" -> \"x\", \"c\" -> {1}|>,\n" + //
+          "<|\"a\" -> 2, \"b\" -> \"y\", \"c\" -> {2, 3}|>,\n" + //
+          "<|\"a\" -> 3, \"b\" -> \"z\", \"c\" -> {3}|>,\n" + //
+          "<|\"a\" -> 4, \"b\" -> \"x\", \"c\" -> {4, 5}|>,\n" + //
+          "<|\"a\" -> 5, \"b\" -> \"y\", \"c\" -> {5, 6, 7}|>,\n" + //
+          "<|\"a\" -> 6, \"b\" -> \"z\", \"c\" -> {}|>})", //
+          " a  |  b  |     c     |\r\n" + //
+              "-----------------------\r\n" + //
+              " 1  |  x  |      {1}  |\r\n" + //
+              " 2  |  y  |    {2,3}  |\r\n" + //
+              " 3  |  z  |      {3}  |\r\n" + //
+              " 4  |  x  |    {4,5}  |\r\n" + //
+              " 5  |  y  |  {5,6,7}  |\r\n" + //
               " 6  |  z  |       {}  |");
 
-      check(
-          "Normal(dset) //InputForm", //
+      check("Normal(dset) //InputForm", //
           "{<|\"a\"->1,\"b\"->\"x\",\"c\"->{1}|>," //
               + "<|\"a\"->2,\"b\"->\"y\",\"c\"->{2,3}|>," //
               + "<|\"a\"->3,\"b\"->\"z\",\"c\"->{3}|>," //
@@ -63,86 +49,53 @@ public class FunctionsTestCase extends AbstractTestCase {
               + "<|\"a\"->5,\"b\"->\"y\",\"c\"->{5,6,7}|>," //
               + "<|\"a\"->6,\"b\"->\"z\",\"c\"->{}|>}");
 
-      check(
-          "dset[2,3]", //
+      check("dset[2,3]", //
           "{2,3}");
 
-      check(
-          "dset[2]", //
-          " a  |  b  |    c    |\r\n"
-              + //
-              "---------------------\r\n"
-              + //
+      check("dset[2]", //
+          " a  |  b  |    c    |\r\n" + //
+              "---------------------\r\n" + //
               " 2  |  y  |  {2,3}  |");
 
-      check(
-          "dset[5, \"c\"]", //
+      check("dset[5, \"c\"]", //
           "{5,6,7}");
 
-      check(
-          "dset[All, \"a\"]", //
-          " a  |\r\n"
-              + //
-              "-----\r\n"
-              + //
-              " 1  |\r\n"
-              + //
-              " 2  |\r\n"
-              + //
-              " 3  |\r\n"
-              + //
-              " 4  |\r\n"
-              + //
-              " 5  |\r\n"
-              + //
+      check("dset[All, \"a\"]", //
+          " a  |\r\n" + //
+              "-----\r\n" + //
+              " 1  |\r\n" + //
+              " 2  |\r\n" + //
+              " 3  |\r\n" + //
+              " 4  |\r\n" + //
+              " 5  |\r\n" + //
               " 6  |");
 
-      check(
-          "dset[All, \"c\", 1]", //
-          "           c            |\r\n"
-              + //
-              "-------------------------\r\n"
-              + //
-              "                     1  |\r\n"
-              + //
-              "                     2  |\r\n"
-              + //
-              "                     3  |\r\n"
-              + //
-              "                     4  |\r\n"
-              + //
-              "                     5  |\r\n"
-              + //
+      check("dset[All, \"c\", 1]", //
+          "           c            |\r\n" + //
+              "-------------------------\r\n" + //
+              "                     1  |\r\n" + //
+              "                     2  |\r\n" + //
+              "                     3  |\r\n" + //
+              "                     4  |\r\n" + //
+              "                     5  |\r\n" + //
               " Missing(PartAbsent,1)  |");
 
-      check(
-          "dset[2] // Normal // InputForm", //
+      check("dset[2] // Normal // InputForm", //
           "<|\"a\"->2,\"b\"->\"y\",\"c\"->{2,3}|>");
 
-      check(
-          "dset[1;;3]", //
-          " a  |  b  |    c    |\r\n"
-              + //
-              "---------------------\r\n"
-              + //
-              " 1  |  x  |    {1}  |\r\n"
-              + //
-              " 2  |  y  |  {2,3}  |\r\n"
-              + //
+      check("dset[1;;3]", //
+          " a  |  b  |    c    |\r\n" + //
+              "---------------------\r\n" + //
+              " 1  |  x  |    {1}  |\r\n" + //
+              " 2  |  y  |  {2,3}  |\r\n" + //
               " 3  |  z  |    {3}  |");
 
-      check(
-          "dset[1;;4,{\"a\",\"b\"}]", //
-          " a  |  b  |\r\n"
-              + //
-              "-----------\r\n"
-              + //
-              " 1  |  x  |\r\n"
-              + //
-              " 2  |  y  |\r\n"
-              + //
-              " 3  |  z  |\r\n"
-              + //
+      check("dset[1;;4,{\"a\",\"b\"}]", //
+          " a  |  b  |\r\n" + //
+              "-----------\r\n" + //
+              " 1  |  x  |\r\n" + //
+              " 2  |  y  |\r\n" + //
+              " 3  |  z  |\r\n" + //
               " 4  |  x  |");
 
       // check("Normal(SemanticImport(\"./data/test.csv\"))", //
@@ -153,71 +106,45 @@ public class FunctionsTestCase extends AbstractTestCase {
       // check("ds=SemanticImport(\"./data/test.csv\");", //
       // "");
 
-      //      check(
-      //          "ds=SemanticImport(\"./data/tornadoes_1950-2014.csv\");", //
-      //          "");
-      //      check(
-      //          "ExportString(ds, \"csv\");", //
-      //          "");
+      // check(
+      // "ds=SemanticImport(\"./data/tornadoes_1950-2014.csv\");", //
+      // "");
+      // check(
+      // "ExportString(ds, \"csv\");", //
+      // "");
     }
   }
 
   public void testSemanticImportString() {
     String s = System.getProperty("os.name");
     if (s.contains("Windows")) {
-      check(
-          "SemanticImportString(\"Products,Sales,Market_Share\n"
-              + //
-              "a,5500,3\n"
-              + //
-              "b,12200,4\n"
-              + //
-              "c,60000,33\n"
-              + //
-              "\")", //
-          "                                       \r\n"
-              + //
-              " Products  |  Sales  |  Market_Share  |\r\n"
-              + //
-              "---------------------------------------\r\n"
-              + //
-              "        a  |   5500  |             3  |\r\n"
-              + //
-              "        b  |  12200  |             4  |\r\n"
-              + //
+      check("SemanticImportString(\"Products,Sales,Market_Share\n" + //
+          "a,5500,3\n" + //
+          "b,12200,4\n" + //
+          "c,60000,33\n" + //
+          "\")", //
+          "                                       \r\n" + //
+              " Products  |  Sales  |  Market_Share  |\r\n" + //
+              "---------------------------------------\r\n" + //
+              "        a  |   5500  |             3  |\r\n" + //
+              "        b  |  12200  |             4  |\r\n" + //
               "        c  |  60000  |            33  |");
-      check(
-          "SemanticImportString(\"Date\\tCity\\tSales\r\n"
-              + //
-              " 2014/1/1\\tBoston\\t198\r\n"
-              + //
-              " 2014/1/1\\tNew York\\t220\r\n"
-              + //
-              " 2014/1/1\\tParis\\t215\r\n"
-              + //
-              " 2014/1/1\\tLondon\\t225\r\n"
-              + //
-              " 2014/1/1\\tShanghai\\t241\r\n"
-              + //
-              " 2014/1/1\\tTokio\\t218\r\n"
-              + //
-              " 2014/1/2\\tBoston\\t189\r\n"
-              + //
-              " 2014/1/2\\tNew York\\t232\r\n"
-              + //
-              " 2014/1/2\\tParis\\t211\r\n"
-              + //
-              " 2014/1/2\\tLondon\\t228\r\n"
-              + //
-              " 2014/1/2\\tShanghai\\t242\r\n"
-              + //
-              " 2014/1/2\\tTokio\\t229\r\n"
-              + //
-              " 2014/1/3\\tBoston\\t196\r\n"
-              + //
-              " 2014/1/3\\tNew York\\t235\")", //
-          "                                   \r\n"
-              + "   Date    |    City    |  Sales  |\r\n"
+      check("SemanticImportString(\"Date\\tCity\\tSales\r\n" + //
+          " 2014/1/1\\tBoston\\t198\r\n" + //
+          " 2014/1/1\\tNew York\\t220\r\n" + //
+          " 2014/1/1\\tParis\\t215\r\n" + //
+          " 2014/1/1\\tLondon\\t225\r\n" + //
+          " 2014/1/1\\tShanghai\\t241\r\n" + //
+          " 2014/1/1\\tTokio\\t218\r\n" + //
+          " 2014/1/2\\tBoston\\t189\r\n" + //
+          " 2014/1/2\\tNew York\\t232\r\n" + //
+          " 2014/1/2\\tParis\\t211\r\n" + //
+          " 2014/1/2\\tLondon\\t228\r\n" + //
+          " 2014/1/2\\tShanghai\\t242\r\n" + //
+          " 2014/1/2\\tTokio\\t229\r\n" + //
+          " 2014/1/3\\tBoston\\t196\r\n" + //
+          " 2014/1/3\\tNew York\\t235\")", //
+          "                                   \r\n" + "   Date    |    City    |  Sales  |\r\n"
               + "-----------------------------------\r\n"
               + " 2014/1/1  |    Boston  |    198  |\r\n"
               + " 2014/1/1  |  New York  |    220  |\r\n"
@@ -231,71 +158,41 @@ public class FunctionsTestCase extends AbstractTestCase {
               + " 2014/1/2  |    London  |    228  |\r\n"
               + " 2014/1/2  |  Shanghai  |    242  |\r\n"
               + " 2014/1/2  |     Tokio  |    229  |\r\n"
-              + " 2014/1/3  |    Boston  |    196  |\r\n"
-              + " 2014/1/3  |  New York  |    235  |");
+              + " 2014/1/3  |    Boston  |    196  |\r\n" + " 2014/1/3  |  New York  |    235  |");
 
-      check(
-          "ds=SemanticImportString(\"Products,Sales,Market_Share,Date,Time\n"
-              + //
-              "a,12200,4,1950-01-03,11:10:00\n"
-              + //
-              "b,5500,3,1970-12-31,23:10:00\n"
-              + //
-              "c,60000,33,2020-04-18,11:35:36\n"
-              + //
-              "\")", //
-          "                                                                   \r\n"
-              + //
-              " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n"
-              + //
-              "-------------------------------------------------------------------\r\n"
-              + //
-              "        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |\r\n"
-              + //
-              "        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n"
-              + //
+      check("ds=SemanticImportString(\"Products,Sales,Market_Share,Date,Time\n" + //
+          "a,12200,4,1950-01-03,11:10:00\n" + //
+          "b,5500,3,1970-12-31,23:10:00\n" + //
+          "c,60000,33,2020-04-18,11:35:36\n" + //
+          "\")", //
+          "                                                                   \r\n" + //
+              " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n" + //
+              "-------------------------------------------------------------------\r\n" + //
+              "        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |\r\n" + //
+              "        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n" + //
               "        c  |  60000  |            33  |  2020-04-18  |  11:35:36  |");
-      check(
-          "st=Structure(ds)", //
-          "              Structure of                \r\n"
-              + //
-              " Index  |  Column Name   |  Column Type  |\r\n"
-              + //
-              "------------------------------------------\r\n"
-              + //
-              "     0  |      Products  |       STRING  |\r\n"
-              + //
-              "     1  |         Sales  |      INTEGER  |\r\n"
-              + //
-              "     2  |  Market_Share  |      INTEGER  |\r\n"
-              + //
-              "     3  |          Date  |   LOCAL_DATE  |\r\n"
-              + //
+      check("st=Structure(ds)", //
+          "              Structure of                \r\n" + //
+              " Index  |  Column Name   |  Column Type  |\r\n" + //
+              "------------------------------------------\r\n" + //
+              "     0  |      Products  |       STRING  |\r\n" + //
+              "     1  |         Sales  |      INTEGER  |\r\n" + //
+              "     2  |  Market_Share  |      INTEGER  |\r\n" + //
+              "     3  |          Date  |   LOCAL_DATE  |\r\n" + //
               "     4  |          Time  |   LOCAL_TIME  |");
-      check(
-          "st(Select(Slot(\"Column Type\") == \"INTEGER\" &))", //
-          "              Structure of                \r\n"
-              + //
-              " Index  |  Column Name   |  Column Type  |\r\n"
-              + //
-              "------------------------------------------\r\n"
-              + //
-              "     1  |         Sales  |      INTEGER  |\r\n"
-              + //
+      check("st(Select(Slot(\"Column Type\") == \"INTEGER\" &))", //
+          "              Structure of                \r\n" + //
+              " Index  |  Column Name   |  Column Type  |\r\n" + //
+              "------------------------------------------\r\n" + //
+              "     1  |         Sales  |      INTEGER  |\r\n" + //
               "     2  |  Market_Share  |      INTEGER  |"); //
-      check(
-          "st(Select(#\"Column Type\" == \"INTEGER\" &))", //
-          "              Structure of                \r\n"
-              + //
-              " Index  |  Column Name   |  Column Type  |\r\n"
-              + //
-              "------------------------------------------\r\n"
-              + //
-              "     1  |         Sales  |      INTEGER  |\r\n"
-              + //
+      check("st(Select(#\"Column Type\" == \"INTEGER\" &))", //
+          "              Structure of                \r\n" + //
+              " Index  |  Column Name   |  Column Type  |\r\n" + //
+              "------------------------------------------\r\n" + //
+              "     1  |         Sales  |      INTEGER  |\r\n" + //
               "     2  |  Market_Share  |      INTEGER  |"); //
-      check(
-          "Summary(ds)", //
+      check("Summary(ds)", //
           "                                                                                                 \r\n"
               + //
               "  Summary   |  Products  |        Sales         |     Market_Share     |     Date     |  Time   |\r\n"
@@ -329,234 +226,145 @@ public class FunctionsTestCase extends AbstractTestCase {
               "  Earliest  |            |                      |                      |  1950-01-03  |  11:10  |\r\n"
               + //
               "    Latest  |            |                      |                      |  2020-04-18  |  23:10  |");
-      check(
-          "First(ds)", //
-          "                                                                   \r\n"
-              + //
-              " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n"
-              + //
-              "-------------------------------------------------------------------\r\n"
-              + //
+      check("First(ds)", //
+          "                                                                   \r\n" + //
+              " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n" + //
+              "-------------------------------------------------------------------\r\n" + //
               "        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |");
-      check(
-          "Keys(ds)", //
+      check("Keys(ds)", //
           "{Products,Sales,Market_Share,Date,Time}");
-      check(
-          "ds[[1,2]]", //
+      check("ds[[1,2]]", //
           "12200");
-      check(
-          "ds(TakeLargest(2), \"Sales\") ", //
+      check("ds(TakeLargest(2), \"Sales\") ", //
           "{60000,12200}");
       // TODO rewrite GroupBy
-      check(
-          "ds(GroupBy(\"Sales\"), \"Sales\") ", //
-          "         \r\n"
-              + //
-              " Sales  |\r\n"
-              + //
-              "---------\r\n"
-              + //
-              "  5500  |\r\n"
-              + //
-              " 12200  |\r\n"
-              + //
+      check("ds(GroupBy(\"Sales\"), \"Sales\") ", //
+          "         \r\n" + //
+              " Sales  |\r\n" + //
+              "---------\r\n" + //
+              "  5500  |\r\n" + //
+              " 12200  |\r\n" + //
               " 60000  |");
       // TODO rewrite SortBy
-      check(
-          "ds(SortBy(\"Sales\"), \"Sales\") ", //
-          "         \r\n"
-              + //
-              " Sales  |\r\n"
-              + //
-              "---------\r\n"
-              + //
-              "  5500  |\r\n"
-              + //
-              " 12200  |\r\n"
-              + //
+      check("ds(SortBy(\"Sales\"), \"Sales\") ", //
+          "         \r\n" + //
+              " Sales  |\r\n" + //
+              "---------\r\n" + //
+              "  5500  |\r\n" + //
+              " 12200  |\r\n" + //
               " 60000  |");
-      check(
-          "ds(Select(#Sales < 13000 &), {\"Products\", \"Market_Share\"})", //
-          "                             \r\n"
-              + //
-              " Products  |  Market_Share  |\r\n"
-              + //
-              "-----------------------------\r\n"
-              + //
-              "        a  |             4  |\r\n"
-              + //
+      check("ds(Select(#Sales < 13000 &), {\"Products\", \"Market_Share\"})", //
+          "                             \r\n" + //
+              " Products  |  Market_Share  |\r\n" + //
+              "-----------------------------\r\n" + //
+              "        a  |             4  |\r\n" + //
               "        b  |             3  |");
-      check(
-          "ds(Select(#Products == \"a\" &), {\"Products\", \"Market_Share\"})", //
-          "                             \r\n"
-              + //
-              " Products  |  Market_Share  |\r\n"
-              + //
-              "-----------------------------\r\n"
-              + //
+      check("ds(Select(#Products == \"a\" &), {\"Products\", \"Market_Share\"})", //
+          "                             \r\n" + //
+              " Products  |  Market_Share  |\r\n" + //
+              "-----------------------------\r\n" + //
               "        a  |             4  |");
       // print: "Dataset: Column Invalid is not present in table"
-      check(
-          "ds(Select(#Invalid < 13000 &) ,All)", //
-          "                                                                   \r\n"
-              + //
-              " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n"
-              + //
-              "-------------------------------------------------------------------\r\n"
-              + //
-              "        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |\r\n"
-              + //
-              "        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n"
-              + //
+      check("ds(Select(#Invalid < 13000 &) ,All)", //
+          "                                                                   \r\n" + //
+              " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n" + //
+              "-------------------------------------------------------------------\r\n" + //
+              "        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |\r\n" + //
+              "        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n" + //
               "        c  |  60000  |            33  |  2020-04-18  |  11:35:36  |[Select(Slot(Invalid)<13000&),All]");
-      check(
-          "ds(All, \"Sales\") // Normal", //
+      check("ds(All, \"Sales\") // Normal", //
           "{12200,5500,60000}");
 
-      check(
-          "ds(Counts, \"Sales\")", //
+      check("ds(Counts, \"Sales\")", //
           "<|60000->1,12200->1,5500->1|>");
 
-      check(
-          "ds(Total, \"Sales\")", //
+      check("ds(Total, \"Sales\")", //
           "77700");
 
-      check(
-          "ds(Mean, \"Sales\")", //
+      check("ds(Mean, \"Sales\")", //
           "25900");
-      check(
-          "ds(Median, \"Sales\")", //
+      check("ds(Median, \"Sales\")", //
           "12200");
-      check(
-          "ds(StandardDeviation, \"Sales\")", //
+      check("ds(StandardDeviation, \"Sales\")", //
           "100*Sqrt(88333)");
 
-      check(
-          "ds(StringJoin, \"Products\")", //
+      check("ds(StringJoin, \"Products\")", //
           "abc");
 
-      check(
-          "ds(3, \"Sales\")", //
+      check("ds(3, \"Sales\")", //
           "60000");
 
       // all rows of column Market_Share
-      check(
-          "ds(All, \"Market_Share\")", //
-          "                \r\n"
-              + //
-              " Market_Share  |\r\n"
-              + //
-              "----------------\r\n"
-              + //
-              "            4  |\r\n"
-              + //
-              "            3  |\r\n"
-              + //
+      check("ds(All, \"Market_Share\")", //
+          "                \r\n" + //
+              " Market_Share  |\r\n" + //
+              "----------------\r\n" + //
+              "            4  |\r\n" + //
+              "            3  |\r\n" + //
               "           33  |");
 
       // all rows - Column 1 and 2
-      check(
-          "ds(All,1;;2)", //
-          "                      \r\n"
-              + //
-              " Products  |  Sales  |\r\n"
-              + //
-              "----------------------\r\n"
-              + //
-              "        a  |  12200  |\r\n"
-              + //
-              "        b  |   5500  |\r\n"
-              + //
+      check("ds(All,1;;2)", //
+          "                      \r\n" + //
+              " Products  |  Sales  |\r\n" + //
+              "----------------------\r\n" + //
+              "        a  |  12200  |\r\n" + //
+              "        b  |   5500  |\r\n" + //
               "        c  |  60000  |");
 
       // rows 2 and 3
-      check(
-          "ds(2;;3)", //
-          "                                                                   \r\n"
-              + //
-              " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n"
-              + //
-              "-------------------------------------------------------------------\r\n"
-              + //
-              "        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n"
-              + //
+      check("ds(2;;3)", //
+          "                                                                   \r\n" + //
+              " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n" + //
+              "-------------------------------------------------------------------\r\n" + //
+              "        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n" + //
               "        c  |  60000  |            33  |  2020-04-18  |  11:35:36  |");
 
       // row 2
-      check(
-          "ds(2)", //
-          "                                                                   \r\n"
-              + //
-              " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n"
-              + //
-              "-------------------------------------------------------------------\r\n"
-              + //
+      check("ds(2)", //
+          "                                                                   \r\n" + //
+              " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n" + //
+              "-------------------------------------------------------------------\r\n" + //
               "        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |");
 
-      check(
-          "ds(2) // Normal", //
+      check("ds(2) // Normal", //
           "<|Products->b,Sales->5500,Market_Share->3,Date->1970-12-31T00:00,Time->23:10:00|>");
 
       // row 3 column 2
-      check(
-          "ds(3, 2)", //
+      check("ds(3, 2)", //
           "60000");
 
       // all rows column 2
-      check(
-          "ds(All, 2)", //
-          "         \r\n"
-              + //
-              " Sales  |\r\n"
-              + //
-              "---------\r\n"
-              + //
-              " 12200  |\r\n"
-              + //
-              "  5500  |\r\n"
-              + //
+      check("ds(All, 2)", //
+          "         \r\n" + //
+              " Sales  |\r\n" + //
+              "---------\r\n" + //
+              " 12200  |\r\n" + //
+              "  5500  |\r\n" + //
               " 60000  |");
 
       // all rows column 1 and 2
-      check(
-          "ds(All,{1,2})", //
-          "                      \r\n"
-              + //
-              " Products  |  Sales  |\r\n"
-              + //
-              "----------------------\r\n"
-              + //
-              "        a  |  12200  |\r\n"
-              + //
-              "        b  |   5500  |\r\n"
-              + //
+      check("ds(All,{1,2})", //
+          "                      \r\n" + //
+              " Products  |  Sales  |\r\n" + //
+              "----------------------\r\n" + //
+              "        a  |  12200  |\r\n" + //
+              "        b  |   5500  |\r\n" + //
               "        c  |  60000  |");
 
-      check(
-          "ds(All,{\"Products\", \"Market_Share\"})", //
-          "                             \r\n"
-              + //
-              " Products  |  Market_Share  |\r\n"
-              + //
-              "-----------------------------\r\n"
-              + //
-              "        a  |             4  |\r\n"
-              + //
-              "        b  |             3  |\r\n"
-              + //
+      check("ds(All,{\"Products\", \"Market_Share\"})", //
+          "                             \r\n" + //
+              " Products  |  Market_Share  |\r\n" + //
+              "-----------------------------\r\n" + //
+              "        a  |             4  |\r\n" + //
+              "        b  |             3  |\r\n" + //
               "        c  |            33  |");
-      check(
-          "ds/.x->3", //
-          "                                                                   \r\n"
-              + //
-              " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n"
-              + //
-              "-------------------------------------------------------------------\r\n"
-              + //
-              "        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |\r\n"
-              + //
-              "        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n"
-              + //
+      check("ds/.x->3", //
+          "                                                                   \r\n" + //
+              " Products  |  Sales  |  Market_Share  |     Date     |    Time    |\r\n" + //
+              "-------------------------------------------------------------------\r\n" + //
+              "        a  |  12200  |             4  |  1950-01-03  |  11:10:00  |\r\n" + //
+              "        b  |   5500  |             3  |  1970-12-31  |  23:10:00  |\r\n" + //
               "        c  |  60000  |            33  |  2020-04-18  |  11:35:36  |");
     }
   }
@@ -565,20 +373,13 @@ public class FunctionsTestCase extends AbstractTestCase {
     // https://en.wikipedia.org/wiki/Comma-separated_values
     String s = System.getProperty("os.name");
     if (s.contains("Windows")) {
-      check(
-          "SemanticImportString(\"Year,Make,Model,Description,Price\n"
-              + //
-              "1997,Ford,E350,\\\"ac, abs, moon\\\",3000.00\n"
-              + //
-              "1999,Chevy,\\\"Venture \\\"\\\"Extended Edition\\\"\\\"\\\",\\\"\\\",4900.00\n"
-              + //
-              "1999,Chevy,\\\"Venture \\\"\\\"Extended Edition, Very Large\\\"\\\"\\\",,5000.00\n"
-              + //
-              "1996,Jeep,Grand Cherokee,\\\"MUST SELL!\n"
-              + //
-              "air, moon roof, loaded\\\",4799.00\n"
-              + //
-              "\")", //
+      check("SemanticImportString(\"Year,Make,Model,Description,Price\n" + //
+          "1997,Ford,E350,\\\"ac, abs, moon\\\",3000.00\n" + //
+          "1999,Chevy,\\\"Venture \\\"\\\"Extended Edition\\\"\\\"\\\",\\\"\\\",4900.00\n" + //
+          "1999,Chevy,\\\"Venture \\\"\\\"Extended Edition, Very Large\\\"\\\"\\\",,5000.00\n" + //
+          "1996,Jeep,Grand Cherokee,\\\"MUST SELL!\n" + //
+          "air, moon roof, loaded\\\",4799.00\n" + //
+          "\")", //
           "                                                                                                             \r\n"
               + " Year  |  Make   |                  Model                   |             Description             |  Price  |\r\n"
               + "-------------------------------------------------------------------------------------------------------------\r\n"
@@ -594,36 +395,30 @@ public class FunctionsTestCase extends AbstractTestCase {
     String s = System.getProperty("os.name");
 
     Config.FILESYSTEM_ENABLED = true;
-    //     check("ds=SemanticImport(\"./data/color2_data.csv\") //Normal //InputForm", //
-    //     "");
+    // check("ds=SemanticImport(\"./data/color2_data.csv\") //Normal //InputForm", //
+    // "");
     // check("ds=SemanticImport(\"./data/color2_data.csv\");ds(All, {\"r\",\"g\",\"b\"})//Normal
     // //Values
     // //InputForm", //
     // "");
 
     if (s.contains("Windows")) {
-      //                  check(
-      //                      "dset =
-      // SemanticImport(\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/data/whiskey.csv\")", //
-      //                      "");
+      // check(
+      // "dset =
+      // SemanticImport(\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/data/whiskey.csv\")",
+      // //
+      // "");
       check(
           "dset=Dataset@<|101 -> <|\"t\" -> 42, \"r\" -> 7.5`|>, 102 -> <|\"t\" -> 42, \"r\" -> 7.5`|>, 103 -> <|\"t\" -> 42, \"r\" -> 7.5`|>|>", //
-          "      |  t   |   r   |\r\n"
-              + "----------------------\r\n"
-              + " 101  |  42  |  7.5  |\r\n"
-              + " 102  |  42  |  7.5  |\r\n"
-              + " 103  |  42  |  7.5  |");
+          "      |  t   |   r   |\r\n" + "----------------------\r\n" + " 101  |  42  |  7.5  |\r\n"
+              + " 102  |  42  |  7.5  |\r\n" + " 103  |  42  |  7.5  |");
 
-      check(
-          "Normal(dset) //InputForm", //
-          "{<|\"\"->101,\"t\"->42,\"r\"->7.5`|>,"
-              + "<|\"\"->102,\"t\"->42,\"r\"->7.5`|>,"
+      check("Normal(dset) //InputForm", //
+          "{<|\"\"->101,\"t\"->42,\"r\"->7.5`|>," + "<|\"\"->102,\"t\"->42,\"r\"->7.5`|>,"
               + "<|\"\"->103,\"t\"->42,\"r\"->7.5`|>}");
-      check(
-          "dset[1,1]", //
+      check("dset[1,1]", //
           "101");
-      check(
-          "dset[2,3]", //
+      check("dset[2,3]", //
           "7.5");
     }
   }

@@ -27,8 +27,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * <blockquote>
  *
- * <p>returns a numerical approximation of the partial derivative of the <code>function</code> for
- * the variable <code>x</code> and the given <code>value</code>.
+ * <p>
+ * returns a numerical approximation of the partial derivative of the <code>function</code> for the
+ * variable <code>x</code> and the given <code>value</code>.
  *
  * </blockquote>
  *
@@ -39,7 +40,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * <blockquote>
  *
- * <p>returns a numerical approximation of the partial derivative of order <code>n</code>.
+ * <p>
+ * returns a numerical approximation of the partial derivative of order <code>n</code>.
  *
  * </blockquote>
  *
@@ -56,8 +58,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * <h3>Related terms</h3>
  *
- * <p><a href="D.md">D</a>, <a href="Integrate.md">Integrate</a>, <a
- * href="NIntegrate.md">NIntegrate</a>
+ * <p>
+ * <a href="D.md">D</a>, <a href="Integrate.md">Integrate</a>,
+ * <a href="NIntegrate.md">NIntegrate</a>
  */
 public class ND extends AbstractFunctionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -85,8 +88,8 @@ public class ND extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  private IExpr partialDerivative(
-      IExpr function, ISymbol variable, int order, IExpr value, EvalEngine engine) {
+  private IExpr partialDerivative(IExpr function, ISymbol variable, int order, IExpr value,
+      EvalEngine engine) {
     double a3Double = Double.NaN;
     try {
       a3Double = value.evalDouble();
@@ -97,15 +100,15 @@ public class ND extends AbstractFunctionEvaluator {
       Complex a3Complex = Complex.NaN;
       a3Complex = value.evalComplex();
       if (a3Complex != null) {
-        //        FDSFactory<Complex> factory = new FDSFactory<Complex>(ComplexField.getInstance(),
+        // FDSFactory<Complex> factory = new FDSFactory<Complex>(ComplexField.getInstance(),
         // 1, order);
-        //        //        FieldDerivativeStructure<Complex> f = factory.variable(0, a3Complex);
-        //        FiniteDifferencesDifferentiator differentiator =
-        //            new FiniteDifferencesDifferentiator(15, 0.01);
-        //        UnivariateDifferentiableFunction f =
-        //            differentiator.differentiate(new UnaryNumerical(arg1, arg2,
+        // // FieldDerivativeStructure<Complex> f = factory.variable(0, a3Complex);
+        // FiniteDifferencesDifferentiator differentiator =
+        // new FiniteDifferencesDifferentiator(15, 0.01);
+        // UnivariateDifferentiableFunction f =
+        // differentiator.differentiate(new UnaryNumerical(arg1, arg2,
         // EvalEngine.get()));
-        //        //       return F.complexNum(f.getPartialDerivative(order));
+        // // return F.complexNum(f.getPartialDerivative(order));
       }
     } else {
       DSFactory factory = new DSFactory(1, order);

@@ -44,12 +44,9 @@ public class RubiASTNodeFactory extends ASTNodeFactory {
           if (temp == null) {
             if (lowercaseName.length() > 1) {
 
-              if (!lowercaseName.equals("sin")
-                  && !lowercaseName.equals("cos")
-                  && !lowercaseName.equals("tan")
-                  && !lowercaseName.equals("cot")
-                  && !lowercaseName.equals("csc")
-                  && !lowercaseName.equals("sec")) {
+              if (!lowercaseName.equals("sin") && !lowercaseName.equals("cos")
+                  && !lowercaseName.equals("tan") && !lowercaseName.equals("cot")
+                  && !lowercaseName.equals("csc") && !lowercaseName.equals("sec")) {
                 // Rubi inert trig functions
                 System.out.println(nodeStr + " => §" + lowercaseName);
               }

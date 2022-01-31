@@ -40,6 +40,7 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
 
   /**
    * Get data input for binary based operation {@link S#BinaryRead}
+   * 
    * @return
    * @throws IOException
    */
@@ -77,8 +78,8 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
     streamName = "String";
   }
 
-  public static InputStreamExpr getFromFile(
-      final FileExpr fileExpr, String streamName, EvalEngine engine) throws FileNotFoundException {
+  public static InputStreamExpr getFromFile(final FileExpr fileExpr, String streamName,
+      EvalEngine engine) throws FileNotFoundException {
     File file = fileExpr.toData();
     IExpr temp = engine.rememberMap.get(file);
     if (temp == null || !(temp instanceof InputStreamExpr)) {
@@ -88,6 +89,7 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
     }
     return (InputStreamExpr) temp;
   }
+
   /**
    * @param fileName
    * @param streamName the name of the stream
@@ -154,14 +156,14 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
   public int hierarchy() {
     return INPUTSTREAMEXPRID;
   }
-  
+
   public void close() throws IOException {
-	    if (reader != null) {
-	    	reader.close();
-	    	reader = null;
-	    }
-	    fData.close();
-	  }
+    if (reader != null) {
+      reader.close();
+      reader = null;
+    }
+    fData.close();
+  }
 
   @Override
   public IExpr copy() {

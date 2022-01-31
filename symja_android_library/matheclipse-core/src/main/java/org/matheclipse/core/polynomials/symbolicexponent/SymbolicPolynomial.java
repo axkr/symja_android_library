@@ -628,7 +628,8 @@ public class SymbolicPolynomial
    * @return first map entry.
    */
   public Map.Entry<ExpVectorSymbolic, IExpr> leadingMonomial() {
-    if (val.size() == 0) return null;
+    if (val.size() == 0)
+      return null;
     Iterator<Map.Entry<ExpVectorSymbolic, IExpr>> ai = val.entrySet().iterator();
     return ai.next();
   }
@@ -1258,8 +1259,8 @@ public class SymbolicPolynomial
    * @param S GenPolynomial.
    * @return this * b - a x<sup>e</sup> S.
    */
-  public SymbolicPolynomial scaleSubtractMultiple(
-      IExpr b, IExpr a, ExpVectorSymbolic e, SymbolicPolynomial S) {
+  public SymbolicPolynomial scaleSubtractMultiple(IExpr b, IExpr a, ExpVectorSymbolic e,
+      SymbolicPolynomial S) {
     if (a == null || S == null) {
       return this.multiply(b);
     }
@@ -1306,8 +1307,8 @@ public class SymbolicPolynomial
    * @param S GenPolynomial.
    * @return this * a x<sup>g</sup> - a x<sup>e</sup> S.
    */
-  public SymbolicPolynomial scaleSubtractMultiple(
-      IExpr b, ExpVectorSymbolic g, IExpr a, ExpVectorSymbolic e, SymbolicPolynomial S) {
+  public SymbolicPolynomial scaleSubtractMultiple(IExpr b, ExpVectorSymbolic g, IExpr a,
+      ExpVectorSymbolic e, SymbolicPolynomial S) {
     if (a == null || S == null) {
       return this.multiply(b, g);
     }
@@ -1636,9 +1637,8 @@ public class SymbolicPolynomial
    *
    * @param S nonzero GenPolynomial with invertible leading coefficient.
    * @return [ quotient , remainder ] with this = quotient * S + remainder and deg(remainder) &lt;
-   *     deg(S) or remiander = 0. Or <code>null</code> is the evaluation was not possible.
-   * @see
-   *     edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+   *         deg(S) or remiander = 0. Or <code>null</code> is the evaluation was not possible.
+   * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
    */
   @Override
   public SymbolicPolynomial[] quotientRemainder(SymbolicPolynomial S) {
@@ -1686,9 +1686,8 @@ public class SymbolicPolynomial
    *
    * @param S nonzero GenPolynomial with invertible leading coefficient.
    * @return [ quotient , remainder ] with this = quotient * S + remainder and deg(remainder) &lt;
-   *     deg(S) or remiander = 0.
-   * @see
-   *     edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+   *         deg(S) or remiander = 0.
+   * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
    * @deprecated use quotientRemainder()
    */
   @Deprecated
@@ -1702,8 +1701,7 @@ public class SymbolicPolynomial
    *
    * @param S nonzero GenPolynomial with invertible leading coefficient.
    * @return quotient with this = quotient * S + remainder.
-   * @see
-   *     edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+   * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
    */
   @Override
   public SymbolicPolynomial divide(SymbolicPolynomial S) {
@@ -1725,8 +1723,7 @@ public class SymbolicPolynomial
    *
    * @param S nonzero GenPolynomial with invertible leading coefficient.
    * @return remainder with this = quotient * S + remainder.
-   * @see
-   *     edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+   * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
    */
   @Override
   public SymbolicPolynomial remainder(SymbolicPolynomial S) {
@@ -1800,7 +1797,7 @@ public class SymbolicPolynomial
    *
    * @param S GenPolynomial.
    * @return [ gcd(this,S), a, b ] with a*this + b*S = gcd(this,S) or <code>null</code> is the
-   *     evaluation was not possible.
+   *         evaluation was not possible.
    */
   @Override
   public SymbolicPolynomial[] egcd(SymbolicPolynomial S) {
@@ -1950,8 +1947,8 @@ public class SymbolicPolynomial
     SymbolicPolynomial[] hegcd = this.hegcd(m);
     SymbolicPolynomial a = hegcd[0];
     if (!a.isUnit()) { // gcd != 1
-      throw new SymbolicAlgebraicNotInvertibleException(
-          "element not invertible, gcd != 1", m, a, m.divide(a));
+      throw new SymbolicAlgebraicNotInvertibleException("element not invertible, gcd != 1", m, a,
+          m.divide(a));
     }
     SymbolicPolynomial b = hegcd[1];
     if (b.isZERO()) { // when m divides this, e.g. m.isUnit()

@@ -66,9 +66,7 @@ public class Dimensions2D {
   }
 
   public boolean isValidRange() {
-    return xMin != Double.MAX_VALUE
-        && xMax != -Double.MAX_VALUE
-        && yMin != Double.MAX_VALUE
+    return xMin != Double.MAX_VALUE && xMax != -Double.MAX_VALUE && yMin != Double.MAX_VALUE
         && yMax != -Double.MAX_VALUE;
   }
 

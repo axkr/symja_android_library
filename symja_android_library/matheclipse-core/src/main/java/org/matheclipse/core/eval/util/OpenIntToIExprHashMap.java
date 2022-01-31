@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.matheclipse.core.eval.util;
 
@@ -26,10 +24,12 @@ import org.matheclipse.core.interfaces.IExpr;
 /**
  * Open addressed map from int to IExpr.
  *
- * <p>This class provides a dedicated map from integers to IExprs with a much smaller memory
- * overhead than standard <code>java.util.Map</code>.
+ * <p>
+ * This class provides a dedicated map from integers to IExprs with a much smaller memory overhead
+ * than standard <code>java.util.Map</code>.
  *
- * <p>This class is not synchronized. The specialized iterators returned by {@link #iterator()} are
+ * <p>
+ * This class is not synchronized. The specialized iterators returned by {@link #iterator()} are
  * fail-fast: they throw a <code>ConcurrentModificationException</code> when they detect the map has
  * been modified during iteration.
  */
@@ -53,14 +53,16 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
   /**
    * Default starting size.
    *
-   * <p>This must be a power of two for bit mask to work properly.
+   * <p>
+   * This must be a power of two for bit mask to work properly.
    */
   private static final int DEFAULT_EXPECTED_SIZE = 16;
 
   /**
    * Multiplier for size growth when map fills up.
    *
-   * <p>This must be a power of two for bit mask to work properly.
+   * <p>
+   * This must be a power of two for bit mask to work properly.
    */
   private static final int RESIZE_MULTIPLIER = 2;
 
@@ -212,7 +214,8 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
   /**
    * Get an iterator over map elements.
    *
-   * <p>The specialized iterators returned are fail-fast: they throw a <code>
+   * <p>
+   * The specialized iterators returned are fail-fast: they throw a <code>
    * ConcurrentModificationException</code> when they detect the map has been modified during
    * iteration.
    *
@@ -251,8 +254,8 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
    * @param mask bit mask for hash values
    * @return index at which key should be inserted
    */
-  private static int findInsertionIndex(
-      final int[] keys, final byte[] states, final int key, final int mask) {
+  private static int findInsertionIndex(final int[] keys, final byte[] states, final int key,
+      final int mask) {
     final int hash = hashOf(key);
     int index = hash & mask;
     if (states[index] == FREE) {
@@ -572,7 +575,7 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
    * @param stream input stream
    * @throws IOException if object cannot be read
    * @throws ClassNotFoundException if the class corresponding to the serialized object cannot be
-   *     found
+   *         found
    */
   private void readObject(final ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
@@ -586,10 +589,10 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
    * @param length size of the array to build
    * @return a new array
    */
-  //	@SuppressWarnings("unchecked")
+  // @SuppressWarnings("unchecked")
   // field is of type T
-  //	private T[] buildArray(final int length) {
-  //		return (T[]) Array.newInstance(field.getRuntimeClass(), length);
-  //	}
+  // private T[] buildArray(final int length) {
+  // return (T[]) Array.newInstance(field.getRuntimeClass(), length);
+  // }
 
 }

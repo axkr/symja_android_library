@@ -34,8 +34,9 @@ import edu.jas.structure.RingFactory;
  * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to Symja <code>
  * IExpr</code> objects
  *
- * <p><b>Note:</b>: set the "no complex number" flag to <code>false</code> to allow complex numbers
- * on input in method <code>expr2IExprJAS(IExpr)</code>
+ * <p>
+ * <b>Note:</b>: set the "no complex number" flag to <code>false</code> to allow complex numbers on
+ * input in method <code>expr2IExprJAS(IExpr)</code>
  */
 public class JASIExpr {
   private final RingFactory<IExpr> fRingFactory;
@@ -76,9 +77,8 @@ public class JASIExpr {
     this.fTermOrder = TermOrderByName.INVLEX;
     this.fPolyFactory =
         new GenPolynomialRing<IExpr>(fRingFactory, fVariables.size(), fTermOrder, vars);
-    this.fBigIntegerPolyFactory =
-        new GenPolynomialRing<edu.jas.arith.BigInteger>(
-            edu.jas.arith.BigInteger.ZERO, fVariables.size(), fTermOrder, vars);
+    this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(
+        edu.jas.arith.BigInteger.ZERO, fVariables.size(), fTermOrder, vars);
   }
 
   public JASIExpr(final List<? extends IExpr> variablesList) {
@@ -93,11 +93,8 @@ public class JASIExpr {
     this(variablesList, ringFactory, TermOrderByName.INVLEX, false);
   }
 
-  public JASIExpr(
-      final List<? extends IExpr> variablesList,
-      RingFactory<IExpr> ringFactory,
-      TermOrder termOrder,
-      boolean numericFunction) {
+  public JASIExpr(final List<? extends IExpr> variablesList, RingFactory<IExpr> ringFactory,
+      TermOrder termOrder, boolean numericFunction) {
     this.fNumericFunction = numericFunction;
     this.fRingFactory = ringFactory;
     this.fVariables = variablesList;
@@ -109,9 +106,8 @@ public class JASIExpr {
     this.fTermOrder = termOrder;
     this.fPolyFactory =
         new GenPolynomialRing<IExpr>(fRingFactory, fVariables.size(), fTermOrder, vars);
-    this.fBigIntegerPolyFactory =
-        new GenPolynomialRing<edu.jas.arith.BigInteger>(
-            edu.jas.arith.BigInteger.ZERO, fVariables.size(), fTermOrder, vars);
+    this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(
+        edu.jas.arith.BigInteger.ZERO, fVariables.size(), fTermOrder, vars);
   }
 
   /**
@@ -133,11 +129,8 @@ public class JASIExpr {
       ExpVector exp = monomial.exponent();
       BigRational re = coeff.getRe();
       BigRational im = coeff.getIm();
-      IASTAppendable monomTimes =
-          F.Times(
-              F.complex(
-                  F.fraction(re.numerator(), re.denominator()),
-                  F.fraction(im.numerator(), im.denominator())));
+      IASTAppendable monomTimes = F.Times(F.complex(F.fraction(re.numerator(), re.denominator()),
+          F.fraction(im.numerator(), im.denominator())));
       long lExp;
       for (int i = 0; i < exp.length(); i++) {
         lExp = exp.getVal(i);
@@ -163,8 +156,9 @@ public class JASIExpr {
    * polynomial. Only symbolic numbers are converted (i.e. no <code>INum</code> or <code>IComplexNum
    * </code> values are converted into the polynomial structure)
    *
-   * <p><b>Note:</b>: set the "no complex number" flag to <code>false</code> to allow complex
-   * numbers on input in method <code>expr2IExprJAS(IExpr)</code>
+   * <p>
+   * <b>Note:</b>: set the "no complex number" flag to <code>false</code> to allow complex numbers
+   * on input in method <code>expr2IExprJAS(IExpr)</code>
    *
    * @param exprPoly
    * @return
@@ -411,7 +405,7 @@ public class JASIExpr {
    * Map the <code>MonomialOrder-&gt;...</code> option to JAS TermOrder.
    *
    * @param defaultTermOrder the term order which should be used as default if no MonomialOrder
-   *     option is set.
+   *        option is set.
    * @return
    */
   public static TermOrder monomialOrder(OptionArgs optionArgs, final TermOrder defaultTermOrder) {

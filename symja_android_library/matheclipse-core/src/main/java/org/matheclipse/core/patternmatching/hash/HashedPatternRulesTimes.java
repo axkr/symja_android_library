@@ -20,20 +20,16 @@ public class HashedPatternRulesTimes extends HashedPatternRules {
    * @param lhsPattern2
    * @param rhsResult
    * @param useOnlyEqualFactors If <code>true</code> use only rules where both factors are equal,
-   *     <b>HACK, to avoid stack overflow in integration rules.</b>
+   *        <b>HACK, to avoid stack overflow in integration rules.</b>
    */
-  public HashedPatternRulesTimes(
-      IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult, boolean useOnlyEqualFactors) {
+  public HashedPatternRulesTimes(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult,
+      boolean useOnlyEqualFactors) {
     super(lhsPattern1, lhsPattern2, rhsResult, false, null, true);
     this.useOnlyEqualFactors = useOnlyEqualFactors;
   }
 
-  public HashedPatternRulesTimes(
-      IExpr lhsPattern1,
-      IExpr lhsPattern2,
-      IExpr rhsResult,
-      IExpr condition,
-      boolean defaultHashCode) {
+  public HashedPatternRulesTimes(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult,
+      IExpr condition, boolean defaultHashCode) {
     super(lhsPattern1, lhsPattern2, rhsResult, false, condition, defaultHashCode);
   }
 

@@ -221,7 +221,8 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
    * @return <0/0/>0 if this is smaller than/equal to /bigger than <code>other</code>.
    */
   public int compareTo(SortedMultiset<T> other) {
-    if (other == null) return Integer.MAX_VALUE;
+    if (other == null)
+      return Integer.MAX_VALUE;
     // get elements sorted biggest elements first
     Iterator<Map.Entry<T, Integer>> myEntryIter = this.getTopDownIterator();
     Iterator<Map.Entry<T, Integer>> otherEntryIter = other.getTopDownIterator();
@@ -232,14 +233,16 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
       T otherKey = (otherEntry != null) ? otherEntry.getKey() : null;
       if (myKey != null && otherKey != null) {
         int keyCmp = myKey.compareTo(otherKey);
-        if (keyCmp != 0) return keyCmp;
+        if (keyCmp != 0)
+          return keyCmp;
         // else keys are equal...
         Integer myMultiplicity = myEntry.getValue();
         Integer otherMultiplicity = otherEntry.getValue();
         int myMult = (myMultiplicity != null) ? myMultiplicity.intValue() : 0;
         int otherMult = (otherMultiplicity != null) ? otherMultiplicity.intValue() : 0;
         int multCmp = myMult - otherMult;
-        if (multCmp != 0) return multCmp;
+        if (multCmp != 0)
+          return multCmp;
       } else if (myKey != null && otherKey == null) {
         return Integer.MAX_VALUE;
       } else if (myKey == null && otherKey != null) {
@@ -247,8 +250,10 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
       } // else both null -> continue
     }
     // one or both iterators have no more values
-    if (myEntryIter.hasNext()) return Integer.MAX_VALUE;
-    if (otherEntryIter.hasNext()) return Integer.MIN_VALUE;
+    if (myEntryIter.hasNext())
+      return Integer.MAX_VALUE;
+    if (otherEntryIter.hasNext())
+      return Integer.MIN_VALUE;
     return 0; // completely equal
   }
 
@@ -260,14 +265,17 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
     if (o != null && o instanceof SortedMultiset) {
       @SuppressWarnings("unchecked")
       SortedMultiset<T> other = (SortedMultiset<T>) o;
-      if (this.size() != other.size()) return false;
+      if (this.size() != other.size())
+        return false;
       Iterator<Map.Entry<T, Integer>> myEntryIter = this.getTopDownIterator();
       Iterator<Map.Entry<T, Integer>> otherEntryIter = other.getTopDownIterator();
       while (myEntryIter.hasNext()) {
-        if (!otherEntryIter.hasNext()) return false;
+        if (!otherEntryIter.hasNext())
+          return false;
         Map.Entry<T, Integer> myEntry = myEntryIter.next();
         Map.Entry<T, Integer> otherEntry = otherEntryIter.next();
-        if (!myEntry.equals(otherEntry)) return false;
+        if (!myEntry.equals(otherEntry))
+          return false;
       }
       // all elements so far were equal, and this has no more entries.
       return !otherEntryIter.hasNext();

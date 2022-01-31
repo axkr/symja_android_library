@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.matheclipse.core.polynomials;
 
@@ -83,7 +81,8 @@ public class PolynomialsUtils {
   /**
    * Create a Chebyshev polynomial of the first kind.
    *
-   * <p><a href="http://mathworld.wolfram.com/ChebyshevPolynomialoftheFirstKind.html">Chebyshev
+   * <p>
+   * <a href="http://mathworld.wolfram.com/ChebyshevPolynomialoftheFirstKind.html">Chebyshev
    * polynomials of the first kind</a> are orthogonal polynomials. They can be defined by the
    * following recurrence relations:
    *
@@ -97,10 +96,7 @@ public class PolynomialsUtils {
    * @return Chebyshev polynomial of specified degree
    */
   public static IAST createChebyshevPolynomial(final int degree, final IExpr x) {
-    return buildPolynomial(
-        degree,
-        x,
-        CHEBYSHEV_COEFFICIENTS,
+    return buildPolynomial(degree, x, CHEBYSHEV_COEFFICIENTS,
         new RecurrenceCoefficientsGenerator() {
           private final BigFraction[] coeffs = {BigFraction.ZERO, BigFraction.TWO, BigFraction.ONE};
 
@@ -115,7 +111,8 @@ public class PolynomialsUtils {
   /**
    * Create a Hermite polynomial.
    *
-   * <p><a href="http://mathworld.wolfram.com/HermitePolynomial.html">Hermite polynomials</a> are
+   * <p>
+   * <a href="http://mathworld.wolfram.com/HermitePolynomial.html">Hermite polynomials</a> are
    * orthogonal polynomials. They can be defined by the following recurrence relations:
    *
    * <pre>
@@ -128,23 +125,20 @@ public class PolynomialsUtils {
    * @return Hermite polynomial of specified degree
    */
   public static IAST createHermitePolynomial(final int degree, final IExpr x) {
-    return buildPolynomial(
-        degree,
-        x,
-        HERMITE_COEFFICIENTS,
-        new RecurrenceCoefficientsGenerator() {
-          /** {@inheritDoc} */
-          @Override
-          public BigFraction[] generate(int k) {
-            return new BigFraction[] {BigFraction.ZERO, BigFraction.TWO, new BigFraction(2 * k)};
-          }
-        });
+    return buildPolynomial(degree, x, HERMITE_COEFFICIENTS, new RecurrenceCoefficientsGenerator() {
+      /** {@inheritDoc} */
+      @Override
+      public BigFraction[] generate(int k) {
+        return new BigFraction[] {BigFraction.ZERO, BigFraction.TWO, new BigFraction(2 * k)};
+      }
+    });
   }
 
   /**
    * Create a Laguerre polynomial.
    *
-   * <p><a href="http://mathworld.wolfram.com/LaguerrePolynomial.html">Laguerre polynomials</a> are
+   * <p>
+   * <a href="http://mathworld.wolfram.com/LaguerrePolynomial.html">Laguerre polynomials</a> are
    * orthogonal polynomials. They can be defined by the following recurrence relations:
    *
    * <pre>
@@ -157,26 +151,22 @@ public class PolynomialsUtils {
    * @return Laguerre polynomial of specified degree
    */
   public static IAST createLaguerrePolynomial(final int degree, final IExpr x) {
-    return buildPolynomial(
-        degree,
-        x,
-        LAGUERRE_COEFFICIENTS,
-        new RecurrenceCoefficientsGenerator() {
-          /** {@inheritDoc} */
-          @Override
-          public BigFraction[] generate(int k) {
-            final int kP1 = k + 1;
-            return new BigFraction[] {
-              new BigFraction(2 * k + 1, kP1), new BigFraction(-1, kP1), new BigFraction(k, kP1)
-            };
-          }
-        });
+    return buildPolynomial(degree, x, LAGUERRE_COEFFICIENTS, new RecurrenceCoefficientsGenerator() {
+      /** {@inheritDoc} */
+      @Override
+      public BigFraction[] generate(int k) {
+        final int kP1 = k + 1;
+        return new BigFraction[] {new BigFraction(2 * k + 1, kP1), new BigFraction(-1, kP1),
+            new BigFraction(k, kP1)};
+      }
+    });
   }
 
   /**
    * Create a Legendre polynomial.
    *
-   * <p><a href="http://mathworld.wolfram.com/LegendrePolynomial.html">Legendre polynomials</a> are
+   * <p>
+   * <a href="http://mathworld.wolfram.com/LegendrePolynomial.html">Legendre polynomials</a> are
    * orthogonal polynomials. They can be defined by the following recurrence relations:
    *
    * <pre>
@@ -189,20 +179,15 @@ public class PolynomialsUtils {
    * @return Legendre polynomial of specified degree
    */
   public static IAST createLegendrePolynomial(final int degree, final IExpr x) {
-    return buildPolynomial(
-        degree,
-        x,
-        LEGENDRE_COEFFICIENTS,
-        new RecurrenceCoefficientsGenerator() {
-          /** {@inheritDoc} */
-          @Override
-          public BigFraction[] generate(int k) {
-            final int kP1 = k + 1;
-            return new BigFraction[] {
-              BigFraction.ZERO, new BigFraction(k + kP1, kP1), new BigFraction(k, kP1)
-            };
-          }
-        });
+    return buildPolynomial(degree, x, LEGENDRE_COEFFICIENTS, new RecurrenceCoefficientsGenerator() {
+      /** {@inheritDoc} */
+      @Override
+      public BigFraction[] generate(int k) {
+        final int kP1 = k + 1;
+        return new BigFraction[] {BigFraction.ZERO, new BigFraction(k + kP1, kP1),
+            new BigFraction(k, kP1)};
+      }
+    });
   }
 
   /**
@@ -213,11 +198,8 @@ public class PolynomialsUtils {
    * @param generator recurrence coefficients generator
    * @return coefficients array
    */
-  public static IAST buildPolynomial(
-      final int degree,
-      final IExpr x,
-      final List<BigFraction> coefficients,
-      final RecurrenceCoefficientsGenerator generator) {
+  public static IAST buildPolynomial(final int degree, final IExpr x,
+      final List<BigFraction> coefficients, final RecurrenceCoefficientsGenerator generator) {
     // do allocation at start to test limits
     IASTAppendable result = F.PlusAlloc(degree + 1);
 
@@ -240,8 +222,8 @@ public class PolynomialsUtils {
     if (start + degree + 1 >= Config.MAX_AST_SIZE) {
       ASTElementLimitExceeded.throwIt(start + degree + 1);
     }
-    return result.appendArgs(
-        0, degree + 1, i -> F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.ZZ(i))));
+    return result.appendArgs(0, degree + 1,
+        i -> F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.ZZ(i))));
   }
 
   /**
@@ -252,11 +234,8 @@ public class PolynomialsUtils {
    * @param generator recurrence coefficients generator
    * @param coefficients list where the computed coefficients should be appended
    */
-  private static void computeUpToDegree(
-      final int degree,
-      final int maxDegree,
-      final RecurrenceCoefficientsGenerator generator,
-      final List<BigFraction> coefficients) {
+  private static void computeUpToDegree(final int degree, final int maxDegree,
+      final RecurrenceCoefficientsGenerator generator, final List<BigFraction> coefficients) {
 
     int startK = (maxDegree - 1) * maxDegree / 2;
     for (int k = maxDegree; k < degree; ++k) {
@@ -279,8 +258,8 @@ public class PolynomialsUtils {
         final BigFraction ckPrev = ck;
         ck = coefficients.get(startK + i);
         ckm1 = coefficients.get(startKm1 + i);
-        coefficients.add(
-            ck.multiply(ai[0]).add(ckPrev.multiply(ai[1])).subtract(ckm1.multiply(ai[2])));
+        coefficients
+            .add(ck.multiply(ai[0]).add(ckPrev.multiply(ai[1])).subtract(ckm1.multiply(ai[2])));
         if (coefficients.size() > Config.MAX_AST_SIZE) {
           ASTElementLimitExceeded.throwIt(coefficients.size());
         }
@@ -306,7 +285,7 @@ public class PolynomialsUtils {
      *
      * @param k highest degree of the polynomials used in the recurrence
      * @return an array of three coefficients such that P<sub>k+1</sub>(X) = (a[0] + a[1] X)
-     *     P<sub>k</sub>(X) - a[2] P<sub>k-1</sub>(X)
+     *         P<sub>k</sub>(X) - a[2] P<sub>k-1</sub>(X)
      */
     BigFraction[] generate(int k);
   }

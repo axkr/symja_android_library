@@ -95,8 +95,8 @@ public class SymbolicTermOrderByName {
   public static final SymbolicTermOrder neglex = NegativeLexicographic; // = REVLEX;
 
   /** ExpVectorTermOrder name negdegrevlex of Sage. */
-  public static final SymbolicTermOrder negdegrevlex =
-      NegativeDegreeReverseLexicographic; // = GRLEX;
+  public static final SymbolicTermOrder negdegrevlex = NegativeDegreeReverseLexicographic; // =
+                                                                                           // GRLEX;
 
   /** ExpVectorTermOrder name negdeglex of Sage. */
   public static final SymbolicTermOrder negdeglex = NegativeDegreeLexicographic; // = REVTDEG;
@@ -163,8 +163,8 @@ public class SymbolicTermOrderByName {
    * @param s split index
    * @return constructed term order
    */
-  public static final SymbolicTermOrder blockOrder(
-      SymbolicTermOrder t1, SymbolicTermOrder t2, int s) {
+  public static final SymbolicTermOrder blockOrder(SymbolicTermOrder t1, SymbolicTermOrder t2,
+      int s) {
     return new SymbolicTermOrder(t1.getEvord(), t2.getEvord(), Integer.MAX_VALUE, s);
   }
 
@@ -178,8 +178,8 @@ public class SymbolicTermOrderByName {
    * @param s split index
    * @return constructed term order
    */
-  public static final SymbolicTermOrder blockOrder(
-      SymbolicTermOrder t1, SymbolicTermOrder t2, ExpVectorLong e, int s) {
+  public static final SymbolicTermOrder blockOrder(SymbolicTermOrder t1, SymbolicTermOrder t2,
+      ExpVectorLong e, int s) {
     return new SymbolicTermOrder(t1.getEvord(), t2.getEvord(), e.length(), s);
   }
 

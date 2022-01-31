@@ -36,17 +36,19 @@ public class IntervalFunctions {
    *
    * <blockquote>
    *
-   * <p>represents the interval from <code>a</code> to <code>b</code>.
+   * <p>
+   * represents the interval from <code>a</code> to <code>b</code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Interval_arithmetic">Wikipedia - Interval
-   *       arithmetic</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Interval_(mathematics)">Wikipedia - Interval
-   *       (mathematics)</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Interval_arithmetic">Wikipedia - Interval
+   * arithmetic</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Interval_(mathematics)">Wikipedia - Interval
+   * (mathematics)</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -71,8 +73,9 @@ public class IntervalFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="IntervalIntersection.md">IntervalIntersection</a>, <a
-   * href="IntervalUnion.md">IntervalUnion</a>
+   * <p>
+   * <a href="IntervalIntersection.md">IntervalIntersection</a>,
+   * <a href="IntervalUnion.md">IntervalUnion</a>
    */
   private static final class Interval extends AbstractEvaluator {
 
@@ -101,18 +104,20 @@ public class IntervalFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code>, if <code>interval-or-real-number</code> is completly sourrounded
-   * by <code>interval</code>
+   * <p>
+   * returns <code>True</code>, if <code>interval-or-real-number</code> is completly sourrounded by
+   * <code>interval</code>
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Interval_arithmetic">Wikipedia - Interval
-   *       arithmetic</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Interval_(mathematics)">Wikipedia - Interval
-   *       (mathematics)</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Interval_arithmetic">Wikipedia - Interval
+   * arithmetic</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Interval_(mathematics)">Wikipedia - Interval
+   * (mathematics)</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -128,9 +133,9 @@ public class IntervalFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Interval.md">Interval</a>, <a
-   * href="IntervalIntersection.md">IntervalIntersection</a>, <a
-   * href="IntervalUnion.md">IntervalUnion</a>
+   * <p>
+   * <a href="Interval.md">Interval</a>, <a href="IntervalIntersection.md">IntervalIntersection</a>,
+   * <a href="IntervalUnion.md">IntervalUnion</a>
    */
   private static final class IntervalMemberQ extends AbstractEvaluator {
 
@@ -153,8 +158,7 @@ public class IntervalFunctions {
                   IAST list2 = (IAST) interval2.get(j);
                   IExpr min2 = list2.arg1();
                   IExpr max2 = list2.arg2();
-                  if (S.LessEqual.ofQ(engine, min1, min2)
-                      && //
+                  if (S.LessEqual.ofQ(engine, min1, min2) && //
                       S.GreaterEqual.ofQ(engine, max1, max2)) {
                     copyInterval2.remove(j);
                     if (copyInterval2.size() <= 1) {
@@ -179,8 +183,7 @@ public class IntervalFunctions {
             IAST list1 = (IAST) interval1.get(i);
             IExpr min1 = list1.arg1();
             IExpr max1 = list1.arg2();
-            if (S.LessEqual.ofQ(engine, min1, arg2)
-                && //
+            if (S.LessEqual.ofQ(engine, min1, arg2) && //
                 S.GreaterEqual.ofQ(engine, max1, arg2)) {
               return S.True;
             }
@@ -211,17 +214,19 @@ public class IntervalFunctions {
    *
    * <blockquote>
    *
-   * <p>compute the intersection of the intervals <code>interval_1, interval_2, ...</code>
+   * <p>
+   * compute the intersection of the intervals <code>interval_1, interval_2, ...</code>
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Interval_arithmetic">Wikipedia - Interval
-   *       arithmetic</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Interval_(mathematics)">Wikipedia - Interval
-   *       (mathematics)</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Interval_arithmetic">Wikipedia - Interval
+   * arithmetic</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Interval_(mathematics)">Wikipedia - Interval
+   * (mathematics)</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -234,7 +239,8 @@ public class IntervalFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Interval.md">Interval</a>, <a href="IntervalUnion.md">IntervalUnion</a>
+   * <p>
+   * <a href="Interval.md">Interval</a>, <a href="IntervalUnion.md">IntervalUnion</a>
    */
   private static final class IntervalIntersection extends AbstractEvaluator {
 
@@ -313,17 +319,19 @@ public class IntervalFunctions {
    *
    * <blockquote>
    *
-   * <p>compute the union of the intervals <code>interval_1, interval_2, ...</code>
+   * <p>
+   * compute the union of the intervals <code>interval_1, interval_2, ...</code>
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Interval_arithmetic">Wikipedia - Interval
-   *       arithmetic</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Interval_(mathematics)">Wikipedia - Interval
-   *       (mathematics)</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Interval_arithmetic">Wikipedia - Interval
+   * arithmetic</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Interval_(mathematics)">Wikipedia - Interval
+   * (mathematics)</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -336,8 +344,8 @@ public class IntervalFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Interval.md">Interval</a>, <a
-   * href="IntervalIntersection.md">IntervalIntersection</a>
+   * <p>
+   * <a href="Interval.md">Interval</a>, <a href="IntervalIntersection.md">IntervalIntersection</a>
    */
   private static final class IntervalUnion extends AbstractEvaluator {
 

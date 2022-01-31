@@ -185,6 +185,7 @@ public class TeXFormFactory {
     public Conjugate() {
       super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "^*");
     }
+
     /** {@inheritDoc} */
     @Override
     public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
@@ -299,8 +300,8 @@ public class TeXFormFactory {
       return false;
     }
 
-    public boolean iteratorStep(
-        final StringBuilder buf, final String mathSymbol, final IAST f, int i) {
+    public boolean iteratorStep(final StringBuilder buf, final String mathSymbol, final IAST f,
+        int i) {
       if (i >= f.size()) {
         buf.append(" ");
         fFactory.convertInternal(buf, f.arg1(), 0);
@@ -868,10 +869,8 @@ public class TeXFormFactory {
       IExpr arg1 = f.arg1();
       IExpr arg2 = f.arg2();
       if (arg2.isBuiltInSymbol()) {
-        if (((IBuiltInSymbol) arg2)
-            .isSymbolID(
-                ID.Black, ID.Brown, ID.Blue, ID.Cyan, ID.Green, ID.Pink, ID.Red, ID.Yellow,
-                ID.White)) {
+        if (((IBuiltInSymbol) arg2).isSymbolID(ID.Black, ID.Brown, ID.Blue, ID.Cyan, ID.Green,
+            ID.Pink, ID.Red, ID.Yellow, ID.White)) {
           buf.append("\\textcolor{");
           buf.append(arg2.toString().toLowerCase());
           buf.append("}{");
@@ -963,8 +962,8 @@ public class TeXFormFactory {
      * @param i
      * @return <code>true</code> if the expression could be transformed to LaTeX
      */
-    public boolean iteratorStep(
-        final StringBuilder buf, final String mathSymbol, final IAST f, int i) {
+    public boolean iteratorStep(final StringBuilder buf, final String mathSymbol, final IAST f,
+        int i) {
       if (i >= f.size()) {
         buf.append(" ");
         fFactory.convertSubExpr(buf, f.arg1(), 0);
@@ -1087,8 +1086,8 @@ public class TeXFormFactory {
      * @precedence
      * @caller
      */
-    public boolean convertTimesFraction(
-        final StringBuilder buf, final IAST f, final int precedence, final int caller) {
+    public boolean convertTimesFraction(final StringBuilder buf, final IAST f, final int precedence,
+        final int caller) {
       IExpr[] parts = Algebra.fractionalPartsTimesPower(f, false, true, false, false, false, false);
       if (parts == null) {
         convertTimesOperator(buf, f, precedence, caller);
@@ -1128,8 +1127,8 @@ public class TeXFormFactory {
       return true;
     }
 
-    private boolean convertTimesOperator(
-        final StringBuilder buf, final IAST timesAST, final int precedence, final int caller) {
+    private boolean convertTimesOperator(final StringBuilder buf, final IAST timesAST,
+        final int precedence, final int caller) {
       int size = timesAST.size();
       IExpr arg1 = F.NIL;
       String timesOperator = "\\,";
@@ -1313,8 +1312,8 @@ public class TeXFormFactory {
     init();
   }
 
-  public void convertApcomplex(
-      final StringBuilder buf, final Apcomplex dc, final int precedence, boolean caller) {
+  public void convertApcomplex(final StringBuilder buf, final Apcomplex dc, final int precedence,
+      boolean caller) {
     if (Precedence.PLUS < precedence) {
       if (caller == PLUS_CALL) {
         buf.append(" + ");
@@ -1334,8 +1333,8 @@ public class TeXFormFactory {
         if (!imaginaryZero) {
           buf.append(" + ");
           final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-          convertDoubleString(
-              buf, convertApfloatToFormattedString(imaginaryPart), Precedence.TIMES, isNegative);
+          convertDoubleString(buf, convertApfloatToFormattedString(imaginaryPart), Precedence.TIMES,
+              isNegative);
           buf.append("\\,"); // InvisibleTimes
           buf.append("i ");
         }
@@ -1346,8 +1345,8 @@ public class TeXFormFactory {
         }
 
         final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
-        convertDoubleString(
-            buf, convertApfloatToFormattedString(imaginaryPart), Precedence.TIMES, isNegative);
+        convertDoubleString(buf, convertApfloatToFormattedString(imaginaryPart), Precedence.TIMES,
+            isNegative);
         buf.append("\\,"); // InvisibleTimes
         buf.append("i ");
       }
@@ -1462,8 +1461,7 @@ public class TeXFormFactory {
       if (derivStruct != null) {
         IAST a1Head = derivStruct[0];
         IAST headAST = derivStruct[1];
-        if (a1Head.isAST1()
-            && headAST.isAST1()
+        if (a1Head.isAST1() && headAST.isAST1()
             && (headAST.arg1().isSymbol() || headAST.arg1().isAST())) {
           try {
             IExpr symbolOrAST = headAST.arg1();
@@ -1519,15 +1517,15 @@ public class TeXFormFactory {
                 IExpr min = subList.arg1();
                 IExpr max = subList.arg2();
                 if (min instanceof INum) {
-                  convertDoubleString(
-                      buf, convertDoubleToFormattedString(min.evalDouble()), 0, false);
+                  convertDoubleString(buf, convertDoubleToFormattedString(min.evalDouble()), 0,
+                      false);
                 } else {
                   convertInternal(buf, min, 0);
                 }
                 buf.append(",");
                 if (max instanceof INum) {
-                  convertDoubleString(
-                      buf, convertDoubleToFormattedString(max.evalDouble()), 0, false);
+                  convertDoubleString(buf, convertDoubleToFormattedString(max.evalDouble()), 0,
+                      false);
                 } else {
                   convertInternal(buf, max, 0);
                 }
@@ -1592,10 +1590,8 @@ public class TeXFormFactory {
 
   public void convertFunctionArgs(final StringBuilder buf, final IAST list) {
     buf.append("(");
-    list.joinToString(
-        buf, //
-        (b, x) -> convertInternal(b, x, Integer.MIN_VALUE),
-        ",");
+    list.joinToString(buf, //
+        (b, x) -> convertInternal(b, x, Integer.MIN_VALUE), ",");
     buf.append(")");
   }
 
@@ -1609,8 +1605,8 @@ public class TeXFormFactory {
    * @param precedence
    * @return
    */
-  public boolean convertAssociation(
-      final StringBuilder buf, final IAssociation assoc, final int precedence) {
+  public boolean convertAssociation(final StringBuilder buf, final IAssociation assoc,
+      final int precedence) {
     IAST ast = assoc.normal(false);
     buf.append("\\langle|");
     if (ast.size() > 1) {
@@ -1625,8 +1621,8 @@ public class TeXFormFactory {
     return true;
   }
 
-  private boolean convertInequality(
-      final StringBuilder buf, final IAST inequality, final int precedence) {
+  private boolean convertInequality(final StringBuilder buf, final IAST inequality,
+      final int precedence) {
     StringBuilder tempBuffer = new StringBuilder();
 
     if (Precedence.EQUAL < precedence) {
@@ -1740,19 +1736,16 @@ public class TeXFormFactory {
     }
     final boolean isNegative = d.isNegative();
     if (d instanceof Num) {
-      convertDoubleString(
-          buf, convertDoubleToFormattedString(d.getRealPart()), precedence, isNegative);
-    } else {
-      convertDoubleString(
-          buf,
-          convertApfloatToFormattedString(((ApfloatNum) d).apfloatValue()),
-          precedence,
+      convertDoubleString(buf, convertDoubleToFormattedString(d.getRealPart()), precedence,
           isNegative);
+    } else {
+      convertDoubleString(buf, convertApfloatToFormattedString(((ApfloatNum) d).apfloatValue()),
+          precedence, isNegative);
     }
   }
 
-  public void convertDoubleComplex(
-      final StringBuilder buf, final IComplexNum dc, final int precedence) {
+  public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc,
+      final int precedence) {
     double re = dc.getRealPart();
     double im = dc.getImaginaryPart();
     if (F.isZero(re)) {
@@ -1791,8 +1784,8 @@ public class TeXFormFactory {
     }
   }
 
-  private void convertDoubleString(
-      final StringBuilder buf, final String d, final int precedence, final boolean isNegative) {
+  private void convertDoubleString(final StringBuilder buf, final String d, final int precedence,
+      final boolean isNegative) {
     if (isNegative && (Precedence.PLUS < precedence)) {
       buf.append("\\left( ");
     }
@@ -1945,8 +1938,8 @@ public class TeXFormFactory {
     }
   }
 
-  private void convertConstantSymbol(
-      final StringBuilder buf, final ISymbol sym, final Object convertedSymbol) {
+  private void convertConstantSymbol(final StringBuilder buf, final ISymbol sym,
+      final Object convertedSymbol) {
     if (convertedSymbol.equals(AST2Expr.TRUE_STRING)) {
       buf.append('\\');
       buf.append(sym.getSymbolName());
@@ -1968,10 +1961,8 @@ public class TeXFormFactory {
     operTab.put(S.Ceiling, new UnaryFunction(" \\left \\lceil ", " \\right \\rceil "));
     operTab.put(S.Conjugate, new Conjugate());
     operTab.put(S.Complex, new Complex());
-    operTab.put(
-        S.CompoundExpression,
-        new AbstractOperator(
-            ASTNodeFactory.MMA_STYLE_FACTORY.get("CompoundExpression").getPrecedence(), ", "));
+    operTab.put(S.CompoundExpression, new AbstractOperator(
+        ASTNodeFactory.MMA_STYLE_FACTORY.get("CompoundExpression").getPrecedence(), ", "));
     operTab.put(S.D, new D());
     operTab.put(S.Defer, new HoldForm());
     operTab.put(S.DirectedInfinity, new DirectedInfinity());
@@ -1983,8 +1974,8 @@ public class TeXFormFactory {
     operTab.put(S.Integrate, new Integrate());
     operTab.put(S.Limit, new Limit());
     operTab.put(S.List, new List());
-    //    operTab.put(S.$RealMatrix, new List());
-    //    operTab.put(S.$RealVector, new List());
+    // operTab.put(S.$RealMatrix, new List());
+    // operTab.put(S.$RealVector, new List());
     operTab.put(S.MatrixForm, new MatrixForm());
     operTab.put(S.TableForm, new TableForm());
     operTab.put(S.Parenthesis, new Parenthesis());
@@ -2008,20 +1999,19 @@ public class TeXFormFactory {
     operTab.put(S.Unset, new PostOperator(this, Precedence.UNSET, "\\text{=.}"));
     operTab.put(S.UpSetDelayed, new AbstractOperator(this, Precedence.UPSETDELAYED, "\\text{^:=}"));
     operTab.put(S.UpSet, new AbstractOperator(this, Precedence.UPSET, "\\text{^=}"));
-    operTab.put(
-        S.NonCommutativeMultiply,
+    operTab.put(S.NonCommutativeMultiply,
         new AbstractOperator(this, Precedence.NONCOMMUTATIVEMULTIPLY, "\\text{**}"));
     operTab.put(S.PreDecrement, new PreOperator(this, Precedence.PREDECREMENT, "\\text{--}"));
-    operTab.put(
-        S.ReplaceRepeated, new AbstractOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}"));
+    operTab.put(S.ReplaceRepeated,
+        new AbstractOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}"));
     operTab.put(S.MapAll, new AbstractOperator(this, Precedence.MAPALL, "\\text{//@}"));
     operTab.put(S.AddTo, new AbstractOperator(this, Precedence.ADDTO, "\\text{+=}"));
     operTab.put(S.Greater, new AbstractOperator(this, Precedence.GREATER, " > "));
     operTab.put(S.GreaterEqual, new AbstractOperator(this, Precedence.GREATEREQUAL, "\\geq "));
     operTab.put(S.SubtractFrom, new AbstractOperator(this, Precedence.SUBTRACTFROM, "\\text{-=}"));
     operTab.put(S.Subtract, new AbstractOperator(this, Precedence.SUBTRACT, " - "));
-    operTab.put(
-        S.CompoundExpression, new AbstractOperator(this, Precedence.COMPOUNDEXPRESSION, ";"));
+    operTab.put(S.CompoundExpression,
+        new AbstractOperator(this, Precedence.COMPOUNDEXPRESSION, ";"));
     operTab.put(S.DivideBy, new AbstractOperator(this, Precedence.DIVIDEBY, "\\text{/=}"));
     operTab.put(S.StringJoin, new AbstractOperator(this, Precedence.STRINGJOIN, "\\text{<>}"));
     operTab.put(S.UnsameQ, new AbstractOperator(this, Precedence.UNSAMEQ, "\\text{=!=}"));
@@ -2054,18 +2044,16 @@ public class TeXFormFactory {
     operTab.put(S.Factorial2, new PostOperator(this, Precedence.FACTORIAL2, " !! "));
 
     operTab.put(S.ReplaceAll, new AbstractOperator(this, Precedence.REPLACEALL, "\\text{/.}\\,"));
-    operTab.put(
-        S.ReplaceRepeated,
+    operTab.put(S.ReplaceRepeated,
         new AbstractOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}\\,"));
     operTab.put(S.Rule, new AbstractOperator(this, Precedence.RULE, "\\to "));
     operTab.put(S.RuleDelayed, new AbstractOperator(this, Precedence.RULEDELAYED, ":\\to "));
     operTab.put(S.Set, new AbstractOperator(this, Precedence.SET, " = "));
     operTab.put(S.SetDelayed, new AbstractOperator(this, Precedence.SETDELAYED, "\\text{:=}\\,"));
-    operTab.put(
-        S.UndirectedEdge,
+    operTab.put(S.UndirectedEdge,
         new AbstractOperator(this, Precedence.UNDIRECTEDEDGE, "\\leftrightarrow "));
-    operTab.put(
-        S.TwoWayRule, new AbstractOperator(this, Precedence.TWOWAYRULE, "\\leftrightarrow "));
+    operTab.put(S.TwoWayRule,
+        new AbstractOperator(this, Precedence.TWOWAYRULE, "\\leftrightarrow "));
     operTab.put(S.CenterDot, new AbstractOperator(this, Precedence.CENTERDOT, "\\cdot "));
     operTab.put(S.CircleDot, new AbstractOperator(this, Precedence.CIRCLEDOT, "\\odot "));
 

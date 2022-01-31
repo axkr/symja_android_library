@@ -24,8 +24,8 @@ public interface IPatternObject extends IExpr {
    * @param pm2
    * @return
    */
-  public boolean equivalent(
-      final IPatternObject patternExpr, final IPatternMap pm1, IPatternMap pm2);
+  public boolean equivalent(final IPatternObject patternExpr, final IPatternMap pm1,
+      IPatternMap pm2);
 
   /**
    * Get the associated condition if available

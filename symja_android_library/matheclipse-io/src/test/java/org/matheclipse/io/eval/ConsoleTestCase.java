@@ -34,8 +34,7 @@ public class ConsoleTestCase extends TestCase {
 
     Console.runConsole(args, stdout, stderr);
 
-    assertEquals(
-        outWriter.toString(), //
+    assertEquals(outWriter.toString(), //
         result);
     stdout.close();
     stderr.close();

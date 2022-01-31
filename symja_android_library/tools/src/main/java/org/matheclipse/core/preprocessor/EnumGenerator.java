@@ -8,42 +8,22 @@ import org.matheclipse.core.convert.AST2Expr;
 /** @deprecated not needed anymore */
 public class EnumGenerator {
 
-  static final String HEADER =
-      "package org.matheclipse.core.expression;\n"
-          + "\n"
-          + "import org.matheclipse.core.interfaces.IBuiltInSymbol;\n"
-          + "\n"
-          + "public enum BuiltIns {";
+  static final String HEADER = "package org.matheclipse.core.expression;\n" + "\n"
+      + "import org.matheclipse.core.interfaces.IBuiltInSymbol;\n" + "\n"
+      + "public enum BuiltIns {";
 
-  static final String FOOTER =
-      "\n"
-          + "	private final String name;\n"
-          + "	private final int symbolID;\n"
-          + "	private final static IBuiltInSymbol[] builtInSymbols = new IBuiltInSymbol[values().length];\n"
-          + "\n"
-          + "	public static IBuiltInSymbol valueOf(BuiltIns sEnum) {\n"
-          + "		IBuiltInSymbol symbol = F.initFinalSymbol(sEnum);\n"
-          + "		builtInSymbols[sEnum.symbolID] = symbol;\n"
-          + "		return symbol;\n"
-          + "	}\n"
-          + "\n"
-          + "	BuiltIns(String name, int symbolID) {\n"
-          + "		this.name = name;\n"
-          + "		this.symbolID = symbolID;\n"
-          + "	}\n"
-          + "\n"
-          + "	public static IBuiltInSymbol symbol(int id) {\n"
-          + "		return builtInSymbols[id];\n"
-          + "	}\n"
-          + "\n"
-          + "	public final int id() {\n"
-          + "		return symbolID;\n"
-          + "	}\n"
-          + "\n"
-          + "	public final String str() {\n"
-          + "		return name;\n"
-          + "	}\n"
-          + "}";
+  static final String FOOTER = "\n" + "	private final String name;\n"
+      + "	private final int symbolID;\n"
+      + "	private final static IBuiltInSymbol[] builtInSymbols = new IBuiltInSymbol[values().length];\n"
+      + "\n" + "	public static IBuiltInSymbol valueOf(BuiltIns sEnum) {\n"
+      + "		IBuiltInSymbol symbol = F.initFinalSymbol(sEnum);\n"
+      + "		builtInSymbols[sEnum.symbolID] = symbol;\n" + "		return symbol;\n" + "	}\n"
+      + "\n" + "	BuiltIns(String name, int symbolID) {\n" + "		this.name = name;\n"
+      + "		this.symbolID = symbolID;\n" + "	}\n" + "\n"
+      + "	public static IBuiltInSymbol symbol(int id) {\n"
+      + "		return builtInSymbols[id];\n" + "	}\n" + "\n" + "	public final int id() {\n"
+      + "		return symbolID;\n" + "	}\n" + "\n" + "	public final String str() {\n"
+      + "		return name;\n" + "	}\n" + "}";
 
   /** @deprecated not needed anymore */
   public static void main(String[] args) {

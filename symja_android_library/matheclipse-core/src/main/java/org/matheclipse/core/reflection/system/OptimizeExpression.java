@@ -25,7 +25,8 @@ import org.matheclipse.core.visit.VisitorExpr;
  *
  * <blockquote>
  *
- * <p>common subexpressions elimination for a complicated <code>function</code> by generating
+ * <p>
+ * common subexpressions elimination for a complicated <code>function</code> by generating
  * &ldquo;dummy&rdquo; variables for these subexpressions.
  *
  * </blockquote>
@@ -38,7 +39,8 @@ import org.matheclipse.core.visit.VisitorExpr;
  * {1/6*(3+3*v1+v2+a*(4+v2)),{v1-&gt;a^2,v2-&gt;Sqrt(5+6*a+5*v1)}}
  * </pre>
  *
- * <p>Create the original expression:
+ * <p>
+ * Create the original expression:
  *
  * <pre>
  * &gt;&gt; ReplaceRepeated(1/6*(3+3*v1+v2+a*(4+v2)), {v1-&gt;a^2, v2-&gt;Sqrt(5+6*a+5*v1)})

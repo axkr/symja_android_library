@@ -153,10 +153,10 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      //      IAssumptions assumptions = engine.getAssumptions();
-      //      if (assumptions == null) {
-      //        return F.True;
-      //      }
+      // IAssumptions assumptions = engine.getAssumptions();
+      // if (assumptions == null) {
+      // return F.True;
+      // }
       IExpr assume = S.$Assumptions.assignedValue();
       if (assume != null) {
         return assume;
@@ -233,11 +233,8 @@ public class ConstantDefinitions {
           historyLength = Short.MAX_VALUE;
         } else {
           // Positive machine-sized integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(
-              S.$HistoryLength,
-              "intpm",
-              F.List(F.C2, F.Set(S.$HistoryLength, rightHandSide)),
-              engine);
+          return IOFunctions.printMessage(S.$HistoryLength, "intpm",
+              F.List(F.C2, F.Set(S.$HistoryLength, rightHandSide)), engine);
         }
       } else if (iValue < Short.MAX_VALUE) {
         historyLength = (short) iValue;
@@ -402,10 +399,8 @@ public class ConstantDefinitions {
       if (operatingSystem.contains("win")) {
         return F.stringx("Windows");
       }
-      if (operatingSystem.contains("six")
-          || operatingSystem.contains("nix")
-          || operatingSystem.contains("nux")
-          || operatingSystem.contains("aix")) {
+      if (operatingSystem.contains("six") || operatingSystem.contains("nix")
+          || operatingSystem.contains("nux") || operatingSystem.contains("aix")) {
         return F.stringx("Unix");
       }
       return F.stringx("Unknown");
@@ -481,12 +476,8 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      Path root =
-          Paths.get(System.getProperty("user.dir"))
-              .getFileSystem()
-              .getRootDirectories()
-              .iterator()
-              .next();
+      Path root = Paths.get(System.getProperty("user.dir")).getFileSystem().getRootDirectories()
+          .iterator().next();
       if (root == null) {
         return F.stringx("/");
       }
@@ -586,8 +577,8 @@ public class ConstantDefinitions {
     @Override
     public void setUp(ISymbol newSymbol) {
       super.setUp(newSymbol);
-      S.RecordSeparators.assignValue(
-          F.List(F.stringx("\n"), F.stringx("\r\n"), F.stringx("\r")), false);
+      S.RecordSeparators.assignValue(F.List(F.stringx("\n"), F.stringx("\r\n"), F.stringx("\r")),
+          false);
     }
   }
 
@@ -621,15 +612,17 @@ public class ConstantDefinitions {
    *
    * <blockquote>
    *
-   * <p>Catalan's constant
+   * <p>
+   * Catalan's constant
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Catalan%27s_constant">Wikipedia - Catalan's
-   *       constant</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Catalan%27s_constant">Wikipedia - Catalan's
+   * constant</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -658,8 +651,8 @@ public class ConstantDefinitions {
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // `1` currently not supported in `2`.
-      return IOFunctions.printMessage(
-          S.Catalan, "unsupported", F.List(S.Catalan, F.$str("Apfloat")), engine);
+      return IOFunctions.printMessage(S.Catalan, "unsupported",
+          F.List(S.Catalan, F.$str("Apfloat")), engine);
     }
 
     @Override
@@ -677,7 +670,8 @@ public class ConstantDefinitions {
    *
    * <blockquote>
    *
-   * <p>represents an infinite complex quantity of undetermined direction.
+   * <p>
+   * represents an infinite complex quantity of undetermined direction.
    *
    * </blockquote>
    *
@@ -719,14 +713,16 @@ public class ConstantDefinitions {
    *
    * <blockquote>
    *
-   * <p>the constant <code>Degree</code> converts angles from degree to <code>Pi/180</code> radians.
+   * <p>
+   * the constant <code>Degree</code> converts angles from degree to <code>Pi/180</code> radians.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Degree_(angle)">Wikipedia - Degree (angle)</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Degree_(angle)">Wikipedia - Degree (angle)</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -736,7 +732,8 @@ public class ConstantDefinitions {
    * 1/2
    * </pre>
    *
-   * <p>Degree has the value of Pi / 180
+   * <p>
+   * Degree has the value of Pi / 180
    *
    * <pre>
    * &gt;&gt; Degree == Pi / 180
@@ -786,11 +783,13 @@ public class ConstantDefinitions {
    *
    * <blockquote>
    *
-   * <p>Euler's constant E
+   * <p>
+   * Euler's constant E
    *
    * </blockquote>
    *
-   * <p><strong>Note</strong>: the upper case identifier <code>E</code> is different from the lower
+   * <p>
+   * <strong>Note</strong>: the upper case identifier <code>E</code> is different from the lower
    * case identifier <code>e</code>.
    *
    * <h3>Examples</h3>
@@ -829,7 +828,8 @@ public class ConstantDefinitions {
   /**
    * Euler gamma constant
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Euler–Mascheroni_constant">Euler– Mascheroni
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Euler–Mascheroni_constant">Euler– Mascheroni
    * constant</a>
    */
   private static class EulerGamma extends AbstractSymbolEvaluator implements ISignedNumberConstant {
@@ -860,18 +860,21 @@ public class ConstantDefinitions {
    *
    * <blockquote>
    *
-   * <p>Glaisher constant.
+   * <p>
+   * Glaisher constant.
    *
    * </blockquote>
    *
-   * <p>The <code>Glaisher</code> constant is named after mathematicians James Whitbread Lee
-   * Glaisher and Hermann Kinkelin. Its approximate value is: <code>1.2824271291...</code>
+   * <p>
+   * The <code>Glaisher</code> constant is named after mathematicians James Whitbread Lee Glaisher
+   * and Hermann Kinkelin. Its approximate value is: <code>1.2824271291...</code>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Glaisher-Kinkelin_constant">Wikipedia -
-   *       Glaisher-Kinkelin constant</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Glaisher-Kinkelin_constant">Wikipedia -
+   * Glaisher-Kinkelin constant</a>
    * </ul>
    */
   private static class Glaisher extends AbstractSymbolEvaluator implements ISignedNumberConstant {
@@ -889,8 +892,8 @@ public class ConstantDefinitions {
 
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // `1` currently not supported in `2`.
-      return IOFunctions.printMessage(
-          S.Glaisher, "unsupported", F.List(S.Glaisher, F.$str("Apfloat")), engine);
+      return IOFunctions.printMessage(S.Glaisher, "unsupported",
+          F.List(S.Glaisher, F.$str("Apfloat")), engine);
     }
 
     @Override
@@ -942,14 +945,16 @@ public class ConstantDefinitions {
    *
    * <blockquote>
    *
-   * <p>is the golden ratio.
+   * <p>
+   * is the golden ratio.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Golden_ratio">Wikipedia: Golden ratio</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Golden_ratio">Wikipedia: Golden ratio</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1002,13 +1007,15 @@ public class ConstantDefinitions {
    *
    * <blockquote>
    *
-   * <p>Imaginary unit - internally converted to the complex number <code>0+1*i</code>. <code>I
+   * <p>
+   * Imaginary unit - internally converted to the complex number <code>0+1*i</code>. <code>I
    * </code> represents the imaginary number <code>Sqrt(-1)</code>. <code>I^2</code> will be
    * evaluated to <code>-1</code>.
    *
    * </blockquote>
    *
-   * <p><strong>Note</strong>: the upper case identifier <code>I</code> is different from the lower
+   * <p>
+   * <strong>Note</strong>: the upper case identifier <code>I</code> is different from the lower
    * case identifier <code>i</code>.
    *
    * <h3>Examples</h3>
@@ -1048,7 +1055,8 @@ public class ConstantDefinitions {
    *
    * <blockquote>
    *
-   * <p>represents an infinite real quantity.
+   * <p>
+   * represents an infinite real quantity.
    *
    * </blockquote>
    *
@@ -1062,7 +1070,8 @@ public class ConstantDefinitions {
    * Infinity
    * </pre>
    *
-   * <p>Use <code>Infinity</code> in sum and limit calculations:
+   * <p>
+   * Use <code>Infinity</code> in sum and limit calculations:
    *
    * <pre>
    * &gt;&gt; Sum(1/x^2, {x, 1, Infinity})
@@ -1078,7 +1087,8 @@ public class ConstantDefinitions {
    * Infinity
    * </pre>
    *
-   * <p>Indeterminate expression <code>0</code> Infinity encountered.
+   * <p>
+   * Indeterminate expression <code>0</code> Infinity encountered.
    *
    * <pre>
    * &gt;&gt; Infinity / Infinity
@@ -1116,8 +1126,8 @@ public class ConstantDefinitions {
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       LocalDateTime now = LocalDateTime.now();
-      return DateObjectExpr.newInstance(
-          LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0));
+      return DateObjectExpr
+          .newInstance(LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0));
     }
 
     @Override
@@ -1135,15 +1145,17 @@ public class ConstantDefinitions {
    *
    * <blockquote>
    *
-   * <p>Khinchin's constant
+   * <p>
+   * Khinchin's constant
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Khinchin%27s_constant">Wikipedia:Khinchin's
-   *       constant</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Khinchin%27s_constant">Wikipedia:Khinchin's
+   * constant</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1173,8 +1185,8 @@ public class ConstantDefinitions {
 
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // `1` currently not supported in `2`.
-      return IOFunctions.printMessage(
-          S.Khinchin, "unsupported", F.List(S.Khinchin, F.$str("Apfloat")), engine);
+      return IOFunctions.printMessage(S.Khinchin, "unsupported",
+          F.List(S.Khinchin, F.$str("Apfloat")), engine);
     }
   }
 
@@ -1187,7 +1199,8 @@ public class ConstantDefinitions {
    *
    * <blockquote>
    *
-   * <p>is the constant <code>Pi</code>.
+   * <p>
+   * is the constant <code>Pi</code>.
    *
    * </blockquote>
    *

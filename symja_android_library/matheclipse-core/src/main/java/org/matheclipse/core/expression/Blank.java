@@ -158,8 +158,8 @@ public class Blank implements IPattern {
    * @return
    */
   @Override
-  public boolean equivalent(
-      final IPatternObject patternObject, final IPatternMap pm1, IPatternMap pm2) {
+  public boolean equivalent(final IPatternObject patternObject, final IPatternMap pm1,
+      IPatternMap pm2) {
     if (this == patternObject) {
       return true;
     }
@@ -338,8 +338,8 @@ public class Blank implements IPattern {
 
   /** {@inheritDoc} */
   @Override
-  public IExpr variables2Slots(
-      final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
+  public IExpr variables2Slots(final Map<IExpr, IExpr> map,
+      final Collection<IExpr> variableCollector) {
     return F.NIL;
   }
 

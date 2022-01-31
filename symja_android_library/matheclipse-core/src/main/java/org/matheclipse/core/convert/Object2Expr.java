@@ -56,9 +56,9 @@ public class Object2Expr {
    * </pre>
    *
    * @param parseString if <code>true</code> and <code>obj instanceof String</code> parse the string
-   *     as a Symja expression
+   *        as a Symja expression
    * @param javaObject if <code>true</code> return a wrapper instanceof {@link JavaObjectExpr} if no
-   *     other conversion was found
+   *        other conversion was found
    */
   public static IExpr convert(Object obj, boolean parseString, boolean javaObject) {
     if (obj == null) {
@@ -132,8 +132,8 @@ public class Object2Expr {
   }
 
   /**
-   * If <code>obj instanceof String</code> return a Symja string object. Otherwise call {@link
-   * #convert(Object, boolean, boolean)}.
+   * If <code>obj instanceof String</code> return a Symja string object. Otherwise call
+   * {@link #convert(Object, boolean, boolean)}.
    *
    * @param obj the object which should be converted to a Symja object
    * @return
@@ -195,13 +195,13 @@ public class Object2Expr {
   /**
    * @param lst
    * @param parseString if <code>true</code> and <code>obj instanceof String</code> parse the string
-   *     as a Symja expression
+   *        as a Symja expression
    * @param javaObject if <code>true</code> return a wrapper instanceof {@link JavaObjectExpr} if no
-   *     other conversion was found
+   *        other conversion was found
    * @return
    */
-  public static IExpr convertList(
-      java.util.Collection<?> lst, boolean parseString, boolean javaObject) {
+  public static IExpr convertList(java.util.Collection<?> lst, boolean parseString,
+      boolean javaObject) {
     if (lst.size() == 0) {
       return List();
     } else {

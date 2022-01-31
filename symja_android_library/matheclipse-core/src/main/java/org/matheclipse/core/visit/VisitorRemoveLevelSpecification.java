@@ -14,7 +14,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * A level specification visitor for levels in abstract syntax trees (AST), which removes elements
  * from a (cloned) AST in the <code>visit(IAST clonedAST)</code> method.
  *
- * <p>Example: the nested list <code>{x,{y}}</code> has depth <code>3</code>
+ * <p>
+ * Example: the nested list <code>{x,{y}}</code> has depth <code>3</code>
  */
 public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
   /** StopException will be thrown, if maximum number of Cases results are reached */
@@ -42,16 +43,12 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
    * @param expr the given <i>level specification</i>
    * @param maximumRemoved maximum number of elements, which are allowed to remove
    * @param includeHeads set to <code>true</code>, if the header of an AST expression should be
-   *     included
+   *        included
    * @throws SymjaMathException if the <code>expr</code> is not a <i>level specification</i>
    * @see
    */
-  public VisitorRemoveLevelSpecification(
-      final Function<IExpr, IExpr> function,
-      final IExpr expr,
-      int maximumRemoved,
-      boolean includeHeads,
-      final EvalEngine engine) {
+  public VisitorRemoveLevelSpecification(final Function<IExpr, IExpr> function, final IExpr expr,
+      int maximumRemoved, boolean includeHeads, final EvalEngine engine) {
     super(function, expr, includeHeads, engine);
     this.maximumRemoved = maximumRemoved;
     this.removedCounter = 0;
@@ -66,21 +63,18 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
     this(function, level, true);
   }
 
-  public VisitorRemoveLevelSpecification(
-      final Function<IExpr, IExpr> function, final int level, final boolean includeHeads) {
+  public VisitorRemoveLevelSpecification(final Function<IExpr, IExpr> function, final int level,
+      final boolean includeHeads) {
     this(function, level, level, includeHeads);
   }
 
-  public VisitorRemoveLevelSpecification(
-      final Function<IExpr, IExpr> function, final int fromLevel, final int toLevel) {
+  public VisitorRemoveLevelSpecification(final Function<IExpr, IExpr> function, final int fromLevel,
+      final int toLevel) {
     this(function, fromLevel, toLevel, true);
   }
 
-  public VisitorRemoveLevelSpecification(
-      final Function<IExpr, IExpr> function,
-      final int fromLevel,
-      final int toLevel,
-      final boolean includeHeads) {
+  public VisitorRemoveLevelSpecification(final Function<IExpr, IExpr> function, final int fromLevel,
+      final int toLevel, final boolean includeHeads) {
     this(function, fromLevel, toLevel, Integer.MIN_VALUE, -1, -1, includeHeads);
   }
 
@@ -99,13 +93,8 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
    * @param maximumRemoved maximum number of elements, which are allowed to remove
    * @param includeHeads
    */
-  public VisitorRemoveLevelSpecification(
-      final Function<IExpr, IExpr> function,
-      final int fromLevel,
-      final int toLevel,
-      final int fromDepth,
-      final int toDepth,
-      int maximumRemoved,
+  public VisitorRemoveLevelSpecification(final Function<IExpr, IExpr> function, final int fromLevel,
+      final int toLevel, final int fromDepth, final int toDepth, int maximumRemoved,
       final boolean includeHeads) {
     super(function, fromLevel, toLevel, fromDepth, toDepth, includeHeads);
     this.maximumRemoved = maximumRemoved;

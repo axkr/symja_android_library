@@ -28,8 +28,7 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
   public static class PriorityComparator implements Comparator<IPatternMatcher> {
     @Override
     public int compare(IPatternMatcher o1, IPatternMatcher o2) {
-      return o1.getLHSPriority() < o2.getLHSPriority()
-          ? -1
+      return o1.getLHSPriority() < o2.getLHSPriority() ? -1
           : o1.getLHSPriority() > o2.getLHSPriority() ? 1 : 0;
     }
   }
@@ -102,13 +101,18 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
     IPatternMatcher other = (IPatternMatcher) obj;
     if (fLhsPatternExpr == null) {
-      if (other.fLhsPatternExpr != null) return false;
-    } else if (!fLhsPatternExpr.equals(other.fLhsPatternExpr)) return false;
+      if (other.fLhsPatternExpr != null)
+        return false;
+    } else if (!fLhsPatternExpr.equals(other.fLhsPatternExpr))
+      return false;
     return true;
   }
 
@@ -222,7 +226,7 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
    *
    * @param expr
    * @return <code>true</code> if the <code>expr</code> matches the pattern-matchings left-hand-side
-   *     expression.
+   *         expression.
    */
   @Override
   public abstract boolean test(IExpr expr) throws ThrowException;
@@ -234,7 +238,7 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
    * @param expr
    * @param engine
    * @return <code>true</code> if the <code>expr</code> matches the pattern-matchings left-hand-side
-   *     expression.
+   *         expression.
    */
   public abstract boolean test(IExpr expr, EvalEngine engine) throws ThrowException;
 
@@ -245,7 +249,7 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
    * @param expr
    * @param engine
    * @return <code>true</code> if the <code>expr</code> matches the pattern-matchings left-hand-side
-   *     expression.
+   *         expression.
    */
   public boolean testBlank(IExpr expr, EvalEngine engine) {
     return test(expr, engine);

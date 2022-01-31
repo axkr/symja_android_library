@@ -13,10 +13,8 @@ public class SymjaClientExample {
     ObjectMapper mapper = new ObjectMapper();
     // JSON URL to Java object
     try {
-      JsonNode node =
-          mapper.readTree(
-              new URL(
-                  "http://localhost:8080/v1/api?i=D(Sin(x)%2Cx)&f=latex&f=plaintext&f=sinput&appid=DEMO"));
+      JsonNode node = mapper.readTree(new URL(
+          "http://localhost:8080/v1/api?i=D(Sin(x)%2Cx)&f=latex&f=plaintext&f=sinput&appid=DEMO"));
       System.out.println(node.toPrettyString());
     } catch (JsonParseException e) {
       e.printStackTrace();

@@ -193,12 +193,14 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>clears all values of the given symbols.
+   * <p>
+   * clears all values of the given symbols.
    *
    * </blockquote>
    *
-   * <p><code>Clear</code> does not remove attributes, options, and default values associated with
-   * the symbols. Use <code>ClearAll</code> to do so.
+   * <p>
+   * <code>Clear</code> does not remove attributes, options, and default values associated with the
+   * symbols. Use <code>ClearAll</code> to do so.
    *
    * <h3>Examples</h3>
    *
@@ -250,7 +252,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>clears all values and attributes associated with the given symbols.
+   * <p>
+   * clears all values and attributes associated with the given symbols.
    *
    * </blockquote>
    */
@@ -292,7 +295,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>return the context of the given symbol.
+   * <p>
+   * return the context of the given symbol.
    *
    * </blockquote>
    *
@@ -303,7 +307,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>return the current context.
+   * <p>
+   * return the current context.
    *
    * </blockquote>
    *
@@ -363,7 +368,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p><code>Default</code> returns the default value associated with the <code>symbol</code> for a
+   * <p>
+   * <code>Default</code> returns the default value associated with the <code>symbol</code> for a
    * pattern default <code>_.</code> expression.
    *
    * </blockquote>
@@ -374,7 +380,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p><code>Default</code> returns the default value associated with the <code>symbol</code> for a
+   * <p>
+   * <code>Default</code> returns the default value associated with the <code>symbol</code> for a
    * pattern default <code>_.</code> expression at position <code>pos</code>.
    *
    * </blockquote>
@@ -416,11 +423,8 @@ public final class PatternMatching {
     }
 
     @Override
-    public IExpr evaluateSet(
-        final IExpr leftHandSide,
-        IExpr rightHandSide,
-        IBuiltInSymbol builtinSymbol,
-        EvalEngine engine) {
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isAST(S.Default) && leftHandSide.size() > 1) {
         if (!leftHandSide.first().isSymbol()) {
           IOFunctions.printMessage(builtinSymbol, "setps", F.List(leftHandSide.first()), engine);
@@ -428,8 +432,8 @@ public final class PatternMatching {
         }
         ISymbol symbol = (ISymbol) leftHandSide.first();
         if (symbol.isProtected()) {
-          IOFunctions.printMessage(
-              S.Default, "write", F.List(symbol, leftHandSide), EvalEngine.get());
+          IOFunctions.printMessage(S.Default, "write", F.List(symbol, leftHandSide),
+              EvalEngine.get());
           throw new FailedException();
         }
         if (leftHandSide.size() == 2 && leftHandSide.first().isSymbol()) {
@@ -461,7 +465,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>prints user-defined values and rules associated with <code>symbol</code>.
+   * <p>
+   * prints user-defined values and rules associated with <code>symbol</code>.
    *
    * </blockquote>
    *
@@ -538,7 +543,7 @@ public final class PatternMatching {
       OutputFormFactory off = OutputFormFactory.get(engine.isRelaxedSyntax());
       off.setIgnoreNewLine(true);
 
-      //    IAST list = definition();
+      // IAST list = definition();
       for (int i = 1; i < list.size(); i++) {
         if (!off.convert(buf, list.get(i))) {
           return "ERROR-IN-OUTPUTFORM";
@@ -562,7 +567,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>prints the down-value rules associated with <code>symbol</code>.
+   * <p>
+   * prints the down-value rules associated with <code>symbol</code>.
    *
    * </blockquote>
    *
@@ -616,7 +622,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>the <code>Evaluate</code> function will be executed even if the function attributes <code>
+   * <p>
+   * the <code>Evaluate</code> function will be executed even if the function attributes <code>
    * HoldFirst, HoldRest, HoldAll</code> are set for the function head.
    *
    * </blockquote>
@@ -645,7 +652,8 @@ public final class PatternMatching {
    * </code>
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * <code>FilterRules(list-of-option-rules, list-of-symbols)
@@ -654,7 +662,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>filter the <code>list-of-option-rules</code> by <code>list-of-rules</code>or <code>
+   * <p>
+   * filter the <code>list-of-option-rules</code> by <code>list-of-rules</code>or <code>
    * list-of-symbols</code>.
    *
    * </blockquote>
@@ -672,7 +681,8 @@ public final class PatternMatching {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Options.md">Options</a>
+   * <p>
+   * <a href="Options.md">Options</a>
    */
   private static final class FilterRules extends AbstractFunctionEvaluator {
 
@@ -724,7 +734,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p><code>Hold</code> doesn't evaluate <code>expr</code>.
+   * <p>
+   * <code>Hold</code> doesn't evaluate <code>expr</code>.
    *
    * </blockquote>
    *
@@ -781,25 +792,29 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p><code>HoldPattern</code> doesn't evaluate <code>expr</code> for pattern-matching.
+   * <p>
+   * <code>HoldPattern</code> doesn't evaluate <code>expr</code> for pattern-matching.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>One might be very surprised that the following line evaluates to <code>True</code>!
+   * <p>
+   * One might be very surprised that the following line evaluates to <code>True</code>!
    *
    * <pre>
    * &gt;&gt; MatchQ(And(x, y, z), Times(p__))
    * True
    * </pre>
    *
-   * <p>When the line above is evaluated <code>Times(p__)</code> evaluates to <code>(p__)</code>
-   * before the kernel checks to see if the pattern matches. <code>MatchQ</code> then determines if
+   * <p>
+   * When the line above is evaluated <code>Times(p__)</code> evaluates to <code>(p__)</code> before
+   * the kernel checks to see if the pattern matches. <code>MatchQ</code> then determines if
    * <code>And(x,y,z)</code> matches the pattern <code>(p__)</code> and it does because <code>
    * And(x,y,z)</code> is itself a sequence of one.
    *
-   * <p>Now the next line also evaluates to <code>True</code> because both <code>( And(p__) )</code>
+   * <p>
+   * Now the next line also evaluates to <code>True</code> because both <code>( And(p__) )</code>
    * and <code>( Times(p__) )</code> evaluate to <code>( p__ )</code>.
    *
    * <pre>
@@ -807,7 +822,8 @@ public final class PatternMatching {
    * True
    * </pre>
    *
-   * <p>In the examples above prevent the patterns from evaluating, by wrapping them with <code>
+   * <p>
+   * In the examples above prevent the patterns from evaluating, by wrapping them with <code>
    * HoldPattern</code> as in the following lines.
    *
    * <pre>
@@ -818,7 +834,8 @@ public final class PatternMatching {
    * False
    * </pre>
    *
-   * <p>In the next lines <code>HoldPattern</code> is used to ensure the head <code>(And)</code> is
+   * <p>
+   * In the next lines <code>HoldPattern</code> is used to ensure the head <code>(And)</code> is
    * changed to <code>(List)</code>.<br>
    * The two examples that follow have the same effect, but the use of <code>HoldPattern</code>
    * isn't needed.
@@ -891,15 +908,16 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>returns <code>expr</code>.
+   * <p>
+   * returns <code>expr</code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Identity_function">Wikipedia - Identity
-   *       function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Identity_function">Wikipedia - Identity function</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -949,11 +967,8 @@ public final class PatternMatching {
               return arg1;
             }
             if (!arg1.isSymbol()) {
-              LOGGER.log(
-                  engine.getLogLevel(),
-                  "{}: symbol expected at position 1 instead of {}",
-                  ast.topHead(),
-                  arg1);
+              LOGGER.log(engine.getLogLevel(), "{}: symbol expected at position 1 instead of {}",
+                  ast.topHead(), arg1);
               return F.NIL;
             }
             symbol = (ISymbol) arg1;
@@ -1005,11 +1020,8 @@ public final class PatternMatching {
       // Here we only validate the arguments
       // The assignment of the message is handled in the Set() function
       if (!ast.arg1().isSymbol()) {
-        LOGGER.log(
-            engine.getLogLevel(),
-            "{}: symbol expected at position 1 instead of {}",
-            ast.topHead(),
-            ast.arg1());
+        LOGGER.log(engine.getLogLevel(), "{}: symbol expected at position 1 instead of {}",
+            ast.topHead(), ast.arg1());
         return F.NIL;
       }
       if (ast.arg2().isString()) {
@@ -1029,11 +1041,8 @@ public final class PatternMatching {
     }
 
     @Override
-    public IExpr evaluateSet(
-        final IExpr leftHandSide,
-        IExpr rightHandSide,
-        IBuiltInSymbol builtinSymbol,
-        EvalEngine engine) {
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isAST(S.MessageName, 3, 4) && leftHandSide.first().isSymbol()) {
         ISymbol symbol = (ISymbol) leftHandSide.first();
         if (!symbol.isProtected()) {
@@ -1081,7 +1090,8 @@ public final class PatternMatching {
    * Optional(patt, default)
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * patt : default
@@ -1089,7 +1099,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>is a pattern which matches <code>patt</code>, which if omitted should be replaced by <code>
+   * <p>
+   * is a pattern which matches <code>patt</code>, which if omitted should be replaced by <code>
    * default</code>.
    *
    * </blockquote>
@@ -1171,11 +1182,8 @@ public final class PatternMatching {
     }
 
     @Override
-    public IExpr evaluateSet(
-        final IExpr leftHandSide,
-        IExpr rightHandSide,
-        IBuiltInSymbol builtinSymbol,
-        EvalEngine engine) {
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isAST(S.Options, 2) && leftHandSide.first().isSymbol()) {
         ISymbol symbol = (ISymbol) leftHandSide.first();
         if (!symbol.isProtected()) {
@@ -1186,8 +1194,8 @@ public final class PatternMatching {
           } catch (final ReturnException e) {
             rightHandSide = e.getValue();
           }
-          symbol.putDownRule(
-              IPatternMatcher.SET, true, leftHandSide, rightHandSide, engine.isPackageMode());
+          symbol.putDownRule(IPatternMatcher.SET, true, leftHandSide, rightHandSide,
+              engine.isPackageMode());
           if (builtinSymbol.equals(S.Set)) {
             return rightHandSide;
           }
@@ -1240,7 +1248,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>prints the own-value rule associated with <code>symbol</code>.
+   * <p>
+   * prints the own-value rule associated with <code>symbol</code>.
    *
    * </blockquote>
    *
@@ -1394,9 +1403,7 @@ public final class PatternMatching {
     private static IExpr releaseHold(IExpr expr) {
       IASTMutable result = F.NIL;
       if (expr.isAST()) {
-        if (expr.isAST(S.Hold, 2)
-            || expr.isAST(S.HoldForm, 2)
-            || expr.isAST(S.HoldComplete, 2)
+        if (expr.isAST(S.Hold, 2) || expr.isAST(S.HoldForm, 2) || expr.isAST(S.HoldComplete, 2)
             || expr.isAST(S.HoldPattern, 2)) {
           return expr.first();
         }
@@ -1443,8 +1450,8 @@ public final class PatternMatching {
       return F.NIL;
     }
 
-    protected static IExpr repeatedLimit(
-        IExpr arg1, IExpr arg2, int defaultMin, EvalEngine engine) {
+    protected static IExpr repeatedLimit(IExpr arg1, IExpr arg2, int defaultMin,
+        EvalEngine engine) {
       if (arg2.isList1()) {
         IExpr first = arg2.first();
         int min;
@@ -1538,7 +1545,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>represents a rule replacing <code>x</code> with <code>y</code>.
+   * <p>
+   * represents a rule replacing <code>x</code> with <code>y</code>.
    *
    * </blockquote>
    *
@@ -1552,7 +1560,8 @@ public final class PatternMatching {
    * {3,9,y}
    * </pre>
    *
-   * <p>Rule called with 3 arguments; 2 arguments are expected.
+   * <p>
+   * Rule called with 3 arguments; 2 arguments are expected.
    *
    * <pre>
    * &gt;&gt; a /. Rule(1, 2, 3) -&gt; t
@@ -1601,7 +1610,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>represents a rule replacing <code>x</code> with <code>y</code>, with <code>y</code> held
+   * <p>
+   * represents a rule replacing <code>x</code> with <code>y</code>, with <code>y</code> held
    * unevaluated.
    *
    * </blockquote>
@@ -1658,7 +1668,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>evaluates <code>value</code> and assigns it to <code>expr</code>.
+   * <p>
+   * evaluates <code>value</code> and assigns it to <code>expr</code>.
    *
    * </blockquote>
    *
@@ -1668,14 +1679,16 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>sets multiple symbols <code>(s1, s2, ...)</code> to the corresponding values <code>
+   * <p>
+   * sets multiple symbols <code>(s1, s2, ...)</code> to the corresponding values <code>
    * (v1, v2, ...)</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p><code>Set</code> can be used to give a symbol a value:<br>
+   * <p>
+   * <code>Set</code> can be used to give a symbol a value:<br>
    *
    * <pre>
    * &gt;&gt; a = 3
@@ -1685,7 +1698,8 @@ public final class PatternMatching {
    * 3
    * </pre>
    *
-   * <p>You can set multiple values at once using lists:<br>
+   * <p>
+   * You can set multiple values at once using lists:<br>
    *
    * <pre>
    * &gt;&gt; {a, b, c} = {10, 2, 3}
@@ -1698,7 +1712,8 @@ public final class PatternMatching {
    * 10
    * </pre>
    *
-   * <p><code>Set</code> evaluates its right-hand side immediately and assigns it to the left-hand
+   * <p>
+   * <code>Set</code> evaluates its right-hand side immediately and assigns it to the left-hand
    * side:<br>
    *
    * <pre>
@@ -1715,7 +1730,8 @@ public final class PatternMatching {
    * 1
    * </pre>
    *
-   * <p>'Set' always returns the right-hand side, which you can again use in an assignment:<br>
+   * <p>
+   * 'Set' always returns the right-hand side, which you can again use in an assignment:<br>
    *
    * <pre>
    * &gt;&gt; a = b = c = 2
@@ -1723,7 +1739,8 @@ public final class PatternMatching {
    * True
    * </pre>
    *
-   * <p>'Set' supports assignments to parts:<br>
+   * <p>
+   * 'Set' supports assignments to parts:<br>
    *
    * <pre>
    * &gt;&gt; A = {{1, 2}, {3, 4}}
@@ -1740,7 +1757,8 @@ public final class PatternMatching {
    * {{1,6},{3,7}}
    * </pre>
    *
-   * <p>Set a submatrix:
+   * <p>
+   * Set a submatrix:
    *
    * <pre>
    * &gt;&gt; B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
@@ -1795,9 +1813,8 @@ public final class PatternMatching {
       return ARGS_2_2;
     }
 
-    private static IExpr createPatternMatcher(
-        IExpr leftHandSide, IExpr rightHandSide, boolean packageMode, final EvalEngine engine)
-        throws RuleCreationError {
+    private static IExpr createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide,
+        boolean packageMode, final EvalEngine engine) throws RuleCreationError {
       int[] flags = new int[] {IPatternMatcher.NOFLAG};
       leftHandSide = evalLHS(leftHandSide, flags, engine);
       return setDownRule(leftHandSide, flags[0], rightHandSide, packageMode);
@@ -1820,13 +1837,15 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>assigns <code>value</code> to <code>expr</code>, without evaluating <code>value</code>.
+   * <p>
+   * assigns <code>value</code> to <code>expr</code>, without evaluating <code>value</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p><code>SetDelayed</code> is like <code>Set</code>, except it has attribute <code>HoldAll
+   * <p>
+   * <code>SetDelayed</code> is like <code>Set</code>, except it has attribute <code>HoldAll
    * </code>, thus it does not evaluate the right-hand side immediately, but evaluates it when
    * needed.<br>
    *
@@ -1842,7 +1861,8 @@ public final class PatternMatching {
    * 1
    * </pre>
    *
-   * <p>Changing the value of <code>a</code> affects <code>x</code>:<br>
+   * <p>
+   * Changing the value of <code>a</code> affects <code>x</code>:<br>
    *
    * <pre>
    * &gt;&gt; a = 2
@@ -1852,7 +1872,8 @@ public final class PatternMatching {
    * 2
    * </pre>
    *
-   * <p><code>Condition</code> (<code>/;</code>) can be used with <code>SetDelayed</code> to make an
+   * <p>
+   * <code>Condition</code> (<code>/;</code>) can be used with <code>SetDelayed</code> to make an
    * assignment that only holds if a condition is satisfied:<br>
    *
    * <pre>
@@ -1882,9 +1903,8 @@ public final class PatternMatching {
             IBuiltInSymbol symbol = (IBuiltInSymbol) head;
             IEvaluator eval = symbol.getEvaluator();
             if (eval instanceof ISetEvaluator) {
-              IExpr temp =
-                  ((ISetEvaluator) eval)
-                      .evaluateSet(leftHandSide, rightHandSide, S.SetDelayed, engine);
+              IExpr temp = ((ISetEvaluator) eval).evaluateSet(leftHandSide, rightHandSide,
+                  S.SetDelayed, engine);
               if (temp.isPresent()) {
                 return temp;
               }
@@ -1913,9 +1933,8 @@ public final class PatternMatching {
       return ARGS_2_2;
     }
 
-    private static void createPatternMatcher(
-        IExpr leftHandSide, IExpr rightHandSide, boolean packageMode, final EvalEngine engine)
-        throws RuleCreationError {
+    private static void createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide,
+        boolean packageMode, final EvalEngine engine) throws RuleCreationError {
       int[] flags = new int[] {IPatternMatcher.NOFLAG};
       leftHandSide = evalLHS(leftHandSide, flags, engine);
       setDelayedDownRule(leftHandSide, flags[0], rightHandSide, packageMode);
@@ -1932,7 +1951,8 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // stub implementation
-      if (ast.isAST1() && ast.arg1().isString()) {}
+      if (ast.isAST1() && ast.arg1().isString()) {
+      }
 
       return S.Null;
     }
@@ -1954,31 +1974,10 @@ public final class PatternMatching {
       if (ast.isAST1() && ast.arg1().isString()) {
         String str = ast.arg1().toString();
         if (str.equals("DifferentiationOptions")) {
-          IAST list =
-              F.List(
-                  S.Hold,
-                  S.HoldComplete,
-                  S.Less,
-                  S.LessEqual,
-                  S.Greater,
-                  S.GreaterEqual,
-                  S.Inequality,
-                  S.Unequal,
-                  S.Nand,
-                  S.Nor,
-                  S.Xor,
-                  S.Not,
-                  S.Element,
-                  S.Exists,
-                  S.ForAll,
-                  S.Implies,
-                  S.Positive,
-                  S.Negative,
-                  S.NonPositive,
-                  S.NonNegative,
-                  S.Replace,
-                  S.ReplaceAll,
-                  S.ReplaceRepeated);
+          IAST list = F.List(S.Hold, S.HoldComplete, S.Less, S.LessEqual, S.Greater, S.GreaterEqual,
+              S.Inequality, S.Unequal, S.Nand, S.Nor, S.Xor, S.Not, S.Element, S.Exists, S.ForAll,
+              S.Implies, S.Positive, S.Negative, S.NonPositive, S.NonNegative, S.Replace,
+              S.ReplaceAll, S.ReplaceRepeated);
           IAST excludedFunctions = F.Rule("ExcludedFunctions", list);
           return F.List(F.Rule("DifferentiationOptions", F.List(excludedFunctions)));
         }
@@ -1995,8 +1994,8 @@ public final class PatternMatching {
     public void setUp(final ISymbol newSymbol) {}
   }
 
-  private static IExpr setDownRule(
-      IExpr leftHandSide, int flags, IExpr rightHandSide, boolean packageMode) {
+  private static IExpr setDownRule(IExpr leftHandSide, int flags, IExpr rightHandSide,
+      boolean packageMode) {
     // final Object[] result = new Object[] { null, rightHandSide };
     if (leftHandSide.isAST()) {
       final ISymbol lhsSymbol = determineRuleTag(leftHandSide);
@@ -2036,8 +2035,8 @@ public final class PatternMatching {
     return leftHandSide.topHead();
   }
 
-  public static IExpr setDownRule(
-      int flags, IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) {
+  public static IExpr setDownRule(int flags, IExpr leftHandSide, IExpr rightHandSide,
+      boolean packageMode) {
     // final Object[] result = new Object[] { null, rightHandSide };
     if (leftHandSide.isAST()) {
       final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
@@ -2052,8 +2051,8 @@ public final class PatternMatching {
     throw new RuleCreationError(leftHandSide);
   }
 
-  private static void setDelayedDownRule(
-      IExpr leftHandSide, int flags, IExpr rightHandSide, boolean packageMode) {
+  private static void setDelayedDownRule(IExpr leftHandSide, int flags, IExpr rightHandSide,
+      boolean packageMode) {
     ISymbol lhsSymbol = null;
     if (leftHandSide instanceof PatternNested) {
       PatternNested pn = (PatternNested) leftHandSide;
@@ -2070,8 +2069,8 @@ public final class PatternMatching {
         IOFunctions.printMessage(S.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
         throw new FailedException();
       }
-      lhsSymbol.putDownRule(
-          flags | IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide, packageMode);
+      lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
+          packageMode);
       return;
     }
     if (leftHandSide.isSymbol()) {
@@ -2087,13 +2086,13 @@ public final class PatternMatching {
     throw new RuleCreationError(leftHandSide);
   }
 
-  public static void setDelayedDownRule(
-      int priority, IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) {
+  public static void setDelayedDownRule(int priority, IExpr leftHandSide, IExpr rightHandSide,
+      boolean packageMode) {
     if (leftHandSide.isAST()) {
       final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
 
-      lhsSymbol.putDownRule(
-          IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide, priority, packageMode);
+      lhsSymbol.putDownRule(IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
+          priority, packageMode);
       return;
     }
     if (leftHandSide.isSymbol()) {
@@ -2120,8 +2119,8 @@ public final class PatternMatching {
         }
         if (symbol.isProtected()) {
           // Tag `1` in `2` is Protected.
-          IOFunctions.printMessage(
-              S.TagSet, "write", F.List(symbol, leftHandSide), EvalEngine.get());
+          IOFunctions.printMessage(S.TagSet, "write", F.List(symbol, leftHandSide),
+              EvalEngine.get());
           throw new FailedException();
         }
 
@@ -2132,9 +2131,8 @@ public final class PatternMatching {
           } catch (final ReturnException e) {
             rightHandSide = e.getValue();
           }
-          IExpr temp =
-              engine.threadASTListArgs(
-                  F.TagSet(symbol, leftHandSide, rightHandSide), S.TagSet, "tdlen");
+          IExpr temp = engine.threadASTListArgs(F.TagSet(symbol, leftHandSide, rightHandSide),
+              S.TagSet, "tdlen");
           if (temp.isPresent()) {
             return engine.evaluate(temp);
           }
@@ -2169,13 +2167,8 @@ public final class PatternMatching {
      * @return
      * @throws RuleCreationError
      */
-    protected static Object[] createPatternMatcher(
-        ISymbol tagSetSymbol,
-        IExpr leftHandSide,
-        IExpr rightHandSide,
-        boolean packageMode,
-        IBuiltInSymbol tagSymbol,
-        EvalEngine engine)
+    protected static Object[] createPatternMatcher(ISymbol tagSetSymbol, IExpr leftHandSide,
+        IExpr rightHandSide, boolean packageMode, IBuiltInSymbol tagSymbol, EvalEngine engine)
         throws RuleCreationError {
       final Object[] result = new Object[2];
 
@@ -2239,8 +2232,8 @@ public final class PatternMatching {
         final IExpr rightHandSide = ast.arg3();
         if (symbol.isProtected()) {
           // Tag `1` in `2` is Protected.
-          IOFunctions.printMessage(
-              ast.topHead(), "write", F.List(symbol, leftHandSide), EvalEngine.get());
+          IOFunctions.printMessage(ast.topHead(), "write", F.List(symbol, leftHandSide),
+              EvalEngine.get());
           throw new FailedException();
         }
         try {
@@ -2275,7 +2268,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>create a unique symbol of the form <code>expr$...</code>.
+   * <p>
+   * create a unique symbol of the form <code>expr$...</code>.
    *
    * </blockquote>
    *
@@ -2286,7 +2280,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>create a unique symbol of the form <code>expr...</code>.
+   * <p>
+   * create a unique symbol of the form <code>expr...</code>.
    *
    * </blockquote>
    *
@@ -2336,7 +2331,8 @@ public final class PatternMatching {
    * Unset(expr)
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * expr =.
@@ -2344,7 +2340,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>removes any definitions belonging to the left-hand-side <code>expr</code>.
+   * <p>
+   * removes any definitions belonging to the left-hand-side <code>expr</code>.
    *
    * </blockquote>
    *
@@ -2360,7 +2357,8 @@ public final class PatternMatching {
    * a
    * </pre>
    *
-   * <p>Unsetting an already unset or never defined variable will not change anything:
+   * <p>
+   * Unsetting an already unset or never defined variable will not change anything:
    *
    * <pre>
    * &gt;&gt; a =.
@@ -2368,7 +2366,8 @@ public final class PatternMatching {
    * &gt;&gt; b =.
    * </pre>
    *
-   * <p><code>Unset</code> can unset particular function values. It will print a message if no
+   * <p>
+   * <code>Unset</code> can unset particular function values. It will print a message if no
    * corresponding rule is found.
    *
    * <pre>
@@ -2433,8 +2432,8 @@ public final class PatternMatching {
       return ARGS_1_1;
     }
 
-    private static void removePatternMatcher(
-        IExpr leftHandSide, boolean packageMode, EvalEngine engine) throws RuleCreationError {
+    private static void removePatternMatcher(IExpr leftHandSide, boolean packageMode,
+        EvalEngine engine) throws RuleCreationError {
 
       if (leftHandSide.isAST()) {
         leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
@@ -2486,9 +2485,8 @@ public final class PatternMatching {
           } catch (final ReturnException e) {
             rightHandSide = e.getValue();
           }
-          IExpr temp =
-              engine.threadASTListArgs(
-                  (IASTMutable) F.UpSet(leftHandSide, rightHandSide), S.UpSet, "tdlen");
+          IExpr temp = engine.threadASTListArgs((IASTMutable) F.UpSet(leftHandSide, rightHandSide),
+              S.UpSet, "tdlen");
           if (temp.isPresent()) {
             return engine.evaluate(temp);
           }
@@ -2506,9 +2504,8 @@ public final class PatternMatching {
       return ARGS_2_2;
     }
 
-    private static Object[] createPatternMatcher(
-        IExpr leftHandSide, IExpr rightHandSide, boolean packageMode, EvalEngine engine)
-        throws RuleCreationError {
+    private static Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide,
+        boolean packageMode, EvalEngine engine) throws RuleCreationError {
       final Object[] result = new Object[2];
 
       int[] flags = new int[] {IPatternMatcher.NOFLAG};
@@ -2575,9 +2572,8 @@ public final class PatternMatching {
       return ARGS_2_2;
     }
 
-    private static Object[] createPatternMatcher(
-        IExpr leftHandSide, IExpr rightHandSide, boolean packageMode, EvalEngine engine)
-        throws RuleCreationError {
+    private static Object[] createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide,
+        boolean packageMode, EvalEngine engine) throws RuleCreationError {
       final Object[] result = new Object[2];
 
       int[] flags = new int[] {IPatternMatcher.NOFLAG};
@@ -2593,9 +2589,8 @@ public final class PatternMatching {
           IExpr headTest = ((IPatternObject) temp).getHeadTest();
           if (headTest != null && headTest.isSymbol()) {
             ISymbol lhsSymbol = (ISymbol) headTest;
-            result[0] =
-                lhsSymbol.putUpRule(
-                    flags[0] | IPatternMatcher.UPSET_DELAYED, false, lhsAST, rightHandSide);
+            result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET_DELAYED, false, lhsAST,
+                rightHandSide);
           }
           continue;
         }
@@ -2605,9 +2600,8 @@ public final class PatternMatching {
         } else {
           lhsSymbol = lhsAST.get(i).topHead();
         }
-        result[0] =
-            lhsSymbol.putUpRule(
-                flags[0] | IPatternMatcher.UPSET_DELAYED, false, lhsAST, rightHandSide);
+        result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET_DELAYED, false, lhsAST,
+            rightHandSide);
       }
       return result;
     }
@@ -2628,7 +2622,8 @@ public final class PatternMatching {
    *
    * <blockquote>
    *
-   * <p>prints the up-value rules associated with <code>symbol</code>.
+   * <p>
+   * prints the up-value rules associated with <code>symbol</code>.
    *
    * </blockquote>
    *
@@ -2670,14 +2665,11 @@ public final class PatternMatching {
   }
 
   private static IExpr evalLHS(IExpr leftHandSide, int[] flags, EvalEngine engine) {
-    if (leftHandSide.isAST()
-        && (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK)
-            == IAST.NO_FLAG) {
+    if (leftHandSide.isAST() && (((IAST) leftHandSide).getEvalFlags()
+        & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
       if (leftHandSide.isHoldPatternOrLiteral()) {
-        flags[0] =
-            leftHandSide.isAST(S.HoldPattern, 2)
-                ? IPatternMatcher.HOLDPATTERN
-                : IPatternMatcher.LITERAL;
+        flags[0] = leftHandSide.isAST(S.HoldPattern, 2) ? IPatternMatcher.HOLDPATTERN
+            : IPatternMatcher.LITERAL;
         return leftHandSide.first();
       }
       return engine.evalHoldPattern((IAST) leftHandSide);
@@ -2766,8 +2758,8 @@ public final class PatternMatching {
         }
         if (!quiet) {
           // Option name `2` not found in defaults for `1`
-          IOFunctions.printMessage(
-              ast.topHead(), "optnf", F.List(optionsPattern, optionValue), engine);
+          IOFunctions.printMessage(ast.topHead(), "optnf", F.List(optionsPattern, optionValue),
+              engine);
         }
         return optionValue;
       }
@@ -2811,8 +2803,8 @@ public final class PatternMatching {
         }
         if (!quiet) {
           // Option name `2` not found in defaults for `1`
-          IOFunctions.printMessage(
-              ast.topHead(), "optnf", F.List(optionsPattern, optionValue), engine);
+          IOFunctions.printMessage(ast.topHead(), "optnf", F.List(optionsPattern, optionValue),
+              engine);
         }
         return optionValue;
       }
@@ -2839,13 +2831,13 @@ public final class PatternMatching {
           }
         }
       }
-      //          return arg1;
+      // return arg1;
     }
     if (optionsPattern != null) {
       if (!quiet) {
         // Option name `2` not found in defaults for `1`
-        IOFunctions.printMessage(
-            ast.topHead(), "optnf", F.List(optionsPattern, optionValue), engine);
+        IOFunctions.printMessage(ast.topHead(), "optnf", F.List(optionsPattern, optionValue),
+            engine);
       }
       return optionValue;
     }

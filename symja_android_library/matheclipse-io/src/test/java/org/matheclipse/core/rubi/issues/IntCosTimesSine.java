@@ -1082,8 +1082,7 @@ public class IntCosTimesSine extends AbstractRubiTestCase {
   }
 
   public void test0269() {
-    check(
-        "Rubi`IntSum[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2, x]",
+    check("Rubi`IntSum[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2, x]",
         "Cos[(a - b)*x]/(2*(a - b)) - Cos[(a + b)*x]/(2*(a + b))");
   }
 
@@ -1092,8 +1091,7 @@ public class IntCosTimesSine extends AbstractRubiTestCase {
   }
 
   public void test0271() {
-    check(
-        "Rubi`IntTerm[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2, x]",
+    check("Rubi`IntTerm[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2, x]",
         "Cos[(a - b)*x]/(2*(a - b)) - Cos[(a + b)*x]/(2*(a + b))");
   }
 
@@ -1562,8 +1560,7 @@ public class IntCosTimesSine extends AbstractRubiTestCase {
   }
 
   public void test0388() {
-    check(
-        "Rubi`NonfreeTerms[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2, x]",
+    check("Rubi`NonfreeTerms[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2, x]",
         "-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2");
   }
 
@@ -1716,8 +1713,7 @@ public class IntCosTimesSine extends AbstractRubiTestCase {
   }
 
   public void test0426() {
-    check(
-        "Rubi`NormalizeSumFactors[Cos[(a - b)*x]/(2*(a - b)) - Cos[(a + b)*x]/(2*(a + b))]",
+    check("Rubi`NormalizeSumFactors[Cos[(a - b)*x]/(2*(a - b)) - Cos[(a + b)*x]/(2*(a + b))]",
         "Cos[(a - b)*x]/(2*(a - b)) - Cos[(a + b)*x]/(2*(a + b))");
   }
 
@@ -2494,8 +2490,7 @@ public class IntCosTimesSine extends AbstractRubiTestCase {
   }
 
   public void test0620() {
-    check(
-        "Rubi`Simp[Cos[(a - b)*x]/(2*(a - b)) - Cos[(a + b)*x]/(2*(a + b)), x]",
+    check("Rubi`Simp[Cos[(a - b)*x]/(2*(a - b)) - Cos[(a + b)*x]/(2*(a + b)), x]",
         "Cos[(a - b)*x]/(2*(a - b)) - Cos[(a + b)*x]/(2*(a + b))");
   }
 
@@ -2580,8 +2575,7 @@ public class IntCosTimesSine extends AbstractRubiTestCase {
   }
 
   public void test0641() {
-    check(
-        "Rubi`SimpHelp[Cos[(a - b)*x]/(2*(a - b)) - Cos[(a + b)*x]/(2*(a + b)), x]",
+    check("Rubi`SimpHelp[Cos[(a - b)*x]/(2*(a - b)) - Cos[(a + b)*x]/(2*(a + b)), x]",
         "Cos[(a - b)*x]/(2*(a - b)) - Cos[(a + b)*x]/(2*(a + b))");
   }
 
@@ -2934,31 +2928,25 @@ public class IntCosTimesSine extends AbstractRubiTestCase {
   }
 
   public void test0800() {
-    check(
-        "Integrate[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2,x]", //
+    check("Integrate[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2,x]", //
         "Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
-    check(
-        "Rubi`ExpandTrigReduce[Cos[a*x]^1*Sin[b*x]^1,x]", //
+    check("Rubi`ExpandTrigReduce[Cos[a*x]^1*Sin[b*x]^1,x]", //
         "-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2");
   }
 
   public void test0801() {
     // 3 times the same test => test if Module() variables are deleted correctly
-    check(
-        "Integrate[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2,x]", //
+    check("Integrate[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2,x]", //
         "Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
-    check(
-        "Integrate[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2,x]", //
+    check("Integrate[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2,x]", //
         "Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
-    check(
-        "Integrate[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2,x]", //
+    check("Integrate[-Sin[(a - b)*x]/2 + Sin[(a + b)*x]/2,x]", //
         "Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
   }
 
   public void test0802() {
     // Integrate(Cos(a*x)*Sin(b*x),x)
-    check(
-        "Integrate[Cos[a*x]* Sin[b*x],x]", //
+    check("Integrate[Cos[a*x]* Sin[b*x],x]", //
         "Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
   }
 }

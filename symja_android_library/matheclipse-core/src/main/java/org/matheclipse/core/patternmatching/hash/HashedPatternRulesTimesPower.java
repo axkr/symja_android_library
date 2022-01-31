@@ -23,10 +23,10 @@ public class HashedPatternRulesTimesPower extends HashedPatternRulesTimes {
    * @param lhsPattern2
    * @param rhsResult
    * @param useOnlyEqualFactors If <code>true</code> use only rules where both factors are equal,
-   *     <b>HACK, to avoid stack overflow in integration rules.</b>
+   *        <b>HACK, to avoid stack overflow in integration rules.</b>
    */
-  public HashedPatternRulesTimesPower(
-      IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult, boolean useOnlyEqualFactors) {
+  public HashedPatternRulesTimesPower(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult,
+      boolean useOnlyEqualFactors) {
     super(lhsPattern1, lhsPattern2, rhsResult, useOnlyEqualFactors);
   }
 

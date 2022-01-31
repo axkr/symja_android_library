@@ -18,7 +18,7 @@ public class Expr2Object {
     int max = 5;
     int k;
 
-    for (OpenIntToDoubleHashMap.Iterator iterator = map.iterator(); iterator.hasNext(); ) {
+    for (OpenIntToDoubleHashMap.Iterator iterator = map.iterator(); iterator.hasNext();) {
       iterator.advance();
       k = iterator.key();
       if (k > max) {
@@ -26,7 +26,7 @@ public class Expr2Object {
       }
     }
     double[] array = new double[max + 1];
-    for (OpenIntToDoubleHashMap.Iterator iterator = map.iterator(); iterator.hasNext(); ) {
+    for (OpenIntToDoubleHashMap.Iterator iterator = map.iterator(); iterator.hasNext();) {
       iterator.advance();
       k = iterator.key();
       // if (k <= 4) {

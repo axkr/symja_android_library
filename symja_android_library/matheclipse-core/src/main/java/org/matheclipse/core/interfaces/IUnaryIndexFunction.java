@@ -4,11 +4,13 @@ package org.matheclipse.core.interfaces;
  * A {@code IUnaryIndexFunction} provides a transformation of an integer and an object and returns
  * the resulting object.
  *
- * <p>The transformation on the source object does not necessarily result in an object of a
- * different type.
+ * <p>
+ * The transformation on the source object does not necessarily result in an object of a different
+ * type.
  *
- * <p>Implementors of BiFunction which may cause side effects upon evaluation are strongly
- * encouraged to state this fact clearly in their API documentation.
+ * <p>
+ * Implementors of BiFunction which may cause side effects upon evaluation are strongly encouraged
+ * to state this fact clearly in their API documentation.
  *
  * @param <F1>
  * @param <T> the type of the resulting object

@@ -67,8 +67,8 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
   }
 
   @Override
-  public void addSinglePartialFraction(
-      GenPolynomial<BigRational> genPolynomial, GenPolynomial<BigRational> Di_1, int j) {
+  public void addSinglePartialFraction(GenPolynomial<BigRational> genPolynomial,
+      GenPolynomial<BigRational> Di_1, int j) {
     if (!genPolynomial.isZERO()) {
       BigRational[] numer = new BigRational[3];
       BigRational[] denom = new BigRational[3];
@@ -93,10 +93,8 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
           } else {
             // compute b^2-4*a*c from
             // (a*x^2+b*x+c)
-            BigRational cmp =
-                denom[1]
-                    .multiply(denom[1])
-                    .subtract(BigRational.valueOf(4L).multiply(denom[2]).multiply(denom[0]));
+            BigRational cmp = denom[1].multiply(denom[1])
+                .subtract(BigRational.valueOf(4L).multiply(denom[2]).multiply(denom[0]));
             int cmpTo = cmp.compareTo(BigRational.ZERO);
             // (2*a*x+b)
             IExpr ax2Plusb = F.Plus(F.Times(F.C2, a, x), b);
@@ -106,12 +104,8 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
             } else if (cmpTo > 0) {
               // (b^2-4ac)^(1/2)
               temp = F.eval(F.Power(F.Subtract(F.Sqr(b), F.Times(F.C4, a, c)), F.C1D2));
-              result.append(
-                  F.Times(
-                      F.Power(temp, F.CN1),
-                      F.Log(
-                          F.Times(
-                              F.Subtract(ax2Plusb, temp), Power(F.Plus(ax2Plusb, temp), F.CN1)))));
+              result.append(F.Times(F.Power(temp, F.CN1), F
+                  .Log(F.Times(F.Subtract(ax2Plusb, temp), Power(F.Plus(ax2Plusb, temp), F.CN1)))));
             } else {
               // (4ac-b^2)^(1/2)
               temp = F.eval(F.Power(F.Subtract(F.Times(F.C4, a, c), F.Sqr(b)), F.CN1D2));
@@ -135,16 +129,12 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
             }
           } else {
             // JavaForm[A/2*Log[x^2+p*x+q]+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan[(2*x+p)/(4*q-p^2)^(1/2)]]
-            temp =
-                Plus(
-                    Times(C1D2, A, Log(Plus(q, Times(p, x), Power(x, C2)))),
-                    Times(
-                        ArcTan(
-                            Times(
-                                Plus(p, Times(C2, x)),
-                                Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2))),
-                        Plus(Times(C2, B), Times(CN1, A, p)),
-                        Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
+            temp = Plus(Times(C1D2, A, Log(Plus(q, Times(p, x), Power(x, C2)))),
+                Times(
+                    ArcTan(Times(Plus(p, Times(C2, x)),
+                        Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2))),
+                    Plus(Times(C2, B), Times(CN1, A, p)),
+                    Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
           }
           result.append(F.eval(temp));
         }
@@ -161,40 +151,25 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
           // JavaForm[B*((2*a*x+b)/((k-1)*(4*a*c-b^2)*(a*x^2+b*x+c)^(k-1))+
           // (4*k*a-6*a)/((k-1)*(4*a*c-b^2))*Integrate[(a*x^2+b*x+c)^(-k+1),x])]
           temp =
-              Times(
-                  B,
+              Times(B,
                   Plus(
                       Times(
-                          Integrate(
-                              Power(
-                                  Plus(c, Times(b, x), Times(a, Power(x, C2))),
-                                  Plus(C1, Times(CN1, k))),
-                              x),
-                          Plus(Times(F.ZZ(-6L), a), Times(C4, a, k)),
-                          Power(Plus(CN1, k), CN1),
+                          Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
+                              Plus(C1, Times(CN1, k))), x),
+                          Plus(Times(F.ZZ(-6L), a), Times(C4, a, k)), Power(Plus(CN1, k), CN1),
                           Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1)),
-                      Times(
-                          Plus(b, Times(C2, a, x)),
-                          Power(Plus(CN1, k), CN1),
+                      Times(Plus(b, Times(C2, a, x)), Power(Plus(CN1, k), CN1),
                           Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1),
-                          Power(
-                              Plus(c, Times(b, x), Times(a, Power(x, C2))),
+                          Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
                               Times(CN1, Plus(CN1, k))))));
         } else {
           // JavaForm[(-A)/(2*a*(k-1)*(a*x^2+b*x+c)^(k-1))+(B-A*b/(2*a))*Integrate[(a*x^2+b*x+c)^(-k),x]]
-          temp =
-              Plus(
-                  Times(
-                      Integrate(
-                          Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, k)), x),
-                      Plus(B, Times(CN1D2, A, Power(a, CN1), b))),
-                  Times(
-                      CN1D2,
-                      A,
-                      Power(a, CN1),
-                      Power(Plus(CN1, k), CN1),
-                      Power(
-                          Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k)))));
+          temp = Plus(
+              Times(
+                  Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, k)), x),
+                  Plus(B, Times(CN1D2, A, Power(a, CN1), b))),
+              Times(CN1D2, A, Power(a, CN1), Power(Plus(CN1, k), CN1),
+                  Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k)))));
         }
         result.append(F.eval(temp));
       } else {
@@ -202,11 +177,8 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
         // ElementaryIntegration<BigRational>(BigRational.ZERO);
         // Integral<BigRational> integral= ei.integrate(genPolynomial,
         // Di_1);
-        temp =
-            F.eval(
-                F.Times(
-                    jas.rationalPoly2Expr(genPolynomial, false),
-                    F.Power(jas.rationalPoly2Expr(Di_1, false), F.ZZ(j * (-1L)))));
+        temp = F.eval(F.Times(jas.rationalPoly2Expr(genPolynomial, false),
+            F.Power(jas.rationalPoly2Expr(Di_1, false), F.ZZ(j * (-1L)))));
         if (!temp.isZero()) {
           if (temp.isAST()) {
             ((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);

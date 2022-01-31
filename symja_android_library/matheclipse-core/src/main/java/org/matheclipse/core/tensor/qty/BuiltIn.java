@@ -5,6 +5,7 @@ import org.matheclipse.core.tensor.io.ResourceData;
 /** singleton instance of built-in SI unit system */
 /* package */ enum BuiltIn {
   SI;
+
   // ---
   static final UnitSystem unitSystem =
       SimpleUnitSystem.from(ResourceData.properties("/unit/si.properties"));

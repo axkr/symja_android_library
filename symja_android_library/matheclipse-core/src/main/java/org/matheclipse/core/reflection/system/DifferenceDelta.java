@@ -11,33 +11,41 @@ import org.matheclipse.core.interfaces.IExpr;
 /**
  *
  *
- * <pre><code>DifferenceDelta(f(x), x)
- * </code></pre>
+ * <pre>
+ * <code>DifferenceDelta(f(x), x)
+ * </code>
+ * </pre>
  *
- * <p>generates a forward difference <code>f(x+1) - f(x)</code>
+ * <p>
+ * generates a forward difference <code>f(x+1) - f(x)</code>
  *
- * <pre><code>DifferenceDelta(f(x), {x,n,h})
- * </code></pre>
+ * <pre>
+ * <code>DifferenceDelta(f(x), {x,n,h})
+ * </code>
+ * </pre>
  *
- * <p>generates a higher-order forward difference for integers <code>n</code>.
+ * <p>
+ * generates a higher-order forward difference for integers <code>n</code>.
  *
- * <p>See:
+ * <p>
+ * See:
  *
  * <ul>
- *   <li><a
- *       href="https://en.wikipedia.org/wiki/Finite_difference#Higher-order_differences">Wikipedia -
- *       Finite difference - Higher-order differences</a>
+ * <li><a href="https://en.wikipedia.org/wiki/Finite_difference#Higher-order_differences">Wikipedia
+ * - Finite difference - Higher-order differences</a>
  * </ul>
  *
  * <h3>Examples</h3>
  *
- * <pre><code>&gt;&gt; DifferenceDelta(b(a),a)
+ * <pre>
+ * <code>&gt;&gt; DifferenceDelta(b(a),a)
  * -b(a)+b(1+a)
  *
  * &gt;&gt; DifferenceDelta(b(a),{a,5,c})
  * -b(a)+5*b(a+c)-10*b(a+2*c)+10*b(a+3*c)-5*b(a+4*c)+b(a+5*c)
  *
- * </code></pre>
+ * </code>
+ * </pre>
  */
 public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
 

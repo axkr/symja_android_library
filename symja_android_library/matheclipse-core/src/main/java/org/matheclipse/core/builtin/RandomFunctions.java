@@ -55,7 +55,8 @@ public final class RandomFunctions {
    *
    * <blockquote>
    *
-   * <p>chooses a random <code>arg</code> from the list.
+   * <p>
+   * chooses a random <code>arg</code> from the list.
    *
    * </blockquote>
    *
@@ -86,11 +87,13 @@ public final class RandomFunctions {
        * Generates a random sample of size sampleSize from {0, 1, ... , weights.length - 1}, using
        * weights as probabilities.
        *
-       * <p>For 0 &lt; i &lt; weights.length, the probability that i is selected (on any draw) is
+       * <p>
+       * For 0 &lt; i &lt; weights.length, the probability that i is selected (on any draw) is
        * weights[i]. If necessary, the weights array is normalized to sum to 1 so that weights[i] is
        * a probability and the array sums to 1.
        *
-       * <p>Weights can be 0, but must not be negative, infinite or NaN. At least one weight must be
+       * <p>
+       * Weights can be 0, but must not be negative, infinite or NaN. At least one weight must be
        * positive.
        *
        * @param sampleSize size of sample to generate
@@ -107,9 +110,7 @@ public final class RandomFunctions {
 
       IExpr arg1 = ast.arg1();
 
-      if (arg1.isRuleAST()
-          && arg1.first().isList()
-          && arg1.second().isList()
+      if (arg1.isRuleAST() && arg1.first().isList() && arg1.second().isList()
           && arg1.first().size() == arg1.second().size()) {
         IAST weights = (IAST) arg1.first();
         IAST items = (IAST) arg1.second();
@@ -129,11 +130,9 @@ public final class RandomFunctions {
               if (dimension == null) {
                 return F.NIL;
               }
-              return Tensors.build(
-                  () -> {
-                    return items.get(sampler.sample(1)[0] + 1);
-                  },
-                  dimension);
+              return Tensors.build(() -> {
+                return items.get(sampler.sample(1)[0] + 1);
+              }, dimension);
             }
             int n = arg2.toIntDefault();
             if (n > 0) {
@@ -167,12 +166,10 @@ public final class RandomFunctions {
               return F.NIL;
             }
             int[] randomValue = new int[1];
-            return Tensors.build(
-                () -> {
-                  randomValue[0] = random.nextInt(listSize);
-                  return list.get(randomValue[0] + 1);
-                },
-                dimension);
+            return Tensors.build(() -> {
+              randomValue[0] = random.nextInt(listSize);
+              return list.get(randomValue[0] + 1);
+            }, dimension);
           }
           int n = arg2.toIntDefault();
           if (n > 0) {
@@ -275,7 +272,8 @@ public final class RandomFunctions {
    *
    * <blockquote>
    *
-   * <p>create a random integer number between <code>0</code> and <code>n</code>.
+   * <p>
+   * create a random integer number between <code>0</code> and <code>n</code>.
    *
    * </blockquote>
    *
@@ -495,8 +493,8 @@ public final class RandomFunctions {
       return F.NIL;
     }
 
-    private static IExpr randomPrime(
-        BigInteger lowerLimit, BigInteger upperLimit, final IAST ast, EvalEngine engine) {
+    private static IExpr randomPrime(BigInteger lowerLimit, BigInteger upperLimit, final IAST ast,
+        EvalEngine engine) {
 
       if (lowerLimit.isProbablePrime(32)
           && upperLimit.compareTo(lowerLimit.nextProbablePrime()) < 0) {
@@ -535,7 +533,8 @@ public final class RandomFunctions {
    *
    * <blockquote>
    *
-   * <p>create a random number between <code>0.0</code> and <code>1.0</code>.
+   * <p>
+   * create a random number between <code>0.0</code> and <code>1.0</code>.
    *
    * </blockquote>
    *
@@ -692,7 +691,8 @@ public final class RandomFunctions {
    *
    * <blockquote>
    *
-   * <p>create a random sample for the arguments of the <code>function</code>.
+   * <p>
+   * create a random sample for the arguments of the <code>function</code>.
    *
    * </blockquote>
    *
@@ -702,7 +702,8 @@ public final class RandomFunctions {
    *
    * <blockquote>
    *
-   * <p>create a random sample of <code>n</code> elements for the arguments of the <code>function
+   * <p>
+   * create a random sample of <code>n</code> elements for the arguments of the <code>function
    * </code>.
    *
    * </blockquote>

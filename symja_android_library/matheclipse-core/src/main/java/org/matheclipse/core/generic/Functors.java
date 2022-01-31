@@ -28,7 +28,7 @@ public class Functors {
 
     /**
      * @param equalRule the left- and right-hand-side (i.e. arg1() and arg2()) which should be
-     *     tested for equality
+     *        tested for equality
      */
     public SingleRuleFunctor(IAST equalRule) {
       lhs = equalRule.arg1();
@@ -60,10 +60,8 @@ public class Functors {
     private final List<PatternMatcherAndEvaluator> fMatchers;
     private final EvalEngine fEngine;
 
-    public RulesPatternFunctor(
-        Map<IExpr, IExpr> equalRules,
-        List<PatternMatcherAndEvaluator> matchers,
-        EvalEngine engine) {
+    public RulesPatternFunctor(Map<IExpr, IExpr> equalRules,
+        List<PatternMatcherAndEvaluator> matchers, EvalEngine engine) {
       fEqualRules = equalRules;
       fMatchers = matchers;
       fEngine = engine;
@@ -97,11 +95,8 @@ public class Functors {
      * @param result
      * @param engine
      */
-    public ListRulesPatternFunctor(
-        Map<IExpr, IExpr> equalRules,
-        List<PatternMatcherList> matchers,
-        IASTAppendable result,
-        EvalEngine engine) {
+    public ListRulesPatternFunctor(Map<IExpr, IExpr> equalRules, List<PatternMatcherList> matchers,
+        IASTAppendable result, EvalEngine engine) {
       fEqualRules = equalRules;
       fMatchers = matchers;
       fResult = result;
@@ -244,8 +239,8 @@ public class Functors {
     return rules(equalRules);
   }
 
-  private static Function<IExpr, IExpr> rulesFromNestedList(
-      IAST astRules, EvalEngine engine, List<PatternMatcherAndEvaluator> matchers) {
+  private static Function<IExpr, IExpr> rulesFromNestedList(IAST astRules, EvalEngine engine,
+      List<PatternMatcherAndEvaluator> matchers) {
     final Map<IExpr, IExpr> equalRules;
     IAST rule;
     if (astRules.size() > 1) {
@@ -283,8 +278,8 @@ public class Functors {
     return rules(equalRules);
   }
 
-  public static Function<IExpr, IExpr> listRules(
-      IAST astRules, IASTAppendable result, EvalEngine engine) {
+  public static Function<IExpr, IExpr> listRules(IAST astRules, IASTAppendable result,
+      EvalEngine engine) {
     final Map<IExpr, IExpr> equalRules;
     List<PatternMatcherList> matchers = new ArrayList<PatternMatcherList>();
     if (astRules.isList()) {
@@ -325,8 +320,8 @@ public class Functors {
     return listRules(equalRules, result);
   }
 
-  public static Function<IExpr, IExpr> listRules(
-      Map<IExpr, IExpr> rulesMap, IASTAppendable result) {
+  public static Function<IExpr, IExpr> listRules(Map<IExpr, IExpr> rulesMap,
+      IASTAppendable result) {
     return new ListRulesPatternFunctor(rulesMap, result);
   }
 
@@ -334,20 +329,16 @@ public class Functors {
    * A predicate to determine if an expression is an instance of <code>IPattern</code> or <code>
    * IPatternSequence</code>.
    */
-  private static Predicate<IExpr> PATTERNQ_PREDICATE =
-      new Predicate<IExpr>() {
-        @Override
-        public boolean test(IExpr input) {
-          return input.isBlank()
-              || input.isPattern()
-              || input.isPatternSequence(false)
-              || input.isAlternatives()
-              || input.isExcept();
-        }
-      };
+  private static Predicate<IExpr> PATTERNQ_PREDICATE = new Predicate<IExpr>() {
+    @Override
+    public boolean test(IExpr input) {
+      return input.isBlank() || input.isPattern() || input.isPatternSequence(false)
+          || input.isAlternatives() || input.isExcept();
+    }
+  };
 
-  private static void addRuleToCollection(
-      Map<IExpr, IExpr> equalRules, List<PatternMatcherAndEvaluator> matchers, IAST rule) {
+  private static void addRuleToCollection(Map<IExpr, IExpr> equalRules,
+      List<PatternMatcherAndEvaluator> matchers, IAST rule) {
     IExpr lhs = rule.arg1();
     final IExpr rhs = rule.arg2();
 
@@ -373,25 +364,24 @@ public class Functors {
       if (rule.isRuleDelayed()) {
         matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET_DELAYED, lhs, rhs));
       } else {
-        matchers.add(
-            new PatternMatcherAndEvaluator(IPatternMatcher.SET, lhs, evalOneIdentity(rhs)));
+        matchers
+            .add(new PatternMatcherAndEvaluator(IPatternMatcher.SET, lhs, evalOneIdentity(rhs)));
       }
     }
   }
 
-  private static void createPatternMatcherList(
-      Map<IExpr, IExpr> equalRules, List<PatternMatcherList> matchers, IAST rule) {
+  private static void createPatternMatcherList(Map<IExpr, IExpr> equalRules,
+      List<PatternMatcherList> matchers, IAST rule) {
     if (rule.arg1().isFree(PATTERNQ_PREDICATE, true)) {
       IExpr temp = equalRules.get(rule.arg1());
       if (temp == null) {
         if (rule.arg1().isOrderlessAST() || rule.arg1().isFlatAST()) {
           if (rule.isRuleDelayed()) {
-            matchers.add(
-                new PatternMatcherList(IPatternMatcher.SET_DELAYED, rule.arg1(), rule.arg2()));
+            matchers
+                .add(new PatternMatcherList(IPatternMatcher.SET_DELAYED, rule.arg1(), rule.arg2()));
           } else {
-            matchers.add(
-                new PatternMatcherList(
-                    IPatternMatcher.SET, rule.arg1(), evalOneIdentity(rule.arg2())));
+            matchers.add(new PatternMatcherList(IPatternMatcher.SET, rule.arg1(),
+                evalOneIdentity(rule.arg2())));
           }
           return;
         }

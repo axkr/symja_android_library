@@ -17,8 +17,8 @@ import org.matheclipse.core.interfaces.IPatternSequence;
 public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
   boolean onlyNamedPatterns;
 
-  public VisitorReplaceAllWithPatternFlags(
-      Function<IExpr, IExpr> function, boolean onlyNamedPatterns) {
+  public VisitorReplaceAllWithPatternFlags(Function<IExpr, IExpr> function,
+      boolean onlyNamedPatterns) {
     super(function);
     this.onlyNamedPatterns = onlyNamedPatterns;
   }
@@ -67,18 +67,18 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
 
         if (result.isAST()) {
           return EvalAttributes.simpleEval(result);
-          //					if (result.isFlatAST()) {
-          //						IASTAppendable flattened = EvalAttributes.flattenDeep((IAST) result);
-          //						if (flattened.isPresent()) {
-          //							result = flattened;
-          //						}
-          //					}
-          //					if (result.isOneIdentityAST1()) {
-          //						return result.first();
-          //					} else if (result.isOrderlessAST()) {
-          //						EvalAttributes.sort((IASTMutable) result);
-          //					}
-          //					((IAST) result).addEvalFlags(ast.getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
+          // if (result.isFlatAST()) {
+          // IASTAppendable flattened = EvalAttributes.flattenDeep((IAST) result);
+          // if (flattened.isPresent()) {
+          // result = flattened;
+          // }
+          // }
+          // if (result.isOneIdentityAST1()) {
+          // return result.first();
+          // } else if (result.isOrderlessAST()) {
+          // EvalAttributes.sort((IASTMutable) result);
+          // }
+          // ((IAST) result).addEvalFlags(ast.getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
 
         }
         // if (result instanceof IASTMutable) {

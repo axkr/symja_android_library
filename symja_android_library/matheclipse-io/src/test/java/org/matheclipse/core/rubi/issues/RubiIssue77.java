@@ -33,10 +33,8 @@ public class RubiIssue77 extends AbstractRubiTestCase {
       // {x*(a+c*x^2+d*x^3)^n,2*c+3*d*x,1}
       // {x*(2*c+3*d*x),a+c*x^2+d*x^3,n}
       // {x*(2*c+3*d*x),(a+c*x^2+d*x^3)^n,1}
-      IExpr expr =
-          (IExpr)
-              fEvaluator.eval(
-                  "myfunction[(pp_)*(qq_)^(m_.), x_Symbol] := {pp,qq,m}/;Print[{pp,qq,m}]");
+      IExpr expr = (IExpr) fEvaluator
+          .eval("myfunction[(pp_)*(qq_)^(m_.), x_Symbol] := {pp,qq,m}/;Print[{pp,qq,m}]");
       IExpr lhsEval = (IExpr) fEvaluator.eval("myfunction[x*(2*c+3*d*x)*(a+c*x^2+d*x^3)^n, x]");
       assertEquals(lhsEval.toString(), "myfunction(x*(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,x)");
     } catch (Exception ex) {
@@ -418,8 +416,7 @@ public class RubiIssue77 extends AbstractRubiTestCase {
   }
 
   public void test0092() {
-    check(
-        "Rubi`MergeFactors[(1 + n)^(-1), (a + c*x^2 + d*x^3)^(1 + n)]",
+    check("Rubi`MergeFactors[(1 + n)^(-1), (a + c*x^2 + d*x^3)^(1 + n)]",
         "(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)");
   }
 
@@ -448,8 +445,7 @@ public class RubiIssue77 extends AbstractRubiTestCase {
   }
 
   public void test0099() {
-    check(
-        "Rubi`NonfreeFactors[(3*(a + c*x^2 + d*x^3)^(1 + n))/(3 + 3*n), x]",
+    check("Rubi`NonfreeFactors[(3*(a + c*x^2 + d*x^3)^(1 + n))/(3 + 3*n), x]",
         "(a + c*x^2 + d*x^3)^(1 + n)");
   }
 
@@ -542,8 +538,7 @@ public class RubiIssue77 extends AbstractRubiTestCase {
   }
 
   public void test0122() {
-    check(
-        "Rubi`NormalizeSumFactors[(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)]",
+    check("Rubi`NormalizeSumFactors[(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)]",
         "(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)");
   }
 
@@ -896,14 +891,12 @@ public class RubiIssue77 extends AbstractRubiTestCase {
   }
 
   public void test0210() {
-    check(
-        "Rubi`SignOfFactor[(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)]",
+    check("Rubi`SignOfFactor[(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)]",
         "{1, (a + c*x^2 + d*x^3)^(1 + n)/(1 + n)}");
   }
 
   public void test0211() {
-    check(
-        "Rubi`Simp[(3*(a + c*x^2 + d*x^3)^(1 + n))/(3 + 3*n), x]",
+    check("Rubi`Simp[(3*(a + c*x^2 + d*x^3)^(1 + n))/(3 + 3*n), x]",
         "(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)");
   }
 
@@ -972,8 +965,7 @@ public class RubiIssue77 extends AbstractRubiTestCase {
   }
 
   public void test0228() {
-    check(
-        "Rubi`SimpHelp[(3*(a + c*x^2 + d*x^3)^(1 + n))/(3 + 3*n), x]",
+    check("Rubi`SimpHelp[(3*(a + c*x^2 + d*x^3)^(1 + n))/(3 + 3*n), x]",
         "(a + c*x^2 + d*x^3)^(1 + n)/(1 + n)");
   }
 
@@ -1144,14 +1136,12 @@ public class RubiIssue77 extends AbstractRubiTestCase {
   }
 
   public void test0268b() {
-    check(
-        "With[{a = 3}, True /; a > 1]", //
+    check("With[{a = 3}, True /; a > 1]", //
         "True");
   }
 
   public void test0268c() {
-    check(
-        "D[2*c+3*d*x,x]+(1+n)*x*(2*c+3*d*x)*D[a+c*x^2+d*x^3,x]", //
+    check("D[2*c+3*d*x,x]+(1+n)*x*(2*c+3*d*x)*D[a+c*x^2+d*x^3,x]", //
         "3*d+(1+n)*x*(2*c+3*d*x)*(2*c*x+3*d*x^2)");
   }
 }

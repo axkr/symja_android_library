@@ -29,11 +29,12 @@ public class ASTElementLimitExceeded extends LimitException {
   /**
    * Throws exception which will be thrown, if the Config.MAX_AST_SIZE limit was exceeded.
    *
-   * <p>Usage:
+   * <p>
+   * Usage:
    *
    * <pre>
    * if (Config.MAX_AST_SIZE < requestedCapacity) {
-   *     ASTElementLimitExceeded.throwIt(requestedCapacity);
+   *   ASTElementLimitExceeded.throwIt(requestedCapacity);
    * }
    * </pre>
    *

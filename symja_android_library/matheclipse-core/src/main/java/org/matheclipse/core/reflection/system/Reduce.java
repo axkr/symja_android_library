@@ -24,7 +24,8 @@ public class Reduce extends AbstractEvaluator {
      * Implements value interval for <code>variable</code> as the interval: <code>
      * xMin (minType) variable (maxType) xMax</code>.
      *
-     * <p><code>minType</code> and <code>maxType</code> define if it is an open interval (value == 1
+     * <p>
+     * <code>minType</code> and <code>maxType</code> define if it is an open interval (value == 1
      * (LessThan) ) or a closed interval (value == 2 (LessEqualThan) or value == 3 (EQUAL))
      */
     static class VariableInterval {
@@ -67,14 +68,14 @@ public class Reduce extends AbstractEvaluator {
             return true;
           }
         } else if (S.GreaterEqual.ofQ(cd.xMin, this.xMin)) {
-          // | this.xMin <= cd.xMin ...  |
+          // | this.xMin <= cd.xMin ... |
           if (S.LessEqual.ofQ(cd.xMax, this.xMax)) {
             // this interval includes cd interval
             // | this.xMin <= cd.xMin <--> cd.Max <= this.xMax |
             return true;
           }
         } else if (S.GreaterEqual.ofQ(this.xMin, cd.xMin)) {
-          // | cd.xMin <= this.xMin ...  |
+          // | cd.xMin <= this.xMin ... |
           if (S.LessEqual.ofQ(this.xMax, cd.xMax)) {
             // cd interval includes this interval
             // | cd.xMin <= this.xMin <--> this.xMax <= cd.xMax |
@@ -88,14 +89,14 @@ public class Reduce extends AbstractEvaluator {
 
         if (S.Greater.ofQ(this.xMax, cd.xMin)) {
           if (S.Less.ofQ(this.xMax, cd.xMax)) {
-            // | cd.xMin <= this.xMax  <--> this.xMax <= cd.xMax |
+            // | cd.xMin <= this.xMax <--> this.xMax <= cd.xMax |
             this.xMax = cd.xMax;
             this.maxType = cd.maxType;
             return true;
           }
         } else if (S.Greater.ofQ(this.xMin, cd.xMin)) {
           if (S.Less.ofQ(this.xMin, cd.xMax)) {
-            // | cd.xMin <= this.xMin  <--> this.xMin <= cd.xMax |
+            // | cd.xMin <= this.xMin <--> this.xMin <= cd.xMax |
             this.xMin = cd.xMin;
             this.minType = cd.minType;
             return true;
@@ -116,23 +117,20 @@ public class Reduce extends AbstractEvaluator {
             }
             return F.False;
           }
-          IAST gt =
-              (minType >= 2) //
-                  ? F.GreaterEqual(variable, xMin)
-                  : F.Greater(variable, xMin);
+          IAST gt = (minType >= 2) //
+              ? F.GreaterEqual(variable, xMin)
+              : F.Greater(variable, xMin);
           if (!xMax.equals(F.CInfinity)) {
-            IAST lt =
-                (maxType >= 2) //
-                    ? F.LessEqual(variable, xMax)
-                    : F.Less(variable, xMax);
+            IAST lt = (maxType >= 2) //
+                ? F.LessEqual(variable, xMax)
+                : F.Less(variable, xMax);
             return F.And(gt, lt);
           }
           return gt;
         } else if (!xMax.equals(F.CInfinity)) {
-          IAST lt =
-              (maxType >= 2) //
-                  ? F.LessEqual(variable, xMax)
-                  : F.Less(variable, xMax);
+          IAST lt = (maxType >= 2) //
+              ? F.LessEqual(variable, xMax)
+              : F.Less(variable, xMax);
           return lt;
         }
         return F.NIL;
@@ -462,15 +460,15 @@ public class Reduce extends AbstractEvaluator {
     }
 
     private IExpr reduceAndBinary(IExpr arg, IExpr orArg) {
-      //      VariableInterval cd = new VariableInterval(variable);
-      //      IExpr reduced = cd.reduceComparator(arg, orArg);
-      //      if (reduced.isPresent()) {
-      //        if (reduced == S.Continue || reduced.isAST(S.And)) {
-      //          return F.NIL;
-      //        }
-      //        return reduced;
-      //      }
-      //      return F.NIL;
+      // VariableInterval cd = new VariableInterval(variable);
+      // IExpr reduced = cd.reduceComparator(arg, orArg);
+      // if (reduced.isPresent()) {
+      // if (reduced == S.Continue || reduced.isAST(S.And)) {
+      // return F.NIL;
+      // }
+      // return reduced;
+      // }
+      // return F.NIL;
 
       ReduceComparison rcAnd = new ReduceComparison(variable);
       IExpr reduced = rcAnd.evaluate(F.And(arg, orArg));

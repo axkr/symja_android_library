@@ -29,8 +29,8 @@ public class Sequence extends ListSizeSequence {
    * @param engine
    * @return <code>null</code> if no <code>Sequence[]</code> can be created
    */
-  public static Sequence[] createSequences(
-      final IAST ast, final int offset, String messageShortcut, EvalEngine engine) {
+  public static Sequence[] createSequences(final IAST ast, final int offset, String messageShortcut,
+      EvalEngine engine) {
     final Sequence[] sequArray = new Sequence[ast.size() - offset];
     Sequence sequ = null;
     int j = 0;
@@ -44,8 +44,8 @@ public class Sequence extends ListSizeSequence {
           if (num == Integer.MIN_VALUE) {
             // default value for overflow from toIntDefault()
             // Cannot <messageShortcut> positions `1` through `2` in `3`.
-            IOFunctions.printMessage(
-                ast.topHead(), messageShortcut, F.List(F.C1, ast.arg2(), ast), engine);
+            IOFunctions.printMessage(ast.topHead(), messageShortcut, F.List(F.C1, ast.arg2(), ast),
+                engine);
             return null;
           }
           sequ = new Sequence(num, Integer.MAX_VALUE);

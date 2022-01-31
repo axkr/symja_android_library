@@ -123,7 +123,8 @@ public class AJAXDocServlet extends HttpServlet {
 
   static class DocNodeRenderer extends CoreHtmlNodeRenderer {
     private final HtmlWriter html;
-    //    private boolean inHeader=false;
+
+    // private boolean inHeader=false;
     public DocNodeRenderer(HtmlNodeRendererContext context) {
       super(context);
       this.html = context.getWriter();
@@ -163,7 +164,7 @@ public class AJAXDocServlet extends HttpServlet {
       WolframFormFactory wolframForm = WolframFormFactory.get();
       final String code = literal.trim();
       if (code.contains(">> ")) {
-        //        try {
+        // try {
         int lastIndex = 0;
         int index = 0;
         html.tag("pre");
@@ -208,13 +209,13 @@ public class AJAXDocServlet extends HttpServlet {
           html.text(code.substring(lastIndex, code.length()));
         }
         html.tag("/pre");
-        //        } catch (RuntimeException rex) {
-        //          rex.printStackTrace();
-        //          visit(fencedCodeBlock);
-        //        }
+        // } catch (RuntimeException rex) {
+        // rex.printStackTrace();
+        // visit(fencedCodeBlock);
+        // }
       } else {
         visit(fencedCodeBlock);
-        //        html.text(code.substring(0, code.length()));
+        // html.text(code.substring(0, code.length()));
       }
     }
 
@@ -235,7 +236,7 @@ public class AJAXDocServlet extends HttpServlet {
           Map<String, String> attrs = new HashMap<>();
           attrs.put("href", destination);
           html.tag("a", attrs);
-          //        html.text(link.getTitle());
+          // html.text(link.getTitle());
           if (link.getFirstChild() != null) {
             super.render(link.getFirstChild());
           }
@@ -251,58 +252,58 @@ public class AJAXDocServlet extends HttpServlet {
     private void tex(TeX teXNode) {
       Text text = (Text) teXNode.getFirstChild();
       html.raw(text.getLiteral());
-      //      StringBuilder buf = new StringBuilder();
-      //      buf.append(
-      //          "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"
+      // StringBuilder buf = new StringBuilder();
+      // buf.append(
+      // "<math xmlns=\"http://www.w3.org/1998/Math/MathML\"
       // xmlns=\"http://www.w3.org/1999/xhtml\">\n"
-      //              + "  <mstyle displaystyle=\"true\" mathvariant=\"sans-serif\">\n");
-      //      buf.append(text.getLiteral());
-      //      buf.append("</mstyle>\n" + "</math>");
-      //      html.raw(buf.toString());
+      // + " <mstyle displaystyle=\"true\" mathvariant=\"sans-serif\">\n");
+      // buf.append(text.getLiteral());
+      // buf.append("</mstyle>\n" + "</math>");
+      // html.raw(buf.toString());
     }
 
-    //    @Override
-    //    public void visit(CustomBlock customBlock) {
-    //      if (customBlock instanceof TableBlock) {
-    //        TableBlock tableBlock = (TableBlock) customBlock;
-    //        visitTableBlock(tableBlock);
-    //      } else {
-    //        visitChildren(customBlock);
-    //      }
-    //    }
+    // @Override
+    // public void visit(CustomBlock customBlock) {
+    // if (customBlock instanceof TableBlock) {
+    // TableBlock tableBlock = (TableBlock) customBlock;
+    // visitTableBlock(tableBlock);
+    // } else {
+    // visitChildren(customBlock);
+    // }
+    // }
     //
-    //    @Override
-    //    public void visit(CustomNode customNode) {
-    //          if (customNode instanceof TableHead) {
-    //            inHeader = true;
-    //            visitChildren(customNode);
+    // @Override
+    // public void visit(CustomNode customNode) {
+    // if (customNode instanceof TableHead) {
+    // inHeader = true;
+    // visitChildren(customNode);
     //
-    //          } else if (customNode instanceof TableBody) {
-    //            inHeader = false;
-    //            visitChildren(customNode);
+    // } else if (customNode instanceof TableBody) {
+    // inHeader = false;
+    // visitChildren(customNode);
     //
-    //          } else if (customNode instanceof org.commonmark.ext.gfm.tables.TableRow) {
-    //            visitChildren(customNode);
-    //          } else if (customNode instanceof TableCell) {
-    //            TableCell cell = (TableCell) customNode;
-    //            visitChildren(cell);
-    //            //  if (inHeader) {
-    //            //
-    //            // }
-    //          } else
-    //      if (customNode instanceof TeX) {
-    //        visitTeXNode((TeX) customNode);
-    //      } else {
-    //        super.visit(customNode);
-    //      }
-    //    }
-    //        private void visitTableBlock(TableBlock tableBlock) {
-    //          try {
-    //            visitChildren(tableBlock);
-    //          } catch (Exception e) {
-    //            e.printStackTrace();
-    //          }
-    //        }
+    // } else if (customNode instanceof org.commonmark.ext.gfm.tables.TableRow) {
+    // visitChildren(customNode);
+    // } else if (customNode instanceof TableCell) {
+    // TableCell cell = (TableCell) customNode;
+    // visitChildren(cell);
+    // // if (inHeader) {
+    // //
+    // // }
+    // } else
+    // if (customNode instanceof TeX) {
+    // visitTeXNode((TeX) customNode);
+    // } else {
+    // super.visit(customNode);
+    // }
+    // }
+    // private void visitTableBlock(TableBlock tableBlock) {
+    // try {
+    // visitChildren(tableBlock);
+    // } catch (Exception e) {
+    // e.printStackTrace();
+    // }
+    // }
 
   }
 
@@ -344,7 +345,7 @@ public class AJAXDocServlet extends HttpServlet {
           htmlBuf.append(html);
           htmlBuf.append("\n</div>");
           // see https://docs.mathjax.org/en/v2.7-latest/advanced/typeset.html -
-          // Modifying Math on the  Page
+          // Modifying Math on the Page
           htmlBuf.append(
               "<script type=\"text/javascript\">MathJax.Hub.Queue(['Typeset',MathJax.Hub,'mjax']); </script>");
           htmlBuf.append("\n</div>");
@@ -353,9 +354,8 @@ public class AJAXDocServlet extends HttpServlet {
           JSON_DOCS_CACHE.put(value, jsonStr);
           out.println(jsonStr);
         } else {
-          out.println(
-              createJSONDocString(
-                  "<p>Insert a keyword and append a '*' to search for keywords. Example: <b>Int*</b>.</p>"));
+          out.println(createJSONDocString(
+              "<p>Insert a keyword and append a '*' to search for keywords. Example: <b>Int*</b>.</p>"));
         }
       }
     } catch (Exception e) {
@@ -364,26 +364,19 @@ public class AJAXDocServlet extends HttpServlet {
   }
 
   public static String generateHTMLString(final String markdownStr) {
-    List<Extension> EXTENSIONS =
-        Arrays.asList( //
-            TeXExtension.create(), TablesExtension.create());
-    Parser parser =
-        Parser.builder() //
-            .extensions(EXTENSIONS)
-            .build();
+    List<Extension> EXTENSIONS = Arrays.asList( //
+        TeXExtension.create(), TablesExtension.create());
+    Parser parser = Parser.builder() //
+        .extensions(EXTENSIONS).build();
     Node document = parser.parse(markdownStr);
 
-    HtmlRenderer renderer =
-        HtmlRenderer.builder() //
-            .extensions(EXTENSIONS)
-            .nodeRendererFactory(
-                new HtmlNodeRendererFactory() {
-                  @Override
-                  public NodeRenderer create(HtmlNodeRendererContext context) {
-                    return new DocNodeRenderer(context);
-                  }
-                })
-            .build();
+    HtmlRenderer renderer = HtmlRenderer.builder() //
+        .extensions(EXTENSIONS).nodeRendererFactory(new HtmlNodeRendererFactory() {
+          @Override
+          public NodeRenderer create(HtmlNodeRendererContext context) {
+            return new DocNodeRenderer(context);
+          }
+        }).build();
     return renderer.render(document);
   }
 
@@ -414,16 +407,16 @@ public class AJAXDocServlet extends HttpServlet {
         String identifier = F.symbolNameNormalized(functionName);
         ISymbol symbol = Context.SYSTEM.get(identifier);
         if (symbol != null) {
-          //          String functionURL = SourceCodeFunctions.functionURL(symbol);
-          //          if (functionURL != null) {
+          // String functionURL = SourceCodeFunctions.functionURL(symbol);
+          // if (functionURL != null) {
           //
-          //            out.append("\n\n### Github");
-          //            out.append("\n\n* [Implementation of ");
-          //            out.append(functionName);
-          //            out.append("](");
-          //            out.append(functionURL);
-          //            out.append(") ");
-          //          }
+          // out.append("\n\n### Github");
+          // out.append("\n\n* [Implementation of ");
+          // out.append(functionName);
+          // out.append("](");
+          // out.append(functionURL);
+          // out.append(") ");
+          // }
           out.append("\n\n [&larr; Function reference](99-function-reference.md) ");
         } else {
           if (!docName.equals("index")) {
@@ -442,8 +435,8 @@ public class AJAXDocServlet extends HttpServlet {
     ObjectNode outJSON = JSON_OBJECT_MAPPER.createObjectNode();
     outJSON.put("content", str);
     return outJSON.toString();
-    //    JSONObject outJSON = new JSONObject();
-    //    outJSON.put("content", str);
-    //    return JSONValue.toJSONString(outJSON);
+    // JSONObject outJSON = new JSONObject();
+    // outJSON.put("content", str);
+    // return JSONValue.toJSONString(outJSON);
   }
 }

@@ -17,7 +17,8 @@ public class SimpleUnitSystem implements UnitSystem {
   /**
    * given properties map a unit expression to a {@link IQuantity}
    *
-   * <p>Example from the built-in file "/unit/si.properties":
+   * <p>
+   * Example from the built-in file "/unit/si.properties":
    *
    * <pre>
    * rad=1
@@ -32,14 +33,9 @@ public class SimpleUnitSystem implements UnitSystem {
    * @throws Exception if keys do not define unit conversions
    */
   public static UnitSystem from(Properties properties) {
-    return new SimpleUnitSystem(
-        properties
-            .stringPropertyNames()
-            .stream()
-            .collect(
-                Collectors.toMap( //
-                    UnitHelper::requireValid,
-                    key -> requireNumeric(F.fromString(properties.getProperty(key))))));
+    return new SimpleUnitSystem(properties.stringPropertyNames().stream().collect(Collectors.toMap( //
+        UnitHelper::requireValid,
+        key -> requireNumeric(F.fromString(properties.getProperty(key))))));
   }
 
   /**
@@ -47,13 +43,9 @@ public class SimpleUnitSystem implements UnitSystem {
    * @return unit system
    */
   public static UnitSystem from(Map<String, IExpr> map) {
-    return new SimpleUnitSystem(
-        map.entrySet()
-            .stream()
-            .collect(
-                Collectors.toMap( //
-                    entry -> UnitHelper.requireValid(entry.getKey()),
-                    entry -> requireNumeric(entry.getValue()))));
+    return new SimpleUnitSystem(map.entrySet().stream().collect(Collectors.toMap( //
+        entry -> UnitHelper.requireValid(entry.getKey()),
+        entry -> requireNumeric(entry.getValue()))));
   }
 
   // ---
@@ -72,12 +64,11 @@ public class SimpleUnitSystem implements UnitSystem {
       for (Entry<String, IExpr> entry : quantity.unit().map().entrySet()) {
         IExpr lookup = map.get(entry.getKey());
         IExpr entryValue = entry.getValue();
-        IExpr temp =
-            Objects.isNull(lookup) //
-                ? IQuantity.of(F.C1, format(entry)) //
-                : lookup.isQuantity() //
-                    ? ((IQuantity) lookup).power(entryValue) //
-                    : S.Power.of(lookup, entryValue);
+        IExpr temp = Objects.isNull(lookup) //
+            ? IQuantity.of(F.C1, format(entry)) //
+            : lookup.isQuantity() //
+                ? ((IQuantity) lookup).power(entryValue) //
+                : S.Power.of(lookup, entryValue);
         if (temp.isQuantity()) {
           v1 = ((IQuantity) temp).times(value, true);
         } else {

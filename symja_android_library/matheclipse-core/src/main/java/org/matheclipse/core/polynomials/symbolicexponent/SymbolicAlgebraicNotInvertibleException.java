@@ -45,8 +45,8 @@ public class SymbolicAlgebraicNotInvertibleException extends NotInvertibleExcept
    * @param f1 polynomial.
    * @param f2 polynomial.
    */
-  public SymbolicAlgebraicNotInvertibleException(
-      SymbolicPolynomial f, SymbolicPolynomial f1, SymbolicPolynomial f2) {
+  public SymbolicAlgebraicNotInvertibleException(SymbolicPolynomial f, SymbolicPolynomial f1,
+      SymbolicPolynomial f2) {
     super("AlgebraicNotInvertibleException");
     this.f = f;
     this.f1 = f1;
@@ -60,8 +60,8 @@ public class SymbolicAlgebraicNotInvertibleException extends NotInvertibleExcept
    * @param f1 polynomial.
    * @param f2 polynomial.
    */
-  public SymbolicAlgebraicNotInvertibleException(
-      String c, SymbolicPolynomial f, SymbolicPolynomial f1, SymbolicPolynomial f2) {
+  public SymbolicAlgebraicNotInvertibleException(String c, SymbolicPolynomial f,
+      SymbolicPolynomial f1, SymbolicPolynomial f2) {
     super(c);
     this.f = f;
     this.f1 = f1;
@@ -75,8 +75,8 @@ public class SymbolicAlgebraicNotInvertibleException extends NotInvertibleExcept
    * @param f1 polynomial.
    * @param f2 polynomial.
    */
-  public SymbolicAlgebraicNotInvertibleException(
-      String c, Throwable t, SymbolicPolynomial f, SymbolicPolynomial f1, SymbolicPolynomial f2) {
+  public SymbolicAlgebraicNotInvertibleException(String c, Throwable t, SymbolicPolynomial f,
+      SymbolicPolynomial f1, SymbolicPolynomial f2) {
     super(c, t);
     this.f = f;
     this.f1 = f1;
@@ -90,8 +90,8 @@ public class SymbolicAlgebraicNotInvertibleException extends NotInvertibleExcept
    * @param f1 polynomial.
    * @param f2 polynomial.
    */
-  public SymbolicAlgebraicNotInvertibleException(
-      Throwable t, SymbolicPolynomial f, SymbolicPolynomial f1, SymbolicPolynomial f2) {
+  public SymbolicAlgebraicNotInvertibleException(Throwable t, SymbolicPolynomial f,
+      SymbolicPolynomial f1, SymbolicPolynomial f2) {
     super("AlgebraicNotInvertibleException", t);
     this.f = f;
     this.f1 = f1;

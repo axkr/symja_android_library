@@ -4,8 +4,8 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Exception for the <a
- * href="https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Throw.md">Throw</a>
+ * Exception for the <a href=
+ * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Throw.md">Throw</a>
  * function.
  */
 public class ThrowException extends FlowControlException {

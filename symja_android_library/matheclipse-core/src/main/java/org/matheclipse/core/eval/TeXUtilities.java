@@ -20,7 +20,7 @@ public class TeXUtilities {
   /**
    * @param evalEngine
    * @param relaxedSyntax if <code>true</code> use '(...)' instead of '[...]' to parenthesize the
-   *     arguments of a function.
+   *        arguments of a function.
    */
   public TeXUtilities(final EvalEngine evalEngine, final boolean relaxedSyntax) {
     fEvalEngine = evalEngine;

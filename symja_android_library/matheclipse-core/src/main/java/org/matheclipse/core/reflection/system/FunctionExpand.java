@@ -50,7 +50,8 @@ import com.google.common.base.Suppliers;
  *
  * <blockquote>
  *
- * <p>expands the special function <code>f</code>.
+ * <p>
+ * expands the special function <code>f</code>.
  *
  * </blockquote>
  *
@@ -74,63 +75,43 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
     private static Matcher init() {
       Matcher MATCHER = new Matcher();
       // Beta
-      MATCHER.caseOf(
-          Beta(z_, a_, b_), //
+      MATCHER.caseOf(Beta(z_, a_, b_), //
           // [$ Beta(a, b)*(1 - (1 - z)^b*Sum((Pochhammer(b, k)*z^k)/k!, {k, 0, a - 1})) /;
           // IntegerQ(a)&&a>0
           // $]
           F.Condition(
-              F.Times(
-                  F.Beta(a, b),
-                  F.Plus(
-                      F.C1,
-                      F.Times(
-                          F.CN1,
-                          F.Power(F.Subtract(F.C1, z), b),
-                          F.Sum(
-                              F.Times(
-                                  F.Power(z, k),
-                                  F.Power(F.Factorial(k), F.CN1),
-                                  F.Pochhammer(b, k)),
-                              F.List(k, F.C0, F.Plus(F.CN1, a)))))),
+              F.Times(F.Beta(a, b), F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Subtract(F.C1, z), b),
+                  F.Sum(F.Times(F.Power(z, k), F.Power(F.Factorial(k), F.CN1), F.Pochhammer(b, k)),
+                      F.List(k, F.C0, F.Plus(F.CN1, a)))))),
               F.And(F.IntegerQ(a), F.Greater(a, F.C0)))); // $$);
 
-      MATCHER.caseOf(
-          Beta(a_, b_), //
+      MATCHER.caseOf(Beta(a_, b_), //
           // [$ Factorial(a-1)*Product((k+b)^(-1),{k,0,a-1}) /; IntegerQ(a)&&a>0 $]
           F.Condition(
-              F.Times(
-                  F.Factorial(F.Plus(F.CN1, a)),
+              F.Times(F.Factorial(F.Plus(F.CN1, a)),
                   F.Product(F.Power(F.Plus(k, b), F.CN1), F.List(k, F.C0, F.Plus(F.CN1, a)))),
               F.And(F.IntegerQ(a), F.Greater(a, F.C0)))); // $$);
 
-      MATCHER.caseOf(
-          BetaRegularized(z_, a_, b_), //
+      MATCHER.caseOf(BetaRegularized(z_, a_, b_), //
           // [$ (Beta(z, a, b)*Gamma(a + b))/(Gamma(a)*Gamma(b)) $]
-          F.Times(
-              F.Beta(z, a, b),
-              F.Power(F.Times(F.Gamma(a), F.Gamma(b)), F.CN1),
+          F.Times(F.Beta(z, a, b), F.Power(F.Times(F.Gamma(a), F.Gamma(b)), F.CN1),
               F.Gamma(F.Plus(a, b)))); // $$);
 
-      MATCHER.caseOf(
-          Binomial(a_, b_), //
+      MATCHER.caseOf(Binomial(a_, b_), //
           // [$ If(IntegerQ(b)&&Positive(b),Product(a-c,{c,0,b-1})/b!, If(IntegerQ(a)&&Positive(a),
           // (a!*Sin(b*Pi))/(Product(b-c,{c,0,a})*Pi), Gamma(1 + a)/(Gamma(1 + b)*Gamma(1 - b + a)))
           // ) $]
           F.If(
-              F.And(F.IntegerQ(b), F.Positive(b)),
+              F.And(F.IntegerQ(b), F
+                  .Positive(b)),
               F.Times(
-                  F.Power(F.Factorial(b), F.CN1),
+                  F.Power(F
+                      .Factorial(b), F.CN1),
                   F.Product(F.Subtract(a, c), F.List(c, F.C0, F.Plus(F.CN1, b)))),
-              F.If(
-                  F.And(F.IntegerQ(a), F.Positive(a)),
-                  F.Times(
-                      F.Power(
-                          F.Times(F.Product(F.Subtract(b, c), F.List(c, F.C0, a)), S.Pi), F.CN1),
-                      F.Factorial(a),
-                      F.Sin(F.Times(b, S.Pi))),
-                  F.Times(
-                      F.Gamma(F.Plus(F.C1, a)),
+              F.If(F.And(F.IntegerQ(a), F.Positive(a)),
+                  F.Times(F.Power(F.Times(F.Product(F.Subtract(b, c), F.List(c, F.C0, a)), S.Pi),
+                      F.CN1), F.Factorial(a), F.Sin(F.Times(b, S.Pi))),
+                  F.Times(F.Gamma(F.Plus(F.C1, a)),
                       F.Power(
                           F.Times(F.Gamma(F.Plus(F.C1, b)), F.Gamma(F.Plus(F.C1, F.Negate(b), a))),
                           F.CN1))))); // $$);
@@ -149,138 +130,106 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
       // F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(x))))); // $$);
 
       // Cos
-      MATCHER.caseOf(
-          F.Cos(F.Sqrt(F.Sqr(x_))), //
+      MATCHER.caseOf(F.Cos(F.Sqrt(F.Sqr(x_))), //
           F.Cos(x));
       // Sin
-      MATCHER.caseOf(
-          F.Sin(F.Sqrt(F.Sqr(x_))), //
+      MATCHER.caseOf(F.Sin(F.Sqrt(F.Sqr(x_))), //
           // [$ (Sqrt(x^2)*Sin(x))/x $]
           F.Times(F.Power(x, F.CN1), F.Sqrt(F.Sqr(x)), F.Sin(x))); // $$);
 
       // CosIntegral
-      MATCHER.caseOf(
-          F.CosIntegral(F.Times(F.CN1, x_)), //
+      MATCHER.caseOf(F.CosIntegral(F.Times(F.CN1, x_)), //
           // [$ CosIntegral(x) + Log(x) - Log(x)
           // $]
           F.Plus(F.CosIntegral(x), F.Negate(F.Log(x)), F.Log(x))); // $$);
-      MATCHER.caseOf(
-          F.CosIntegral(F.Times(F.CI, x_)), //
+      MATCHER.caseOf(F.CosIntegral(F.Times(F.CI, x_)), //
           // [$ CoshIntegral(x) - Log(x) + Log(I*x)
           // $]
           F.Plus(F.CoshIntegral(x), F.Negate(F.Log(x)), F.Log(F.Times(F.CI, x)))); // $$);
-      MATCHER.caseOf(
-          F.CosIntegral(F.Times(F.CNI, x_)), //
+      MATCHER.caseOf(F.CosIntegral(F.Times(F.CNI, x_)), //
           // [$ CoshIntegral(x) - Log(x) + Log(-I*x)
           // $]
           F.Plus(F.CoshIntegral(x), F.Negate(F.Log(x)), F.Log(F.Times(F.CNI, x)))); // $$);
-      MATCHER.caseOf(
-          F.CosIntegral(F.Power(F.Power(x_, F.C2), F.C1D2)), //
+      MATCHER.caseOf(F.CosIntegral(F.Power(F.Power(x_, F.C2), F.C1D2)), //
           // [$ CosIntegral(x) + Log(Sqrt(x^2)) - Log(x)
           // $]
           F.Plus(F.CosIntegral(x), F.Negate(F.Log(x)), F.Log(F.Sqrt(F.Sqr(x))))); // $$);
 
       // SinIntegral
-      MATCHER.caseOf(
-          F.SinIntegral(F.Power(F.Power(x_, F.C2), F.C1D2)), //
+      MATCHER.caseOf(F.SinIntegral(F.Power(F.Power(x_, F.C2), F.C1D2)), //
           // [$ (Sqrt(x^2)/x) * SinIntegral(x)
           // $]
           F.Times(F.Power(x, F.CN1), F.Sqrt(F.Sqr(x)), F.SinIntegral(x))); // $$);
 
       // Factorial
-      MATCHER.caseOf(
-          Factorial(x_), //
+      MATCHER.caseOf(Factorial(x_), //
           // [$ Gamma(1+x) $]
           F.Gamma(F.Plus(F.C1, x))); // $$);
 
       // Haversine
-      MATCHER.caseOf(
-          F.Haversine(x_), //
+      MATCHER.caseOf(F.Haversine(x_), //
           // [$ (1/2) * (1 - Cos(x)) $]
           F.Times(F.C1D2, F.Subtract(F.C1, F.Cos(x)))); // $$);
       // InverseHaversine
-      MATCHER.caseOf(
-          F.InverseHaversine(x_), //
+      MATCHER.caseOf(F.InverseHaversine(x_), //
           // [$ 2*ArcSin( Sqrt(x) ) $]
           F.Times(F.C2, F.ArcSin(F.Sqrt(x)))); // $$);
 
       // Pochhammer
-      MATCHER.caseOf(
-          F.Pochhammer(x_, y_), //
+      MATCHER.caseOf(F.Pochhammer(x_, y_), //
           // [$ Gamma(x+y)/Gamma(x) $]
           F.Times(F.Power(F.Gamma(x), F.CN1), F.Gamma(F.Plus(x, y)))); // $$);
       // PolyGamma
-      MATCHER.caseOf(
-          F.PolyGamma(F.CN2, F.C1), //
+      MATCHER.caseOf(F.PolyGamma(F.CN2, F.C1), //
           // [$ (1/2)*(Log(2)+Log(Pi)) $]
           F.Times(F.C1D2, F.Plus(F.Log(F.C2), F.Log(S.Pi)))); // $$);
-      MATCHER.caseOf(
-          F.PolyGamma(F.CN3, F.C1), //
+      MATCHER.caseOf(F.PolyGamma(F.CN3, F.C1), //
           // [$ Log(Glaisher) + (1/4)*(Log(2) + Log(Pi)) $]
           F.Plus(F.Log(S.Glaisher), F.Times(F.C1D4, F.Plus(F.Log(F.C2), F.Log(S.Pi))))); // $$);
 
-      MATCHER.caseOf(
-          S.Degree, //
+      MATCHER.caseOf(S.Degree, //
           // [$ Pi/180 $]
           F.Times(F.QQ(1L, 180L), S.Pi)); // $$);
-      MATCHER.caseOf(
-          S.GoldenAngle, //
+      MATCHER.caseOf(S.GoldenAngle, //
           // [$ (3-Sqrt(5))*Pi $]
           F.Times(F.Subtract(F.C3, F.CSqrt5), S.Pi)); // $$);
-      MATCHER.caseOf(
-          S.GoldenRatio, //
+      MATCHER.caseOf(S.GoldenRatio, //
           // [$ 1/2*(1+Sqrt(5)) $]
           F.Times(F.C1D2, F.Plus(F.C1, F.CSqrt5))); // $$);
 
       // Power
-      MATCHER.caseOf(
-          F.Power(S.E, F.ArcSinh(x_)), //
+      MATCHER.caseOf(F.Power(S.E, F.ArcSinh(x_)), //
           // [$ (x+Sqrt(1+x^2)) $]
           F.Plus(x, F.Sqrt(F.Plus(F.C1, F.Sqr(x))))); // $$);
-      MATCHER.caseOf(
-          F.Power(S.E, F.ArcCosh(x_)), //
+      MATCHER.caseOf(F.Power(S.E, F.ArcCosh(x_)), //
           // [$ (x+Sqrt(x-1)*Sqrt(x+1)) $]
           F.Plus(x, F.Times(F.Sqrt(F.Plus(F.CN1, x)), F.Sqrt(F.Plus(x, F.C1))))); // $$);
-      MATCHER.caseOf(
-          F.Power(S.E, F.ArcTanh(x_)), //
+      MATCHER.caseOf(F.Power(S.E, F.ArcTanh(x_)), //
           // [$ ((x+1)/Sqrt(1-x^2)) $]
           F.Times(F.Plus(x, F.C1), F.Power(F.Subtract(F.C1, F.Sqr(x)), F.CN1D2))); // $$);
-      MATCHER.caseOf(
-          F.Power(S.E, F.ArcCsch(x_)), //
+      MATCHER.caseOf(F.Power(S.E, F.ArcCsch(x_)), //
           // [$ (1/x+Sqrt(1+1/x^2)) $]
           F.Plus(F.Power(x, F.CN1), F.Sqrt(F.Plus(F.C1, F.Power(x, F.CN2))))); // $$);
-      MATCHER.caseOf(
-          F.Power(S.E, F.ArcSech(x_)), //
+      MATCHER.caseOf(F.Power(S.E, F.ArcSech(x_)), //
           // [$ (1/x+Sqrt(1/x-1)*Sqrt(1/x+1)) $]
-          F.Plus(
-              F.Power(x, F.CN1),
-              F.Times(
-                  F.Sqrt(F.Plus(F.CN1, F.Power(x, F.CN1))),
-                  F.Sqrt(F.Plus(F.Power(x, F.CN1), F.C1))))); // $$);
-      MATCHER.caseOf(
-          F.Power(S.E, F.ArcCoth(x_)), //
+          F.Plus(F.Power(x, F.CN1), F.Times(F.Sqrt(F.Plus(F.CN1, F.Power(x, F.CN1))),
+              F.Sqrt(F.Plus(F.Power(x, F.CN1), F.C1))))); // $$);
+      MATCHER.caseOf(F.Power(S.E, F.ArcCoth(x_)), //
           // [$ (1/Sqrt((x-1)/(x+1))) $]
           F.Power(F.Times(F.Power(F.Plus(x, F.C1), F.CN1), F.Plus(F.CN1, x)), F.CN1D2)); // $$);
 
       // Log
-      MATCHER.caseOf(
-          F.Log(F.Times(m_, n_)), //
+      MATCHER.caseOf(F.Log(F.Times(m_, n_)), //
           // [$ (Log(m)+Log(n)) /; Positive(m)
           // $]
           F.Condition(F.Plus(F.Log(m), F.Log(n)), F.Positive(m))); // $$);
 
       // Log(x^(y_?( RealNumberQ(#) && (x>-1) && (#<1) )& ))
       MATCHER.caseOf(
-          F.Log(
-              F.Power(
-                  x_,
-                  F.PatternTest(
-                      y_,
-                      (F.Function(
-                          F.And(
-                              F.RealNumberQ(F.Slot1),
-                              F.Greater(F.Slot1, F.CN1),
-                              F.Less(F.Slot1, F.C1))))))), //
+          F.Log(F.Power(x_,
+              F.PatternTest(y_,
+                  (F.Function(F.And(F.RealNumberQ(F.Slot1), F.Greater(F.Slot1, F.CN1),
+                      F.Less(F.Slot1, F.C1))))))), //
           // [$ (y * Log(x))
           // $]
           F.Times(y, F.Log(x))); // $$);
@@ -298,7 +247,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
       MATCHER.caseOf(S.ParzenWindow.of(x_), WindowFunctions.parzenWindow(x));
       MATCHER.caseOf(S.TukeyWindow.of(x_), WindowFunctions.tukeyWindow(x));
 
-      //      IAST list = (IAST) WL.deserializeResource("/rules/FunctionExpandRules.bin", true);
+      // IAST list = (IAST) WL.deserializeResource("/rules/FunctionExpandRules.bin", true);
       IAST list = RULES;
 
       for (int i = 1; i < list.size(); i++) {
@@ -331,8 +280,8 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
   }
 
   /**
-   * See: <a
-   * href="https://en.wikipedia.org/wiki/Trigonometric_constants_expressed_in_real_radicals#The_trivial_values">Trigonometric_constants_expressed_in_real_radicals#The_trivial_values</a>
+   * See: <a href=
+   * "https://en.wikipedia.org/wiki/Trigonometric_constants_expressed_in_real_radicals#The_trivial_values">Trigonometric_constants_expressed_in_real_radicals#The_trivial_values</a>
    *
    * @param timesAST
    * @param ast
@@ -348,22 +297,13 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
             int exponent = factors.arg1().second().toIntDefault();
             if (exponent > 3) {
               if (ast.isCos()) {
-                return F.Times(
-                    F.C1D2,
-                    F.Sqrt(F.C2)
-                        .nest(
-                            F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
-                            exponent - 2));
+                return F.Times(F.C1D2, F.Sqrt(F.C2).nest(F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
+                    exponent - 2));
               } else if (ast.isSin()) {
-                return F.Times(
-                    F.C1D2,
-                    F.Sqrt(
-                        F.Subtract(
-                            F.C2,
-                            F.Sqrt(F.C2)
-                                .nest(
-                                    F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
-                                    exponent - 3))));
+                return F.Times(F.C1D2,
+                    F.Sqrt(F.Subtract(F.C2,
+                        F.Sqrt(F.C2).nest(F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
+                            exponent - 3))));
               }
             }
           }
@@ -384,10 +324,11 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
    *   sqrt(2) + sqrt(3)
    * </pre>
    *
-   * <p>See: <a href="//
-   * https://en.wikipedia.org/wiki/Nested_radical#Two_nested_square_roots">Wikipedia - Nested
-   * radical - Two nested square roots</a> Github #166. References for possible improvements of this
-   * method:
+   * <p>
+   * See:
+   * <a href="// https://en.wikipedia.org/wiki/Nested_radical#Two_nested_square_roots">Wikipedia -
+   * Nested radical - Two nested square roots</a> Github #166. References for possible improvements
+   * of this method:
    *
    * <pre>
    *
@@ -402,10 +343,8 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
    */
   public static IExpr sqrtDenest(IRational arg1, IExpr arg2) {
     if (arg1.isNegative()) {
-      return sqrtDenest(
-              arg1.negate(), //
-              arg2.negate())
-          .mapExpr(x -> F.Times(F.CI, x));
+      return sqrtDenest(arg1.negate(), //
+          arg2.negate()).mapExpr(x -> F.Times(F.CI, x));
     } else {
       final EvalEngine engine = EvalEngine.get();
       boolean arg2IsNegative = false;

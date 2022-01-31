@@ -810,17 +810,21 @@ public class MinMaxFunctions {
                   F.Rule(x, F.Piecewise(F.List(F.List(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
             }
           } else {
-            return F.List(
-                F.Piecewise(F.List(F.List(e, F.And(F.Equal(d, 0), F.LessEqual(c, 0))), F.List(
-                    F.Times(F.C1D4, F.Power(c, -1),
-                        F.Plus(F.Times(-1, F.Power(d, 2)), F.Times(4, c, e))),
-                    F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)), F.And(F.Less(d, 0), F.Less(c, 0))))),
-                    F.CInfinity),
-                F.List(F.Rule(x,
+            return F
+                .List(
+                    F.Piecewise(
+                        F.List(F.List(e, F.And(F.Equal(d, 0), F.LessEqual(c, 0))),
+                            F.List(
+                                F.Times(F.C1D4, F.Power(c, -1),
+                                    F.Plus(F.Times(-1, F.Power(d, 2)), F.Times(4, c, e))),
+                                F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)),
+                                    F.And(F.Less(d, 0), F.Less(c, 0))))),
+                        F.CInfinity),
+                    F.List(F.Rule(x,
                         F.Piecewise(
                             F.List(
-                            F.List(F.Times(F.CN1D2, F.Power(c, -1), d),
-                                F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)),
+                                F.List(F.Times(F.CN1D2, F.Power(c, -1), d),
+                                    F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)),
                                         F.And(F.Less(d, 0), F.Less(c, 0)))),
                                 F.List(F.C0, F.And(F.Equal(d, 0), F.LessEqual(c, 0)))),
                             S.Indeterminate))));
@@ -830,7 +834,8 @@ public class MinMaxFunctions {
           return F.List(
               F.Piecewise(
                   F.List(
-                      F.List(e, F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
+                      F.List(e,
+                          F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
                               F.And(F.Equal(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
                       F.List(
                           F.Times(F.C1D4, F.Power(c, F.CN1),
@@ -963,20 +968,24 @@ public class MinMaxFunctions {
                   F.Rule(x, F.Piecewise(F.List(F.List(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
             }
           } else {
-            return F.List(F.Piecewise(
+            return F
+                .List(
+                    F.Piecewise(
                         F.List(
-                    F.List(e, F.And(F.Equal(d, 0), F.GreaterEqual(c, 0))),
-                    F.List(
-                        F.Times(F.C1D4, F.Power(c, -1),
-                            F.Plus(F.Times(-1, F.Power(d, 2)), F.Times(4, c, e))),
-                        F.Or(F.And(F.Greater(d, 0), F.Greater(c, 0)),
-                            F.And(F.Less(d, 0), F.Greater(c, 0))))),
-                F.CNInfinity),
-                F.List(F.Rule(x,
+                            F.List(e, F.And(F.Equal(d, 0),
+                                F.GreaterEqual(c, 0))),
+                            F.List(
+                                F.Times(
+                                    F.C1D4, F.Power(c, -1), F.Plus(F.Times(-1, F.Power(d, 2)),
+                                        F.Times(4, c, e))),
+                                F.Or(F.And(F.Greater(d, 0), F.Greater(c, 0)),
+                                    F.And(F.Less(d, 0), F.Greater(c, 0))))),
+                        F.CNInfinity),
+                    F.List(F.Rule(x,
                         F.Piecewise(
                             F.List(
-                            F.List(F.Times(F.CN1D2, F.Power(c, -1), d),
-                                F.Or(F.And(F.Greater(d, 0), F.Greater(c, 0)),
+                                F.List(F.Times(F.CN1D2, F.Power(c, -1), d),
+                                    F.Or(F.And(F.Greater(d, 0), F.Greater(c, 0)),
                                         F.And(F.Less(d, 0), F.Greater(c, 0)))),
                                 F.List(F.C0, F.And(F.Equal(d, 0), F.GreaterEqual(c, 0)))),
                             S.Indeterminate))));
@@ -986,7 +995,8 @@ public class MinMaxFunctions {
           return F.List(
               F.Piecewise(
                   F.List(
-                      F.List(e, F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
+                      F.List(e,
+                          F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
                               F.And(F.Equal(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
                       F.List(
                           F.Times(F.C1D4, F.Power(c, F.CN1),

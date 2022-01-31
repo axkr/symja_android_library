@@ -10,20 +10,21 @@ import java.util.Iterator;
  *
  * <pre>
  * public static void main(String[] args) {
- * 	RosenNumberPartitionIterator i = new RosenNumberPartitionIterator(10, 3);
- * 	while (i.hasNext()) {
- * 		int[] t = i.next();
- * 		for (int j = 0; j < t.length; j++) {
- * 			System.out.print(t[j]);
- * 			System.out.print(" ");
- * 		}
- * 		System.out.println();
+ *   RosenNumberPartitionIterator i = new RosenNumberPartitionIterator(10, 3);
+ *   while (i.hasNext()) {
+ *     int[] t = i.next();
+ *     for (int j = 0; j < t.length; j++) {
+ *       System.out.print(t[j]);
+ *       System.out.print(" ");
+ *     }
+ *     System.out.println();
  *
- * 	}
+ *   }
  * }
  * </pre>
  *
- * <p>See Kenneth H. Rosen, Discrete Mathematics and Its Applications, 2nd edition (NY: McGraw-Hill,
+ * <p>
+ * See Kenneth H. Rosen, Discrete Mathematics and Its Applications, 2nd edition (NY: McGraw-Hill,
  * 1991), pp. 284-286
  */
 public class RosenNumberPartitionIterator implements Iterator<int[]> {

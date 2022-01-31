@@ -50,8 +50,8 @@ public class JASModInteger {
     this(variablesList, ringFactory, TermOrderByName.Lexicographic);
   }
 
-  public JASModInteger(
-      final List<? extends IExpr> variablesList, ModLongRing ringFactory, TermOrder termOrder) {
+  public JASModInteger(final List<? extends IExpr> variablesList, ModLongRing ringFactory,
+      TermOrder termOrder) {
     this.fRingFactory = ringFactory;
     this.fVariables = variablesList;
     String[] vars = new String[fVariables.size()];
@@ -135,7 +135,7 @@ public class JASModInteger {
    *
    * @param exprPoly
    * @param numeric2Rational if <code>true</code>, <code>INum</code> double values are converted to
-   *     <code>BigRational</code> internally
+   *        <code>BigRational</code> internally
    * @return
    * @throws ArithmeticException
    * @throws ClassCastException

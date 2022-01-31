@@ -235,10 +235,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    * @param listOfVariables names for the variables.
    */
   public ExprPolynomialRing(IAST listOfVariables) {
-    this(
-        ExprRingFactory.CONST,
-        listOfVariables,
-        listOfVariables.argSize(),
+    this(ExprRingFactory.CONST, listOfVariables, listOfVariables.argSize(),
         ExprTermOrderByName.Lexicographic);
   }
 
@@ -313,8 +310,8 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    * @param t a term order.
    * @param numericFunction
    */
-  public ExprPolynomialRing(
-      ExprRingFactory cf, IAST listOfVariables, int n, ExprTermOrder t, boolean numericFunction) {
+  public ExprPolynomialRing(ExprRingFactory cf, IAST listOfVariables, int n, ExprTermOrder t,
+      boolean numericFunction) {
     coFac = cf;
     nvar = n;
     tord = t;
@@ -391,18 +388,15 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    *
    * @param exprPoly the polynomial expression
    * @param coefficient set to <code>true</code> if called by the <code>Coefficient()</code>
-   *     function
+   *        function
    * @param checkNegativeExponents if <code>true</code> don't allow negative exponents and throw an
-   *     ArithmeticException
+   *        ArithmeticException
    * @param coefficientListMode if in coefficient list mode don't collect negative <code>Power()
    *     </code> exponents
    * @return
    */
-  public ExprPolynomial create(
-      final IExpr exprPoly,
-      boolean coefficient,
-      boolean checkNegativeExponents,
-      boolean coefficientListMode)
+  public ExprPolynomial create(final IExpr exprPoly, boolean coefficient,
+      boolean checkNegativeExponents, boolean coefficientListMode)
       throws ArithmeticException, JASConversionException {
     int ix = ExpVectorLong.indexVar(exprPoly, getVars());
     if (ix >= 0) {
@@ -496,9 +490,8 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    * @return
    * @throws ArithmeticException
    */
-  public static Map<IExpr, IExpr> create(
-      final IExpr exprPoly, IExpr x, Map<IExpr, IExpr> coefficientMap, IASTAppendable restList)
-      throws ArithmeticException {
+  public static Map<IExpr, IExpr> create(final IExpr exprPoly, IExpr x,
+      Map<IExpr, IExpr> coefficientMap, IASTAppendable restList) throws ArithmeticException {
     if (exprPoly instanceof IAST) {
       final IAST ast = (IAST) exprPoly;
       if (ast.isPlus()) {
@@ -537,8 +530,8 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     return coefficientMap;
   }
 
-  private static Map<IExpr, IExpr> createTimesSub(
-      final IAST ast, IExpr x, Map<IExpr, IExpr> coefficientMap, IASTAppendable restList) {
+  private static Map<IExpr, IExpr> createTimesSub(final IAST ast, IExpr x,
+      Map<IExpr, IExpr> coefficientMap, IASTAppendable restList) {
     IExpr mainExponent = F.NIL;
     IExpr expr;
     IASTAppendable times = F.TimesAlloc(ast.size());
@@ -571,8 +564,8 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     return addCoefficient(coefficientMap, mainExponent, times.oneIdentity1());
   }
 
-  public static Map<IExpr, IExpr> createTimes(
-      final IAST ast, IExpr x, Map<IExpr, IExpr> coefficientMap, IASTAppendable restList) {
+  public static Map<IExpr, IExpr> createTimes(final IAST ast, IExpr x,
+      Map<IExpr, IExpr> coefficientMap, IASTAppendable restList) {
     IExpr mainExponent = F.NIL;
     IExpr expr;
     IASTAppendable times = F.TimesAlloc(ast.size());
@@ -612,8 +605,8 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    * @param coefficient the coefficient
    * @return
    */
-  private static Map<IExpr, IExpr> addCoefficient(
-      Map<IExpr, IExpr> coefficientMap, final IExpr exponent, IExpr coefficient) {
+  private static Map<IExpr, IExpr> addCoefficient(Map<IExpr, IExpr> coefficientMap,
+      final IExpr exponent, IExpr coefficient) {
     if (exponent.isPresent()) {
       IExpr oldCoefficient = coefficientMap.get(exponent);
       if (oldCoefficient != null) {
@@ -648,7 +641,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    *
    * @param expression the expression which should be checked if it's a polynomial
    * @param coefficient set to <code>true</code> if called by the <code>Coefficient()</code>
-   *     function
+   *        function
    * @return <code>true</code> if the given expression is a polynomial
    */
   public boolean isPolynomial(final IExpr expression, boolean coefficient)
@@ -659,8 +652,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       if (variable.equals(expression)) {
         return true;
       }
-      if (variable.isPower()
-          && variable.base().equals(expression)
+      if (variable.isPower() && variable.base().equals(expression)
           && variable.exponent().isRational()) {
         IExpr expr = variable.exponent().reciprocal();
         if (!expr.isZero()) {
@@ -697,8 +689,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
               return false;
             }
             return true;
-          } else if (variable.isPower()
-              && variable.base().equals(ast.base())
+          } else if (variable.isPower() && variable.base().equals(ast.base())
               && variable.exponent().isRational()) {
             IExpr expr = variable.exponent().reciprocal().times(ast.exponent());
             if (!expr.isZero()) {

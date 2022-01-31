@@ -465,8 +465,8 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             return F.NIL;
           }
           IExpr value = F.Divide(exprWithoutVariable, timesWithoutVariable);
-          return extractVariableRecursive(timesWithVariable.oneIdentity1(), value, predicate, variable,
-              multipleValues, engine);
+          return extractVariableRecursive(timesWithVariable.oneIdentity1(), value, predicate,
+              variable, multipleValues, engine);
         } else if (ast.isPower()) {
           IExpr base = ast.base();
           IExpr exponent = ast.exponent();

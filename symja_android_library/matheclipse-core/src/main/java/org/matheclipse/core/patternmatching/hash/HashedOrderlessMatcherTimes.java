@@ -43,18 +43,11 @@ public class HashedOrderlessMatcherTimes extends HashedOrderlessMatcher {
   }
 
   @Override
-  protected boolean updateHashValues(
-      IASTAppendable result,
-      final IAST orderlessAST,
-      AbstractHashedPatternRules hashRule,
-      int[] hashValues,
-      int i,
-      int j,
-      EvalEngine engine) {
+  protected boolean updateHashValues(IASTAppendable result, final IAST orderlessAST,
+      AbstractHashedPatternRules hashRule, int[] hashValues, int i, int j, EvalEngine engine) {
     if (hashRule instanceof HashedPatternRulesTimesPower) {
-      IExpr temp =
-          hashRule.evalDownRule(
-              orderlessAST.get(i + 1), null, orderlessAST.get(j + 1), null, engine);
+      IExpr temp = hashRule.evalDownRule(orderlessAST.get(i + 1), null, orderlessAST.get(j + 1),
+          null, engine);
       if (temp.isPresent()) {
         hashValues[i] = 0;
         hashValues[j] = 0;

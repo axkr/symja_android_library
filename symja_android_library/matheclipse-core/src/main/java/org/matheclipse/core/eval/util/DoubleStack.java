@@ -5,7 +5,8 @@ package org.matheclipse.core.eval.util;
  * usual push and pop operations are provided, as well as a method to peek at the top item on the
  * stack, a method to test for whether the stack is empty.
  *
- * <p>When a stack is first created, it contains no items.
+ * <p>
+ * When a stack is first created, it contains no items.
  */
 public class DoubleStack {
   private double[] stack;

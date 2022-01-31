@@ -43,15 +43,12 @@ public class VisitorPlusTimesPowerReplaceAll extends VisitorReplaceAll {
       if (temp.isPresent()) {
         // something was evaluated - return a new IAST:
         IASTMutable result = ast.setAtCopy(i++, temp);
-        ast.forEach(
-            i,
-            size,
-            (x, j) -> {
-              IExpr t = x.accept(this);
-              if (t.isPresent()) {
-                result.set(j, t);
-              }
-            });
+        ast.forEach(i, size, (x, j) -> {
+          IExpr t = x.accept(this);
+          if (t.isPresent()) {
+            result.set(j, t);
+          }
+        });
         return result;
       }
       i++;

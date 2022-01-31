@@ -18,9 +18,8 @@ public class FactorPolynomialStressExample {
     for (int i = 0; i < 100000; i++) {
       String[] vars = new String[] {"a", "c", "d", "e", "x"};
       GenPolynomialRing<edu.jas.arith.BigInteger> fac;
-      fac =
-          new GenPolynomialRing<edu.jas.arith.BigInteger>(
-              edu.jas.arith.BigInteger.ZERO, vars.length, new TermOrder(TermOrder.INVLEX), vars);
+      fac = new GenPolynomialRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ZERO,
+          vars.length, new TermOrder(TermOrder.INVLEX), vars);
 
       GenPolynomial<edu.jas.arith.BigInteger> poly =
           fac.parse("a*d*e + c*d^2*x + a*e^2*x + c*d*e*x^2");

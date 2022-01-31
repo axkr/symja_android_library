@@ -19,7 +19,7 @@ public interface ISignedNumber extends INumber {
    */
   public ApfloatNum apfloatNumValue();
 
-  public Apfloat apfloatValue( );
+  public Apfloat apfloatValue();
 
   /** {@inheritDoc} */
   @Override
@@ -68,8 +68,8 @@ public interface ISignedNumber extends INumber {
   /**
    * Return the integer part of this number
    *
-   * <p>This method raises ArithmeticException if a numeric value cannot be represented by an
-   * longtype.
+   * <p>
+   * This method raises ArithmeticException if a numeric value cannot be represented by an longtype.
    *
    * @return
    */
@@ -222,8 +222,8 @@ public interface ISignedNumber extends INumber {
    * negative, zero or positive).
    *
    * @return 1 if this is a positive number;<br>
-   *     0 if this is a zero;<br>
-   *     -1 if this is a negative number;
+   *         0 if this is a zero;<br>
+   *         -1 if this is a negative number;
    */
   public int complexSign();
 
@@ -236,11 +236,11 @@ public interface ISignedNumber extends INumber {
   public ISignedNumber subtractFrom(ISignedNumber that);
 
   /**
-   * Converts this number to <code>int</code>; unlike {@link #intValue} this method raises {@link
-   * ArithmeticException} if this number cannot be represented by an <code>int</code> type.
+   * Converts this number to <code>int</code>; unlike {@link #intValue} this method raises
+   * {@link ArithmeticException} if this number cannot be represented by an <code>int</code> type.
    *
    * @return the numeric value represented by this integer after conversion to type <code>int</code>
-   *     .
+   *         .
    * @throws ArithmeticException if conversion to <code>int</code> is not possible.
    */
   public int toInt() throws ArithmeticException;
@@ -290,8 +290,8 @@ public interface ISignedNumber extends INumber {
   }
 
   /**
-   * Converts this number to <code>long</code>; unlike {@link #longValue} this method raises {@link
-   * ArithmeticException} if this number cannot be represented by a <code>long</code> type.
+   * Converts this number to <code>long</code>; unlike {@link #longValue} this method raises
+   * {@link ArithmeticException} if this number cannot be represented by a <code>long</code> type.
    *
    * @return the numeric value represented by this integer after conversion to type <code>long
    *     </code>.

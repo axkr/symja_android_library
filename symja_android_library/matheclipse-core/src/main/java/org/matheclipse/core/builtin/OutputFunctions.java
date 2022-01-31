@@ -130,13 +130,15 @@ public final class OutputFunctions {
    *
    * <blockquote>
    *
-   * <p>shows the internal representation of the given <code>expression</code>.
+   * <p>
+   * shows the internal representation of the given <code>expression</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>FullForm shows the difference in the internal expression representation:
+   * <p>
+   * FullForm shows the difference in the internal expression representation:
    *
    * <pre>
    * &gt;&gt;&gt; FullForm(x(x+1))
@@ -172,7 +174,8 @@ public final class OutputFunctions {
    *
    * <blockquote>
    *
-   * <p><code>HoldForm</code> doesn't evaluate <code>expr</code> and didn't appear in the output
+   * <p>
+   * <code>HoldForm</code> doesn't evaluate <code>expr</code> and didn't appear in the output
    *
    * </blockquote>
    *
@@ -205,7 +208,8 @@ public final class OutputFunctions {
    *
    * <blockquote>
    *
-   * <p>Generate the horner scheme for a univariate <code>polynomial</code>.
+   * <p>
+   * Generate the horner scheme for a univariate <code>polynomial</code>.
    *
    * </blockquote>
    *
@@ -215,16 +219,18 @@ public final class OutputFunctions {
    *
    * <blockquote>
    *
-   * <p>Generate the horner scheme for a univariate <code>polynomial</code> in <code>x</code>.
+   * <p>
+   * Generate the horner scheme for a univariate <code>polynomial</code> in <code>x</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Horner_scheme">Wikipedia - Horner scheme</a>
-   *   <li><a href="https://rosettacode.org/wiki/">Rosetta Code - Horner's rule for polynomial
-   *       evaluation</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Horner_scheme">Wikipedia - Horner scheme</a>
+   * <li><a href="https://rosettacode.org/wiki/">Rosetta Code - Horner's rule for polynomial
+   * evaluation</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -318,22 +324,12 @@ public final class OutputFunctions {
               return F.NIL;
             }
             IStringX arg2 = (IStringX) ast.arg2();
-            if (arg2.isString("Dutch")
-                || arg2.isString("Finnish")
-                || arg2.isString("English")
-                || arg2.isString("Esperanto")
-                || arg2.isString("French")
-                || arg2.isString("German")
-                || arg2.isString("Hungarian")
-                || arg2.isString("Italian")
-                || arg2.isString("Latin")
-                || arg2.isString("Polish")
-                || arg2.isString("Portuguese")
-                || arg2.isString("Romanian")
-                || arg2.isString("Russian")
-                || arg2.isString("Spanish")
-                || arg2.isString("Swedish")
-                || arg2.isString("Tongan")
+            if (arg2.isString("Dutch") || arg2.isString("Finnish") || arg2.isString("English")
+                || arg2.isString("Esperanto") || arg2.isString("French") || arg2.isString("German")
+                || arg2.isString("Hungarian") || arg2.isString("Italian") || arg2.isString("Latin")
+                || arg2.isString("Polish") || arg2.isString("Portuguese")
+                || arg2.isString("Romanian") || arg2.isString("Russian") || arg2.isString("Spanish")
+                || arg2.isString("Swedish") || arg2.isString("Tongan")
                 || arg2.isString("Turkish")) {
               language = arg2;
             } else {
@@ -419,14 +415,16 @@ public final class OutputFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the Symja Java form of the <code>expr</code>. In Java you can use the created Symja
+   * <p>
+   * returns the Symja Java form of the <code>expr</code>. In Java you can use the created Symja
    * expressions.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>JavaForm can add the <code>F.</code> prefix for class <code>
+   * <p>
+   * JavaForm can add the <code>F.</code> prefix for class <code>
    * org.matheclipse.core.expression.F</code> if you set <code>prefix-&gt;True</code>:
    *
    * <pre>
@@ -437,14 +435,16 @@ public final class OutputFunctions {
    * "Plus(Times(CC(0L,1L,1L,2L),Power(E,Times(CNI,x))),Times(CC(0L,1L,-1L,2L),Power(E,Times(CI,x))))"
    * </pre>
    *
-   * <p>JavaForm evaluates its argument before creating the Java form:
+   * <p>
+   * JavaForm evaluates its argument before creating the Java form:
    *
    * <pre>
    * &gt;&gt; JavaForm(D(sin(x)*cos(x),x))
    * "Plus(Sqr(Cos(x)),Negate(Sqr(Sin(x))))"
    * </pre>
    *
-   * <p>You can use <code>Hold</code> to suppress the evaluation:
+   * <p>
+   * You can use <code>Hold</code> to suppress the evaluation:
    *
    * <pre>
    * &gt;&gt; JavaForm(Hold(D(sin(x)*cos(x),x)))
@@ -457,9 +457,8 @@ public final class OutputFunctions {
   private static class JavaForm extends AbstractCoreFunctionEvaluator {
 
     public static CharSequence javaForm(IExpr arg1, boolean strictJava, boolean usePrefix) {
-      SourceCodeProperties p =
-          SourceCodeProperties.of(
-              strictJava, false, usePrefix ? Prefix.CLASS_NAME : Prefix.NONE, false);
+      SourceCodeProperties p = SourceCodeProperties.of(strictJava, false,
+          usePrefix ? Prefix.CLASS_NAME : Prefix.NONE, false);
       return arg1.internalJavaString(p, 0, x -> null);
     }
 
@@ -593,8 +592,8 @@ public final class OutputFunctions {
           return F.$str(((IASTDataset) arg1).datasetToJSForm(), IStringX.TEXT_HTML);
         }
         if (arg1 instanceof GraphExpr) {
-          return F.$str(
-              GraphFunctions.graphToJSForm((GraphExpr) arg1), IStringX.APPLICATION_JAVASCRIPT);
+          return F.$str(GraphFunctions.graphToJSForm((GraphExpr) arg1),
+              IStringX.APPLICATION_JAVASCRIPT);
         }
 
         return F.$str(toJavaScript(arg1, javascriptFlavor), IStringX.APPLICATION_JAVASCRIPT);
@@ -619,7 +618,8 @@ public final class OutputFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the MathMLForm form of the evaluated <code>expr</code>.
+   * <p>
+   * returns the MathMLForm form of the evaluated <code>expr</code>.
    *
    * </blockquote>
    */
@@ -661,8 +661,7 @@ public final class OutputFunctions {
             return IOFunctions.printMessage( //
                 ast.topHead(), //
                 "intrange", //
-                F.List(
-                    F.ZZ(RomanArabicConverter.MIN_VALUE), //
+                F.List(F.ZZ(RomanArabicConverter.MIN_VALUE), //
                     F.ZZ(RomanArabicConverter.MAX_VALUE)), //
                 engine);
           }
@@ -684,8 +683,8 @@ public final class OutputFunctions {
   private static class TableForm extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
       if (argSize >= 1) {
         IExpr tableHeadings = option[0];
         IExpr arg1 = ast.arg1();
@@ -726,10 +725,8 @@ public final class OutputFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      IBuiltInSymbol[] lhsOptionSymbols =
-          new IBuiltInSymbol[] {
-            S.TableAlignments, S.TableDepth, S.TableDirections, S.TableHeadings, S.TableSpacing
-          };
+      IBuiltInSymbol[] lhsOptionSymbols = new IBuiltInSymbol[] {S.TableAlignments, S.TableDepth,
+          S.TableDirections, S.TableHeadings, S.TableSpacing};
       IExpr[] rhsValues = new IExpr[] {S.Automatic, F.CInfinity, S.Column, S.None, S.Automatic};
       setOptions(newSymbol, lhsOptionSymbols, rhsValues);
     }
@@ -744,7 +741,8 @@ public final class OutputFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the TeX form of the evaluated <code>expr</code>.
+   * <p>
+   * returns the TeX form of the evaluated <code>expr</code>.
    *
    * </blockquote>
    *
@@ -778,8 +776,8 @@ public final class OutputFunctions {
   }
 
   private static class TreeForm extends AbstractCoreFunctionEvaluator {
-    private static void edgesToVisjs(
-        StringBuilder buf, List<SimpleImmutableEntry<Integer, Integer>> edgeSet) {
+    private static void edgesToVisjs(StringBuilder buf,
+        List<SimpleImmutableEntry<Integer, Integer>> edgeSet) {
       boolean first = true;
 
       buf.append("var edges = new vis.DataSet([\n");
@@ -801,16 +799,11 @@ public final class OutputFunctions {
       buf.append("]);\n");
     }
 
-    private static void treeToGraph(
-        IAST tree,
-        final int level,
-        final int maxLevel,
-        int[] currentCount,
-        List<SimpleImmutableEntry<String, Integer>> vertexList,
+    private static void treeToGraph(IAST tree, final int level, final int maxLevel,
+        int[] currentCount, List<SimpleImmutableEntry<String, Integer>> vertexList,
         List<SimpleImmutableEntry<Integer, Integer>> edgeList) {
-      vertexList.add(
-          new SimpleImmutableEntry<String, Integer>(
-              tree.head().toString(), Integer.valueOf(level)));
+      vertexList.add(new SimpleImmutableEntry<String, Integer>(tree.head().toString(),
+          Integer.valueOf(level)));
       int currentNode = vertexList.size();
       final int nextLevel = level + 1;
       for (int i = 1; i < tree.size(); i++) {
@@ -825,8 +818,8 @@ public final class OutputFunctions {
       }
     }
 
-    private static void vertexToVisjs(
-        StringBuilder buf, List<SimpleImmutableEntry<String, Integer>> vertexSet) {
+    private static void vertexToVisjs(StringBuilder buf,
+        List<SimpleImmutableEntry<String, Integer>> vertexSet) {
       buf.append("var nodes = new vis.DataSet([\n");
       boolean first = true;
       int counter = 1;
@@ -872,8 +865,8 @@ public final class OutputFunctions {
           edgesToVisjs(jsControl, edgeList);
           return F.JSFormData(jsControl.toString(), "treeform");
         } else {
-          vertexList.add(
-              new SimpleImmutableEntry<String, Integer>(arg1.toString(), Integer.valueOf(0)));
+          vertexList
+              .add(new SimpleImmutableEntry<String, Integer>(arg1.toString(), Integer.valueOf(0)));
           vertexToVisjs(jsControl, vertexList);
           edgesToVisjs(jsControl, edgeList);
           return F.JSFormData(jsControl.toString(), "treeform");
@@ -922,8 +915,8 @@ public final class OutputFunctions {
 
     @Override
     public String apply(IExpr expr) {
-      for (Iterator<Map<IExpr, String>> iterator = varStack.descendingIterator();
-          iterator.hasNext(); ) {
+      for (Iterator<Map<IExpr, String>> iterator = varStack.descendingIterator(); iterator
+          .hasNext();) {
         Map<IExpr, String> map = iterator.next();
         String temp = map.get(expr);
         if (temp != null) {
@@ -974,12 +967,12 @@ public final class OutputFunctions {
    * @param variablesIndex
    * @param variables set the variable at the current <code>variablesIndex</code>
    * @param types set the corresponding type <code>Real, Integer,...</code> for variable at the
-   *     current <code>variablesIndex</code>
+   *        current <code>variablesIndex</code>
    * @param engine
    * @return <code>true</code> if the variables and types
    */
-  private static boolean checkVariable(
-      IExpr arg, int variablesIndex, IASTMutable variables, IASTMutable types, EvalEngine engine) {
+  private static boolean checkVariable(IExpr arg, int variablesIndex, IASTMutable variables,
+      IASTMutable types, EvalEngine engine) {
     IExpr sym = arg;
     IExpr headTest = S.Real;
     if (arg.isList1() || arg.isList2()) {
@@ -1013,11 +1006,8 @@ public final class OutputFunctions {
     Initializer.init();
   }
 
-  public static boolean markdownTable(
-      StringBuilder result,
-      IExpr expr,
-      java.util.function.Function<IExpr, String> function,
-      boolean fillUpWithSPACE) {
+  public static boolean markdownTable(StringBuilder result, IExpr expr,
+      java.util.function.Function<IExpr, String> function, boolean fillUpWithSPACE) {
     int[] dim = expr.isMatrix();
     if (dim != null && dim[0] > 0 && dim[1] > 0) {
       IAST matrix = (IAST) expr;
@@ -1078,12 +1068,8 @@ public final class OutputFunctions {
     return false;
   }
 
-  public static boolean plaintextTable(
-      StringBuilder result,
-      IExpr expr,
-      String delimiter,
-      java.util.function.Function<IExpr, String> function,
-      boolean fillUpWithSPACE) {
+  public static boolean plaintextTable(StringBuilder result, IExpr expr, String delimiter,
+      java.util.function.Function<IExpr, String> function, boolean fillUpWithSPACE) {
     int[] dim = expr.isMatrix();
     if (dim != null && dim[0] > 0 && dim[1] > 0) {
       int rowDimension = dim[0];

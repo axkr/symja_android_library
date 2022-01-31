@@ -66,7 +66,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>append <code>rule</code> to the association <code>assoc</code> and assign the result to
+   * <p>
+   * append <code>rule</code> to the association <code>assoc</code> and assign the result to
    * <code>assoc</code>.
    *
    * </blockquote>
@@ -78,7 +79,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>append the <code>list-of-rules</code> to the association <code>assoc</code> and assign the
+   * <p>
+   * append the <code>list-of-rules</code> to the association <code>assoc</code> and assign the
    * result to <code>assoc</code>.
    *
    * </blockquote>
@@ -96,11 +98,12 @@ public class AssociationFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>, <a
-   * href="AssociationMap.md">AssociationMap</a>, <a
-   * href="AssociationThread.md">AssociationThread</a>, <a href="Counts.md">Counts</a>, <a
-   * href="Lookup.md">Lookup</a>, <a href="KeyExistsQ.md">KeyExistsQ</a>, <a
-   * href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a href="Values.md">Values</a>
+   * <p>
+   * <a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>,
+   * <a href="AssociationMap.md">AssociationMap</a>,
+   * <a href="AssociationThread.md">AssociationThread</a>, <a href="Counts.md">Counts</a>,
+   * <a href="Lookup.md">Lookup</a>, <a href="KeyExistsQ.md">KeyExistsQ</a>,
+   * <a href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a href="Values.md">Values</a>
    */
   private static final class AssociateTo extends AbstractCoreFunctionEvaluator {
 
@@ -124,8 +127,8 @@ public class AssociationFunctions {
           }
         }
         // The argument `1` is not a valid Association.
-        return IOFunctions.printMessage(
-            S.AssociateTo, "invak", F.List(symbolValue), EvalEngine.get());
+        return IOFunctions.printMessage(S.AssociateTo, "invak", F.List(symbolValue),
+            EvalEngine.get());
       }
     }
 
@@ -151,8 +154,8 @@ public class AssociationFunctions {
       return IOFunctions.printMessage(ast.topHead(), "rvalue", F.List(leftHandSide), engine);
     }
 
-    private static IExpr assignPartTo(
-        ISymbol symbol, IAST part, final IAST ast, EvalEngine engine) {
+    private static IExpr assignPartTo(ISymbol symbol, IAST part, final IAST ast,
+        EvalEngine engine) {
       if (symbol.hasAssignedSymbolValue()) {
         IExpr value = ast.arg2();
         if (value.isRuleAST() || value.isListOfRules() || value.isAssociation()) {
@@ -164,8 +167,8 @@ public class AssociationFunctions {
             return symbol.assignedValue();
           }
           // The argument `1` is not a valid Association.
-          return IOFunctions.printMessage(
-              ast.topHead(), "invak", F.List(oldValue), EvalEngine.get());
+          return IOFunctions.printMessage(ast.topHead(), "invak", F.List(oldValue),
+              EvalEngine.get());
         }
         // The argument is not a rule or a list of rules.
         return IOFunctions.printMessage(ast.topHead(), "invdt", F.List(), EvalEngine.get());
@@ -195,7 +198,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>create a <code>key-&gt;value</code> association map from the <code>list-of-rules</code>.
+   * <p>
+   * create a <code>key-&gt;value</code> association map from the <code>list-of-rules</code>.
    *
    * </blockquote>
    *
@@ -207,7 +211,8 @@ public class AssociationFunctions {
    * </code>
    * </pre>
    *
-   * <p><code>Association</code> is the head of associations:
+   * <p>
+   * <code>Association</code> is the head of associations:
    *
    * <pre>
    * <code>&gt;&gt; Head(&lt;|a -&gt; x, b -&gt; y, c -&gt; z|&gt;)
@@ -221,7 +226,8 @@ public class AssociationFunctions {
    * </code>
    * </pre>
    *
-   * <p>Associations can be nested:
+   * <p>
+   * Associations can be nested:
    *
    * <pre>
    * <code>&gt;&gt; &lt;|a -&gt; x, b -&gt; y, &lt;|a -&gt; z, d -&gt; t|&gt;|&gt;
@@ -231,9 +237,10 @@ public class AssociationFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="AssociationQ.md">AssociationQ</a>, <a href="Counts.md">Counts</a>, <a
-   * href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a href="Lookup.md">Lookup</a>, <a
-   * href="Values.md">Values</a>
+   * <p>
+   * <a href="AssociationQ.md">AssociationQ</a>, <a href="Counts.md">Counts</a>,
+   * <a href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a href="Lookup.md">Lookup</a>,
+   * <a href="Values.md">Values</a>
    */
   private static class Association extends AbstractEvaluator implements ISetEvaluator {
 
@@ -275,7 +282,7 @@ public class AssociationFunctions {
           return assoc;
         } catch (ValidateException ve) {
           IOFunctions.printMessage(S.Association, ve, engine);
-          //          LOGGER.debug("Association.evaluate() failed", ve);
+          // LOGGER.debug("Association.evaluate() failed", ve);
           // print no message
         }
         return evaled ? assocList : F.NIL;
@@ -289,11 +296,8 @@ public class AssociationFunctions {
     }
 
     @Override
-    public IExpr evaluateSet(
-        final IExpr leftHandSide,
-        IExpr rightHandSide,
-        IBuiltInSymbol builtinSymbol,
-        EvalEngine engine) {
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.head().isSymbol()) {
         ISymbol symbol = (ISymbol) leftHandSide.head();
 
@@ -304,8 +308,8 @@ public class AssociationFunctions {
         } else {
           if (symbol.isProtected()) {
             // Symbol `1` is Protected.
-            return IOFunctions.printMessage(
-                builtinSymbol, "wrsym", F.List(symbol), EvalEngine.get());
+            return IOFunctions.printMessage(builtinSymbol, "wrsym", F.List(symbol),
+                EvalEngine.get());
           }
           try {
             IExpr lhsHead = engine.evaluate(symbol);
@@ -336,8 +340,9 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>create an association <code>&lt;|header(k1-&gt;v1), header(k2-&gt;v2),...|&gt;</code> with
-   * the rules mapped by the <code>header</code>.
+   * <p>
+   * create an association <code>&lt;|header(k1-&gt;v1), header(k2-&gt;v2),...|&gt;</code> with the
+   * rules mapped by the <code>header</code>.
    *
    * </blockquote>
    *
@@ -348,8 +353,9 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>create an association <code>&lt;|k1-&gt;header(k1), k2-&gt;header(k2),...|&gt;</code> with
-   * the rules mapped by the <code>header</code>.
+   * <p>
+   * create an association <code>&lt;|k1-&gt;header(k1), k2-&gt;header(k2),...|&gt;</code> with the
+   * rules mapped by the <code>header</code>.
    *
    * </blockquote>
    *
@@ -366,10 +372,11 @@ public class AssociationFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>, <a
-   * href="AssociationThread.md">AssociationThread</a>, <a href="Counts.md">Counts</a>, <a
-   * href="Lookup.md">Lookup</a>, <a href="KeyExistsQ.md">KeyExistsQ</a>, <a
-   * href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a href="Values.md">Values</a>
+   * <p>
+   * <a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>,
+   * <a href="AssociationThread.md">AssociationThread</a>, <a href="Counts.md">Counts</a>,
+   * <a href="Lookup.md">Lookup</a>, <a href="KeyExistsQ.md">KeyExistsQ</a>,
+   * <a href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a href="Values.md">Values</a>
    */
   private static class AssociationMap extends AbstractEvaluator {
 
@@ -421,7 +428,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>create an association with rules from the keys <code>{k1,k2,...}</code> and values <code>
+   * <p>
+   * create an association with rules from the keys <code>{k1,k2,...}</code> and values <code>
    * {v1,v2,...}</code>.
    *
    * </blockquote>
@@ -433,7 +441,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>create an association with rules from the keys <code>{k1,k2,...}</code> and values <code>
+   * <p>
+   * create an association with rules from the keys <code>{k1,k2,...}</code> and values <code>
    * {v1,v2,...}</code>.
    *
    * </blockquote>
@@ -451,11 +460,12 @@ public class AssociationFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="AssociateTo.md">AssociateTo</a>, <a href="Association.md">Association</a>, <a
-   * href="AssociationQ.md">AssociationQ</a>, <a href="AssociationMap.md">AssociationMap</a>, <a
-   * href="Counts.md">Counts</a>, <a href="Lookup.md">Lookup</a>, <a
-   * href="KeyExistsQ.md">KeyExistsQ</a>, <a href="Keys.md">Keys</a>, <a
-   * href="KeySort.md">KeySort</a>, <a href="Values.md">Values</a>
+   * <p>
+   * <a href="AssociateTo.md">AssociateTo</a>, <a href="Association.md">Association</a>,
+   * <a href="AssociationQ.md">AssociationQ</a>, <a href="AssociationMap.md">AssociationMap</a>,
+   * <a href="Counts.md">Counts</a>, <a href="Lookup.md">Lookup</a>,
+   * <a href="KeyExistsQ.md">KeyExistsQ</a>, <a href="Keys.md">Keys</a>,
+   * <a href="KeySort.md">KeySort</a>, <a href="Values.md">Values</a>
    */
   private static class AssociationThread extends AbstractEvaluator {
 
@@ -505,7 +515,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>count the number of each distinct element in the list <code>{elem1, elem2, elem3, ...}
+   * <p>
+   * count the number of each distinct element in the list <code>{elem1, elem2, elem3, ...}
    * </code> and return the result as an association <code>&lt;|elem1-&gt;counter1, ...|&gt;</code>.
    *
    * </blockquote>
@@ -520,7 +531,8 @@ public class AssociationFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Commonest.md">Commonest</a>, <a href="Tally.md">Tally</a>
+   * <p>
+   * <a href="Commonest.md">Commonest</a>, <a href="Tally.md">Tally</a>
    */
   private static class Counts extends AbstractEvaluator {
 
@@ -611,7 +623,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>return a list of keys of the <code>association</code>.
+   * <p>
+   * return a list of keys of the <code>association</code>.
    *
    * </blockquote>
    *
@@ -625,9 +638,10 @@ public class AssociationFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>, <a
-   * href="Counts.md">Counts</a>, <a href="Lookup.md">Lookup</a>, <a href="KeySort.md">KeySort</a>,
-   * <a href="Values.md">Values</a>
+   * <p>
+   * <a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>,
+   * <a href="Counts.md">Counts</a>, <a href="Lookup.md">Lookup</a>,
+   * <a href="KeySort.md">KeySort</a>, <a href="Values.md">Values</a>
    */
   private static class Keys extends AbstractEvaluator {
 
@@ -685,7 +699,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>returns an association of the elements for which <code>head(keyi)</code> returns <code>True
+   * <p>
+   * returns an association of the elements for which <code>head(keyi)</code> returns <code>True
    * </code>.
    *
    * </blockquote>
@@ -697,7 +712,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>returns an association of the elements for which <code>head(keyi)</code> returns <code>True
+   * <p>
+   * returns an association of the elements for which <code>head(keyi)</code> returns <code>True
    * </code>.
    *
    * </blockquote>
@@ -770,7 +786,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>sort the <code>&lt;|key1-&gt;value1, ...|&gt;</code> entries by the <code>key</code> values.
+   * <p>
+   * sort the <code>&lt;|key1-&gt;value1, ...|&gt;</code> entries by the <code>key</code> values.
    *
    * </blockquote>
    *
@@ -781,7 +798,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>sort the entries by the <code>comparator</code>.
+   * <p>
+   * sort the entries by the <code>comparator</code>.
    *
    * </blockquote>
    *
@@ -829,17 +847,19 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>count the number of each distinct character in the <code>string</code> and return the result
-   * as an association <code>&lt;|char-&gt;counter1, ...|&gt;</code>.
+   * <p>
+   * count the number of each distinct character in the <code>string</code> and return the result as
+   * an association <code>&lt;|char-&gt;counter1, ...|&gt;</code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a
-   *       href="https://en.wikipedia.org/wiki/The_quick_brown_fox_jumps_over_the_lazy_dog">Wikipedia
-   *       - The quick brown fox jumps over the lazy dog</a>
+   * <li><a href=
+   * "https://en.wikipedia.org/wiki/The_quick_brown_fox_jumps_over_the_lazy_dog">Wikipedia - The
+   * quick brown fox jumps over the lazy dog</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -860,8 +880,7 @@ public class AssociationFunctions {
         String str = ((IStringX) arg1).toString();
         HashMap<Character, MutableInt> map = new HashMap<Character, MutableInt>();
         for (int i = 0; i < str.length(); i++) {
-          map.compute(
-              str.charAt(i), //
+          map.compute(str.charAt(i), //
               (k, v) -> (v == null) ? new MutableInt(1) : v.increment());
         }
         IAssociation assoc = F.assoc();
@@ -889,7 +908,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>return the value in the <code>association</code> which is associated with the <code>key
+   * <p>
+   * return the value in the <code>association</code> which is associated with the <code>key
    * </code>. If no value is available return <code>Missing(&quot;KeyAbsent&quot;,key)</code>.
    *
    * </blockquote>
@@ -901,7 +921,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>return the value in the <code>association</code> which is associated with the <code>key
+   * <p>
+   * return the value in the <code>association</code> which is associated with the <code>key
    * </code>. If no value is available return <code>defaultValue</code>.
    *
    * </blockquote>
@@ -922,9 +943,10 @@ public class AssociationFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>, <a
-   * href="Counts.md">Counts</a>, <a href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a
-   * href="Values.md">Values</a>
+   * <p>
+   * <a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>,
+   * <a href="Counts.md">Counts</a>, <a href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>,
+   * <a href="Values.md">Values</a>
    */
   private static class Lookup extends AbstractEvaluator implements ICoreFunctionEvaluator {
 
@@ -1025,7 +1047,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>returns an association of the rules for which the <code>k1, k2,...</code> are keys in the
+   * <p>
+   * returns an association of the rules for which the <code>k1, k2,...</code> are keys in the
    * association.
    *
    * </blockquote>
@@ -1037,7 +1060,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>returns an association of the rules for which the <code>k1, k2,...</code> are keys in the
+   * <p>
+   * returns an association of the rules for which the <code>k1, k2,...</code> are keys in the
    * association.
    *
    * </blockquote>
@@ -1068,8 +1092,7 @@ public class AssociationFunctions {
           }
           return keyTake(arg1, (IAST) arg2);
         } else {
-          LOGGER.log(
-              engine.getLogLevel(),
+          LOGGER.log(engine.getLogLevel(),
               "KeyTake: Association or list of rules expected at position 1.");
         }
       } catch (final ValidateException ve) {
@@ -1129,7 +1152,8 @@ public class AssociationFunctions {
    *
    * <blockquote>
    *
-   * <p>return a list of values of the <code>association</code>.
+   * <p>
+   * return a list of values of the <code>association</code>.
    *
    * </blockquote>
    *
@@ -1143,9 +1167,10 @@ public class AssociationFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>, <a
-   * href="Counts.md">Counts</a>, <a href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a
-   * href="Lookup.md">Lookup</a>
+   * <p>
+   * <a href="Association.md">Association</a>, <a href="AssociationQ.md">AssociationQ</a>,
+   * <a href="Counts.md">Counts</a>, <a href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>,
+   * <a href="Lookup.md">Lookup</a>
    */
   private static class Values extends AbstractEvaluator {
 

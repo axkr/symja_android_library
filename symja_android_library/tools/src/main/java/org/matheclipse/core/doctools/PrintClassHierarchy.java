@@ -41,31 +41,11 @@ public class PrintClassHierarchy {
   private final Map<String, List<String>> subClazzEntries = new HashMap<String, List<String>>();
 
   public static void main(final String[] args) {
-    new PrintClassHierarchy(
-            IAST.class,
-            IASTMutable.class,
-            AST0.class,
-            AST1.class,
-            AST2.class,
-            AST3.class,
-            AST.class,
-            ASTRealMatrix.class,
-            ASTRealVector.class,
-            IASTAppendable.class,
-            ComplexSym.class,
-            IntegerSym.class,
-            BigIntegerSym.class,
-            FractionSym.class,
-            BigFractionSym.class,
-            ComplexNum.class,
-            Num.class,
-            ApcomplexNum.class,
-            ApfloatNum.class,
-            Pattern.class,
-            PatternSequence.class,
-            BuiltInSymbol.class,
-            StringX.class)
-        .printHierarchy();
+    new PrintClassHierarchy(IAST.class, IASTMutable.class, AST0.class, AST1.class, AST2.class,
+        AST3.class, AST.class, ASTRealMatrix.class, ASTRealVector.class, IASTAppendable.class,
+        ComplexSym.class, IntegerSym.class, BigIntegerSym.class, FractionSym.class,
+        BigFractionSym.class, ComplexNum.class, Num.class, ApcomplexNum.class, ApfloatNum.class,
+        Pattern.class, PatternSequence.class, BuiltInSymbol.class, StringX.class).printHierarchy();
   }
 
   public PrintClassHierarchy(final Class<?>... clazzes) {
@@ -80,8 +60,8 @@ public class PrintClassHierarchy {
 
   private void printHierarchy(final String clazzName, final Stack<Boolean> moreClassesInHierarchy) {
     if (!moreClassesInHierarchy.empty()) {
-      for (final Boolean hasColumn :
-          moreClassesInHierarchy.subList(0, moreClassesInHierarchy.size() - 1)) {
+      for (final Boolean hasColumn : moreClassesInHierarchy.subList(0,
+          moreClassesInHierarchy.size() - 1)) {
         System.out.print(hasColumn.booleanValue() ? PADDING_WITH_COLUMN : PADDING);
       }
     }

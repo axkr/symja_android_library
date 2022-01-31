@@ -33,8 +33,8 @@ public class MagicProcessor {
       // Just Remove outermost braces for single equation. Issues for
       // multiple eqn
       /*
-       * if(processedQ.split(",").length == 2) { if (ans.charAt(0) == '{' && ans.charAt(ans.length() - 1) == '}')
-       * ans = ans.substring(1, ans.length() - 1); }
+       * if(processedQ.split(",").length == 2) { if (ans.charAt(0) == '{' && ans.charAt(ans.length()
+       * - 1) == '}') ans = ans.substring(1, ans.length() - 1); }
        */
     }
 
@@ -43,8 +43,9 @@ public class MagicProcessor {
 
   String preProcessQues() {
     /*
-     * For q = Solve({x^2==4,y^2+x==6},{x,y}) ques = AST = Solve[{x^2==4,y^2+x==6},{x,y}] | |----array |0 = Symbol =
-     * solve |1 = AST = {x^2==4,y^2+x==6} |2 = AST = {x,y} |3 = null |4 = null
+     * For q = Solve({x^2==4,y^2+x==6},{x,y}) ques = AST = Solve[{x^2==4,y^2+x==6},{x,y}] |
+     * |----array |0 = Symbol = solve |1 = AST = {x^2==4,y^2+x==6} |2 = AST = {x,y} |3 = null |4 =
+     * null
      */
 
     // Convert expression like "2*x+7=10" to Solve(2*x+7 - 10 == 0, x)
@@ -56,15 +57,16 @@ public class MagicProcessor {
       }
 
       /*
-       * String [] list = outPut.split("="); if(list.length == 2) { String eq = list[1] + "- (" + list[0] + ")";
-       * IExpr eqn = MathUtils.parse(eq, null); if(eqn.isAST() && isPolynomial((IAST) eqn)) { String vars =
-       * solve_get_arg_if_missing(eqn); isSysOfEq = true; outPut = ((Symbol) F.Solve).toString() + "(" + eq +
-       * " == 0" + "," + vars + ")"; } }
+       * String [] list = outPut.split("="); if(list.length == 2) { String eq = list[1] + "- (" +
+       * list[0] + ")"; IExpr eqn = MathUtils.parse(eq, null); if(eqn.isAST() && isPolynomial((IAST)
+       * eqn)) { String vars = solve_get_arg_if_missing(eqn); isSysOfEq = true; outPut = ((Symbol)
+       * F.Solve).toString() + "(" + eq + " == 0" + "," + vars + ")"; } }
        */
     }
 
     IExpr ques = MathUtils.parse(outPut, null);
-    if (ques == null) return outPut;
+    if (ques == null)
+      return outPut;
     LOGGER.debug("ques = {}", ques);
 
     if (wrtArgumentMising(ques, S.Solve)) {
@@ -82,8 +84,10 @@ public class MagicProcessor {
       org.matheclipse.core.convert.VariablesSet eVar =
           new org.matheclipse.core.convert.VariablesSet(fn);
       String var = null;
-      if (eVar.isSize(1)) var = getVarString(eVar, false);
-      else var = getVarString(eVar, true);
+      if (eVar.isSize(1))
+        var = getVarString(eVar, false);
+      else
+        var = getVarString(eVar, true);
       outPut = ((Symbol) S.D).toString() + "(" + fn.toString() + "," + var + ")";
     }
     if (wrtArgumentMising(ques, S.Integrate)) {
@@ -92,8 +96,10 @@ public class MagicProcessor {
       org.matheclipse.core.convert.VariablesSet eVar =
           new org.matheclipse.core.convert.VariablesSet(fn);
       String var = null;
-      if (eVar.isSize(1)) var = getVarString(eVar, false);
-      else var = getVarString(eVar, true);
+      if (eVar.isSize(1))
+        var = getVarString(eVar, false);
+      else
+        var = getVarString(eVar, true);
       outPut = ((Symbol) S.Integrate).toString() + "(" + fn.toString() + "," + var + ")";
     }
 
@@ -110,7 +116,8 @@ public class MagicProcessor {
   }
 
   private int getSize(IExpr ques) {
-    if (ques.isAST()) return ((IAST) ques).size();
+    if (ques.isAST())
+      return ((IAST) ques).size();
     return 0;
   }
 
@@ -130,9 +137,12 @@ public class MagicProcessor {
         // Number of equations and variables are different
         if (num_equations == 1) {
           String vars = getVarString(eVar, true);
-          if (vars != null) return vars;
-          else err = "Please specify variable also i.e Solve( f(x), x)";
-        } else err = "Please specify variable also i.e Solve( equatons, {x, y, ...} )";
+          if (vars != null)
+            return vars;
+          else
+            err = "Please specify variable also i.e Solve( f(x), x)";
+        } else
+          err = "Please specify variable also i.e Solve( equatons, {x, y, ...} )";
       }
     }
     return null;
@@ -157,9 +167,12 @@ public class MagicProcessor {
 
   public String getVarString(org.matheclipse.core.convert.VariablesSet eVar, boolean onlyXorY) {
     if (onlyXorY) {
-      if (eVar.contains(S.x)) return S.x.toString();
-      else if (eVar.contains(S.y)) return S.y.toString();
-      else return null;
+      if (eVar.contains(S.x))
+        return S.x.toString();
+      else if (eVar.contains(S.y))
+        return S.y.toString();
+      else
+        return null;
     }
     IAST varList = eVar.getVarList();
     // [list, x, null, null, null, null]
@@ -167,7 +180,8 @@ public class MagicProcessor {
   }
 
   boolean isEquation(IExpr exp) {
-    if (exp.isAST() && isPolynomial((IAST) exp)) {}
+    if (exp.isAST() && isPolynomial((IAST) exp)) {
+    }
 
     return false;
   }
@@ -208,19 +222,23 @@ public class MagicProcessor {
   String inputQuestionIsPossiblyASystemOfEquation(String s) {
     int numQuals = s.split("=").length - 1;
     int numComma = s.split(",").length - 1;
-    if ((numQuals > 0) && (numComma + 1 != numQuals)) return null;
+    if ((numQuals > 0) && (numComma + 1 != numQuals))
+      return null;
 
     String[] listEqn = s.split(",");
     String processedEqn = "";
 
     for (int i = 0; i < numQuals; i++) {
       String fixedEq = getFixedEquation(listEqn[i]);
-      if (fixedEq == null) return null;
+      if (fixedEq == null)
+        return null;
       processedEqn += fixedEq;
-      if (i != numQuals - 1) processedEqn += ",";
+      if (i != numQuals - 1)
+        processedEqn += ",";
     }
 
-    if (numQuals >= 1) processedEqn = "{" + processedEqn + "}";
+    if (numQuals >= 1)
+      processedEqn = "{" + processedEqn + "}";
 
     return processedEqn;
   }

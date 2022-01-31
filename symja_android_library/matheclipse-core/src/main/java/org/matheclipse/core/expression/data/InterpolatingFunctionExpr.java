@@ -30,8 +30,8 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
   private static class HermiteFunctionExpr
       extends InterpolatingFunctionExpr<FieldHermiteInterpolator> {
 
-    public HermiteFunctionExpr(
-        final FieldHermiteInterpolator interpolator, double min, double max) {
+    public HermiteFunctionExpr(final FieldHermiteInterpolator interpolator, double min,
+        double max) {
       super(interpolator, min, max);
     }
   }
@@ -44,8 +44,8 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
     return new HermiteFunctionExpr(interpolator, min, max);
   }
 
-  public static InterpolatingFunctionExpr newInstance(
-      final IAST interpolator, double min, double max) {
+  public static InterpolatingFunctionExpr newInstance(final IAST interpolator, double min,
+      double max) {
     return new ASTFunctionExpr(interpolator, min, max);
   }
 
@@ -53,8 +53,8 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
    * @param value
    * @return
    */
-  public static InterpolatingFunctionExpr newInstance(
-      final UpdatingMultipleLinearRegression value, double min, double max) {
+  public static InterpolatingFunctionExpr newInstance(final UpdatingMultipleLinearRegression value,
+      double min, double max) {
     return new InterpolatingFunctionExpr(value, min, max);
   }
 

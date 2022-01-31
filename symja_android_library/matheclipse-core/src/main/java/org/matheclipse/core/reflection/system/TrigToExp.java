@@ -20,7 +20,8 @@ import org.matheclipse.core.visit.VisitorReplaceAllDFS;
  *
  * <blockquote>
  *
- * <p>converts trigonometric functions in <code>expr</code> to exponentials.
+ * <p>
+ * converts trigonometric functions in <code>expr</code> to exponentials.
  *
  * </blockquote>
  *
@@ -38,7 +39,8 @@ public class TrigToExp extends AbstractEvaluator {
   /**
    * Exponential definitions for trigonometric functions
    *
-   * <p>See <a href=
+   * <p>
+   * See <a href=
    * "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Exponential_definitions"> List
    * of trigonometric identities - Exponential definitions</a>,<br>
    * <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
@@ -51,14 +53,13 @@ public class TrigToExp extends AbstractEvaluator {
     }
 
     IExpr arg1 = ast.arg1();
-    Function<IExpr, IExpr> fun =
-        x -> {
-          IExpr t = x.rewrite(ID.Exp);
-          if (!t.isPresent()) {
-            return x.rewrite(ID.Log);
-          }
-          return t.rewrite(ID.Log).orElse(t);
-        };
+    Function<IExpr, IExpr> fun = x -> {
+      IExpr t = x.rewrite(ID.Exp);
+      if (!t.isPresent()) {
+        return x.rewrite(ID.Log);
+      }
+      return t.rewrite(ID.Log).orElse(t);
+    };
     VisitorReplaceAllDFS dfs = new VisitorReplaceAllDFS(fun, 1);
     return arg1.accept(dfs).orElse(arg1);
   }

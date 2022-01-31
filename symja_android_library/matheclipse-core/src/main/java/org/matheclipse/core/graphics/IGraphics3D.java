@@ -5,25 +5,25 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * Interface for 3D graphics primitives like Cubiod, Sphere, Cylinder,... which create a threejs
- * JSON String which is used in calling the <a
- * href="https://github.com/Mathics3/mathics-threejs-backend/wiki">mathics-threejs-backend
+ * JSON String which is used in calling the
+ * <a href="https://github.com/Mathics3/mathics-threejs-backend/wiki">mathics-threejs-backend
  * library</a>.
  */
 public interface IGraphics3D {
-  
+
   default boolean graphics2DDimension(IAST ast, Dimensions2D dim) {
     return false;
   }
 
-  default boolean graphics2D(
-      StringBuilder buf, IAST ast, Dimensions2D dim, IAST color, IExpr opacity) {
+  default boolean graphics2D(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
+      IExpr opacity) {
     return false;
   }
 
   /**
    * Interface for 3D graphics primitives like Cuboid, Sphere, Cylinder,... which create a threejs
-   * JSON String which is used in calling the <a
-   * href="https://github.com/Mathics3/mathics-threejs-backend/wiki">mathics-threejs-backend
+   * JSON String which is used in calling the
+   * <a href="https://github.com/Mathics3/mathics-threejs-backend/wiki">mathics-threejs-backend
    * library</a>.
    *
    * @param buf

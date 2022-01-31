@@ -268,19 +268,18 @@ public class SwingFunctions {
       return F.NIL;
     }
 
-    private static boolean addComponents(
-        Container container, IAST list, JDialog dialog, EvalEngine engine, IExpr result[]) {
-      final Consumer<IExpr> consumer =
-          x -> {
-            try {
-              engine.evaluate(x);
-            } catch (DialogReturnException rex) {
-              result[0] = rex.getValue();
-              dialog.dispose();
-            } catch (RuntimeException rex) {
-              //
-            }
-          };
+    private static boolean addComponents(Container container, IAST list, JDialog dialog,
+        EvalEngine engine, IExpr result[]) {
+      final Consumer<IExpr> consumer = x -> {
+        try {
+          engine.evaluate(x);
+        } catch (DialogReturnException rex) {
+          result[0] = rex.getValue();
+          dialog.dispose();
+        } catch (RuntimeException rex) {
+          //
+        }
+      };
       for (int i = 1; i < list.size(); i++) {
         IExpr arg = list.get(i);
         int headID = list.get(i).headID();
@@ -289,8 +288,8 @@ public class SwingFunctions {
             case ID.Button:
               if (arg.size() == 3) {
                 final String buttonLabel = arg.first().toString();
-                createButton(
-                    dialog, container, buttonLabel, arg.second(), consumer, result, engine);
+                createButton(dialog, container, buttonLabel, arg.second(), consumer, result,
+                    engine);
               } else {
                 return false;
               }
@@ -309,21 +308,14 @@ public class SwingFunctions {
                 return false;
               }
               createButton(dialog, container, cancelLabel, cancelAction, consumer, result, engine);
-              dialog
-                  .getRootPane()
-                  .getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+              dialog.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
                   .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CANCEL");
-              dialog
-                  .getRootPane()
-                  .getActionMap()
-                  .put(
-                      "CANCEL",
-                      new AbstractAction() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                          consumer.accept(cancelAction);
-                        }
-                      });
+              dialog.getRootPane().getActionMap().put("CANCEL", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                  consumer.accept(cancelAction);
+                }
+              });
               continue;
             case ID.DefaultButton:
               String buttonLabel = "Ok";
@@ -337,9 +329,8 @@ public class SwingFunctions {
               } else {
                 return false;
               }
-              JButton db =
-                  createButton(
-                      dialog, container, buttonLabel, buttonAction, consumer, result, engine);
+              JButton db = createButton(dialog, container, buttonLabel, buttonAction, consumer,
+                  result, engine);
               dialog.getRootPane().setDefaultButton(db);
               continue;
             case ID.Column:
@@ -412,23 +403,16 @@ public class SwingFunctions {
       return true;
     }
 
-    private static JButton createButton(
-        JDialog dialog,
-        Container container,
-        String label,
-        IExpr action,
-        final Consumer<IExpr> consumer,
-        IExpr[] result,
-        EvalEngine engine) {
+    private static JButton createButton(JDialog dialog, Container container, String label,
+        IExpr action, final Consumer<IExpr> consumer, IExpr[] result, EvalEngine engine) {
       JButton button = new JButton(label);
       container.add(button);
-      button.addActionListener(
-          new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-              consumer.accept(action);
-            }
-          });
+      button.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          consumer.accept(action);
+        }
+      });
       return button;
     }
 
@@ -438,8 +422,7 @@ public class SwingFunctions {
       int headID;
 
       public MyDocumentListener(JTextField inputField, ISymbol dynamic, int headID) {
-        if (dynamic != null
-            && //
+        if (dynamic != null && //
             (!dynamic.isVariable() || dynamic.isBuiltInSymbol())) {
           // Cannot assign to raw object `1`.
           throw new ArgumentTypeException(
@@ -486,20 +469,14 @@ public class SwingFunctions {
       }
     }
 
-    private static void createInputField(
-        JDialog dialog,
-        Container container,
-        final IExpr action,
-        int headID,
-        IExpr[] result,
-        EvalEngine engine) {
+    private static void createInputField(JDialog dialog, Container container, final IExpr action,
+        int headID, IExpr[] result, EvalEngine engine) {
       String defaultInput = action.toString();
       ISymbol dynamic = null;
 
       if (action == S.Null) {
         defaultInput = "";
-      } else if (action.isAST(S.Dynamic, 2)
-          && action.first().isSymbol()
+      } else if (action.isAST(S.Dynamic, 2) && action.first().isSymbol()
           && !action.first().isBuiltInSymbol()) {
         dynamic = (ISymbol) action.first();
         defaultInput = dynamic.toString();
@@ -576,8 +553,8 @@ public class SwingFunctions {
     return getMessage(messageShortcut, listOfArgs, EvalEngine.get());
   }
 
-  public static String getMessage(
-      String messageShortcut, final IAST listOfArgs, EvalEngine engine) {
+  public static String getMessage(String messageShortcut, final IAST listOfArgs,
+      EvalEngine engine) {
     IExpr temp = S.General.evalMessage(messageShortcut);
     String message = null;
     if (temp.isPresent()) {

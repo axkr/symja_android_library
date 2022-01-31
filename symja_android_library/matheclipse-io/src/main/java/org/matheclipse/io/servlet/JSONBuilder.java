@@ -140,8 +140,8 @@ public class JSONBuilder {
     return new String[] {"mathml", json.toString()};
   }
 
-  public static String[] createJSONResult(
-      EvalEngine engine, IExpr outExpr, StringWriter outWriter, StringWriter errorWriter) {
+  public static String[] createJSONResult(EvalEngine engine, IExpr outExpr, StringWriter outWriter,
+      StringWriter errorWriter) {
     // DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
     // DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
     MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
@@ -186,13 +186,13 @@ public class JSONBuilder {
     return new String[] {"mathml", json.toString()};
   }
 
-  public static String[] createJSONHTML(
-      EvalEngine engine, String html, StringWriter outWriter, StringWriter errorWriter) {
+  public static String[] createJSONHTML(EvalEngine engine, String html, StringWriter outWriter,
+      StringWriter errorWriter) {
     // DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
     // DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
-    //    MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
-    //	    StringWriter stw = new StringWriter();
-    //	    stw.append(html);
+    // MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
+    // StringWriter stw = new StringWriter();
+    // stw.append(html);
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
     resultsJSON.put("line", Integer.valueOf(21));
@@ -240,45 +240,35 @@ public class JSONBuilder {
   public static String[] createJSONIFrame(String html, String manipulateStr) {
     html = IOFunctions.templateRender(html, new String[] {manipulateStr});
     html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript(
-        "<iframe srcdoc=\""
-            + html
-            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
   }
 
   public static String[] createGraphics3DIFrame(String html, String manipulateStr) {
     html = JSBuilder.buildGraphics3D(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript(
-        "<iframe srcdoc=\""
-            + html
-            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
   }
 
   public static String[] createMathcellIFrame(String html, String manipulateStr) {
     html = JSBuilder.buildMathcell(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript(
-        "<iframe srcdoc=\""
-            + html
-            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
   }
 
   public static String[] createJSXGraphIFrame(String html, String manipulateStr) {
     html = JSBuilder.buildJSXGraph(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript(
-        "<iframe srcdoc=\""
-            + html
-            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
   }
 
   public static String[] createPlotlyIFrame(String html, String manipulateStr) {
     html = JSBuilder.buildPlotly(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript(
-        "<iframe srcdoc=\""
-            + html
-            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" scrolling=\"no\"></iframe>");
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" scrolling=\"no\"></iframe>");
   }
 }

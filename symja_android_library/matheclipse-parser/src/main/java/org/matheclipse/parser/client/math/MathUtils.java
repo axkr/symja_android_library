@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.matheclipse.parser.client.math;
@@ -126,18 +124,20 @@ public final class MathUtils {
   }
 
   /**
-   * Returns an exact representation of the <a
-   * href="http://mathworld.wolfram.com/BinomialCoefficient.html">Binomial Coefficient</a>, "<code>
+   * Returns an exact representation of the
+   * <a href="http://mathworld.wolfram.com/BinomialCoefficient.html">Binomial Coefficient</a>,
+   * "<code>
    * n choose k</code>", the number of <code>k</code>-element subsets that can be selected from an
    * <code>n</code>-element set.
    *
-   * <p><Strong>Preconditions</strong>:
+   * <p>
+   * <Strong>Preconditions</strong>:
    *
    * <ul>
-   *   <li><code>0 <= k <= n </code> (otherwise <code>IllegalArgumentException</code> is thrown)
-   *   <li>The result is small enough to fit into a <code>long</code>. The largest value of <code>n
+   * <li><code>0 <= k <= n </code> (otherwise <code>IllegalArgumentException</code> is thrown)
+   * <li>The result is small enough to fit into a <code>long</code>. The largest value of <code>n
    *       </code> for which all coefficients are <code> < Long.MAX_VALUE</code> is 66. If the
-   *       computed value exceeds <code>Long.MAX_VALUE</code> an <code>ArithMeticException
+   * computed value exceeds <code>Long.MAX_VALUE</code> an <code>ArithMeticException
    *      </code> is thrown.
    * </ul>
    *
@@ -169,18 +169,20 @@ public final class MathUtils {
   }
 
   /**
-   * Returns a <code>double</code> representation of the <a
-   * href="http://mathworld.wolfram.com/BinomialCoefficient.html">Binomial Coefficient</a>, "<code>
+   * Returns a <code>double</code> representation of the
+   * <a href="http://mathworld.wolfram.com/BinomialCoefficient.html">Binomial Coefficient</a>,
+   * "<code>
    * n choose k</code>", the number of <code>k</code>-element subsets that can be selected from an
    * <code>n</code>-element set.
    *
-   * <p><Strong>Preconditions</strong>:
+   * <p>
+   * <Strong>Preconditions</strong>:
    *
    * <ul>
-   *   <li><code>0 <= k <= n </code> (otherwise <code>IllegalArgumentException</code> is thrown)
-   *   <li>The result is small enough to fit into a <code>double</code>. The largest value of <code>
+   * <li><code>0 <= k <= n </code> (otherwise <code>IllegalArgumentException</code> is thrown)
+   * <li>The result is small enough to fit into a <code>double</code>. The largest value of <code>
    *       n</code> for which all coefficients are < Double.MAX_VALUE is 1029. If the computed value
-   *       exceeds Double.MAX_VALUE, Double.POSITIVE_INFINITY is returned
+   * exceeds Double.MAX_VALUE, Double.POSITIVE_INFINITY is returned
    * </ul>
    *
    * @param n the size of the set
@@ -193,15 +195,17 @@ public final class MathUtils {
   }
 
   /**
-   * Returns the natural <code>log</code> of the <a
-   * href="http://mathworld.wolfram.com/BinomialCoefficient.html">Binomial Coefficient</a>, "<code>
+   * Returns the natural <code>log</code> of the
+   * <a href="http://mathworld.wolfram.com/BinomialCoefficient.html">Binomial Coefficient</a>,
+   * "<code>
    * n choose k</code>", the number of <code>k</code>-element subsets that can be selected from an
    * <code>n</code>-element set.
    *
-   * <p><Strong>Preconditions</strong>:
+   * <p>
+   * <Strong>Preconditions</strong>:
    *
    * <ul>
-   *   <li><code>0 <= k <= n </code> (otherwise <code>IllegalArgumentException</code> is thrown)
+   * <li><code>0 <= k <= n </code> (otherwise <code>IllegalArgumentException</code> is thrown)
    * </ul>
    *
    * @param n the size of the set
@@ -287,13 +291,14 @@ public final class MathUtils {
    * Returns n!. Shorthand for <code>n</code> <a href="http://mathworld.wolfram.com/Factorial.html">
    * Factorial</a>, the product of the numbers <code>1,...,n</code>.
    *
-   * <p><Strong>Preconditions</strong>:
+   * <p>
+   * <Strong>Preconditions</strong>:
    *
    * <ul>
-   *   <li><code>n >= 0</code> (otherwise <code>IllegalArgumentException</code> is thrown)
-   *   <li>The result is small enough to fit into a <code>long</code>. The largest value of <code>n
+   * <li><code>n >= 0</code> (otherwise <code>IllegalArgumentException</code> is thrown)
+   * <li>The result is small enough to fit into a <code>long</code>. The largest value of <code>n
    *       </code> for which <code>n!</code> < Long.MAX_VALUE</code> is 20. If the computed value
-   *       exceeds <code>Long.MAX_VALUE</code> an <code>ArithMeticException </code> is thrown.
+   * exceeds <code>Long.MAX_VALUE</code> an <code>ArithMeticException </code> is thrown.
    * </ul>
    *
    * @param n argument
@@ -313,13 +318,14 @@ public final class MathUtils {
    * Returns n!. Shorthand for <code>n</code> <a href="http://mathworld.wolfram.com/Factorial.html">
    * Factorial</a>, the product of the numbers <code>1,...,n</code> as a <code>double</code>.
    *
-   * <p><Strong>Preconditions</strong>:
+   * <p>
+   * <Strong>Preconditions</strong>:
    *
    * <ul>
-   *   <li><code>n >= 0</code> (otherwise <code>IllegalArgumentException</code> is thrown)
-   *   <li>The result is small enough to fit into a <code>double</code>. The largest value of <code>
+   * <li><code>n >= 0</code> (otherwise <code>IllegalArgumentException</code> is thrown)
+   * <li>The result is small enough to fit into a <code>double</code>. The largest value of <code>
    *       n</code> for which <code>n!</code> < Double.MAX_VALUE</code> is 170. If the computed
-   *       value exceeds Double.MAX_VALUE, Double.POSITIVE_INFINITY is returned
+   * value exceeds Double.MAX_VALUE, Double.POSITIVE_INFINITY is returned
    * </ul>
    *
    * @param n argument
@@ -336,10 +342,11 @@ public final class MathUtils {
   /**
    * Returns the natural logarithm of n!.
    *
-   * <p><Strong>Preconditions</strong>:
+   * <p>
+   * <Strong>Preconditions</strong>:
    *
    * <ul>
-   *   <li><code>n >= 0</code> (otherwise <code>IllegalArgumentException</code> is thrown)
+   * <li><code>n >= 0</code> (otherwise <code>IllegalArgumentException</code> is thrown)
    * </ul>
    *
    * @param n argument
@@ -531,20 +538,18 @@ public final class MathUtils {
 
   /**
    * <p>
-   * Returns the <a href="http://mathworld.wolfram.com/Logarithm.html">logarithm</a> for base <code>b</code> of
-   * <code>x</code>.
+   * Returns the <a href="http://mathworld.wolfram.com/Logarithm.html">logarithm</a> for base
+   * <code>b</code> of <code>x</code>.
    * </p>
    * <p>
    * Returns <code>NaN<code> if either argument is negative.  If
-   * <code>base</code> is 0 and <code>x</code> is positive, 0 is returned. If <code>base</code> is positive and
-   * <code>x</code> is 0, <code>Double.NEGATIVE_INFINITY</code> is returned. If both arguments are 0, the result is
-   * <code>NaN</code>.
+   * <code>base</code> is 0 and <code>x</code> is positive, 0 is returned. If <code>base</code> is
+   * positive and <code>x</code> is 0, <code>Double.NEGATIVE_INFINITY</code> is returned. If both
+   * arguments are 0, the result is <code>NaN</code>.
    * </p>
    *
-   * @param base
-   *            the base of the logarithm, must be greater than 0
-   * @param x
-   *            argument, must be greater than 0
+   * @param base the base of the logarithm, must be greater than 0
+   * @param x argument, must be greater than 0
    * @return the value of the logarithm - the number y such that base^y = x.
    * @since 1.2
    */
@@ -625,18 +630,20 @@ public final class MathUtils {
   /**
    * Normalize an angle in a 2&pi wide interval around a center value.
    *
-   * <p>This method has three main uses:
+   * <p>
+   * This method has three main uses:
    *
    * <ul>
-   *   <li>normalize an angle between 0 and 2&pi;:<br>
-   *       <code>a = MathUtils.normalizeAngle(a, Math.PI);</code>
-   *   <li>normalize an angle between -&pi; and +&pi;<br>
-   *       <code>a = MathUtils.normalizeAngle(a, 0.0);</code>
-   *   <li>compute the angle between two defining angular positions:<br>
-   *       <code>angle = MathUtils.normalizeAngle(end, start) - start;</code>
+   * <li>normalize an angle between 0 and 2&pi;:<br>
+   * <code>a = MathUtils.normalizeAngle(a, Math.PI);</code>
+   * <li>normalize an angle between -&pi; and +&pi;<br>
+   * <code>a = MathUtils.normalizeAngle(a, 0.0);</code>
+   * <li>compute the angle between two defining angular positions:<br>
+   * <code>angle = MathUtils.normalizeAngle(end, start) - start;</code>
    * </ul>
    *
-   * <p>Note that due to numerical accuracy and since &pi; cannot be represented exactly, the result
+   * <p>
+   * Note that due to numerical accuracy and since &pi; cannot be represented exactly, the result
    * interval is <em>closed</em>, it cannot be half-closed as would be more satisfactory in a purely
    * mathematical view.
    *
@@ -653,8 +660,9 @@ public final class MathUtils {
    * Returns the <a href="http://mathworld.wolfram.com/Sign.html">sign</a> for byte value <code>x
    * </code>.
    *
-   * <p>For a byte value x, this method returns (byte)(+1) if x > 0, (byte)(0) if x = 0, and
-   * (byte)(-1) if x < 0.
+   * <p>
+   * For a byte value x, this method returns (byte)(+1) if x > 0, (byte)(0) if x = 0, and (byte)(-1)
+   * if x < 0.
    *
    * @param x the value, a byte
    * @return (byte)(+1), (byte)(0), or (byte)(-1), depending on the sign of x
@@ -667,7 +675,8 @@ public final class MathUtils {
    * Returns the <a href="http://mathworld.wolfram.com/Sign.html">sign</a> for double precision
    * <code>x</code>.
    *
-   * <p>For a double value <code>x</code>, this method returns <code>+1.0</code> if <code>x > 0
+   * <p>
+   * For a double value <code>x</code>, this method returns <code>+1.0</code> if <code>x > 0
    * </code>, <code>0.0</code> if <code>x = 0.0</code>, and <code>-1.0</code> if <code>x < 0</code>.
    * Returns <code>NaN</code> if <code>x</code> is <code>NaN</code>.
    *
@@ -685,8 +694,9 @@ public final class MathUtils {
    * Returns the <a href="http://mathworld.wolfram.com/Sign.html">sign</a> for float value <code>x
    * </code>.
    *
-   * <p>For a float value x, this method returns +1.0F if x > 0, 0.0F if x = 0.0F, and -1.0F if x <
-   * 0. Returns <code>NaN</code> if <code>x</code> is <code>NaN</code>.
+   * <p>
+   * For a float value x, this method returns +1.0F if x > 0, 0.0F if x = 0.0F, and -1.0F if x < 0.
+   * Returns <code>NaN</code> if <code>x</code> is <code>NaN</code>.
    *
    * @param x the value, a float
    * @return +1.0F, 0.0F, or -1.0F, depending on the sign of x
@@ -702,7 +712,8 @@ public final class MathUtils {
    * Returns the <a href="http://mathworld.wolfram.com/Sign.html">sign</a> for int value <code>x
    * </code>.
    *
-   * <p>For an int value x, this method returns +1 if x > 0, 0 if x = 0, and -1 if x < 0.
+   * <p>
+   * For an int value x, this method returns +1 if x > 0, 0 if x = 0, and -1 if x < 0.
    *
    * @param x the value, an int
    * @return +1, 0, or -1, depending on the sign of x
@@ -715,7 +726,8 @@ public final class MathUtils {
    * Returns the <a href="http://mathworld.wolfram.com/Sign.html">sign</a> for long value <code>x
    * </code>.
    *
-   * <p>For a long value x, this method returns +1L if x > 0, 0L if x = 0, and -1L if x < 0.
+   * <p>
+   * For a long value x, this method returns +1L if x > 0, 0L if x = 0, and -1L if x < 0.
    *
    * @param x the value, a long
    * @return +1L, 0L, or -1L, depending on the sign of x
@@ -728,7 +740,8 @@ public final class MathUtils {
    * Returns the <a href="http://mathworld.wolfram.com/Sign.html">sign</a> for short value <code>x
    * </code>.
    *
-   * <p>For a short value x, this method returns (short)(+1) if x > 0, (short)(0) if x = 0, and
+   * <p>
+   * For a short value x, this method returns (short)(+1) if x > 0, (short)(0) if x = 0, and
    * (short)(-1) if x < 0.
    *
    * @param x the value, a short

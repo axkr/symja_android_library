@@ -84,8 +84,7 @@ public class OptionsPattern extends PatternSequence {
         }
         return false;
       }
-      if (fSymbol.equals(pattern.fSymbol)
-          && fDefault == pattern.fDefault
+      if (fSymbol.equals(pattern.fSymbol) && fDefault == pattern.fDefault
           && fZeroArgsAllowed == pattern.fZeroArgsAllowed) {
         return fDefaultOptions.equals(pattern.fDefaultOptions);
       }
@@ -105,7 +104,8 @@ public class OptionsPattern extends PatternSequence {
       buf.append(
           ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ",OptionsPattern())" : ",OptionsPattern[]]");
     } else {
-      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? "OptionsPattern()" : "OptionsPattern[]");
+      buf.append(
+          ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? "OptionsPattern()" : "OptionsPattern[]");
     }
     return buf.toString();
   }
@@ -129,8 +129,8 @@ public class OptionsPattern extends PatternSequence {
   }
 
   @Override
-  public boolean matchPatternSequence(
-      final IAST sequence, IPatternMap patternMap, ISymbol optionsPatternHead) {
+  public boolean matchPatternSequence(final IAST sequence, IPatternMap patternMap,
+      ISymbol optionsPatternHead) {
     // if (!isConditionMatchedSequence(sequence, patternMap)) {
     // return false;
     // }

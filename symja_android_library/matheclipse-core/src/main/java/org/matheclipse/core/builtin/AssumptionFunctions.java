@@ -102,15 +102,17 @@ public class AssumptionFunctions {
    *
    * <blockquote>
    *
-   * <p>assume (or test) that the <code>symbol</code> is in the domain <code>dom</code>.
+   * <p>
+   * assume (or test) that the <code>symbol</code> is in the domain <code>dom</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Domain_of_a_function">Wikipedia - Domain of a
-   *       function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Domain_of_a_function">Wikipedia - Domain of a
+   * function</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -244,7 +246,8 @@ public class AssumptionFunctions {
    *
    * <blockquote>
    *
-   * <p>evaluate the <code>expression</code> for the given <code>assumptions</code>.
+   * <p>
+   * evaluate the <code>expression</code> for the given <code>assumptions</code>.
    *
    * </blockquote>
    *
@@ -295,8 +298,8 @@ public class AssumptionFunctions {
     }
   }
 
-  public static IExpr refineAssumptions(
-      final IExpr expr, IAssumptions assumptions, EvalEngine engine) {
+  public static IExpr refineAssumptions(final IExpr expr, IAssumptions assumptions,
+      EvalEngine engine) {
     if (assumptions != null) {
       IAssumptions oldAssumptions = engine.getAssumptions();
       try {

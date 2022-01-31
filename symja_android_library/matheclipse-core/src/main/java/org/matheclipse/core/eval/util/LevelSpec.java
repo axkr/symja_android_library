@@ -3,7 +3,8 @@ package org.matheclipse.core.eval.util;
 /**
  * A level specification definition for levels in nested lists.
  *
- * <p>Example: the nested list <code>[x,[y]]</code> has depth <code>3</code>
+ * <p>
+ * Example: the nested list <code>[x,[y]]</code> has depth <code>3</code>
  */
 public class LevelSpec {
   protected int fFromLevel;
@@ -58,11 +59,7 @@ public class LevelSpec {
    * @param toDepth
    * @param includeHeads
    */
-  public LevelSpec(
-      final int fromLevel,
-      final int toLevel,
-      final int fromDepth,
-      final int toDepth,
+  public LevelSpec(final int fromLevel, final int toLevel, final int fromDepth, final int toDepth,
       final boolean includeHeads) {
     fFromLevel = fromLevel;
     fToLevel = toLevel;
@@ -105,10 +102,8 @@ public class LevelSpec {
   }
 
   public boolean isInRange() {
-    return (fCurrentLevel >= fFromLevel)
-        && (fCurrentLevel <= fToLevel)
-        && (fCurrentDepth >= fFromDepth)
-        && (fCurrentDepth <= fToDepth);
+    return (fCurrentLevel >= fFromLevel) && (fCurrentLevel <= fToLevel)
+        && (fCurrentDepth >= fFromDepth) && (fCurrentDepth <= fToDepth);
   }
 
   public boolean isInScope() {

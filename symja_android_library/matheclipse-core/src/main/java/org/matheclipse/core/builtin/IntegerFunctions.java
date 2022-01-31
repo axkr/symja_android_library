@@ -104,7 +104,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the number of bits needed to represent the integer <code>x</code>. The sign of <code>x
+   * <p>
+   * gives the number of bits needed to represent the integer <code>x</code>. The sign of <code>x
    * </code> is ignored.
    *
    * </blockquote>
@@ -157,7 +158,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the first integer greater than or equal <code>expr</code>.
+   * <p>
+   * gives the first integer greater than or equal <code>expr</code>.
    *
    * </blockquote>
    *
@@ -167,7 +169,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the first multiple of <code>a</code> greater than or equal to <code>expr</code>.
+   * <p>
+   * gives the first multiple of <code>a</code> greater than or equal to <code>expr</code>.
    *
    * </blockquote>
    *
@@ -187,7 +190,8 @@ public class IntegerFunctions {
    * 2
    * </pre>
    *
-   * <p>For complex <code>expr</code>, take the ceiling of real and imaginary parts.<br>
+   * <p>
+   * For complex <code>expr</code>, take the ceiling of real and imaginary parts.<br>
    *
    * <pre>
    * &gt;&gt; Ceiling(1.3 + 0.7*I)
@@ -224,8 +228,9 @@ public class IntegerFunctions {
      * Returns the smallest (closest to negative infinity) <code>ISignedNumber</code> value that is
      * not less than <code>this</code> and is equal to a mathematical integer.
      *
-     * <p>See <a href="http://en.wikipedia.org/wiki/Floor_and_ceiling_functions">Wikipedia - Floor
-     * and ceiling functions</a>
+     * <p>
+     * See <a href="http://en.wikipedia.org/wiki/Floor_and_ceiling_functions">Wikipedia - Floor and
+     * ceiling functions</a>
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -367,7 +372,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a list of integer digits for <code>n</code> under <code>base</code>.
+   * <p>
+   * returns a list of integer digits for <code>n</code> under <code>base</code>.
    *
    * </blockquote>
    *
@@ -377,7 +383,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>pads the result list on the left with maximum <code>padLeft</code> zeros.
+   * <p>
+   * pads the result list on the left with maximum <code>padLeft</code> zeros.
    *
    * </blockquote>
    *
@@ -448,7 +455,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the highest exponent of <code>b</code> that divides <code>n</code>.
+   * <p>
+   * gives the highest exponent of <code>b</code> that divides <code>n</code>.
    *
    * </blockquote>
    *
@@ -503,7 +511,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the smallest integer less than or equal <code>expr</code>.
+   * <p>
+   * gives the smallest integer less than or equal <code>expr</code>.
    *
    * </blockquote>
    *
@@ -513,7 +522,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the smallest multiple of <code>a</code> less than or equal to <code>expr</code>.
+   * <p>
+   * gives the smallest multiple of <code>a</code> less than or equal to <code>expr</code>.
    *
    * </blockquote>
    *
@@ -545,15 +555,17 @@ public class IntegerFunctions {
    * -11
    * </pre>
    *
-   * <p>For complex <code>expr</code>, take the floor of real an imaginary parts.<br>
+   * <p>
+   * For complex <code>expr</code>, take the floor of real an imaginary parts.<br>
    *
    * <pre>
    * &gt;&gt; Floor(1.5 + 2.7*I)
    * 1+I*2
    * </pre>
    *
-   * <p>For negative <code>a</code>, the smallest multiple of <code>a</code> greater than or equal
-   * to <code>expr</code> is returned.<br>
+   * <p>
+   * For negative <code>a</code>, the smallest multiple of <code>a</code> greater than or equal to
+   * <code>expr</code> is returned.<br>
    *
    * <pre>
    * &gt;&gt; Floor(10.4, -1)
@@ -587,8 +599,9 @@ public class IntegerFunctions {
      * Returns the largest (closest to positive infinity) <code>ISignedNumber</code> value that is
      * not greater than <code>this</code> and is equal to a mathematical integer.
      *
-     * <p>See <a href="http://en.wikipedia.org/wiki/Floor_and_ceiling_functions">Wikipedia - Floor
-     * and ceiling functions</a>
+     * <p>
+     * See <a href="http://en.wikipedia.org/wiki/Floor_and_ceiling_functions">Wikipedia - Floor and
+     * ceiling functions</a>
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -664,7 +677,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>get the fractional part of a <code>number</code>.
+   * <p>
+   * get the fractional part of a <code>number</code>.
    *
    * </blockquote>
    *
@@ -817,7 +831,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the number of digits in the base-10 representation of <code>x</code>.
+   * <p>
+   * gives the number of digits in the base-10 representation of <code>x</code>.
    *
    * </blockquote>
    *
@@ -827,7 +842,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the number of base-<code>b</code> digits in <code>x</code>.
+   * <p>
+   * gives the number of base-<code>b</code> digits in <code>x</code>.
    *
    * </blockquote>
    *
@@ -844,28 +860,32 @@ public class IntegerFunctions {
    * 1001
    * </pre>
    *
-   * <p><code>IntegerLength</code> with base <code>2</code>:
+   * <p>
+   * <code>IntegerLength</code> with base <code>2</code>:
    *
    * <pre>
    * &gt;&gt; IntegerLength(8, 2)
    * 4
    * </pre>
    *
-   * <p>Check that <code>IntegerLength</code> is correct for the first 100 powers of 10:
+   * <p>
+   * Check that <code>IntegerLength</code> is correct for the first 100 powers of 10:
    *
    * <pre>
    * &gt;&gt; IntegerLength /@ (10 ^ Range(100)) == Range(2, 101)
    * True
    * </pre>
    *
-   * <p>The base must be greater than <code>1</code>:
+   * <p>
+   * The base must be greater than <code>1</code>:
    *
    * <pre>
    * &gt;&gt; IntegerLength(3, -2)
    * IntegerLength(3, -2)
    * </pre>
    *
-   * <p>'0' is a special case:
+   * <p>
+   * '0' is a special case:
    *
    * <pre>
    * &gt;&gt; IntegerLength(0)
@@ -923,7 +943,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>for real <code>expr</code> return the integer part of <code>expr</code>.
+   * <p>
+   * for real <code>expr</code> return the integer part of <code>expr</code>.
    *
    * </blockquote>
    *
@@ -953,11 +974,8 @@ public class IntegerFunctions {
         if (arg1.isIntegerResult()) {
           return arg1;
         }
-        if (arg1.isInfinity()
-            || arg1.isNegativeInfinity()
-            || arg1.isDirectedInfinity(F.CI)
-            || arg1.isDirectedInfinity(F.CNI)
-            || arg1.isAST(S.IntegerPart, 2)) {
+        if (arg1.isInfinity() || arg1.isNegativeInfinity() || arg1.isDirectedInfinity(F.CI)
+            || arg1.isDirectedInfinity(F.CNI) || arg1.isAST(S.IntegerPart, 2)) {
           return arg1;
         }
         IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
@@ -1004,7 +1022,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>x</code> modulo <code>m</code>.
+   * <p>
+   * returns <code>x</code> modulo <code>m</code>.
    *
    * </blockquote>
    *
@@ -1019,7 +1038,8 @@ public class IntegerFunctions {
    * -3
    * </pre>
    *
-   * <p>The argument 0 should be nonzero
+   * <p>
+   * The argument 0 should be nonzero
    *
    * <pre>
    * &gt;&gt; Mod(5, 0)
@@ -1049,12 +1069,8 @@ public class IntegerFunctions {
             IExpr subExpr = ((ISignedNumber) m.subtract(d).divide(n)).floorFraction();
             return m.plus(F.CN1.times(n).times(subExpr));
           }
-          if (m.isComplex()
-              || n.isComplex()
-              || d.isComplex()
-              || m.isComplexNumeric()
-              || n.isComplexNumeric()
-              || d.isComplexNumeric()) {
+          if (m.isComplex() || n.isComplex() || d.isComplex() || m.isComplexNumeric()
+              || n.isComplexNumeric() || d.isComplexNumeric()) {
             // https://mathematica.stackexchange.com/a/114373/21734
             IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
             IExpr re = S.Round.of(subExpr.re());
@@ -1084,8 +1100,7 @@ public class IntegerFunctions {
         return S.Indeterminate;
       }
       if (div.isNumericFunction(true) //
-          || div.isDirectedInfinity()
-          || div.isComplexInfinity()) {
+          || div.isDirectedInfinity() || div.isComplexInfinity()) {
         return F.Subtract(m, F.Times(n, F.Floor(div)));
       }
 
@@ -1113,7 +1128,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>computes <code>x^y</code> modulo <code>m</code>.
+   * <p>
+   * computes <code>x^y</code> modulo <code>m</code>.
    *
    * </blockquote>
    *
@@ -1126,14 +1142,16 @@ public class IntegerFunctions {
    * 9
    * </pre>
    *
-   * <p>0 is not invertible modulo 2.
+   * <p>
+   * 0 is not invertible modulo 2.
    *
    * <pre>
    * &gt;&gt; PowerMod(0, -1, 2)
    * PowerMod(0, -1, 2)
    * </pre>
    *
-   * <p>The argument 0 should be nonzero.
+   * <p>
+   * The argument 0 should be nonzero.
    *
    * <pre>
    * &gt;&gt; PowerMod(5, 2, 0)
@@ -1190,7 +1208,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>computes the integer quotient of <code>m</code> and <code>n</code>.
+   * <p>
+   * computes the integer quotient of <code>m</code> and <code>n</code>.
    *
    * </blockquote>
    *
@@ -1201,7 +1220,8 @@ public class IntegerFunctions {
    * 3
    * </pre>
    *
-   * <p>Infinite expression Quotient(13, 0) encountered.
+   * <p>
+   * Infinite expression Quotient(13, 0) encountered.
    *
    * <pre>
    * &gt;&gt; Quotient(13, 0)
@@ -1312,7 +1332,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>computes a list of the quotient and remainder from division of <code>m</code> and <code>n
+   * <p>
+   * computes a list of the quotient and remainder from division of <code>m</code> and <code>n
    * </code>.
    *
    * </blockquote>
@@ -1324,7 +1345,8 @@ public class IntegerFunctions {
    * {3,2}
    * </pre>
    *
-   * <p>Infinite expression QuotientRemainder(13, 0) encountered.
+   * <p>
+   * Infinite expression QuotientRemainder(13, 0) encountered.
    *
    * <pre>
    * &gt;&gt; QuotientRemainder(13, 0)
@@ -1539,7 +1561,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>round a given <code>expr</code> to nearest integer.
+   * <p>
+   * round a given <code>expr</code> to nearest integer.
    *
    * </blockquote>
    *
@@ -1573,8 +1596,9 @@ public class IntegerFunctions {
     /**
      * Round a given value to nearest integer.
      *
-     * <p>See <a href="http://en.wikipedia.org/wiki/Floor_and_ceiling_functions">Wikipedia - Floor
-     * and ceiling functions</a>
+     * <p>
+     * See <a href="http://en.wikipedia.org/wiki/Floor_and_ceiling_functions">Wikipedia - Floor and
+     * ceiling functions</a>
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1689,7 +1713,8 @@ public class IntegerFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>0</code>, if <code>expr</code> is less than <code>0</code> and returns <code>1
+   * <p>
+   * returns <code>0</code>, if <code>expr</code> is less than <code>0</code> and returns <code>1
    * </code>, if <code>expr</code> is greater equal than <code>0</code>.
    *
    * </blockquote>

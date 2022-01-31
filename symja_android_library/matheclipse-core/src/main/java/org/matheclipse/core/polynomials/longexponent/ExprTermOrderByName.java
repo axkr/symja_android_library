@@ -170,8 +170,8 @@ public class ExprTermOrderByName {
    * @param s split index
    * @return constructed term order
    */
-  public static final ExprTermOrder blockOrder(
-      ExprTermOrder t1, ExprTermOrder t2, ExpVectorLong e, int s) {
+  public static final ExprTermOrder blockOrder(ExprTermOrder t1, ExprTermOrder t2, ExpVectorLong e,
+      int s) {
     return new ExprTermOrder(t1.getEvord(), t2.getEvord(), e.length(), s);
   }
 

@@ -59,12 +59,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     // at runtime.
   }
 
-  public ASTSeriesData(
-      IExpr x,
-      IExpr x0,
-      IAST coefficients,
-      final int nMin,
-      final int truncate,
+  public ASTSeriesData(IExpr x, IExpr x0, IAST coefficients, final int nMin, final int truncate,
       final int denominator) {
     this(x, x0, nMin, nMin, truncate, denominator, new OpenIntToIExprHashMap<IExpr>());
     final int size = coefficients.size();
@@ -81,13 +76,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     this(x, x0, nMin, nMin, truncate, denominator, new OpenIntToIExprHashMap<IExpr>());
   }
 
-  private ASTSeriesData(
-      IExpr x,
-      IExpr x0,
-      int nMin,
-      int nMax,
-      int truncate,
-      int denominator,
+  private ASTSeriesData(IExpr x, IExpr x0, int nMin, int nMax, int truncate, int denominator,
       OpenIntToIExprHashMap<IExpr> vals) {
     super();
     this.coefficientValues = vals;
@@ -149,13 +138,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    */
   @Override
   public IAST clone() {
-    return new ASTSeriesData(
-        x,
-        x0,
-        nMin,
-        nMax,
-        truncate,
-        denominator,
+    return new ASTSeriesData(x, x0, nMin, nMax, truncate, denominator,
         new OpenIntToIExprHashMap<IExpr>(coefficientValues));
   }
 
@@ -225,7 +208,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    *
    * <blockquote>
    *
-   * <p>substitute <code>series2</code> into <code>series1</code>
+   * <p>
+   * substitute <code>series2</code> into <code>series1</code>
    *
    * </blockquote>
    *
@@ -243,13 +227,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     IExpr coeff0 = series2.coefficient(0);
     if (!coeff0.equals(x0)) {
       Level logLevel = EvalEngine.get().getLogLevel();
-      LOGGER.log(
-          logLevel,
-          "Constant {} of series {} unequals point {} of series {}",
-          coeff0,
-          this,
-          x0,
-          series2);
+      LOGGER.log(logLevel, "Constant {} of series {} unequals point {} of series {}", coeff0, this,
+          x0, series2);
       return null;
     }
     ASTSeriesData series =
@@ -275,13 +254,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   /** {@inheritDoc} */
   @Override
   public ASTSeriesData copy() {
-    return new ASTSeriesData(
-        x,
-        x0,
-        nMin,
-        nMax,
-        truncate,
-        denominator,
+    return new ASTSeriesData(x, x0, nMin, nMax, truncate, denominator,
         new OpenIntToIExprHashMap<IExpr>(coefficientValues));
   }
 
@@ -298,8 +271,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   /**
    * Differentiation of a power series.
    *
-   * <p>See <a
-   * href="https://en.wikipedia.org/wiki/Power_series#Differentiation_and_integration">Wikipedia:
+   * <p>
+   * See
+   * <a href="https://en.wikipedia.org/wiki/Power_series#Differentiation_and_integration">Wikipedia:
    * Power series - Differentiation and integration</a>
    *
    * @param x
@@ -311,9 +285,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         return this;
       }
       if (truncate > 0) {
-        ASTSeriesData series =
-            new ASTSeriesData(
-                x, x0, nMin, nMin, truncate - 1, denominator, new OpenIntToIExprHashMap<IExpr>());
+        ASTSeriesData series = new ASTSeriesData(x, x0, nMin, nMin, truncate - 1, denominator,
+            new OpenIntToIExprHashMap<IExpr>());
         if (nMin >= 0) {
           if (nMin > 0) {
             series.setCoeff(nMin - 1, this.coefficient(nMin + 1).times(F.ZZ(nMin + 1)));
@@ -480,8 +453,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   /**
    * Integration of a power series.
    *
-   * <p>See <a
-   * href="https://en.wikipedia.org/wiki/Power_series#Differentiation_and_integration">Wikipedia:
+   * <p>
+   * See
+   * <a href="https://en.wikipedia.org/wiki/Power_series#Differentiation_and_integration">Wikipedia:
    * Power series - Differentiation and integration</a>
    *
    * @param x
@@ -493,9 +467,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         return this;
       }
       if (truncate > 0) {
-        ASTSeriesData series =
-            new ASTSeriesData(
-                x, x0, nMin, nMin, truncate + 1, denominator, new OpenIntToIExprHashMap<IExpr>());
+        ASTSeriesData series = new ASTSeriesData(x, x0, nMin, nMin, truncate + 1, denominator,
+            new OpenIntToIExprHashMap<IExpr>());
         if (nMin + 1 > 0) {
           for (int i = nMin + 1; i <= nMax; i++) {
             series.setCoeff(i, this.coefficient(i - 1).times(F.QQ(1, i)));
@@ -528,7 +501,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    *
    * <blockquote>
    *
-   * <p>return the inverse series.
+   * <p>
+   * return the inverse series.
    *
    * </blockquote>
    *
@@ -580,9 +554,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
       IExpr a1 = coefficient(1);
       IExpr a1Inverse = a1.inverse();
-      ASTSeriesData ps =
-          new ASTSeriesData(
-              x, x0Value, nMin, nMin, truncate, denominator, new OpenIntToIExprHashMap<IExpr>());
+      ASTSeriesData ps = new ASTSeriesData(x, x0Value, nMin, nMin, truncate, denominator,
+          new OpenIntToIExprHashMap<IExpr>());
       if (!this.x0.isZero()) {
         ps.setCoeff(0, this.x0);
       }
@@ -597,89 +570,51 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         if (maxPower > 3) {
           // a1^(-5) * (2*a2^2-a1*a3)
           IExpr a3 = coefficient(3);
-          ps.setCoeff(
-              3,
-              S.Times.of(
-                  engine,
-                  F.Power(a1, -5), //
-                  F.Subtract(F.Times(F.C2, F.Sqr(a2)), F.Times(a1, a3))));
+          ps.setCoeff(3, S.Times.of(engine, F.Power(a1, -5), //
+              F.Subtract(F.Times(F.C2, F.Sqr(a2)), F.Times(a1, a3))));
           if (maxPower > 4) {
             // a1^(-7) * (5*a1*a2*a3-a1*a4-5*a2^3)
             IExpr a4 = coefficient(4);
-            ps.setCoeff(
-                4,
-                S.Times.of(
-                    engine,
-                    F.Power(a1, -7), //
-                    F.Plus(
-                        F.Times(F.CN5, F.Power(a2, 3)),
-                        F.Times(F.C5, a1, a2, a3),
-                        F.Times(F.CN1, a1, a4))));
+            ps.setCoeff(4, S.Times.of(engine, F.Power(a1, -7), //
+                F.Plus(F.Times(F.CN5, F.Power(a2, 3)), F.Times(F.C5, a1, a2, a3),
+                    F.Times(F.CN1, a1, a4))));
             if (maxPower > 5) {
               // a1^(-9) * (6*a1^2*a2*a4+3*a1^2*a3^2+14*a2^4-a1^3*a5-21*a1*a2^2*a3)
               IExpr a5 = coefficient(5);
-              ps.setCoeff(
-                  5,
-                  S.Times.of(
-                      engine,
-                      F.Power(a1, -9), //
-                      F.Plus(
-                          F.Times(F.ZZ(14L), F.Power(a2, 4)),
-                          F.Times(F.ZZ(-21L), a1, F.Sqr(a2), a3),
-                          F.Times(F.C3, F.Sqr(a1), F.Sqr(a3)),
-                          F.Times(F.C6, F.Sqr(a1), a2, a4),
-                          F.Times(F.CN1, F.Power(a1, 3), a5))));
+              ps.setCoeff(5, S.Times.of(engine, F.Power(a1, -9), //
+                  F.Plus(F.Times(F.ZZ(14L), F.Power(a2, 4)), F.Times(F.ZZ(-21L), a1, F.Sqr(a2), a3),
+                      F.Times(F.C3, F.Sqr(a1), F.Sqr(a3)), F.Times(F.C6, F.Sqr(a1), a2, a4),
+                      F.Times(F.CN1, F.Power(a1, 3), a5))));
               if (maxPower > 6) {
                 // a1^(-11) *
                 // (7*a1^3*a2*a5+7*a1^3*a3*a4+84*a1*a2^3*a3-a1^4*a6-28*a1^2*a2*a3^2-42*a2^5-28*a1^2*a2^2*a4)
                 IExpr a6 = coefficient(6);
-                ps.setCoeff(
-                    6,
-                    S.Times.of(
-                        engine,
-                        F.Power(a1, -11), //
-                        F.Plus(
-                            F.Times(F.ZZ(-42L), F.Power(a2, 5)),
-                            F.Times(F.ZZ(84L), a1, F.Power(a2, 3), a3),
-                            F.Times(F.ZZ(-28L), F.Sqr(a1), a2, F.Sqr(a3)),
-                            F.Times(F.ZZ(-28L), F.Sqr(a1), F.Sqr(a2), a4),
-                            F.Times(F.C7, F.Power(a1, 3), a3, a4),
-                            F.Times(F.C7, F.Power(a1, 3), a2, a5),
-                            F.Times(F.CN1, F.Power(a1, 4), a6))));
+                ps.setCoeff(6, S.Times.of(engine, F.Power(a1, -11), //
+                    F.Plus(F.Times(F.ZZ(-42L), F.Power(a2, 5)),
+                        F.Times(F.ZZ(84L), a1, F.Power(a2, 3), a3),
+                        F.Times(F.ZZ(-28L), F.Sqr(a1), a2, F.Sqr(a3)),
+                        F.Times(F.ZZ(-28L), F.Sqr(a1), F.Sqr(a2), a4),
+                        F.Times(F.C7, F.Power(a1, 3), a3, a4),
+                        F.Times(F.C7, F.Power(a1, 3), a2, a5),
+                        F.Times(F.CN1, F.Power(a1, 4), a6))));
                 if (maxPower > 7) {
                   IExpr a7 = coefficient(7);
                   // (132*a2^6 - 330*a1*a2^4*a3 + 120*a1^2*a2^3*a4 - 36*a1^2*a2^2*(-5*a3^2 +
                   // a1*a5) + 8*a1^3*a2*(-9*a3*a4 + a1*a6) + a1^3*(-12*a3^3 + 8*a1*a3*a5 +
                   // a1*(4*a4^2 - a1*a7))) / a1^13
-                  ps.setCoeff(
-                      7,
-                      S.Times.of(
-                          engine,
-                          F.Power(a1, -13),
-                          F.Plus(
-                              F.Times(F.ZZ(132L), F.Power(a2, 6)),
-                              F.Times(F.ZZ(-330L), a1, F.Power(a2, 4), a3),
-                              F.Times(F.ZZ(120L), F.Sqr(a1), F.Power(a2, 3), a4),
-                              F.Times(
-                                  F.ZZ(-36L),
-                                  F.Sqr(a1),
-                                  F.Sqr(a2),
-                                  F.Plus(F.Times(F.CN5, F.Sqr(a3)), F.Times(a1, a5))),
-                              F.Times(
-                                  F.C8,
-                                  F.Power(a1, 3),
-                                  a2,
-                                  F.Plus(F.Times(F.CN9, a3, a4), F.Times(a1, a6))),
-                              F.Times(
-                                  F.Power(a1, 3),
-                                  F.Plus(
-                                      F.Times(F.ZZ(-12L), F.Power(a3, 3)),
-                                      F.Times(F.C8, a1, a3, a5),
-                                      F.Times(
-                                          a1,
-                                          F.Plus(
-                                              F.Times(F.C4, F.Sqr(a4)), F.Times(F.CN1, a1, a7)))))),
-                          F.Power(a1, 13)));
+                  ps.setCoeff(7, S.Times.of(engine, F.Power(a1, -13),
+                      F.Plus(F.Times(F.ZZ(132L), F.Power(a2, 6)),
+                          F.Times(F.ZZ(-330L), a1, F.Power(a2, 4), a3),
+                          F.Times(F.ZZ(120L), F.Sqr(a1), F.Power(a2, 3), a4),
+                          F.Times(F.ZZ(-36L), F.Sqr(a1), F.Sqr(a2),
+                              F.Plus(F.Times(F.CN5, F.Sqr(a3)), F.Times(a1, a5))),
+                          F.Times(F.C8, F.Power(a1, 3), a2,
+                              F.Plus(F.Times(F.CN9, a3, a4), F.Times(a1, a6))),
+                          F.Times(F.Power(a1, 3),
+                              F.Plus(F.Times(F.ZZ(-12L), F.Power(a3, 3)), F.Times(F.C8, a1, a3, a5),
+                                  F.Times(a1,
+                                      F.Plus(F.Times(F.C4, F.Sqr(a4)), F.Times(F.CN1, a1, a7)))))),
+                      F.Power(a1, 13)));
                   if (maxPower > 8) {
                     // (-429*a2^7 + 1287*a1*a2^5*a3 - 495*a1^2*a2^4*a4 +
                     // 165*a1^2*a2^3*(-6*a3^2
@@ -688,46 +623,23 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
                     // 9*a1*a3*a6 +
                     // a1*(9*a4*a5 - a1*a8)))/a1^15
                     IExpr a8 = coefficient(8);
-                    ps.setCoeff(
-                        8,
-                        S.Times.of(
-                            engine,
-                            F.Power(a1, -15),
-                            F.Plus(
-                                F.Times(F.ZZ(-429L), F.Power(a2, 7)),
+                    ps.setCoeff(8,
+                        S.Times.of(engine, F.Power(a1, -15),
+                            F.Plus(F.Times(F.ZZ(-429L), F.Power(a2, 7)),
                                 F.Times(F.ZZ(1287L), a1, F.Power(a2, 5), a3),
                                 F.Times(F.ZZ(-495L), F.Sqr(a1), F.Power(a2, 4), a4),
-                                F.Times(
-                                    F.ZZ(165L),
-                                    F.Sqr(a1),
-                                    F.Power(a2, 3),
+                                F.Times(F.ZZ(165L), F.Sqr(a1), F.Power(a2, 3),
                                     F.Plus(F.Times(F.CN6, F.Sqr(a3)), F.Times(a1, a5))),
-                                F.Times(
-                                    F.ZZ(-45L),
-                                    F.Power(a1, 3),
-                                    F.Sqr(a2),
+                                F.Times(F.ZZ(-45L), F.Power(a1, 3), F.Sqr(a2),
                                     F.Plus(F.Times(F.ZZ(-11L), a3, a4), F.Times(a1, a6))),
-                                F.Times(
-                                    F.C3,
-                                    F.Power(a1, 3),
-                                    a2,
-                                    F.Plus(
-                                        F.Times(F.ZZ(55L), F.Power(a3, 3)),
+                                F.Times(F.C3, F.Power(a1, 3), a2,
+                                    F.Plus(F.Times(F.ZZ(55L), F.Power(a3, 3)),
                                         F.Times(F.ZZ(-30L), a1, a3, a5),
-                                        F.Times(
-                                            F.C3,
-                                            a1,
+                                        F.Times(F.C3, a1,
                                             F.Plus(F.Times(F.CN5, F.Sqr(a4)), F.Times(a1, a7))))),
-                                F.Times(
-                                    F.Power(a1, 4),
-                                    F.Plus(
-                                        F.Times(F.ZZ(-45L), F.Sqr(a3), a4),
-                                        F.Times(F.C9, a1, a3, a6),
-                                        F.Times(
-                                            a1,
-                                            F.Plus(
-                                                F.Times(F.C9, a4, a5),
-                                                F.Times(F.CN1, a1, a8))))))));
+                                F.Times(F.Power(a1, 4), F.Plus(F.Times(F.ZZ(-45L), F.Sqr(a3), a4),
+                                    F.Times(F.C9, a1, a3, a6), F.Times(a1,
+                                        F.Plus(F.Times(F.C9, a4, a5), F.Times(F.CN1, a1, a8))))))));
                     if (maxPower > 9) {
                       // (1430*a2^8 - 5005*a1*a2^6*a3 + 2002*a1^2*a2^5*a4 -
                       // 715*a1^2*a2^4*(-7*a3^2 + a1*a5) + 220*a1^3*a2^3*(-13*a3*a4 +
@@ -737,64 +649,29 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
                       // a1^4*(55*a3^4 - 55*a1*a3^2*a5 + 5*a1*a3*(-11*a4^2 + 2*a1*a7) +
                       // a1^2*(5*a5^2 + 10*a4*a6 - a1*a9)))/a1^17
                       IExpr a9 = coefficient(9);
-                      ps.setCoeff(
-                          9,
-                          S.Times.of(
-                              engine,
-                              F.Power(a1, -17),
-                              F.Plus(
-                                  F.Times(F.ZZ(1430L), F.Power(a2, 8)),
-                                  F.Times(F.ZZ(-5005L), a1, F.Power(a2, 6), a3),
-                                  F.Times(F.ZZ(2002L), F.Sqr(a1), F.Power(a2, 5), a4),
-                                  F.Times(
-                                      F.ZZ(-715L),
-                                      F.Sqr(a1),
-                                      F.Power(a2, 4),
-                                      F.Plus(F.Times(F.CN7, F.Sqr(a3)), F.Times(a1, a5))),
-                                  F.Times(
-                                      F.ZZ(220L),
-                                      F.Power(a1, 3),
-                                      F.Power(a2, 3),
-                                      F.Plus(F.Times(F.ZZ(-13L), a3, a4), F.Times(a1, a6))),
-                                  F.Times(
-                                      F.ZZ(-55L),
-                                      F.Power(a1, 3),
-                                      F.Sqr(a2),
-                                      F.Plus(
-                                          F.Times(F.ZZ(26L), F.Power(a3, 3)),
-                                          F.Times(F.ZZ(-12L), a1, a3, a5),
-                                          F.Times(
-                                              a1,
-                                              F.Plus(F.Times(F.CN6, F.Sqr(a4)), F.Times(a1, a7))))),
-                                  F.Times(
-                                      F.C10,
-                                      F.Power(a1, 4),
-                                      a2,
-                                      F.Plus(
-                                          F.Times(F.ZZ(66L), F.Sqr(a3), a4),
-                                          F.Times(F.ZZ(-11L), a1, a3, a6),
-                                          F.Times(
-                                              a1,
-                                              F.Plus(
-                                                  F.Times(F.ZZ(-11L), a4, a5), F.Times(a1, a8))))),
-                                  F.Times(
-                                      F.Power(a1, 4),
-                                      F.Plus(
-                                          F.Times(F.ZZ(55L), F.Power(a3, 4)),
-                                          F.Times(F.ZZ(-55L), a1, F.Sqr(a3), a5),
-                                          F.Times(
-                                              F.C5,
-                                              a1,
-                                              a3,
-                                              F.Plus(
-                                                  F.Times(F.ZZ(-11L), F.Sqr(a4)),
-                                                  F.Times(F.C2, a1, a7))),
-                                          F.Times(
-                                              F.Sqr(a1),
-                                              F.Plus(
-                                                  F.Times(F.C5, F.Sqr(a5)),
-                                                  F.Times(F.C10, a4, a6),
-                                                  F.Times(F.CN1, a1, a9))))))));
+                      ps.setCoeff(9, S.Times.of(engine, F.Power(a1, -17), F.Plus(
+                          F.Times(F.ZZ(1430L), F.Power(a2, 8)),
+                          F.Times(F.ZZ(-5005L), a1, F.Power(a2, 6), a3),
+                          F.Times(F.ZZ(2002L), F.Sqr(a1), F.Power(a2, 5), a4),
+                          F.Times(F.ZZ(-715L), F.Sqr(a1), F.Power(a2, 4),
+                              F.Plus(F.Times(F.CN7, F.Sqr(a3)), F.Times(a1, a5))),
+                          F.Times(F.ZZ(220L), F.Power(a1, 3), F.Power(a2, 3),
+                              F.Plus(F.Times(F.ZZ(-13L), a3, a4), F.Times(a1, a6))),
+                          F.Times(F.ZZ(-55L), F.Power(a1, 3), F.Sqr(a2),
+                              F.Plus(F.Times(F.ZZ(26L), F.Power(a3, 3)),
+                                  F.Times(F.ZZ(-12L), a1, a3, a5),
+                                  F.Times(a1, F.Plus(F.Times(F.CN6, F.Sqr(a4)), F.Times(a1, a7))))),
+                          F.Times(F.C10, F.Power(a1, 4), a2,
+                              F.Plus(F.Times(F.ZZ(66L), F.Sqr(a3), a4),
+                                  F.Times(F.ZZ(-11L), a1, a3, a6),
+                                  F.Times(a1,
+                                      F.Plus(F.Times(F.ZZ(-11L), a4, a5), F.Times(a1, a8))))),
+                          F.Times(F.Power(a1, 4), F.Plus(F.Times(F.ZZ(55L), F.Power(a3, 4)),
+                              F.Times(F.ZZ(-55L), a1, F.Sqr(a3), a5),
+                              F.Times(F.C5, a1, a3,
+                                  F.Plus(F.Times(F.ZZ(-11L), F.Sqr(a4)), F.Times(F.C2, a1, a7))),
+                              F.Times(F.Sqr(a1), F.Plus(F.Times(F.C5, F.Sqr(a5)),
+                                  F.Times(F.C10, a4, a6), F.Times(F.CN1, a1, a9))))))));
                     }
                   }
                 }
@@ -878,7 +755,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    *
    * <blockquote>
    *
-   * <p>converts a <code>series</code> expression into a standard expression.
+   * <p>
+   * converts a <code>series</code> expression into a standard expression.
    *
    * </blockquote>
    *
@@ -940,7 +818,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   /**
    * Add two power series.
    *
-   * <p>See <a href="https://en.wikipedia.org/wiki/Power_series#Addition_and_subtraction">Wikipedia:
+   * <p>
+   * See <a href="https://en.wikipedia.org/wiki/Power_series#Addition_and_subtraction">Wikipedia:
    * Power series - Addition and subtraction</a>
    *
    * @param b
@@ -1105,9 +984,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         nMin = k;
       } else if (k >= nMax) {
         nMax = k + 1;
-        //				if (k >= truncate) {
-        //					truncate = k + 1;
-        //				}
+        // if (k >= truncate) {
+        // truncate = k + 1;
+        // }
       }
     }
   }
@@ -1174,7 +1053,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   /**
    * Subtract two power series.
    *
-   * <p>See <a href="https://en.wikipedia.org/wiki/Power_series#Addition_and_subtraction">Wikipedia:
+   * <p>
+   * See <a href="https://en.wikipedia.org/wiki/Power_series#Addition_and_subtraction">Wikipedia:
    * Power series - Addition and subtraction</a>
    *
    * @param b
@@ -1257,9 +1137,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   /**
    * Multiply two power series.
    *
-   * <p>See <a
-   * href="https://en.wikipedia.org/wiki/Power_series#Multiplication_and_division">Wikipedia: Power
-   * series - Multiplication and Division</a>
+   * <p>
+   * See <a href="https://en.wikipedia.org/wiki/Power_series#Multiplication_and_division">Wikipedia:
+   * Power series - Multiplication and Division</a>
    *
    * @param b
    * @return
@@ -1301,8 +1181,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return internalTimes(this, nMin, truncate, denominator);
   }
 
-  private ASTSeriesData internalTimes(
-      ASTSeriesData b, int minSize, int newPower, int newDenominator) {
+  private ASTSeriesData internalTimes(ASTSeriesData b, int minSize, int newPower,
+      int newDenominator) {
     ASTSeriesData series = new ASTSeriesData(x, x0, nMin + b.nMin, newPower, newDenominator);
     int start = series.nMin;
     int end = nMax + b.nMax + 1;

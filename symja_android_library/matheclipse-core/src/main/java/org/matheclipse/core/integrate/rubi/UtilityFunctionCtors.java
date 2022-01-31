@@ -22,7 +22,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * UtilityFunction constructors from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi -
  * rule-based integrator</a>.
  *
- * <p>TODO a lot of functions are only placeholders at the moment.
+ * <p>
+ * TODO a lot of functions are only placeholders at the moment.
  */
 public class UtilityFunctionCtors {
 
@@ -42,7 +43,7 @@ public class UtilityFunctionCtors {
   public static final ISymbol P = initFinalHiddenSymbol("P");
   public static final ISymbol Q = initFinalHiddenSymbol("Q");
   public static final ISymbol R = initFinalHiddenSymbol("R");
-  //	public final static ISymbol S = initFinalHiddenSymbol("S");
+  // public final static ISymbol S = initFinalHiddenSymbol("S");
   public static final ISymbol T = initFinalHiddenSymbol("T");
   public static final ISymbol U = initFinalHiddenSymbol("U");
   public static final ISymbol V = initFinalHiddenSymbol("V");
@@ -81,121 +82,97 @@ public class UtilityFunctionCtors {
 
   public static ISymbol ReapList = org.matheclipse.core.expression.F.$rubi("ReapList");
 
-  static ISymbol FalseQ =
-      F.$rubi(
-          "FalseQ",
-          new AbstractCoreFunctionEvaluator() {
-            @Override
-            public IExpr evaluate(IAST ast, EvalEngine engine) {
-              if (ast.size() == 2) {
-                return engine.evaluate(ast.arg1()).isFalse() ? S.True : S.False;
-              }
-              return S.False;
-            }
-          });
+  static ISymbol FalseQ = F.$rubi("FalseQ", new AbstractCoreFunctionEvaluator() {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.size() == 2) {
+        return engine.evaluate(ast.arg1()).isFalse() ? S.True : S.False;
+      }
+      return S.False;
+    }
+  });
 
-  static ISymbol FractionQ =
-      F.$rubi(
-          "FractionQ",
-          new AbstractCoreFunctionEvaluator() {
-            @Override
-            public IExpr evaluate(IAST ast, EvalEngine engine) {
-              if (ast.size() == 2) {
-                IExpr arg1 = engine.evaluate(ast.arg1());
-                return arg1.isFraction() ? S.True : S.False;
-              }
-              if (ast.size() > 2) {
-                return ast.forAll(x -> engine.evaluate(x).isFraction(), 1) ? S.True : S.False;
-              }
-              return S.False;
-            }
-          });
+  static ISymbol FractionQ = F.$rubi("FractionQ", new AbstractCoreFunctionEvaluator() {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.size() == 2) {
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        return arg1.isFraction() ? S.True : S.False;
+      }
+      if (ast.size() > 2) {
+        return ast.forAll(x -> engine.evaluate(x).isFraction(), 1) ? S.True : S.False;
+      }
+      return S.False;
+    }
+  });
 
-  static ISymbol IntegersQ =
-      F.$rubi(
-          "IntegersQ",
-          new AbstractCoreFunctionEvaluator() {
-            @Override
-            public IExpr evaluate(IAST ast, EvalEngine engine) {
-              if (ast.size() == 2) {
-                IExpr arg1 = engine.evaluate(ast.arg1());
-                return arg1.isInteger() ? S.True : S.False;
-              }
-              if (ast.size() > 2) {
-                return ast.forAll(x -> engine.evaluate(x).isInteger(), 1) ? S.True : S.False;
-              }
-              return S.False;
-            }
-          });
+  static ISymbol IntegersQ = F.$rubi("IntegersQ", new AbstractCoreFunctionEvaluator() {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.size() == 2) {
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        return arg1.isInteger() ? S.True : S.False;
+      }
+      if (ast.size() > 2) {
+        return ast.forAll(x -> engine.evaluate(x).isInteger(), 1) ? S.True : S.False;
+      }
+      return S.False;
+    }
+  });
 
-  static ISymbol ComplexNumberQ =
-      F.$rubi(
-          "ComplexNumberQ",
-          new AbstractCoreFunctionEvaluator() {
-            @Override
-            public IExpr evaluate(IAST ast, EvalEngine engine) {
-              if (ast.size() == 2) {
-                IExpr arg1 = engine.evaluate(ast.arg1());
-                return arg1.isComplex() || arg1.isComplexNumeric() ? S.True : S.False;
-              }
-              return S.False;
-            }
-          });
+  static ISymbol ComplexNumberQ = F.$rubi("ComplexNumberQ", new AbstractCoreFunctionEvaluator() {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.size() == 2) {
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        return arg1.isComplex() || arg1.isComplexNumeric() ? S.True : S.False;
+      }
+      return S.False;
+    }
+  });
 
-  static ISymbol PowerQ =
-      F.$rubi(
-          "PowerQ",
-          new AbstractCoreFunctionEvaluator() {
-            @Override
-            public IExpr evaluate(IAST ast, EvalEngine engine) {
-              if (ast.size() == 2) {
-                IExpr arg1 = engine.evaluate(ast.arg1());
-                return arg1.head().equals(F.Power) ? S.True : S.False;
-              }
-              return S.False;
-            }
-          });
+  static ISymbol PowerQ = F.$rubi("PowerQ", new AbstractCoreFunctionEvaluator() {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.size() == 2) {
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        return arg1.head().equals(F.Power) ? S.True : S.False;
+      }
+      return S.False;
+    }
+  });
 
-  static ISymbol ProductQ =
-      F.$rubi(
-          "ProductQ",
-          new AbstractCoreFunctionEvaluator() {
-            @Override
-            public IExpr evaluate(IAST ast, EvalEngine engine) {
-              if (ast.size() == 2) {
-                IExpr arg1 = engine.evaluate(ast.arg1());
-                return arg1.head().equals(F.Times) ? S.True : S.False;
-              }
-              return S.False;
-            }
-          });
+  static ISymbol ProductQ = F.$rubi("ProductQ", new AbstractCoreFunctionEvaluator() {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.size() == 2) {
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        return arg1.head().equals(F.Times) ? S.True : S.False;
+      }
+      return S.False;
+    }
+  });
 
-  static ISymbol SumQ =
-      F.$rubi(
-          "SumQ",
-          new AbstractCoreFunctionEvaluator() {
-            @Override
-            public IExpr evaluate(IAST ast, EvalEngine engine) {
-              if (ast.size() == 2) {
-                IExpr arg1 = engine.evaluate(ast.arg1());
-                return arg1.head().equals(F.Plus) ? S.True : S.False;
-              }
-              return S.False;
-            }
-          });
-  static ISymbol NonsumQ =
-      F.$rubi(
-          "NonsumQ",
-          new AbstractCoreFunctionEvaluator() {
-            @Override
-            public IExpr evaluate(IAST ast, EvalEngine engine) {
-              if (ast.size() == 2) {
-                IExpr arg1 = engine.evaluate(ast.arg1());
-                return arg1.head().equals(F.Plus) ? S.False : S.True;
-              }
-              return S.False;
-            }
-          });
+  static ISymbol SumQ = F.$rubi("SumQ", new AbstractCoreFunctionEvaluator() {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.size() == 2) {
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        return arg1.head().equals(F.Plus) ? S.True : S.False;
+      }
+      return S.False;
+    }
+  });
+  static ISymbol NonsumQ = F.$rubi("NonsumQ", new AbstractCoreFunctionEvaluator() {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.size() == 2) {
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        return arg1.head().equals(F.Plus) ? S.False : S.True;
+      }
+      return S.False;
+    }
+  });
 
   public static IAST F(final IExpr a0) {
     return F.unaryAST1(F.FSymbol, a0);
@@ -456,13 +433,8 @@ public class UtilityFunctionCtors {
     return F.binaryAST2(F.$rubi("ExpandAlgebraicFunction"), a0, a1);
   }
 
-  public static IAST ExpandBinomial(
-      final IExpr a0,
-      final IExpr a1,
-      final IExpr a2,
-      final IExpr a3,
-      final IExpr a4,
-      final IExpr a5) {
+  public static IAST ExpandBinomial(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
+      final IExpr a4, final IExpr a5) {
     return senary(F.$rubi("ExpandBinomial"), a0, a1, a2, a3, a4, a5);
   }
 
@@ -482,8 +454,8 @@ public class UtilityFunctionCtors {
     return F.ternaryAST3(F.$rubi("ExpandIntegrand"), a0, a1, a2);
   }
 
-  public static IAST ExpandLinearProduct(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+  public static IAST ExpandLinearProduct(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3, final IExpr a4) {
     return quinary(F.$rubi("ExpandLinearProduct"), a0, a1, a2, a3, a4);
   }
 
@@ -503,13 +475,8 @@ public class UtilityFunctionCtors {
     return F.ternaryAST3(ExpandTrig, a0, a1, a2);
   }
 
-  public static IAST ExpandTrigExpand(
-      final IExpr a0,
-      final IExpr a1,
-      final IExpr a2,
-      final IExpr a3,
-      final IExpr a4,
-      final IExpr a5) {
+  public static IAST ExpandTrigExpand(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3, final IExpr a4, final IExpr a5) {
     return senary(F.$rubi("ExpandTrigExpand"), a0, a1, a2, a3, a4, a5);
   }
 
@@ -584,8 +551,8 @@ public class UtilityFunctionCtors {
     return new FalseQ(a0);
   }
 
-  public static IAST FindTrigFactor(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+  public static IAST FindTrigFactor(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
+      final IExpr a4) {
     return quinary(F.$rubi("FindTrigFactor"), a0, a1, a2, a3, a4);
   }
 
@@ -656,13 +623,13 @@ public class UtilityFunctionCtors {
     return F.unaryAST1(F.$rubi("FractionalPowerFreeQ"), a0);
   }
 
-  public static IAST FractionalPowerOfLinear(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST FractionalPowerOfLinear(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(F.$rubi("FractionalPowerOfLinear"), a0, a1, a2, a3);
   }
 
-  public static IAST FractionalPowerOfQuotientOfLinears(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST FractionalPowerOfQuotientOfLinears(final IExpr a0, final IExpr a1,
+      final IExpr a2, final IExpr a3) {
     return quaternary(F.$rubi("FractionalPowerOfQuotientOfLinears"), a0, a1, a2, a3);
   }
 
@@ -750,13 +717,13 @@ public class UtilityFunctionCtors {
     return F.binaryAST2(F.$rubi("FunctionOfLinear"), a0, a1);
   }
 
-  public static IAST FunctionOfLinear(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+  public static IAST FunctionOfLinear(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3, final IExpr a4) {
     return quinary(F.$rubi("FunctionOfLinear"), a0, a1, a2, a3, a4);
   }
 
-  public static IAST FunctionOfLinearSubst(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST FunctionOfLinearSubst(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(F.$rubi("FunctionOfLinearSubst"), a0, a1, a2, a3);
   }
 
@@ -788,8 +755,8 @@ public class UtilityFunctionCtors {
     return F.binaryAST2(F.$rubi("FunctionOfSquareRootOfQuadratic"), a0, a1);
   }
 
-  public static IAST FunctionOfSquareRootOfQuadratic(
-      final IExpr a0, final IExpr a1, final IExpr a2) {
+  public static IAST FunctionOfSquareRootOfQuadratic(final IExpr a0, final IExpr a1,
+      final IExpr a2) {
     return F.ternaryAST3(F.$rubi("FunctionOfSquareRootOfQuadratic"), a0, a1, a2);
   }
 
@@ -1389,8 +1356,8 @@ public class UtilityFunctionCtors {
   // return F.unaryAST1(F.$rubi("NonzeroQ"), a0);
   // }
 
-  public static IAST NormalizeHyperbolic(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST NormalizeHyperbolic(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(F.$rubi("NormalizeHyperbolic"), a0, a1, a2, a3);
   }
 
@@ -1529,8 +1496,8 @@ public class UtilityFunctionCtors {
     return F.ternaryAST3(F.$rubi("PolynomialDivide"), a0, a1, a2);
   }
 
-  public static IAST PolynomialDivide(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST PolynomialDivide(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(F.$rubi("PolynomialDivide"), a0, a1, a2, a3);
   }
 
@@ -1582,8 +1549,8 @@ public class UtilityFunctionCtors {
     return F.unaryAST1(PowerQ, a0);
   }
 
-  public static IAST PowerVariableDegree(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST PowerVariableDegree(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(F.$rubi("PowerVariableDegree"), a0, a1, a2, a3);
   }
 
@@ -1719,23 +1686,23 @@ public class UtilityFunctionCtors {
     return F.unaryAST1(ReapList, a0);
   }
 
-  public static IAST RectifyCotangent(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST RectifyCotangent(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(F.$rubi("RectifyCotangent"), a0, a1, a2, a3);
   }
 
-  public static IAST RectifyCotangent(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+  public static IAST RectifyCotangent(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3, final IExpr a4) {
     return quinary(F.$rubi("RectifyCotangent"), a0, a1, a2, a3, a4);
   }
 
-  public static IAST RectifyTangent(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST RectifyTangent(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(F.$rubi("RectifyTangent"), a0, a1, a2, a3);
   }
 
-  public static IAST RectifyTangent(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+  public static IAST RectifyTangent(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
+      final IExpr a4) {
     return quinary(F.$rubi("RectifyTangent"), a0, a1, a2, a3, a4);
   }
 
@@ -1902,8 +1869,8 @@ public class UtilityFunctionCtors {
     return F.unaryAST1(F.$rubi("SqrtNumberSumQ"), a0);
   }
 
-  public static IAST SquareRootOfQuadraticSubst(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST SquareRootOfQuadraticSubst(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(F.$rubi("SquareRootOfQuadraticSubst"), a0, a1, a2, a3);
   }
 
@@ -1943,8 +1910,8 @@ public class UtilityFunctionCtors {
     return F.ternaryAST3(F.$rubi("SubstForExpn"), a0, a1, a2);
   }
 
-  public static IAST SubstForFractionalPower(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+  public static IAST SubstForFractionalPower(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3, final IExpr a4) {
     return quinary(F.$rubi("SubstForFractionalPower"), a0, a1, a2, a3, a4);
   }
 
@@ -1964,8 +1931,8 @@ public class UtilityFunctionCtors {
     return F.ternaryAST3(F.$rubi("SubstForFractionalPowerQ"), a0, a1, a2);
   }
 
-  public static IAST SubstForHyperbolic(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+  public static IAST SubstForHyperbolic(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3, final IExpr a4) {
     return quinary(F.$rubi("SubstForHyperbolic"), a0, a1, a2, a3, a4);
   }
 
@@ -1973,8 +1940,8 @@ public class UtilityFunctionCtors {
     return F.ternaryAST3(F.$rubi("SubstForInverseFunction"), a0, a1, a2);
   }
 
-  public static IAST SubstForInverseFunction(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+  public static IAST SubstForInverseFunction(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
     return quaternary(F.$rubi("SubstForInverseFunction"), a0, a1, a2, a3);
   }
 
@@ -1982,8 +1949,8 @@ public class UtilityFunctionCtors {
     return F.binaryAST2(F.$rubi("SubstForInverseFunctionOfQuotientOfLinears"), a0, a1);
   }
 
-  public static IAST SubstForTrig(
-      final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+  public static IAST SubstForTrig(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
+      final IExpr a4) {
     return quinary(F.$rubi("SubstForTrig"), a0, a1, a2, a3, a4);
   }
 
@@ -2179,19 +2146,16 @@ public class UtilityFunctionCtors {
       IExpr arg1 = astPlus.get(i);
       if (arg1.isAST(Dist) && arg1.size() == 4) {
         // dist1 = Dist[u_,v_,x_]
-        IAST dist1 =
-            engine.evalArgs((IAST) arg1, ISymbol.NOATTRIBUTE).orElse((IAST) arg1); // (IAST) arg1;
+        IAST dist1 = engine.evalArgs((IAST) arg1, ISymbol.NOATTRIBUTE).orElse((IAST) arg1); // (IAST)
+                                                                                            // arg1;
         IExpr v = dist1.arg2();
         IExpr x = dist1.arg3();
         for (int j = i + 1; j < astPlus.size(); j++) {
           IExpr arg2 = astPlus.get(j);
-          if (arg2.isAST(Dist)
-              && arg2.size() == 4
-              && arg2.getAt(2).equals(v)
+          if (arg2.isAST(Dist) && arg2.size() == 4 && arg2.getAt(2).equals(v)
               && arg2.getAt(3).equals(x)) {
             // dist2=Dist[w_,v_,x_]
-            IAST dist2 =
-                engine.evalArgs((IAST) arg2, ISymbol.NOATTRIBUTE).orElse((IAST) arg2); // (IAST)
+            IAST dist2 = engine.evalArgs((IAST) arg2, ISymbol.NOATTRIBUTE).orElse((IAST) arg2); // (IAST)
             // arg2;
             IASTAppendable result = astPlus.removeAtClone(j);
             result.remove(i);
@@ -2205,10 +2169,8 @@ public class UtilityFunctionCtors {
           }
           if (arg2.isTimes2() && arg2.first().isMinusOne() && arg2.second().isAST(Dist)) {
             // -1 * Dist[w_,v_,x_]
-            IAST dist2 =
-                engine
-                    .evalArgs((IAST) arg2.second(), ISymbol.NOATTRIBUTE)
-                    .orElse((IAST) arg2.second()); // (IAST) arg2.second();
+            IAST dist2 = engine.evalArgs((IAST) arg2.second(), ISymbol.NOATTRIBUTE)
+                .orElse((IAST) arg2.second()); // (IAST) arg2.second();
             if (dist2.size() == 4 && dist2.getAt(2).equals(v) && dist2.getAt(3).equals(x)) {
               IASTAppendable result = astPlus.removeAtClone(j);
               result.remove(i);
@@ -2225,21 +2187,16 @@ public class UtilityFunctionCtors {
       } else if (arg1.isTimes2() && arg1.first().isMinusOne() && arg1.second().isAST(Dist)) {
         // -1 * Dist[w_,v_,x_]
         IAST dist1 =
-            engine
-                .evalArgs((IAST) arg1.second(), ISymbol.NOATTRIBUTE)
-                .orElse((IAST) arg1.second()); // (IAST)
+            engine.evalArgs((IAST) arg1.second(), ISymbol.NOATTRIBUTE).orElse((IAST) arg1.second()); // (IAST)
         // arg1.second();
         IExpr v = dist1.arg2();
         IExpr x = dist1.arg3();
         for (int j = i + 1; j < astPlus.size(); j++) {
           IExpr arg2 = astPlus.get(j);
-          if (arg2.isAST(Dist)
-              && arg2.size() == 4
-              && arg2.getAt(2).equals(v)
+          if (arg2.isAST(Dist) && arg2.size() == 4 && arg2.getAt(2).equals(v)
               && arg2.getAt(3).equals(x)) {
             // dist2 = Dist[u_,v_,x_]
-            IAST dist2 =
-                engine.evalArgs((IAST) arg2, ISymbol.NOATTRIBUTE).orElse((IAST) arg2); // (IAST)
+            IAST dist2 = engine.evalArgs((IAST) arg2, ISymbol.NOATTRIBUTE).orElse((IAST) arg2); // (IAST)
             // arg2;
             IASTAppendable result = astPlus.removeAtClone(j);
             result.remove(i);

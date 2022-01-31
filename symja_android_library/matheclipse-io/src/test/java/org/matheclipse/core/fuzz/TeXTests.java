@@ -62,51 +62,50 @@ public class TeXTests extends TestCase {
     OutputFormFactory fInputFactory = OutputFormFactory.get(true, false, 5, 7);
     fInputFactory.setInputForm(true);
     AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-    IAST seedList =
-        F.List( //
-            F.complex(-0.5, 0.5), //
-            F.complex(0.0, 0.5), //
-            F.complex(0.0, -1.0), //
-            F.complex(0.0, 1.0), //
-            F.num(-0.5), //
-            F.num(0.5), //
-            F.num(Math.PI * (-0.5)), //
-            F.num(Math.PI * 0.5), //
-            F.num(-Math.PI), //
-            F.num(Math.PI), //
-            F.num(-Math.E), //
-            F.num(Math.E), //
-            S.True, //
-            S.False, //
-            F.assoc(F.CEmptyList), //
-            F.assoc(F.List(F.Rule(F.x, F.y))), //
-            F.CEmptyList, //
-            F.List(F.Rule(F.C1, F.C0)), //
-            F.List(F.Rule(F.x, F.CN1)), //
-            F.C0, //
-            F.C1, //
-            F.CN1, //
-            F.C2, //
-            F.CN2, //
-            F.CN10, //
-            F.CN1D2, //
-            F.C1D2, //
-            F.CNI, //
-            F.CI, //
-            // F.ZZ(Integer.MIN_VALUE), //
-            F.CInfinity, //
-            F.CNInfinity, //
-            F.Null, //
-            F.Power(F.x, F.C2), //
-            // F.Indeterminate, //
-            F.ComplexInfinity, //
-            F.x_, //
-            F.y_, //
-            F.C1DSqrt5, //
-            F.Slot1, //
-            F.stringx(""), //
-            F.stringx("\uffff"), //
-            F.Subtract(F.C1, F.C1));
+    IAST seedList = F.List( //
+        F.complex(-0.5, 0.5), //
+        F.complex(0.0, 0.5), //
+        F.complex(0.0, -1.0), //
+        F.complex(0.0, 1.0), //
+        F.num(-0.5), //
+        F.num(0.5), //
+        F.num(Math.PI * (-0.5)), //
+        F.num(Math.PI * 0.5), //
+        F.num(-Math.PI), //
+        F.num(Math.PI), //
+        F.num(-Math.E), //
+        F.num(Math.E), //
+        S.True, //
+        S.False, //
+        F.assoc(F.CEmptyList), //
+        F.assoc(F.List(F.Rule(F.x, F.y))), //
+        F.CEmptyList, //
+        F.List(F.Rule(F.C1, F.C0)), //
+        F.List(F.Rule(F.x, F.CN1)), //
+        F.C0, //
+        F.C1, //
+        F.CN1, //
+        F.C2, //
+        F.CN2, //
+        F.CN10, //
+        F.CN1D2, //
+        F.C1D2, //
+        F.CNI, //
+        F.CI, //
+        // F.ZZ(Integer.MIN_VALUE), //
+        F.CInfinity, //
+        F.CNInfinity, //
+        F.Null, //
+        F.Power(F.x, F.C2), //
+        // F.Indeterminate, //
+        F.ComplexInfinity, //
+        F.x_, //
+        F.y_, //
+        F.C1DSqrt5, //
+        F.Slot1, //
+        F.stringx(""), //
+        F.stringx("\uffff"), //
+        F.Subtract(F.C1, F.C1));
     int counter = 0;
     ThreadLocalRandom random = ThreadLocalRandom.current();
     for (int j = 1; j < 10000; j++) {

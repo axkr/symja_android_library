@@ -41,11 +41,11 @@ public class IntRangeSpec {
    * null</code>.
    *
    * <ul>
-   *   <li>&quot;All&quot; - gives <code>[0, Integer.MAX_VALUE]</code>
-   *   <li>&quot;int value&quot; - gives exactly <code>[0, &quot;int value&quot;]</code>
-   *   <li>&quot;{int value}&quot; - gives <code>[&quot;int value&quot;, &quot;int value&quot;]
+   * <li>&quot;All&quot; - gives <code>[0, Integer.MAX_VALUE]</code>
+   * <li>&quot;int value&quot; - gives exactly <code>[0, &quot;int value&quot;]</code>
+   * <li>&quot;{int value}&quot; - gives <code>[&quot;int value&quot;, &quot;int value&quot;]
    *       </code>
-   *   <li>&quot;{min, max}&quot; - gives <code>[&quot;min&quot;, &quot;max&quot;]</code>
+   * <li>&quot;{min, max}&quot; - gives <code>[&quot;min&quot;, &quot;max&quot;]</code>
    * </ul>
    *
    * @param ast
@@ -68,11 +68,11 @@ public class IntRangeSpec {
    * parts of the range are negative or undefined return <code>null</code>.
    *
    * <ul>
-   *   <li>&quot;All&quot; - gives <code>[0, Integer.MAX_VALUE]</code>
-   *   <li>&quot;int value&quot; - gives exactly <code>[0, &quot;int value&quot;]</code>
-   *   <li>&quot;{int value}&quot; - gives <code>[&quot;int value&quot;, &quot;int value&quot;]
+   * <li>&quot;All&quot; - gives <code>[0, Integer.MAX_VALUE]</code>
+   * <li>&quot;int value&quot; - gives exactly <code>[0, &quot;int value&quot;]</code>
+   * <li>&quot;{int value}&quot; - gives <code>[&quot;int value&quot;, &quot;int value&quot;]
    *       </code>
-   *   <li>&quot;{min, max}&quot; - gives <code>[&quot;min&quot;, &quot;max&quot;]</code>
+   * <li>&quot;{min, max}&quot; - gives <code>[&quot;min&quot;, &quot;max&quot;]</code>
    * </ul>
    *
    * @param specification

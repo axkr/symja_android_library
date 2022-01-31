@@ -50,15 +50,17 @@ public class CurveFitterFunctions {
    *
    * <blockquote>
    *
-   * <p>solve a least squares problem using the Levenberg-Marquardt algorithm.
+   * <p>
+   * solve a least squares problem using the Levenberg-Marquardt algorithm.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm">Wikipedia -
-   *       Levenberg–Marquardt algorithm</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm">Wikipedia -
+   * Levenberg–Marquardt algorithm</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -71,22 +73,25 @@ public class CurveFitterFunctions {
    * {a-&gt;0.0,b-&gt;0.0,c-&gt;1.0}
    * </pre>
    *
-   * <p>The default initial guess in the following example for the parameters <code>{a,w,f}</code>
-   * is <code>{1.0, 1.0, 1.0}</code>. These initial values give a bad result:
+   * <p>
+   * The default initial guess in the following example for the parameters <code>{a,w,f}</code> is
+   * <code>{1.0, 1.0, 1.0}</code>. These initial values give a bad result:
    *
    * <pre>
    * &gt;&gt; FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {a,w,f}, t)
    * {a-&gt;0.6688,w-&gt;1.49588,f-&gt;3.74845}
    * </pre>
    *
-   * <p>The initial guess <code>{2.0, 1.0, 1.0}</code> gives a much better result:
+   * <p>
+   * The initial guess <code>{2.0, 1.0, 1.0}</code> gives a much better result:
    *
    * <pre>
    * &gt;&gt; FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {{a, 2}, {w,1}, {f,1}}, t)
    * {a-&gt;3.0,w-&gt;3.0,f-&gt;1.0}
    * </pre>
    *
-   * <p>You can omit <code>1.0</code> in the parameter list because it's the default value:
+   * <p>
+   * You can omit <code>1.0</code> in the parameter list because it's the default value:
    *
    * <pre>
    * &gt;&gt; FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {{a, 2}, w, f}, t)
@@ -101,12 +106,8 @@ public class CurveFitterFunctions {
       IAST gradientList;
       IASTAppendable listOfRules;
 
-      public FindFitParametricFunction(
-          final IExpr function,
-          final IAST gradientList,
-          final IAST listOfSymbols,
-          final ISymbol x,
-          final EvalEngine engine) {
+      public FindFitParametricFunction(final IExpr function, final IAST gradientList,
+          final IAST listOfSymbols, final ISymbol x, final EvalEngine engine) {
         this.function = function;
         this.engine = engine;
         this.gradientList = gradientList;
@@ -263,10 +264,8 @@ public class CurveFitterFunctions {
             IExpr gradientList = S.Grad.of(engine, function, listOfSymbols);
             if (gradientList.isList()) {
               AbstractCurveFitter fitter =
-                  SimpleCurveFitter.create(
-                      new FindFitParametricFunction(
-                          function, (IAST) gradientList, listOfSymbols, x, engine),
-                      initialGuess);
+                  SimpleCurveFitter.create(new FindFitParametricFunction(function,
+                      (IAST) gradientList, listOfSymbols, x, engine), initialGuess);
               WeightedObservedPoints obs = new WeightedObservedPoints();
               if (addWeightedObservedPoints(data, obs)) {
                 double[] values = fitter.fit(obs.toList());
@@ -293,15 +292,17 @@ public class CurveFitterFunctions {
    *
    * <blockquote>
    *
-   * <p>solve a least squares problem using the Levenberg-Marquardt algorithm.
+   * <p>
+   * solve a least squares problem using the Levenberg-Marquardt algorithm.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm">Wikipedia -
-   *       Levenberg–Marquardt algorithm</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm">Wikipedia -
+   * Levenberg–Marquardt algorithm</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -326,8 +327,8 @@ public class CurveFitterFunctions {
           WeightedObservedPoints obs = new WeightedObservedPoints();
           if (addWeightedObservedPoints(data, obs)) {
             try {
-              return Convert.polynomialFunction2Expr(
-                  fitter.fit(obs.toList()), (ISymbol) ast.arg3());
+              return Convert.polynomialFunction2Expr(fitter.fit(obs.toList()),
+                  (ISymbol) ast.arg3());
             } catch (RuntimeException rex) {
               LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             }

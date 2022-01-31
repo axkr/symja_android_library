@@ -36,8 +36,8 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
    * @param leftHandSide could contain pattern expressions for "pattern-matching"
    * @param rightHandSide the result which should be evaluated if the "pattern-matching" succeeds
    */
-  public PatternMatcherEquals(
-      final int setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
+  public PatternMatcherEquals(final int setSymbol, final IExpr leftHandSide,
+      final IExpr rightHandSide) {
     super(leftHandSide);
     fSetFlags = setSymbol;
     fRightHandSide = rightHandSide;

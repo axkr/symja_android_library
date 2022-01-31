@@ -37,10 +37,7 @@ public class TeXParser {
   static class BinaryOperator extends Operator {
     BiFunction<IExpr, IExpr, IExpr> binaryFunction;
 
-    public BinaryOperator(
-        final String oper,
-        final String functionName,
-        final int precedence,
+    public BinaryOperator(final String oper, final String functionName, final int precedence,
         BiFunction<IExpr, IExpr, IExpr> binaryFunction) {
       super(oper, functionName, precedence);
       this.binaryFunction = binaryFunction;
@@ -54,10 +51,7 @@ public class TeXParser {
   static class PostfixOperator extends Operator {
     Function<IExpr, IExpr> function;
 
-    public PostfixOperator(
-        final String oper,
-        final String functionName,
-        final int precedence,
+    public PostfixOperator(final String oper, final String functionName, final int precedence,
         Function<IExpr, IExpr> function) {
       super(oper, functionName, precedence);
       this.function = function;
@@ -71,10 +65,7 @@ public class TeXParser {
   static class PrefixOperator extends Operator {
     Function<IExpr, IExpr> function;
 
-    public PrefixOperator(
-        final String oper,
-        final String functionName,
-        final int precedence,
+    public PrefixOperator(final String oper, final String functionName, final int precedence,
         Function<IExpr, IExpr> function) {
       super(oper, functionName, precedence);
       this.function = function;
@@ -88,41 +79,40 @@ public class TeXParser {
   static final boolean SHOW_UNICODE = false;
 
   static final PrefixOperator[] PREFIX_OPERATORS = { //
-    new PrefixOperator("+", "Plus", 670, (x) -> x), //
-    new PrefixOperator("-", "Minus", 485, (x) -> F.Negate(x)), //
-    new PrefixOperator("\u00ac", "Not", 230, (x) -> F.Not(x)), //
+      new PrefixOperator("+", "Plus", 670, (x) -> x), //
+      new PrefixOperator("-", "Minus", 485, (x) -> F.Negate(x)), //
+      new PrefixOperator("\u00ac", "Not", 230, (x) -> F.Not(x)), //
   };
 
   static final PostfixOperator[] POSTFIX_OPERATORS = { //
-    new PostfixOperator("!", "Factorial", Precedence.FACTORIAL, (x) -> F.Factorial(x)), //
+      new PostfixOperator("!", "Factorial", Precedence.FACTORIAL, (x) -> F.Factorial(x)), //
   };
 
   static final BinaryOperator[] BINARY_OPERATORS = { //
-    new BinaryOperator("=", "Equal", Precedence.EQUAL, (lhs, rhs) -> F.Equal(lhs, rhs)), //
-    new BinaryOperator(
-        "\u2264", "LessEqual", Precedence.EQUAL, (lhs, rhs) -> F.LessEqual(lhs, rhs)), //
-    new BinaryOperator(
-        "\u2265", "GreaterEqual", Precedence.EQUAL, (lhs, rhs) -> F.GreaterEqual(lhs, rhs)), //
-    new BinaryOperator("<", "Less", Precedence.EQUAL, (lhs, rhs) -> F.Less(lhs, rhs)), //
-    new BinaryOperator(">", "Greater", Precedence.EQUAL, (lhs, rhs) -> F.Greater(lhs, rhs)), //
-    new BinaryOperator("\u2227", "And", 215, (lhs, rhs) -> F.And(lhs, rhs)), //
-    new BinaryOperator("\u2228", "Or", 213, (lhs, rhs) -> F.Or(lhs, rhs)), //
-    new BinaryOperator("\u21d2", "Implies", 120, (lhs, rhs) -> F.Implies(lhs, rhs)), // Rightarrow
-    new BinaryOperator("\u2192", "Rule", 120, (lhs, rhs) -> F.Rule(lhs, rhs)), // rightarrow
-    new BinaryOperator(
-        "\u21d4", "Equivalent", 120, (lhs, rhs) -> F.Equivalent(lhs, rhs)), // Leftrightarrow
-    new BinaryOperator("\u2261", "Equivalent", 120, (lhs, rhs) -> F.Equivalent(lhs, rhs)), // equiv
-    new BinaryOperator("+", "Plus", Precedence.PLUS, (lhs, rhs) -> F.Plus(lhs, rhs)), //
-    new BinaryOperator("-", "Subtract", Precedence.PLUS, (lhs, rhs) -> F.Subtract(lhs, rhs)), //
-    new BinaryOperator("*", "Times", Precedence.TIMES, (lhs, rhs) -> F.Times(lhs, rhs)), //
-    // x multiplication sign
-    new BinaryOperator("\u00d7", "Times", Precedence.TIMES, (lhs, rhs) -> F.Times(lhs, rhs)), //
-    // InvisibleTimes
-    new BinaryOperator("\u2062", "Times", Precedence.TIMES, (lhs, rhs) -> F.Times(lhs, rhs)), //
-    new BinaryOperator("/", "Divide", Precedence.DIVIDE, (lhs, rhs) -> F.Divide(lhs, rhs)), //
-    // &#xf7; Division sign
-    new BinaryOperator("\u00f7", "Divide", Precedence.DIVIDE, (lhs, rhs) -> F.Divide(lhs, rhs)), //
-    new BinaryOperator("\u2208", "Element", 250, (lhs, rhs) -> F.Element(lhs, rhs)), //
+      new BinaryOperator("=", "Equal", Precedence.EQUAL, (lhs, rhs) -> F.Equal(lhs, rhs)), //
+      new BinaryOperator("\u2264", "LessEqual", Precedence.EQUAL,
+          (lhs, rhs) -> F.LessEqual(lhs, rhs)), //
+      new BinaryOperator("\u2265", "GreaterEqual", Precedence.EQUAL,
+          (lhs, rhs) -> F.GreaterEqual(lhs, rhs)), //
+      new BinaryOperator("<", "Less", Precedence.EQUAL, (lhs, rhs) -> F.Less(lhs, rhs)), //
+      new BinaryOperator(">", "Greater", Precedence.EQUAL, (lhs, rhs) -> F.Greater(lhs, rhs)), //
+      new BinaryOperator("\u2227", "And", 215, (lhs, rhs) -> F.And(lhs, rhs)), //
+      new BinaryOperator("\u2228", "Or", 213, (lhs, rhs) -> F.Or(lhs, rhs)), //
+      new BinaryOperator("\u21d2", "Implies", 120, (lhs, rhs) -> F.Implies(lhs, rhs)), // Rightarrow
+      new BinaryOperator("\u2192", "Rule", 120, (lhs, rhs) -> F.Rule(lhs, rhs)), // rightarrow
+      new BinaryOperator("\u21d4", "Equivalent", 120, (lhs, rhs) -> F.Equivalent(lhs, rhs)), // Leftrightarrow
+      new BinaryOperator("\u2261", "Equivalent", 120, (lhs, rhs) -> F.Equivalent(lhs, rhs)), // equiv
+      new BinaryOperator("+", "Plus", Precedence.PLUS, (lhs, rhs) -> F.Plus(lhs, rhs)), //
+      new BinaryOperator("-", "Subtract", Precedence.PLUS, (lhs, rhs) -> F.Subtract(lhs, rhs)), //
+      new BinaryOperator("*", "Times", Precedence.TIMES, (lhs, rhs) -> F.Times(lhs, rhs)), //
+      // x multiplication sign
+      new BinaryOperator("\u00d7", "Times", Precedence.TIMES, (lhs, rhs) -> F.Times(lhs, rhs)), //
+      // InvisibleTimes
+      new BinaryOperator("\u2062", "Times", Precedence.TIMES, (lhs, rhs) -> F.Times(lhs, rhs)), //
+      new BinaryOperator("/", "Divide", Precedence.DIVIDE, (lhs, rhs) -> F.Divide(lhs, rhs)), //
+      // &#xf7; Division sign
+      new BinaryOperator("\u00f7", "Divide", Precedence.DIVIDE, (lhs, rhs) -> F.Divide(lhs, rhs)), //
+      new BinaryOperator("\u2208", "Element", 250, (lhs, rhs) -> F.Element(lhs, rhs)), //
   };
 
   private static Map<String, IExpr> UNICODE_OPERATOR_MAP;
@@ -139,8 +129,7 @@ public class TeXParser {
   private static class Initializer {
 
     private static void init() {
-      UNICODE_OPERATOR_MAP =
-          Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+      UNICODE_OPERATOR_MAP = Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
       UNICODE_OPERATOR_MAP.put("\u2218", S.Degree);
       UNICODE_OPERATOR_MAP.put("\u00B0", S.Degree);
       UNICODE_OPERATOR_MAP.put("\u222b", S.Integrate);
@@ -152,8 +141,7 @@ public class TeXParser {
       UNICODE_OPERATOR_MAP.put("\u2149", F.CI); // double-struck italic letter j
       UNICODE_OPERATOR_MAP.put("\u2107", S.E); // euler's constant
 
-      FUNCTION_HEADER_MAP =
-          Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+      FUNCTION_HEADER_MAP = Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
       FUNCTION_HEADER_MAP.put("ln", S.Log);
       FUNCTION_HEADER_MAP.put("lim", S.Limit);
 
@@ -175,8 +163,7 @@ public class TeXParser {
 
       TrieBuilder<String, PostfixOperator, ArrayList<PostfixOperator>> postfixBuilder =
           TrieBuilder.create();
-      POSTFIX_OPERATOR_MAP =
-          postfixBuilder.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+      POSTFIX_OPERATOR_MAP = postfixBuilder.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
       for (int i = 0; i < POSTFIX_OPERATORS.length; i++) {
         String headStr = POSTFIX_OPERATORS[i].getOperatorString();
         POSTFIX_OPERATOR_MAP.put(headStr, POSTFIX_OPERATORS[i]);
@@ -252,8 +239,7 @@ public class TeXParser {
           attribute = ((ISymbol) lhs).getAttributes();
         }
         if ((attribute & ISymbol.CONSTANT) != ISymbol.CONSTANT) {
-          if ((lhs.isFunction() || lhs.isSymbol() || lhs.isDerivative() != null)
-              && //
+          if ((lhs.isFunction() || lhs.isSymbol() || lhs.isDerivative() != null) && //
               position[0] < listSize) {
             boolean isNumericFunction =
                 ((attribute & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION);
@@ -272,8 +258,7 @@ public class TeXParser {
                 return lhs;
               }
             } else if (isNumericFunction
-                || (lhs.isBuiltInSymbol() && !(lhs instanceof BuiltInDummy))
-                || lhs.isFunction()) {
+                || (lhs.isBuiltInSymbol() && !(lhs instanceof BuiltInDummy)) || lhs.isFunction()) {
               if (lhs.equals(S.Integrate)) {
                 ISymbol test = F.Dummy("test");
                 return integrate(list, position, test, test);
@@ -405,8 +390,8 @@ public class TeXParser {
    * @param symbolOrList
    * @return
    */
-  private IExpr integrate(
-      NodeList parentList, int[] position, ISymbol dummySymbol, IExpr symbolOrList) {
+  private IExpr integrate(NodeList parentList, int[] position, ISymbol dummySymbol,
+      IExpr symbolOrList) {
     ISymbol x = null;
     IExpr dxValue = F.C1;
     int dxStart = -1;
@@ -415,8 +400,7 @@ public class TeXParser {
     int[] dxPosition1 = new int[] {position[0]};
     while (dxPosition1[0] < parentList.getLength()) {
       Node nd = parentList.item(dxPosition1[0]++);
-      if (nd.getNodeName().equals("mi")
-          && //
+      if (nd.getNodeName().equals("mi") && //
           nd.getTextContent().equals("d")) {
         if (dxPosition1[0] < parentList.getLength()) {
           nd = parentList.item(dxPosition1[0]);
@@ -476,9 +460,7 @@ public class TeXParser {
         throw new AbortException();
       }
     }
-    if (frac.isTimes()
-        && frac.first().isSymbol()
-        && frac.size() == 3
+    if (frac.isTimes() && frac.first().isSymbol() && frac.size() == 3
         && frac.second().isPowerReciprocal()) {
       ISymbol d = (ISymbol) frac.first();
       if (d.getSymbolName().equals("d")) {

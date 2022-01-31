@@ -28,10 +28,7 @@ public class RuleCreationError extends ValidateException {
     // return "Error in rule creation: " + fLHS + " " + fRHS;
     // }
     Context context = fLHS.topHead().getContext();
-    return "Not allowed left-hand-side expression: \""
-        + fLHS
-        + "\" from context \""
-        + context
+    return "Not allowed left-hand-side expression: \"" + fLHS + "\" from context \"" + context
         + "\"\nPlease use names which aren't predefined by the system.";
   }
 
@@ -41,12 +38,7 @@ public class RuleCreationError extends ValidateException {
       return symbol + ": " + "Operation not allowed in server mode.";
     }
     Context context = fLHS.topHead().getContext();
-    return symbol
-        + ": "
-        + "Not allowed left-hand-side expression: \""
-        + fLHS
-        + "\" from context \""
-        + context
-        + "\"\nPlease use names which aren't predefined by the system.";
+    return symbol + ": " + "Not allowed left-hand-side expression: \"" + fLHS + "\" from context \""
+        + context + "\"\nPlease use names which aren't predefined by the system.";
   }
 }

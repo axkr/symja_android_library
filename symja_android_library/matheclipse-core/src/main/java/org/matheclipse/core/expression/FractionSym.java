@@ -183,9 +183,8 @@ public class FractionSym extends AbstractFractionSym {
       if (expr instanceof IntegerSym) {
         return compareInt(((IntegerSym) expr).fIntValue);
       } else if (expr instanceof BigIntegerSym) {
-        return new BigFractionSym(
-                ((AbstractIntegerSym) expr).toBigNumerator().negate(), BigInteger.ONE)
-            .compareTo(this);
+        return new BigFractionSym(((AbstractIntegerSym) expr).toBigNumerator().negate(),
+            BigInteger.ONE).compareTo(this);
       } else if (expr instanceof BigFractionSym) {
         return -expr.compareTo(this);
       }
@@ -239,7 +238,8 @@ public class FractionSym extends AbstractFractionSym {
     long newnum = (long) fNumerator * fs.fDenominator;
     long newdenom = (long) fDenominator * fs.fNumerator;
     // +-inf : -c = -+inf
-    if (newdenom == 0 && fs.fNumerator < 0) newnum = -newnum;
+    if (newdenom == 0 && fs.fNumerator < 0)
+      newnum = -newnum;
     return valueOf(newnum, newdenom);
   }
 
@@ -374,10 +374,8 @@ public class FractionSym extends AbstractFractionSym {
     FractionSym fs = (FractionSym) other;
     int gcddenom = ArithmeticUtils.gcd(fDenominator, fs.fDenominator);
     long denom = ((long) (fDenominator / gcddenom)) * (long) fs.fDenominator;
-    long num =
-        ArithmeticUtils.gcd(
-            fNumerator < 0 ? -fNumerator : fNumerator,
-            fs.fNumerator < 0 ? -fs.fNumerator : fs.fNumerator);
+    long num = ArithmeticUtils.gcd(fNumerator < 0 ? -fNumerator : fNumerator,
+        fs.fNumerator < 0 ? -fs.fNumerator : fs.fNumerator);
     return valueOf(num, denom);
   }
 
@@ -513,8 +511,10 @@ public class FractionSym extends AbstractFractionSym {
   public IFraction mul(BigInteger other) {
     if (other.bitLength() <= 31) {
       int oint = other.intValue();
-      if (oint == 1) return this;
-      if (oint == -1) return this.negate();
+      if (oint == 1)
+        return this;
+      if (oint == -1)
+        return this.negate();
       long newnum = (long) fNumerator * oint;
       return valueOf(newnum, fDenominator);
     }
@@ -686,13 +686,8 @@ public class FractionSym extends AbstractFractionSym {
   public String toString() {
     try {
       StringBuilder sb = new StringBuilder();
-      OutputFormFactory.get()
-          .convertFraction(
-              sb,
-              toBigNumerator(),
-              toBigDenominator(),
-              Integer.MIN_VALUE,
-              OutputFormFactory.NO_PLUS_CALL);
+      OutputFormFactory.get().convertFraction(sb, toBigNumerator(), toBigDenominator(),
+          Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
       return sb.toString();
     } catch (Exception e1) {
       // fall back to simple output format

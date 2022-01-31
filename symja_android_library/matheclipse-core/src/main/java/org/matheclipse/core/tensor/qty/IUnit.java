@@ -34,8 +34,9 @@ public interface IUnit extends Comparable<IUnit>, Serializable {
   /**
    * function negate is equivalent to {@link #multiply(IExpr)} with factor -1
    *
-   * <p>Example: in order to compute the reciprocal of a quantity, the exponents of the elemental
-   * units are negated. 1 / (X[kg*m^2]) is accompanied by the calculation [kg*m^2] -> [kg^-1*m^-2]
+   * <p>
+   * Example: in order to compute the reciprocal of a quantity, the exponents of the elemental units
+   * are negated. 1 / (X[kg*m^2]) is accompanied by the calculation [kg*m^2] -> [kg^-1*m^-2]
    *
    * @return
    */
@@ -46,7 +47,8 @@ public interface IUnit extends Comparable<IUnit>, Serializable {
    * X[m*s] * Y[s^2] requires to collect all elemental units and add their exponents: [m*s] + [s^2]
    * -> [m*s^3]
    *
-   * <p>If the resulting exponent equals 0, the elemental unit is removed altogether.
+   * <p>
+   * If the resulting exponent equals 0, the elemental unit is removed altogether.
    *
    * @param unit
    * @return

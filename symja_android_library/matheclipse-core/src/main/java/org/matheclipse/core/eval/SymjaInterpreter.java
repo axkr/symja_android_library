@@ -40,7 +40,7 @@ public class SymjaInterpreter extends EvalUtilities {
    * Evaluate the expression assigned to this interpreter.
    *
    * @param function <code>null</code> if you like to evaluate in symbolic mode; &quot;N&quot; if
-   *     you like to evaluate in numeric mode
+   *        you like to evaluate in numeric mode
    * @return
    */
   public String interpreter(String function) {
@@ -171,7 +171,7 @@ public class SymjaInterpreter extends EvalUtilities {
    * Evaluate the expression assigned to this interpreter.
    *
    * @param function <code>null</code> if you like to evaluate in symbolic mode; &quot;N&quot; if
-   *     you like to evaluate in numeric mode
+   *        you like to evaluate in numeric mode
    */
   public void eval(String function) {
     String result = interpreter(function);

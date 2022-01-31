@@ -399,8 +399,7 @@ public class RubiIssue72 extends AbstractRubiTestCase {
     // TODO answer has equivalent form:
     // check("Rubi`NonnumericFactors[1/Sqrt[2]]", //
     // "Sqrt[2]");
-    check(
-        "Rubi`NonnumericFactors[1/Sqrt[2]]", //
+    check("Rubi`NonnumericFactors[1/Sqrt[2]]", //
         "2/Sqrt[2]");
   }
 
@@ -424,8 +423,7 @@ public class RubiIssue72 extends AbstractRubiTestCase {
     // TODO answer has equivalent form:
     // check("Rubi`NonnumericFactors[(2 + 2*x)/(2*Sqrt[2])]", //
     // "Sqrt[2]*(1 + x)");
-    check(
-        "Rubi`NonnumericFactors[(2 + 2*x)/(2*Sqrt[2])]", //
+    check("Rubi`NonnumericFactors[(2 + 2*x)/(2*Sqrt[2])]", //
         "(2*(1+x))/Sqrt[2]");
   }
 
@@ -678,8 +676,7 @@ public class RubiIssue72 extends AbstractRubiTestCase {
   }
 
   public void test0163() {
-    check(
-        "Rubi`Simp[1/Sqrt[2] + x/Sqrt[2], x]", //
+    check("Rubi`Simp[1/Sqrt[2] + x/Sqrt[2], x]", //
         "1/Sqrt[2] + x/Sqrt[2]");
   }
 
@@ -762,8 +759,7 @@ public class RubiIssue72 extends AbstractRubiTestCase {
   }
 
   public void test0185() {
-    check(
-        "Rubi`SubstAux[-ArcTan[x/(2*Sqrt[2])]/(2*Sqrt[2]), x, 2 + 2*x, True]",
+    check("Rubi`SubstAux[-ArcTan[x/(2*Sqrt[2])]/(2*Sqrt[2]), x, 2 + 2*x, True]",
         "-ArcTan[(1 + x)/Sqrt[2]]/(2*Sqrt[2])");
   }
 

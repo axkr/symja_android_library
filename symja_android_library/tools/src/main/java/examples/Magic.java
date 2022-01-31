@@ -31,25 +31,29 @@ public class Magic {
     int sum = n * (n * n + 1) / 2;
     for (int i = 0; i < n; i++) {
       s = square[i][0];
-      for (int j = 1; j < n; j++) s = s.add(square[i][j]);
+      for (int j = 1; j < n; j++)
+        s = s.add(square[i][j]);
       s.equals(sum);
     }
 
     // Sum of each column is n*(n*n+1)/2
     for (int j = 0; j < n; j++) {
       s = square[0][j];
-      for (int i = 1; i < n; i++) s = s.add(square[i][j]);
+      for (int i = 1; i < n; i++)
+        s = s.add(square[i][j]);
       s.equals(sum);
     }
 
     // Sum of down-diagonal is n*(n*n+1)/2
     s = square[0][0];
-    for (int i = 1; i < n; i++) s = s.add(square[i][i]);
+    for (int i = 1; i < n; i++)
+      s = s.add(square[i][i]);
     s.equals(sum);
 
     // Sum of up-diagonal is n*(n*n+1)/2
     s = square[0][n - 1];
-    for (int i = 1; i < n; i++) s = s.add(square[i][n - i - 1]);
+    for (int i = 1; i < n; i++)
+      s = s.add(square[i][n - i - 1]);
     s.equals(sum);
 
     // Left-upper corner is minimum

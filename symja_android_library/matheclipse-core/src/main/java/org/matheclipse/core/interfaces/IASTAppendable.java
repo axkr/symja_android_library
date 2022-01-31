@@ -17,10 +17,12 @@ import org.matheclipse.core.expression.F;
 /**
  * Appendable (I)nterface for the (A)bstract (S)yntax (T)ree of a given function.
  *
- * <p>An AST object to which <tt>IExpr</tt> sequences and values can be appended or removed. These
+ * <p>
+ * An AST object to which <tt>IExpr</tt> sequences and values can be appended or removed. These
  * operations typically change the size of the {@code IAST}.
  *
- * <p>In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
+ * <p>
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
  * structure of the Symja source code. Each node of the tree denotes a construct occurring in the
  * source code. The syntax is 'abstract' in the sense that it does not represent every detail that
  * appears in the real syntax. For instance, grouping parentheses are implicit in the tree
@@ -29,13 +31,13 @@ import org.matheclipse.core.expression.F;
  * <code>x</code>. Internally an AST is represented as a list which contains
  *
  * <ul>
- *   <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
- *       Times,...) at index <code>0</code> and
- *   <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
+ * Times,...) at index <code>0</code> and
+ * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
  * </ul>
  *
- * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>, <a
- * href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph</a>
+ * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>,
+ * <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph</a>
  */
 public interface IASTAppendable extends IASTMutable {
 
@@ -81,15 +83,13 @@ public interface IASTAppendable extends IASTMutable {
    * order.
    *
    * @return a {@code Collector} that appends the input expressions into a {@code AST}, in encounter
-   *     order.
+   *         order.
    */
-  public static Collector<IExpr, ?, IASTAppendable> toAST(
-      final IExpr head, final int initialCapacity) {
+  public static Collector<IExpr, ?, IASTAppendable> toAST(final IExpr head,
+      final int initialCapacity) {
     final Supplier<IASTAppendable> supplier = () -> F.ast(head, initialCapacity);
-    return new CollectorImpl<IExpr, IASTAppendable, IASTAppendable>(
-        supplier,
-        IASTAppendable::append,
-        (r1, r2) -> {
+    return new CollectorImpl<IExpr, IASTAppendable, IASTAppendable>(supplier,
+        IASTAppendable::append, (r1, r2) -> {
           r1.append(r2);
           return r1;
         });
@@ -100,7 +100,7 @@ public interface IASTAppendable extends IASTMutable {
    * order.
    *
    * @return a {@code Collector} that appends the input expressions into a {@code AST}, in encounter
-   *     order.
+   *         order.
    */
   public static Collector<IExpr, ?, IASTAppendable> toAST(final IExpr head) {
     return toAST(head, 5);
@@ -113,9 +113,7 @@ public interface IASTAppendable extends IASTMutable {
    */
   public static Collector<IExpr, ?, IASTAppendable> toAST(final IASTAppendable appendable) {
     return new CollectorImpl<IExpr, IASTAppendable, IASTAppendable>(
-        () -> appendable.copyAppendable(),
-        IASTAppendable::append,
-        (r1, r2) -> {
+        () -> appendable.copyAppendable(), IASTAppendable::append, (r1, r2) -> {
           r1.append(r2);
           return r1;
         });
@@ -237,7 +235,7 @@ public interface IASTAppendable extends IASTMutable {
    *
    * @param collection the collection of objects.
    * @return {@code true} if this {@code List} is modified, {@code false} otherwise (i.e. if the
-   *     passed collection was empty).
+   *         passed collection was empty).
    * @throws UnsupportedOperationException if adding to this {@code List} is not supported.
    * @throws ClassCastException if the class of an object is inappropriate for this {@code List}.
    * @throws IllegalArgumentException if an object cannot be added to this {@code List}.
@@ -312,7 +310,7 @@ public interface IASTAppendable extends IASTMutable {
    *
    * @param ast AST containing elements to be added to this AST
    * @param untilPosition append all argumments of ast up to position <code>untilPosition</code>
-   *     exclusive.
+   *        exclusive.
    * @return <tt>true</tt> if this AST changed as a result of the call
    */
   public boolean appendArgs(IAST ast, int untilPosition);
@@ -397,7 +395,7 @@ public interface IASTAppendable extends IASTMutable {
    *
    * @param start the index at which to start removing.
    * @param end the index one after the end of the range to remove. * @throws
-   *     UnsupportedOperationException if removing from this {@code IAST} is not supported.
+   *        UnsupportedOperationException if removing from this {@code IAST} is not supported.
    * @throws IndexOutOfBoundsException when {@code start < 0, start > end} or {@code end > size()}
    */
   public void removeRange(int start, int end);

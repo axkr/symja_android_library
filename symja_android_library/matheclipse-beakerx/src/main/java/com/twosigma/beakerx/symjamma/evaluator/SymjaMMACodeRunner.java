@@ -1,17 +1,15 @@
 /*
- *  Copyright 2017 TWO SIGMA OPEN SOURCE, LLC
+ * Copyright 2017 TWO SIGMA OPEN SOURCE, LLC
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.twosigma.beakerx.symjamma.evaluator;
 
@@ -45,8 +43,8 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
   private final String theCode;
   private final SimpleEvaluationObject theOutput;
 
-  public SymjaMMACodeRunner(
-      SymjaMMAEvaluator groovyEvaluator, String code, SimpleEvaluationObject out) {
+  public SymjaMMACodeRunner(SymjaMMAEvaluator groovyEvaluator, String code,
+      SimpleEvaluationObject out) {
     this.symjammaEvaluator = groovyEvaluator;
     theCode = code;
     theOutput = out;
@@ -60,8 +58,8 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
     return svgData.toString();
   }
 
-  public Object interpreter(
-      ExprEvaluator fEvaluator, OutputFormFactory fOutputFactory, final String inputExpression) {
+  public Object interpreter(ExprEvaluator fEvaluator, OutputFormFactory fOutputFactory,
+      final String inputExpression) {
     IExpr result;
     final StringWriter buf = new StringWriter();
     try {
@@ -75,13 +73,8 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
       if (symjammaEvaluator.fSeconds <= 0) {
         result = fEvaluator.eval(inputExpression);
       } else {
-        result =
-            fEvaluator.evaluateWithTimeout(
-                inputExpression,
-                symjammaEvaluator.fSeconds,
-                TimeUnit.SECONDS,
-                true,
-                new EvalControlledCallable(fEvaluator.getEvalEngine()));
+        result = fEvaluator.evaluateWithTimeout(inputExpression, symjammaEvaluator.fSeconds,
+            TimeUnit.SECONDS, true, new EvalControlledCallable(fEvaluator.getEvalEngine()));
       }
       if (result != null) {
         if (result.equals(S.Null)) {
@@ -132,8 +125,7 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
       e = ((InvocationTargetException) e).getTargetException();
     }
 
-    if (e instanceof InterruptedException
-        || e instanceof InvocationTargetException
+    if (e instanceof InterruptedException || e instanceof InvocationTargetException
         || e instanceof ThreadDeath) {
       either = TryResult.createError(INTERUPTED_MSG);
     } else {

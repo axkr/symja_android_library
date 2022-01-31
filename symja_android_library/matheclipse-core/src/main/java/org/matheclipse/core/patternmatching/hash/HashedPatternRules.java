@@ -9,7 +9,8 @@ import org.matheclipse.core.patternmatching.RulesData;
 /**
  * Data structure for <code>HashedOrderlessMatcher</code>.
  *
- * <p>To set up a rule like<br>
+ * <p>
+ * To set up a rule like<br>
  * <code>Sin[x]^2+Cos[x]^2 -> 1</code> <br>
  * use the method:<br>
  * <code>HashedPatternRules(F.Sin(F.x_)^F.C2, F.Cos(F.x_)^F.C2, F.C1)</code>
@@ -32,13 +33,8 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
    * @param condition a condition test
    * @param defaultHashCode use the default hash code of {@link IExpr}
    */
-  public HashedPatternRules(
-      IExpr lhsPattern1,
-      IExpr lhsPattern2,
-      IExpr rhsResult,
-      boolean lhs2Negate,
-      IExpr condition,
-      boolean defaultHashCode) {
+  public HashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult,
+      boolean lhs2Negate, IExpr condition, boolean defaultHashCode) {
     super(lhsPattern1, lhsPattern2, defaultHashCode);
     fCondition = condition;
     fRHS = rhsResult;
@@ -99,14 +95,11 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
     if (fRulesData == null) {
       fRulesData = new RulesData();
       if (fCondition != null) {
-        fRulesData.putDownRule(
-            IPatternMatcher.SET_DELAYED,
-            false,
-            F.List(fLHSPattern1, fLHSPattern2),
-            F.Condition(fRHS, fCondition));
+        fRulesData.putDownRule(IPatternMatcher.SET_DELAYED, false,
+            F.List(fLHSPattern1, fLHSPattern2), F.Condition(fRHS, fCondition));
       } else {
-        fRulesData.putDownRule(
-            IPatternMatcher.SET_DELAYED, false, F.List(fLHSPattern1, fLHSPattern2), fRHS);
+        fRulesData.putDownRule(IPatternMatcher.SET_DELAYED, false,
+            F.List(fLHSPattern1, fLHSPattern2), fRHS);
       }
     }
     return fRulesData;

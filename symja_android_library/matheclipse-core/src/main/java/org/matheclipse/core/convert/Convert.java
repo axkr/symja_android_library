@@ -176,7 +176,7 @@ public class Convert {
     }
     if (expr.isSparseArray()) {
       // TODO optimize for sparse arrays
-      //      ISparseArray array = (ISparseArray) expr;
+      // ISparseArray array = (ISparseArray) expr;
       expr = ((ISparseArray) expr).normal(false);
     }
     if (expr.isList()) {
@@ -262,10 +262,10 @@ public class Convert {
     if (dim == null || dim[0] == 0 || dim[1] == 0) {
       return null;
     }
-    //	    if (expr.isSparseArray()) {
-    //	      ISparseArray array = (ISparseArray) expr;
-    //	      return array.toFieldMatrix(false);
-    //	    }
+    // if (expr.isSparseArray()) {
+    // ISparseArray array = (ISparseArray) expr;
+    // return array.toFieldMatrix(false);
+    // }
     if (expr.isList()) {
       IAST list = (IAST) expr;
       IAST currInRow = (IAST) list.arg1();
@@ -322,9 +322,8 @@ public class Convert {
     return null;
   }
 
-  public static FieldMatrix<IExpr> augmentedFieldMatrix(
-      final FieldMatrix<IExpr> listMatrix, final FieldVector<IExpr> listVector)
-      throws ClassCastException, IndexOutOfBoundsException {
+  public static FieldMatrix<IExpr> augmentedFieldMatrix(final FieldMatrix<IExpr> listMatrix,
+      final FieldVector<IExpr> listVector) throws ClassCastException, IndexOutOfBoundsException {
     if (listMatrix == null || listVector == null) {
       return null;
     }
@@ -473,8 +472,8 @@ public class Convert {
       return null;
     }
     if (expr.isSparseArray()) {
-      //	      ISparseArray array = (ISparseArray) expr;
-      //	      return array.toFieldVector(false);
+      // ISparseArray array = (ISparseArray) expr;
+      // return array.toFieldVector(false);
       expr = ((ISparseArray) expr).normal(false);
     }
     if (expr.isList()) {
@@ -639,8 +638,8 @@ public class Convert {
     return complexMatrix2List(matrix, true);
   }
 
-  public static IASTAppendable complexMatrix2List(
-      final FieldMatrix<Complex> matrix, boolean matrixFormat) {
+  public static IASTAppendable complexMatrix2List(final FieldMatrix<Complex> matrix,
+      boolean matrixFormat) {
     if (matrix == null) {
       return F.NIL;
     }
@@ -798,8 +797,8 @@ public class Convert {
    * @param vectorFormat set flag for isVector() method
    * @return <code>F.NIL</code> if no conversion was possible
    */
-  public static IASTAppendable complexVector2List(
-      final FieldVector<Complex> vector, boolean vectorFormat) {
+  public static IASTAppendable complexVector2List(final FieldVector<Complex> vector,
+      boolean vectorFormat) {
     if (vector == null) {
       return F.NIL;
     }

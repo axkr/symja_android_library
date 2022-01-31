@@ -30,17 +30,13 @@ public class MatrixDTest extends AbstractTestCase {
         "$Assumptions={Element(X, Matrices({n,n},Complexes)),Element(A, Matrices({n,n},Complexes)),Element(B, Matrices({4,4},Complexes))}", //
         "{X∈Matrices({n,n},Complexes),A∈Matrices({n,n},Complexes),B∈Matrices({4,4},Complexes)}");
 
-    check(
-        "MatrixD(X,X)", //
+    check("MatrixD(X,X)", //
         "$SingleEntryMatrix");
-    check(
-        "MatrixD(A.X, X)", //
+    check("MatrixD(A.X, X)", //
         "0.X+A.$SingleEntryMatrix");
-    check(
-        "MatrixD(Det(MatrixPower(X, k)), X)", //
+    check("MatrixD(Det(MatrixPower(X, k)), X)", //
         "k*Det(MatrixPower(X,k))*Inverse(Transpose(X))");
-    check(
-        "MatrixD(Inverse(X), X)", //
+    check("MatrixD(Inverse(X), X)", //
         "(-Inverse(X)).$SingleEntryMatrix.Inverse(X)");
   }
 
@@ -49,44 +45,38 @@ public class MatrixDTest extends AbstractTestCase {
         "$Assumptions={Element(X, Matrices({n,n},Complexes)),Element(A, Matrices({n,n},Complexes)),Element(B, Matrices({4,4},Complexes))}", //
         "{X∈Matrices({n,n},Complexes),A∈Matrices({n,n},Complexes),B∈Matrices({4,4},Complexes)}");
 
-    check(
-        "TensorRank(X)", //
+    check("TensorRank(X)", //
         "2");
-    check(
-        "MatrixD(Transpose(X), X)", //
+    check("MatrixD(Transpose(X), X)", //
         "Transpose($SingleEntryMatrix)");
-    check(
-        "MatrixD(Det(X), X)", //
+    check("MatrixD(Det(X), X)", //
         "Det(X)*Transpose(Inverse(X))");
-    check(
-        "MatrixD(Det(A.X.B), X)", //
+    check("MatrixD(Det(A.X.B), X)", //
         "Det(A.X.B)*Transpose(Inverse(X))");
-    check(
-        "MatrixD(Det(Inverse(X)),X)", //
+    check("MatrixD(Det(Inverse(X)),X)", //
         "-Det(Inverse(X))*Transpose(Inverse(X))");
-    check(
-        "MatrixD(Log(Det(Transpose(X).X)), X)", // (55)
+    check("MatrixD(Log(Det(Transpose(X).X)), X)", // (55)
         "2*Inverse(Transpose(X))");
-    check(
-        "MatrixD(Log @ Det(X), X)", // (57)
+    check("MatrixD(Log @ Det(X), X)", // (57)
         "Inverse(Transpose(X))");
   }
 
-//  public void testMatrixD002() {
-//    check(
-//        "$Assumptions={Element(X, Matrices({n,n},Complexes)),Element(A, Matrices({n,n},Complexes)),Element(B, Matrices({4,4},Complexes))}", //
-//        "{X∈Matrices({n,n},Complexes),A∈Matrices({n,n},Complexes),B∈Matrices({4,4},Complexes)}");
-//    check(
-//        "MatrixD(A, X)",  
-//        "0");
-//    check(
-//            "MatrixD(a*X, X)",  
-//            "$SingleEntryMatrix*a");
-//    check(
-//        "MatrixD(Transpose(X)*A*x + c*Transpose(sin(y))*X, X)",  
-//        "");
-//  }
-  
+  // public void testMatrixD002() {
+  // check(
+  // "$Assumptions={Element(X, Matrices({n,n},Complexes)),Element(A,
+  // Matrices({n,n},Complexes)),Element(B, Matrices({4,4},Complexes))}", //
+  // "{X∈Matrices({n,n},Complexes),A∈Matrices({n,n},Complexes),B∈Matrices({4,4},Complexes)}");
+  // check(
+  // "MatrixD(A, X)",
+  // "0");
+  // check(
+  // "MatrixD(a*X, X)",
+  // "$SingleEntryMatrix*a");
+  // check(
+  // "MatrixD(Transpose(X)*A*x + c*Transpose(sin(y))*X, X)",
+  // "");
+  // }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {

@@ -137,8 +137,8 @@ public class AssumptionTestCase extends TestCase {
 
     EvalUtilities util = new EvalUtilities(false, true);
 
-    //  Element(M, Matrices({3, 3}, Reals))
-    // define "m" with "m" assumed to be a  3x3 matrix
+    // Element(M, Matrices({3, 3}, Reals))
+    // define "m" with "m" assumed to be a 3x3 matrix
     // use #1 (Slot1) as placeholder for a new symbol!
     ISymbol t = F.symbol("m", F.Element(F.Slot1, F.Matrices(F.List(3, 3), S.Reals)));
 

@@ -16,7 +16,7 @@ public class MMAServletServer {
     String deploymentName = "mmasymja.war";
     Class<MMAAJAXQueryServlet> ajaxServlet = MMAAJAXQueryServlet.class;
     ClassLoader classLoader = serverClass.getClassLoader();
-    ServletServer.runServer(
-        deploymentName, classLoader, ajaxServlet, ServletServer.PORT, "indexmma.html");
+    ServletServer.runServer(deploymentName, classLoader, ajaxServlet, ServletServer.PORT,
+        "indexmma.html");
   }
 }

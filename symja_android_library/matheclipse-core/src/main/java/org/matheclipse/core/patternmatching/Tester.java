@@ -42,7 +42,7 @@ public class Tester implements Predicate<IExpr> {
    *
    * @param expression the object to be matched
    * @return <code>true</code> if the expression could be matched with one of the pattern-matching
-   *     rules; <code>false</code> otherwise.
+   *         rules; <code>false</code> otherwise.
    */
   @Override
   public boolean test(IExpr expression) {

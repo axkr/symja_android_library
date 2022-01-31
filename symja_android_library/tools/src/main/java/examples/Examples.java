@@ -87,12 +87,8 @@ public class Examples {
     Network net = new Network();
     IntVariable x = new IntVariable(net, "x");
     IntVariable y = new IntVariable(net, "y");
-    boolean[][] rel = {
-      {false, true, false, false},
-      {false, false, false, true},
-      {true, false, false, false},
-      {false, false, true, false}
-    };
+    boolean[][] rel = {{false, true, false, false}, {false, false, false, true},
+        {true, false, false, false}, {false, false, true, false}};
     new Relation(net, x, rel, y);
     runExample(net, Solver.DEFAULT);
   }

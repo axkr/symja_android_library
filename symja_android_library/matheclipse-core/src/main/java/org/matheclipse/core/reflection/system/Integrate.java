@@ -50,7 +50,8 @@ import com.google.common.cache.CacheBuilder;
  *
  * <blockquote>
  *
- * <p>integrates <code>f</code> with respect to <code>x</code>. The result does not contain the
+ * <p>
+ * integrates <code>f</code> with respect to <code>x</code>. The result does not contain the
  * additive integration constant.
  *
  * </blockquote>
@@ -61,12 +62,14 @@ import com.google.common.cache.CacheBuilder;
  *
  * <blockquote>
  *
- * <p>computes the definite integral of <code>f</code> with respect to <code>x</code> from <code>a
+ * <p>
+ * computes the definite integral of <code>f</code> with respect to <code>x</code> from <code>a
  * </code> to <code>b</code>.
  *
  * </blockquote>
  *
- * <p>See: <a href="https://en.wikipedia.org/wiki/Integral">Wikipedia: Integral</a>
+ * <p>
+ * See: <a href="https://en.wikipedia.org/wiki/Integral">Wikipedia: Integral</a>
  *
  * <h3>Examples</h3>
  *
@@ -120,62 +123,38 @@ public class Integrate extends AbstractFunctionEvaluator {
         F.ISet(F.$s("§$showsteps"), S.False);
         UtilityFunctionCtors.ReapList.setAttributes(ISymbol.HOLDFIRST);
         F.ISet(F.$s("§$trigfunctions"), F.List(S.Sin, S.Cos, S.Tan, S.Cot, S.Sec, S.Csc));
-        F.ISet(
-            F.$s("§$hyperbolicfunctions"), F.List(S.Sinh, S.Cosh, S.Tanh, S.Coth, S.Sech, S.Csch));
-        F.ISet(
-            F.$s("§$inversetrigfunctions"),
+        F.ISet(F.$s("§$hyperbolicfunctions"),
+            F.List(S.Sinh, S.Cosh, S.Tanh, S.Coth, S.Sech, S.Csch));
+        F.ISet(F.$s("§$inversetrigfunctions"),
             F.List(S.ArcSin, S.ArcCos, S.ArcTan, S.ArcCot, S.ArcSec, S.ArcCsc));
-        F.ISet(
-            F.$s("§$inversehyperbolicfunctions"),
+        F.ISet(F.$s("§$inversehyperbolicfunctions"),
             F.List(S.ArcSinh, S.ArcCosh, S.ArcTanh, S.ArcCoth, S.ArcSech, S.ArcCsch));
-        F.ISet(
-            F.$s("§$calculusfunctions"),
-            F.List(
-                S.D,
-                S.Sum,
-                S.Product,
-                S.Integrate,
-                F.$rubi("Unintegrable"),
-                F.$rubi("CannotIntegrate"),
-                F.$rubi("Dif"),
-                F.$rubi("Subst")));
-        F.ISet(
-            F.$s("§$stopfunctions"),
-            F.List(
-                S.Hold,
-                S.HoldForm,
-                S.Defer,
-                S.Pattern,
-                S.If,
-                S.Integrate,
-                UtilityFunctionCtors.Unintegrable,
-                F.$rubi("CannotIntegrate")));
+        F.ISet(F.$s("§$calculusfunctions"), F.List(S.D, S.Sum, S.Product, S.Integrate,
+            F.$rubi("Unintegrable"), F.$rubi("CannotIntegrate"), F.$rubi("Dif"), F.$rubi("Subst")));
+        F.ISet(F.$s("§$stopfunctions"), F.List(S.Hold, S.HoldForm, S.Defer, S.Pattern, S.If,
+            S.Integrate, UtilityFunctionCtors.Unintegrable, F.$rubi("CannotIntegrate")));
         F.ISet(F.$s("§$heldfunctions"), F.List(S.Hold, S.HoldForm, S.Defer, S.Pattern));
 
-        F.ISet(
-            UtilityFunctionCtors.IntegerPowerQ, //
+        F.ISet(UtilityFunctionCtors.IntegerPowerQ, //
             F.Function(
                 F.And(F.SameQ(F.Head(F.Slot1), S.Power), F.IntegerQ(F.Part(F.Slot1, F.C2)))));
 
-        F.ISet(
-            UtilityFunctionCtors.FractionalPowerQ, //
-            F.Function(
-                F.And(
-                    F.SameQ(F.Head(F.Slot1), S.Power),
-                    F.SameQ(F.Head(F.Part(F.Slot1, F.C2)), S.Rational))));
+        F.ISet(UtilityFunctionCtors.FractionalPowerQ, //
+            F.Function(F.And(F.SameQ(F.Head(F.Slot1), S.Power),
+                F.SameQ(F.Head(F.Part(F.Slot1, F.C2)), S.Rational))));
         COUNT_DOWN_LATCH.countDown();
       }
     }
 
     private static void getRuleASTStatic() {
       INTEGRATE_RULES_DATA = S.Integrate.createRulesData(new int[] {0, 7000});
-      //      IAST list = (IAST) WL.deserializeResource("/rules/IntegrateRules.bin", true);
-      //      for (int i = 1; i < list.size(); i++) {
-      //        IAST binaryList   = (IAST)list.get(i);
-      //        IExpr lhs=binaryList.arg1();
-      //        IExpr rhs=binaryList.arg2();
-      //        F.IIntegrate(i, (IAST)lhs, rhs);
-      //      }
+      // IAST list = (IAST) WL.deserializeResource("/rules/IntegrateRules.bin", true);
+      // for (int i = 1; i < list.size(); i++) {
+      // IAST binaryList = (IAST)list.get(i);
+      // IExpr lhs=binaryList.arg1();
+      // IExpr rhs=binaryList.arg2();
+      // F.IIntegrate(i, (IAST)lhs, rhs);
+      // }
       UtilityFunctionCtors.getRuleASTRubi45();
 
       ISymbol[] rubiSymbols = {S.Derivative, S.D};
@@ -332,20 +311,18 @@ public class Integrate extends AbstractFunctionEvaluator {
 
         result = integrateByRubiRules(fx, x, ast, engine);
         if (result.isPresent()) {
-          IExpr temp =
-              result.replaceAll(
-                  f -> {
-                    if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
-                      IAST integrate = F.Integrate(f.first(), f.second());
-                      integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
-                      return integrate;
-                    } else if (f.isAST(F.$rubi("CannotIntegrate"), 3)) {
-                      IAST integrate = F.Integrate(f.first(), f.second());
-                      integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
-                      return integrate;
-                    }
-                    return F.NIL;
-                  });
+          IExpr temp = result.replaceAll(f -> {
+            if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
+              IAST integrate = F.Integrate(f.first(), f.second());
+              integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
+              return integrate;
+            } else if (f.isAST(F.$rubi("CannotIntegrate"), 3)) {
+              IAST integrate = F.Integrate(f.first(), f.second());
+              integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
+              return integrate;
+            }
+            return F.NIL;
+          });
           return temp.orElse(result);
         }
 
@@ -393,8 +370,8 @@ public class Integrate extends AbstractFunctionEvaluator {
     }
   }
 
-  private static IExpr integratePiecewise(
-      int[] dim, final IAST piecewiseFunction, final IAST integrateFunction) {
+  private static IExpr integratePiecewise(int[] dim, final IAST piecewiseFunction,
+      final IAST integrateFunction) {
     IAST list = (IAST) piecewiseFunction.arg1();
     if (list.size() > 1) {
       IASTAppendable pwResult = F.ListAlloc(list.size());
@@ -439,10 +416,7 @@ public class Integrate extends AbstractFunctionEvaluator {
         // Abs(x)
         IAST abs = (IAST) function;
         IExpr[] lin = abs.arg1().linearPower(x);
-        if (lin != null
-            && !lin[1].isZero()
-            && lin[0].isRealResult()
-            && lin[1].isRealResult()
+        if (lin != null && !lin[1].isZero() && lin[0].isRealResult() && lin[1].isRealResult()
             && lin[2].isInteger()) {
           // Abs(l0 + l1 * x^exp)
 
@@ -453,13 +427,10 @@ public class Integrate extends AbstractFunctionEvaluator {
           if (exp.isOne()) {
             // Piecewise({{(-l0)*x - (l1*x^2)/2, x <= constant}}, l0^2/Pi + l0*x + (l1*x^2)/2)
             return F.Piecewise( //
-                F.List(
-                    F.List( //
-                        F.Plus(F.Times(F.CN1, l0, S.x), F.Times(F.CN1D2, l1, F.Sqr(S.x))),
-                        F.LessEqual(S.x, constant))),
-                F.Plus(
-                    F.Times(F.Sqr(l0), F.Power(S.Pi, F.CN1)),
-                    F.Times(l0, S.x),
+                F.List(F.List( //
+                    F.Plus(F.Times(F.CN1, l0, S.x), F.Times(F.CN1D2, l1, F.Sqr(S.x))),
+                    F.LessEqual(S.x, constant))),
+                F.Plus(F.Times(F.Sqr(l0), F.Power(S.Pi, F.CN1)), F.Times(l0, S.x),
                     F.Times(F.C1D2, l1, F.Sqr(S.x))));
           } else if (exp.isMinusOne()) {
             // Abs(l0 + l1 * x^(-1))
@@ -468,19 +439,15 @@ public class Integrate extends AbstractFunctionEvaluator {
               // Piecewise({{l0*x + l1*Log(x), x <= -(l1/l0)},
               // {(-l0)*x - l1*(2 - I*l1 - Log(l1)) + l1*(-2 + I*l1 + Log(l1)) - l1*Log(x),
               // Inequality(-(l1/l0), Less, x, LessEqual, 0)}}, l0*x + l1*Log(x))
-              return F.Piecewise(
+              return F.Piecewise(F.List(F.List( //
+                  F.Plus(F.Times(l0, S.x), F.Times(l1, F.Log(S.x))),
+                  F.LessEqual(S.x, F.Times(F.CN1, F.Power(l0, F.CN1), l1))),
                   F.List(
-                      F.List( //
-                          F.Plus(F.Times(l0, S.x), F.Times(l1, F.Log(S.x))),
-                          F.LessEqual(S.x, F.Times(F.CN1, F.Power(l0, F.CN1), l1))),
-                      F.List(
-                          F.Plus(
-                              F.Times(F.CN1, l0, S.x),
-                              F.Times(F.C2, l1, F.Plus(F.CN2, F.Times(F.CI, l1), F.Log(l1))),
-                              F.Times(F.CN1, l1, F.Log(S.x))),
-                          F.And(
-                              F.Less(F.Times(F.CN1, F.Power(l0, F.CN1), l1), S.x),
-                              F.LessEqual(S.x, F.C0)))),
+                      F.Plus(F.Times(F.CN1, l0, S.x),
+                          F.Times(F.C2, l1, F.Plus(F.CN2, F.Times(F.CI, l1), F.Log(l1))),
+                          F.Times(F.CN1, l1, F.Log(S.x))),
+                      F.And(F.Less(F.Times(F.CN1, F.Power(l0, F.CN1), l1), S.x),
+                          F.LessEqual(S.x, F.C0)))),
                   F.Plus(F.Times(l0, S.x), F.Times(l1, F.Log(S.x))));
             }
           } else if (exp.isPositive()) {
@@ -493,8 +460,7 @@ public class Integrate extends AbstractFunctionEvaluator {
             IInteger expP1 = exp.inc();
             if (exp.isEven()) {
               // -(l1/(expP1*x^expP1)) + l0*x
-              return F.Plus(
-                  F.Times(l0, S.x),
+              return F.Plus(F.Times(l0, S.x),
                   F.Times(F.CN1, F.Power(expP1, F.CN1), l1, F.Power(S.x, F.Negate(expP1))));
             }
           }
@@ -523,19 +489,15 @@ public class Integrate extends AbstractFunctionEvaluator {
               return F.Times(expP1.inverse().negate(), F.Power(x, expP1));
             }
             return F.Piecewise( //
-                F.List(
-                    F.List(
-                        F.Times(expP1.inverse().negate(), F.Power(x, expP1)),
-                        F.LessEqual(x, constant))), //
+                F.List(F.List(F.Times(expP1.inverse().negate(), F.Power(x, expP1)),
+                    F.LessEqual(x, constant))), //
                 F.Times(expP1.inverse(), F.Power(x, expP1)));
           }
           if (exp.isEven()) {
             return F.Divide(F.Power(x, expP1), expP1);
           }
           return F.Piecewise( //
-              F.List(
-                  F.List(
-                      F.Divide(F.Power(x, expP1), expP1.negate()), F.LessEqual(x, constant))), //
+              F.List(F.List(F.Divide(F.Power(x, expP1), expP1.negate()), F.LessEqual(x, constant))), //
               F.Divide(F.Power(x, expP1), expP1));
         }
       }
@@ -551,11 +513,12 @@ public class Integrate extends AbstractFunctionEvaluator {
    * [lower, upper]
    * </code> of the real line, calculate the definite integral <code>F(upper)-F(lower)</code>.
    *
-   * <p>See: <a href="https://en.wikipedia.org/wiki/Integral">Wikipedia - Integral</a>
+   * <p>
+   * See: <a href="https://en.wikipedia.org/wiki/Integral">Wikipedia - Integral</a>
    *
    * @param function a function of <code>x</code>
    * @param xValueList a list of the form <code>{x, lower, upper}</code> with <code>3</code>
-   *     arguments
+   *        arguments
    * @param engine the evaluation engine
    * @return
    */
@@ -588,24 +551,24 @@ public class Integrate extends AbstractFunctionEvaluator {
       return F.NIL;
     }
 
-    //    if (lower.isNegativeResult() && upper.isPositiveResult()) {
-    //      // 0 is a value inside the given interval
-    //      IExpr FZeroAbove =
-    //          engine.evaluate(F.Limit(function, F.Rule(x, F.C0), F.Rule(S.Direction, F.CN1)));
-    //      if (!FZeroAbove.isFree(S.DirectedInfinity, true)
-    //          || !FZeroAbove.isFree(S.Indeterminate, true)) {
-    //        return engine.printMessage("Not integrable: " + function + " for limit " + x + " ->
+    // if (lower.isNegativeResult() && upper.isPositiveResult()) {
+    // // 0 is a value inside the given interval
+    // IExpr FZeroAbove =
+    // engine.evaluate(F.Limit(function, F.Rule(x, F.C0), F.Rule(S.Direction, F.CN1)));
+    // if (!FZeroAbove.isFree(S.DirectedInfinity, true)
+    // || !FZeroAbove.isFree(S.Indeterminate, true)) {
+    // return engine.printMessage("Not integrable: " + function + " for limit " + x + " ->
     // 0");
-    //      }
-    //      IExpr FZeroBelow =
-    //          engine.evaluate(F.Limit(function, F.Rule(x, F.C0), F.Rule(S.Direction, F.C1)));
-    //      if (!FZeroBelow.isFree(S.DirectedInfinity, true)
-    //          || !FZeroBelow.isFree(S.Indeterminate, true)) {
-    //        return engine.printMessage("Not integrable: " + function + " for limit " + x + " ->
+    // }
+    // IExpr FZeroBelow =
+    // engine.evaluate(F.Limit(function, F.Rule(x, F.C0), F.Rule(S.Direction, F.C1)));
+    // if (!FZeroBelow.isFree(S.DirectedInfinity, true)
+    // || !FZeroBelow.isFree(S.Indeterminate, true)) {
+    // return engine.printMessage("Not integrable: " + function + " for limit " + x + " ->
     // 0");
-    //      }
-    //      return F.Plus(F.Subtract(upperLimit, FZeroAbove), F.Subtract(FZeroBelow, lowerLimit));
-    //    }
+    // }
+    // return F.Plus(F.Subtract(upperLimit, FZeroAbove), F.Subtract(FZeroBelow, lowerLimit));
+    // }
 
     if (upperLimit.isAST() && lowerLimit.isAST()) {
       IExpr bDenominator = S.Denominator.of(engine, upperLimit);
@@ -629,15 +592,12 @@ public class Integrate extends AbstractFunctionEvaluator {
         // Integrate[a_*y_,x_Symbol] -> a*Integrate[y,x] /; FreeQ[a,x]
         IASTAppendable filterCollector = F.TimesAlloc(arg1AST.size());
         IASTAppendable restCollector = F.TimesAlloc(arg1AST.size());
-        arg1AST.filter(
-            filterCollector,
-            restCollector,
-            new Predicate<IExpr>() {
-              @Override
-              public boolean test(IExpr input) {
-                return input.isFree(x, true);
-              }
-            });
+        arg1AST.filter(filterCollector, restCollector, new Predicate<IExpr>() {
+          @Override
+          public boolean test(IExpr input) {
+            return input.isFree(x, true);
+          }
+        });
         if (filterCollector.size() > 1) {
           if (restCollector.size() > 1) {
             filterCollector.append(F.Integrate(restCollector.oneIdentity0(), x));
@@ -684,8 +644,8 @@ public class Integrate extends AbstractFunctionEvaluator {
    * Map <code>Integrate</code> on <code>ast</code>. Examples:
    *
    * <ul>
-   *   <li><code>Integrate[{a_, b_,...},x_] -> {Integrate[a,x], Integrate[b,x], ...}</code> or
-   *   <li><code>Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...</code>
+   * <li><code>Integrate[{a_, b_,...},x_] -> {Integrate[a,x], Integrate[b,x], ...}</code> or
+   * <li><code>Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...</code>
    * </ul>
    *
    * @param ast a <code>List(...)</code> or <code>Plus(...)</code> ast
@@ -705,8 +665,8 @@ public class Integrate extends AbstractFunctionEvaluator {
    * @param symbol
    * @return
    */
-  private static IExpr integratePolynomialByParts(
-      IAST ast, final IAST arg1, IExpr symbol, EvalEngine engine) {
+  private static IExpr integratePolynomialByParts(IAST ast, final IAST arg1, IExpr symbol,
+      EvalEngine engine) {
     IASTAppendable fTimes = F.TimesAlloc(arg1.size());
     IASTAppendable gTimes = F.TimesAlloc(arg1.size());
     collectPolynomialTerms(arg1, symbol, gTimes, fTimes);
@@ -734,8 +694,7 @@ public class Integrate extends AbstractFunctionEvaluator {
       boolean quietMode = engine.isQuietMode();
       ISymbol head = arg1.topHead();
 
-      if (head.isNumericFunctionAttribute()
-          || INT_RUBI_FUNCTIONS.contains(head)
+      if (head.isNumericFunctionAttribute() || INT_RUBI_FUNCTIONS.contains(head)
           || head.getSymbolName().startsWith("§")) {
 
         boolean newCache = false;
@@ -807,8 +766,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 
   /**
    * Integrate by parts rule: <code>
-   * Integrate(f'(x) * g(x), x) = f(x) * g(x) - Integrate(f(x) * g'(x),x )</code> . See <a
-   * href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
+   * Integrate(f'(x) * g(x), x) = f(x) * g(x) - Integrate(f(x) * g'(x),x )</code> . See
+   * <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
    *
    * @param f <code>f(x)</code>
    * @param g <code>g(x)</code>
@@ -848,8 +807,8 @@ public class Integrate extends AbstractFunctionEvaluator {
    * @param polyTimes the polynomial terms part
    * @param restTimes the non-polynomil terms part
    */
-  private static void collectPolynomialTerms(
-      final IAST timesAST, IExpr symbol, IASTAppendable polyTimes, IASTAppendable restTimes) {
+  private static void collectPolynomialTerms(final IAST timesAST, IExpr symbol,
+      IASTAppendable polyTimes, IASTAppendable restTimes) {
     IExpr temp;
     for (int i = 1; i < timesAST.size(); i++) {
       temp = timesAST.get(i);

@@ -30,13 +30,8 @@ public class ListPod implements IPod {
     return "list";
   }
 
-  private static int integerListPods(
-      ArrayNode podsArray,
-      IExpr inExpr,
-      IAST list,
-      int formats,
-      ObjectMapper mapper,
-      EvalEngine engine) {
+  private static int integerListPods(ArrayNode podsArray, IExpr inExpr, IAST list, int formats,
+      ObjectMapper mapper, EvalEngine engine) {
     int numpods = 0;
 
     inExpr = F.Total(list);
@@ -76,14 +71,8 @@ public class ListPod implements IPod {
           if (isPoly1 && isPoly2) {
             inExpr = F.PolynomialQuotientRemainder(arg1, arg2, variables.arg1());
             IExpr podOut = engine.evaluate(inExpr);
-            Pods.addSymjaPod(
-                podsArray,
-                inExpr,
-                podOut,
-                "Polynomial quotient and remainder",
-                "Polynomial",
-                formats,
-                engine);
+            Pods.addSymjaPod(podsArray, inExpr, podOut, "Polynomial quotient and remainder",
+                "Polynomial", formats, engine);
             numpods++;
           }
         }
@@ -96,11 +85,9 @@ public class ListPod implements IPod {
 
     int[] matrixDimension = list.isMatrix();
     if (matrixDimension != null) {
-      if (matrixDimension[0] >= 2
-          && //
+      if (matrixDimension[0] >= 2 && //
           matrixDimension[1] >= 2) {
-        if (matrixDimension[0] <= Config.MAX_MATRIX_DIMENSION_SIZE
-            && //
+        if (matrixDimension[0] <= Config.MAX_MATRIX_DIMENSION_SIZE && //
             matrixDimension[1] <= Config.MAX_MATRIX_DIMENSION_SIZE) {
           double[][] matrix = list.toDoubleMatrix();
           if (matrix == null) {
@@ -108,14 +95,8 @@ public class ListPod implements IPod {
               IExpr hermitianMatrixQ = F.HermitianMatrixQ(list);
               boolean isHermitian = engine.evalTrue(hermitianMatrixQ);
               if (isHermitian) {
-                Pods.addSymjaPod(
-                    podsArray,
-                    hermitianMatrixQ,
-                    F.NIL,
-                    "The matrix is hermitian (self-adjoint).",
-                    "Properties",
-                    "Matrix",
-                    formats,
+                Pods.addSymjaPod(podsArray, hermitianMatrixQ, F.NIL,
+                    "The matrix is hermitian (self-adjoint).", "Properties", "Matrix", formats,
                     engine);
                 numpods++;
               }
@@ -125,46 +106,26 @@ public class ListPod implements IPod {
               IExpr symmetricMatrixQ = F.SymmetricMatrixQ(list);
               boolean isSymmetric = engine.evalTrue(symmetricMatrixQ);
               if (isSymmetric) {
-                Pods.addSymjaPod(
-                    podsArray,
-                    symmetricMatrixQ,
-                    F.NIL,
-                    "The matrix is symmetric.",
-                    "Properties",
-                    "Matrix",
-                    formats,
-                    engine);
+                Pods.addSymjaPod(podsArray, symmetricMatrixQ, F.NIL, "The matrix is symmetric.",
+                    "Properties", "Matrix", formats, engine);
                 numpods++;
               }
               IExpr detMatrix = F.Det(list); // new ASTRealMatrix(matrix, false));
               IExpr podOut = engine.evaluate(detMatrix);
               if (detMatrix.isZero()) {
-                Pods.addSymjaPod(
-                    podsArray,
-                    symmetricMatrixQ,
-                    F.NIL,
-                    "The matrix is singular",
-                    "Properties",
-                    "Matrix",
-                    formats,
-                    engine);
+                Pods.addSymjaPod(podsArray, symmetricMatrixQ, F.NIL, "The matrix is singular",
+                    "Properties", "Matrix", formats, engine);
                 numpods++;
               } else {
-                Pods.addSymjaPod(
-                    podsArray,
-                    detMatrix,
-                    F.NIL,
-                    "The determinant of the matrix is " + podOut.toString(),
-                    "Properties",
-                    "Matrix",
-                    formats,
-                    engine);
+                Pods.addSymjaPod(podsArray, detMatrix, F.NIL,
+                    "The determinant of the matrix is " + podOut.toString(), "Properties", "Matrix",
+                    formats, engine);
                 numpods++;
 
                 inExpr = F.Inverse(list);
                 podOut = engine.evaluate(inExpr);
-                Pods.addSymjaPod(
-                    podsArray, inExpr, podOut, "Inverse of matrix", "Matrix", formats, engine);
+                Pods.addSymjaPod(podsArray, inExpr, podOut, "Inverse of matrix", "Matrix", formats,
+                    engine);
                 numpods++;
               }
             }
@@ -174,16 +135,8 @@ public class ListPod implements IPod {
               IExpr podOut = engine.evaluate(plot2D);
               if (podOut.isAST(S.JSFormData, 3)) {
                 int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
-                Pods.addPod(
-                    podsArray,
-                    inExpr,
-                    podOut,
-                    podOut.first().toString(),
-                    StringFunctions.inputForm(plot2D),
-                    "Plot points",
-                    "Plotter",
-                    form,
-                    engine);
+                Pods.addPod(podsArray, inExpr, podOut, podOut.first().toString(),
+                    StringFunctions.inputForm(plot2D), "Plot points", "Plotter", form, engine);
                 numpods++;
               }
             }
@@ -216,16 +169,8 @@ public class ListPod implements IPod {
           IExpr podOut = engine.evaluate(plot2D);
           if (podOut.isAST(S.JSFormData, 3)) {
             int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
-            Pods.addPod(
-                podsArray,
-                inExpr,
-                podOut,
-                podOut.first().toString(),
-                StringFunctions.inputForm(plot2D),
-                "Plot points",
-                "Plotter",
-                form,
-                engine);
+            Pods.addPod(podsArray, inExpr, podOut, podOut.first().toString(),
+                StringFunctions.inputForm(plot2D), "Plot points", "Plotter", form, engine);
             numpods++;
           }
         }
@@ -234,24 +179,16 @@ public class ListPod implements IPod {
       if (list.argSize() > 5) {
         IExpr fivenum = F.FiveNum(list);
         IExpr podOut = engine.evaluate(fivenum);
-        Pods.addSymjaPod(
-            podsArray, fivenum, podOut, "Five-number summary", "Statistics", formats, engine);
+        Pods.addSymjaPod(podsArray, fivenum, podOut, "Five-number summary", "Statistics", formats,
+            engine);
         numpods++;
 
         IExpr histogram = F.Histogram(list);
         podOut = engine.evaluate(histogram);
         if (podOut.isAST(S.JSFormData, 3)) {
           int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
-          Pods.addPod(
-              podsArray,
-              inExpr,
-              podOut,
-              podOut.first().toString(),
-              StringFunctions.inputForm(histogram),
-              "Histogram",
-              "Plotter",
-              form,
-              engine);
+          Pods.addPod(podsArray, inExpr, podOut, podOut.first().toString(),
+              StringFunctions.inputForm(histogram), "Histogram", "Plotter", form, engine);
           numpods++;
         }
       }

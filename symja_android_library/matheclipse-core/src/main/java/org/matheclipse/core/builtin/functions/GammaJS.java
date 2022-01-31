@@ -25,8 +25,8 @@ import de.lab4inf.math.gof.Visitor;
 import de.lab4inf.math.util.ContinuedFraction;
 
 /**
- * Ported from JavaScript file <a
- * href="https://github.com/paulmasson/math/blob/master/src/functions/gamma.js">gamma.js</a>
+ * Ported from JavaScript file
+ * <a href="https://github.com/paulmasson/math/blob/master/src/functions/gamma.js">gamma.js</a>
  */
 public class GammaJS {
 
@@ -128,8 +128,8 @@ public class GammaJS {
    * @param maxIterations maximum number of iterations to complete
    * @return the regularized gamma function Q(a,x)
    */
-  private static double regGammaQ(
-      final double a, final double x, final double epsilon, final int maxIterations) {
+  private static double regGammaQ(final double a, final double x, final double epsilon,
+      final int maxIterations) {
     double ret = 0;
 
     if ((a <= 0.0) || (x < 0.0)) {
@@ -155,16 +155,15 @@ public class GammaJS {
       throw new ArgumentTypeException("Factorial: n<0.0");
     }
     return DoubleMath.factorial(NumberUtil.toInt(n));
-    //    double result = 1.0;
-    //    for (int i = 2; i <= n; i++) {
-    //      result *= i;
-    //    }
-    //    return result;
+    // double result = 1.0;
+    // for (int i = 2; i <= n; i++) {
+    // result *= i;
+    // }
+    // return result;
   }
 
   public static Complex beta(Complex x, Complex y) {
-    return Arithmetic.lanczosApproxGamma(x)
-        .multiply(Arithmetic.lanczosApproxGamma(y))
+    return Arithmetic.lanczosApproxGamma(x).multiply(Arithmetic.lanczosApproxGamma(y))
         .divide(Arithmetic.lanczosApproxGamma(x.add(y)));
   }
 
@@ -226,16 +225,10 @@ public class GammaJS {
 
   public static Complex fresnelS(Complex x) {
 
-    Complex m1 =
-        HypergeometricJS.hypergeometric1F1(
-            new Complex(0.5),
-            new Complex(1.5),
-            new Complex(0, Math.PI / 2).multiply(x.multiply(x)));
-    Complex m2 =
-        HypergeometricJS.hypergeometric1F1(
-            new Complex(0.5),
-            new Complex(1.5),
-            new Complex(0, -Math.PI / 2).multiply(x.multiply(x)));
+    Complex m1 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
+        new Complex(0, Math.PI / 2).multiply(x.multiply(x)));
+    Complex m2 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
+        new Complex(0, -Math.PI / 2).multiply(x.multiply(x)));
 
     Complex result = x.multiply(m1.subtract(m2)).multiply(new Complex(0, -0.5));
     return result;
@@ -243,16 +236,10 @@ public class GammaJS {
 
   public static Complex fresnelC(Complex x) {
 
-    Complex m1 =
-        HypergeometricJS.hypergeometric1F1(
-            new Complex(0.5),
-            new Complex(1.5),
-            new Complex(0, Math.PI / 2).multiply(x.multiply(x)));
-    Complex m2 =
-        HypergeometricJS.hypergeometric1F1(
-            new Complex(0.5),
-            new Complex(1.5),
-            new Complex(0, -Math.PI / 2).multiply(x.multiply(x)));
+    Complex m1 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
+        new Complex(0, Math.PI / 2).multiply(x.multiply(x)));
+    Complex m2 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
+        new Complex(0, -Math.PI / 2).multiply(x.multiply(x)));
 
     Complex result = x.multiply(m1.add(m2)).multiply(0.5);
     return result;
@@ -303,13 +290,9 @@ public class GammaJS {
       // return result;
 
       Complex yLogNegate = y.log().negate();
-      Complex result =
-          expIntegralEi(y.negate())
-              .negate()
-              .add( //
-                  y.negate().log().subtract(y.reciprocal().negate().log()).multiply(0.5))
-              .add( //
-                  yLogNegate);
+      Complex result = expIntegralEi(y.negate()).negate().add( //
+          y.negate().log().subtract(y.reciprocal().negate().log()).multiply(0.5)).add( //
+              yLogNegate);
       if (F.isZero(y.getImaginary()) && y.getReal() > 0.0) {
         return new Complex(result.getReal());
       }
@@ -329,16 +312,10 @@ public class GammaJS {
       // x is a negative integer
       final double n = -xRe;
       int iterationLimit = EvalEngine.get().getIterationLimit();
-      final Complex t =
-          y.negate()
-              .exp()
-              .multiply( //
-                  ZetaJS.complexSummation(
-                      k ->
-                          new Complex(Math.pow(-1.0, k) * factorialInt(k)).divide(y.pow(k + 1)), //
-                      0.0,
-                      n - 1.0,
-                      iterationLimit));
+      final Complex t = y.negate().exp().multiply( //
+          ZetaJS.complexSummation(
+              k -> new Complex(Math.pow(-1.0, k) * factorialInt(k)).divide(y.pow(k + 1)), //
+              0.0, n - 1.0, iterationLimit));
       // dlmf.nist.gov/8.4.4
       final double plusMinusOne = Math.pow(-1.0, n);
       return gamma(Complex.ZERO, y).subtract(t).multiply(plusMinusOne / factorialInt(n));
@@ -457,20 +434,19 @@ public class GammaJS {
    * @return
    */
   public static double polyGamma(double x) {
-    //		  return diff( x => logGamma(x), x );
+    // return diff( x => logGamma(x), x );
     ISymbol xSymbol = F.Dummy("x");
     FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(15, 0.01);
-    UnivariateDifferentiableFunction f =
-        differentiator.differentiate(
-            new UnaryNumerical(F.LogGamma(xSymbol), xSymbol, EvalEngine.get()));
+    UnivariateDifferentiableFunction f = differentiator
+        .differentiate(new UnaryNumerical(F.LogGamma(xSymbol), xSymbol, EvalEngine.get()));
     DSFactory factory = new DSFactory(1, 1);
     return f.value(factory.variable(0, x)).getPartialDerivative(1);
   }
 
   public static double polyGamma(int n, double x) {
-    //		  if ( arguments.length === 1 ) {
-    //			  return digamma(x);
-    //		  }
+    // if ( arguments.length === 1 ) {
+    // return digamma(x);
+    // }
     if (n <= 0) {
       throw new ArgumentTypeException("PolyGamma: Unsupported polygamma index");
     }
@@ -485,13 +461,8 @@ public class GammaJS {
 
     Complex ix = Complex.I.multiply(x);
 
-    Complex result =
-        new Complex(0, 0.5)
-            .multiply(
-                gamma(Complex.ZERO, ix.negate())
-                    .add(gammaZero(ix).negate())
-                    .add(ix.negate().log())
-                    .add(ix.log().negate()));
+    Complex result = new Complex(0, 0.5).multiply(gamma(Complex.ZERO, ix.negate())
+        .add(gammaZero(ix).negate()).add(ix.negate().log()).add(ix.log().negate()));
 
     if (F.isZero(x.getImaginary())) {
       return new Complex(result.getReal());
@@ -505,14 +476,8 @@ public class GammaJS {
     // complex for negative real argument
     Complex ix = Complex.I.multiply(x);
 
-    Complex result =
-        x.log()
-            .subtract(
-                gammaZero(ix.negate())
-                    .add(gammaZero(ix))
-                    .add(ix.negate().log())
-                    .add(ix.log())
-                    .multiply(0.5));
+    Complex result = x.log().subtract(gammaZero(ix.negate()).add(gammaZero(ix))
+        .add(ix.negate().log()).add(ix.log()).multiply(0.5));
     return result;
   }
 
@@ -521,12 +486,8 @@ public class GammaJS {
       return Complex.ZERO;
     }
 
-    Complex result =
-        gammaZero(x)
-            .add(gammaZero(x.negate()).negate())
-            .add(x.log())
-            .add(x.negate().log().negate())
-            .multiply(0.5);
+    Complex result = gammaZero(x).add(gammaZero(x.negate()).negate()).add(x.log())
+        .add(x.negate().log().negate()).multiply(0.5);
 
     if (F.isZero(x.getImaginary())) {
       return new Complex(result.getReal());
@@ -555,8 +516,7 @@ public class GammaJS {
   }
 
   public static double gammaRegularized(double x, double y, double z) {
-    return org.hipparchus.special.Gamma.regularizedGammaQ(x, y)
-        - //
+    return org.hipparchus.special.Gamma.regularizedGammaQ(x, y) - //
         org.hipparchus.special.Gamma.regularizedGammaQ(x, z);
     // Complex cx = new Complex(x);
     // return gamma(cx, y, new Complex(z)).divide(gamma(cx));
@@ -591,22 +551,11 @@ public class GammaJS {
     return x.pow(nSubtract1).multiply(gamma(Complex.ONE.subtract(n), x));
   }
 
-  static final double[] c = {
-    57.1562356658629235,
-    -59.5979603554754912,
-    14.1360979747417471,
-    -0.491913816097620199,
-    .339946499848118887e-4,
-    .465236289270485756e-4,
-    -.983744753048795646e-4,
-    .158088703224912494e-3,
-    -.210264441724104883e-3,
-    .217439618115212643e-3,
-    -.164318106536763890e-3,
-    .844182239838527433e-4,
-    -.261908384015814087e-4,
-    .368991826595316234e-5
-  };
+  static final double[] c = {57.1562356658629235, -59.5979603554754912, 14.1360979747417471,
+      -0.491913816097620199, .339946499848118887e-4, .465236289270485756e-4,
+      -.983744753048795646e-4, .158088703224912494e-3, -.210264441724104883e-3,
+      .217439618115212643e-3, -.164318106536763890e-3, .844182239838527433e-4,
+      -.261908384015814087e-4, .368991826595316234e-5};
 
   public static Complex logGamma(Complex x) {
     // if ( isComplex(x) ) {
@@ -617,11 +566,8 @@ public class GammaJS {
 
     // reflection formula with modified Hare correction to imaginary part
     if (x.getReal() < 0.0) {
-      Complex t =
-          new Complex(Math.PI)
-              .divide(x.multiply(Math.PI).sin())
-              .log()
-              .subtract(logGamma(x.negate().add(1.0)));
+      Complex t = new Complex(Math.PI).divide(x.multiply(Math.PI).sin()).log()
+          .subtract(logGamma(x.negate().add(1.0)));
       double s = x.getImaginary() < 0.0 ? -1.0 : 1.0;
       double d = F.isZero(x.getImaginary()) ? 0.25 : 0;
       double k = Math.ceil(x.getReal() / 2.0 - 0.75 + d);

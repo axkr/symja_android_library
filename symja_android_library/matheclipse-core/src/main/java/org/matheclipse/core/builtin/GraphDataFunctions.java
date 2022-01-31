@@ -32,12 +32,12 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
- 
+
 /** Functions for graph theory algorithms. */
 public class GraphDataFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
-  private static final TrieBuilder<String, Supplier<Graph>, ArrayList<Supplier<Graph>>>
-      TRIE_STRING2GRAPH_BUILDER = TrieBuilder.create();
+  private static final TrieBuilder<String, Supplier<Graph>, ArrayList<Supplier<Graph>>> TRIE_STRING2GRAPH_BUILDER =
+      TrieBuilder.create();
   private static Map<String, Supplier<Graph>> GRAPH_MAP =
       TRIE_STRING2GRAPH_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
@@ -48,7 +48,7 @@ public class GraphDataFunctions {
   private static class Initializer {
 
     private static void init() {
-      //      GRAPH_MAP.put("PetersenGraph", () -> petersenGraph());
+      // GRAPH_MAP.put("PetersenGraph", () -> petersenGraph());
       GRAPH_MAP.put("PappusGraph", () -> pappusGraph());
       S.GraphData.setEvaluator(new GraphData());
 
@@ -90,10 +90,8 @@ public class GraphDataFunctions {
               Graph<IExpr, ExprEdge> g = supplier.get();
               return GraphExpr.newInstance(g);
             }
-            LOGGER.log(
-                engine.getLogLevel(),
-                "GraphData: no value associated with the specified graph name: {}",
-                graphName);
+            LOGGER.log(engine.getLogLevel(),
+                "GraphData: no value associated with the specified graph name: {}", graphName);
           }
         }
       } catch (RuntimeException rex) {
@@ -104,8 +102,7 @@ public class GraphDataFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(
-          newSymbol, //
+      setOptions(newSymbol, //
           F.List(F.Rule(S.EdgeWeight, S.Automatic)));
     }
 
@@ -132,14 +129,10 @@ public class GraphDataFunctions {
       try {
         CompleteGraphGenerator<IExpr, ExprEdge> gen =
             new CompleteGraphGenerator<IExpr, ExprEdge>(order);
-        Graph<IExpr, ExprEdge> target =
-            GraphTypeBuilder //
-                .undirected()
-                .allowingMultipleEdges(false)
-                .allowingSelfLoops(false) //
-                .vertexSupplier(new IntegerSupplier(1))
-                .edgeClass(ExprEdge.class) //
-                .buildGraph();
+        Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+            .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+            .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+            .buildGraph();
         gen.generateGraph(target);
         return GraphExpr.newInstance(target);
       } catch (RuntimeException rex) {
@@ -170,15 +163,11 @@ public class GraphDataFunctions {
 
       try {
         RingGraphGenerator<IExpr, ExprEdge> gen = new RingGraphGenerator<IExpr, ExprEdge>(order);
-        Graph<IExpr, ExprEdge> target =
-            GraphTypeBuilder //
-                .undirected()
-                .allowingMultipleEdges(false)
-                .allowingSelfLoops(false) //
-                .vertexSupplier(new IntegerSupplier(1))
-                .edgeClass(ExprEdge.class) //
-                .buildGraph();
-        //          Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
+        Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+            .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+            .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+            .buildGraph();
+        // Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
         // ExprEdge>(ExprEdge.class);
         gen.generateGraph(target);
         return GraphExpr.newInstance(target);
@@ -211,14 +200,10 @@ public class GraphDataFunctions {
       try {
         HyperCubeGraphGenerator<IExpr, ExprEdge> gen =
             new HyperCubeGraphGenerator<IExpr, ExprEdge>(order);
-        Graph<IExpr, ExprEdge> target =
-            GraphTypeBuilder //
-                .undirected()
-                .allowingMultipleEdges(false)
-                .allowingSelfLoops(false) //
-                .vertexSupplier(new IntegerSupplier(1))
-                .edgeClass(ExprEdge.class) //
-                .buildGraph();
+        Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+            .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+            .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+            .buildGraph();
         gen.generateGraph(target);
         return GraphExpr.newInstance(target);
       } catch (RuntimeException rex) {
@@ -238,19 +223,15 @@ public class GraphDataFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
-        // The argument `2`  in  `1`  is not valid. 0 or 2 arguments expected.
+        // The argument `2` in `1` is not valid. 0 or 2 arguments expected.
         return IOFunctions.printMessage(ast.topHead(), "inv", F.List(ast, ast.arg1()), engine);
       }
 
       if (ast.isAST0()) {
-        Graph<IExpr, ExprEdge> target =
-            GraphTypeBuilder //
-                .undirected()
-                .allowingMultipleEdges(false)
-                .allowingSelfLoops(false) //
-                .vertexSupplier(new IntegerSupplier(1))
-                .edgeClass(ExprEdge.class) //
-                .buildGraph();
+        Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+            .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+            .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+            .buildGraph();
         GeneralizedPetersenGraphGenerator<IExpr, ExprEdge> gpgg =
             new GeneralizedPetersenGraphGenerator<>(5, 2);
         gpgg.generateGraph(target);
@@ -271,14 +252,10 @@ public class GraphDataFunctions {
           return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C2), engine);
         }
         try {
-          Graph<IExpr, ExprEdge> target =
-              GraphTypeBuilder //
-                  .undirected()
-                  .allowingMultipleEdges(false)
-                  .allowingSelfLoops(false) //
-                  .vertexSupplier(new IntegerSupplier(1))
-                  .edgeClass(ExprEdge.class) //
-                  .buildGraph();
+          Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+              .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+              .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+              .buildGraph();
           GeneralizedPetersenGraphGenerator<IExpr, ExprEdge> gpgg =
               new GeneralizedPetersenGraphGenerator<>(order, k);
           gpgg.generateGraph(target);
@@ -346,14 +323,10 @@ public class GraphDataFunctions {
     private IExpr randomGraph(int vertices, int edges) {
       GnmRandomGraphGenerator<IExpr, ExprEdge> gen =
           new GnmRandomGraphGenerator<IExpr, ExprEdge>(vertices, edges);
-      Graph<IExpr, ExprEdge> target =
-          GraphTypeBuilder //
-              .undirected()
-              .allowingMultipleEdges(false)
-              .allowingSelfLoops(false) //
-              .vertexSupplier(new IntegerSupplier(1))
-              .edgeClass(ExprEdge.class) //
-              .buildGraph();
+      Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+          .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+          .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+          .buildGraph();
       gen.generateGraph(target);
       return GraphExpr.newInstance(target);
     }
@@ -380,15 +353,11 @@ public class GraphDataFunctions {
 
       try {
         StarGraphGenerator<IExpr, ExprEdge> gen = new StarGraphGenerator<IExpr, ExprEdge>(order);
-        Graph<IExpr, ExprEdge> target =
-            GraphTypeBuilder //
-                .undirected()
-                .allowingMultipleEdges(false)
-                .allowingSelfLoops(false) //
-                .vertexSupplier(new IntegerSupplier(1))
-                .edgeClass(ExprEdge.class) //
-                .buildGraph();
-        //	        Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
+        Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+            .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+            .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+            .buildGraph();
+        // Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
         // ExprEdge>(ExprEdge.class);
         gen.generateGraph(target);
         return GraphExpr.newInstance(target);
@@ -420,15 +389,11 @@ public class GraphDataFunctions {
 
       try {
         WheelGraphGenerator<IExpr, ExprEdge> gen = new WheelGraphGenerator<IExpr, ExprEdge>(order);
-        Graph<IExpr, ExprEdge> target =
-            GraphTypeBuilder //
-                .undirected()
-                .allowingMultipleEdges(false)
-                .allowingSelfLoops(false) //
-                .vertexSupplier(new IntegerSupplier(1))
-                .edgeClass(ExprEdge.class) //
-                .buildGraph();
-        //          Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
+        Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+            .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+            .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+            .buildGraph();
+        // Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
         // ExprEdge>(ExprEdge.class);
         gen.generateGraph(target);
         return GraphExpr.newInstance(target);
@@ -454,44 +419,14 @@ public class GraphDataFunctions {
    */
   private static Graph<IExpr, ExprEdge> pappusGraph() {
     Graph<IExpr, ExprEdge> g =
-        GraphTypeBuilder.undirected()
-            .allowingMultipleEdges(false)
-            .allowingSelfLoops(false)
-            .vertexSupplier(new IntegerSupplier(1))
-            .edgeClass(ExprEdge.class)
-            .buildGraph();
+        GraphTypeBuilder.undirected().allowingMultipleEdges(false).allowingSelfLoops(false)
+            .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class).buildGraph();
     // new NamedGraphGenerator<Integer, DefaultEdge>().generatePappusGraph(g);
     HashMap<IExpr, IExpr> vertexMap = new HashMap<>();
     // vertexMap.clear();
-    int[][] edges = {
-      {0, 1},
-      {0, 5},
-      {0, 6},
-      {1, 2},
-      {1, 7},
-      {2, 3},
-      {2, 8},
-      {3, 4},
-      {3, 9},
-      {4, 5},
-      {4, 10},
-      {5, 11},
-      {6, 13},
-      {6, 17},
-      {7, 12},
-      {7, 14},
-      {8, 13},
-      {8, 15},
-      {9, 14},
-      {9, 16},
-      {10, 15},
-      {10, 17},
-      {11, 12},
-      {11, 16},
-      {12, 15},
-      {13, 16},
-      {14, 17}
-    };
+    int[][] edges = {{0, 1}, {0, 5}, {0, 6}, {1, 2}, {1, 7}, {2, 3}, {2, 8}, {3, 4}, {3, 9}, {4, 5},
+        {4, 10}, {5, 11}, {6, 13}, {6, 17}, {7, 12}, {7, 14}, {8, 13}, {8, 15}, {9, 14}, {9, 16},
+        {10, 15}, {10, 17}, {11, 12}, {11, 16}, {12, 15}, {13, 16}, {14, 17}};
     for (int[] edge : edges) {
       addEdge(vertexMap, g, edge[0], edge[1]);
     }
@@ -499,8 +434,8 @@ public class GraphDataFunctions {
   }
 
   // --------------Helper methods-----------------/
-  private static IExpr addVertex(
-      HashMap<IExpr, IExpr> vertexMap, Graph<IExpr, ExprEdge> targetGraph, int i) {
+  private static IExpr addVertex(HashMap<IExpr, IExpr> vertexMap,
+      Graph<IExpr, ExprEdge> targetGraph, int i) {
     IInteger intNumber = F.ZZ(i);
     if (!vertexMap.containsKey(intNumber)) {
       vertexMap.put(intNumber, targetGraph.addVertex());
@@ -508,15 +443,15 @@ public class GraphDataFunctions {
     return vertexMap.get(intNumber);
   }
 
-  private static void addEdge(
-      HashMap<IExpr, IExpr> vertexMap, Graph<IExpr, ExprEdge> targetGraph, int i, int j) {
+  private static void addEdge(HashMap<IExpr, IExpr> vertexMap, Graph<IExpr, ExprEdge> targetGraph,
+      int i, int j) {
     IExpr u = addVertex(vertexMap, targetGraph, i);
     IExpr v = addVertex(vertexMap, targetGraph, j);
     targetGraph.addEdge(u, v);
   }
 
-  private static void addCycle(
-      HashMap<IExpr, IExpr> vertexMap, Graph<IExpr, ExprEdge> targetGraph, int array[]) {
+  private static void addCycle(HashMap<IExpr, IExpr> vertexMap, Graph<IExpr, ExprEdge> targetGraph,
+      int array[]) {
     for (int i = 0; i < array.length; i++) {
       addEdge(vertexMap, targetGraph, array[i], array[(i + 1) % array.length]);
     }

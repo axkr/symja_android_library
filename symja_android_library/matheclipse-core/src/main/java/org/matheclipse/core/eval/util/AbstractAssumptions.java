@@ -33,6 +33,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
   public IAST tensors(IExpr expr) {
     return F.NIL;
   }
+
   /**
    * TODO implement algebraic number conditions.
    *
@@ -125,12 +126,13 @@ public abstract class AbstractAssumptions implements IAssumptions {
     }
     return null;
   }
+
   /**
    * Test if <code>expr</code> is assumed to be an boolean value.
    *
    * @param expr
    * @return <code>S.True</code> or <code>S.False</code> if <code>expr</code> is assumed to be a
-   *     boolean value or no boolean value. In all other cases return <code>null</code>.
+   *         boolean value or no boolean value. In all other cases return <code>null</code>.
    */
   public static ISymbol assumeBoolean(final IExpr expr) {
     if (expr.isTrue() || expr.isFalse()) {
@@ -159,7 +161,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
    *
    * @param expr
    * @return <code>S.True</code> or <code>S.False</code> if <code>expr</code> is assumed to be a
-   *     complex number or no complex number. In all other cases return <code>null</code>.
+   *         complex number or no complex number. In all other cases return <code>null</code>.
    */
   public static ISymbol assumeComplex(final IExpr expr) {
     if (expr.isNumber()) {
@@ -203,7 +205,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
    *
    * @param expr
    * @return <code>S.True</code> or <code>S.False</code> if <code>expr</code> is assumed to be an
-   *     integer or no integer. In all other cases return <code>null</code>.
+   *         integer or no integer. In all other cases return <code>null</code>.
    */
   public static ISymbol assumeInteger(final IExpr expr) {
     if (expr.isInteger()) {
@@ -235,7 +237,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
    *
    * @param expr
    * @return <code>true</code> if <code>expr</code> is assumed to be a negative number. Return
-   *     <code>false</code> in all other cases.
+   *         <code>false</code> in all other cases.
    */
   public static boolean assumeNegative(final IExpr expr) {
     if (expr.isReal()) {
@@ -264,8 +266,8 @@ public abstract class AbstractAssumptions implements IAssumptions {
       return false;
     }
     if (expr.isRealConstant()) {
-      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal()
-          <= number.doubleValue();
+      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() <= number
+          .doubleValue();
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -284,8 +286,8 @@ public abstract class AbstractAssumptions implements IAssumptions {
       return false;
     }
     if (expr.isRealConstant()) {
-      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal()
-          < number.doubleValue();
+      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < number
+          .doubleValue();
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -301,7 +303,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
    *
    * @param expr
    * @return <code>true</code> if <code>expr</code> is assumed to be a non negative number. Return
-   *     <code>false</code> in all other cases.
+   *         <code>false</code> in all other cases.
    */
   public static boolean assumeNonNegative(final IExpr expr) {
     if (expr.isReal()) {
@@ -330,8 +332,8 @@ public abstract class AbstractAssumptions implements IAssumptions {
       return false;
     }
     if (expr.isRealConstant()) {
-      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal()
-          >= number.doubleValue();
+      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= number
+          .doubleValue();
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -347,7 +349,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
    *
    * @param expr
    * @return <code>true</code> if <code>expr</code> is assumed to be a positive number. Return
-   *     <code>false</code> in all other cases.
+   *         <code>false</code> in all other cases.
    */
   public static boolean assumePositive(final IExpr expr) {
     if (expr.isReal()) {
@@ -376,8 +378,8 @@ public abstract class AbstractAssumptions implements IAssumptions {
       return false;
     }
     if (expr.isRealConstant()) {
-      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal()
-          > number.doubleValue();
+      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > number
+          .doubleValue();
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -393,7 +395,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
    *
    * @param expr
    * @return <code>S.True</code> or <code>S.False</code> if <code>expr</code> is assumed to be a
-   *     prime number or no prime number. In all other cases return <code>F.NIL</code>.
+   *         prime number or no prime number. In all other cases return <code>F.NIL</code>.
    */
   public static IExpr assumePrime(final IExpr expr) {
     if (expr.isInteger() && ((IInteger) expr).isProbablePrime()) {
@@ -422,7 +424,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
    *
    * @param expr
    * @return <code>S.True</code> or <code>S.False</code> if <code>expr</code> is assumed to be a
-   *     rational number or no rational number. In all other cases return <code>null</code>.
+   *         rational number or no rational number. In all other cases return <code>null</code>.
    */
   public static ISymbol assumeRational(final IExpr expr) {
     if (expr.isRational()) {
@@ -457,7 +459,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
    *
    * @param expr
    * @return <code>S.True</code> or <code>S.False</code> if <code>expr</code> is assumed to be a
-   *     real number or no real number. In all other cases return <code>null</code>.
+   *         real number or no real number. In all other cases return <code>null</code>.
    */
   public static ISymbol assumeReal(final IExpr expr) {
     if (expr.isReal()) {

@@ -814,8 +814,7 @@ public class SpecialFunctions extends AbstractRubiTestCase {
     // "True");
     // check("Rubi`EasyDQ[x*ExpIntegralEi[b*x],x]", //
     // "True");
-    check(
-        "Rubi`EasyDQ[E^(b*x)[[1]],x]", //
+    check("Rubi`EasyDQ[E^(b*x)[[1]],x]", //
         "True");
     check( //
         "Integrate[(E^(b*x)*ExpIntegralEi[b*x])/x, x]", //

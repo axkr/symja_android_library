@@ -38,20 +38,13 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
     FUNCTIONS_STR.put(S.Tanh, ".tanh");
   }
 
-  private JavaComplexFormFactory(
-      final boolean relaxedSyntax,
-      final boolean reversed,
-      int exponentFigures,
-      int significantFigures) {
+  private JavaComplexFormFactory(final boolean relaxedSyntax, final boolean reversed,
+      int exponentFigures, int significantFigures) {
     this(relaxedSyntax, reversed, exponentFigures, significantFigures, false);
   }
 
-  private JavaComplexFormFactory(
-      final boolean relaxedSyntax,
-      final boolean reversed,
-      int exponentFigures,
-      int significantFigures,
-      boolean packagePrefix) {
+  private JavaComplexFormFactory(final boolean relaxedSyntax, final boolean reversed,
+      int exponentFigures, int significantFigures, boolean packagePrefix) {
     super(relaxedSyntax, reversed, exponentFigures, significantFigures, packagePrefix);
   }
 
@@ -60,9 +53,9 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
    * readable string.
    *
    * @param relaxedSyntax If <code>true</code> use paranthesis instead of square brackets and ignore
-   *     case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
-   *     brackets instead of double square brackets for extracting parts of an expression, i.e.
-   *     {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+   *        case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
+   *        brackets instead of double square brackets for extracting parts of an expression, i.e.
+   *        {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
    * @return
    */
   public static JavaComplexFormFactory get(final boolean relaxedSyntax) {
@@ -74,15 +67,15 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
    * readable string.
    *
    * @param relaxedSyntax if <code>true</code> use paranthesis instead of square brackets and ignore
-   *     case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
-   *     brackets instead of double square brackets for extracting parts of an expression, i.e.
-   *     {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+   *        case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
+   *        brackets instead of double square brackets for extracting parts of an expression, i.e.
+   *        {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
    * @param plusReversed if <code>true</code> the arguments of the <code>Plus()</code> function will
-   *     be printed in reversed order
+   *        be printed in reversed order
    * @return
    */
-  public static JavaComplexFormFactory get(
-      final boolean relaxedSyntax, final boolean plusReversed) {
+  public static JavaComplexFormFactory get(final boolean relaxedSyntax,
+      final boolean plusReversed) {
     return get(relaxedSyntax, plusReversed, -1, -1, false);
   }
 
@@ -91,24 +84,20 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
    * readable string.
    *
    * @param relaxedSyntax if <code>true</code> use paranthesis instead of square brackets and ignore
-   *     case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
-   *     brackets instead of double square brackets for extracting parts of an expression, i.e.
-   *     {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+   *        case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
+   *        brackets instead of double square brackets for extracting parts of an expression, i.e.
+   *        {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
    * @param plusReversed if <code>true</code> the arguments of the <code>Plus()</code> function will
-   *     be printed in reversed order
+   *        be printed in reversed order
    * @param exponentFigures
    * @param significantFigures
    * @param packagePrefix
    * @return
    */
-  public static JavaComplexFormFactory get(
-      final boolean relaxedSyntax,
-      final boolean plusReversed,
-      int exponentFigures,
-      int significantFigures,
-      boolean packagePrefix) {
-    return new JavaComplexFormFactory(
-        relaxedSyntax, plusReversed, exponentFigures, significantFigures, packagePrefix);
+  public static JavaComplexFormFactory get(final boolean relaxedSyntax, final boolean plusReversed,
+      int exponentFigures, int significantFigures, boolean packagePrefix) {
+    return new JavaComplexFormFactory(relaxedSyntax, plusReversed, exponentFigures,
+        significantFigures, packagePrefix);
   }
 
   @Override
@@ -168,7 +157,7 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
             return;
           }
         }
-        //  Complex atan2(Complex x) {
+        // Complex atan2(Complex x) {
         buf.append("(");
         convertInternal(buf, function.first());
         buf.append(")" + str);
@@ -180,9 +169,7 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
       }
     }
     if (function.headID() > 0) {
-      if (function.isAST(S.Defer, 2)
-          || function.isAST(S.Evaluate, 2)
-          || function.isAST(S.Hold, 2)
+      if (function.isAST(S.Defer, 2) || function.isAST(S.Evaluate, 2) || function.isAST(S.Hold, 2)
           || function.isUnevaluated()) {
         convertInternal(buf, function.first());
         return;

@@ -1,17 +1,16 @@
 /*
  * NOTICE OF LICENSE
  *
- * This source file is subject to the Open Software License (OSL 3.0) that is
- * bundled with this package in the file LICENSE.txt. It is also available
- * through the world-wide-web at http://opensource.org/licenses/osl-3.0.php
- * If you did not receive a copy of the license and are unable to obtain it
- * through the world-wide-web, please send an email to magnos.software@gmail.com
- * so we can send you a copy immediately. If you use any of this software please
- * notify me via our website or email, your feedback is much appreciated.
+ * This source file is subject to the Open Software License (OSL 3.0) that is bundled with this
+ * package in the file LICENSE.txt. It is also available through the world-wide-web at
+ * http://opensource.org/licenses/osl-3.0.php If you did not receive a copy of the license and are
+ * unable to obtain it through the world-wide-web, please send an email to magnos.software@gmail.com
+ * so we can send you a copy immediately. If you use any of this software please notify me via our
+ * website or email, your feedback is much appreciated.
  *
- * @copyright   Copyright (c) 2011 Magnos Software (http://www.magnos.org)
- * @license     http://opensource.org/licenses/osl-3.0.php
- *              Open Software License (OSL 3.0)
+ * @copyright Copyright (c) 2011 Magnos Software (http://www.magnos.org)
+ * 
+ * @license http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
 package org.matheclipse.parser.trie;
@@ -217,8 +216,8 @@ public class PerfectHashMap<T> implements Serializable {
    * Calculates the relative index of a key based on the minimum key value in the map.
    *
    * @param key The key to calculate the relative index to.
-   * @return 0 if the key is the minimum key in this map, a positive value less than {@link
-   *     #capacity()} of the map otherwise.
+   * @return 0 if the key is the minimum key in this map, a positive value less than
+   *         {@link #capacity()} of the map otherwise.
    */
   private final int relativeIndex(int key) {
     return (key - min);
@@ -261,8 +260,8 @@ public class PerfectHashMap<T> implements Serializable {
   }
 
   /**
-   * The capacity of the underlying table. This is equivalent to {@link #getMax()} - {@link
-   * #getMin()} + 1.
+   * The capacity of the underlying table. This is equivalent to {@link #getMax()} -
+   * {@link #getMin()} + 1.
    *
    * @return The current capacity of the map.
    */
@@ -274,10 +273,10 @@ public class PerfectHashMap<T> implements Serializable {
    * Returns the value at the given index.
    *
    * @param index 0 for the first entry in the map, {@link #capacity()} - 1 for the last entry in
-   *     the map. Entries in between these may be null, meaning a value has not been added for that
-   *     key.
+   *        the map. Entries in between these may be null, meaning a value has not been added for
+   *        that key.
    * @return The value with the key "{@link #getMin()} + index" or null if that value/key doesn't
-   *     exist.
+   *         exist.
    */
   public T valueAt(int index) {
     return values[index];

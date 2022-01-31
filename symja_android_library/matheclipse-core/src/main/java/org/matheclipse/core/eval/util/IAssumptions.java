@@ -34,7 +34,7 @@ public interface IAssumptions {
   public IExpr get$Assumptions();
 
   public Map<IExpr, IAST> getTensorsMap();
-  
+
   /**
    * Gives <code>true</code>, if the expression is assumed to be an algebraic value (i.e. an element
    * of the <code>Algebraics</code> domain), <code>false</code> in all other cases.

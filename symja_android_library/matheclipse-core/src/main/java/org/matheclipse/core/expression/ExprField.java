@@ -6,7 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** Class for representing a field of <code>IExpr</code>. */
-/* package private*/ final class ExprField implements Field<IExpr> {
+/* package private */ final class ExprField implements Field<IExpr> {
 
   @Override
   public IExpr getOne() {

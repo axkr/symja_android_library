@@ -15,8 +15,8 @@ public class EllipticCurveMethodJUnit extends TestCase {
     SortedMultiset<BigInteger> bigMap = new SortedMultiset_BottomUp<BigInteger>();
     PRIME_FACTORS.factorInteger(big, bigMap);
     System.out.println(bigMap.toString());
-    assertEquals(
-        "{59=1, 41387=1, 40320271=1, 85708917607365601059185614891297817=1}", bigMap.toString());
+    assertEquals("{59=1, 41387=1, 40320271=1, 85708917607365601059185614891297817=1}",
+        bigMap.toString());
 
     System.out.println();
     big = new BigInteger("8392894255239922239");
@@ -36,27 +36,22 @@ public class EllipticCurveMethodJUnit extends TestCase {
 
     System.out.println();
     // 50! * 8392894255239922239
-    big =
-        new BigInteger(
-            "255262268110991784076989150819008060991712040134738393813423038941626368000000000000");
+    big = new BigInteger(
+        "255262268110991784076989150819008060991712040134738393813423038941626368000000000000");
     bigMap = new SortedMultiset_BottomUp<BigInteger>();
     PRIME_FACTORS.factorInteger(big, bigMap);
     System.out.println(bigMap.toString());
-    assertEquals(
-        "{2=47, 3=23, 5=12, 7=9, 11=4, 13=3, 17=2, 19=2, 23=2, 29=1, 31=1, "
-            + "37=1, 41=1, 43=1, 47=1, 457=1, 11717=1, 84053=1, 887987=1}",
-        bigMap.toString());
+    assertEquals("{2=47, 3=23, 5=12, 7=9, 11=4, 13=3, 17=2, 19=2, 23=2, 29=1, 31=1, "
+        + "37=1, 41=1, 43=1, 47=1, 457=1, 11717=1, 84053=1, 887987=1}", bigMap.toString());
 
     System.out.println();
-    big =
-        new BigInteger(
-            "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001");
+    big = new BigInteger(
+        "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001");
     bigMap = new SortedMultiset_BottomUp<BigInteger>();
     PRIME_FACTORS.factorInteger(big, bigMap);
     System.out.println(bigMap.toString());
-    assertEquals(
-        "{73=1, 137=1, 401=1, 1201=1, 1601=1, 1676321=1, "
-            + "5964848081=1, 129694419029057750551385771184564274499075700947656757821537291527196801=1}",
+    assertEquals("{73=1, 137=1, 401=1, 1201=1, 1601=1, 1676321=1, "
+        + "5964848081=1, 129694419029057750551385771184564274499075700947656757821537291527196801=1}",
         bigMap.toString());
 
     System.out.println();

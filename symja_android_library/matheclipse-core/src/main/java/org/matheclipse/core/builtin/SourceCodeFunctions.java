@@ -35,22 +35,28 @@ public class SourceCodeFunctions {
   /**
    *
    *
-   * <pre><code>FunctionURL(built-in-symbol)</code></pre>
+   * <pre>
+   * <code>FunctionURL(built-in-symbol)</code>
+   * </pre>
    *
    * <blockquote>
    *
-   * <p>returns the GitHub URL of the <code>built-in-symbol</code> implementation in the <a
-   * href="https://github.com/axkr/symja_android_library">Symja GitHub repository</a>.
+   * <p>
+   * returns the GitHub URL of the <code>built-in-symbol</code> implementation in the
+   * <a href="https://github.com/axkr/symja_android_library">Symja GitHub repository</a>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>Get the GitHub URL of the <code>NIntegrate</code> function implementation:
+   * <p>
+   * Get the GitHub URL of the <code>NIntegrate</code> function implementation:
    *
-   * <pre><code>&gt;&gt; FunctionURL(NIntegrate)
+   * <pre>
+   * <code>&gt;&gt; FunctionURL(NIntegrate)
    * https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/NIntegrate.java#L71
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static class FunctionURL extends AbstractEvaluator {
 
@@ -100,8 +106,8 @@ public class SourceCodeFunctions {
   }
 
   /**
-   * Returns the GitHub URL of the <code>built-in-symbol</code> implementation in the <a
-   * href="https://github.com/axkr/symja_android_library">Symja GitHub repository</a>.
+   * Returns the GitHub URL of the <code>built-in-symbol</code> implementation in the
+   * <a href="https://github.com/axkr/symja_android_library">Symja GitHub repository</a>.
    *
    * @param builtin the built-in function identifier
    * @return <code>null</code> is no entry was found

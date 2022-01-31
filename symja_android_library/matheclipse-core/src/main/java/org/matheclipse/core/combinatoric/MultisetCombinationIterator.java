@@ -5,10 +5,12 @@ import java.util.Iterator;
 /**
  * Combinations of a multiset
  *
- * <p>These are the combinations of <code>k</code> elements chosen from a sorted <code>int[]</code>
+ * <p>
+ * These are the combinations of <code>k</code> elements chosen from a sorted <code>int[]</code>
  * array, that can contain duplicates (a multiset).
  *
- * <p>For example, given the multiset <code>{0, 1, 1, 2, 2, 2, 3}</code>, the 4-combinations are:
+ * <p>
+ * For example, given the multiset <code>{0, 1, 1, 2, 2, 2, 3}</code>, the 4-combinations are:
  *
  * <pre>
  * [0, 1, 1, 2]
@@ -24,22 +26,25 @@ import java.util.Iterator;
  * [2, 2, 2, 3]
  * </pre>
  *
- * <p>This algorithm produces the combinations in lexicographic order, with the elements in each
+ * <p>
+ * This algorithm produces the combinations in lexicographic order, with the elements in each
  * combination in increasing order.
  *
- * <p>Begin with the first combination, which is the first <var>k</var> elements of the multiset
- * ([0, 1, 1, 2] in the example above), and then at each step:
+ * <p>
+ * Begin with the first combination, which is the first <var>k</var> elements of the multiset ([0,
+ * 1, 1, 2] in the example above), and then at each step:
  *
  * <ol>
- *   <li>Find the rightmost element that is less than the maximum value it can have (which is the
- *       element in the multiset that is the same distance from the right).
- *   <li>Replace it with the first multiset element greater than it.
- *   <li>Replace the remainder of the combination with the elements that follow the replacement in
- *       the multiset.
+ * <li>Find the rightmost element that is less than the maximum value it can have (which is the
+ * element in the multiset that is the same distance from the right).
+ * <li>Replace it with the first multiset element greater than it.
+ * <li>Replace the remainder of the combination with the elements that follow the replacement in the
+ * multiset.
  * </ol>
  *
- * <p>See: <a
- * href="http://www.martinbroadhurst.com/combinatorial-algorithms.html#combinations-of-a-multiset"
+ * <p>
+ * See: <a href=
+ * "http://www.martinbroadhurst.com/combinatorial-algorithms.html#combinations-of-a-multiset"
  * >martinbroadhurst.com Combinations of a Multiset</a>
  */
 public class MultisetCombinationIterator implements Iterator<int[]> {
@@ -52,7 +57,8 @@ public class MultisetCombinationIterator implements Iterator<int[]> {
   /**
    * Combinations of a multiset
    *
-   * <p>These are the combinations of <code>k</code> elements chosen from a sorted <code>int[]
+   * <p>
+   * These are the combinations of <code>k</code> elements chosen from a sorted <code>int[]
    * </code> array, that can contain duplicates (a multiset).
    */
   public MultisetCombinationIterator(int[] multiset, final int k) {
@@ -84,7 +90,8 @@ public class MultisetCombinationIterator implements Iterator<int[]> {
         if (result[i] < multiset[i + (n - k)]) {
           // Find the successor
           int j;
-          for (j = 0; multiset[j] <= result[i]; j++) {}
+          for (j = 0; multiset[j] <= result[i]; j++) {
+          }
 
           // Replace this element with it
           result[i] = multiset[j];

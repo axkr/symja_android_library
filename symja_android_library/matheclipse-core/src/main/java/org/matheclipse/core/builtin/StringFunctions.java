@@ -73,7 +73,7 @@ public final class StringFunctions {
    * Repeated</code>, <code>RepeatedNull</code>.
    *
    * @see <a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia - Regular
-   *     expression</a>
+   *      expression</a>
    */
   static final String[] REGEX_LONGEST = new String[] {"+", "*"};
 
@@ -82,7 +82,7 @@ public final class StringFunctions {
    * Repeated</code>, <code>RepeatedNull</code>.
    *
    * @see <a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia - Regular
-   *     expression</a>
+   *      expression</a>
    */
   static final String[] REGEX_SHORTEST = new String[] {"+?", "*?"};
 
@@ -93,145 +93,63 @@ public final class StringFunctions {
       "\u0430\u0431\u0432\u0433\u0491\u0434\u0452\u0453\u0435\u0451\u0454\u0436\u0437\u0437\u0301\u0455\u0438\u0456\u0457\u0439\u0458\u043a\u043b\u0459\u043c\u043d\u045a\u043e\u043f\u0440\u0441\u0441\u0301\u0442\u045b\u045c\u0443\u045e\u0444\u0445\u0446\u0447\u045f\u0448\u0449\u044a\u044b\u044c\u044d\u044e\u044f";
 
   /** Alphabet strings which contain only single characters not separated by comma. */
-  private static final String[] ALPHABETS = {
-    "Arabic",
-    "\u0627\u0628\u062a\u062b\u062c\u062d\u062e\u062f\u0630\u0631\u0632\u0633\u0634\u0635\u0636\u0637\u0638\u0639\u063a\u0641\u0642\u0643\u0644\u0645\u0646\u0647\u0648\u064a",
-    "Belarusian",
-    "\u0430\u0431\u0432\u0433\u0434\u0435\u0451\u0436\u0437\u0456\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u045e\u0444\u0445\u0446\u0447\u0448\u044b\u044c\u044d\u044e\u044f\u0027",
-    "Bulgarian",
-    "\u0430\u0431\u0432\u0433\u0434\u0435\u0436\u0437\u0438\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044a\u044c\u044e\u044f",
-    "Catalan",
-    "abcçdefghijklmnopqrstuvwxyz",
-    //    "Chinese", EMPTY_ALPHABET,  // not known
-    "Cyrillic",
-    CYRILLIC_ALPHABET,
-    "Danish",
-    "abcdefghijklmnopqrstuvwxyzæøå",
-    "English",
-    LATIN_ALPHABET,
-    "Esperanto",
-    "abcĉdefgĝhĥijĵklmnoprsŝtuŭvz",
-    "Estonian",
-    "abdefghijklmnoprsšzžtuvõäöü",
-    "Finnish",
-    "abcdefghijklmnopqrstuvwxyzåäö",
-    "French",
-    LATIN_ALPHABET,
-    "German",
-    LATIN_ALPHABET,
-    "Greek",
-    "\u03b1\u03b2\u03b3\u03b4\u03b5\u03b6\u03b7\u03b8\u03b9\u03ba\u03bb\u03bc\u03bd\u03be\u03bf\u03c0\u03c1\u03c3\u03c4\u03c5\u03c6\u03c7\u03c8\u03c9",
-    "Hebrew",
-    "\u05d0\u05d1\u05d2\u05d3\u05d4\u05d5\u05d6\u05d7\u05d8\u05d9\u05db\u05dc\u05de\u05e0\u05e1\u05e2\u05e4\u05e6\u05e7\u05e8\u05e9\u05ea",
-    "Hindi",
-    "\u0905\u0906\u0907\u0908\u0909\u090a\u090b\u090f\u0910\u0913\u0914\u0915\u0916\u0917\u0918\u0919\u091a\u091b\u091c\u091d\u091e\u091f\u0920\u0921\u0922\u0923\u0924\u0925\u0926\u0927\u0928\u092a\u092b\u092c\u092d\u092e\u092f\u0930\u0932\u0935\u0936\u0937\u0938\u0939",
-    "Icelandic",
-    "aábdðeéfghiíjklmnoóprstuúvxyýþæö",
-    "Indonesian",
-    LATIN_ALPHABET,
-    "Irish",
-    "abcdefghilmnoprstu",
-    "Italian",
-    "abcdefghilmnopqrstuvz",
-    // "Japanese", EMPTY_ALPHABET,// not known
-    "Korean",
-    "\u3131\u3132\u3134\u3137\u3138\u3139\u3141\u3142\u3143\u3145\u3146\u3147\u3148\u3149\u314a\u314b\u314c\u314d\u314e\u314f\u3150\u3151\u3152\u3153\u3154\u3155\u3156\u3157\u3158\u3159\u315a\u315b\u315c\u315d\u315e\u315f\u3160\u3161\u3162\u3163",
-    "Latin",
-    LATIN_ALPHABET,
-    "Latvian",
-    "aābcčdeēfgģhiījkķlļmnņoprsštuūvzž",
-    "Lithuanian",
-    "aąbcčdeęėfghiįyjklmnoprsštuųūvzž",
-    "Macedonian",
-    "\u0430\u0431\u0432\u0433\u0434\u0453\u0435\u0436\u0437\u0455\u0438\u0458\u043a\u043b\u0459\u043c\u043d\u045a\u043e\u043f\u0440\u0441\u0442\u045c\u0443\u0444\u0445\u0446\u0447\u045f\u0448",
-    "Malay",
-    LATIN_ALPHABET,
-    "Norwegian",
-    "abcdefghijklmnopqrstuvwxyzæøå",
-    "Polish",
-    "aąbcćdeęfghijklłmnńoóprsśtuwyzźż",
-    "Portuguese",
-    LATIN_ALPHABET,
-    "Romanian",
-    "aăâbcdefghiîjklmnopqrsștțuvwxyz",
-    "Russian",
-    "\u0430\u0431\u0432\u0433\u0434\u0435\u0451\u0436\u0437\u0438\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044a\u044b\u044c\u044d\u044e\u044f",
-    // "Serbian", EMPTY_ALPHABET,// not known
-    "Slovenian",
-    "abcčdefghijklmnoprsštuvzž",
-    "Spanish",
-    "abcdefghijklmnñopqrstuvwxyz",
-    "Swedish",
-    "abcdefghijklmnopqrstuvwxyzåäö",
-    // "Thai", EMPTY_ALPHABET,// not known
-    "Turkish",
-    "abcçdefgğhıijklmnoöprsştuüvyz",
-    "Ukrainian",
-    "\u0430\u0431\u0432\u0433\u0491\u0434\u0435\u0454\u0436\u0437\u0438\u0456\u0457\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044c\u044e\u044f",
-    "Vietnamese",
-    "aăâbcdđeêfghiklmnoôơpqrstuưvxy"
-  };
+  private static final String[] ALPHABETS = {"Arabic",
+      "\u0627\u0628\u062a\u062b\u062c\u062d\u062e\u062f\u0630\u0631\u0632\u0633\u0634\u0635\u0636\u0637\u0638\u0639\u063a\u0641\u0642\u0643\u0644\u0645\u0646\u0647\u0648\u064a",
+      "Belarusian",
+      "\u0430\u0431\u0432\u0433\u0434\u0435\u0451\u0436\u0437\u0456\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u045e\u0444\u0445\u0446\u0447\u0448\u044b\u044c\u044d\u044e\u044f\u0027",
+      "Bulgarian",
+      "\u0430\u0431\u0432\u0433\u0434\u0435\u0436\u0437\u0438\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044a\u044c\u044e\u044f",
+      "Catalan", "abcçdefghijklmnopqrstuvwxyz",
+      // "Chinese", EMPTY_ALPHABET, // not known
+      "Cyrillic", CYRILLIC_ALPHABET, "Danish", "abcdefghijklmnopqrstuvwxyzæøå", "English",
+      LATIN_ALPHABET, "Esperanto", "abcĉdefgĝhĥijĵklmnoprsŝtuŭvz", "Estonian",
+      "abdefghijklmnoprsšzžtuvõäöü", "Finnish", "abcdefghijklmnopqrstuvwxyzåäö", "French",
+      LATIN_ALPHABET, "German", LATIN_ALPHABET, "Greek",
+      "\u03b1\u03b2\u03b3\u03b4\u03b5\u03b6\u03b7\u03b8\u03b9\u03ba\u03bb\u03bc\u03bd\u03be\u03bf\u03c0\u03c1\u03c3\u03c4\u03c5\u03c6\u03c7\u03c8\u03c9",
+      "Hebrew",
+      "\u05d0\u05d1\u05d2\u05d3\u05d4\u05d5\u05d6\u05d7\u05d8\u05d9\u05db\u05dc\u05de\u05e0\u05e1\u05e2\u05e4\u05e6\u05e7\u05e8\u05e9\u05ea",
+      "Hindi",
+      "\u0905\u0906\u0907\u0908\u0909\u090a\u090b\u090f\u0910\u0913\u0914\u0915\u0916\u0917\u0918\u0919\u091a\u091b\u091c\u091d\u091e\u091f\u0920\u0921\u0922\u0923\u0924\u0925\u0926\u0927\u0928\u092a\u092b\u092c\u092d\u092e\u092f\u0930\u0932\u0935\u0936\u0937\u0938\u0939",
+      "Icelandic", "aábdðeéfghiíjklmnoóprstuúvxyýþæö", "Indonesian", LATIN_ALPHABET, "Irish",
+      "abcdefghilmnoprstu", "Italian", "abcdefghilmnopqrstuvz",
+      // "Japanese", EMPTY_ALPHABET,// not known
+      "Korean",
+      "\u3131\u3132\u3134\u3137\u3138\u3139\u3141\u3142\u3143\u3145\u3146\u3147\u3148\u3149\u314a\u314b\u314c\u314d\u314e\u314f\u3150\u3151\u3152\u3153\u3154\u3155\u3156\u3157\u3158\u3159\u315a\u315b\u315c\u315d\u315e\u315f\u3160\u3161\u3162\u3163",
+      "Latin", LATIN_ALPHABET, "Latvian", "aābcčdeēfgģhiījkķlļmnņoprsštuūvzž", "Lithuanian",
+      "aąbcčdeęėfghiįyjklmnoprsštuųūvzž", "Macedonian",
+      "\u0430\u0431\u0432\u0433\u0434\u0453\u0435\u0436\u0437\u0455\u0438\u0458\u043a\u043b\u0459\u043c\u043d\u045a\u043e\u043f\u0440\u0441\u0442\u045c\u0443\u0444\u0445\u0446\u0447\u045f\u0448",
+      "Malay", LATIN_ALPHABET, "Norwegian", "abcdefghijklmnopqrstuvwxyzæøå", "Polish",
+      "aąbcćdeęfghijklłmnńoóprsśtuwyzźż", "Portuguese", LATIN_ALPHABET, "Romanian",
+      "aăâbcdefghiîjklmnopqrsștțuvwxyz", "Russian",
+      "\u0430\u0431\u0432\u0433\u0434\u0435\u0451\u0436\u0437\u0438\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044a\u044b\u044c\u044d\u044e\u044f",
+      // "Serbian", EMPTY_ALPHABET,// not known
+      "Slovenian", "abcčdefghijklmnoprsštuvzž", "Spanish", "abcdefghijklmnñopqrstuvwxyz", "Swedish",
+      "abcdefghijklmnopqrstuvwxyzåäö",
+      // "Thai", EMPTY_ALPHABET,// not known
+      "Turkish", "abcçdefgğhıijklmnoöprsştuüvyz", "Ukrainian",
+      "\u0430\u0431\u0432\u0433\u0491\u0434\u0435\u0454\u0436\u0437\u0438\u0456\u0457\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044c\u044e\u044f",
+      "Vietnamese", "aăâbcdđeêfghiklmnoôơpqrstuưvxy"};
 
   /** Alphabet strings which contain single/multiple characters separated by comma. */
-  private static final String[] ALPHABETS_CSV = {
-    "Albanian", "a,b,c,ç,d,dh,e,ë,f,g,gj,h,i,j,k,l,ll,m,n,nj,o,p,q,r,rr,s,sh,t,th,u,v,x,xh,y,z,zh",
-    "Croatian", "a,b,c,č,ć,d,dž,đ,e,f,g,h,i,j,k,l,lj,m,n,nj,o,p,r,s,š,t,u,v,z,ž",
-    "Czech", "a,á,b,c,č,d,ď,e,é,ě,f,g,h,ch,i,í,j,k,l,m,n,ň,o,ó,p,q,r,ř,s,š,t,ť,u,ú,ů,v,w,x,y,ý,z,ž",
-    "Dutch", "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,ij,z",
-    "Hungarian",
-        "a,á,b,c,cs,d,dz,dzs,e,é,f,g,gy,h,i,í,j,k,l,ly,m,n,ny,o,ó,ö,ő,p,q,r,s,sz,t,ty,u,ú,ü,ű,v,w,x,y,z,zs",
-    "Maltese", "a,b,ċ,d,e,f,ġ,g,għ,h,ħ,i,ie,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,ż,z",
-    "Slovak",
-        "a,á,ä,b,c,č,d,ď,dz,dž,e,é,f,g,h,ch,i,í,j,k,l,ĺ,ľ,m,n,ň,o,ó,ô,p,q,r,ŕ,s,š,t,ť,u,ú,v,w,x,y,ý,z,ž"
-  };
+  private static final String[] ALPHABETS_CSV = {"Albanian",
+      "a,b,c,ç,d,dh,e,ë,f,g,gj,h,i,j,k,l,ll,m,n,nj,o,p,q,r,rr,s,sh,t,th,u,v,x,xh,y,z,zh",
+      "Croatian", "a,b,c,č,ć,d,dž,đ,e,f,g,h,i,j,k,l,lj,m,n,nj,o,p,r,s,š,t,u,v,z,ž", "Czech",
+      "a,á,b,c,č,d,ď,e,é,ě,f,g,h,ch,i,í,j,k,l,m,n,ň,o,ó,p,q,r,ř,s,š,t,ť,u,ú,ů,v,w,x,y,ý,z,ž",
+      "Dutch", "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,ij,z", "Hungarian",
+      "a,á,b,c,cs,d,dz,dzs,e,é,f,g,gy,h,i,í,j,k,l,ly,m,n,ny,o,ó,ö,ő,p,q,r,s,sz,t,ty,u,ú,ü,ű,v,w,x,y,z,zs",
+      "Maltese", "a,b,ċ,d,e,f,ġ,g,għ,h,ħ,i,ie,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,ż,z", "Slovak",
+      "a,á,ä,b,c,č,d,ď,dz,dž,e,é,f,g,h,ch,i,í,j,k,l,ĺ,ľ,m,n,ň,o,ó,ô,p,q,r,ŕ,s,š,t,ť,u,ú,v,w,x,y,ý,z,ž"};
 
   /** The languages locale shortcut. */
-  private static final String[] LANGUAGES = {
-    "Albanian", "sq",
-    "Arabic", "ar",
-    "Belarusian", "be",
-    "Bulgarian", "bg",
-    "Catalan", "ca",
-    "Chinese", "zh",
-    "Croatian", "hr",
-    "Czech", "cs",
-    "Danish", "da",
-    "Dutch", "nl",
-    "English", "en",
-    "Estonian", "et",
-    "Finnish", "fi",
-    "French", "fr",
-    "German", "de",
-    "Greek", "el",
-    "Hebrew", "iw",
-    "Hindi", "hi",
-    "Hungarian", "hu",
-    "Icelandic", "is",
-    "Indonesian", "in",
-    "Irish", "ga",
-    "Italian", "it",
-    "Japanese", "ja",
-    "Korean", "ko",
-    "Latvian", "lv",
-    "Lithuanian", "lt",
-    "Macedonian", "mk",
-    "Malay", "ms",
-    "Maltese", "mt",
-    "Norwegian", "no",
-    "Polish", "pl",
-    "Portuguese", "pt",
-    "Romanian", "ro",
-    "Russian", "ru",
-    "Serbian", "sr",
-    "Slovak", "sk",
-    "Slovenian", "sl",
-    "Spanish", "es",
-    "Swedish", "sv",
-    "Thai", "th",
-    "Turkish", "tr",
-    "Ukrainian", "uk",
-    "Vietnamese", "vi",
-  };
+  private static final String[] LANGUAGES = {"Albanian", "sq", "Arabic", "ar", "Belarusian", "be",
+      "Bulgarian", "bg", "Catalan", "ca", "Chinese", "zh", "Croatian", "hr", "Czech", "cs",
+      "Danish", "da", "Dutch", "nl", "English", "en", "Estonian", "et", "Finnish", "fi", "French",
+      "fr", "German", "de", "Greek", "el", "Hebrew", "iw", "Hindi", "hi", "Hungarian", "hu",
+      "Icelandic", "is", "Indonesian", "in", "Irish", "ga", "Italian", "it", "Japanese", "ja",
+      "Korean", "ko", "Latvian", "lv", "Lithuanian", "lt", "Macedonian", "mk", "Malay", "ms",
+      "Maltese", "mt", "Norwegian", "no", "Polish", "pl", "Portuguese", "pt", "Romanian", "ro",
+      "Russian", "ru", "Serbian", "sr", "Slovak", "sk", "Slovenian", "sl", "Spanish", "es",
+      "Swedish", "sv", "Thai", "th", "Turkish", "tr", "Ukrainian", "uk", "Vietnamese", "vi",};
 
   /** Map language name to alphabet string with characters not separated by comma.. */
   private static final Map<String, String> ALPHABET_MAP = new HashMap<String, String>();
@@ -427,14 +345,16 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>computes a list of character strings from <code>min-character</code> to <code>max-character
+   * <p>
+   * computes a list of character strings from <code>min-character</code> to <code>max-character
    * </code>
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>The printable ASCII characters:
+   * <p>
+   * The printable ASCII characters:
    *
    * <pre>
    * <code>&gt;&gt; CharacterRange(&quot; &quot;, &quot;~&quot;)
@@ -451,16 +371,16 @@ public final class StringFunctions {
         if (!(ast.arg1().isInteger()) || !(ast.arg2().isInteger())) {
           // Arguments `1` and `2` of `3` should be either non-negative integers or one-character
           // strings.
-          return IOFunctions.printMessage(
-              ast.topHead(), "argtype", F.List(ast.arg1(), ast.arg2(), ast.topHead()), engine);
+          return IOFunctions.printMessage(ast.topHead(), "argtype",
+              F.List(ast.arg1(), ast.arg2(), ast.topHead()), engine);
         } else {
           int from = ast.arg1().toIntDefault();
           int to = ast.arg2().toIntDefault();
           if (from < 0 || to < 0) {
             // Arguments `1` and `2` of `3` should be either non-negative integers or one-character
             // strings.
-            return IOFunctions.printMessage(
-                ast.topHead(), "argtype", F.List(ast.arg1(), ast.arg2(), ast.topHead()), engine);
+            return IOFunctions.printMessage(ast.topHead(), "argtype",
+                F.List(ast.arg1(), ast.arg2(), ast.topHead()), engine);
           }
           int size = to - from + 1;
           if (size <= 0) {
@@ -478,8 +398,8 @@ public final class StringFunctions {
         if (str1.length() != 1 || str2.length() != 1) {
           // Arguments `1` and `2` of `3` should be either non-negative integers or one-character
           // strings.
-          return IOFunctions.printMessage(
-              ast.topHead(), "argtype", F.List(ast.arg1(), ast.arg2(), ast.topHead()), engine);
+          return IOFunctions.printMessage(ast.topHead(), "argtype",
+              F.List(ast.arg1(), ast.arg2(), ast.topHead()), engine);
         }
         char from = str1.charAt(0);
         char to = str2.charAt(0);
@@ -532,8 +452,8 @@ public final class StringFunctions {
       } catch (IndexOutOfBoundsException iob) {
         // from substring
         // Cannot take positions `1` through `2` in `3`.
-        return IOFunctions.printMessage(
-            ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1),
+            engine);
       }
       return F.NIL;
     }
@@ -563,7 +483,7 @@ public final class StringFunctions {
             }
             separator = File.separator;
             if (separator != null) {
-              //   try operator system dependent
+              // try operator system dependent
               index = fileName.lastIndexOf(separator);
               if (index >= 0) {
                 return F.stringx(fileName.substring(index + separator.length()));
@@ -576,8 +496,8 @@ public final class StringFunctions {
       } catch (IndexOutOfBoundsException iob) {
         // from substring
         // Cannot take positions `1` through `2` in `3`.
-        return IOFunctions.printMessage(
-            ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1),
+            engine);
       }
       return F.NIL;
     }
@@ -598,7 +518,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>converts the <code>ch1, ch2,...</code> character codes into a string of corresponding
+   * <p>
+   * converts the <code>ch1, ch2,...</code> character codes into a string of corresponding
    * characters.
    *
    * </blockquote>
@@ -613,7 +534,8 @@ public final class StringFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="ToCharacterCode.md">ToCharacterCode</a>
+   * <p>
+   * <a href="ToCharacterCode.md">ToCharacterCode</a>
    */
   private static class FromCharacterCode extends AbstractFunctionEvaluator {
 
@@ -634,8 +556,8 @@ public final class StringFunctions {
       return F.NIL;
     }
 
-    private static IExpr fromCharacterCode(
-        final IAST charList, final IAST fromCharacterCodeAST, EvalEngine engine) {
+    private static IExpr fromCharacterCode(final IAST charList, final IAST fromCharacterCodeAST,
+        EvalEngine engine) {
       final StringBuilder buffer = new StringBuilder(charList.size());
       char ch;
       for (int i = 1; i < charList.size(); i++) {
@@ -645,8 +567,8 @@ public final class StringFunctions {
             // A character unicode, which should be a non-negative integer less than 1114112, is
             // expected at
             // position `2` in `1`.
-            return IOFunctions.printMessage(
-                S.FromCharacterCode, "notunicode", F.List(charList, F.ZZ(i)), engine);
+            return IOFunctions.printMessage(S.FromCharacterCode, "notunicode",
+                F.List(charList, F.ZZ(i)), engine);
           }
           ch = (char) unicode;
 
@@ -665,19 +587,26 @@ public final class StringFunctions {
   /**
    *
    *
-   * <pre><code>FromLetterNumber(number)
-   * </code></pre>
+   * <pre>
+   * <code>FromLetterNumber(number)
+   * </code>
+   * </pre>
    *
-   * <p>get the corresponding characters from the English alphabet.
+   * <p>
+   * get the corresponding characters from the English alphabet.
    *
-   * <pre><code>FromLetterNumber(number, language-string)
-   * </code></pre>
+   * <pre>
+   * <code>FromLetterNumber(number, language-string)
+   * </code>
+   * </pre>
    *
-   * <p>get the corresponding characters from the languages alphabet.
+   * <p>
+   * get the corresponding characters from the languages alphabet.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; FromLetterNumber(-2, &quot;Dutch&quot;)
+   * <pre>
+   * <code>&gt;&gt; FromLetterNumber(-2, &quot;Dutch&quot;)
    * ij
    *
    * &gt;&gt; FromLetterNumber(26, &quot;Dutch&quot;)
@@ -685,11 +614,13 @@ public final class StringFunctions {
    *
    * &gt;&gt; FromLetterNumber(1)
    * a
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Alphabet.md">Alphabet</a>, <a href="LetterNumber.md">LetterNumber</a>
+   * <p>
+   * <a href="Alphabet.md">Alphabet</a>, <a href="LetterNumber.md">LetterNumber</a>
    */
   private static class FromLetterNumber extends AbstractFunctionEvaluator {
 
@@ -749,8 +680,8 @@ public final class StringFunctions {
   private static final class HammingDistance extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
@@ -789,29 +720,37 @@ public final class StringFunctions {
   /**
    *
    *
-   * <pre><code>Alphabet()
-   * </code></pre>
+   * <pre>
+   * <code>Alphabet()
+   * </code>
+   * </pre>
    *
-   * <p>gives the list of lowercase letters <code>a-z</code> in the English or Latin alphabet .
+   * <p>
+   * gives the list of lowercase letters <code>a-z</code> in the English or Latin alphabet .
    *
-   * <pre><code>Alphabet(language-string)
-   * </code></pre>
+   * <pre>
+   * <code>Alphabet(language-string)
+   * </code>
+   * </pre>
    *
-   * <p>returns the languages alphabet as a list of lowercase letters.
+   * <p>
+   * returns the languages alphabet as a list of lowercase letters.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; Alphabet()
+   * <pre>
+   * <code>&gt;&gt; Alphabet()
    * {a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z}
    *
    * &gt;&gt; Alphabet(&quot;Dutch&quot;)
    * {a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,ij,z}
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="FromLetterNumber.md">FromLetterNumber</a>, <a
-   * href="LetterNumber.md">LetterNumber</a>
+   * <p>
+   * <a href="FromLetterNumber.md">FromLetterNumber</a>, <a href="LetterNumber.md">LetterNumber</a>
    */
   private static class Alphabet extends AbstractFunctionEvaluator {
 
@@ -849,19 +788,26 @@ public final class StringFunctions {
   /**
    *
    *
-   * <pre><code>LetterNumber(character)
-   * </code></pre>
+   * <pre>
+   * <code>LetterNumber(character)
+   * </code>
+   * </pre>
    *
-   * <p>returns the position of the <code>character</code> in the English alphabet.
+   * <p>
+   * returns the position of the <code>character</code> in the English alphabet.
    *
-   * <pre><code>FromLetterNumber(character, language-string)
-   * </code></pre>
+   * <pre>
+   * <code>FromLetterNumber(character, language-string)
+   * </code>
+   * </pre>
    *
-   * <p>returns the position of the <code>character</code> in the languages alphabet.
+   * <p>
+   * returns the position of the <code>character</code> in the languages alphabet.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; LetterNumber(&quot;b&quot;)
+   * <pre>
+   * <code>&gt;&gt; LetterNumber(&quot;b&quot;)
    * 2
    *
    * &gt;&gt; LetterNumber(&quot;B&quot;)
@@ -872,11 +818,13 @@ public final class StringFunctions {
    *
    * &gt;&gt; LetterNumber(&quot;dzs&quot;,&quot;Hungarian&quot;)
    * 8
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Alphabet.md">Alphabet</a>, <a href="FromLetterNumber.md">FromLetterNumber</a>
+   * <p>
+   * <a href="Alphabet.md">Alphabet</a>, <a href="FromLetterNumber.md">FromLetterNumber</a>
    */
   private static class LetterNumber extends AbstractFunctionEvaluator {
 
@@ -945,23 +893,26 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>tests whether <code>expr</code> is a string, which only contains letters.
+   * <p>
+   * tests whether <code>expr</code> is a string, which only contains letters.
    *
    * </blockquote>
    *
-   * <p>A character is considered to be a letter if its general category type, provided by the Java
+   * <p>
+   * A character is considered to be a letter if its general category type, provided by the Java
    * method <code>Character#getType()</code> is any of the following:
    *
    * <ul>
-   *   <li><code>UPPERCASE_LETTER</code>
-   *   <li><code>LOWERCASE_LETTER</code>
-   *   <li><code>TITLECASE_LETTER</code>
-   *   <li><code>MODIFIER_LETTER</code>
-   *   <li><code>OTHER_LETTER</code>
+   * <li><code>UPPERCASE_LETTER</code>
+   * <li><code>LOWERCASE_LETTER</code>
+   * <li><code>TITLECASE_LETTER</code>
+   * <li><code>MODIFIER_LETTER</code>
+   * <li><code>OTHER_LETTER</code>
    * </ul>
    *
-   * <p>Not all letters have case. Many characters are letters but are neither uppercase nor
-   * lowercase nor titlecase.
+   * <p>
+   * Not all letters have case. Many characters are letters but are neither uppercase nor lowercase
+   * nor titlecase.
    */
   private static class LetterQ extends AbstractFunctionEvaluator implements Predicate<IExpr> {
 
@@ -1002,8 +953,9 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>is <code>True</code> if the given <code>str</code> is a string which only contains lower
-   * case characters.
+   * <p>
+   * is <code>True</code> if the given <code>str</code> is a string which only contains lower case
+   * characters.
    *
    * </blockquote>
    */
@@ -1040,23 +992,28 @@ public final class StringFunctions {
   /**
    *
    *
-   * <pre><code>EditDistance(a, b)
-   * </code></pre>
+   * <pre>
+   * <code>EditDistance(a, b)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Levenshtein distance of <code>a</code> and <code>b</code>, which is defined as
-   * the minimum number of insertions, deletions and substitutions on the constituents of <code>a
+   * <p>
+   * returns the Levenshtein distance of <code>a</code> and <code>b</code>, which is defined as the
+   * minimum number of insertions, deletions and substitutions on the constituents of <code>a
    * </code> and <code>b</code> needed to transform one into the other.
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Wikipedia - Levenshtein
-   *       distance</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Wikipedia - Levenshtein
+   * distance</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; EditDistance(&quot;kitten&quot;, &quot;kitchen&quot;)
+   * <pre>
+   * <code>&gt;&gt; EditDistance(&quot;kitten&quot;, &quot;kitchen&quot;)
    * 2
    *
    * &gt;&gt; EditDistance(&quot;abc&quot;, &quot;ac&quot;)
@@ -1066,23 +1023,26 @@ public final class StringFunctions {
    *
    * &gt;&gt; EditDistance(&quot;azbc&quot;, &quot;abxyc&quot;)
    * 3
-   * </code></pre>
+   * </code>
+   * </pre>
    *
-   * <p>The <code>IgnoreCase</code> option makes <code>EditDistance</code> ignore the case of
-   * letters:
+   * <p>
+   * The <code>IgnoreCase</code> option makes <code>EditDistance</code> ignore the case of letters:
    *
-   * <pre><code>&gt;&gt; EditDistance(&quot;time&quot;, &quot;Thyme&quot;)
+   * <pre>
+   * <code>&gt;&gt; EditDistance(&quot;time&quot;, &quot;Thyme&quot;)
    * 3
    *
    * &gt;&gt; EditDistance(&quot;time&quot;, &quot;Thyme&quot;, IgnoreCase -&gt; True)
    * 2
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static final class EditDistance extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
@@ -1091,9 +1051,8 @@ public final class StringFunctions {
 
         LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
         if (ignoreCase) {
-          return F.ZZ(
-              levenshteinDistance.apply(
-                  arg1.toString().toLowerCase(), arg2.toString().toLowerCase()));
+          return F.ZZ(levenshteinDistance.apply(arg1.toString().toLowerCase(),
+              arg2.toString().toLowerCase()));
         }
         return F.ZZ(levenshteinDistance.apply(arg1.toString(), arg2.toString()));
       }
@@ -1121,15 +1080,17 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>returns <code>True</code> if all characters in <code>str</code> are ASCII characters.
+   * <p>
+   * returns <code>True</code> if all characters in <code>str</code> are ASCII characters.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/ASCII">Wikipedia - ASCII</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/UTF-8">Wikipedia - UTF-8</a>
+   * <li><a href="https://en.wikipedia.org/wiki/ASCII">Wikipedia - ASCII</a>
+   * <li><a href="https://en.wikipedia.org/wiki/UTF-8">Wikipedia - UTF-8</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1182,14 +1143,16 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>replace characters with diacritics with characters without diacritics.
+   * <p>
+   * replace characters with diacritics with characters without diacritics.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Diacritic">Wikipedia - Diacritic</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Diacritic">Wikipedia - Diacritic</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1229,7 +1192,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>gives all occurences of <code>pattern</code> in <code>string</code>.
+   * <p>
+   * gives all occurences of <code>pattern</code> in <code>string</code>.
    *
    * </blockquote>
    *
@@ -1250,8 +1214,8 @@ public final class StringFunctions {
   private static class StringCases extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
 
       if (argSize >= 2) {
         IExpr arg1 = engine.evaluate(ast.arg1());
@@ -1311,7 +1275,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>counts all ocurences of <code>pattern</code> in <code>string</code>.
+   * <p>
+   * counts all ocurences of <code>pattern</code> in <code>string</code>.
    *
    * </blockquote>
    *
@@ -1329,8 +1294,8 @@ public final class StringFunctions {
   private static class StringCount extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
 
       if (argSize >= 2) {
         IExpr arg1 = engine.evaluate(ast.arg1());
@@ -1388,8 +1353,9 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>return a list of matches for <code>&quot;p1&quot;, &quot;p2&quot;,...</code> list of strings
-   * in the string <code>str</code>.
+   * <p>
+   * return a list of matches for <code>&quot;p1&quot;, &quot;p2&quot;,...</code> list of strings in
+   * the string <code>str</code>.
    *
    * </blockquote>
    *
@@ -1404,8 +1370,8 @@ public final class StringFunctions {
   private static class StringContainsQ extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
       if (argSize >= 2) {
         boolean ignoreCase = option[0].isTrue();
         IExpr arg1 = engine.evaluate(ast.arg1());
@@ -1466,8 +1432,8 @@ public final class StringFunctions {
       } catch (IndexOutOfBoundsException iob) {
         // from substring
         // Cannot drop positions `1` through `2` in `3`.
-        return IOFunctions.printMessage(
-            ast.topHead(), "drop", F.List(F.ZZ(from - 1), F.ZZ(to), ast.arg1()), engine);
+        return IOFunctions.printMessage(ast.topHead(), "drop",
+            F.List(F.ZZ(from - 1), F.ZZ(to), ast.arg1()), engine);
       }
       return F.NIL;
     }
@@ -1548,8 +1514,8 @@ public final class StringFunctions {
   private static class StringFreeQ extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
 
       if (argSize >= 2) {
         boolean ignoreCase = option[0].isTrue();
@@ -1580,8 +1546,8 @@ public final class StringFunctions {
       return F.NIL;
     }
 
-    private static IExpr stringFreeQ(
-        IAST ast, IExpr arg1, IExpr arg2, boolean ignoreCase, EvalEngine engine) {
+    private static IExpr stringFreeQ(IAST ast, IExpr arg1, IExpr arg2, boolean ignoreCase,
+        EvalEngine engine) {
       Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
       java.util.regex.Pattern pattern = toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
       if (pattern == null) {
@@ -1616,7 +1582,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a string with <code>new-string</code> inserted starting at <code>position</code> in
+   * <p>
+   * returns a string with <code>new-string</code> inserted starting at <code>position</code> in
    * <code>string</code>.
    *
    * </blockquote>
@@ -1628,8 +1595,9 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a string with <code>new-string</code> inserted starting at <code>position</code>
-   * from the end of <code>string</code>.
+   * <p>
+   * returns a string with <code>new-string</code> inserted starting at <code>position</code> from
+   * the end of <code>string</code>.
    *
    * </blockquote>
    *
@@ -1640,7 +1608,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a string with <code>new-string</code> inserted at each position <code>posN</code> in
+   * <p>
+   * returns a string with <code>new-string</code> inserted at each position <code>posN</code> in
    * <code>string</code>.
    *
    * </blockquote>
@@ -1652,7 +1621,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the list of results for each of the strings <code>strN</code>
+   * <p>
+   * gives the list of results for each of the strings <code>strN</code>
    *
    * </blockquote>
    *
@@ -1683,9 +1653,8 @@ public final class StringFunctions {
       String str2 = ((IStringX) arg2).toString();
       int[] listOfInts;
       if (ast.arg3().isList()) {
-        listOfInts =
-            Validate.checkListOfInts(
-                ast, ast.arg3(), -str1.length() - 1, str1.length() + 1, engine);
+        listOfInts = Validate.checkListOfInts(ast, ast.arg3(), -str1.length() - 1,
+            str1.length() + 1, engine);
       } else {
         int pos = ast.arg3().toIntDefault();
         if (Math.abs(pos) > str1.length() + 1) {
@@ -1735,7 +1704,8 @@ public final class StringFunctions {
    * </code>
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * <code>str1 &lt;&gt; str2 &lt;&gt;  ... &lt;&gt; strN
@@ -1744,7 +1714,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the concatenation of the strings <code>str1, str2, ... strN</code>.
+   * <p>
+   * returns the concatenation of the strings <code>str1, str2, ... strN</code>.
    *
    * </blockquote>
    *
@@ -1811,7 +1782,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the length of <code>string</code>.
+   * <p>
+   * gives the length of <code>string</code>.
    *
    * </blockquote>
    *
@@ -1857,15 +1829,17 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>check if the regular expression <code>regex-pattern</code> matches the <code>string</code>.
+   * <p>
+   * check if the regular expression <code>regex-pattern</code> matches the <code>string</code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia - Regular
-   *       expression</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia - Regular
+   * expression</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1882,8 +1856,8 @@ public final class StringFunctions {
   private static class StringMatchQ extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
 
       if (argSize >= 2) {
         boolean ignoreCase = option[0].isTrue();
@@ -1932,8 +1906,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>return the character at position <code>pos</code> from the <code>str</code> string
-   * expression.
+   * <p>
+   * return the character at position <code>pos</code> from the <code>str</code> string expression.
    *
    * </blockquote>
    *
@@ -1944,8 +1918,9 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>return the characters at the position in the list <code>{pos1, pos2, pos3,....}</code> from
-   * the <code>str</code> string expression.
+   * <p>
+   * return the characters at the position in the list <code>{pos1, pos2, pos3,....}</code> from the
+   * <code>str</code> string expression.
    *
    * </blockquote>
    *
@@ -1975,8 +1950,8 @@ public final class StringFunctions {
       if (part > 0) {
         if (part > str.length()) {
           // Part `1` of `2` does not exist.
-          return IOFunctions.printMessage(
-              ast.topHead(), "partw", F.List(F.ZZ(part), ast.arg1()), engine);
+          return IOFunctions.printMessage(ast.topHead(), "partw", F.List(F.ZZ(part), ast.arg1()),
+              engine);
         }
         return F.stringx(str.charAt(part - 1));
       }
@@ -1996,8 +1971,8 @@ public final class StringFunctions {
   private static class StringPosition extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
 
       if (argSize >= 2) {
         int maxOccurences = Integer.MAX_VALUE;
@@ -2039,14 +2014,8 @@ public final class StringFunctions {
       return F.NIL;
     }
 
-    private static IExpr stringPosition(
-        IAST ast,
-        IExpr arg1,
-        IExpr arg2,
-        int maxOccurences,
-        boolean ignoreCase,
-        IASTAppendable result,
-        EvalEngine engine) {
+    private static IExpr stringPosition(IAST ast, IExpr arg1, IExpr arg2, int maxOccurences,
+        boolean ignoreCase, IASTAppendable result, EvalEngine engine) {
 
       Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
       java.util.regex.Pattern pattern = toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
@@ -2084,7 +2053,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>replaces each occurrence of <code>fromStr</code> with <code>toStr</code> in <code>string
+   * <p>
+   * replaces each occurrence of <code>fromStr</code> with <code>toStr</code> in <code>string
    * </code>.
    *
    * </blockquote>
@@ -2103,8 +2073,8 @@ public final class StringFunctions {
   private static class StringReplace extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
 
       if (argSize >= 2) {
         boolean ignoreCase = option[0].isTrue();
@@ -2141,9 +2111,8 @@ public final class StringFunctions {
             if (pattern == null) {
               return F.NIL;
             }
-            str =
-                stringReplaceCondition(
-                    str, conditionTest, ruleRHS, pattern, namedRegexGroups, engine);
+            str = stringReplaceCondition(str, conditionTest, ruleRHS, pattern, namedRegexGroups,
+                engine);
           } else {
             java.util.regex.Pattern pattern =
                 toRegexPattern(ruleLHS, true, ignoreCase, ast, namedRegexGroups, engine);
@@ -2166,11 +2135,8 @@ public final class StringFunctions {
      * @param engine
      * @return
      */
-    private static String stringReplace(
-        String str,
-        final IExpr ruleRHS,
-        java.util.regex.Pattern pattern,
-        Map<ISymbol, String> namedRegexGroups,
+    private static String stringReplace(String str, final IExpr ruleRHS,
+        java.util.regex.Pattern pattern, Map<ISymbol, String> namedRegexGroups,
         final EvalEngine engine) {
 
       Matcher matcher = pattern.matcher(str);
@@ -2199,12 +2165,8 @@ public final class StringFunctions {
      * @param engine
      * @return
      */
-    private static String stringReplaceCondition(
-        String str,
-        IExpr conditionTest,
-        final IExpr ruleRHS,
-        java.util.regex.Pattern pattern,
-        Map<ISymbol, String> namedRegexGroups,
+    private static String stringReplaceCondition(String str, IExpr conditionTest,
+        final IExpr ruleRHS, java.util.regex.Pattern pattern, Map<ISymbol, String> namedRegexGroups,
         final EvalEngine engine) {
 
       Matcher matcher = pattern.matcher(str);
@@ -2236,8 +2198,8 @@ public final class StringFunctions {
      * @param namedRegexGroups maps a pattern symbol to the regex name
      * @return
      */
-    private static IExpr replaceGroups(
-        IExpr expr, Matcher matcher, Map<ISymbol, String> namedRegexGroups) {
+    private static IExpr replaceGroups(IExpr expr, Matcher matcher,
+        Map<ISymbol, String> namedRegexGroups) {
 
       for (Map.Entry<ISymbol, String> group : namedRegexGroups.entrySet()) {
         String groupValue = matcher.group(group.getValue());
@@ -2367,7 +2329,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>split the string <code>str</code> by whitespaces into a list of strings.
+   * <p>
+   * split the string <code>str</code> by whitespaces into a list of strings.
    *
    * </blockquote>
    *
@@ -2378,7 +2341,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>split the string <code>str1</code> by <code>str2</code> into a list of strings.
+   * <p>
+   * split the string <code>str1</code> by <code>str2</code> into a list of strings.
    *
    * </blockquote>
    *
@@ -2389,16 +2353,18 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>split the string <code>str1</code> by the regular expression <code>str2</code> into a list
-   * of strings.
+   * <p>
+   * split the string <code>str1</code> by the regular expression <code>str2</code> into a list of
+   * strings.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia - Regular
-   *       expression</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia - Regular
+   * expression</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -2418,8 +2384,8 @@ public final class StringFunctions {
   private static class StringSplit extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (!arg1.isString()) {
         if (arg1.isListOfStrings()) {
@@ -2500,58 +2466,58 @@ public final class StringFunctions {
           } else if (arg2.equals(S.All)) {
             return arg1;
           } else if (arg2.isList()) {
-            //        	  int[][] sequ =
-            //                      Validate.checkListOfSequenceSpec(ast, arg2, 2,
+            // int[][] sequ =
+            // Validate.checkListOfSequenceSpec(ast, arg2, 2,
             // s.length(),Integer.MIN_VALUE, Integer.MAX_VALUE, engine);
-            //                  if (sequ == null || sequ.length == 0) {
-            //                    return F.NIL;
-            //                  }
-            //                 if( sequ.length >1) {
-            //                	 return ((IAST) arg2).mapThread(ast, 2);
-            //                 }
-            //                  switch (sequ.length) {
-            //                    case 1:
-            //                      from = sequ[0];
-            //                      if (from < 0) {
-            //                        from = s.length() + from + 1;
-            //                      }
-            //                      to = from;
-            //                      return F.$str(s.substring(from - 1, to));
-            //                    case 2:
-            //                      from = sequ[0];
-            //                      if (from < 0) {
-            //                        from = s.length() + from + 1;
-            //                      }
-            //                      to = sequ[1];
-            //                      if (to < 0) {
-            //                        to = s.length() + to + 1;
-            //                      }
-            //                      return F.$str(s.substring(from - 1, to));
-            //                    case 3:
-            //                      from = sequ[0];
-            //                      if (from < 0) {
-            //                        from = s.length() + from + 1;
-            //                      }
-            //                      to = sequ[1];
-            //                      if (to < 0) {
-            //                        to = s.length() + to + 1;
-            //                      }
-            //                      int step = sequ[2];
-            //                      if (step < 0) {
-            //                        return F.NIL;
-            //                      }
-            //                      if (step == 0) {
-            //                        return ((IAST) arg2).mapThread(ast, 2);
-            //                      }
-            //                      StringBuilder buf = new StringBuilder();
-            //                      while (from <= to) {
-            //                        buf.append(s.substring(from - 1, from));
-            //                        from += step;
-            //                      }
-            //                      return F.$str(buf.toString());
-            //                    default:
-            //                      return ((IAST) arg2).mapThread(ast, 2);
-            //                  }
+            // if (sequ == null || sequ.length == 0) {
+            // return F.NIL;
+            // }
+            // if( sequ.length >1) {
+            // return ((IAST) arg2).mapThread(ast, 2);
+            // }
+            // switch (sequ.length) {
+            // case 1:
+            // from = sequ[0];
+            // if (from < 0) {
+            // from = s.length() + from + 1;
+            // }
+            // to = from;
+            // return F.$str(s.substring(from - 1, to));
+            // case 2:
+            // from = sequ[0];
+            // if (from < 0) {
+            // from = s.length() + from + 1;
+            // }
+            // to = sequ[1];
+            // if (to < 0) {
+            // to = s.length() + to + 1;
+            // }
+            // return F.$str(s.substring(from - 1, to));
+            // case 3:
+            // from = sequ[0];
+            // if (from < 0) {
+            // from = s.length() + from + 1;
+            // }
+            // to = sequ[1];
+            // if (to < 0) {
+            // to = s.length() + to + 1;
+            // }
+            // int step = sequ[2];
+            // if (step < 0) {
+            // return F.NIL;
+            // }
+            // if (step == 0) {
+            // return ((IAST) arg2).mapThread(ast, 2);
+            // }
+            // StringBuilder buf = new StringBuilder();
+            // while (from <= to) {
+            // buf.append(s.substring(from - 1, from));
+            // from += step;
+            // }
+            // return F.$str(buf.toString());
+            // default:
+            // return ((IAST) arg2).mapThread(ast, 2);
+            // }
 
             int[] sequ =
                 Validate.checkListOfInts(ast, arg2, Integer.MIN_VALUE, Integer.MAX_VALUE, engine);
@@ -2615,8 +2581,8 @@ public final class StringFunctions {
       } catch (IndexOutOfBoundsException iob) {
         // from substring
         // Cannot take positions `1` through `2` in `3`.
-        return IOFunctions.printMessage(
-            ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1),
+            engine);
       }
     }
 
@@ -2782,8 +2748,7 @@ public final class StringFunctions {
           }
         }
       }
-      return templateExpr
-          .replaceAll(x -> replaceTemplateSlotFunction(x, context))
+      return templateExpr.replaceAll(x -> replaceTemplateSlotFunction(x, context))
           .orElse(templateExpr);
     }
 
@@ -2854,7 +2819,7 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      //      IExpr arg1 = ast.arg1();
+      // IExpr arg1 = ast.arg1();
       return F.NIL;
     }
 
@@ -2926,7 +2891,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>converts <code>string</code> into a list of corresponding integer character codes.
+   * <p>
+   * converts <code>string</code> into a list of corresponding integer character codes.
    *
    * </blockquote>
    *
@@ -2943,7 +2909,8 @@ public final class StringFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="FromCharacterCode.md">FromCharacterCode</a>
+   * <p>
+   * <a href="FromCharacterCode.md">FromCharacterCode</a>
    */
   private static class ToCharacterCode extends AbstractFunctionEvaluator {
 
@@ -2966,7 +2933,7 @@ public final class StringFunctions {
     }
 
     public static IAST toCharacterCode(final String unicodeInput, final Charset inputEncoding) {
-      //      try {
+      // try {
 
       final String utf8String =
           new String(unicodeInput.getBytes(inputEncoding), StandardCharsets.UTF_8);
@@ -2978,10 +2945,10 @@ public final class StringFunctions {
         list.append(characterCode);
       }
       return list;
-      //      } catch (final UnsupportedEncodingException e) {
-      //        LOGGER.error("ToCharacterCode.toCharacterCode() failed", e);
-      //      }
-      //      return F.NIL;
+      // } catch (final UnsupportedEncodingException e) {
+      // LOGGER.error("ToCharacterCode.toCharacterCode() failed", e);
+      // }
+      // return F.NIL;
     }
   }
 
@@ -2995,7 +2962,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>converts the <code>string</code> given in <code>form</code> into an expression.
+   * <p>
+   * converts the <code>string</code> given in <code>form</code> into an expression.
    *
    * </blockquote>
    *
@@ -3075,7 +3043,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>converts <code>expr</code> into a string.
+   * <p>
+   * converts <code>expr</code> into a string.
    *
    * </blockquote>
    *
@@ -3135,7 +3104,8 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>converts <code>string</code> into a string of corresponding unicode character codes.
+   * <p>
+   * converts <code>string</code> into a string of corresponding unicode character codes.
    *
    * </blockquote>
    *
@@ -3149,8 +3119,9 @@ public final class StringFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="FromCharacterCode.md">FromCharacterCode</a>, <a
-   * href="ToCharacterCode.md">ToCharacterCode</a>
+   * <p>
+   * <a href="FromCharacterCode.md">FromCharacterCode</a>,
+   * <a href="ToCharacterCode.md">ToCharacterCode</a>
    */
   private static class ToUnicode extends AbstractFunctionEvaluator {
     private static final String UNICODE_PREFIX = "\\u";
@@ -3177,7 +3148,7 @@ public final class StringFunctions {
       final StringBuilder unicodeStringBuilder = new StringBuilder();
       String unicodeString = null;
 
-      //      try {
+      // try {
       final String utf8String =
           new String(unicodeInput.getBytes(inputEncoding), StandardCharsets.UTF_8);
       String hexValueString = null;
@@ -3194,9 +3165,9 @@ public final class StringFunctions {
         unicodeStringBuilder.append(hexValueString);
       }
       unicodeString = unicodeStringBuilder.toString();
-      //      } catch (final UnsupportedEncodingException e) {
-      //        LOGGER.error("ToUnicode.toUnicodeString() failed", e);
-      //      }
+      // } catch (final UnsupportedEncodingException e) {
+      // LOGGER.error("ToUnicode.toUnicodeString() failed", e);
+      // }
       return unicodeString;
     }
   }
@@ -3233,17 +3204,19 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>try converting the given string to a similar ASCII string
+   * <p>
+   * try converting the given string to a similar ASCII string
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Transliteration">Wikipedia - Transliteration</a>
-   *   <li><a
-   *       href="https://unicode-org.github.io/icu/userguide/transforms/general/">unicode-org.github.io
-   *       - General Transforms </a>
+   * <li><a href="https://en.wikipedia.org/wiki/Transliteration">Wikipedia - Transliteration</a>
+   * <li><a href=
+   * "https://unicode-org.github.io/icu/userguide/transforms/general/">unicode-org.github.io -
+   * General Transforms </a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -3330,8 +3303,9 @@ public final class StringFunctions {
    *
    * <blockquote>
    *
-   * <p>is <code>True</code> if the given <code>str</code> is a string which only contains upper
-   * case characters.
+   * <p>
+   * is <code>True</code> if the given <code>str</code> is a string which only contains upper case
+   * characters.
    *
    * </blockquote>
    *
@@ -3397,16 +3371,13 @@ public final class StringFunctions {
     return StringFunctions.inputForm(expression, ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS);
   }
 
-  private static IExpr regexErrorHandling(
-      final IAST ast, IllegalArgumentException iae, EvalEngine engine) {
+  private static IExpr regexErrorHandling(final IAST ast, IllegalArgumentException iae,
+      EvalEngine engine) {
     if (iae instanceof PatternSyntaxException) {
       PatternSyntaxException pse = (PatternSyntaxException) iae;
       // Regex expression `1` error message: `2`
-      return IOFunctions.printMessage(
-          S.RegularExpression,
-          "zzregex",
-          F.List(F.$str(pse.getPattern()), F.$str(pse.getMessage())),
-          engine);
+      return IOFunctions.printMessage(S.RegularExpression, "zzregex",
+          F.List(F.$str(pse.getPattern()), F.$str(pse.getMessage())), engine);
     } else {
       LOGGER.log(engine.getLogLevel(), ast.topHead(), iae);
       return F.NIL;
@@ -3417,47 +3388,37 @@ public final class StringFunctions {
    * Unicode version of predefined character classes and POSIX character classes are enabled in the
    * resulting regex Pattern object.
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a
-   *       href="https://github.com/mathics/Mathics/blob/master/mathics/builtin/strings.py#L78">to_regex()
-   *       function</a>
-   *   <li><a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia -
-   *       Perl Compatible Regular Expression</a>
+   * <li><a href=
+   * "https://github.com/mathics/Mathics/blob/master/mathics/builtin/strings.py#L78">to_regex()
+   * function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia -
+   * Perl Compatible Regular Expression</a>
    * </ul>
    *
    * @param partOfRegex the expression which represents a regex 'piece'
    * @param abbreviatedPatterns if <code>true</code> allow 'abbreviated patterns" in strings (i.e.
-   *     '\','*' and '@' operatore)
+   *        '\','*' and '@' operatore)
    * @param ignoreCase if <code>true</code> enables case-insensitive matching.
    * @param stringFunction the original string function, used in error messages
    * @param engine the evaluation engine
    * @return
    */
-  public static java.util.regex.Pattern toRegexPattern(
-      IExpr partOfRegex,
-      boolean abbreviatedPatterns,
-      boolean ignoreCase,
-      IAST stringFunction,
-      Map<ISymbol, String> namedRegexGroups,
-      EvalEngine engine) {
+  public static java.util.regex.Pattern toRegexPattern(IExpr partOfRegex,
+      boolean abbreviatedPatterns, boolean ignoreCase, IAST stringFunction,
+      Map<ISymbol, String> namedRegexGroups, EvalEngine engine) {
 
-    String regex =
-        toRegexString(
-            partOfRegex,
-            abbreviatedPatterns,
-            stringFunction,
-            REGEX_LONGEST,
-            namedRegexGroups,
-            engine);
+    String regex = toRegexString(partOfRegex, abbreviatedPatterns, stringFunction, REGEX_LONGEST,
+        namedRegexGroups, engine);
     if (regex != null) {
       java.util.regex.Pattern pattern;
       try {
         if (ignoreCase) {
-          pattern =
-              java.util.regex.Pattern.compile(
-                  regex, Pattern.UNICODE_CHARACTER_CLASS | Pattern.CASE_INSENSITIVE);
+          pattern = java.util.regex.Pattern.compile(regex,
+              Pattern.UNICODE_CHARACTER_CLASS | Pattern.CASE_INSENSITIVE);
         } else {
           pattern = java.util.regex.Pattern.compile(regex, Pattern.UNICODE_CHARACTER_CLASS);
         }
@@ -3477,23 +3438,19 @@ public final class StringFunctions {
    * expression string.
    *
    * @param partOfRegex the expression which represents a regex 'piece' which must be converted to a
-   *     Java regex string
+   *        Java regex string
    * @param abbreviatedPatterns if <code>true</code> allow 'abbreviated patterns" in strings (i.e.
-   *     '\','*' and '@' operators)
+   *        '\','*' and '@' operators)
    * @param stringFunction the original string function, used in error messages
    * @param shortestLongest either {@link #REGEX_LONGEST} or {@link #REGEX_SHORTEST}
    * @param groups
    * @param engine the evaluation engine
    * @return
    * @see <a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia -
-   *     Perl Compatible Regular Expression</a>
+   *      Perl Compatible Regular Expression</a>
    */
-  private static String toRegexString(
-      IExpr partOfRegex,
-      boolean abbreviatedPatterns,
-      IAST stringFunction,
-      String[] shortestLongest,
-      Map<ISymbol, String> groups,
+  private static String toRegexString(IExpr partOfRegex, boolean abbreviatedPatterns,
+      IAST stringFunction, String[] shortestLongest, Map<ISymbol, String> groups,
       EvalEngine engine) {
 
     if (partOfRegex.isString()) {
@@ -3543,14 +3500,8 @@ public final class StringFunctions {
       }
       if (expr.isAST(S.Pattern, 3) && expr.first().isSymbol()) {
         final ISymbol symbol = (ISymbol) expr.first();
-        String str =
-            toRegexString(
-                expr.second(),
-                abbreviatedPatterns,
-                stringFunction,
-                shortestLongest,
-                groups,
-                engine);
+        String str = toRegexString(expr.second(), abbreviatedPatterns, stringFunction,
+            shortestLongest, groups, engine);
         if (str != null) {
           final String groupName = symbol.toString();
           groups.put(symbol, groupName);
@@ -3561,9 +3512,8 @@ public final class StringFunctions {
           }
         }
       } else {
-        String str =
-            toRegexString(
-                expr, abbreviatedPatterns, stringFunction, shortestLongest, groups, engine);
+        String str = toRegexString(expr, abbreviatedPatterns, stringFunction, shortestLongest,
+            groups, engine);
         if (str != null) {
           if (repeated.isNullSequence()) {
             return "(" + str + ")" + shortestLongest[ASTERISK_Q];
@@ -3574,8 +3524,8 @@ public final class StringFunctions {
       }
     } else if (partOfRegex.isAST(S.StringExpression)) {
       IAST stringExpression = (IAST) partOfRegex;
-      return toRegexString(
-          stringFunction, stringExpression, abbreviatedPatterns, shortestLongest, groups, engine);
+      return toRegexString(stringFunction, stringExpression, abbreviatedPatterns, shortestLongest,
+          groups, engine);
     } else if (partOfRegex.isBlank()) {
       return "(.|\\n)";
     } else if (partOfRegex.isPattern()) {
@@ -3588,23 +3538,16 @@ public final class StringFunctions {
         if (pattern instanceof PatternNested) {
           PatternNested pn = (PatternNested) pattern;
           IExpr subPattern = pn.getPatternExpr();
-          String subPatternRegex =
-              toRegexString(
-                  subPattern, abbreviatedPatterns, stringFunction, shortestLongest, groups, engine);
+          String subPatternRegex = toRegexString(subPattern, abbreviatedPatterns, stringFunction,
+              shortestLongest, groups, engine);
           return "(?<" + groupName + ">" + subPatternRegex + ")";
         }
         return "(?<" + groupName + ">(.|\\n))";
       }
     } else if (partOfRegex.isAST(S.Pattern, 3) && partOfRegex.first().isSymbol()) {
       final ISymbol symbol = (ISymbol) partOfRegex.first();
-      String str =
-          toRegexString(
-              partOfRegex.second(),
-              abbreviatedPatterns,
-              stringFunction,
-              shortestLongest,
-              groups,
-              engine);
+      String str = toRegexString(partOfRegex.second(), abbreviatedPatterns, stringFunction,
+          shortestLongest, groups, engine);
       if (str != null) {
         final String groupName = symbol.toString();
         groups.put(symbol, groupName);
@@ -3643,21 +3586,12 @@ public final class StringFunctions {
       IAST alternatives = (IAST) partOfRegex;
       StringBuilder pieces = new StringBuilder();
       for (int i = 1; i < alternatives.size(); i++) {
-        String str =
-            toRegexString(
-                alternatives.get(i),
-                abbreviatedPatterns,
-                stringFunction,
-                shortestLongest,
-                groups,
-                engine);
+        String str = toRegexString(alternatives.get(i), abbreviatedPatterns, stringFunction,
+            shortestLongest, groups, engine);
         if (str == null) {
           // `1` currently not supported in `2`.
-          IOFunctions.printMessage(
-              stringFunction.topHead(),
-              "unsupported",
-              F.List(alternatives.get(i), stringFunction.topHead()),
-              engine);
+          IOFunctions.printMessage(stringFunction.topHead(), "unsupported",
+              F.List(alternatives.get(i), stringFunction.topHead()), engine);
           return null;
         }
         pieces.append(str);
@@ -3667,26 +3601,20 @@ public final class StringFunctions {
       }
       return pieces.toString();
     } else if (partOfRegex.isAST(S.Shortest, 2)) {
-      String str =
-          toRegexString(
-              partOfRegex.first(),
-              abbreviatedPatterns,
-              stringFunction,
-              REGEX_SHORTEST,
-              groups,
-              engine);
+      String str = toRegexString(partOfRegex.first(), abbreviatedPatterns, stringFunction,
+          REGEX_SHORTEST, groups, engine);
       return str;
     } else if (partOfRegex.isAST(S.Longest, 2)) {
-      return toRegexString(
-          partOfRegex.first(), abbreviatedPatterns, stringFunction, REGEX_LONGEST, groups, engine);
+      return toRegexString(partOfRegex.first(), abbreviatedPatterns, stringFunction, REGEX_LONGEST,
+          groups, engine);
     } else if (partOfRegex.isBuiltInSymbol()) {
       int ordinal = ((IBuiltInSymbol) partOfRegex).ordinal();
       switch (ordinal) {
         case ID.NumberString:
           // better suitable for StringSplit?
           return "[0-9]{1,13}(\\.[0-9]+)?";
-          // mathics:
-          // return "[-|+]?(\\d+(\\.\\d*)?|\\.\\d+)?";
+        // mathics:
+        // return "[-|+]?(\\d+(\\.\\d*)?|\\.\\d+)?";
         case ID.Whitespace:
           return "(?u)\\s+";
         case ID.DigitCharacter:
@@ -3711,21 +3639,15 @@ public final class StringFunctions {
           return "[0-9a-fA-F]";
         default:
           // `1` currently not supported in `2`.
-          IOFunctions.printMessage(
-              stringFunction.topHead(),
-              "unsupported",
-              F.List(partOfRegex, stringFunction.topHead()),
-              engine);
+          IOFunctions.printMessage(stringFunction.topHead(), "unsupported",
+              F.List(partOfRegex, stringFunction.topHead()), engine);
           return null;
       }
     }
 
     // `1` currently not supported in `2`.
-    IOFunctions.printMessage(
-        stringFunction.topHead(),
-        "unsupported",
-        F.List(partOfRegex, stringFunction.topHead()),
-        engine);
+    IOFunctions.printMessage(stringFunction.topHead(), "unsupported",
+        F.List(partOfRegex, stringFunction.topHead()), engine);
     return null;
   }
 
@@ -3735,21 +3657,16 @@ public final class StringFunctions {
    * @param ast
    * @param stringExpression the <code>StringExpression( ... )</code> expression
    * @param abbreviatedPatterns if <code>true</code> allow 'abbreviated patterns" in strings (i.e.
-   *     '\','*' and '@' operators)
+   *        '\','*' and '@' operators)
    * @param shortestLongest either {@link #REGEX_LONGEST} or {@link #REGEX_SHORTEST}
    * @param groups
    * @param engine the evaluation engine
    * @return
    * @see <a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia -
-   *     Perl Compatible Regular Expression</a>
+   *      Perl Compatible Regular Expression</a>
    */
-  private static String toRegexString(
-      IAST ast,
-      IAST stringExpression,
-      boolean abbreviatedPatterns,
-      String[] shortestLongest,
-      Map<ISymbol, String> groups,
-      EvalEngine engine) {
+  private static String toRegexString(IAST ast, IAST stringExpression, boolean abbreviatedPatterns,
+      String[] shortestLongest, Map<ISymbol, String> groups, EvalEngine engine) {
 
     StringBuilder regex = new StringBuilder();
     for (int i = 1; i < stringExpression.size(); i++) {
@@ -3769,7 +3686,7 @@ public final class StringFunctions {
    *
    * @param characterRangeAST the character range <code>CharacterRange(a,b)</code>
    * @return <code>from</code> at offset 0 and <code>to</code> at offset 1. <code>null</code> if the
-   *     character range cannot be generated
+   *         character range cannot be generated
    */
   private static String[] characterRange(final IAST characterRangeAST) {
 

@@ -1084,8 +1084,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
    */
   public static final boolean PLUS_CALL = true;
 
-  public static final Map<ISymbol, IConverter> CONVERTERS =
-      new HashMap<ISymbol, IConverter>(199);
+  public static final Map<ISymbol, IConverter> CONVERTERS = new HashMap<ISymbol, IConverter>(199);
 
   private static final TrieBuilder<String, Object, ArrayList<Object>> constantBuilder =
       TrieBuilder.create();

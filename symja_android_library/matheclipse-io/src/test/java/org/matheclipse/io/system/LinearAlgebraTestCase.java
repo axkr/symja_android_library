@@ -1072,7 +1072,7 @@ public class LinearAlgebraTestCase extends AbstractTestCase {
             + "327600-285600*Sqrt(6)+223968*Sqrt(35)+63648*Sqrt(210)))}},\n" //
             + "{{-Sqrt(35),-44/Sqrt(35)},\n" //
             + " {0,2*Sqrt(6/35)},\n" //
-        + " {0,0}}}");
+            + " {0,0}}}");
 
     check("QRDecomposition({{12, -51, 4}, {6, 167, -68}, {-4, 24, -41}})", //
         "{\n" + "{{-6/7,-3/7,2/7},\n" //

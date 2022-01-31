@@ -16,8 +16,8 @@ class FuzzyInfixExprOperator extends Operator {
 
   public static final int LEFT_ASSOCIATIVE = 2;
 
-  public FuzzyInfixExprOperator(
-      final String oper, final String functionName, final int precedence, final int grouping) {
+  public FuzzyInfixExprOperator(final String oper, final String functionName, final int precedence,
+      final int grouping) {
     super(oper, functionName, precedence);
     fGrouping = grouping;
   }
@@ -31,8 +31,8 @@ class FuzzyInfixExprOperator extends Operator {
     return fGrouping;
   }
 
-  public IASTMutable createFunction(
-      final IParserFactory factory, FuzzyParser parser, final IExpr lhs, final IExpr rhs) {
+  public IASTMutable createFunction(final IParserFactory factory, FuzzyParser parser,
+      final IExpr lhs, final IExpr rhs) {
     if (fOperatorString.equals("//")) {
       // lhs // rhs ==> rhs[lhs]
       IASTAppendable function = F.ast(rhs);

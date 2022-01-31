@@ -426,7 +426,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   public int intValue() {
     return fBigIntValue.intValue();
   }
- 
+
   @Override
   public IRational inverse() {
     if (isOne() || isMinusOne()) {
@@ -449,8 +449,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
       return fBigIntValue.compareTo(((BigIntegerSym) obj).fBigIntValue) > 0;
     }
     if (obj instanceof IFraction) {
-      return -((IFraction) obj).compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE))
-          > 0;
+      return -((IFraction) obj)
+          .compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE)) > 0;
     }
     return fBigIntValue.doubleValue() > obj.doubleValue();
   }
@@ -469,8 +469,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
       return fBigIntValue.compareTo(((BigIntegerSym) obj).fBigIntValue) < 0;
     }
     if (obj instanceof IFraction) {
-      return -((IFraction) obj).compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE))
-          < 0;
+      return -((IFraction) obj)
+          .compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE)) < 0;
     }
     return fBigIntValue.doubleValue() < obj.doubleValue();
   }
@@ -629,10 +629,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
    * Returns the nth-root of this integer.
    *
    * @return <code>k<code> such as <code>k^n <= this < (k + 1)^n</code>
-   * @throws IllegalArgumentException
-   *             if {@code this < 0}
-   * @throws ArithmeticException
-   *             if this integer is negative and n is even.
+   * @throws IllegalArgumentException if {@code this < 0}
+   * @throws ArithmeticException if this integer is negative and n is even.
    */
   @Override
   public IExpr nthRoot(int n) throws ArithmeticException {
@@ -657,10 +655,9 @@ public class BigIntegerSym extends AbstractIntegerSym {
       IInteger temp = this;
       do {
         result = temp;
-        temp =
-            divideAndRemainder(temp.powerRational(((long) n) - 1))[0].add(
-                    temp.multiply(AbstractIntegerSym.valueOf(n - 1)))
-                .divideAndRemainder(AbstractIntegerSym.valueOf(n))[0];
+        temp = divideAndRemainder(temp.powerRational(((long) n) - 1))[0]
+            .add(temp.multiply(AbstractIntegerSym.valueOf(n - 1)))
+            .divideAndRemainder(AbstractIntegerSym.valueOf(n))[0];
       } while (temp.compareTo(result) < 0);
       return result;
     }
@@ -750,8 +747,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
   /**
    * Returns the integer square root of this integer.
    *
-   * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative or it's
-   *         impossible to find a square root return <code>F.Sqrt(this)</code>.
+   * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative
+   *         or it's impossible to find a square root return <code>F.Sqrt(this)</code>.
    */
   @Override
   public IExpr sqrt() {

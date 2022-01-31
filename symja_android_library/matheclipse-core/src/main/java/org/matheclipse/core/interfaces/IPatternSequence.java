@@ -21,8 +21,8 @@ public interface IPatternSequence extends IPatternObject, IExpr {
    * @param optionsPatternHead TODO
    * @return
    */
-  public boolean matchPatternSequence(
-      final IAST sequence, IPatternMap patternMap, ISymbol optionsPatternHead);
+  public boolean matchPatternSequence(final IAST sequence, IPatternMap patternMap,
+      ISymbol optionsPatternHead);
 
   /**
    * Return <code>true</code>, if all of the elements in the <code>sequence</code> fulfill the

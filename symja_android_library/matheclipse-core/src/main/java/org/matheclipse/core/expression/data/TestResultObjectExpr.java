@@ -76,23 +76,11 @@ public class TestResultObjectExpr extends DataExpr<IAssociation> implements Exte
     IExpr testID = fData.getRule("TestID");
     if (outcomeRule.second().isString("Failure")) {
       if (testID.isPresent()) {
-        return "TestResultObject("
-            + outcomeRule.toString()
-            + ","
-            + expectedOutputRule.toString()
-            + ","
-            + actualOutput.toString()
-            + ","
-            + testID.toString()
-            + ")";
+        return "TestResultObject(" + outcomeRule.toString() + "," + expectedOutputRule.toString()
+            + "," + actualOutput.toString() + "," + testID.toString() + ")";
       }
-      return "TestResultObject("
-          + outcomeRule.toString()
-          + ","
-          + expectedOutputRule.toString()
-          + ","
-          + actualOutput.toString()
-          + ")";
+      return "TestResultObject(" + outcomeRule.toString() + "," + expectedOutputRule.toString()
+          + "," + actualOutput.toString() + ")";
     }
     if (testID.isPresent()) {
       return "TestResultObject(" + outcomeRule.toString() + "," + testID.toString() + ")";

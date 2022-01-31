@@ -26,8 +26,8 @@ public class BinaryNumerical implements BiFunction<IExpr, IExpr, IExpr> {
 
   final EvalEngine fEngine;
 
-  public BinaryNumerical(
-      final IExpr fn, final ISymbol v1, final ISymbol v2, final EvalEngine engine) {
+  public BinaryNumerical(final IExpr fn, final ISymbol v1, final ISymbol v2,
+      final EvalEngine engine) {
     if (!v1.isVariable() || v1.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
@@ -46,8 +46,8 @@ public class BinaryNumerical implements BiFunction<IExpr, IExpr, IExpr> {
 
   @Override
   public IExpr apply(final IExpr firstArg, final IExpr secondArg) {
-    return fEngine.evalN(
-        F.subst(fun, F.List(F.Rule(variable1, firstArg), F.Rule(variable2, secondArg))));
+    return fEngine
+        .evalN(F.subst(fun, F.List(F.Rule(variable1, firstArg), F.Rule(variable2, secondArg))));
   }
 
   public double value(final double x, final double y) {
@@ -56,15 +56,12 @@ public class BinaryNumerical implements BiFunction<IExpr, IExpr, IExpr> {
       final INum xValue = F.num(x);
       final INum yValue = F.num(y);
       // substitution is more thread safe than direct value assigning to global variables
-      IExpr temp =
-          F.subst(
-              fun,
-              arg -> {
-                if (arg.equals(variable1)) {
-                  return xValue;
-                }
-                return arg.equals(variable2) ? yValue : arg;
-              });
+      IExpr temp = F.subst(fun, arg -> {
+        if (arg.equals(variable1)) {
+          return xValue;
+        }
+        return arg.equals(variable2) ? yValue : arg;
+      });
       final double[] stack = new double[10];
       result = DoubleStackEvaluator.eval(stack, 0, temp);
     } catch (RuntimeException rex) {

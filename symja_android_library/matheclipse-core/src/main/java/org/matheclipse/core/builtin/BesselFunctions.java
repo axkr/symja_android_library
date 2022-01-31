@@ -58,8 +58,8 @@ public class BesselFunctions {
           try {
             return F.complexNum(BesselJS.airyAi(z.evalDouble()));
           } catch (NegativeArraySizeException nae) {
-            LOGGER.log(
-                engine.getLogLevel(), "AiryAi: {} caused NegativeArraySizeException", ast, nae);
+            LOGGER.log(engine.getLogLevel(), "AiryAi: {} caused NegativeArraySizeException", ast,
+                nae);
             return F.NIL;
           } catch (RuntimeException rex) {
             //
@@ -97,8 +97,8 @@ public class BesselFunctions {
           try {
             return F.complexNum(BesselJS.airyAiPrime(z.evalDouble()));
           } catch (NegativeArraySizeException nae) {
-            LOGGER.log(
-                engine.getLogLevel(), "AiryAiPrime: {} caused NegativeArraySizeException", ast);
+            LOGGER.log(engine.getLogLevel(), "AiryAiPrime: {} caused NegativeArraySizeException",
+                ast);
             return F.NIL;
           } catch (RuntimeException rex) {
           }
@@ -107,8 +107,8 @@ public class BesselFunctions {
         try {
           return F.complexNum(BesselJS.airyAiPrime(z.evalComplex()));
         } catch (NegativeArraySizeException nae) {
-          LOGGER.log(
-              engine.getLogLevel(), "AiryAiPrime: {} caused NegativeArraySizeException", ast);
+          LOGGER.log(engine.getLogLevel(), "AiryAiPrime: {} caused NegativeArraySizeException",
+              ast);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -175,11 +175,8 @@ public class BesselFunctions {
           try {
             return F.complexNum(BesselJS.airyBiPrime(z.evalDouble()));
           } catch (NegativeArraySizeException nae) {
-            LOGGER.log(
-                engine.getLogLevel(),
-                "AiryBiPrime: {} caused NegativeArraySizeException",
-                ast,
-                nae);
+            LOGGER.log(engine.getLogLevel(), "AiryBiPrime: {} caused NegativeArraySizeException",
+                ast, nae);
             return F.NIL;
           } catch (RuntimeException rex) {
           }
@@ -188,8 +185,8 @@ public class BesselFunctions {
         try {
           return F.complexNum(BesselJS.airyBiPrime(z.evalComplex()));
         } catch (NegativeArraySizeException nae) {
-          LOGGER.log(
-              engine.getLogLevel(), "AiryBiPrime: {} caused NegativeArraySizeException", ast, nae);
+          LOGGER.log(engine.getLogLevel(), "AiryBiPrime: {} caused NegativeArraySizeException", ast,
+              nae);
           return F.NIL;
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
@@ -220,14 +217,16 @@ public class BesselFunctions {
    *
    * <blockquote>
    *
-   * <p>Bessel function of the first kind.
+   * <p>
+   * Bessel function of the first kind.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -256,44 +255,34 @@ public class BesselFunctions {
       // z)*Sum(((-1)^j*(2*j + Abs(n) - 1/2)!)/ ((2*j)!*(-2*j + Abs(n) - 1/2)!*(2*z)^(2*j)), {j, 0,
       // Floor((1/4)*(2*Abs(n) - 1))}))
       ISymbol j = F.Dummy("j");
-      return F.Times(
-          F.CSqrt2,
-          F.Power(S.Pi, F.CN1D2),
-          F.Power(z, F.CN1D2),
-          F.Plus(
-              F.Times(
-                  F.Cos(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), S.Pi), F.Negate(z))),
-                  F.Sum(
+      return F
+          .Times(
+              F.CSqrt2, F.Power(S.Pi, F.CN1D2), F.Power(z, F.CN1D2), F
+                  .Plus(
                       F.Times(
-                          F.Power(F.CN1, j),
-                          F.Power(F.Times(F.C2, z), F.Plus(F.CN1, F.Times(F.CN2, j))),
-                          F.Factorial(F.Plus(F.Times(F.C2, j), F.Abs(n), F.C1D2)),
-                          F.Power(
-                              F.Times(
-                                  F.Factorial(F.Plus(F.Times(F.C2, j), F.C1)),
-                                  F.Factorial(F.Plus(F.QQ(-3L, 2L), F.Times(F.CN2, j), F.Abs(n)))),
-                              -1)),
-                      F.List(
-                          j,
-                          F.C0,
-                          F.Floor(F.Times(F.C1D4, F.Plus(F.CN3, F.Times(F.C2, F.Abs(n)))))))),
-              F.Times(
-                  F.CN1,
-                  F.Sin(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), S.Pi), F.Negate(z))),
-                  F.Sum(
-                      F.Times(
-                          F.Power(F.CN1, j),
-                          F.Power(
-                              F.Times(
-                                  F.Factorial(F.Times(F.C2, j)),
+                          F.Cos(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), S.Pi),
+                              F.Negate(z))),
+                          F.Sum(F.Times(F.Power(F.CN1, j),
+                              F.Power(F.Times(F.C2, z), F.Plus(F.CN1, F.Times(F.CN2, j))),
+                              F.Factorial(F.Plus(F.Times(F.C2, j), F.Abs(n), F.C1D2)),
+                              F.Power(
+                                  F.Times(F.Factorial(F.Plus(F.Times(F.C2, j), F.C1)),
+                                      F.Factorial(
+                                          F.Plus(F.QQ(-3L, 2L), F.Times(F.CN2, j), F.Abs(n)))),
+                                  -1)),
+                              F.List(j, F.C0,
+                                  F.Floor(
+                                      F.Times(F.C1D4, F.Plus(F.CN3, F.Times(F.C2, F.Abs(n)))))))),
+                      F.Times(F.CN1,
+                          F.Sin(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), S.Pi),
+                              F.Negate(z))),
+                          F.Sum(F.Times(F.Power(F.CN1, j),
+                              F.Power(F.Times(F.Factorial(F.Times(F.C2, j)),
                                   F.Factorial(F.Plus(F.CN1D2, F.Times(F.CN2, j), F.Abs(n))),
-                                  F.Power(F.Times(F.C2, z), F.Times(F.C2, j))),
-                              -1),
-                          F.Factorial(F.Plus(F.CN1D2, F.Times(F.C2, j), F.Abs(n)))),
-                      F.List(
-                          j,
-                          F.C0,
-                          F.Floor(F.Times(F.C1D4, F.Plus(F.CN1, F.Times(F.C2, F.Abs(n))))))))));
+                                  F.Power(F.Times(F.C2, z), F.Times(F.C2, j))), -1),
+                              F.Factorial(F.Plus(F.CN1D2, F.Times(F.C2, j), F.Abs(n)))),
+                              F.List(j, F.C0, F.Floor(
+                                  F.Times(F.C1D4, F.Plus(F.CN1, F.Times(F.C2, F.Abs(n))))))))));
     }
 
     @Override
@@ -393,14 +382,16 @@ public class BesselFunctions {
    *
    * <blockquote>
    *
-   * <p>is the <code>k</code>th zero of the <code>BesselJ(n,z)</code> function.
+   * <p>
+   * is the <code>k</code>th zero of the <code>BesselJ(n,z)</code> function.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -457,14 +448,16 @@ public class BesselFunctions {
    *
    * <blockquote>
    *
-   * <p>modified Bessel function of the first kind.
+   * <p>
+   * modified Bessel function of the first kind.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -505,8 +498,7 @@ public class BesselFunctions {
           return S.Indeterminate;
         }
       }
-      if (n.isNumber()
-          && //
+      if (n.isNumber() && //
           (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI))) {
         return F.C0;
       }
@@ -558,14 +550,16 @@ public class BesselFunctions {
    *
    * <blockquote>
    *
-   * <p>modified Bessel function of the second kind.
+   * <p>
+   * modified Bessel function of the second kind.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -600,8 +594,7 @@ public class BesselFunctions {
           return S.ComplexInfinity;
         }
       }
-      if (n.isNumber()
-          && //
+      if (n.isNumber() && //
           (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI))) {
         return F.C0;
       }
@@ -653,14 +646,16 @@ public class BesselFunctions {
    *
    * <blockquote>
    *
-   * <p>Bessel function of the second kind.
+   * <p>
+   * Bessel function of the second kind.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Bessel_function">Wikipedia - Bessel function</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -696,8 +691,7 @@ public class BesselFunctions {
           return S.ComplexInfinity;
         }
       }
-      if (n.isNumber()
-          && //
+      if (n.isNumber() && //
           (z.isInfinity() || z.isNegativeInfinity())) {
         return F.C0;
       }
@@ -868,16 +862,18 @@ public class BesselFunctions {
    *
    * <blockquote>
    *
-   * <p>spherical Bessel function <code>J(n, x)</code>.
+   * <p>
+   * spherical Bessel function <code>J(n, x)</code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a
-   *       href="https://en.wikipedia.org/wiki/Bessel_function#Spherical_Bessel_functions">Wikipedia
-   *       - Bessel function - Spherical Bessel function</a>
+   * <li><a href=
+   * "https://en.wikipedia.org/wiki/Bessel_function#Spherical_Bessel_functions">Wikipedia - Bessel
+   * function - Spherical Bessel function</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1028,16 +1024,18 @@ public class BesselFunctions {
    *
    * <blockquote>
    *
-   * <p>spherical Bessel function <code>Y(n, x)</code>.
+   * <p>
+   * spherical Bessel function <code>Y(n, x)</code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a
-   *       href="https://en.wikipedia.org/wiki/Bessel_function#Spherical_Bessel_functions">Wikipedia
-   *       - Bessel function - Spherical Bessel function</a>
+   * <li><a href=
+   * "https://en.wikipedia.org/wiki/Bessel_function#Spherical_Bessel_functions">Wikipedia - Bessel
+   * function - Spherical Bessel function</a>
    * </ul>
    *
    * <h3>Examples</h3>

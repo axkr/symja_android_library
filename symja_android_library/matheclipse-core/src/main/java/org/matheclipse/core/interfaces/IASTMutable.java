@@ -6,10 +6,12 @@ import java.util.function.IntFunction;
 /**
  * (I)nterface for the (A)bstract (S)yntax (T)ree of a given function.
  *
- * <p>An AST object where {@code IExpr} element values could be replaced by new values. This
- * operation does not change the size of the {@code IAST}.
+ * <p>
+ * An AST object where {@code IExpr} element values could be replaced by new values. This operation
+ * does not change the size of the {@code IAST}.
  *
- * <p>In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
+ * <p>
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
  * structure of the Symja source code. Each node of the tree denotes a construct occurring in the
  * source code. The syntax is 'abstract' in the sense that it does not represent every detail that
  * appears in the real syntax. For instance, grouping parentheses are implicit in the tree
@@ -18,13 +20,13 @@ import java.util.function.IntFunction;
  * <code>x</code>. Internally an AST is represented as a list which contains
  *
  * <ul>
- *   <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
- *       Times,...) at index <code>0</code> and
- *   <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
+ * Times,...) at index <code>0</code> and
+ * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
  * </ul>
  *
- * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>, <a
- * href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph</a>
+ * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>,
+ * <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph</a>
  */
 public interface IASTMutable extends IAST {
 
@@ -36,7 +38,7 @@ public interface IASTMutable extends IAST {
    * @param object the object to insert.
    * @return the previous element at the index.
    * @throws UnsupportedOperationException if replacing elements in this {@code IAST} is not
-   *     supported.
+   *         supported.
    * @throws ClassCastException if the class of an object is inappropriate for this {@code IAST}.
    * @throws IllegalArgumentException if an object cannot be added to this {@code IAST}.
    * @throws IndexOutOfBoundsException if {@code location < 0 || >= size()}
@@ -52,7 +54,7 @@ public interface IASTMutable extends IAST {
    * @param value the object to insert.
    * @return the previous element at the index.
    * @throws UnsupportedOperationException if replacing elements in this {@code IAST} is not
-   *     supported.
+   *         supported.
    * @throws ClassCastException if the class of an object is inappropriate for this {@code IAST}.
    * @throws IllegalArgumentException if an object cannot be added to this {@code IAST}.
    * @throws IndexOutOfBoundsException if {@code location < 0 || >= size()}
@@ -96,8 +98,9 @@ public interface IASTMutable extends IAST {
    * <b>Example:</b> suppose the Symbol f has the attribute ISymbol.ORDERLESS <code>
    * f(z,d,a,b) ==> f(a,b,d,z)</code>
    *
-   * <p><b>Warning</b> only call this method in certain steps of the evaluation chain (for example
-   * for evaluating attribute {@link ISymbol#ORDERLESS})
+   * <p>
+   * <b>Warning</b> only call this method in certain steps of the evaluation chain (for example for
+   * evaluating attribute {@link ISymbol#ORDERLESS})
    *
    * @param ast the AST will be sorted in place.
    */

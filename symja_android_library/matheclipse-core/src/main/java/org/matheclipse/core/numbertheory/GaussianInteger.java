@@ -58,8 +58,8 @@ public final class GaussianInteger {
     return list;
   }
 
-  void gaussianFactorization2(
-      BigInteger re, BigInteger im, SortedMap<ComplexSym, Integer> complexMap) {
+  void gaussianFactorization2(BigInteger re, BigInteger im,
+      SortedMap<ComplexSym, Integer> complexMap) {
     BigInteger BigInt2;
     BigInt2 = BigInteger.valueOf(2L);
     BigInteger K, Mult1, Mult2, p, q, M1, M2, Tmp;
@@ -73,7 +73,7 @@ public final class GaussianInteger {
       return;
     }
     if (norm.compareTo(BigInteger.ONE) > 0) {
-      //      SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
+      // SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
       SortedMap<BigInteger, Integer> bigMap = Config.PRIME_FACTORS.factorInteger(norm);
       Ind = bigMap.size();
       Primes = new BigInteger[Ind];
@@ -136,8 +136,8 @@ public final class GaussianInteger {
     }
   }
 
-  private void divideGaussian(
-      BigInteger real, BigInteger imag, SortedMap<ComplexSym, Integer> complexMap) {
+  private void divideGaussian(BigInteger real, BigInteger imag,
+      SortedMap<ComplexSym, Integer> complexMap) {
     real = real.abs();
     BigInteger temp;
     BigInteger norm = real.multiply(real).add(imag.multiply(imag));
@@ -175,13 +175,14 @@ public final class GaussianInteger {
    * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the
    * division of the gaussian <code>IInteger</code> numbers <code>c1 / c2</code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
-   *   <li><a
-   *       href="http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
-   *       Algorithm for Gaussian Integers </a>
+   * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
+   * <li><a href=
+   * "http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
+   * Algorithm for Gaussian Integers </a>
    * </ul>
    *
    * @param c1
@@ -193,22 +194,14 @@ public final class GaussianInteger {
     final IInteger fImaginary = c1[1];
     final IInteger re = c2[0];
     final IInteger im = c2[1];
-    IInteger numeratorReal =
-        fReal
-            .multiply(re)
-            .add( //
-                fImaginary.multiply(im));
+    IInteger numeratorReal = fReal.multiply(re).add( //
+        fImaginary.multiply(im));
 
-    IInteger numeratorImaginary =
-        fReal
-            .multiply(im.negate())
-            .add( //
-                re.multiply(fImaginary));
+    IInteger numeratorImaginary = fReal.multiply(im.negate()).add( //
+        re.multiply(fImaginary));
 
-    IInteger denominator =
-        re.multiply(re)
-            .add( //
-                im.multiply(im));
+    IInteger denominator = re.multiply(re).add( //
+        im.multiply(im));
 
     if (denominator.isZero()) {
       throw new IllegalArgumentException("Denominator can not be zero.");

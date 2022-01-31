@@ -20,13 +20,8 @@ public class PolynomialExample {
       System.out.println(expr.toString());
 
       final IAST variables = F.List(F.symbol("x"), F.symbol("y"));
-      ExprPolynomialRing ring =
-          new ExprPolynomialRing(
-              ExprRingFactory.CONST,
-              variables,
-              variables.argSize(),
-              ExprTermOrderByName.Lexicographic,
-              false);
+      ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables,
+          variables.argSize(), ExprTermOrderByName.Lexicographic, false);
 
       ExprPolynomial poly = ring.create(expr);
       System.out.println(poly.toString());

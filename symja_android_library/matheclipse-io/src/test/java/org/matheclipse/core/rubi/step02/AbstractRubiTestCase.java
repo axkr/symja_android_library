@@ -89,8 +89,8 @@ public abstract class AbstractRubiTestCase extends TestCase {
   }
 
   /** Evaluates the given string-expression and returns the result in <code>OutputForm</code> */
-  public String interpreter(
-      final String inputExpression, final String expectedResult, String manuallyCheckedResult) {
+  public String interpreter(final String inputExpression, final String expectedResult,
+      String manuallyCheckedResult) {
     IExpr result;
     final StringWriter buf = new StringWriter();
     try {
@@ -99,13 +99,8 @@ public abstract class AbstractRubiTestCase extends TestCase {
       } else {
         EvalEngine engine = fEvaluator.getEvalEngine();
         engine.setSeconds(fSeconds);
-        result =
-            fEvaluator.evaluateWithTimeout(
-                inputExpression,
-                fSeconds,
-                TimeUnit.SECONDS,
-                true,
-                new EvalControlledCallable(fEvaluator.getEvalEngine()));
+        result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true,
+            new EvalControlledCallable(fEvaluator.getEvalEngine()));
       }
       if (result != null) {
         return printResult(result, expectedResult, manuallyCheckedResult);
@@ -153,8 +148,8 @@ public abstract class AbstractRubiTestCase extends TestCase {
     checkLength(evalString, expectedResult, null, -1);
   }
 
-  public void checkLength(
-      String evalString, String expectedResult, String manuallyCheckedResult, int resultLength) {
+  public void checkLength(String evalString, String expectedResult, String manuallyCheckedResult,
+      int resultLength) {
     try {
       if (evalString.length() == 0 && expectedResult.length() == 0) {
         return;
@@ -187,10 +182,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
     check(evalString, expectedResult);
   }
 
-  public void check(
-      String evalString,
-      String expectedResult,
-      String manuallyCheckedResult,
+  public void check(String evalString, String expectedResult, String manuallyCheckedResult,
       int... ruleNumberUsed) {
     checkLength(evalString, expectedResult, manuallyCheckedResult, -1);
   }

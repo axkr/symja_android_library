@@ -45,8 +45,8 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
    * @param instance instance of an IFunctionEvaluator interface
    * @param methodName method to call
    */
-  public PatternMatcherAndInvoker(
-      final IExpr leftHandSide, IFunctionEvaluator instance, final String methodName) {
+  public PatternMatcherAndInvoker(final IExpr leftHandSide, IFunctionEvaluator instance,
+      final String methodName) {
     super(leftHandSide);
     this.fInstance = instance;
     initInvoker(instance, methodName);
@@ -60,8 +60,8 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
    * @param instance
    * @param methodName
    */
-  public PatternMatcherAndInvoker(
-      final String leftHandSide, IFunctionEvaluator instance, final String methodName) {
+  public PatternMatcherAndInvoker(final String leftHandSide, IFunctionEvaluator instance,
+      final String methodName) {
     this.fInstance = instance;
 
     final ExprParser parser = new ExprParser(EvalEngine.get());
@@ -79,7 +79,8 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
     Method[] declaredMethods = c.getDeclaredMethods();
     List<Method> namedMethods = new ArrayList<Method>();
     for (Method method : declaredMethods) {
-      if (method.getName().equals(methodName)) namedMethods.add(method);
+      if (method.getName().equals(methodName))
+        namedMethods.add(method);
     }
     if (namedMethods.size() == 1) {
       this.fMethod = namedMethods.get(0);

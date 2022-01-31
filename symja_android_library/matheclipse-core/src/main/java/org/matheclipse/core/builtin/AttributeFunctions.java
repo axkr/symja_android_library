@@ -47,7 +47,8 @@ public class AttributeFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the list of attributes which are assigned to <code>symbol</code>
+   * <p>
+   * returns the list of attributes which are assigned to <code>symbol</code>
    *
    * </blockquote>
    *
@@ -64,21 +65,21 @@ public class AttributeFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr arg1 = ast.arg1();
-        //        if (arg1.isList()) {
-        //          IAST list = (IAST) arg1;
-        //          if (list.exists(x -> !x.isSymbol())) {
-        //            return F.NIL;
-        //          }
-        //          final IASTAppendable result = F.ListAlloc(list.size());
-        //          for (int i = 1; i < list.size(); i++) {
-        //            IExpr temp = attributesList(list.get(i), ast, engine);
-        //            if (!temp.isPresent()) {
-        //              return F.NIL;
-        //            }
-        //            result.append(temp);
-        //          }
-        //          return result;
-        //        }
+        // if (arg1.isList()) {
+        // IAST list = (IAST) arg1;
+        // if (list.exists(x -> !x.isSymbol())) {
+        // return F.NIL;
+        // }
+        // final IASTAppendable result = F.ListAlloc(list.size());
+        // for (int i = 1; i < list.size(); i++) {
+        // IExpr temp = attributesList(list.get(i), ast, engine);
+        // if (!temp.isPresent()) {
+        // return F.NIL;
+        // }
+        // result.append(temp);
+        // }
+        // return result;
+        // }
         return attributesList(arg1, ast, engine);
       }
 
@@ -86,11 +87,8 @@ public class AttributeFunctions {
     }
 
     @Override
-    public IExpr evaluateSet(
-        final IExpr leftHandSide,
-        IExpr rightHandSide,
-        IBuiltInSymbol builtinSymbol,
-        EvalEngine engine) {
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isAST(S.Attributes, 2)) {
         if (!leftHandSide.first().isSymbol()) {
           IOFunctions.printMessage(builtinSymbol, "setps", F.List(leftHandSide.first()), engine);
@@ -124,7 +122,8 @@ public class AttributeFunctions {
    *
    * <blockquote>
    *
-   * <p>removes <code>attrib</code> from <code>symbol</code>'s attributes.
+   * <p>
+   * removes <code>attrib</code> from <code>symbol</code>'s attributes.
    *
    * </blockquote>
    *
@@ -140,7 +139,8 @@ public class AttributeFunctions {
    * {}
    * </pre>
    *
-   * <p>Attributes that are not even set are simply ignored:
+   * <p>
+   * Attributes that are not even set are simply ignored:
    *
    * <pre>
    * &gt;&gt; ClearAttributes({f}, {Flat})
@@ -355,7 +355,8 @@ public class AttributeFunctions {
    *
    * <blockquote>
    *
-   * <p>adds <code>attrib</code> to <code>symbol</code>'s attributes.
+   * <p>
+   * adds <code>attrib</code> to <code>symbol</code>'s attributes.
    *
    * </blockquote>
    *
@@ -367,7 +368,8 @@ public class AttributeFunctions {
    * {Flat}
    * </pre>
    *
-   * <p>Multiple attributes can be set at the same time using lists:<br>
+   * <p>
+   * Multiple attributes can be set at the same time using lists:<br>
    *
    * <pre>
    * &gt;&gt; SetAttributes({f, g}, {Flat, Orderless})
@@ -396,8 +398,8 @@ public class AttributeFunctions {
       return F.NIL;
     }
 
-    private static IExpr setSymbolsAttributes(
-        IAST listOfSymbols, IExpr attributes, IAST ast, EvalEngine engine) {
+    private static IExpr setSymbolsAttributes(IAST listOfSymbols, IExpr attributes, IAST ast,
+        EvalEngine engine) {
       attributes = engine.evaluate(attributes);
       for (int i = 1; i < listOfSymbols.size(); i++) {
         final IExpr arg = listOfSymbols.get(i);
@@ -418,8 +420,8 @@ public class AttributeFunctions {
      * @param engine
      * @return {@link F#NIL} if <code>expr</code> is not a symbol
      */
-    private static IExpr addAttributes(
-        final IExpr expr, IExpr attributes, IAST ast, EvalEngine engine) {
+    private static IExpr addAttributes(final IExpr expr, IExpr attributes, IAST ast,
+        EvalEngine engine) {
       IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
       if (!x.isPresent()) {
         return F.NIL;

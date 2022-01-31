@@ -51,8 +51,8 @@ public class HashedOrderlessMatcher {
    * @param rhs
    * @param condition
    */
-  public void defineHashRule(
-      final IExpr lhs1, final IExpr lhs2, final IExpr rhs, final IExpr condition) {
+  public void defineHashRule(final IExpr lhs1, final IExpr lhs2, final IExpr rhs,
+      final IExpr condition) {
     AbstractHashedPatternRules hashRule =
         new HashedPatternRules(lhs1, lhs2, rhs, false, condition, true);
     fHashRuleMap.put(hashRule.hashCode(), hashRule);
@@ -79,8 +79,8 @@ public class HashedOrderlessMatcher {
    * @param rhs the right-hand-side result
    * @param lhsNegate if <code>true</code> this rule needs a negative integer factor to be true
    */
-  public void definePatternHashRule(
-      final IExpr lhs1, final IExpr lhs2, final IExpr rhs, final boolean lhsNegate) {
+  public void definePatternHashRule(final IExpr lhs1, final IExpr lhs2, final IExpr rhs,
+      final boolean lhsNegate) {
     definePatternHashRule(lhs1, lhs2, rhs, lhsNegate, null);
   }
 
@@ -93,8 +93,8 @@ public class HashedOrderlessMatcher {
    * @param rhs the right-hand-side result
    * @param condition if <code>!= null</code> do a condition test for the matched 2 left-hand-sides
    */
-  public void definePatternHashRule(
-      final IExpr lhs1, final IExpr lhs2, final IExpr rhs, final IExpr condition) {
+  public void definePatternHashRule(final IExpr lhs1, final IExpr lhs2, final IExpr rhs,
+      final IExpr condition) {
     AbstractHashedPatternRules hashRule =
         new HashedPatternRules(lhs1, lhs2, rhs, false, condition, false);
     fPatternHashRuleMap.put(hashRule.hashCode(), hashRule);
@@ -110,12 +110,8 @@ public class HashedOrderlessMatcher {
    * @param lhsNegate if <code>true</code> this rule needs a negative integer factor to be true
    * @param condition if <code>!= null</code> do a condition test for the matched 2 left-hand-sides
    */
-  public void definePatternHashRule(
-      final IExpr lhs1,
-      final IExpr lhs2,
-      final IExpr rhs,
-      final boolean lhsNegate,
-      final IExpr condition) {
+  public void definePatternHashRule(final IExpr lhs1, final IExpr lhs2, final IExpr rhs,
+      final boolean lhsNegate, final IExpr condition) {
     AbstractHashedPatternRules hashRule =
         new HashedPatternRules(lhs1, lhs2, rhs, lhsNegate, condition, false);
     fPatternHashRuleMap.put(hashRule.hashCode(), hashRule);
@@ -241,11 +237,8 @@ public class HashedOrderlessMatcher {
     }
   }
 
-  protected IAST evaluateHashedValues(
-      final IAST orderlessAST,
-      OpenIntToList<AbstractHashedPatternRules> hashRuleMap,
-      int[] hashValues,
-      EvalEngine engine) {
+  protected IAST evaluateHashedValues(final IAST orderlessAST,
+      OpenIntToList<AbstractHashedPatternRules> hashRuleMap, int[] hashValues, EvalEngine engine) {
     boolean evaled = false;
     IASTAppendable result = orderlessAST.copyHead();
     for (int i = 0; i < hashValues.length - 1; i++) {
@@ -253,15 +246,13 @@ public class HashedOrderlessMatcher {
         // already used entry OR size() of expression to big
         continue;
       }
-      evaled:
-      for (int j = i + 1; j < hashValues.length; j++) {
+      evaled: for (int j = i + 1; j < hashValues.length; j++) {
         if (hashValues[j] == 0 || orderlessAST.get(j + 1).size() >= MAX_AST_SIZE_ARGUMENT) {
           // already used entry OR size() of expression to big
           continue;
         }
-        final List<AbstractHashedPatternRules> hashRuleList =
-            hashRuleMap.get(
-                AbstractHashedPatternRules.calculateHashcode(hashValues[i], hashValues[j]));
+        final List<AbstractHashedPatternRules> hashRuleList = hashRuleMap
+            .get(AbstractHashedPatternRules.calculateHashcode(hashValues[i], hashValues[j]));
         if (hashRuleList != null) {
           for (AbstractHashedPatternRules hashRule : hashRuleList) {
 
@@ -322,19 +313,12 @@ public class HashedOrderlessMatcher {
     return F.NIL;
   }
 
-  protected boolean updateHashValues(
-      IASTAppendable result,
-      final IAST orderlessAST,
-      AbstractHashedPatternRules hashRule,
-      int[] hashValues,
-      int i,
-      int j,
-      EvalEngine engine) {
+  protected boolean updateHashValues(IASTAppendable result, final IAST orderlessAST,
+      AbstractHashedPatternRules hashRule, int[] hashValues, int i, int j, EvalEngine engine) {
     IExpr temp;
     if ((temp =
-            hashRule.evalDownRule(
-                orderlessAST.get(i + 1), null, orderlessAST.get(j + 1), null, engine))
-        .isPresent()) {
+        hashRule.evalDownRule(orderlessAST.get(i + 1), null, orderlessAST.get(j + 1), null, engine))
+            .isPresent()) {
       hashValues[i] = 0;
       hashValues[j] = 0;
       result.append(temp);

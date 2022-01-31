@@ -38,7 +38,7 @@ public class BioFunctions {
             return BioSequenceExpr.newRNASequence(sequenceStr);
           }
         } catch (CompoundNotFoundException e) {
-          //            IOFunctions.printMessage(ast.topHead(), "", ast, engine);
+          // IOFunctions.printMessage(ast.topHead(), "", ast, engine);
           return F.NIL;
         }
       }
@@ -66,7 +66,7 @@ public class BioFunctions {
       return ARGS_1_1;
     }
   }
-  
+
   public static void initialize() {
     Initializer.init();
   }

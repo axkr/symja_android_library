@@ -14,7 +14,8 @@ import org.matheclipse.core.parser.ExprParser;
 /**
  * Convert an expression into presentation MathML output
  *
- * <p>See <a href="http://www.w3.org/TR/2000/CR-MathML2-20001113/byalpha.html">Chracters ordered by
+ * <p>
+ * See <a href="http://www.w3.org/TR/2000/CR-MathML2-20001113/byalpha.html">Chracters ordered by
  * Unicode</a>
  */
 public class MathMLUtilities {
@@ -40,31 +41,31 @@ public class MathMLUtilities {
    *
    * @param evalEngine
    * @param mathMLTagPrefix if set to <code>true</code> use &quot;m:&quot; as tag prefix for the
-   *     MathML output.
+   *        MathML output.
    * @param mathMLHeader print MathML header in output
    */
-  //	public MathMLUtilities(final EvalEngine evalEngine, final boolean mathMLTagPrefix, final
+  // public MathMLUtilities(final EvalEngine evalEngine, final boolean mathMLTagPrefix, final
   // boolean mathMLHeader) {
-  //		this(evalEngine, mathMLTagPrefix, mathMLHeader, null);
-  //	}
+  // this(evalEngine, mathMLTagPrefix, mathMLHeader, null);
+  // }
 
   /**
    * Constructor for an object which converts an expression into presentation MathML output
    *
    * @param evalEngine
    * @param mathMLTagPrefix if set to <code>true</code> use &quot;m:&quot; as tag prefix for the
-   *     MathML output.
+   *        MathML output.
    * @param mathMLHeader print MathML header in output
    */
-  public MathMLUtilities(
-      final EvalEngine evalEngine, final boolean mathMLTagPrefix, final boolean mathMLHeader) {
+  public MathMLUtilities(final EvalEngine evalEngine, final boolean mathMLTagPrefix,
+      final boolean mathMLHeader) {
     fEvalEngine = evalEngine;
     EvalEngine.setReset(fEvalEngine);
-    //		if (mathMLTagPrefix) {
-    //			fMathMLFactory = new MathMLFormFactory("m:", numberFormat);
-    //		} else {
-    //			fMathMLFactory = new MathMLFormFactory("", numberFormat);
-    //		}
+    // if (mathMLTagPrefix) {
+    // fMathMLFactory = new MathMLFormFactory("m:", numberFormat);
+    // } else {
+    // fMathMLFactory = new MathMLFormFactory("", numberFormat);
+    // }
     // fParser = new Parser(relaxedSyntax);
     fMSIE = mathMLTagPrefix;
     fMathMLHeader = mathMLHeader;
@@ -113,19 +114,15 @@ public class MathMLUtilities {
     return toMathML(objectExpression, out, false);
   }
 
-  public synchronized boolean toMathML(
-      final IExpr objectExpression, final Writer out, boolean useXmlns) {
+  public synchronized boolean toMathML(final IExpr objectExpression, final Writer out,
+      boolean useXmlns) {
     final StringBuilder buf = new StringBuilder();
 
     if (objectExpression != null) {
       try {
         MathMLFormFactory mathMLFactory =
-            new MathMLFormFactory(
-                fMSIE ? "m:" : "",
-                fEvalEngine.isRelaxedSyntax(),
-                null,
-                fEvalEngine.getSignificantFigures() - 1,
-                fEvalEngine.getSignificantFigures() + 1);
+            new MathMLFormFactory(fMSIE ? "m:" : "", fEvalEngine.isRelaxedSyntax(), null,
+                fEvalEngine.getSignificantFigures() - 1, fEvalEngine.getSignificantFigures() + 1);
 
         if (mathMLFactory.convert(buf, objectExpression, Integer.MIN_VALUE, false)) {
           if (fMSIE) {
@@ -134,10 +131,9 @@ public class MathMLUtilities {
             out.write("</m:math>");
           } else {
             if (fMathMLHeader) {
-              out.write(
-                  "<?xml version=\"1.0\"?>\n"
-                      + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
-                      + "<math mode=\"display\">\n");
+              out.write("<?xml version=\"1.0\"?>\n"
+                  + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
+                  + "<math mode=\"display\">\n");
             } else {
               if (useXmlns) {
                 out.write("<math xmlns=\"http://www.w3.org/1999/xhtml\">");
@@ -164,8 +160,8 @@ public class MathMLUtilities {
   private static final SourceCodeProperties JAVA_FORM_PROPERTIES =
       SourceCodeProperties.of(false, false, Prefix.CLASS_NAME, false);
 
-  private synchronized void toJava(
-      final String inputExpression, final Writer out, boolean strictJava) {
+  private synchronized void toJava(final String inputExpression, final Writer out,
+      boolean strictJava) {
     IExpr parsedExpression = null;
     // ASTNode node;
     if (inputExpression != null) {
@@ -174,8 +170,8 @@ public class MathMLUtilities {
         parsedExpression = parser.parse(inputExpression);
         // node = fEvalEngine.parseNode(inputExpression);
         // parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
-        out.write(parsedExpression.internalJavaString(JAVA_FORM_PROPERTIES, -1, x -> null)
-            .toString());
+        out.write(
+            parsedExpression.internalJavaString(JAVA_FORM_PROPERTIES, -1, x -> null).toString());
       } catch (final IOException ioe) {
         //
       } catch (final RuntimeException rex) {

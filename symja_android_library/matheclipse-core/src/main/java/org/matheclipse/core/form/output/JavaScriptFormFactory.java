@@ -24,8 +24,8 @@ import org.matheclipse.parser.client.operator.Operator;
  * JavaScript output for usage with the JavaScript libraries:
  *
  * <ul>
- *   <li><a href="https://github.com/paulmasson/math">github.com/paulmasson/math</a>
- *   <li><a href="https://github.com/paulmasson/mathcell">github.com/paulmasson/mathcell</a>
+ * <li><a href="https://github.com/paulmasson/math">github.com/paulmasson/math</a>
+ * <li><a href="https://github.com/paulmasson/mathcell">github.com/paulmasson/mathcell</a>
  * </ul>
  */
 public class JavaScriptFormFactory extends DoubleFormFactory {
@@ -37,8 +37,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
    * Generate JavaScript output for usage with the JavaScript libraries:
    *
    * <ul>
-   *   <li><a href="https://github.com/paulmasson/math">github.com/paulmasson/math</a>
-   *   <li><a href="https://github.com/paulmasson/mathcell">github.com/paulmasson/mathcell</a>
+   * <li><a href="https://github.com/paulmasson/math">github.com/paulmasson/math</a>
+   * <li><a href="https://github.com/paulmasson/mathcell">github.com/paulmasson/mathcell</a>
    * </ul>
    */
   public static final int USE_MATHCELL = 2;
@@ -249,11 +249,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_PURE_JS.put(S.Tanh, "Math.tanh");
   }
 
-  public JavaScriptFormFactory(
-      final boolean relaxedSyntax,
-      final boolean reversed,
-      int exponentFigures,
-      int significantFigures) {
+  public JavaScriptFormFactory(final boolean relaxedSyntax, final boolean reversed,
+      int exponentFigures, int significantFigures) {
     this(relaxedSyntax, reversed, exponentFigures, significantFigures, USE_PURE_JS);
   }
 
@@ -266,12 +263,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
    * @param significantFigures
    * @param javascriptFlavor
    */
-  public JavaScriptFormFactory(
-      final boolean relaxedSyntax,
-      final boolean reversed,
-      int exponentFigures,
-      int significantFigures,
-      int javascriptFlavor) {
+  public JavaScriptFormFactory(final boolean relaxedSyntax, final boolean reversed,
+      int exponentFigures, int significantFigures, int javascriptFlavor) {
     super(relaxedSyntax, reversed, exponentFigures, significantFigures);
     this.sliderNames = new ArrayList<String>();
     this.variableNames = new ArrayList<String>();
@@ -292,9 +285,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
    * readable string.
    *
    * @param relaxedSyntax If <code>true</code> use paranthesis instead of square brackets and ignore
-   *     case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
-   *     brackets instead of double square brackets for extracting parts of an expression, i.e.
-   *     {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+   *        case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
+   *        brackets instead of double square brackets for extracting parts of an expression, i.e.
+   *        {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
    * @return
    */
   public static JavaScriptFormFactory get(final boolean relaxedSyntax) {
@@ -306,11 +299,11 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
    * readable string.
    *
    * @param relaxedSyntax if <code>true</code> use paranthesis instead of square brackets and ignore
-   *     case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
-   *     brackets instead of double square brackets for extracting parts of an expression, i.e.
-   *     {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+   *        case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
+   *        brackets instead of double square brackets for extracting parts of an expression, i.e.
+   *        {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
    * @param plusReversed if <code>true</code> the arguments of the <code>Plus()</code> function will
-   *     be printed in reversed order
+   *        be printed in reversed order
    * @return
    */
   public static JavaScriptFormFactory get(final boolean relaxedSyntax, final boolean plusReversed) {
@@ -322,22 +315,19 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
    * readable string.
    *
    * @param relaxedSyntax if <code>true</code> use paranthesis instead of square brackets and ignore
-   *     case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
-   *     brackets instead of double square brackets for extracting parts of an expression, i.e.
-   *     {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+   *        case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
+   *        brackets instead of double square brackets for extracting parts of an expression, i.e.
+   *        {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
    * @param plusReversed if <code>true</code> the arguments of the <code>Plus()</code> function will
-   *     be printed in reversed order
+   *        be printed in reversed order
    * @param exponentFigures
    * @param significantFigures
    * @return
    */
-  public static JavaScriptFormFactory get(
-      final boolean relaxedSyntax,
-      final boolean plusReversed,
-      int exponentFigures,
-      int significantFigures) {
-    return new JavaScriptFormFactory(
-        relaxedSyntax, plusReversed, exponentFigures, significantFigures);
+  public static JavaScriptFormFactory get(final boolean relaxedSyntax, final boolean plusReversed,
+      int exponentFigures, int significantFigures) {
+    return new JavaScriptFormFactory(relaxedSyntax, plusReversed, exponentFigures,
+        significantFigures);
   }
 
   @Override
@@ -437,9 +427,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
       buf.append("]");
       return;
     }
-    if (function.isAST(S.Defer, 2)
-        || function.isAST(S.Evaluate, 2)
-        || function.isAST(S.Hold, 2)
+    if (function.isAST(S.Defer, 2) || function.isAST(S.Evaluate, 2) || function.isAST(S.Hold, 2)
         || function.isUnevaluated()) {
       convertInternal(buf, function.first());
       return;
@@ -703,15 +691,15 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         IExpr arg = list.get(i);
         if (arg.isList2()) {
           IAST row = (IAST) arg;
-          //          if (i == 1) {
-          //            piecewiseBuffer.append("if (");
-          //            convertInternal(piecewiseBuffer, row.second());
-          //            piecewiseBuffer.append(") {\n");
-          //          } else {
+          // if (i == 1) {
+          // piecewiseBuffer.append("if (");
+          // convertInternal(piecewiseBuffer, row.second());
+          // piecewiseBuffer.append(") {\n");
+          // } else {
           piecewiseBuffer.append("\nif (");
           convertInternal(piecewiseBuffer, row.second());
           piecewiseBuffer.append(") {");
-          //          }
+          // }
           piecewiseBuffer.append(" return ");
           convertInternal(piecewiseBuffer, row.first());
           piecewiseBuffer.append(";}");
@@ -743,12 +731,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
   }
 
   @Override
-  protected boolean convertOperator(
-      final Operator operator,
-      final IAST list,
-      final StringBuilder buf,
-      final int precedence,
-      ISymbol head) {
+  protected boolean convertOperator(final Operator operator, final IAST list,
+      final StringBuilder buf, final int precedence, ISymbol head) {
     if (!super.convertOperator(operator, list, buf, precedence, head)) {
       if (javascriptFlavor == USE_MATHCELL) {
         convertAST(buf, list);
@@ -763,16 +747,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
   @Override
   public Operator getOperator(ISymbol head) {
     if (javascriptFlavor == USE_MATHCELL) {
-      if (head.isSymbolID(
-          ID.Equal,
-          ID.Unequal,
-          ID.Less,
-          ID.LessEqual,
-          ID.Greater,
-          ID.GreaterEqual,
-          ID.And,
-          ID.Or,
-          ID.Not)) {
+      if (head.isSymbolID(ID.Equal, ID.Unequal, ID.Less, ID.LessEqual, ID.Greater, ID.GreaterEqual,
+          ID.And, ID.Or, ID.Not)) {
         return OutputFormFactory.getOperator(head);
       }
       return null;
@@ -781,8 +757,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
   }
 
   @Override
-  public void convertComplex(
-      final StringBuilder buf, final IComplex c, final int precedence, boolean caller) {
+  public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence,
+      boolean caller) {
     buf.append("complex(");
     convertFraction(buf, c.getRealPart(), 0, NO_PLUS_CALL);
     buf.append(",");
@@ -791,8 +767,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
   }
 
   @Override
-  public void convertDoubleComplex(
-      final StringBuilder buf, final IComplexNum dc, final int precedence, boolean caller) {
+  public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc,
+      final int precedence, boolean caller) {
     buf.append("complex(");
     convertDoubleString(buf, convertDoubleToFormattedString(dc.getRealPart()), 0, false);
     buf.append(",");

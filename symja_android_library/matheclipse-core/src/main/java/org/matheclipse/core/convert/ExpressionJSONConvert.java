@@ -114,8 +114,8 @@ public class ExpressionJSONConvert {
             IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
             IEvaluator evaluator = symbol.getEvaluator();
             if (evaluator instanceof IGraphics3D) {
-              //              JsonNode n = ((IGraphics3D) evaluator).graphics3D(buf, (IAST) ast);
-              //              temp.add(n);
+              // JsonNode n = ((IGraphics3D) evaluator).graphics3D(buf, (IAST) ast);
+              // temp.add(n);
             }
           }
         }

@@ -104,8 +104,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
         while (i < listOfEquations.size()) {
           IExpr equation = listOfEquations.get(i);
           if (equation.isFree(timeVar)) {
-            if (determineSingleBoundary(
-                equation, listOfVariables, timeVar, boundaryCondition, engine)) {
+            if (determineSingleBoundary(equation, listOfVariables, timeVar, boundaryCondition,
+                engine)) {
               listOfEquations.remove(i);
               continue;
             }
@@ -118,8 +118,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
         while (i < listOfEquations.size()) {
           IExpr equation = listOfEquations.get(i);
           if (!equation.isFree(timeVar)) {
-            if (determineSingleDotEquation(
-                equation, listOfVariables, timeVar, dotEquations, engine)) {
+            if (determineSingleDotEquation(equation, listOfVariables, timeVar, dotEquations,
+                engine)) {
               listOfEquations.remove(i);
               continue;
             }
@@ -157,10 +157,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
             IASTAppendable primaryList = F.ListAlloc();
             IASTAppendable secondaryList = F.ListAlloc();
             for (int j = 1; j < listOfVariables.size(); j++) {
-              secondaryList.append(
-                  F.Rule(
-                      listOfVariables.get(j),
-                      engine.evaluate(F.Interpolation(resultLists[j - 1]))));
+              secondaryList.append(F.Rule(listOfVariables.get(j),
+                  engine.evaluate(F.Interpolation(resultLists[j - 1]))));
             }
             primaryList.append(secondaryList);
             return primaryList;
@@ -191,12 +189,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
    * @param engine
    * @return
    */
-  private static boolean determineSingleBoundary(
-      IExpr equation,
-      IAST uFunctionSymbols,
-      IExpr xVar,
-      IExpr boundaryCondition[][],
-      EvalEngine engine) {
+  private static boolean determineSingleBoundary(IExpr equation, IAST uFunctionSymbols, IExpr xVar,
+      IExpr boundaryCondition[][], EvalEngine engine) {
     if (equation.isAST()) {
       IASTAppendable eq = ((IAST) equation).copyAppendable();
       if (!eq.isPlus()) {
@@ -232,8 +226,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
     return false;
   }
 
-  private static boolean determineSingleDotEquation(
-      IExpr equation, IAST uFunctionSymbols, IExpr xVar, IExpr dotEquations[], EvalEngine engine) {
+  private static boolean determineSingleDotEquation(IExpr equation, IAST uFunctionSymbols,
+      IExpr xVar, IExpr dotEquations[], EvalEngine engine) {
     if (equation.isAST()) {
       IASTAppendable eq = ((IAST) equation).copyAppendable();
       if (!eq.isPlus()) {
@@ -284,14 +278,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
    * @param engine
    * @return
    */
-  private static boolean removeDeriveFromPlus(
-      IExpr[] dotEquations,
-      int i,
-      IASTAppendable plusAST,
-      int j,
-      IASTAppendable expr,
-      boolean negate,
-      EvalEngine engine) {
+  private static boolean removeDeriveFromPlus(IExpr[] dotEquations, int i, IASTAppendable plusAST,
+      int j, IASTAppendable expr, boolean negate, EvalEngine engine) {
     IExpr temp = negate ? expr.oneIdentity0().negate() : expr.oneIdentity0();
     dotEquations[i] = engine.evaluate(temp);
     // eliminate deriveExpr from Plus(...) expression

@@ -1,23 +1,20 @@
 /*
  * Copyright (c) 2008-2014 Nicolai Diethelm
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * (MIT License)
  */
@@ -33,7 +30,8 @@ import java.util.concurrent.ThreadLocalRandom;
  * (implemented as a randomized ternary search tree) in which each node holds a weight-ordered list
  * of the k highest-weighted terms in its subtree.
  *
- * <p>Note that this implementation is not synchronized. If multiple threads access a Suggest Tree
+ * <p>
+ * Note that this implementation is not synchronized. If multiple threads access a Suggest Tree
  * concurrently, and at least one of the threads modifies the tree, it must be synchronized
  * externally.
  */
@@ -65,7 +63,7 @@ public class SuggestTree {
    *
    * @param prefix the prefix for which to return autocomplete suggestions
    * @return the k highest-weighted terms in the tree that start with the specified prefix, or null
-   *     if there is no such term
+   *         if there is no such term
    * @throws IllegalArgumentException if the specified prefix is an empty string
    * @throws NullPointerException if the specified prefix is null
    */
@@ -115,7 +113,7 @@ public class SuggestTree {
    * @param term the term to be inserted or reweighted
    * @param weight the weight to be assigned to the term
    * @throws IllegalArgumentException if the specified term is an empty string or much too long
-   *     (longer than 32767 characters)
+   *         (longer than 32767 characters)
    * @throws NullPointerException if the specified term is null
    */
   public void put(String term, int weight) {
@@ -661,7 +659,7 @@ public class SuggestTree {
      * @param index the index of the suggestion to return
      * @return the suggestion at the specified index in the list
      * @throws ArrayIndexOutOfBoundsException if the specified index is negative or not less than
-     *     the list length
+     *         the list length
      */
     public Entry getSuggestion(final int index) {
       return list[index];

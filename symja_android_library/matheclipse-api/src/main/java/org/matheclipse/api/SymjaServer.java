@@ -95,15 +95,11 @@ public class SymjaServer {
 
       final APIHandler apiHandler = new APIHandler();
 
-      PathHandler path =
-          new PathHandler()
-              .addPrefixPath(
-                  "/",
-                  resource(
-                          new ClassPathResourceManager(
-                              SymjaServer.class.getClassLoader(), SymjaServer.class.getPackage()))
-                      .addWelcomeFiles("indexapi.html"))
-              .addExactPath("/v1/api", apiHandler);
+      PathHandler path = new PathHandler()
+          .addPrefixPath("/",
+              resource(new ClassPathResourceManager(SymjaServer.class.getClassLoader(),
+                  SymjaServer.class.getPackage())).addWelcomeFiles("indexapi.html"))
+          .addExactPath("/v1/api", apiHandler);
       // https://stackoverflow.com/a/41652378/24819
       String host = LOCALHOST_STRING ? "localhost" : InetAddress.getLocalHost().getHostAddress();
       Undertow server = Undertow.builder().addHttpListener(PORT, host).setHandler(path).build();
@@ -112,12 +108,8 @@ public class SymjaServer {
       System.out.println("\n>>> JSON API server started. <<<");
       System.out.println("Waiting for API calls at http://" + host + ":" + PORT + "/v1/api");
       System.out.println("Example client call:");
-      System.out.println(
-          "http://"
-              + host
-              + ":"
-              + PORT
-              + "/v1/api?i=D(Sin(x)%2Cx)&f=latex&f=plaintext&f=sinput&appid=DEMO");
+      System.out.println("http://" + host + ":" + PORT
+          + "/v1/api?i=D(Sin(x)%2Cx)&f=latex&f=plaintext&f=sinput&appid=DEMO");
 
       URI uri = new URI("http://" + host + ":" + PORT + "/indexapi.html");
 
@@ -171,10 +163,8 @@ public class SymjaServer {
     final StringBuilder msg = new StringBuilder();
     msg.append(Config.SYMJA);
     msg.append(Config.COPYRIGHT);
-    msg.append(
-        "Symja JSON API Wiki: "
-            + "https://github.com/axkr/symja_android_library/wiki/API"
-            + lineSeparator);
+    msg.append("Symja JSON API Wiki: " + "https://github.com/axkr/symja_android_library/wiki/API"
+        + lineSeparator);
     msg.append(lineSeparator);
     msg.append("org.matheclipse.api." + serverClass + " [options]" + lineSeparator);
     msg.append(lineSeparator);
@@ -198,11 +188,8 @@ public class SymjaServer {
     return null;
   }
 
-  static String getParam(
-      Map<String, Deque<String>> queryParameters,
-      String longParameter,
-      String shortParameter,
-      String defaultStr) {
+  static String getParam(Map<String, Deque<String>> queryParameters, String longParameter,
+      String shortParameter, String defaultStr) {
     Deque<String> d = queryParameters.get(shortParameter);
     if (d != null && !d.isEmpty()) {
       return d.getFirst();
@@ -214,11 +201,8 @@ public class SymjaServer {
     return defaultStr;
   }
 
-  static String[] getParams(
-      Map<String, Deque<String>> queryParameters,
-      String longParameter,
-      String shortParameter,
-      String defaultStr) {
+  static String[] getParams(Map<String, Deque<String>> queryParameters, String longParameter,
+      String shortParameter, String defaultStr) {
     Deque<String> d = queryParameters.get(shortParameter);
     if (d != null && !d.isEmpty()) {
       String[] result = d.toArray(new String[d.size()]);

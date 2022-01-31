@@ -15,7 +15,8 @@ import java.util.Locale;
  * // $$</code> into Java source code. The closing tag can be followed by postfix characters which
  * are appended after the genreated source code.
  *
- * <p>See github project <a href="https://github.com/axkr/java_codegen">java_codegen</a>
+ * <p>
+ * See github project <a href="https://github.com/axkr/java_codegen">java_codegen</a>
  */
 public abstract class AbstractCodeGenerator {
 
@@ -135,8 +136,8 @@ public abstract class AbstractCodeGenerator {
     }
   }
 
-  private int generateCommand(
-      String str, StringBuilder buf, int position, int startCommand, int length) {
+  private int generateCommand(String str, StringBuilder buf, int position, int startCommand,
+      int length) {
     int endCommand = str.indexOf(END_COMMAND, startCommand);
     if (endCommand >= 0) {
       String command = str.substring(startCommand + length, endCommand);
@@ -175,8 +176,8 @@ public abstract class AbstractCodeGenerator {
 
           position = insertJavaCode(command, buf, postFix, endBlock);
         } else {
-          System.out.println(
-              "Error: no end clock of //$$ comment found after position " + endCommand);
+          System.out
+              .println("Error: no end clock of //$$ comment found after position " + endCommand);
           return -1;
         }
       }

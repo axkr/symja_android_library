@@ -15,10 +15,8 @@ public interface IDiscreteDistribution extends IDistribution {
   default int[] range(IExpr discreteDistribution, IExpr predicate, IExpr x) {
     IAssumptions assumptions = Assumptions.getInstance(predicate);
     if (assumptions != null) {
-      int[] result =
-          new int[] {
-            getSupportLowerBound(discreteDistribution), getSupportUpperBound(discreteDistribution)
-          };
+      int[] result = new int[] {getSupportLowerBound(discreteDistribution),
+          getSupportUpperBound(discreteDistribution)};
       return assumptions.reduceRange(x, result);
     }
     return null;

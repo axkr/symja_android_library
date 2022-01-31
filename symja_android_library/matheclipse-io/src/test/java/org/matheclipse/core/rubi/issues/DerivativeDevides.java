@@ -9,20 +9,17 @@ public class DerivativeDevides extends AbstractRubiTestCase {
   }
 
   public void test0000() {
-    check(
-        "PolynomialQ[Csch[x]*Sech[x],x]", //
+    check("PolynomialQ[Csch[x]*Sech[x],x]", //
         "False");
   }
 
   public void test0000b() {
-    check(
-        "PolynomialQ[Log[Tanh[x]],x]", //
+    check("PolynomialQ[Log[Tanh[x]],x]", //
         "False");
   }
 
   public void test0000c() {
-    check(
-        "MatchQ[Log[Tanh[x]],a_.*x /; FreeQ[a,x]]", //
+    check("MatchQ[Log[Tanh[x]],a_.*x /; FreeQ[a,x]]", //
         "False");
   }
 
@@ -33,32 +30,27 @@ public class DerivativeDevides extends AbstractRubiTestCase {
   }
 
   public void test0000e() {
-    check(
-        "1/(Coth[x]*Sech[x])", //
+    check("1/(Coth[x]*Sech[x])", //
         "Sinh[x]");
   }
 
   public void test0000fa() {
-    check(
-        "Coth[x]*Sech[x]^2", // Csch(x)^2*Sech(x)
+    check("Coth[x]*Sech[x]^2", // Csch(x)^2*Sech(x)
         "Csch(x)*Sech(x)");
   }
 
   public void test0000fb() {
-    check(
-        "1/(Coth[x]*Sech[x]^2)", //
+    check("1/(Coth[x]*Sech[x]^2)", //
         "Cosh(x)*Sinh(x)");
   }
 
   public void test0000g() {
-    check(
-        "Module[{v=Block[{$ShowSteps=False}, ReplaceAll[D[Sech[x],x],Sinc[z_]->Sin[z]/z]]}, v]", //
+    check("Module[{v=Block[{$ShowSteps=False}, ReplaceAll[D[Sech[x],x],Sinc[z_]->Sin[z]/z]]}, v]", //
         "-Sech(x)*Tanh(x)");
   }
 
   public void test0000h() {
-    check(
-        "Module[{v=Block[{$ShowSteps=False}, ReplaceAll[D[Csch[x],x],Sinc[z_]->Sin[z]/z]]}, v]", //
+    check("Module[{v=Block[{$ShowSteps=False}, ReplaceAll[D[Csch[x],x],Sinc[z_]->Sin[z]/z]]}, v]", //
         "-Coth(x)*Csch(x)");
   }
 
@@ -69,14 +61,12 @@ public class DerivativeDevides extends AbstractRubiTestCase {
   }
 
   public void test0000j() {
-    check(
-        "Rubi`Simp[(-4*Coth[2*x]*Csch[2*x]*(Log[Tanh[x]])^(2))/(2), x]", //
+    check("Rubi`Simp[(-4*Coth[2*x]*Csch[2*x]*(Log[Tanh[x]])^(2))/(2), x]", //
         "-2*Coth(2*x)*Csch(2*x)*Log(Tanh(x))^2");
   }
 
   public void test0000k() {
-    check(
-        "Rubi`Simp[(-Coth[x]*Csch[x]*Sech[x]-Csch[x]*Sech[x]*Tanh[x]*(Log[Tanh[x]])^(2))/(2), x]", //
+    check("Rubi`Simp[(-Coth[x]*Csch[x]*Sech[x]-Csch[x]*Sech[x]*Tanh[x]*(Log[Tanh[x]])^(2))/(2), x]", //
         "-(Csch(x)^2+Log(Tanh(x))^2*Sech(x)^2)/2");
   }
 
@@ -91,50 +81,42 @@ public class DerivativeDevides extends AbstractRubiTestCase {
    * </pre>
    */
   public void test0001() {
-    check(
-        "Rubi`DerivativeDivides[Log[Tanh[x]]*Sech[x], Csch[x], x]", //
+    check("Rubi`DerivativeDivides[Log[Tanh[x]]*Sech[x], Csch[x], x]", //
         "False");
   }
 
   public void test0002() {
-    check(
-        "Rubi`DerivativeDivides[Log[Tanh[x]], Csch[x]*Sech[x], x]", //
+    check("Rubi`DerivativeDivides[Log[Tanh[x]], Csch[x]*Sech[x], x]", //
         "1");
   }
 
   public void test0003() {
-    check(
-        "Rubi`DerivativeDivides[Log[Tanh[x]]*Csch[x], Sech[x], x]", //
+    check("Rubi`DerivativeDivides[Log[Tanh[x]]*Csch[x], Sech[x], x]", //
         "False");
   }
 
   public void test0004() {
-    check(
-        "Rubi`EasyDQ[Log[Tanh[x]]*Sech[x], x]", //
+    check("Rubi`EasyDQ[Log[Tanh[x]]*Sech[x], x]", //
         "False");
   }
 
   public void test0005() {
-    check(
-        "Rubi`EasyDQ[Log[Tanh[x]],  x]", //
+    check("Rubi`EasyDQ[Log[Tanh[x]],  x]", //
         "True");
   }
 
   public void test0006() {
-    check(
-        "Rubi`EasyDQ[Csch[x],  x]", //
+    check("Rubi`EasyDQ[Csch[x],  x]", //
         "True");
   }
 
   public void test0007() {
-    check(
-        "Rubi`EasyDQ[Sech[x],  x]", //
+    check("Rubi`EasyDQ[Sech[x],  x]", //
         "True");
   }
 
   public void test0008() {
-    check(
-        "Rubi`EasyDQ[Log[Tanh[x]]*Csch[x], x]", //
+    check("Rubi`EasyDQ[Log[Tanh[x]]*Csch[x], x]", //
         "False");
   }
 }

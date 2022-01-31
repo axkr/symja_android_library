@@ -187,46 +187,42 @@ public class SidesFunctions {
           return comparator.map(x -> function(x, arg2));
         case ID.Unequal:
           return comparator.map(x -> function(x, arg2));
-        case ID.Less:
-          {
-            if (arg2.isNegative()) {
-              return comparator.mapReverse(x -> function(x, arg2));
-            }
-            if (arg2.isPositive()) {
-              return comparator.map(x -> function(x, arg2));
-            }
-            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+        case ID.Less: {
+          if (arg2.isNegative()) {
+            return comparator.mapReverse(x -> function(x, arg2));
           }
-        case ID.LessEqual:
-          {
-            if (arg2.isNegative()) {
-              return comparator.mapReverse(x -> function(x, arg2));
-            }
-            if (arg2.isPositive()) {
-              return comparator.map(x -> function(x, arg2));
-            }
-            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          if (arg2.isPositive()) {
+            return comparator.map(x -> function(x, arg2));
           }
-        case ID.Greater:
-          {
-            if (arg2.isNegative()) {
-              return comparator.mapReverse(x -> function(x, arg2));
-            }
-            if (arg2.isPositive()) {
-              return comparator.map(x -> function(x, arg2));
-            }
-            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+        }
+        case ID.LessEqual: {
+          if (arg2.isNegative()) {
+            return comparator.mapReverse(x -> function(x, arg2));
           }
-        case ID.GreaterEqual:
-          {
-            if (arg2.isNegative()) {
-              return comparator.mapReverse(x -> function(x, arg2));
-            }
-            if (arg2.isPositive()) {
-              return comparator.map(x -> function(x, arg2));
-            }
-            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          if (arg2.isPositive()) {
+            return comparator.map(x -> function(x, arg2));
           }
+          return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+        }
+        case ID.Greater: {
+          if (arg2.isNegative()) {
+            return comparator.mapReverse(x -> function(x, arg2));
+          }
+          if (arg2.isPositive()) {
+            return comparator.map(x -> function(x, arg2));
+          }
+          return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+        }
+        case ID.GreaterEqual: {
+          if (arg2.isNegative()) {
+            return comparator.mapReverse(x -> function(x, arg2));
+          }
+          if (arg2.isPositive()) {
+            return comparator.map(x -> function(x, arg2));
+          }
+          return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+        }
       }
       return F.NIL;
     }
@@ -280,46 +276,42 @@ public class SidesFunctions {
           return comparator.map(x -> function(x, arg2));
         case ID.Unequal:
           return comparator.map(x -> function(x, arg2));
-        case ID.Less:
-          {
-            if (arg2.isNegative()) {
-              return comparator.mapReverse(x -> function(x, arg2));
-            }
-            if (arg2.isPositive()) {
-              return comparator.map(x -> function(x, arg2));
-            }
-            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+        case ID.Less: {
+          if (arg2.isNegative()) {
+            return comparator.mapReverse(x -> function(x, arg2));
           }
-        case ID.LessEqual:
-          {
-            if (arg2.isNegative()) {
-              return comparator.mapReverse(x -> function(x, arg2));
-            }
-            if (arg2.isPositive()) {
-              return comparator.map(x -> function(x, arg2));
-            }
-            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          if (arg2.isPositive()) {
+            return comparator.map(x -> function(x, arg2));
           }
-        case ID.Greater:
-          {
-            if (arg2.isNegative()) {
-              return comparator.mapReverse(x -> function(x, arg2));
-            }
-            if (arg2.isPositive()) {
-              return comparator.map(x -> function(x, arg2));
-            }
-            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+        }
+        case ID.LessEqual: {
+          if (arg2.isNegative()) {
+            return comparator.mapReverse(x -> function(x, arg2));
           }
-        case ID.GreaterEqual:
-          {
-            if (arg2.isNegative()) {
-              return comparator.mapReverse(x -> function(x, arg2));
-            }
-            if (arg2.isPositive()) {
-              return comparator.map(x -> function(x, arg2));
-            }
-            return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+          if (arg2.isPositive()) {
+            return comparator.map(x -> function(x, arg2));
           }
+          return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+        }
+        case ID.Greater: {
+          if (arg2.isNegative()) {
+            return comparator.mapReverse(x -> function(x, arg2));
+          }
+          if (arg2.isPositive()) {
+            return comparator.map(x -> function(x, arg2));
+          }
+          return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+        }
+        case ID.GreaterEqual: {
+          if (arg2.isNegative()) {
+            return comparator.mapReverse(x -> function(x, arg2));
+          }
+          if (arg2.isPositive()) {
+            return comparator.map(x -> function(x, arg2));
+          }
+          return piecewiseComparator(comparator, arg2, x -> function(x, arg2));
+        }
       }
       return F.NIL;
     }
@@ -412,14 +404,13 @@ public class SidesFunctions {
     }
   }
 
-  private static IExpr piecewiseComparator(
-      IAST comparator, final IExpr value, Function<IExpr, IExpr> function) {
+  private static IExpr piecewiseComparator(IAST comparator, final IExpr value,
+      Function<IExpr, IExpr> function) {
     IAST list1 = comparator.map(function);
     IAST list2 = comparator.mapReverse(function);
-    IAST listOfConditions =
-        F.List( //
-            F.List(list1, F.Greater(value, F.C0)), //
-            F.List(list2, F.Less(value, F.C0)));
+    IAST listOfConditions = F.List( //
+        F.List(list1, F.Greater(value, F.C0)), //
+        F.List(list2, F.Less(value, F.C0)));
     return F.Piecewise(listOfConditions, comparator);
   }
 

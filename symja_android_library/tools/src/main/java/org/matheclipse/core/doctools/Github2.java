@@ -21,9 +21,9 @@ public class Github2 {
   public static void main(final String[] args) {
     String fileName = buildFileNameL(Arithmetic.Times.class);
     File sourceLocation = new File(fileName);
-    //		File sourceLocation = new File(
+    // File sourceLocation = new File(
     //
-    //	"..\\symja_android_library\\matheclipse-core\\src\\main\\java\\org\\matheclipse\\core\\builtin\\Arithmetic.java");
+    // "..\\symja_android_library\\matheclipse-core\\src\\main\\java\\org\\matheclipse\\core\\builtin\\Arithmetic.java");
     int lineCounter = parseFileToList(sourceLocation, "Times");
     System.out.println(lineCounter);
   }

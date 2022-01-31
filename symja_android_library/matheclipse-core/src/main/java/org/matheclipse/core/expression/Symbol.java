@@ -337,14 +337,14 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   /** {@inheritDoc} */
-  //  @Override
-  //  public final Complex evalComplex() {
-  //    INumber number = evalNumber();
-  //    if (number != null) {
-  //      return number.complexNumValue().complexValue();
-  //    }
-  //    throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
-  //  }
+  // @Override
+  // public final Complex evalComplex() {
+  // INumber number = evalNumber();
+  // if (number != null) {
+  // return number.complexNumValue().complexValue();
+  // }
+  // throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
+  // }
 
   /** {@inheritDoc} */
   @Override
@@ -461,13 +461,13 @@ public class Symbol implements ISymbol, Serializable {
     } catch (Exception e1) {
       return fSymbolName;
     }
-    //    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-    //      String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
-    //      if (str != null) {
-    //        return str;
-    //      }
-    //    }
-    //    return fSymbolName;
+    // if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+    // String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
+    // if (str != null) {
+    // return str;
+    // }
+    // }
+    // return fSymbolName;
   }
 
   /** {@inheritDoc} */
@@ -582,9 +582,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public CharSequence internalJavaString(
-      SourceCodeProperties properties,
-      int depth,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
     CharSequence result = variables.apply(this);
     if (result != null) {
@@ -630,14 +628,12 @@ public class Symbol implements ISymbol, Serializable {
         return fSymbolName;
       }
       if ((Config.RUBI_CONVERT_SYMBOLS && 'A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E')
-          || ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E')
-          || ('P' == ch || ch == 'Q')) {
+          || ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') || ('P' == ch || ch == 'Q')) {
         return new StringBuilder(fSymbolName).append("Symbol");
       }
     }
     if (Config.RUBI_CONVERT_SYMBOLS) {
-      if (fSymbolName.length() == 2
-          && '§' == fSymbolName.charAt(0)
+      if (fSymbolName.length() == 2 && '§' == fSymbolName.charAt(0)
           && Character.isLowerCase(fSymbolName.charAt(1))) {
         char ch = fSymbolName.charAt(1);
         if ('a' <= ch && ch <= 'z') {
@@ -714,12 +710,12 @@ public class Symbol implements ISymbol, Serializable {
     if (isConstantAttribute()) {
       return true;
     }
-    //    if (hasAssignedSymbolValue()) {
-    //      IExpr temp = assignedValue();
-    //      if (temp != null) {
-    //        return temp != this && temp.isNumericFunction(true);
-    //      }
-    //    }
+    // if (hasAssignedSymbolValue()) {
+    // IExpr temp = assignedValue();
+    // if (temp != null) {
+    // return temp != this && temp.isNumericFunction(true);
+    // }
+    // }
     return false;
   }
 
@@ -808,9 +804,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public final boolean isVariable() {
     return ((fAttributes & (CONSTANT | NUMERICFUNCTION)) == NOATTRIBUTE)
-        && (this != S.ComplexInfinity)
-        && (this != S.Indeterminate)
-        && (this != S.DirectedInfinity)
+        && (this != S.ComplexInfinity) && (this != S.Indeterminate) && (this != S.DirectedInfinity)
         && (this != S.Infinity);
   }
 
@@ -882,29 +876,16 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final void putDownRule(
-      final int setSymbol,
-      final boolean equalRule,
-      final IExpr leftHandSide,
-      final IExpr rightHandSide,
-      boolean packageMode) {
-    putDownRule(
-        setSymbol,
-        equalRule,
-        leftHandSide,
-        rightHandSide,
-        IPatternMap.DEFAULT_RULE_PRIORITY,
-        packageMode);
+  public final void putDownRule(final int setSymbol, final boolean equalRule,
+      final IExpr leftHandSide, final IExpr rightHandSide, boolean packageMode) {
+    putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide,
+        IPatternMap.DEFAULT_RULE_PRIORITY, packageMode);
   }
 
   /** {@inheritDoc} */
   @Override
-  public final void putDownRule(
-      final int setSymbol,
-      final boolean equalRule,
-      final IExpr leftHandSide,
-      final IExpr rightHandSide,
-      final int priority,
+  public final void putDownRule(final int setSymbol, final boolean equalRule,
+      final IExpr leftHandSide, final IExpr rightHandSide, final int priority,
       boolean packageMode) {
     if (!packageMode) {
       if (isLocked(packageMode)) {
@@ -941,20 +922,16 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final IPatternMatcher putUpRule(
-      final int setSymbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide) {
-    return putUpRule(
-        setSymbol, equalRule, leftHandSide, rightHandSide, IPatternMap.DEFAULT_RULE_PRIORITY);
+  public final IPatternMatcher putUpRule(final int setSymbol, boolean equalRule, IAST leftHandSide,
+      IExpr rightHandSide) {
+    return putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide,
+        IPatternMap.DEFAULT_RULE_PRIORITY);
   }
 
   /** {@inheritDoc} */
   @Override
-  public final IPatternMatcher putUpRule(
-      final int setSymbol,
-      final boolean equalRule,
-      final IAST leftHandSide,
-      final IExpr rightHandSide,
-      final int priority) {
+  public final IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule,
+      final IAST leftHandSide, final IExpr rightHandSide, final int priority) {
     EvalEngine engine = EvalEngine.get();
     if (!engine.isPackageMode()) {
       if (isLocked(false)) {
@@ -1024,8 +1001,8 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public IExpr[] reassignSymbolValue(
-      Function<IExpr, IExpr> function, ISymbol functionSymbol, EvalEngine engine) {
+  public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol,
+      EvalEngine engine) {
     if (hasAssignedSymbolValue()) {
       IExpr[] result = new IExpr[2];
       result[0] = fValue;
@@ -1041,11 +1018,11 @@ public class Symbol implements ISymbol, Serializable {
     }
     // `1` is not a variable with a value, so its value cannot be changed.
     IOFunctions.printMessage(functionSymbol, "rvalue", F.List(this), engine);
-    //    engine.printMessage(
-    //        functionSymbol.toString()
-    //            + ": "
-    //            + toString()
-    //            + " is not a variable with a value, so its value cannot be changed.");
+    // engine.printMessage(
+    // functionSymbol.toString()
+    // + ": "
+    // + toString()
+    // + " is not a variable with a value, so its value cannot be changed.");
     return null;
   }
 
@@ -1066,17 +1043,14 @@ public class Symbol implements ISymbol, Serializable {
         return result;
       }
     }
-    throw new ArgumentTypeException(
-        functionSymbol.toString()
-            + " - Symbol: "
-            + toString()
-            + " has no value! Reassignment with a new value is not possible");
+    throw new ArgumentTypeException(functionSymbol.toString() + " - Symbol: " + toString()
+        + " has no value! Reassignment with a new value is not possible");
   }
 
   /** {@inheritDoc} */
   @Override
-  public final boolean removeRule(
-      final int setSymbol, final boolean equalRule, final IExpr leftHandSide, boolean packageMode) {
+  public final boolean removeRule(final int setSymbol, final boolean equalRule,
+      final IExpr leftHandSide, boolean packageMode) {
     if (!packageMode) {
       if (isLocked(packageMode)) {
         throw new RuleCreationError(leftHandSide);
@@ -1162,8 +1136,8 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public IExpr variables2Slots(
-      final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
+  public IExpr variables2Slots(final Map<IExpr, IExpr> map,
+      final Collection<IExpr> variableCollector) {
     final UnaryVariable2Slot uv2s = new UnaryVariable2Slot(map, variableCollector);
     return uv2s.apply(this);
   }

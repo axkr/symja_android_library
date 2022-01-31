@@ -87,7 +87,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
     } finally {
       engine.setTogetherMode(togetherMode);
     }
-    //		return evaluate(ast, engine);
+    // return evaluate(ast, engine);
   }
 
   /**
@@ -106,8 +106,8 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
    * @param matrix the matrix which contains symbolic values
    * @return
    */
-  public abstract FieldMatrix<IExpr> matrixEval(
-      FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker);
+  public abstract FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix,
+      Predicate<IExpr> zeroChecker);
 
   /**
    * Evaluate the numeric matrix for this algorithm.

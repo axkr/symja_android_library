@@ -105,10 +105,10 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   @Override
   public final void assignValue(final IExpr value, boolean setDelayed) {
     super.assignValue(value, setDelayed);
-    //    if (Config.FUZZ_TESTING) {
-    //      // Cannot assign to raw object `1`.
-    //      throw new NullPointerException();
-    //    }
+    // if (Config.FUZZ_TESTING) {
+    // // Cannot assign to raw object `1`.
+    // throw new NullPointerException();
+    // }
   }
 
   /** {@inheritDoc} */

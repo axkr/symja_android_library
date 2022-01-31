@@ -30,12 +30,7 @@ public interface IEvaluator {
    * @param listOfRules a list of rules with the default option settings
    */
   default void setOptions(final ISymbol symbol, IAST listOfRules) {
-    symbol.putDownRule(
-        IPatternMatcher.SET,
-        true,
-        F.Options(symbol),
-        listOfRules,
-        IPatternMap.DEFAULT_RULE_PRIORITY,
-        true);
+    symbol.putDownRule(IPatternMatcher.SET, true, F.Options(symbol), listOfRules,
+        IPatternMap.DEFAULT_RULE_PRIORITY, true);
   }
 }

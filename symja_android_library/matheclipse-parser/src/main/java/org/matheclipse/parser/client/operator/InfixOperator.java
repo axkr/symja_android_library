@@ -1,17 +1,15 @@
 /*
  * Copyright 2005-2008 Axel Kramer (axelclk@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.matheclipse.parser.client.operator;
 
@@ -29,8 +27,8 @@ public class InfixOperator extends Operator {
 
   public static final int LEFT_ASSOCIATIVE = 2;
 
-  public InfixOperator(
-      final String oper, final String functionName, final int precedence, final int grouping) {
+  public InfixOperator(final String oper, final String functionName, final int precedence,
+      final int grouping) {
     super(oper, functionName, precedence);
     fGrouping = grouping;
   }
@@ -44,10 +42,10 @@ public class InfixOperator extends Operator {
     return fGrouping;
   }
 
-  public ASTNode createFunction(
-      final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+  public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs,
+      final ASTNode rhs) {
     if (fOperatorString.equals("//")) {
-      //   lhs // rhs ==> rhs[lhs]
+      // lhs // rhs ==> rhs[lhs]
       return factory.unaryAST(rhs, lhs);
     }
     return factory.createFunction(factory.createSymbol(getFunctionName()), lhs, rhs);
@@ -61,8 +59,8 @@ public class InfixOperator extends Operator {
    * @param scanner can throw SyntaxError exceptions if necessary
    * @return
    */
-  public FunctionNode endFunction(
-      final INodeParserFactory factory, final FunctionNode function, final Scanner scanner) {
+  public FunctionNode endFunction(final INodeParserFactory factory, final FunctionNode function,
+      final Scanner scanner) {
     return function;
   }
 }

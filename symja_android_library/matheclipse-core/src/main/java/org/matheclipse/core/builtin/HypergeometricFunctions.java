@@ -92,8 +92,8 @@ public class HypergeometricFunctions {
         return F.Hypergeometric2F1(a, b1, c, z1);
       }
       if (z2.isOne()) {
-        return F.Times(
-            F.Hypergeometric2F1(a, b1, F.Subtract(c, b2), z1), F.Hypergeometric2F1(a, b2, c, F.C1));
+        return F.Times(F.Hypergeometric2F1(a, b1, F.Subtract(c, b2), z1),
+            F.Hypergeometric2F1(a, b2, c, F.C1));
       }
 
       if (z1.subtract(z2).isPossibleZero(true)) {
@@ -102,33 +102,28 @@ public class HypergeometricFunctions {
       }
       if (b1.subtract(b2).isPossibleZero(true) && z1.plus(z2).isPossibleZero(true)) {
         // HypergeometricPFQ({1/2+a/2,a/2,b1},{1/2+c/2,c/2},z1^2)
-        return F.HypergeometricPFQ(
-            F.List(F.Plus(F.C1D2, F.Divide(a, F.C2)), F.Divide(a, F.C2), b1), //
-            F.List(F.Plus(F.C1D2, F.Divide(c, F.C2)), F.Divide(c, F.C2)),
-            F.Sqr(z1));
+        return F.HypergeometricPFQ(F.List(F.Plus(F.C1D2, F.Divide(a, F.C2)), F.Divide(a, F.C2), b1), //
+            F.List(F.Plus(F.C1D2, F.Divide(c, F.C2)), F.Divide(c, F.C2)), F.Sqr(z1));
       }
       if (b1.plus(b2).subtract(c).isPossibleZero(true)) {
         // Hypergeometric2F1(a, b1, b1 + b2, (z1 - z2)/(1 - z2)) / (1 - z2)^a
         return F.Times( //
-            F.Hypergeometric2F1(
-                a, //
-                b1,
-                F.Plus(b1, b2),
-                F.Divide(F.Subtract(z1, z2), F.Subtract(F.C1, z2))),
+            F.Hypergeometric2F1(a, //
+                b1, F.Plus(b1, b2), F.Divide(F.Subtract(z1, z2), F.Subtract(F.C1, z2))),
             F.Power(F.Subtract(F.C1, z2), a));
       }
-      //            if (engine.isDoubleMode()) {
-      //              try {
-      //              } catch (ThrowException te) {
-      //                LOGGER.debug("AppellF1.evaluate() failed", te);
-      //                return te.getValue();
-      //              } catch (ValidateException ve) {
-      //                LOGGER.debug("AppellF1.evaluate() failed", ve);
-      //              } catch (RuntimeException rex) {
-      //                LOGGER.error("AppellF1.evaluate() failed", rex);
-      //                return engine.printMessage(ast.topHead(), rex);
-      //              }
-      //            }
+      // if (engine.isDoubleMode()) {
+      // try {
+      // } catch (ThrowException te) {
+      // LOGGER.debug("AppellF1.evaluate() failed", te);
+      // return te.getValue();
+      // } catch (ValidateException ve) {
+      // LOGGER.debug("AppellF1.evaluate() failed", ve);
+      // } catch (RuntimeException rex) {
+      // LOGGER.error("AppellF1.evaluate() failed", rex);
+      // return engine.printMessage(ast.topHead(), rex);
+      // }
+      // }
       return F.NIL;
     }
 
@@ -138,8 +133,8 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class CosIntegral
-      extends AbstractFunctionEvaluator { // implements INumeric, DoubleUnaryOperator {
+  private static class CosIntegral extends AbstractFunctionEvaluator { // implements INumeric,
+                                                                       // DoubleUnaryOperator {
     // @Override
     // public IExpr e1ComplexArg(final Complex c) {
     // return F.complexNum(GammaJS.cosIntegral(c));
@@ -232,8 +227,8 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class CoshIntegral
-      extends AbstractFunctionEvaluator { // implements INumeric, DoubleUnaryOperator {
+  private static class CoshIntegral extends AbstractFunctionEvaluator { // implements INumeric,
+                                                                        // DoubleUnaryOperator {
 
     // @Override
     // public double applyAsDouble(double z) {
@@ -384,8 +379,8 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class ExpIntegralEi
-      extends AbstractFunctionEvaluator { // implements INumeric, DoubleUnaryOperator {
+  private static class ExpIntegralEi extends AbstractFunctionEvaluator { // implements INumeric,
+                                                                         // DoubleUnaryOperator {
     // @Override
     // public double applyAsDouble(double operand) {
     // if (F.isZero(operand)) {
@@ -650,11 +645,8 @@ public class HypergeometricFunctions {
               return F.ChebyshevU(n, z);
             case 2:
               // ((-2 - n)*ChebyshevU(n, z) + z*(1 + n)*ChebyshevU(1 + n, z))/(2*(-1 + z^2))
-              return F.Times(
-                  F.C1D2,
-                  F.Power(F.Plus(F.CN1, F.Sqr(z)), -1),
-                  F.Plus(
-                      F.Times(F.Plus(F.CN2, F.Negate(S.n)), F.ChebyshevU(n, z)),
+              return F.Times(F.C1D2, F.Power(F.Plus(F.CN1, F.Sqr(z)), -1),
+                  F.Plus(F.Times(F.Plus(F.CN2, F.Negate(S.n)), F.ChebyshevU(n, z)),
                       F.Times(F.Plus(F.C1, n), z, F.ChebyshevU(F.Plus(F.C1, n), z))));
           }
         }
@@ -664,16 +656,10 @@ public class HypergeometricFunctions {
         int nInt = n.toIntDefault();
         if (nInt > 0) {
           // Sum(((-1)^k*Pochhammer(l, n - k)*(2*z)^(n - 2*k))/(k!*(n - 2*k)!), {k, 0, Floor(n/2)})
-          return F.sum(
-              k ->
-                  F.Times(
-                      F.Power(F.CN1, k),
-                      F.Power(F.Times(F.C2, z), F.Plus(F.Times(F.CN2, k), n)),
-                      F.Power(F.Factorial(k), -1),
-                      F.Power(F.Factorial(F.Plus(F.Times(F.CN2, k), n)), -1),
-                      F.Pochhammer(l, F.Plus(F.Negate(k), n))),
-              0,
-              nInt / 2);
+          return F.sum(k -> F.Times(F.Power(F.CN1, k),
+              F.Power(F.Times(F.C2, z), F.Plus(F.Times(F.CN2, k), n)), F.Power(F.Factorial(k), -1),
+              F.Power(F.Factorial(F.Plus(F.Times(F.CN2, k), n)), -1),
+              F.Pochhammer(l, F.Plus(F.Negate(k), n))), 0, nInt / 2);
         }
         return F.NIL;
       }
@@ -696,17 +682,10 @@ public class HypergeometricFunctions {
           // (2^n/n)*z^n + Sum(((-1)^k*(n - k - 1)!*(2*z)^(n - 2*k))/(k! * (n -
           // 2*k)!), {k, 1, Floor(n/2)})
           int floorND2 = nInt / 2;
-          return Plus(
-              Times(Power(C2, n), Power(n, -1), Power(z, n)),
-              F.sum(
-                  k ->
-                      Times(
-                          Power(CN1, k),
-                          Power(Times(C2, z), Plus(Times(F.CN2, k), n)),
-                          Power(Times(Factorial(k), Factorial(Plus(Times(F.CN2, k), n))), -1),
-                          Factorial(Plus(CN1, Negate(k), n))),
-                  1,
-                  floorND2));
+          return Plus(Times(Power(C2, n), Power(n, -1), Power(z, n)),
+              F.sum(k -> Times(Power(CN1, k), Power(Times(C2, z), Plus(Times(F.CN2, k), n)),
+                  Power(Times(Factorial(k), Factorial(Plus(Times(F.CN2, k), n))), -1),
+                  Factorial(Plus(CN1, Negate(k), n))), 1, floorND2));
         }
       }
 
@@ -836,10 +815,7 @@ public class HypergeometricFunctions {
         // LaguerreL(-a, z)
         return F.LaguerreL(a.negate(), z);
       }
-      if (a.isInteger()
-          && b.isInteger()
-          && a.isNegative()
-          && b.isNegative()
+      if (a.isInteger() && b.isInteger() && a.isNegative() && b.isNegative()
           && ((IInteger) b).isGT((IInteger) a)) {
         return F.CComplexInfinity;
       }
@@ -877,10 +853,7 @@ public class HypergeometricFunctions {
         }
         if (a.isOne()) {
           // (-1 + b)*E^z*z^(1 - b)*(Gamma(-1 + b) - Gamma(-1 + b, z))
-          return F.Times(
-              F.Plus(F.CN1, b),
-              F.Power(S.E, z),
-              F.Power(z, F.Plus(F.C1, F.Negate(b))),
+          return F.Times(F.Plus(F.CN1, b), F.Power(S.E, z), F.Power(z, F.Plus(F.C1, F.Negate(b))),
               F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z))));
         }
         if (a.isMinusOne()) {
@@ -892,25 +865,17 @@ public class HypergeometricFunctions {
           // b)*(Gamma(-1
           // +
           // b] - Gamma(-1 + b, z)))
-          return F.Times(
-              F.Plus(F.CN1, b),
-              F.Plus(
-                  F.C1,
-                  F.Times(
-                      F.Plus(F.C2, F.Negate(b)),
-                      F.Power(S.E, z),
+          return F.Times(F.Plus(F.CN1, b),
+              F.Plus(F.C1,
+                  F.Times(F.Plus(F.C2, F.Negate(b)), F.Power(S.E, z),
                       F.Power(z, F.Plus(F.C1, F.Negate(b))),
                       F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z)))),
-                  F.Times(
-                      F.Power(S.E, z),
-                      F.Power(z, F.Plus(F.C2, F.Negate(b))),
+                  F.Times(F.Power(S.E, z), F.Power(z, F.Plus(F.C2, F.Negate(b))),
                       F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z))))));
         }
         if (a.isNumEqualInteger(F.CN2)) {
           // 1 - (2*z)/b + z^2/(b*(1 + b))
-          return F.Plus(
-              F.C1,
-              F.Times(F.CN2, F.Power(b, -1), z),
+          return F.Plus(F.C1, F.Times(F.CN2, F.Power(b, -1), z),
               F.Times(F.Power(b, -1), F.Power(F.Plus(F.C1, b), -1), F.Sqr(z)));
         }
       } catch (ValidateException ve) {
@@ -1019,12 +984,8 @@ public class HypergeometricFunctions {
             zDouble = z.evalDouble();
           } catch (ValidateException ve) {
           }
-          if (Double.isNaN(aDouble)
-              || Double.isNaN(bDouble)
-              || Double.isNaN(cDouble)
-              || Double.isNaN(zDouble)
-              || (zDouble > 1.0)
-              || (zDouble == -1.0)) {
+          if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(cDouble)
+              || Double.isNaN(zDouble) || (zDouble > 1.0) || (zDouble == -1.0)) {
             Complex ac = a.evalComplex();
             Complex bc = b.evalComplex();
             Complex cc = c.evalComplex();
@@ -1118,9 +1079,8 @@ public class HypergeometricFunctions {
             Complex AC[] = a.toComplexVector();
             Complex BC[] = b.toComplexVector();
             if (AC != null && BC != null) {
-              return F.complexNum(
-                  HypergeometricJS.hypergeometricPFQ(
-                      AC, BC, c.evalComplex(), Config.DOUBLE_TOLERANCE));
+              return F.complexNum(HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalComplex(),
+                  Config.DOUBLE_TOLERANCE));
             }
           } else {
             INum result = F.num(HypergeometricJS.hypergeometricPFQ(A, B, cDouble));
@@ -1190,16 +1150,11 @@ public class HypergeometricFunctions {
           if (nInt > 0) {
             int nMinus1 = nInt - 1;
             // Sum((Binomial(-1+n, -1-k+n)*Pochhammer(a, k))/z^k, {k, 0, n-1}) / z^a
-            return F.Times(
-                F.Power(z, a.negate()), //
+            return F.Times(F.Power(z, a.negate()), //
                 F.intSum( //
-                    k ->
-                        F.Times(
-                            F.Binomial(nMinus1, nMinus1 - k),
-                            F.Pochhammer(a, F.ZZ(k)),
-                            F.Power(z, -k)), //
-                    0,
-                    nMinus1));
+                    k -> F.Times(F.Binomial(nMinus1, nMinus1 - k), F.Pochhammer(a, F.ZZ(k)),
+                        F.Power(z, -k)), //
+                    0, nMinus1));
           }
         }
         if (engine.isDoubleMode()) {
@@ -1210,9 +1165,8 @@ public class HypergeometricFunctions {
             aDouble = a.evalDouble();
             bDouble = b.evalDouble();
             zDouble = z.evalDouble();
-            return F.complexNum(
-                HypergeometricJS.hypergeometricU(
-                    new Complex(aDouble), new Complex(bDouble), new Complex(zDouble)));
+            return F.complexNum(HypergeometricJS.hypergeometricU(new Complex(aDouble),
+                new Complex(bDouble), new Complex(zDouble)));
           } catch (ValidateException ve) {
             IOFunctions.printMessage(ast.topHead(), ve, engine);
           }
@@ -1244,8 +1198,8 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class LogIntegral
-      extends AbstractFunctionEvaluator { // implements INumeric, DoubleUnaryOperator {
+  private static class LogIntegral extends AbstractFunctionEvaluator { // implements INumeric,
+                                                                       // DoubleUnaryOperator {
 
     // @Override
     // public double applyAsDouble(double operand) {
@@ -1350,8 +1304,8 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class SinIntegral
-      extends AbstractFunctionEvaluator { // implements INumeric, DoubleUnaryOperator {
+  private static class SinIntegral extends AbstractFunctionEvaluator { // implements INumeric,
+                                                                       // DoubleUnaryOperator {
 
     // @Override
     // public double applyAsDouble(double operand) {
@@ -1555,9 +1509,8 @@ public class HypergeometricFunctions {
             kDouble = k.evalDouble();
             mDouble = m.evalDouble();
             zDouble = z.evalDouble();
-            return F.complexNum(
-                HypergeometricJS.whittakerM(
-                    new Complex(kDouble), new Complex(mDouble), new Complex(zDouble)));
+            return F.complexNum(HypergeometricJS.whittakerM(new Complex(kDouble),
+                new Complex(mDouble), new Complex(zDouble)));
           } catch (ValidateException ve) {
             IOFunctions.printMessage(ast.topHead(), ve, engine);
           }

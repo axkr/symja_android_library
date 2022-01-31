@@ -12,43 +12,31 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
   public void testAdjacencyMatrix() {
     // order 1, 2, 3, 4
-    check(
-        "AdjacencyMatrix(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2})) // Normal", //
+    check("AdjacencyMatrix(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2})) // Normal", //
         "{{0,1,1,0},\n" //
-            + " {0,0,1,0},\n"
-            + " {0,0,0,0},\n"
-            + " {0,1,0,0}}");
+            + " {0,0,1,0},\n" + " {0,0,0,0},\n" + " {0,1,0,0}}");
     // order 4, 2, 1, 3 is like parsing order of the vertexes in the graph expression
-    check(
-        "AdjacencyMatrix(Graph({4 -> 2, 1 -> 2, 2 -> 3, 1 -> 3})) // Normal", //
+    check("AdjacencyMatrix(Graph({4 -> 2, 1 -> 2, 2 -> 3, 1 -> 3})) // Normal", //
         "{{0,1,0,0},\n" //
-            + " {0,0,0,1},\n"
-            + " {0,1,0,1},\n"
-            + " {0,0,0,0}}");
+            + " {0,0,0,1},\n" + " {0,1,0,1},\n" + " {0,0,0,0}}");
     // order d,b,c,a is like parsing order of the vertexes in the graph expression
-    check(
-        "AdjacencyMatrix(Graph({d -> b, a -> b, b -> c, a -> c})) // Normal", //
+    check("AdjacencyMatrix(Graph({d -> b, a -> b, b -> c, a -> c})) // Normal", //
         "{{0,1,0,0},\n" //
-            + " {0,0,0,1},\n"
-            + " {0,1,0,1},\n"
-            + " {0,0,0,0}}");
+            + " {0,0,0,1},\n" + " {0,1,0,1},\n" + " {0,0,0,0}}");
 
     check(
         "AdjacencyMatrix(Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}))// Normal", //
         "{{0,1,1},\n" //
-            + " {1,0,1},\n"
-            + " {1,1,0}}");
+            + " {1,0,1},\n" + " {1,1,0}}");
     check(
         "AdjacencyMatrix(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))// Normal", //
         "{{0,1,0},\n" //
-            + " {0,0,1},\n"
-            + " {1,0,0}}");
+            + " {0,0,1},\n" + " {1,0,0}}");
   }
 
   public void testClosenessCentrality() {
 
-    check(
-        "ClosenessCentrality[Graph[{1, 2, 3, 4, 5},{1<->2,1<->3,2<->3,3<->4,3<->5}]]", //
+    check("ClosenessCentrality[Graph[{1, 2, 3, 4, 5},{1<->2,1<->3,2<->3,3<->4,3<->5}]]", //
         "{0.666667,0.666667,1.0,0.571429,0.571429}");
   }
 
@@ -68,81 +56,63 @@ public class GraphFunctionsTest extends AbstractTestCase {
             + "    UndirectedEdge(5, 1), UndirectedEdge(5, 4), UndirectedEdge(6, 1)}, \n"
             + "   {VertexShapeFunction -> {\"Name\"}}))  ", //
         "{5.5,0.0,0.0,2.0,0.5,1.0}");
-    check(
-        "BetweennessCentrality( Graph({1, 3, 2, 6, 4, 5}, \n"
-            + "{DirectedEdge(1, 3), DirectedEdge(2, 1), DirectedEdge(3, 6), DirectedEdge(4, 6), DirectedEdge(1, 5), DirectedEdge(5, 4), DirectedEdge(6, 1)}))", //
+    check("BetweennessCentrality( Graph({1, 3, 2, 6, 4, 5}, \n"
+        + "{DirectedEdge(1, 3), DirectedEdge(2, 1), DirectedEdge(3, 6), DirectedEdge(4, 6), DirectedEdge(1, 5), DirectedEdge(5, 4), DirectedEdge(6, 1)}))", //
         "{12.0,2.0,0.0,8.0,3.0,4.0}");
   }
 
   public void testCompleteGraph() {
-    check(
-        "CompleteGraph(4) // AdjacencyMatrix // Normal", //
+    check("CompleteGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,1},\n" //
-            + " {1,0,1,1},\n"
-            + " {1,1,0,1},\n"
-            + " {1,1,1,0}}");
+            + " {1,0,1,1},\n" + " {1,1,0,1},\n" + " {1,1,1,0}}");
   }
 
   public void testCycleGraph() {
-    check(
-        "CycleGraph(4) // AdjacencyMatrix // Normal", //
+    check("CycleGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,0,1},\n" //
-            + " {1,0,1,0},\n"
-            + " {0,1,0,1},\n"
-            + " {1,0,1,0}}");
+            + " {1,0,1,0},\n" + " {0,1,0,1},\n" + " {1,0,1,0}}");
   }
 
   public void testEdgeList() {
-    check(
-        "EdgeList(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))", //
+    check("EdgeList(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))", //
         "{1->2,2->3,1->3,4->2}");
     check(
         "EdgeList(Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}))", //
         "{1<->2,2<->3,3<->1}");
-    check(
-        "EdgeList(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
+    check("EdgeList(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
         "{1->2,2->3,3->1}");
   }
 
   public void testEdgeRules() {
-    check(
-        "EdgeRules(Graph({1 <-> 2, 2 <-> 3, 1 <-> 3, 4 <-> 2}))", //
+    check("EdgeRules(Graph({1 <-> 2, 2 <-> 3, 1 <-> 3, 4 <-> 2}))", //
         "{1->2,2->3,1->3,4->2}");
     check(
         "EdgeRules(Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}))", //
         "{1->2,2->3,3->1}");
-    check(
-        "EdgeRules(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
+    check("EdgeRules(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1}))", //
         "{1->2,2->3,3->1}");
   }
 
   public void testEdgeQ() {
-    check(
-        "EdgeQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),2 -> 3)", //
+    check("EdgeQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),2 -> 3)", //
         "True");
-    check(
-        "EdgeQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),2 -> 4)", //
+    check("EdgeQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),2 -> 4)", //
         "False");
   }
 
   public void testEulerianGraphQ() {
-    check(
-        "EulerianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
+    check("EulerianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
         "True");
-    check(
-        "EulerianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
+    check("EulerianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
         "False");
   }
 
   public void testFindEulerianCycle() {
-    check(
-        "FindEulerianCycle(Graph({1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1}))", //
+    check("FindEulerianCycle(Graph({1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1}))", //
         "{4->1,1->2,2->3,3->4}");
-    check(
-        "FindEulerianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
+    check("FindEulerianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
         "{4->1,1->3,3->1,1->2,2->3,3->4}");
-    check(
-        "FindEulerianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
+    check("FindEulerianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
         "{}");
   }
 
@@ -160,21 +130,17 @@ public class GraphFunctionsTest extends AbstractTestCase {
   }
 
   public void testFindHamiltonianCycle() {
-    check(
-        "FindHamiltonianCycle( {1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1} )", //
+    check("FindHamiltonianCycle( {1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1} )", //
         "{1->2,2->3,3->4,4->1}");
-    check(
-        "FindHamiltonianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
+    check("FindHamiltonianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
         "{1->2,2->3,3->4,4->1}");
-    check(
-        "FindHamiltonianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
+    check("FindHamiltonianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
         "{}");
   }
 
   public void testFindVertexCover() {
     // example from wikipedia: https://en.wikipedia.org/wiki/Vertex_cover
-    check(
-        "FindVertexCover({1<->2,1<->3,2<->3,3<->4,3<->5,3<->6})", //
+    check("FindVertexCover({1<->2,1<->3,2<->3,3<->4,3<->5,3<->6})", //
         "{3,1}");
 
     check(
@@ -199,19 +165,16 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "FindShortestPath(Graph({1 -> 2, 2 -> 4, 1 -> 3,  3 -> 2, 3 -> 4},{EdgeWeight->{3.0,1.0,1.0,1.0,3.0}}),1,4)", //
         "{1,3,2,4}");
 
-    check(
-        "FindShortestPath({1 -> 2, 2 -> 3, 3 -> 1,  3 -> 4, 4 -> 5, 3 -> 5},1,4)", //
+    check("FindShortestPath({1 -> 2, 2 -> 3, 3 -> 1,  3 -> 4, 4 -> 5, 3 -> 5},1,4)", //
         "{1,2,3,4}");
   }
 
   public void testFindShortestTour() {
-    check(
-        "FindShortestTour({{1,2},{2,3},{3,1}})", //
+    check("FindShortestTour({{1,2},{2,3},{3,1}})", //
         "{Sqrt(2)+2*Sqrt(5),{1,3,2,1}}");
 
-    check(
-        "FindShortestTour({GeoPosition({41, 20}), GeoPosition({5, 20}), GeoPosition({49, 32}), " //
-            + "GeoPosition({53, 28}), GeoPosition({47, 29})})", //
+    check("FindShortestTour({GeoPosition({41, 20}), GeoPosition({5, 20}), GeoPosition({49, 32}), " //
+        + "GeoPosition({53, 28}), GeoPosition({47, 29})})", //
         "{6852.025[mi],{1,2,5,3,4,1}}");
     check(
         "FindShortestTour({{1, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {2, 1}, {2, 3}, {2, 5}, {3, 1}, {3, 2}," //
@@ -227,52 +190,38 @@ public class GraphFunctionsTest extends AbstractTestCase {
             + "{EdgeWeight->{1.0,3.0,6.0,5.0,1.0,5.0,2.0,1.0,4.0}}))", //
         "Graph({a,b,d,e,c,f},{a->b,d->e,c->f,b->e,e->f},{EdgeWeight->{1.0,1.0,2.0,1.0,4.0}})");
 
-    check(
-        "g=Graph({1,2,3,4,5,6,7,8},\n"
-            + "{UndirectedEdge(1,2),UndirectedEdge(1,3),UndirectedEdge(1,4),UndirectedEdge(3,4),UndirectedEdge(2,6),\n"
-            + "UndirectedEdge(3,6),UndirectedEdge(5,3),UndirectedEdge(5,4),UndirectedEdge(5,6),UndirectedEdge(5,7),\n"
-            + "UndirectedEdge(5,8),UndirectedEdge(6,7),UndirectedEdge(7,8),UndirectedEdge(4,8)});", //
+    check("g=Graph({1,2,3,4,5,6,7,8},\n"
+        + "{UndirectedEdge(1,2),UndirectedEdge(1,3),UndirectedEdge(1,4),UndirectedEdge(3,4),UndirectedEdge(2,6),\n"
+        + "UndirectedEdge(3,6),UndirectedEdge(5,3),UndirectedEdge(5,4),UndirectedEdge(5,6),UndirectedEdge(5,7),\n"
+        + "UndirectedEdge(5,8),UndirectedEdge(6,7),UndirectedEdge(7,8),UndirectedEdge(4,8)});", //
         "");
 
-    check(
-        "FindSpanningTree(g)", //
+    check("FindSpanningTree(g)", //
         "Graph({1,2,3,4,6,5,7,8},{1->2,1->3,1->4,2->6,5->3,5->7,5->8})");
   }
 
   public void testHamiltonianGraphQ() {
-    check(
-        "HamiltonianGraphQ(Graph({1,2,3},{1<->2,2<->3,3<->1}))", //
+    check("HamiltonianGraphQ(Graph({1,2,3},{1<->2,2<->3,3<->1}))", //
         "True");
-    check(
-        "HamiltonianGraphQ(Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}}))", //
+    check("HamiltonianGraphQ(Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}}))", //
         "True");
 
-    check(
-        "HamiltonianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
+    check("HamiltonianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
         "True");
-    check(
-        "HamiltonianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
+    check("HamiltonianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
         "False");
   }
 
   public void testHypercubeGraph() {
-    check(
-        "HypercubeGraph(4) // AdjacencyMatrix // Normal", //
+    check("HypercubeGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,0,1,0,0,0,1,0,0,0,0,0,0,0},\n" //
-            + " {1,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0},\n"
-            + " {1,0,0,1,0,0,1,0,0,0,1,0,0,0,0,0},\n"
-            + " {0,1,1,0,0,0,0,1,0,0,0,1,0,0,0,0},\n"
-            + " {1,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0},\n"
-            + " {0,1,0,0,1,0,0,1,0,0,0,0,0,1,0,0},\n"
-            + " {0,0,1,0,1,0,0,1,0,0,0,0,0,0,1,0},\n"
-            + " {0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,1},\n"
-            + " {1,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0},\n"
-            + " {0,1,0,0,0,0,0,0,1,0,0,1,0,1,0,0},\n"
-            + " {0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0},\n"
-            + " {0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,1},\n"
-            + " {0,0,0,0,1,0,0,0,1,0,0,0,0,1,1,0},\n"
-            + " {0,0,0,0,0,1,0,0,0,1,0,0,1,0,0,1},\n"
-            + " {0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,1},\n"
+            + " {1,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0},\n" + " {1,0,0,1,0,0,1,0,0,0,1,0,0,0,0,0},\n"
+            + " {0,1,1,0,0,0,0,1,0,0,0,1,0,0,0,0},\n" + " {1,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0},\n"
+            + " {0,1,0,0,1,0,0,1,0,0,0,0,0,1,0,0},\n" + " {0,0,1,0,1,0,0,1,0,0,0,0,0,0,1,0},\n"
+            + " {0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,1},\n" + " {1,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0},\n"
+            + " {0,1,0,0,0,0,0,0,1,0,0,1,0,1,0,0},\n" + " {0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0},\n"
+            + " {0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,1},\n" + " {0,0,0,0,1,0,0,0,1,0,0,0,0,1,1,0},\n"
+            + " {0,0,0,0,0,1,0,0,0,1,0,0,1,0,0,1},\n" + " {0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,1},\n"
             + " {0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0}}");
   }
 
@@ -293,8 +242,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check(
         "Graph({1, 2, 3}, {UndirectedEdge(1, 2), UndirectedEdge(2, 3), UndirectedEdge(3, 1)}, {EdgeWeight -> {5, 4, 3}})", //
         "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{5.0,4.0,3.0}})");
-    check(
-        "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})", //
+    check("Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})", //
         "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})");
     check(
         "Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}, {EdgeWeight -> {2, 3, 4}})", //
@@ -303,34 +251,27 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
   public void testGraph() {
 
-    check(
-        "Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1})", //
+    check("Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1})", //
         "Graph({1,2,3},{1<->2,2<->3,3<->1})");
-    check(
-        "Graph({1,2,3},{1<->2,2<->3,3<->1})", //
+    check("Graph({1,2,3},{1<->2,2<->3,3<->1})", //
         "Graph({1,2,3},{1<->2,2<->3,3<->1})");
 
-    check(
-        "Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1})", //
+    check("Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1})", //
         "Graph({1,2,3},{1->2,2->3,3->1})");
-    check(
-        "Graph({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1})", //
+    check("Graph({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1})", //
         "Graph({1,2,3,4},{1->2,2->3,3->1,1->3,3->4,4->1})");
 
-    check(
-        "Graph({1,2,3,4,5,6,7,8},\n"
-            + "{UndirectedEdge(1,2),UndirectedEdge(1,3),UndirectedEdge(1,4),UndirectedEdge(3,4),UndirectedEdge(2,6),\n"
-            + "UndirectedEdge(3,6),UndirectedEdge(5,3),UndirectedEdge(5,4),UndirectedEdge(5,6),UndirectedEdge(5,7),\n"
-            + "UndirectedEdge(5,8),UndirectedEdge(6,7),UndirectedEdge(7,8),UndirectedEdge(4,8)})", //
+    check("Graph({1,2,3,4,5,6,7,8},\n"
+        + "{UndirectedEdge(1,2),UndirectedEdge(1,3),UndirectedEdge(1,4),UndirectedEdge(3,4),UndirectedEdge(2,6),\n"
+        + "UndirectedEdge(3,6),UndirectedEdge(5,3),UndirectedEdge(5,4),UndirectedEdge(5,6),UndirectedEdge(5,7),\n"
+        + "UndirectedEdge(5,8),UndirectedEdge(6,7),UndirectedEdge(7,8),UndirectedEdge(4,8)})", //
         "Graph({1,2,3,4,5,6,7,8},{1<->2,1<->3,1<->4,3<->4,2<->6,3<->6,5<->3,5<->4,5<->6,5<->7,5<->8,6<->7,7<->8,4<->8})");
   }
 
   public void testGraphData() {
-    check(
-        "GraphData(\"PappusGraph\")", //
+    check("GraphData(\"PappusGraph\")", //
         "Graph({1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18}," //
-            + "{1<->2,1<->3,1<->4,2<->5,2<->6,5<->7,5<->8,7<->9,7<->\n"
-            + //
+            + "{1<->2,1<->3,1<->4,2<->5,2<->6,5<->7,5<->8,7<->9,7<->\n" + //
             "10,9<->3,9<->11,3<->12,4<->13,4<->14,6<->15,6<->16,8<->13,8<->17,10<->16,10<->18,11<->17,11<->14,12<->15,12<->18,15<->17,13<->18,16<->\n"
             + "14})");
   }
@@ -386,12 +327,12 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "1");
   }
 
-  //  public void testGraphUnion() {
-  //    check(
-  //        "GraphUnion(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}), Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 ->
+  // public void testGraphUnion() {
+  // check(
+  // "GraphUnion(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}), Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 ->
   // 2, 4 -> 1}) )", //
-  //        "{3}");
-  //  }
+  // "{3}");
+  // }
 
   public void testGraphPeriphery() {
     check(
@@ -413,37 +354,31 @@ public class GraphFunctionsTest extends AbstractTestCase {
   }
 
   public void testGraphQ() {
-    check(
-        "GraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
+    check("GraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
         "True");
-    check(
-        "GraphQ( Sin(x) )", //
+    check("GraphQ( Sin(x) )", //
         "False");
-    check(
-        "GraphQ( Graph({1->2, 2->3, 3->1}, EdgeWeight->{5.061,2.282,5.086}) )", //
+    check("GraphQ( Graph({1->2, 2->3, 3->1}, EdgeWeight->{5.061,2.282,5.086}) )", //
         "True");
   }
 
   public void testPetersenGraph() {
-    check(
-        "PetersenGraph()", //
+    check("PetersenGraph()", //
         "Graph({1,2,3,4,5,6,7,8,9,10},{1<->3,1<->2,2<->6,3<->5,3<->4,4<->8,5<->7,5<->6,6<->10,7<->9,7<->8,8<->2,9<->1,9<->10,10<->4})");
   }
 
   public void testPlanarGraphQ() {
-    check(
-        "PlanarGraphQ( PetersenGraph(5,2) )", //
+    check("PlanarGraphQ( PetersenGraph(5,2) )", //
         "False");
-    check(
-        "PlanarGraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
+    check("PlanarGraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
         "True");
   }
 
   public void testLineGraph() {
     // todo
-    //    check(
-    //        "LineGraph(Graph({1 -> 2, 1 -> 3, 2 -> 4, 3 -> 4, 3 -> 5, 4 -> 6, 5 -> 6}) )", //
-    //        "");
+    // check(
+    // "LineGraph(Graph({1 -> 2, 1 -> 3, 2 -> 4, 3 -> 4, 3 -> 5, 4 -> 6, 5 -> 6}) )", //
+    // "");
     // ([(1 : 2), (1 : 3), (2 : 4), (3 : 4), (3 : 5), (4 : 6), (5 : 6)], [
     // ((1 : 2) : (2 : 4))={(1 : 2),(2 : 4)},
     // ((1 : 3) : (3 : 4))={(1 : 3),(3 : 4)},
@@ -452,82 +387,76 @@ public class GraphFunctionsTest extends AbstractTestCase {
     // ((3 : 4) : (4 : 6))={(3 : 4),(4 : 6)},
     // ((3 : 5) : (5 : 6))={(3 : 5),(5 : 6)}])
 
-    //    check(
-    //        "LineGraph(Graph({1 <-> 2,1 <-> 3,1 <-> 4, 2 <-> 3,2 <-> 4, 3 <->4}) )", //
-    //        "");
-    //    ([(1 : 2), (1 : 3), (1 : 4), (2 : 3), (2 : 4), (3 : 4)], [
+    // check(
+    // "LineGraph(Graph({1 <-> 2,1 <-> 3,1 <-> 4, 2 <-> 3,2 <-> 4, 3 <->4}) )", //
+    // "");
+    // ([(1 : 2), (1 : 3), (1 : 4), (2 : 3), (2 : 4), (3 : 4)], [
     // ((1 : 2) : (1 : 3))=
-    //    	{(1 : 2),(1 : 3)},
+    // {(1 : 2),(1 : 3)},
     // ((1 : 2) : (1 : 4))=
-    //  {(1 : 2),(1 : 4)},
+    // {(1 : 2),(1 : 4)},
     // ((1 : 3) : (1 : 4))=
-    //    {(1 : 3),(1 : 4)},
+    // {(1 : 3),(1 : 4)},
     // ((1 : 2) : (2 : 3))=
-    //   {(1 : 2),(2 : 3)},
+    // {(1 : 2),(2 : 3)},
     // ((1 : 2) : (2 : 4))=
     // {(1 : 2),(2 : 4)},
     // ((2 : 3) : (2 : 4))=
-    //	{(2 : 3),(2 : 4)},
+    // {(2 : 3),(2 : 4)},
     // ((1 : 3) : (2 : 3))=
     // {(1 : 3),(2 : 3)},
     // ((1 : 3) : (3 : 4))=
-    //	{(1 : 3),(3 : 4)},
+    // {(1 : 3),(3 : 4)},
     // ((2 : 3) : (3 : 4))=
     // {(2 : 3),(3 : 4)},
     // ((1 : 4) : (2 : 4))=
-    //	{(1 : 4),(2 : 4)},
+    // {(1 : 4),(2 : 4)},
     // ((1 : 4) : (3 : 4))=
     // {(1 : 4),(3 : 4)},
     // ((2 : 4) : (3 : 4))=
-    //	{(2 : 4),(3 : 4)}])
+    // {(2 : 4),(3 : 4)}])
 
   }
 
   public void testRandomGraph() {
     // random result:
 
-    //    check(
-    //        "AdjacencyMatrix /@ RandomGraph({7,4}, 3) // Normal", //
-    //        "{\n" //
-    //            + "{{0,0,1,0,0,1,0},\n"
-    //            + " {0,0,0,0,0,0,0},\n"
-    //            + " {1,0,0,0,0,1,1},\n"
-    //            + " {0,0,0,0,0,0,0},\n"
-    //            + " {0,0,0,0,0,0,0},\n"
-    //            + " {1,0,1,0,0,0,0},\n"
-    //            + " {0,0,1,0,0,0,0}},\n"
-    //            + "{{0,1,0,0,0,0,0},\n"
-    //            + " {1,0,0,0,0,0,0},\n"
-    //            + " {0,0,0,0,0,1,0},\n"
-    //            + " {0,0,0,0,0,0,0},\n"
-    //            + " {0,0,0,0,0,1,1},\n"
-    //            + " {0,0,1,0,1,0,0},\n"
-    //            + " {0,0,0,0,1,0,0}},\n"
-    //            + "{{0,0,1,0,0,0,1},\n"
-    //            + " {0,0,1,0,0,0,0},\n"
-    //            + " {1,1,0,0,0,0,0},\n"
-    //            + " {0,0,0,0,0,0,0},\n"
-    //            + " {0,0,0,0,0,0,1},\n"
-    //            + " {0,0,0,0,0,0,0},\n"
-    //            + " {1,0,0,0,1,0,0}}}");
+    // check(
+    // "AdjacencyMatrix /@ RandomGraph({7,4}, 3) // Normal", //
+    // "{\n" //
+    // + "{{0,0,1,0,0,1,0},\n"
+    // + " {0,0,0,0,0,0,0},\n"
+    // + " {1,0,0,0,0,1,1},\n"
+    // + " {0,0,0,0,0,0,0},\n"
+    // + " {0,0,0,0,0,0,0},\n"
+    // + " {1,0,1,0,0,0,0},\n"
+    // + " {0,0,1,0,0,0,0}},\n"
+    // + "{{0,1,0,0,0,0,0},\n"
+    // + " {1,0,0,0,0,0,0},\n"
+    // + " {0,0,0,0,0,1,0},\n"
+    // + " {0,0,0,0,0,0,0},\n"
+    // + " {0,0,0,0,0,1,1},\n"
+    // + " {0,0,1,0,1,0,0},\n"
+    // + " {0,0,0,0,1,0,0}},\n"
+    // + "{{0,0,1,0,0,0,1},\n"
+    // + " {0,0,1,0,0,0,0},\n"
+    // + " {1,1,0,0,0,0,0},\n"
+    // + " {0,0,0,0,0,0,0},\n"
+    // + " {0,0,0,0,0,0,1},\n"
+    // + " {0,0,0,0,0,0,0},\n"
+    // + " {1,0,0,0,1,0,0}}}");
   }
 
   public void testStarGraph() {
-    check(
-        "StarGraph(4) // AdjacencyMatrix // Normal", //
+    check("StarGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,1},\n" //
-            + " {1,0,0,0},\n"
-            + " {1,0,0,0},\n"
-            + " {1,0,0,0}}");
-    check(
-        "StarGraph(6)", //
+            + " {1,0,0,0},\n" + " {1,0,0,0},\n" + " {1,0,0,0}}");
+    check("StarGraph(6)", //
         "Graph({1,2,3,4,5,6},{2<->1,3<->1,4<->1,5<->1,6<->1})");
     check(
         "SparseArray(Automatic, {4, 4}, 0, {1, {{0, 3, 4, 5, 6}, {{2}, {3}, {4}, {1}, {1}, {1}}}, {1, 1, 1, 1, 1, 1}}) // Normal", //
         "{{0,1,1,1},\n" //
-            + " {1,0,0,0},\n"
-            + " {1,0,0,0},\n"
-            + " {1,0,0,0}}");
+            + " {1,0,0,0},\n" + " {1,0,0,0},\n" + " {1,0,0,0}}");
   }
 
   public void testWeightedAdjacencyMatrix() {
@@ -535,54 +464,38 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check(
         "WeightedAdjacencyMatrix(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}, EdgeWeight->{5.061,2.282,5.086,1.707})) // Normal", //
         "{{0,5.061,5.086,0},\n" //
-            + " {0,0,2.282,0},\n"
-            + " {0,0,0,0},\n"
-            + " {0,1.707,0,0}}");
-    check(
-        "WeightedAdjacencyMatrix({1 -> 3, 2 -> 1}) // Normal", //
+            + " {0,0,2.282,0},\n" + " {0,0,0,0},\n" + " {0,1.707,0,0}}");
+    check("WeightedAdjacencyMatrix({1 -> 3, 2 -> 1}) // Normal", //
         "{{0,1,0},\n" //
-            + " {0,0,0},\n"
-            + " {1,0,0}}");
-    check(
-        "wg=Graph({1<->2, 2<->3, 3<->1}, EdgeWeight->{5.061,2.282,5.086})", //
+            + " {0,0,0},\n" + " {1,0,0}}");
+    check("wg=Graph({1<->2, 2<->3, 3<->1}, EdgeWeight->{5.061,2.282,5.086})", //
         "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{5.061,2.282,5.086}})");
 
-    check(
-        "WeightedAdjacencyMatrix(wg) // Normal", //
+    check("WeightedAdjacencyMatrix(wg) // Normal", //
         "{{0,5.061,5.086},\n" //
-            + " {5.061,0,2.282},\n"
-            + " {5.086,2.282,0}}");
+            + " {5.061,0,2.282},\n" + " {5.086,2.282,0}}");
 
-    check(
-        "wgd=Graph({1->2, 2->3, 3->1}, EdgeWeight->{5.061,2.282,5.086})", //
+    check("wgd=Graph({1->2, 2->3, 3->1}, EdgeWeight->{5.061,2.282,5.086})", //
         "Graph({1,2,3},{1->2,2->3,3->1},{EdgeWeight->{5.061,2.282,5.086}})");
 
-    check(
-        "WeightedAdjacencyMatrix(wgd) // Normal", //
+    check("WeightedAdjacencyMatrix(wgd) // Normal", //
         "{{0,5.061,0},\n" //
-            + " {0,0,2.282},\n"
-            + " {5.086,0,0}}");
+            + " {0,0,2.282},\n" + " {5.086,0,0}}");
   }
 
   public void testWeightedGraphQ() {
-    check(
-        "WeightedGraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
+    check("WeightedGraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
         "False");
-    check(
-        "WeightedGraphQ( Sin(x) ) ", //
+    check("WeightedGraphQ( Sin(x) ) ", //
         "False");
-    check(
-        "WeightedGraphQ( Graph({1->2, 2->3, 3->1}, EdgeWeight->{5.061,2.282,5.086}) ) ", //
+    check("WeightedGraphQ( Graph({1->2, 2->3, 3->1}, EdgeWeight->{5.061,2.282,5.086}) ) ", //
         "True");
   }
 
   public void testWheelGraph() {
-    check(
-        "WheelGraph(4) // AdjacencyMatrix // Normal", //
+    check("WheelGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,1},\n" //
-            + " {1,0,1,1},\n"
-            + " {1,1,0,1},\n"
-            + " {1,1,1,0}}");
+            + " {1,0,1,1},\n" + " {1,1,0,1},\n" + " {1,1,1,0}}");
   }
 
   /** The JUnit setup method */

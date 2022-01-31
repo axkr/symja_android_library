@@ -30,23 +30,14 @@ public class JavaCreamSolver {
     IntVariable JAVA = J.multiply(1000).add(A.multiply(100)).add(V.multiply(10)).add(A);
     IntVariable CREAM =
         C.multiply(10000).add(R.multiply(1000)).add(E.multiply(100)).add(A.multiply(10)).add(M);
-    IntVariable SOLVER =
-        S.multiply(100000)
-            .add(O.multiply(10000))
-            .add(L.multiply(1000))
-            .add(V.multiply(100))
-            .add(E.multiply(10))
-            .add(R);
+    IntVariable SOLVER = S.multiply(100000).add(O.multiply(10000)).add(L.multiply(1000))
+        .add(V.multiply(100)).add(E.multiply(10)).add(R);
     JAVA.add(CREAM).equals(SOLVER);
     Solver solver = new DefaultSolver(net);
     for (solver.start(); solver.waitNext(); solver.resume()) {
       Solution solution = solver.getSolution();
-      System.out.println(
-          solution.getIntValue(JAVA)
-              + " + "
-              + solution.getIntValue(CREAM)
-              + " = "
-              + solution.getIntValue(SOLVER));
+      System.out.println(solution.getIntValue(JAVA) + " + " + solution.getIntValue(CREAM) + " = "
+          + solution.getIntValue(SOLVER));
     }
     solver.stop();
   }

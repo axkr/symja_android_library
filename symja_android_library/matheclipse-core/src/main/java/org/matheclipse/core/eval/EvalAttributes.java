@@ -143,27 +143,25 @@ public class EvalAttributes {
     newSize[0] = 0;
     boolean[] flattened = new boolean[] {false};
 
-    ast.forEach(
-        expr -> {
-          if (expr.isAST(head)) {
-            flattened[0] = true;
-            int temp = flattenAlloc(head, (IAST) expr);
-            newSize[0] += temp;
-          } else {
-            newSize[0]++;
-          }
-        });
+    ast.forEach(expr -> {
+      if (expr.isAST(head)) {
+        flattened[0] = true;
+        int temp = flattenAlloc(head, (IAST) expr);
+        newSize[0] += temp;
+      } else {
+        newSize[0]++;
+      }
+    });
 
     if (flattened[0]) {
       IASTAppendable result = F.ast(ast.head(), newSize[0]);
-      ast.forEach(
-          expr -> {
-            if (expr.isAST(head)) {
-              result.appendArgs(flattenDeep(head, (IAST) expr).orElse((IAST) expr));
-            } else {
-              result.append(expr);
-            }
-          });
+      ast.forEach(expr -> {
+        if (expr.isAST(head)) {
+          result.appendArgs(flattenDeep(head, (IAST) expr).orElse((IAST) expr));
+        } else {
+          result.append(expr);
+        }
+      });
       return result;
     }
     return F.NIL;
@@ -185,35 +183,30 @@ public class EvalAttributes {
     newSize[0] = 0;
     boolean[] flattened = new boolean[] {false};
 
-    ast.forEach(
-        expr -> {
-          if (expr.isAST(head)
-              || (expr.isUnevaluated()
-                  && expr.first().head().equals(head)
-                  && expr.first().isAST())) {
-            flattened[0] = true;
-            int temp = ((IAST) expr).argSize(); // flattenAlloc(head, (IAST) expr);
-            newSize[0] += temp;
-          } else {
-            newSize[0]++;
-          }
-        });
+    ast.forEach(expr -> {
+      if (expr.isAST(head)
+          || (expr.isUnevaluated() && expr.first().head().equals(head) && expr.first().isAST())) {
+        flattened[0] = true;
+        int temp = ((IAST) expr).argSize(); // flattenAlloc(head, (IAST) expr);
+        newSize[0] += temp;
+      } else {
+        newSize[0]++;
+      }
+    });
 
     if (flattened[0]) {
       IASTAppendable result = F.ast(ast.head(), newSize[0]);
-      ast.forEach(
-          expr -> {
-            if (expr.isAST(head)) {
-              result.appendArgs((IAST) expr); // flatten(head, (IAST) expr).orElse((IAST) expr));
-            } else if (expr.isUnevaluated()
-                && expr.first().head().equals(head)
-                && expr.first().isAST()) {
-              IAST unevaluated = (IAST) expr.first();
-              result.appendArgs(unevaluated.map(head, x -> F.Unevaluated(x)));
-            } else {
-              result.append(expr);
-            }
-          });
+      ast.forEach(expr -> {
+        if (expr.isAST(head)) {
+          result.appendArgs((IAST) expr); // flatten(head, (IAST) expr).orElse((IAST) expr));
+        } else if (expr.isUnevaluated() && expr.first().head().equals(head)
+            && expr.first().isAST()) {
+          IAST unevaluated = (IAST) expr.first();
+          result.appendArgs(unevaluated.map(head, x -> F.Unevaluated(x)));
+        } else {
+          result.append(expr);
+        }
+      });
       return result;
     }
     return F.NIL;
@@ -271,14 +264,13 @@ public class EvalAttributes {
 
   public static int flattenAlloc(final ISymbol head, final IAST ast) {
     int[] newSize = new int[1];
-    ast.forEach(
-        expr -> {
-          if (expr.isAST(head)) {
-            newSize[0] += flattenAlloc(head, (IAST) expr);
-          } else {
-            newSize[0]++;
-          }
-        });
+    ast.forEach(expr -> {
+      if (expr.isAST(head)) {
+        newSize[0] += flattenAlloc(head, (IAST) expr);
+      } else {
+        newSize[0]++;
+      }
+    });
     return newSize[0];
   }
 
@@ -295,25 +287,18 @@ public class EvalAttributes {
    * @param level the recursion level up to which the list should be flattened
    * @return <code>true</code> if a sublist was flattened out into the <code>result</code> list.
    */
-  public static boolean flatten(
-      final ISymbol head,
-      final IAST sublist,
-      final IASTAppendable result,
-      final int recursionCounter,
-      final int level) {
+  public static boolean flatten(final ISymbol head, final IAST sublist, final IASTAppendable result,
+      final int recursionCounter, final int level) {
     boolean[] flattened = new boolean[1];
     flattened[0] = false;
-    sublist.forEach(
-        1,
-        sublist.size(),
-        expr -> {
-          if (expr.isAST(head) && recursionCounter < level) {
-            flattened[0] = true;
-            flatten(head, (IAST) expr, result, recursionCounter + 1, level);
-          } else {
-            result.append(expr);
-          }
-        });
+    sublist.forEach(1, sublist.size(), expr -> {
+      if (expr.isAST(head) && recursionCounter < level) {
+        flattened[0] = true;
+        flatten(head, (IAST) expr, result, recursionCounter + 1, level);
+      } else {
+        result.append(expr);
+      }
+    });
     return flattened[0];
   }
 
@@ -431,8 +416,8 @@ public class EvalAttributes {
    * @param comparator a comparison function, which imposes a total ordering
    * @return
    */
-  public static final boolean isSorted(
-      final IAST ast, int fromPosition, Comparator<IExpr> comparator) {
+  public static final boolean isSorted(final IAST ast, int fromPosition,
+      Comparator<IExpr> comparator) {
     if (ast.size() < fromPosition + 2) {
       return true;
     }
@@ -463,27 +448,27 @@ public class EvalAttributes {
     if (ast.size() > 2) {
       if (!isSorted(ast, comparator)) {
         ast.sortInplace(comparator);
-        //        final IExpr[] a = ast.toArray();
-        //        int end = a.length;
-        //        if (Config.FUZZ_TESTING) {
-        //          try {
-        //            Arrays.sort(a, 1, ast.size(), comparator);
-        //            for (int j = 1; j < end; j++) {
-        //              ast.set(j, a[j]);
-        //            }
-        //          } catch (java.lang.IllegalArgumentException iae) {
-        //            // java.util.TimSort.mergeHi(TimSort.java:899) - Comparison method violates
+        // final IExpr[] a = ast.toArray();
+        // int end = a.length;
+        // if (Config.FUZZ_TESTING) {
+        // try {
+        // Arrays.sort(a, 1, ast.size(), comparator);
+        // for (int j = 1; j < end; j++) {
+        // ast.set(j, a[j]);
+        // }
+        // } catch (java.lang.IllegalArgumentException iae) {
+        // // java.util.TimSort.mergeHi(TimSort.java:899) - Comparison method violates
         // its general
-        //            // contract!
-        //            LOGGER.error(ast, iae);
-        //            throw iae;
-        //          }
-        //        } else {
-        //          Arrays.sort(a, 1, ast.size(), comparator);
-        //          for (int j = 1; j < end; j++) {
-        //            ast.set(j, a[j]);
-        //          }
-        //        }
+        // // contract!
+        // LOGGER.error(ast, iae);
+        // throw iae;
+        // }
+        // } else {
+        // Arrays.sort(a, 1, ast.size(), comparator);
+        // for (int j = 1; j < end; j++) {
+        // ast.set(j, a[j]);
+        // }
+        // }
         return true;
       }
     }
@@ -568,8 +553,8 @@ public class EvalAttributes {
    * @param listLength the length of the list
    * @return the resulting ast with the <code>argHead</code> threaded into each ast argument.
    */
-  public static IASTMutable threadList(
-      final IAST ast, final IExpr listHead, final IExpr argHead, final int listLength) {
+  public static IASTMutable threadList(final IAST ast, final IExpr listHead, final IExpr argHead,
+      final int listLength) {
     if (listLength == 0) {
       return F.headAST0(listHead);
     }
@@ -578,8 +563,7 @@ public class EvalAttributes {
     for (int j = 1; j < listLength + 1; j++) {
       final IASTMutable subResult = F.astMutable(argHead, listSize - 1);
       for (int i = 1; i < listSize; i++) {
-        if (listHead == S.List
-            && //
+        if (listHead == S.List && //
             (ast.get(i).isList() || ast.get(i).isSparseArray())) {
           if (ast.get(i).isList()) {
             final IAST arg = (IAST) ast.get(i);

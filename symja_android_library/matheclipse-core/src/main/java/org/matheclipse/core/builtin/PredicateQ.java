@@ -793,8 +793,8 @@ public class PredicateQ {
       if (!arg1.isString()) {
         arg1 = engine.evaluate(ast.arg1());
       }
-      
-      if (arg1.isString()) { 
+
+      if (arg1.isString()) {
         return F.bool(F.hasSymbol(arg1.toString(), engine));
       }
       return S.False;

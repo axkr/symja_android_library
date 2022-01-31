@@ -3,8 +3,7 @@ package examples;
 import jp.ac.kobe_u.cs.cream.*;
 
 /*
- * Zebra puzzle
- * http://en.wikipedia.org/wiki/Zebra_Puzzle
+ * Zebra puzzle http://en.wikipedia.org/wiki/Zebra_Puzzle
  */
 public class Zebra {
   static int houses = 5;
@@ -98,21 +97,11 @@ public class Zebra {
       Solution solution = solver.getSolution();
       count++;
       System.out.println("Solution " + count);
-      //			System.out.println(solution);
+      // System.out.println(solution);
       for (int house = 1; house <= houses; house++) {
-        System.out.println(
-            "\tHouse "
-                + house
-                + ": "
-                + find(house, color, solution)
-                + ", "
-                + find(house, nationality, solution)
-                + ", "
-                + find(house, drink, solution)
-                + ", "
-                + find(house, smoke, solution)
-                + ", "
-                + find(house, pet, solution));
+        System.out.println("\tHouse " + house + ": " + find(house, color, solution) + ", "
+            + find(house, nationality, solution) + ", " + find(house, drink, solution) + ", "
+            + find(house, smoke, solution) + ", " + find(house, pet, solution));
       }
       System.out.println();
     }

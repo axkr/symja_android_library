@@ -17,8 +17,8 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Forward and backward substitutions of expressions for polynomials. See <a
- * href="https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf">3.5
+ * Forward and backward substitutions of expressions for polynomials. See <a href=
+ * "https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf">3.5
  * Homogenization</a>
  */
 public class PolynomialHomogenization {
@@ -47,8 +47,8 @@ public class PolynomialHomogenization {
   private EvalEngine engine;
 
   /**
-   * Forward and backward substitutions of expressions for polynomials. See <a
-   * href="https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf">3.5
+   * Forward and backward substitutions of expressions for polynomials. See <a href=
+   * "https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf">3.5
    * Homogenization</a> (page 112)
    *
    * @param listOfVariables names for the variables.
@@ -289,8 +289,7 @@ public class PolynomialHomogenization {
           IAST plusAST = (IAST) exp;
           if (plusAST.first().isInteger()) {
             IExpr coefficient = S.Power.of(base, plusAST.first());
-            return F.Times(
-                replaceForwardRecursive(coefficient),
+            return F.Times(replaceForwardRecursive(coefficient),
                 replaceForwardRecursive(F.Power(base, plusAST.rest().oneIdentity0())));
           }
         }
@@ -407,22 +406,19 @@ public class PolynomialHomogenization {
    * @see #replaceForward(IExpr)
    */
   public IExpr replaceBackward(final IExpr expression) {
-    IExpr temp =
-        F.subst(
-            expression,
-            x -> {
-              if (x.isSymbol()) {
-                IExpr t = substitutedVariables.get(x);
-                if (t != null) {
-                  IInteger denominatorLCM = getLCM(x);
-                  if (denominatorLCM.isOne()) {
-                    return t;
-                  }
-                  return F.Power(t, F.fraction(F.C1, denominatorLCM));
-                }
-              }
-              return F.NIL;
-            });
+    IExpr temp = F.subst(expression, x -> {
+      if (x.isSymbol()) {
+        IExpr t = substitutedVariables.get(x);
+        if (t != null) {
+          IInteger denominatorLCM = getLCM(x);
+          if (denominatorLCM.isOne()) {
+            return t;
+          }
+          return F.Power(t, F.fraction(F.C1, denominatorLCM));
+        }
+      }
+      return F.NIL;
+    });
     return engine.evaluate(temp);
   }
 

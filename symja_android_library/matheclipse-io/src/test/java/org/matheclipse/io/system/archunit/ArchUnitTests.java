@@ -30,9 +30,8 @@ public class ArchUnitTests {
   @ArchTest
   public static final ArchRule expression_data_access = classes().that() //
       .resideInAPackage("org.matheclipse.core.expression.data..") //
-      .should().onlyBeAccessed()
-      .byAnyPackage("org.matheclipse.core.builtin..", "org.matheclipse.core.expression..",
-          "org.matheclipse.core.interface..");
+      .should().onlyBeAccessed().byAnyPackage("org.matheclipse.core.builtin..",
+          "org.matheclipse.core.expression..", "org.matheclipse.core.interface..");
 
   @ArchTest
   public static final ArchRule expression_access =

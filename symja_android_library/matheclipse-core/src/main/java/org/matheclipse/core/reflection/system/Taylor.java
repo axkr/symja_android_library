@@ -30,10 +30,8 @@ public class Taylor extends AbstractFunctionEvaluator {
       IExpr factor = null;
       for (int i = 1; i <= upperLimit; i++) {
         temp = F.D(temp, list.arg1());
-        factor =
-            F.Times(
-                F.Power(F.Factorial(F.ZZ(i)), F.CN1),
-                F.Power(F.Plus(list.arg1(), F.Times(F.CN1, list.arg2())), F.ZZ(i)));
+        factor = F.Times(F.Power(F.Factorial(F.ZZ(i)), F.CN1),
+            F.Power(F.Plus(list.arg1(), F.Times(F.CN1, list.arg2())), F.ZZ(i)));
         fadd.append(F.Times(F.ReplaceAll(temp, F.Rule(list.arg1(), list.arg2())), factor));
       }
       return fadd;

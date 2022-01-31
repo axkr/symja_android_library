@@ -9,11 +9,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class WolframFormFactory extends OutputFormFactory {
 
-  private WolframFormFactory(
-      final boolean relaxedSyntax,
-      final boolean reversed,
-      int exponentFigures,
-      int significantFigures) {
+  private WolframFormFactory(final boolean relaxedSyntax, final boolean reversed,
+      int exponentFigures, int significantFigures) {
     super(relaxedSyntax, reversed, exponentFigures, significantFigures);
     this.fInputForm = true;
   }

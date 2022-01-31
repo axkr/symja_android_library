@@ -8,14 +8,16 @@ import org.matheclipse.core.interfaces.IExpr;
  * UnitSystem is an operator that maps a given {@link IQuantity} to a {@link IQuantity} that makes
  * use only of standard units defined by the unit system.
  *
- * <p>Example when using the built-in SI definitions:
+ * <p>
+ * Example when using the built-in SI definitions:
  *
  * <pre>
  * UnitSystem.SI().apply(Quantity.of(1, "V")) == 1[A^-1*kg*m^2*s^-3]
  * UnitSystem.SI().apply(Quantity.of(125, "mi")) == 201168[m]
  * </pre>
  *
- * <p>{@link SimpleUnitSystem} is a reference implementation of the interface provided by the tensor
+ * <p>
+ * {@link SimpleUnitSystem} is a reference implementation of the interface provided by the tensor
  * library.
  */
 public interface UnitSystem extends UnaryOperator<IExpr> {
