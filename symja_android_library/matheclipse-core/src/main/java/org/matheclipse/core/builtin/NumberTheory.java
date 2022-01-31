@@ -51,6 +51,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.FractionSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -208,8 +209,7 @@ public final class NumberTheory {
             return F.C1;
           }
           if (n > 0) {
-            IInteger bellB = bellNumber(n);
-            return bellB;
+            return bellNumber(n);
           }
         }
       } catch (RuntimeException rex) {
@@ -4551,9 +4551,7 @@ public final class NumberTheory {
               && (p1.isRational() || p1.isFactorSqrtExpr()) && p2.isFactorSqrtExpr()) {
             IRational denominator = (IRational) F.Subtract.of(F.Sqr(p1), F.Sqr(p2));
             IAST numerator = F.Subtract(p1, p2);
-            IExpr temp = F.Divide(numerator, //
-                denominator);
-            return temp;
+            return F.Divide(numerator, denominator);
           }
         }
       }
@@ -5291,7 +5289,7 @@ public final class NumberTheory {
       return F.C0;
     }
     IFraction[] bernoulli = new IFraction[n + 1];
-    bernoulli[0] = AbstractFractionSym.ONE;
+    bernoulli[0] = FractionSym.ONE;
     bernoulli[1] = AbstractFractionSym.valueOf(-1L, 2L);
 
     int iterationLimit = EvalEngine.get().getIterationLimit();
@@ -5300,7 +5298,7 @@ public final class NumberTheory {
     }
     int iterationCounter = 0;
     for (int k = 2; k <= n; k++) {
-      bernoulli[k] = AbstractFractionSym.ZERO;
+      bernoulli[k] = FractionSym.ZERO;
       for (int i = 0; i < k; i++) {
         if (!bernoulli[i].isZero()) {
           if (iterationLimit > 0 && iterationLimit <= iterationCounter++) {

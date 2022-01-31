@@ -302,7 +302,7 @@ public class BigFractionSym extends AbstractFractionSym {
   @Override
   public IFraction fractionalPart() {
     if (isIntegral()) {
-      return AbstractFractionSym.ZERO;
+      return FractionSym.ZERO;
     }
     BigInteger den = fFraction.getDenominator();
     BigInteger newnum = fFraction.getNumerator().mod(den);
@@ -501,7 +501,7 @@ public class BigFractionSym extends AbstractFractionSym {
         return this.negate();
       }
       if (oint == 0) {
-        return AbstractFractionSym.ZERO;
+        return FractionSym.ZERO;
       }
     }
     return valueOf(toBigNumerator().multiply(other), toBigDenominator());
@@ -532,7 +532,7 @@ public class BigFractionSym extends AbstractFractionSym {
       return this;
     }
     if (n == 0) {
-      return AbstractFractionSym.ZERO;
+      return FractionSym.ZERO;
     }
     if (n == -1) {
       return this.negate();
