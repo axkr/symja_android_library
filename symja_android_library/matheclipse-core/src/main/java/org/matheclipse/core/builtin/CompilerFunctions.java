@@ -322,7 +322,7 @@ public class CompilerFunctions {
         fFactory.numericVariables.push();
         HashSet<String> oldLocalVariables = fFactory.localVariables;
         try {
-          HashSet<String> localVariables = (HashSet<String>) fFactory.localVariables.clone();
+          HashSet<String> localVariables = new HashSet<>(fFactory.localVariables);
           fFactory.localVariables = localVariables;
           IAST variableList = (IAST) f.arg1();
           int m = fFactory.module++;

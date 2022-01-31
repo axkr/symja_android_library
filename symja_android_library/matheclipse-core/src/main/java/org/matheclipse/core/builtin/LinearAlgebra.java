@@ -2315,7 +2315,7 @@ public final class LinearAlgebra {
           int size = list1RestDimensions.get(0) + 1;
           IASTAppendable newResult = F.ast(head, size);
           for (int i = 1; i < size; i++) {
-            ArrayList<Integer> list1CurClone = (ArrayList<Integer>) list1Cur.clone();
+            ArrayList<Integer> list1CurClone = new ArrayList<>(list1Cur);
             list1CurClone.add(i);
             IAST recursionInner = recursionInner(list1CurClone, list2Cur,
                 list1RestDimensions.subList(1, list1RestDimensions.size()), list2RestDimensions);
@@ -2330,7 +2330,7 @@ public final class LinearAlgebra {
           int size = list2RestDimensions.get(0) + 1;
           IASTAppendable newResult = F.ast(head, size);
           for (int i = 1; i < size; i++) {
-            ArrayList<Integer> list2CurClone = (ArrayList<Integer>) list2Cur.clone();
+            ArrayList<Integer> list2CurClone = new ArrayList<>(list2Cur);
             list2CurClone.add(i);
             IAST recursionInner = recursionInner(list1Cur, list2CurClone, list1RestDimensions,
                 list2RestDimensions.subList(1, list2RestDimensions.size()));
@@ -2358,7 +2358,6 @@ public final class LinearAlgebra {
         }
       }
 
-      @SuppressWarnings("unchecked")
       private IAST summand(List<Integer> list1Cur, List<Integer> list2Cur, final int i) {
         IASTAppendable result = F.ast(f, 2);
         List<Integer> list1CurClone = new ArrayList<>(list1Cur);
