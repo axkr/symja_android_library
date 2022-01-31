@@ -40,6 +40,8 @@ import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.ParserConfig;
 
 public class Symbol implements ISymbol, Serializable {
+  private static final long serialVersionUID = 6048546131696113624L;
+
   private static final Logger LOGGER = LogManager.getLogger();
 
   protected transient Context fContext;

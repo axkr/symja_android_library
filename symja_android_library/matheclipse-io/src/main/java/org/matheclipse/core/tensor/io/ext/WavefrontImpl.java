@@ -9,6 +9,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 
 /* package */ class WavefrontImpl implements Wavefront, Serializable {
+  private static final long serialVersionUID = 109909634419147041L;
+
   private final IASTAppendable vertices = F.ListAlloc();
   private final IASTAppendable normals = F.ListAlloc();
   private final List<WavefrontObject> objects = new ArrayList<>();

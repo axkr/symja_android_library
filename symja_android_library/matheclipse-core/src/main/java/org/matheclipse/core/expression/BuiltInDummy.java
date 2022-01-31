@@ -41,6 +41,8 @@ import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.ParserConfig;
 
 public class BuiltInDummy implements IBuiltInSymbol, Serializable {
+  private static final long serialVersionUID = -1921824292485125087L;
+
   private static final Logger LOGGER = LogManager.getLogger();
 
   private static final Collator US_COLLATOR = Collator.getInstance(Locale.US);

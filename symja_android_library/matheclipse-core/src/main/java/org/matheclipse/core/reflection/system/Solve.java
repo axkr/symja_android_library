@@ -743,8 +743,9 @@ public class Solve extends AbstractFunctionEvaluator {
     }
   }
 
-  @SuppressWarnings("serial")
   protected static class NoSolution extends Exception {
+    private static final long serialVersionUID = -8578380756971796776L;
+
     /** Solution couldn't be found. */
     public static final int NO_SOLUTION_FOUND = 1;
 

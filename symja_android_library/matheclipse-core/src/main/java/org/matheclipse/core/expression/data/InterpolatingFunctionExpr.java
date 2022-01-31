@@ -17,6 +17,8 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
   double max;
 
   private static class ASTFunctionExpr extends InterpolatingFunctionExpr<IAST> {
+    private static final long serialVersionUID = 7355009868203033788L;
+
     @Override
     public IAST normal(boolean nilIfUnevaluated) {
       return toData();
@@ -29,6 +31,7 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
 
   private static class HermiteFunctionExpr
       extends InterpolatingFunctionExpr<FieldHermiteInterpolator> {
+    private static final long serialVersionUID = 5139557783149167160L;
 
     public HermiteFunctionExpr(final FieldHermiteInterpolator interpolator, double min,
         double max) {

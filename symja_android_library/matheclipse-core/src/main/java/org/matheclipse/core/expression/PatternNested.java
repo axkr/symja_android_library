@@ -13,6 +13,8 @@ import org.matheclipse.parser.client.ParserConfig;
  * </code>).
  */
 public class PatternNested extends Pattern {
+  private static final long serialVersionUID = 7897154396467939141L;
+
   private IExpr fPatternExpr;
 
   public static IPattern valueOf(final ISymbol symbol, final IExpr patternExpr) {
