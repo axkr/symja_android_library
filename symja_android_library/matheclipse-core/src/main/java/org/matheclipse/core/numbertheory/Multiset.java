@@ -118,7 +118,9 @@ public interface Multiset<T> {
    */
   List<T> toList();
 
+  @Override
   String toString();
 
+  @Override
   boolean equals(Object o);
 }

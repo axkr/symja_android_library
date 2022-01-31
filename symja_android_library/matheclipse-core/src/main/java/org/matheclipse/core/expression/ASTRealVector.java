@@ -367,6 +367,7 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
     return true;
   }
 
+  @Override
   public boolean isNaN() {
     return vector.isNaN();
   }
@@ -414,6 +415,7 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
     return true;
   }
 
+  @Override
   public boolean isNumericFunction(boolean allowList) {
     return allowList;
   }
@@ -425,6 +427,7 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
    * @param builder join the elements as strings
    * @param delimiter the delimiter that separates each element
    */
+  @Override
   public void joinToString(StringBuilder builder, CharSequence delimiter) {
     Convert.joinToString(vector.toArray(), builder, delimiter);
   }

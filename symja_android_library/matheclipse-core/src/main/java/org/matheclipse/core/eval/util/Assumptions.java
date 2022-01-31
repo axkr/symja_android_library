@@ -609,6 +609,7 @@ public class Assumptions extends AbstractAssumptions {
     return this;
   }
 
+  @Override
   public IAssumptions copy() {
     Assumptions assumptions = new Assumptions();
     assumptions.distributionsMap = (HashMap) distributionsMap.clone();
@@ -630,10 +631,12 @@ public class Assumptions extends AbstractAssumptions {
     return (tensor == null) ? F.NIL : tensor;
   }
 
+  @Override
   public IExpr get$Assumptions() {
     return $assumptions;
   }
 
+  @Override
   public Map<IExpr, IAST> getTensorsMap() {
     return tensorsMap;
   }
@@ -901,6 +904,7 @@ public class Assumptions extends AbstractAssumptions {
     return null;
   }
 
+  @Override
   public void set$Assumptions(IExpr $assumptions) {
     this.$assumptions = $assumptions;
   }

@@ -205,6 +205,7 @@ public class ComplexSym implements IComplex {
     return ApcomplexNum.valueOf(apcomplexValue());
   }
 
+  @Override
   public Apcomplex apcomplexValue() {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     long precision = h.precision();

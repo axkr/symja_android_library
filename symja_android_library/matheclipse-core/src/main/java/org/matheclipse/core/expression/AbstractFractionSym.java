@@ -383,6 +383,7 @@ public abstract class AbstractFractionSym implements IFraction {
     return ApcomplexNum.valueOf(apcomplexValue());
   }
 
+  @Override
   public Apcomplex apcomplexValue() {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     Apfloat real = h.divide(new Apfloat(toBigNumerator(), h.precision()),

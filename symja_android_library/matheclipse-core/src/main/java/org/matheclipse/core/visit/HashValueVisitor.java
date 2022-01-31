@@ -47,6 +47,7 @@ public final class HashValueVisitor extends AbstractVisitorInt {
     return element.hashCode();
   }
 
+  @Override
   public int visit(IDataExpr element) {
     return element.hashCode();
   }

@@ -452,6 +452,7 @@ public interface ISymbol extends IExpr {
    */
   public boolean isLocked(boolean packageMode);
 
+  @Override
   default boolean isNumericFunction(boolean allowList) {
     return isConstantAttribute();
   }

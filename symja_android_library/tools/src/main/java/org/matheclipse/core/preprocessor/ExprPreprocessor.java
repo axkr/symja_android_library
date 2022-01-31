@@ -41,6 +41,7 @@ public class ExprPreprocessor extends AbstractCodeGenerator {
     runConsole(epp);
   }
 
+  @Override
   public boolean apply(String command, StringBuilder buf) {
     ExprParser p = new ExprParser(EvalEngine.get(), true);
     IExpr expr = p.parse(command);

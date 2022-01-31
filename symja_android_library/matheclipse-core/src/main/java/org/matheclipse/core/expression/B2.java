@@ -821,6 +821,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     return false;
   }
 
+  @Override
   public boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
     return stopPredicate.test(arg1, arg2);
   }
@@ -1045,6 +1046,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   public abstract ISymbol head();
 
 
+  @Override
   public int headID() {
     final IExpr head = head();
     return head instanceof IBuiltInSymbol ? ((IBuiltInSymbol) head).ordinal() : ID.UNKNOWN;

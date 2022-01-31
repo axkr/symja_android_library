@@ -39,6 +39,7 @@ public class Show3D2ThreeJS {
    * @throws IOException
    * @deprecated
    */
+  @Deprecated
   private static void graphics3dToSVG(IAST ast, StringBuilder buf) {
     EvalEngine engine = EvalEngine.get();
     IAST numericAST = (IAST) engine.evalN(ast);

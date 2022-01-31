@@ -39,6 +39,7 @@ public class DynamicSwingFunctions {
         if (obj instanceof java.awt.Window) {
           final java.awt.Window window = (java.awt.Window) obj;
           SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
               window.setSize(new Dimension(640, 400));
               // center the window

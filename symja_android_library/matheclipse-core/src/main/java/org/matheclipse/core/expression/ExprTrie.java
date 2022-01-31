@@ -68,6 +68,7 @@ public class ExprTrie {
     return exprMap.entrySet(sequence, match);
   }
 
+  @Override
   public boolean equals(Object obj) {
     if (obj instanceof ExprTrie) {
       return exprMap.equals(((ExprTrie) obj).exprMap);
@@ -107,6 +108,7 @@ public class ExprTrie {
     return exprMap.has(sequence, match);
   }
 
+  @Override
   public int hashCode() {
     return exprMap.hashCode();
   }
@@ -212,6 +214,7 @@ public class ExprTrie {
     return exprMap.size();
   }
 
+  @Override
   public String toString() {
     return exprMap.toString();
   }

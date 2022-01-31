@@ -225,6 +225,7 @@ public interface ISignedNumber extends INumber {
    *         0 if this is a zero;<br>
    *         -1 if this is a negative number;
    */
+  @Override
   public int complexSign();
 
   /**

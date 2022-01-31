@@ -155,6 +155,7 @@ public final class NumStr extends Num {
     return super.times(that);
   }
 
+  @Override
   public int getExponent() {
     return fExponent;
   }

@@ -25,6 +25,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return F.NIL;
   }
 
+  @Override
   public Map<IExpr, IAST> getTensorsMap() {
     return new HashMap<IExpr, IAST>();
   }

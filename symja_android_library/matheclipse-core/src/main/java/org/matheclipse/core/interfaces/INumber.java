@@ -147,6 +147,7 @@ public interface INumber extends IExpr {
    * @return real part
    * @deprecated use {@link #reDoubleValue()}
    */
+  @Override
   @Deprecated
   default double getReal() {
     return reDoubleValue();
