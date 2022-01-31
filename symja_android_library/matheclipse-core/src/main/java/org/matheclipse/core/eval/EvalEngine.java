@@ -1053,7 +1053,7 @@ public class EvalEngine implements Serializable {
 
   /**
    * Test if the experimental message was printed at least once for a symbol.
-   * 
+   *
    * @param symbol
    * @return
    */
@@ -2140,7 +2140,7 @@ public class EvalEngine implements Serializable {
    * Test if <code>head[arg1]</code> can be evaluated to <code>True</code>. If a <code>
    * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
    * False</code>.
-   * 
+   *
    * @param head
    * @param arg1
    * @return
@@ -2157,7 +2157,7 @@ public class EvalEngine implements Serializable {
    * Test if <code>head[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
    * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
    * False</code>.
-   * 
+   *
    * @param head
    * @param arg1
    * @param arg2
@@ -2175,7 +2175,7 @@ public class EvalEngine implements Serializable {
    * Test if <code>Equal[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
    * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
    * False</code>.
-   * 
+   *
    * @param lhs
    * @param rhs
    * @return
@@ -2192,7 +2192,7 @@ public class EvalEngine implements Serializable {
    * Test if <code>Less[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
    * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
    * False</code>.
-   * 
+   *
    * @param lhs
    * @param rhs
    * @return
@@ -2209,7 +2209,7 @@ public class EvalEngine implements Serializable {
    * Test if <code>Less[arg1, arg2, arg3]</code> can be evaluated to <code>True</code>. If a <code>
    * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
    * False</code>.
-   * 
+   *
    * @param arg1
    * @param arg2
    * @param arg3
@@ -2227,7 +2227,7 @@ public class EvalEngine implements Serializable {
    * Test if <code>LessEqual[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
    * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
    * False</code>.
-   * 
+   *
    * @param lhs
    * @param rhs
    * @return
@@ -2244,7 +2244,7 @@ public class EvalEngine implements Serializable {
    * Test if <code>Greater[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
    * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
    * False</code>.
-   * 
+   *
    * @param lhs
    * @param rhs
    * @return
@@ -2261,7 +2261,7 @@ public class EvalEngine implements Serializable {
    * Test if <code>Greater[arg1, arg2,arg3]</code> can be evaluated to <code>True</code>. If a
    * <code>org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return
    * <code>False</code>.
-   * 
+   *
    * @param arg1
    * @param arg2
    * @param arg3
@@ -2280,7 +2280,7 @@ public class EvalEngine implements Serializable {
    * <code>
    * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
    * False</code>.
-   * 
+   *
    * @param lhs
    * @param rhs
    * @return
@@ -2635,7 +2635,7 @@ public class EvalEngine implements Serializable {
 
   /**
    * Increment the counter, how often the experimental message was printed.
-   * 
+   *
    * @param symbol
    */
   public void incExperimentalCounter(IBuiltInSymbol symbol) {
@@ -2819,7 +2819,7 @@ public class EvalEngine implements Serializable {
    * Basic arithmetic operations (especially in linear algebra functions) like for example
    * {@link IExpr#plus(IExpr)} and {@link IExpr#times(IExpr)} are tried to be simplified with a
    * wrpped {@link S#Together} command during the evaluation of the multiplication.
-   * 
+   *
    * @return
    * @see #setTogetherMode(boolean)
    */
@@ -2959,7 +2959,7 @@ public class EvalEngine implements Serializable {
 
   /**
    * Set the numeric mode for numeric calculations.
-   * 
+   *
    * @param numericMode if <code>true</code> evaluate in floating number mode
    */
   public void setNumericMode(final boolean numericMode) {
@@ -3147,7 +3147,7 @@ public class EvalEngine implements Serializable {
    * {@link IExpr#plus(IExpr)} and {@link IExpr#times(IExpr)} are tried to be simplified with a
    * {@link S#Together} command during the evaluation of the multiplication if the parameter is set
    * to <code>true</code>.
-   * 
+   *
    * @param fTogetherMode if <code>true</code> the evaluation will be wrapped by a
    *        {@link S#Together} function in basic multiplication
    * @see #isTogetherMode()
@@ -3311,7 +3311,7 @@ public class EvalEngine implements Serializable {
 
   /**
    * Return the counter, how often the experimental message was printed.
-   * 
+   *
    * @param symbol
    * @return
    */

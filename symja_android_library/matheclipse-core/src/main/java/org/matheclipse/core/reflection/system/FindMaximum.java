@@ -16,33 +16,33 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>FindMaximum(f, {x, xstart})
  * </code>
  * </pre>
- * 
+ *
  * <p>
  * searches for a local numerical maximum of <code>f</code> for the variable <code>x</code> and the
  * start value <code>xstart</code>.
  * </p>
- * 
+ *
  * <pre>
  * <code>FindMaximum(f, {x, xstart}, Method-&gt;method_name)
  * </code>
  * </pre>
- * 
+ *
  * <p>
  * searches for a local numerical maximum of <code>f</code> for the variable <code>x</code> and the
  * start value <code>xstart</code>, with one of the following method names:
  * </p>
- * 
+ *
  * <pre>
  * <code>FindMaximum(f, {{x, xstart},{y, ystart},...})
  * </code>
  * </pre>
- * 
+ *
  * <p>
  * searches for a local numerical maximum of the multivariate function <code>f</code> for the
  * variables <code>x, y,...</code> and the corresponding start values
  * <code>xstart, ystart,...</code>.
  * </p>
- * 
+ *
  * <p>
  * See
  * </p>
@@ -63,9 +63,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  * This is a derivative based method and the functions must be symbolically differentiatable.
  * </p>
  * <h3>Examples</h3>
- * 
+ *
  * <pre>
- * <code>&gt;&gt; FindMaximum(Sin(x), {x, 0.5}) 
+ * <code>&gt;&gt; FindMaximum(Sin(x), {x, 0.5})
  * {1.0,{x-&gt;1.5708}}
  * </code>
  * </pre>

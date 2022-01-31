@@ -45,7 +45,7 @@ public class S {
 
   /**
    * $Assumptions - contains the default assumptions for `Integrate`, `Refine` and `Simplify`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$Assumptions.md">$Assumptions
    *      documentation</a>
@@ -73,7 +73,7 @@ public class S {
 
   /**
    * $HistoryLength - specifies the maximum number of `In` and `Out` entries.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$HistoryLength.md">$HistoryLength
    *      documentation</a>
@@ -95,7 +95,7 @@ public class S {
   /**
    * $IterationLimit - specifies the maximum number of times a reevaluation of an expression may
    * happen.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$IterationLimit.md">$IterationLimit
    *      documentation</a>
@@ -105,7 +105,7 @@ public class S {
 
   /**
    * $Line - holds the current input line number.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$Line.md">$Line
    *      documentation</a>
@@ -132,7 +132,7 @@ public class S {
   /**
    * $OperatingSystem - gives the type of operating system ("Windows", "MacOSX", or "Unix") running
    * Symja.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$OperatingSystem.md">$OperatingSystem
    *      documentation</a>
@@ -156,7 +156,7 @@ public class S {
 
   /**
    * $RecursionLimit - holds the current input line number
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$RecursionLimit.md">$RecursionLimit
    *      documentation</a>
@@ -170,7 +170,7 @@ public class S {
   /**
    * $ScriptCommandLine - is a list of string arguments when running Symja in script mode. The list
    * starts with the name of the script.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$ScriptCommandLine.md">$ScriptCommandLine
    *      documentation</a>
@@ -199,7 +199,7 @@ public class S {
 
   /**
    * Abort() - aborts an evaluation completely and returns `$Aborted`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Abort.md">Abort
    *      documentation</a>
@@ -208,7 +208,7 @@ public class S {
 
   /**
    * Abs(expr) - returns the absolute value of the real or complex number `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Abs.md">Abs
    *      documentation</a>
@@ -217,7 +217,7 @@ public class S {
 
   /**
    * AbsArg(expr) - returns a list of 2 values of the complex number `Abs(expr), Arg(expr)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AbsArg.md">AbsArg
    *      documentation</a>
@@ -233,7 +233,7 @@ public class S {
   /**
    * AbsoluteTiming(x) - returns a list with the first entry containing the evaluation time of `x`
    * and the second entry is the evaluation result of `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AbsoluteTiming.md">AbsoluteTiming
    *      documentation</a>
@@ -243,7 +243,7 @@ public class S {
 
   /**
    * Accumulate(list) - accumulate the values of `list` returning a new list.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Accumulate.md">Accumulate
    *      documentation</a>
@@ -254,7 +254,7 @@ public class S {
    * AddSides(compare-expr, value) - add `value` to all elements of the `compare-expr`.
    * `compare-expr` can be `True`, `False` or an comparison expression with head `Equal, Unequal,
    * Less, LessEqual, Greater, GreaterEqual`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AddSides.md">AddSides
    *      documentation</a>
@@ -263,7 +263,7 @@ public class S {
 
   /**
    * AddTo(x, dx) - is equivalent to `x = x + dx`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AddTo.md">AddTo
    *      documentation</a>
@@ -275,7 +275,7 @@ public class S {
 
   /**
    * AdjacencyMatrix(graph) - convert the `graph` into a adjacency matrix in sparse array format.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AdjacencyMatrix.md">AdjacencyMatrix
    *      documentation</a>
@@ -285,7 +285,7 @@ public class S {
 
   /**
    * AiryAi(z) - returns the Airy function of the first kind of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AiryAi.md">AiryAi
    *      documentation</a>
@@ -294,7 +294,7 @@ public class S {
 
   /**
    * AiryAiPrime(z) - returns the derivative of the `AiryAi` function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AiryAiPrime.md">AiryAiPrime
    *      documentation</a>
@@ -303,7 +303,7 @@ public class S {
 
   /**
    * AiryBi(z) - returns the Airy function of the second kind of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AiryBi.md">AiryBi
    *      documentation</a>
@@ -312,7 +312,7 @@ public class S {
 
   /**
    * AiryBiPrime(z) - returns the derivative of the `AiryBi` function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AiryBiPrime.md">AiryBiPrime
    *      documentation</a>
@@ -326,7 +326,7 @@ public class S {
 
   /**
    * All - is a possible value for `Span` and `Quiet`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/All.md">All
    *      documentation</a>
@@ -336,7 +336,7 @@ public class S {
   /**
    * AllTrue({expr1, expr2, ...}, test) - returns `True` if all applications of `test` to `expr1,
    * expr2, ...` evaluate to `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AllTrue.md">AllTrue
    *      documentation</a>
@@ -351,7 +351,7 @@ public class S {
 
   /**
    * Alphabet() - gives the list of lowercase letters `a-z` in the English or Latin alphabet .
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Alphabet.md">Alphabet
    *      documentation</a>
@@ -361,7 +361,7 @@ public class S {
   /**
    * Alternatives(p1, p2, ..., p_i) - is a pattern that matches any of the patterns `p1, p2,....,
    * p_i`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Alternatives.md">Alternatives
    *      documentation</a>
@@ -376,7 +376,7 @@ public class S {
    * And(expr1, expr2, ...) - `expr1 && expr2 && ...` evaluates each expression in turn, returning
    * `False` as soon as an expression evaluates to `False`. If all expressions evaluate to `True`,
    * `And` returns `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/And.md">And
    *      documentation</a>
@@ -385,7 +385,7 @@ public class S {
 
   /**
    * AngleVector(phi) - returns the point at angle `phi` on the unit circle.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AngleVector.md">AngleVector
    *      documentation</a>
@@ -396,7 +396,7 @@ public class S {
 
   /**
    * Annuity(p, t) - returns an annuity object.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Annuity.md">Annuity
    *      documentation</a>
@@ -405,7 +405,7 @@ public class S {
 
   /**
    * AnnuityDue(p, t) - returns an annuity due object.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AnnuityDue.md">AnnuityDue
    *      documentation</a>
@@ -417,7 +417,7 @@ public class S {
 
   /**
    * AntihermitianMatrixQ(m) - returns `True` if `m` is a anti hermitian matrix.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AntihermitianMatrixQ.md">AntihermitianMatrixQ
    *      documentation</a>
@@ -427,7 +427,7 @@ public class S {
 
   /**
    * AntisymmetricMatrixQ(m) - returns `True` if `m` is a anti symmetric matrix.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AntisymmetricMatrixQ.md">AntisymmetricMatrixQ
    *      documentation</a>
@@ -438,7 +438,7 @@ public class S {
   /**
    * AnyTrue({expr1, expr2, ...}, test) - returns `True` if any application of `test` to `expr1,
    * expr2, ...` evaluates to `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AnyTrue.md">AnyTrue
    *      documentation</a>
@@ -447,7 +447,7 @@ public class S {
 
   /**
    * Apart(expr) - rewrites `expr` as a sum of individual fractions.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Apart.md">Apart
    *      documentation</a>
@@ -458,7 +458,7 @@ public class S {
 
   /**
    * Append(expr, item) - returns `expr` with `item` appended to its leaves.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Append.md">Append
    *      documentation</a>
@@ -467,7 +467,7 @@ public class S {
 
   /**
    * AppendTo(s, item) - append `item` to value of `s` and sets `s` to the result.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AppendTo.md">AppendTo
    *      documentation</a>
@@ -476,7 +476,7 @@ public class S {
 
   /**
    * f @ expr - returns `f(expr)`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Apply.md">Apply
    *      documentation</a>
@@ -487,7 +487,7 @@ public class S {
    * ApplySides(compare-expr, value) - divides all elements of the `compare-expr` by `value`.
    * `compare-expr` can be `True`, `False` or a comparison expression with head `Equal, Unequal,
    * Less, LessEqual, Greater, GreaterEqual`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ApplySides.md">ApplySides
    *      documentation</a>
@@ -496,7 +496,7 @@ public class S {
 
   /**
    * ArcCos(expr) - returns the arc cosine (inverse cosine) of `expr` (measured in radians).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArcCos.md">ArcCos
    *      documentation</a>
@@ -505,7 +505,7 @@ public class S {
 
   /**
    * ArcCosh(z) - returns the inverse hyperbolic cosine of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArcCosh.md">ArcCosh
    *      documentation</a>
@@ -514,7 +514,7 @@ public class S {
 
   /**
    * ArcCot(z) - returns the inverse cotangent of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArcCot.md">ArcCot
    *      documentation</a>
@@ -523,7 +523,7 @@ public class S {
 
   /**
    * ArcCoth(z) - returns the inverse hyperbolic cotangent of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArcCoth.md">ArcCoth
    *      documentation</a>
@@ -532,7 +532,7 @@ public class S {
 
   /**
    * ArcCsc(z) - returns the inverse cosecant of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArcCsc.md">ArcCsc
    *      documentation</a>
@@ -541,7 +541,7 @@ public class S {
 
   /**
    * ArcCsch(z) - returns the inverse hyperbolic cosecant of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArcCsch.md">ArcCsch
    *      documentation</a>
@@ -552,7 +552,7 @@ public class S {
 
   /**
    * ArcSec(z) - returns the inverse secant of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArcSec.md">ArcSec
    *      documentation</a>
@@ -561,7 +561,7 @@ public class S {
 
   /**
    * ArcSech(z) - returns the inverse hyperbolic secant of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArcSech.md">ArcSech
    *      documentation</a>
@@ -570,7 +570,7 @@ public class S {
 
   /**
    * ArcSin(expr) - returns the arc sine (inverse sine) of `expr` (measured in radians).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArcSin.md">ArcSin
    *      documentation</a>
@@ -579,7 +579,7 @@ public class S {
 
   /**
    * ArcSinh(z) - returns the inverse hyperbolic sine of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArcSinh.md">ArcSinh
    *      documentation</a>
@@ -588,7 +588,7 @@ public class S {
 
   /**
    * ArcTan(expr) - returns the arc tangent (inverse tangent) of `expr` (measured in radians).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArcTan.md">ArcTan
    *      documentation</a>
@@ -597,7 +597,7 @@ public class S {
 
   /**
    * ArcTanh(z) - returns the inverse hyperbolic tangent of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArcTanh.md">ArcTanh
    *      documentation</a>
@@ -608,7 +608,7 @@ public class S {
 
   /**
    * Arg(expr) - returns the argument of the complex number `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Arg.md">Arg
    *      documentation</a>
@@ -617,7 +617,7 @@ public class S {
 
   /**
    * ArgMax(function, variable) - returns a maximizer point for a univariate `function`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArgMax.md">ArgMax
    *      documentation</a>
@@ -626,7 +626,7 @@ public class S {
 
   /**
    * ArgMin(function, variable) - returns a minimizer point for a univariate `function`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArgMin.md">ArgMin
    *      documentation</a>
@@ -636,7 +636,7 @@ public class S {
   /**
    * ArithmeticGeometricMean({a, b, c,...}) - returns the arithmetic geometric mean of `{a, b,
    * c,...}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArithmeticGeometricMean.md">ArithmeticGeometricMean
    *      documentation</a>
@@ -646,7 +646,7 @@ public class S {
 
   /**
    * Array(f, n) - returns the `n`-element list `{f(1), ..., f(n)}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Array.md">Array
    *      documentation</a>
@@ -656,7 +656,7 @@ public class S {
   /**
    * ArrayDepth(a) - returns the depth of the non-ragged array `a`, defined as
    * `Length(Dimensions(a))`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArrayDepth.md">ArrayDepth
    *      documentation</a>
@@ -665,7 +665,7 @@ public class S {
 
   /**
    * ArrayPad(list, n) - adds `n` times `0` on the left and right of the `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArrayPad.md">ArrayPad
    *      documentation</a>
@@ -674,7 +674,7 @@ public class S {
 
   /**
    * ArrayQ(expr) - tests whether expr is a full array.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArrayQ.md">ArrayQ
    *      documentation</a>
@@ -684,7 +684,7 @@ public class S {
   /**
    * ArrayReshape(list-of-values, list-of-dimension) - returns the `list-of-values` elements
    * reshaped as nested list with dimensions according to the `list-of-dimension`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArrayReshape.md">ArrayReshape
    *      documentation</a>
@@ -694,7 +694,7 @@ public class S {
 
   /**
    * ArrayRules(sparse-array) - return the array of rules which define the sparse array.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArrayRules.md">ArrayRules
    *      documentation</a>
@@ -705,7 +705,7 @@ public class S {
 
   /**
    * Arrow({p1, p2}) - represents a line from `p1` to `p2` that ends with an arrow at `p2`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Arrow.md">Arrow
    *      documentation</a>
@@ -719,7 +719,7 @@ public class S {
   /**
    * AssociateTo(assoc, rule) - append `rule` to the association `assoc` and assign the result to
    * `assoc`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AssociateTo.md">AssociateTo
    *      documentation</a>
@@ -728,7 +728,7 @@ public class S {
 
   /**
    * Association(list-of-rules) - create a `key->value` association map from the `list-of-rules`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Association.md">Association
    *      documentation</a>
@@ -738,7 +738,7 @@ public class S {
   /**
    * AssociationMap(header, <|k1->v1, k2->v2,...|>) - create an association `<|header(k1->v1),
    * header(k2->v2),...|>` with the rules mapped by the `header`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AssociationMap.md">AssociationMap
    *      documentation</a>
@@ -748,7 +748,7 @@ public class S {
 
   /**
    * AssociationQ(expr) - returns `True` if `expr` is an association, and `False` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AssociationQ.md">AssociationQ
    *      documentation</a>
@@ -759,7 +759,7 @@ public class S {
   /**
    * AssociationThread({k1,k2,...}, {v1,v2,...}) - create an association with rules from the keys
    * `{k1,k2,...}` and values `{v1,v2,...}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AssociationThread.md">AssociationThread
    *      documentation</a>
@@ -770,7 +770,7 @@ public class S {
   /**
    * Assuming(assumption, expression) - evaluate the `expression` with the assumptions appended to
    * the default `$Assumptions` assumptions.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Assuming.md">Assuming
    *      documentation</a>
@@ -782,7 +782,7 @@ public class S {
   /**
    * AtomQ(x) - is true if `x` is an atom (an object such as a number or string, which cannot be
    * divided into subexpressions using 'Part').
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AtomQ.md">AtomQ
    *      documentation</a>
@@ -791,7 +791,7 @@ public class S {
 
   /**
    * Attributes(symbol) - returns the list of attributes which are assigned to `symbol`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Attributes.md">Attributes
    *      documentation</a>
@@ -818,7 +818,7 @@ public class S {
   /**
    * BarChart(list-of-values, options) - plot a bar chart for a `list-of-values` with option
    * `BarOrigin->Bottom` or `BarOrigin->Bottom`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BarChart.md">BarChart
    *      documentation</a>
@@ -833,7 +833,7 @@ public class S {
   /**
    * BaseDecode(string) - decodes a Base64 encoded `string` into a `ByteArray` using the Base64
    * encoding scheme.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BaseDecode.md">BaseDecode
    *      documentation</a>
@@ -843,7 +843,7 @@ public class S {
   /**
    * BaseEncode(byte-array) - encodes the specified `byte-array` into a string using the Base64
    * encoding scheme.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BaseEncode.md">BaseEncode
    *      documentation</a>
@@ -852,7 +852,7 @@ public class S {
 
   /**
    * BaseForm(integer, radix) - prints the `integer` number in base `radix` form.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BaseForm.md">BaseForm
    *      documentation</a>
@@ -863,7 +863,7 @@ public class S {
 
   /**
    * Begin("<context-name>") - start a new context definition
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Begin.md">Begin
    *      documentation</a>
@@ -872,7 +872,7 @@ public class S {
 
   /**
    * BeginPackage("<context-name>") - start a new package definition
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BeginPackage.md">BeginPackage
    *      documentation</a>
@@ -886,7 +886,7 @@ public class S {
   /**
    * BellB(n) - the Bell number function counts the number of different ways to partition a set that
    * has exactly `n` elements
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BellB.md">BellB
    *      documentation</a>
@@ -896,7 +896,7 @@ public class S {
   /**
    * BellY(n, k, {x1, x2, ... , xN}) - the second kind of Bell polynomials (incomplete Bell
    * polynomials).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BellY.md">BellY
    *      documentation</a>
@@ -905,7 +905,7 @@ public class S {
 
   /**
    * BernoulliB(expr) - computes the Bernoulli number of the first kind.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BernoulliB.md">BernoulliB
    *      documentation</a>
@@ -914,7 +914,7 @@ public class S {
 
   /**
    * BernoulliDistribution(p) - returns the Bernoulli distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BernoulliDistribution.md">BernoulliDistribution
    *      documentation</a>
@@ -924,7 +924,7 @@ public class S {
 
   /**
    * BernsteinBasis(n, v, expr) - computes the Bernstein basis for the expression `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BernsteinBasis.md">BernsteinBasis
    *      documentation</a>
@@ -934,7 +934,7 @@ public class S {
 
   /**
    * BesselI(n, z) - modified Bessel function of the first kind.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BesselI.md">BesselI
    *      documentation</a>
@@ -943,7 +943,7 @@ public class S {
 
   /**
    * BesselJ(n, z) - Bessel function of the first kind.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BesselJ.md">BesselJ
    *      documentation</a>
@@ -952,7 +952,7 @@ public class S {
 
   /**
    * BesselJZero(n, z) - is the `k`th zero of the `BesselJ(n,z)` function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BesselJZero.md">BesselJZero
    *      documentation</a>
@@ -961,7 +961,7 @@ public class S {
 
   /**
    * BesselK(n, z) - modified Bessel function of the second kind.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BesselK.md">BesselK
    *      documentation</a>
@@ -970,7 +970,7 @@ public class S {
 
   /**
    * BesselY(n, z) - Bessel function of the second kind.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BesselY.md">BesselY
    *      documentation</a>
@@ -979,7 +979,7 @@ public class S {
 
   /**
    * BesselYZero(n, z) - is the `k`th zero of the `BesselY(n,z)` function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BesselYZero.md">BesselYZero
    *      documentation</a>
@@ -988,7 +988,7 @@ public class S {
 
   /**
    * Beta(a, b) - is the beta function of the numbers `a`,`b`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Beta.md">Beta
    *      documentation</a>
@@ -1003,7 +1003,7 @@ public class S {
 
   /**
    * BetweennessCentrality(graph) - Computes the betweenness centrality of each vertex of a `graph`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BetweennessCentrality.md">BetweennessCentrality
    *      documentation</a>
@@ -1017,7 +1017,7 @@ public class S {
   /**
    * BinCounts(list, width-of-bin) - count the number of elements, if `list`, is divided into
    * successive bins with width `width-of-bin`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BinCounts.md">BinCounts
    *      documentation</a>
@@ -1027,7 +1027,7 @@ public class S {
   /**
    * BinaryDeserialize(byte-array) - deserialize the `byte-array` from WXF format into a Symja
    * expression.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BinaryDeserialize.md">BinaryDeserialize
    *      documentation</a>
@@ -1038,7 +1038,7 @@ public class S {
   /**
    * BinaryDistance(u, v) - returns the binary distance between `u` and `v`. `0` if `u` and `v` are
    * unequal. `1` if `u` and `v` are equal.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BinaryDistance.md">BinaryDistance
    *      documentation</a>
@@ -1050,7 +1050,7 @@ public class S {
 
   /**
    * BinarySerialize(expr) - serialize the Symja `expr` into a byte array expression in WXF format.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BinarySerialize.md">BinarySerialize
    *      documentation</a>
@@ -1062,7 +1062,7 @@ public class S {
 
   /**
    * Binomial(n, k) - returns the binomial coefficient of the 2 integers `n` and `k`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Binomial.md">Binomial
    *      documentation</a>
@@ -1071,7 +1071,7 @@ public class S {
 
   /**
    * BinomialDistribution(n, p) - returns the binomial distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BinomialDistribution.md">BinomialDistribution
    *      documentation</a>
@@ -1093,7 +1093,7 @@ public class S {
   /**
    * BitLengthi(x) - gives the number of bits needed to represent the integer `x`. The sign of `x`
    * is ignored.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BitLength.md">BitLength
    *      documentation</a>
@@ -1121,7 +1121,7 @@ public class S {
 
   /**
    * Block({list_of_local_variables}, expr ) - evaluates `expr` for the `list_of_local_variables`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Block.md">Block
    *      documentation</a>
@@ -1133,7 +1133,7 @@ public class S {
   /**
    * Boole(expr) - returns `1` if `expr` evaluates to `True`; returns `0` if `expr` evaluates to
    * `False`; and gives no result otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Boole.md">Boole
    *      documentation</a>
@@ -1143,7 +1143,7 @@ public class S {
   /**
    * BooleanConvert(logical-expr) - convert the `logical-expr` to [disjunctive normal
    * form](https://en.wikipedia.org/wiki/Disjunctive_normal_form)
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BooleanConvert.md">BooleanConvert
    *      documentation</a>
@@ -1154,7 +1154,7 @@ public class S {
   /**
    * BooleanMinimize(expr) - minimizes a boolean function with the [Quine McCluskey
    * algorithm](https://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm)
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BooleanMinimize.md">BooleanMinimize
    *      documentation</a>
@@ -1164,7 +1164,7 @@ public class S {
 
   /**
    * BooleanQ(expr) - returns `True` if `expr` is either `True` or `False`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BooleanQ.md">BooleanQ
    *      documentation</a>
@@ -1174,7 +1174,7 @@ public class S {
   /**
    * BooleanTable(logical-expr, variables) - generate [truth
    * values](https://en.wikipedia.org/wiki/Truth_table) from the `logical-expr`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BooleanTable.md">BooleanTable
    *      documentation</a>
@@ -1185,7 +1185,7 @@ public class S {
   /**
    * BooleanVariables(logical-expr) - gives a list of the boolean variables that appear in the
    * `logical-expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BooleanVariables.md">BooleanVariables
    *      documentation</a>
@@ -1195,7 +1195,7 @@ public class S {
 
   /**
    * Booleans - is the set of boolean values.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Booleans.md">Booleans
    *      documentation</a>
@@ -1208,7 +1208,7 @@ public class S {
 
   /**
    * BoxWhiskerChart( ) - plot a box whisker chart.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BoxWhiskerChart.md">BoxWhiskerChart
    *      documentation</a>
@@ -1220,7 +1220,7 @@ public class S {
 
   /**
    * BrayCurtisDistance(u, v) - returns the Bray Curtis distance between `u` and `v`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BrayCurtisDistance.md">BrayCurtisDistance
    *      documentation</a>
@@ -1230,7 +1230,7 @@ public class S {
 
   /**
    * Break() - exits a `For`, `While`, or `Do` loop.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Break.md">Break
    *      documentation</a>
@@ -1245,7 +1245,7 @@ public class S {
 
   /**
    * ByteArray({list-of-byte-values}) - converts the `list-of-byte-values` into a byte array.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ByteArray.md">ByteArray
    *      documentation</a>
@@ -1263,7 +1263,7 @@ public class S {
   /**
    * ByteArrayToString(byte-array) - decoding the specified `byte-array` using the default character
    * set `UTF-8`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ByteArrayToString.md">ByteArrayToString
    *      documentation</a>
@@ -1275,7 +1275,7 @@ public class S {
 
   /**
    * C(n) - represents the `n`-th constant in a solution to a differential equation.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/C.md">C
    *      documentation</a>
@@ -1284,7 +1284,7 @@ public class S {
 
   /**
    * CDF(distribution, value) - returns the cumulative distribution function of `value`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CDF.md">CDF
    *      documentation</a>
@@ -1298,7 +1298,7 @@ public class S {
   /**
    * CanberraDistance(u, v) - returns the canberra distance between `u` and `v`, which is a weighted
    * version of the Manhattan distance.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CanberraDistance.md">CanberraDistance
    *      documentation</a>
@@ -1308,7 +1308,7 @@ public class S {
 
   /**
    * Cancel(expr) - cancels out common factors in numerators and denominators.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cancel.md">Cancel
    *      documentation</a>
@@ -1320,7 +1320,7 @@ public class S {
 
   /**
    * CarlsonRC(x, y) - returns the Carlson RC function..
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CarlsonRC.md">CarlsonRC
    *      documentation</a>
@@ -1329,7 +1329,7 @@ public class S {
 
   /**
    * CarlsonRD(x, y, z) - returns the Carlson RD function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CarlsonRD.md">CarlsonRD
    *      documentation</a>
@@ -1338,7 +1338,7 @@ public class S {
 
   /**
    * CarlsonRF(x, y, z) - returns the Carlson RF function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CarlsonRF.md">CarlsonRF
    *      documentation</a>
@@ -1347,7 +1347,7 @@ public class S {
 
   /**
    * CarlsonRG(x, y, z) - returns the Carlson RG function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CarlsonRG.md">CarlsonRG
    *      documentation</a>
@@ -1356,7 +1356,7 @@ public class S {
 
   /**
    * CarlsonRJ(x, y, z, p) - returns the Carlson RJ function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CarlsonRJ.md">CarlsonRJ
    *      documentation</a>
@@ -1365,7 +1365,7 @@ public class S {
 
   /**
    * CarmichaelLambda(n) - the Carmichael function of `n`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CarmichaelLambda.md">CarmichaelLambda
    *      documentation</a>
@@ -1375,7 +1375,7 @@ public class S {
 
   /**
    * CartesianProduct(list1, list2) - returns the cartesian product for multiple lists.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CartesianProduct.md">CartesianProduct
    *      documentation</a>
@@ -1385,7 +1385,7 @@ public class S {
 
   /**
    * Cases(list, pattern) - returns the elements of `list` that match `pattern`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cases.md">Cases
    *      documentation</a>
@@ -1394,7 +1394,7 @@ public class S {
 
   /**
    * Catalan - Catalan's constant
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Catalan.md">Catalan
    *      documentation</a>
@@ -1403,7 +1403,7 @@ public class S {
 
   /**
    * CatalanNumber(n) - returns the catalan number for the argument `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CatalanNumber.md">CatalanNumber
    *      documentation</a>
@@ -1414,7 +1414,7 @@ public class S {
   /**
    * Catch(expr) - returns the value argument of the first `Throw(value)` generated in the
    * evaluation of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Catch.md">Catch
    *      documentation</a>
@@ -1423,7 +1423,7 @@ public class S {
 
   /**
    * Catenate({l1, l2, ...}) - concatenates the lists `l1, l2, ...`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Catenate.md">Catenate
    *      documentation</a>
@@ -1432,7 +1432,7 @@ public class S {
 
   /**
    * CauchyDistribution(a,b) - returns the Cauchy distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CauchyDistribution.md">CauchyDistribution
    *      documentation</a>
@@ -1442,7 +1442,7 @@ public class S {
 
   /**
    * Ceiling(expr) - gives the first integer greater than or equal `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Ceiling.md">Ceiling
    *      documentation</a>
@@ -1456,7 +1456,7 @@ public class S {
   /**
    * CentralMoment(list, r) - gives the the `r`th central moment (i.e. the `r`th moment about the
    * mean) of `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CentralMoment.md">CentralMoment
    *      documentation</a>
@@ -1472,7 +1472,7 @@ public class S {
   /**
    * CharacterRange(min-character, max-character) - computes a list of character strings from
    * `min-character` to `max-character`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CharacterRange.md">CharacterRange
    *      documentation</a>
@@ -1483,7 +1483,7 @@ public class S {
   /**
    * CharacteristicPolynomial(matrix, var) - computes the characteristic polynomial of a `matrix`
    * for the variable `var`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CharacteristicPolynomial.md">CharacteristicPolynomial
    *      documentation</a>
@@ -1495,7 +1495,7 @@ public class S {
 
   /**
    * ChebyshevT(n, x) - returns the Chebyshev polynomial of the first kind `T_n(x)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ChebyshevT.md">ChebyshevT
    *      documentation</a>
@@ -1504,7 +1504,7 @@ public class S {
 
   /**
    * ChebyshevU(n, x) - returns the Chebyshev polynomial of the second kind `U_n(x)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ChebyshevU.md">ChebyshevU
    *      documentation</a>
@@ -1514,7 +1514,7 @@ public class S {
   /**
    * Check(expr, failure) - evaluates `expr`, and returns the result, unless messages were
    * generated, in which case `failure` will be returned.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Check.md">Check
    *      documentation</a>
@@ -1524,7 +1524,7 @@ public class S {
   /**
    * CheckAbort(expr, failure-expr) - evaluates `expr`, and returns the result, unless `Abort` was
    * called during the evaluation, in which case `failure-expr` will be returned.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CheckAbort.md">CheckAbort
    *      documentation</a>
@@ -1535,7 +1535,7 @@ public class S {
    * ChessboardDistance(u, v) - returns the chessboard distance (also known as Chebyshev distance)
    * between `u` and `v`, which is the number of moves a king on a chessboard needs to get from
    * square `u` to square `v`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ChessboardDistance.md">ChessboardDistance
    *      documentation</a>
@@ -1548,7 +1548,7 @@ public class S {
 
   /**
    * ChineseRemainder({a1, a2, a3,...}, {n1, n2, n3,...}) - the chinese remainder function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ChineseRemainder.md">ChineseRemainder
    *      documentation</a>
@@ -1559,7 +1559,7 @@ public class S {
   /**
    * CholeskyDecomposition(matrix) - calculate the Cholesky decomposition of a hermitian, positive
    * definite square `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CholeskyDecomposition.md">CholeskyDecomposition
    *      documentation</a>
@@ -1570,7 +1570,7 @@ public class S {
   /**
    * Chop(numerical-expr) - replaces numerical values in the `numerical-expr` which are close to
    * zero with symbolic value `0`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Chop.md">Chop
    *      documentation</a>
@@ -1583,7 +1583,7 @@ public class S {
 
   /**
    * CirclePoints(i) - gives the `i` points on the unit circle for a positive integer `i`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CirclePoints.md">CirclePoints
    *      documentation</a>
@@ -1595,7 +1595,7 @@ public class S {
 
   /**
    * Clear(symbol1, symbol2,...) - clears all values of the given symbols.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Clear.md">Clear
    *      documentation</a>
@@ -1605,7 +1605,7 @@ public class S {
   /**
    * ClearAll(symbol1, symbol2,...) - clears all values and attributes associated with the given
    * symbols.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ClearAll.md">ClearAll
    *      documentation</a>
@@ -1614,7 +1614,7 @@ public class S {
 
   /**
    * ClearAttributes(symbol, attrib) - removes `attrib` from `symbol`'s attributes.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ClearAttributes.md">ClearAttributes
    *      documentation</a>
@@ -1625,7 +1625,7 @@ public class S {
   /**
    * Clip(expr) - returns `expr` in the range `-1` to `1`. Returns `-1` if `expr` is less than `-1`.
    * Returns `1` if `expr` is greater than `1`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Clip.md">Clip
    *      documentation</a>
@@ -1634,7 +1634,7 @@ public class S {
 
   /**
    * Close(stream) - closes an input or output `stream`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Close.md">Close
    *      documentation</a>
@@ -1643,7 +1643,7 @@ public class S {
 
   /**
    * ClosenessCentrality(graph) - Computes the closeness centrality of each vertex of a `graph`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ClosenessCentrality.md">ClosenessCentrality
    *      documentation</a>
@@ -1654,7 +1654,7 @@ public class S {
   /**
    * Coefficient(polynomial, variable, exponent) - get the coefficient of `variable^exponent` in
    * `polynomial`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Coefficient.md">Coefficient
    *      documentation</a>
@@ -1666,7 +1666,7 @@ public class S {
 
   /**
    * CoefficientList(polynomial, variable) - get the coefficient list of a `polynomial`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CoefficientList.md">CoefficientList
    *      documentation</a>
@@ -1677,7 +1677,7 @@ public class S {
   /**
    * CoefficientRules(polynomial, list-of-variables) - get the list of coefficient rules of a
    * `polynomial`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CoefficientRules.md">CoefficientRules
    *      documentation</a>
@@ -1689,7 +1689,7 @@ public class S {
 
   /**
    * Collect(expr, variable) - collect subexpressions in `expr` which belong to the same `variable`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Collect.md">Collect
    *      documentation</a>
@@ -1699,7 +1699,7 @@ public class S {
   /**
    * CollinearPoints({{x1,y1},{x2,y2},{a,b},...}) - returns true if the point `{a,b]` is on the line
    * defined by the first two points `{x1,y1},{x2,y2}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CollinearPoints.md">CollinearPoints
    *      documentation</a>
@@ -1719,7 +1719,7 @@ public class S {
   /**
    * Commonest(data-values-list) - the mode of a list of data values is the value that appears most
    * often.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Commonest.md">Commonest
    *      documentation</a>
@@ -1733,7 +1733,7 @@ public class S {
    * Compile(list-of-arguments}, expression) - compile the `expression` into a Java function, which
    * has the arguments defined in `list-of-arguments` and return the compiled result in an
    * `CompiledFunction` expression.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Compile.md">Compile
    *      documentation</a>
@@ -1745,7 +1745,7 @@ public class S {
    * and return the corresponding Java source code function, which has the arguments defined in
    * `list-of-arguments`n. You have to run Symja from a Java Development Kit (JDK) to compile to
    * Java binary code.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CompilePrint.md">CompilePrint
    *      documentation</a>
@@ -1755,7 +1755,7 @@ public class S {
 
   /**
    * CompiledFunction(...) - represents a binary Java coded function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CompiledFunction.md">CompiledFunction
    *      documentation</a>
@@ -1765,7 +1765,7 @@ public class S {
 
   /**
    * Complement(set1, set2) - get the complement set from `set1` and `set2`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Complement.md">Complement
    *      documentation</a>
@@ -1774,7 +1774,7 @@ public class S {
 
   /**
    * CompleteGraph(order) - create a new complete graph with `order` number of total vertices.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CompleteGraph.md">CompleteGraph
    *      documentation</a>
@@ -1784,7 +1784,7 @@ public class S {
 
   /**
    * Complex - is the head of complex numbers.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Complex.md">Complex
    *      documentation</a>
@@ -1794,7 +1794,7 @@ public class S {
   /**
    * ComplexExpand(expr) - get the expanded `expr`. All variable symbols in `expr` are assumed to be
    * non complex numbers.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ComplexExpand.md">ComplexExpand
    *      documentation</a>
@@ -1804,7 +1804,7 @@ public class S {
 
   /**
    * ComplexInfinity - represents an infinite complex quantity of undetermined direction.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ComplexInfinity.md">ComplexInfinity
    *      documentation</a>
@@ -1815,7 +1815,7 @@ public class S {
   /**
    * ComplexPlot3D(expr, {z, min, max ) - create a 3D plot of `expr` for the complex variable `z` in
    * the range `{ Re(min),Re(max) }` to `{ Im(min),Im(max) }`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ComplexPlot3D.md">ComplexPlot3D
    *      documentation</a>
@@ -1825,7 +1825,7 @@ public class S {
 
   /**
    * Complexes - is the set of complex numbers.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Complexes.md">Complexes
    *      documentation</a>
@@ -1838,7 +1838,7 @@ public class S {
   /**
    * ComposeList(list-of-symbols, variable) - creates a list of compositions of the symbols applied
    * at the argument `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ComposeList.md">ComposeList
    *      documentation</a>
@@ -1847,7 +1847,7 @@ public class S {
 
   /**
    * ComposeSeries( series1, series2 ) - substitute `series2` into `series1`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ComposeSeries.md">ComposeSeries
    *      documentation</a>
@@ -1858,7 +1858,7 @@ public class S {
   /**
    * Composition(sym1, sym2,...)[arg1, arg2,...] - creates a composition of the symbols applied at
    * the arguments.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Composition.md">Composition
    *      documentation</a>
@@ -1868,7 +1868,7 @@ public class S {
   /**
    * CompoundExpression(expr1, expr2, ...) - evaluates its arguments in turn, returning the last
    * result.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CompoundExpression.md">CompoundExpression
    *      documentation</a>
@@ -1879,7 +1879,7 @@ public class S {
   /**
    * Condition(pattern, expr) - places an additional constraint on `pattern` that only allows it to
    * match if `expr` evaluates to `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Condition.md">Condition
    *      documentation</a>
@@ -1890,7 +1890,7 @@ public class S {
    * ConditionalExpression(expr, condition) - if `condition` evaluates to `True` return `expr`, if
    * `condition` evaluates to `False` return `Undefined`. Otherwise return the
    * `ConditionalExpression` unevaluated.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ConditionalExpression.md">ConditionalExpression
    *      documentation</a>
@@ -1902,7 +1902,7 @@ public class S {
 
   /**
    * Conjugate(z) - returns the complex conjugate of the complex number `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Conjugate.md">Conjugate
    *      documentation</a>
@@ -1911,7 +1911,7 @@ public class S {
 
   /**
    * ConjugateTranspose(matrix) - get the transposed `matrix` with conjugated matrix elements.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ConjugateTranspose.md">ConjugateTranspose
    *      documentation</a>
@@ -1924,7 +1924,7 @@ public class S {
 
   /**
    * Constant - is an attribute that indicates that a symbol is a constant.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Constant.md">Constant
    *      documentation</a>
@@ -1933,7 +1933,7 @@ public class S {
 
   /**
    * ConstantArray(expr, n) - returns a list of `n` copies of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ConstantArray.md">ConstantArray
    *      documentation</a>
@@ -1954,7 +1954,7 @@ public class S {
   /**
    * ContainsOnly(list1, list2) - yields True if `list1` contains only elements that appear in
    * `list2`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ContainsOnly.md">ContainsOnly
    *      documentation</a>
@@ -1964,7 +1964,7 @@ public class S {
 
   /**
    * Context(symbol) - return the context of the given symbol.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Context.md">Context
    *      documentation</a>
@@ -1973,7 +1973,7 @@ public class S {
 
   /**
    * Continue() - continues with the next iteration in a `For`, `While`, or `Do` loop.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Continue.md">Continue
    *      documentation</a>
@@ -1983,7 +1983,7 @@ public class S {
   /**
    * ContinuedFraction(number) - the complete continued fraction representation for a rational or
    * quadradic irrational `number`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ContinuedFraction.md">ContinuedFraction
    *      documentation</a>
@@ -1996,7 +1996,7 @@ public class S {
   /**
    * Convergents({n1, n2, ...}) - return the list of convergents which represents the continued
    * fraction list `{n1, n2, ...}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Convergents.md">Convergents
    *      documentation</a>
@@ -2009,7 +2009,7 @@ public class S {
   /**
    * CoplanarPoints({{x1,y1,z1},{x2,y2,z2},{x3,y3,z3},{a,b,c},...}) - returns true if the point
    * `{a,b,c]` is on the plane defined by the first three points `{x1,y1,z1},{x2,y2,z2},{x3,y3,z3}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CoplanarPoints.md">CoplanarPoints
    *      documentation</a>
@@ -2020,7 +2020,7 @@ public class S {
   /**
    * CoprimeQ(x, y) - tests whether `x` and `y` are coprime by computing their greatest common
    * divisor.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CoprimeQ.md">CoprimeQ
    *      documentation</a>
@@ -2029,7 +2029,7 @@ public class S {
 
   /**
    * Correlation(a, b) - computes Pearson's correlation of two equal-sized vectors `a` and `b`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Correlation.md">Correlation
    *      documentation</a>
@@ -2039,7 +2039,7 @@ public class S {
   /**
    * Cos(expr) - returns the cosine of `expr` (measured in radians). `Cos(expr)` will evaluate
    * automatically in the case `expr` is a multiple of `Pi, Pi/2, Pi/3, Pi/4` and `Pi/6`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cos.md">Cos
    *      documentation</a>
@@ -2048,7 +2048,7 @@ public class S {
 
   /**
    * CosIntegral(expr) - returns the cosine integral of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CosIntegral.md">CosIntegral
    *      documentation</a>
@@ -2057,7 +2057,7 @@ public class S {
 
   /**
    * Cosh(z) - returns the hyperbolic cosine of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cosh.md">Cosh
    *      documentation</a>
@@ -2066,7 +2066,7 @@ public class S {
 
   /**
    * CoshIntegral(expr) - returns the hyperbolic cosine integral of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CoshIntegral.md">CoshIntegral
    *      documentation</a>
@@ -2076,7 +2076,7 @@ public class S {
 
   /**
    * CosineDistance(u, v) - returns the cosine distance between `u` and `v`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CosineDistance.md">CosineDistance
    *      documentation</a>
@@ -2086,7 +2086,7 @@ public class S {
 
   /**
    * Cot(expr) - the cotangent function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cot.md">Cot
    *      documentation</a>
@@ -2095,7 +2095,7 @@ public class S {
 
   /**
    * Coth(z) - returns the hyperbolic cotangent of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Coth.md">Coth
    *      documentation</a>
@@ -2104,7 +2104,7 @@ public class S {
 
   /**
    * Count(list, pattern) - returns the number of times `pattern` appears in `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Count.md">Count
    *      documentation</a>
@@ -2113,7 +2113,7 @@ public class S {
 
   /**
    * CountDistinct(list) - returns the number of distinct entries in `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CountDistinct.md">CountDistinct
    *      documentation</a>
@@ -2125,7 +2125,7 @@ public class S {
    * Counts({elem1, elem2, elem3, ...}) - count the number of each distinct element in the list
    * `{elem1, elem2, elem3, ...}` and return the result as an association `<|elem1->counter1,
    * ...|>`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Counts.md">Counts
    *      documentation</a>
@@ -2134,7 +2134,7 @@ public class S {
 
   /**
    * Covariance(a, b) - computes the covariance between the equal-sized vectors `a` and `b`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Covariance.md">Covariance
    *      documentation</a>
@@ -2148,7 +2148,7 @@ public class S {
 
   /**
    * Cross(a, b) - computes the vector cross product of `a` and `b`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cross.md">Cross
    *      documentation</a>
@@ -2157,7 +2157,7 @@ public class S {
 
   /**
    * Csc(z) - returns the cosecant of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Csc.md">Csc
    *      documentation</a>
@@ -2166,7 +2166,7 @@ public class S {
 
   /**
    * Csch(z) - returns the hyperbolic cosecant of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Csch.md">Csch
    *      documentation</a>
@@ -2175,7 +2175,7 @@ public class S {
 
   /**
    * CubeRoot(n) - finds the real-valued cube root of the given `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CubeRoot.md">CubeRoot
    *      documentation</a>
@@ -2184,7 +2184,7 @@ public class S {
 
   /**
    * Cuboid({xmin, ymin, zmin}) - is a unit cube.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cuboid.md">Cuboid
    *      documentation</a>
@@ -2193,7 +2193,7 @@ public class S {
 
   /**
    * Curl({f1, f2}, {x1, x2}) - gives the curl.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Curl.md">Curl
    *      documentation</a>
@@ -2206,7 +2206,7 @@ public class S {
 
   /**
    * Cycles(a, b) - expression for defining canonical cycles of a permutation.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cycles.md">Cycles
    *      documentation</a>
@@ -2215,7 +2215,7 @@ public class S {
 
   /**
    * Cyclotomic(n, x) - returns the Cyclotomic polynomial `C_n(x)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cyclotomic.md">Cyclotomic
    *      documentation</a>
@@ -2224,7 +2224,7 @@ public class S {
 
   /**
    * Cylinder({{x1, y1, z1}, {x2, y2, z2}}) - represents a cylinder of radius `1`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cylinder.md">Cylinder
    *      documentation</a>
@@ -2233,7 +2233,7 @@ public class S {
 
   /**
    * D(f, x) - gives the partial derivative of `f` with respect to `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/D.md">D
    *      documentation</a>
@@ -2243,7 +2243,7 @@ public class S {
   /**
    * DSolve(equation, f(var), var) - attempts to solve a linear differential `equation` for the
    * function `f(var)` and variable `var`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DSolve.md">DSolve
    *      documentation</a>
@@ -2254,7 +2254,7 @@ public class S {
 
   /**
    * - create a `Dataset` object from the `association`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Dataset.md">Dataset
    *      documentation</a>
@@ -2269,7 +2269,7 @@ public class S {
 
   /**
    * Decrement(x) - decrements `x` by `1`, returning the original value of `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Decrement.md">Decrement
    *      documentation</a>
@@ -2279,7 +2279,7 @@ public class S {
   /**
    * Default(symbol) - `Default` returns the default value associated with the `symbol` for a
    * pattern default `_.` expression.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Default.md">Default
    *      documentation</a>
@@ -2294,7 +2294,7 @@ public class S {
 
   /**
    * Defer(expr) - `Defer` doesn't evaluate `expr` and didn't appear in the output
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Defer.md">Defer
    *      documentation</a>
@@ -2303,7 +2303,7 @@ public class S {
 
   /**
    * Definition(symbol) - prints user-defined values and rules associated with `symbol`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Definition.md">Definition
    *      documentation</a>
@@ -2312,7 +2312,7 @@ public class S {
 
   /**
    * Degree - the constant `Degree` converts angles from degree to `Pi/180` radians.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Degree.md">Degree
    *      documentation</a>
@@ -2327,7 +2327,7 @@ public class S {
 
   /**
    * Delete(expr, n) - returns `expr` with part `n` removed.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Delete.md">Delete
    *      documentation</a>
@@ -2336,7 +2336,7 @@ public class S {
 
   /**
    * DeleteCases(list, pattern) - returns the elements of `list` that do not match `pattern`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DeleteCases.md">DeleteCases
    *      documentation</a>
@@ -2345,7 +2345,7 @@ public class S {
 
   /**
    * DeleteDuplicates(list) - deletes duplicates from `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DeleteDuplicates.md">DeleteDuplicates
    *      documentation</a>
@@ -2356,7 +2356,7 @@ public class S {
   /**
    * DeleteDuplicatesBy(list, predicate) - deletes duplicates from `list`, for which the `predicate`
    * returns `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DeleteDuplicatesBy.md">DeleteDuplicatesBy
    *      documentation</a>
@@ -2367,7 +2367,7 @@ public class S {
   /**
    * Denominator(expr) - gives the denominator in `expr`. Denominator collects expressions with
    * negative exponents.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Denominator.md">Denominator
    *      documentation</a>
@@ -2376,7 +2376,7 @@ public class S {
 
   /**
    * DensityHistogram( list-of-pair-values ) - plot a density histogram for a `list-of-pair-values`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DensityHistogram.md">DensityHistogram
    *      documentation</a>
@@ -2388,7 +2388,7 @@ public class S {
 
   /**
    * Depth(expr) - gives the depth of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Depth.md">Depth
    *      documentation</a>
@@ -2397,7 +2397,7 @@ public class S {
 
   /**
    * Derivative(n)[f] - represents the `n`-th derivative of the function `f`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Derivative.md">Derivative
    *      documentation</a>
@@ -2406,7 +2406,7 @@ public class S {
 
   /**
    * DesignMatrix(m, f, x) - returns the design matrix.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DesignMatrix.md">DesignMatrix
    *      documentation</a>
@@ -2416,7 +2416,7 @@ public class S {
 
   /**
    * Det(matrix) - computes the determinant of the `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Det.md">Det
    *      documentation</a>
@@ -2425,7 +2425,7 @@ public class S {
 
   /**
    * Diagonal(matrix) - computes the diagonal vector of the `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Diagonal.md">Diagonal
    *      documentation</a>
@@ -2435,7 +2435,7 @@ public class S {
   /**
    * DiagonalMatrix(list) - gives a matrix with the values in `list` on its diagonal and zeroes
    * elsewhere.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DiagonalMatrix.md">DiagonalMatrix
    *      documentation</a>
@@ -2449,7 +2449,7 @@ public class S {
 
   /**
    * DialogInput() - if the file system is enabled, the user can input a string in a dialog box.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DialogInput.md">DialogInput
    *      documentation</a>
@@ -2466,7 +2466,7 @@ public class S {
    * DiceDissimilarity(u, v) - returns the Dice dissimilarity between the two boolean 1-D lists `u`
    * and `v`, which is defined as `(c_tf + c_ft) / (2 * c_tt + c_ft + c_tf)`, where n is `len(u)`
    * and `c_ij` is the number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DiceDissimilarity.md">DiceDissimilarity
    *      documentation</a>
@@ -2476,7 +2476,7 @@ public class S {
 
   /**
    * DifferenceDelta(f(x), x) - generates a forward difference `f(x+1) - f(x)`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DifferenceDelta.md">DifferenceDelta
    *      documentation</a>
@@ -2488,7 +2488,7 @@ public class S {
 
   /**
    * DigitCharacter - represents the digits 0-9.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DigitCharacter.md">DigitCharacter
    *      documentation</a>
@@ -2498,7 +2498,7 @@ public class S {
 
   /**
    * DigitCount(n) - returns a list of the number of integer digits for `n` for `radix` 10.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DigitCount.md">DigitCount
    *      documentation</a>
@@ -2507,7 +2507,7 @@ public class S {
 
   /**
    * DigitQ(str) - returns `True` if `str` is a string which contains only digits.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DigitQ.md">DigitQ
    *      documentation</a>
@@ -2516,7 +2516,7 @@ public class S {
 
   /**
    * Dimensions(expr) - returns a list of the dimensions of the expression `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Dimensions.md">Dimensions
    *      documentation</a>
@@ -2525,7 +2525,7 @@ public class S {
 
   /**
    * DiracDelta(x) - `DiracDelta` function returns `0` for all real numbers `x` where `x != 0`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DiracDelta.md">DiracDelta
    *      documentation</a>
@@ -2534,7 +2534,7 @@ public class S {
 
   /**
    * DirectedEdge(a, b) - is a directed edge from vertex `a` to vertex `b` in a `graph` object.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirectedEdge.md">DirectedEdge
    *      documentation</a>
@@ -2544,7 +2544,7 @@ public class S {
 
   /**
    * DirectedInfinity(z) - represents an infinite multiple of the complex number `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirectedInfinity.md">DirectedInfinity
    *      documentation</a>
@@ -2568,7 +2568,7 @@ public class S {
   /**
    * DiscreteDelta(n1, n2, n3, ...) - `DiscreteDelta` function returns `1` if all the `ni` are `0`.
    * Returns `0` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DiscreteDelta.md">DiscreteDelta
    *      documentation</a>
@@ -2578,7 +2578,7 @@ public class S {
 
   /**
    * DiscreteUniformDistribution({min, max}) - returns a discrete uniform distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DiscreteUniformDistribution.md">DiscreteUniformDistribution
    *      documentation</a>
@@ -2589,7 +2589,7 @@ public class S {
   /**
    * Discriminant(poly, var) - computes the discriminant of the polynomial `poly` with respect to
    * the variable `var`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Discriminant.md">Discriminant
    *      documentation</a>
@@ -2603,7 +2603,7 @@ public class S {
 
   /**
    * Dispatch({rule1, rule2, ...}) - create a dispatch map for a list of rules.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Dispatch.md">Dispatch
    *      documentation</a>
@@ -2622,7 +2622,7 @@ public class S {
 
   /**
    * Distribute(f(x1, x2, x3,...)) - distributes `f` over `Plus` appearing in any of the `xi`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Distribute.md">Distribute
    *      documentation</a>
@@ -2633,7 +2633,7 @@ public class S {
 
   /**
    * Div({f1, f2, f3,...},{x1, x2, x3,...}) - compute the divergence.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Div.md">Div
    *      documentation</a>
@@ -2642,7 +2642,7 @@ public class S {
 
   /**
    * Divide(a, b) - represents the division of `a` by `b`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Divide.md">Divide
    *      documentation</a>
@@ -2651,7 +2651,7 @@ public class S {
 
   /**
    * DivideBy(x, dx) - is equivalent to `x = x / dx`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DivideBy.md">DivideBy
    *      documentation</a>
@@ -2662,7 +2662,7 @@ public class S {
    * DivideSides(compare-expr, value) - divides all elements of the `compare-expr` by `value`.
    * `compare-expr` can be `True`, `False` or a comparison expression with head `Equal, Unequal,
    * Less, LessEqual, Greater, GreaterEqual`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DivideSides.md">DivideSides
    *      documentation</a>
@@ -2671,7 +2671,7 @@ public class S {
 
   /**
    * Divisible(n, m) - returns `True` if `n` could be divide by `m`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Divisible.md">Divisible
    *      documentation</a>
@@ -2680,7 +2680,7 @@ public class S {
 
   /**
    * DivisorSigma(k, n) - returns the sum of the `k`-th powers of the divisors of `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DivisorSigma.md">DivisorSigma
    *      documentation</a>
@@ -2691,7 +2691,7 @@ public class S {
   /**
    * DivisorSum(n, head) - returns the sum of the divisors of `n`. The `head` is applied to each
    * divisor.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DivisorSum.md">DivisorSum
    *      documentation</a>
@@ -2700,7 +2700,7 @@ public class S {
 
   /**
    * Divisors(n) - returns all integers that divide the integer `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Divisors.md">Divisors
    *      documentation</a>
@@ -2709,7 +2709,7 @@ public class S {
 
   /**
    * Do(expr, {max}) - evaluates `expr` `max` times.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Do.md">Do
    *      documentation</a>
@@ -2721,7 +2721,7 @@ public class S {
 
   /**
    * Dot(x, y) or x . y - `x . y` computes the vector dot product or matrix product `x . y`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Dot.md">Dot
    *      documentation</a>
@@ -2730,7 +2730,7 @@ public class S {
 
   /**
    * DownValues(symbol) - prints the down-value rules associated with `symbol`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DownValues.md">DownValues
    *      documentation</a>
@@ -2739,7 +2739,7 @@ public class S {
 
   /**
    * Drop(expr, n) - returns `expr` with the first `n` leaves removed.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Drop.md">Drop
    *      documentation</a>
@@ -2753,7 +2753,7 @@ public class S {
 
   /**
    * E - Euler's constant E
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/E.md">E
    *      documentation</a>
@@ -2765,7 +2765,7 @@ public class S {
 
   /**
    * Echo(expr) - prints the `expr` to the default output stream and returns `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Echo.md">Echo
    *      documentation</a>
@@ -2775,7 +2775,7 @@ public class S {
   /**
    * EchoFunction()[expr] - operator form of the `Echo`function. Print the `expr` to the default
    * output stream and return `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EchoFunction.md">EchoFunction
    *      documentation</a>
@@ -2791,7 +2791,7 @@ public class S {
 
   /**
    * EdgeList(graph) - convert the `graph` into a list of edges.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeList.md">EdgeList
    *      documentation</a>
@@ -2800,7 +2800,7 @@ public class S {
 
   /**
    * EdgeQ(graph, edge) - test if `edge` is an edge in the `graph` object.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeQ.md">EdgeQ
    *      documentation</a>
@@ -2810,7 +2810,7 @@ public class S {
   /**
    * EdgeRules(graph) - convert the `graph` into a list of rules. All edge types (undirected,
    * directed) are represented by a rule `lhs->rhs`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeRules.md">EdgeRules
    *      documentation</a>
@@ -2828,7 +2828,7 @@ public class S {
    * EditDistance(a, b) - returns the Levenshtein distance of `a` and `b`, which is defined as the
    * minimum number of insertions, deletions and substitutions on the constituents of `a` and `b`
    * needed to transform one into the other.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EditDistance.md">EditDistance
    *      documentation</a>
@@ -2838,7 +2838,7 @@ public class S {
 
   /**
    * EffectiveInterest(i, n) - returns an effective interest rate object.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EffectiveInterest.md">EffectiveInterest
    *      documentation</a>
@@ -2848,7 +2848,7 @@ public class S {
 
   /**
    * Eigenvalues(matrix) - get the numerical eigenvalues of the `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Eigenvalues.md">Eigenvalues
    *      documentation</a>
@@ -2857,7 +2857,7 @@ public class S {
 
   /**
    * Eigenvectors(matrix) - get the numerical eigenvectors of the `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Eigenvectors.md">Eigenvectors
    *      documentation</a>
@@ -2867,7 +2867,7 @@ public class S {
 
   /**
    * Element(symbol, dom) - assume (or test) that the `symbol` is in the domain `dom`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Element.md">Element
    *      documentation</a>
@@ -2877,7 +2877,7 @@ public class S {
   /**
    * ElementData("name", "property") - gives the value of the property for the chemical specified by
    * name.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ElementData.md">ElementData
    *      documentation</a>
@@ -2887,7 +2887,7 @@ public class S {
   /**
    * Eliminate(list-of-equations, list-of-variables) - attempts to eliminate the variables from the
    * `list-of-variables` in the `list-of-equations`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Eliminate.md">Eliminate
    *      documentation</a>
@@ -2901,7 +2901,7 @@ public class S {
 
   /**
    * EllipticE(z) - returns the complete elliptic integral of the second kind.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EllipticE.md">EllipticE
    *      documentation</a>
@@ -2910,7 +2910,7 @@ public class S {
 
   /**
    * EllipticF(z) - returns the incomplete elliptic integral of the first kind.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EllipticF.md">EllipticF
    *      documentation</a>
@@ -2919,7 +2919,7 @@ public class S {
 
   /**
    * EllipticK(z) - returns the complete elliptic integral of the first kind.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EllipticK.md">EllipticK
    *      documentation</a>
@@ -2928,7 +2928,7 @@ public class S {
 
   /**
    * EllipticPi(n,m) - returns the complete elliptic integral of the third kind.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EllipticPi.md">EllipticPi
    *      documentation</a>
@@ -2940,7 +2940,7 @@ public class S {
 
   /**
    * End( ) - end a context definition started with `Begin`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/End.md">End
    *      documentation</a>
@@ -2955,7 +2955,7 @@ public class S {
 
   /**
    * EndPackage( ) - end a package definition
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EndPackage.md">EndPackage
    *      documentation</a>
@@ -2969,7 +2969,7 @@ public class S {
 
   /**
    * Entropy(list) - return the base `E` (Shannon) information entropy of the elements in `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Entropy.md">Entropy
    *      documentation</a>
@@ -2979,7 +2979,7 @@ public class S {
   /**
    * Equal(x, y) - yields `True` if `x` and `y` are known to be equal, or `False` if `x` and `y` are
    * known to be unequal.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Equal.md">Equal
    *      documentation</a>
@@ -2993,7 +2993,7 @@ public class S {
    * `B` are both `True` or both `False`. Returns `True` if all of the arguments are logically
    * equivalent. Returns `False` otherwise. `Equivalent(arg1, arg2, ...)` is equivalent to `(arg1 &&
    * arg2 && ...) || (!arg1 && !arg2 && ...)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Equivalent.md">Equivalent
    *      documentation</a>
@@ -3002,7 +3002,7 @@ public class S {
 
   /**
    * Erf(z) - returns the error function of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Erf.md">Erf
    *      documentation</a>
@@ -3011,7 +3011,7 @@ public class S {
 
   /**
    * Erfc(z) - returns the complementary error function of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Erfc.md">Erfc
    *      documentation</a>
@@ -3020,7 +3020,7 @@ public class S {
 
   /**
    * Erfi(z) - returns the imaginary error function of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Erfi.md">Erfi
    *      documentation</a>
@@ -3029,7 +3029,7 @@ public class S {
 
   /**
    * ErlangDistribution({k, lambda}) - returns a Erlang distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ErlangDistribution.md">ErlangDistribution
    *      documentation</a>
@@ -3039,7 +3039,7 @@ public class S {
 
   /**
    * EuclideanDistance(u, v) - returns the euclidean distance between `u` and `v`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EuclideanDistance.md">EuclideanDistance
    *      documentation</a>
@@ -3049,7 +3049,7 @@ public class S {
 
   /**
    * EulerE(n) - gives the euler number `En`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EulerE.md">EulerE
    *      documentation</a>
@@ -3058,7 +3058,7 @@ public class S {
 
   /**
    * EulerGamma - Euler-Mascheroni constant
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EulerGamma.md">EulerGamma
    *      documentation</a>
@@ -3067,7 +3067,7 @@ public class S {
 
   /**
    * EulerPhi(n) - compute Euler's totient function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EulerPhi.md">EulerPhi
    *      documentation</a>
@@ -3076,7 +3076,7 @@ public class S {
 
   /**
    * EulerianGraphQ(graph) - returns `True` if `graph` is an eulerian graph, and `False` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EulerianGraphQ.md">EulerianGraphQ
    *      documentation</a>
@@ -3087,7 +3087,7 @@ public class S {
   /**
    * Evaluate(expr) - the `Evaluate` function will be executed even if the function attributes
    * `HoldFirst, HoldRest, HoldAll` are set for the function head.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Evaluate.md">Evaluate
    *      documentation</a>
@@ -3096,7 +3096,7 @@ public class S {
 
   /**
    * EvenQ(x) - returns `True` if `x` is even, and `False` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EvenQ.md">EvenQ
    *      documentation</a>
@@ -3105,7 +3105,7 @@ public class S {
 
   /**
    * ExactNumberQ(expr) - returns `True` if `expr` is an exact number, and `False` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ExactNumberQ.md">ExactNumberQ
    *      documentation</a>
@@ -3115,7 +3115,7 @@ public class S {
 
   /**
    * Except(c) - represents a pattern object that matches any expression except those matching `c`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Except.md">Except
    *      documentation</a>
@@ -3128,7 +3128,7 @@ public class S {
 
   /**
    * Exp(z) - the exponential function `E^z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Exp.md">Exp
    *      documentation</a>
@@ -3137,7 +3137,7 @@ public class S {
 
   /**
    * ExpIntegralE(n, expr) - returns the exponential integral `E_n(expr)` of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ExpIntegralE.md">ExpIntegralE
    *      documentation</a>
@@ -3147,7 +3147,7 @@ public class S {
 
   /**
    * ExpIntegralEi(expr) - returns the exponential integral `Ei(expr)` of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ExpIntegralEi.md">ExpIntegralEi
    *      documentation</a>
@@ -3159,7 +3159,7 @@ public class S {
 
   /**
    * Expand(expr) - expands out positive rational powers and products of sums in `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Expand.md">Expand
    *      documentation</a>
@@ -3168,7 +3168,7 @@ public class S {
 
   /**
    * ExpandAll(expr) - expands out all positive integer powers and products of sums in `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ExpandAll.md">ExpandAll
    *      documentation</a>
@@ -3178,7 +3178,7 @@ public class S {
   /**
    * Expectation(pure-function, data-set) - returns the expected value of the `pure-function` for
    * the given `data-set`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Expectation.md">Expectation
    *      documentation</a>
@@ -3188,7 +3188,7 @@ public class S {
   /**
    * Exponent(polynomial, x) - gives the maximum power with which `x` appears in the expanded form
    * of `polynomial`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Exponent.md">Exponent
    *      documentation</a>
@@ -3197,7 +3197,7 @@ public class S {
 
   /**
    * ExponentialDistribution(lambda) - returns an exponential distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ExponentialDistribution.md">ExponentialDistribution
    *      documentation</a>
@@ -3208,7 +3208,7 @@ public class S {
   /**
    * Export("path-to-filename", expression, "WXF") - if the file system is enabled, export the
    * `expression` in WXF format to the "path-to-filename" file.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Export.md">Export
    *      documentation</a>
@@ -3222,7 +3222,7 @@ public class S {
 
   /**
    * ExtendedGCD(n1, n2, ...) - computes the extended greatest common divisor of the given integers.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ExtendedGCD.md">ExtendedGCD
    *      documentation</a>
@@ -3233,7 +3233,7 @@ public class S {
 
   /**
    * Extract(expr, list) - extracts parts of `expr` specified by `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Extract.md">Extract
    *      documentation</a>
@@ -3245,7 +3245,7 @@ public class S {
 
   /**
    * Factor(expr) - factors the polynomial expression `expr`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Factor.md">Factor
    *      documentation</a>
@@ -3254,7 +3254,7 @@ public class S {
 
   /**
    * FactorInteger(n) - returns the factorization of `n` as a list of factors and exponents.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FactorInteger.md">FactorInteger
    *      documentation</a>
@@ -3264,7 +3264,7 @@ public class S {
 
   /**
    * FactorSquareFree(polynomial) - factor the polynomial expression `polynomial` square free.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FactorSquareFree.md">FactorSquareFree
    *      documentation</a>
@@ -3275,7 +3275,7 @@ public class S {
   /**
    * FactorSquareFreeList(polynomial) - get the square free factors of the polynomial expression
    * `polynomial`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FactorSquareFreeList.md">FactorSquareFreeList
    *      documentation</a>
@@ -3285,7 +3285,7 @@ public class S {
 
   /**
    * FactorTerms(poly) - pulls out any overall numerical factor in `poly`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FactorTerms.md">FactorTerms
    *      documentation</a>
@@ -3294,7 +3294,7 @@ public class S {
 
   /**
    * Factorial(n) - returns the factorial number of the integer `n`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Factorial.md">Factorial
    *      documentation</a>
@@ -3303,7 +3303,7 @@ public class S {
 
   /**
    * Factorial2(n) - returns the double factorial number of the integer `n` as `n*(n-2)*(n-4)...`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Factorial2.md">Factorial2
    *      documentation</a>
@@ -3315,7 +3315,7 @@ public class S {
 
   /**
    * False - the constant `False` represents the boolean value **false**
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/False.md">False
    *      documentation</a>
@@ -3324,7 +3324,7 @@ public class S {
 
   /**
    * Fibonacci(n) - returns the Fibonacci number of the integer `n`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Fibonacci.md">Fibonacci
    *      documentation</a>
@@ -3341,7 +3341,7 @@ public class S {
 
   /**
    * FileNames( ) - returns a list with the filenames in the current working folder..
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FileNames.md">FileNames
    *      documentation</a>
@@ -3350,7 +3350,7 @@ public class S {
 
   /**
    * FilePrint(file) - prints the raw contents of `file`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FilePrint.md">FilePrint
    *      documentation</a>
@@ -3365,7 +3365,7 @@ public class S {
   /**
    * FilterRules(list-of-option-rules, list-of-rules) - filter the `list-of-option-rules` by
    * `list-of-rules`or `list-of-symbols`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FilterRules.md">FilterRules
    *      documentation</a>
@@ -3376,7 +3376,7 @@ public class S {
    * FindClusters(list-of-data-points, k) - Clustering algorithm based on David Arthur and Sergei
    * Vassilvitski k-means++ algorithm. Create `k` number of clusters to split the
    * `list-of-data-points` into.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindClusters.md">FindClusters
    *      documentation</a>
@@ -3389,7 +3389,7 @@ public class S {
 
   /**
    * FindEulerianCycle(graph) - find an eulerian cycle in the `graph`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindEulerianCycle.md">FindEulerianCycle
    *      documentation</a>
@@ -3400,7 +3400,7 @@ public class S {
   /**
    * FindFit(list-of-data-points, function, parameters, variable) - solve a least squares problem
    * using the Levenberg-Marquardt algorithm.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindFit.md">FindFit
    *      documentation</a>
@@ -3413,7 +3413,7 @@ public class S {
   /**
    * FindGraphIsomorphism(graph1, graph2) - returns an isomorphism between `graph1` and `graph2` if
    * it exists. Return an empty list if no isomorphism exists.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindGraphIsomorphism.md">FindGraphIsomorphism
    *      documentation</a>
@@ -3423,7 +3423,7 @@ public class S {
 
   /**
    * FindHamiltonianCycle(graph) - find an hamiltonian cycle in the `graph`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindHamiltonianCycle.md">FindHamiltonianCycle
    *      documentation</a>
@@ -3440,7 +3440,7 @@ public class S {
   /**
    * FindInstance(equations, vars) - attempts to find one solution which solves the `equations` for
    * the variables `vars`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindInstance.md">FindInstance
    *      documentation</a>
@@ -3451,7 +3451,7 @@ public class S {
   /**
    * FindPermutation(list1, list2) - create a `Cycles({{...},{...}, ...})` permutation expression,
    * for two lists whose arguments are the same but may be differently arranged.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindPermutation.md">FindPermutation
    *      documentation</a>
@@ -3466,7 +3466,7 @@ public class S {
   /**
    * FindRoot(f, {x, xmin, xmax}) - searches for a numerical root of `f` for the variable `x`, in
    * the range `xmin` to `xmax`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindRoot.md">FindRoot
    *      documentation</a>
@@ -3476,7 +3476,7 @@ public class S {
   /**
    * FindShortestPath(graph, source, destination) - find a shortest path in the `graph` from
    * `source` to `destination`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindShortestPath.md">FindShortestPath
    *      documentation</a>
@@ -3487,7 +3487,7 @@ public class S {
   /**
    * FindShortestTour({{p11, p12}, {p21, p22}, {p31, p32}, ...}) - find a shortest tour in the
    * `graph` with minimum `EuclideanDistance`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindShortestTour.md">FindShortestTour
    *      documentation</a>
@@ -3497,7 +3497,7 @@ public class S {
 
   /**
    * FindSpanningTree(graph) - find the minimum spanning tree in the `graph`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindSpanningTree.md">FindSpanningTree
    *      documentation</a>
@@ -3508,7 +3508,7 @@ public class S {
   /**
    * FindVertexCover(graph) - algorithm to find a vertex cover for a `graph`. A vertex cover is a
    * set of vertices that touches all the edges in the graph.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindVertexCover.md">FindVertexCover
    *      documentation</a>
@@ -3518,7 +3518,7 @@ public class S {
 
   /**
    * First(expr) - returns the first element in `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/First.md">First
    *      documentation</a>
@@ -3528,7 +3528,7 @@ public class S {
   /**
    * FirstCase({arg1, arg2, ...}, pattern-matcher) - returns the first of the elements `argi` for
    * which `pattern-matcher` is matching.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FirstCase.md">FirstCase
    *      documentation</a>
@@ -3538,7 +3538,7 @@ public class S {
   /**
    * FirstPosition(expression, pattern-matcher) - returns the first subexpression of `expression`
    * for which `pattern-matcher` is matching.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FirstPosition.md">FirstPosition
    *      documentation</a>
@@ -3549,7 +3549,7 @@ public class S {
   /**
    * Fit(list-of-data-points, degree, variable) - solve a least squares problem using the
    * Levenberg-Marquardt algorithm.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Fit.md">Fit
    *      documentation</a>
@@ -3558,7 +3558,7 @@ public class S {
 
   /**
    * FittedModel( ) - `FittedModel`holds the model generated with `LinearModelFit`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FittedModel.md">FittedModel
    *      documentation</a>
@@ -3569,7 +3569,7 @@ public class S {
    * FiveNum({dataset}) - the Tuckey five-number summary is a set of descriptive statistics that
    * provide information about a `dataset`. It consists of the five most important sample
    * percentiles:
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FiveNum.md">FiveNum
    *      documentation</a>
@@ -3579,7 +3579,7 @@ public class S {
   /**
    * FixedPoint(f, expr) - starting with `expr`, iteratively applies `f` until the result no longer
    * changes.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FixedPoint.md">FixedPoint
    *      documentation</a>
@@ -3589,7 +3589,7 @@ public class S {
   /**
    * FixedPointList(f, expr) - starting with `expr`, iteratively applies `f` until the result no
    * longer changes, and returns a list of all intermediate results.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FixedPointList.md">FixedPointList
    *      documentation</a>
@@ -3600,7 +3600,7 @@ public class S {
   /**
    * Flat - is an attribute that specifies that nested occurrences of a function should be
    * automatically flattened.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Flat.md">Flat
    *      documentation</a>
@@ -3612,7 +3612,7 @@ public class S {
 
   /**
    * Flatten(expr) - flattens out nested lists in `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Flatten.md">Flatten
    *      documentation</a>
@@ -3621,7 +3621,7 @@ public class S {
 
   /**
    * FlattenAt(expr, position) - flattens out nested lists at the given `position` in `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FlattenAt.md">FlattenAt
    *      documentation</a>
@@ -3632,7 +3632,7 @@ public class S {
 
   /**
    * Floor(expr) - gives the smallest integer less than or equal `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Floor.md">Floor
    *      documentation</a>
@@ -3642,7 +3642,7 @@ public class S {
   /**
    * Fold[f, x, {a, b}] - returns `f[f[x, a], b]`, and this nesting continues for lists of arbitrary
    * length.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Fold.md">Fold
    *      documentation</a>
@@ -3651,7 +3651,7 @@ public class S {
 
   /**
    * FoldList[f, x, {a, b}] - returns `{x, f[x, a], f[f[x, a], b]}`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FoldList.md">FoldList
    *      documentation</a>
@@ -3661,7 +3661,7 @@ public class S {
   /**
    * For(start, test, incr, body) - evaluates `start`, and then iteratively `body` and `incr` as
    * long as test evaluates to `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/For.md">For
    *      documentation</a>
@@ -3674,7 +3674,7 @@ public class S {
    * Fourier(vector-of-complex-numbers) - Discrete Fourier transform of a
    * `vector-of-complex-numbers`. Fourier transform is restricted to vectors with length of power of
    * 2.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Fourier.md">Fourier
    *      documentation</a>
@@ -3683,7 +3683,7 @@ public class S {
 
   /**
    * FourierMatrix(n) - gives a fourier matrix with the dimension `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FourierMatrix.md">FourierMatrix
    *      documentation</a>
@@ -3695,7 +3695,7 @@ public class S {
 
   /**
    * FractionalPart(number) - get the fractional part of a `number`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FractionalPart.md">FractionalPart
    *      documentation</a>
@@ -3705,7 +3705,7 @@ public class S {
 
   /**
    * FrechetDistribution(a,b) - returns a Frechet distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FrechetDistribution.md">FrechetDistribution
    *      documentation</a>
@@ -3715,7 +3715,7 @@ public class S {
 
   /**
    * FreeQ(`expr`, `x`) - returns 'True' if `expr` does not contain the expression `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FreeQ.md">FreeQ
    *      documentation</a>
@@ -3729,7 +3729,7 @@ public class S {
   /**
    * FrobeniusNumber({a1, ... ,aN}) - returns the Frobenius number of the nonnegative integers `{a1,
    * ... ,aN}`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FrobeniusNumber.md">FrobeniusNumber
    *      documentation</a>
@@ -3740,7 +3740,7 @@ public class S {
   /**
    * FrobeniusSolve({a1, ... ,aN}, M) - get a list of solutions for the Frobenius equation given by
    * the list of integers `{a1, ... ,aN}` and the non-negative integer `M`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FrobeniusSolve.md">FrobeniusSolve
    *      documentation</a>
@@ -3751,7 +3751,7 @@ public class S {
   /**
    * FromCharacterCode({ch1, ch2, ...}) - converts the `ch1, ch2,...` character codes into a string
    * of corresponding characters.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FromCharacterCode.md">FromCharacterCode
    *      documentation</a>
@@ -3762,7 +3762,7 @@ public class S {
   /**
    * FromContinuedFraction({n1, n2, ...}) - reconstructs a number from the list of its continued
    * fraction terms `{n1, n2, ...}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FromContinuedFraction.md">FromContinuedFraction
    *      documentation</a>
@@ -3772,7 +3772,7 @@ public class S {
 
   /**
    * FromDigits(list) - creates an expression from the list of digits for radix `10`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FromDigits.md">FromDigits
    *      documentation</a>
@@ -3781,7 +3781,7 @@ public class S {
 
   /**
    * FromLetterNumber(number) - get the corresponding characters from the English alphabet.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FromLetterNumber.md">FromLetterNumber
    *      documentation</a>
@@ -3792,7 +3792,7 @@ public class S {
   /**
    * FromPolarCoordinates({r, t}) - return the cartesian coordinates for the polar coordinates `{r,
    * t}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FromPolarCoordinates.md">FromPolarCoordinates
    *      documentation</a>
@@ -3804,7 +3804,7 @@ public class S {
 
   /**
    * FullForm(expression) - shows the internal representation of the given `expression`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FullForm.md">FullForm
    *      documentation</a>
@@ -3814,7 +3814,7 @@ public class S {
   /**
    * FullSimplify(expr) - works like `Simplify` but additionally tries some `FunctionExpand` rule
    * transformations to simplify `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FullSimplify.md">FullSimplify
    *      documentation</a>
@@ -3824,7 +3824,7 @@ public class S {
 
   /**
    * Function(body) - represents a pure function with parameters `#1`, `#2`....
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Function.md">Function
    *      documentation</a>
@@ -3837,7 +3837,7 @@ public class S {
   /**
    * FunctionExpand(expression) - expands the special function `expression`. `FunctionExpand`
    * expands simple nested radicals.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FunctionExpand.md">FunctionExpand
    *      documentation</a>
@@ -3851,7 +3851,7 @@ public class S {
   /**
    * FunctionURL(built-in-symbol) - returns the GitHub URL of the `built-in-symbol` implementation
    * in the [Symja GitHub repository](https://github.com/axkr/symja_android_library).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FunctionURL.md">FunctionURL
    *      documentation</a>
@@ -3860,7 +3860,7 @@ public class S {
 
   /**
    * GCD(n1, n2, ...) - computes the greatest common divisor of the given integers.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GCD.md">GCD
    *      documentation</a>
@@ -3869,7 +3869,7 @@ public class S {
 
   /**
    * Gamma(z) - is the gamma function on the complex number `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Gamma.md">Gamma
    *      documentation</a>
@@ -3878,7 +3878,7 @@ public class S {
 
   /**
    * GammaDistribution(a,b) - returns a gamma distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GammaDistribution.md">GammaDistribution
    *      documentation</a>
@@ -3892,7 +3892,7 @@ public class S {
   /**
    * Gather(list, test) - gathers leaves of `list` into sub lists of items that are the same
    * according to `test`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Gather.md">Gather
    *      documentation</a>
@@ -3902,7 +3902,7 @@ public class S {
   /**
    * GatherBy(list, f) - gathers leaves of `list` into sub lists of items whose image under `f`
    * identical.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GatherBy.md">GatherBy
    *      documentation</a>
@@ -3920,7 +3920,7 @@ public class S {
 
   /**
    * GegenbauerC(n, a, x) - returns the GegenbauerC polynomial.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GegenbauerC.md">GegenbauerC
    *      documentation</a>
@@ -3932,7 +3932,7 @@ public class S {
   /**
    * GeoDistance({latitude1,longitude1}, {latitude2,longitude2}) - returns the geodesic distance
    * between `{latitude1,longitude1}` and `{latitude2,longitude2}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeoDistance.md">GeoDistance
    *      documentation</a>
@@ -3945,7 +3945,7 @@ public class S {
 
   /**
    * GeometricDistribution(p) - returns a geometric distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeometricDistribution.md">GeometricDistribution
    *      documentation</a>
@@ -3955,7 +3955,7 @@ public class S {
 
   /**
    * GeometricMean({a, b, c,...}) - returns the geometric mean of `{a, b, c,...}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeometricMean.md">GeometricMean
    *      documentation</a>
@@ -3968,7 +3968,7 @@ public class S {
 
   /**
    * Get("path-to-package-file-name") - load the package defined in `path-to-package-file-name`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Get.md">Get
    *      documentation</a>
@@ -3977,7 +3977,7 @@ public class S {
 
   /**
    * Glaisher - Glaisher constant.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Glaisher.md">Glaisher
    *      documentation</a>
@@ -3988,7 +3988,7 @@ public class S {
 
   /**
    * GoldenRatio - is the golden ratio `(1+Sqrt(5))/2`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GoldenRatio.md">GoldenRatio
    *      documentation</a>
@@ -4000,7 +4000,7 @@ public class S {
 
   /**
    * Grad(function, list-of-variables) - gives the gradient of the function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Grad.md">Grad
    *      documentation</a>
@@ -4009,7 +4009,7 @@ public class S {
 
   /**
    * Graph({edge1,...,edgeN}) - create a graph from the given edges `edge1,...,edgeN`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Graph.md">Graph
    *      documentation</a>
@@ -4019,7 +4019,7 @@ public class S {
   /**
    * GraphCenter(graph) - compute the `graph` center. The center of a `graph` is the set of vertices
    * of graph eccentricity equal to the `graph` radius.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphCenter.md">GraphCenter
    *      documentation</a>
@@ -4030,7 +4030,7 @@ public class S {
 
   /**
    * GraphDiameter(graph) - return the diameter of the `graph`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphDiameter.md">GraphDiameter
    *      documentation</a>
@@ -4041,7 +4041,7 @@ public class S {
   /**
    * GraphPeriphery(graph) - compute the `graph` periphery. The periphery of a `graph` is the set of
    * vertices of graph eccentricity equal to the graph diameter.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphPeriphery.md">GraphPeriphery
    *      documentation</a>
@@ -4051,7 +4051,7 @@ public class S {
 
   /**
    * GraphQ(expr) - test if `expr` is a graph object.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphQ.md">GraphQ
    *      documentation</a>
@@ -4060,7 +4060,7 @@ public class S {
 
   /**
    * GraphRadius(graph) - return the radius of the `graph`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphRadius.md">GraphRadius
    *      documentation</a>
@@ -4073,7 +4073,7 @@ public class S {
 
   /**
    * Graphics3D(primitives, options) - represents a three-dimensional graphic.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Graphics3D.md">Graphics3D
    *      documentation</a>
@@ -4092,7 +4092,7 @@ public class S {
 
   /**
    * Greater(x, y) - yields `True` if `x` is known to be greater than `y`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Greater.md">Greater
    *      documentation</a>
@@ -4101,7 +4101,7 @@ public class S {
 
   /**
    * GreaterEqual(x, y) - yields `True` if `x` is known to be greater than or equal to `y`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GreaterEqual.md">GreaterEqual
    *      documentation</a>
@@ -4119,7 +4119,7 @@ public class S {
   /**
    * GroebnerBasis({polynomial-list},{variable-list}) - returns a Gröbner basis for the
    * `polynomial-list` and `variable-list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GroebnerBasis.md">GroebnerBasis
    *      documentation</a>
@@ -4130,7 +4130,7 @@ public class S {
   /**
    * GroupBy(list, head) - return an association where the elements of `list` are grouped by
    * `head(element)`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GroupBy.md">GroupBy
    *      documentation</a>
@@ -4139,7 +4139,7 @@ public class S {
 
   /**
    * Gudermannian(expr) - computes the gudermannian function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Gudermannian.md">Gudermannian
    *      documentation</a>
@@ -4149,7 +4149,7 @@ public class S {
 
   /**
    * GumbelDistribution(a, b) - returns a Gumbel distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GumbelDistribution.md">GumbelDistribution
    *      documentation</a>
@@ -4160,7 +4160,7 @@ public class S {
   /**
    * HamiltonianGraphQ(graph) - returns `True` if `graph` is an hamiltonian graph, and `False`
    * otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HamiltonianGraphQ.md">HamiltonianGraphQ
    *      documentation</a>
@@ -4171,7 +4171,7 @@ public class S {
   /**
    * HammingDistance(a, b) - returns the Hamming distance of `a` and `b`, i.e. the number of
    * different elements.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HammingDistance.md">HammingDistance
    *      documentation</a>
@@ -4190,7 +4190,7 @@ public class S {
 
   /**
    * HarmonicMean({a, b, c,...}) - returns the harmonic mean of `{a, b, c,...}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HarmonicMean.md">HarmonicMean
    *      documentation</a>
@@ -4200,7 +4200,7 @@ public class S {
 
   /**
    * HarmonicNumber(n) - returns the `n`th harmonic number.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HarmonicNumber.md">HarmonicNumber
    *      documentation</a>
@@ -4210,7 +4210,7 @@ public class S {
 
   /**
    * Haversine(z) - returns the haversine function of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Haversine.md">Haversine
    *      documentation</a>
@@ -4219,7 +4219,7 @@ public class S {
 
   /**
    * Head(expr) - returns the head of the expression or atom `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Head.md">Head
    *      documentation</a>
@@ -4232,7 +4232,7 @@ public class S {
    * HeavisideTheta(expr1, expr2, ... exprN) - returns `1` if all `expr1, expr2, ... exprN` are
    * positive and `0` if one of the `expr1, expr2, ... exprN` is negative. `HeavisideTheta(0)`
    * returns unevaluated as `HeavisideTheta(0)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HeavisideTheta.md">HeavisideTheta
    *      documentation</a>
@@ -4242,7 +4242,7 @@ public class S {
 
   /**
    * HermiteH(n, x) - returns the Hermite polynomial `H_n(x)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HermiteH.md">HermiteH
    *      documentation</a>
@@ -4251,7 +4251,7 @@ public class S {
 
   /**
    * HermitianMatrixQ(m) - returns `True` if `m` is a hermitian matrix.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HermitianMatrixQ.md">HermitianMatrixQ
    *      documentation</a>
@@ -4261,7 +4261,7 @@ public class S {
 
   /**
    * HexidecimalCharacter - represents the characters `0-9`, `a-f` and `A-F`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HexidecimalCharacter.md">HexidecimalCharacter
    *      documentation</a>
@@ -4271,7 +4271,7 @@ public class S {
 
   /**
    * HilbertMatrix(n) - gives the hilbert matrix with `n` rows and columns.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HilbertMatrix.md">HilbertMatrix
    *      documentation</a>
@@ -4281,7 +4281,7 @@ public class S {
 
   /**
    * Histogram(list-of-values) - plots a histogram for a `list-of-values`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Histogram.md">Histogram
    *      documentation</a>
@@ -4293,7 +4293,7 @@ public class S {
   /**
    * Hold(expr) - `Hold` doesn't evaluate `expr`. `Hold` evaluates `UpValues`for its arguments.
    * `HoldComplete` doesn't evaluate `UpValues`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Hold.md">Hold
    *      documentation</a>
@@ -4303,7 +4303,7 @@ public class S {
   /**
    * HoldAll - is an attribute specifying that all arguments of a function should be left
    * unevaluated.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HoldAll.md">HoldAll
    *      documentation</a>
@@ -4316,7 +4316,7 @@ public class S {
   /**
    * HoldComplete(expr) - `HoldComplete` doesn't evaluate `expr`. `Hold` evaluates `UpValues`for its
    * arguments. `HoldComplete` doesn't evaluate `UpValues`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HoldComplete.md">HoldComplete
    *      documentation</a>
@@ -4327,7 +4327,7 @@ public class S {
   /**
    * HoldFirst - is an attribute specifying that the first argument of a function should be left
    * unevaluated.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HoldFirst.md">HoldFirst
    *      documentation</a>
@@ -4336,7 +4336,7 @@ public class S {
 
   /**
    * HoldForm(expr) - `HoldForm` doesn't evaluate `expr` and didn't appear in the output.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HoldForm.md">HoldForm
    *      documentation</a>
@@ -4345,7 +4345,7 @@ public class S {
 
   /**
    * HoldPattern(expr) - `HoldPattern` doesn't evaluate `expr` for pattern-matching.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HoldPattern.md">HoldPattern
    *      documentation</a>
@@ -4355,7 +4355,7 @@ public class S {
   /**
    * HoldRest - is an attribute specifying that all but the first argument of a function should be
    * left unevaluated.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HoldRest.md">HoldRest
    *      documentation</a>
@@ -4366,7 +4366,7 @@ public class S {
 
   /**
    * HornerForm(polynomial) - Generate the horner scheme for a univariate `polynomial`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HornerForm.md">HornerForm
    *      documentation</a>
@@ -4377,7 +4377,7 @@ public class S {
 
   /**
    * HurwitzZeta(s, a) - returns the Hurwitz zeta function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HurwitzZeta.md">HurwitzZeta
    *      documentation</a>
@@ -4389,7 +4389,7 @@ public class S {
 
   /**
    * Hypergeometric0F1(b, z) - return the `Hypergeometric0F1` function
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Hypergeometric0F1.md">Hypergeometric0F1
    *      documentation</a>
@@ -4399,7 +4399,7 @@ public class S {
 
   /**
    * Hypergeometric1F1(a, b, z) - return the `Hypergeometric1F1` function
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Hypergeometric1F1.md">Hypergeometric1F1
    *      documentation</a>
@@ -4412,7 +4412,7 @@ public class S {
 
   /**
    * Hypergeometric2F1(a, b, c, z) - return the `Hypergeometric2F1` function
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Hypergeometric2F1.md">Hypergeometric2F1
    *      documentation</a>
@@ -4422,7 +4422,7 @@ public class S {
 
   /**
    * HypergeometricDistribution(n, s, t) - returns a hypergeometric distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HypergeometricDistribution.md">HypergeometricDistribution
    *      documentation</a>
@@ -4432,7 +4432,7 @@ public class S {
 
   /**
    * HypergeometricPFQ({a,...}, {b,...}, c) - return the `HypergeometricPFQ` function
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HypergeometricPFQ.md">HypergeometricPFQ
    *      documentation</a>
@@ -4449,7 +4449,7 @@ public class S {
   /**
    * I - Imaginary unit - internally converted to the complex number `0+1*i`. `I` represents the
    * imaginary number `Sqrt(-1)`. `I^2` will be evaluated to `-1`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/I.md">I
    *      documentation</a>
@@ -4460,7 +4460,7 @@ public class S {
 
   /**
    * Identity(x) - is the identity function, which returns `x` unchanged.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Identity.md">Identity
    *      documentation</a>
@@ -4469,7 +4469,7 @@ public class S {
 
   /**
    * IdentityMatrix(n) - gives the identity matrix with `n` rows and columns.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IdentityMatrix.md">IdentityMatrix
    *      documentation</a>
@@ -4480,7 +4480,7 @@ public class S {
   /**
    * If(cond, pos, neg) - returns `pos` if `cond` evaluates to `True`, and `neg` if it evaluates to
    * `False`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/If.md">If
    *      documentation</a>
@@ -4491,7 +4491,7 @@ public class S {
 
   /**
    * Im(z) - returns the imaginary component of the complex number `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Im.md">Im
    *      documentation</a>
@@ -4527,7 +4527,7 @@ public class S {
 
   /**
    * Implies(arg1, arg2) - Logical implication.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Implies.md">Implies
    *      documentation</a>
@@ -4537,7 +4537,7 @@ public class S {
   /**
    * Import("path-to-filename", "WXF") - if the file system is enabled, import an expression in WXF
    * format from the "path-to-filename" file.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Import.md">Import
    *      documentation</a>
@@ -4549,7 +4549,7 @@ public class S {
 
   /**
    * In(k) - gives the `k`th line of input.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/In.md">In
    *      documentation</a>
@@ -4558,7 +4558,7 @@ public class S {
 
   /**
    * Increment(x) - increments `x` by `1`, returning the original value of `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Increment.md">Increment
    *      documentation</a>
@@ -4567,7 +4567,7 @@ public class S {
 
   /**
    * Indeterminate - represents an indeterminate result.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Indeterminate.md">Indeterminate
    *      documentation</a>
@@ -4579,7 +4579,7 @@ public class S {
 
   /**
    * InexactNumberQ(expr) - returns `True` if `expr` is not an exact number, and `False` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InexactNumberQ.md">InexactNumberQ
    *      documentation</a>
@@ -4589,7 +4589,7 @@ public class S {
 
   /**
    * Infinity - represents an infinite real quantity.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Infinity.md">Infinity
    *      documentation</a>
@@ -4605,7 +4605,7 @@ public class S {
   /**
    * Inner(f, x, y, g) - computes a generalized inner product of `x` and `y`, using a multiplication
    * function `f` and an addition function `g`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Inner.md">Inner
    *      documentation</a>
@@ -4615,7 +4615,7 @@ public class S {
   /**
    * Input() - if the file system is enabled, the user can input an expression. After input this
    * expression will be evaluated immediately.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Input.md">Input
    *      documentation</a>
@@ -4626,7 +4626,7 @@ public class S {
 
   /**
    * InputForm(expr) - print the `expr` as if it should be inserted by the user for evaluation.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InputForm.md">InputForm
    *      documentation</a>
@@ -4637,7 +4637,7 @@ public class S {
 
   /**
    * InputString() - if the file system is enabled, the user can input a string.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InputString.md">InputString
    *      documentation</a>
@@ -4647,7 +4647,7 @@ public class S {
   /**
    * Insert(list, elem, n) - inserts `elem` at position `n` in `list`. When `n` is negative, the
    * position is counted from the end.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Insert.md">Insert
    *      documentation</a>
@@ -4662,7 +4662,7 @@ public class S {
   /**
    * InstanceOf[java-object, "class-name"] - return the result of the Java expression `java-object
    * instanceof class`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InstanceOf.md">InstanceOf
    *      documentation</a>
@@ -4671,7 +4671,7 @@ public class S {
 
   /**
    * Integer - is the head of integers.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Integer.md">Integer
    *      documentation</a>
@@ -4680,7 +4680,7 @@ public class S {
 
   /**
    * IntegerDigits(n, base) - returns a list of integer digits for `n` under `base`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntegerDigits.md">IntegerDigits
    *      documentation</a>
@@ -4690,7 +4690,7 @@ public class S {
 
   /**
    * IntegerExponent(n, b) - gives the highest exponent of `b` that divides `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntegerExponent.md">IntegerExponent
    *      documentation</a>
@@ -4700,7 +4700,7 @@ public class S {
 
   /**
    * IntegerLength(x) - gives the number of digits in the base-10 representation of `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntegerLength.md">IntegerLength
    *      documentation</a>
@@ -4711,7 +4711,7 @@ public class S {
   /**
    * IntegerName(integer-number) - gives the spoken number string of `integer-number` in language
    * `English`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntegerName.md">IntegerName
    *      documentation</a>
@@ -4720,7 +4720,7 @@ public class S {
 
   /**
    * IntegerPart(expr) - for real `expr` return the integer part of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntegerPart.md">IntegerPart
    *      documentation</a>
@@ -4729,7 +4729,7 @@ public class S {
 
   /**
    * IntegerPartitions(n) - returns all partitions of the integer `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntegerPartitions.md">IntegerPartitions
    *      documentation</a>
@@ -4739,7 +4739,7 @@ public class S {
 
   /**
    * IntegerQ(expr) - returns `True` if `expr` is an integer, and `False` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntegerQ.md">IntegerQ
    *      documentation</a>
@@ -4748,7 +4748,7 @@ public class S {
 
   /**
    * Integers - is the set of integer numbers.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Integers.md">Integers
    *      documentation</a>
@@ -4758,7 +4758,7 @@ public class S {
   /**
    * Integrate(f, x) - integrates `f` with respect to `x`. The result does not contain the additive
    * integration constant.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Integrate.md">Integrate
    *      documentation</a>
@@ -4768,7 +4768,7 @@ public class S {
   /**
    * InterpolatingFunction(data-list) - get the representation for the given `data-list` as
    * piecewise `InterpolatingPolynomial`s.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InterpolatingFunction.md">InterpolatingFunction
    *      documentation</a>
@@ -4779,7 +4779,7 @@ public class S {
   /**
    * InterpolatingPolynomial(data-list, symbol) - get the polynomial representation for the given
    * `data-list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InterpolatingPolynomial.md">InterpolatingPolynomial
    *      documentation</a>
@@ -4793,7 +4793,7 @@ public class S {
   /**
    * InterquartileRange(list) - returns the interquartile range (IQR), which is between upper and
    * lower quartiles, IQR = Q3 − Q1.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InterquartileRange.md">InterquartileRange
    *      documentation</a>
@@ -4803,7 +4803,7 @@ public class S {
 
   /**
    * Interrupt( ) - Interrupt an evaluation and returns `$Aborted`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Interrupt.md">Interrupt
    *      documentation</a>
@@ -4815,7 +4815,7 @@ public class S {
 
   /**
    * Intersection(set1, set2, ...) - get the intersection set from `set1` and `set2` ....
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Intersection.md">Intersection
    *      documentation</a>
@@ -4825,7 +4825,7 @@ public class S {
 
   /**
    * Interval({a, b}) - represents the interval from `a` to `b`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Interval.md">Interval
    *      documentation</a>
@@ -4835,7 +4835,7 @@ public class S {
   /**
    * IntervalIntersection(interval_1, interval_2, ...) - compute the intersection of the intervals
    * `interval_1, interval_2, ...`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntervalIntersection.md">IntervalIntersection
    *      documentation</a>
@@ -4846,7 +4846,7 @@ public class S {
   /**
    * IntervalMemberQ(interval, interval-or-real-number) - returns `True`, if
    * `interval-or-real-number` is completly sourrounded by `interval`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntervalMemberQ.md">IntervalMemberQ
    *      documentation</a>
@@ -4857,7 +4857,7 @@ public class S {
   /**
    * IntervalUnion(interval_1, interval_2, ...) - compute the union of the intervals `interval_1,
    * interval_2, ...`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntervalUnion.md">IntervalUnion
    *      documentation</a>
@@ -4867,7 +4867,7 @@ public class S {
 
   /**
    * Inverse(matrix) - computes the inverse of the `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Inverse.md">Inverse
    *      documentation</a>
@@ -4880,7 +4880,7 @@ public class S {
   /**
    * InverseCDF(dist, q) - returns the inverse cumulative distribution for the distribution `dist`
    * as a function of `q`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseCDF.md">InverseCDF
    *      documentation</a>
@@ -4889,7 +4889,7 @@ public class S {
 
   /**
    * InverseErf(z) - returns the inverse error function of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseErf.md">InverseErf
    *      documentation</a>
@@ -4898,7 +4898,7 @@ public class S {
 
   /**
    * InverseErfc(z) - returns the inverse complementary error function of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseErfc.md">InverseErfc
    *      documentation</a>
@@ -4909,7 +4909,7 @@ public class S {
    * InverseFourier(vector-of-complex-numbers) - Inverse discrete Fourier transform of a
    * `vector-of-complex-numbers`. Fourier transform is restricted to vectors with length of power of
    * 2.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseFourier.md">InverseFourier
    *      documentation</a>
@@ -4919,7 +4919,7 @@ public class S {
 
   /**
    * InverseFunction(head) - returns the inverse function for the symbol `head`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseFunction.md">InverseFunction
    *      documentation</a>
@@ -4932,7 +4932,7 @@ public class S {
 
   /**
    * InverseGudermannian(expr) - computes the inverse gudermannian function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseGudermannian.md">InverseGudermannian
    *      documentation</a>
@@ -4942,7 +4942,7 @@ public class S {
 
   /**
    * InverseHaversine(z) - returns the inverse haversine function of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseHaversine.md">InverseHaversine
    *      documentation</a>
@@ -4952,7 +4952,7 @@ public class S {
 
   /**
    * InverseLaplaceTransform(f,s,t) - returns the inverse laplace transform.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseLaplaceTransform.md">InverseLaplaceTransform
    *      documentation</a>
@@ -4962,7 +4962,7 @@ public class S {
 
   /**
    * InverseSeries( series ) - return the inverse series.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseSeries.md">InverseSeries
    *      documentation</a>
@@ -4976,7 +4976,7 @@ public class S {
   /**
    * IsomorphicGraphQ(graph1, graph2) - returns `True` if an isomorphism exists between `graph1` and
    * `graph2`. Return `False`in all other cases.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IsomorphicGraphQ.md">IsomorphicGraphQ
    *      documentation</a>
@@ -4986,7 +4986,7 @@ public class S {
 
   /**
    * JSForm(expr) - returns the JavaScript form of the `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JSForm.md">JSForm
    *      documentation</a>
@@ -4999,7 +4999,7 @@ public class S {
    * JaccardDissimilarity(u, v) - returns the Jaccard-Needham dissimilarity between the two boolean
    * 1-D lists `u` and `v`, which is defined as `(c_tf + c_ft) / (c_tt + c_ft + c_tf)`, where n is
    * `len(u)` and `c_ij` is the number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JaccardDissimilarity.md">JaccardDissimilarity
    *      documentation</a>
@@ -5009,7 +5009,7 @@ public class S {
 
   /**
    * JacobiAmplitude(x, m) - returns the amplitude `am(x, m)` for Jacobian elliptic function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JacobiAmplitude.md">JacobiAmplitude
    *      documentation</a>
@@ -5019,7 +5019,7 @@ public class S {
 
   /**
    * JacobiCD(x, m) - returns the Jacobian elliptic function `cd(x, m)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JacobiCD.md">JacobiCD
    *      documentation</a>
@@ -5028,7 +5028,7 @@ public class S {
 
   /**
    * JacobiCN(x, m) - returns the Jacobian elliptic function `cn(x, m)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JacobiCN.md">JacobiCN
    *      documentation</a>
@@ -5039,7 +5039,7 @@ public class S {
 
   /**
    * JacobiDN(x, m) - returns the Jacobian elliptic function `dn(x, m)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JacobiDN.md">JacobiDN
    *      documentation</a>
@@ -5051,7 +5051,7 @@ public class S {
 
   /**
    * JacobiMatrix(matrix, var) - creates a Jacobian matrix.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JacobiMatrix.md">JacobiMatrix
    *      documentation</a>
@@ -5065,7 +5065,7 @@ public class S {
 
   /**
    * JacobiSC(x, m) - returns the Jacobian elliptic function `sc(x, m)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JacobiSC.md">JacobiSC
    *      documentation</a>
@@ -5074,7 +5074,7 @@ public class S {
 
   /**
    * JacobiSD(x, m) - returns the Jacobian elliptic function `sd(x, m)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JacobiSD.md">JacobiSD
    *      documentation</a>
@@ -5083,7 +5083,7 @@ public class S {
 
   /**
    * JacobiSN(x, m) - returns the Jacobian elliptic function `sn(x, m)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JacobiSN.md">JacobiSN
    *      documentation</a>
@@ -5092,7 +5092,7 @@ public class S {
 
   /**
    * JacobiSymbol(m, n) - calculates the Jacobi symbol.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JacobiSymbol.md">JacobiSymbol
    *      documentation</a>
@@ -5106,7 +5106,7 @@ public class S {
    * JavaClass[class-name] - a `JavaClass` expression can be created with the `LoadJavaClass`
    * function and wraps a Java `java.lang.Class` object. All static method names are assigned to a
    * context which will be created by the last part of the class name.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JavaClass.md">JavaClass
    *      documentation</a>
@@ -5116,7 +5116,7 @@ public class S {
   /**
    * JavaForm(expr) - returns the Symja Java form of the `expr`. In Java you can use the created
    * Symja expressions.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JavaForm.md">JavaForm
    *      documentation</a>
@@ -5125,7 +5125,7 @@ public class S {
 
   /**
    * JavaObject[class className] - a `JavaObject` can be created with the `JavaNew` function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JavaNew.md">JavaNew
    *      documentation</a>
@@ -5134,7 +5134,7 @@ public class S {
 
   /**
    * JavaNew["class-name"] - create a `JavaObject` from the `class-name` default constructor.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JavaObject.md">JavaObject
    *      documentation</a>
@@ -5143,7 +5143,7 @@ public class S {
 
   /**
    * JavaObjectQ[java-object] - return `True` if `java-object` is a `JavaObject` expression.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JavaObjectQ.md">JavaObjectQ
    *      documentation</a>
@@ -5153,7 +5153,7 @@ public class S {
   /**
    * JavaShow[ java.awt.Window ] - show the `JavaObject` which has to be an instance of
    * `java.awt.Window`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JavaShow.md">JavaShow
    *      documentation</a>
@@ -5162,7 +5162,7 @@ public class S {
 
   /**
    * Join(l1, l2) - concatenates the lists `l1` and `l2`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Join.md">Join
    *      documentation</a>
@@ -5180,7 +5180,7 @@ public class S {
 
   /**
    * Key(key) - represents a `key` used to access a value in an association.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Key.md">Key
    *      documentation</a>
@@ -5194,7 +5194,7 @@ public class S {
   /**
    * KeySelect(<|key1->value1, ...|>, head) - returns an association of the elements for which
    * `head(keyi)` returns `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KeySelect.md">KeySelect
    *      documentation</a>
@@ -5203,7 +5203,7 @@ public class S {
 
   /**
    * KeySort(<|key1->value1, ...|>) - sort the `<|key1->value1, ...|>` entries by the `key` values.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KeySort.md">KeySort
    *      documentation</a>
@@ -5213,7 +5213,7 @@ public class S {
   /**
    * KeyTake(<|key1->value1, ...|>, {k1, k2,...}) - returns an association of the rules for which
    * the `k1, k2,...` are keys in the association.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KeyTake.md">KeyTake
    *      documentation</a>
@@ -5222,7 +5222,7 @@ public class S {
 
   /**
    * Keys(association) - return a list of keys of the `association`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Keys.md">Keys
    *      documentation</a>
@@ -5231,7 +5231,7 @@ public class S {
 
   /**
    * Khinchin - Khinchin's constant
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Khinchin.md">Khinchin
    *      documentation</a>
@@ -5248,7 +5248,7 @@ public class S {
    * a one-sample [Wikipedia:Kolmogorov-Smirnov
    * test](http://en.wikipedia.org/wiki/Kolmogorov-Smirnov_test) evaluating the null hypothesis that
    * `data` conforms to the `NormalDistribution()`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KolmogorovSmirnovTest.md">KolmogorovSmirnovTest
    *      documentation</a>
@@ -5259,7 +5259,7 @@ public class S {
   /**
    * KroneckerDelta(arg1, arg2, ... argN) - if all arguments `arg1` to `argN` are equal return `1`,
    * otherwise return `0`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KroneckerDelta.md">KroneckerDelta
    *      documentation</a>
@@ -5273,7 +5273,7 @@ public class S {
   /**
    * Kurtosis(list) - gives the Pearson measure of kurtosis for `list` (a measure of existing
    * outliers).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Kurtosis.md">Kurtosis
    *      documentation</a>
@@ -5282,7 +5282,7 @@ public class S {
 
   /**
    * LCM(n1, n2, ...) - computes the least common multiple of the given integers.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LCM.md">LCM
    *      documentation</a>
@@ -5291,7 +5291,7 @@ public class S {
 
   /**
    * LUDecomposition(matrix) - calculate the LUP-decomposition of a square `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LUDecomposition.md">LUDecomposition
    *      documentation</a>
@@ -5309,7 +5309,7 @@ public class S {
 
   /**
    * LaguerreL(n, x) - returns the Laguerre polynomial `L_n(x)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LaguerreL.md">LaguerreL
    *      documentation</a>
@@ -5320,7 +5320,7 @@ public class S {
 
   /**
    * LaplaceTransform(f,t,s) - returns the laplace transform.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LaplaceTransform.md">LaplaceTransform
    *      documentation</a>
@@ -5330,7 +5330,7 @@ public class S {
 
   /**
    * Last(expr) - returns the last element in `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Last.md">Last
    *      documentation</a>
@@ -5339,7 +5339,7 @@ public class S {
 
   /**
    * LeafCount(expr) - returns the total number of indivisible subexpressions in `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LeafCount.md">LeafCount
    *      documentation</a>
@@ -5348,7 +5348,7 @@ public class S {
 
   /**
    * LeastSquares(matrix, right) - solves the linear least-squares problem 'matrix . x = right'.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LeastSquares.md">LeastSquares
    *      documentation</a>
@@ -5360,7 +5360,7 @@ public class S {
 
   /**
    * LegendreP(n, x) - returns the Legendre polynomial `P_n(x)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LegendreP.md">LegendreP
    *      documentation</a>
@@ -5369,7 +5369,7 @@ public class S {
 
   /**
    * LegendreQ(n, x) - returns the Legendre functions of the second kind `Q_n(x)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LegendreQ.md">LegendreQ
    *      documentation</a>
@@ -5378,7 +5378,7 @@ public class S {
 
   /**
    * Length(expr) - returns the number of leaves in `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Length.md">Length
    *      documentation</a>
@@ -5388,7 +5388,7 @@ public class S {
   /**
    * LengthWhile({e1, e2, ...}, head) - returns the number of elements `ei` at the start of list for
    * which `head(ei)` returns `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LengthWhile.md">LengthWhile
    *      documentation</a>
@@ -5397,7 +5397,7 @@ public class S {
 
   /**
    * Less(x, y) - yields `True` if `x` is known to be less than `y`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Less.md">Less
    *      documentation</a>
@@ -5406,7 +5406,7 @@ public class S {
 
   /**
    * LessEqual(x, y) - yields `True` if `x` is known to be less than or equal `y`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LessEqual.md">LessEqual
    *      documentation</a>
@@ -5420,7 +5420,7 @@ public class S {
 
   /**
    * LetterCharacter - represents letters..
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LetterCharacter.md">LetterCharacter
    *      documentation</a>
@@ -5431,7 +5431,7 @@ public class S {
   /**
    * LetterCounts(string) - count the number of each distinct character in the `string` and return
    * the result as an association `<|char->counter1, ...|>`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LetterCounts.md">LetterCounts
    *      documentation</a>
@@ -5441,7 +5441,7 @@ public class S {
 
   /**
    * LetterNumber(character) - returns the position of the `character` in the English alphabet.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LetterNumber.md">LetterNumber
    *      documentation</a>
@@ -5451,7 +5451,7 @@ public class S {
 
   /**
    * LetterQ(expr) - tests whether `expr` is a string, which only contains letters.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LetterQ.md">LetterQ
    *      documentation</a>
@@ -5461,7 +5461,7 @@ public class S {
   /**
    * Level(expr, levelspec) - gives a list of all sub-expressions of `expr` at the level(s)
    * specified by `levelspec`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Level.md">Level
    *      documentation</a>
@@ -5470,7 +5470,7 @@ public class S {
 
   /**
    * LevelQ(expr) - tests whether `expr` is a valid level specification.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LevelQ.md">LevelQ
    *      documentation</a>
@@ -5481,7 +5481,7 @@ public class S {
    * LeviCivitaTensor(n) - returns the `n`-dimensional Levi-Civita tensor as sparse array. The
    * Levi-Civita symbol represents a collection of numbers; defined from the sign of a permutation
    * of the natural numbers `1, 2, …, n`, for some positive integer `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LeviCivitaTensor.md">LeviCivitaTensor
    *      documentation</a>
@@ -5519,7 +5519,7 @@ public class S {
 
   /**
    * Limit(expr, x->x0) - gives the limit of `expr` as `x` approaches `x0`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Limit.md">Limit
    *      documentation</a>
@@ -5534,7 +5534,7 @@ public class S {
    * LinearModelFit(list-of-data-points, expr, symbol) - In statistics, linear regression is a
    * linear approach to modeling the relationship between a scalar response (or dependent variable)
    * and one or more explanatory variables (or independent variables).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LinearModelFit.md">LinearModelFit
    *      documentation</a>
@@ -5548,7 +5548,7 @@ public class S {
    * [George Dantzig's simplex algorithm](http://en.wikipedia.org/wiki/Simplex_algorithm) for
    * solving linear optimization problems with linear equality and inequality constraints and
    * implicit non-negative variables.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LinearProgramming.md">LinearProgramming
    *      documentation</a>
@@ -5559,7 +5559,7 @@ public class S {
   /**
    * LinearRecurrence(list1, list2, n) - solve the linear recurrence and return the generated
    * sequence of elements.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LinearRecurrence.md">LinearRecurrence
    *      documentation</a>
@@ -5570,7 +5570,7 @@ public class S {
   /**
    * LinearSolve(matrix, right) - solves the linear equation system 'matrix . x = right' and returns
    * one corresponding solution `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LinearSolve.md">LinearSolve
    *      documentation</a>
@@ -5585,7 +5585,7 @@ public class S {
 
   /**
    * List(e1, e2, ..., ei) - represents a list containing the elements `e1...ei`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/List.md">List
    *      documentation</a>
@@ -5598,7 +5598,7 @@ public class S {
   /**
    * ListConvolve(kernel-list, tensor-list) - create the convolution of the `kernel-list` with
    * `tensor-list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListConvolve.md">ListConvolve
    *      documentation</a>
@@ -5609,7 +5609,7 @@ public class S {
   /**
    * ListCorrelate(kernel-list, tensor-list) - create the correlation of the `kernel-list` with
    * `tensor-list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListCorrelate.md">ListCorrelate
    *      documentation</a>
@@ -5620,7 +5620,7 @@ public class S {
   /**
    * ListLinePlot( { list-of-points } ) - generate a JavaScript list line plot control for the
    * `list-of-points`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListLinePlot.md">ListLinePlot
    *      documentation</a>
@@ -5634,7 +5634,7 @@ public class S {
   /**
    * ListPlot( { list-of-points } ) - generate a JavaScript list plot control for the
    * `list-of-points`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListPlot.md">ListPlot
    *      documentation</a>
@@ -5644,7 +5644,7 @@ public class S {
   /**
    * ListPlot3D( { list-of-polygons } ) - generate a JavaScript list plot 3D control for the
    * `list-of-polygons`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListPlot3D.md">ListPlot3D
    *      documentation</a>
@@ -5654,7 +5654,7 @@ public class S {
   /**
    * ListPointPlot3D( { list-of-points } ) - generate a JavaScript list plot 3D control for the
    * `list-of-points`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListPointPlot3D.md">ListPointPlot3D
    *      documentation</a>
@@ -5664,7 +5664,7 @@ public class S {
 
   /**
    * ListQ(expr) - tests whether `expr` is a `List`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListQ.md">ListQ
    *      documentation</a>
@@ -5674,7 +5674,7 @@ public class S {
   /**
    * Listable - is an attribute specifying that a function should be automatically applied to each
    * element of a list.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Listable.md">Listable
    *      documentation</a>
@@ -5687,7 +5687,7 @@ public class S {
    * LoadJavaClass["class-name"] - loads the class with the specified `class-name` and return a
    * `JavaClass` expression. All static method names are assigned to a context which will be created
    * by the last part of the class name.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LoadJavaClass.md">LoadJavaClass
    *      documentation</a>
@@ -5697,7 +5697,7 @@ public class S {
 
   /**
    * Log(z) - returns the natural logarithm of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Log.md">Log
    *      documentation</a>
@@ -5707,7 +5707,7 @@ public class S {
   /**
    * Log10(z) - returns the base-`10` logarithm of `z`. `Log10(z)` will be converted to
    * `Log(z)/Log(10)` in symbolic mode.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Log10.md">Log10
    *      documentation</a>
@@ -5717,7 +5717,7 @@ public class S {
   /**
    * Log2(z) - returns the base-`2` logarithm of `z`. `Log2(z)` will be converted to `Log(z)/Log(2)`
    * in symbolic mode.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Log2.md">Log2
    *      documentation</a>
@@ -5726,7 +5726,7 @@ public class S {
 
   /**
    * LogGamma(z) - is the logarithmic gamma function on the complex number `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LogGamma.md">LogGamma
    *      documentation</a>
@@ -5735,7 +5735,7 @@ public class S {
 
   /**
    * LogIntegral(expr) - returns the integral logarithm of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LogIntegral.md">LogIntegral
    *      documentation</a>
@@ -5744,7 +5744,7 @@ public class S {
 
   /**
    * LogNormalDistribution(m, s) - returns a log-normal distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LogNormalDistribution.md">LogNormalDistribution
    *      documentation</a>
@@ -5757,7 +5757,7 @@ public class S {
 
   /**
    * LogisticSigmoid(z) - returns the logistic sigmoid of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LogisticSigmoid.md">LogisticSigmoid
    *      documentation</a>
@@ -5772,7 +5772,7 @@ public class S {
   /**
    * Lookup(association, key) - return the value in the `association` which is associated with the
    * `key`. If no value is available return `Missing("KeyAbsent",key)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Lookup.md">Lookup
    *      documentation</a>
@@ -5782,7 +5782,7 @@ public class S {
   /**
    * LowerCaseQ(str) - is `True` if the given `str` is a string which only contains lower case
    * characters.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LowerCaseQ.md">LowerCaseQ
    *      documentation</a>
@@ -5791,7 +5791,7 @@ public class S {
 
   /**
    * LowerTriangularize(matrix) - create a lower triangular matrix from the given `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LowerTriangularize.md">LowerTriangularize
    *      documentation</a>
@@ -5801,7 +5801,7 @@ public class S {
 
   /**
    * LucasL(n) - gives the `n`th Lucas number.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LucasL.md">LucasL
    *      documentation</a>
@@ -5810,7 +5810,7 @@ public class S {
 
   /**
    * MachineNumberQ(expr) - returns `True` if `expr` is a machine-precision real or complex number.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MachineNumberQ.md">MachineNumberQ
    *      documentation</a>
@@ -5824,7 +5824,7 @@ public class S {
 
   /**
    * MangoldtLambda(n) - the von Mangoldt function of `n`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MangoldtLambda.md">MangoldtLambda
    *      documentation</a>
@@ -5836,7 +5836,7 @@ public class S {
    * ManhattanDistance(u, v) - returns the Manhattan distance between `u` and `v`, which is the
    * number of horizontal or vertical moves in the grid like Manhattan city layout to get from `u`
    * to `v`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ManhattanDistance.md">ManhattanDistance
    *      documentation</a>
@@ -5847,7 +5847,7 @@ public class S {
   /**
    * Manipulate(plot, {x, min, max}) - generate a JavaScript control for the expression `plot` which
    * can be manipulated by a range slider `{x, min, max}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Manipulate.md">Manipulate
    *      documentation</a>
@@ -5859,7 +5859,7 @@ public class S {
 
   /**
    * Map(f, expr) or f /@ expr - applies `f` to each part on the first level of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Map.md">Map
    *      documentation</a>
@@ -5873,7 +5873,7 @@ public class S {
   /**
    * MapIndexed(f, expr) - applies `f` to each part on the first level of `expr` and appending the
    * elements position as a list in the second argument.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MapIndexed.md">MapIndexed
    *      documentation</a>
@@ -5883,7 +5883,7 @@ public class S {
   /**
    * MapThread(f, {{a1, a2, ...}, {b1, b2, ...}, ...}) - returns `{f(a1, b1, ...), f(a2, b2, ...),
    * ...}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MapThread.md">MapThread
    *      documentation</a>
@@ -5892,7 +5892,7 @@ public class S {
 
   /**
    * MatchQ(expr, form) - tests whether `expr` matches `form`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatchQ.md">MatchQ
    *      documentation</a>
@@ -5903,7 +5903,7 @@ public class S {
    * MatchingDissimilarity(u, v) - returns the Matching dissimilarity between the two boolean 1-D
    * lists `u` and `v`, which is defined as `(c_tf + c_ft) / n`, where `n` is `len(u)` and `c_ij` is
    * the number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatchingDissimilarity.md">MatchingDissimilarity
    *      documentation</a>
@@ -5913,7 +5913,7 @@ public class S {
 
   /**
    * MathMLForm(expr) - returns the MathML form of the evaluated `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathMLForm.md">MathMLForm
    *      documentation</a>
@@ -5924,7 +5924,7 @@ public class S {
 
   /**
    * MatrixD(f, X) - gives the matrix derivative of `f` with respect to the matrix `X`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatrixD.md">MatrixD
    *      documentation</a>
@@ -5933,7 +5933,7 @@ public class S {
 
   /**
    * MatrixExp(matrix) - computes the matrix exponential of the square `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatrixExp.md">MatrixExp
    *      documentation</a>
@@ -5942,7 +5942,7 @@ public class S {
 
   /**
    * MatrixForm(matrix) - print a `matrix` or sparse array in matrix form
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatrixForm.md">MatrixForm
    *      documentation</a>
@@ -5957,7 +5957,7 @@ public class S {
   /**
    * MatrixMinimalPolynomial(matrix, var) - computes the matrix minimal polynomial of a `matrix` for
    * the variable `var`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatrixMinimalPolynomial.md">MatrixMinimalPolynomial
    *      documentation</a>
@@ -5967,7 +5967,7 @@ public class S {
 
   /**
    * MatrixPlot( matrix ) - create a matrix plot.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatrixPlot.md">MatrixPlot
    *      documentation</a>
@@ -5976,7 +5976,7 @@ public class S {
 
   /**
    * MatrixPower(matrix, n) - computes the `n`th power of a `matrix`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatrixPower.md">MatrixPower
    *      documentation</a>
@@ -5985,7 +5985,7 @@ public class S {
 
   /**
    * MatrixQ(m) - returns `True` if `m` is a list of equal-length lists.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatrixQ.md">MatrixQ
    *      documentation</a>
@@ -5994,7 +5994,7 @@ public class S {
 
   /**
    * MatrixRank(matrix) - returns the rank of `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatrixRank.md">MatrixRank
    *      documentation</a>
@@ -6003,7 +6003,7 @@ public class S {
 
   /**
    * Max(e_1, e_2, ..., e_i) - returns the expression with the greatest value among the `e_i`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Max.md">Max
    *      documentation</a>
@@ -6012,7 +6012,7 @@ public class S {
 
   /**
    * MaxFilter(list, r) - filter which evaluates the `Max` of `list` for the radius `r`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MaxFilter.md">MaxFilter
    *      documentation</a>
@@ -6030,7 +6030,7 @@ public class S {
   /**
    * Maximize(unary-function, variable) - returns the maximum of the unary function for the given
    * `variable`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Maximize.md">Maximize
    *      documentation</a>
@@ -6039,7 +6039,7 @@ public class S {
 
   /**
    * Mean(list) - returns the statistical mean of `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Mean.md">Mean
    *      documentation</a>
@@ -6051,7 +6051,7 @@ public class S {
 
   /**
    * MeanFilter(list, r) - filter which evaluates the `Mean` of `list` for the radius `r`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeanFilter.md">MeanFilter
    *      documentation</a>
@@ -6060,7 +6060,7 @@ public class S {
 
   /**
    * Median(list) - returns the median of `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Median.md">Median
    *      documentation</a>
@@ -6069,7 +6069,7 @@ public class S {
 
   /**
    * MedianFilter(list, r) - filter which evaluates the `Median` of `list` for the radius `r`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MedianFilter.md">MedianFilter
    *      documentation</a>
@@ -6082,7 +6082,7 @@ public class S {
   /**
    * MemberQ(list, pattern) - returns `True` if pattern matches any element of `list`, or `False`
    * otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MemberQ.md">MemberQ
    *      documentation</a>
@@ -6097,7 +6097,7 @@ public class S {
   /**
    * MersennePrimeExponent(n) - returns the `n`th mersenne prime exponent. `2^n - 1` must be a prime
    * number.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MersennePrimeExponent.md">MersennePrimeExponent
    *      documentation</a>
@@ -6108,7 +6108,7 @@ public class S {
   /**
    * MersennePrimeExponentQ(n) - returns `True` if `2^n - 1` is a prime number. Currently `0 <= n <=
    * 47` can be computed in reasonable time.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MersennePrimeExponentQ.md">MersennePrimeExponentQ
    *      documentation</a>
@@ -6123,7 +6123,7 @@ public class S {
   /**
    * Message(symbol::msg, expr1, expr2, ...) - displays the specified message, replacing
    * placeholders in the message text with the corresponding expressions.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Message.md">Message
    *      documentation</a>
@@ -6133,7 +6133,7 @@ public class S {
   /**
    * MessageName(symbol, msg) - `symbol::msg` identifies a message. `MessageName` is the head of
    * message IDs of the form `symbol::tag`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MessageName.md">MessageName
    *      documentation</a>
@@ -6142,7 +6142,7 @@ public class S {
 
   /**
    * Messages(symbol) - return all messages which are asociated to `symbol`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Messages.md">Messages
    *      documentation</a>
@@ -6153,7 +6153,7 @@ public class S {
 
   /**
    * Min(e_1, e_2, ..., e_i) - returns the expression with the lowest value among the `e_i`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Min.md">Min
    *      documentation</a>
@@ -6162,7 +6162,7 @@ public class S {
 
   /**
    * MinFilter(list, r) - filter which evaluates the `Min` of `list` for the radius `r`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MinFilter.md">MinFilter
    *      documentation</a>
@@ -6177,7 +6177,7 @@ public class S {
   /**
    * Minimize(unary-function, variable) - returns the minimum of the unary function for the given
    * `variable`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Minimize.md">Minimize
    *      documentation</a>
@@ -6190,7 +6190,7 @@ public class S {
 
   /**
    * Minus(expr) - is the negation of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Minus.md">Minus
    *      documentation</a>
@@ -6201,7 +6201,7 @@ public class S {
 
   /**
    * MissingQ(expr) - returns `True` if `expr` is a `Missing()` expression.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MissingQ.md">MissingQ
    *      documentation</a>
@@ -6210,7 +6210,7 @@ public class S {
 
   /**
    * Mod(x, m) - returns `x` modulo `m`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Mod.md">Mod
    *      documentation</a>
@@ -6220,7 +6220,7 @@ public class S {
   /**
    * Module({list_of_local_variables}, expr ) - evaluates `expr` for the `list_of_local_variables`
    * by renaming local variables.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Module.md">Module
    *      documentation</a>
@@ -6231,7 +6231,7 @@ public class S {
 
   /**
    * MoebiusMu(expr) - calculate the Möbius function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MoebiusMu.md">MoebiusMu
    *      documentation</a>
@@ -6241,7 +6241,7 @@ public class S {
   /**
    * MonomialList(polynomial, list-of-variables) - get the list of monomials of a `polynomial`
    * expression, with respect to the `list-of-variables`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MonomialList.md">MonomialList
    *      documentation</a>
@@ -6254,7 +6254,7 @@ public class S {
 
   /**
    * Most(expr) - returns `expr` with the last element removed.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Most.md">Most
    *      documentation</a>
@@ -6263,7 +6263,7 @@ public class S {
 
   /**
    * Multinomial(n1, n2, ...) - gives the multinomial coefficient `(n1+n2+...)!/(n1! n2! ...)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Multinomial.md">Multinomial
    *      documentation</a>
@@ -6272,7 +6272,7 @@ public class S {
 
   /**
    * MultiplicativeOrder(a, n) - gives the multiplicative order `a` modulo `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MultiplicativeOrder.md">MultiplicativeOrder
    *      documentation</a>
@@ -6284,7 +6284,7 @@ public class S {
    * MultiplySides(compare-expr, value) - multiplies `value` with all elements of the
    * `compare-expr`. `compare-expr` can be `True`, `False` or a comparison expression with head
    * `Equal, Unequal, Less, LessEqual, Greater, GreaterEqual`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MultiplySides.md">MultiplySides
    *      documentation</a>
@@ -6294,7 +6294,7 @@ public class S {
 
   /**
    * N(expr) - gives the numerical value of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/N.md">N
    *      documentation</a>
@@ -6304,7 +6304,7 @@ public class S {
   /**
    * ND(function, x, value) - returns a numerical approximation of the partial derivative of the
    * `function` for the variable `x` and the given `value`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ND.md">ND
    *      documentation</a>
@@ -6315,7 +6315,7 @@ public class S {
    * NDSolve({equation-list}, functions, t) - attempts to solve the linear differential
    * `equation-list` for the `functions` and the time-dependent-variable `t`. Returns an
    * `InterpolatingFunction` function object.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NDSolve.md">NDSolve
    *      documentation</a>
@@ -6327,7 +6327,7 @@ public class S {
 
   /**
    * NHoldAll - is an attribute that protects all arguments of a function from numeric evaluation.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NHoldAll.md">NHoldAll
    *      documentation</a>
@@ -6337,7 +6337,7 @@ public class S {
   /**
    * NHoldFirst - is an attribute that protects the first argument of a function from numeric
    * evaluation.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NHoldFirst.md">NHoldFirst
    *      documentation</a>
@@ -6347,7 +6347,7 @@ public class S {
   /**
    * NHoldRest - is an attribute that protects all but the first argument of a function from numeric
    * evaluation.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NHoldRest.md">NHoldRest
    *      documentation</a>
@@ -6357,7 +6357,7 @@ public class S {
   /**
    * NIntegrate(f, {x,a,b}) - computes the numerical univariate real integral of `f` with respect to
    * `x` from `a` to `b`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NIntegrate.md">NIntegrate
    *      documentation</a>
@@ -6369,7 +6369,7 @@ public class S {
    * an implementation of [George Dantzig's simplex
    * algorithm](http://en.wikipedia.org/wiki/Simplex_algorithm) for solving linear optimization
    * problems with linear equality and inequality constraints and implicit non-negative variables.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NMaximize.md">NMaximize
    *      documentation</a>
@@ -6381,7 +6381,7 @@ public class S {
    * an implementation of [George Dantzig's simplex
    * algorithm](http://en.wikipedia.org/wiki/Simplex_algorithm) for solving linear optimization
    * problems with linear equality and inequality constraints and implicit non-negative variables.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NMinimize.md">NMinimize
    *      documentation</a>
@@ -6390,7 +6390,7 @@ public class S {
 
   /**
    * NRoots(polynomial==0) - gives the numerical roots of a univariate polynomial `polynomial`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NRoots.md">NRoots
    *      documentation</a>
@@ -6399,7 +6399,7 @@ public class S {
 
   /**
    * NSolve(equations, vars) - attempts to solve `equations` for the variables `vars`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NSolve.md">NSolve
    *      documentation</a>
@@ -6408,7 +6408,7 @@ public class S {
 
   /**
    * NakagamiDistribution(m, o) - returns a Nakagami distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NakagamiDistribution.md">NakagamiDistribution
    *      documentation</a>
@@ -6420,7 +6420,7 @@ public class S {
 
   /**
    * Names(string) - return the symbols from the context path matching the `string` or `pattern`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Names.md">Names
    *      documentation</a>
@@ -6430,7 +6430,7 @@ public class S {
   /**
    * Nand(arg1, arg2, ...) - Logical NAND function. It evaluates its arguments in order, giving
    * `True` immediately if any of them are `False`, and `False` if they are all `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Nand.md">Nand
    *      documentation</a>
@@ -6445,7 +6445,7 @@ public class S {
 
   /**
    * Negative(x) - returns `True` if `x` is a negative real number.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Negative.md">Negative
    *      documentation</a>
@@ -6464,7 +6464,7 @@ public class S {
   /**
    * Nest(f, expr, n) - starting with `expr`, iteratively applies `f` `n` times and returns the
    * final result.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Nest.md">Nest
    *      documentation</a>
@@ -6474,7 +6474,7 @@ public class S {
   /**
    * NestList(f, expr, n) - starting with `expr`, iteratively applies `f` `n` times and returns a
    * list of all intermediate results.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NestList.md">NestList
    *      documentation</a>
@@ -6484,7 +6484,7 @@ public class S {
   /**
    * NestWhile(f, expr, test) - applies a function `f` repeatedly on an expression `expr`, until
    * applying `test` on the result no longer yields `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NestWhile.md">NestWhile
    *      documentation</a>
@@ -6495,7 +6495,7 @@ public class S {
    * NestWhileList(f, expr, test) - applies a function `f` repeatedly on an expression `expr`, until
    * applying `test` on the result no longer yields `True`. It returns a list of all intermediate
    * results.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NestWhileList.md">NestWhileList
    *      documentation</a>
@@ -6505,7 +6505,7 @@ public class S {
 
   /**
    * NextPrime(n) - gives the next prime after `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NextPrime.md">NextPrime
    *      documentation</a>
@@ -6517,7 +6517,7 @@ public class S {
 
   /**
    * NonNegative(x) - returns `True` if `x` is a positive real number or zero.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NonNegative.md">NonNegative
    *      documentation</a>
@@ -6526,7 +6526,7 @@ public class S {
 
   /**
    * NonPositive(x) - returns `True` if `x` is a negative real number or zero.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NonPositive.md">NonPositive
    *      documentation</a>
@@ -6535,7 +6535,7 @@ public class S {
 
   /**
    * None - is a possible value for `Span` and `Quiet`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/None.md">None
    *      documentation</a>
@@ -6545,7 +6545,7 @@ public class S {
   /**
    * NoneTrue({expr1, expr2, ...}, test) - returns `True` if no application of `test` to `expr1,
    * expr2, ...` evaluates to `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NoneTrue.md">NoneTrue
    *      documentation</a>
@@ -6557,7 +6557,7 @@ public class S {
   /**
    * Nor(arg1, arg2, ...)' - Logical NOR function. It evaluates its arguments in order, giving
    * `False` immediately if any of them are `True`, and `True` if they are all `False`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Nor.md">Nor
    *      documentation</a>
@@ -6566,7 +6566,7 @@ public class S {
 
   /**
    * Norm(m, l) - computes the `l`-norm of matrix `m` (currently only works for vectors!).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Norm.md">Norm
    *      documentation</a>
@@ -6575,7 +6575,7 @@ public class S {
 
   /**
    * Normal(expr) - converts a Symja expression `expr` into a normal expression.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Normal.md">Normal
    *      documentation</a>
@@ -6584,7 +6584,7 @@ public class S {
 
   /**
    * NormalDistribution(m, s) - returns the normal distribution of mean `m` and sigma `s`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NormalDistribution.md">NormalDistribution
    *      documentation</a>
@@ -6594,7 +6594,7 @@ public class S {
 
   /**
    * Normalize(v) - calculates the normalized vector `v` as `v/Norm(v)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Normalize.md">Normalize
    *      documentation</a>
@@ -6604,7 +6604,7 @@ public class S {
   /**
    * Not(expr) - Logical Not function (negation). Returns `True` if the statement is `False`.
    * Returns `False` if the `expr` is `True`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Not.md">Not
    *      documentation</a>
@@ -6624,7 +6624,7 @@ public class S {
   /**
    * Nothing - during evaluation of a list with a `Nothing` element `{..., Nothing, ...}`, the
    * symbol `Nothing` is removed from the arguments.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Nothing.md">Nothing
    *      documentation</a>
@@ -6635,7 +6635,7 @@ public class S {
 
   /**
    * Null - is the implicit result of expressions that do not yield a result.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Null.md">Null
    *      documentation</a>
@@ -6644,7 +6644,7 @@ public class S {
 
   /**
    * NullSpace(matrix) - returns a list of vectors that span the nullspace of the `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NullSpace.md">NullSpace
    *      documentation</a>
@@ -6658,7 +6658,7 @@ public class S {
 
   /**
    * NumberQ(expr) - returns `True` if `expr` is an explicit number, and `False` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NumberQ.md">NumberQ
    *      documentation</a>
@@ -6667,7 +6667,7 @@ public class S {
 
   /**
    * NumberString - represents the characters in a number.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NumberString.md">NumberString
    *      documentation</a>
@@ -6678,7 +6678,7 @@ public class S {
   /**
    * Numerator(expr) - gives the numerator in `expr`. Numerator collects expressions with non
    * negative exponents.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Numerator.md">Numerator
    *      documentation</a>
@@ -6700,7 +6700,7 @@ public class S {
   /**
    * NumericQ(expr) - returns `True` if `expr` is an explicit numeric expression, and `False`
    * otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NumericQ.md">NumericQ
    *      documentation</a>
@@ -6716,7 +6716,7 @@ public class S {
 
   /**
    * OddQ(x) - returns `True` if `x` is odd, and `False` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OddQ.md">OddQ
    *      documentation</a>
@@ -6725,7 +6725,7 @@ public class S {
 
   /**
    * Off( ) - switch off the interactive trace.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Off.md">Off
    *      documentation</a>
@@ -6734,7 +6734,7 @@ public class S {
 
   /**
    * On( ) - switch on the interactive trace. The output is printed in the defined `out` stream.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/On.md">On
    *      documentation</a>
@@ -6744,7 +6744,7 @@ public class S {
   /**
    * OneIdentity - is an attribute specifying that `f(x)` should be treated as equivalent to `x` in
    * pattern matching.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OneIdentity.md">OneIdentity
    *      documentation</a>
@@ -6756,7 +6756,7 @@ public class S {
   /**
    * OpenAppend("file-name") - opens a file and returns an OutputStream to which writes are
    * appended.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OpenAppend.md">OpenAppend
    *      documentation</a>
@@ -6768,7 +6768,7 @@ public class S {
   /**
    * OpenWrite() - creates an empty file in the default temporary-file directory and returns an
    * OutputStream.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OpenWrite.md">OpenWrite
    *      documentation</a>
@@ -6777,7 +6777,7 @@ public class S {
 
   /**
    * Operate(p, expr) - applies `p` to the head of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Operate.md">Operate
    *      documentation</a>
@@ -6787,7 +6787,7 @@ public class S {
   /**
    * OptimizeExpression(function) - common subexpressions elimination for a complicated `function`
    * by generating "dummy" variables for these subexpressions.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OptimizeExpression.md">OptimizeExpression
    *      documentation</a>
@@ -6798,7 +6798,7 @@ public class S {
   /**
    * OptionValue(name) - gives the value of the option `name` as specified in a call to a function
    * with `OptionsPattern`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OptionValue.md">OptionValue
    *      documentation</a>
@@ -6808,7 +6808,7 @@ public class S {
   /**
    * Optional(patt, default) - is a pattern which matches `patt`, which if omitted should be
    * replaced by `default`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Optional.md">Optional
    *      documentation</a>
@@ -6817,7 +6817,7 @@ public class S {
 
   /**
    * Options(symbol) - gives a list of optional arguments to `symbol` and their default values.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Options.md">Options
    *      documentation</a>
@@ -6831,7 +6831,7 @@ public class S {
    * Or(expr1, expr2, ...)' - `expr1 || expr2 || ...` evaluates each expression in turn, returning
    * `True` as soon as an expression evaluates to `True`. If all expressions evaluate to `False`,
    * `Or` returns `False`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Or.md">Or
    *      documentation</a>
@@ -6843,7 +6843,7 @@ public class S {
   /**
    * Order(a, b) - is `0` if `a` equals `b`. Is `-1` or `1` according to canonical order of `a` and
    * `b`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Order.md">Order
    *      documentation</a>
@@ -6852,7 +6852,7 @@ public class S {
 
   /**
    * OrderedQ({a, b}) - is `True` if `a` sorts before `b` according to canonical ordering.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OrderedQ.md">OrderedQ
    *      documentation</a>
@@ -6861,7 +6861,7 @@ public class S {
 
   /**
    * Ordering(list) - calculate the permutation list of the elements in the sorted `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Ordering.md">Ordering
    *      documentation</a>
@@ -6871,7 +6871,7 @@ public class S {
   /**
    * Orderless - is an attribute indicating that the leaves in an expression `f(a, b, c)` can be
    * placed in any order.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Orderless.md">Orderless
    *      documentation</a>
@@ -6881,7 +6881,7 @@ public class S {
   /**
    * OrthogonalMatrixQ(matrix) - returns `True`, if `matrix` is an orthogonal matrix. `False`
    * otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OrthogonalMatrixQ.md">OrthogonalMatrixQ
    *      documentation</a>
@@ -6892,7 +6892,7 @@ public class S {
   /**
    * Orthogonalize(matrix) - returns a basis for the orthogonalized set of vectors defined by
    * `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Orthogonalize.md">Orthogonalize
    *      documentation</a>
@@ -6902,7 +6902,7 @@ public class S {
 
   /**
    * Out(k) - gives the result of the `k`th input line.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Out.md">Out
    *      documentation</a>
@@ -6912,7 +6912,7 @@ public class S {
   /**
    * Outer(f, x, y) - computes a generalised outer product of `x` and `y`, using the function `f` in
    * place of multiplication.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Outer.md">Outer
    *      documentation</a>
@@ -6923,7 +6923,7 @@ public class S {
 
   /**
    * OutputStream("file-name") - opens a file and returns an OutputStream.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OutputStream.md">OutputStream
    *      documentation</a>
@@ -6936,7 +6936,7 @@ public class S {
 
   /**
    * OwnValues(symbol) - prints the own-value rule associated with `symbol`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OwnValues.md">OwnValues
    *      documentation</a>
@@ -6945,7 +6945,7 @@ public class S {
 
   /**
    * PDF(distribution, value) - returns the probability density function of `value`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PDF.md">PDF
    *      documentation</a>
@@ -6956,7 +6956,7 @@ public class S {
 
   /**
    * PadLeft(list, n) - pads `list` to length `n` by adding `0` on the left.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PadLeft.md">PadLeft
    *      documentation</a>
@@ -6965,7 +6965,7 @@ public class S {
 
   /**
    * PadRight(list, n) - pads `list` to length `n` by adding `0` on the right.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PadRight.md">PadRight
    *      documentation</a>
@@ -6975,7 +6975,7 @@ public class S {
   /**
    * ParametricPlot({function1, function2}, {t, tMin, tMax}) - generate a JavaScript control for the
    * parametric expressions `function1`, `function2` in the `t` range `{t, tMin, tMax}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ParametricPlot.md">ParametricPlot
    *      documentation</a>
@@ -6985,7 +6985,7 @@ public class S {
 
   /**
    * Parenthesis(expr) - print `expr` with parenthesis surrounded in output forms.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Parenthesis.md">Parenthesis
    *      documentation</a>
@@ -6994,7 +6994,7 @@ public class S {
 
   /**
    * ParetoDistribution(k,a) - returns a Pareto distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ParetoDistribution.md">ParetoDistribution
    *      documentation</a>
@@ -7004,7 +7004,7 @@ public class S {
 
   /**
    * Part(expr, i) - returns part `i` of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part
    *      documentation</a>
@@ -7013,7 +7013,7 @@ public class S {
 
   /**
    * Partition(list, n) - partitions `list` into sublists of length `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Partition.md">Partition
    *      documentation</a>
@@ -7022,7 +7022,7 @@ public class S {
 
   /**
    * PartitionsP(n) - gives the number of unrestricted partitions of the integer `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PartitionsP.md">PartitionsP
    *      documentation</a>
@@ -7031,7 +7031,7 @@ public class S {
 
   /**
    * PartitionsQ(n) - gives the number of partitions of the integer `n` into distinct parts
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PartitionsQ.md">PartitionsQ
    *      documentation</a>
@@ -7049,7 +7049,7 @@ public class S {
   /**
    * PatternTest(pattern, test) - constrains `pattern` to match `expr` only if the evaluation of
    * `test(expr)` yields `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PatternTest.md">PatternTest
    *      documentation</a>
@@ -7058,7 +7058,7 @@ public class S {
 
   /**
    * PauliMatrix(n) - returns the Pauli `2x2` matrix for `n` between `0` and `4`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PauliMatrix.md">PauliMatrix
    *      documentation</a>
@@ -7067,7 +7067,7 @@ public class S {
 
   /**
    * Pause(seconds) - pause the thread for the number of `seconds`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Pause.md">Pause
    *      documentation</a>
@@ -7080,7 +7080,7 @@ public class S {
   /**
    * PerfectNumber(n) - returns the `n`th perfect number. In number theory, a perfect number is a
    * positive integer that is equal to the sum of its proper
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PerfectNumber.md">PerfectNumber
    *      documentation</a>
@@ -7091,7 +7091,7 @@ public class S {
   /**
    * PerfectNumberQ(n) - returns `True` if `n` is a perfect number. In number theory, a perfect
    * number is a positive integer that is equal to the sum of its proper
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PerfectNumberQ.md">PerfectNumberQ
    *      documentation</a>
@@ -7104,7 +7104,7 @@ public class S {
   /**
    * PermutationCycles(permutation-list) - generate a `Cycles({{...},{...}, ...})` expression from
    * the `permutation-list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PermutationCycles.md">PermutationCycles
    *      documentation</a>
@@ -7115,7 +7115,7 @@ public class S {
   /**
    * PermutationCyclesQ(cycles-expression) - if `cycles-expression` is a valid `Cycles({{...},{...},
    * ...})` expression return `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PermutationCyclesQ.md">PermutationCyclesQ
    *      documentation</a>
@@ -7126,7 +7126,7 @@ public class S {
   /**
    * PermutationList(Cycles({{...},{...}, ...})) - get the permutation list representation from the
    * `Cycles({{...},{...}, ...})` expression.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PermutationList.md">PermutationList
    *      documentation</a>
@@ -7137,7 +7137,7 @@ public class S {
   /**
    * PermutationListQ(permutation-list) - if `permutation-list` is a valid permutation list return
    * `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PermutationListQ.md">PermutationListQ
    *      documentation</a>
@@ -7149,7 +7149,7 @@ public class S {
    * PermutationReplace(list-or-integer, Cycles({{...},{...}, ...})) - replace the arguments of the
    * first expression with the corresponding element from the `Cycles({{...},{...}, ...})`
    * expression.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PermutationReplace.md">PermutationReplace
    *      documentation</a>
@@ -7159,7 +7159,7 @@ public class S {
 
   /**
    * Permutations(list) - gives all possible orderings of the items in `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Permutations.md">Permutations
    *      documentation</a>
@@ -7170,7 +7170,7 @@ public class S {
   /**
    * Permute(list, Cycles({permutation-cycles})) - permutes the `list` from the cycles in
    * `permutation-cycles`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Permute.md">Permute
    *      documentation</a>
@@ -7179,7 +7179,7 @@ public class S {
 
   /**
    * PetersenGraph() - create a `PetersenGraph(5, 2)` graph.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PetersenGraph.md">PetersenGraph
    *      documentation</a>
@@ -7189,7 +7189,7 @@ public class S {
 
   /**
    * Pi - is the constant `Pi`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Pi.md">Pi
    *      documentation</a>
@@ -7199,7 +7199,7 @@ public class S {
   /**
    * Pick(nested-list, nested-selection) - returns the elements of `nested-list` that have value
    * `True` in the corresponding position in `nested-selection`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Pick.md">Pick
    *      documentation</a>
@@ -7208,7 +7208,7 @@ public class S {
 
   /**
    * PieChart(list-of-values) - plot a pie chart from a `list-of-values`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PieChart.md">PieChart
    *      documentation</a>
@@ -7217,7 +7217,7 @@ public class S {
 
   /**
    * Piecewise({{expr1, cond1}, ...}) - represents a piecewise function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Piecewise.md">Piecewise
    *      documentation</a>
@@ -7227,7 +7227,7 @@ public class S {
   /**
    * PiecewiseExpand(function) - expands piecewise expressions into a `Piecewise` function.
    * Currently only `Abs, Clip, If, Ramp, UnitStep` are converted to Piecewise expressions.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PiecewiseExpand.md">PiecewiseExpand
    *      documentation</a>
@@ -7245,7 +7245,7 @@ public class S {
   /**
    * Plot(function, {x, xMin, xMax}, PlotRange->{yMin,yMax}) - generate a JavaScript control for the
    * expression `function` in the `x` range `{x, xMin, xMax}` and `{yMin, yMax}` in the `y` range.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plot.md">Plot
    *      documentation</a>
@@ -7255,7 +7255,7 @@ public class S {
   /**
    * Plot3D(function, {x, xMin, xMax}, {y,yMin,yMax}) - generate a JavaScript control for the
    * expression `function` in the `x` range `{x, xMin, xMax}` and `{yMin, yMax}` in the `y` range.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plot3D.md">Plot3D
    *      documentation</a>
@@ -7270,7 +7270,7 @@ public class S {
 
   /**
    * Plus(a, b, ...) - represents the sum of the terms `a, b, ...`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus
    *      documentation</a>
@@ -7280,7 +7280,7 @@ public class S {
   /**
    * Pochhammer(a, n) - returns the pochhammer symbol for a rational number `a` and an integer
    * number `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Pochhammer.md">Pochhammer
    *      documentation</a>
@@ -7289,7 +7289,7 @@ public class S {
 
   /**
    * Point({point_1, point_2 ...}) - represents the point primitive.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Point.md">Point
    *      documentation</a>
@@ -7300,7 +7300,7 @@ public class S {
 
   /**
    * PoissonDistribution(m) - returns a Poisson distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PoissonDistribution.md">PoissonDistribution
    *      documentation</a>
@@ -7311,7 +7311,7 @@ public class S {
   /**
    * PolarPlot(function, {t, tMin, tMax}) - generate a JavaScript control for the polar plot
    * expressions `function` in the `t` range `{t, tMin, tMax}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolarPlot.md">PolarPlot
    *      documentation</a>
@@ -7321,7 +7321,7 @@ public class S {
   /**
    * PolyGamma(value) - return the digamma function of the `value`. The digamma function is defined
    * as the logarithmic derivative of the gamma function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolyGamma.md">PolyGamma
    *      documentation</a>
@@ -7332,7 +7332,7 @@ public class S {
 
   /**
    * Polygon({point_1, point_2 ...}) - represents the filled polygon primitive.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Polygon.md">Polygon
    *      documentation</a>
@@ -7344,7 +7344,7 @@ public class S {
   /**
    * PolynomialExtendedGCD(p, q, x) - returns the extended GCD ('greatest common divisor') of the
    * univariate polynomials `p` and `q`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolynomialExtendedGCD.md">PolynomialExtendedGCD
    *      documentation</a>
@@ -7355,7 +7355,7 @@ public class S {
   /**
    * PolynomialGCD(p, q) - returns the GCD ('greatest common divisor') of the polynomials `p` and
    * `q`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolynomialGCD.md">PolynomialGCD
    *      documentation</a>
@@ -7365,7 +7365,7 @@ public class S {
 
   /**
    * PolynomialLCM(p, q) - returns the LCM ('least common multiple') of the polynomials `p` and `q`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolynomialLCM.md">PolynomialLCM
    *      documentation</a>
@@ -7376,7 +7376,7 @@ public class S {
   /**
    * PolynomialQ(p, x) - return `True` if `p` is a polynomial for the variable `x`. Return `False`
    * in all other cases.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolynomialQ.md">PolynomialQ
    *      documentation</a>
@@ -7386,7 +7386,7 @@ public class S {
   /**
    * PolynomialQuotient(p, q, x) - returns the polynomial quotient of the polynomials `p` and `q`
    * for the variable `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolynomialQuotient.md">PolynomialQuotient
    *      documentation</a>
@@ -7397,7 +7397,7 @@ public class S {
   /**
    * PolynomialQuotientRemainder(p, q, x) - returns a list with the polynomial quotient and
    * remainder of the polynomials `p` and `q` for the variable `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolynomialQuotientRemainder.md">PolynomialQuotientRemainder
    *      documentation</a>
@@ -7408,7 +7408,7 @@ public class S {
   /**
    * PolynomialQuotient(p, q, x) - returns the polynomial remainder of the polynomials `p` and `q`
    * for the variable `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolynomialRemainder.md">PolynomialRemainder
    *      documentation</a>
@@ -7418,7 +7418,7 @@ public class S {
 
   /**
    * Position(expr, patt) - returns the list of positions for which `expr` matches `patt`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Position.md">Position
    *      documentation</a>
@@ -7427,7 +7427,7 @@ public class S {
 
   /**
    * Positive(x) - returns `True` if `x` is a positive real number.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Positive.md">Positive
    *      documentation</a>
@@ -7437,7 +7437,7 @@ public class S {
   /**
    * PossibleZeroQ(expr) - returns `True` if basic symbolic and numerical methods suggests that
    * `expr` has value zero, and `False` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PossibleZeroQ.md">PossibleZeroQ
    *      documentation</a>
@@ -7449,7 +7449,7 @@ public class S {
 
   /**
    * Power(a, b) - represents `a` raised to the power of `b`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Power.md">Power
    *      documentation</a>
@@ -7458,7 +7458,7 @@ public class S {
 
   /**
    * PowerExpand(expr) - expands out powers of the form `(x^y)^z` and `(x*y)^z` in `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PowerExpand.md">PowerExpand
    *      documentation</a>
@@ -7467,7 +7467,7 @@ public class S {
 
   /**
    * PowerMod(x, y, m) - computes `x^y` modulo `m`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PowerMod.md">PowerMod
    *      documentation</a>
@@ -7476,7 +7476,7 @@ public class S {
 
   /**
    * PreDecrement(x) - decrements `x` by `1`, returning the new value of `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PreDecrement.md">PreDecrement
    *      documentation</a>
@@ -7486,7 +7486,7 @@ public class S {
 
   /**
    * PreIncrement(x) - increments `x` by `1`, returning the new value of `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PreIncrement.md">PreIncrement
    *      documentation</a>
@@ -7503,7 +7503,7 @@ public class S {
 
   /**
    * Prepend(expr, item) - returns `expr` with `item` prepended to its leaves.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Prepend.md">Prepend
    *      documentation</a>
@@ -7512,7 +7512,7 @@ public class S {
 
   /**
    * PrependTo(s, item) - prepend `item` to value of `s` and sets `s` to the result.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PrependTo.md">PrependTo
    *      documentation</a>
@@ -7521,7 +7521,7 @@ public class S {
 
   /**
    * Prime(n) - returns the `n`th prime number.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Prime.md">Prime
    *      documentation</a>
@@ -7530,7 +7530,7 @@ public class S {
 
   /**
    * PrimeOmega(n) - returns the sum of the exponents of the prime factorization of `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PrimeOmega.md">PrimeOmega
    *      documentation</a>
@@ -7539,7 +7539,7 @@ public class S {
 
   /**
    * PrimePi(x) - gives the number of primes less than or equal to `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PrimePi.md">PrimePi
    *      documentation</a>
@@ -7548,7 +7548,7 @@ public class S {
 
   /**
    * PrimePowerQ(n) - returns `True` if `n` is a power of a prime number.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PrimePowerQ.md">PrimePowerQ
    *      documentation</a>
@@ -7557,7 +7557,7 @@ public class S {
 
   /**
    * PrimeQ(n) - returns `True` if `n` is a integer prime number.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PrimeQ.md">PrimeQ
    *      documentation</a>
@@ -7571,7 +7571,7 @@ public class S {
 
   /**
    * PrimitiveRootList(n) - returns the list of the primitive roots of `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PrimitiveRootList.md">PrimitiveRootList
    *      documentation</a>
@@ -7581,7 +7581,7 @@ public class S {
 
   /**
    * Print(expr) - print the `expr` to the default output stream and return `Null`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Print.md">Print
    *      documentation</a>
@@ -7590,7 +7590,7 @@ public class S {
 
   /**
    * PrintableASCIIQ(str) - returns `True` if all characters in `str` are ASCII characters.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PrintableASCIIQ.md">PrintableASCIIQ
    *      documentation</a>
@@ -7603,7 +7603,7 @@ public class S {
   /**
    * Probability(pure-function, data-set) - returns the probability of the `pure-function` for the
    * given `data-set`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Probability.md">Probability
    *      documentation</a>
@@ -7613,7 +7613,7 @@ public class S {
   /**
    * Product(expr, {i, imin, imax}) - evaluates the discrete product of `expr` with `i` ranging from
    * `imin` to `imax`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Product.md">Product
    *      documentation</a>
@@ -7622,7 +7622,7 @@ public class S {
 
   /**
    * ProductLog(z) - returns the value of the Lambert W function at `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ProductLog.md">ProductLog
    *      documentation</a>
@@ -7632,7 +7632,7 @@ public class S {
   /**
    * Projection(vector1, vector2) - Find the orthogonal projection of `vector1` onto another
    * `vector2`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Projection.md">Projection
    *      documentation</a>
@@ -7646,7 +7646,7 @@ public class S {
   /**
    * PseudoInverse(matrix) - computes the Moore-Penrose pseudoinverse of the `matrix`. If `matrix`
    * is invertible, the pseudoinverse equals the inverse.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PseudoInverse.md">PseudoInverse
    *      documentation</a>
@@ -7664,7 +7664,7 @@ public class S {
    * QRDecomposition(A) - computes the QR decomposition of the matrix `A`. The QR decomposition is a
    * decomposition of a matrix `A` into a product `A = Q.R` of an unitary matrix `Q` and an upper
    * triangular matrix `R`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QRDecomposition.md">QRDecomposition
    *      documentation</a>
@@ -7675,7 +7675,7 @@ public class S {
   /**
    * QuadraticIrrationalQ(expr) - returns `True`, if the `expr` is of the form `(p + s * Sqrt(d)) /
    * q` for integers `p,q,d,s`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QuadraticIrrationalQ.md">QuadraticIrrationalQ
    *      documentation</a>
@@ -7685,7 +7685,7 @@ public class S {
 
   /**
    * Quantile(list, q) - returns the `q`-Quantile of `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantile.md">Quantile
    *      documentation</a>
@@ -7694,7 +7694,7 @@ public class S {
 
   /**
    * Quantity(value, unit) - returns the quantity for `value` and `unit`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quantity.md">Quantity
    *      documentation</a>
@@ -7706,7 +7706,7 @@ public class S {
 
   /**
    * QuantityMagnitude(quantity) - returns the value of the `quantity`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QuantityMagnitude.md">QuantityMagnitude
    *      documentation</a>
@@ -7721,7 +7721,7 @@ public class S {
 
   /**
    * Quartiles(arg) - returns a list of the `1/4`, `1/2` and `3/4` quantile of `arg`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quartiles.md">Quartiles
    *      documentation</a>
@@ -7731,7 +7731,7 @@ public class S {
   /**
    * Quiet(expr) - evaluates `expr` in "quiet" mode (i.e. no warning messages are shown during
    * evaluation).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quiet.md">Quiet
    *      documentation</a>
@@ -7742,7 +7742,7 @@ public class S {
 
   /**
    * Quotient(m, n) - computes the integer quotient of `m` and `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quotient.md">Quotient
    *      documentation</a>
@@ -7752,7 +7752,7 @@ public class S {
   /**
    * QuotientRemainder(m, n) - computes a list of the quotient and remainder from division of `m`
    * and `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QuotientRemainder.md">QuotientRemainder
    *      documentation</a>
@@ -7768,7 +7768,7 @@ public class S {
 
   /**
    * Ramp(z) - The `Ramp` function is a unary real function, whose graph is shaped like a ramp.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Ramp.md">Ramp
    *      documentation</a>
@@ -7777,7 +7777,7 @@ public class S {
 
   /**
    * RandomChoice({item1, item2, item3,...}) - randomly picks one `item` from items.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomChoice.md">RandomChoice
    *      documentation</a>
@@ -7788,7 +7788,7 @@ public class S {
   /**
    * RandomComplex[{z_min, z_max}] - yields a pseudo-random complex number in the rectangle with
    * complex corners `z_min` and `z_max`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomComplex.md">RandomComplex
    *      documentation</a>
@@ -7800,7 +7800,7 @@ public class S {
 
   /**
    * RandomInteger(n) - create a random integer number between `0` and `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomInteger.md">RandomInteger
    *      documentation</a>
@@ -7810,7 +7810,7 @@ public class S {
 
   /**
    * RandomPermutation(s) - create a pseudo random permutation between `1` and `s`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomPermutation.md">RandomPermutation
    *      documentation</a>
@@ -7821,7 +7821,7 @@ public class S {
   /**
    * RandomPrime({imin, imax}) - create a random prime integer number between `imin` and `imax`
    * inclusive.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomPrime.md">RandomPrime
    *      documentation</a>
@@ -7830,7 +7830,7 @@ public class S {
 
   /**
    * RandomReal() - create a random number between `0.0` and `1.0`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomReal.md">RandomReal
    *      documentation</a>
@@ -7839,7 +7839,7 @@ public class S {
 
   /**
    * RandomSample(items) - create a random sample for the arguments of the `items`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomSample.md">RandomSample
    *      documentation</a>
@@ -7852,7 +7852,7 @@ public class S {
 
   /**
    * Range(n) - returns a list of integers from `1` to `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Range.md">Range
    *      documentation</a>
@@ -7862,7 +7862,7 @@ public class S {
   /**
    * RankedMax({e_1, e_2, ..., e_i}, n) - returns the n-th largest real value in the list `{e_1,
    * e_2, ..., e_i}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RankedMax.md">RankedMax
    *      documentation</a>
@@ -7872,7 +7872,7 @@ public class S {
   /**
    * RankedMin({e_1, e_2, ..., e_i}, n) - returns the n-th smallest real value in the list `{e_1,
    * e_2, ..., e_i}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RankedMin.md">RankedMin
    *      documentation</a>
@@ -7881,7 +7881,7 @@ public class S {
 
   /**
    * Rational - is the head of rational numbers.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rational.md">Rational
    *      documentation</a>
@@ -7891,7 +7891,7 @@ public class S {
   /**
    * Rationalize(expression) - convert numerical real or imaginary parts in (sub-)expressions into
    * rational numbers.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rationalize.md">Rationalize
    *      documentation</a>
@@ -7904,7 +7904,7 @@ public class S {
 
   /**
    * Re(z) - returns the real component of the complex number `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Re.md">Re
    *      documentation</a>
@@ -7913,7 +7913,7 @@ public class S {
 
   /**
    * Read(input-stream) - reads the `input-stream` and return one expression.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Read.md">Read
    *      documentation</a>
@@ -7929,7 +7929,7 @@ public class S {
 
   /**
    * Real - is the head of real (floating point) numbers.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Real.md">Real
    *      documentation</a>
@@ -7939,7 +7939,7 @@ public class S {
   /**
    * RealAbs(x) - returns the absolute value of the real number `x`. For complex number arguments
    * the function will be left unevaluated.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RealAbs.md">RealAbs
    *      documentation</a>
@@ -7950,7 +7950,7 @@ public class S {
 
   /**
    * RealNumberQ(expr) - returns `True` if `expr` is an explicit number with no imaginary component.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RealNumberQ.md">RealNumberQ
    *      documentation</a>
@@ -7960,7 +7960,7 @@ public class S {
   /**
    * RealSign(x) - gives `-1`, `0` or `1` depending on whether `x` is negative, zero or positive.
    * For complex number arguments the function will be left unevaluated.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RealSign.md">RealSign
    *      documentation</a>
@@ -7969,7 +7969,7 @@ public class S {
 
   /**
    * Reals - is the set of real numbers.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Reals.md">Reals
    *      documentation</a>
@@ -7979,7 +7979,7 @@ public class S {
   /**
    * Reap(expr) - gives the result of evaluating `expr`, together with all values sown during this
    * evaluation. Values sown with different tags are given in different lists.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Reap.md">Reap
    *      documentation</a>
@@ -7998,7 +7998,7 @@ public class S {
   /**
    * Reduce(logic-expression, var) - returns the reduced `logic-expression` for the variable `var`.
    * Reduce works only for the `Reals` domain.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Reduce.md">Reduce
    *      documentation</a>
@@ -8007,7 +8007,7 @@ public class S {
 
   /**
    * Refine(expression, assumptions) - evaluate the `expression` for the given `assumptions`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Refine.md">Refine
    *      documentation</a>
@@ -8017,7 +8017,7 @@ public class S {
   /**
    * RegularExpression("regex") - represents the regular expression specified by the string
    * `“regex”`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RegularExpression.md">RegularExpression
    *      documentation</a>
@@ -8028,7 +8028,7 @@ public class S {
   /**
    * ReleaseHold(expr) - removes any `Hold`, `HoldForm`, `HoldPattern` or `HoldComplete` head from
    * `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReleaseHold.md">ReleaseHold
    *      documentation</a>
@@ -8039,7 +8039,7 @@ public class S {
 
   /**
    * RemoveDiacritics("string") - returns a version of `string` with all diacritics removed.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RemoveDiacritics.md">RemoveDiacritics
    *      documentation</a>
@@ -8055,7 +8055,7 @@ public class S {
   /**
    * RepeatedTiming(x) - returns a list with the first entry containing the average evaluation time
    * of `x` and the second entry containing the evaluation result of `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RepeatedTiming.md">RepeatedTiming
    *      documentation</a>
@@ -8066,7 +8066,7 @@ public class S {
   /**
    * Replace(expr, lhs -> rhs) - replaces the left-hand-side pattern expression `lhs` in `expr` with
    * the right-hand-side `rhs`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Replace.md">Replace
    *      documentation</a>
@@ -8075,7 +8075,7 @@ public class S {
 
   /**
    * ReplaceAll(expr, i -> new) - replaces all `i` in `expr` with `new`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReplaceAll.md">ReplaceAll
    *      documentation</a>
@@ -8085,7 +8085,7 @@ public class S {
   /**
    * ReplaceList(expr, lhs -> rhs) - replaces the left-hand-side pattern expression `lhs` in `expr`
    * with the right-hand-side `rhs`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReplaceList.md">ReplaceList
    *      documentation</a>
@@ -8094,7 +8094,7 @@ public class S {
 
   /**
    * ReplacePart(expr, i -> new) - replaces part `i` in `expr` with `new`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReplacePart.md">ReplacePart
    *      documentation</a>
@@ -8104,7 +8104,7 @@ public class S {
   /**
    * ReplaceRepeated(expr, lhs -> rhs) - repeatedly applies the rule `lhs -> rhs` to `expr` until
    * the result no longer changes.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReplaceRepeated.md">ReplaceRepeated
    *      documentation</a>
@@ -8114,7 +8114,7 @@ public class S {
 
   /**
    * Rescale(list) - returns `Rescale(list,{Min(list), Max(list)})`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rescale.md">Rescale
    *      documentation</a>
@@ -8123,7 +8123,7 @@ public class S {
 
   /**
    * Rest(expr) - returns `expr` with the first element removed.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rest.md">Rest
    *      documentation</a>
@@ -8133,7 +8133,7 @@ public class S {
   /**
    * Resultant(polynomial1, polynomial2, var) - computes the resultant of the polynomials
    * `polynomial1` and `polynomial2` with respect to the variable `var`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Resultant.md">Resultant
    *      documentation</a>
@@ -8142,7 +8142,7 @@ public class S {
 
   /**
    * Return(expr) - aborts a function call and returns `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Return.md">Return
    *      documentation</a>
@@ -8151,7 +8151,7 @@ public class S {
 
   /**
    * Reverse(list) - reverse the elements of the `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Reverse.md">Reverse
    *      documentation</a>
@@ -8164,7 +8164,7 @@ public class S {
    * discrete time. The continuous time algebraic Riccati equation (CARE):
    * `A^{T}·X+X·A-X·B·R^{-1}·B^{T}·X+Q==0`. And the respective linear controller is: `K =
    * R^{-1}·B^{T}·P`. The solver receives `A`, `B`, `Q` and `R` and computes `P`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RiccatiSolve.md">RiccatiSolve
    *      documentation</a>
@@ -8174,7 +8174,7 @@ public class S {
 
   /**
    * Riffle(list1, list2) - insert elements of `list2` between the elements of `list1`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Riffle.md">Riffle
    *      documentation</a>
@@ -8186,7 +8186,7 @@ public class S {
   /**
    * RightComposition(sym1, sym2,...)[arg1, arg2,...] - creates a composition of the symbols applied
    * in reversed order at the arguments.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RightComposition.md">RightComposition
    *      documentation</a>
@@ -8199,7 +8199,7 @@ public class S {
    * boolean 1-D lists `u` and `v`, which is defined as `R / (c_tt + c_ff + R)` where n is `len(u)`,
    * `c_ij` is the number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`, and `R = 2 * (c_tf +
    * c_ft)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RogersTanimotoDissimilarity.md">RogersTanimotoDissimilarity
    *      documentation</a>
@@ -8210,7 +8210,7 @@ public class S {
   /**
    * RomanNumeral(positive-int-value) - converts the given `positive-int-value` to a roman numeral
    * string.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RomanNumeral.md">RomanNumeral
    *      documentation</a>
@@ -8230,7 +8230,7 @@ public class S {
   /**
    * Roots(polynomial-equation, var) - determine the roots of a univariate polynomial equation with
    * respect to the variable `var`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Roots.md">Roots
    *      documentation</a>
@@ -8239,7 +8239,7 @@ public class S {
 
   /**
    * RotateLeft(list) - rotates the items of `list` by one item to the left.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RotateLeft.md">RotateLeft
    *      documentation</a>
@@ -8248,7 +8248,7 @@ public class S {
 
   /**
    * RotateRight(list) - rotates the items of `list` by one item to the right.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RotateRight.md">RotateRight
    *      documentation</a>
@@ -8257,7 +8257,7 @@ public class S {
 
   /**
    * RotationMatrix(theta) - yields a rotation matrix for the angle `theta`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RotationMatrix.md">RotationMatrix
    *      documentation</a>
@@ -8267,7 +8267,7 @@ public class S {
 
   /**
    * Round(expr) - round a given `expr` to nearest integer.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Round.md">Round
    *      documentation</a>
@@ -8280,7 +8280,7 @@ public class S {
 
   /**
    * RowReduce(matrix) - returns the reduced row-echelon form of `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RowReduce.md">RowReduce
    *      documentation</a>
@@ -8289,7 +8289,7 @@ public class S {
 
   /**
    * Rule(x, y) - represents a rule replacing `x` with `y`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule
    *      documentation</a>
@@ -8298,7 +8298,7 @@ public class S {
 
   /**
    * RuleDelayed(x, y) - represents a rule replacing `x` with `y`, with `y` held unevaluated.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RuleDelayed.md">RuleDelayed
    *      documentation</a>
@@ -8309,7 +8309,7 @@ public class S {
    * RussellRaoDissimilarity(u, v) - returns the Russell-Rao dissimilarity between the two boolean
    * 1-D lists `u` and `v`, which is defined as `(n - c_tt) / c_tt` where `n` is `len(u)` and `c_ij`
    * is the number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RussellRaoDissimilarity.md">RussellRaoDissimilarity
    *      documentation</a>
@@ -8320,7 +8320,7 @@ public class S {
   /**
    * SameObjectQ[java-object1, java-object2] - gives `True` if the Java `==` operator for the Java
    * objects gives true. `False` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SameObjectQ.md">SameObjectQ
    *      documentation</a>
@@ -8329,7 +8329,7 @@ public class S {
 
   /**
    * SameQ(x, y) - returns `True` if `x` and `y` are structurally identical.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SameQ.md">SameQ
    *      documentation</a>
@@ -8342,7 +8342,7 @@ public class S {
    * SatisfiabilityCount(boolean-expr) - test whether the `boolean-expr` is satisfiable by a
    * combination of boolean `False` and `True` values for the variables of the boolean expression
    * and return the number of possible combinations.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SatisfiabilityCount.md">SatisfiabilityCount
    *      documentation</a>
@@ -8354,7 +8354,7 @@ public class S {
    * SatisfiabilityInstances(boolean-expr, list-of-variables) - test whether the `boolean-expr` is
    * satisfiable by a combination of boolean `False` and `True` values for the `list-of-variables`
    * and return exactly one instance of `True, False` combinations if possible.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SatisfiabilityInstances.md">SatisfiabilityInstances
    *      documentation</a>
@@ -8365,7 +8365,7 @@ public class S {
   /**
    * SatisfiableQ(boolean-expr, list-of-variables) - test whether the `boolean-expr` is satisfiable
    * by a combination of boolean `False` and `True` values for the `list-of-variables`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SatisfiableQ.md">SatisfiableQ
    *      documentation</a>
@@ -8380,7 +8380,7 @@ public class S {
 
   /**
    * Scan(f, expr) - applies `f` to each element of `expr` and returns `Null`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Scan.md">Scan
    *      documentation</a>
@@ -8389,7 +8389,7 @@ public class S {
 
   /**
    * Sec(z) - returns the secant of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sec.md">Sec
    *      documentation</a>
@@ -8398,7 +8398,7 @@ public class S {
 
   /**
    * Sech(z) - returns the hyperbolic secant of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sech.md">Sech
    *      documentation</a>
@@ -8410,7 +8410,7 @@ public class S {
   /**
    * Select({e1, e2, ...}, head) - returns a list of the elements `ei` for which `head(ei)` returns
    * `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Select.md">Select
    *      documentation</a>
@@ -8420,7 +8420,7 @@ public class S {
   /**
    * SelectFirst({e1, e2, ...}, f) - returns the first of the elements `ei` for which `f(ei)`
    * returns `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SelectFirst.md">SelectFirst
    *      documentation</a>
@@ -8430,7 +8430,7 @@ public class S {
   /**
    * SemanticImport("path-to-filename") - if the file system is enabled, import the data from CSV
    * files and do a semantic interpretation of the columns.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SemanticImport.md">SemanticImport
    *      documentation</a>
@@ -8441,7 +8441,7 @@ public class S {
   /**
    * SemanticImportString("string-content") - import the data from a content string in CSV format
    * and do a semantic interpretation of the columns.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SemanticImportString.md">SemanticImportString
    *      documentation</a>
@@ -8451,7 +8451,7 @@ public class S {
 
   /**
    * Sequence[x1, x2, ...] - represents a sequence of arguments to a function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sequence.md">Sequence
    *      documentation</a>
@@ -8464,7 +8464,7 @@ public class S {
   /**
    * Series(expr, {x, x0, n}) - create a power series of `expr` up to order `(x- x0)^n` at the point
    * `x = x0`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Series.md">Series
    *      documentation</a>
@@ -8473,7 +8473,7 @@ public class S {
 
   /**
    * SeriesCoefficient(expr, {x, x0, n}) - get the coefficient of `(x- x0)^n` at the point `x = x0`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SeriesCoefficient.md">SeriesCoefficient
    *      documentation</a>
@@ -8484,7 +8484,7 @@ public class S {
   /**
    * SeriesData(x, x0, {coeff0, coeff1, coeff2,...}, nMin, nMax, denominator}) - internal structure
    * of a power series at the point `x = x0` the `coeff_i` are coefficients of the power series.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SeriesData.md">SeriesData
    *      documentation</a>
@@ -8493,7 +8493,7 @@ public class S {
 
   /**
    * Set(expr, value) - evaluates `value` and assigns it to `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Set.md">Set
    *      documentation</a>
@@ -8502,7 +8502,7 @@ public class S {
 
   /**
    * SetAttributes(symbol, attrib) - adds `attrib` to `symbol`'s attributes.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SetAttributes.md">SetAttributes
    *      documentation</a>
@@ -8512,7 +8512,7 @@ public class S {
 
   /**
    * SetDelayed(expr, value) - assigns `value` to `expr`, without evaluating `value`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SetDelayed.md">SetDelayed
    *      documentation</a>
@@ -8526,7 +8526,7 @@ public class S {
    * Share(function) - replace internally equal common subexpressions in `function` by the same
    * reference to reduce memory consumption and return the number of times where `Share(function)`
    * could replace a common subexpression.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Share.md">Share
    *      documentation</a>
@@ -8541,7 +8541,7 @@ public class S {
 
   /**
    * Sign(x) - gives `-1`, `0` or `1` depending on whether `x` is negative, zero or positive.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sign.md">Sign
    *      documentation</a>
@@ -8553,7 +8553,7 @@ public class S {
   /**
    * Signature(permutation-list) - determine if the `permutation-list` has odd (`-1`) or even (`1`)
    * parity. Returns `0` if two elements in the `permutation-list` are equal.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Signature.md">Signature
    *      documentation</a>
@@ -8564,7 +8564,7 @@ public class S {
 
   /**
    * Simplify(expr) - simplifies `expr`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Simplify.md">Simplify
    *      documentation</a>
@@ -8573,7 +8573,7 @@ public class S {
 
   /**
    * Sin(expr) - returns the sine of `expr` (measured in radians).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sin.md">Sin
    *      documentation</a>
@@ -8582,7 +8582,7 @@ public class S {
 
   /**
    * SinIntegral(expr) - returns the hyperbolic sine integral of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SinIntegral.md">SinIntegral
    *      documentation</a>
@@ -8591,7 +8591,7 @@ public class S {
 
   /**
    * Sinc(expr) - the sinc function `Sin(expr)/expr` for `expr != 0`. `Sinc(0)` returns `1`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sinc.md">Sinc
    *      documentation</a>
@@ -8601,7 +8601,7 @@ public class S {
   /**
    * SingularValueDecomposition(matrix) - calculates the singular value decomposition for the
    * `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SingularValueDecomposition.md">SingularValueDecomposition
    *      documentation</a>
@@ -8614,7 +8614,7 @@ public class S {
 
   /**
    * Sinh(z) - returns the hyperbolic sine of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sinh.md">Sinh
    *      documentation</a>
@@ -8623,7 +8623,7 @@ public class S {
 
   /**
    * SinhIntegral(expr) - returns the sine integral of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SinhIntegral.md">SinhIntegral
    *      documentation</a>
@@ -8634,7 +8634,7 @@ public class S {
   /**
    * Skewness(list) - gives Pearson's moment coefficient of skewness for `list` (a measure for
    * estimating the symmetry of a distribution).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Skewness.md">Skewness
    *      documentation</a>
@@ -8643,7 +8643,7 @@ public class S {
 
   /**
    * # - is a short-hand for `#1`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Slot.md">Slot
    *      documentation</a>
@@ -8654,7 +8654,7 @@ public class S {
 
   /**
    * ## - is the sequence of arguments supplied to a pure function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SlotSequence.md">SlotSequence
    *      documentation</a>
@@ -8666,7 +8666,7 @@ public class S {
    * SokalSneathDissimilarity(u, v) - returns the Sokal-Sneath dissimilarity between the two boolean
    * 1-D lists `u` and `v`, which is defined as `R / (c_tt + R)` where n is `len(u)`, `c_ij` is the
    * number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`, and `R = 2 * (c_tf + c_ft)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SokalSneathDissimilarity.md">SokalSneathDissimilarity
    *      documentation</a>
@@ -8676,7 +8676,7 @@ public class S {
 
   /**
    * Solve(equations, vars) - attempts to solve `equations` for the variables `vars`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Solve.md">Solve
    *      documentation</a>
@@ -8686,7 +8686,7 @@ public class S {
   /**
    * Sort(list) - sorts `list` (or the leaves of any other expression) according to canonical
    * ordering.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sort.md">Sort
    *      documentation</a>
@@ -8698,7 +8698,7 @@ public class S {
    * ordering of the keys that are extracted from the `list`'s elements using `f`. Chunks of leaves
    * that appear the same under `f` are sorted according to their natural order (without applying
    * `f`).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SortBy.md">SortBy
    *      documentation</a>
@@ -8707,7 +8707,7 @@ public class S {
 
   /**
    * Sow(expr) - sends the value `expr` to the innermost `Reap`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sow.md">Sow
    *      documentation</a>
@@ -8716,7 +8716,7 @@ public class S {
 
   /**
    * Span - is the head of span ranges like `1;;3`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Span.md">Span
    *      documentation</a>
@@ -8725,7 +8725,7 @@ public class S {
 
   /**
    * SparseArray(nested-list) - create a sparse array from a `nested-list` structure.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SparseArray.md">SparseArray
    *      documentation</a>
@@ -8736,7 +8736,7 @@ public class S {
 
   /**
    * Sphere({x, y, z}) - is a sphere of radius `1` centered at the point `{x, y, z}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sphere.md">Sphere
    *      documentation</a>
@@ -8745,7 +8745,7 @@ public class S {
 
   /**
    * SphericalBesselJ(n, z) - spherical Bessel function `J(n, x)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SphericalBesselJ.md">SphericalBesselJ
    *      documentation</a>
@@ -8755,7 +8755,7 @@ public class S {
 
   /**
    * SphericalBesselY(n, z) - spherical Bessel function `Y(n, x)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SphericalBesselY.md">SphericalBesselY
    *      documentation</a>
@@ -8774,7 +8774,7 @@ public class S {
 
   /**
    * Split(list) - splits `list` into collections of consecutive identical elements.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Split.md">Split
    *      documentation</a>
@@ -8784,7 +8784,7 @@ public class S {
   /**
    * SplitBy(list, f) - splits `list` into collections of consecutive elements that give the same
    * result when `f` is applied.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SplitBy.md">SplitBy
    *      documentation</a>
@@ -8795,7 +8795,7 @@ public class S {
 
   /**
    * Sqrt(expr) - returns the square root of `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sqrt.md">Sqrt
    *      documentation</a>
@@ -8805,7 +8805,7 @@ public class S {
   /**
    * SquareFreeQ(n) - returns `True` if `n` is a square free integer number or a square free
    * univariate polynomial.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SquareFreeQ.md">SquareFreeQ
    *      documentation</a>
@@ -8814,7 +8814,7 @@ public class S {
 
   /**
    * SquareMatrixQ(m) - returns `True` if `m` is a square matrix.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SquareMatrixQ.md">SquareMatrixQ
    *      documentation</a>
@@ -8824,7 +8824,7 @@ public class S {
 
   /**
    * SquaredEuclideanDistance(u, v) - returns squared the euclidean distance between `u$` and `v`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SquaredEuclideanDistance.md">SquaredEuclideanDistance
    *      documentation</a>
@@ -8834,7 +8834,7 @@ public class S {
 
   /**
    * Stack( ) - return a list of the heads of the current stack wrapped by `HoldForm`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Stack.md">Stack
    *      documentation</a>
@@ -8844,7 +8844,7 @@ public class S {
   /**
    * Stack(expr) - begine a new stack and evaluate `èxpr`. Use `Stack(_)` as a subexpression in
    * `expr` to return the stack elements.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StackBegin.md">StackBegin
    *      documentation</a>
@@ -8854,7 +8854,7 @@ public class S {
   /**
    * StandardDeviation(list) - computes the standard deviation of `list`. `list` may consist of
    * numerical values or symbols. Numerical values may be real or complex.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StandardDeviation.md">StandardDeviation
    *      documentation</a>
@@ -8870,7 +8870,7 @@ public class S {
   /**
    * StarGraph(order) - create a new star graph with `order` number of total vertices including the
    * center vertex.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StarGraph.md">StarGraph
    *      documentation</a>
@@ -8880,7 +8880,7 @@ public class S {
   /**
    * StartOfLine - begine a new stack and evaluate `èxpr`. Use `Stack(_)` as a subexpression in
    * `expr` to return the stack elements.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StartOfLine.md">StartOfLine
    *      documentation</a>
@@ -8889,7 +8889,7 @@ public class S {
 
   /**
    * StartOfString - represents the start of a string.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StartOfString.md">StartOfString
    *      documentation</a>
@@ -8902,7 +8902,7 @@ public class S {
 
   /**
    * StieltjesGamma(a) - returns Stieltjes constant.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StieltjesGamma.md">StieltjesGamma
    *      documentation</a>
@@ -8912,7 +8912,7 @@ public class S {
 
   /**
    * StirlingS1(n, k) - returns the Stirling numbers of the first kind.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StirlingS1.md">StirlingS1
    *      documentation</a>
@@ -8922,7 +8922,7 @@ public class S {
   /**
    * StirlingS2(n, k) - returns the Stirling numbers of the second kind. `StirlingS2(n,k)` is the
    * number of ways of partitioning an `n`-element set into `k` non-empty subsets.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StirlingS2.md">StirlingS2
    *      documentation</a>
@@ -8933,7 +8933,7 @@ public class S {
 
   /**
    * String - is the head of strings..
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/String.md">String
    *      documentation</a>
@@ -8942,7 +8942,7 @@ public class S {
 
   /**
    * StringCases(string, pattern) - gives all occurences of `pattern` in `string`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringCases.md">StringCases
    *      documentation</a>
@@ -8952,7 +8952,7 @@ public class S {
   /**
    * StringContainsQ(str1, str2) - return a list of matches for `"p1", "p2",...` list of strings in
    * the string `str`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringContainsQ.md">StringContainsQ
    *      documentation</a>
@@ -8962,7 +8962,7 @@ public class S {
 
   /**
    * StringCount(string, pattern) - counts all occurences of `pattern` in `string`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringCount.md">StringCount
    *      documentation</a>
@@ -8974,7 +8974,7 @@ public class S {
   /**
    * StringExpression(s_1, s_2, ...) - represents a sequence of strings and symbolic string objects
    * `s_i`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringExpression.md">StringExpression
    *      documentation</a>
@@ -8988,7 +8988,7 @@ public class S {
   /**
    * StringFreeQ("string", patt) - returns `True` if no substring in `string` matches the string
    * expression `patt`, and returns `False` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringFreeQ.md">StringFreeQ
    *      documentation</a>
@@ -8998,7 +8998,7 @@ public class S {
   /**
    * StringInsert(string, new-string, position) - returns a string with `new-string` inserted
    * starting at `position` in `string`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringInsert.md">StringInsert
    *      documentation</a>
@@ -9009,7 +9009,7 @@ public class S {
   /**
    * StringJoin(str1, str2, ... strN) - returns the concatenation of the strings `str1, str2, ...
    * strN`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringJoin.md">StringJoin
    *      documentation</a>
@@ -9018,7 +9018,7 @@ public class S {
 
   /**
    * StringLength(string) - gives the length of `string`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringLength.md">StringLength
    *      documentation</a>
@@ -9029,7 +9029,7 @@ public class S {
   /**
    * StringMatchQ(string, regex-pattern) - check if the regular expression `regex-pattern` matches
    * the `string`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringMatchQ.md">StringMatchQ
    *      documentation</a>
@@ -9039,7 +9039,7 @@ public class S {
 
   /**
    * StringPart(str, pos) - return the character at position `pos` from the `str` string expression.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringPart.md">StringPart
    *      documentation</a>
@@ -9049,7 +9049,7 @@ public class S {
   /**
    * StringPosition("string", patt) - gives a list of starting and ending positions where `patt`
    * matches `"string"`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringPosition.md">StringPosition
    *      documentation</a>
@@ -9059,7 +9059,7 @@ public class S {
 
   /**
    * StringQ(x) - is `True` if `x` is a string object, or `False` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringQ.md">StringQ
    *      documentation</a>
@@ -9069,7 +9069,7 @@ public class S {
   /**
    * StringReplace(string, fromStr -> toStr) - replaces each occurrence of `fromStr` with `toStr` in
    * `string`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringReplace.md">StringReplace
    *      documentation</a>
@@ -9079,7 +9079,7 @@ public class S {
 
   /**
    * StringReplace(string) - reverse the `string`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringReverse.md">StringReverse
    *      documentation</a>
@@ -9090,7 +9090,7 @@ public class S {
   /**
    * StringRiffle({s1, s2, s3, ...}) - returns a new string by concatenating all the `si`, with
    * spaces inserted between them.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringRiffle.md">StringRiffle
    *      documentation</a>
@@ -9100,7 +9100,7 @@ public class S {
 
   /**
    * StringSplit(str) - split the string `str` by whitespaces into a list of strings.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringSplit.md">StringSplit
    *      documentation</a>
@@ -9109,7 +9109,7 @@ public class S {
 
   /**
    * StringTake("string", n) - gives the first `n` characters in `string`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringTake.md">StringTake
    *      documentation</a>
@@ -9118,7 +9118,7 @@ public class S {
 
   /**
    * StringTemplate(string) - gives a `StringTemplate` expression with name `string`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringTemplate.md">StringTemplate
    *      documentation</a>
@@ -9129,7 +9129,7 @@ public class S {
   /**
    * StringToByteArray(string) - encodes the `string` into a sequence of bytes using the default
    * character set `UTF-8`, storing the result into into a `ByteArray`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringToByteArray.md">StringToByteArray
    *      documentation</a>
@@ -9139,7 +9139,7 @@ public class S {
 
   /**
    * StringToStream("string") - converts a `string` to an open input stream.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringToStream.md">StringToStream
    *      documentation</a>
@@ -9149,7 +9149,7 @@ public class S {
 
   /**
    * StringTrim(s) - returns a version of `s `with whitespace removed from start and end.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringTrim.md">StringTrim
    *      documentation</a>
@@ -9160,7 +9160,7 @@ public class S {
 
   /**
    * StruveH(n, z) - returns the Struve function `H_n(z)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StruveH.md">StruveH
    *      documentation</a>
@@ -9169,7 +9169,7 @@ public class S {
 
   /**
    * StruveL(n, z) - returns the modified Struve function `L_n(z)`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StruveL.md">StruveL
    *      documentation</a>
@@ -9178,7 +9178,7 @@ public class S {
 
   /**
    * StudentTDistribution(v) - returns a Student's t-distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StudentTDistribution.md">StudentTDistribution
    *      documentation</a>
@@ -9192,7 +9192,7 @@ public class S {
 
   /**
    * Subdivide(n) - returns a list with `n+1` entries obtained by subdividing the range `0` to `1`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Subdivide.md">Subdivide
    *      documentation</a>
@@ -9201,7 +9201,7 @@ public class S {
 
   /**
    * Subfactorial(n) - returns the subfactorial number of the integer `n`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Subfactorial.md">Subfactorial
    *      documentation</a>
@@ -9216,7 +9216,7 @@ public class S {
 
   /**
    * SubsetQ(set1, set2) - returns `True` if `set2` is a subset of `set1`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SubsetQ.md">SubsetQ
    *      documentation</a>
@@ -9225,7 +9225,7 @@ public class S {
 
   /**
    * Subsets(list) - finds a list of all possible subsets of `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Subsets.md">Subsets
    *      documentation</a>
@@ -9237,7 +9237,7 @@ public class S {
 
   /**
    * Subtract(a, b) - represents the subtraction of `b` from `a`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Subtract.md">Subtract
    *      documentation</a>
@@ -9246,7 +9246,7 @@ public class S {
 
   /**
    * SubtractFrom(x, dx) - is equivalent to `x = x - dx`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SubtractFrom.md">SubtractFrom
    *      documentation</a>
@@ -9258,7 +9258,7 @@ public class S {
    * SubtractSides(compare-expr, value) - subtracts `value` from all elements of the `compare-expr`.
    * `compare-expr` can be `True`, `False` or a comparison expression with head `Equal, Unequal,
    * Less, LessEqual, Greater, GreaterEqual`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SubtractSides.md">SubtractSides
    *      documentation</a>
@@ -9269,7 +9269,7 @@ public class S {
   /**
    * Sum(expr, {i, imin, imax}) - evaluates the discrete sum of `expr` with `i` ranging from `imin`
    * to `imax`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sum.md">Sum
    *      documentation</a>
@@ -9285,7 +9285,7 @@ public class S {
 
   /**
    * Surd(expr, n) - returns the `n`-th root of `expr`. If the result is defined, it's a real value.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Surd.md">Surd
    *      documentation</a>
@@ -9300,7 +9300,7 @@ public class S {
   /**
    * SurvivalFunction(dist, x) - returns the survival function for the distribution `dist` evaluated
    * at `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SurvivalFunction.md">SurvivalFunction
    *      documentation</a>
@@ -9311,7 +9311,7 @@ public class S {
   /**
    * Switch(expr, pattern1, value1, pattern2, value2, ...) - yields the first `value` for which
    * `expr` matches the corresponding pattern.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Switch.md">Switch
    *      documentation</a>
@@ -9320,7 +9320,7 @@ public class S {
 
   /**
    * Symbol - is the head of symbols.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Symbol.md">Symbol
    *      documentation</a>
@@ -9329,7 +9329,7 @@ public class S {
 
   /**
    * SymbolName(s) - returns the name of the symbol `s` (without any leading context name).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SymbolName.md">SymbolName
    *      documentation</a>
@@ -9338,7 +9338,7 @@ public class S {
 
   /**
    * SymbolQ(x) - is `True` if `x` is a symbol, or `False` otherwise.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SymbolQ.md">SymbolQ
    *      documentation</a>
@@ -9349,7 +9349,7 @@ public class S {
 
   /**
    * SymmetricMatrixQ(m) - returns `True` if `m` is a symmetric matrix.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SymmetricMatrixQ.md">SymmetricMatrixQ
    *      documentation</a>
@@ -9362,7 +9362,7 @@ public class S {
 
   /**
    * SyntaxQ(str) - is `True` if the given `str` is a string which has the correct syntax.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SyntaxQ.md">SyntaxQ
    *      documentation</a>
@@ -9371,7 +9371,7 @@ public class S {
 
   /**
    * SystemDialogInput("FileOpen") - if the file system is enabled, open a file chooser dialog box.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SystemDialogInput.md">SystemDialogInput
    *      documentation</a>
@@ -9386,7 +9386,7 @@ public class S {
    * TTest(real-vector) - Returns the *observed significance level*, or *p-value*, associated with a
    * one-sample, two-tailed t-test comparing the mean of the input vector with the constant
    * <code>0.0</code>.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TTest.md">TTest
    *      documentation</a>
@@ -9396,7 +9396,7 @@ public class S {
   /**
    * Table(expr, {i, n}) - evaluates `expr` with `i` ranging from `1` to `n`, returning a list of
    * the results.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Table.md">Table
    *      documentation</a>
@@ -9422,7 +9422,7 @@ public class S {
   /**
    * TagSet(f, expr, value) - assigns the evaluated `value` to `expr` and associates the
    * corresponding rule with the symbol `f`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TagSet.md">TagSet
    *      documentation</a>
@@ -9432,7 +9432,7 @@ public class S {
   /**
    * TagSetDelayed(f, expr, value) - assigns `value` to `expr`, without evaluating `value` and
    * associates the corresponding rule with the symbol `f`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TagSetDelayed.md">TagSetDelayed
    *      documentation</a>
@@ -9442,7 +9442,7 @@ public class S {
 
   /**
    * Take(expr, n) - returns `expr` with all but the first `n` leaves removed.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Take.md">Take
    *      documentation</a>
@@ -9452,7 +9452,7 @@ public class S {
   /**
    * TakeLargest({e_1, e_2, ..., e_i}, n) - returns the `n` largest real values from the list `{e_1,
    * e_2, ..., e_i}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TakeLargest.md">TakeLargest
    *      documentation</a>
@@ -9462,7 +9462,7 @@ public class S {
   /**
    * TakeLargestBy({e_1, e_2, ..., e_i}, function, n) - returns the `n` values from the list `{e_1,
    * e_2, ..., e_i}`, where `function(e_i)` is largest.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TakeLargestBy.md">TakeLargestBy
    *      documentation</a>
@@ -9473,7 +9473,7 @@ public class S {
   /**
    * TakeSmallest({e_1, e_2, ..., e_i}, n) - returns the `n` smallest real values from the list
    * `{e_1, e_2, ..., e_i}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TakeSmallest.md">TakeSmallest
    *      documentation</a>
@@ -9484,7 +9484,7 @@ public class S {
   /**
    * TakeSmallestBy({e_1, e_2, ..., e_i}, function, n) - returns the `n` values from the list `{e_1,
    * e_2, ..., e_i}`, where `function(e_i)` is smallest.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TakeSmallestBy.md">TakeSmallestBy
    *      documentation</a>
@@ -9495,7 +9495,7 @@ public class S {
   /**
    * TakeWhile({e1, e2, ...}, head) - returns the list of elements `ei` at the start of list for
    * which `head(ei)` returns `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TakeWhile.md">TakeWhile
    *      documentation</a>
@@ -9506,7 +9506,7 @@ public class S {
    * Tally(list) - return the elements and their number of occurrences in `list` in a new result
    * list. The `binary-predicate` tests if two elements are equivalent. `SameQ` is used as the
    * default `binary-predicate`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Tally.md">Tally
    *      documentation</a>
@@ -9515,7 +9515,7 @@ public class S {
 
   /**
    * Tan(expr) - returns the tangent of `expr` (measured in radians).
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Tan.md">Tan
    *      documentation</a>
@@ -9524,7 +9524,7 @@ public class S {
 
   /**
    * Tanh(z) - returns the hyperbolic tangent of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Tanh.md">Tanh
    *      documentation</a>
@@ -9534,7 +9534,7 @@ public class S {
   /**
    * TautologyQ(boolean-expr, list-of-variables) - test whether the `boolean-expr` is satisfiable by
    * all combinations of boolean `False` and `True` values for the `list-of-variables`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TautologyQ.md">TautologyQ
    *      documentation</a>
@@ -9545,7 +9545,7 @@ public class S {
 
   /**
    * TeXForm(expr) - returns the TeX form of the evaluated `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TeXForm.md">TeXForm
    *      documentation</a>
@@ -9555,7 +9555,7 @@ public class S {
   /**
    * TemplateApply(string, values) - renders a `StringTemplate` expression by replacing
    * `TemplateSlot`s with mapped values.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TemplateApply.md">TemplateApply
    *      documentation</a>
@@ -9570,7 +9570,7 @@ public class S {
    * TemplateIf(condition-expression, true-expression, false-expression) - in `TemplateApply`
    * evaluation insert `true-expression` if `condition-expression` evaluates to `true`, otherwise
    * insert `false-expression`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TemplateIf.md">TemplateIf
    *      documentation</a>
@@ -9579,7 +9579,7 @@ public class S {
 
   /**
    * TemplateSlot(string) - gives a `TemplateSlot` expression with name `string`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TemplateSlot.md">TemplateSlot
    *      documentation</a>
@@ -9589,7 +9589,7 @@ public class S {
 
   /**
    * TensorDimensions(t) - return the dimensions of the tensor `t`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TensorDimensions.md">TensorDimensions
    *      documentation</a>
@@ -9599,7 +9599,7 @@ public class S {
 
   /**
    * TensorProduct(t1, t2, ...) - product of the tensors `t1, t2, ...`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TensorProduct.md">TensorProduct
    *      documentation</a>
@@ -9609,7 +9609,7 @@ public class S {
 
   /**
    * TensorRank(t) - return the rank of the tensor `t`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TensorRank.md">TensorRank
    *      documentation</a>
@@ -9624,7 +9624,7 @@ public class S {
   /**
    * TestReport("file-name-string") - load the unit tests from a `file-name-string` and print a
    * summary of the `VerificationTest` included in the file.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TestReport.md">TestReport
    *      documentation</a>
@@ -9637,7 +9637,7 @@ public class S {
   /**
    * TestResultObject( ... ) - is an association wrapped in a `TestResultObject`returned from
    * `VerificationTest` which stores the results from executing a single unit test.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TestResultObject.md">TestResultObject
    *      documentation</a>
@@ -9662,7 +9662,7 @@ public class S {
 
   /**
    * Thread(f(args) - threads `f` over any lists that appear in `args`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Thread.md">Thread
    *      documentation</a>
@@ -9671,7 +9671,7 @@ public class S {
 
   /**
    * Through(p(f)[x]) - gives `p(f(x))`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Through.md">Through
    *      documentation</a>
@@ -9681,7 +9681,7 @@ public class S {
   /**
    * Throw(value) - stops evaluation and returns `value` as the value of the nearest enclosing
    * `Catch`. `Catch(value, tag)` is caught only by `Catch(expr, form)`, where `tag` matches `form`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Throw.md">Throw
    *      documentation</a>
@@ -9691,7 +9691,7 @@ public class S {
   /**
    * TimeConstrained(expression, seconds) - stop evaluation of `expression` if time measurement of
    * the evaluation exceeds `seconds` and return `$Aborted`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TimeConstrained.md">TimeConstrained
    *      documentation</a>
@@ -9706,7 +9706,7 @@ public class S {
 
   /**
    * TimeValue(p, i, n) - returns a time value calculation.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TimeValue.md">TimeValue
    *      documentation</a>
@@ -9715,7 +9715,7 @@ public class S {
 
   /**
    * Times(a, b, ...) - represents the product of the terms `a, b, ...`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times
    *      documentation</a>
@@ -9724,7 +9724,7 @@ public class S {
 
   /**
    * TimesBy(x, dx) - is equivalent to `x = x * dx`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TimesBy.md">TimesBy
    *      documentation</a>
@@ -9734,7 +9734,7 @@ public class S {
   /**
    * Timing(x) - returns a list with the first entry containing the evaluation CPU time of `x` and
    * the second entry is the evaluation result of `x`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Timing.md">Timing
    *      documentation</a>
@@ -9746,7 +9746,7 @@ public class S {
   /**
    * ToCharacterCode(string) - converts `string` into a list of corresponding integer character
    * codes.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToCharacterCode.md">ToCharacterCode
    *      documentation</a>
@@ -9756,7 +9756,7 @@ public class S {
 
   /**
    * ToExpression("string", form) - converts the `string` given in `form` into an expression.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToExpression.md">ToExpression
    *      documentation</a>
@@ -9767,7 +9767,7 @@ public class S {
   /**
    * ToLowerCase(string) - converts `string` into a string of corresponding lowercase character
    * codes.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToLowerCase.md">ToLowerCase
    *      documentation</a>
@@ -9777,7 +9777,7 @@ public class S {
   /**
    * ToPolarCoordinates({x, y}) - return the polar coordinates for the cartesian coordinates `{x,
    * y}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToPolarCoordinates.md">ToPolarCoordinates
    *      documentation</a>
@@ -9789,7 +9789,7 @@ public class S {
 
   /**
    * ToString(expr) - converts `expr` into a string.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToString.md">ToString
    *      documentation</a>
@@ -9798,7 +9798,7 @@ public class S {
 
   /**
    * ToUnicode(string) - converts `string` into a string of corresponding unicode character codes.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToUnicode.md">ToUnicode
    *      documentation</a>
@@ -9808,7 +9808,7 @@ public class S {
   /**
    * ToUpperCase(string) - converts `string` into a string of corresponding uppercase character
    * codes.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToUpperCase.md">ToUpperCase
    *      documentation</a>
@@ -9819,7 +9819,7 @@ public class S {
 
   /**
    * ToeplitzMatrix(n) - gives a toeplitz matrix with the dimension `n`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToeplitzMatrix.md">ToeplitzMatrix
    *      documentation</a>
@@ -9829,7 +9829,7 @@ public class S {
 
   /**
    * Together(expr) - writes sums of fractions in `expr` together.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Together.md">Together
    *      documentation</a>
@@ -9842,7 +9842,7 @@ public class S {
 
   /**
    * Total(list) - adds all values in `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Total.md">Total
    *      documentation</a>
@@ -9851,7 +9851,7 @@ public class S {
 
   /**
    * Tr(matrix) - computes the trace of the `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Tr.md">Tr
    *      documentation</a>
@@ -9860,7 +9860,7 @@ public class S {
 
   /**
    * Trace(expr) - return the evaluation steps which are used to get the result.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Trace.md">Trace
    *      documentation</a>
@@ -9874,7 +9874,7 @@ public class S {
 
   /**
    * Transliterate("string") - try converting the given string to a similar ASCII string
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Transliterate.md">Transliterate
    *      documentation</a>
@@ -9884,7 +9884,7 @@ public class S {
 
   /**
    * Transpose(m) - transposes rows and columns in the matrix `m`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Transpose.md">Transpose
    *      documentation</a>
@@ -9893,7 +9893,7 @@ public class S {
 
   /**
    * TreeForm(expr) - create a tree visualization from the given expression `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TreeForm.md">TreeForm
    *      documentation</a>
@@ -9906,7 +9906,7 @@ public class S {
 
   /**
    * TrigExpand(expr) - expands out trigonometric expressions in `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TrigExpand.md">TrigExpand
    *      documentation</a>
@@ -9916,7 +9916,7 @@ public class S {
   /**
    * TrigReduce(expr) - rewrites products and powers of trigonometric functions in `expr` in terms
    * of trigonometric functions with combined arguments.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TrigReduce.md">TrigReduce
    *      documentation</a>
@@ -9925,7 +9925,7 @@ public class S {
 
   /**
    * TrigToExp(expr) - converts trigonometric functions in `expr` to exponentials.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TrigToExp.md">TrigToExp
    *      documentation</a>
@@ -9934,7 +9934,7 @@ public class S {
 
   /**
    * True - the constant `True` represents the boolean value **true**
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/True.md">True
    *      documentation</a>
@@ -9943,7 +9943,7 @@ public class S {
 
   /**
    * TrueQ(expr) - returns `True` if and only if `expr` is `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TrueQ.md">TrueQ
    *      documentation</a>
@@ -9956,7 +9956,7 @@ public class S {
 
   /**
    * Tuples(list, n) - creates a list of all `n`-tuples of elements in `list`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Tuples.md">Tuples
    *      documentation</a>
@@ -9975,7 +9975,7 @@ public class S {
   /**
    * UndirectedEdge(a, b) - is an undirected edge between the vertices `a` and `b` in a `graph`
    * object.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UndirectedEdge.md">UndirectedEdge
    *      documentation</a>
@@ -9986,7 +9986,7 @@ public class S {
   /**
    * Unequal(x, y) - yields `False` if `x` and `y` are known to be equal, or `True` if `x` and `y`
    * are known to be unequal.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Unequal.md">Unequal
    *      documentation</a>
@@ -9998,7 +9998,7 @@ public class S {
   /**
    * Unevaluated(expr) - temporarily leaves `expr` in an unevaluated form when it appears as a
    * function argument.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Unevaluated.md">Unevaluated
    *      documentation</a>
@@ -10007,7 +10007,7 @@ public class S {
 
   /**
    * UniformDistribution({min, max}) - returns a uniform distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UniformDistribution.md">UniformDistribution
    *      documentation</a>
@@ -10017,7 +10017,7 @@ public class S {
 
   /**
    * Union(set1, set2) - get the union set from `set1` and `set2`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Union.md">Union
    *      documentation</a>
@@ -10026,7 +10026,7 @@ public class S {
 
   /**
    * Unique(expr) - create a unique symbol of the form `expr$...`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Unique.md">Unique
    *      documentation</a>
@@ -10035,7 +10035,7 @@ public class S {
 
   /**
    * UnitConvert(quantity) - convert the `quantity` to the base unit
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UnitConvert.md">UnitConvert
    *      documentation</a>
@@ -10045,7 +10045,7 @@ public class S {
   /**
    * UnitStep(expr) - returns `0`, if `expr` is less than `0` and returns `1`, if `expr` is greater
    * equal than `0`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UnitStep.md">UnitStep
    *      documentation</a>
@@ -10057,7 +10057,7 @@ public class S {
 
   /**
    * UnitVector(position) - returns a unit vector with element `1` at the given `position`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UnitVector.md">UnitVector
    *      documentation</a>
@@ -10069,7 +10069,7 @@ public class S {
 
   /**
    * Unitize(expr) - maps a non-zero `expr` to `1`, and a zero `expr` to `0`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Unitize.md">Unitize
    *      documentation</a>
@@ -10082,7 +10082,7 @@ public class S {
 
   /**
    * UnsameQ(x, y) - returns `True` if `x` and `y` are not structurally identical.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UnsameQ.md">UnsameQ
    *      documentation</a>
@@ -10091,7 +10091,7 @@ public class S {
 
   /**
    * Unset(expr) - removes any definitions belonging to the left-hand-side `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Unset.md">Unset
    *      documentation</a>
@@ -10107,7 +10107,7 @@ public class S {
 
   /**
    * UpValues(symbol) - prints the up-value rules associated with `symbol`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UpValues.md">UpValues
    *      documentation</a>
@@ -10117,7 +10117,7 @@ public class S {
   /**
    * UpperCaseQ(str) - is `True` if the given `str` is a string which only contains upper case
    * characters.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UpperCaseQ.md">UpperCaseQ
    *      documentation</a>
@@ -10126,7 +10126,7 @@ public class S {
 
   /**
    * UpperTriangularize(matrix) - create a upper triangular matrix from the given `matrix`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UpperTriangularize.md">UpperTriangularize
    *      documentation</a>
@@ -10139,7 +10139,7 @@ public class S {
 
   /**
    * ValueQ(expr) - returns `True` if and only if `expr` is defined.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ValueQ.md">ValueQ
    *      documentation</a>
@@ -10148,7 +10148,7 @@ public class S {
 
   /**
    * Values(association) - return a list of values of the `association`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Values.md">Values
    *      documentation</a>
@@ -10157,7 +10157,7 @@ public class S {
 
   /**
    * VandermondeMatrix(n) - gives the Vandermonde matrix with `n` rows and columns.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VandermondeMatrix.md">VandermondeMatrix
    *      documentation</a>
@@ -10169,7 +10169,7 @@ public class S {
 
   /**
    * Variables(expr) - gives a list of the variables that appear in the polynomial `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Variables.md">Variables
    *      documentation</a>
@@ -10179,7 +10179,7 @@ public class S {
   /**
    * Variance(list) - computes the variance of `list`. `list` may consist of numerical values or
    * symbols. Numerical values may be real or complex.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Variance.md">Variance
    *      documentation</a>
@@ -10188,7 +10188,7 @@ public class S {
 
   /**
    * VectorAngle(u, v) - gives the angles between vectors `u` and `v`
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VectorAngle.md">VectorAngle
    *      documentation</a>
@@ -10197,7 +10197,7 @@ public class S {
 
   /**
    * VectorQ(v) - returns `True` if `v` is a list of elements which are not themselves lists.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VectorQ.md">VectorQ
    *      documentation</a>
@@ -10209,7 +10209,7 @@ public class S {
   /**
    * Verbatim(expr) - prevents pattern constructs in `expr` from taking effect, allowing them to
    * match themselves.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Verbatim.md">Verbatim
    *      documentation</a>
@@ -10219,7 +10219,7 @@ public class S {
   /**
    * VerificationTest(test-expr) - create a `TestResultObject` by testing if `test-expr` evaluates
    * to `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VerificationTest.md">VerificationTest
    *      documentation</a>
@@ -10230,7 +10230,7 @@ public class S {
   /**
    * VertexEccentricity(graph, vertex) - compute the eccentricity of `vertex` in the `graph`. It's
    * the length of the longest shortest path from the `vertex` to every other vertex in the `graph`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexEccentricity.md">VertexEccentricity
    *      documentation</a>
@@ -10243,7 +10243,7 @@ public class S {
 
   /**
    * VertexList(graph) - convert the `graph` into a list of vertices.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexList.md">VertexList
    *      documentation</a>
@@ -10252,7 +10252,7 @@ public class S {
 
   /**
    * VertexQ(graph, vertex) - test if `vertex` is a vertex in the `graph` object.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexQ.md">VertexQ
    *      documentation</a>
@@ -10274,7 +10274,7 @@ public class S {
 
   /**
    * WeibullDistribution(a, b) - returns a Weibull distribution.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WeibullDistribution.md">WeibullDistribution
    *      documentation</a>
@@ -10290,7 +10290,7 @@ public class S {
 
   /**
    * WeierstrassP(expr, {n1, n2}) - Weierstrass elliptic function.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WeierstrassP.md">WeierstrassP
    *      documentation</a>
@@ -10304,7 +10304,7 @@ public class S {
   /**
    * WeightedAdjacencyMatrix(graph) - convert the `graph` into a weighted adjacency matrix in sparse
    * array format.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WeightedAdjacencyMatrix.md">WeightedAdjacencyMatrix
    *      documentation</a>
@@ -10317,7 +10317,7 @@ public class S {
 
   /**
    * WeightedGraphQ(expr) - test if `expr` is an explicit weighted graph object.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WeightedGraphQ.md">WeightedGraphQ
    *      documentation</a>
@@ -10330,7 +10330,7 @@ public class S {
   /**
    * Which(cond1, expr1, cond2, expr2, ...) - yields `expr1` if `cond1` evaluates to `True`, `expr2`
    * if `cond2` evaluates to `True`, etc.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Which.md">Which
    *      documentation</a>
@@ -10339,7 +10339,7 @@ public class S {
 
   /**
    * While(test, body) - evaluates `body` as long as test evaluates to `True`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/While.md">While
    *      documentation</a>
@@ -10350,7 +10350,7 @@ public class S {
 
   /**
    * Whitespace - represents a sequence of whitespace characters.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Whitespace.md">Whitespace
    *      documentation</a>
@@ -10359,7 +10359,7 @@ public class S {
 
   /**
    * WhitespaceCharacter - represents a single whitespace character.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WhitespaceCharacter.md">WhitespaceCharacter
    *      documentation</a>
@@ -10374,7 +10374,7 @@ public class S {
   /**
    * With({list_of_local_variables}, expr ) - evaluates `expr` for the `list_of_local_variables` by
    * replacing the local variables in `expr`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/With.md">With
    *      documentation</a>
@@ -10385,7 +10385,7 @@ public class S {
 
   /**
    * WordBoundary - represents the boundary between words.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WordBoundary.md">WordBoundary
    *      documentation</a>
@@ -10395,7 +10395,7 @@ public class S {
 
   /**
    * WordCharacter] - represents a single letter or digit character.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WordCharacter.md">WordCharacter
    *      documentation</a>
@@ -10414,7 +10414,7 @@ public class S {
    * Xor(arg1, arg2, ...) - Logical XOR (exclusive OR) function. Returns `True` if an odd number of
    * the arguments are `True` and the rest are `False`. Returns `False` if an even number of the
    * arguments are `True` and the rest are `False`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Xor.md">Xor
    *      documentation</a>
@@ -10427,7 +10427,7 @@ public class S {
    * YuleDissimilarity(u, v) - returns the Yule dissimilarity between the two boolean 1-D lists `u`
    * and `v`, which is defined as `R / (c_tt * c_ff + R / 2)` where `n` is `len(u)`, `c_ij` is the
    * number of occurrences of `u(k)=i` and `v(k)=j` for `k<n`, and `R = 2 * c_tf * c_ft`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/YuleDissimilarity.md">YuleDissimilarity
    *      documentation</a>
@@ -10442,7 +10442,7 @@ public class S {
 
   /**
    * Zeta(z) - returns the Riemann zeta function of `z`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Zeta.md">Zeta
    *      documentation</a>

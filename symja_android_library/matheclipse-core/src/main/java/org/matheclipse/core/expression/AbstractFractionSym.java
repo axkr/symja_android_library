@@ -51,7 +51,7 @@ public abstract class AbstractFractionSym implements IFraction {
    * <p>
    * See:
    * <a href="https://github.com/Hipparchus-Math/hipparchus/issues/176">hipparchus/issues/176</a>
-   * 
+   *
    * @param value value to approximate
    * @param maxConbvergents maximum number of convergents.
    * @return stream of {@link BigFraction} convergents approximating {@code value}
@@ -67,7 +67,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
   /**
    * Iterator for generating continuous fractions.
-   * 
+   *
    * @param value value to approximate
    * @param maxConbvergents maximum number of convergents.
    * @return iterator iterating over continuous fractions aproximating {@code value}

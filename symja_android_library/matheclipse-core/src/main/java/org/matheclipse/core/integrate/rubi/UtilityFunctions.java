@@ -9,9 +9,9 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * UtilityFunctions from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based
  * integrator</a>.
- * 
+ *
  * TODO a lot of functions are only placeholders at the moment.
- * 
+ *
  */
 public class UtilityFunctions {
 

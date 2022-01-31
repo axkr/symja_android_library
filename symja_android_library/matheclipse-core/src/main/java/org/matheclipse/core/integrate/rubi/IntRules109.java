@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IAST;
 /**
  * IndefiniteIntegrationRules from the <a href="https://rulebasedintegration.org/">Rubi - rule-based
  * integrator</a>.
- * 
+ *
  */
 class IntRules109 {
   public static IAST RULES =

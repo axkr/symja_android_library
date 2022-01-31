@@ -204,7 +204,7 @@ public class ApfloatToMMA {
 
   /**
    * Convert a <code>Apfloat</code> value into a TeX string.
-   * 
+   *
    * @param buf
    * @param value
    * @param exponent
@@ -224,7 +224,7 @@ public class ApfloatToMMA {
 
   /**
    * Convert a <code>Apfloat</code> value into a MathML string.
-   * 
+   *
    * @param buf
    * @param value
    * @param exponent

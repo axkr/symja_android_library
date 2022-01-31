@@ -358,7 +358,7 @@ public abstract class Scanner {
 
   /**
    * Create a string with first character 1 appending exponent times 0.
-   * 
+   *
    * @param nonNegativeExponent the number of <code>0</code> which should be appended; the number
    *        must be a non-negative integer.
    * @return

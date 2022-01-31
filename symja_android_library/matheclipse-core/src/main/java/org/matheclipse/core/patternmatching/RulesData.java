@@ -645,7 +645,7 @@ public final class RulesData implements Serializable {
 
   /**
    * Create a <code>Integrate</code> pattern matching rule.
-   * 
+   *
    * @param leftHandSide left hand side rule with patterns
    * @param rightHandSide right hand side term rewriting rule
    * @param priority the priority of the rule
