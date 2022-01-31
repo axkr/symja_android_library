@@ -22,7 +22,8 @@ import org.matheclipse.core.reflection.system.rules.DerivativeRules;
  *
  * <blockquote>
  *
- * <p>represents the <code>n</code>-th derivative of the function <code>f</code>.<br>
+ * <p>
+ * represents the <code>n</code>-th derivative of the function <code>f</code>.<br>
  *
  * </blockquote>
  *
@@ -32,7 +33,8 @@ import org.matheclipse.core.reflection.system.rules.DerivativeRules;
  *
  * <blockquote>
  *
- * <p>represents a multivariate derivative.
+ * <p>
+ * represents a multivariate derivative.
  *
  * </blockquote>
  *
@@ -49,7 +51,8 @@ import org.matheclipse.core.reflection.system.rules.DerivativeRules;
  * 6*(#1&amp;)
  * </pre>
  *
- * <p><code>Derivative</code> can be entered using <code>'</code>:<br>
+ * <p>
+ * <code>Derivative</code> can be entered using <code>'</code>:<br>
  *
  * <pre>
  * &gt;&gt; Sin'(x)
@@ -62,14 +65,16 @@ import org.matheclipse.core.reflection.system.rules.DerivativeRules;
  * "Derivative(1)[f][x]"
  * </pre>
  *
- * <p>The <code>0</code>th derivative of any expression is the expression itself:
+ * <p>
+ * The <code>0</code>th derivative of any expression is the expression itself:
  *
  * <pre>
  * &gt;&gt; Derivative(0,0,0)[a+b+c]
  * a+b+c
  * </pre>
  *
- * <p>Unknown derivatives:<br>
+ * <p>
+ * Unknown derivatives:<br>
  *
  * <pre>
  * &gt;&gt; Derivative(2, 1)[h]
@@ -112,22 +117,22 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         }
       }
 
-      //      if (derivativeHead.size() == 2) {
-      //        IExpr nTimes = derivativeHead.arg1();
-      //        if (functions.size() >= 2) {
-      //          int n = nTimes.toIntDefault();
-      //          if (n >= 0 || nTimes.isFree(num -> num.isNumber(), false)) {
-      //            IAST fullDerivative = derivativeAST[2];
-      //            return evaluateDArg1IfPossible(
-      //                nTimes, derivativeHead, (IAST) functions, fullDerivative, engine);
-      //          }
-      //          // Multiple derivative specifier `1` does not have the form {variable, n} where n
+      // if (derivativeHead.size() == 2) {
+      // IExpr nTimes = derivativeHead.arg1();
+      // if (functions.size() >= 2) {
+      // int n = nTimes.toIntDefault();
+      // if (n >= 0 || nTimes.isFree(num -> num.isNumber(), false)) {
+      // IAST fullDerivative = derivativeAST[2];
+      // return evaluateDArg1IfPossible(
+      // nTimes, derivativeHead, (IAST) functions, fullDerivative, engine);
+      // }
+      // // Multiple derivative specifier `1` does not have the form {variable, n} where n
       // is a
-      //          // symbolic expression or a non-negative integer.
-      //          return IOFunctions.printMessage(
-      //              ast.topHead(), "dvar", F.List(F.List(F.Slot1, nTimes)), engine);
-      //        }
-      //      } else
+      // // symbolic expression or a non-negative integer.
+      // return IOFunctions.printMessage(
+      // ast.topHead(), "dvar", F.List(F.List(F.Slot1, nTimes)), engine);
+      // }
+      // } else
       if (derivativeHead.size() >= 2) {
         IExpr result = F.NIL;
         for (int i = 1; i < derivativeHead.size(); i++) {
@@ -143,8 +148,8 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
             }
             // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
             // symbolic expression or a non-negative integer.
-            return IOFunctions.printMessage(
-                ast.topHead(), "dvar", F.List(F.List(F.Slot1, nTimes)), engine);
+            return IOFunctions.printMessage(ast.topHead(), "dvar", F.List(F.List(F.Slot1, nTimes)),
+                engine);
           }
         }
         if (result.isPresent()) {
@@ -188,8 +193,8 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
    * @param engine
    * @return
    */
-  private static IExpr evaluateDArg1IfPossible(
-      IExpr n, IAST head, IAST headDerivative, IAST fullDerivative, EvalEngine engine) {
+  private static IExpr evaluateDArg1IfPossible(IExpr n, IAST head, IAST headDerivative,
+      IAST fullDerivative, EvalEngine engine) {
     IExpr newFunction;
     IExpr symbol = F.Slot1;
     if (fullDerivative != null) {
@@ -212,8 +217,8 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         int iterationLimit = engine.getIterationLimit();
         if (iterationLimit > 0 && iterationLimit < ni) {
           // Iteration limit of `1` exceeded.
-          return IOFunctions.printMessage(
-              S.Derivative, "itlim", F.List(F.ZZ(iterationLimit)), engine);
+          return IOFunctions.printMessage(S.Derivative, "itlim", F.List(F.ZZ(iterationLimit)),
+              engine);
         }
       }
       dExpr = F.D(newFunction, F.List(symbol, n));
@@ -248,8 +253,8 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
     return F.NIL;
   }
 
-  private static IExpr evaluateDIfPossible(
-      IAST head, IAST headDerivative, IAST fullDerivative, EvalEngine engine) {
+  private static IExpr evaluateDIfPossible(IAST head, IAST headDerivative, IAST fullDerivative,
+      EvalEngine engine) {
     IASTAppendable newFunction = F.ast(headDerivative.arg1());
     IASTAppendable list = F.ListAlloc(headDerivative.size());
     IASTAppendable dExpr;
@@ -282,8 +287,8 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
           int iterationLimit = engine.getIterationLimit();
           if (iterationLimit > 0 && iterationLimit < ni) {
             // Iteration limit of `1` exceeded.
-            return IOFunctions.printMessage(
-                S.Derivative, "itlim", F.List(F.ZZ(iterationLimit)), engine);
+            return IOFunctions.printMessage(S.Derivative, "itlim", F.List(F.ZZ(iterationLimit)),
+                engine);
           }
           list.append(F.List(symbol, n));
         }
@@ -297,12 +302,8 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         if (head.isAST1()) {
           int n = head.first().toIntDefault();
           if (n > 0) {
-            IExpr dResult =
-                S.Derivative.evalDownRule(
-                    engine,
-                    (n == 1)
-                        ? headDerivative
-                        : headDerivative.setAtCopy(0, head.setAtCopy(1, F.C1)));
+            IExpr dResult = S.Derivative.evalDownRule(engine,
+                (n == 1) ? headDerivative : headDerivative.setAtCopy(0, head.setAtCopy(1, F.C1)));
             if (dResult.isPresent()) {
               doEval = true;
             }
@@ -346,11 +347,8 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         if (arg1.isPower()) {
           IExpr exponent = arg1.exponent();
           if (arg1.base().equals(F.Slot1) && exponent.isFree(F.Slot1)) {
-            return F.Times(
-                exponent,
-                createDerivative(
-                    n - 1,
-                    F.unaryAST1(S.Function, engine.evaluate(F.Power(F.Slot1, exponent.dec())))));
+            return F.Times(exponent, createDerivative(n - 1,
+                F.unaryAST1(S.Function, engine.evaluate(F.Power(F.Slot1, exponent.dec())))));
           }
         }
       }

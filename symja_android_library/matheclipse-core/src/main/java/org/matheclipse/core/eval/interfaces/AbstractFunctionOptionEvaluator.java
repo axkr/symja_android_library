@@ -19,9 +19,8 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
       option = new IExpr[0];
     } else {
       option = new IExpr[optionSymbols.length];
-      argSize =
-          AbstractFunctionEvaluator.determineOptions(
-              option, ast, ast.argSize(), expectedArgSize(ast), optionSymbols, engine);
+      argSize = AbstractFunctionEvaluator.determineOptions(option, ast, ast.argSize(),
+          expectedArgSize(ast), optionSymbols, engine);
     }
     return evaluate(ast, argSize, option, engine);
   }
@@ -31,8 +30,8 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
     super.setOptions(symbol, F.List(F.Rule(lhsOptionSymbol, rhsValue)));
   }
 
-  protected void setOptions(
-      final ISymbol symbol, IBuiltInSymbol[] lhsOptionSymbols, IExpr[] rhsValues) {
+  protected void setOptions(final ISymbol symbol, IBuiltInSymbol[] lhsOptionSymbols,
+      IExpr[] rhsValues) {
     optionSymbols = lhsOptionSymbols;
     IASTAppendable list = F.ListAlloc(rhsValues.length);
     for (int i = 0; i < rhsValues.length; i++) {
@@ -45,6 +44,6 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
     return optionSymbols;
   }
 
-  public abstract IExpr evaluate(
-      final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine);
+  public abstract IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+      final EvalEngine engine);
 }

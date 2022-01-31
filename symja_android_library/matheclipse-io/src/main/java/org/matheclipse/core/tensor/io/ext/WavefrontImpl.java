@@ -18,13 +18,17 @@ import org.matheclipse.core.interfaces.IASTAppendable;
   }
 
   private void parse(String string) {
-    if (string.startsWith("v ")) vertices.append(StaticHelper.three(string.substring(2)));
+    if (string.startsWith("v "))
+      vertices.append(StaticHelper.three(string.substring(2)));
     else //
-    if (string.startsWith("vn ")) normals.append(StaticHelper.three(string.substring(3)));
+    if (string.startsWith("vn "))
+      normals.append(StaticHelper.three(string.substring(3)));
     else //
-    if (string.startsWith("f ")) ((WavefrontObjectImpl) object()).append_f(string.substring(2));
+    if (string.startsWith("f "))
+      ((WavefrontObjectImpl) object()).append_f(string.substring(2));
     else //
-    if (string.startsWith("o ")) objects.add(new WavefrontObjectImpl(string.substring(2)));
+    if (string.startsWith("o "))
+      objects.add(new WavefrontObjectImpl(string.substring(2)));
   }
 
   @Override // from Wavefront
@@ -43,7 +47,8 @@ import org.matheclipse.core.interfaces.IASTAppendable;
   }
 
   private WavefrontObject object() {
-    if (objects.isEmpty()) throw new RuntimeException();
+    if (objects.isEmpty())
+      throw new RuntimeException();
     return objects.get(objects.size() - 1);
   }
 }

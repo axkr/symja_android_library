@@ -1,31 +1,28 @@
 package org.matheclipse.core.frobenius;
 /*
- * 2016-09-04: Copied and modified under Lesser GPL license from
- * <a href="http://redberry.cc/">Redberry: symbolic tensor computations</a> with
- * permission from the original authors Stanislav Poslavsky and Dmitry Bolotin.
+ * 2016-09-04: Copied and modified under Lesser GPL license from <a
+ * href="http://redberry.cc/">Redberry: symbolic tensor computations</a> with permission from the
+ * original authors Stanislav Poslavsky and Dmitry Bolotin.
  *
  * Following is the original header:
  *
  * Redberry: symbolic tensor computations.
  *
- * Copyright (c) 2010-2015:
- *   Stanislav Poslavsky   <stvlpos@mail.ru>
- *   Bolotin Dmitriy       <bolotin.dmitriy@gmail.com>
+ * Copyright (c) 2010-2015: Stanislav Poslavsky <stvlpos@mail.ru> Bolotin Dmitriy
+ * <bolotin.dmitriy@gmail.com>
  *
  * This file is part of Redberry.
  *
- * Redberry is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Redberry is free software: you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- * Redberry is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Redberry is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with Redberry. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with Redberry. If not,
+ * see <http://www.gnu.org/licenses/>.
  */
 
 import static java.math.BigInteger.ONE;
@@ -47,7 +44,8 @@ public class FrobeniusNumber {
   /**
    * Returns Frobenius number
    *
-   * <p><br>
+   * <p>
+   * <br>
    * The implementation is taken from <br>
    * http://dansesacrale.wordpress.com/2010/09/20/frobenius-numbers-round-robin-algorithm/ </br>
    * </br>
@@ -57,14 +55,16 @@ public class FrobeniusNumber {
    */
   public static BigInteger frobeniusNumber(int[] array) {
     BigInteger[] _array = new BigInteger[array.length];
-    for (int i = array.length - 1; i >= 0; --i) _array[i] = BigInteger.valueOf(array[i]);
+    for (int i = array.length - 1; i >= 0; --i)
+      _array[i] = BigInteger.valueOf(array[i]);
     return frobeniusNumber(_array);
   }
 
   /**
    * Returns Frobenius number
    *
-   * <p><br>
+   * <p>
+   * <br>
    * The implementation is taken from <br>
    * http://dansesacrale.wordpress.com/2010/09/20/frobenius-numbers-round-robin-algorithm/ </br>
    * </br>
@@ -74,7 +74,8 @@ public class FrobeniusNumber {
    */
   public static BigInteger frobeniusNumber(long[] array) {
     BigInteger[] _array = new BigInteger[array.length];
-    for (int i = array.length - 1; i >= 0; --i) _array[i] = BigInteger.valueOf(array[i]);
+    for (int i = array.length - 1; i >= 0; --i)
+      _array[i] = BigInteger.valueOf(array[i]);
     return frobeniusNumber(_array);
   }
 
@@ -84,7 +85,8 @@ public class FrobeniusNumber {
   /**
    * Returns Frobenius number
    *
-   * <p><br>
+   * <p>
+   * <br>
    * The implementation is taken from <br>
    * http://dansesacrale.wordpress.com/2010/09/20/frobenius-numbers-round-robin-algorithm/ </br>
    * </br>
@@ -93,9 +95,9 @@ public class FrobeniusNumber {
    * @return Frobenius number
    */
   public static BigInteger frobeniusNumber(BigInteger[] array) {
-    //    if (array[0].compareTo(ARRAY_SIZE_THRESHOLD) > 0)
-    //    	return frobeniusNumberIntegerArray(array);
-    //    else
+    // if (array[0].compareTo(ARRAY_SIZE_THRESHOLD) > 0)
+    // return frobeniusNumberIntegerArray(array);
+    // else
     return frobeniusNumberIntegerArray(array);
   }
 
@@ -106,7 +108,8 @@ public class FrobeniusNumber {
       BigInteger d = gcd(array[0], array[i]);
       for (BigInteger r = ZERO; r.compareTo(d) < 0; r = r.add(ONE)) {
         BigInteger n = MINUS_ONE;
-        if (r.compareTo(ZERO) == 0) n = ZERO;
+        if (r.compareTo(ZERO) == 0)
+          n = ZERO;
         else {
           BigInteger q = r;
           while (q.compareTo(array[0]) < 0) {
@@ -126,7 +129,9 @@ public class FrobeniusNumber {
       }
     }
     BigInteger max = MINUS_ONE;
-    for (BigInteger c : ns.values()) if (c.compareTo(max) > 0) max = c;
+    for (BigInteger c : ns.values())
+      if (c.compareTo(max) > 0)
+        max = c;
     return max.subtract(array[0]);
   }
 
@@ -143,7 +148,8 @@ public class FrobeniusNumber {
       int d = intValue(gcd(array[0], array[i]));
       for (int r = 0; r < d; r++) {
         BigInteger n = MINUS_ONE;
-        if (r == 0) n = ZERO;
+        if (r == 0)
+          n = ZERO;
         else {
           int q = r;
           while (q < array0) {
@@ -164,8 +170,10 @@ public class FrobeniusNumber {
     }
     BigInteger max = ZERO;
     for (int i = 0; i < array0; i++)
-      if (ns[i].equals(MINUS_ONE) || ns[i].compareTo(max) > 0) max = ns[i];
-    if (max.equals(MINUS_ONE)) return MINUS_ONE;
+      if (ns[i].equals(MINUS_ONE) || ns[i].compareTo(max) > 0)
+        max = ns[i];
+    if (max.equals(MINUS_ONE))
+      return MINUS_ONE;
     return max.subtract(array[0]);
   }
 
@@ -178,7 +186,7 @@ public class FrobeniusNumber {
   private static int intValue(BigInteger integer) {
     if (integer.compareTo(MAX_VALUE) > 0) {
       ASTElementLimitExceeded.throwIt(Integer.MAX_VALUE);
-      //      throw new UnsupportedOperationException("Integer overflow.");
+      // throw new UnsupportedOperationException("Integer overflow.");
     }
     return integer.intValue();
   }

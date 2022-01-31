@@ -13,15 +13,15 @@ public class PatternMatcherList extends PatternMatcherAndEvaluator {
     return fReplaceList;
   }
 
-  public PatternMatcherList(
-      final int setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
+  public PatternMatcherList(final int setSymbol, final IExpr leftHandSide,
+      final IExpr rightHandSide) {
     super(setSymbol, leftHandSide, rightHandSide, true, 0);
     fReplaceList = F.ListAlloc();
   }
 
   @Override
-  protected IExpr replaceSubExpressionOrderlessFlat(
-      final IAST lhsPatternAST, final IAST lhsEvalAST, final IExpr rhsExpr, EvalEngine engine) {
+  protected IExpr replaceSubExpressionOrderlessFlat(final IAST lhsPatternAST, final IAST lhsEvalAST,
+      final IExpr rhsExpr, EvalEngine engine) {
     return F.NIL;
   }
 

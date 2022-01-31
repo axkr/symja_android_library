@@ -1,8 +1,8 @@
 package org.matheclipse.core.eval.exception;
 
 /**
- * Exception for the <a
- * href="https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Continue.md">Continue</a>
+ * Exception for the <a href=
+ * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Continue.md">Continue</a>
  * function.
  */
 public class ContinueException extends FlowControlException {

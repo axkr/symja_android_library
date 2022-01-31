@@ -85,9 +85,8 @@ public class VariablesSet {
 
     @Override
     public boolean visit(IAST ast) {
-      ISymbol[] logicEquationHeads = {
-        S.And, S.Or, S.Not, S.Xor, S.Nand, S.Nor, S.Implies, S.Equivalent, S.Equal, S.Unequal
-      };
+      ISymbol[] logicEquationHeads =
+          {S.And, S.Or, S.Not, S.Xor, S.Nand, S.Nor, S.Implies, S.Equivalent, S.Equal, S.Unequal};
       for (int i = 0; i < logicEquationHeads.length; i++) {
         if (ast.isAST(logicEquationHeads[i])) {
           ast.forEach(x -> x.accept(this));

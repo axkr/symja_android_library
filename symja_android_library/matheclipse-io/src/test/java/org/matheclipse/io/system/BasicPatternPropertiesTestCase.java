@@ -58,13 +58,13 @@ public class BasicPatternPropertiesTestCase extends TestCase {
     checkPriority("f[x_,y_]", "2147483586");
     checkPriority("g[x_,y_]", "2147483586");
     checkPriority("g[x_,42, y_]", "2147483537");
-    //		checkPriority("x_ . y_", "1073741762");
-    //		checkPriority("x_+y_", "1073741762");
-    //		checkPriority("f[x_]", "1073741768");
-    //		checkPriority("f[x__]", "1073741773");
-    //		checkPriority("f[x_,y_]", "1073741762");
-    //		checkPriority("g[x_,y_]", "1073741762");
-    //		checkPriority("g[x_,42, y_]", "1073741713");
+    // checkPriority("x_ . y_", "1073741762");
+    // checkPriority("x_+y_", "1073741762");
+    // checkPriority("f[x_]", "1073741768");
+    // checkPriority("f[x__]", "1073741773");
+    // checkPriority("f[x_,y_]", "1073741762");
+    // checkPriority("g[x_,y_]", "1073741762");
+    // checkPriority("g[x_,42, y_]", "1073741713");
   }
 
   public void testCompareTo() {

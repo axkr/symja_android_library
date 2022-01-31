@@ -110,150 +110,127 @@ public final class SymbolicTermOrder implements Serializable {
     evbeg2 = evend1;
     evend2 = evend1;
     switch (evord) { // horder = new EVhorder();
-      case SymbolicTermOrder.LEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                  return ExpVectorSymbolic.EVILCP(e1, e2);
-                }
-              };
-          break;
-        }
-      case SymbolicTermOrder.INVLEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                  return -ExpVectorSymbolic.EVILCP(e1, e2);
-                }
-              };
-          break;
-        }
-      case SymbolicTermOrder.GRLEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                  return ExpVectorSymbolic.EVIGLC(e1, e2);
-                }
-              };
-          break;
-        }
-      case SymbolicTermOrder.IGRLEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                  return -ExpVectorSymbolic.EVIGLC(e1, e2);
-                }
-              };
-          break;
-        }
-      case SymbolicTermOrder.REVLEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                  return ExpVectorSymbolic.EVRILCP(e1, e2);
-                }
-              };
-          break;
-        }
-      case SymbolicTermOrder.REVILEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                  return -ExpVectorSymbolic.EVRILCP(e1, e2);
-                }
-              };
-          break;
-        }
-      case SymbolicTermOrder.REVTDEG:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                  return ExpVectorSymbolic.EVRIGLC(e1, e2);
-                }
-              };
-          break;
-        }
-      case SymbolicTermOrder.REVITDG:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                  return -ExpVectorSymbolic.EVRIGLC(e1, e2);
-                }
-              };
-          break;
-        }
-      case SymbolicTermOrder.ITDEGLEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                  return -ExpVectorSymbolic.EVITDEGLC(e1, e2); // okay +/-
-                }
-              };
-          break;
-        }
-      case SymbolicTermOrder.REVITDEG:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                  return ExpVectorSymbolic.EVRLITDEGC(e1, e2); // okay +/-
-                }
-              };
-          break;
-        }
-      default:
-        {
-          throw new IllegalArgumentException("invalid term order: " + evord);
-        }
-    }
-    // lorder = new EVlorder();
-    lorder =
-        new EVComparator() {
+      case SymbolicTermOrder.LEX: {
+        horder = new EVComparator() {
 
           @Override
           public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-            return -horder.compare(e1, e2);
+            return ExpVectorSymbolic.EVILCP(e1, e2);
           }
         };
+        break;
+      }
+      case SymbolicTermOrder.INVLEX: {
+        horder = new EVComparator() {
 
-    // sugar = new EVsugar();
-    sugar =
-        new EVComparator() {
+          @Override
+          public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+            return -ExpVectorSymbolic.EVILCP(e1, e2);
+          }
+        };
+        break;
+      }
+      case SymbolicTermOrder.GRLEX: {
+        horder = new EVComparator() {
 
           @Override
           public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
             return ExpVectorSymbolic.EVIGLC(e1, e2);
           }
         };
+        break;
+      }
+      case SymbolicTermOrder.IGRLEX: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+            return -ExpVectorSymbolic.EVIGLC(e1, e2);
+          }
+        };
+        break;
+      }
+      case SymbolicTermOrder.REVLEX: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+            return ExpVectorSymbolic.EVRILCP(e1, e2);
+          }
+        };
+        break;
+      }
+      case SymbolicTermOrder.REVILEX: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+            return -ExpVectorSymbolic.EVRILCP(e1, e2);
+          }
+        };
+        break;
+      }
+      case SymbolicTermOrder.REVTDEG: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+            return ExpVectorSymbolic.EVRIGLC(e1, e2);
+          }
+        };
+        break;
+      }
+      case SymbolicTermOrder.REVITDG: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+            return -ExpVectorSymbolic.EVRIGLC(e1, e2);
+          }
+        };
+        break;
+      }
+      case SymbolicTermOrder.ITDEGLEX: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+            return -ExpVectorSymbolic.EVITDEGLC(e1, e2); // okay +/-
+          }
+        };
+        break;
+      }
+      case SymbolicTermOrder.REVITDEG: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+            return ExpVectorSymbolic.EVRLITDEGC(e1, e2); // okay +/-
+          }
+        };
+        break;
+      }
+      default: {
+        throw new IllegalArgumentException("invalid term order: " + evord);
+      }
+    }
+    // lorder = new EVlorder();
+    lorder = new EVComparator() {
+
+      @Override
+      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+        return -horder.compare(e1, e2);
+      }
+    };
+
+    // sugar = new EVsugar();
+    sugar = new EVComparator() {
+
+      @Override
+      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+        return ExpVectorSymbolic.EVIGLC(e1, e2);
+      }
+    };
   }
 
   /**
@@ -282,25 +259,23 @@ public final class SymbolicTermOrder implements Serializable {
     evbeg2 = evend1;
     evend2 = evend1;
 
-    horder =
-        new EVComparator() {
+    horder = new EVComparator() {
 
-          @Override
-          public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-            return -ExpVectorSymbolic.EVIWLC(weight, e1, e2);
-          }
-        };
+      @Override
+      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+        return -ExpVectorSymbolic.EVIWLC(weight, e1, e2);
+      }
+    };
 
     // lorder = new EVlorder();
-    lorder =
-        new EVComparator() {
+    lorder = new EVComparator() {
 
-          @Override
-          public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-            return +ExpVectorSymbolic.EVIWLC(weight, e1, e2);
-            // return - horder.compare( e1, e2 );
-          }
-        };
+      @Override
+      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+        return +ExpVectorSymbolic.EVIWLC(weight, e1, e2);
+        // return - horder.compare( e1, e2 );
+      }
+    };
 
     // sugar = new EVsugar();
     sugar = horder;
@@ -333,1011 +308,880 @@ public final class SymbolicTermOrder implements Serializable {
           "invalid term order split, r = " + r + ", split = " + split);
     }
     switch (evord) { // horder = new EVhorder();
-      case SymbolicTermOrder.LEX:
-        {
-          switch (evord2) {
-            case SymbolicTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+      case SymbolicTermOrder.LEX: {
+        switch (evord2) {
+          case SymbolicTermOrder.LEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
               }
-            case SymbolicTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
-        }
-      case SymbolicTermOrder.INVLEX:
-        {
-          switch (evord2) {
-            case SymbolicTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+          case SymbolicTermOrder.INVLEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
               }
-            case SymbolicTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVILEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVTDEG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVITDG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
-        }
-      case SymbolicTermOrder.GRLEX:
-        {
-          switch (evord2) {
-            case SymbolicTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+          case SymbolicTermOrder.GRLEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
               }
-            case SymbolicTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
-        }
-      case SymbolicTermOrder.IGRLEX:
-        {
-          switch (evord2) {
-            case SymbolicTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+          case SymbolicTermOrder.IGRLEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
               }
-            case SymbolicTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVILEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVTDEG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVITDG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
-        }
-        // ----- begin reversed -----------
-      case SymbolicTermOrder.REVLEX:
-        {
-          switch (evord2) {
-            case SymbolicTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVILEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVTDEG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVITDG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+          default: {
+            horder = null;
           }
-          break;
         }
-      case SymbolicTermOrder.REVILEX:
-        {
-          switch (evord2) {
-            case SymbolicTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+        break;
+      }
+      case SymbolicTermOrder.INVLEX: {
+        switch (evord2) {
+          case SymbolicTermOrder.LEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
               }
-            case SymbolicTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVILEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVTDEG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVITDG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
-        }
-      case SymbolicTermOrder.REVTDEG:
-        {
-          switch (evord2) {
-            case SymbolicTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+          case SymbolicTermOrder.INVLEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
               }
-            case SymbolicTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVILEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVTDEG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVITDG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
-        }
-      case SymbolicTermOrder.REVITDG:
-        {
-          switch (evord2) {
-            case SymbolicTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+          case SymbolicTermOrder.GRLEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
               }
-            case SymbolicTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVILEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVTDEG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case SymbolicTermOrder.REVITDG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-                        int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
+          case SymbolicTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVILEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVTDEG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVITDG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
         }
-        // ----- end reversed-----------
-      default:
-        {
-          horder = null;
+        break;
+      }
+      case SymbolicTermOrder.GRLEX: {
+        switch (evord2) {
+          case SymbolicTermOrder.LEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.INVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.GRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
         }
+        break;
+      }
+      case SymbolicTermOrder.IGRLEX: {
+        switch (evord2) {
+          case SymbolicTermOrder.LEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.INVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.GRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVILEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVTDEG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVITDG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
+        }
+        break;
+      }
+      // ----- begin reversed -----------
+      case SymbolicTermOrder.REVLEX: {
+        switch (evord2) {
+          case SymbolicTermOrder.LEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.INVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.GRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVILEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVTDEG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVITDG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
+        }
+        break;
+      }
+      case SymbolicTermOrder.REVILEX: {
+        switch (evord2) {
+          case SymbolicTermOrder.LEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.INVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.GRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVILEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVTDEG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVITDG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
+        }
+        break;
+      }
+      case SymbolicTermOrder.REVTDEG: {
+        switch (evord2) {
+          case SymbolicTermOrder.LEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.INVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.GRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVILEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVTDEG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVITDG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
+        }
+        break;
+      }
+      case SymbolicTermOrder.REVITDG: {
+        switch (evord2) {
+          case SymbolicTermOrder.LEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.INVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.GRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVILEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVTDEG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case SymbolicTermOrder.REVITDG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+                int t = -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorSymbolic.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
+        }
+        break;
+      }
+      // ----- end reversed-----------
+      default: {
+        horder = null;
+      }
     }
     if (horder == null) {
       throw new IllegalArgumentException("invalid term order: " + evord + " 2 " + evord2);
     }
 
-    lorder =
-        new EVComparator() {
+    lorder = new EVComparator() {
 
-          @Override
-          public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-            return -horder.compare(e1, e2);
-          }
-        };
+      @Override
+      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+        return -horder.compare(e1, e2);
+      }
+    };
 
     // sugar = new EVsugar();
-    sugar =
-        new EVComparator() {
+    sugar = new EVComparator() {
 
-          @Override
-          public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
-            return ExpVectorSymbolic.EVIGLC(e1, e2);
-          }
-        };
+      @Override
+      public int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2) {
+        return ExpVectorSymbolic.EVIGLC(e1, e2);
+      }
+    };
   }
 
   /*
@@ -1345,7 +1189,8 @@ public final class SymbolicTermOrder implements Serializable {
    *
    * @param r max number of exponents to compare.
    *
-   * @param split index. public ExprTermOrder(int r, int split) { this(DEFAULT_EVORD, DEFAULT_EVORD, r, split); }
+   * @param split index. public ExprTermOrder(int r, int split) { this(DEFAULT_EVORD, DEFAULT_EVORD,
+   * r, split); }
    */
 
   /**
@@ -1469,13 +1314,8 @@ public final class SymbolicTermOrder implements Serializable {
       return false;
     }
     SymbolicTermOrder b = (SymbolicTermOrder) B;
-    boolean t =
-        evord == b.getEvord()
-            && evord2 == b.evord2
-            && evbeg1 == b.evbeg1
-            && evend1 == b.evend1
-            && evbeg2 == b.evbeg2
-            && evend2 == b.evend2;
+    boolean t = evord == b.getEvord() && evord2 == b.evord2 && evbeg1 == b.evbeg1
+        && evend1 == b.evend1 && evbeg2 == b.evbeg2 && evend2 == b.evend2;
     if (!t) {
       return t;
     }
@@ -1709,8 +1549,8 @@ public final class SymbolicTermOrder implements Serializable {
         }
       case Singular:
         switch (ev) {
-            // case LEX: // missing
-            // return "negrevlex";
+          // case LEX: // missing
+          // return "negrevlex";
           case INVLEX:
             return "rp";
           case GRLEX:
@@ -1796,8 +1636,8 @@ public final class SymbolicTermOrder implements Serializable {
       }
       return new SymbolicTermOrder(evord, evord2, r + k, evend1 + k);
     }
-    return new SymbolicTermOrder(
-        DEFAULT_EVORD /* evord */, evord, r + k, k); // don't change to evord, cause
+    return new SymbolicTermOrder(DEFAULT_EVORD /* evord */, evord, r + k, k); // don't change to
+                                                                              // evord, cause
     // REVITDG
   }
 

@@ -6,7 +6,8 @@ import java.util.function.BiPredicate;
 /**
  * A predicate of two arguments - one object and one {@code int}.
  *
- * <p>This takes two arguments and returns a {@code boolean} result.
+ * <p>
+ * This takes two arguments and returns a {@code boolean} result.
  *
  * @param <T> the type of the object parameter
  * @see BiPredicate
@@ -26,7 +27,8 @@ public interface ObjIntPredicate<T> {
   /**
    * Returns a new predicate that returns true if both predicates return true.
    *
-   * <p>The second predicate is only invoked if the first returns true.
+   * <p>
+   * The second predicate is only invoked if the first returns true.
    *
    * @param other the second predicate
    * @return the combined predicate, "this AND that"
@@ -40,7 +42,8 @@ public interface ObjIntPredicate<T> {
   /**
    * Returns a new predicate that returns true if either predicates returns true.
    *
-   * <p>The second predicate is only invoked if the first returns false.
+   * <p>
+   * The second predicate is only invoked if the first returns false.
    *
    * @param other the second predicate
    * @return the combined predicate, "this OR that"

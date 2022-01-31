@@ -37,17 +37,18 @@ public class FirstStep {
     int yv = solution.getIntValue(y);
     System.out.println("x = " + xv + ", y = " + yv);
 
-    //		for (solver.start(); solver.waitNext(); solver.resume()) {
-    //			Solution solution = solver.getSolution();
-    //			int xv = solution.getIntValue(x);
-    //			int yv = solution.getIntValue(y);
-    //			System.out.println("x = " + xv + ", y = " + yv);
-    //		}
-    //		solver.stop();
+    // for (solver.start(); solver.waitNext(); solver.resume()) {
+    // Solution solution = solver.getSolution();
+    // int xv = solution.getIntValue(x);
+    // int yv = solution.getIntValue(y);
+    // System.out.println("x = " + xv + ", y = " + yv);
+    // }
+    // solver.stop();
 
-    //		solver.findAll(new FirstStepHandler(x, y));
+    // solver.findAll(new FirstStepHandler(x, y));
   }
 }
+
 
 class FirstStepHandler implements SolutionHandler {
   IntVariable x;

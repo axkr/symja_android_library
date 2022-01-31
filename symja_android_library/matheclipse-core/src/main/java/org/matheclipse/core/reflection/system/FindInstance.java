@@ -23,7 +23,8 @@ import org.matheclipse.core.interfaces.IExpr;
  *
  * <blockquote>
  *
- * <p>attempts to find one instance which solves the <code>equations</code> for the variables <code>
+ * <p>
+ * attempts to find one instance which solves the <code>equations</code> for the variables <code>
  * vars</code>.
  *
  * </blockquote>
@@ -37,7 +38,8 @@ import org.matheclipse.core.interfaces.IExpr;
  *
  * <h3>Related terms</h3>
  *
- * <p><a href="Solve.md">Solve</a>
+ * <p>
+ * <a href="Solve.md">Solve</a>
  */
 public class FindInstance extends Solve {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -87,11 +89,8 @@ public class FindInstance extends Solve {
         } else if (ast.arg3().equals(S.Integers)) {
           return Solve.solveIntegers(ast, vars, vars, maxChoices, engine);
         }
-        LOGGER.log(
-            engine.getLogLevel(),
-            "{}: Booleans domain expected at position 3 instead of {}",
-            ast.topHead(),
-            ast.arg3());
+        LOGGER.log(engine.getLogLevel(), "{}: Booleans domain expected at position 3 instead of {}",
+            ast.topHead(), ast.arg3());
         return F.NIL;
       }
       IASTMutable termsEqualZeroList = Validate.checkEquations(ast, 1);

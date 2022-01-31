@@ -138,8 +138,8 @@ public class Pattern extends Blank {
    * @return
    */
   @Override
-  public boolean equivalent(
-      final IPatternObject patternObject, final IPatternMap pm1, IPatternMap pm2) {
+  public boolean equivalent(final IPatternObject patternObject, final IPatternMap pm1,
+      IPatternMap pm2) {
     if (this == patternObject) {
       return true;
     }
@@ -238,10 +238,8 @@ public class Pattern extends Blank {
     String symbolStr = fSymbol.toString();
     char ch = symbolStr.charAt(0);
     if (symbolStr.length() == 1) { // && fOptionalValue == null) {
-      if (('a' <= ch && ch <= 'z')
-          || ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E')
-          || ch == 'P'
-          || ch == 'Q') {
+      if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E')
+          || ch == 'P' || ch == 'Q') {
         if (!fDefault) {
           if (fHeadTest == null) {
             return buffer.append(symbolStr).append("_");

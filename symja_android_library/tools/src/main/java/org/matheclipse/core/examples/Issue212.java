@@ -19,9 +19,8 @@ public class Issue212 {
       ISymbol a = F.Dummy("a");
       ISymbol b = F.Dummy("b");
       ISymbol c = F.Dummy("c");
-      IAST compound =
-          F.CompoundExpression(
-              F.Set(a, F.ZZ(13)), F.Set(b, F.ZZ(11)), F.Set(c, F.ZZ(12)), F.Plus(a, b, c));
+      IAST compound = F.CompoundExpression(F.Set(a, F.ZZ(13)), F.Set(b, F.ZZ(11)),
+          F.Set(c, F.ZZ(12)), F.Plus(a, b, c));
       IExpr result = util.eval(compound);
       // print 36
       if (result.isInteger()) {
@@ -32,10 +31,9 @@ public class Issue212 {
       // solve({x==y,y==2},{x,y})
       ISymbol x = F.Dummy("x");
       ISymbol y = F.Dummy("y");
-      IAST solve =
-          F.Solve( //
-              F.List(F.Equal(x, y), F.Equal(y, F.ZZ(2))), //
-              F.List(x, y));
+      IAST solve = F.Solve( //
+          F.List(F.Equal(x, y), F.Equal(y, F.ZZ(2))), //
+          F.List(x, y));
       result = util.eval(solve);
       if (result.isListOfLists()) {
         IAST list = (IAST) result;

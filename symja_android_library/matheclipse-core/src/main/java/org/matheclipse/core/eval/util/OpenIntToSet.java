@@ -13,14 +13,17 @@ import java.util.TreeSet;
 /**
  * Open addressed map from int to Set<T>.
  *
- * <p>This class provides a dedicated map from integers to Sets with a much smaller memory overhead
+ * <p>
+ * This class provides a dedicated map from integers to Sets with a much smaller memory overhead
  * than standard <code>java.util.Set</code>.
  *
- * <p>This class is not synchronized. The specialized iterators returned by {@link #iterator()} are
+ * <p>
+ * This class is not synchronized. The specialized iterators returned by {@link #iterator()} are
  * fail-fast: they throw a <code>ConcurrentModificationException</code> when they detect the map has
  * been modified during iteration.
  *
- * <p>Copied and modified from <code>org.apache.commons.math4.util-OpenIntToFieldHashMap</code>
+ * <p>
+ * Copied and modified from <code>org.apache.commons.math4.util-OpenIntToFieldHashMap</code>
  *
  * @param <T> the type of the set elements
  */
@@ -144,14 +147,16 @@ public class OpenIntToSet<T> implements Serializable {
   /**
    * Default starting size.
    *
-   * <p>This must be a power of two for bit mask to work properly.
+   * <p>
+   * This must be a power of two for bit mask to work properly.
    */
   private static final int DEFAULT_EXPECTED_SIZE = 16;
 
   /**
    * Multiplier for size growth when map fills up.
    *
-   * <p>This must be a power of two for bit mask to work properly.
+   * <p>
+   * This must be a power of two for bit mask to work properly.
    */
   private static final int RESIZE_MULTIPLIER = 2;
 
@@ -195,8 +200,8 @@ public class OpenIntToSet<T> implements Serializable {
    * @param mask bit mask for hash values
    * @return index at which key should be inserted
    */
-  private static int findInsertionIndex(
-      final int[] keys, final byte[] states, final int key, final int mask) {
+  private static int findInsertionIndex(final int[] keys, final byte[] states, final int key,
+      final int mask) {
     final int hash = hashOf(key);
     int index = hash & mask;
     if (states[index] == FREE) {
@@ -411,15 +416,23 @@ public class OpenIntToSet<T> implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
     OpenIntToSet<T> other = (OpenIntToSet<T>) obj;
-    if (!Arrays.equals(keys, other.keys)) return false;
-    if (mask != other.mask) return false;
-    if (size != other.size) return false;
-    if (!Arrays.equals(states, other.states)) return false;
-    if (!Arrays.equals(values, other.values)) return false;
+    if (!Arrays.equals(keys, other.keys))
+      return false;
+    if (mask != other.mask)
+      return false;
+    if (size != other.size)
+      return false;
+    if (!Arrays.equals(states, other.states))
+      return false;
+    if (!Arrays.equals(values, other.values))
+      return false;
     return true;
   }
 
@@ -516,7 +529,8 @@ public class OpenIntToSet<T> implements Serializable {
   /**
    * Get an iterator over map elements.
    *
-   * <p>The specialized iterators returned are fail-fast: they throw a <code>
+   * <p>
+   * The specialized iterators returned are fail-fast: they throw a <code>
    * ConcurrentModificationException</code> when they detect the map has been modified during
    * iteration.
    *
@@ -562,7 +576,7 @@ public class OpenIntToSet<T> implements Serializable {
    * @param stream input stream
    * @throws IOException if object cannot be read
    * @throws ClassNotFoundException if the class corresponding to the serialized object cannot be
-   *     found
+   *         found
    */
   private void readObject(final ObjectInputStream stream)
       throws IOException, ClassNotFoundException {

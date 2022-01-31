@@ -10,7 +10,8 @@ import org.matheclipse.core.interfaces.IInteger;
 /**
  * mappings between {@link IAST}, {@link Color}, and 0xAA:RR:GG:BB integer
  *
- * <p>functions are used in {@link ImageFormat}
+ * <p>
+ * functions are used in {@link ImageFormat}
  */
 public enum ColorFormat {
   ;

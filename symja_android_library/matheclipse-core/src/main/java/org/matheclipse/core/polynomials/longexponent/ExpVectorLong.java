@@ -170,7 +170,7 @@ public final class ExpVectorLong {
    *
    * @return true if this structure is finite, else false.
    * @see edu.jas.structure.ElemFactory#isFinite() <b>Note: </b> returns true because of finite set
-   *     of values in each index.
+   *      of values in each index.
    */
   public boolean isFinite() {
     return true;
@@ -461,14 +461,12 @@ public final class ExpVectorLong {
       return "null";
     }
     StringBuilder s = new StringBuilder();
-    vars.forEach(
-        vars.size(),
-        (x, i) -> {
-          s.append(x);
-          if (i < vars.argSize()) {
-            s.append(",");
-          }
-        });
+    vars.forEach(vars.size(), (x, i) -> {
+      s.append(x);
+      if (i < vars.argSize()) {
+        s.append(",");
+      }
+    });
     return s.toString();
   }
 
@@ -655,7 +653,7 @@ public final class ExpVectorLong {
    * ExpVectorLong signum.
    *
    * @return 0 if this is zero, -1 if some entry is negative, 1 if no entry is negative and at least
-   *     one entry is positive.
+   *         one entry is positive.
    */
   public int signum() {
     int t = 0;
@@ -972,8 +970,10 @@ public final class ExpVectorLong {
     long[] v = V.val;
     int t = 0;
     for (int i = 0; i < u.length; i++) {
-      if (u[i] > v[i]) return 1;
-      if (u[i] < v[i]) return -1;
+      if (u[i] > v[i])
+        return 1;
+      if (u[i] < v[i])
+        return -1;
     }
     return t;
     // return EVILCP(this, V);
@@ -992,8 +992,10 @@ public final class ExpVectorLong {
     long[] v = V.val;
     int t = 0;
     for (int i = begin; i < end; i++) {
-      if (u[i] > v[i]) return 1;
-      if (u[i] < v[i]) return -1;
+      if (u[i] > v[i])
+        return 1;
+      if (u[i] < v[i])
+        return -1;
     }
     return t;
     // return EVILCP(this, V, begin, end);
@@ -1094,8 +1096,10 @@ public final class ExpVectorLong {
     long[] v = V.val;
     int t = 0;
     for (int i = u.length - 1; i >= 0; i--) {
-      if (u[i] > v[i]) return 1;
-      if (u[i] < v[i]) return -1;
+      if (u[i] > v[i])
+        return 1;
+      if (u[i] < v[i])
+        return -1;
     }
     return t;
     // return EVRILCP(this, V);
@@ -1114,8 +1118,10 @@ public final class ExpVectorLong {
     long[] v = V.val;
     int t = 0;
     for (int i = end - 1; i >= begin; i--) {
-      if (u[i] > v[i]) return 1;
-      if (u[i] < v[i]) return -1;
+      if (u[i] > v[i])
+        return 1;
+      if (u[i] < v[i])
+        return -1;
     }
     return t;
     // return EVRILCP(this, V, begin, end);

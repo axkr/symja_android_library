@@ -11,7 +11,8 @@ import java.util.SortedMap;
  * SortedMaps are a bit slower than HashMaps - output of sorted multisets looks nicer than that of
  * unsorted multisets
  *
- * <p>Since elements are sorted, we can easily define a sorting on SortedMultisets, too: A sorted
+ * <p>
+ * Since elements are sorted, we can easily define a sorting on SortedMultisets, too: A sorted
  * multiset is bigger than another one if it's biggest element is bigger than the largest element of
  * the other multiset; or the 2.nd-biggest if the biggest elements are equal; or the 3.rd biggest,
  * and so on.
@@ -54,8 +55,9 @@ public interface SortedMultiset<T extends Comparable<T>>
    * Removes one instance of the given value from this multiset, if at least one element is
    * contained.
    *
-   * <p>The key is declared as Object and not as T to match exactly the signature of the same method
-   * in the Map-interface. Nevertheless, of course the arguments should be of type T.
+   * <p>
+   * The key is declared as Object and not as T to match exactly the signature of the same method in
+   * the Map-interface. Nevertheless, of course the arguments should be of type T.
    *
    * @param key
    * @return previous multiplicity of the argument

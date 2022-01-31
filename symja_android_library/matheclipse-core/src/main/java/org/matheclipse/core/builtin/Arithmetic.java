@@ -620,9 +620,8 @@ public final class Arithmetic {
             if (rePart.isZero() && !imPart.isZero()) {
               // Arg(E^(I*z)) => Re(z) + 2*Pi*Floor((Pi - Re(z))/(2*Pi))
               return F.Plus(
-                  F.Times(F.C2, S.Pi,
-                      F.Floor(F.Times(F.C1D2, F.Power(S.Pi, -1),
-                          F.Plus(S.Pi, F.Negate(F.Re(imPart)))))),
+                  F.Times(F.C2, S.Pi, F.Floor(
+                      F.Times(F.C1D2, F.Power(S.Pi, -1), F.Plus(S.Pi, F.Negate(F.Re(imPart)))))),
                   F.Re(imPart));
             }
             // Arg(E^z) => Im(z) + 2*Pi*Floor((Pi - Im(z))/(2*Pi))
@@ -6880,15 +6879,19 @@ public final class Arithmetic {
       IExpr d = function.arg1();
       IExpr n = function.arg2();
       IExpr x = function.arg3();
-      return F.Piecewise(F.List(F.List(F.C1, F.Or(F.And(F.Equal(d, F.C0), F.Equal(n, F.C0)),
+      return F
+          .Piecewise(F.List(
+              F.List(F.C1,
+                  F.Or(F.And(F.Equal(d, F.C0), F.Equal(n, F.C0)),
                       F.And(F.GreaterEqual(d, F.C0), F.Equal(n, F.C0), F.Equal(x, F.C0)),
-          F.And(F.Greater(d, F.C0), F.Equal(x, F.C1), F.Equal(F.Subtract(d, n), F.C0)))),
+                      F.And(F.Greater(d, F.C0), F.Equal(x, F.C1),
+                          F.Equal(F.Subtract(d, n), F.C0)))),
               F.List(
-              F.Times(F.Power(F.Subtract(F.C1, x), F.Subtract(d, n)), F.Power(x, n),
+                  F.Times(F.Power(F.Subtract(F.C1, x), F.Subtract(d, n)), F.Power(x, n),
                       F.Binomial(d, n)),
-              F.And(F.Greater(d, F.C0), F.GreaterEqual(n, F.C0),
-                  F.GreaterEqual(F.Subtract(d, n), F.C0), F.Less(F.C0, x, F.C1)))),
-          F.C0);
+                  F.And(F.Greater(d, F.C0), F.GreaterEqual(n, F.C0),
+                      F.GreaterEqual(F.Subtract(d, n), F.C0), F.Less(F.C0, x, F.C1)))),
+              F.C0);
     }
     if (function.isAST(S.RealAbs, 2)) {
       return F.Piecewise(F.List(F.List(F.Negate(x), F.Less(x, F.C0))), x);

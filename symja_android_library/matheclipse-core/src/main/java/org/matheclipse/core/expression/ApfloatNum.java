@@ -96,9 +96,8 @@ public class ApfloatNum implements INum {
   @Override
   public boolean isNumEqualRational(IRational value) throws ArithmeticException {
     long precision = fApfloat.precision();
-    return fApfloat.equals(
-        new Apfloat(value.toBigNumerator(), precision)
-            .divide(new Apfloat(value.toBigDenominator(), precision)));
+    return fApfloat.equals(new Apfloat(value.toBigNumerator(), precision)
+        .divide(new Apfloat(value.toBigDenominator(), precision)));
   }
 
   /** {@inheritDoc} */
@@ -176,8 +175,8 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr power(final IExpr that) {
     if (that instanceof IComplexNum) {
-      return F.complexNum(
-          EvalEngine.getApfloat().pow(fApfloat, ((IComplexNum) that).apcomplexValue()));
+      return F
+          .complexNum(EvalEngine.getApfloat().pow(fApfloat, ((IComplexNum) that).apcomplexValue()));
     }
     if (that instanceof INum) {
       if (fApfloat.compareTo(Apfloat.ZERO) < 0) {
@@ -263,9 +262,9 @@ public class ApfloatNum implements INum {
     return fApfloat;
   }
 
-  //  public Apfloat apfloatValue() {
-  //    return fApfloat;
-  //  }
+  // public Apfloat apfloatValue() {
+  // return fApfloat;
+  // }
 
   @Override
   public boolean equals(final Object arg0) {
@@ -607,9 +606,9 @@ public class ApfloatNum implements INum {
     return this;
   }
 
-  //  public ApfloatNum apfloatNumValue() {
-  //    return this;
-  //  }
+  // public ApfloatNum apfloatNumValue() {
+  // return this;
+  // }
 
   @Override
   public Num numValue() {

@@ -19,14 +19,16 @@ import org.matheclipse.core.reflection.system.rules.InverseLaplaceTransformRules
  *
  * <blockquote>
  *
- * <p>returns the inverse laplace transform.
+ * <p>
+ * returns the inverse laplace transform.
  *
  * </blockquote>
  *
- * <p>See:
+ * <p>
+ * See:
  *
  * <ul>
- *   <li><a href="https://en.wikipedia.org/wiki/Laplace_transform">Wikipedia - Laplace transform</a>
+ * <li><a href="https://en.wikipedia.org/wiki/Laplace_transform">Wikipedia - Laplace transform</a>
  * </ul>
  *
  * <h3>Examples</h3>

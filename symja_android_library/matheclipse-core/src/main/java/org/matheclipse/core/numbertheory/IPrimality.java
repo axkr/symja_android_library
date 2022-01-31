@@ -9,6 +9,6 @@ public interface IPrimality {
   public void factorInteger(BigInteger n, SortedMultiset<BigInteger> sortedMap);
 
   public SortedMap<BigInteger, Integer> factorInteger(BigInteger n);
-  
-  public   IAST factorIInteger(IInteger b) ;
+
+  public IAST factorIInteger(IInteger b);
 }

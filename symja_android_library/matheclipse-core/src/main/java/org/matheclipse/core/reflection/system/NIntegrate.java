@@ -38,7 +38,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * <blockquote>
  *
- * <p>computes the numerical univariate real integral of <code>f</code> with respect to <code>x
+ * <p>
+ * computes the numerical univariate real integral of <code>f</code> with respect to <code>x
  * </code> from <code>a</code> to <code>b</code>.
  *
  * </blockquote>
@@ -50,7 +51,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * -0.0208333333333333
  * </pre>
  *
- * <p>LegendreGauss is the default method for numerical integration
+ * <p>
+ * LegendreGauss is the default method for numerical integration
  *
  * <pre>
  * &gt;&gt; NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method-&gt;LegendreGauss)
@@ -66,7 +68,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * -0.0208333333333333
  * </pre>
  *
- * <p>Other options include <code>MaxIterations</code> and <code>MaxPoints</code>
+ * <p>
+ * Other options include <code>MaxIterations</code> and <code>MaxPoints</code>
  *
  * <pre>
  * &gt;&gt; NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method-&gt;Trapezoid, MaxIterations-&gt;5000)
@@ -88,7 +91,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
    * @param method the following methods are possible: LegendreGauss, Simpson, Romberg, Trapezoid
    * @param list a list of the form <code>{x, lowerBound, upperBound}</code>, where <code>lowerBound
    *     </code> and <code>upperBound</code> are numbers which could be converted to a Java double
-   *     value.
+   *        value.
    * @param min Lower bound of the integration interval.
    * @param max Upper bound of the integration interval.
    * @param function the function which should be integrated.
@@ -97,15 +100,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
    * @return
    * @throws MathIllegalStateException
    */
-  public static double integrate(
-      String method,
-      IAST list,
-      double min,
-      double max,
-      IExpr function,
-      int maxPoints,
-      int maxIterations)
-      throws MathIllegalStateException {
+  public static double integrate(String method, IAST list, double min, double max, IExpr function,
+      int maxPoints, int maxIterations) throws MathIllegalStateException {
     GaussIntegratorFactory factory = new GaussIntegratorFactory();
 
     if (!list.arg1().isSymbol()) {
@@ -129,8 +125,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       if (maxPoints > 1000) {
         // github 150 - avoid StackOverflow from recursion
         // see also https://github.com/Hipparchus-Math/hipparchus/issues/61
-        throw new MathIllegalArgumentException(
-            LocalizedCoreFormats.NUMBER_TOO_LARGE, maxPoints, 1000);
+        throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, maxPoints,
+            1000);
       }
       // default: LegendreGauss
       GaussIntegrator integ = factory.legendre(maxPoints, min, max);
@@ -147,7 +143,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
    * Function for <a href="http://en.wikipedia.org/wiki/Numerical_integration">numerical
    * integration</a> of univariate real functions.
    *
-   * <p>Uses the LegendreGaussIntegrator, RombergIntegrator, SimpsonIntegrator, TrapezoidIntegrator
+   * <p>
+   * Uses the LegendreGaussIntegrator, RombergIntegrator, SimpsonIntegrator, TrapezoidIntegrator
    * implementations.
    */
   @Override
@@ -166,10 +163,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       if (option.isReal()) {
         maxPoints = ((ISignedNumber) option).toIntDefault(-1);
         if (maxPoints <= 0) {
-          LOGGER.log(
-              engine.getLogLevel(),
-              "NIntegrate: Error in option MaxPoints. Using default value: {}",
-              maxPoints);
+          LOGGER.log(engine.getLogLevel(),
+              "NIntegrate: Error in option MaxPoints. Using default value: {}", maxPoints);
           maxPoints = DEFAULT_MAX_POINTS;
         }
       }
@@ -184,10 +179,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       if (option.isReal()) {
         precisionGoal = ((ISignedNumber) option).toIntDefault(-1);
         if (precisionGoal <= 0) {
-          LOGGER.log(
-              engine.getLogLevel(),
-              "NIntegrate: Error in option PrecisionGoal. Using default value: {}",
-              precisionGoal);
+          LOGGER.log(engine.getLogLevel(),
+              "NIntegrate: Error in option PrecisionGoal. Using default value: {}", precisionGoal);
           precisionGoal = 16;
         }
       }
@@ -205,21 +198,14 @@ public class NIntegrate extends AbstractFunctionEvaluator {
             function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
           }
           try {
-            double result =
-                integrate(
-                    method,
-                    list,
-                    min.doubleValue(),
-                    max.doubleValue(),
-                    function,
-                    maxPoints,
-                    maxIterations);
+            double result = integrate(method, list, min.doubleValue(), max.doubleValue(), function,
+                maxPoints, maxIterations);
             result = Precision.round(result, precisionGoal);
             return Num.valueOf(result);
           } catch (MathIllegalArgumentException | MathIllegalStateException miae) {
             // `1`.
-            return IOFunctions.printMessage(
-                ast.topHead(), "error", F.List(F.$str(miae.getMessage())), engine);
+            return IOFunctions.printMessage(ast.topHead(), "error",
+                F.List(F.$str(miae.getMessage())), engine);
           } catch (MathRuntimeException mre) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
           } catch (Exception e) {

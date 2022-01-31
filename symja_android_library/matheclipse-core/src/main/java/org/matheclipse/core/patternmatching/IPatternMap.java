@@ -274,12 +274,10 @@ public interface IPatternMap {
       if (isAllPatternsAssigned()) {
         return true;
       }
-      return substitutedExpr.isFree(
-          x -> {
-            // compare object references with operator '==' here !
-            return (fSymbol1 != x);
-          },
-          true);
+      return substitutedExpr.isFree(x -> {
+        // compare object references with operator '==' here !
+        return (fSymbol1 != x);
+      }, true);
     }
 
     @Override
@@ -358,20 +356,17 @@ public interface IPatternMap {
     @Override
     public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       final EvalEngine engine = EvalEngine.get();
-      return rhsExpr
-          .replaceAll(
-              (IExpr input) -> {
-                if (input.isSymbol()) {
-                  // compare object references with operator '==' here !
-                  if ((ISymbol) input == fSymbol1) {
-                    return fValue1 != null ? fValue1 : nilOrEmptySequence;
-                  }
-                } else if (input.isAST(S.OptionValue, 2, 4)) {
-                  return PatternMatching.optionValueReplace((IAST) input, true, engine);
-                }
-                return F.NIL;
-              })
-          .orElse(rhsExpr);
+      return rhsExpr.replaceAll((IExpr input) -> {
+        if (input.isSymbol()) {
+          // compare object references with operator '==' here !
+          if ((ISymbol) input == fSymbol1) {
+            return fValue1 != null ? fValue1 : nilOrEmptySequence;
+          }
+        } else if (input.isAST(S.OptionValue, 2, 4)) {
+          return PatternMatching.optionValueReplace((IAST) input, true, engine);
+        }
+        return F.NIL;
+      }).orElse(rhsExpr);
     }
 
     @Override
@@ -543,12 +538,10 @@ public interface IPatternMap {
       if (isAllPatternsAssigned()) {
         return true;
       }
-      return substitutedExpr.isFree(
-          x -> {
-            // compare object references with operator '==' here !
-            return (fSymbol1 != x) && (fSymbol2 != x);
-          },
-          true);
+      return substitutedExpr.isFree(x -> {
+        // compare object references with operator '==' here !
+        return (fSymbol1 != x) && (fSymbol2 != x);
+      }, true);
     }
 
     @Override
@@ -652,23 +645,20 @@ public interface IPatternMap {
     @Override
     public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       final EvalEngine engine = EvalEngine.get();
-      return rhsExpr
-          .replaceAll(
-              (IExpr input) -> {
-                if (input.isSymbol()) {
-                  // compare object references with operator '==' here !
-                  if ((ISymbol) input == fSymbol1) {
-                    return fValue1 != null ? fValue1 : nilOrEmptySequence;
-                  }
-                  if ((ISymbol) input == fSymbol2) {
-                    return fValue2 != null ? fValue2 : nilOrEmptySequence;
-                  }
-                } else if (input.isAST(S.OptionValue, 2, 4)) {
-                  return PatternMatching.optionValueReplace((IAST) input, true, engine);
-                }
-                return F.NIL;
-              })
-          .orElse(rhsExpr);
+      return rhsExpr.replaceAll((IExpr input) -> {
+        if (input.isSymbol()) {
+          // compare object references with operator '==' here !
+          if ((ISymbol) input == fSymbol1) {
+            return fValue1 != null ? fValue1 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol2) {
+            return fValue2 != null ? fValue2 : nilOrEmptySequence;
+          }
+        } else if (input.isAST(S.OptionValue, 2, 4)) {
+          return PatternMatching.optionValueReplace((IAST) input, true, engine);
+        }
+        return F.NIL;
+      }).orElse(rhsExpr);
     }
 
     @Override
@@ -756,8 +746,7 @@ public interface IPatternMap {
     @Override
     public int get(IExpr patternOrSymbol) {
       // compare object references with operator '==' here !
-      return (patternOrSymbol == fSymbol1)
-          ? 0
+      return (patternOrSymbol == fSymbol1) ? 0
           : (patternOrSymbol == fSymbol2) ? 1 : (patternOrSymbol == fSymbol3) ? 2 : -1;
     }
 
@@ -884,12 +873,10 @@ public interface IPatternMap {
       if (isAllPatternsAssigned()) {
         return true;
       }
-      return substitutedExpr.isFree(
-          x -> {
-            // compare object references with operator '==' here !
-            return (fSymbol1 != x) && (fSymbol2 != x) && (fSymbol3 != x);
-          },
-          true);
+      return substitutedExpr.isFree(x -> {
+        // compare object references with operator '==' here !
+        return (fSymbol1 != x) && (fSymbol2 != x) && (fSymbol3 != x);
+      }, true);
     }
 
     @Override
@@ -1015,26 +1002,23 @@ public interface IPatternMap {
     @Override
     public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       final EvalEngine engine = EvalEngine.get();
-      return rhsExpr
-          .replaceAll(
-              (IExpr input) -> {
-                if (input.isSymbol()) {
-                  // compare object references with operator '==' here !
-                  if ((ISymbol) input == fSymbol1) {
-                    return fValue1 != null ? fValue1 : nilOrEmptySequence;
-                  }
-                  if ((ISymbol) input == fSymbol2) {
-                    return fValue2 != null ? fValue2 : nilOrEmptySequence;
-                  }
-                  if ((ISymbol) input == fSymbol3) {
-                    return fValue3 != null ? fValue3 : nilOrEmptySequence;
-                  }
-                } else if (input.isAST(S.OptionValue, 2, 4)) {
-                  return PatternMatching.optionValueReplace((IAST) input, true, engine);
-                }
-                return F.NIL;
-              })
-          .orElse(rhsExpr);
+      return rhsExpr.replaceAll((IExpr input) -> {
+        if (input.isSymbol()) {
+          // compare object references with operator '==' here !
+          if ((ISymbol) input == fSymbol1) {
+            return fValue1 != null ? fValue1 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol2) {
+            return fValue2 != null ? fValue2 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol3) {
+            return fValue3 != null ? fValue3 : nilOrEmptySequence;
+          }
+        } else if (input.isAST(S.OptionValue, 2, 4)) {
+          return PatternMatching.optionValueReplace((IAST) input, true, engine);
+        }
+        return F.NIL;
+      }).orElse(rhsExpr);
     }
 
     @Override
@@ -1326,18 +1310,16 @@ public interface IPatternMap {
         return true;
       }
       if (fSymbolsOrPattern != null) {
-        return substitutedExpr.isFree(
-            x -> {
-              final int length = fSymbolsOrPattern.length;
-              for (int i = 0; i < length; i++) {
-                // compare object references with operator '==' here !
-                if (fSymbolsOrPattern[i] == x) {
-                  return false;
-                }
-              }
-              return true;
-            },
-            true);
+        return substitutedExpr.isFree(x -> {
+          final int length = fSymbolsOrPattern.length;
+          for (int i = 0; i < length; i++) {
+            // compare object references with operator '==' here !
+            if (fSymbolsOrPattern[i] == x) {
+              return false;
+            }
+          }
+          return true;
+        }, true);
       }
       return true;
     }
@@ -1351,8 +1333,8 @@ public interface IPatternMap {
     @Override
     public final void resetPattern(final IExpr[] patternValuesArray) {
       evaluatedRHS = false;
-      System.arraycopy(
-          patternValuesArray, 0, fSymbolsOrPatternValues, 0, fSymbolsOrPatternValues.length);
+      System.arraycopy(patternValuesArray, 0, fSymbolsOrPatternValues, 0,
+          fSymbolsOrPatternValues.length);
     }
 
     // public boolean isPatternTest(IExpr expr, IExpr patternTest, EvalEngine engine) {
@@ -1455,39 +1437,35 @@ public interface IPatternMap {
      * internal pattern values arrays
      *
      * @param rhsExpr right-hand-side expression, substitute all symbols from the pattern-matching
-     *     values
+     *        values
      * @return
      */
     @Override
     public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       final EvalEngine engine = EvalEngine.get();
       if (fSymbolsOrPatternValues != null) {
-        return rhsExpr
-            .replaceAll(
-                (IExpr input) -> {
-                  if (input.isSymbol()) {
-                    final ISymbol symbol = (ISymbol) input;
-                    final int length = fSymbolsOrPattern.length;
-                    for (int i = 0; i < length; i++) {
-                      // compare object references with operator '==' here !
-                      if (symbol == fSymbolsOrPattern[i]) {
-                        return fSymbolsOrPatternValues[i] != null
-                            ? fSymbolsOrPatternValues[i]
-                            : nilOrEmptySequence;
-                      }
-                    }
-                  } else if (input.isAST(S.OptionValue, 2, 4)) {
-                    final int length = fSymbolsOrPattern.length;
-                    //                    for (int i = length - 1; i >= 0; i--) {
-                    // reverse iterating on fSymbolsOrPattern
-                    //                      if (fSymbolsOrPattern[i].isOptionsPattern()) {
-                    return PatternMatching.optionValueReplace((IAST) input, true, engine);
-                    //                      }
-                    //                    }
-                  }
-                  return F.NIL;
-                })
-            .orElse(rhsExpr);
+        return rhsExpr.replaceAll((IExpr input) -> {
+          if (input.isSymbol()) {
+            final ISymbol symbol = (ISymbol) input;
+            final int length = fSymbolsOrPattern.length;
+            for (int i = 0; i < length; i++) {
+              // compare object references with operator '==' here !
+              if (symbol == fSymbolsOrPattern[i]) {
+                return fSymbolsOrPatternValues[i] != null ? fSymbolsOrPatternValues[i]
+                    : nilOrEmptySequence;
+              }
+            }
+          } else if (input.isAST(S.OptionValue, 2, 4)) {
+            final int length = fSymbolsOrPattern.length;
+            // for (int i = length - 1; i >= 0; i--) {
+            // reverse iterating on fSymbolsOrPattern
+            // if (fSymbolsOrPattern[i].isOptionsPattern()) {
+            return PatternMatching.optionValueReplace((IAST) input, true, engine);
+            // }
+            // }
+          }
+          return F.NIL;
+        }).orElse(rhsExpr);
       }
       return rhsExpr;
     }
@@ -1532,8 +1510,8 @@ public interface IPatternMap {
    * @param patternIndexMap
    * @param pattern
    */
-  static void addPattern(
-      List<Pair<IExpr, IPatternObject>> patternIndexMap, IPatternObject pattern) {
+  static void addPattern(List<Pair<IExpr, IPatternObject>> patternIndexMap,
+      IPatternObject pattern) {
     ISymbol sym = pattern.getSymbol();
     if (sym != null) {
       for (int i = 0; i < patternIndexMap.size(); i++) {
@@ -1550,13 +1528,14 @@ public interface IPatternMap {
   /**
    * Determine all patterns (i.e. all objects of instance IPattern) in the given expression
    *
-   * <p>Increments this classes pattern counter.
+   * <p>
+   * Increments this classes pattern counter.
    *
    * @param lhsPatternExpr the (left-hand-side) expression which could contain pattern objects.
    * @return the priority of this pattern-matcher
    */
-  static IPatternMap determinePatterns(
-      final IExpr lhsPatternExpr, int[] priority, PatternNested p2) {
+  static IPatternMap determinePatterns(final IExpr lhsPatternExpr, int[] priority,
+      PatternNested p2) {
     // int[] priority = new int[] { DEFAULT_RULE_PRIORITY };
 
     if (lhsPatternExpr instanceof IAST) {
@@ -1569,8 +1548,8 @@ public interface IPatternMap {
         priority[0] -= result[1];
       }
 
-      determinePatternsRecursive(
-          patternIndexMap, (IAST) lhsPatternExpr, priority, ruleWithoutPattern, 1);
+      determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr, priority,
+          ruleWithoutPattern, 1);
       int size = patternIndexMap.size();
       switch (size) {
         case 1:
@@ -1640,65 +1619,54 @@ public interface IPatternMap {
   /**
    * Determine all patterns (i.e. all objects of instance IPattern) in the given expression
    *
-   * <p>Increments this classes pattern counter.
+   * <p>
+   * Increments this classes pattern counter.
    *
    * @param patternIndexMap
    * @param lhsPatternExpr the (left-hand-side) expression which could contain pattern objects.
    * @param treeLevel the level of the tree where the patterns are determined
    */
-  static int determinePatternsRecursive(
-      List<Pair<IExpr, IPatternObject>> patternIndexMap,
-      final IAST lhsPatternExpr,
-      int[] priority,
-      boolean[] ruleWithoutPattern,
-      int treeLevel) {
+  static int determinePatternsRecursive(List<Pair<IExpr, IPatternObject>> patternIndexMap,
+      final IAST lhsPatternExpr, int[] priority, boolean[] ruleWithoutPattern, int treeLevel) {
 
     int[] listEvalFlags = new int[] {IAST.NO_FLAG};
     if (lhsPatternExpr.isAlternatives() || lhsPatternExpr.isExcept()) {
       ruleWithoutPattern[0] = false;
     }
 
-    lhsPatternExpr.forEach(
-        x -> {
-          if (x.isASTOrAssociation()) {
-            final IAST lhsPatternAST = (IAST) x;
-            if (lhsPatternAST.isPatternMatchingFunction()) {
-              listEvalFlags[0] |= IAST.CONTAINS_PATTERN;
-            }
-            listEvalFlags[0] |=
-                determinePatternsRecursive(
-                    patternIndexMap, lhsPatternAST, priority, ruleWithoutPattern, treeLevel + 1);
+    lhsPatternExpr.forEach(x -> {
+      if (x.isASTOrAssociation()) {
+        final IAST lhsPatternAST = (IAST) x;
+        if (lhsPatternAST.isPatternMatchingFunction()) {
+          listEvalFlags[0] |= IAST.CONTAINS_PATTERN;
+        }
+        listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, lhsPatternAST, priority,
+            ruleWithoutPattern, treeLevel + 1);
+        priority[0] -= 11;
+        if (x.isPatternDefault()) {
+          listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN;
+        }
+      } else if (x instanceof IPatternObject) {
+        ruleWithoutPattern[0] = false;
+        int[] result = ((IPatternObject) x).addPattern(patternIndexMap);
+        listEvalFlags[0] |= result[0];
+        priority[0] -= result[1];
+        if (x instanceof PatternNested) {
+          IExpr patternExpr = ((PatternNested) x).getPatternExpr();
+          if (patternExpr.isASTOrAssociation()) {
+            listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, (IAST) patternExpr,
+                priority, ruleWithoutPattern, treeLevel + 1);
             priority[0] -= 11;
             if (x.isPatternDefault()) {
               listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN;
             }
-          } else if (x instanceof IPatternObject) {
-            ruleWithoutPattern[0] = false;
-            int[] result = ((IPatternObject) x).addPattern(patternIndexMap);
-            listEvalFlags[0] |= result[0];
-            priority[0] -= result[1];
-            if (x instanceof PatternNested) {
-              IExpr patternExpr = ((PatternNested) x).getPatternExpr();
-              if (patternExpr.isASTOrAssociation()) {
-                listEvalFlags[0] |=
-                    determinePatternsRecursive(
-                        patternIndexMap,
-                        (IAST) patternExpr,
-                        priority,
-                        ruleWithoutPattern,
-                        treeLevel + 1);
-                priority[0] -= 11;
-                if (x.isPatternDefault()) {
-                  listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN;
-                }
-              }
-            }
-
-          } else {
-            priority[0] -= (50 - treeLevel);
           }
-        },
-        0);
+        }
+
+      } else {
+        priority[0] -= (50 - treeLevel);
+      }
+    }, 0);
     lhsPatternExpr.setEvalFlags(listEvalFlags[0]);
     // disable flag "pattern with default value"
     // listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;
@@ -1779,8 +1747,7 @@ public interface IPatternMap {
   default boolean isPatternTest(IExpr expr, IExpr patternTest, EvalEngine engine) {
     final IExpr temp = substitutePatternOrSymbols(expr, false).orElse(expr);
     if (temp.isSequence()) {
-      return ((IAST) temp)
-          .forAll(x -> engine.evalTrue(patternTest, x));
+      return ((IAST) temp).forAll(x -> engine.evalTrue(patternTest, x));
     }
     return engine.evalTrue(patternTest, temp);
   }
@@ -1845,25 +1812,22 @@ public interface IPatternMap {
    * @return <code>F.NIL</code> if substitutions isn't possible
    */
   default IExpr substitutePatternOrSymbols(final IExpr lhsPatternExpr, boolean onlyNamedPatterns) {
-    VisitorReplaceAllWithPatternFlags visitor =
-        new VisitorReplaceAllWithPatternFlags(
-            input -> {
-              if (input instanceof IPatternObject) {
-                if (onlyNamedPatterns && !(input instanceof Pattern)) {
-                  return F.NIL;
-                }
-                IExpr symbolOrPatternObject = ((IPatternObject) input).getSymbol();
-                if (symbolOrPatternObject == null) {
-                  if (onlyNamedPatterns) {
-                    return F.NIL;
-                  }
-                  symbolOrPatternObject = input;
-                }
-                return substitute(symbolOrPatternObject);
-              }
-              return F.NIL;
-            },
-            onlyNamedPatterns);
+    VisitorReplaceAllWithPatternFlags visitor = new VisitorReplaceAllWithPatternFlags(input -> {
+      if (input instanceof IPatternObject) {
+        if (onlyNamedPatterns && !(input instanceof Pattern)) {
+          return F.NIL;
+        }
+        IExpr symbolOrPatternObject = ((IPatternObject) input).getSymbol();
+        if (symbolOrPatternObject == null) {
+          if (onlyNamedPatterns) {
+            return F.NIL;
+          }
+          symbolOrPatternObject = input;
+        }
+        return substitute(symbolOrPatternObject);
+      }
+      return F.NIL;
+    }, onlyNamedPatterns);
     IExpr result = lhsPatternExpr.accept(visitor);
 
     if (result.isPresent()) {
@@ -1882,27 +1846,24 @@ public interface IPatternMap {
    * @param onlyNamedPatterns
    * @return {@link F#NIL} if no substitution can be found.
    */
-  default IExpr substituteASTPatternOrSymbols(
-      final IAST lhsPatternExpr, boolean onlyNamedPatterns) {
-    VisitorReplaceAllWithPatternFlags visitor =
-        new VisitorReplaceAllWithPatternFlags(
-            input -> {
-              if (input instanceof IPatternObject) {
-                if (onlyNamedPatterns && !(input instanceof Pattern)) {
-                  return F.NIL;
-                }
-                IExpr symbolOrPatternObject = ((IPatternObject) input).getSymbol();
-                if (symbolOrPatternObject == null) {
-                  if (onlyNamedPatterns) {
-                    return F.NIL;
-                  }
-                  symbolOrPatternObject = input;
-                }
-                return substitute(symbolOrPatternObject);
-              }
-              return F.NIL;
-            },
-            onlyNamedPatterns);
+  default IExpr substituteASTPatternOrSymbols(final IAST lhsPatternExpr,
+      boolean onlyNamedPatterns) {
+    VisitorReplaceAllWithPatternFlags visitor = new VisitorReplaceAllWithPatternFlags(input -> {
+      if (input instanceof IPatternObject) {
+        if (onlyNamedPatterns && !(input instanceof Pattern)) {
+          return F.NIL;
+        }
+        IExpr symbolOrPatternObject = ((IPatternObject) input).getSymbol();
+        if (symbolOrPatternObject == null) {
+          if (onlyNamedPatterns) {
+            return F.NIL;
+          }
+          symbolOrPatternObject = input;
+        }
+        return substitute(symbolOrPatternObject);
+      }
+      return F.NIL;
+    }, onlyNamedPatterns);
 
     IASTMutable result = F.NIL;
     for (int i = 1; i < lhsPatternExpr.size(); i++) {
@@ -1943,7 +1904,7 @@ public interface IPatternMap {
    * with the corresponding option value from the current pattern-matching process.
    *
    * @param rhsExpr right-hand-side expression, substitute all symbols from the pattern-matching
-   *     values
+   *        values
    * @param nilOrEmptySequence default value <code>F.NIL</code> or <code>F.Sequence()</code>
    * @return
    */

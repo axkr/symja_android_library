@@ -18,8 +18,8 @@ public class VisitorPredicateReplaceAll extends VisitorReplaceAll {
     this(function, predicate, 0);
   }
 
-  public VisitorPredicateReplaceAll(
-      Function<IExpr, IExpr> function, Predicate<IExpr> predicate, int offset) {
+  public VisitorPredicateReplaceAll(Function<IExpr, IExpr> function, Predicate<IExpr> predicate,
+      int offset) {
     super(function, offset);
     this.fPredicate = predicate;
   }

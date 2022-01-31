@@ -43,7 +43,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
   /** Public no-arg constructor needed for serialization. */
   public ASTAssociation() {
     super(10, false);
-    //    keyToIndexMap = new Object2IntOpenHashMap<IExpr>();
+    // keyToIndexMap = new Object2IntOpenHashMap<IExpr>();
     keyToIndexMap = StaticImports.map();
     append(S.Association);
   }
@@ -53,9 +53,9 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
    *
    * @param listOfRules
    */
-  /* package private*/ ASTAssociation(IAST listOfRules) {
+  /* package private */ ASTAssociation(IAST listOfRules) {
     super(listOfRules.size(), false);
-    //    keyToIndexMap = new Object2IntOpenHashMap<IExpr>();
+    // keyToIndexMap = new Object2IntOpenHashMap<IExpr>();
     keyToIndexMap = StaticImports.map();
     append(S.Association);
 
@@ -103,8 +103,8 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     }
   }
 
-  private static final int appendRule(
-      ASTAssociation assoc, MutMap<IExpr, Integer> map, int index, IExpr rule) {
+  private static final int appendRule(ASTAssociation assoc, MutMap<IExpr, Integer> map, int index,
+      IExpr rule) {
     if (rule.isRuleAST()) {
       Integer value = map.get(rule.first());
       if (value == null) {
@@ -142,12 +142,8 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     keyToIndexMap = temp.immutable();
   }
 
-  private int appendRules(
-      MutMap<IExpr, Integer> temp,
-      int index,
-      IAST listOfRules,
-      int startPosition,
-      int endPosition) {
+  private int appendRules(MutMap<IExpr, Integer> temp, int index, IAST listOfRules,
+      int startPosition, int endPosition) {
     if (listOfRules.isRuleAST()) {
       index = appendRule(this, temp, index, listOfRules);
     } else {
@@ -200,7 +196,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
   @Override
   public ASTAssociation copy() {
     ASTAssociation ast = new ASTAssociation();
-    //    ast.fProperties = null;
+    // ast.fProperties = null;
     ast.rrbTree = rrbTree.toMutRrbt();
     ast.hashValue = 0;
     ast.keyToIndexMap = keyToIndexMap.mutable().immutable();
@@ -872,7 +868,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     if (location > 0) {
       final IAST oldRule = getRule(location);
       MutMap<IExpr, Integer> mutable = keyToIndexMap.mutable();
-      //      mutable.without(oldRule.first());
+      // mutable.without(oldRule.first());
       mutable.assoc(oldRule.first(), location);
       keyToIndexMap = mutable.immutable();
       return super.set(location, oldRule.setAtCopy(2, value));
@@ -894,21 +890,19 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     }
     Comparator<Integer> comparator;
     if (comp == null) {
-      comparator =
-          new Comparator<Integer>() {
-            @Override
-            public int compare(Integer i, Integer j) {
-              return getValue(i).compareTo(getValue(j));
-            }
-          };
+      comparator = new Comparator<Integer>() {
+        @Override
+        public int compare(Integer i, Integer j) {
+          return getValue(i).compareTo(getValue(j));
+        }
+      };
     } else {
-      comparator =
-          new Comparator<Integer>() {
-            @Override
-            public int compare(Integer i, Integer j) {
-              return comp.compare(getValue(i), getValue(j));
-            }
-          };
+      comparator = new Comparator<Integer>() {
+        @Override
+        public int compare(Integer i, Integer j) {
+          return comp.compare(getValue(i), getValue(j));
+        }
+      };
     }
     Collections.sort(indices, comparator);
     ASTAssociation result = copy();

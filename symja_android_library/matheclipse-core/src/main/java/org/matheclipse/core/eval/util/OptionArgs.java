@@ -38,6 +38,7 @@ public class OptionArgs {
   private OptionArgs() {
     //
   }
+
   /**
    * Construct special <i>Options</i> used in evaluation of function symbols (i.e. <code>
    * Modulus-&gt;n</code> is an option which could be used for an integer <code>n</code> in a
@@ -50,10 +51,7 @@ public class OptionArgs {
    *     </code>
    * @param engine the evaluation engine
    */
-  public OptionArgs(
-      final ISymbol symbol,
-      final IAST currentOptionsList,
-      final int startIndex,
+  public OptionArgs(final ISymbol symbol, final IAST currentOptionsList, final int startIndex,
       final EvalEngine engine) {
     this(symbol, currentOptionsList, startIndex, engine, false);
   }
@@ -71,12 +69,8 @@ public class OptionArgs {
    * @param engine the evaluation engine
    * @param evaluate do an extra evaluation step for each potential option argument
    */
-  public OptionArgs(
-      final ISymbol symbol,
-      final IAST currentOptionsList,
-      final int startIndex,
-      final EvalEngine engine,
-      boolean evaluate) {
+  public OptionArgs(final ISymbol symbol, final IAST currentOptionsList, final int startIndex,
+      final EvalEngine engine, boolean evaluate) {
     fEngine = engine;
     evalDefaultOptions(symbol);
     this.fCurrentOptionsList = F.NIL;
@@ -167,12 +161,8 @@ public class OptionArgs {
    *     currentOptionsList
    *     </code>
    */
-  public OptionArgs(
-      final ISymbol symbol,
-      final IAST currentOptionsList,
-      final int startIndex,
-      final int endIndex,
-      final EvalEngine engine) {
+  public OptionArgs(final ISymbol symbol, final IAST currentOptionsList, final int startIndex,
+      final int endIndex, final EvalEngine engine) {
     fEngine = engine;
     evalDefaultOptions(symbol);
     this.fCurrentOptionsList = F.NIL;
@@ -246,17 +236,16 @@ public class OptionArgs {
     IAST[] rule = new IAST[1];
     if (fCurrentOptionsList.isPresent()) {
       try {
-        if (fCurrentOptionsList.exists(
-            x -> {
-              if (x.isAST()) {
-                IAST temp = (IAST) x;
-                if (temp.isRuleAST() && temp.arg1().equals(option)) {
-                  rule[0] = temp;
-                  return true;
-                }
-              }
-              return false;
-            })) {
+        if (fCurrentOptionsList.exists(x -> {
+          if (x.isAST()) {
+            IAST temp = (IAST) x;
+            if (temp.isRuleAST() && temp.arg1().equals(option)) {
+              rule[0] = temp;
+              return true;
+            }
+          }
+          return false;
+        })) {
           return rule[0].arg2();
         }
       } catch (Exception e) {
@@ -265,18 +254,16 @@ public class OptionArgs {
     }
     if (fDefaultOptionsList.isPresent()) {
       try {
-        if (fDefaultOptionsList.exists(
-            x -> {
-              if (x.isAST()) {
-                IAST temp = (IAST) x;
-                if (temp.isRuleAST() && temp.arg1().equals(option)) {
-                  rule[0] = temp;
-                  return true;
-                }
-              }
-              return false;
-            },
-            1)) {
+        if (fDefaultOptionsList.exists(x -> {
+          if (x.isAST()) {
+            IAST temp = (IAST) x;
+            if (temp.isRuleAST() && temp.arg1().equals(option)) {
+              rule[0] = temp;
+              return true;
+            }
+          }
+          return false;
+        }, 1)) {
           return rule[0].arg2();
         }
       } catch (Exception e) {
@@ -309,11 +296,8 @@ public class OptionArgs {
       int maxIterations = optionMaxIterations.toIntDefault();
       if (maxIterations <= 0) {
         // Value of option `1` should be a non-negative integer or Infinity.
-        IOFunctions.printMessage(
-            fCurrentOptionsList.topHead(),
-            "iopnf",
-            F.List(F.Rule(S.MaxIterations, optionMaxIterations)),
-            fEngine);
+        IOFunctions.printMessage(fCurrentOptionsList.topHead(), "iopnf",
+            F.List(F.Rule(S.MaxIterations, optionMaxIterations)), fEngine);
         return Integer.MIN_VALUE;
       }
       return maxIterations;
@@ -326,7 +310,7 @@ public class OptionArgs {
    *
    * @param option the option
    * @return <code>true</code> if the option is set to <code>False</code> or <code>false</code>
-   *     otherwise.
+   *         otherwise.
    */
   public boolean isFalse(final ISymbol option) {
     return getOption(option).isFalse();
@@ -346,11 +330,8 @@ public class OptionArgs {
     if (invalidPosition > greaterThanPositon) {
       // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a
       // rule or a list of rules.
-      IOFunctions.printMessage(
-          ast.topHead(),
-          "nonopt",
-          F.List(ast.get(invalidPosition), F.ZZ(greaterThanPositon), ast),
-          EvalEngine.get());
+      IOFunctions.printMessage(ast.topHead(), "nonopt",
+          F.List(ast.get(invalidPosition), F.ZZ(greaterThanPositon), ast), EvalEngine.get());
       return true;
     }
     return false;
@@ -372,7 +353,7 @@ public class OptionArgs {
    *
    * @param option the option
    * @return <code>true</code> if the option is set to <code>True</code> or <code>false</code>
-   *     otherwise.
+   *         otherwise.
    */
   public boolean isTrue(final ISymbol option) {
     return getOption(option).isTrue();
@@ -381,7 +362,8 @@ public class OptionArgs {
   /**
    * Print message &quot;nonopt&quot; and return {@link F#NIL}.
    *
-   * <p><code>
+   * <p>
+   * <code>
    * Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.
    * </code>
    *
@@ -393,11 +375,8 @@ public class OptionArgs {
   public IAST printNonopt(IAST ast, int optionPosition, EvalEngine engine) {
     // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or
     // a list of rules.
-    return IOFunctions.printMessage(
-        ast.topHead(),
-        "nonopt",
-        F.List(ast.get(fInvalidPosition), F.ZZ(optionPosition), ast),
-        engine);
+    return IOFunctions.printMessage(ast.topHead(), "nonopt",
+        F.List(ast.get(fInvalidPosition), F.ZZ(optionPosition), ast), engine);
   }
 
   public IAST replaceAll(final IAST options) {
@@ -413,8 +392,7 @@ public class OptionArgs {
   public static IExpr determineAssumptions(final IAST ast, int position, OptionArgs options) {
     IExpr assumptionExpr = F.NIL;
     if (options != null) {
-      if (options.fInvalidPosition > 0
-          && options.fInvalidPosition <= position
+      if (options.fInvalidPosition > 0 && options.fInvalidPosition <= position
           && ast.size() > position) {
         assumptionExpr = ast.get(position);
       } else {

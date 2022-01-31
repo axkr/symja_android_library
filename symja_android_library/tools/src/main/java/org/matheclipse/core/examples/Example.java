@@ -9,8 +9,8 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
- * Used as an example for the Java usage in the github wiki. See: <a
- * href="https://github.com/axkr/symja_android_library/wiki/Java-usage">/wiki/Java-usage</a>
+ * Used as an example for the Java usage in the github wiki. See:
+ * <a href="https://github.com/axkr/symja_android_library/wiki/Java-usage">/wiki/Java-usage</a>
  */
 public class Example {
   public static void main(String[] args) {

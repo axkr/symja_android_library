@@ -33,18 +33,18 @@ public class ExprTrie {
     return trie;
   }
 
-  public IExpr compute(
-      String key, BiFunction<? super String, ? super IExpr, ? extends IExpr> remappingFunction) {
+  public IExpr compute(String key,
+      BiFunction<? super String, ? super IExpr, ? extends IExpr> remappingFunction) {
     return exprMap.compute(key, remappingFunction);
   }
 
-  public IExpr computeIfAbsent(
-      String key, Function<? super String, ? extends IExpr> mappingFunction) {
+  public IExpr computeIfAbsent(String key,
+      Function<? super String, ? extends IExpr> mappingFunction) {
     return exprMap.computeIfAbsent(key, mappingFunction);
   }
 
-  public IExpr computeIfPresent(
-      String key, BiFunction<? super String, ? super IExpr, ? extends IExpr> remappingFunction) {
+  public IExpr computeIfPresent(String key,
+      BiFunction<? super String, ? super IExpr, ? extends IExpr> remappingFunction) {
     return exprMap.computeIfPresent(key, remappingFunction);
   }
 
@@ -127,9 +127,7 @@ public class ExprTrie {
     return exprMap.keySet(sequence, match);
   }
 
-  public IExpr merge(
-      String key,
-      IExpr value,
+  public IExpr merge(String key, IExpr value,
       BiFunction<? super IExpr, ? super IExpr, ? extends IExpr> remappingFunction) {
     return exprMap.merge(key, value, remappingFunction);
   }

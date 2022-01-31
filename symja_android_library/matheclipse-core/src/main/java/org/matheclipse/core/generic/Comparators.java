@@ -57,8 +57,9 @@ public final class Comparators {
   }
 
   /**
-   * Comparator for using an internal {@link BiPredicate} from {@link
-   * Predicates#isBinaryTrue(IExpr)} as a test for equality. If not equal call the <code>compareTo()
+   * Comparator for using an internal {@link BiPredicate} from
+   * {@link Predicates#isBinaryTrue(IExpr)} as a test for equality. If not equal call the
+   * <code>compareTo()
    * </code> method from <code>IExpr</code>.
    */
   static final class BinaryEqualsComparator implements Comparator<IExpr> {
@@ -78,8 +79,9 @@ public final class Comparators {
   }
 
   /**
-   * Comparator for using an internal {@link BiPredicate} from {@link
-   * Predicates#isBinaryTrue(IExpr)} as a test for equality. If not equal call the <code>compareTo()
+   * Comparator for using an internal {@link BiPredicate} from
+   * {@link Predicates#isBinaryTrue(IExpr)} as a test for equality. If not equal call the
+   * <code>compareTo()
    * </code> method from <code>IExpr</code>.
    *
    * @param test the test header. See for example function {@link ListFunctions.Gather}

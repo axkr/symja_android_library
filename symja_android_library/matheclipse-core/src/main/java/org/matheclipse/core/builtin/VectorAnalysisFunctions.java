@@ -34,15 +34,17 @@ public class VectorAnalysisFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the curl.
+   * <p>
+   * gives the curl.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Curl_%28mathematics%29">Wikipedia - Curl
-   *       (mathematics)</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Curl_%28mathematics%29">Wikipedia - Curl
+   * (mathematics)</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -61,15 +63,12 @@ public class VectorAnalysisFunctions {
           IAST variables = (IAST) ast.arg2().normal(false);
           IAST vector = (IAST) ast.arg1().normal(false);
           IASTAppendable curlVector = F.ListAlloc(vector.size());
-          curlVector.append(
-              F.Subtract(
-                  F.D(vector.arg3(), variables.arg2()), F.D(vector.arg2(), variables.arg3())));
-          curlVector.append(
-              F.Subtract(
-                  F.D(vector.arg1(), variables.arg3()), F.D(vector.arg3(), variables.arg1())));
-          curlVector.append(
-              F.Subtract(
-                  F.D(vector.arg2(), variables.arg1()), F.D(vector.arg1(), variables.arg2())));
+          curlVector.append(F.Subtract(F.D(vector.arg3(), variables.arg2()),
+              F.D(vector.arg2(), variables.arg3())));
+          curlVector.append(F.Subtract(F.D(vector.arg1(), variables.arg3()),
+              F.D(vector.arg3(), variables.arg1())));
+          curlVector.append(F.Subtract(F.D(vector.arg2(), variables.arg1()),
+              F.D(vector.arg1(), variables.arg2())));
           for (int i = 4; i < vector.size(); i++) {
             curlVector.append(vector.get(i));
           }
@@ -95,14 +94,16 @@ public class VectorAnalysisFunctions {
    *
    * <blockquote>
    *
-   * <p>compute the divergence.
+   * <p>
+   * compute the divergence.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Divergence">Wikipedia - Divergence</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Divergence">Wikipedia - Divergence</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -162,9 +163,7 @@ public class VectorAnalysisFunctions {
         IExpr theta = ast.arg1();
         return
         // [$ {{Cos(theta),-Sin(theta)},{Sin(theta),Cos(theta)}} $]
-        F.List(
-            F.List(F.Cos(theta), F.Negate(F.Sin(theta))),
-            F.List(F.Sin(theta), F.Cos(theta))); // $$;
+        F.List(F.List(F.Cos(theta), F.Negate(F.Sin(theta))), F.List(F.Sin(theta), F.Cos(theta))); // $$;
       }
       if (ast.isAST2() && ast.arg2().isAST(S.List, 4)) {
         // TODO generalize for all rotations
@@ -181,24 +180,15 @@ public class VectorAnalysisFunctions {
             // Sin(theta))/Abs(x)^3)},{0,(x*Conjugate(x)^2*Sin(theta))/Abs(x)^3,(x^3*Conjugate(x)^3*
             // Cos(theta))/Abs(x)^6}} $]
             F.List(
-                F.List(
-                    F.Times(
-                        F.Power(x, F.C3), F.Power(F.Abs(x), F.CN6), F.Power(F.Conjugate(x), F.C3)),
-                    F.C0,
-                    F.C0),
-                F.List(
-                    F.C0,
-                    F.Cos(theta),
-                    F.Times(
-                        F.CN1, F.Sqr(x), F.Power(F.Abs(x), F.CN3), F.Conjugate(x), F.Sin(theta))),
-                F.List(
-                    F.C0,
+                F.List(F.Times(F.Power(x, F.C3), F.Power(F.Abs(x), F.CN6),
+                    F.Power(F.Conjugate(x), F.C3)), F.C0, F.C0),
+                F.List(F.C0, F.Cos(theta),
+                    F.Times(F.CN1, F.Sqr(x), F.Power(F.Abs(x), F.CN3), F.Conjugate(x),
+                        F.Sin(theta))),
+                F.List(F.C0,
                     F.Times(x, F.Power(F.Abs(x), F.CN3), F.Sqr(F.Conjugate(x)), F.Sin(theta)),
-                    F.Times(
-                        F.Power(x, F.C3),
-                        F.Power(F.Abs(x), F.CN6),
-                        F.Power(F.Conjugate(x), F.C3),
-                        F.Cos(theta)))); // $$;
+                    F.Times(F.Power(x, F.C3), F.Power(F.Abs(x), F.CN6),
+                        F.Power(F.Conjugate(x), F.C3), F.Cos(theta)))); // $$;
           }
           if (x.isZero()) {
             return
@@ -206,24 +196,17 @@ public class VectorAnalysisFunctions {
             // {{Cos(theta),0,(y^2*Conjugate(y)*Sin(theta))/Abs(y)^3},{0,(y^3*Conjugate(y)^3)/Abs(y)^6,0},{-((y*Conjugate(y)^2*Sin(theta))/Abs(y)^3),0,(y^3*Conjugate(y)^3*Cos(theta))/Abs(y)^6}}
             // $]
             F.List(
-                F.List(
-                    F.Cos(theta),
-                    F.C0,
+                F.List(F.Cos(theta), F.C0,
                     F.Times(F.Sqr(y), F.Power(F.Abs(y), F.CN3), F.Conjugate(y), F.Sin(theta))),
-                F.List(
-                    F.C0,
-                    F.Times(
-                        F.Power(y, F.C3), F.Power(F.Abs(y), F.CN6), F.Power(F.Conjugate(y), F.C3)),
+                F.List(F.C0,
+                    F.Times(F.Power(y, F.C3), F.Power(F.Abs(y), F.CN6),
+                        F.Power(F.Conjugate(y), F.C3)),
                     F.C0),
                 F.List(
-                    F.Times(
-                        F.CN1, y, F.Power(F.Abs(y), F.CN3), F.Sqr(F.Conjugate(y)), F.Sin(theta)),
-                    F.C0,
-                    F.Times(
-                        F.Power(y, F.C3),
-                        F.Power(F.Abs(y), F.CN6),
-                        F.Power(F.Conjugate(y), F.C3),
-                        F.Cos(theta)))); // $$;
+                    F.Times(F.CN1, y, F.Power(F.Abs(y), F.CN3), F.Sqr(F.Conjugate(y)),
+                        F.Sin(theta)),
+                    F.C0, F.Times(F.Power(y, F.C3), F.Power(F.Abs(y), F.CN6),
+                        F.Power(F.Conjugate(y), F.C3), F.Cos(theta)))); // $$;
           }
           return F.NIL;
         }
@@ -234,10 +217,8 @@ public class VectorAnalysisFunctions {
           // Cos(theta))/Abs(z)^2,0},{0,0,(z*Conjugate(z))/Abs(z)^2}} $]
           F.List(
               F.List(F.Cos(theta), F.Times(F.CN1, z, F.Power(F.Abs(z), F.CN1), F.Sin(theta)), F.C0),
-              F.List(
-                  F.Times(F.Power(F.Abs(z), F.CN1), F.Conjugate(z), F.Sin(theta)),
-                  F.Times(z, F.Power(F.Abs(z), F.CN2), F.Conjugate(z), F.Cos(theta)),
-                  F.C0),
+              F.List(F.Times(F.Power(F.Abs(z), F.CN1), F.Conjugate(z), F.Sin(theta)),
+                  F.Times(z, F.Power(F.Abs(z), F.CN2), F.Conjugate(z), F.Cos(theta)), F.C0),
               F.List(F.C0, F.C0, F.Times(z, F.Power(F.Abs(z), F.CN2), F.Conjugate(z)))); // $$;
         }
         return F.NIL;

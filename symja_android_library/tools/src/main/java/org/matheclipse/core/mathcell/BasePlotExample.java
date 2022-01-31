@@ -43,37 +43,22 @@ public abstract class BasePlotExample {
         String js;
         if (result.second().toString().equals("mathcell")) {
           String manipulateStr = ((IAST) result).arg1().toString();
-          js =
-              JSBuilder.buildMathcell(
-                  JSBuilder.MATHCELL_TEMPLATE, manipulateStr);
-          //          js = Config.MATHCELL_PAGE;
-          //          js = StringUtils.replace(js, "`1`", manipulateStr);
+          js = JSBuilder.buildMathcell(JSBuilder.MATHCELL_TEMPLATE, manipulateStr);
+          // js = Config.MATHCELL_PAGE;
+          // js = StringUtils.replace(js, "`1`", manipulateStr);
         } else if (result.second().toString().equals("treeform")) {
           String manipulateStr = ((IAST) result).arg1().toString();
           js = Config.VISJS_PAGE;
           js = StringUtils.replace(js, "`1`", manipulateStr);
-          js =
-              StringUtils.replace(
-                  js,
-                  "`2`", //
-                  "  var options = {\n"
-                      + "		  edges: {\n"
-                      + "              smooth: {\n"
-                      + "                  type: 'cubicBezier',\n"
-                      + "                  forceDirection:  'vertical',\n"
-                      + "                  roundness: 0.4\n"
-                      + "              }\n"
-                      + "          },\n"
-                      + "          layout: {\n"
-                      + "              hierarchical: {\n"
-                      + "                  direction: \"UD\"\n"
-                      + "              }\n"
-                      + "          },\n"
-                      + "          nodes: {\n"
-                      + "            shape: 'box'\n"
-                      + "          },\n"
-                      + "          physics:false\n"
-                      + "      }; ");
+          js = StringUtils.replace(js, "`2`", //
+              "  var options = {\n" + "		  edges: {\n" + "              smooth: {\n"
+                  + "                  type: 'cubicBezier',\n"
+                  + "                  forceDirection:  'vertical',\n"
+                  + "                  roundness: 0.4\n" + "              }\n" + "          },\n"
+                  + "          layout: {\n" + "              hierarchical: {\n"
+                  + "                  direction: \"UD\"\n" + "              }\n" + "          },\n"
+                  + "          nodes: {\n" + "            shape: 'box'\n" + "          },\n"
+                  + "          physics:false\n" + "      }; ");
         } else if (result.second().toString().equals("traceform")) {
           String jsStr = ((IAST) result).arg1().toString();
           js = Config.TRACEFORM_PAGE;
@@ -81,13 +66,11 @@ public abstract class BasePlotExample {
         } else if (result.second().toString().equals("plotly")) {
           String manipulateStr = ((IAST) result).arg1().toString();
           js = JSBuilder.buildPlotly(JSBuilder.PLOTLY_TEMPLATE, manipulateStr);
-          //          js = Config.PLOTLY_PAGE;
-          //          js = StringUtils.replace(js, "`1`", manipulateStr);
+          // js = Config.PLOTLY_PAGE;
+          // js = StringUtils.replace(js, "`1`", manipulateStr);
         } else {
           String manipulateStr = ((IAST) result).arg1().toString();
-          js =
-              JSBuilder.buildJSXGraph(
-                  JSBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
+          js = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
         }
         System.out.println(js);
         F.openHTMLOnDesktop(js);
@@ -121,5 +104,5 @@ public abstract class BasePlotExample {
     }
   }
 
-  
+
 }

@@ -27,37 +27,20 @@ public class FlatOrderlessStepVisitor extends FlatStepVisitor implements IStepVi
    * @deprecated used only for JUnit tests
    */
   @Deprecated
-  public FlatOrderlessStepVisitor(
-      final ISymbol sym,
-      IAST lhsPatternAST,
-      IAST lhsEvalAST,
-      PatternMatcher patternMatcher,
-      IPatternMap patternMap) {
-    this(
-        sym,
-        lhsPatternAST,
-        lhsEvalAST, //
-        patternMatcher.new StackMatcher(EvalEngine.get()),
-        patternMap);
+  public FlatOrderlessStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST,
+      PatternMatcher patternMatcher, IPatternMap patternMap) {
+    this(sym, lhsPatternAST, lhsEvalAST, //
+        patternMatcher.new StackMatcher(EvalEngine.get()), patternMap);
   }
 
-  public FlatOrderlessStepVisitor(
-      final ISymbol sym,
-      IAST lhsPatternAST,
-      IAST lhsEvalAST,
-      StackMatcher stackMatcher,
-      IPatternMap patternMap) {
+  public FlatOrderlessStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST,
+      StackMatcher stackMatcher, IPatternMap patternMap) {
     super(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap);
     toIntArray(lhsEvalAST, 1, lhsEvalAST.size());
   }
 
-  public FlatOrderlessStepVisitor(
-      final ISymbol sym,
-      IAST lhsPatternAST,
-      IAST lhsEvalAST,
-      StackMatcher stackMatcher,
-      IPatternMap patternMap,
-      boolean oneIdentity) {
+  public FlatOrderlessStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST,
+      StackMatcher stackMatcher, IPatternMap patternMap, boolean oneIdentity) {
     super(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap, oneIdentity);
     toIntArray(lhsEvalAST, 1, lhsEvalAST.size());
   }
@@ -79,18 +62,15 @@ public class FlatOrderlessStepVisitor extends FlatStepVisitor implements IStepVi
     final int[] j = new int[1];
     multiset[j[0]++] = index[0];
     array[index[0]] = lastT[0];
-    sortedList.forEach(
-        start + 1,
-        end,
-        x -> {
-          if (x.equals(lastT[0])) {
-            multiset[j[0]++] = index[0];
-          } else {
-            multiset[j[0]++] = ++index[0];
-            array[index[0]] = x;
-            lastT[0] = x;
-          }
-        });
+    sortedList.forEach(start + 1, end, x -> {
+      if (x.equals(lastT[0])) {
+        multiset[j[0]++] = index[0];
+      } else {
+        multiset[j[0]++] = ++index[0];
+        array[index[0]] = x;
+        lastT[0] = x;
+      }
+    });
   }
 
   @Override

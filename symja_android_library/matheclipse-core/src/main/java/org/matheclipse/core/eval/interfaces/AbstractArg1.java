@@ -38,8 +38,7 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
         try {
           if (hier == IExpr.DOUBLEID) {
             if (arg1 instanceof ApfloatNum) {
-              return e1ApfloatArg(
-                  ((ApfloatNum) arg1).apfloatValue( ));
+              return e1ApfloatArg(((ApfloatNum) arg1).apfloatValue());
             }
             return e1DblArg(((Num) arg1).doubleValue());
           }
@@ -50,7 +49,7 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
-          //					EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
+          // EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
           return F.NIL;
         }
       } else {

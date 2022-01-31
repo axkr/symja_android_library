@@ -3,7 +3,8 @@ package org.matheclipse.core.eval.util;
 /**
  * Basic abstract class for sequence specifications.
  *
- * <p>A sequence in the interval of <code>integer</code> numbers: <code>
+ * <p>
+ * A sequence in the interval of <code>integer</code> numbers: <code>
  * [getStart(), getStart()+getStep(), getStart()+2*getStep(), ..., getEnd()]</code>
  */
 public abstract class AbstractSequence implements ISequence {
@@ -28,7 +29,7 @@ public abstract class AbstractSequence implements ISequence {
   public int getEndOffset() {
     return fEndOffset;
   }
-  
+
   /** {@inheritDoc} */
   @Override
   public int getStep() {

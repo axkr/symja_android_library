@@ -29,20 +29,12 @@ import org.matheclipse.parser.client.ast.ASTNode;
  * Indefinite Integration Reduction Rules</a>
  */
 public class ConvertRubiUtilityFunctions {
-  private static final String HEADER =
-      "package org.matheclipse.core.integrate.rubi;\n"
-          + "\n"
-          + "\n"
-          + "import static org.matheclipse.core.expression.F.*;\n"
-          + "import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;\n"
-          + "\n"
-          + "import org.matheclipse.core.interfaces.IAST;\n"
-          + "/** \n"
-          + " * UtilityFunctions rules from the <a href=\"https://rulebasedintegration.org/\">Rubi -\n"
-          + " * rule-based integrator</a>.\n"
-          + " *  \n"
-          + " */\n"
-          + "class UtilityFunctions";
+  private static final String HEADER = "package org.matheclipse.core.integrate.rubi;\n" + "\n"
+      + "\n" + "import static org.matheclipse.core.expression.F.*;\n"
+      + "import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;\n" + "\n"
+      + "import org.matheclipse.core.interfaces.IAST;\n" + "/** \n"
+      + " * UtilityFunctions rules from the <a href=\"https://rulebasedintegration.org/\">Rubi -\n"
+      + " * rule-based integrator</a>.\n" + " *  \n" + " */\n" + "class UtilityFunctions";
 
   private static final String FOOTER = "}\n";
 
@@ -85,12 +77,8 @@ public class ConvertRubiUtilityFunctions {
     }
   }
 
-  public static void convert(
-      ASTNode node,
-      StringBuffer buffer,
-      boolean last,
-      Set<String> functionSet,
-      IASTAppendable listOfRules) {
+  public static void convert(ASTNode node, StringBuffer buffer, boolean last,
+      Set<String> functionSet, IASTAppendable listOfRules) {
     try {
       // convert ASTNode to an IExpr node
       IExpr expr = new AST2Expr(false, EvalEngine.get()).convert(node);
@@ -109,12 +97,8 @@ public class ConvertRubiUtilityFunctions {
     }
   }
 
-  private static void convertExpr(
-      IExpr expr,
-      StringBuffer buffer,
-      boolean last,
-      Set<String> functionSet,
-      IASTAppendable listOfRules) {
+  private static void convertExpr(IExpr expr, StringBuffer buffer, boolean last,
+      Set<String> functionSet, IASTAppendable listOfRules) {
     // ISymbol module = F.$s("Module");
     // if (expr.isFree(module, true)) {
 
@@ -186,11 +170,7 @@ public class ConvertRubiUtilityFunctions {
           ASTNode astNode = list.get(j);
 
           cnt++;
-          convert(
-              astNode,
-              buffer,
-              cnt == NUMBER_OF_RULES_PER_FILE || j == list.size(),
-              functionSet,
+          convert(astNode, buffer, cnt == NUMBER_OF_RULES_PER_FILE || j == list.size(), functionSet,
               listOfRules);
 
           if (cnt == NUMBER_OF_RULES_PER_FILE) {
@@ -214,12 +194,8 @@ public class ConvertRubiUtilityFunctions {
         }
         for (String str : uniqueFunctionSet) {
           String functionName = str;
-          buffer.append(
-              "    F.PREDEFINED_INTERNAL_FORM_STRINGS.put(\""
-                  + functionName
-                  + "\", Context.RUBI_STR + \""
-                  + functionName
-                  + "\");\n");
+          buffer.append("    F.PREDEFINED_INTERNAL_FORM_STRINGS.put(\"" + functionName
+              + "\", Context.RUBI_STR + \"" + functionName + "\");\n");
         }
         System.out.println(buffer.toString());
         buffer = new StringBuffer(100000);
@@ -240,36 +216,28 @@ public class ConvertRubiUtilityFunctions {
               buffer.append("  }\n\n");
               break;
             case 3:
-              buffer.append(
-                  "  public static IAST "
-                      + functionName
-                      + "(final IExpr a0, final IExpr a1, final IExpr a2) {\n");
+              buffer.append("  public static IAST " + functionName
+                  + "(final IExpr a0, final IExpr a1, final IExpr a2) {\n");
               buffer.append("    return ternary($rubi(\"" + functionName + "\"), a0, a1, a2);\n");
               buffer.append("  }\n\n");
               break;
             case 4:
-              buffer.append(
-                  "  public static IAST "
-                      + functionName
-                      + "(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {\n");
+              buffer.append("  public static IAST " + functionName
+                  + "(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {\n");
               buffer.append(
                   "    return quaternary($rubi(\"" + functionName + "\"), a0, a1, a2, a3);\n");
               buffer.append("  }\n\n");
               break;
             case 5:
-              buffer.append(
-                  "  public static IAST "
-                      + functionName
-                      + "(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {\n");
+              buffer.append("  public static IAST " + functionName
+                  + "(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {\n");
               buffer.append(
                   "    return quinary($rubi(\"" + functionName + "\"), a0, a1, a2, a3, a4);\n");
               buffer.append("  }\n\n");
               break;
             case 6:
-              buffer.append(
-                  "  public static IAST "
-                      + functionName
-                      + "(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4, final IExpr a5) {\n");
+              buffer.append("  public static IAST " + functionName
+                  + "(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4, final IExpr a5) {\n");
               buffer.append(
                   "    return senary($rubi(\"" + functionName + "\"), a0, a1, a2, a3, a4, a5);\n");
               buffer.append("  }\n\n");

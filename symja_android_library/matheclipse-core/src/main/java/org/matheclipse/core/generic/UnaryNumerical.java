@@ -36,10 +36,7 @@ public class UnaryNumerical
     this(function, variable, engine, false);
   }
 
-  public UnaryNumerical(
-      final IExpr function,
-      final ISymbol variable,
-      final EvalEngine engine,
+  public UnaryNumerical(final IExpr function, final ISymbol variable, final EvalEngine engine,
       boolean firstDerivative) {
     if (!variable.isVariable() || variable.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
@@ -79,12 +76,12 @@ public class UnaryNumerical
     return result;
   }
 
-  //  @Override
-  //  public DerivativeStructure value(final DerivativeStructure x) {
-  //    // x.getPartialDerivative(1)==1.0 in the case:
-  //    // fFirstDerivative.value(x.getValue() * x.getPartialDerivative(1)
-  //    return x.getFactory().build(value(x.getValue()), fFirstDerivative.value(x.getValue()));
-  //  }
+  // @Override
+  // public DerivativeStructure value(final DerivativeStructure x) {
+  // // x.getPartialDerivative(1)==1.0 in the case:
+  // // fFirstDerivative.value(x.getValue() * x.getPartialDerivative(1)
+  // return x.getFactory().build(value(x.getValue()), fFirstDerivative.value(x.getValue()));
+  // }
 
   @Override
   public <T extends Derivative<T>> T value(T x) throws MathIllegalArgumentException {

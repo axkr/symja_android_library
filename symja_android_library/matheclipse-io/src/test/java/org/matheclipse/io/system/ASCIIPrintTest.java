@@ -49,13 +49,13 @@ public class ASCIIPrintTest extends TestCase {
     check(expr, s1, s2, s3);
   }
 
-  //	public void testTimes001() {
-  //		IExpr expr = F.Times(F.C1, F.a);
-  //		String s1 = "       ";
-  //		String s2 = "-10 * a";
-  //		String s3 = "       ";
-  //		check(expr, s1, s2, s3);
-  //	}
+  // public void testTimes001() {
+  // IExpr expr = F.Times(F.C1, F.a);
+  // String s1 = " ";
+  // String s2 = "-10 * a";
+  // String s3 = " ";
+  // check(expr, s1, s2, s3);
+  // }
 
   public void testTimes002() {
     IExpr expr = F.Times(F.CN1, F.a);

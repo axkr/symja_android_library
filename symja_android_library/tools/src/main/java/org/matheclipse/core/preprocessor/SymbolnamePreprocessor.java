@@ -17,7 +17,7 @@ public class SymbolnamePreprocessor {
    *
    * @param sourceLocation source directory for rule (*.m) files
    * @param ignoreTimestamp if <code>false</code> only change the target file (*.java), if the
-   *     source file (*.m) has a newer time stamp than the target file.
+   *        source file (*.m) has a newer time stamp than the target file.
    */
   public static void generateFunctionStrings1(final File sourceLocation, boolean ignoreTimestamp) {
     if (sourceLocation.exists()) {
@@ -38,12 +38,8 @@ public class SymbolnamePreprocessor {
             buffer.append("public final static ISymbol ");
             buffer.append(className);
             buffer.append(" = initFinalSymbol(\n");
-            buffer.append(
-                "		Config.PARSER_USE_LOWERCASE_SYMBOLS ? \""
-                    + lcClassName
-                    + "\" : \""
-                    + className
-                    + "\",\n");
+            buffer.append("		Config.PARSER_USE_LOWERCASE_SYMBOLS ? \"" + lcClassName + "\" : \""
+                + className + "\",\n");
 
             buffer.append("		new org.matheclipse.core.builtin.function.");
             buffer.append(className);
@@ -75,12 +71,8 @@ public class SymbolnamePreprocessor {
             buffer.append("public final static ISymbol ");
             buffer.append(className);
             buffer.append(" = initFinalSymbol(\n");
-            buffer.append(
-                "		Config.PARSER_USE_LOWERCASE_SYMBOLS ? \""
-                    + lcClassName
-                    + "\" : \""
-                    + className
-                    + "\");\n");
+            buffer.append("		Config.PARSER_USE_LOWERCASE_SYMBOLS ? \"" + lcClassName + "\" : \""
+                + className + "\");\n");
           }
         }
         System.out.println(buffer.toString());
@@ -98,10 +90,8 @@ public class SymbolnamePreprocessor {
           // we are only interested in .m files
           if (files[i].endsWith(".java")) {
             String className = files[i].substring(0, files[i].length() - 5);
-            if (className.equals("Integrate")
-                || className.equals("Plus")
-                || className.equals("Power")
-                || className.equals("Times")) {
+            if (className.equals("Integrate") || className.equals("Plus")
+                || className.equals("Power") || className.equals("Times")) {
               continue;
             }
             // System.out.println(functionName + ".setEvaluator(new
@@ -120,13 +110,11 @@ public class SymbolnamePreprocessor {
 
   public static void main(final String[] args) {
     String userHome = System.getProperty("user.home");
-    File sourceLocation1 =
-        new File(userHome
-            + "/git/symja_android_library/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/function");
+    File sourceLocation1 = new File(userHome
+        + "/git/symja_android_library/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/function");
 
-    File sourceLocation2 =
-        new File(userHome
-            + "/git/symja_android_library/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system");
+    File sourceLocation2 = new File(userHome
+        + "/git/symja_android_library/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system");
 
     generateFunctionStrings1(sourceLocation1, true);
 

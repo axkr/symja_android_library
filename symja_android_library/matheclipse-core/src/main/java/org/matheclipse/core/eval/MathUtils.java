@@ -98,14 +98,8 @@ public class MathUtils {
     IExpr function = parse(fun, null);
     IExpr var = parse(v, null);
     IAST list = F.List(var, F.num(a), F.num(b));
-    return NIntegrate.integrate(
-        "LegendreGauss",
-        list,
-        a,
-        b,
-        function,
-        NIntegrate.DEFAULT_MAX_POINTS,
-        NIntegrate.DEFAULT_MAX_ITERATIONS);
+    return NIntegrate.integrate("LegendreGauss", list, a, b, function,
+        NIntegrate.DEFAULT_MAX_POINTS, NIntegrate.DEFAULT_MAX_ITERATIONS);
   }
 
   /**
@@ -649,7 +643,7 @@ public class MathUtils {
    * Evaluate the expression in <code>codeString</code>.
    *
    * @param function <code>null</code> if you like to evaluate in symbolic mode; &quot;N&quot; if
-   *     you like to evaluate in numeric mode
+   *        you like to evaluate in numeric mode
    * @return
    */
   public static String evaluate(final String codeString, final String function) {

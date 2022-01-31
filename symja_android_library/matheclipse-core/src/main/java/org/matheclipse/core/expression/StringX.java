@@ -449,17 +449,13 @@ public class StringX implements IStringX {
     return fString.matches(regex);
   }
 
-  public boolean regionMatches(
-      final boolean ignoreCase,
-      final int toffset,
-      final String other,
-      final int ooffset,
-      final int len) {
+  public boolean regionMatches(final boolean ignoreCase, final int toffset, final String other,
+      final int ooffset, final int len) {
     return fString.regionMatches(ignoreCase, toffset, other, ooffset, len);
   }
 
-  public boolean regionMatches(
-      final int toffset, final String other, final int ooffset, final int len) {
+  public boolean regionMatches(final int toffset, final String other, final int ooffset,
+      final int len) {
     return fString.regionMatches(toffset, other, ooffset, len);
   }
 

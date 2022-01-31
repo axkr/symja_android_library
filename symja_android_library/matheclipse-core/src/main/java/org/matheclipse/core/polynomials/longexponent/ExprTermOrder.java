@@ -107,150 +107,127 @@ public final class ExprTermOrder implements Serializable {
     evbeg2 = evend1;
     evend2 = evend1;
     switch (evord) { // horder = new EVhorder();
-      case ExprTermOrder.LEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                  return ExpVectorLong.EVILCP(e1, e2);
-                }
-              };
-          break;
-        }
-      case ExprTermOrder.INVLEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                  return -ExpVectorLong.EVILCP(e1, e2);
-                }
-              };
-          break;
-        }
-      case ExprTermOrder.GRLEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                  return ExpVectorLong.EVIGLC(e1, e2);
-                }
-              };
-          break;
-        }
-      case ExprTermOrder.IGRLEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                  return -ExpVectorLong.EVIGLC(e1, e2);
-                }
-              };
-          break;
-        }
-      case ExprTermOrder.REVLEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                  return ExpVectorLong.EVRILCP(e1, e2);
-                }
-              };
-          break;
-        }
-      case ExprTermOrder.REVILEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                  return -ExpVectorLong.EVRILCP(e1, e2);
-                }
-              };
-          break;
-        }
-      case ExprTermOrder.REVTDEG:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                  return ExpVectorLong.EVRIGLC(e1, e2);
-                }
-              };
-          break;
-        }
-      case ExprTermOrder.REVITDG:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                  return -ExpVectorLong.EVRIGLC(e1, e2);
-                }
-              };
-          break;
-        }
-      case ExprTermOrder.ITDEGLEX:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                  return -ExpVectorLong.EVITDEGLC(e1, e2); // okay +/-
-                }
-              };
-          break;
-        }
-      case ExprTermOrder.REVITDEG:
-        {
-          horder =
-              new EVComparator() {
-
-                @Override
-                public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                  return ExpVectorLong.EVRLITDEGC(e1, e2); // okay +/-
-                }
-              };
-          break;
-        }
-      default:
-        {
-          throw new IllegalArgumentException("invalid term order: " + evord);
-        }
-    }
-    // lorder = new EVlorder();
-    lorder =
-        new EVComparator() {
+      case ExprTermOrder.LEX: {
+        horder = new EVComparator() {
 
           @Override
           public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-            return -horder.compare(e1, e2);
+            return ExpVectorLong.EVILCP(e1, e2);
           }
         };
+        break;
+      }
+      case ExprTermOrder.INVLEX: {
+        horder = new EVComparator() {
 
-    // sugar = new EVsugar();
-    sugar =
-        new EVComparator() {
+          @Override
+          public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+            return -ExpVectorLong.EVILCP(e1, e2);
+          }
+        };
+        break;
+      }
+      case ExprTermOrder.GRLEX: {
+        horder = new EVComparator() {
 
           @Override
           public int compare(ExpVectorLong e1, ExpVectorLong e2) {
             return ExpVectorLong.EVIGLC(e1, e2);
           }
         };
+        break;
+      }
+      case ExprTermOrder.IGRLEX: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+            return -ExpVectorLong.EVIGLC(e1, e2);
+          }
+        };
+        break;
+      }
+      case ExprTermOrder.REVLEX: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+            return ExpVectorLong.EVRILCP(e1, e2);
+          }
+        };
+        break;
+      }
+      case ExprTermOrder.REVILEX: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+            return -ExpVectorLong.EVRILCP(e1, e2);
+          }
+        };
+        break;
+      }
+      case ExprTermOrder.REVTDEG: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+            return ExpVectorLong.EVRIGLC(e1, e2);
+          }
+        };
+        break;
+      }
+      case ExprTermOrder.REVITDG: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+            return -ExpVectorLong.EVRIGLC(e1, e2);
+          }
+        };
+        break;
+      }
+      case ExprTermOrder.ITDEGLEX: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+            return -ExpVectorLong.EVITDEGLC(e1, e2); // okay +/-
+          }
+        };
+        break;
+      }
+      case ExprTermOrder.REVITDEG: {
+        horder = new EVComparator() {
+
+          @Override
+          public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+            return ExpVectorLong.EVRLITDEGC(e1, e2); // okay +/-
+          }
+        };
+        break;
+      }
+      default: {
+        throw new IllegalArgumentException("invalid term order: " + evord);
+      }
+    }
+    // lorder = new EVlorder();
+    lorder = new EVComparator() {
+
+      @Override
+      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+        return -horder.compare(e1, e2);
+      }
+    };
+
+    // sugar = new EVsugar();
+    sugar = new EVComparator() {
+
+      @Override
+      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+        return ExpVectorLong.EVIGLC(e1, e2);
+      }
+    };
   }
 
   /**
@@ -279,25 +256,23 @@ public final class ExprTermOrder implements Serializable {
     evbeg2 = evend1;
     evend2 = evend1;
 
-    horder =
-        new EVComparator() {
+    horder = new EVComparator() {
 
-          @Override
-          public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-            return -ExpVectorLong.EVIWLC(weight, e1, e2);
-          }
-        };
+      @Override
+      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+        return -ExpVectorLong.EVIWLC(weight, e1, e2);
+      }
+    };
 
     // lorder = new EVlorder();
-    lorder =
-        new EVComparator() {
+    lorder = new EVComparator() {
 
-          @Override
-          public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-            return +ExpVectorLong.EVIWLC(weight, e1, e2);
-            // return - horder.compare( e1, e2 );
-          }
-        };
+      @Override
+      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+        return +ExpVectorLong.EVIWLC(weight, e1, e2);
+        // return - horder.compare( e1, e2 );
+      }
+    };
 
     // sugar = new EVsugar();
     sugar = horder;
@@ -330,1011 +305,880 @@ public final class ExprTermOrder implements Serializable {
           "invalid term order split, r = " + r + ", split = " + split);
     }
     switch (evord) { // horder = new EVhorder();
-      case ExprTermOrder.LEX:
-        {
-          switch (evord2) {
-            case ExprTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+      case ExprTermOrder.LEX: {
+        switch (evord2) {
+          case ExprTermOrder.LEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
               }
-            case ExprTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
-        }
-      case ExprTermOrder.INVLEX:
-        {
-          switch (evord2) {
-            case ExprTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+          case ExprTermOrder.INVLEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
               }
-            case ExprTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVILEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVTDEG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVITDG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
-        }
-      case ExprTermOrder.GRLEX:
-        {
-          switch (evord2) {
-            case ExprTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+          case ExprTermOrder.GRLEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
               }
-            case ExprTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
-        }
-      case ExprTermOrder.IGRLEX:
-        {
-          switch (evord2) {
-            case ExprTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+          case ExprTermOrder.IGRLEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
               }
-            case ExprTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVILEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVTDEG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVITDG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
-        }
-        // ----- begin reversed -----------
-      case ExprTermOrder.REVLEX:
-        {
-          switch (evord2) {
-            case ExprTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVILEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVTDEG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVITDG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+          default: {
+            horder = null;
           }
-          break;
         }
-      case ExprTermOrder.REVILEX:
-        {
-          switch (evord2) {
-            case ExprTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+        break;
+      }
+      case ExprTermOrder.INVLEX: {
+        switch (evord2) {
+          case ExprTermOrder.LEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
               }
-            case ExprTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVILEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVTDEG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVITDG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
-        }
-      case ExprTermOrder.REVTDEG:
-        {
-          switch (evord2) {
-            case ExprTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+          case ExprTermOrder.INVLEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
               }
-            case ExprTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVILEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVTDEG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVITDG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
-        }
-      case ExprTermOrder.REVITDG:
-        {
-          switch (evord2) {
-            case ExprTermOrder.LEX:
-              {
-                horder =
-                    new EVComparator() {
+          case ExprTermOrder.GRLEX: {
+            horder = new EVComparator() {
 
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
               }
-            case ExprTermOrder.INVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.GRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.IGRLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVLEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVILEX:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVTDEG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            case ExprTermOrder.REVITDG:
-              {
-                horder =
-                    new EVComparator() {
-
-                      @Override
-                      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-                        int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
-                        if (t != 0) {
-                          return t;
-                        }
-                        return -ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
-                      }
-                    };
-                break;
-              }
-            default:
-              {
-                horder = null;
-              }
+            };
+            break;
           }
-          break;
+          case ExprTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVILEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVTDEG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVITDG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
         }
-        // ----- end reversed-----------
-      default:
-        {
-          horder = null;
+        break;
+      }
+      case ExprTermOrder.GRLEX: {
+        switch (evord2) {
+          case ExprTermOrder.LEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.INVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.GRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
         }
+        break;
+      }
+      case ExprTermOrder.IGRLEX: {
+        switch (evord2) {
+          case ExprTermOrder.LEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.INVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.GRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVILEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVTDEG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVITDG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
+        }
+        break;
+      }
+      // ----- begin reversed -----------
+      case ExprTermOrder.REVLEX: {
+        switch (evord2) {
+          case ExprTermOrder.LEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.INVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.GRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVILEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVTDEG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVITDG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
+        }
+        break;
+      }
+      case ExprTermOrder.REVILEX: {
+        switch (evord2) {
+          case ExprTermOrder.LEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.INVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.GRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVILEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVTDEG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVITDG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRILCP(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
+        }
+        break;
+      }
+      case ExprTermOrder.REVTDEG: {
+        switch (evord2) {
+          case ExprTermOrder.LEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.INVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.GRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVILEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVTDEG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVITDG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
+        }
+        break;
+      }
+      case ExprTermOrder.REVITDG: {
+        switch (evord2) {
+          case ExprTermOrder.LEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.INVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.GRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.IGRLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVLEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVILEX: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVRILCP(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVTDEG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          case ExprTermOrder.REVITDG: {
+            horder = new EVComparator() {
+
+              @Override
+              public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+                int t = -ExpVectorLong.EVRIGLC(e1, e2, evbeg1, evend1);
+                if (t != 0) {
+                  return t;
+                }
+                return -ExpVectorLong.EVRIGLC(e1, e2, evbeg2, evend2);
+              }
+            };
+            break;
+          }
+          default: {
+            horder = null;
+          }
+        }
+        break;
+      }
+      // ----- end reversed-----------
+      default: {
+        horder = null;
+      }
     }
     if (horder == null) {
       throw new IllegalArgumentException("invalid term order: " + evord + " 2 " + evord2);
     }
 
-    lorder =
-        new EVComparator() {
+    lorder = new EVComparator() {
 
-          @Override
-          public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-            return -horder.compare(e1, e2);
-          }
-        };
+      @Override
+      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+        return -horder.compare(e1, e2);
+      }
+    };
 
     // sugar = new EVsugar();
-    sugar =
-        new EVComparator() {
+    sugar = new EVComparator() {
 
-          @Override
-          public int compare(ExpVectorLong e1, ExpVectorLong e2) {
-            return ExpVectorLong.EVIGLC(e1, e2);
-          }
-        };
+      @Override
+      public int compare(ExpVectorLong e1, ExpVectorLong e2) {
+        return ExpVectorLong.EVIGLC(e1, e2);
+      }
+    };
   }
 
   /*
@@ -1342,7 +1186,8 @@ public final class ExprTermOrder implements Serializable {
    *
    * @param r max number of exponents to compare.
    *
-   * @param split index. public ExprTermOrder(int r, int split) { this(DEFAULT_EVORD, DEFAULT_EVORD, r, split); }
+   * @param split index. public ExprTermOrder(int r, int split) { this(DEFAULT_EVORD, DEFAULT_EVORD,
+   * r, split); }
    */
 
   /**
@@ -1466,13 +1311,8 @@ public final class ExprTermOrder implements Serializable {
       return false;
     }
     ExprTermOrder b = (ExprTermOrder) B;
-    boolean t =
-        evord == b.getEvord()
-            && evord2 == b.evord2
-            && evbeg1 == b.evbeg1
-            && evend1 == b.evend1
-            && evbeg2 == b.evbeg2
-            && evend2 == b.evend2;
+    boolean t = evord == b.getEvord() && evord2 == b.evord2 && evbeg1 == b.evbeg1
+        && evend1 == b.evend1 && evbeg2 == b.evbeg2 && evend2 == b.evend2;
     if (!t) {
       return t;
     }
@@ -1706,8 +1546,8 @@ public final class ExprTermOrder implements Serializable {
         }
       case Singular:
         switch (ev) {
-            // case LEX: // missing
-            // return "negrevlex";
+          // case LEX: // missing
+          // return "negrevlex";
           case INVLEX:
             return "rp";
           case GRLEX:
@@ -1771,7 +1611,8 @@ public final class ExprTermOrder implements Serializable {
         long max = 0;
         // long min = Long.MAX_VALUE;
         for (int j = 0; j < wi.length; j++) {
-          if (wi[j] > max) max = wi[j];
+          if (wi[j] > max)
+            max = wi[j];
           // if ( wi[j] < min ) min = wi[j];
         }
         max++;
@@ -1791,8 +1632,8 @@ public final class ExprTermOrder implements Serializable {
       }
       return new ExprTermOrder(evord, evord2, r + k, evend1 + k);
     }
-    return new ExprTermOrder(
-        DEFAULT_EVORD /* evord */, evord, r + k, k); // don't change to evord, cause REVITDG
+    return new ExprTermOrder(DEFAULT_EVORD /* evord */, evord, r + k, k); // don't change to evord,
+                                                                          // cause REVITDG
   }
 
   /**
@@ -1812,7 +1653,8 @@ public final class ExprTermOrder implements Serializable {
         long min = Long.MAX_VALUE;
         for (int j = 0; j < wi.length; j++) {
           // if ( wi[j] > max ) max = wi[j];
-          if (wi[j] < min) min = wi[j];
+          if (wi[j] < min)
+            min = wi[j];
         }
         // max++;
         long[] wj = new long[wi.length + k];

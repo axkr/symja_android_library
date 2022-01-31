@@ -22,16 +22,8 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 
   @Override // from Unit
   public IUnit negate() {
-    return new UnitImpl(
-        navigableMap
-            .entrySet()
-            .stream()
-            .collect(
-                Collectors.toMap( //
-                    Entry::getKey,
-                    entry -> entry.getValue().negate(),
-                    (e1, e2) -> null,
-                    TreeMap::new)));
+    return new UnitImpl(navigableMap.entrySet().stream().collect(Collectors.toMap( //
+        Entry::getKey, entry -> entry.getValue().negate(), (e1, e2) -> null, TreeMap::new)));
   }
 
   @Override // from Unit
@@ -80,9 +72,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 
   @Override // from Object
   public String toString() {
-    return navigableMap
-        .entrySet()
-        .stream() //
+    return navigableMap.entrySet().stream() //
         .map(entry -> entry.getKey() + exponentString(entry.getValue())) //
         .collect(Collectors.joining(IUnit.JOIN_DELIMITER));
   }

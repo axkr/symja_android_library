@@ -5,11 +5,12 @@ import java.util.Iterator;
 import java.util.List;
 
 public class KSubsets {
-  
+
   /**
    * Iterable for all k-combinations from a set
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
    */
   public static final class KSubsetsIterable implements Iterable<int[]> {
 
@@ -76,7 +77,8 @@ public class KSubsets {
   /**
    * Iterate over the lists of all k-combinations from a given list
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
    */
   public static final class KSubsetsList<E, T extends List<E>> implements Iterable<T> {
 
@@ -129,8 +131,8 @@ public class KSubsets {
     }
   }
 
-  public static <E, T extends List<E>> KSubsetsList<E, T> createKSubsets(
-      final T list, final int k, final int offset) {
+  public static <E, T extends List<E>> KSubsetsList<E, T> createKSubsets(final T list, final int k,
+      final int offset) {
     return new KSubsetsList<E, T>(list, k, offset);
   }
 

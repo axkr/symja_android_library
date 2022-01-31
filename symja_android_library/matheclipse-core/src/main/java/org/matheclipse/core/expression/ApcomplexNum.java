@@ -121,7 +121,8 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   private ApcomplexNum(final String realPart, String imaginaryPart, long precision) {
-    fApcomplex = new Apcomplex(new Apfloat(realPart, precision), new Apfloat(imaginaryPart, precision));
+    fApcomplex =
+        new Apcomplex(new Apfloat(realPart, precision), new Apfloat(imaginaryPart, precision));
   }
 
   /** @return */

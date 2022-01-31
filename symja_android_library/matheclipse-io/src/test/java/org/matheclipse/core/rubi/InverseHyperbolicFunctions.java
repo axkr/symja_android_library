@@ -137,14 +137,11 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
     check( //
         "Integrate[Sqrt[a + I*b*ArcSin[1 - I*d*x^2]], x]", //
         "x*Sqrt[a + I*b*ArcSin[1 - I*d*x^2]] + (Sqrt[Pi]*x*FresnelS[(Sqrt[(-I)/b]*Sqrt[a + I*b*ArcSin[1 - I*d*x^2]])/Sqrt[Pi]]*(Cosh[a/(2*b)] + I*Sinh[a/(2*b)]))/(Sqrt[(-I)/b]*(Cos[ArcSin[1 - I*d*x^2]/2] - Sin[ArcSin[1 - I*d*x^2]/2])) - (Sqrt[(-I)/b]*b*Sqrt[Pi]*x*FresnelC[(Sqrt[(-I)/b]*Sqrt[a + I*b*ArcSin[1 - I*d*x^2]])/Sqrt[Pi]]*(I*Cosh[a/(2*b)] + Sinh[a/(2*b)]))/(Cos[ArcSin[1 - I*d*x^2]/2] - Sin[ArcSin[1 - I*d*x^2]/2])", //
-        "x*Sqrt(a+I*b*ArcSin(1-I*d*x^2))+(Sqrt(Pi)*x*FresnelC((Sqrt(-I/b)*Sqrt(a+I*b*ArcSin(\n"
-            + //
-            "1-I*d*x^2)))/Sqrt(Pi))*(-Cosh(a/(2*b))+I*Sinh(a/(2*b))))/(Sqrt(-I/b)*(Cos(ArcSin(\n"
-            + //
+        "x*Sqrt(a+I*b*ArcSin(1-I*d*x^2))+(Sqrt(Pi)*x*FresnelC((Sqrt(-I/b)*Sqrt(a+I*b*ArcSin(\n" + //
+            "1-I*d*x^2)))/Sqrt(Pi))*(-Cosh(a/(2*b))+I*Sinh(a/(2*b))))/(Sqrt(-I/b)*(Cos(ArcSin(\n" + //
             "1-I*d*x^2)/2)-Sin(ArcSin(1-I*d*x^2)/2)))+(Sqrt(Pi)*x*FresnelS((Sqrt(-I/b)*Sqrt(a+I*b*ArcSin(\n"
             + //
-            "1-I*d*x^2)))/Sqrt(Pi))*(Cosh(a/(2*b))+I*Sinh(a/(2*b))))/(Sqrt(-I/b)*(Cos(ArcSin(\n"
-            + //
+            "1-I*d*x^2)))/Sqrt(Pi))*(Cosh(a/(2*b))+I*Sinh(a/(2*b))))/(Sqrt(-I/b)*(Cos(ArcSin(\n" + //
             "1-I*d*x^2)/2)-Sin(ArcSin(1-I*d*x^2)/2)))", //
         4811);
   }

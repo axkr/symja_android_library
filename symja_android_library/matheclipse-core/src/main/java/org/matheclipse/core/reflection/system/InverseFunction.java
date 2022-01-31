@@ -23,7 +23,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * <blockquote>
  *
- * <p>returns the inverse function for the symbol <code>head</code>.
+ * <p>
+ * returns the inverse function for the symbol <code>head</code>.
  *
  * </blockquote>
  *
@@ -53,8 +54,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
       }
     } else if (arg1.isBuiltInSymbol()) {
       if (arg1.equals(S.Abs)) {
-        LOGGER.log(
-            engine.getLogLevel(),
+        LOGGER.log(engine.getLogLevel(),
             "InverseFunction: using of inverse functions may omit some values.");
       }
       IExpr temp = getUnaryInverseFunction((ISymbol) arg1);
@@ -95,7 +95,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
    * arguments (i.e. <code>inverseAST.size()==1)</code>.
    *
    * @param ast the AST which represents a function (i.e. <code>Cos(x), Sin(x), ArcSin(x),...</code>
-   *     )
+   *        )
    * @param realAbs return inverse for <code>RealBas()</code> function
    * @return <code>null</code> if there is no inverse function defined.
    */
@@ -125,10 +125,10 @@ public class InverseFunction extends AbstractFunctionEvaluator {
    * @param dummy a temporary variable
    * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
    *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
-   *     rule which is used for variable elimination in index <code>[1]</code>.
+   *         rule which is used for variable elimination in index <code>[1]</code>.
    */
-  public static IAST[] eliminateSlotInverseFunction(
-      IExpr xFunction, ISymbol dummy, EvalEngine engine) {
+  public static IAST[] eliminateSlotInverseFunction(IExpr xFunction, ISymbol dummy,
+      EvalEngine engine) {
     final IAST equalAST = F.Equal(xFunction, dummy);
     Eliminate.VariableCounterVisitor exprAnalyzer;
     ArrayList<Eliminate.VariableCounterVisitor> analyzerList =

@@ -67,7 +67,8 @@ public class SemanticImport extends AbstractEvaluator {
   /**
    * Read CSV or TSV data from a URL.
    *
-   * <p>Example <code>urlName</code>:
+   * <p>
+   * Example <code>urlName</code>:
    *
    * <pre>
    * https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/data/whiskey.csv\

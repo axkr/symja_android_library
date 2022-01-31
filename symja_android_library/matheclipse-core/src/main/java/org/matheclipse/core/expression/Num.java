@@ -425,9 +425,7 @@ public class Num implements INum {
   }
 
   @Override
-  public CharSequence internalJavaString(
-      SourceCodeProperties properties,
-      int depth,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
     StringBuilder javaForm = new StringBuilder(prefix);
@@ -584,8 +582,8 @@ public class Num implements INum {
   @Override
   public INum multiply(final INum val) {
     if (val instanceof ApfloatNum) {
-      return F.num(
-          EvalEngine.getApfloat().multiply(apfloatValue(), ((ApfloatNum) val).apfloatValue()));
+      return F
+          .num(EvalEngine.getApfloat().multiply(apfloatValue(), ((ApfloatNum) val).apfloatValue()));
     }
     return valueOf(fDouble * val.getRealPart());
   }
@@ -677,13 +675,12 @@ public class Num implements INum {
   public ISignedNumber roundClosest(ISignedNumber multiple) {
     if (multiple.isRational()) {
       return F.ZZ(
-              DoubleMath.roundToBigInteger(
-                  fDouble / multiple.doubleValue(), RoundingMode.HALF_EVEN))
+          DoubleMath.roundToBigInteger(fDouble / multiple.doubleValue(), RoundingMode.HALF_EVEN))
           .multiply((IRational) multiple);
     }
     double factor = multiple.doubleValue();
-    return F.num(
-        DoubleMath.roundToBigInteger(fDouble / factor, RoundingMode.HALF_EVEN).doubleValue()
+    return F
+        .num(DoubleMath.roundToBigInteger(fDouble / factor, RoundingMode.HALF_EVEN).doubleValue()
             * factor);
   }
 

@@ -110,7 +110,8 @@ public class ClusteringFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the Bray Curtis distance between <code>u</code> and <code>v</code>.
+   * <p>
+   * returns the Bray Curtis distance between <code>u</code> and <code>v</code>.
    *
    * </blockquote>
    *
@@ -150,7 +151,8 @@ public class ClusteringFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the canberra distance between <code>u</code> and <code>v</code>, which is a weighted
+   * <p>
+   * returns the canberra distance between <code>u</code> and <code>v</code>, which is a weighted
    * version of the Manhattan distance.
    *
    * </blockquote>
@@ -191,9 +193,10 @@ public class ClusteringFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the chessboard distance (also known as Chebyshev distance) between <code>u</code>
-   * and <code>v</code>, which is the number of moves a king on a chessboard needs to get from
-   * square <code>u</code> to square <code>v</code>.
+   * <p>
+   * returns the chessboard distance (also known as Chebyshev distance) between <code>u</code> and
+   * <code>v</code>, which is the number of moves a king on a chessboard needs to get from square
+   * <code>u</code> to square <code>v</code>.
    *
    * </blockquote>
    *
@@ -234,7 +237,8 @@ public class ClusteringFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the cosine distance between <code>u</code> and <code>v</code>.
+   * <p>
+   * returns the cosine distance between <code>u</code> and <code>v</code>.
    *
    * </blockquote>
    *
@@ -275,7 +279,8 @@ public class ClusteringFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the euclidean distance between <code>u</code> and <code>v</code>.
+   * <p>
+   * returns the euclidean distance between <code>u</code> and <code>v</code>.
    *
    * </blockquote>
    *
@@ -453,16 +458,18 @@ public class ClusteringFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the Manhattan distance between <code>u</code> and <code>v</code>, which is the
-   * number of horizontal or vertical moves in the grid like Manhattan city layout to get from
+   * <p>
+   * returns the Manhattan distance between <code>u</code> and <code>v</code>, which is the number
+   * of horizontal or vertical moves in the grid like Manhattan city layout to get from
    * <code>u</code> to <code>v</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Taxicab_geometry">Wikipedia - Taxicab geometry</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Taxicab_geometry">Wikipedia - Taxicab geometry</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -500,7 +507,8 @@ public class ClusteringFunctions {
    *
    * <blockquote>
    *
-   * <p>returns squared the euclidean distance between <code>u$</code> and <code>v</code>.
+   * <p>
+   * returns squared the euclidean distance between <code>u$</code> and <code>v</code>.
    *
    * </blockquote>
    *

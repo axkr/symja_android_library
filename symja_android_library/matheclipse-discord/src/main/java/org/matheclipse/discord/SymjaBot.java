@@ -250,5 +250,5 @@ public class SymjaBot {
     buf.append("\nOutput:\n```mma\n" + output + "\n```\n");
     return buf.toString();
   }
- 
+
 }

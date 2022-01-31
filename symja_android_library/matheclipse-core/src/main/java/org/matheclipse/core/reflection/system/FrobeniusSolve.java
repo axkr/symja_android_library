@@ -26,21 +26,24 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * <blockquote>
  *
- * <p>get a list of solutions for the Frobenius equation given by the list of integers <code>
+ * <p>
+ * get a list of solutions for the Frobenius equation given by the list of integers <code>
  * {a1, ... ,aN}</code> and the non-negative integer <code>M</code>.
  *
  * </blockquote>
  *
- * <p>The Frobenius problem, also known as the postage-stamp problem or the money-changing problem,
- * is an integer programming problem that seeks nonnegative integer solutions to <code>
+ * <p>
+ * The Frobenius problem, also known as the postage-stamp problem or the money-changing problem, is
+ * an integer programming problem that seeks nonnegative integer solutions to <code>
  * x1*a1 + ... + xN*aN = M</code> where <code>ai</code> and <code>M</code> are positive integers. In
  * particular, the Frobenius number <code>FrobeniusNumber({a1, ... ,aN})</code>, is the largest
  * <code>M</code> so that this equation fails to have a solution.
  *
- * <p>See:
+ * <p>
+ * See:
  *
  * <ul>
- *   <li><a href="https://en.wikipedia.org/wiki/Coin_problem">Wikipedia - Coin problem</a>
+ * <li><a href="https://en.wikipedia.org/wiki/Coin_problem">Wikipedia - Coin problem</a>
  * </ul>
  *
  * <h3>Examples</h3>
@@ -68,7 +71,8 @@ public class FrobeniusSolve extends AbstractEvaluator {
         int[] listInt = Validate.checkListOfInts(ast, list, true, false, engine);
         if (listInt != null) {
           for (int i = 0; i < listInt.length; i++) {
-            if (listInt[i] < 0 && ast.size() < 4) {}
+            if (listInt[i] < 0 && ast.size() < 4) {
+            }
           }
           IInteger[] solution;
           IASTAppendable result = F.ListAlloc(8);

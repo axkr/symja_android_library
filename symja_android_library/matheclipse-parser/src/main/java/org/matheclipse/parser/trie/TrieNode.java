@@ -1,17 +1,16 @@
 /*
  * NOTICE OF LICENSE
  *
- * This source file is subject to the Open Software License (OSL 3.0) that is
- * bundled with this package in the file LICENSE.txt. It is also available
- * through the world-wide-web at http://opensource.org/licenses/osl-3.0.php
- * If you did not receive a copy of the license and are unable to obtain it
- * through the world-wide-web, please send an email to magnos.software@gmail.com
- * so we can send you a copy immediately. If you use any of this software please
- * notify me via our website or email, your feedback is much appreciated.
+ * This source file is subject to the Open Software License (OSL 3.0) that is bundled with this
+ * package in the file LICENSE.txt. It is also available through the world-wide-web at
+ * http://opensource.org/licenses/osl-3.0.php If you did not receive a copy of the license and are
+ * unable to obtain it through the world-wide-web, please send an email to magnos.software@gmail.com
+ * so we can send you a copy immediately. If you use any of this software please notify me via our
+ * website or email, your feedback is much appreciated.
  *
- * @copyright   Copyright (c) 2011 Magnos Software (http://www.magnos.org)
- * @license     http://opensource.org/licenses/osl-3.0.php
- *              Open Software License (OSL 3.0)
+ * @copyright Copyright (c) 2011 Magnos Software (http://www.magnos.org)
+ * 
+ * @license http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
 package org.matheclipse.parser.trie;
@@ -25,33 +24,35 @@ import java.util.function.Function;
  * value, the starting and ending indices into the sequence, the number of children in this node,
  * and the parent to this node.
  *
- * <p>There are three types of TrieNodes and each have special properties.
+ * <p>
+ * There are three types of TrieNodes and each have special properties.
  *
  * <ol>
- *   <li>Root
- *       <ul>
- *         <li>{@link #getStart()} == {@link #getEnd()} == 0
- *         <li>{@link #getValue()} == null
- *         <li>{@link #getKey()} == {@link #getSequence()} == null
- *       </ul>
- *   <li>Naked Branch
- *       <ul>
- *         <li>{@link #getStart()} &lt; {@link #getEnd()}
- *         <li>{@link #getValue()} == null
- *         <li>{@link #getKey()} == {@link #getSequence()} == (a key of one of it's children or a
- *             past child, ignore)
- *       </ul>
- *   <li>Valued (Branch or Leaf)
- *       <ul>
- *         <li>{@link #getStart()} &lt; {@link #getEnd()}
- *         <li>{@link #getValue()} == non-null value passed into {@link Trie#put(Object, Object)}
- *         <li>{@link #getKey()} == {@link #getSequence()} == a non-null key passed into {@link
- *             Trie#put(Object, Object)}
- *       </ul>
+ * <li>Root
+ * <ul>
+ * <li>{@link #getStart()} == {@link #getEnd()} == 0
+ * <li>{@link #getValue()} == null
+ * <li>{@link #getKey()} == {@link #getSequence()} == null
+ * </ul>
+ * <li>Naked Branch
+ * <ul>
+ * <li>{@link #getStart()} &lt; {@link #getEnd()}
+ * <li>{@link #getValue()} == null
+ * <li>{@link #getKey()} == {@link #getSequence()} == (a key of one of it's children or a past
+ * child, ignore)
+ * </ul>
+ * <li>Valued (Branch or Leaf)
+ * <ul>
+ * <li>{@link #getStart()} &lt; {@link #getEnd()}
+ * <li>{@link #getValue()} == non-null value passed into {@link Trie#put(Object, Object)}
+ * <li>{@link #getKey()} == {@link #getSequence()} == a non-null key passed into
+ * {@link Trie#put(Object, Object)}
+ * </ul>
  * </ol>
  *
- * <p>You can tell a valued branch or leaf apart by {@link #getChildCount()}, if it returns 0 then
- * it's a leaf, otherwise it's a branch.
+ * <p>
+ * You can tell a valued branch or leaf apart by {@link #getChildCount()}, if it returns 0 then it's
+ * a leaf, otherwise it's a branch.
  *
  * @author Philip Diffenderfer
  */
@@ -97,12 +98,7 @@ public class TrieNode<S, T> implements Entry<S, T>, Serializable {
    * @param end The end of the sequence for this node.
    * @param children The intial set of children.
    */
-  protected TrieNode(
-      TrieNode<S, T> parent,
-      T value,
-      S sequence,
-      int start,
-      int end,
+  protected TrieNode(TrieNode<S, T> parent, T value, S sequence, int start, int end,
       PerfectHashMap<TrieNode<S, T>> children) {
     this.parent = parent;
     this.sequence = sequence;
@@ -144,7 +140,7 @@ public class TrieNode<S, T> implements Entry<S, T>, Serializable {
    *
    * @param child The TrieNode to add as a child.
    * @param sequencer The sequencer to use to determine the place of the node in the children
-   *     PerfectHashMap.
+   *        PerfectHashMap.
    */
   protected void add(TrieNode<S, T> child, TrieSequencer<S> sequencer) {
     int hash = sequencer.hashOf(child.sequence, end);
@@ -160,7 +156,7 @@ public class TrieNode<S, T> implements Entry<S, T>, Serializable {
    * Removes this node from the Trie and appropriately adjusts it's parent and children.
    *
    * @param sequencer The sequencer to use to determine the place of this node in this nodes sibling
-   *     PerfectHashMap.
+   *        PerfectHashMap.
    */
   protected void remove(TrieSequencer<S> sequencer) {
     // Decrement size if this node had a value
@@ -262,7 +258,7 @@ public class TrieNode<S, T> implements Entry<S, T>, Serializable {
    * The value of this TrieNode.
    *
    * @return The value of this TrieNode or null if this TrieNode is a branching node only (has
-   *     children but the sequence in this node was never directly added).
+   *         children but the sequence in this node was never directly added).
    */
   @Override
   public T getValue() {
@@ -283,7 +279,8 @@ public class TrieNode<S, T> implements Entry<S, T>, Serializable {
    * The start of the sequence in this TrieNode.
    *
    * @return The start of the sequence in this TrieNode, greater than or equal to 0 and less than
-   *     {@link #getEnd()}. In the case of the root node: {@link #getStart()} == {@link #getEnd()}.
+   *         {@link #getEnd()}. In the case of the root node: {@link #getStart()} ==
+   *         {@link #getEnd()}.
    */
   public int getStart() {
     return start;
@@ -293,7 +290,7 @@ public class TrieNode<S, T> implements Entry<S, T>, Serializable {
    * The end of the sequence in this TrieNode.
    *
    * @return The end of the sequence in this TrieNode, greater than {@link #getStart()}. In the case
-   *     of the root node: {@link #getStart()} == {@link #getEnd()}.
+   *         of the root node: {@link #getStart()} == {@link #getEnd()}.
    */
   public int getEnd() {
     return end;
@@ -397,8 +394,7 @@ public class TrieNode<S, T> implements Entry<S, T>, Serializable {
 
     TrieNode<?, ?> node = (TrieNode<?, ?>) o;
 
-    return (sequence == node.sequence || sequence.equals(node.sequence))
-        && (value == node.value
-            || (value != null && node.value != null && value.equals(node.value)));
+    return (sequence == node.sequence || sequence.equals(node.sequence)) && (value == node.value
+        || (value != null && node.value != null && value.equals(node.value)));
   }
 }

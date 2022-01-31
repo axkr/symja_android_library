@@ -26,7 +26,8 @@ public class ComputationalGeometryFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {}
+      if (ast.arg1().isList()) {
+      }
       return F.NIL;
     }
 
@@ -39,26 +40,32 @@ public class ComputationalGeometryFunctions {
   /**
    *
    *
-   * <pre><code>CoplanarPoints({{x1,y1,z1},{x2,y2,z2},{x3,y3,z3},{a,b,c},...})
-   * </code></pre>
+   * <pre>
+   * <code>CoplanarPoints({{x1,y1,z1},{x2,y2,z2},{x3,y3,z3},{a,b,c},...})
+   * </code>
+   * </pre>
    *
-   * <p>returns true if the point <code>{a,b,c]</code> is on the plane defined by the first three
+   * <p>
+   * returns true if the point <code>{a,b,c]</code> is on the plane defined by the first three
    * points <code>{x1,y1,z1},{x2,y2,z2},{x3,y3,z3}</code>.
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Coplanarity">Wikipedia - Coplanarity</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Coplanarity">Wikipedia - Coplanarity</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; CoplanarPoints( {{3,2,-5}, {-1,4,-3}, {-3,8,-5}, {-3,2,1}})
+   * <pre>
+   * <code>&gt;&gt; CoplanarPoints( {{3,2,-5}, {-1,4,-3}, {-3,8,-5}, {-3,2,1}})
    * True
    *
    * &gt;&gt; CoplanarPoints( {{0,-1,-1}, {4,5,1}, {3,9,4}, {-4,4,3}})
    * False
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static class CoplanarPoints extends AbstractEvaluator {
 
@@ -77,10 +84,8 @@ public class ComputationalGeometryFunctions {
             }
           }
           return S.True;
-        } else if (ast.arg1().argSize() > 3
-            && listOfPoints.arg1().isList3()
-            && listOfPoints.arg2().isList3()
-            && listOfPoints.arg3().isList3()) {
+        } else if (ast.arg1().argSize() > 3 && listOfPoints.arg1().isList3()
+            && listOfPoints.arg2().isList3() && listOfPoints.arg3().isList3()) {
 
           IASTAppendable result = F.ast(S.And, listOfPoints.size() - 3);
           for (int i = 4; i < listOfPoints.size(); i++) {
@@ -141,22 +146,13 @@ public class ComputationalGeometryFunctions {
       IExpr py = p4.arg2();
       IExpr pz = p4.arg3();
 
-      IExpr times1 =
-          S.Times.of(
-              engine,
-              a1,
-              F.Plus(F.Times(py, a22), F.Times(x3, y1), F.Times(-1, x1, y3), F.Times(px, b2)));
-      IExpr times2 =
-          S.Times.of(
-              engine,
-              b1,
-              F.Plus(F.Times(pz, a22), F.Times(x3, z1), F.Times(-1, x1, z3), F.Times(px, c2)));
+      IExpr times1 = S.Times.of(engine, a1,
+          F.Plus(F.Times(py, a22), F.Times(x3, y1), F.Times(-1, x1, y3), F.Times(px, b2)));
+      IExpr times2 = S.Times.of(engine, b1,
+          F.Plus(F.Times(pz, a22), F.Times(x3, z1), F.Times(-1, x1, z3), F.Times(px, c2)));
 
-      IExpr times3 =
-          S.Times.of(
-              engine,
-              c1,
-              F.Plus(F.Times(pz, b22), F.Times(y3, z1), F.Times(-1, y1, z3), F.Times(py, c2)));
+      IExpr times3 = S.Times.of(engine, c1,
+          F.Plus(F.Times(pz, b22), F.Times(y3, z1), F.Times(-1, y1, z3), F.Times(py, c2)));
       IExpr calc = F.Plus.of(engine, times1, times2, times3);
 
       if (calc.isZero()) {
@@ -179,30 +175,39 @@ public class ComputationalGeometryFunctions {
   /**
    *
    *
-   * <pre><code>CollinearPoints({{x1,y1},{x2,y2},{a,b},...})
-   * </code></pre>
+   * <pre>
+   * <code>CollinearPoints({{x1,y1},{x2,y2},{a,b},...})
+   * </code>
+   * </pre>
    *
-   * <p>returns true if the point <code>{a,b]</code> is on the line defined by the first two points
+   * <p>
+   * returns true if the point <code>{a,b]</code> is on the line defined by the first two points
    * <code>{x1,y1},{x2,y2}</code>.
    *
-   * <pre><code>CollinearPoints({{x1,y1,z1},{x2,y2,z2},{a,b,c},...})
-   * </code></pre>
+   * <pre>
+   * <code>CollinearPoints({{x1,y1,z1},{x2,y2,z2},{a,b,c},...})
+   * </code>
+   * </pre>
    *
-   * <p>returns true if the point <code>{a,b,c]</code> is on the line defined by the first two
-   * points <code>{x1,y1,z1},{x2,y2,z2}</code>.
+   * <p>
+   * returns true if the point <code>{a,b,c]</code> is on the line defined by the first two points
+   * <code>{x1,y1,z1},{x2,y2,z2}</code>.
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Collinearity">Wikipedia - Collinearity</a>
-   *   <li><a href="https://youtu.be/UDt9M8_zxlw">Youtube - Collinear Points in 3D (Ch1 Pr18)</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Collinearity">Wikipedia - Collinearity</a>
+   * <li><a href="https://youtu.be/UDt9M8_zxlw">Youtube - Collinear Points in 3D (Ch1 Pr18)</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; CollinearPoints({{1,2,3}, {3,8,1}, {7,20,-3}})
+   * <pre>
+   * <code>&gt;&gt; CollinearPoints({{1,2,3}, {3,8,1}, {7,20,-3}})
    * True
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static class CollinearPoints extends AbstractEvaluator {
 
@@ -210,8 +215,7 @@ public class ComputationalGeometryFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList() && ast.arg1().argSize() > 2) {
         IAST listOfPoints = (IAST) ast.arg1();
-        if (ast.arg1().argSize() > 2
-            && listOfPoints.arg1().isList2()
+        if (ast.arg1().argSize() > 2 && listOfPoints.arg1().isList2()
             && listOfPoints.arg2().isList2()) {
 
           IASTAppendable result = F.ast(S.And, listOfPoints.size() - 2);
@@ -231,10 +235,8 @@ public class ComputationalGeometryFunctions {
             return result.arg1();
           }
           return result;
-        } else if (ast.arg1().argSize() > 2
-            && listOfPoints.arg1().isList3()
-            && listOfPoints.arg2().isList3()
-            && listOfPoints.arg3().isList3()) {
+        } else if (ast.arg1().argSize() > 2 && listOfPoints.arg1().isList3()
+            && listOfPoints.arg2().isList3() && listOfPoints.arg3().isList3()) {
 
           IASTAppendable result = F.ast(S.And, listOfPoints.size() - 3);
           for (int i = 3; i < listOfPoints.size(); i++) {

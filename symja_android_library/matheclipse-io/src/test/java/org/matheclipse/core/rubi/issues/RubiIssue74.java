@@ -9,11 +9,9 @@ public class RubiIssue74 extends AbstractRubiTestCase {
   }
 
   public void test0001() {
-    check(
-        "Part[Rubi`SignOfFactor[-I]*Rubi`SignOfFactor[x]*Rubi`SignOfFactor[1/Sqrt[2*x+x^2]],1]", //
+    check("Part[Rubi`SignOfFactor[-I]*Rubi`SignOfFactor[x]*Rubi`SignOfFactor[1/Sqrt[2*x+x^2]],1]", //
         "1");
-    check(
-        "(Rubi`SignOfFactor[-I]*Rubi`SignOfFactor[x]*Rubi`SignOfFactor[1/Sqrt[2*x+x^2]])[[1]]==1", //
+    check("(Rubi`SignOfFactor[-I]*Rubi`SignOfFactor[x]*Rubi`SignOfFactor[1/Sqrt[2*x+x^2]])[[1]]==1", //
         "True");
   }
 

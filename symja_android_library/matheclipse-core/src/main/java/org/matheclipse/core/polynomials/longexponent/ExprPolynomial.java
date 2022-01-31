@@ -630,7 +630,8 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @return first map entry.
    */
   public Map.Entry<ExpVectorLong, IExpr> leadingMonomial() {
-    if (val.size() == 0) return null;
+    if (val.size() == 0)
+      return null;
     Iterator<Map.Entry<ExpVectorLong, IExpr>> ai = val.entrySet().iterator();
     return ai.next();
   }
@@ -1307,8 +1308,8 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @param S GenPolynomial.
    * @return this * a x<sup>g</sup> - a x<sup>e</sup> S.
    */
-  public ExprPolynomial scaleSubtractMultiple(
-      IExpr b, ExpVectorLong g, IExpr a, ExpVectorLong e, ExprPolynomial S) {
+  public ExprPolynomial scaleSubtractMultiple(IExpr b, ExpVectorLong g, IExpr a, ExpVectorLong e,
+      ExprPolynomial S) {
     if (a == null || S == null) {
       return this.multiply(b, g);
     }
@@ -1637,9 +1638,8 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    *
    * @param S nonzero GenPolynomial with invertible leading coefficient.
    * @return [ quotient , remainder ] with this = quotient * S + remainder and deg(remainder) &lt;
-   *     deg(S) or remiander = 0. Or <code>null</code> is the evaluation was not possible.
-   * @see
-   *     edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+   *         deg(S) or remiander = 0. Or <code>null</code> is the evaluation was not possible.
+   * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
    */
   @Override
   public ExprPolynomial[] quotientRemainder(ExprPolynomial S) {
@@ -1687,9 +1687,8 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    *
    * @param S nonzero GenPolynomial with invertible leading coefficient.
    * @return [ quotient , remainder ] with this = quotient * S + remainder and deg(remainder) &lt;
-   *     deg(S) or remiander = 0.
-   * @see
-   *     edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+   *         deg(S) or remiander = 0.
+   * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
    * @deprecated use quotientRemainder()
    */
   @Deprecated
@@ -1703,8 +1702,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    *
    * @param S nonzero GenPolynomial with invertible leading coefficient.
    * @return quotient with this = quotient * S + remainder.
-   * @see
-   *     edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+   * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
    */
   @Override
   public ExprPolynomial divide(ExprPolynomial S) {
@@ -1726,8 +1724,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    *
    * @param S nonzero GenPolynomial with invertible leading coefficient.
    * @return remainder with this = quotient * S + remainder.
-   * @see
-   *     edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
+   * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
    */
   @Override
   public ExprPolynomial remainder(ExprPolynomial S) {
@@ -1801,7 +1798,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    *
    * @param S GenPolynomial.
    * @return [ gcd(this,S), a, b ] with a*this + b*S = gcd(this,S) or <code>null</code> is the
-   *     evaluation was not possible.
+   *         evaluation was not possible.
    */
   @Override
   public ExprPolynomial[] egcd(ExprPolynomial S) {
@@ -1951,8 +1948,8 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     ExprPolynomial[] hegcd = this.hegcd(m);
     ExprPolynomial a = hegcd[0];
     if (!a.isUnit()) { // gcd != 1
-      throw new AlgebraicNotInvertibleException(
-          "element not invertible, gcd != 1", m, a, m.divide(a));
+      throw new AlgebraicNotInvertibleException("element not invertible, gcd != 1", m, a,
+          m.divide(a));
     }
     ExprPolynomial b = hegcd[1];
     if (b.isZERO()) { // when m divides this, e.g. m.isUnit()
@@ -2283,11 +2280,11 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       if (maxDegree == 0) {
         result.set(1, coeff);
       } else {
-        for (int i = exp.length()-1; i >=0; i--) {
+        for (int i = exp.length() - 1; i >= 0; i--) {
           if (exp.getVal(i) != 0L) {
             SparseArrayExpr sparse = (SparseArrayExpr) result.get(maxDegree + 1);
             int[] positions = new int[maxDegree];
-            positions[0] = exp.length()-i;
+            positions[0] = exp.length() - i;
 
             Trie<int[], IExpr> data = sparse.toData();
             data.put(positions, coeff);
@@ -2295,12 +2292,12 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
           }
         }
       }
-      //      int len = exp.length();
-      //      IASTAppendable ruleList = F.ListAlloc(len);
-      //      for (int i = 0; i < len; i++) {
-      //        ruleList.append(exp.getVal(len - i - 1));
-      //      }
-      //      result.append(F.Rule(ruleList, coeff));
+      // int len = exp.length();
+      // IASTAppendable ruleList = F.ListAlloc(len);
+      // for (int i = 0; i < len; i++) {
+      // ruleList.append(exp.getVal(len - i - 1));
+      // }
+      // result.append(F.Rule(ruleList, coeff));
     }
     return result;
   }

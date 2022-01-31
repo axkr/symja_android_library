@@ -1,17 +1,15 @@
 /*
- *  Copyright 2014 TWO SIGMA OPEN SOURCE, LLC
+ * Copyright 2014 TWO SIGMA OPEN SOURCE, LLC
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.twosigma.beakerx.symjamma.evaluator;
 
@@ -87,21 +85,10 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 
   // private BeakerXUrlClassLoader beakerxUrlClassLoader;
 
-  public SymjaMMAEvaluator(
-      String id,
-      String sId,
-      CellExecutor cellExecutor,
-      TempFolderFactory tempFolderFactory,
-      EvaluatorParameters evaluatorParameters,
-      BeakerXClient beakerxClient,
-      MagicCommandAutocompletePatterns autocompletePatterns) {
-    super(
-        id,
-        sId,
-        cellExecutor,
-        tempFolderFactory,
-        evaluatorParameters,
-        beakerxClient,
+  public SymjaMMAEvaluator(String id, String sId, CellExecutor cellExecutor,
+      TempFolderFactory tempFolderFactory, EvaluatorParameters evaluatorParameters,
+      BeakerXClient beakerxClient, MagicCommandAutocompletePatterns autocompletePatterns) {
+    super(id, sId, cellExecutor, tempFolderFactory, evaluatorParameters, beakerxClient,
         autocompletePatterns);
     gac = createAutocomplete(autocompletePatterns);
     outDir = envVariablesFilter(outDir, System.getenv());
@@ -117,20 +104,10 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
     fUsedForm = TEXFORM;
   }
 
-  public SymjaMMAEvaluator(
-      String id,
-      String sId,
-      EvaluatorParameters evaluatorParameters,
-      BeakerXClient beakerxClient,
-      MagicCommandAutocompletePatterns autocompletePatterns) {
-    this(
-        id,
-        sId,
-        new BeakerCellExecutor("symjamma"),
-        new TempFolderFactoryImpl(),
-        evaluatorParameters,
-        beakerxClient,
-        autocompletePatterns);
+  public SymjaMMAEvaluator(String id, String sId, EvaluatorParameters evaluatorParameters,
+      BeakerXClient beakerxClient, MagicCommandAutocompletePatterns autocompletePatterns) {
+    this(id, sId, new BeakerCellExecutor("symjamma"), new TempFolderFactoryImpl(),
+        evaluatorParameters, beakerxClient, autocompletePatterns);
   }
 
   @Override
@@ -175,10 +152,10 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
   }
 
   @Override
-  public TryResult evaluate(
-      SimpleEvaluationObject seo, String code, ExecutionOptions executionOptions) {
-    return evaluate(
-        seo, new SymjaMMAWorkerThread(this, new JobDescriptor(code, seo, executionOptions)));
+  public TryResult evaluate(SimpleEvaluationObject seo, String code,
+      ExecutionOptions executionOptions) {
+    return evaluate(seo,
+        new SymjaMMAWorkerThread(this, new JobDescriptor(code, seo, executionOptions)));
   }
 
   @Override
@@ -203,8 +180,8 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
    * @param trimmedInput
    * @return
    */
-  MIMEContainer metaCommand(
-      final SymjaMMACodeRunner symjaMMACodeRunner, final String trimmedInput) {
+  MIMEContainer metaCommand(final SymjaMMACodeRunner symjaMMACodeRunner,
+      final String trimmedInput) {
     String command = trimmedInput.substring(1).toLowerCase(Locale.ENGLISH);
     if (command.equals("java")) {
       fUsedForm = SymjaMMAEvaluator.JAVAFORM;
@@ -247,7 +224,8 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
   TryResult printForm(final SymjaMMACodeRunner symjaMMACodeRunner, final Object result) {
     switch (fUsedForm) {
       case SymjaMMAEvaluator.JAVAFORM:
-        return TryResult.createResult(((IExpr) result).internalJavaString(JAVA_FORM_PROPERTIES, -1, x -> null));
+        return TryResult
+            .createResult(((IExpr) result).internalJavaString(JAVA_FORM_PROPERTIES, -1, x -> null));
       case SymjaMMAEvaluator.TRADITIONALFORM:
         StringBuilder traditionalBuffer = new StringBuilder();
         fOutputTraditionalFactory.reset(false);

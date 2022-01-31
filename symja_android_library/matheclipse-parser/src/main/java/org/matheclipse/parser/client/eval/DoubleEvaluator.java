@@ -1,17 +1,15 @@
 /*
  * Copyright 2005-2008 Axel Kramer (axelclk@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.matheclipse.parser.client.eval;
 
@@ -214,19 +212,19 @@ public class DoubleEvaluator {
 
   static {
     SYMBOL_DOUBLE_MAP = new ConcurrentHashMap<String, Double>();
-    SYMBOL_DOUBLE_MAP.put(
-        "Catalan", Double.valueOf(0.91596559417721901505460351493238411077414937428167));
+    SYMBOL_DOUBLE_MAP.put("Catalan",
+        Double.valueOf(0.91596559417721901505460351493238411077414937428167));
     SYMBOL_DOUBLE_MAP.put("Degree", Double.valueOf(Math.PI / 180));
     SYMBOL_DOUBLE_MAP.put("E", Double.valueOf(Math.E));
     SYMBOL_DOUBLE_MAP.put("Pi", Double.valueOf(Math.PI));
-    SYMBOL_DOUBLE_MAP.put(
-        "EulerGamma", Double.valueOf(0.57721566490153286060651209008240243104215933593992));
-    SYMBOL_DOUBLE_MAP.put(
-        "Glaisher", Double.valueOf(1.2824271291006226368753425688697917277676889273250));
-    SYMBOL_DOUBLE_MAP.put(
-        "GoldenRatio", Double.valueOf(1.6180339887498948482045868343656381177203091798058));
-    SYMBOL_DOUBLE_MAP.put(
-        "Khinchin", Double.valueOf(2.6854520010653064453097148354817956938203822939945));
+    SYMBOL_DOUBLE_MAP.put("EulerGamma",
+        Double.valueOf(0.57721566490153286060651209008240243104215933593992));
+    SYMBOL_DOUBLE_MAP.put("Glaisher",
+        Double.valueOf(1.2824271291006226368753425688697917277676889273250));
+    SYMBOL_DOUBLE_MAP.put("GoldenRatio",
+        Double.valueOf(1.6180339887498948482045868343656381177203091798058));
+    SYMBOL_DOUBLE_MAP.put("Khinchin",
+        Double.valueOf(2.6854520010653064453097148354817956938203822939945));
 
     SYMBOL_BOOLEAN_MAP = new ConcurrentHashMap<String, Boolean>();
     SYMBOL_BOOLEAN_MAP.put("False", Boolean.FALSE);
@@ -234,79 +232,61 @@ public class DoubleEvaluator {
 
     FUNCTION_BOOLEAN_MAP = new ConcurrentHashMap<String, Object>();
 
-    FUNCTION_BOOLEAN_MAP.put(
-        "And",
-        new IBooleanBoolean2Function() {
-          @Override
-          public boolean evaluate(boolean arg1, boolean arg2) {
-            return arg1 && arg2;
-          }
-        });
-    FUNCTION_BOOLEAN_MAP.put(
-        "Not",
-        new IBooleanBoolean1Function() {
-          @Override
-          public boolean evaluate(boolean arg1) {
-            return !arg1;
-          }
-        });
-    FUNCTION_BOOLEAN_MAP.put(
-        "Or",
-        new IBooleanBoolean2Function() {
-          @Override
-          public boolean evaluate(boolean arg1, boolean arg2) {
-            return arg1 || arg2;
-          }
-        });
+    FUNCTION_BOOLEAN_MAP.put("And", new IBooleanBoolean2Function() {
+      @Override
+      public boolean evaluate(boolean arg1, boolean arg2) {
+        return arg1 && arg2;
+      }
+    });
+    FUNCTION_BOOLEAN_MAP.put("Not", new IBooleanBoolean1Function() {
+      @Override
+      public boolean evaluate(boolean arg1) {
+        return !arg1;
+      }
+    });
+    FUNCTION_BOOLEAN_MAP.put("Or", new IBooleanBoolean2Function() {
+      @Override
+      public boolean evaluate(boolean arg1, boolean arg2) {
+        return arg1 || arg2;
+      }
+    });
 
-    FUNCTION_BOOLEAN_MAP.put(
-        "Equal",
-        new IBooleanDouble2Function() {
-          @Override
-          public boolean evaluate(double arg1, double arg2) {
-            return Math.abs(arg1 - arg2) < EPSILON;
-          }
-        });
-    FUNCTION_BOOLEAN_MAP.put(
-        "Greater",
-        new IBooleanDouble2Function() {
-          @Override
-          public boolean evaluate(double arg1, double arg2) {
-            return arg1 > arg2;
-          }
-        });
-    FUNCTION_BOOLEAN_MAP.put(
-        "GreaterEqual",
-        new IBooleanDouble2Function() {
-          @Override
-          public boolean evaluate(double arg1, double arg2) {
-            return arg1 >= arg2;
-          }
-        });
-    FUNCTION_BOOLEAN_MAP.put(
-        "Less",
-        new IBooleanDouble2Function() {
-          @Override
-          public boolean evaluate(double arg1, double arg2) {
-            return arg1 < arg2;
-          }
-        });
-    FUNCTION_BOOLEAN_MAP.put(
-        "LessEqual",
-        new IBooleanDouble2Function() {
-          @Override
-          public boolean evaluate(double arg1, double arg2) {
-            return arg1 <= arg2;
-          }
-        });
-    FUNCTION_BOOLEAN_MAP.put(
-        "Unequal",
-        new IBooleanDouble2Function() {
-          @Override
-          public boolean evaluate(double arg1, double arg2) {
-            return !(Math.abs(arg1 - arg2) < EPSILON);
-          }
-        });
+    FUNCTION_BOOLEAN_MAP.put("Equal", new IBooleanDouble2Function() {
+      @Override
+      public boolean evaluate(double arg1, double arg2) {
+        return Math.abs(arg1 - arg2) < EPSILON;
+      }
+    });
+    FUNCTION_BOOLEAN_MAP.put("Greater", new IBooleanDouble2Function() {
+      @Override
+      public boolean evaluate(double arg1, double arg2) {
+        return arg1 > arg2;
+      }
+    });
+    FUNCTION_BOOLEAN_MAP.put("GreaterEqual", new IBooleanDouble2Function() {
+      @Override
+      public boolean evaluate(double arg1, double arg2) {
+        return arg1 >= arg2;
+      }
+    });
+    FUNCTION_BOOLEAN_MAP.put("Less", new IBooleanDouble2Function() {
+      @Override
+      public boolean evaluate(double arg1, double arg2) {
+        return arg1 < arg2;
+      }
+    });
+    FUNCTION_BOOLEAN_MAP.put("LessEqual", new IBooleanDouble2Function() {
+      @Override
+      public boolean evaluate(double arg1, double arg2) {
+        return arg1 <= arg2;
+      }
+    });
+    FUNCTION_BOOLEAN_MAP.put("Unequal", new IBooleanDouble2Function() {
+      @Override
+      public boolean evaluate(double arg1, double arg2) {
+        return !(Math.abs(arg1 - arg2) < EPSILON);
+      }
+    });
 
     FUNCTION_DOUBLE_MAP = new ConcurrentHashMap<String, Object>();
     FUNCTION_DOUBLE_MAP.put("ArcTan", new ArcTanFunction());
@@ -320,149 +300,115 @@ public class DoubleEvaluator {
     //
     // Functions with 0 argument
     //
-    FUNCTION_DOUBLE_MAP.put(
-        "Random",
-        new DoubleSupplier() {
-          @Override
-          public double getAsDouble() {
-            return ThreadLocalRandom.current().nextDouble();
-          }
-        });
+    FUNCTION_DOUBLE_MAP.put("Random", new DoubleSupplier() {
+      @Override
+      public double getAsDouble() {
+        return ThreadLocalRandom.current().nextDouble();
+      }
+    });
     //
     // Functions with 1 argument
     //
-    FUNCTION_DOUBLE_MAP.put(
-        "Abs",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.abs(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "ArcCos",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.acos(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "ArcSin",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.asin(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "Ceiling",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.ceil(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "Cos",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.cos(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "Cosh",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.cosh(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "Exp",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.exp(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "Floor",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.floor(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "Round",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.round(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "Sign",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.signum(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "Sin",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.sin(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "Sinh",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.sinh(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "Sqrt",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.sqrt(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "Tan",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.tan(arg1);
-          }
-        });
-    FUNCTION_DOUBLE_MAP.put(
-        "Tanh",
-        new DoubleUnaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1) {
-            return Math.tanh(arg1);
-          }
-        });
+    FUNCTION_DOUBLE_MAP.put("Abs", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.abs(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("ArcCos", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.acos(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("ArcSin", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.asin(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("Ceiling", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.ceil(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("Cos", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.cos(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("Cosh", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.cosh(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("Exp", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.exp(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("Floor", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.floor(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("Round", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.round(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("Sign", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.signum(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("Sin", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.sin(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("Sinh", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.sinh(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("Sqrt", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.sqrt(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("Tan", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.tan(arg1);
+      }
+    });
+    FUNCTION_DOUBLE_MAP.put("Tanh", new DoubleUnaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1) {
+        return Math.tanh(arg1);
+      }
+    });
 
     //
     // Functions with 2 arguments
     //
-    FUNCTION_DOUBLE_MAP.put(
-        "Power",
-        new DoubleBinaryOperator() {
-          @Override
-          public double applyAsDouble(double arg1, double arg2) {
-            return Math.pow(arg1, arg2);
-          }
-        });
+    FUNCTION_DOUBLE_MAP.put("Power", new DoubleBinaryOperator() {
+      @Override
+      public double applyAsDouble(double arg1, double arg2) {
+        return Math.pow(arg1, arg2);
+      }
+    });
   }
 
   private Map<String, IDoubleValue> fVariableMap;
@@ -648,9 +594,8 @@ public class DoubleEvaluator {
             }
           } else if (functionNode.size() == 3) {
             if (obj instanceof DoubleBinaryOperator) {
-              return ((DoubleBinaryOperator) obj)
-                  .applyAsDouble(
-                      evaluateNode(functionNode.getNode(1)), evaluateNode(functionNode.getNode(2)));
+              return ((DoubleBinaryOperator) obj).applyAsDouble(
+                  evaluateNode(functionNode.getNode(1)), evaluateNode(functionNode.getNode(2)));
             }
           }
           if (fCallbackFunction != null) {
@@ -751,26 +696,19 @@ public class DoubleEvaluator {
           if (f.get(2).isFree(var)) { // derive x^r
             ASTNode arg1Derived = derivative(f.getNode(1), var);
             // (r-1)
-            FunctionNode exponent =
-                fASTFactory.createFunction(
-                    fASTFactory.createSymbol("Plus"), new DoubleNode(-1.0), f.get(2));
+            FunctionNode exponent = fASTFactory.createFunction(fASTFactory.createSymbol("Plus"),
+                new DoubleNode(-1.0), f.get(2));
             // r*x^(r-1)
-            FunctionNode fun =
-                fASTFactory.createFunction(
-                    fASTFactory.createSymbol("Times"),
-                    f.get(2),
-                    fASTFactory.createFunction(
-                        fASTFactory.createSymbol("Power"), f.get(1), exponent));
+            FunctionNode fun = fASTFactory.createFunction(fASTFactory.createSymbol("Times"),
+                f.get(2),
+                fASTFactory.createFunction(fASTFactory.createSymbol("Power"), f.get(1), exponent));
             return getDerivativeResult(arg1Derived, fun);
           }
           if (f.get(1).isFree(var)) { // derive a^x
             ASTNode arg2Derived = derivative(f.getNode(2), var);
             // log(a) * a^x
-            FunctionNode fun =
-                fASTFactory.createFunction(
-                    fASTFactory.createSymbol("Times"),
-                    fASTFactory.createFunction(fASTFactory.createSymbol("Log"), f.get(1)),
-                    f);
+            FunctionNode fun = fASTFactory.createFunction(fASTFactory.createSymbol("Times"),
+                fASTFactory.createFunction(fASTFactory.createSymbol("Log"), f.get(1)), f);
             return getDerivativeResult(arg2Derived, fun);
           }
         } else {
@@ -874,14 +812,12 @@ public class DoubleEvaluator {
       } else if (functionNode.size() == 3) {
         Object obj = FUNCTION_BOOLEAN_MAP.get(symbol);
         if (obj instanceof IBooleanDouble2Function) {
-          return ((IBooleanDouble2Function) obj)
-              .evaluate(
-                  evaluateNode(functionNode.getNode(1)), evaluateNode(functionNode.getNode(2)));
+          return ((IBooleanDouble2Function) obj).evaluate(evaluateNode(functionNode.getNode(1)),
+              evaluateNode(functionNode.getNode(2)));
         } else if (obj instanceof IBooleanBoolean2Function) {
-          return ((IBooleanBoolean2Function) obj)
-              .evaluate(
-                  evaluateNodeLogical(functionNode.getNode(1)),
-                  evaluateNodeLogical(functionNode.getNode(2)));
+          return ((IBooleanBoolean2Function) obj).evaluate(
+              evaluateNodeLogical(functionNode.getNode(1)),
+              evaluateNodeLogical(functionNode.getNode(2)));
         }
         // } else {
         // Object obj = FUNCTION_BOOLEAN_MAP.get(symbol);
@@ -1030,13 +966,12 @@ public class DoubleEvaluator {
    * @param expression
    * @param result a set which contains the variable names
    * @param relaxedSyntax if <code>true</code> us e function syntax like <code>sin(x)</code>
-   *     otherwise use <code>Sin[x]</code>.
+   *        otherwise use <code>Sin[x]</code>.
    */
   public static void getVariables(String expression, Set<String> result, boolean relaxedSyntax) {
-    Parser p =
-        new Parser(
-            relaxedSyntax ? ASTNodeFactory.RELAXED_STYLE_FACTORY : ASTNodeFactory.MMA_STYLE_FACTORY,
-            relaxedSyntax);
+    Parser p = new Parser(
+        relaxedSyntax ? ASTNodeFactory.RELAXED_STYLE_FACTORY : ASTNodeFactory.MMA_STYLE_FACTORY,
+        relaxedSyntax);
     ASTNode node = p.parse(expression);
     getVariables(node, result);
   }

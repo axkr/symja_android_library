@@ -87,7 +87,8 @@ public class Export extends AbstractEvaluator {
             }
             return arg1;
           } else {
-            if (arg2.isList()) {}
+            if (arg2.isList()) {
+            }
           }
         } else if (format.equals(Extension.DAT)) {
           File file = new File(arg1.toString());
@@ -115,17 +116,18 @@ public class Export extends AbstractEvaluator {
       throws ExportException {
     switch (format) {
       case DOT:
-        DOTExporter<IExpr, DefaultEdge> dotExporter =
-            new DOTExporter<>(); // new IntegerComponentNameProvider<>(), null, null, null, null);
-        //        dotExporter.putGraphAttribute("overlap", "false");
-        //        dotExporter.putGraphAttribute("splines", "true");
-        dotExporter.setGraphAttributeProvider(
-            () -> {
-              Map<String, Attribute> map = new LinkedHashMap<>();
-              map.put("overlap", DefaultAttribute.createAttribute("false"));
-              map.put("splines", DefaultAttribute.createAttribute("true"));
-              return map;
-            });
+        DOTExporter<IExpr, DefaultEdge> dotExporter = new DOTExporter<>(); // new
+                                                                           // IntegerComponentNameProvider<>(),
+                                                                           // null, null, null,
+                                                                           // null);
+        // dotExporter.putGraphAttribute("overlap", "false");
+        // dotExporter.putGraphAttribute("splines", "true");
+        dotExporter.setGraphAttributeProvider(() -> {
+          Map<String, Attribute> map = new LinkedHashMap<>();
+          map.put("overlap", DefaultAttribute.createAttribute("false"));
+          map.put("splines", DefaultAttribute.createAttribute("true"));
+          return map;
+        });
         dotExporter.exportGraph(g, writer);
         return;
       case GRAPHML:
@@ -136,9 +138,8 @@ public class Export extends AbstractEvaluator {
     }
 
     // DEFAULT: return CSV file
-    CSVExporter<IExpr, DefaultEdge> exporter =
-        new CSVExporter<IExpr, DefaultEdge>(
-            nameProvider, org.jgrapht.nio.csv.CSVFormat.EDGE_LIST, ';');
+    CSVExporter<IExpr, DefaultEdge> exporter = new CSVExporter<IExpr, DefaultEdge>(nameProvider,
+        org.jgrapht.nio.csv.CSVFormat.EDGE_LIST, ';');
     exporter.exportGraph(g, writer);
   }
 

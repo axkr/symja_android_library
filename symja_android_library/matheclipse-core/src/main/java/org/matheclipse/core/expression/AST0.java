@@ -22,7 +22,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>no argument</b>.
  *
- * <p>In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
+ * <p>
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
  * structure of the Symja source code. Each node of the tree denotes a construct occurring in the
  * source code. The syntax is 'abstract' in the sense that it does not represent every detail that
  * appears in the real syntax. For instance, grouping parentheses are implicit in the tree
@@ -31,9 +32,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>x</code>. Internally an AST is represented as a <code>java.util.List</code> which contains
  *
  * <ul>
- *   <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
- *       Times,...) at index <code>0</code> and
- *   <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
+ * Times,...) at index <code>0</code> and
+ * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
  * </ul>
  *
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
@@ -50,7 +51,8 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   /**
    * The head of this function.
    *
-   * <p>Package private.
+   * <p>
+   * Package private.
    */
   protected IExpr arg0;
 
@@ -228,8 +230,8 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
 
   /** {@inheritDoc} */
   @Override
-  public IAST filter(
-      IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
+  public IAST filter(IASTAppendable filterAST, IASTAppendable restAST,
+      Predicate<? super IExpr> predicate) {
     return filterAST;
   }
 
@@ -241,8 +243,8 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
 
   /** {@inheritDoc} */
   @Override
-  public IAST filterFunction(
-      IASTAppendable filterAST, IASTAppendable restAST, final Function<IExpr, IExpr> function) {
+  public IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+      final Function<IExpr, IExpr> function) {
     return filterAST;
   }
 

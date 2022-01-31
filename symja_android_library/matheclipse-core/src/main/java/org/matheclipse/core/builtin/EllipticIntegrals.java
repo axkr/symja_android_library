@@ -63,16 +63,20 @@ public class EllipticIntegrals {
   /**
    *
    *
-   * <pre><code>CarlsonRC(x, y)
-   * </code></pre>
+   * <pre>
+   * <code>CarlsonRC(x, y)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Carlson RC function..
+   * <p>
+   * returns the Carlson RC function..
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
-   *       symmetric form</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
+   * symmetric form</a>
    * </ul>
    */
   private static class CarlsonRC extends AbstractFunctionEvaluator {
@@ -91,10 +95,8 @@ public class EllipticIntegrals {
           // 1 / Sqrt(x)
           return F.Power.of(engine, x, F.CN1D2);
         }
-        return F.Piecewise(
-            F.List(
-                F.List(
-                    F.CComplexInfinity, F.And(F.LessEqual(F.Re(x), F.C0), F.Equal(F.Im(x), F.C0)))),
+        return F.Piecewise(F.List(
+            F.List(F.CComplexInfinity, F.And(F.LessEqual(F.Re(x), F.C0), F.Equal(F.Im(x), F.C0)))),
             F.Power(x, F.CN1D2));
       }
       if (y.isZero()) {
@@ -143,16 +145,20 @@ public class EllipticIntegrals {
   /**
    *
    *
-   * <pre><code>CarlsonRD(x, y, z)
-   * </code></pre>
+   * <pre>
+   * <code>CarlsonRD(x, y, z)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Carlson RD function.
+   * <p>
+   * returns the Carlson RD function.
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
-   *       symmetric form</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
+   * symmetric form</a>
    * </ul>
    */
   private static class CarlsonRD extends AbstractFunctionEvaluator {
@@ -199,16 +205,20 @@ public class EllipticIntegrals {
   /**
    *
    *
-   * <pre><code>CarlsonRF(x, y, z)
-   * </code></pre>
+   * <pre>
+   * <code>CarlsonRF(x, y, z)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Carlson RF function.
+   * <p>
+   * returns the Carlson RF function.
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
-   *       symmetric form</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
+   * symmetric form</a>
    * </ul>
    */
   private static class CarlsonRF extends AbstractFunctionEvaluator {
@@ -259,16 +269,20 @@ public class EllipticIntegrals {
   /**
    *
    *
-   * <pre><code>CarlsonRG(x, y, z)
-   * </code></pre>
+   * <pre>
+   * <code>CarlsonRG(x, y, z)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Carlson RG function.
+   * <p>
+   * returns the Carlson RG function.
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
-   *       symmetric form</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
+   * symmetric form</a>
    * </ul>
    */
   private static class CarlsonRG extends AbstractFunctionEvaluator {
@@ -329,16 +343,20 @@ public class EllipticIntegrals {
   /**
    *
    *
-   * <pre><code>CarlsonRJ(x, y, z, p)
-   * </code></pre>
+   * <pre>
+   * <code>CarlsonRJ(x, y, z, p)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Carlson RJ function.
+   * <p>
+   * returns the Carlson RJ function.
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
-   *       symmetric form</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Carlson_symmetric_form">Wikipedia - Carlson
+   * symmetric form</a>
    * </ul>
    */
   private static class CarlsonRJ extends AbstractFunctionEvaluator {
@@ -400,16 +418,18 @@ public class EllipticIntegrals {
    *
    * <blockquote>
    *
-   * <p>returns the complete elliptic integral of the second kind.
+   * <p>
+   * returns the complete elliptic integral of the second kind.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href=
-   *       "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_second_kind">Wikipedia
-   *       - Elliptic integral - Complete elliptic integral of the second kind)</a>
+   * <li><a href=
+   * "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_second_kind">Wikipedia
+   * - Elliptic integral - Complete elliptic integral of the second kind)</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -487,18 +507,12 @@ public class EllipticIntegrals {
       }
       if (z.isNumEqualRational(F.C1D2)) {
         // (Pi^2 + 2 Gamma(3/4)^4)/(4*Sqrt(Pi)*Gamma(3/4)^2)
-        return F.Times(
-            F.C1D4,
-            F.Power(S.Pi, F.CN1D2),
-            F.Power(F.Gamma(F.QQ(3L, 4L)), -2),
+        return F.Times(F.C1D4, F.Power(S.Pi, F.CN1D2), F.Power(F.Gamma(F.QQ(3L, 4L)), -2),
             F.Plus(F.Sqr(S.Pi), F.Times(F.C2, F.Power(F.Gamma(F.QQ(3L, 4L)), 4))));
       }
       if (z.isMinusOne()) {
         // (Pi^2+2*Gamma(3/4)^4)/(2*Sqrt(2)*Sqrt(Pi)*Gamma(3/4)^2)
-        return F.Times(
-            F.C1D2,
-            F.C1DSqrt2,
-            F.Power(S.Pi, F.CN1D2),
+        return F.Times(F.C1D2, F.C1DSqrt2, F.Power(S.Pi, F.CN1D2),
             F.Power(F.Gamma(F.QQ(3L, 4L)), -2),
             F.Plus(F.Sqr(S.Pi), F.Times(F.C2, F.Power(F.Gamma(F.QQ(3L, 4L)), 4))));
       }
@@ -551,16 +565,18 @@ public class EllipticIntegrals {
    *
    * <blockquote>
    *
-   * <p>returns the incomplete elliptic integral of the first kind.
+   * <p>
+   * returns the incomplete elliptic integral of the first kind.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href=
-   *       "https://en.wikipedia.org/wiki/Elliptic_integral#Incomplete_elliptic_integral_of_the_first_kind">Wikipedia
-   *       - Elliptic integral - Incomplete elliptic integral of the first kind)</a>
+   * <li><a href=
+   * "https://en.wikipedia.org/wiki/Elliptic_integral#Incomplete_elliptic_integral_of_the_first_kind">Wikipedia
+   * - Elliptic integral - Incomplete elliptic integral of the first kind)</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -669,16 +685,18 @@ public class EllipticIntegrals {
    *
    * <blockquote>
    *
-   * <p>returns the complete elliptic integral of the first kind.
+   * <p>
+   * returns the complete elliptic integral of the first kind.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href=
-   *       "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_first_kind">Wikipedia
-   *       - Elliptic integral - Complete elliptic integral of the first kind)</a>
+   * <li><a href=
+   * "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_first_kind">Wikipedia
+   * - Elliptic integral - Complete elliptic integral of the first kind)</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -693,9 +711,7 @@ public class EllipticIntegrals {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr m = ast.arg1();
-      if (m.isInfinity()
-          || m.isNegativeInfinity()
-          || m.isDirectedInfinity(F.CI)
+      if (m.isInfinity() || m.isNegativeInfinity() || m.isDirectedInfinity(F.CI)
           || m.isDirectedInfinity(F.CNI)) {
         return F.C0;
       }
@@ -736,9 +752,7 @@ public class EllipticIntegrals {
       }
       if (m.isNumber()) {
         // EllipticK(m_) := Pi/(2*ArithmeticGeometricMean(1,Sqrt(1-m)))
-        return F.Times(
-            F.C1D2,
-            S.Pi,
+        return F.Times(F.C1D2, S.Pi,
             F.Power(F.ArithmeticGeometricMean(F.C1, F.Sqrt(F.Plus(F.C1, F.Negate(m)))), -1));
       }
       return F.NIL;
@@ -763,7 +777,8 @@ public class EllipticIntegrals {
    * EllipticPi(n, m)
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * EllipticPi(n, m, z)
@@ -771,16 +786,18 @@ public class EllipticIntegrals {
    *
    * <blockquote>
    *
-   * <p>returns the complete elliptic integral of the third kind.
+   * <p>
+   * returns the complete elliptic integral of the third kind.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href=
-   *       "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_third_kind">Wikipedia
-   *       - Elliptic integral - Complete elliptic integral of the third kind</a>
+   * <li><a href=
+   * "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_third_kind">Wikipedia
+   * - Elliptic integral - Complete elliptic integral of the third kind</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -944,15 +961,15 @@ public class EllipticIntegrals {
           }
           if (x.isReal() && m.isReal()) {
             try {
-              return F.complexNum(
-                  EllipticFunctionsJS.jacobiTheta(a, x.evalDouble(), m.evalDouble()));
+              return F
+                  .complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalDouble(), m.evalDouble()));
             } catch (RuntimeException rex) {
               LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             }
           } else if (x.isInexactNumber() && m.isInexactNumber()) {
             try {
-              return F.complexNum(
-                  EllipticFunctionsJS.jacobiTheta(a, x.evalComplex(), m.evalComplex()));
+              return F
+                  .complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalComplex(), m.evalComplex()));
             } catch (ValidateException ve) {
               return IOFunctions.printMessage(ast.topHead(), ve, engine);
             } catch (RuntimeException rex) {
@@ -983,9 +1000,8 @@ public class EllipticIntegrals {
           }
         } else if (m.isInexactNumber()) {
           try {
-            return F.complexNum(
-                EllipticFunctionsJS.jacobiTheta(
-                    a, org.hipparchus.complex.Complex.ZERO, m.evalComplex()));
+            return F.complexNum(EllipticFunctionsJS.jacobiTheta(a,
+                org.hipparchus.complex.Complex.ZERO, m.evalComplex()));
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
@@ -1043,17 +1059,21 @@ public class EllipticIntegrals {
   /**
    *
    *
-   * <pre><code>JacobiAmplitude(x, m)
-   * </code></pre>
+   * <pre>
+   * <code>JacobiAmplitude(x, m)
+   * </code>
+   * </pre>
    *
-   * <p>returns the amplitude <code>am(x, m)</code> for Jacobian elliptic function.
+   * <p>
+   * returns the amplitude <code>am(x, m)</code> for Jacobian elliptic function.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
-   *       elliptic functions</a>
-   *   <li><a href="https://dlmf.nist.gov/22.16">NIST - Jacobi’s Amplitude (am) Function</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   * elliptic functions</a>
+   * <li><a href="https://dlmf.nist.gov/22.16">NIST - Jacobi’s Amplitude (am) Function</a>
    * </ul>
    */
   private static class JacobiAmplitude extends AbstractFunctionEvaluator {
@@ -1077,11 +1097,11 @@ public class EllipticIntegrals {
       if (z.isInexactNumber() && m.isInexactNumber()) {
         try {
           if (z.isReal() && m.isReal()) {
-            return F.complexNum(
-                EllipticFunctionsJS.jacobiAmplitude(z.evalDouble(), m.evalDouble()));
+            return F
+                .complexNum(EllipticFunctionsJS.jacobiAmplitude(z.evalDouble(), m.evalDouble()));
           }
-          return F.complexNum(
-              EllipticFunctionsJS.jacobiAmplitude(z.evalComplex(), m.evalComplex()));
+          return F
+              .complexNum(EllipticFunctionsJS.jacobiAmplitude(z.evalComplex(), m.evalComplex()));
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -1109,24 +1129,30 @@ public class EllipticIntegrals {
   /**
    *
    *
-   * <pre><code>JacobiCD(x, m)
-   * </code></pre>
+   * <pre>
+   * <code>JacobiCD(x, m)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Jacobian elliptic function <code>cd(x, m)</code>.
+   * <p>
+   * returns the Jacobian elliptic function <code>cd(x, m)</code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
-   *       elliptic functions</a>
-   *   <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   * elliptic functions</a>
+   * <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; JacobiCD(10.0,1/3)
+   * <pre>
+   * <code>&gt;&gt; JacobiCD(10.0,1/3)
    * -0.945268
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static class JacobiCD extends AbstractFunctionEvaluator {
 
@@ -1176,24 +1202,30 @@ public class EllipticIntegrals {
   /**
    *
    *
-   * <pre><code>JacobiCN(x, m)
-   * </code></pre>
+   * <pre>
+   * <code>JacobiCN(x, m)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Jacobian elliptic function <code>cn(x, m)</code>.
+   * <p>
+   * returns the Jacobian elliptic function <code>cn(x, m)</code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
-   *       elliptic functions</a>
-   *   <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   * elliptic functions</a>
+   * <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; JacobiCN(10.0,1/3)
+   * <pre>
+   * <code>&gt;&gt; JacobiCN(10.0,1/3)
    * -0.92107
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static class JacobiCN extends AbstractFunctionEvaluator {
 
@@ -1246,24 +1278,30 @@ public class EllipticIntegrals {
   /**
    *
    *
-   * <pre><code>JacobiDN(x, m)
-   * </code></pre>
+   * <pre>
+   * <code>JacobiDN(x, m)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Jacobian elliptic function <code>dn(x, m)</code>.
+   * <p>
+   * returns the Jacobian elliptic function <code>dn(x, m)</code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
-   *       elliptic functions</a>
-   *   <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   * elliptic functions</a>
+   * <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; JacobiDN(10.0,1/3)
+   * <pre>
+   * <code>&gt;&gt; JacobiDN(10.0,1/3)
    * 0.974401
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static class JacobiDN extends AbstractFunctionEvaluator {
 
@@ -1316,24 +1354,30 @@ public class EllipticIntegrals {
   /**
    *
    *
-   * <pre><code>JacobiSC(x, m)
-   * </code></pre>
+   * <pre>
+   * <code>JacobiSC(x, m)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Jacobian elliptic function <code>sc(x, m)</code>.
+   * <p>
+   * returns the Jacobian elliptic function <code>sc(x, m)</code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
-   *       elliptic functions</a>
-   *   <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   * elliptic functions</a>
+   * <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; JacobiSC(10.0,1/3)
+   * <pre>
+   * <code>&gt;&gt; JacobiSC(10.0,1/3)
    * -0.422766
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static class JacobiSC extends AbstractFunctionEvaluator implements JacobiSCRules {
     @Override
@@ -1392,24 +1436,30 @@ public class EllipticIntegrals {
   /**
    *
    *
-   * <pre><code>JacobiSD(x, m)
-   * </code></pre>
+   * <pre>
+   * <code>JacobiSD(x, m)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Jacobian elliptic function <code>sd(x, m)</code>.
+   * <p>
+   * returns the Jacobian elliptic function <code>sd(x, m)</code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
-   *       elliptic functions</a>
-   *   <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   * elliptic functions</a>
+   * <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; JacobiSD(10.0,1/3)
+   * <pre>
+   * <code>&gt;&gt; JacobiSD(10.0,1/3)
    * 0.399627
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static class JacobiSD extends AbstractFunctionEvaluator {
 
@@ -1464,24 +1514,30 @@ public class EllipticIntegrals {
   /**
    *
    *
-   * <pre><code>JacobiSN(x, m)
-   * </code></pre>
+   * <pre>
+   * <code>JacobiSN(x, m)
+   * </code>
+   * </pre>
    *
-   * <p>returns the Jacobian elliptic function <code>sn(x, m)</code>.
+   * <p>
+   * returns the Jacobian elliptic function <code>sn(x, m)</code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
-   *       elliptic functions</a>
-   *   <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Jacobi_elliptic_functions">Wikipedia - Jacobi
+   * elliptic functions</a>
+   * <li><a href="https://dlmf.nist.gov/22.5">NIST - Jacobian elliptic functions</a>
    * </ul>
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; JacobiSN(10.0,1/3)
+   * <pre>
+   * <code>&gt;&gt; JacobiSN(10.0,1/3)
    * 0.389397
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static class JacobiSN extends AbstractFunctionEvaluator {
 
@@ -1725,9 +1781,8 @@ public class EllipticIntegrals {
         }
         if (u.isInexactNumber() && g2.isInexactNumber() && g3.isInexactNumber()) {
           try {
-            return F.complexNum(
-                EllipticFunctionsJS.weierstrassP(
-                    u.evalComplex(), g2.evalComplex(), g3.evalComplex()));
+            return F.complexNum(EllipticFunctionsJS.weierstrassP(u.evalComplex(), g2.evalComplex(),
+                g3.evalComplex()));
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
@@ -1765,17 +1820,13 @@ public class EllipticIntegrals {
         }
         if (g2.isNumEqualInteger(F.C3) && g3.isOne()) {
           // -3 * Sqrt(3/2) * Cot(Sqrt(3/2)*u) * Csc(Sqrt(3/2)*u)^2
-          return F.Times(
-              F.CN3,
-              F.Sqrt(F.C3D2),
-              F.Cot(F.Times(F.Sqrt(F.C3D2), u)),
+          return F.Times(F.CN3, F.Sqrt(F.C3D2), F.Cot(F.Times(F.Sqrt(F.C3D2), u)),
               F.Sqr(F.Csc(F.Times(F.Sqrt(F.C3D2), u))));
         }
         if (u.isInexactNumber() && g2.isInexactNumber() && g3.isInexactNumber()) {
           try {
-            return F.complexNum(
-                EllipticFunctionsJS.weierstrassPPrime(
-                    u.evalComplex(), g2.evalComplex(), g3.evalComplex()));
+            return F.complexNum(EllipticFunctionsJS.weierstrassPPrime(u.evalComplex(),
+                g2.evalComplex(), g3.evalComplex()));
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }

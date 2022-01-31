@@ -26,16 +26,18 @@ import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
  *
  * <blockquote>
  *
- * <p>attempts to solve a linear differential <code>equation</code> for the function <code>f(var)
+ * <p>
+ * attempts to solve a linear differential <code>equation</code> for the function <code>f(var)
  * </code> and variable <code>var</code>.
  *
  * </blockquote>
  *
- * <p>See:<br>
+ * <p>
+ * See:<br>
  *
  * <ul>
- *   <li><a href="https://en.wikipedia.org/wiki/Ordinary_differential_equation">Wikipedia - Ordinary
- *       differential equation</a>
+ * <li><a href="https://en.wikipedia.org/wiki/Ordinary_differential_equation">Wikipedia - Ordinary
+ * differential equation</a>
  * </ul>
  *
  * <h3>Examples</h3>
@@ -50,8 +52,9 @@ import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
  *
  * <h3>Related terms</h3>
  *
- * <p><a href="Factor.md">Factor</a>, <a href="FindRoot.md">FindRoot</a>, <a
- * href="NRoots.md">NRoots</a>,<a href="Solve.md">Solve</a>
+ * <p>
+ * <a href="Factor.md">Factor</a>, <a href="FindRoot.md">FindRoot</a>,
+ * <a href="NRoots.md">NRoots</a>,<a href="Solve.md">Solve</a>
  */
 public class DSolve extends AbstractFunctionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -119,13 +122,8 @@ public class DSolve extends AbstractFunctionEvaluator {
    * @param engine
    * @return
    */
-  private IExpr unaryODE(
-      IAST uFunction1Arg,
-      IExpr arg2,
-      IExpr xVar,
-      IASTAppendable listOfEquations,
-      IExpr[] boundaryCondition,
-      EvalEngine engine) {
+  private IExpr unaryODE(IAST uFunction1Arg, IExpr arg2, IExpr xVar, IASTAppendable listOfEquations,
+      IExpr[] boundaryCondition, EvalEngine engine) {
     IAST listOfVariables = F.List(uFunction1Arg);
     if (listOfEquations.size() == 2) {
       IExpr C_1 = F.unaryAST1(S.C, F.C1); // constant C(1)
@@ -152,8 +150,8 @@ public class DSolve extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  private IExpr solveSingleODE(
-      IExpr equation, IExpr xVar, IAST listOfVariables, IExpr C_1, EvalEngine engine) {
+  private IExpr solveSingleODE(IExpr equation, IExpr xVar, IAST listOfVariables, IExpr C_1,
+      EvalEngine engine) {
     ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables);
 
     if (equation.isAST()) {
@@ -231,8 +229,8 @@ public class DSolve extends AbstractFunctionEvaluator {
    * @param engine
    * @return
    */
-  private IExpr[] solveSingleBoundary(
-      IExpr equation, IAST uFunction1Arg, IExpr xVar, EvalEngine engine) {
+  private IExpr[] solveSingleBoundary(IExpr equation, IAST uFunction1Arg, IExpr xVar,
+      EvalEngine engine) {
     if (equation.isAST()) {
       IASTAppendable eq = ((IAST) equation).copyAppendable();
       if (!eq.isPlus()) {
@@ -307,8 +305,8 @@ public class DSolve extends AbstractFunctionEvaluator {
     return new IExpr[] {m, n};
   }
 
-  private static IExpr odeSeparable(
-      EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
+  private static IExpr odeSeparable(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y,
+      IExpr C_1) {
     if (n.isOne()) {
       IExpr fxExpr = F.NIL;
       IExpr gyExpr = F.NIL;
@@ -319,14 +317,13 @@ public class DSolve extends AbstractFunctionEvaluator {
         IAST timesAST = (IAST) m;
         IASTAppendable fx = F.TimesAlloc(timesAST.size());
         IASTAppendable gy = F.TimesAlloc(timesAST.size());
-        timesAST.forEach(
-            expr -> {
-              if (expr.isFree(y)) {
-                fx.append(expr);
-              } else {
-                gy.append(expr);
-              }
-            });
+        timesAST.forEach(expr -> {
+          if (expr.isFree(y)) {
+            fx.append(expr);
+          } else {
+            gy.append(expr);
+          }
+        });
         fxExpr = engine.evaluate(fx);
         gyExpr = engine.evaluate(gy);
       }

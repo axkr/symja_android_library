@@ -3,7 +3,8 @@ package org.matheclipse.core.io;
 /**
  * File extensions format.
  *
- * <p>See Symja's <code>Import()</code> and <code>Export()</code> functiuons.
+ * <p>
+ * See Symja's <code>Import()</code> and <code>Export()</code> functiuons.
  */
 public enum Extension {
   /** uncompressed loss-less image format, no alpha channel */
@@ -133,7 +134,7 @@ public enum Extension {
       //
     }
     if (extensionString.equals("Text")) {
-    	return TXT;
+      return TXT;
     }
     return STRING;
   }

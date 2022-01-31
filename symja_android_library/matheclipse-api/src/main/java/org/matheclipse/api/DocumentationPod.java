@@ -76,8 +76,8 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
     return 0;
   }
 
-  protected static int addDocumentationPod(
-      DocumentationPod pod, ArrayNode podsArray, StringBuilder buf, int formats) {
+  protected static int addDocumentationPod(DocumentationPod pod, ArrayNode podsArray,
+      StringBuilder buf, int formats) {
     int numpods = 0;
     if (pod.parameters != null) {
       IAST plotFunction = F.unaryAST1(pod.symbol, F.Times(S.a, S.x));
@@ -85,29 +85,17 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
         // print real and imaginary part separately
         plotFunction = F.List(F.Re(plotFunction), F.Im(plotFunction));
       }
-      IExpr plot2D =
-          F.Manipulate(
-              F.Plot(
-                  plotFunction, //
-                  F.List(S.x, pod.parameters.arg1(), pod.parameters.arg2()), //
-                  F.Rule(
-                      S.PlotRange, //
-                      F.List(pod.parameters.arg3(), pod.parameters.arg4()))), //
-              F.List(S.a, F.C1, F.C10));
+      IExpr plot2D = F.Manipulate(F.Plot(plotFunction, //
+          F.List(S.x, pod.parameters.arg1(), pod.parameters.arg2()), //
+          F.Rule(S.PlotRange, //
+              F.List(pod.parameters.arg3(), pod.parameters.arg4()))), //
+          F.List(S.a, F.C1, F.C10));
       EvalEngine engine = EvalEngine.get();
       IExpr podOut = engine.evaluate(plot2D);
       if (podOut.isAST(S.JSFormData, 3)) {
         int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
-        Pods.addPod(
-            podsArray,
-            plot2D,
-            podOut,
-            podOut.first().toString(),
-            StringFunctions.inputForm(plot2D),
-            "Plot",
-            "Plotter",
-            form,
-            engine);
+        Pods.addPod(podsArray, plot2D, podOut, podOut.first().toString(),
+            StringFunctions.inputForm(plot2D), "Plot", "Plotter", form, engine);
         ++numpods;
       }
     }

@@ -30,8 +30,8 @@ public class LinearSolveFunctionExpr<T extends FieldElement<T>>
 
   private final long precision;
 
-  protected LinearSolveFunctionExpr(
-      final FieldDecompositionSolver<T> solver, boolean complexNumeric, long precision) {
+  protected LinearSolveFunctionExpr(final FieldDecompositionSolver<T> solver,
+      boolean complexNumeric, long precision) {
     super(S.LinearSolveFunction, solver);
     this.complexNumeric = complexNumeric;
     this.precision = precision;
@@ -79,7 +79,7 @@ public class LinearSolveFunctionExpr<T extends FieldElement<T>>
   public boolean isComplexNumeric() {
     return complexNumeric;
   }
-   
+
   public long getNumericPrecision() {
     return precision;
   }

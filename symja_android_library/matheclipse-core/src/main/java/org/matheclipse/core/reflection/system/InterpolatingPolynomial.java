@@ -26,19 +26,22 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * <blockquote>
  *
- * <p>get the polynomial representation for the given <code>data-list</code>.
+ * <p>
+ * get the polynomial representation for the given <code>data-list</code>.
  *
  * </blockquote>
  *
- * <p>Newton polynomial interpolation, is the interpolation polynomial for a given set of data
- * points in the Newton form. The Newton polynomial is sometimes called Newton's divided differences
+ * <p>
+ * Newton polynomial interpolation, is the interpolation polynomial for a given set of data points
+ * in the Newton form. The Newton polynomial is sometimes called Newton's divided differences
  * interpolation polynomial because the coefficients of the polynomial are calculated using divided
  * differences.
  *
- * <p>See:<br>
+ * <p>
+ * See:<br>
  *
  * <ul>
- *   <li><a href="https://en.wikipedia.org/wiki/Newton_polynomial">Wikipedia - Newton Polynomial</a>
+ * <li><a href="https://en.wikipedia.org/wiki/Newton_polynomial">Wikipedia - Newton Polynomial</a>
  * </ul>
  *
  * <h3>Examples</h3>
@@ -65,9 +68,8 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
    * @throws MathIllegalArgumentException if the array is not sorted and {@code abort} is {@code
    *     true}.
    */
-  public static boolean checkPartialRealOrder(
-      IExpr[] val, OrderDirection dir, boolean strict, boolean abort)
-      throws MathIllegalArgumentException {
+  public static boolean checkPartialRealOrder(IExpr[] val, OrderDirection dir, boolean strict,
+      boolean abort) throws MathIllegalArgumentException {
     ISignedNumber previous = F.C0;
     final int max = val.length;
     int start = max;
@@ -80,8 +82,7 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
     }
 
     int index;
-    ITEM:
-    for (index = start; index < max; index++) {
+    ITEM: for (index = start; index < max; index++) {
       if (val[index] instanceof ISignedNumber) {
         switch (dir) {
           case INCREASING:
@@ -124,16 +125,11 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
     if (abort) {
       throw new MathIllegalArgumentException(
           dir == MathArrays.OrderDirection.INCREASING
-              ? (strict
-                  ? LocalizedCoreFormats.NOT_STRICTLY_INCREASING_SEQUENCE
+              ? (strict ? LocalizedCoreFormats.NOT_STRICTLY_INCREASING_SEQUENCE
                   : LocalizedCoreFormats.NOT_INCREASING_SEQUENCE)
-              : (strict
-                  ? LocalizedCoreFormats.NOT_STRICTLY_DECREASING_SEQUENCE
+              : (strict ? LocalizedCoreFormats.NOT_STRICTLY_DECREASING_SEQUENCE
                   : LocalizedCoreFormats.NOT_DECREASING_SEQUENCE),
-          val[index],
-          previous,
-          index,
-          index - 1);
+          val[index], previous, index, index - 1);
     } else {
       return false;
     }
@@ -149,17 +145,17 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
    * @throws MathIllegalArgumentException if the array lengths are different.
    * @throws MathIllegalArgumentException if the number of points is less than 2.
    * @throws org.hipparchus.exception.MathIllegalArgumentException if {@code x} is not sorted in
-   *     strictly increasing order and {@code abort} is {@code true}.
+   *         strictly increasing order and {@code abort} is {@code true}.
    * @return {@code false} if the {@code x} is not sorted in increasing order, {@code true}
-   *     otherwise.
+   *         otherwise.
    * @see #evaluate(double[], double[], double)
    * @see #computeCoefficients()
    */
   public static boolean verifyInterpolationArray(IExpr x[], IExpr y[], boolean abort)
       throws MathIllegalArgumentException {
     if (x.length < 2) {
-      throw new MathIllegalArgumentException(
-          LocalizedCoreFormats.WRONG_NUMBER_OF_POINTS, 2, x.length, true);
+      throw new MathIllegalArgumentException(LocalizedCoreFormats.WRONG_NUMBER_OF_POINTS, 2,
+          x.length, true);
     }
 
     return checkPartialRealOrder(x, MathArrays.OrderDirection.INCREASING, true, abort);
@@ -168,14 +164,16 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
   /**
    * Return a copy of the divided difference array.
    *
-   * <p>The divided difference array is defined recursively by
+   * <p>
+   * The divided difference array is defined recursively by
    *
    * <pre>
    * f[x0] = f(x0)
    * f[x0,x1,...,xk] = (f[x1,...,xk] - f[x0,...,x[k-1]]) / (xk - x0)
    * </pre>
    *
-   * <p>The computational complexity is O(N^2).
+   * <p>
+   * The computational complexity is O(N^2).
    *
    * @param x Interpolating points array.
    * @param y Interpolating values array.
@@ -184,8 +182,8 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
    * @throws MathIllegalArgumentException if the number of points is less than 2.
    * @throws MathIllegalArgumentException if {@code x} is not sorted in strictly increasing order.
    */
-  protected static IExpr[] computeDividedDifference(
-      final IExpr x[], final IExpr y[], EvalEngine engine) {
+  protected static IExpr[] computeDividedDifference(final IExpr x[], final IExpr y[],
+      EvalEngine engine) {
     // see org.hipparchus.analysis.interpolation.DividedDifferenceInterpolator
     verifyInterpolationArray(x, y, true);
     final IExpr[] divdiff = y.clone(); // initialization
@@ -261,6 +259,6 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    //		newSymbol.setAttributes(ISymbol.HOLDALL);
+    // newSymbol.setAttributes(ISymbol.HOLDALL);
   }
 }

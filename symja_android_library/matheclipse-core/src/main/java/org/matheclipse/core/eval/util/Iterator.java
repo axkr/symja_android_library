@@ -59,12 +59,8 @@ public class Iterator {
 
     final ISymbol variable;
 
-    public ExprIterator(
-        final ISymbol symbol,
-        final IExpr originalStart,
-        final IExpr originalMaxCount,
-        final IExpr originalStep,
-        boolean numericMode,
+    public ExprIterator(final ISymbol symbol, final IExpr originalStart,
+        final IExpr originalMaxCount, final IExpr originalStep, boolean numericMode,
         final EvalEngine engine) {
       this.variable = symbol;
       this.evalEngine = engine;
@@ -103,7 +99,7 @@ public class Iterator {
      * Tests if this enumeration contains more elements.
      *
      * @return <code>true</code> if this enumeration contains more elements; <code>false</code>
-     *     otherwise.
+     *         otherwise.
      */
     @Override
     public boolean hasNext() {
@@ -152,8 +148,7 @@ public class Iterator {
 
     @Override
     public boolean isNumericFunction() {
-      return originalLowerLimit.isNumericFunction(true)
-          && originalStep.isNumericFunction(true)
+      return originalLowerLimit.isNumericFunction(true) && originalStep.isNumericFunction(true)
           && originalUpperLimit.isNumericFunction(true);
     }
 
@@ -164,11 +159,8 @@ public class Iterator {
 
     @Override
     public boolean isValidVariable() {
-      return variable != null
-          && originalLowerLimit != null
-          && originalStep != null
-          && originalUpperLimit != null
-          && !originalUpperLimit.isList();
+      return variable != null && originalLowerLimit != null && originalStep != null
+          && originalUpperLimit != null && !originalUpperLimit.isList();
     }
 
     /**
@@ -279,8 +271,8 @@ public class Iterator {
      * @param originalList
      * @param engine
      */
-    public ExprListIterator(
-        final ISymbol symbol, final IAST originalList, final EvalEngine engine) {
+    public ExprListIterator(final ISymbol symbol, final IAST originalList,
+        final EvalEngine engine) {
       this.variable = symbol;
       this.evalEngine = engine;
       this.originalList = originalList;
@@ -300,7 +292,7 @@ public class Iterator {
      * Tests if this enumeration contains more elements.
      *
      * @return <code>true</code> if this enumeration contains more elements; <code>false</code>
-     *     otherwise.
+     *         otherwise.
      */
     @Override
     public boolean hasNext() {
@@ -403,8 +395,8 @@ public class Iterator {
 
     final IExpr originalStep;
 
-    public DoubleIterator(
-        final ISymbol symbol, final double lowerLimit, final double upperLimit, final double step) {
+    public DoubleIterator(final ISymbol symbol, final double lowerLimit, final double upperLimit,
+        final double step) {
       this.variable = symbol;
       this.lowerLimit = lowerLimit;
       this.upperLimit = upperLimit;
@@ -446,7 +438,7 @@ public class Iterator {
      * Tests if this enumeration contains more elements.
      *
      * @return <code>true</code> if this enumeration contains more elements; <code>false</code>
-     *     otherwise.
+     *         otherwise.
      */
     @Override
     public boolean hasNext() {
@@ -544,11 +536,8 @@ public class Iterator {
 
     final IRational originalStep;
 
-    public RationalIterator(
-        final ISymbol symbol,
-        final IRational lowerLimit,
-        final IRational upperLimit,
-        final IRational step) {
+    public RationalIterator(final ISymbol symbol, final IRational lowerLimit,
+        final IRational upperLimit, final IRational step) {
       this.variable = symbol;
       this.lowerLimit = lowerLimit;
       this.upperLimit = upperLimit;
@@ -593,7 +582,7 @@ public class Iterator {
      * Tests if this enumeration contains more elements.
      *
      * @return <code>true</code> if this enumeration contains more elements; <code>false</code>
-     *     otherwise.
+     *         otherwise.
      */
     @Override
     public boolean hasNext() {
@@ -688,8 +677,8 @@ public class Iterator {
 
     final IQuantity originalStep;
 
-    public QuantityIterator(
-        final ISymbol symbol, IQuantity lowerLimit, IQuantity upperLimit, final IQuantity step) {
+    public QuantityIterator(final ISymbol symbol, IQuantity lowerLimit, IQuantity upperLimit,
+        final IQuantity step) {
       this.unit = lowerLimit.unit();
       if (!lowerLimit.unit().equals(unit)) {
         lowerLimit = (IQuantity) QuantityFunctions.unitConvert(lowerLimit, unit);
@@ -775,7 +764,7 @@ public class Iterator {
      * Tests if this enumeration contains more elements.
      *
      * @return <code>true</code> if this enumeration contains more elements; <code>false</code>
-     *     otherwise.
+     *         otherwise.
      */
     @Override
     public boolean hasNext() {
@@ -868,11 +857,8 @@ public class Iterator {
 
     final ISignedNumber originalStep;
 
-    public ISignedNumberIterator(
-        final ISymbol symbol,
-        final ISignedNumber lowerLimit,
-        final ISignedNumber upperLimit,
-        final ISignedNumber step) {
+    public ISignedNumberIterator(final ISymbol symbol, final ISignedNumber lowerLimit,
+        final ISignedNumber upperLimit, final ISignedNumber step) {
       this.variable = symbol;
       this.lowerLimit = lowerLimit;
       this.upperLimit = upperLimit;
@@ -911,7 +897,7 @@ public class Iterator {
      * Tests if this enumeration contains more elements.
      *
      * @return <code>true</code> if this enumeration contains more elements; <code>false</code>
-     *     otherwise.
+     *         otherwise.
      */
     @Override
     public boolean hasNext() {
@@ -1007,8 +993,8 @@ public class Iterator {
 
     final IExpr originalStep;
 
-    public IntIterator(
-        final ISymbol symbol, final int lowerLimit, final int upperLimit, final int step) {
+    public IntIterator(final ISymbol symbol, final int lowerLimit, final int upperLimit,
+        final int step) {
       this.variable = symbol;
       this.lowerLimit = lowerLimit;
       this.upperLimit = upperLimit;
@@ -1062,7 +1048,7 @@ public class Iterator {
      * Tests if this enumeration contains more elements.
      *
      * @return <code>true</code> if this enumeration contains more elements; <code>false</code>
-     *     otherwise.
+     *         otherwise.
      */
     @Override
     public boolean hasNext() {
@@ -1145,7 +1131,7 @@ public class Iterator {
    *
    * @param list a list representing an iterator specification
    * @param position the position of the list in the argument sequence, for printing an error if
-   *     list cannot be converted into an iterator form
+   *        list cannot be converted into an iterator form
    * @param engine the evaluation engine
    * @return the iterator
    */
@@ -1268,11 +1254,8 @@ public class Iterator {
                 IOFunctions.getMessage("itraw", F.List(list.arg1()), EvalEngine.get()));
           }
           if (lowerLimit instanceof Num && upperLimit instanceof Num) {
-            return new DoubleIterator(
-                variable,
-                ((INum) lowerLimit).doubleValue(),
-                ((INum) upperLimit).doubleValue(),
-                1.0);
+            return new DoubleIterator(variable, ((INum) lowerLimit).doubleValue(),
+                ((INum) upperLimit).doubleValue(), 1.0);
           }
           if (lowerLimit.isInteger() && upperLimit.isInteger()) {
             try {
@@ -1284,8 +1267,8 @@ public class Iterator {
             }
           } else if (lowerLimit.isRational() && upperLimit.isRational()) {
             try {
-              return new RationalIterator(
-                  variable, (IRational) lowerLimit, (IRational) upperLimit, F.C1);
+              return new RationalIterator(variable, (IRational) lowerLimit, (IRational) upperLimit,
+                  F.C1);
             } catch (ArithmeticException ae) {
               //
             }
@@ -1316,11 +1299,8 @@ public class Iterator {
                 IOFunctions.getMessage("itraw", F.List(list.arg1()), EvalEngine.get()));
           }
           if (lowerLimit instanceof Num && upperLimit instanceof Num && step instanceof Num) {
-            return new DoubleIterator(
-                variable,
-                ((INum) lowerLimit).doubleValue(),
-                ((INum) upperLimit).doubleValue(),
-                ((INum) step).doubleValue());
+            return new DoubleIterator(variable, ((INum) lowerLimit).doubleValue(),
+                ((INum) upperLimit).doubleValue(), ((INum) step).doubleValue());
           }
           if (lowerLimit.isInteger() && upperLimit.isInteger() && step.isInteger()) {
             try {
@@ -1333,20 +1313,17 @@ public class Iterator {
             }
           } else if (lowerLimit.isRational() && upperLimit.isRational() && step.isRational()) {
             try {
-              return new RationalIterator(
-                  variable, (IRational) lowerLimit, (IRational) upperLimit, (IRational) step);
+              return new RationalIterator(variable, (IRational) lowerLimit, (IRational) upperLimit,
+                  (IRational) step);
             } catch (ArithmeticException ae) {
               //
             }
           } else if (lowerLimit.isQuantity() && upperLimit.isQuantity() && step.isQuantity()) {
-            return new QuantityIterator(
-                variable, (IQuantity) lowerLimit, (IQuantity) upperLimit, (IQuantity) step);
+            return new QuantityIterator(variable, (IQuantity) lowerLimit, (IQuantity) upperLimit,
+                (IQuantity) step);
           } else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
-            return new ISignedNumberIterator(
-                variable,
-                (ISignedNumber) lowerLimit,
-                (ISignedNumber) upperLimit,
-                (ISignedNumber) step);
+            return new ISignedNumberIterator(variable, (ISignedNumber) lowerLimit,
+                (ISignedNumber) upperLimit, (ISignedNumber) step);
           }
 
           break;
@@ -1356,10 +1333,10 @@ public class Iterator {
               IOFunctions.getMessage("itform", F.List(list, F.ZZ(position)), EvalEngine.get());
           throw new ArgumentTypeException(str);
 
-          // lowerLimit = null;
-          // upperLimit = null;
-          // step = null;
-          // variable = null;
+        // lowerLimit = null;
+        // upperLimit = null;
+        // step = null;
+        // variable = null;
       }
 
       return new ExprIterator(variable, lowerLimit, upperLimit, step, fNumericMode, evalEngine);
@@ -1385,8 +1362,8 @@ public class Iterator {
    * @param engine the evaluation engine
    * @return the iterator
    */
-  public static IIterator<IExpr> create(
-      final IAST list, final ISymbol symbol, final EvalEngine engine) {
+  public static IIterator<IExpr> create(final IAST list, final ISymbol symbol,
+      final EvalEngine engine) {
     EvalEngine evalEngine = engine;
     IExpr lowerLimit;
     IExpr upperLimit;
@@ -1454,11 +1431,8 @@ public class Iterator {
             return new ExprListIterator(variable, (IAST) upperLimit, evalEngine);
           }
           if (lowerLimit instanceof Num && upperLimit instanceof Num) {
-            return new DoubleIterator(
-                variable,
-                ((INum) lowerLimit).doubleValue(),
-                ((INum) upperLimit).doubleValue(),
-                1.0);
+            return new DoubleIterator(variable, ((INum) lowerLimit).doubleValue(),
+                ((INum) upperLimit).doubleValue(), 1.0);
           }
           if (lowerLimit.isInteger() && upperLimit.isInteger()) {
             try {
@@ -1470,16 +1444,16 @@ public class Iterator {
             }
           } else if (lowerLimit.isRational() && upperLimit.isRational()) {
             try {
-              return new RationalIterator(
-                  symbol, (IRational) lowerLimit, (IRational) upperLimit, F.C1);
+              return new RationalIterator(symbol, (IRational) lowerLimit, (IRational) upperLimit,
+                  F.C1);
             } catch (ArithmeticException ae) {
               //
             }
           } else if (lowerLimit.isQuantity() && upperLimit.isQuantity()) {
             return new QuantityIterator(symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit);
           } else if (lowerLimit.isReal() && upperLimit.isReal()) {
-            return new ISignedNumberIterator(
-                variable, (ISignedNumber) lowerLimit, (ISignedNumber) upperLimit, F.C1);
+            return new ISignedNumberIterator(variable, (ISignedNumber) lowerLimit,
+                (ISignedNumber) upperLimit, F.C1);
           }
           break;
         case 4:
@@ -1488,11 +1462,8 @@ public class Iterator {
           step = evalEngine.evalWithoutNumericReset(list.arg3());
           variable = symbol;
           if (lowerLimit instanceof Num && upperLimit instanceof Num && step instanceof Num) {
-            return new DoubleIterator(
-                variable,
-                ((INum) lowerLimit).doubleValue(),
-                ((INum) upperLimit).doubleValue(),
-                ((INum) step).doubleValue());
+            return new DoubleIterator(variable, ((INum) lowerLimit).doubleValue(),
+                ((INum) upperLimit).doubleValue(), ((INum) step).doubleValue());
           }
           if (lowerLimit.isInteger() && upperLimit.isInteger() && step.isInteger()) {
             try {
@@ -1505,20 +1476,17 @@ public class Iterator {
             }
           } else if (lowerLimit.isRational() && upperLimit.isRational() && step.isRational()) {
             try {
-              return new RationalIterator(
-                  symbol, (IRational) lowerLimit, (IRational) upperLimit, (IRational) step);
+              return new RationalIterator(symbol, (IRational) lowerLimit, (IRational) upperLimit,
+                  (IRational) step);
             } catch (ArithmeticException ae) {
               //
             }
           } else if (lowerLimit.isQuantity() && upperLimit.isQuantity() && step.isQuantity()) {
-            return new QuantityIterator(
-                symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit, (IQuantity) step);
+            return new QuantityIterator(symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit,
+                (IQuantity) step);
           } else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
-            return new ISignedNumberIterator(
-                variable,
-                (ISignedNumber) lowerLimit,
-                (ISignedNumber) upperLimit,
-                (ISignedNumber) step);
+            return new ISignedNumberIterator(variable, (ISignedNumber) lowerLimit,
+                (ISignedNumber) upperLimit, (ISignedNumber) step);
           }
           break;
         default:

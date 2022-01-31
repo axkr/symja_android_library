@@ -84,10 +84,8 @@ public class EllipticIntegralsJS {
     Complex A0 = x.add(y).add(z).divide(3.0);
     Complex Am = A0;
 
-    double Q =
-        Math.pow(3.0 * tolerance, -1.0 / 6.0)
-            * Math.max(
-                A0.subtract(x).norm(), Math.max(A0.subtract(y).norm(), A0.subtract(z).norm()));
+    double Q = Math.pow(3.0 * tolerance, -1.0 / 6.0)
+        * Math.max(A0.subtract(x).norm(), Math.max(A0.subtract(y).norm(), A0.subtract(z).norm()));
     double g = 0.25;
     double pow4 = 1.0;
 
@@ -121,12 +119,8 @@ public class EllipticIntegralsJS {
     // Am.pow(-0.5)
     Complex AmPow = Am.pow(-0.5);
 
-    return AmPow.multiply(
-            E2.multiply(-924.0)
-                .add(E2.multiply(E2).multiply(385.0))
-                .add(E3.multiply(660.0))
-                .add(E2.multiply(E3).multiply(-630.0))
-                .add(9240.0))
+    return AmPow.multiply(E2.multiply(-924.0).add(E2.multiply(E2).multiply(385.0))
+        .add(E3.multiply(660.0)).add(E2.multiply(E3).multiply(-630.0)).add(9240.0))
         .multiply(1.0 / 9240.0);
   }
 
@@ -153,9 +147,8 @@ public class EllipticIntegralsJS {
     double A0 = (x + y + z) / 3.0;
     double Am = A0;
 
-    double Q =
-        Math.pow(3.0 * tolerance, -1.0 / 6.0)
-            * Math.max(Math.max(Math.abs(A0 - x), Math.abs(A0 - y)), Math.abs(A0 - z));
+    double Q = Math.pow(3.0 * tolerance, -1.0 / 6.0)
+        * Math.max(Math.max(Math.abs(A0 - x), Math.abs(A0 - y)), Math.abs(A0 - z));
     double g = .25;
     double pow4 = 1.0;
 
@@ -183,8 +176,7 @@ public class EllipticIntegralsJS {
     double E3 = X * Y * Z;
 
     return Math.pow(Am, -0.5)
-        * (9240.0 - 924.0 * E2 + 385.0 * E2 * E2 + 660.0 * E3 - 630.0 * E2 * E3)
-        / 9240.0;
+        * (9240.0 - 924.0 * E2 + 385.0 * E2 * E2 + 660.0 * E3 - 630.0 * E2 * E3) / 9240.0;
   }
 
   public static double carlsonRG(double x, double y, double z) {
@@ -219,12 +211,8 @@ public class EllipticIntegralsJS {
     Complex Am = x.add(y).add(z).add(p.multiply(2)).divide(5.0);
     Complex A0 = Am;
     Complex delta = p.subtract(x).multiply(p.subtract(y)).multiply(p.subtract(z));
-    double Q =
-        Math.pow(0.25 * tolerance, -1.0 / 6.0)
-            * Math.max(
-                A0.subtract(x).norm(),
-                Math.max(
-                    A0.subtract(y).norm(), Math.max(A0.subtract(z).norm(), A0.subtract(p).norm())));
+    double Q = Math.pow(0.25 * tolerance, -1.0 / 6.0) * Math.max(A0.subtract(x).norm(),
+        Math.max(A0.subtract(y).norm(), Math.max(A0.subtract(z).norm(), A0.subtract(p).norm())));
     double m = 0.0;
     double g = 0.25;
     double pow4 = 1.0;
@@ -242,11 +230,8 @@ public class EllipticIntegralsJS {
       zm = zm.add(lm).multiply(g);
       pm = pm.add(lm).multiply(g);
       Complex dm = sp.add(sx).multiply(sp.add(sy)).multiply(sp.add(sz));
-      Complex em =
-          dm.reciprocal()
-              .multiply(dm.reciprocal())
-              .multiply(delta)
-              .multiply(Math.pow(4.0, -3.0 * m));
+      Complex em = dm.reciprocal().multiply(dm.reciprocal()).multiply(delta)
+          .multiply(Math.pow(4.0, -3.0 * m));
       if (pow4 * Q < Am.norm()) {
         break;
       }
@@ -264,27 +249,14 @@ public class EllipticIntegralsJS {
     Complex P = X.add(Y.add(Z)).divide(-2);
     Complex E2 =
         X.multiply(Y).add(X.multiply(Z)).add(Y.multiply(Z)).add(P.multiply(P).multiply(-3));
-    Complex E3 =
-        X.multiply(Y)
-            .multiply(Z)
-            .add(E2.multiply(P).multiply(2))
-            .add(P.multiply(P).multiply(P).multiply(4));
-    Complex E4 =
-        X.multiply(Y)
-            .multiply(Z)
-            .multiply(2)
-            .add(E2.multiply(P))
-            .add(P.multiply(P).multiply(P).multiply(3))
-            .multiply(P);
+    Complex E3 = X.multiply(Y).multiply(Z).add(E2.multiply(P).multiply(2))
+        .add(P.multiply(P).multiply(P).multiply(4));
+    Complex E4 = X.multiply(Y).multiply(Z).multiply(2).add(E2.multiply(P))
+        .add(P.multiply(P).multiply(P).multiply(3)).multiply(P);
     Complex E5 = X.multiply(Y).multiply(Z).multiply(P).multiply(P);
-    P =
-        E2.multiply(-5148)
-            .add(E2.multiply(E2).multiply(2457))
-            .add(E3.multiply(4004))
-            .add(E2.multiply(E3).multiply(-4158))
-            .add(E4.multiply(-3276))
-            .add(E5.multiply(2772))
-            .add(24024);
+    P = E2.multiply(-5148).add(E2.multiply(E2).multiply(2457)).add(E3.multiply(4004))
+        .add(E2.multiply(E3).multiply(-4158)).add(E4.multiply(-3276)).add(E5.multiply(2772))
+        .add(24024);
     Complex v1 = Am.pow(-1.5).multiply(Math.pow(g, m)).multiply(P).multiply(1.0 / 24024.0);
 
     return S.multiply(6.0).add(v1);
@@ -306,11 +278,8 @@ public class EllipticIntegralsJS {
     double Am = (x + y + z + 2 * p) / 5.0;
     double A0 = Am;
     double delta = (p - x) * (p - y) * (p - z);
-    double Q =
-        Math.pow(.25 * tolerance, -1.0 / 6.0)
-            * Math.max(
-                Math.abs(A0 - x),
-                Math.max(Math.abs(A0 - y), Math.max(Math.abs(A0 - z), Math.abs(A0 - p))));
+    double Q = Math.pow(.25 * tolerance, -1.0 / 6.0) * Math.max(Math.abs(A0 - x),
+        Math.max(Math.abs(A0 - y), Math.max(Math.abs(A0 - z), Math.abs(A0 - p))));
     double m = 0;
     double g = 0.25;
     double pow4 = 1;
@@ -348,14 +317,8 @@ public class EllipticIntegralsJS {
     double E3 = X * Y * Z + 2 * E2 * P + 4 * Math.pow(P, 3);
     double E4 = (2 * X * Y * Z + E2 * P + 3 * Math.pow(P, 3)) * P;
     double E5 = X * Y * Z * Math.pow(P, 2);
-    P =
-        24024
-            - 5148 * E2
-            + 2457 * Math.pow(E2, 2)
-            + 4004 * E3
-            - 4158 * E2 * E3
-            - 3276 * E4
-            + 2772 * E5;
+    P = 24024 - 5148 * E2 + 2457 * Math.pow(E2, 2) + 4004 * E3 - 4158 * E2 * E3 - 3276 * E4
+        + 2772 * E5;
     double v1 = Math.pow(g, m) * Math.pow(Am, -1.5) * P / 24024.0;
 
     return S.multiply(6.0).add(v1);
@@ -365,7 +328,7 @@ public class EllipticIntegralsJS {
 
   public static Complex ellipticF(Complex x, Complex m) {
     // https://github.com/Hipparchus-Math/hipparchus/issues/151
-    //    return LegendreEllipticIntegral.bigF(x, m);
+    // return LegendreEllipticIntegral.bigF(x, m);
     Complex period = Complex.ZERO;
     if (Math.abs(x.getReal()) > (Math.PI / 2)) {
       long p = Math.round(x.getReal() / Math.PI);
@@ -389,7 +352,7 @@ public class EllipticIntegralsJS {
       return ellipticF(new Complex(x), new Complex(m));
     }
     // https://github.com/Hipparchus-Math/hipparchus/issues/151
-    //    return Complex.valueOf(LegendreEllipticIntegral.bigF(x, m));
+    // return Complex.valueOf(LegendreEllipticIntegral.bigF(x, m));
     Complex period = Complex.ZERO;
     if (Math.abs(x) > Math.PI / 2.0) {
       long p = Math.round(x / Math.PI);
@@ -483,15 +446,9 @@ public class EllipticIntegralsJS {
       a2 = Complex.ONE.subtract(m.multiply(sqrSinX));
     }
     return sinX.multiply(carlsonRF(sqrCosX, a2, Complex.ONE))
-        .add(
-            n.multiply(1.0 / 3.0)
-                .multiply(p3SinX)
-                .multiply(
-                    carlsonRJ(
-                        sqrCosX,
-                        Complex.ONE.subtract(m.multiply(sqrSinX)),
-                        Complex.ONE,
-                        Complex.ONE.subtract(n.multiply(sqrSinX)))))
+        .add(n.multiply(1.0 / 3.0).multiply(p3SinX)
+            .multiply(carlsonRJ(sqrCosX, Complex.ONE.subtract(m.multiply(sqrSinX)), Complex.ONE,
+                Complex.ONE.subtract(n.multiply(sqrSinX)))))
         .add(period);
   }
 
@@ -519,32 +476,21 @@ public class EllipticIntegralsJS {
     double mSqrSinX = 1.0 - m * sqrSinX;
     double nSqrSinX = 1.0 - n * sqrSinX;
     if (mSqrSinX < 0) {
-      return carlsonRF(new Complex(sqrCosX), new Complex(mSqrSinX), Complex.ONE)
-          .multiply(sinX)
-          .add(
-              carlsonRJ(
-                      new Complex(sqrCosX),
-                      new Complex(mSqrSinX),
-                      Complex.ONE,
-                      new Complex(nSqrSinX))
-                  .multiply(n / 3.0 * p3SqrSinX))
+      return carlsonRF(new Complex(sqrCosX), new Complex(mSqrSinX), Complex.ONE).multiply(sinX).add(
+          carlsonRJ(new Complex(sqrCosX), new Complex(mSqrSinX), Complex.ONE, new Complex(nSqrSinX))
+              .multiply(n / 3.0 * p3SqrSinX))
           .add(period);
     }
-    return Complex.valueOf(carlsonRF(sqrCosX, mSqrSinX, 1))
-        .multiply(sinX)
-        .add(
-            Complex.valueOf(carlsonRJ(sqrCosX, mSqrSinX, 1, nSqrSinX))
-                .multiply(n / 3.0 * p3SqrSinX))
+    return Complex
+        .valueOf(carlsonRF(sqrCosX, mSqrSinX, 1)).multiply(sinX).add(Complex
+            .valueOf(carlsonRJ(sqrCosX, mSqrSinX, 1, nSqrSinX)).multiply(n / 3.0 * p3SqrSinX))
         .add(period);
   }
 
   public static Complex jacobiZeta(Complex x, Complex m) {
     // using definition matching elliptic integrals
     // alternate definition replaces x with am(x,m)
-    return ellipticE(x, m)
-        .subtract(
-            ellipticF(x, m)
-                .multiply(ellipticE(new Complex(Math.PI / 2.0), m))
-                .multiply(ellipticK(m).reciprocal()));
+    return ellipticE(x, m).subtract(ellipticF(x, m)
+        .multiply(ellipticE(new Complex(Math.PI / 2.0), m)).multiply(ellipticK(m).reciprocal()));
   }
 }

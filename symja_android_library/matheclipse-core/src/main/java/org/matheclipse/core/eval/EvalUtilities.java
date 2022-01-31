@@ -26,9 +26,9 @@ public class EvalUtilities extends MathMLUtilities {
    * Constructor for an object which evaluates an expression.
    *
    * @param mathMLTagPrefix if set to <code>true</code> use &quot;m:&quot; as tag prefix for the
-   *     MathML output.
+   *        MathML output.
    * @param relaxedSyntax if set to <code>true</code> use &quot;(...)&quot; instead of
-   *     &quot;[...]&quot; for function arguments (i.e. sin(...) instead of sin[...]).
+   *        &quot;[...]&quot; for function arguments (i.e. sin(...) instead of sin[...]).
    */
   public EvalUtilities(final boolean mathMLTagPrefix, final boolean relaxedSyntax) {
     this(new EvalEngine(relaxedSyntax), mathMLTagPrefix, relaxedSyntax);
@@ -39,12 +39,12 @@ public class EvalUtilities extends MathMLUtilities {
    *
    * @param evalEngine
    * @param mathMLTagPrefix if set to <code>true</code> use &quot;m:&quot; as tag prefix for the
-   *     MathML output.
+   *        MathML output.
    * @param relaxedSyntax if set to <code>true</code> use &quot;(...)&quot; instead of
-   *     &quot;[...]&quot; for function arguments (i.e. sin(...) instead of sin[...]).
+   *        &quot;[...]&quot; for function arguments (i.e. sin(...) instead of sin[...]).
    */
-  public EvalUtilities(
-      final EvalEngine evalEngine, final boolean mathMLTagPrefix, final boolean relaxedSyntax) {
+  public EvalUtilities(final EvalEngine evalEngine, final boolean mathMLTagPrefix,
+      final boolean relaxedSyntax) {
     super(evalEngine, mathMLTagPrefix, relaxedSyntax);
   }
 
@@ -64,41 +64,41 @@ public class EvalUtilities extends MathMLUtilities {
           IExpr result = ExprEvaluator.evalTryCatch(parsedExpression, engineRef);
           fEvalEngine = engineRef[0];
           return result;
-          //                    IExpr temp;
-          //                    try {
-          //                      // F.join();
-          //                      temp = fEvalEngine.evaluate(parsedExpression);
-          //                    } catch (final ThrowException e) {
-          //                        // Iteration limit of `1` exceeded.
-          //                        IAST ast = F.Throw(e.getValue());
-          //                        IOFunctions.printMessage(S.Throw, "nocatch", F.List(ast),
+          // IExpr temp;
+          // try {
+          // // F.join();
+          // temp = fEvalEngine.evaluate(parsedExpression);
+          // } catch (final ThrowException e) {
+          // // Iteration limit of `1` exceeded.
+          // IAST ast = F.Throw(e.getValue());
+          // IOFunctions.printMessage(S.Throw, "nocatch", F.List(ast),
           // fEvalEngine);
-          //                        temp = F.Hold(ast);
-          //                    } catch (final IterationLimitExceeded e) {
-          //                      // Iteration limit of `1` exceeded.
-          //                      int iterationLimit = fEvalEngine.getIterationLimit();
-          //                      IOFunctions.printMessage(
-          //                          S.$IterationLimit,
-          //                          "itlim",
-          //                          F.List(iterationLimit < 0 ? F.CInfinity :
+          // temp = F.Hold(ast);
+          // } catch (final IterationLimitExceeded e) {
+          // // Iteration limit of `1` exceeded.
+          // int iterationLimit = fEvalEngine.getIterationLimit();
+          // IOFunctions.printMessage(
+          // S.$IterationLimit,
+          // "itlim",
+          // F.List(iterationLimit < 0 ? F.CInfinity :
           // F.ZZ(iterationLimit),
-          //           parsedExpression),
-          //                          fEvalEngine);
-          //                      temp = F.Hold(parsedExpression);
-          //                    } catch (final RecursionLimitExceeded e) {
-          //                      // Recursion depth of `1` exceeded during evaluation of `2`.
-          //                      int recursionLimit = fEvalEngine.getRecursionLimit();
-          //                      IOFunctions.printMessage(
-          //                          S.$RecursionLimit,
-          //                          "reclim2",
-          //                          F.List(recursionLimit < 0 ? F.CInfinity :
+          // parsedExpression),
+          // fEvalEngine);
+          // temp = F.Hold(parsedExpression);
+          // } catch (final RecursionLimitExceeded e) {
+          // // Recursion depth of `1` exceeded during evaluation of `2`.
+          // int recursionLimit = fEvalEngine.getRecursionLimit();
+          // IOFunctions.printMessage(
+          // S.$RecursionLimit,
+          // "reclim2",
+          // F.List(recursionLimit < 0 ? F.CInfinity :
           // F.ZZ(recursionLimit),
-          //           parsedExpression),
-          //                          fEvalEngine);
-          //                      temp = F.Hold(parsedExpression);
-          //                    }
-          //                    fEvalEngine.addInOut(parsedExpression, temp);
-          //                    return temp;
+          // parsedExpression),
+          // fEvalEngine);
+          // temp = F.Hold(parsedExpression);
+          // }
+          // fEvalEngine.addInOut(parsedExpression, temp);
+          // return temp;
         }
       } finally {
         // Quit may set a new engine
@@ -193,7 +193,7 @@ public class EvalUtilities extends MathMLUtilities {
    *
    * @param inputExpression the expression which should be evaluated.
    * @param matcher a filter which determines the expressions which should be traced, If the matcher
-   *     is set to <code>null</code>, all expressions are traced.
+   *        is set to <code>null</code>, all expressions are traced.
    * @return <code>F.NIL</code> if <code>inputExpression == null</code>
    */
   public IAST evalTrace(final String inputExpression, Predicate<IExpr> matcher) {
@@ -218,7 +218,7 @@ public class EvalUtilities extends MathMLUtilities {
    *
    * @param parsedExpression the expression which should be evaluated.
    * @param matcher a filter which determines the expressions which should be traced, If the matcher
-   *     is set to <code>null</code>, all expressions are traced.
+   *        is set to <code>null</code>, all expressions are traced.
    * @return
    */
   public IAST evalTrace(final IExpr parsedExpression, Predicate<IExpr> matcher)

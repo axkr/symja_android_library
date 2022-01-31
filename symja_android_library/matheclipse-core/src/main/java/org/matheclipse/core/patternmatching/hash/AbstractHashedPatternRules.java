@@ -40,8 +40,8 @@ public abstract class AbstractHashedPatternRules {
    * @param lhsPattern1 first left-hand-side pattern
    * @param lhsPattern2 second left-hand-side pattern
    * @param defaultHashCode if <code>false</code> use a <code>HashValueVisitor()</code> to determine
-   *     the two hash values for the <code>lhs...</code> arguments. if <code>true</code> use the
-   *     default <code> Object.hashCode()</code> method.
+   *        the two hash values for the <code>lhs...</code> arguments. if <code>true</code> use the
+   *        default <code> Object.hashCode()</code> method.
    */
   public AbstractHashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, boolean defaultHashCode) {
     fLHSPattern1 = lhsPattern1;
@@ -157,8 +157,8 @@ public abstract class AbstractHashedPatternRules {
   }
 
   /**
-   * Try matching the <code>arg1, arg2</code> expressions as <code>F.List(arg1, arg2)</code> with this
-   * pattern-matching rules and if matched, return an evaluated right-hand-side expression,
+   * Try matching the <code>arg1, arg2</code> expressions as <code>F.List(arg1, arg2)</code> with
+   * this pattern-matching rules and if matched, return an evaluated right-hand-side expression,
    * otherwise return {@link F#NIL}.
    *
    * @param arg1
@@ -168,5 +168,6 @@ public abstract class AbstractHashedPatternRules {
    * @param engine
    * @return {@link F#NIL} if no match was found
    */
-  public abstract IExpr evalDownRule(IExpr arg1, IExpr num1, IExpr arg2, IExpr num2, EvalEngine engine);
+  public abstract IExpr evalDownRule(IExpr arg1, IExpr num1, IExpr arg2, IExpr num2,
+      EvalEngine engine);
 }

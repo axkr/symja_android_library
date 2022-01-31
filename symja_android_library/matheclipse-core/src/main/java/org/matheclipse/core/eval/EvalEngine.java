@@ -216,10 +216,10 @@ public class EvalEngine implements Serializable {
   transient String fSessionID;
 
   private transient String fMessageShortcut;
-  
+
   private transient IdentityHashMap<IBuiltInSymbol, Integer> experimatalSymbols =
       new IdentityHashMap<IBuiltInSymbol, Integer>();
-  
+
   /**
    * If <code>true</code> the engine evaluates in &quot;Trace()&quot; function mode.
    *

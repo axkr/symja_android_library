@@ -49,19 +49,15 @@ public class ImageFunctions {
       return F.NIL;
     }
 
-    private static IExpr filterHead(
-        IAST list, final int radius, IExpr filterHead, EvalEngine engine) {
+    private static IExpr filterHead(IAST list, final int radius, IExpr filterHead,
+        EvalEngine engine) {
       final IASTMutable result = list.copy();
       final int size = list.size();
-      list.forEach(
-          (x, i) ->
-              result.set(
-                  i,
-                  engine.evaluate( //
-                      F.unaryAST1( //
-                          filterHead, //
-                          list.slice(Math.max(1, i - radius), Math.min(size, i + radius + 1)) //
-                          ))));
+      list.forEach((x, i) -> result.set(i, engine.evaluate( //
+          F.unaryAST1( //
+              filterHead, //
+              list.slice(Math.max(1, i - radius), Math.min(size, i + radius + 1)) //
+          ))));
       return result;
     }
 

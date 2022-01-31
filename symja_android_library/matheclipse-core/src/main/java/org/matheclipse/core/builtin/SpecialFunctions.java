@@ -160,7 +160,7 @@ public class SpecialFunctions {
           return te.getValue();
         } catch (ValidateException ve) {
           return IOFunctions.printMessage(ast.topHead(), ve, engine);
-          //          LOGGER.debug("Beta.evaluate() failed", ve);
+          // LOGGER.debug("Beta.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -194,9 +194,7 @@ public class SpecialFunctions {
         if (a.isNumber() && b.isNumber()) {
           if (a.isInteger() && a.isPositive() && b.isInteger() && b.isPositive()) {
             // http://fungrim.org/entry/082a69/
-            return Times(
-                Factorial(Plus(CN1, a)),
-                Factorial(Plus(CN1, b)),
+            return Times(Factorial(Plus(CN1, a)), Factorial(Plus(CN1, b)),
                 Power(Factorial(Plus(CN1, a, b)), -1));
           }
           // http://fungrim.org/entry/888581/
@@ -215,7 +213,7 @@ public class SpecialFunctions {
         return te.getValue();
       } catch (ValidateException ve) {
         return IOFunctions.printMessage(ast.topHead(), ve, engine);
-        //        LOGGER.debug("Beta.evaluate() failed", ve);
+        // LOGGER.debug("Beta.evaluate() failed", ve);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -309,11 +307,8 @@ public class SpecialFunctions {
           for (int k = 0; k < ni; k++) {
             // (Pochhammer(a, k)*(1 - z)^k)/k!
             IInteger kk = F.ZZ(k);
-            sum.append(
-                F.Times(
-                    F.Power(F.Plus(F.C1, F.Negate(z)), kk),
-                    F.Power(F.Factorial(kk), -1),
-                    F.Pochhammer(a, kk)));
+            sum.append(F.Times(F.Power(F.Plus(F.C1, F.Negate(z)), kk), F.Power(F.Factorial(kk), -1),
+                F.Pochhammer(a, kk)));
           }
           // z^a * sum
           return F.Times(F.Power(z, a), sum);
@@ -375,28 +370,28 @@ public class SpecialFunctions {
 
     @Override
     public IExpr e1DblArg(final double d) {
-      //      if (F.isEqual(1.0, d)) {
-      //        return F.num(Math.log(2.0));
-      //      }
-      //      return e1ComplexArg(Complex.valueOf(d));
+      // if (F.isEqual(1.0, d)) {
+      // return F.num(Math.log(2.0));
+      // }
+      // return e1ComplexArg(Complex.valueOf(d));
       return F.complexNum(ZetaJS.dirichletEta(d));
     }
 
     @Override
     public IExpr e1ComplexArg(final Complex c) {
-      //      Complex zeta;
-      //      if (F.isEqual(c.getReal(), 1.0) && F.isZero(c.getImaginary())) {
-      //        zeta = Complex.valueOf(Math.log(2.0), 0.0);
-      //      } else {
-      //        de.lab4inf.math.Complex x =
-      //            new de.lab4inf.math.sets.ComplexNumber(c.getReal(), c.getImaginary());
-      //        x = de.lab4inf.math.functions.Zeta.zeta(x);
-      //        zeta = Complex.valueOf(x.real(), x.imag());
-      //      }
-      //      Complex dirichletEta =
+      // Complex zeta;
+      // if (F.isEqual(c.getReal(), 1.0) && F.isZero(c.getImaginary())) {
+      // zeta = Complex.valueOf(Math.log(2.0), 0.0);
+      // } else {
+      // de.lab4inf.math.Complex x =
+      // new de.lab4inf.math.sets.ComplexNumber(c.getReal(), c.getImaginary());
+      // x = de.lab4inf.math.functions.Zeta.zeta(x);
+      // zeta = Complex.valueOf(x.real(), x.imag());
+      // }
+      // Complex dirichletEta =
       //
       // zeta.multiply(Complex.ONE.subtract(Complex.valueOf(2.0).pow(Complex.ONE.subtract(c))));
-      //      return F.complex(dirichletEta.getReal(), dirichletEta.getImaginary());
+      // return F.complex(dirichletEta.getReal(), dirichletEta.getImaginary());
       return F.complexNum(ZetaJS.dirichletEta(c));
     }
 
@@ -634,11 +629,11 @@ public class SpecialFunctions {
         }
         return gammaRegularized2(a, z1, ast, engine);
       } catch (MathIllegalArgumentException miae) {
-        return IOFunctions.printMessage(
-            S.GammaRegularized, "argillegal", F.List(F.stringx(miae.getMessage()), ast), engine);
+        return IOFunctions.printMessage(S.GammaRegularized, "argillegal",
+            F.List(F.stringx(miae.getMessage()), ast), engine);
       } catch (RuntimeException rex) {
-        return IOFunctions.printMessage(
-            S.GammaRegularized, "argillegal", F.List(F.stringx(rex.getMessage()), ast), engine);
+        return IOFunctions.printMessage(S.GammaRegularized, "argillegal",
+            F.List(F.stringx(rex.getMessage()), ast), engine);
       }
     }
 
@@ -693,8 +688,8 @@ public class SpecialFunctions {
       return F.NIL;
     }
 
-    private static IExpr gammaRegularzed3(
-        IExpr a, IExpr z1, IExpr z2, final IAST ast, EvalEngine engine) {
+    private static IExpr gammaRegularzed3(IExpr a, IExpr z1, IExpr z2, final IAST ast,
+        EvalEngine engine) {
       if (engine.isDoubleMode()) {
         try {
           double aDouble = Double.NaN;
@@ -785,8 +780,8 @@ public class SpecialFunctions {
       if (a.isNumber()) {
         if (a.isZero() && s.isInteger() && s.isNegative()) {
           // http://fungrim.org/entry/7dab87/
-          return F.Times(
-              F.CN1, F.Divide(F.BernoulliB(F.Plus(1, s.negate())), F.Plus(1, s.negate())));
+          return F.Times(F.CN1,
+              F.Divide(F.BernoulliB(F.Plus(1, s.negate())), F.Plus(1, s.negate())));
         }
         if (a.isOne()) {
           // http://fungrim.org/entry/af23f7/
@@ -813,14 +808,9 @@ public class SpecialFunctions {
             int n = a.toIntDefault();
             int sNegate = sInt.negate().toIntDefault();
             if (n > Integer.MIN_VALUE && sNegate > Integer.MIN_VALUE) {
-              return F.Subtract(
-                  F.Zeta(s),
-                  F.sum(
-                      k -> {
-                        return k.power(sNegate);
-                      },
-                      1,
-                      n - 1));
+              return F.Subtract(F.Zeta(s), F.sum(k -> {
+                return k.power(sNegate);
+              }, 1, n - 1));
             }
           }
         }
@@ -1007,13 +997,11 @@ public class SpecialFunctions {
               return F.C1;
             }
           }
-          if (engine.isDoubleMode()
-              && (z.isNumericFunction(true)
-                  && a.isNumericFunction(true)
-                  && b.isNumericFunction(true))) {
+          if (engine.isDoubleMode() && (z.isNumericFunction(true) && a.isNumericFunction(true)
+              && b.isNumericFunction(true))) {
             org.hipparchus.distribution.continuous.BetaDistribution beta = //
-                new org.hipparchus.distribution.continuous.BetaDistribution(
-                    a.evalDouble(), b.evalDouble());
+                new org.hipparchus.distribution.continuous.BetaDistribution(a.evalDouble(),
+                    b.evalDouble());
             return F.num(beta.inverseCumulativeProbability(z.evalDouble()));
           }
         } else {
@@ -1029,17 +1017,11 @@ public class SpecialFunctions {
           }
         }
       } catch (MathIllegalArgumentException miae) {
-        return IOFunctions.printMessage(
-            S.InverseBetaRegularized,
-            "argillegal",
-            F.List(F.stringx(miae.getMessage()), ast),
-            engine);
+        return IOFunctions.printMessage(S.InverseBetaRegularized, "argillegal",
+            F.List(F.stringx(miae.getMessage()), ast), engine);
       } catch (RuntimeException rex) {
-        return IOFunctions.printMessage(
-            S.InverseBetaRegularized,
-            "argillegal",
-            F.List(F.stringx(rex.getMessage()), ast),
-            engine);
+        return IOFunctions.printMessage(S.InverseBetaRegularized, "argillegal",
+            F.List(F.stringx(rex.getMessage()), ast), engine);
       }
       return F.NIL;
     }
@@ -1135,10 +1117,8 @@ public class SpecialFunctions {
       if (arg1.isInfinity() || arg1.isZero()) {
         return F.CInfinity;
       }
-      if (arg1.isNegativeInfinity()
-          || arg1.isDirectedInfinity(F.CI)
-          || arg1.isDirectedInfinity(F.CNI)
-          || arg1.isComplexInfinity()) {
+      if (arg1.isNegativeInfinity() || arg1.isDirectedInfinity(F.CI)
+          || arg1.isDirectedInfinity(F.CNI) || arg1.isComplexInfinity()) {
         return F.CComplexInfinity;
       }
       if (arg1.isPositive()) {
@@ -1150,12 +1130,8 @@ public class SpecialFunctions {
           //
           return
           // [$ Log(2^(1 - n)*Sqrt(Pi)*Gamma(n)/Gamma((n+1)/2)) $]
-          F.Log(
-              F.Times(
-                  F.Power(F.C2, F.Subtract(F.C1, n)),
-                  F.Sqrt(S.Pi),
-                  F.Power(F.Gamma(F.Times(F.C1D2, F.Plus(n, F.C1))), F.CN1),
-                  F.Gamma(n))); // $$;
+          F.Log(F.Times(F.Power(F.C2, F.Subtract(F.C1, n)), F.Sqrt(S.Pi),
+              F.Power(F.Gamma(F.Times(F.C1D2, F.Plus(n, F.C1))), F.CN1), F.Gamma(n))); // $$;
         }
       } else if (arg1.isNegative()) {
         if (arg1.isInteger()) {
@@ -1186,13 +1162,8 @@ public class SpecialFunctions {
         if (arg1.isList() && arg2.isList()) {
           IAST list1 = (IAST) arg1;
           IAST list2 = (IAST) arg2;
-          if (list1.size() == 3
-              && list1.arg1().isList()
-              && list1.arg2().isList()
-              && //
-              list2.size() == 3
-              && list2.arg1().isList()
-              && list2.arg2().isList()) {
+          if (list1.size() == 3 && list1.arg1().isList() && list1.arg2().isList() && //
+              list2.size() == 3 && list2.arg1().isList() && list2.arg2().isList()) {
             IAST k1 = (IAST) list1.arg1();
             IAST k2 = (IAST) list1.arg2();
             IAST l1 = (IAST) list2.arg1();
@@ -1246,13 +1217,9 @@ public class SpecialFunctions {
                             // [$ (z^b1*Hypergeometric1F1Regularized(1 - a2 + b1, 1 + b1 - b2,
                             // z))/Gamma(a2
                             // - b1) $]
-                            F.Times(
-                                F.Power(z, b1),
-                                F.Power(F.Gamma(F.Subtract(a2, b1)), F.CN1),
-                                F.Hypergeometric1F1Regularized(
-                                    F.Plus(F.C1, F.Negate(a2), b1),
-                                    F.Plus(F.C1, b1, F.Negate(b2)),
-                                    z)); // $$;
+                            F.Times(F.Power(z, b1), F.Power(F.Gamma(F.Subtract(a2, b1)), F.CN1),
+                                F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a2), b1),
+                                    F.Plus(F.C1, b1, F.Negate(b2)), z)); // $$;
                         }
                         break;
                     }
@@ -1273,8 +1240,7 @@ public class SpecialFunctions {
                             // 1,0,0,0
                             return
                             // [$ z^(-1 + a1)/E^z^(-1) $]
-                            F.Times(
-                                F.Power(F.Exp(F.Power(z, F.CN1)), F.CN1),
+                            F.Times(F.Power(F.Exp(F.Power(z, F.CN1)), F.CN1),
                                 F.Power(z, F.Plus(F.CN1, a1))); // $$;
                           case 1:
                             // 1,0,0,1
@@ -1282,9 +1248,7 @@ public class SpecialFunctions {
                             if (z.isPositive()) {
                               return
                               // [$ (z^b2/Gamma(a1 - b2))*(z - 1)^(a1 - b2 - 1)*UnitStep(z - 1) $]
-                              F.Times(
-                                  F.Power(z, b2),
-                                  F.Power(F.Gamma(F.Subtract(a1, b2)), F.CN1),
+                              F.Times(F.Power(z, b2), F.Power(F.Gamma(F.Subtract(a1, b2)), F.CN1),
                                   F.Power(F.Plus(F.CN1, z), F.Plus(F.CN1, a1, F.Negate(b2))),
                                   F.UnitStep(F.Plus(F.CN1, z))); // $$;
                             }
@@ -1301,13 +1265,9 @@ public class SpecialFunctions {
                             // [$ z^b1*Gamma(1 - a1 + b1)*Hypergeometric1F1Regularized(1 - a1 + b1,
                             // 1 +
                             // b1 - b2, -z) $]
-                            F.Times(
-                                F.Power(z, b1),
-                                F.Gamma(F.Plus(F.C1, F.Negate(a1), b1)),
-                                F.Hypergeometric1F1Regularized(
-                                    F.Plus(F.C1, F.Negate(a1), b1),
-                                    F.Plus(F.C1, b1, F.Negate(b2)),
-                                    F.Negate(z))); // $$;
+                            F.Times(F.Power(z, b1), F.Gamma(F.Plus(F.C1, F.Negate(a1), b1)),
+                                F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a1), b1),
+                                    F.Plus(F.C1, b1, F.Negate(b2)), F.Negate(z))); // $$;
                         }
                         break;
                     }
@@ -1324,11 +1284,9 @@ public class SpecialFunctions {
                             return
                             // [$ z^(-1 + a1 + (1/2)*(-a1 + a2))*BesselJ(-a1 + a2, 2/Sqrt(z)) $]
                             F.Times(
-                                F.Power(
-                                    z,
+                                F.Power(z,
                                     F.Plus(F.CN1, a1, F.Times(F.C1D2, F.Plus(F.Negate(a1), a2)))),
-                                F.BesselJ(
-                                    F.Plus(F.Negate(a1), a2),
+                                F.BesselJ(F.Plus(F.Negate(a1), a2),
                                     F.Times(F.C2, F.Power(z, F.CN1D2)))); // $$;
                           case 1:
                             // 1,1,0,1
@@ -1337,13 +1295,10 @@ public class SpecialFunctions {
                             // [$ (z^(-1 + a1)*Hypergeometric1F1Regularized(1 - a1 + b2, 1 - a1 +
                             // a2,
                             // 1/z))/Gamma(a1 - b2) $]
-                            F.Times(
-                                F.Power(z, F.Plus(F.CN1, a1)),
+                            F.Times(F.Power(z, F.Plus(F.CN1, a1)),
                                 F.Power(F.Gamma(F.Subtract(a1, b2)), F.CN1),
-                                F.Hypergeometric1F1Regularized(
-                                    F.Plus(F.C1, F.Negate(a1), b2),
-                                    F.Plus(F.C1, F.Negate(a1), a2),
-                                    F.Power(z, F.CN1))); // $$;
+                                F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a1), b2),
+                                    F.Plus(F.C1, F.Negate(a1), a2), F.Power(z, F.CN1))); // $$;
                         }
                         break;
                       case 1:
@@ -1355,13 +1310,10 @@ public class SpecialFunctions {
                             // [$ z^(-1 + a1)*Gamma(1 - a1 + b1)*Hypergeometric1F1Regularized(1 - a1
                             // + b1, 1
                             // - a1 + a2, -(1/z)) $]
-                            F.Times(
-                                F.Power(z, F.Plus(F.CN1, a1)),
+                            F.Times(F.Power(z, F.Plus(F.CN1, a1)),
                                 F.Gamma(F.Plus(F.C1, F.Negate(a1), b1)),
-                                F.Hypergeometric1F1Regularized(
-                                    F.Plus(F.C1, F.Negate(a1), b1),
-                                    F.Plus(F.C1, F.Negate(a1), a2),
-                                    F.Negate(F.Power(z, F.CN1)))); // $$;
+                                F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a1), b1),
+                                    F.Plus(F.C1, F.Negate(a1), a2), F.Negate(F.Power(z, F.CN1)))); // $$;
                         }
                         break;
                     }
@@ -1426,9 +1378,9 @@ public class SpecialFunctions {
               } catch (ValidateException ve) {
               }
               if (Double.isNaN(xDouble)) {
-                //                Complex xc = arg2.evalComplex();
+                // Complex xc = arg2.evalComplex();
                 //
-                //                return
+                // return
               } else {
                 if (n == 0) {
                   return F.num(GammaJS.polyGamma(xDouble));
@@ -1516,8 +1468,8 @@ public class SpecialFunctions {
           return Times(CN1, arg2, Plus(C1, arg2), Power(Plus(CN1, arg2), -3));
         } else if (arg1.equals(F.CN3)) {
           // (arg2*(1 + 4*arg2 + arg2^2))/(arg2 - 1)^4
-          return Times(
-              arg2, Plus(C1, Times(C4, arg2), Sqr(arg2)), Power(Plus(C1, Negate(arg2)), -4));
+          return Times(arg2, Plus(C1, Times(C4, arg2), Sqr(arg2)),
+              Power(Plus(C1, Negate(arg2)), -4));
         }
       }
       if (engine.isDoubleMode()) {
@@ -1594,10 +1546,9 @@ public class SpecialFunctions {
       if (arg1.isZero()) {
         return arg1;
       }
-      Apcomplex c =
-          new Apcomplex(
-              new Apfloat(new BigDecimal(arg1.getRealPart()), ParserConfig.MACHINE_PRECISION),
-              new Apfloat(new BigDecimal(arg1.getImaginaryPart()), ParserConfig.MACHINE_PRECISION));
+      Apcomplex c = new Apcomplex(
+          new Apfloat(new BigDecimal(arg1.getRealPart()), ParserConfig.MACHINE_PRECISION),
+          new Apfloat(new BigDecimal(arg1.getImaginaryPart()), ParserConfig.MACHINE_PRECISION));
       // if (Config.FUZZ_TESTING) {
       // LOGGER.error(c);
       // }
@@ -1655,8 +1606,8 @@ public class SpecialFunctions {
         ki = k.toIntDefault();
         if (ki == Integer.MIN_VALUE) {
           // Machine-sized integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(
-              S.ProductLog, "intm", F.List(F.ProductLog(k, z), F.C1), EvalEngine.get());
+          return IOFunctions.printMessage(S.ProductLog, "intm", F.List(F.ProductLog(k, z), F.C1),
+              EvalEngine.get());
         }
         // ProductLog(0,z_) := ProductLog(z)
         if (ki == 0) {
@@ -1788,10 +1739,7 @@ public class SpecialFunctions {
           if (negArg2.isPresent()) {
             // StruveH(n_, arg2_)) := ((-(arg2)^n) StruveH(n,
             // negArg2))/negArg2^n
-            return F.Times(
-                F.CN1,
-                F.Power(arg2, arg1),
-                F.Power(negArg2, F.Negate(arg1)),
+            return F.Times(F.CN1, F.Power(arg2, arg1), F.Power(negArg2, F.Negate(arg1)),
                 F.StruveH(arg1, negArg2));
           }
         }
@@ -1868,10 +1816,7 @@ public class SpecialFunctions {
           if (negArg2.isPresent()) {
             // StruveL(n_, arg2_)) := ((-(arg2)^n) StruveL(n,
             // negArg2))/negArg2^n
-            return F.Times(
-                F.CN1,
-                F.Power(arg2, arg1),
-                F.Power(negArg2, F.Negate(arg1)),
+            return F.Times(F.CN1, F.Power(arg2, arg1), F.Power(negArg2, F.Negate(arg1)),
                 F.StruveL(arg1, negArg2));
           }
         }
@@ -1949,11 +1894,8 @@ public class SpecialFunctions {
           // http://fungrim.org/entry/72ccda/
           // Zeta(2*n) := ((((-1)^(n-1)*2^(-1+2*n)*Pi^(2*n))/(2*n)!)*BernoulliB(2*n)
           n = n.shiftRight(1);
-          return Times(
-              Power(CN1, Plus(CN1, n)),
-              Power(C2, Plus(CN1, Times(C2, n))),
-              Power(Pi, Times(C2, n)),
-              Power(Factorial(Times(C2, n)), -1),
+          return Times(Power(CN1, Plus(CN1, n)), Power(C2, Plus(CN1, Times(C2, n))),
+              Power(Pi, Times(C2, n)), Power(Factorial(Times(C2, n)), -1),
               BernoulliB(Times(C2, n)));
         }
 

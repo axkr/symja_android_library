@@ -86,18 +86,23 @@ public class JavaFunctions {
   /**
    *
    *
-   * <pre><code>InstanceOf[java-object, &quot;class-name&quot;]
-   * </code></pre>
+   * <pre>
+   * <code>InstanceOf[java-object, &quot;class-name&quot;]
+   * </code>
+   * </pre>
    *
-   * <p>return the result of the Java expression <code>java-object instanceof class</code>.
+   * <p>
+   * return the result of the Java expression <code>java-object instanceof class</code>.
    *
-   * <p><strong>Note</strong>: the Java specific functions which call Java native classes are only
+   * <p>
+   * <strong>Note</strong>: the Java specific functions which call Java native classes are only
    * available in the MMA mode in a local installation. All symbol and method names have to be case
    * sensitive.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; loc = JavaNew[&quot;java.util.Locale&quot;, &quot;US&quot;]
+   * <pre>
+   * <code>&gt;&gt; loc = JavaNew[&quot;java.util.Locale&quot;, &quot;US&quot;]
    * JavaObject[class java.util.Locale]
    *
    * &gt;&gt; InstanceOf[loc, &quot;java.util.Locale&quot;]
@@ -105,13 +110,15 @@ public class JavaFunctions {
    *
    * &gt;&gt; InstanceOf[loc, &quot;java.io.Serializable&quot;]
    * True
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="JavaClass.md">JavaClass</a>, <a href="JavaNew.md">JavaNew</a>, <a
-   * href="JavaObject.md">JavaObject</a>, <a href="JavaObjectQ.md">JavaObjectQ</a>, <a
-   * href="LoadJavaClass.md">LoadJavaClass</a>, <a href="SameObjectQ.md">SameObjectQ</a>
+   * <p>
+   * <a href="JavaClass.md">JavaClass</a>, <a href="JavaNew.md">JavaNew</a>,
+   * <a href="JavaObject.md">JavaObject</a>, <a href="JavaObjectQ.md">JavaObjectQ</a>,
+   * <a href="LoadJavaClass.md">LoadJavaClass</a>, <a href="SameObjectQ.md">SameObjectQ</a>
    */
   private static class InstanceOf extends AbstractEvaluator {
 
@@ -145,18 +152,23 @@ public class JavaFunctions {
   /**
    *
    *
-   * <pre><code>JavaObject[class className]
-   * </code></pre>
+   * <pre>
+   * <code>JavaObject[class className]
+   * </code>
+   * </pre>
    *
-   * <p>a <code>JavaObject</code> can be created with the <code>JavaNew</code> function.
+   * <p>
+   * a <code>JavaObject</code> can be created with the <code>JavaNew</code> function.
    *
-   * <p><strong>Note</strong>: the Java specific functions which call Java native classes are only
+   * <p>
+   * <strong>Note</strong>: the Java specific functions which call Java native classes are only
    * available in the MMA mode in a local installation. All symbol and method names have to be case
    * sensitive.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; loc = JavaNew[&quot;java.util.Locale&quot;, &quot;US&quot;]
+   * <pre>
+   * <code>&gt;&gt; loc = JavaNew[&quot;java.util.Locale&quot;, &quot;US&quot;]
    * JavaObject[class java.util.Locale]
    *
    * &gt;&gt; ds =  JavaNew[&quot;java.text.DecimalFormatSymbols&quot;, loc]
@@ -164,20 +176,25 @@ public class JavaFunctions {
    *
    * &gt;&gt; dm = JavaNew[&quot;java.text.DecimalFormat&quot;, &quot;#.00&quot;, ds]
    * JavaObject[class java.text.DecimalFormat]
-   * </code></pre>
+   * </code>
+   * </pre>
    *
-   * <p>Calls the <code>format</code> method of the <code>dm</code> Java object.
+   * <p>
+   * Calls the <code>format</code> method of the <code>dm</code> Java object.
    *
-   * <pre><code>&gt;&gt; dm@format[0.815] // InputForm
+   * <pre>
+   * <code>&gt;&gt; dm@format[0.815] // InputForm
    * &quot;.81&quot;
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="InstanceOf.md">InstanceOf</a>, <a href="JavaClass.md">JavaClass</a>, <a
-   * href="JavaObject.md">JavaObject</a>, <a href="JavaObjectQ.md">JavaObjectQ</a>, <a
-   * href="JavaShow.md">JavaShow</a>, <a href="LoadJavaClass.md">LoadJavaClass</a>, <a
-   * href="SameObjectQ.md">SameObjectQ</a>
+   * <p>
+   * <a href="InstanceOf.md">InstanceOf</a>, <a href="JavaClass.md">JavaClass</a>,
+   * <a href="JavaObject.md">JavaObject</a>, <a href="JavaObjectQ.md">JavaObjectQ</a>,
+   * <a href="JavaShow.md">JavaShow</a>, <a href="LoadJavaClass.md">LoadJavaClass</a>,
+   * <a href="SameObjectQ.md">SameObjectQ</a>
    */
   private static class JavaNew extends AbstractEvaluator {
 
@@ -210,11 +227,8 @@ public class JavaFunctions {
                 }
               }
             }
-          } catch (InstantiationException
-              | IllegalAccessException
-              | IllegalArgumentException
-              | InvocationTargetException
-              | SecurityException ex) {
+          } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+              | InvocationTargetException | SecurityException ex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
             return F.NIL;
           }
@@ -232,24 +246,32 @@ public class JavaFunctions {
   /**
    *
    *
-   * <pre><code>JavaNew[&quot;class-name&quot;]
-   * </code></pre>
+   * <pre>
+   * <code>JavaNew[&quot;class-name&quot;]
+   * </code>
+   * </pre>
    *
-   * <p>create a <code>JavaObject</code> from the <code>class-name</code> default constructor.
+   * <p>
+   * create a <code>JavaObject</code> from the <code>class-name</code> default constructor.
    *
-   * <pre><code>JavaNew[&quot;class-name&quot;, arg1, arg2,...]
-   * </code></pre>
+   * <pre>
+   * <code>JavaNew[&quot;class-name&quot;, arg1, arg2,...]
+   * </code>
+   * </pre>
    *
-   * <p>create a <code>JavaObject</code> from the <code>class-name</code> constructor matching the
+   * <p>
+   * create a <code>JavaObject</code> from the <code>class-name</code> constructor matching the
    * arguments <code>arg1, arg2,...</code>
    *
-   * <p><strong>Note</strong>: the Java specific functions which call Java native classes are only
+   * <p>
+   * <strong>Note</strong>: the Java specific functions which call Java native classes are only
    * available in the MMA mode in a local installation. All symbol and method names have to be case
    * sensitive.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; loc = JavaNew[&quot;java.util.Locale&quot;, &quot;US&quot;]
+   * <pre>
+   * <code>&gt;&gt; loc = JavaNew[&quot;java.util.Locale&quot;, &quot;US&quot;]
    * JavaObject[class java.util.Locale]
    *
    * &gt;&gt; ds =  JavaNew[&quot;java.text.DecimalFormatSymbols&quot;, loc]
@@ -257,20 +279,25 @@ public class JavaFunctions {
    *
    * &gt;&gt; dm = JavaNew[&quot;java.text.DecimalFormat&quot;, &quot;#.00&quot;, ds]
    * JavaObject[class java.text.DecimalFormat]
-   * </code></pre>
+   * </code>
+   * </pre>
    *
-   * <p>Calls the <code>format</code> method of the <code>dm</code> Java object.
+   * <p>
+   * Calls the <code>format</code> method of the <code>dm</code> Java object.
    *
-   * <pre><code>&gt;&gt; dm@format[0.815] // InputForm
+   * <pre>
+   * <code>&gt;&gt; dm@format[0.815] // InputForm
    * &quot;.81&quot;
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="InstanceOf.md">InstanceOf</a>, <a href="JavaClass.md">JavaClass</a>, <a
-   * href="JavaNew.md">JavaNew</a>, <a href="JavaObjectQ.md">JavaObjectQ</a>, <a
-   * href="JavaShow.md">JavaShow</a>, <a href="LoadJavaClass.md">LoadJavaClass</a>, <a
-   * href="SameObjectQ.md">SameObjectQ</a>
+   * <p>
+   * <a href="InstanceOf.md">InstanceOf</a>, <a href="JavaClass.md">JavaClass</a>,
+   * <a href="JavaNew.md">JavaNew</a>, <a href="JavaObjectQ.md">JavaObjectQ</a>,
+   * <a href="JavaShow.md">JavaShow</a>, <a href="LoadJavaClass.md">LoadJavaClass</a>,
+   * <a href="SameObjectQ.md">SameObjectQ</a>
    */
   private static class JavaObject extends AbstractEvaluator {
 
@@ -280,8 +307,7 @@ public class JavaFunctions {
         return F.NIL;
       }
       if (ast.head() instanceof JavaObjectExpr //
-          && ast.argSize() == 1
-          && ast.arg1().isAST()) {
+          && ast.argSize() == 1 && ast.arg1().isAST()) {
         try {
           IAST methodExpr = (IAST) ast.arg1();
           if (methodExpr.head().isSymbol()) {
@@ -316,31 +342,37 @@ public class JavaFunctions {
   /**
    *
    *
-   * <pre><code>JavaObjectQ[java-object]
-   * </code></pre>
+   * <pre>
+   * <code>JavaObjectQ[java-object]
+   * </code>
+   * </pre>
    *
-   * <p>return <code>True</code> if <code>java-object</code> is a <code>JavaObject</code>
-   * expression.
+   * <p>
+   * return <code>True</code> if <code>java-object</code> is a <code>JavaObject</code> expression.
    *
-   * <p><strong>Note</strong>: the Java specific functions which call Java native classes are only
+   * <p>
+   * <strong>Note</strong>: the Java specific functions which call Java native classes are only
    * available in the MMA mode in a local installation. All symbol and method names have to be case
    * sensitive.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; loc = JavaNew[&quot;java.util.Locale&quot;, &quot;US&quot;]
+   * <pre>
+   * <code>&gt;&gt; loc = JavaNew[&quot;java.util.Locale&quot;, &quot;US&quot;]
    * JavaObject[class java.util.Locale]
    *
    * &gt;&gt; JavaObjectQ[loc]
    * True
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="InstanceOf.md">InstanceOf</a>, <a href="JavaClass.md">JavaClass</a>, <a
-   * href="JavaNew.md">JavaNew</a>, <a href="JavaObject.md">JavaObject</a>, <a
-   * href="JavaShow.md">JavaShow</a>, <a href="LoadJavaClass.md">LoadJavaClass</a>, <a
-   * href="SameObjectQ.md">SameObjectQ</a>
+   * <p>
+   * <a href="InstanceOf.md">InstanceOf</a>, <a href="JavaClass.md">JavaClass</a>,
+   * <a href="JavaNew.md">JavaNew</a>, <a href="JavaObject.md">JavaObject</a>,
+   * <a href="JavaShow.md">JavaShow</a>, <a href="LoadJavaClass.md">LoadJavaClass</a>,
+   * <a href="SameObjectQ.md">SameObjectQ</a>
    */
   private static class JavaObjectQ extends AbstractEvaluator {
 
@@ -358,39 +390,49 @@ public class JavaFunctions {
   /**
    *
    *
-   * <pre><code>LoadJavaClass[&quot;class-name&quot;]
-   * </code></pre>
+   * <pre>
+   * <code>LoadJavaClass[&quot;class-name&quot;]
+   * </code>
+   * </pre>
    *
-   * <p>loads the class with the specified <code>class-name</code> and return a <code>JavaClass
+   * <p>
+   * loads the class with the specified <code>class-name</code> and return a <code>JavaClass
    * </code> expression. All static method names are assigned to a context which will be created by
    * the last part of the class name.
    *
-   * <p><strong>Note</strong>: the Java specific functions which call Java native classes are only
+   * <p>
+   * <strong>Note</strong>: the Java specific functions which call Java native classes are only
    * available in the MMA mode in a local installation. All symbol and method names have to be case
    * sensitive.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; clazz= LoadJavaClass[&quot;org.jsoup.Jsoup&quot;]
+   * <pre>
+   * <code>&gt;&gt; clazz= LoadJavaClass[&quot;org.jsoup.Jsoup&quot;]
    * JavaClass[org.jsoup.Jsoup]
    *
    * &gt;&gt; conn=Jsoup`connect[&quot;https://jsoup.org/&quot;]
    * JavaObject[class org.jsoup.helper.HttpConnection]
    *
    * &gt;&gt; doc=conn@get[ ];
-   * </code></pre>
+   * </code>
+   * </pre>
    *
-   * <p>Print the title of the HTML page.
+   * <p>
+   * Print the title of the HTML page.
    *
-   * <pre><code>&gt;&gt; Print[doc@title[ ]]
+   * <pre>
+   * <code>&gt;&gt; Print[doc@title[ ]]
    * jsoup Java HTML Parser, with the best of HTML5 DOM methods and CSS selectors.
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="InstanceOf.md">InstanceOf</a>, <a href="JavaClass.md">JavaClass</a>, <a
-   * href="JavaNew.md">JavaNew</a>, <a href="JavaObject.md">JavaObject</a>, <a
-   * href="JavaObjectQ.md">JavaObjectQ</a>
+   * <p>
+   * <a href="InstanceOf.md">InstanceOf</a>, <a href="JavaClass.md">JavaClass</a>,
+   * <a href="JavaNew.md">JavaNew</a>, <a href="JavaObject.md">JavaObject</a>,
+   * <a href="JavaObjectQ.md">JavaObjectQ</a>
    */
   private static class LoadJavaClass extends AbstractEvaluator {
 
@@ -446,19 +488,24 @@ public class JavaFunctions {
   /**
    *
    *
-   * <pre><code>SameObjectQ[java-object1, java-object2]
-   * </code></pre>
+   * <pre>
+   * <code>SameObjectQ[java-object1, java-object2]
+   * </code>
+   * </pre>
    *
-   * <p>gives <code>True</code> if the Java <code>==</code> operator for the Java objects gives
-   * true. <code>False</code> otherwise.
+   * <p>
+   * gives <code>True</code> if the Java <code>==</code> operator for the Java objects gives true.
+   * <code>False</code> otherwise.
    *
-   * <p><strong>Note</strong>: the Java specific functions which call Java native classes are only
+   * <p>
+   * <strong>Note</strong>: the Java specific functions which call Java native classes are only
    * available in the MMA mode in a local installation. All symbol and method names have to be case
    * sensitive.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; loc1= JavaNew[&quot;java.util.Locale&quot;,&quot;US&quot;]
+   * <pre>
+   * <code>&gt;&gt; loc1= JavaNew[&quot;java.util.Locale&quot;,&quot;US&quot;]
    * JavaObject[class java.util.Locale]
    *
    * &gt;&gt; loc2= JavaNew[&quot;java.util.Locale&quot;,&quot;US&quot;]
@@ -469,13 +516,15 @@ public class JavaFunctions {
    *
    * &gt;&gt; SameObjectQ[loc1, loc1]
    * True
-   * </code></pre>
+   * </code>
+   * </pre>
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="InstanceOf.md">InstanceOf</a>, <a href="JavaClass.md">JavaClass</a>, <a
-   * href="JavaNew.md">JavaNew</a>, <a href="JavaObject.md">JavaObject</a>, <a
-   * href="JavaObjectQ.md">JavaObjectQ</a>
+   * <p>
+   * <a href="InstanceOf.md">InstanceOf</a>, <a href="JavaClass.md">JavaClass</a>,
+   * <a href="JavaNew.md">JavaNew</a>, <a href="JavaObject.md">JavaObject</a>,
+   * <a href="JavaObjectQ.md">JavaObjectQ</a>
    */
   private static class SameObjectQ extends AbstractEvaluator {
 

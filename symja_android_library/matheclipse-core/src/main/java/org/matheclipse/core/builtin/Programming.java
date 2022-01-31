@@ -127,7 +127,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>aborts an evaluation completely and returns <code>$Aborted</code>.
+   * <p>
+   * aborts an evaluation completely and returns <code>$Aborted</code>.
    *
    * </blockquote>
    *
@@ -187,7 +188,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>exits a <code>For</code>, <code>While</code>, or <code>Do</code> loop.
+   * <p>
+   * exits a <code>For</code>, <code>While</code>, or <code>Do</code> loop.
    *
    * </blockquote>
    *
@@ -227,7 +229,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>evaluates <code>expr</code> for the <code>list_of_local_variables</code>
+   * <p>
+   * evaluates <code>expr</code> for the <code>list_of_local_variables</code>
    *
    * </blockquote>
    *
@@ -270,25 +273,23 @@ public final class Programming {
         switch (size) {
           case 2:
             return e.getValue();
-          case 3:
-            {
-              final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
-              IExpr tag = engine.evaluate(e.getTag());
-              if (matcher.test(tag)) {
-                return e.getValue();
-              }
-              throw e;
+          case 3: {
+            final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
+            IExpr tag = engine.evaluate(e.getTag());
+            if (matcher.test(tag)) {
+              return e.getValue();
             }
-          case 4:
-            {
-              final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
-              IExpr tag = engine.evaluate(e.getTag());
-              if (matcher.test(tag)) {
-                IExpr head = engine.evaluate(ast.arg3());
-                return F.binaryAST2(head, e.getValue(), tag);
-              }
-              throw e;
+            throw e;
+          }
+          case 4: {
+            final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
+            IExpr tag = engine.evaluate(e.getTag());
+            if (matcher.test(tag)) {
+              IExpr head = engine.evaluate(ast.arg3());
+              return F.binaryAST2(head, e.getValue(), tag);
             }
+            throw e;
+          }
           default:
             return e.getValue();
         }
@@ -316,8 +317,9 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>evaluates <code>expr</code>, and returns the result, unless messages were generated, in
-   * which case <code>failure</code> will be returned.
+   * <p>
+   * evaluates <code>expr</code>, and returns the result, unless messages were generated, in which
+   * case <code>failure</code> will be returned.
    *
    * </blockquote>
    *
@@ -329,8 +331,8 @@ public final class Programming {
    * </code>
    * </pre>
    *
-   * <p><code>0^(-42)</code> prints message: &quot;Power: Infinite expression 1/0^42
-   * encountered.&quot;
+   * <p>
+   * <code>0^(-42)</code> prints message: &quot;Power: Infinite expression 1/0^42 encountered.&quot;
    *
    * <pre>
    * <code>&gt;&gt; Check(0^(-42), failure)
@@ -368,20 +370,25 @@ public final class Programming {
   /**
    *
    *
-   * <pre><code>CheckAbort(expr, failure-expr)
-   * </code></pre>
+   * <pre>
+   * <code>CheckAbort(expr, failure-expr)
+   * </code>
+   * </pre>
    *
-   * <p>evaluates <code>expr</code>, and returns the result, unless <code>Abort</code> was called
+   * <p>
+   * evaluates <code>expr</code>, and returns the result, unless <code>Abort</code> was called
    * during the evaluation, in which case <code>failure-expr</code> will be returned.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>&gt;&gt; CheckAbort(Abort(); -1, 41) + 1
+   * <pre>
+   * <code>&gt;&gt; CheckAbort(Abort(); -1, 41) + 1
    * 42
    *
    * &gt;&gt; CheckAbort(abc; -1, 41) + 1
    * 0
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static final class CheckAbort extends AbstractCoreFunctionEvaluator {
 
@@ -411,7 +418,8 @@ public final class Programming {
    * CompoundExpression(expr1, expr2, ...)
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * expr1; expr2; ...
@@ -419,7 +427,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>evaluates its arguments in turn, returning the last result.
+   * <p>
+   * evaluates its arguments in turn, returning the last result.
    *
    * </blockquote>
    */
@@ -453,7 +462,8 @@ public final class Programming {
    * Condition(pattern, expr)
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * pattern /; expr
@@ -461,14 +471,16 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>places an additional constraint on <code>pattern</code> that only allows it to match if
+   * <p>
+   * places an additional constraint on <code>pattern</code> that only allows it to match if
    * <code>expr</code> evaluates to <code>True</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>The controlling expression of a <code>Condition</code> can use variables from the pattern:
+   * <p>
+   * The controlling expression of a <code>Condition</code> can use variables from the pattern:
    *
    * <pre>
    * &gt; f(3) /. f(x_) /; x&gt;0 -&gt; t
@@ -478,7 +490,8 @@ public final class Programming {
    * f(-3)
    * </pre>
    *
-   * <p><code>Condition</code> can be used in an assignment:
+   * <p>
+   * <code>Condition</code> can be used in an assignment:
    *
    * <pre>
    * &gt;&gt; f(x_) := p(x) /; x&gt;0
@@ -522,7 +535,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>continues with the next iteration in a <code>For</code>, <code>While</code>, or <code>Do
+   * <p>
+   * continues with the next iteration in a <code>For</code>, <code>While</code>, or <code>Do
    * </code> loop.
    *
    * </blockquote>
@@ -566,7 +580,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p><code>Defer</code> doesn't evaluate <code>expr</code> and didn't appear in the output
+   * <p>
+   * <code>Defer</code> doesn't evaluate <code>expr</code> and didn't appear in the output
    *
    * </blockquote>
    *
@@ -581,16 +596,16 @@ public final class Programming {
   private static class Defer extends AbstractCoreFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      //      if (!ToggleFeature.DEFER) {
-      //        return F.NIL;
-      //      }
-      //       IExpr arg1=ast.arg1();
-      //       return arg1;
-      //       if (arg1.isAST()){
-      //       IAST copy=(IAST)arg1.copy();
-      //       copy.addEvalFlags(IAST.DEFER_AST);
-      //       return copy;
-      //       }
+      // if (!ToggleFeature.DEFER) {
+      // return F.NIL;
+      // }
+      // IExpr arg1=ast.arg1();
+      // return arg1;
+      // if (arg1.isAST()){
+      // IAST copy=(IAST)arg1.copy();
+      // copy.addEvalFlags(IAST.DEFER_AST);
+      // return copy;
+      // }
       return F.NIL;
     }
 
@@ -614,7 +629,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>evaluates <code>expr</code> <code>max</code> times.
+   * <p>
+   * evaluates <code>expr</code> <code>max</code> times.
    *
    * </blockquote>
    *
@@ -624,7 +640,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>evaluates <code>expr</code> <code>max</code> times, substituting <code>i</code> in <code>
+   * <p>
+   * evaluates <code>expr</code> <code>max</code> times, substituting <code>i</code> in <code>
    * expr</code> with values from <code>1</code> to <code>max</code>.
    *
    * </blockquote>
@@ -635,7 +652,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>starts with <code>i = max</code>.
+   * <p>
+   * starts with <code>i = max</code>.
    *
    * </blockquote>
    *
@@ -645,7 +663,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>uses a step size of <code>step</code>.
+   * <p>
+   * uses a step size of <code>step</code>.
    *
    * </blockquote>
    *
@@ -655,7 +674,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>uses values <code>i1, i2, ... for i</code>.
+   * <p>
+   * uses values <code>i1, i2, ... for i</code>.
    *
    * </blockquote>
    *
@@ -665,7 +685,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>evaluates expr for each j from jmin to jmax, for each i from imin to imax, etc.
+   * <p>
+   * evaluates expr for each j from jmin to jmax, for each i from imin to imax, etc.
    *
    * </blockquote>
    *
@@ -686,7 +707,8 @@ public final class Programming {
    *  | {2, 5}
    * </pre>
    *
-   * <p>You can use 'Break()' and 'Continue()' inside 'Do':
+   * <p>
+   * You can use 'Break()' and 'Continue()' inside 'Do':
    *
    * <pre>
    * &gt;&gt; Do(If(i &gt; 10, Break(), If(Mod(i, 2) == 0, Continue()); Print(i)), {i, 5, 20})
@@ -731,8 +753,8 @@ public final class Programming {
     final EvalEngine fEngine;
     int fIndex;
 
-    public DoIterator(
-        final java.util.List<? extends IIterator<IExpr>> iterList, EvalEngine engine) {
+    public DoIterator(final java.util.List<? extends IIterator<IExpr>> iterList,
+        EvalEngine engine) {
       fIterList = iterList;
       fEngine = engine;
       fIndex = 0;
@@ -781,8 +803,9 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>starting with <code>expr</code>, iteratively applies <code>f</code> until the result no
-   * longer changes.
+   * <p>
+   * starting with <code>expr</code>, iteratively applies <code>f</code> until the result no longer
+   * changes.
    *
    * </blockquote>
    *
@@ -792,7 +815,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>performs at most <code>n</code> iterations.
+   * <p>
+   * performs at most <code>n</code> iterations.
    *
    * </blockquote>
    *
@@ -809,7 +833,8 @@ public final class Programming {
    * x
    * </pre>
    *
-   * <p>Non-negative integer expected.
+   * <p>
+   * Non-negative integer expected.
    *
    * <pre>
    * &gt;&gt; FixedPoint(f, x, -1)
@@ -843,8 +868,8 @@ public final class Programming {
         }
         if (maxIterations < 0) {
           // Non-negative machine-sized integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(
-              ast.topHead(), "intnm", F.List(ast, F.ZZ(3)), EvalEngine.get());
+          return IOFunctions.printMessage(ast.topHead(), "intnm", F.List(ast, F.ZZ(3)),
+              EvalEngine.get());
         }
         if (maxIterations == 0) {
           return ast.arg2();
@@ -888,8 +913,9 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>starting with <code>expr</code>, iteratively applies <code>f</code> until the result no
-   * longer changes, and returns a list of all intermediate results.
+   * <p>
+   * starting with <code>expr</code>, iteratively applies <code>f</code> until the result no longer
+   * changes, and returns a list of all intermediate results.
    *
    * </blockquote>
    *
@@ -899,7 +925,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>performs at most <code>n</code> iterations.
+   * <p>
+   * performs at most <code>n</code> iterations.
    *
    * </blockquote>
    *
@@ -910,7 +937,8 @@ public final class Programming {
    * {1.0,0.5403023058681398,0.8575532158463934,0.6542897904977791,0.7934803587425656}
    * </pre>
    *
-   * <p>Observe the convergence of Newton's method for approximating square roots:<br>
+   * <p>
+   * Observe the convergence of Newton's method for approximating square roots:<br>
    *
    * <pre>
    * &gt;&gt; newton(n_) := FixedPointList(.5(# + n/#) &amp;, 1.);
@@ -918,7 +946,8 @@ public final class Programming {
    * {1.0,5.0,3.4,3.023529411764706,3.00009155413138,3.000000001396984,3.0,3.0}
    * </pre>
    *
-   * <p>Get the &ldquo;hailstone&rdquo; sequence of a number:<br>
+   * <p>
+   * Get the &ldquo;hailstone&rdquo; sequence of a number:<br>
    *
    * <pre>
    * &gt;&gt; collatz(1) := 1;
@@ -934,7 +963,8 @@ public final class Programming {
    * {x}
    * </pre>
    *
-   * <p>Non-negative integer expected.
+   * <p>
+   * Non-negative integer expected.
    *
    * <pre>
    * &gt;&gt; FixedPointList(f, x, -1)
@@ -968,8 +998,8 @@ public final class Programming {
         }
         if (iterations < 0) {
           // Non-negative machine-sized integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(
-              ast.topHead(), "intnm", F.List(ast, F.ZZ(3)), EvalEngine.get());
+          return IOFunctions.printMessage(ast.topHead(), "intnm", F.List(ast, F.ZZ(3)),
+              EvalEngine.get());
         }
         if (iterations == 0) {
           return F.List(ast.arg2());
@@ -1010,8 +1040,9 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>evaluates <code>start</code>, and then iteratively <code>body</code> and <code>incr</code>
-   * as long as test evaluates to <code>True</code>.
+   * <p>
+   * evaluates <code>start</code>, and then iteratively <code>body</code> and <code>incr</code> as
+   * long as test evaluates to <code>True</code>.
    *
    * </blockquote>
    *
@@ -1021,7 +1052,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>evaluates only <code>incr</code> and no <code>body</code>.
+   * <p>
+   * evaluates only <code>incr</code> and no <code>body</code>.
    *
    * </blockquote>
    *
@@ -1031,13 +1063,15 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>runs the loop without any body.<br>
+   * <p>
+   * runs the loop without any body.<br>
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>Compute the factorial of 10 using 'For':
+   * <p>
+   * Compute the factorial of 10 using 'For':
    *
    * <pre>
    * &gt;&gt; n := 1
@@ -1116,7 +1150,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>returns <code>pos</code> if <code>cond</code> evaluates to <code>True</code>, and <code>neg
+   * <p>
+   * returns <code>pos</code> if <code>cond</code> evaluates to <code>True</code>, and <code>neg
    * </code> if it evaluates to <code>False</code>.
    *
    * </blockquote>
@@ -1127,7 +1162,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>returns <code>other</code> if <code>cond</code> evaluates to neither <code>True</code> nor
+   * <p>
+   * returns <code>other</code> if <code>cond</code> evaluates to neither <code>True</code> nor
    * <code>False</code>.
    *
    * </blockquote>
@@ -1138,7 +1174,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>returns <code>Null</code> if <code>cond</code> evaluates to <code>False</code>.
+   * <p>
+   * returns <code>Null</code> if <code>cond</code> evaluates to <code>False</code>.
    *
    * </blockquote>
    *
@@ -1149,21 +1186,25 @@ public final class Programming {
    * a
    * </pre>
    *
-   * <p>If the second branch is not specified, <code>Null</code> is taken:
+   * <p>
+   * If the second branch is not specified, <code>Null</code> is taken:
    *
    * <blockquote>
    *
    * <blockquote>
    *
-   * <p>If(1&lt;2, a) a
+   * <p>
+   * If(1&lt;2, a) a
    *
-   * <p>If(False, a) //FullForm Null
+   * <p>
+   * If(False, a) //FullForm Null
    *
    * </blockquote>
    *
    * </blockquote>
    *
-   * <p>You might use comments (inside <code>(*</code> and <code>*)</code>) to make the branches of
+   * <p>
+   * You might use comments (inside <code>(*</code> and <code>*)</code>) to make the branches of
    * <code>If</code> more readable:
    *
    * <pre>
@@ -1216,13 +1257,15 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>Interrupt an evaluation and returns <code>$Aborted</code>.
+   * <p>
+   * Interrupt an evaluation and returns <code>$Aborted</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p><code>Print(test1)</code> prints string: &quot;test1&quot;
+   * <p>
+   * <code>Print(test1)</code> prints string: &quot;test1&quot;
    *
    * <pre>
    * <code>&gt;&gt; Print(test1); Interrupt(); Print(test2)
@@ -1254,7 +1297,8 @@ public final class Programming {
    * </code>
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * <code>{e1, e2, ..., ei}
@@ -1263,13 +1307,15 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>represents a list containing the elements <code>e1...ei</code>.
+   * <p>
+   * represents a list containing the elements <code>e1...ei</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>'List' is the head of lists:
+   * <p>
+   * 'List' is the head of lists:
    *
    * <pre>
    * <code>&gt;&gt; Head({1, 2, 3})
@@ -1277,7 +1323,8 @@ public final class Programming {
    * </code>
    * </pre>
    *
-   * <p>Lists can be nested:
+   * <p>
+   * Lists can be nested:
    *
    * <pre>
    * <code>&gt;&gt; {{a, b, {c, d}}}
@@ -1294,11 +1341,8 @@ public final class Programming {
     }
 
     @Override
-    public IExpr evaluateSet(
-        final IExpr leftHandSide,
-        IExpr rightHandSide,
-        IBuiltInSymbol builtinSymbol,
-        EvalEngine engine) {
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isList()) {
         // thread over lists
         IExpr temp =
@@ -1368,7 +1412,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>evaluates <code>expr</code> for the <code>list_of_local_variables</code> by renaming local
+   * <p>
+   * evaluates <code>expr</code> for the <code>list_of_local_variables</code> by renaming local
    * variables.
    *
    * </blockquote>
@@ -1407,7 +1452,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and
+   * <p>
+   * starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and
    * returns the final result.
    *
    * </blockquote>
@@ -1462,7 +1508,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and
+   * <p>
+   * starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and
    * returns a list of all intermediate results.
    *
    * </blockquote>
@@ -1499,12 +1546,8 @@ public final class Programming {
       return F.NIL;
     }
 
-    public static IAST nestList(
-        final IExpr expr,
-        final int n,
-        final Function<IExpr, IExpr> fn,
-        final IExpr resultHead,
-        EvalEngine engine) {
+    public static IAST nestList(final IExpr expr, final int n, final Function<IExpr, IExpr> fn,
+        final IExpr resultHead, EvalEngine engine) {
       IASTAppendable resultList = F.ast(resultHead, n + 1);
       IExpr temp = expr;
       resultList.append(temp);
@@ -1535,8 +1578,9 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>applies a function <code>f</code> repeatedly on an expression <code>expr</code>, until
-   * applying <code>test</code> on the result no longer yields <code>True</code>.
+   * <p>
+   * applies a function <code>f</code> repeatedly on an expression <code>expr</code>, until applying
+   * <code>test</code> on the result no longer yields <code>True</code>.
    *
    * </blockquote>
    *
@@ -1546,8 +1590,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>supplies the last <code>m</code> results to <code>test</code> (default value: <code>1</code>
-   * ).
+   * <p>
+   * supplies the last <code>m</code> results to <code>test</code> (default value: <code>1</code> ).
    *
    * </blockquote>
    *
@@ -1557,13 +1601,15 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>supplies all results gained so far to <code>test</code>.
+   * <p>
+   * supplies all results gained so far to <code>test</code>.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>Divide by 2 until the result is no longer an integer:
+   * <p>
+   * Divide by 2 until the result is no longer an integer:
    *
    * <pre>
    * &gt;&gt; NestWhile(#/2&amp;, 10000, IntegerQ)
@@ -1578,8 +1624,8 @@ public final class Programming {
       if (ast.argSize() == 4) {
         n = ast.arg4();
       }
-      return nestWhile(
-          ast.arg2(), engine.evaluate(ast.arg3()), x -> F.unaryAST1(ast.arg1(), x), n, engine);
+      return nestWhile(ast.arg2(), engine.evaluate(ast.arg3()), x -> F.unaryAST1(ast.arg1(), x), n,
+          engine);
     }
 
     @Override
@@ -1587,12 +1633,8 @@ public final class Programming {
       return ARGS_3_4;
     }
 
-    public static IExpr nestWhile(
-        final IExpr expr,
-        final IExpr test,
-        final Function<IExpr, IExpr> fn,
-        final IExpr n,
-        EvalEngine engine) {
+    public static IExpr nestWhile(final IExpr expr, final IExpr test,
+        final Function<IExpr, IExpr> fn, final IExpr n, EvalEngine engine) {
       if (n == S.All) {
         IExpr temp = expr;
         IASTAppendable testFunction = F.ast(test);
@@ -1640,9 +1682,10 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>applies a function <code>f</code> repeatedly on an expression <code>expr</code>, until
-   * applying <code>test</code> on the result no longer yields <code>True</code>. It returns a list
-   * of all intermediate results.
+   * <p>
+   * applies a function <code>f</code> repeatedly on an expression <code>expr</code>, until applying
+   * <code>test</code> on the result no longer yields <code>True</code>. It returns a list of all
+   * intermediate results.
    *
    * </blockquote>
    *
@@ -1653,8 +1696,9 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>supplies the last <code>m</code> results to <code>test</code> (default value: <code>1</code>
-   * ). It returns a list of all intermediate results.
+   * <p>
+   * supplies the last <code>m</code> results to <code>test</code> (default value: <code>1</code> ).
+   * It returns a list of all intermediate results.
    *
    * </blockquote>
    *
@@ -1665,8 +1709,9 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>supplies all results gained so far to <code>test</code>. It returns a list of all
-   * intermediate results.
+   * <p>
+   * supplies all results gained so far to <code>test</code>. It returns a list of all intermediate
+   * results.
    *
    * </blockquote>
    *
@@ -1681,13 +1726,8 @@ public final class Programming {
       if (ast.argSize() == 4) {
         n = ast.arg4();
       }
-      return nestList(
-          ast.arg2(),
-          engine.evaluate(ast.arg3()),
-          n,
-          x -> F.unaryAST1(arg1, x),
-          F.ListAlloc(15),
-          engine);
+      return nestList(ast.arg2(), engine.evaluate(ast.arg3()), n, x -> F.unaryAST1(arg1, x),
+          F.ListAlloc(15), engine);
       // Functors.append(F.ast(ast.arg1())), List(), engine);
     }
 
@@ -1696,13 +1736,8 @@ public final class Programming {
       return ARGS_3_4;
     }
 
-    public static IAST nestList(
-        final IExpr expr,
-        final IExpr test,
-        final IExpr n,
-        final Function<IExpr, IExpr> fn,
-        final IASTAppendable resultList,
-        EvalEngine engine) {
+    public static IAST nestList(final IExpr expr, final IExpr test, final IExpr n,
+        final Function<IExpr, IExpr> fn, final IASTAppendable resultList, EvalEngine engine) {
       if (n == S.All) {
         IExpr temp = expr;
         IASTAppendable testFunction = F.ast(test);
@@ -1759,13 +1794,15 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>switch off the interactive trace.
+   * <p>
+   * switch off the interactive trace.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p><code>On()</code> enables the trace of the evaluation steps.
+   * <p>
+   * <code>On()</code> enables the trace of the evaluation steps.
    *
    * <pre>
    * <code>&gt;&gt; On()
@@ -1799,7 +1836,8 @@ public final class Programming {
    * </code>
    * </pre>
    *
-   * <p><code>Off()</code> disables the trace of the evaluation steps.
+   * <p>
+   * <code>Off()</code> disables the trace of the evaluation steps.
    *
    * <pre>
    * <code>&gt;&gt; Off()
@@ -1812,7 +1850,8 @@ public final class Programming {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="On.md">On</a>
+   * <p>
+   * <a href="On.md">On</a>
    */
   private static final class Off extends AbstractCoreFunctionEvaluator {
 
@@ -1824,8 +1863,8 @@ public final class Programming {
       }
 
       if (ast.isAST1()) {
-        LOGGER.log(
-            engine.getLogLevel(), "Off: {} - disabling messages currently not supported", ast);
+        LOGGER.log(engine.getLogLevel(), "Off: {} - disabling messages currently not supported",
+            ast);
       }
       return F.NIL;
     }
@@ -1849,8 +1888,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>switch on the interactive trace. The output is printed in the defined <code>out</code>
-   * stream.
+   * <p>
+   * switch on the interactive trace. The output is printed in the defined <code>out</code> stream.
    *
    * </blockquote>
    *
@@ -1861,8 +1900,9 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>switch on the interactive trace only for the <code>head</code>s defined in the list. The
-   * output is printed in the defined <code>out</code> stream.
+   * <p>
+   * switch on the interactive trace only for the <code>head</code>s defined in the list. The output
+   * is printed in the defined <code>out</code> stream.
    *
    * </blockquote>
    *
@@ -1871,7 +1911,8 @@ public final class Programming {
    * </code>
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * <code>On(All, Unique)
@@ -1880,15 +1921,17 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>switch on the interactive trace only for the defined <code>head</code> s. The output is
-   * printed only once for a combination of <em>unevaluated</em> input expression and
-   * <em>evaluated</em> output expression.
+   * <p>
+   * switch on the interactive trace only for the defined <code>head</code> s. The output is printed
+   * only once for a combination of <em>unevaluated</em> input expression and <em>evaluated</em>
+   * output expression.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p><code>On()</code> enables the trace of the evaluation steps.
+   * <p>
+   * <code>On()</code> enables the trace of the evaluation steps.
    *
    * <pre>
    * <code>&gt;&gt; On()
@@ -1922,7 +1965,8 @@ public final class Programming {
    * </code>
    * </pre>
    *
-   * <p><code>Off()</code> disables the trace of the evaluation steps.
+   * <p>
+   * <code>Off()</code> disables the trace of the evaluation steps.
    *
    * <pre>
    * <code>&gt;&gt; Off()
@@ -1935,7 +1979,8 @@ public final class Programming {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="Off.md">Off</a>
+   * <p>
+   * <a href="Off.md">Off</a>
    */
   private static final class On extends AbstractCoreFunctionEvaluator {
 
@@ -1959,8 +2004,8 @@ public final class Programming {
       return F.NIL;
     }
 
-    private void enableOnOffTrace(
-        IExpr arg1, IdentityHashMap<ISymbol, ISymbol> map, EvalEngine engine) {
+    private void enableOnOffTrace(IExpr arg1, IdentityHashMap<ISymbol, ISymbol> map,
+        EvalEngine engine) {
 
       if (!arg1.equals(S.All)) {
         IAST list = F.List(arg1);
@@ -1994,7 +2039,8 @@ public final class Programming {
    * Part(expr, i)
    * </pre>
    *
-   * <p>or
+   * <p>
+   * or
    *
    * <pre>
    * expr[[i]]
@@ -2002,11 +2048,13 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>returns part <code>i</code> of <code>expr</code>.
+   * <p>
+   * returns part <code>i</code> of <code>expr</code>.
    *
    * </blockquote>
    *
-   * <p>Extract an element from a list:
+   * <p>
+   * Extract an element from a list:
    *
    * <pre>
    * &gt;&gt; A = {a, b, c, d}
@@ -2014,28 +2062,32 @@ public final class Programming {
    * c
    * </pre>
    *
-   * <p>Negative indices count from the end:
+   * <p>
+   * Negative indices count from the end:
    *
    * <pre>
    * &gt;&gt; {a, b, c}[[-2]]
    * b
    * </pre>
    *
-   * <p><code>Part</code> can be applied on any expression, not necessarily lists.
+   * <p>
+   * <code>Part</code> can be applied on any expression, not necessarily lists.
    *
    * <pre>
    * &gt;&gt; (a + b + c)[[2]]
    * b
    * </pre>
    *
-   * <p><code>expr[[0]]</code> gives the head of <code>expr</code>:
+   * <p>
+   * <code>expr[[0]]</code> gives the head of <code>expr</code>:
    *
    * <pre>
    * &gt;&gt; (a + b + c)[[0]]
    * Plus
    * </pre>
    *
-   * <p>Parts of nested lists:
+   * <p>
+   * Parts of nested lists:
    *
    * <pre>
    * &gt;&gt; M = {{a, b}, {c, d}}
@@ -2043,7 +2095,8 @@ public final class Programming {
    * b
    * </pre>
    *
-   * <p>You can use <code>Span</code> to specify a range of parts:
+   * <p>
+   * You can use <code>Span</code> to specify a range of parts:
    *
    * <pre>
    * &gt;&gt; {1, 2, 3, 4}[[2;;4]]
@@ -2053,14 +2106,16 @@ public final class Programming {
    * {2,3,4}
    * </pre>
    *
-   * <p>A list of parts extracts elements at certain indices:
+   * <p>
+   * A list of parts extracts elements at certain indices:
    *
    * <pre>
    * &gt;&gt; {a, b, c, d}[[{1, 3, 3}]]
    * {a,c,c}
    * </pre>
    *
-   * <p>Get a certain column of a matrix:
+   * <p>
+   * Get a certain column of a matrix:
    *
    * <pre>
    * &gt;&gt; B = {{a, b, c}, {d, e, f}, {g, h, i}}
@@ -2068,7 +2123,8 @@ public final class Programming {
    * {b, e, h}
    * </pre>
    *
-   * <p>Extract a submatrix of 1st and 3rd row and the two last columns:
+   * <p>
+   * Extract a submatrix of 1st and 3rd row and the two last columns:
    *
    * <pre>
    * &gt;&gt; B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
@@ -2076,21 +2132,24 @@ public final class Programming {
    * {{2,3},{8,9}}
    * </pre>
    *
-   * <p>Further examples:
+   * <p>
+   * Further examples:
    *
    * <pre>
    * &gt;&gt; (a+b+c+d)[[-1;;-2]]
    * 0
    * </pre>
    *
-   * <p>Part specification is longer than depth of object.
+   * <p>
+   * Part specification is longer than depth of object.
    *
    * <pre>
    * &gt;&gt; x[[2]]
    * x[[2]]
    * </pre>
    *
-   * <p>Assignments to parts are possible:
+   * <p>
+   * Assignments to parts are possible:
    *
    * <pre>
    * &gt;&gt; B[[;;, 2]] = {10, 11, 12}
@@ -2119,7 +2178,8 @@ public final class Programming {
    * {{{1,2,k},{2,t,k},{3,t,9}},{{2,4,k},{4,t,k},{6,t,18}},{{3,6,k},{6,t,k},{9,t,27}}}
    * </pre>
    *
-   * <p>Of course, part specifications have precedence over most arithmetic operations:
+   * <p>
+   * Of course, part specifications have precedence over most arithmetic operations:
    *
    * <pre>
    * &gt;&gt; A[[1]] + B[[2]] + C[[3]] // Hold // FullForm
@@ -2129,7 +2189,8 @@ public final class Programming {
    * {0, 3, 4}
    * </pre>
    *
-   * <p>Negative step
+   * <p>
+   * Negative step
    *
    * <pre>
    * &gt;&gt; {1,2,3,4,5}[[3;;1;;-1]]
@@ -2148,14 +2209,16 @@ public final class Programming {
    * {7,5}
    * </pre>
    *
-   * <p>Cannot take positions <code>1</code> through <code>3</code> in <code>{1, 2, 3, 4}</code>.
+   * <p>
+   * Cannot take positions <code>1</code> through <code>3</code> in <code>{1, 2, 3, 4}</code>.
    *
    * <pre>
    * &gt;&gt; {1, 2, 3, 4}[[1;;3;;-1]]
    * {1,2,3,4}[[1;;3;;-1]]
    * </pre>
    *
-   * <p>Cannot take positions <code>3</code> through <code>1</code> in <code>{1, 2, 3, 4}</code>.
+   * <p>
+   * Cannot take positions <code>3</code> through <code>1</code> in <code>{1, 2, 3, 4}</code>.
    *
    * <pre>
    * &gt;&gt; {1, 2, 3, 4}[[3;;1]]
@@ -2204,7 +2267,7 @@ public final class Programming {
             return IOFunctions.printMessage(S.Part, "partd", F.List(ast), engine);
           }
         }
-        
+
         IAST arg1AST = (IAST) arg1;
         IExpr temp;
         int astSize = ast.size();
@@ -2259,11 +2322,8 @@ public final class Programming {
     }
 
     @Override
-    public IExpr evaluateSet(
-        final IExpr leftHandSide,
-        IExpr rightHandSide,
-        IBuiltInSymbol builtinSymbol,
-        EvalEngine engine) {
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.size() > 1) {
         IAST part = (IAST) leftHandSide;
         if (part.arg1().isSymbol()) {
@@ -2275,8 +2335,8 @@ public final class Programming {
             return IOFunctions.printMessage(builtinSymbol, "rvalue", F.List(symbol), engine);
           } else {
             if (symbol.isProtected()) {
-              return IOFunctions.printMessage(
-                  builtinSymbol, "write", F.List(symbol), EvalEngine.get());
+              return IOFunctions.printMessage(builtinSymbol, "write", F.List(symbol),
+                  EvalEngine.get());
             }
             try {
               if (rightHandSide.isList()) {
@@ -2349,7 +2409,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>evaluates <code>expr</code> in &quot;quiet&quot; mode (i.e. no warning messages are shown
+   * <p>
+   * evaluates <code>expr</code> in &quot;quiet&quot; mode (i.e. no warning messages are shown
    * during evaluation).
    *
    * </blockquote>
@@ -2388,7 +2449,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>gives the result of evaluating <code>expr</code>, together with all values sown during this
+   * <p>
+   * gives the result of evaluating <code>expr</code>, together with all values sown during this
    * evaluation. Values sown with different tags are given in different lists.
    *
    * </blockquote>
@@ -2509,7 +2571,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>aborts a function call and returns <code>expr</code>.
+   * <p>
+   * aborts a function call and returns <code>expr</code>.
    *
    * </blockquote>
    *
@@ -2526,7 +2589,8 @@ public final class Programming {
    *  | 3
    * </pre>
    *
-   * <p><code>Return</code> only exits from the innermost control flow construct.
+   * <p>
+   * <code>Return</code> only exits from the innermost control flow construct.
    *
    * <pre>
    * &gt;&gt; g(x_) := (Do(If(x &lt; 0, Return(0)), {i, {2, 1, 0, -1}}); x)
@@ -2587,7 +2651,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>sends the value <code>expr</code> to the innermost <code>Reap</code>.
+   * <p>
+   * sends the value <code>expr</code> to the innermost <code>Reap</code>.
    *
    * </blockquote>
    *
@@ -2622,8 +2687,8 @@ public final class Programming {
       return F.NIL;
     }
 
-    private static void appendReapList(
-        final IExpr expr, final IExpr tag, java.util.List<IExpr> reapList) {
+    private static void appendReapList(final IExpr expr, final IExpr tag,
+        java.util.List<IExpr> reapList) {
       for (int i = 0; i < reapList.size(); i += 2) {
         IExpr currentTag = reapList.get(i);
         if (tag.equals(currentTag)) {
@@ -2652,20 +2717,28 @@ public final class Programming {
   /**
    *
    *
-   * <pre><code>Stack( )
-   * </code></pre>
+   * <pre>
+   * <code>Stack( )
+   * </code>
+   * </pre>
    *
-   * <p>return a list of the heads of the current stack wrapped by <code>HoldForm</code>.
+   * <p>
+   * return a list of the heads of the current stack wrapped by <code>HoldForm</code>.
    *
-   * <pre><code>Stack(_)
-   * </code></pre>
+   * <pre>
+   * <code>Stack(_)
+   * </code>
+   * </pre>
    *
-   * <p>return a list of the expressions of the current stack wrapped by <code>HoldForm</code>.
+   * <p>
+   * return a list of the expressions of the current stack wrapped by <code>HoldForm</code>.
    *
    * <h3>Examples</h3>
    *
-   * <pre><code>
-   * </code></pre>
+   * <pre>
+   * <code>
+   * </code>
+   * </pre>
    */
   private static final class Stack extends AbstractCoreFunctionEvaluator {
 
@@ -2687,8 +2760,7 @@ public final class Programming {
           IPatternMatcher matcher = engine.evalPatternMatcher(arg1);
           while (iter.hasNext()) {
             IExpr expr = iter.next();
-            if (expr != ast
-                && //
+            if (expr != ast && //
                 matcher.test(expr, engine)) {
               result.append(F.HoldForm(expr));
             }
@@ -2749,7 +2821,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>yields the first <code>value</code> for which <code>expr</code> matches the corresponding
+   * <p>
+   * yields the first <code>value</code> for which <code>expr</code> matches the corresponding
    * pattern.
    *
    * </blockquote>
@@ -2767,21 +2840,24 @@ public final class Programming {
    * z
    * </pre>
    *
-   * <p>Switch called with 2 arguments. Switch must be called with an odd number of arguments.
+   * <p>
+   * Switch called with 2 arguments. Switch must be called with an odd number of arguments.
    *
    * <pre>
    * &gt;&gt; Switch(2, 1)
    * Switch(2, 1)
    * </pre>
    *
-   * <p>Switch called with 2 arguments. Switch must be called with an odd number of arguments.
+   * <p>
+   * Switch called with 2 arguments. Switch must be called with an odd number of arguments.
    *
    * <pre>
    * &gt;&gt; a; Switch(b, b)
    * Switch(b, b)
    * </pre>
    *
-   * <p>Switch called with 2 arguments. Switch must be called with an odd number of arguments.
+   * <p>
+   * Switch called with 2 arguments. Switch must be called with an odd number of arguments.
    *
    * <pre>
    * &gt;&gt; z = Switch(b, b);
@@ -2897,8 +2973,7 @@ public final class Programming {
         return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(F.C2, ast), engine);
       }
       final ExecutorService executor = Executors.newSingleThreadExecutor();
-      TimeLimiter timeLimiter =
-          SimpleTimeLimiter.create(executor); // Executors.newSingleThreadExecutor());
+      TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor); // Executors.newSingleThreadExecutor());
       EvalControlledCallable work = new EvalControlledCallable(engine);
 
       try {
@@ -3043,7 +3118,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>return the evaluation steps which are used to get the result.
+   * <p>
+   * return the evaluation steps which are used to get the result.
    *
    * </blockquote>
    *
@@ -3190,7 +3266,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>yields <code>expr1</code> if <code>cond1</code> evaluates to <code>True</code>, <code>expr2
+   * <p>
+   * yields <code>expr1</code> if <code>cond1</code> evaluates to <code>True</code>, <code>expr2
    * </code> if <code>cond2</code> evaluates to <code>True</code>, etc.
    *
    * </blockquote>
@@ -3207,21 +3284,24 @@ public final class Programming {
    * 3
    * </pre>
    *
-   * <p>If no test yields <code>True</code>, <code>Which</code> returns <code>Null</code>:
+   * <p>
+   * If no test yields <code>True</code>, <code>Which</code> returns <code>Null</code>:
    *
    * <pre>
    * &gt;&gt; Which(False, a)
    * </pre>
    *
-   * <p>If a test does not evaluate to <code>True</code> or <code>False</code>, evaluation stops and
-   * a <code>Which</code> expression containing the remaining cases is returned:
+   * <p>
+   * If a test does not evaluate to <code>True</code> or <code>False</code>, evaluation stops and a
+   * <code>Which</code> expression containing the remaining cases is returned:
    *
    * <pre>
    * &gt;&gt; Which(False, a, x, b, True, c)
    * Which(x,b,True,c)
    * </pre>
    *
-   * <p><code>Which</code> must be called with an even number of arguments:
+   * <p>
+   * <code>Which</code> must be called with an even number of arguments:
    *
    * <pre>
    * &gt;&gt; Which(a, b, c)
@@ -3270,7 +3350,8 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>evaluates <code>body</code> as long as test evaluates to <code>True</code>.
+   * <p>
+   * evaluates <code>body</code> as long as test evaluates to <code>True</code>.
    *
    * </blockquote>
    *
@@ -3280,13 +3361,15 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>runs the loop without any body.
+   * <p>
+   * runs the loop without any body.
    *
    * </blockquote>
    *
    * <h3>Examples</h3>
    *
-   * <p>Compute the GCD of two numbers:
+   * <p>
+   * Compute the GCD of two numbers:
    *
    * <pre>
    * &gt;&gt; {a, b} = {27, 6};
@@ -3345,8 +3428,9 @@ public final class Programming {
    *
    * <blockquote>
    *
-   * <p>evaluates <code>expr</code> for the <code>list_of_local_variables</code> by replacing the
-   * local variables in <code>expr</code>.
+   * <p>
+   * evaluates <code>expr</code> for the <code>list_of_local_variables</code> by replacing the local
+   * variables in <code>expr</code>.
    *
    * </blockquote>
    */
@@ -3390,8 +3474,8 @@ public final class Programming {
    * @param variablesMap the resulting module variables map
    * @return
    */
-  private static boolean rememberWithVariables(
-      IAST variablesList, final java.util.Map<ISymbol, IExpr> variablesMap, EvalEngine engine) {
+  private static boolean rememberWithVariables(IAST variablesList,
+      final java.util.Map<ISymbol, IExpr> variablesMap, EvalEngine engine) {
     ISymbol oldSymbol;
     for (int i = 1; i < variablesList.size(); i++) {
       if (variablesList.get(i).isAST(S.Set, 3)) {
@@ -3405,9 +3489,9 @@ public final class Programming {
           variablesMap.put(oldSymbol, temp);
         } else {
           // Local variable specification `1` contains `2`, which is an assignment to `3`; only
-          // assignments to  symbols are allowed.
-          IOFunctions.printMessage(
-              S.With, "lvset", F.List(variablesList, variablesList.get(i), setFun.arg1()), engine);
+          // assignments to symbols are allowed.
+          IOFunctions.printMessage(S.With, "lvset",
+              F.List(variablesList, variablesList.get(i), setFun.arg1()), engine);
           return false;
         }
       } else if (variablesList.get(i).isAST(S.SetDelayed, 3)) {
@@ -3421,14 +3505,14 @@ public final class Programming {
         } else {
           // Local variable specification `1` contains `2`, which is an assignment to `3`; only
           // assignments to symbols are allowed.
-          IOFunctions.printMessage(
-              S.With, "lvset", F.List(variablesList, variablesList.get(i), setFun.arg1()), engine);
+          IOFunctions.printMessage(S.With, "lvset",
+              F.List(variablesList, variablesList.get(i), setFun.arg1()), engine);
           return false;
         }
       } else {
         // Variable `1` in local variable specification `2` requires assigning a value
-        IOFunctions.printMessage(
-            S.With, "lvws", F.List(variablesList.get(i), variablesList), engine);
+        IOFunctions.printMessage(S.With, "lvws", F.List(variablesList.get(i), variablesList),
+            engine);
         return false;
       }
     }
@@ -3444,11 +3528,8 @@ public final class Programming {
    * @param variablesMap the resulting module variables map
    * @param engine the evaluation engine
    */
-  public static boolean rememberModuleVariables(
-      IAST variablesList,
-      final String varAppend,
-      final java.util.Map<ISymbol, IExpr> variablesMap,
-      final EvalEngine engine) {
+  public static boolean rememberModuleVariables(IAST variablesList, final String varAppend,
+      final java.util.Map<ISymbol, IExpr> variablesMap, final EvalEngine engine) {
     ISymbol oldSymbol;
     ISymbol newSymbol;
     for (int i = 1; i < variablesList.size(); i++) {
@@ -3465,14 +3546,12 @@ public final class Programming {
             variablesMap.put(oldSymbol, newSymbol);
             newSymbol.assignValue(engine.evaluate(setFun.arg2()));
           } else {
-            LOGGER.log(
-                engine.getLogLevel(), "Module: expression requires symbol variable: {}", setFun);
+            LOGGER.log(engine.getLogLevel(), "Module: expression requires symbol variable: {}",
+                setFun);
             return false;
           }
         } else {
-          LOGGER.log(
-              engine.getLogLevel(),
-              "Module: expression requires symbol variable: {}",
+          LOGGER.log(engine.getLogLevel(), "Module: expression requires symbol variable: {}",
               variablesList.get(i));
           return false;
         }
@@ -3488,15 +3567,11 @@ public final class Programming {
    * @param variablesList initializer variables list from the <code>Block</code> function
    * @param assignedValues the variables mapped to their values (IExpr) before evaluating the block
    * @param assignedRules the variables mapped to their rules (RulesData) before evaluating the
-   *     block
+   *        block
    * @param engine the evaluation engine
    */
-  public static void rememberBlockVariables(
-      IAST variablesList,
-      final ISymbol[] symbolList,
-      final IExpr[] assignedValues,
-      final RulesData[] assignedRules,
-      final EvalEngine engine) {
+  public static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
+      final IExpr[] assignedValues, final RulesData[] assignedRules, final EvalEngine engine) {
     ISymbol variableSymbol;
     for (int i = 1; i < variablesList.size(); i++) {
       if (variablesList.get(i).isSymbol()) {
@@ -3553,12 +3628,12 @@ public final class Programming {
    * @param intializerList list of variables which should be substituted by appending <code>
    *     $<number></code> to the variable names
    * @param moduleBlock the module block where the variables should be replaced with temporary
-   *     variables
+   *        variables
    * @param engine
    * @return
    */
-  private static IExpr moduleSubstVariables(
-      IAST intializerList, IExpr moduleBlock, final EvalEngine engine) {
+  private static IExpr moduleSubstVariables(IAST intializerList, IExpr moduleBlock,
+      final EvalEngine engine) {
     // final long moduleCounter = engine.incModuleCounter();
     final String varAppend = EvalEngine.uniqueName("$");
     final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables =
@@ -3580,16 +3655,15 @@ public final class Programming {
    * @param engine
    * @return
    */
-  private static IExpr withSubstVariables(
-      IAST intializerList, IExpr withBlock, final EvalEngine engine) {
+  private static IExpr withSubstVariables(IAST intializerList, IExpr withBlock,
+      final EvalEngine engine) {
     // final long moduleCounter = engine.incModuleCounter();
     // final String varAppend = "$" + moduleCounter;
     final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables =
         new IdentityHashMap<ISymbol, IExpr>();
     if (rememberWithVariables(intializerList, moduleVariables, engine)) {
-      IExpr result =
-          withBlock.accept(
-              new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
+      IExpr result = withBlock
+          .accept(new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
       return result.orElse(withBlock);
     }
     return F.NIL;
@@ -3792,8 +3866,8 @@ public final class Programming {
     return IOFunctions.printMessage(S.Part, "pkspec1", F.List(arg2), engine);
   }
 
-  public static IExpr sparsePart(
-      final ISparseArray arg1, final IAST ast, int pos, EvalEngine engine) {
+  public static IExpr sparsePart(final ISparseArray arg1, final IAST ast, int pos,
+      EvalEngine engine) {
     if (ast.forAll(x -> (x.isInteger() && x.isPositive()) || x.equals(S.All), 2)) {
       return arg1.getPart(ast, 2);
     }
@@ -3815,16 +3889,8 @@ public final class Programming {
     return IOFunctions.printMessage(S.Part, "pkspec1", F.List(ast), engine);
   }
 
-  private static IExpr spanPart(
-      final IAST ast,
-      int pos,
-      final IAST arg1,
-      final IExpr arg2,
-      int start,
-      int last,
-      int step,
-      int p1,
-      EvalEngine engine) {
+  private static IExpr spanPart(final IAST ast, int pos, final IAST arg1, final IExpr arg2,
+      int start, int last, int step, int p1, EvalEngine engine) {
 
     final int size = arg1.size();
     if (step < 0 && start >= last) {
@@ -3841,8 +3907,8 @@ public final class Programming {
         if (arg1.get(i).isASTOrAssociation()) {
           if (i >= size) {
             // Cannot take positions `1` through `2` in `3`.
-            return IOFunctions.printMessage(
-                S.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1), engine);
+            return IOFunctions.printMessage(S.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1),
+                engine);
           }
           IExpr temp = part((IAST) arg1.get(i), ast, p1, engine);
           if (temp.isPresent()) {
@@ -3868,8 +3934,8 @@ public final class Programming {
         if (arg1.get(i).isASTOrAssociation()) {
           if (i >= size) {
             // Cannot take positions `1` through `2` in `3`.
-            return IOFunctions.printMessage(
-                S.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1), engine);
+            return IOFunctions.printMessage(S.Part, "take", F.List(F.ZZ(start), F.ZZ(last), arg1),
+                engine);
           }
 
           if (arg1.isAssociation()) {
@@ -3899,8 +3965,8 @@ public final class Programming {
     return IOFunctions.printMessage(S.Part, "pkspec1", F.List(arg2), engine);
   }
 
-  private static IExpr assignPart(
-      final IExpr assignedExpr, final IAST part, int partPosition, IExpr value, EvalEngine engine) {
+  private static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition,
+      IExpr value, EvalEngine engine) {
     if (partPosition >= part.size()) {
       // stop recursion
       return value;
@@ -3923,16 +3989,14 @@ public final class Programming {
       if (step < 0 && start >= last) {
         for (int i = start; i >= last; i += step) {
           element = assignedAST.get(i);
-          result =
-              assignPartSpanValue(
-                  assignedAST, element, part, partPositionPlus1, result, i, value, engine);
+          result = assignPartSpanValue(assignedAST, element, part, partPositionPlus1, result, i,
+              value, engine);
         }
       } else if (step > 0 && (last != 1 || start <= last)) {
         for (int i = start; i <= last; i += step) {
           element = assignedAST.get(i);
-          result =
-              assignPartSpanValue(
-                  assignedAST, element, part, partPositionPlus1, result, i, value, engine);
+          result = assignPartSpanValue(assignedAST, element, part, partPositionPlus1, result, i,
+              value, engine);
         }
       } else {
         // Part `1` of `2` does not exist.
@@ -3978,8 +4042,8 @@ public final class Programming {
               result.append(temp);
             } else {
               // Part `1` of `2` does not exist.
-              return IOFunctions.printMessage(
-                  S.Part, "partw", F.List(F.ZZ(partPosition), assignedAST), engine);
+              return IOFunctions.printMessage(S.Part, "partw",
+                  F.List(F.ZZ(partPosition), assignedAST), engine);
             }
           } else {
             result.append(ires);
@@ -3992,13 +4056,8 @@ public final class Programming {
     return IOFunctions.printMessage(S.Part, "partw", F.List(arg2, assignedAST), engine);
   }
 
-  private static IExpr assignPart(
-      final IExpr assignedExpr,
-      final IAST part,
-      int partPosition,
-      IAST rhs,
-      int rhsPos,
-      EvalEngine engine) {
+  private static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition,
+      IAST rhs, int rhsPos, EvalEngine engine) {
     if (!assignedExpr.isASTOrAssociation() || partPosition >= part.size()) {
       return assignedExpr;
     }
@@ -4060,8 +4119,8 @@ public final class Programming {
           return assignPart(ires, part, partPositionPlus1, rhs, rhsPos++, engine);
         } else {
           // Part `1` of `2` does not exist.
-          return IOFunctions.printMessage(
-              S.Part, "partw", F.List(F.ZZ(partPosition), assignedAST), engine);
+          return IOFunctions.printMessage(S.Part, "partw", F.List(F.ZZ(partPosition), assignedAST),
+              engine);
         }
       }
       return ires;
@@ -4086,8 +4145,8 @@ public final class Programming {
               result.append(temp);
             } else {
               // Part `1` of `2` does not exist.
-              return IOFunctions.printMessage(
-                  S.Part, "partw", F.List(F.ZZ(partPosition), assignedAST), engine);
+              return IOFunctions.printMessage(S.Part, "partw",
+                  F.List(F.ZZ(partPosition), assignedAST), engine);
             }
           } else {
             result.append(ires);
@@ -4134,15 +4193,8 @@ public final class Programming {
    * @param engine the evaluation engineF
    * @return the (cloned and value assigned) result AST from input
    */
-  private static IASTAppendable assignPartSpanValue(
-      IAST expr,
-      IExpr element,
-      final IAST part,
-      int partPosition,
-      IASTAppendable result,
-      int position,
-      IExpr value,
-      EvalEngine engine) {
+  private static IASTAppendable assignPartSpanValue(IAST expr, IExpr element, final IAST part,
+      int partPosition, IASTAppendable result, int position, IExpr value, EvalEngine engine) {
     IExpr resultValue = assignPart(element, part, partPosition, value, engine);
     if (resultValue.isPresent()) {
       if (!result.isPresent()) {

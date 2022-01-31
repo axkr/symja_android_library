@@ -112,9 +112,8 @@ public class SerializableTest extends TestCase {
     equalsCopy(F.complex(F.fraction(Integer.MIN_VALUE, 3L), F.fraction(Integer.MIN_VALUE, 3L)));
     equalsCopy(
         F.complex(F.fraction(Integer.MAX_VALUE * 2L, 5L), F.fraction(Integer.MAX_VALUE * 2L, 5L)));
-    equalsCopy(
-        F.complex(
-            F.fraction(Integer.MIN_VALUE * 2L, 11L), F.fraction(Integer.MIN_VALUE * 2L, 11L)));
+    equalsCopy(F.complex(F.fraction(Integer.MIN_VALUE * 2L, 11L),
+        F.fraction(Integer.MIN_VALUE * 2L, 11L)));
   }
 
   public void testSymbol() {
@@ -177,9 +176,8 @@ public class SerializableTest extends TestCase {
 
     // PseudoInverse({{1,2,3},{3,4,5}})
     EvalEngine engine = EvalEngine.get();
-    IExpr result =
-        engine.evaluate(
-            F.PseudoInverse(F.List(F.List(F.C1, F.C2, F.C3), F.List(F.C4, F.C5, F.C6))));
+    IExpr result = engine
+        .evaluate(F.PseudoInverse(F.List(F.List(F.C1, F.C2, F.C3), F.List(F.C4, F.C5, F.C6))));
     equalsCopy(result);
   }
 

@@ -1,17 +1,16 @@
 /*
  * NOTICE OF LICENSE
  *
- * This source file is subject to the Open Software License (OSL 3.0) that is
- * bundled with this package in the file LICENSE.txt. It is also available
- * through the world-wide-web at http://opensource.org/licenses/osl-3.0.php
- * If you did not receive a copy of the license and are unable to obtain it
- * through the world-wide-web, please send an email to magnos.software@gmail.com
- * so we can send you a copy immediately. If you use any of this software please
- * notify me via our website or email, your feedback is much appreciated.
+ * This source file is subject to the Open Software License (OSL 3.0) that is bundled with this
+ * package in the file LICENSE.txt. It is also available through the world-wide-web at
+ * http://opensource.org/licenses/osl-3.0.php If you did not receive a copy of the license and are
+ * unable to obtain it through the world-wide-web, please send an email to magnos.software@gmail.com
+ * so we can send you a copy immediately. If you use any of this software please notify me via our
+ * website or email, your feedback is much appreciated.
  *
- * @copyright   Copyright (c) 2011 Magnos Software (http://www.magnos.org)
- * @license     http://opensource.org/licenses/osl-3.0.php
- *              Open Software License (OSL 3.0)
+ * @copyright Copyright (c) 2011 Magnos Software (http://www.magnos.org)
+ * 
+ * @license http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
 package org.matheclipse.parser.trie;
@@ -86,8 +85,9 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
    * Instantiates a new Trie.
    *
    * @param sequencer The TrieSequencer which handles the necessary sequence operations.
-   * @param defaultValue The default value of the Trie is the value returned when {@link
-   *     #get(Object)} or {@link #get(Object, TrieMatch)} is called and no match was found.
+   * @param defaultValue The default value of the Trie is the value returned when
+   *        {@link #get(Object)} or {@link #get(Object, TrieMatch)} is called and no match was
+   *        found.
    */
   public Trie(TrieSequencer<S> sequencer, T defaultValue) {
     this.root =
@@ -102,8 +102,9 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
   /**
    * Sets the default value of the Trie, which is the value returned when a query is unsuccessful.
    *
-   * @param defaultValue The default value of the Trie is the value returned when {@link
-   *     #get(Object)} or {@link #get(Object, TrieMatch)} is called and no match was found.
+   * @param defaultValue The default value of the Trie is the value returned when
+   *        {@link #get(Object)} or {@link #get(Object, TrieMatch)} is called and no match was
+   *        found.
    */
   public void setDefaultValue(T defaultValue) {
     root.value = defaultValue;
@@ -249,7 +250,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
    * @param sequence The sequence to match.
    * @param match The matching logic to use.
    * @return The value for the given sequence, or the default value of the Trie if no match was
-   *     found. The default value of a Trie is by default null.
+   *         found. The default value of a Trie is by default null.
    */
   public T get(S sequence, TrieMatch match) {
     TrieNode<S, T> n = search(root, sequence, match);
@@ -262,7 +263,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
    *
    * @param sequence The sequence to match.
    * @return The value for the given sequence, or the default value of the Trie if no match was
-   *     found. The default value of a Trie is by default null.
+   *         found. The default value of a Trie is by default null.
    * @see #get(Object, TrieMatch)
    */
   @Override

@@ -15,8 +15,8 @@ public class CompiledFunctionExpr extends DataExpr<Class<?>> {
 
   private static final long serialVersionUID = 3098987741558862963L;
 
-  public static CompiledFunctionExpr newInstance(
-      IAST variables, IAST types, IExpr expr, Class<?> clazz) {
+  public static CompiledFunctionExpr newInstance(IAST variables, IAST types, IExpr expr,
+      Class<?> clazz) {
     return new CompiledFunctionExpr(variables, types, expr, clazz);
   }
 
@@ -85,20 +85,20 @@ public class CompiledFunctionExpr extends DataExpr<Class<?>> {
     buf.append(variables.argSize());
     buf.append(" Types: {");
     types.joinToString(buf, ",");
-    //    for (int i = 1; i < types.size(); i++) {
-    //      buf.append(types.get(i));
-    //      if (i < types.size() - 1) {
-    //        buf.append(",");
-    //      }
-    //    }
+    // for (int i = 1; i < types.size(); i++) {
+    // buf.append(types.get(i));
+    // if (i < types.size() - 1) {
+    // buf.append(",");
+    // }
+    // }
     buf.append("} Variables: {");
     variables.joinToString(buf, ",");
-    //    for (int i = 1; i < variables.size(); i++) {
-    //      buf.append(variables.get(i));
-    //      if (i < variables.size() - 1) {
-    //        buf.append(",");
-    //      }
-    //    }
+    // for (int i = 1; i < variables.size(); i++) {
+    // buf.append(variables.get(i));
+    // if (i < variables.size() - 1) {
+    // buf.append(",");
+    // }
+    // }
     buf.append("}");
     buf.append(")");
     return buf.toString();

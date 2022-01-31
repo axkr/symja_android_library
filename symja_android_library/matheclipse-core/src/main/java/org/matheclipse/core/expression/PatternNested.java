@@ -78,8 +78,8 @@ public class PatternNested extends Pattern {
    * @return
    */
   @Override
-  public boolean equivalent(
-      final IPatternObject patternObject, final IPatternMap pm1, IPatternMap pm2) {
+  public boolean equivalent(final IPatternObject patternObject, final IPatternMap pm1,
+      IPatternMap pm2) {
     if (this == patternObject) {
       return true;
     }

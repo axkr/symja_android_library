@@ -72,7 +72,7 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
             result.append(temp);
           }
         }
-    i++;
+        i++;
       }
 
       if (evaled) {

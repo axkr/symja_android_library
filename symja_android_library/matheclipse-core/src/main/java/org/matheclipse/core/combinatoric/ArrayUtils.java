@@ -1,11 +1,14 @@
 /**
  * jcombinatorics: Java Combinatorics Library
  *
- * <p>Copyright (c) 2009 by Alistair A. Israel.
+ * <p>
+ * Copyright (c) 2009 by Alistair A. Israel.
  *
- * <p>This software is made available under the terms of the MIT License. See LICENSE.txt.
+ * <p>
+ * This software is made available under the terms of the MIT License. See LICENSE.txt.
  *
- * <p>Created Aug 31, 2009
+ * <p>
+ * Created Aug 31, 2009
  */
 package org.matheclipse.core.combinatoric;
 

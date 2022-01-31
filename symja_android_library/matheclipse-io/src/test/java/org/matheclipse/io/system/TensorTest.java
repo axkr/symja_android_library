@@ -11,19 +11,16 @@ public class TensorTest extends AbstractTestCase {
   }
 
   public void testHodgeDual() {
-    //    check(
-    //        "Normal@HodgeDual({{a, b},{ c,d}})", //
-    //        "(b-c)/2");
-    check(
-        "Normal@HodgeDual({a, b, c})", //
+    // check(
+    // "Normal@HodgeDual({{a, b},{ c,d}})", //
+    // "(b-c)/2");
+    check("Normal@HodgeDual({a, b, c})", //
         "{{0,c,-b},{-c,0,a},{b,-a,0}}");
-    check(
-        "Normal@HodgeDual({a, b, c, d})", //
+    check("Normal@HodgeDual({a, b, c, d})", //
         "{{{0,0,0,0},{0,0,-d,c},{0,d,0,-b},{0,-c,b,0}},{{0,0,d,-c},{0,0,0,0},{-d,0,0,a},{c,\n"
             + "0,-a,0}},{{0,-d,0,b},{d,0,0,-a},{0,0,0,0},{-b,a,0,0}},{{0,c,-b,0},{-c,0,a,0},{b,-a,\n"
             + "0,0},{0,0,0,0}}}");
-    check(
-        "Normal@HodgeDual({a, b, c, d, e})", //
+    check("Normal@HodgeDual({a, b, c, d, e})", //
         "{{{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{0,\n"
             + "0,0,0,0},{0,0,0,e,-d},{0,0,-e,0,c},{0,0,d,-c,0}},{{0,0,0,0,0},{0,0,0,-e,d},{0,0,\n"
             + "0,0,0},{0,e,0,0,-b},{0,-d,0,b,0}},{{0,0,0,0,0},{0,0,e,0,-c},{0,-e,0,0,b},{0,0,0,\n"
@@ -48,24 +45,18 @@ public class TensorTest extends AbstractTestCase {
 
   public void testLeviCivitaTensor() {
     if (Config.EXPENSIVE_JUNIT_TESTS) {
-      check(
-          "LeviCivitaTensor(7);", //
+      check("LeviCivitaTensor(7);", //
           "");
     }
-    check(
-        "LeviCivitaTensor(1)//Normal", //
+    check("LeviCivitaTensor(1)//Normal", //
         "{1}");
-    check(
-        "{x,y,z}.Normal(LeviCivitaTensor(3))  ", //
+    check("{x,y,z}.Normal(LeviCivitaTensor(3))  ", //
         "{{0,z,-y},{-z,0,x},{y,-x,0}}");
-    check(
-        "Array(Signature({##})&,{3,3,3})", //
+    check("Array(Signature({##})&,{3,3,3})", //
         "{{{0,0,0},{0,0,1},{0,-1,0}},{{0,0,-1},{0,0,0},{1,0,0}},{{0,1,0},{-1,0,0},{0,0,0}}}");
-    check(
-        "LeviCivitaTensor(3)", //
+    check("LeviCivitaTensor(3)", //
         "SparseArray(Number of elements: 6 Dimensions: {3,3,3} Default value: 0)");
-    check(
-        "LeviCivitaTensor(4) // Normal", //
+    check("LeviCivitaTensor(4) // Normal", //
         "{{{{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}},{{0,0,0,0},{0,0,0,0},{0,0,0,1},{0,0,-\n"
             + "1,0}},{{0,0,0,0},{0,0,0,-1},{0,0,0,0},{0,1,0,0}},{{0,0,0,0},{0,0,1,0},{0,-1,0,0},{\n"
             + "0,0,0,0}}},{{{0,0,0,0},{0,0,0,0},{0,0,0,-1},{0,0,1,0}},{{0,0,0,0},{0,0,0,0},{0,0,\n"
@@ -78,59 +69,43 @@ public class TensorTest extends AbstractTestCase {
   }
 
   public void testTensorDimensions() {
-    check(
-        "A=Array(a, {2, 3, 4});TensorDimensions(A)", //
+    check("A=Array(a, {2, 3, 4});TensorDimensions(A)", //
         "{2,3,4}");
-    check(
-        "TensorDimensions({{1,2},{3,4},{a,b},{c,d}})", //
+    check("TensorDimensions({{1,2},{3,4},{a,b},{c,d}})", //
         "{4,2}");
-    check(
-        "m = SparseArray({{1, 2, 3} -> a}, {2, 3, 4});TensorDimensions(m)", //
+    check("m = SparseArray({{1, 2, 3} -> a}, {2, 3, 4});TensorDimensions(m)", //
         "{2,3,4}");
   }
 
   public void testTensorRank() {
-    check(
-        "TensorRank(3.14)", //
+    check("TensorRank(3.14)", //
         "0");
-    check(
-        "TensorRank(Pi+E)", //
+    check("TensorRank(Pi+E)", //
         "0");
-    check(
-        "TensorRank({})", //
+    check("TensorRank({})", //
         "1");
-    check(
-        "TensorRank({{}})", //
+    check("TensorRank({{}})", //
         "2");
-    check(
-        "A=Array(a, {2, 3, 4});TensorRank(A)", //
+    check("A=Array(a, {2, 3, 4});TensorRank(A)", //
         "3");
-    check(
-        "TensorRank({{1,2},{3,4},{a,b},{c,d}})", //
+    check("TensorRank({{1,2},{3,4},{a,b},{c,d}})", //
         "2");
-    check(
-        "m = SparseArray({{1, 2, 3} -> a}, {2, 3, 4});TensorRank(m)", //
+    check("m = SparseArray({{1, 2, 3} -> a}, {2, 3, 4});TensorRank(m)", //
         "3");
   }
 
   public void testTensorSymmetry() {
-    check(
-        "TensorSymmetry({{a,b,c,d}, {b,e,f,g}, {c,f,h,i},{d,g,i,j}})", //
+    check("TensorSymmetry({{a,b,c,d}, {b,e,f,g}, {c,f,h,i},{d,g,i,j}})", //
         "Symmetric({1,2})");
-    check(
-        "TensorSymmetry({{0, a, b}, {-a, 0, c}, {-b, -c, 0}})", //
+    check("TensorSymmetry({{0, a, b}, {-a, 0, c}, {-b, -c, 0}})", //
         "AntiSymmetric({1,2})");
-    check(
-        "TensorSymmetry({{a}})", //
+    check("TensorSymmetry({{a}})", //
         "Symmetric({1,2})");
-    check(
-        "TensorSymmetry({{0}})", //
+    check("TensorSymmetry({{0}})", //
         "ZeroSymmetric({})");
-    check(
-        "TensorSymmetry({{0,0}, {0,0}})", //
+    check("TensorSymmetry({{0,0}, {0,0}})", //
         "ZeroSymmetric({})");
-    check(
-        "TensorSymmetry({{a,b}, {b,c}})", //
+    check("TensorSymmetry({{a,b}, {b,c}})", //
         "Symmetric({1,2})");
   }
 
@@ -147,26 +122,20 @@ public class TensorTest extends AbstractTestCase {
             + "3,0},{0,0,1}}}}}");
 
     // Unicode symbol \[TensorProduct] - \uF3DA looks nearly the same as \[CircleTimes] - \u2997
-    check(
-        "TensorProduct(a + 2*b, c)", //
+    check("TensorProduct(a + 2*b, c)", //
         "(a+2*b)\uF3DAc");
 
-    check(
-        "TensorProduct({2, 3}, {{a, b}, {c, d}} )", //
+    check("TensorProduct({2, 3}, {{a, b}, {c, d}} )", //
         "{{{2*a,2*b},{2*c,2*d}},{{3*a,3*b},{3*c,3*d}}}");
-    check(
-        "TensorProduct({{{2*a,2*b},{2*c,2*d}},{{3*a,3*b},{3*c,3*d}}}, {x, y})", //
+    check("TensorProduct({{{2*a,2*b},{2*c,2*d}},{{3*a,3*b},{3*c,3*d}}}, {x, y})", //
         "{{{{2*a*x,2*a*y},{2*b*x,2*b*y}},{{2*c*x,2*c*y},{2*d*x,2*d*y}}},{{{3*a*x,3*a*y},{\n"
             + "3*b*x,3*b*y}},{{3*c*x,3*c*y},{3*d*x,3*d*y}}}}");
-    check(
-        "TensorProduct({2, 3}, {{a, b}, {c, d}}, {x, y})", //
+    check("TensorProduct({2, 3}, {{a, b}, {c, d}}, {x, y})", //
         "{{{{2*a*x,2*a*y},{2*b*x,2*b*y}},{{2*c*x,2*c*y},{2*d*x,2*d*y}}},{{{3*a*x,3*a*y},{\n"
             + "3*b*x,3*b*y}},{{3*c*x,3*c*y},{3*d*x,3*d*y}}}}");
-    check(
-        "TensorProduct({a, b}, {x, y})", //
+    check("TensorProduct({a, b}, {x, y})", //
         "{{a*x,a*y},{b*x,b*y}}");
-    check(
-        "TensorProduct({x,y}, {a,b})", //
+    check("TensorProduct({x,y}, {a,b})", //
         "{{a*x,b*x},{a*y,b*y}}");
 
     check(

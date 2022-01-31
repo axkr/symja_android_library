@@ -20,26 +20,28 @@ import org.matheclipse.core.io.Extension;
 /**
  * ImageFormat uses the data alignment of {@link BufferedImage}.
  *
- * <p>The {@link Dimensions} of tensors that represent native images are For grayscale: <code>
+ * <p>
+ * The {@link Dimensions} of tensors that represent native images are For grayscale: <code>
  * height x width</code> For color (not supported yet): <code>height x width x 4</code> The 4
  * entries in the last dimension are RGBA.
  *
- * <p><code>tensor.get(y, x)</code> refers to the same pixel as <code>BufferedImage::getRGB(x, y)
+ * <p>
+ * <code>tensor.get(y, x)</code> refers to the same pixel as <code>BufferedImage::getRGB(x, y)
  * </code>
  */
 public class ImageFormat {
 
   private static IAST of(Extension extension, InputStream inputStream) throws IOException {
     switch (extension) {
-        // case CSV:
-        // // gjoel found that {@link Files#lines(Path)} was unsuitable on Windows
-        // return CsvFormat.parse(lines(inputStream));
+      // case CSV:
+      // // gjoel found that {@link Files#lines(Path)} was unsuitable on Windows
+      // return CsvFormat.parse(lines(inputStream));
       case BMP:
       case JPG:
       case PNG:
         return ImageFormat.from(ImageIO.read(inputStream));
-        // case VECTOR:
-        // return IAST.of(lines(inputStream).map(Scalars::fromString));
+      // case VECTOR:
+      // return IAST.of(lines(inputStream).map(Scalars::fromString));
       default:
         throw new RuntimeException();
     }
@@ -68,10 +70,8 @@ public class ImageFormat {
       case BufferedImage.TYPE_BYTE_GRAY:
         return fromGrayscale(bufferedImage);
       default:
-        return F.matrix(
-            (y, x) -> ColorFormat.toVector(bufferedImage.getRGB(x, y)), //
-            bufferedImage.getHeight(),
-            bufferedImage.getWidth());
+        return F.matrix((y, x) -> ColorFormat.toVector(bufferedImage.getRGB(x, y)), //
+            bufferedImage.getHeight(), bufferedImage.getWidth());
     }
   }
 
@@ -81,7 +81,8 @@ public class ImageFormat {
    */
   public static BufferedImage of(IAST ast) {
     List<Integer> dims = LinearAlgebra.dimensions(ast);
-    if (dims.size() == 2) return toTYPE_BYTE_GRAY(ast, dims.get(1), dims.get(0));
+    if (dims.size() == 2)
+      return toTYPE_BYTE_GRAY(ast, dims.get(1), dims.get(0));
     return toTYPE_INT(ast, dims.get(1), dims.get(0), BufferedImage.TYPE_INT_ARGB);
   }
 
@@ -93,10 +94,8 @@ public class ImageFormat {
     WritableRaster writableRaster = bufferedImage.getRaster();
     DataBufferByte dataBufferByte = (DataBufferByte) writableRaster.getDataBuffer();
     ByteBuffer byteBuffer = ByteBuffer.wrap(dataBufferByte.getData());
-    return F.matrix(
-        (i, j) -> LOOKUP[byteBuffer.get() & 0xff], //
-        bufferedImage.getHeight(),
-        bufferedImage.getWidth());
+    return F.matrix((i, j) -> LOOKUP[byteBuffer.get() & 0xff], //
+        bufferedImage.getHeight(), bufferedImage.getWidth());
   }
 
   // helper function
@@ -106,14 +105,11 @@ public class ImageFormat {
     DataBufferByte dataBufferByte = (DataBufferByte) writableRaster.getDataBuffer();
     byte[] bytes = dataBufferByte.getData();
     ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-    tensor.forEach(
-        row -> {
-          ((IAST) row)
-              .forEach(
-                  number -> {
-                    byteBuffer.put(((IInteger) number).byteValue());
-                  });
-        });
+    tensor.forEach(row -> {
+      ((IAST) row).forEach(number -> {
+        byteBuffer.put(((IInteger) number).byteValue());
+      });
+    });
     return bufferedImage;
   }
 
@@ -122,14 +118,11 @@ public class ImageFormat {
     BufferedImage bufferedImage = new BufferedImage(width, height, imageType);
     int[] array = new int[width * height];
     int[] i = new int[1];
-    ast.forEach(
-        row -> {
-          ((IAST) row)
-              .forEach(
-                  number -> {
-                    array[i[0]++] = ((IInteger) number).intValue();
-                  });
-        });
+    ast.forEach(row -> {
+      ((IAST) row).forEach(number -> {
+        array[i[0]++] = ((IInteger) number).intValue();
+      });
+    });
     bufferedImage.setRGB(0, 0, width, height, array, 0, width);
     return bufferedImage;
   }

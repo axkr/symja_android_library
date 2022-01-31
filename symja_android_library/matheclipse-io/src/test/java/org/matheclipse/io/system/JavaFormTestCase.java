@@ -67,12 +67,11 @@ public class JavaFormTestCase extends AbstractTestCase {
     IExpr result = EvalEngine.get().evalHoldPattern(function);
     assertEquals(
         "org.matheclipse.core.expression.F.Sinc(org.matheclipse.core.expression.F.DirectedInfinity(org.matheclipse.core.expression.F.CI))",
-        result.internalJavaString(SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, x -> null)
-            .toString());
+        result.internalJavaString(SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, x -> null).toString());
 
     result = util.evaluate(function);
-    assertEquals("org.matheclipse.core.expression.F.oo", result
-        .internalJavaString(SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, x -> null).toString());
+    assertEquals("org.matheclipse.core.expression.F.oo",
+        result.internalJavaString(SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, x -> null).toString());
   }
 
   private static final SourceCodeProperties NO_SYMBOL_FACTORY_PROPERTIES =

@@ -51,9 +51,7 @@ public class CompilerFunctions {
           + "import static org.matheclipse.core.expression.F.*;                         \n"
           + "                                                                           \n"
           + "public class CompiledFunction extends AbstractFunctionEvaluator {          \n"
-          + "  EvalEngine engine;\n"
-          + "  IASTAppendable stack;\n"
-          + "  ExprTrie vars;\n"
+          + "  EvalEngine engine;\n" + "  IASTAppendable stack;\n" + "  ExprTrie vars;\n"
           + "  int top=1;\n"
           + "    public IExpr evaluate(final IAST ast, EvalEngine engine){              \n"
           + "        if (ast.argSize()!={$size}) { return print(ast,{$size},engine); }  \n"
@@ -62,14 +60,9 @@ public class CompilerFunctions {
           + "        return {$expression}\n"
           + "    }                                                                      \n"
           + "  public double evalDouble(IExpr expr)  { \n"
-          + "    return engine.evalDouble(expr); \n"
-          + "  }\n"
-          + "\n"
+          + "    return engine.evalDouble(expr); \n" + "  }\n" + "\n"
           + "  public Complex evalComplex(IExpr expr)  { \n"
-          + "    return engine.evalComplex(expr); \n"
-          + "  }\n"
-          + "\n"
-          + "{$methods}\n"
+          + "    return engine.evalComplex(expr); \n" + "  }\n" + "\n" + "{$methods}\n"
           + "}                                                                          \n";
 
   /**
@@ -172,8 +165,8 @@ public class CompilerFunctions {
 
     private static class CompoundExpressionConverter extends AbstractConverter {
       @Override
-      public boolean convert(
-          final StringBuilder parentBuffer, final StringBuilder methods, final IAST f) {
+      public boolean convert(final StringBuilder parentBuffer, final StringBuilder methods,
+          final IAST f) {
         if (f.size() < 2) {
           return false;
         }
@@ -210,37 +203,37 @@ public class CompilerFunctions {
     private static class DoConverter extends AbstractConverter {
       @Override
       public boolean convert(final StringBuilder buf, StringBuilder methods, final IAST f) {
-        //        if (f.size() < 3) {
-        //          return false;
-        //        }
+        // if (f.size() < 3) {
+        // return false;
+        // }
         //
-        //        final java.util.List<IIterator<IExpr>> iterList = new
+        // final java.util.List<IIterator<IExpr>> iterList = new
         // ArrayList<IIterator<IExpr>>();
-        //        final EvalEngine engine = EvalEngine.get();
-        //        f.forEach(
-        //            2,
-        //            f.size(),
-        //            (x, i) -> {
-        //              iterList.add(Iterator.create((IAST) x, i, engine));
-        //            });
-        //        final Programming.DoIterator generator = new Programming.DoIterator(iterList,
+        // final EvalEngine engine = EvalEngine.get();
+        // f.forEach(
+        // 2,
+        // f.size(),
+        // (x, i) -> {
+        // iterList.add(Iterator.create((IAST) x, i, engine));
+        // });
+        // final Programming.DoIterator generator = new Programming.DoIterator(iterList,
         // engine);
-        //        return generator.doIt(f.arg1());
+        // return generator.doIt(f.arg1());
 
-        //        buf.append("F.Do(\n");
-        //        fFactory.convert(buf, methods, f.arg1());
-        //        buf.append(",\n");
-        //        fFactory.convert(buf, methods, f.arg2());
-        //        buf.append("\n");
-        //        buf.append(")\n");
+        // buf.append("F.Do(\n");
+        // fFactory.convert(buf, methods, f.arg1());
+        // buf.append(",\n");
+        // fFactory.convert(buf, methods, f.arg2());
+        // buf.append("\n");
+        // buf.append(")\n");
         return true;
       }
     }
 
     private static class SetConverter extends AbstractConverter {
       @Override
-      public boolean convert(
-          final StringBuilder parentBuffer, StringBuilder methods, final IAST f) {
+      public boolean convert(final StringBuilder parentBuffer, StringBuilder methods,
+          final IAST f) {
         if (f.size() != 3 || !f.arg1().isVariable()) {
           return false;
         }
@@ -265,7 +258,7 @@ public class CompilerFunctions {
 
         parentBuffer.append("IExpr " + variable + " = ");
         fFactory.convert(parentBuffer, methods, f.arg2(), true);
-        //        parentBuffer.append(")");
+        // parentBuffer.append(")");
         return true;
       }
     }
@@ -278,8 +271,8 @@ public class CompilerFunctions {
 
     private static class IfConverter extends AbstractConverter {
       @Override
-      public boolean convert(
-          final StringBuilder parentBuffer, StringBuilder methods, final IAST f) {
+      public boolean convert(final StringBuilder parentBuffer, StringBuilder methods,
+          final IAST f) {
         if (f.size() < 3 || f.size() > 4) {
           return false;
         }
@@ -320,8 +313,8 @@ public class CompilerFunctions {
 
     private static class ModuleConverter extends AbstractConverter {
       @Override
-      public boolean convert(
-          final StringBuilder parentBuffer, StringBuilder methods, final IAST f) {
+      public boolean convert(final StringBuilder parentBuffer, StringBuilder methods,
+          final IAST f) {
         if (f.size() != 3 && f.arg1().isList()) {
           return false;
         }
@@ -366,7 +359,7 @@ public class CompilerFunctions {
           StringBuilder subMethods = new StringBuilder();
           fFactory.convert(expressions, subMethods, f.arg2(), true);
           methods.append("return " + expressions.toString() + ";\n");
-          //          tryEnd
+          // tryEnd
           methods.append("} finally {top = oldTop; vars = oldVars;}\n");
 
           methods.append("}\n\n");
@@ -378,22 +371,21 @@ public class CompilerFunctions {
           fFactory.variables.pop();
           fFactory.numericVariables.pop();
         }
-        //        parentBuffer.append("F.Module(\n");
-        //        fFactory.convert(parentBuffer, methods, f.arg1());
-        //        parentBuffer.append(",\n");
-        //        fFactory.convert(parentBuffer, methods, f.arg2());
-        //        parentBuffer.append("\n");
-        //        parentBuffer.append(")\n");
+        // parentBuffer.append("F.Module(\n");
+        // fFactory.convert(parentBuffer, methods, f.arg1());
+        // parentBuffer.append(",\n");
+        // fFactory.convert(parentBuffer, methods, f.arg2());
+        // parentBuffer.append("\n");
+        // parentBuffer.append(")\n");
         return true;
       }
     }
 
-    public static final Map<ISymbol, IConverter> CONVERTERS =
-        new HashMap<ISymbol, IConverter>(199);
+    public static final Map<ISymbol, IConverter> CONVERTERS = new HashMap<ISymbol, IConverter>(199);
 
     static {
       CONVERTERS.put(S.CompoundExpression, new CompoundExpressionConverter());
-      //      CONVERTERS.put(S.Do, new DoConverter());
+      // CONVERTERS.put(S.Do, new DoConverter());
       CONVERTERS.put(S.If, new IfConverter());
       CONVERTERS.put(S.Set, new SetConverter());
       CONVERTERS.put(S.Module, new ModuleConverter());
@@ -406,12 +398,8 @@ public class CompilerFunctions {
     int topOfStack;
     final IAST types;
 
-    public CompileFactory(
-        VariableManager numericVariables,
-        VariableManager variables,
-        IAST types,
-        int topOfStack,
-        int defaultNumericType) {
+    public CompileFactory(VariableManager numericVariables, VariableManager variables, IAST types,
+        int topOfStack, int defaultNumericType) {
       this.localVariables = new HashSet<String>();
       this.numericVariables = numericVariables;
       this.variables = variables;
@@ -427,10 +415,10 @@ public class CompilerFunctions {
      * @param methods
      * @param expression
      * @param addEval if <code>true</code> wrap the expression with a <code>F.eval( ... )</code>
-     *     statement.
+     *        statement.
      */
-    public void convert(
-        StringBuilder buf, StringBuilder methods, IExpr expression, boolean addEval) {
+    public void convert(StringBuilder buf, StringBuilder methods, IExpr expression,
+        boolean addEval) {
       if (expression.isNumericFunction(numericVariables)) {
         int type = convertNumeric(buf, expression, defaultNumericType);
         if (type > 0) {
@@ -467,7 +455,7 @@ public class CompilerFunctions {
      * @param expression
      * @param type <code>1</code> create double value; <code>2</code> create Complex value
      * @return <code>0</code> if an exception occured; <code>1</code> evalDouble; <code>2</code>
-     *     evalComplex
+     *         evalComplex
      */
     private int convertNumeric(StringBuilder parentBuffer, IExpr expression, int type) {
       try {
@@ -476,16 +464,13 @@ public class CompilerFunctions {
           StringBuilder buf = new StringBuilder();
           DoubleFormFactory factory = JavaDoubleFormFactory.get(true, false);
           buf.append("F.num(");
-          expression =
-              F.subst(
-                  expression,
-                  x -> {
-                    String str = numericVariables.apply(x);
-                    if (x.isSymbol() && str != null) {
-                      return F.stringx("evalDouble(" + str + ")"); // x.toString() + "D");
-                    }
-                    return F.NIL;
-                  });
+          expression = F.subst(expression, x -> {
+            String str = numericVariables.apply(x);
+            if (x.isSymbol() && str != null) {
+              return F.stringx("evalDouble(" + str + ")"); // x.toString() + "D");
+            }
+            return F.NIL;
+          });
           factory.convert(buf, expression);
           buf.append(")");
           parentBuffer.append(buf);
@@ -499,16 +484,13 @@ public class CompilerFunctions {
         StringBuilder buf = new StringBuilder();
         JavaComplexFormFactory factory = JavaComplexFormFactory.get(true, false, -1, -1, true);
         buf.append("F.complexNum(");
-        expression =
-            F.subst(
-                expression,
-                x -> {
-                  String str = numericVariables.apply(x);
-                  if (x.isSymbol() && str != null) {
-                    return F.stringx("evalComplex(" + str + ")"); // x.toString() + "D");
-                  }
-                  return F.NIL;
-                });
+        expression = F.subst(expression, x -> {
+          String str = numericVariables.apply(x);
+          if (x.isSymbol() && str != null) {
+            return F.stringx("evalComplex(" + str + ")"); // x.toString() + "D");
+          }
+          return F.NIL;
+        });
         factory.convert(buf, expression);
         buf.append(")");
         parentBuffer.append(buf);
@@ -525,16 +507,12 @@ public class CompilerFunctions {
 
     private boolean convertSymbolic(StringBuilder buf, IExpr expression) {
       try {
-        buf.append(
-            expression.internalJavaString(
-                JAVA_FORM_PROPERTIES,
-                -1,
-                x -> {
-                  if (localVariables.contains(x.toString())) {
-                    return "vars.get(\"" + x.toString() + "\")";
-                  }
-                  return numericVariables.apply(x);
-                }));
+        buf.append(expression.internalJavaString(JAVA_FORM_PROPERTIES, -1, x -> {
+          if (localVariables.contains(x.toString())) {
+            return "vars.get(\"" + x.toString() + "\")";
+          }
+          return numericVariables.apply(x);
+        }));
         return true;
       } catch (RuntimeException rex) {
         //
@@ -698,10 +676,9 @@ public class CompilerFunctions {
 
     VariableManager numericVars = new VariableManager(numericVariables);
     VariableManager symbolicVars = new VariableManager(symbolicVariables);
-    CompilerFunctions.CompileFactory cf =
-        new CompilerFunctions.CompileFactory(
-            numericVars, symbolicVars, types, top, defaultNumericType);
-    //    buf.append("\n");
+    CompilerFunctions.CompileFactory cf = new CompilerFunctions.CompileFactory(numericVars,
+        symbolicVars, types, top, defaultNumericType);
+    // buf.append("\n");
     cf.convert(buf, methods, expression, true);
     buf.append(";\n");
     String source = JAVA_SOURCE_CODE.replace("{$variables}", variablesBuf.toString());

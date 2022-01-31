@@ -105,15 +105,16 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>get the coefficient of <code>variable^exponent</code> in <code>polynomial</code>.
+   * <p>
+   * get the coefficient of <code>variable^exponent</code> in <code>polynomial</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Coefficient">Wikipedia - Coefficient
-   *       Coefficient</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Coefficient">Wikipedia - Coefficient Coefficient</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -307,7 +308,8 @@ public class PolynomialFunctions {
   /**
    * Get exponent vectors and coefficients of monomials of a polynomial expression.
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial<a/>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial<a/>
    */
   private static class CoefficientRules extends AbstractFunctionEvaluator {
     @Override
@@ -413,9 +415,8 @@ public class PolynomialFunctions {
      * @param option the &quot;Modulus&quot; option
      * @return the list of monomials of the univariate polynomial.
      */
-    private static IAST coefficientRulesModulus(
-        IExpr polynomial, List<IExpr> variablesList, final TermOrder termOrder, IExpr option)
-        throws JASConversionException {
+    private static IAST coefficientRulesModulus(IExpr polynomial, List<IExpr> variablesList,
+        final TermOrder termOrder, IExpr option) throws JASConversionException {
       try {
         // found "Modulus" option => use ModIntegerRing
         ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
@@ -449,15 +450,17 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the Cyclotomic polynomial <code>C_n(x)</code>.
+   * <p>
+   * returns the Cyclotomic polynomial <code>C_n(x)</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Cyclotomic_polynomial">Wikipedia - Cyclotomic
-   *       polynomial</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Cyclotomic_polynomial">Wikipedia - Cyclotomic
+   * polynomial</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -467,9 +470,10 @@ public class PolynomialFunctions {
    * 1+x^5+x^10+x^15+x^20
    * </pre>
    *
-   * <p>The case of the 105-th cyclotomic polynomial is interesting because 105 is the lowest
-   * integer that is the product of three distinct odd prime numbers and this polynomial is the
-   * first one that has a coefficient other than <code>1, 0</code> or <code>−1</code>:
+   * <p>
+   * The case of the 105-th cyclotomic polynomial is interesting because 105 is the lowest integer
+   * that is the product of three distinct odd prime numbers and this polynomial is the first one
+   * that has a coefficient other than <code>1, 0</code> or <code>−1</code>:
    *
    * <pre>
    * &gt;&gt; Cyclotomic(105, x)
@@ -541,14 +545,8 @@ public class PolynomialFunctions {
       IInteger ni = F.ZZ(n);
       IAST divisorList = ni.divisors();
       // Product((1 - x^d)^MoebiusMu(n/d), {d, divisorList) // Together
-      return F.Together(
-          F.intIterator(
-              S.Times,
-              d ->
-                  F.Power(
-                      F.Plus(F.C1, F.Negate(F.Power(x, d))),
-                      F.MoebiusMu(F.Times(F.Power(d, -1), ni))),
-              divisorList));
+      return F.Together(F.intIterator(S.Times, d -> F.Power(F.Plus(F.C1, F.Negate(F.Power(x, d))),
+          F.MoebiusMu(F.Times(F.Power(d, -1), ni))), divisorList));
     }
 
     @Override
@@ -567,15 +565,17 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>computes the discriminant of the polynomial <code>poly</code> with respect to the variable
+   * <p>
+   * computes the discriminant of the polynomial <code>poly</code> with respect to the variable
    * <code>var</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Discriminant">Wikipedia - Discriminant</a>
+   * <li><a href="http://en.wikipedia.org/wiki/Discriminant">Wikipedia - Discriminant</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -590,13 +590,9 @@ public class PolynomialFunctions {
     private static final IExpr QUADRATIC = F.Plus(F.Sqr(F.b), F.Times(F.CN4, F.a, F.c));
 
     // b^2*c^2 - 4*a*c^3 - 4*b^3*d + 18*a*b*c*d - 27*a^2*d^2
-    private static final IExpr CUBIC =
-        F.Plus(
-            F.Times(F.Sqr(F.b), F.Sqr(F.c)),
-            F.Times(F.CN4, F.a, F.Power(F.c, F.C3)),
-            F.Times(F.CN4, F.Power(F.b, F.C3), F.d),
-            F.Times(F.ZZ(18L), F.a, F.b, F.c, F.d),
-            F.Times(F.ZZ(-27L), F.Sqr(F.a), F.Sqr(F.d)));
+    private static final IExpr CUBIC = F.Plus(F.Times(F.Sqr(F.b), F.Sqr(F.c)),
+        F.Times(F.CN4, F.a, F.Power(F.c, F.C3)), F.Times(F.CN4, F.Power(F.b, F.C3), F.d),
+        F.Times(F.ZZ(18L), F.a, F.b, F.c, F.d), F.Times(F.ZZ(-27L), F.Sqr(F.a), F.Sqr(F.d)));
 
     // Page 405
     // http://books.google.com/books?id=-gGzjSnNnR0C&lpg=PA402&vq=quartic&hl=de&pg=PA405#v=snippet&q=quartic&f=false
@@ -605,24 +601,22 @@ public class PolynomialFunctions {
     // 4*b^2*c^3*e + 16*a*c^4*e + 18*b^3*c*d*e - 80*a*b*c^2*d*e - 6*a*b^2*d^2*e +
     // 144*a^2*c*d^2*e - 27*b^4*e^2 + 144*a*b^2*c*e^2 - 128*a^2*c^2*e^2 -
     // 192*a^2*b*d*e^2 + 256*a^3*e^3
-    private static final IExpr QUARTIC =
-        F.Plus(
-            F.Times(F.Sqr(F.b), F.Sqr(F.c), F.Sqr(F.d)),
-            F.Times(F.CN4, F.a, F.Power(F.c, F.C3), F.Sqr(F.d)),
-            F.Times(F.CN4, F.Power(F.b, F.C3), F.Power(F.d, F.C3)),
-            F.Times(F.ZZ(18L), F.a, F.b, F.c, F.Power(F.d, F.C3)),
-            F.Times(F.ZZ(-27L), F.Sqr(F.a), F.Power(F.d, F.C4)),
-            F.Times(F.CN4, F.Sqr(F.b), F.Power(F.c, F.C3), F.e),
-            F.Times(F.ZZ(16L), F.a, F.Power(F.c, F.C4), F.e),
-            F.Times(F.ZZ(18L), F.Power(F.b, F.C3), F.c, F.d, F.e),
-            F.Times(F.ZZ(-80L), F.a, F.b, F.Sqr(F.c), F.d, F.e),
-            F.Times(F.CN6, F.a, F.Sqr(F.b), F.Sqr(F.d), F.e),
-            F.Times(F.ZZ(144L), F.Sqr(F.a), F.c, F.Sqr(F.d), F.e),
-            F.Times(F.ZZ(-27L), F.Power(F.b, F.C4), F.Sqr(F.e)),
-            F.Times(F.ZZ(144L), F.a, F.Sqr(F.b), F.c, F.Sqr(F.e)),
-            F.Times(F.ZZ(-128L), F.Sqr(F.a), F.Sqr(F.c), F.Sqr(F.e)),
-            F.Times(F.ZZ(-192L), F.Sqr(F.a), F.b, F.d, F.Sqr(F.e)),
-            F.Times(F.ZZ(256L), F.Power(F.a, F.C3), F.Power(F.e, F.C3)));
+    private static final IExpr QUARTIC = F.Plus(F.Times(F.Sqr(F.b), F.Sqr(F.c), F.Sqr(F.d)),
+        F.Times(F.CN4, F.a, F.Power(F.c, F.C3), F.Sqr(F.d)),
+        F.Times(F.CN4, F.Power(F.b, F.C3), F.Power(F.d, F.C3)),
+        F.Times(F.ZZ(18L), F.a, F.b, F.c, F.Power(F.d, F.C3)),
+        F.Times(F.ZZ(-27L), F.Sqr(F.a), F.Power(F.d, F.C4)),
+        F.Times(F.CN4, F.Sqr(F.b), F.Power(F.c, F.C3), F.e),
+        F.Times(F.ZZ(16L), F.a, F.Power(F.c, F.C4), F.e),
+        F.Times(F.ZZ(18L), F.Power(F.b, F.C3), F.c, F.d, F.e),
+        F.Times(F.ZZ(-80L), F.a, F.b, F.Sqr(F.c), F.d, F.e),
+        F.Times(F.CN6, F.a, F.Sqr(F.b), F.Sqr(F.d), F.e),
+        F.Times(F.ZZ(144L), F.Sqr(F.a), F.c, F.Sqr(F.d), F.e),
+        F.Times(F.ZZ(-27L), F.Power(F.b, F.C4), F.Sqr(F.e)),
+        F.Times(F.ZZ(144L), F.a, F.Sqr(F.b), F.c, F.Sqr(F.e)),
+        F.Times(F.ZZ(-128L), F.Sqr(F.a), F.Sqr(F.c), F.Sqr(F.e)),
+        F.Times(F.ZZ(-192L), F.Sqr(F.a), F.b, F.d, F.Sqr(F.e)),
+        F.Times(F.ZZ(256L), F.Power(F.a, F.C3), F.Power(F.e, F.C3)));
 
     // b^2*c^2*d^2*e^2 - 4*a*c^3*d^2*e^2 - 4*b^3*d^3*e^2 + 18*a*b*c*d^3*e^2 -
     // 27*a^2*d^4*e^2 - 4*b^2*c^3*e^3 + 16*a*c^4*e^3 + 18*b^3*c*d*e^3 -
@@ -642,8 +636,7 @@ public class PolynomialFunctions {
     // 2250*a^2*b*c^2*f^3 + 2000*a^2*b^2*d*f^3 - 3750*a^3*c*d*f^3 -
     // 2500*a^3*b*e*f^3 + 3125*a^4*f^4
     private static final IExpr QUINTIC =
-        F.Plus(
-            F.Times(F.Sqr(F.b), F.Sqr(F.c), F.Sqr(F.d), F.Sqr(F.e)),
+        F.Plus(F.Times(F.Sqr(F.b), F.Sqr(F.c), F.Sqr(F.d), F.Sqr(F.e)),
             F.Times(F.CN4, F.a, F.Power(F.c, F.C3), F.Sqr(F.d), F.Sqr(F.e)),
             F.Times(F.CN4, F.Power(F.b, F.C3), F.Power(F.d, F.C3), F.Sqr(F.e)),
             F.Times(F.ZZ(18L), F.a, F.b, F.c, F.Power(F.d, F.C3), F.Sqr(F.e)),
@@ -737,11 +730,8 @@ public class PolynomialFunctions {
         ExprPolynomial polyDiff = poly.derivativeUnivariate();
         // see:
         // http://en.wikipedia.org/wiki/Discriminant#Discriminant_of_a_polynomial
-        return F.Divide(
-            F.Times(
-                F.Power(F.CN1, (n * (n - 1) / 2)),
-                F.Resultant(poly.getExpr(), polyDiff.getExpr(), arg2)),
-            fN);
+        return F.Divide(F.Times(F.Power(F.CN1, (n * (n - 1) / 2)),
+            F.Resultant(poly.getExpr(), polyDiff.getExpr(), arg2)), fN);
       } catch (RuntimeException ex) {
         LOGGER.log(engine.getLogLevel(), "{}: polynomial expected at position 1 instead of {}",
             ast.topHead(), ast.arg1());
@@ -769,7 +759,8 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>gives the maximum power with which <code>x</code> appears in the expanded form of <code>
+   * <p>
+   * gives the maximum power with which <code>x</code> appears in the expanded form of <code>
    * polynomial</code>.
    *
    * </blockquote>
@@ -882,26 +873,20 @@ public class PolynomialFunctions {
       return ARGS_2_3;
     }
 
-    private static IExpr powerExponent(
-        IAST powerAST, final IExpr form, final IPatternMatcher matcher, EvalEngine engine) {
+    private static IExpr powerExponent(IAST powerAST, final IExpr form,
+        final IPatternMatcher matcher, EvalEngine engine) {
       if (matcher.test(powerAST.base(), engine)) {
         return powerAST.exponent();
       }
-      if (matcher.isRuleWithoutPatterns()
-          && form.isPower()
-          && form.base().equals(powerAST.base())
+      if (matcher.isRuleWithoutPatterns() && form.isPower() && form.base().equals(powerAST.base())
           && form.exponent().isRational()) {
         return form.exponent().reciprocal().times(powerAST.exponent());
       }
       return F.C0;
     }
 
-    private static void timesExponent(
-        IAST timesAST,
-        IExpr form,
-        final IPatternMatcher matcher,
-        Set<IExpr> collector,
-        EvalEngine engine) {
+    private static void timesExponent(IAST timesAST, IExpr form, final IPatternMatcher matcher,
+        Set<IExpr> collector, EvalEngine engine) {
       boolean evaled = false;
       IExpr argi;
       for (int i = 1; i < timesAST.size(); i++) {
@@ -946,15 +931,17 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>computes the resultant of the polynomials <code>polynomial1</code> and <code>polynomial2
+   * <p>
+   * computes the resultant of the polynomials <code>polynomial1</code> and <code>polynomial2
    * </code> with respect to the variable <code>var</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Resultant">Wikipedia - Resultant</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Resultant">Wikipedia - Resultant</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -985,15 +972,15 @@ public class PolynomialFunctions {
           ring.create(a);
         } catch (RuntimeException ex) {
           // Polynomial expected at position `1` in `2`.
-          return IOFunctions.printMessage(
-              ast.topHead(), "polynomial", F.List(ast.get(1), F.C1), engine);
+          return IOFunctions.printMessage(ast.topHead(), "polynomial", F.List(ast.get(1), F.C1),
+              engine);
         }
         try {
           // check if b is a polynomial otherwise check ArithmeticException, ClassCastException
           ring.create(b);
         } catch (RuntimeException ex) {
-          return IOFunctions.printMessage(
-              ast.topHead(), "polynomial", F.List(ast.get(2), F.C2), engine);
+          return IOFunctions.printMessage(ast.topHead(), "polynomial", F.List(ast.get(2), F.C2),
+              engine);
         }
         IExpr resultant = resultant(a, b, x, engine);
         if (resultant.isPresent()) {
@@ -1012,10 +999,10 @@ public class PolynomialFunctions {
       IExpr aExp = S.Exponent.ofNIL(engine, a, x);
       IExpr bExp = S.Exponent.ofNIL(engine, b, x);
       if (aExp.isPresent() && bExp.isPresent()) {
-        //        if (b.isFree(x)) {
-        //          return F.Power(b, aExp);
-        //        }
-        //        IExpr abExp = aExp.times(bExp);
+        // if (b.isFree(x)) {
+        // return F.Power(b, aExp);
+        // }
+        // IExpr abExp = aExp.times(bExp);
         if (S.Less.ofQ(engine, aExp, bExp)) {
           IExpr resultant = resultant(b, a, x, engine);
           if (!resultant.isPresent()) {
@@ -1152,13 +1139,13 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      //      int degree = ast.arg1().toIntDefault();
-      //      if (degree >= 0) {
-      //        if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
-      //          PolynomialDegreeLimitExceeded.throwIt(degree);
-      //        }
-      //        return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
-      //      }
+      // int degree = ast.arg1().toIntDefault();
+      // if (degree >= 0) {
+      // if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
+      // PolynomialDegreeLimitExceeded.throwIt(degree);
+      // }
+      // return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
+      // }
       return F.NIL;
     }
 
@@ -1187,15 +1174,17 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the Chebyshev polynomial of the first kind <code>T_n(x)</code>.
+   * <p>
+   * returns the Chebyshev polynomial of the first kind <code>T_n(x)</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Chebyshev_polynomials">Wikipedia - Chebyshev
-   *       polynomials</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Chebyshev_polynomials">Wikipedia - Chebyshev
+   * polynomials</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1260,15 +1249,17 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the Chebyshev polynomial of the second kind <code>U_n(x)</code>.
+   * <p>
+   * returns the Chebyshev polynomial of the second kind <code>U_n(x)</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Chebyshev_polynomials">Wikipedia - Chebyshev
-   *       polynomials</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Chebyshev_polynomials">Wikipedia - Chebyshev
+   * polynomials</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1286,9 +1277,7 @@ public class PolynomialFunctions {
       IExpr z = ast.arg2();
       if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
         // Sin((n + 1)*ArcCos(z))/Sqrt(1 - z^2)
-        return F.Times.of(
-            engine,
-            F.Power(F.Plus(F.C1, F.Negate(F.Sqr(z))), F.CN1D2),
+        return F.Times.of(engine, F.Power(F.Plus(F.C1, F.Negate(F.Sqr(z))), F.CN1D2),
             F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
       }
 
@@ -1314,14 +1303,10 @@ public class PolynomialFunctions {
         }
         // (n, z) => Sum(((-1)^k*(n - k)!*(2*z)^(n - 2*k))/(k!*(n - 2*k)!), {k, 0, Floor(n/2)})
         return F.sum(
-            k ->
-                F.Times(
-                    F.Power(F.CN1, k),
-                    F.Power(F.Times(F.C2, z), F.Plus(F.Times(F.CN2, k), n)),
-                    F.Power(F.Times(F.Factorial(k), F.Factorial(F.Plus(F.Times(F.CN2, k), n))), -1),
-                    F.Factorial(F.Plus(F.Negate(k), n))),
-            0,
-            degree / 2);
+            k -> F.Times(F.Power(F.CN1, k), F.Power(F.Times(F.C2, z), F.Plus(F.Times(F.CN2, k), n)),
+                F.Power(F.Times(F.Factorial(k), F.Factorial(F.Plus(F.Times(F.CN2, k), n))), -1),
+                F.Factorial(F.Plus(F.Negate(k), n))),
+            0, degree / 2);
       }
 
       if (n.isNumEqualRational(F.CN1D2)) {
@@ -1330,8 +1315,8 @@ public class PolynomialFunctions {
       }
       if (n.isNumEqualRational(F.C1D2)) {
         // (1/2, z) => (1 + 2*z)/(Sqrt(2)* Sqrt(1 + z))
-        return F.Times(
-            F.C1DSqrt2, F.Plus(F.C1, F.Times(F.C2, z)), F.Power(F.Plus(F.C1, z), F.CN1D2));
+        return F.Times(F.C1DSqrt2, F.Plus(F.C1, F.Times(F.C2, z)),
+            F.Power(F.Plus(F.C1, z), F.CN1D2));
       }
       if (z.isZero()) {
         // Cos((Pi*n)/2)
@@ -1365,14 +1350,16 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>the second kind of Bell polynomials (incomplete Bell polynomials).
+   * <p>
+   * the second kind of Bell polynomials (incomplete Bell polynomials).
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Bell_polynomials">Wikipedia - Bell polynomials</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Bell_polynomials">Wikipedia - Bell polynomials</a>
    * </ul>
    *
    * <pre>
@@ -1455,14 +1442,16 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>returns a Gröbner basis for the <code>polynomial-list</code> and <code>variable-list</code>.
+   * <p>
+   * returns a Gröbner basis for the <code>polynomial-list</code> and <code>variable-list</code>.
    *
    * </blockquote>
    *
-   * <p>See:
+   * <p>
+   * See:
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Gröbner_basis">Wikipedia - Gröbner basis</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Gröbner_basis">Wikipedia - Gröbner basis</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1480,13 +1469,13 @@ public class PolynomialFunctions {
     /**
      * Compute the Groebner basis for a list of polynomials.
      *
-     * <p>See
+     * <p>
+     * See
      *
      * <ul>
-     *   <li><a href="https://en.wikipedia.org/wiki/Gr%C3%B6bner_basis">EN-Wikipedia: Gröbner
-     *       basis</a>
-     *   <li><a href="https://de.wikipedia.org/wiki/Gr%C3%B6bnerbasis">DE-Wikipedia: Gröbner
-     *       basis</a>
+     * <li><a href="https://en.wikipedia.org/wiki/Gr%C3%B6bner_basis">EN-Wikipedia: Gröbner
+     * basis</a>
+     * <li><a href="https://de.wikipedia.org/wiki/Gr%C3%B6bnerbasis">DE-Wikipedia: Gröbner basis</a>
      * </ul>
      */
     @Override
@@ -1518,11 +1507,11 @@ public class PolynomialFunctions {
      * @param listOfVariables a list of variable symbols
      * @param termOrder the term order
      * @return <code>F.NIL</code> if <code>stopUnevaluatedOnPolynomialConversionError==true</code>
-     *     and one of the polynomials in <code>listOfPolynomials</code> are not convertible to JAS
-     *     polynomials
+     *         and one of the polynomials in <code>listOfPolynomials</code> are not convertible to
+     *         JAS polynomials
      */
-    private static IAST computeGroebnerBasis(
-        IAST listOfPolynomials, IAST listOfVariables, TermOrder termOrder) {
+    private static IAST computeGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables,
+        TermOrder termOrder) {
       List<ISymbol> varList = new ArrayList<ISymbol>(listOfVariables.argSize());
       String[] pvars = new String[listOfVariables.argSize()];
 
@@ -1575,15 +1564,17 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the Hermite polynomial <code>H_n(x)</code>.
+   * <p>
+   * returns the Hermite polynomial <code>H_n(x)</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Hermite_polynomials">Wikipedia - Hermite
-   *       polynomials</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Hermite_polynomials">Wikipedia - Hermite
+   * polynomials</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1622,15 +1613,17 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the Laguerre polynomial <code>L_n(x)</code>.
+   * <p>
+   * returns the Laguerre polynomial <code>L_n(x)</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Laguerre_polynomials">Wikipedia - Laguerre
-   *       polynomials</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Laguerre_polynomials">Wikipedia - Laguerre
+   * polynomials</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1677,15 +1670,8 @@ public class PolynomialFunctions {
       if (degree == 2) {
         return
         // [$ (1/2)*(2 + 3*l + l^2 - 4*z - 2*l*z + z^2) $]
-        F.Times(
-            F.C1D2,
-            F.Plus(
-                F.C2,
-                F.Times(F.C3, l),
-                F.Sqr(l),
-                F.Times(F.CN4, z),
-                F.Times(F.CN2, l, z),
-                F.Sqr(z))); // $$;
+        F.Times(F.C1D2, F.Plus(F.C2, F.Times(F.C3, l), F.Sqr(l), F.Times(F.CN4, z),
+            F.Times(F.CN2, l, z), F.Sqr(z))); // $$;
       }
       if (degree < 0) {
         return F.NIL;
@@ -1700,9 +1686,7 @@ public class PolynomialFunctions {
         // Recurrence relation for LaguerreL polynomials
         // (1/n) * (((2*n + l - z - 1) )*LaguerreL(n - 1, l, z) - ((n + l - 1) )*LaguerreL(n - 2, l,
         // z))
-        IExpr laguerre1 =
-            laguerreLRecursive(
-                F.ZZ(degree - 2), degree - 2, l, z, engine); // F.LaguerreL.of(engine,
+        IExpr laguerre1 = laguerreLRecursive(F.ZZ(degree - 2), degree - 2, l, z, engine); // F.LaguerreL.of(engine,
         // F.Plus(F.CN2, n),
         // l,
         // z);
@@ -1713,9 +1697,7 @@ public class PolynomialFunctions {
         if (leafCount1 > Config.MAX_AST_SIZE) {
           ASTElementLimitExceeded.throwIt(leafCount1);
         }
-        IExpr laguerre2 =
-            laguerreLRecursive(
-                F.ZZ(degree - 1), degree - 1, l, z, engine); // F.LaguerreL.of(engine,
+        IExpr laguerre2 = laguerreLRecursive(F.ZZ(degree - 1), degree - 1, l, z, engine); // F.LaguerreL.of(engine,
         // F.Plus(F.CN1, n),
         // l, z);
         if (laguerre2.isIndeterminate()) {
@@ -1725,11 +1707,8 @@ public class PolynomialFunctions {
         if (leafCount2 > Config.MAX_AST_SIZE) {
           ASTElementLimitExceeded.throwIt(leafCount2);
         }
-        return F.Times(
-            F.Power(n, F.CN1),
-            F.Plus(
-                F.Times(F.CN1, F.Plus(F.CN1, l, n), laguerre1),
-                F.Times(F.Plus(F.CN1, l, F.Times(F.C2, n), F.Negate(z)), laguerre2)));
+        return F.Times(F.Power(n, F.CN1), F.Plus(F.Times(F.CN1, F.Plus(F.CN1, l, n), laguerre1),
+            F.Times(F.Plus(F.CN1, l, F.Times(F.C2, n), F.Negate(z)), laguerre2)));
       } finally {
         engine.decRecursionCounter();
       }
@@ -1756,15 +1735,17 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the Legendre polynomial <code>P_n(x)</code>.
+   * <p>
+   * returns the Legendre polynomial <code>P_n(x)</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Legendre_polynomials">Wikipedia - Legendre
-   *       polynomials</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Legendre_polynomials">Wikipedia - Legendre
+   * polynomials</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1814,15 +1795,17 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the Legendre functions of the second kind <code>Q_n(x)</code>.
+   * <p>
+   * returns the Legendre functions of the second kind <code>Q_n(x)</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Legendre_polynomials">Wikipedia - Legendre
-   *       polynomials</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Legendre_polynomials">Wikipedia - Legendre
+   * polynomials</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -1871,22 +1854,25 @@ public class PolynomialFunctions {
    *
    * <blockquote>
    *
-   * <p>get the list of monomials of a <code>polynomial</code> expression, with respect to the
+   * <p>
+   * get the list of monomials of a <code>polynomial</code> expression, with respect to the
    * <code>list-of-variables</code>.
    *
    * </blockquote>
    *
-   * <p>See:<br>
+   * <p>
+   * See:<br>
    *
    * <ul>
-   *   <li><a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial</a><br>
+   * <li><a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial</a><br>
    * </ul>
    */
   private static final class MonomialList extends AbstractFunctionEvaluator {
     /**
      * Get the list of monomials of a polynomial expression.
      *
-     * <p>See <a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial<a/>
+     * <p>
+     * See <a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial<a/>
      */
     @Override
     public IExpr evaluate(final IAST ast, final EvalEngine engine) {
@@ -1956,9 +1942,8 @@ public class PolynomialFunctions {
      * @param option the &quot;Modulus&quot; option
      * @return the list of monomials of the univariate polynomial.
      */
-    private static IAST monomialListModulus(
-        IExpr polynomial, List<IExpr> variablesList, final TermOrder termOrder, IExpr option)
-        throws JASConversionException {
+    private static IAST monomialListModulus(IExpr polynomial, List<IExpr> variablesList,
+        final TermOrder termOrder, IExpr option) throws JASConversionException {
       try {
         // found "Modulus" option => use ModIntegerRing
         ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
@@ -2050,15 +2035,15 @@ public class PolynomialFunctions {
    * @param listOfPolynomials a list of polynomials
    * @param listOfVariables a list of variable symbols
    * @return <code>F.NIL</code> if <code>stopUnevaluatedOnPolynomialConversionError==true</code> and
-   *     one of the polynomials in <code>listOfPolynomials</code> are not convertible to JAS
-   *     polynomials
+   *         one of the polynomials in <code>listOfPolynomials</code> are not convertible to JAS
+   *         polynomials
    */
   public static IASTAppendable solveGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables) {
     List<IExpr> varList = new ArrayList<IExpr>(listOfVariables.argSize());
     for (int i = 1; i < listOfVariables.size(); i++) {
-      //      if (!listOfVariables.get(i).isSymbol() ) {
-      //        return F.NIL;
-      //      }
+      // if (!listOfVariables.get(i).isSymbol() ) {
+      // return F.NIL;
+      // }
       varList.add(listOfVariables.get(i));
     }
 
@@ -2082,9 +2067,7 @@ public class PolynomialFunctions {
     }
     GroebnerBaseAbstract<BigRational> engine =
         GBAlgorithmBuilder.<BigRational>polynomialRing(jas.getPolynomialRingFactory())
-            .fractionFree()
-            .syzygyPairlist()
-            .build();
+            .fractionFree().syzygyPairlist().build();
     List<GenPolynomial<BigRational>> opl = engine.GB(polyList);
     IASTAppendable resultList = F.ListAlloc(opl.size() + rest.size());
     // convert rational to integer coefficients and add

@@ -35,16 +35,18 @@ import org.matheclipse.core.visit.VisitorExpr;
  *
  * <blockquote>
  *
- * <p>get the expanded <code>expr</code>. All variable symbols in <code>expr</code> are assumed to
- * be non complex numbers.
+ * <p>
+ * get the expanded <code>expr</code>. All variable symbols in <code>expr</code> are assumed to be
+ * non complex numbers.
  *
  * </blockquote>
  *
- * <p>See:<br>
+ * <p>
+ * See:<br>
  *
  * <ul>
- *   <li><a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities">Wikipedia - List of
- *       trigonometric identities</a>
+ * <li><a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities">Wikipedia - List of
+ * trigonometric identities</a>
  * </ul>
  *
  * <h3>Examples</h3>
@@ -84,10 +86,8 @@ public class ComplexExpand extends AbstractEvaluator {
           // exponent*Arg(base)
           IExpr inner = exponent.times(F.Arg(base));
           // coeff*Cos(inner) + I*coeff*Sin(inner);
-          IExpr temp =
-              S.Expand.of(
-                  fEngine,
-                  F.Plus(F.Times(coeff, F.Cos(inner)), F.Times(F.CI, coeff, F.Sin(inner))));
+          IExpr temp = S.Expand.of(fEngine,
+              F.Plus(F.Times(coeff, F.Cos(inner)), F.Times(F.CI, coeff, F.Sin(inner))));
           return temp;
         }
       }
@@ -115,13 +115,9 @@ public class ComplexExpand extends AbstractEvaluator {
       if (head.equals(S.Cot)) {
         // -(Sin(2*Re(x))/(Cos(2*Re(x))-Cosh(2*Im(x))))+(I*Sinh(2*Im(x)))/(Cos(2*Re(x))-Cosh(2*Im(x)))
         return Plus(
-            Times(
-                CN1,
-                Sin(Times(C2, reX)),
+            Times(CN1, Sin(Times(C2, reX)),
                 Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)),
-            Times(
-                CI,
-                Sinh(Times(C2, imX)),
+            Times(CI, Sinh(Times(C2, imX)),
                 Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)));
       }
       if (head.equals(S.Csc)) {
@@ -129,16 +125,9 @@ public class ComplexExpand extends AbstractEvaluator {
         // ((2 I) Cos(Re(x)) Sinh(Im(x)))/(Cos(2 Re(x))-Cosh(2
         // Im(x)))
         return Plus(
-            Times(
-                F.CN2,
-                Cosh(imX),
-                Sin(reX),
+            Times(F.CN2, Cosh(imX), Sin(reX),
                 Power(Plus(Cos(Times(F.C2, reX)), Times(F.CN1, Cosh(Times(F.C2, imX)))), F.CN1)),
-            Times(
-                F.C2,
-                F.CI,
-                Cos(reX),
-                Sinh(imX),
+            Times(F.C2, F.CI, Cos(reX), Sinh(imX),
                 Power(Plus(Cos(Times(F.C2, reX)), Times(F.CN1, Cosh(Times(F.C2, imX)))), F.CN1)));
       }
       if (head.equals(S.Sec)) {
@@ -146,16 +135,9 @@ public class ComplexExpand extends AbstractEvaluator {
         // ((2 I) Sin(Re(x)) Sinh(Im(x)))/(Cos(2 Re(x)) + Cosh(2
         // Im(x)))
         return Plus(
-            Times(
-                C2,
-                Cos(reX),
-                Cosh(imX),
+            Times(C2, Cos(reX), Cosh(imX),
                 Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)),
-            Times(
-                C2,
-                CI,
-                Sin(reX),
-                Sinh(imX),
+            Times(C2, CI, Sin(reX), Sinh(imX),
                 Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)));
       }
       if (head.equals(S.ProductLog)) {
@@ -169,29 +151,20 @@ public class ComplexExpand extends AbstractEvaluator {
       }
       if (head.equals(S.ArcTan)) {
         // https://functions.wolfram.com/ElementaryFunctions/ArcTan/19/
-        return Plus(
-            Times(Times(F.CN1D2, F.Arg(F.Subtract(F.C1, F.Distribute(F.Times(F.CI, z)))))),
-            Times(Times(F.C1D2, F.Arg(F.Plus(F.C1, F.Distribute(F.Times(F.CI, z)))))),
-            Times(
-                F.CI, //
+        return Plus(Times(Times(F.CN1D2, F.Arg(F.Subtract(F.C1, F.Distribute(F.Times(F.CI, z)))))),
+            Times(Times(F.C1D2, F.Arg(F.Plus(F.C1, F.Distribute(F.Times(F.CI, z)))))), Times(F.CI, //
                 Plus(
-                    Times(
-                        Times(
-                            F.CN1D4,
-                            F.Log(F.Plus(F.Sqr(reX), F.Power(F.Subtract(F.C1, imX), F.C2))))),
-                    Times(
-                        Times(
-                            F.C1D4,
-                            F.Log(F.Plus(F.Sqr(reX), F.Power(F.Plus(F.C1, imX), F.C2))))))));
+                    Times(Times(F.CN1D4,
+                        F.Log(F.Plus(F.Sqr(reX), F.Power(F.Subtract(F.C1, imX), F.C2))))),
+                    Times(Times(F.C1D4,
+                        F.Log(F.Plus(F.Sqr(reX), F.Power(F.Plus(F.C1, imX), F.C2))))))));
       }
       if (head.equals(S.Tan)) {
         // Sin(2*Re(x))/(Cos(2*Re(x)) + Cosh(2*Im(x))) +
         // (I*Sinh(2*Im(x)))/(Cos(2*Re(x)) + Cosh(2*Im(x)))
         return Plus(
             Times(Sin(Times(C2, reX)), Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)),
-            Times(
-                CI,
-                Sinh(Times(C2, imX)),
+            Times(CI, Sinh(Times(C2, imX)),
                 Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)));
       }
       if (result.isPresent()) {

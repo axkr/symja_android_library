@@ -6,14 +6,16 @@ import java.util.Properties;
 /**
  * access to resource data in jar files, for instance, the content included in the tensor library.
  *
- * <p>Tensor resources provided by the tensor library include
+ * <p>
+ * Tensor resources provided by the tensor library include
  *
  * <pre>
  * /colorscheme/classic.csv
  * /number/primes.vector
  * </pre>
  *
- * <p>Properties provided by the tensor library include
+ * <p>
+ * Properties provided by the tensor library include
  *
  * <pre>
  * /unit/si.properties

@@ -432,8 +432,8 @@ public class ASTDataset extends AbstractAST
           ruleCache(cache, assoc, F.Rule(colName, DateObjectExpr.newInstance(lDate)));
         } else if (t.equals(ColumnType.LOCAL_DATE)) {
           LocalDate lDate = row.getDate(j);
-          ruleCache(
-              cache, assoc, F.Rule(colName, DateObjectExpr.newInstance(lDate.atStartOfDay())));
+          ruleCache(cache, assoc,
+              F.Rule(colName, DateObjectExpr.newInstance(lDate.atStartOfDay())));
         } else if (t.equals(ColumnType.LOCAL_TIME)) {
           LocalTime lTime = row.getTime(j);
           ruleCache(cache, assoc, F.Rule(colName, TimeObjectExpr.newInstance(lTime)));
@@ -767,13 +767,8 @@ public class ASTDataset extends AbstractAST
   @Override
   public String datasetToJSForm() throws IOException {
     OutputStream baos = new ByteArrayOutputStream();
-    fTable
-        .write()
-        .usingOptions(
-            HtmlWriteOptions.builder(baos)
-                .escapeText(true)
-                .elementCreator((elementName, column, row) -> new Element(elementName))
-                .build());
+    fTable.write().usingOptions(HtmlWriteOptions.builder(baos).escapeText(true)
+        .elementCreator((elementName, column, row) -> new Element(elementName)).build());
     return baos.toString();
   }
 }

@@ -25,22 +25,13 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
   protected IAST fLhsPatternAST;
   protected final boolean fOneIdentity;
 
-  public FlatStepVisitor(
-      final ISymbol sym,
-      IAST lhsPatternAST,
-      IAST lhsEvalAST,
-      StackMatcher stackMatcher,
-      IPatternMap patternMap) {
+  public FlatStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST,
+      StackMatcher stackMatcher, IPatternMap patternMap) {
     this(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap, sym.hasOneIdentityAttribute());
   }
 
-  public FlatStepVisitor(
-      final ISymbol sym,
-      IAST lhsPatternAST,
-      IAST lhsEvalAST,
-      StackMatcher stackMatcher,
-      IPatternMap patternMap,
-      boolean oneIdentity) {
+  public FlatStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST,
+      StackMatcher stackMatcher, IPatternMap patternMap, boolean oneIdentity) {
     super(lhsEvalAST); // , 1, lhsEvalAST.size());
     this.fSymbol = sym;
     this.stackMatcher = stackMatcher;

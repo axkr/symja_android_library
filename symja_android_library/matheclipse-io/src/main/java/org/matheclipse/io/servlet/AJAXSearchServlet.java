@@ -60,9 +60,8 @@ public class AJAXSearchServlet extends HttpServlet {
         htmlBuf.append("\n</div>");
         out.println(createJSONDocString(htmlBuf.toString()));
       } else {
-        out.println(
-            createJSONDocString(
-                "<p>Insert a keyword and append a '*' to search for keywords. Example: <b>Int*</b>.</p>"));
+        out.println(createJSONDocString(
+            "<p>Insert a keyword and append a '*' to search for keywords. Example: <b>Int*</b>.</p>"));
       }
     } catch (Exception e) {
       // ...
@@ -103,13 +102,13 @@ public class AJAXSearchServlet extends HttpServlet {
     }
   }
 
-  //  public static String generateHTMLString(final String markdownStr) {
-  //    Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
-  //    Parser parser = Parser.builder().extensions(EXTENSIONS).build();
-  //    Node document = parser.parse(markdownStr);
-  //    HtmlRenderer renderer = HtmlRenderer.builder().extensions(EXTENSIONS).build();
-  //    return renderer.render(document);
-  //  }
+  // public static String generateHTMLString(final String markdownStr) {
+  // Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
+  // Parser parser = Parser.builder().extensions(EXTENSIONS).build();
+  // Node document = parser.parse(markdownStr);
+  // HtmlRenderer renderer = HtmlRenderer.builder().extensions(EXTENSIONS).build();
+  // return renderer.render(document);
+  // }
 
   public static void printMarkdown(Appendable out, String symbolName) {
     // read markdown file
@@ -137,8 +136,8 @@ public class AJAXSearchServlet extends HttpServlet {
     ObjectNode outJSON = JSON_OBJECT_MAPPER.createObjectNode();
     outJSON.put("content", str);
     return outJSON.toString();
-    //    JSONObject outJSON = new JSONObject();
-    //    outJSON.put("content", str);
-    //    return JSONValue.toJSONString(outJSON);
+    // JSONObject outJSON = new JSONObject();
+    // outJSON.put("content", str);
+    // return JSONValue.toJSONString(outJSON);
   }
 }

@@ -97,12 +97,8 @@ public class Documentation {
       }
       if (list.size() == 2) {
         Documentation.printDocumentation(out, list.arg1().toString());
-      } else if (list.isEmpty()
-          && (name.equals("C")
-              || name.equals("D")
-              || name.equals("E")
-              || name.equals("I")
-              || name.equals("N"))) {
+      } else if (list.isEmpty() && (name.equals("C") || name.equals("D") || name.equals("E")
+          || name.equals("I") || name.equals("N"))) {
         Documentation.printDocumentation(out, name);
       }
     } catch (IOException e) {
@@ -200,10 +196,7 @@ public class Documentation {
             out.append("\n         * ");
             out.append(
                 "@see <a href=\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/"
-                    + symbolName
-                    + ".md\">"
-                    + symbolName
-                    + " documentation</a>");
+                    + symbolName + ".md\">" + symbolName + " documentation</a>");
             out.append(" */");
             return 1;
           }

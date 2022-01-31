@@ -22,8 +22,8 @@ public class IndexTableGenerator {
    * @param head the head of the resulting lists
    * @param function
    */
-  public IndexTableGenerator(
-      final int[] indexArray, final ISymbol head, final IIndexFunction<? extends IExpr> function) {
+  public IndexTableGenerator(final int[] indexArray, final ISymbol head,
+      final IIndexFunction<? extends IExpr> function) {
     fIndexArray = indexArray;
     fHead = head;
     fFunction = function;

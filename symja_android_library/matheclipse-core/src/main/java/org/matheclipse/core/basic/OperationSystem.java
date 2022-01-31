@@ -77,7 +77,7 @@ public class OperationSystem {
 
   /**
    * @param additionalMemoryInBytes approximately memory will be allocate after perform some
-   *     operations. Unit of bytes
+   *        operations. Unit of bytes
    */
   public static void checkMemory(long additionalMemoryInBytes) {
     if (isJvm()) {
@@ -140,14 +140,8 @@ public class OperationSystem {
     LOGGER.debug("magLength2 = {}", magLength2);
 
     if (magLength1 > toomCook3Threshold && magLength2 > toomCook3Threshold) {
-      throw new MemoryLimitExceeded(
-          "toomCook3Threshold "
-              + toomCook3Threshold
-              + " limit exceeded. "
-              + "magLength1 = "
-              + magLength1
-              + "; magLength2 = "
-              + magLength2);
+      throw new MemoryLimitExceeded("toomCook3Threshold " + toomCook3Threshold + " limit exceeded. "
+          + "magLength1 = " + magLength1 + "; magLength2 = " + magLength2);
     }
   }
 }

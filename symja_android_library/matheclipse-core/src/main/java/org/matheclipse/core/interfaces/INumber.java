@@ -33,11 +33,12 @@ public interface INumber extends IExpr {
 
   /**
    * Returns the smallest (closest to negative infinity) <code>IInteger</code> value that is not
-   * less than <code>this</code> and is equal to a mathematical integer. This method raises {@link
-   * ArithmeticException} if a numeric value cannot be represented by an <code>long</code> type.
+   * less than <code>this</code> and is equal to a mathematical integer. This method raises
+   * {@link ArithmeticException} if a numeric value cannot be represented by an <code>long</code>
+   * type.
    *
    * @return the smallest (closest to negative infinity) <code>IInteger</code> value that is not
-   *     less than <code>this</code> and is equal to a mathematical integer.
+   *         less than <code>this</code> and is equal to a mathematical integer.
    */
   public INumber ceilFraction() throws ArithmeticException;
 
@@ -45,9 +46,9 @@ public interface INumber extends IExpr {
    * Compare the absolute value of this number with <code>1</code> and return
    *
    * <ul>
-   *   <li><code>1</code>, if the absolute value is greater than 1
-   *   <li><code>0</code>, if the absolute value equals 1
-   *   <li><code>-1</code>, if the absolute value is less than 1
+   * <li><code>1</code>, if the absolute value is greater than 1
+   * <li><code>0</code>, if the absolute value equals 1
+   * <li><code>-1</code>, if the absolute value is less than 1
    * </ul>
    *
    * @return
@@ -73,8 +74,8 @@ public interface INumber extends IExpr {
    * Gets the signum value of a complex number
    *
    * @return 0 for <code>this == 0</code>; +1 for <code>real(this) &gt; 0</code> or
-   *         <code>( real(this)==0 &amp;&amp; imaginary(this) &gt; 0 )</code>; -1 for <code>real(this) &lt; 0 || (
-   *         real(this) == 0 &amp;&amp; imaginary(this) &lt; 0 )
+   *         <code>( real(this)==0 &amp;&amp; imaginary(this) &gt; 0 )</code>; -1 for
+   *         <code>real(this) &lt; 0 || ( real(this) == 0 &amp;&amp; imaginary(this) &lt; 0 )
    */
   public int complexSign();
 
@@ -111,7 +112,7 @@ public interface INumber extends IExpr {
    * <code>long</code> type.
    *
    * @return the largest (closest to positive infinity) <code>IInteger</code> value that is not
-   *     greater than <code>this</code> and is equal to a mathematical integer.
+   *         greater than <code>this</code> and is equal to a mathematical integer.
    */
   public INumber floorFraction() throws ArithmeticException;
 

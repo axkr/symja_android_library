@@ -21,8 +21,8 @@ import jp.ac.kobe_u.cs.cream.SolutionHandler;
 import jp.ac.kobe_u.cs.cream.Solver;
 
 /**
- * Convert <code>IExpr</code> expressions from and to <a
- * href="http://bach.istc.kobe-u.ac.jp/cream/">Cream: Class Library for Constraint Programming in
+ * Convert <code>IExpr</code> expressions from and to
+ * <a href="http://bach.istc.kobe-u.ac.jp/cream/">Cream: Class Library for Constraint Programming in
  * Java</a>
  */
 public class CreamConvert {
@@ -34,12 +34,8 @@ public class CreamConvert {
     private final IAST equationVariables;
     private final EvalEngine engine;
 
-    private CreamSolutionHandler(
-        IASTAppendable result,
-        IAST equationVariables,
-        IAST userDefinedVariables,
-        int maximumNumberOfResults,
-        EvalEngine engine) {
+    private CreamSolutionHandler(IASTAppendable result, IAST equationVariables,
+        IAST userDefinedVariables, int maximumNumberOfResults, EvalEngine engine) {
       this.userDefinedVariables = userDefinedVariables;
       this.result = result;
       this.maximumNumberOfResults = maximumNumberOfResults;
@@ -53,9 +49,8 @@ public class CreamConvert {
         IExpr listOfZZVariables = F.NIL;
         IExpr complement = S.Complement.of(engine, userDefinedVariables, equationVariables);
         if (complement.size() > 1 && complement.isList()) {
-          listOfZZVariables =
-              S.Apply.of(
-                  engine, S.And, ((IAST) complement).mapThread(F.Element(F.Slot1, S.Integers), 1));
+          listOfZZVariables = S.Apply.of(engine, S.And,
+              ((IAST) complement).mapThread(F.Element(F.Slot1, S.Integers), 1));
         }
 
         Set<Entry<ISymbol, IntVariable>> set = map.entrySet();
@@ -63,11 +58,8 @@ public class CreamConvert {
         for (Entry<ISymbol, IntVariable> entry : set) {
           ISymbol variable = entry.getKey();
           if (listOfZZVariables.isPresent()) {
-            temp.append(
-                F.Rule(
-                    variable,
-                    F.ConditionalExpression(
-                        F.ZZ(solution.getIntValue(entry.getValue())), listOfZZVariables)));
+            temp.append(F.Rule(variable, F.ConditionalExpression(
+                F.ZZ(solution.getIntValue(entry.getValue())), listOfZZVariables)));
           } else {
             temp.append(F.Rule(variable, F.ZZ(solution.getIntValue(entry.getValue()))));
           }
@@ -195,25 +187,19 @@ public class CreamConvert {
    * @param list
    * @param equationVariables all variables which are defined in the equations
    * @param userDefinedVariables all variables which are defined by the user. May contain additional
-   *     variables which aren't available in <code>equationVariables</code>
+   *        variables which aren't available in <code>equationVariables</code>
    * @param engine
    * @return a list of rules with the integer solutions
    */
-  public IAST integerSolve(
-      final IAST list,
-      final IAST equationVariables,
-      final IAST userDefinedVariables,
-      int maximumNumberOfResults,
-      final EvalEngine engine) {
+  public IAST integerSolve(final IAST list, final IAST equationVariables,
+      final IAST userDefinedVariables, int maximumNumberOfResults, final EvalEngine engine) {
     IASTAppendable result = F.ListAlloc();
 
     Solver solver = new DefaultSolver(expr2Cream(list, equationVariables), Solver.DEFAULT);
 
     // call with timeout
-    solver.findAll(
-        new CreamSolutionHandler(
-            result, equationVariables, userDefinedVariables, maximumNumberOfResults, engine),
-        10000);
+    solver.findAll(new CreamSolutionHandler(result, equationVariables, userDefinedVariables,
+        maximumNumberOfResults, engine), 10000);
     return result;
   }
 }

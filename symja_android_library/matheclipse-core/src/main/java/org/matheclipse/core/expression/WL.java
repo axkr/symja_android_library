@@ -40,7 +40,8 @@ import com.google.common.io.ByteStreams;
 /**
  * Methods for handling the WXF serialization format.
  *
- * <p>See: <a href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXF
+ * <p>
+ * See: <a href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXF
  * Format Description</a>
  */
 public class WL {
@@ -69,8 +70,9 @@ public class WL {
      * Internal proprietary format token for serializing predefined &quot;constant&quot; Symja
      * expressions like built-in symbols, pattern objects, constant numbers, ...
      *
-     * <p>Use only with methods {@link WL#serializeInternal(IExpr)} or {@link
-     * WL#deserializeInternal(byte[])}
+     * <p>
+     * Use only with methods {@link WL#serializeInternal(IExpr)} or
+     * {@link WL#deserializeInternal(byte[])}
      */
     static final byte InternalExprID = (byte) 0xD1;
   }
@@ -246,59 +248,57 @@ public class WL {
     private IExpr readPackedArray() throws AbortException {
       byte arrayType = array[position++];
       switch (arrayType) {
-        case NumericArrayExpr.Integer8:
-          {
-            int rank = parseLength();
-            int[] dimensions = new int[rank];
-            for (int i = 0; i < rank; i++) {
-              dimensions[i] = parseLength();
+        case NumericArrayExpr.Integer8: {
+          int rank = parseLength();
+          int[] dimensions = new int[rank];
+          for (int i = 0; i < rank; i++) {
+            dimensions[i] = parseLength();
+          }
+          if (rank == 1) {
+            IASTAppendable list = F.ListAlloc(dimensions[0]);
+            for (int i = 0; i < dimensions[0]; i++) {
+              int value = parseInteger8();
+              list.append(value);
             }
-            if (rank == 1) {
-              IASTAppendable list = F.ListAlloc(dimensions[0]);
-              for (int i = 0; i < dimensions[0]; i++) {
-                int value = parseInteger8();
-                list.append(value);
+            return list;
+          } else if (rank == 2) {
+            IASTAppendable m = F.ListAlloc(dimensions[0]);
+            for (int i = 0; i < dimensions[0]; i++) {
+              IASTAppendable row = F.ListAlloc(dimensions[1]);
+              for (int j = 0; j < dimensions[1]; j++) {
+                row.append(parseInteger8());
               }
-              return list;
-            } else if (rank == 2) {
-              IASTAppendable m = F.ListAlloc(dimensions[0]);
-              for (int i = 0; i < dimensions[0]; i++) {
-                IASTAppendable row = F.ListAlloc(dimensions[1]);
-                for (int j = 0; j < dimensions[1]; j++) {
-                  row.append(parseInteger8());
-                }
-                m.append(row);
-              }
+              m.append(row);
+            }
 
-              return m;
-            }
+            return m;
           }
+        }
           break;
-        case NumericArrayExpr.Real64:
-          {
-            int rank = parseLength();
-            int[] dimensions = new int[rank];
-            for (int i = 0; i < rank; i++) {
-              dimensions[i] = parseLength();
-            }
-            if (rank == 1) {
-              double[] vector = new double[dimensions[0]];
-              for (int i = 0; i < vector.length; i++) {
-                double d = parseDouble();
-                vector[i] = d;
-              }
-              return new ASTRealVector(vector, false);
-            } else if (rank == 2) {
-              double[][] matrix = new double[dimensions[0]][dimensions[1]];
-              for (int i = 0; i < dimensions[0]; i++) {
-                for (int j = 0; j < dimensions[1]; j++) {
-                  double d = parseDouble();
-                  matrix[i][j] = d;
-                }
-              }
-              return new ASTRealMatrix(matrix, false);
-            }
+        case NumericArrayExpr.Real64: {
+          int rank = parseLength();
+          int[] dimensions = new int[rank];
+          for (int i = 0; i < rank; i++) {
+            dimensions[i] = parseLength();
           }
+          if (rank == 1) {
+            double[] vector = new double[dimensions[0]];
+            for (int i = 0; i < vector.length; i++) {
+              double d = parseDouble();
+              vector[i] = d;
+            }
+            return new ASTRealVector(vector, false);
+          } else if (rank == 2) {
+            double[][] matrix = new double[dimensions[0]][dimensions[1]];
+            for (int i = 0; i < dimensions[0]; i++) {
+              for (int j = 0; j < dimensions[1]; j++) {
+                double d = parseDouble();
+                matrix[i][j] = d;
+              }
+            }
+            return new ASTRealMatrix(matrix, false);
+          }
+        }
           break;
       }
       throw AbortException.ABORTED;
@@ -316,78 +316,70 @@ public class WL {
 
       switch (arrayType) {
         case NumericArrayExpr.Integer8:
-        case NumericArrayExpr.UnsignedInteger8:
-          {
-            byte[] byteArr = new byte[size];
-            System.arraycopy(array, position, byteArr, 0, size);
-            position += size;
-            return NumericArrayExpr.newInstance(byteArr, dimensions, arrayType);
-          }
+        case NumericArrayExpr.UnsignedInteger8: {
+          byte[] byteArr = new byte[size];
+          System.arraycopy(array, position, byteArr, 0, size);
+          position += size;
+          return NumericArrayExpr.newInstance(byteArr, dimensions, arrayType);
+        }
         case NumericArrayExpr.Integer16:
-        case NumericArrayExpr.UnsignedInteger16:
-          {
-            short[] shortArr = new short[size];
-            for (int i = 0; i < size; i++) {
-              shortArr[i] = parseInteger16();
-            }
-            return NumericArrayExpr.newInstance(shortArr, dimensions, arrayType);
+        case NumericArrayExpr.UnsignedInteger16: {
+          short[] shortArr = new short[size];
+          for (int i = 0; i < size; i++) {
+            shortArr[i] = parseInteger16();
           }
+          return NumericArrayExpr.newInstance(shortArr, dimensions, arrayType);
+        }
         case NumericArrayExpr.Integer32:
-        case NumericArrayExpr.UnsignedInteger32:
-          {
-            int[] intArr = new int[size];
-            for (int i = 0; i < size; i++) {
-              intArr[i] = parseInteger32();
-            }
-            return NumericArrayExpr.newInstance(intArr, dimensions, arrayType);
+        case NumericArrayExpr.UnsignedInteger32: {
+          int[] intArr = new int[size];
+          for (int i = 0; i < size; i++) {
+            intArr[i] = parseInteger32();
           }
+          return NumericArrayExpr.newInstance(intArr, dimensions, arrayType);
+        }
         case NumericArrayExpr.Integer64:
-        case NumericArrayExpr.UnsignedInteger64:
-          {
-            long[] longArr = new long[size];
-            for (int i = 0; i < size; i++) {
-              longArr[i] = parseInteger64();
-            }
-            return NumericArrayExpr.newInstance(longArr, dimensions, arrayType);
+        case NumericArrayExpr.UnsignedInteger64: {
+          long[] longArr = new long[size];
+          for (int i = 0; i < size; i++) {
+            longArr[i] = parseInteger64();
           }
-        case NumericArrayExpr.Real32:
-          {
-            float[] floatArr = new float[size];
-            for (int i = 0; i < size; i++) {
-              floatArr[i] = parseFloat();
-            }
-            return NumericArrayExpr.newInstance(floatArr, dimensions, arrayType);
+          return NumericArrayExpr.newInstance(longArr, dimensions, arrayType);
+        }
+        case NumericArrayExpr.Real32: {
+          float[] floatArr = new float[size];
+          for (int i = 0; i < size; i++) {
+            floatArr[i] = parseFloat();
           }
-        case NumericArrayExpr.Real64:
-          {
-            double[] doubleArr = new double[size];
-            for (int i = 0; i < size; i++) {
-              doubleArr[i] = parseDouble();
-            }
-            return NumericArrayExpr.newInstance(doubleArr, dimensions, arrayType);
+          return NumericArrayExpr.newInstance(floatArr, dimensions, arrayType);
+        }
+        case NumericArrayExpr.Real64: {
+          double[] doubleArr = new double[size];
+          for (int i = 0; i < size; i++) {
+            doubleArr[i] = parseDouble();
           }
-        case NumericArrayExpr.ComplexReal32:
-          {
-            int doubledSize = size * 2;
-            float[] floatArr = new float[doubledSize];
-            int i = 0;
-            while (i < doubledSize) {
-              floatArr[i++] = parseFloat();
-              floatArr[i++] = parseFloat();
-            }
-            return NumericArrayExpr.newInstance(floatArr, dimensions, arrayType);
+          return NumericArrayExpr.newInstance(doubleArr, dimensions, arrayType);
+        }
+        case NumericArrayExpr.ComplexReal32: {
+          int doubledSize = size * 2;
+          float[] floatArr = new float[doubledSize];
+          int i = 0;
+          while (i < doubledSize) {
+            floatArr[i++] = parseFloat();
+            floatArr[i++] = parseFloat();
           }
-        case NumericArrayExpr.ComplexReal64:
-          {
-            int doubledSize = size * 2;
-            double[] doubleArr = new double[doubledSize];
-            int i = 0;
-            while (i < doubledSize) {
-              doubleArr[i++] = parseDouble();
-              doubleArr[i++] = parseDouble();
-            }
-            return NumericArrayExpr.newInstance(doubleArr, dimensions, arrayType);
+          return NumericArrayExpr.newInstance(floatArr, dimensions, arrayType);
+        }
+        case NumericArrayExpr.ComplexReal64: {
+          int doubledSize = size * 2;
+          double[] doubleArr = new double[doubledSize];
+          int i = 0;
+          while (i < doubledSize) {
+            doubleArr[i++] = parseDouble();
+            doubleArr[i++] = parseDouble();
           }
+          return NumericArrayExpr.newInstance(doubleArr, dimensions, arrayType);
+        }
       }
       throw AbortException.ABORTED;
     }
@@ -492,10 +484,10 @@ public class WL {
       } else if (contextName.equals(Context.RUBI_STR)) {
         // use Rubi Context
         return F.$rubi(lcSymbolName);
-        //        ISymbol sym = Context.SYSTEM.get(lcSymbolName);
-        //        if (sym != null) {
-        //          return sym;
-        //        }
+        // ISymbol sym = Context.SYSTEM.get(lcSymbolName);
+        // if (sym != null) {
+        // return sym;
+        // }
       }
       ContextPath contextPath = engine.getContextPath();
       Context context = contextPath.getContext(contextName);
@@ -617,8 +609,8 @@ public class WL {
             } else {
               if (pat.isNullSequence()) {
                 if (condition != null) {
-                  writeAST2(
-                      S.Pattern, pat.getSymbol(), F.unaryAST1(S.BlankNullSequence, condition));
+                  writeAST2(S.Pattern, pat.getSymbol(),
+                      F.unaryAST1(S.BlankNullSequence, condition));
                 } else {
                   writeAST2(S.Pattern, pat.getSymbol(), F.headAST0(S.BlankNullSequence));
                 }
@@ -774,74 +766,66 @@ public class WL {
 
       switch (arrayType) {
         case NumericArrayExpr.Integer8:
-        case NumericArrayExpr.UnsignedInteger8:
-          {
-            byte[] byteArr = (byte[]) numericArray.toData();
-            stream.write(byteArr, 0, size);
-            return;
-          }
+        case NumericArrayExpr.UnsignedInteger8: {
+          byte[] byteArr = (byte[]) numericArray.toData();
+          stream.write(byteArr, 0, size);
+          return;
+        }
         case NumericArrayExpr.Integer16:
-        case NumericArrayExpr.UnsignedInteger16:
-          {
-            short[] shortArr = (short[]) numericArray.toData();
-            for (int i = 0; i < shortArr.length; i++) {
-              writeInteger16(shortArr[i]);
-            }
-            return;
+        case NumericArrayExpr.UnsignedInteger16: {
+          short[] shortArr = (short[]) numericArray.toData();
+          for (int i = 0; i < shortArr.length; i++) {
+            writeInteger16(shortArr[i]);
           }
+          return;
+        }
         case NumericArrayExpr.Integer32:
-        case NumericArrayExpr.UnsignedInteger32:
-          {
-            int[] intArr = (int[]) numericArray.toData();
-            for (int i = 0; i < intArr.length; i++) {
-              writeInteger32(intArr[i]);
-            }
-            return;
+        case NumericArrayExpr.UnsignedInteger32: {
+          int[] intArr = (int[]) numericArray.toData();
+          for (int i = 0; i < intArr.length; i++) {
+            writeInteger32(intArr[i]);
           }
+          return;
+        }
         case NumericArrayExpr.Integer64:
-        case NumericArrayExpr.UnsignedInteger64:
-          {
-            long[] longArr = (long[]) numericArray.toData();
-            for (int i = 0; i < longArr.length; i++) {
-              writeInteger64(longArr[i]);
-            }
-            return;
+        case NumericArrayExpr.UnsignedInteger64: {
+          long[] longArr = (long[]) numericArray.toData();
+          for (int i = 0; i < longArr.length; i++) {
+            writeInteger64(longArr[i]);
           }
-        case NumericArrayExpr.Real32:
-          {
-            float[] floatArr = (float[]) numericArray.toData();
-            for (int i = 0; i < floatArr.length; i++) {
-              writeFloat(floatArr[i]);
-            }
-            return;
+          return;
+        }
+        case NumericArrayExpr.Real32: {
+          float[] floatArr = (float[]) numericArray.toData();
+          for (int i = 0; i < floatArr.length; i++) {
+            writeFloat(floatArr[i]);
           }
-        case NumericArrayExpr.Real64:
-          {
-            double[] doubleArr = (double[]) numericArray.toData();
-            for (int i = 0; i < doubleArr.length; i++) {
-              writeDouble(doubleArr[i]);
-            }
-            return;
+          return;
+        }
+        case NumericArrayExpr.Real64: {
+          double[] doubleArr = (double[]) numericArray.toData();
+          for (int i = 0; i < doubleArr.length; i++) {
+            writeDouble(doubleArr[i]);
           }
-        case NumericArrayExpr.ComplexReal32:
-          {
-            float[] floatArr = (float[]) numericArray.toData();
-            int doubledSize = floatArr.length;
-            int i = 0;
-            while (i < doubledSize) {
-              writeFloat(floatArr[i++]);
-            }
-            return;
+          return;
+        }
+        case NumericArrayExpr.ComplexReal32: {
+          float[] floatArr = (float[]) numericArray.toData();
+          int doubledSize = floatArr.length;
+          int i = 0;
+          while (i < doubledSize) {
+            writeFloat(floatArr[i++]);
           }
-        case NumericArrayExpr.ComplexReal64:
-          {
-            double[] doubleArr = (double[]) numericArray.toData();
-            int doubledSize = doubleArr.length;
-            int i = 0;
-            while (i < doubledSize) {
-              writeDouble(doubleArr[i++]);
-            }
+          return;
+        }
+        case NumericArrayExpr.ComplexReal64: {
+          double[] doubleArr = (double[]) numericArray.toData();
+          int doubledSize = doubleArr.length;
+          int i = 0;
+          while (i < doubledSize) {
+            writeDouble(doubleArr[i++]);
           }
+        }
       }
     }
 
@@ -1041,7 +1025,8 @@ public class WL {
    * Deserialize the byte array to an {@link IExpr} expression from internal version dependent
    * format. The format will change on every change in the built-in symbols table.
    *
-   * <p><b>Warning:</b>: Don't use for &quot;outside communication&quot;.
+   * <p>
+   * <b>Warning:</b>: Don't use for &quot;outside communication&quot;.
    *
    * @param bArray
    * @return {@link F#NIL} if the byte array is <code>null</code> or not valid.
@@ -1132,7 +1117,8 @@ public class WL {
    * Serialize the {@link IExpr} into a byte array in internal version dependent format. The format
    * will change on every change in the built-in symbols table.
    *
-   * <p><b>Warning:</b>: Don't use for &quot;outside communication&quot;.
+   * <p>
+   * <b>Warning:</b>: Don't use for &quot;outside communication&quot;.
    *
    * @param expr
    * @return <code>null</code> if the expression couldn't be serialized

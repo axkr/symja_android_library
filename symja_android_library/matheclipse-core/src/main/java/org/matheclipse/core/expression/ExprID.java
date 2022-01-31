@@ -29,11 +29,15 @@ import org.matheclipse.core.visit.IVisitorLong;
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
     ExprID other = (ExprID) obj;
-    if (fExprID != other.fExprID) return false;
+    if (fExprID != other.fExprID)
+      return false;
     return true;
   }
 

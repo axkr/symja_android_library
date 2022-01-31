@@ -105,8 +105,8 @@ public class Matcher implements Function<IExpr, IExpr> {
   private static class PatternMatcherBiFunctionMethod extends AbstractPatternMatcherMethod {
     BiFunction<IExpr, IExpr, IExpr> fRightHandSide;
 
-    public PatternMatcherBiFunctionMethod(
-        final IExpr leftHandSide, final BiFunction<IExpr, IExpr, IExpr> rightHandSide) {
+    public PatternMatcherBiFunctionMethod(final IExpr leftHandSide,
+        final BiFunction<IExpr, IExpr, IExpr> rightHandSide) {
       super(leftHandSide);
       fRightHandSide = rightHandSide;
     }
@@ -123,8 +123,8 @@ public class Matcher implements Function<IExpr, IExpr> {
   private static class PatternMatcherBiPredicateMethod extends AbstractPatternMatcherMethod {
     BiPredicate<IExpr, IExpr> fRightHandSide;
 
-    public PatternMatcherBiPredicateMethod(
-        final IExpr leftHandSide, final BiPredicate<IExpr, IExpr> rightHandSide) {
+    public PatternMatcherBiPredicateMethod(final IExpr leftHandSide,
+        final BiPredicate<IExpr, IExpr> rightHandSide) {
       super(leftHandSide);
       fRightHandSide = rightHandSide;
     }
@@ -141,8 +141,8 @@ public class Matcher implements Function<IExpr, IExpr> {
   private static class PatternMatcherFunctionMethod extends AbstractPatternMatcherMethod {
     Function<IExpr, IExpr> fRightHandSide;
 
-    public PatternMatcherFunctionMethod(
-        final IExpr leftHandSide, final Function<IExpr, IExpr> rightHandSide) {
+    public PatternMatcherFunctionMethod(final IExpr leftHandSide,
+        final Function<IExpr, IExpr> rightHandSide) {
       super(leftHandSide);
       fRightHandSide = rightHandSide;
     }
@@ -173,8 +173,8 @@ public class Matcher implements Function<IExpr, IExpr> {
   private static class PatternMatcherPredicateMethod extends AbstractPatternMatcherMethod {
     Predicate<IExpr> fRightHandSide;
 
-    public PatternMatcherPredicateMethod(
-        final IExpr leftHandSide, final Predicate<IExpr> rightHandSide) {
+    public PatternMatcherPredicateMethod(final IExpr leftHandSide,
+        final Predicate<IExpr> rightHandSide) {
       super(leftHandSide);
       fRightHandSide = rightHandSide;
     }
@@ -214,8 +214,8 @@ public class Matcher implements Function<IExpr, IExpr> {
    * @param patternMatchingRule
    * @param predicate
    */
-  public void caseBoole(
-      final IExpr patternMatchingRule, final BiPredicate<IExpr, IExpr> predicate) {
+  public void caseBoole(final IExpr patternMatchingRule,
+      final BiPredicate<IExpr, IExpr> predicate) {
     rules.insertMatcher(new PatternMatcherBiPredicateMethod(patternMatchingRule, predicate));
   }
 
@@ -248,8 +248,8 @@ public class Matcher implements Function<IExpr, IExpr> {
    * @param patternMatchingRule
    * @param function
    */
-  public void caseOf(
-      final IExpr patternMatchingRule, final BiFunction<IExpr, IExpr, IExpr> function) {
+  public void caseOf(final IExpr patternMatchingRule,
+      final BiFunction<IExpr, IExpr, IExpr> function) {
     rules.insertMatcher(new PatternMatcherBiFunctionMethod(patternMatchingRule, function));
   }
 
@@ -269,7 +269,7 @@ public class Matcher implements Function<IExpr, IExpr> {
    *
    * @param patternMatchingRule the pattern-matching rule
    * @param resultExpr the result expression which should be returned if the pattern-matching rule
-   *     matches an expression in the apply method.
+   *        matches an expression in the apply method.
    * @return a
    */
   public void caseOf(final IExpr patternMatchingRule, final IExpr resultExpr) {

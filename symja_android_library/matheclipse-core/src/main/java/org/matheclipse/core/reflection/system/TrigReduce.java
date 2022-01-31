@@ -38,7 +38,8 @@ import org.matheclipse.core.visit.VisitorExpr;
  *
  * <blockquote>
  *
- * <p>rewrites products and powers of trigonometric functions in <code>expr</code> in terms of
+ * <p>
+ * rewrites products and powers of trigonometric functions in <code>expr</code> in terms of
  * trigonometric functions with combined arguments.
  *
  * </blockquote>
@@ -94,9 +95,7 @@ public class TrigReduce extends AbstractEvaluator {
       IExpr x = base.arg1();
       IInteger n = F.ZZ(i);
       // 1/2 * (1+Cos[2*x])*Cos[x]^(n-2)
-      return Times(
-          C1D2,
-          Plus(F.C1, Cos(Times(C2, x))), //
+      return Times(C1D2, Plus(F.C1, Cos(Times(C2, x))), //
           Power(Cos(x), n.subtract(C2)));
     }
 
@@ -104,9 +103,7 @@ public class TrigReduce extends AbstractEvaluator {
       IExpr x = base.arg1();
       IInteger n = F.ZZ(i);
       // 1/2 * (1-Cos[2*x])*Sin[x]^(n-2)
-      return Times(
-          C1D2,
-          Subtract(F.C1, Cos(Times(C2, x))), //
+      return Times(C1D2, Subtract(F.C1, Cos(Times(C2, x))), //
           Power(Sin(x), n.subtract(C2)));
     }
   }
@@ -114,7 +111,8 @@ public class TrigReduce extends AbstractEvaluator {
   /**
    * Transform products of trigonometric functions into &quot;linear form&quot;.
    *
-   * <p><a href=
+   * <p>
+   * <a href=
    * "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Product-to-sum_and_sum-to-product_identities"
    * >List of trigonometric identities - Product-to-sum and sum-to-product identities</a>
    */
@@ -149,46 +147,28 @@ public class TrigReduce extends AbstractEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    ORDERLESS_MATCHER.defineHashRule(
-        Sin(x_),
-        Cos(y_),
+    ORDERLESS_MATCHER.defineHashRule(Sin(x_), Cos(y_),
         // [$ 1/2 * (Sin(x+y)+Sin(x-y)) $]
         F.Times(F.C1D2, F.Plus(F.Sin(F.Plus(x, y)), F.Sin(F.Subtract(x, y))))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(
-        Sin(x_),
-        Sin(y_),
+    ORDERLESS_MATCHER.defineHashRule(Sin(x_), Sin(y_),
         // [$ 1/2 * (Cos(x-y)-Cos(x+y)) $]
         F.Times(F.C1D2, F.Subtract(F.Cos(F.Subtract(x, y)), F.Cos(F.Plus(x, y))))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(
-        Cos(x_),
-        Cos(y_),
+    ORDERLESS_MATCHER.defineHashRule(Cos(x_), Cos(y_),
         // [$ 1/2 * (Cos(x+y)+Cos(x-y)) $]
         F.Times(F.C1D2, F.Plus(F.Cos(F.Plus(x, y)), F.Cos(F.Subtract(x, y))))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(
-        Sinh(x_),
-        Cosh(y_),
+    ORDERLESS_MATCHER.defineHashRule(Sinh(x_), Cosh(y_),
         // [$ 1/2 * (Sinh(x-y)+Sinh(x+y)) $]
         F.Times(F.C1D2, F.Plus(F.Sinh(F.Subtract(x, y)), F.Sinh(F.Plus(x, y))))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(
-        Sin(x_),
-        Tan(y_),
+    ORDERLESS_MATCHER.defineHashRule(Sin(x_), Tan(y_),
         // [$ 1/2 * (Cos(x-y)-Cos(x+y)) * Sec(y) $]
-        F.Times(
-            F.C1D2, F.Subtract(F.Cos(F.Subtract(x, y)), F.Cos(F.Plus(x, y))), F.Sec(y))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(
-        Cos(x_),
-        Tan(y_),
+        F.Times(F.C1D2, F.Subtract(F.Cos(F.Subtract(x, y)), F.Cos(F.Plus(x, y))), F.Sec(y))); // $$);
+    ORDERLESS_MATCHER.defineHashRule(Cos(x_), Tan(y_),
         // [$ -(1/2) * (Sin(x-y)-Sin(x+y)) * Sec(y) $]
-        F.Times(
-            F.CN1D2, F.Subtract(F.Sin(F.Subtract(x, y)), F.Sin(F.Plus(x, y))), F.Sec(y))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(
-        Cos(x_),
-        Cot(y_),
+        F.Times(F.CN1D2, F.Subtract(F.Sin(F.Subtract(x, y)), F.Sin(F.Plus(x, y))), F.Sec(y))); // $$);
+    ORDERLESS_MATCHER.defineHashRule(Cos(x_), Cot(y_),
         // [$ 1/2 * (Cos(x-y)+Cos(x+y)) * Csc(y) $]
         F.Times(F.C1D2, F.Plus(F.Cos(F.Subtract(x, y)), F.Cos(F.Plus(x, y))), F.Csc(y))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(
-        Sin(x_),
-        Cot(y_),
+    ORDERLESS_MATCHER.defineHashRule(Sin(x_), Cot(y_),
         // [$ 1/2 * (Sin(x-y)+Sin(x+y)) * Csc(y) $]
         F.Times(F.C1D2, F.Plus(F.Sin(F.Subtract(x, y)), F.Sin(F.Plus(x, y))), F.Csc(y))); // $$);
   }

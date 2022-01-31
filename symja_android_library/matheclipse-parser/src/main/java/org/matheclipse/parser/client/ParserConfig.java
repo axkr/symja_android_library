@@ -29,19 +29,21 @@ public class ParserConfig {
    * expression. I.e. you cannot write <code>2(b+c)</code> anymore, but have to write <code>2*(b+c)
    * </code> to get <code>Times(2, Plus(b, c))</code>.
    *
-   * <p>You also enable <a
-   * href="https://en.wikipedia.org/wiki/Scientific_notation#E-notation">scientific E-notation</a>.
-   * I.e. <code>1E-2</code> is converted to a double value <code>0.01</code> for floating point
-   * numbers and not parsed as <code>Plus(-2, E)</code> anymore.
+   * <p>
+   * You also enable
+   * <a href="https://en.wikipedia.org/wiki/Scientific_notation#E-notation">scientific
+   * E-notation</a>. I.e. <code>1E-2</code> is converted to a double value <code>0.01</code> for
+   * floating point numbers and not parsed as <code>Plus(-2, E)</code> anymore.
    *
-   * <p>You also enable integer literal input with a prefix, similar to <a
-   * href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html">Java integer
+   * <p>
+   * You also enable integer literal input with a prefix, similar to
+   * <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html">Java integer
    * literals</a>
    *
    * <ul>
-   *   <li><code>0b</code> or <code>0B</code> for binary numbers
-   *   <li><code>0x</code> or <code>0X</code> for hexadecimal numbers
-   *   <li><code>0o</code> or <code>0O</code> for octal numbers
+   * <li><code>0b</code> or <code>0B</code> for binary numbers
+   * <li><code>0x</code> or <code>0X</code> for hexadecimal numbers
+   * <li><code>0o</code> or <code>0O</code> for octal numbers
    * </ul>
    */
   public static boolean EXPLICIT_TIMES_OPERATOR = false;
@@ -58,9 +60,9 @@ public class ParserConfig {
   public static final TrieBuilder<String, String, ArrayList<String>> TRIE_STRING2STRING_BUILDER =
       TrieBuilder.create();
 
-  public static final TrieBuilder<String, Operator, ArrayList<Operator>>
-      TRIE_STRING2OPERATOR_BUILDER = TrieBuilder.create();
+  public static final TrieBuilder<String, Operator, ArrayList<Operator>> TRIE_STRING2OPERATOR_BUILDER =
+      TrieBuilder.create();
 
-  public static final TrieBuilder<String, ArrayList<Operator>, ArrayList<ArrayList<Operator>>>
-      TRIE_STRING2OPERATORLIST_BUILDER = TrieBuilder.create();
+  public static final TrieBuilder<String, ArrayList<Operator>, ArrayList<ArrayList<Operator>>> TRIE_STRING2OPERATORLIST_BUILDER =
+      TrieBuilder.create();
 }

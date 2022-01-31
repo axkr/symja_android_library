@@ -32,8 +32,8 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
   public IExpr get(int position);
 
   /**
-   * Low level access. It is assumed that <code>positions</code> is a full index within the dimensions of
-   * this sparse array.
+   * Low level access. It is assumed that <code>positions</code> is a full index within the
+   * dimensions of this sparse array.
    *
    * @param positions
    * @return
@@ -42,7 +42,7 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
 
   /**
    * Get the <code>Part(-ISparseArray-,...)</code> of a sparse array, with index being an integer
-   * number or symbol <code>All</code>. Low level access.  
+   * number or symbol <code>All</code>. Low level access.
    *
    * @param ast
    * @param startPosition

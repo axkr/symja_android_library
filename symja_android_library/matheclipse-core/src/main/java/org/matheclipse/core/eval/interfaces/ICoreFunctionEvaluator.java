@@ -11,22 +11,21 @@ import org.matheclipse.core.interfaces.ISymbol;
  * by a derived classes from this interface.
  */
 public interface ICoreFunctionEvaluator extends IFunctionEvaluator {
-  public static final ICoreFunctionEvaluator ARGS_EVALUATOR =
-      new ICoreFunctionEvaluator() {
+  public static final ICoreFunctionEvaluator ARGS_EVALUATOR = new ICoreFunctionEvaluator() {
 
-        @Override
-        public final IExpr evaluate(IAST ast, final EvalEngine engine) {
-          return F.NIL; // engine.evalAttributes(ast.topHead(), ast);
-        }
+    @Override
+    public final IExpr evaluate(IAST ast, final EvalEngine engine) {
+      return F.NIL; // engine.evalAttributes(ast.topHead(), ast);
+    }
 
-        @Override
-        public final IExpr numericEval(IAST ast, final EvalEngine engine) {
-          return F.NIL; // engine.evalAttributes(ast.topHead(), ast);
-        }
+    @Override
+    public final IExpr numericEval(IAST ast, final EvalEngine engine) {
+      return F.NIL; // engine.evalAttributes(ast.topHead(), ast);
+    }
 
-        @Override
-        public void setUp(ISymbol newSymbol) {}
-      };
+    @Override
+    public void setUp(ISymbol newSymbol) {}
+  };
 
   @Override
   default IExpr numericEval(IAST ast, final EvalEngine engine) {

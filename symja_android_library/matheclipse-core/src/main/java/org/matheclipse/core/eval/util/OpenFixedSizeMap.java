@@ -13,7 +13,8 @@ import java.util.Set;
  * The <code>entrySet()</code> method is not implemented and throws a <code>
  * java.lang.IllegalStateException</code> exception.
  *
- * <p>This class is not synchronized.
+ * <p>
+ * This class is not synchronized.
  *
  * @param <K> the key type of the objects
  * @param <V> the value type of the objects
@@ -130,7 +131,8 @@ public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V>
 
   @Override
   public V put(K key, V value) {
-    if (size == (table.length >> 1)) throw new IllegalStateException("Map is full!");
+    if (size == (table.length >> 1))
+      throw new IllegalStateException("Map is full!");
     int hash = hash(key);
     return put(hash, key, value);
   }

@@ -100,13 +100,9 @@ public class ListPlot extends AbstractEvaluator {
           } else {
             plotRange = Rule(S.PlotRange, S.Automatic);
           }
-          final IExpr options[] = {
-            plotRange,
-            Rule(S.AxesStyle, S.Automatic),
-            Rule(S.AxesOrigin, List(F.C0, F.C0)),
-            Rule(S.Axes, S.True),
-            Rule(S.Background, S.White)
-          };
+          final IExpr options[] =
+              {plotRange, Rule(S.AxesStyle, S.Automatic), Rule(S.AxesOrigin, List(F.C0, F.C0)),
+                  Rule(S.Axes, S.True), Rule(S.Background, S.White)};
           graphics.appendAll(F.function(S.List, options), 1, options.length);
           return Show(graphics);
         }

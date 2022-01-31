@@ -22,8 +22,8 @@ public abstract class ListSizeSequence extends AbstractSequence {
     this(startOffset, endOffset, step, 0);
   }
 
-  public ListSizeSequence(
-      final int startOffset, final int endOffset, final int step, final int headOffset) {
+  public ListSizeSequence(final int startOffset, final int endOffset, final int step,
+      final int headOffset) {
     super(startOffset, endOffset, step);
     // if (step < 0) {
     // throw new WrongSequenceException("Negative step:" + step);

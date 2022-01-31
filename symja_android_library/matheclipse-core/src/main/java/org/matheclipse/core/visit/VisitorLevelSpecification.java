@@ -26,7 +26,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * A level specification visitor for levels in abstract syntax trees (AST).
  *
- * <p>Example: the nested list <code>{x,{y}}</code> has depth <code>3</code>
+ * <p>
+ * Example: the nested list <code>{x,{y}}</code> has depth <code>3</code>
  */
 public class VisitorLevelSpecification extends AbstractVisitor {
   protected final Function<IExpr, IExpr> fFunction;
@@ -57,14 +58,11 @@ public class VisitorLevelSpecification extends AbstractVisitor {
    * @param function the function which should be applied for an element
    * @param unevaledLevelExpr the given <i>level specification</i>
    * @param includeHeads set to <code>true</code>, if the header of an AST expression should be
-   *     included
+   *        included
    * @throws SymjaMathException if the <code>expr</code> is not a <i>level specification</i>
    */
-  public VisitorLevelSpecification(
-      final Function<IExpr, IExpr> function,
-      final IExpr unevaledLevelExpr,
-      boolean includeHeads,
-      final EvalEngine engine) {
+  public VisitorLevelSpecification(final Function<IExpr, IExpr> function,
+      final IExpr unevaledLevelExpr, boolean includeHeads, final EvalEngine engine) {
     IExpr levelExpr = engine.evaluate(unevaledLevelExpr);
     fFromLevel = fToLevel = -1;
     fFromDepth = fToDepth = 0;
@@ -185,21 +183,18 @@ public class VisitorLevelSpecification extends AbstractVisitor {
     this(function, level, true);
   }
 
-  public VisitorLevelSpecification(
-      final Function<IExpr, IExpr> function, final int level, final boolean includeHeads) {
+  public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final int level,
+      final boolean includeHeads) {
     this(function, level, level, includeHeads);
   }
 
-  public VisitorLevelSpecification(
-      final Function<IExpr, IExpr> function, final int fromLevel, final int toLevel) {
+  public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final int fromLevel,
+      final int toLevel) {
     this(function, fromLevel, toLevel, true);
   }
 
-  public VisitorLevelSpecification(
-      final Function<IExpr, IExpr> function,
-      final int fromLevel,
-      final int toLevel,
-      final boolean includeHeads) {
+  public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final int fromLevel,
+      final int toLevel, final boolean includeHeads) {
     this(function, fromLevel, toLevel, Integer.MIN_VALUE, -1, includeHeads);
   }
 
@@ -217,13 +212,8 @@ public class VisitorLevelSpecification extends AbstractVisitor {
    * @param toDepth
    * @param includeHeads
    */
-  public VisitorLevelSpecification(
-      final Function<IExpr, IExpr> function,
-      final int fromLevel,
-      final int toLevel,
-      final int fromDepth,
-      final int toDepth,
-      final boolean includeHeads) {
+  public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final int fromLevel,
+      final int toLevel, final int fromDepth, final int toDepth, final boolean includeHeads) {
     fFunction = function;
     fFromLevel = fromLevel;
     fToLevel = toLevel;
@@ -243,9 +233,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
   }
 
   public boolean isInRange(int level, int depth) {
-    return (level >= fFromLevel)
-        && (level <= fToLevel)
-        && (depth >= fFromDepth)
+    return (level >= fFromLevel) && (level <= fToLevel) && (depth >= fFromDepth)
         && (depth <= fToDepth);
   }
 
@@ -324,19 +312,18 @@ public class VisitorLevelSpecification extends AbstractVisitor {
         if (fIncludeHeads) {
           // no include head for associations
         }
-        assoc.forEach(
-            (x, i) -> {
-              final IExpr temp = x.accept(this);
-              if (temp.isPresent()) {
-                if (!result[0].isPresent()) {
-                  result[0] = createResult(assoc, temp);
-                }
-                result[0].set(i, assoc.getRule(i).setAtCopy(2, temp));
-              }
-              if (fCurrentDepth < minDepth[0]) {
-                minDepth[0] = fCurrentDepth;
-              }
-            });
+        assoc.forEach((x, i) -> {
+          final IExpr temp = x.accept(this);
+          if (temp.isPresent()) {
+            if (!result[0].isPresent()) {
+              result[0] = createResult(assoc, temp);
+            }
+            result[0].set(i, assoc.getRule(i).setAtCopy(2, temp));
+          }
+          if (fCurrentDepth < minDepth[0]) {
+            minDepth[0] = fCurrentDepth;
+          }
+        });
       } finally {
         fCurrentLevel--;
       }
@@ -374,19 +361,18 @@ public class VisitorLevelSpecification extends AbstractVisitor {
             minDepth[0] = fCurrentDepth;
           }
         }
-        ast.forEach(
-            (x, i) -> {
-              final IExpr temp = x.accept(this);
-              if (temp.isPresent()) {
-                if (!result[0].isPresent()) {
-                  result[0] = createResult(ast, temp);
-                }
-                result[0].set(i, temp);
-              }
-              if (fCurrentDepth < minDepth[0]) {
-                minDepth[0] = fCurrentDepth;
-              }
-            });
+        ast.forEach((x, i) -> {
+          final IExpr temp = x.accept(this);
+          if (temp.isPresent()) {
+            if (!result[0].isPresent()) {
+              result[0] = createResult(ast, temp);
+            }
+            result[0].set(i, temp);
+          }
+          if (fCurrentDepth < minDepth[0]) {
+            minDepth[0] = fCurrentDepth;
+          }
+        });
       } finally {
         fCurrentLevel--;
       }

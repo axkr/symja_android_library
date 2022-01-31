@@ -151,13 +151,8 @@ public class ExprEvaluatorTest extends TestCase {
       assertEquals("c+a*x+x^2+y+b*y", expr.toString());
 
       final IAST variables = F.List(F.symbol("x"), F.symbol("y"));
-      ExprPolynomialRing ring =
-          new ExprPolynomialRing(
-              ExprRingFactory.CONST,
-              variables,
-              variables.argSize(),
-              ExprTermOrderByName.Lexicographic,
-              false);
+      ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables,
+          variables.argSize(), ExprTermOrderByName.Lexicographic, false);
 
       ExprPolynomial poly = ring.create(expr);
       assertEquals("x^2 + a x + ( 1+b ) y + c ", poly.toString());
@@ -276,11 +271,9 @@ public class ExprEvaluatorTest extends TestCase {
   public void testSmallValue() {
     // github #208
     ExprEvaluator exprEvaluator = new ExprEvaluator();
-    assertEquals(
-        exprEvaluator.eval("N( 1/(1602176620898*10^(-31)) ,100)").toString(),
+    assertEquals(exprEvaluator.eval("N( 1/(1602176620898*10^(-31)) ,100)").toString(),
         "6.241509125501484852088071665173164020252959820255548406024372975427711002340001391293975286331422182*10^18");
-    assertEquals(
-        exprEvaluator.eval("1/(N(0.0000000000000000001602176620898, 100))").toString(),
+    assertEquals(exprEvaluator.eval("1/(N(0.0000000000000000001602176620898, 100))").toString(),
         "6.241509125501484852088071665173*10^18");
 
     assertEquals(
@@ -293,11 +286,9 @@ public class ExprEvaluatorTest extends TestCase {
     ExprEvaluator exprEvaluator = new ExprEvaluator();
     EvalEngine evalEngine = exprEvaluator.getEvalEngine();
     evalEngine.setNumericMode(true, 100, -1);
-    assertEquals(
-        evalEngine.evaluate("N( 1/(1602176620898*10^(-31)) ,100)").toString(),
+    assertEquals(evalEngine.evaluate("N( 1/(1602176620898*10^(-31)) ,100)").toString(),
         "6.241509125501484852088071665173164020252959820255548406024372975427711002340001391293975286331422182*10^18");
-    assertEquals(
-        evalEngine.evaluate("1/(N(0.0000000000000000001602176620898, 100))").toString(),
+    assertEquals(evalEngine.evaluate("1/(N(0.0000000000000000001602176620898, 100))").toString(),
         "6.241509125501484852088071665173164020252959820255548406024372975427711002340001391293975286331422182*10^18");
 
     assertEquals(
@@ -309,11 +300,10 @@ public class ExprEvaluatorTest extends TestCase {
     try {
       ExprEvaluator util = new ExprEvaluator(false, (short) 100);
 
-      IExpr result =
-          util.eval(
-              "Variables(termquery$$fuchs*(termquery$$huhn*(1-termquery$$schaf)+termquery$$schaf)+(1-termquery$$fuchs)*termquery$$schaf*termquery$$wolf)");
-      assertEquals(
-          "{termquery$$fuchs,termquery$$huhn,termquery$$schaf,termquery$$wolf}", result.toString());
+      IExpr result = util.eval(
+          "Variables(termquery$$fuchs*(termquery$$huhn*(1-termquery$$schaf)+termquery$$schaf)+(1-termquery$$fuchs)*termquery$$schaf*termquery$$wolf)");
+      assertEquals("{termquery$$fuchs,termquery$$huhn,termquery$$schaf,termquery$$wolf}",
+          result.toString());
 
     } catch (SyntaxError e) {
       // catch Symja parser errors here

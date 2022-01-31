@@ -37,7 +37,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    * @param expression
    * @param factor
    * @return the negated negative expression or <code>null</code> if a negative expression couldn't
-   *     be extracted.
+   *         be extracted.
    */
   public static IExpr extractFactorFromExpression(final IExpr expression, INumber factor) {
     return extractFactorFromExpression(expression, factor, true);
@@ -50,10 +50,10 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    * @param factor
    * @param checkTimes check <code>Times(...)</code> expressions
    * @return the negated negative expression or <code>F.NIL</code> if a negative expression couldn't
-   *     be extracted.
+   *         be extracted.
    */
-  public static IExpr extractFactorFromExpression(
-      final IExpr expression, INumber factor, boolean checkTimes) {
+  public static IExpr extractFactorFromExpression(final IExpr expression, INumber factor,
+      boolean checkTimes) {
     if (expression.isNumber()) {
       if (((INumber) expression).equals(factor)) {
         return F.C1;
@@ -79,7 +79,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    *
    * @param expression
    * @return the negated negative expression or <code>F.NIL</code> if a negative expression couldn't
-   *     be extracted.
+   *         be extracted.
    */
   public static IExpr getNormalizedNegativeExpression(final IExpr expression) {
     return getNormalizedNegativeExpression(expression, true);
@@ -91,10 +91,10 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    * @param expression
    * @param checkTimesPlus check <code>Times(...)</code> and <code>Plus(...)</code> expressions
    * @return the negated negative expression or <code>F.NIL</code> if a negative expression couldn't
-   *     be extracted.
+   *         be extracted.
    */
-  public static IExpr getNormalizedNegativeExpression(
-      final IExpr expression, boolean checkTimesPlus) {
+  public static IExpr getNormalizedNegativeExpression(final IExpr expression,
+      boolean checkTimesPlus) {
     IASTMutable result = F.NIL;
     if (expression.isNumber()) {
       if (((INumber) expression).complexSign() < 0) {
@@ -204,11 +204,11 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    * @param ast
    * @param checkTimesPlus check <code>Times(...)</code> and <code>Plus(...)</code> expressions
    * @param maxNegativeExpr maximum number of negative valued terms which have to be found before
-   *     returning <code>true</code>
+   *        returning <code>true</code>
    * @return
    */
-  public static boolean isNegativeWeighted(
-      final IAST ast, boolean checkTimesPlus, int maxNegativeExpr) {
+  public static boolean isNegativeWeighted(final IAST ast, boolean checkTimesPlus,
+      int maxNegativeExpr) {
     int count = maxNegativeExpr - 1;
     for (int i = 1; i < ast.size(); i++) {
       if (isNegativeValued(ast.get(i), checkTimesPlus)) {
@@ -270,7 +270,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    * @param expr
    * @param period
    * @return <code>F.NIL</code> if no periodicity was found or the rest at argument 1 and the factor
-   *     of the period at argument 2
+   *         of the period at argument 2
    */
   public static IAST getPeriodicParts(final IExpr expr, final IExpr period) {
     // IExpr[] result = new IExpr[2];
@@ -444,7 +444,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    * @param expression
    * @param checkTimesPlus check <code>Times(...)</code> and <code>Plus(...)</code> expressions
    * @return the negated negative expression or <code>F.NIL</code> if a negative expression couldn't
-   *     be extracted.
+   *         be extracted.
    */
   public static IExpr getPowerNegativeExpression(final IExpr expression, boolean checkTimesPlus) {
     IASTMutable result = F.NIL;
@@ -722,13 +722,8 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    * @param engine
    * @return
    */
-  public static int determineOptions(
-      IExpr[] options,
-      IAST ast,
-      int argSize,
-      int[] expectedArgSize,
-      IBuiltInSymbol[] optionSymbol,
-      EvalEngine engine) {
+  public static int determineOptions(IExpr[] options, IAST ast, int argSize, int[] expectedArgSize,
+      IBuiltInSymbol[] optionSymbol, EvalEngine engine) {
     argSize = determineArgumentOptions(options, ast, argSize, expectedArgSize, optionSymbol);
 
     determineDefaultOptions(options, ast, optionSymbol, engine);
@@ -747,12 +742,8 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    * @param optionSymbol
    * @return
    */
-  private static int determineArgumentOptions(
-      IExpr[] options,
-      IAST ast,
-      int argSize,
-      int[] expectedArgSize,
-      IBuiltInSymbol[] optionSymbol) {
+  private static int determineArgumentOptions(IExpr[] options, IAST ast, int argSize,
+      int[] expectedArgSize, IBuiltInSymbol[] optionSymbol) {
     int minNumberOfArgs = 1;
     if (expectedArgSize != null) {
       // the ast function must at least contain the minimum number of arguments
@@ -811,8 +802,8 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    * @param optionSymbol
    * @param engine
    */
-  private static void determineDefaultOptions(
-      IExpr[] options, IAST ast, IBuiltInSymbol[] optionSymbol, EvalEngine engine) {
+  private static void determineDefaultOptions(IExpr[] options, IAST ast,
+      IBuiltInSymbol[] optionSymbol, EvalEngine engine) {
     int optionNullStart = -1;
     for (int i = 0; i < options.length; i++) {
       if (options[i] == null) {
@@ -822,7 +813,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     }
     if (optionNullStart >= 0) {
       final IExpr temp = PatternMatching.optionsList(ast.topHead(), false);
-      //      final IExpr temp = engine.evaluate(F.Options(ast.topHead()));
+      // final IExpr temp = engine.evaluate(F.Options(ast.topHead()));
       if (temp.isList() && temp.size() > 1) {
         IAST list = (IAST) temp;
         for (int i = optionNullStart; i < options.length; i++) {

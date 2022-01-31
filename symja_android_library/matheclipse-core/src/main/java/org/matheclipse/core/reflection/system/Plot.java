@@ -114,13 +114,9 @@ public class Plot extends AbstractEvaluator {
           } else {
             plotRange = Rule(S.PlotRange, S.Automatic);
           }
-          final IExpr options[] = {
-            plotRange,
-            Rule(S.AxesStyle, S.Automatic),
-            Rule(S.AxesOrigin, List(F.C0, F.C0)),
-            Rule(S.Axes, S.True),
-            Rule(S.Background, S.White)
-          };
+          final IExpr options[] =
+              {plotRange, Rule(S.AxesStyle, S.Automatic), Rule(S.AxesOrigin, List(F.C0, F.C0)),
+                  Rule(S.Axes, S.True), Rule(S.Background, S.White)};
           graphics.appendAll(F.function(S.List, options), 1, options.length);
           return Show(graphics);
         }
@@ -176,22 +172,16 @@ public class Plot extends AbstractEvaluator {
    * @param xMin the minimum x-range value
    * @param xMax the maximum x-range value
    * @param yMin if <code>yMin != 0 && yMax != 0</code> filter only results which are in the y-range
-   *     and set yMin or yMax as plot result-range.
+   *        and set yMin or yMax as plot result-range.
    * @param yMax if <code>yMin != 0 && yMax != 0</code> filter only results which are in the y-range
-   *     and set yMin or yMax as plot result-range.
+   *        and set yMin or yMax as plot result-range.
    * @param function the function which should be plotted
    * @param xVar the variable symbol
    * @param engine the evaluation engine
    * @return <code>F.NIL</code> is no conversion of the data into an <code>IExpr</code> was possible
    */
-  public IExpr plotLine(
-      final double xMin,
-      final double xMax,
-      final double yMin,
-      final double yMax,
-      final IExpr function,
-      final ISymbol xVar,
-      Dimensions2D autoPlotRange,
+  public IExpr plotLine(final double xMin, final double xMax, final double yMin, final double yMax,
+      final IExpr function, final ISymbol xVar, Dimensions2D autoPlotRange,
       final EvalEngine engine) {
 
     final double step = (xMax - xMin) / N;

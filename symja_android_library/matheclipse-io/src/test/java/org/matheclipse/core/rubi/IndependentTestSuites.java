@@ -818,8 +818,7 @@ public class IndependentTestSuites extends AbstractRubiTestCase {
     check( //
         "Integrate[(-1 + I*eps*Sinh[x])/(I*a - x + I*eps*Cosh[x]), x]", //
         "Log[a + I*x + eps*Cosh[x]]", //
-        "Log(I*a-x+I*eps*Cosh(x))",
-        6684);
+        "Log(I*a-x+I*eps*Cosh(x))", 6684);
   }
 
   // {2646}

@@ -311,14 +311,14 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   }
 
   /** {@inheritDoc} */
-  //  @Override
-  //  public final Complex evalComplex() {
-  //    INumber number = evalNumber();
-  //    if (number != null) {
-  //      return number.complexNumValue().complexValue();
-  //    }
-  //    throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
-  //  }
+  // @Override
+  // public final Complex evalComplex() {
+  // INumber number = evalNumber();
+  // if (number != null) {
+  // return number.complexNumValue().complexValue();
+  // }
+  // throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
+  // }
 
   /** {@inheritDoc} */
   @Override
@@ -508,7 +508,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   public final boolean hasListableAttribute() {
     return ISymbol.hasListableAttribute(fAttributes);
   }
-  
+
   /** {@inheritDoc} */
   @Override
   public int hashCode() {
@@ -551,9 +551,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public CharSequence internalJavaString(
-      SourceCodeProperties properties,
-      int depth,
+  public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
     CharSequence result = variables.apply(this);
     if (result != null) {
@@ -603,8 +601,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       }
     }
     if (Config.RUBI_CONVERT_SYMBOLS) {
-      if (fSymbolName.length() == 2
-          && '§' == fSymbolName.charAt(0)
+      if (fSymbolName.length() == 2 && '§' == fSymbolName.charAt(0)
           && Character.isLowerCase(fSymbolName.charAt(1))) {
         char ch = fSymbolName.charAt(1);
         if ('a' <= ch && ch <= 'z') {
@@ -840,19 +837,10 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final void putDownRule(
-      final int setSymbol,
-      final boolean equalRule,
-      final IExpr leftHandSide,
-      final IExpr rightHandSide,
-      boolean packageMode) {
-    putDownRule(
-        setSymbol,
-        equalRule,
-        leftHandSide,
-        rightHandSide,
-        IPatternMap.DEFAULT_RULE_PRIORITY,
-        packageMode);
+  public final void putDownRule(final int setSymbol, final boolean equalRule,
+      final IExpr leftHandSide, final IExpr rightHandSide, boolean packageMode) {
+    putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide,
+        IPatternMap.DEFAULT_RULE_PRIORITY, packageMode);
   }
 
   // public Object readResolve() throws ObjectStreamException {
@@ -869,12 +857,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final void putDownRule(
-      final int setSymbol,
-      final boolean equalRule,
-      final IExpr leftHandSide,
-      final IExpr rightHandSide,
-      final int priority,
+  public final void putDownRule(final int setSymbol, final boolean equalRule,
+      final IExpr leftHandSide, final IExpr rightHandSide, final int priority,
       boolean packageMode) {
     if (!packageMode) {
       if (isLocked(packageMode)) {
@@ -902,20 +886,16 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final IPatternMatcher putUpRule(
-      final int setSymbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide) {
-    return putUpRule(
-        setSymbol, equalRule, leftHandSide, rightHandSide, IPatternMap.DEFAULT_RULE_PRIORITY);
+  public final IPatternMatcher putUpRule(final int setSymbol, boolean equalRule, IAST leftHandSide,
+      IExpr rightHandSide) {
+    return putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide,
+        IPatternMap.DEFAULT_RULE_PRIORITY);
   }
 
   /** {@inheritDoc} */
   @Override
-  public final IPatternMatcher putUpRule(
-      final int setSymbol,
-      final boolean equalRule,
-      final IAST leftHandSide,
-      final IExpr rightHandSide,
-      final int priority) {
+  public final IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule,
+      final IAST leftHandSide, final IExpr rightHandSide, final int priority) {
     throw new UnsupportedOperationException();
   }
 
@@ -952,8 +932,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public IExpr[] reassignSymbolValue(
-      Function<IExpr, IExpr> function, ISymbol functionSymbol, EvalEngine engine) {
+  public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol,
+      EvalEngine engine) {
     if (hasAssignedSymbolValue()) {
       IExpr[] result = new IExpr[2];
       result[0] = fValue;
@@ -969,11 +949,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     }
     // `1` is not a variable with a value, so its value cannot be changed.
     IOFunctions.printMessage(functionSymbol, "rvalue", F.List(this), engine);
-    //    engine.printMessage(
-    //        functionSymbol.toString()
-    //            + ": "
-    //            + toString()
-    //            + " is not a variable with a value, so its value cannot be changed.");
+    // engine.printMessage(
+    // functionSymbol.toString()
+    // + ": "
+    // + toString()
+    // + " is not a variable with a value, so its value cannot be changed.");
     return null;
   }
 
@@ -993,17 +973,14 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
         return result;
       }
     }
-    throw new ArgumentTypeException(
-        functionSymbol.toString()
-            + " - Symbol: "
-            + toString()
-            + " has no value! Reassignment with a new value is not possible");
+    throw new ArgumentTypeException(functionSymbol.toString() + " - Symbol: " + toString()
+        + " has no value! Reassignment with a new value is not possible");
   }
 
   /** {@inheritDoc} */
   @Override
-  public final boolean removeRule(
-      final int setSymbol, final boolean equalRule, final IExpr leftHandSide, boolean packageMode) {
+  public final boolean removeRule(final int setSymbol, final boolean equalRule,
+      final IExpr leftHandSide, boolean packageMode) {
     if (!packageMode) {
       if (isLocked(packageMode)) {
         throw new RuleCreationError(leftHandSide);
@@ -1076,8 +1053,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public IExpr variables2Slots(
-      final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
+  public IExpr variables2Slots(final Map<IExpr, IExpr> map,
+      final Collection<IExpr> variableCollector) {
     final UnaryVariable2Slot uv2s = new UnaryVariable2Slot(map, variableCollector);
     return uv2s.apply(this);
   }

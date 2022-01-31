@@ -18,8 +18,8 @@ class InfixExprOperator extends Operator {
 
   public static final int LEFT_ASSOCIATIVE = 2;
 
-  public InfixExprOperator(
-      final String oper, final String functionName, final int precedence, final int grouping) {
+  public InfixExprOperator(final String oper, final String functionName, final int precedence,
+      final int grouping) {
     super(oper, functionName, precedence);
     fGrouping = grouping;
   }
@@ -33,8 +33,8 @@ class InfixExprOperator extends Operator {
     return fGrouping;
   }
 
-  public IASTMutable createFunction(
-      final IParserFactory factory, ExprParser parser, final IExpr lhs, final IExpr rhs) {
+  public IASTMutable createFunction(final IParserFactory factory, ExprParser parser,
+      final IExpr lhs, final IExpr rhs) {
     if (fOperatorString.equals("//")) {
       // lhs // rhs ==> rhs[lhs]
       IASTAppendable function = F.ast(rhs);
@@ -47,8 +47,8 @@ class InfixExprOperator extends Operator {
     return function;
   }
 
-  public IAST endFunction(
-      final IParserFactory factory, final IAST function, final Scanner scanner) {
+  public IAST endFunction(final IParserFactory factory, final IAST function,
+      final Scanner scanner) {
     return function;
   }
 }

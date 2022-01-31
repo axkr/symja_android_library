@@ -152,146 +152,74 @@ public class Pods {
       Suppliers.memoize(SOUNDEX_SUPPLIER);
 
   static final String JSXGRAPH_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
           + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>JSXGraph</title>\n"
-          + "\n"
-          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "\n"
+          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>JSXGraph</title>\n" + "\n"
+          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + "\n"
           + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdn.jsdelivr.net/npm/jsxgraph@1.4.1/distrib/jsxgraph.css\" />\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.6/build/math.js\"></script>\n"
           + "<script src=\"https://cdn.jsdelivr.net/npm/jsxgraph@1.4.1/distrib/jsxgraphcore.js\"\n"
-          + "        type=\"text/javascript\"></script>\n"
-          + "\n"
+          + "        type=\"text/javascript\"></script>\n" + "\n"
           + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
-          + "<script>\n"
-          + "`1`\n"
-          + "</script>\n"
-          + "</div>\n" 
-          + "\n"
-          + "</body>\n"
-          + "</html>";
+          + "<script>\n" + "`1`\n" + "</script>\n" + "</div>\n" + "\n" + "</body>\n" + "</html>";
 
   protected static final String MATHCELL_IFRAME = //
       // "<html style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
           + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>MathCell</title>\n"
-          + "</head>\n"
-          + "\n"
-          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "\n"
+          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>MathCell</title>\n" + "</head>\n"
+          + "\n" + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + "\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.6/build/math.js\"></script>\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.2/build/mathcell.js\"></script>\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
           + "\n"
           + "<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + "<script>\n"
-          + "\n"
-          + "var parent = document.currentScript.parentNode;\n"
-          + "\n"
-          + "var id = generateId();\n"
-          + "parent.id = id;\n"
-          + "\n"
-          + "`1`\n"
-          + "\n"
-          + "parent.update( id );\n"
-          + "\n"
-          + "</script>\n"
-          + "</div>\n"
-          + "\n"
-          + "</body>\n"
+          + "<script>\n" + "\n" + "var parent = document.currentScript.parentNode;\n" + "\n"
+          + "var id = generateId();\n" + "parent.id = id;\n" + "\n" + "`1`\n" + "\n"
+          + "parent.update( id );\n" + "\n" + "</script>\n" + "</div>\n" + "\n" + "</body>\n"
           + "</html>";
 
   protected static final String PLOTLY_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
           + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>Plotly</title>\n"
-          + "\n"
-          + "   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\n"
-          + "</head>\n"
-          + "<body>\n"
-          + "<div id='plotly' ></div>\n"
-          + "`1`\n"
-          + "</body>\n"
-          + "</html>"; //
+          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Plotly</title>\n" + "\n"
+          + "   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\n" + "</head>\n"
+          + "<body>\n" + "<div id='plotly' ></div>\n" + "`1`\n" + "</body>\n" + "</html>"; //
 
   protected static final String VISJS_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
           + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>VIS-NetWork</title>\n"
-          + "\n"
+          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>VIS-NetWork</title>\n" + "\n"
           + "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
-          + "</head>\n"
-          + "<body>\n"
-          + "\n"
+          + "</head>\n" + "<body>\n" + "\n"
           + "<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + "<script type=\"text/javascript\">\n"
-          + "`1`\n"
-          + "  var container = document.getElementById('vis');\n"
-          + "  var data = {\n"
-          + "    nodes: nodes,\n"
-          + "    edges: edges\n"
-          + "  };\n"
-          + "`2`\n"
-          + "  var network = new vis.Network(container, data, options);\n"
-          + "</script>\n"
-          + "</div>\n"
-          + "</body>\n"
-          + "</html>";
+          + "<script type=\"text/javascript\">\n" + "`1`\n"
+          + "  var container = document.getElementById('vis');\n" + "  var data = {\n"
+          + "    nodes: nodes,\n" + "    edges: edges\n" + "  };\n" + "`2`\n"
+          + "  var network = new vis.Network(container, data, options);\n" + "</script>\n"
+          + "</div>\n" + "</body>\n" + "</html>";
 
   protected static final String HIGHLIGHT_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
           + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>Highlight</title>\n"
-          + "\n"
+          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Highlight</title>\n" + "\n"
           + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css\" />\n"
           + "  <script type=\"text/javascript\" src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js\"></script>\n"
           + "<script>hljs.initHighlightingOnLoad();</script></head>\n"
-          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "\n"
+          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + "\n"
           + "<div id=\"highlight\" style=\"width: 600px; height: 800px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + "<pre><code class=\"javascript\">\n"
-          + "`1`\n"
-          + "</code></pre>\n"
-          + "</div>\n"
-          + "</body>\n"
-          + "</html>"; //
+          + "<pre><code class=\"javascript\">\n" + "`1`\n" + "</code></pre>\n" + "</div>\n"
+          + "</body>\n" + "</html>"; //
 
   private static void addElementData(String soundex, String value) {
     ArrayList<IPod> list = SOUNDEX_MAP.get(soundex);
@@ -305,14 +233,8 @@ public class Pods {
   }
 
   /** package private */
-  static void addPod(
-      ArrayNode podsArray,
-      IExpr inExpr,
-      IExpr outExpr,
-      String title,
-      String scanner,
-      int formats,
-      EvalEngine engine) {
+  static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title, String scanner,
+      int formats, EvalEngine engine) {
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
     ObjectNode subpodsResult = JSON_OBJECT_MAPPER.createObjectNode();
     subpodsResult.put("title", title);
@@ -328,15 +250,8 @@ public class Pods {
   }
 
   /** package private */
-  static void addPod(
-      ArrayNode podsArray,
-      IExpr inExpr,
-      IExpr outExpr,
-      String plaintext,
-      String title,
-      String scanner,
-      int formats,
-      EvalEngine engine) {
+  static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext,
+      String title, String scanner, int formats, EvalEngine engine) {
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
     ObjectNode subpodsResult = JSON_OBJECT_MAPPER.createObjectNode();
     subpodsResult.put("title", title);
@@ -352,16 +267,8 @@ public class Pods {
   }
 
   /** package private */
-  static void addPod(
-      ArrayNode podsArray,
-      IExpr inExpr,
-      IExpr outExpr,
-      String plaintext,
-      String sinput,
-      String title,
-      String scanner,
-      int formats,
-      EvalEngine engine) {
+  static void addPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext,
+      String sinput, String title, String scanner, int formats, EvalEngine engine) {
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
     ObjectNode subpodsResult = JSON_OBJECT_MAPPER.createObjectNode();
     subpodsResult.put("title", title);
@@ -377,14 +284,8 @@ public class Pods {
   }
 
   /** package private */
-  static void addSymjaPod(
-      ArrayNode podsArray,
-      IExpr inExpr,
-      IExpr outExpr,
-      String title,
-      String scanner,
-      int formats,
-      EvalEngine engine) {
+  static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String title,
+      String scanner, int formats, EvalEngine engine) {
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
     ObjectNode subpodsResult = JSON_OBJECT_MAPPER.createObjectNode();
     subpodsResult.put("title", title);
@@ -400,29 +301,14 @@ public class Pods {
   }
 
   /** package private */
-  static void addSymjaPod(
-      ArrayNode podsArray,
-      IExpr inExpr,
-      IExpr outExpr,
-      String plaintext,
-      String title,
-      String scanner,
-      int formats,
-      EvalEngine engine) {
+  static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext,
+      String title, String scanner, int formats, EvalEngine engine) {
     addSymjaPod(podsArray, inExpr, outExpr, plaintext, title, scanner, formats, engine, false);
   }
 
   /** package private */
-  static void addSymjaPod(
-      ArrayNode podsArray,
-      IExpr inExpr,
-      IExpr outExpr,
-      String plaintext,
-      String title,
-      String scanner,
-      int formats,
-      EvalEngine engine,
-      boolean error) {
+  static void addSymjaPod(ArrayNode podsArray, IExpr inExpr, IExpr outExpr, String plaintext,
+      String title, String scanner, int formats, EvalEngine engine, boolean error) {
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
     ObjectNode subpodsResult = JSON_OBJECT_MAPPER.createObjectNode();
     subpodsResult.put("title", title);
@@ -447,8 +333,8 @@ public class Pods {
    * @param engine
    * @return
    */
-  private static int booleanPods(
-      ArrayNode podsArray, IExpr booleanFormula, IAST variables, int formats, EvalEngine engine) {
+  private static int booleanPods(ArrayNode podsArray, IExpr booleanFormula, IAST variables,
+      int formats, EvalEngine engine) {
     int htmlFormats = formats | HTML;
     if ((htmlFormats & PLAIN) == PLAIN) {
       htmlFormats ^= PLAIN;
@@ -489,15 +375,8 @@ public class Pods {
         }
         tableForm.append("</tr></tbody>");
         tableForm.append("</table>");
-        addSymjaPod(
-            podsArray,
-            outExpr,
-            podOut,
-            tableForm.toString(),
-            "Truth table",
-            "Boolean",
-            htmlFormats,
-            engine);
+        addSymjaPod(podsArray, outExpr, podOut, tableForm.toString(), "Truth table", "Boolean",
+            htmlFormats, engine);
         numpods++;
       }
     }
@@ -534,15 +413,8 @@ public class Pods {
       tableForm.append("</tr></tbody>");
       tableForm.append("</table>");
 
-      addSymjaPod(
-          podsArray,
-          outExpr,
-          podOut,
-          tableForm.toString(),
-          "Satisfiability instance",
-          "Boolean",
-          htmlFormats,
-          engine);
+      addSymjaPod(podsArray, outExpr, podOut, tableForm.toString(), "Satisfiability instance",
+          "Boolean", htmlFormats, engine);
       numpods++;
     }
 
@@ -572,8 +444,8 @@ public class Pods {
     return json;
   }
 
-  private static void createJSONFormat(
-      ObjectNode json, EvalEngine engine, IExpr outExpr, int formats) {
+  private static void createJSONFormat(ObjectNode json, EvalEngine engine, IExpr outExpr,
+      int formats) {
     createJSONFormat(json, engine, outExpr, null, "", formats);
   }
 
@@ -585,13 +457,8 @@ public class Pods {
    * @param sinput Symja input string
    * @param formats
    */
-  private static void createJSONFormat(
-      ObjectNode json,
-      EvalEngine engine,
-      IExpr outExpr,
-      String plainText,
-      String sinput,
-      int formats) {
+  private static void createJSONFormat(ObjectNode json, EvalEngine engine, IExpr outExpr,
+      String plainText, String sinput, int formats) {
 
     String encodedPlainText = plainText == null ? null : Encode.forHtmlContent(plainText);
     if ((formats & HTML) != 0x00) {
@@ -650,13 +517,11 @@ public class Pods {
       if (plainText != null && plainText.length() > 0) {
         try {
           String html = JSBuilder.buildMathcell(JSBuilder.MATHCELL_IFRAME_TEMPLATE, plainText);
-          //          String html = MATHCELL_IFRAME;
-          //          html = StringUtils.replace(html, "`1`", plainText);
+          // String html = MATHCELL_IFRAME;
+          // html = StringUtils.replace(html, "`1`", plainText);
           html = StringEscapeUtils.escapeHtml4(html);
-          html =
-              "<iframe srcdoc=\""
-                  + html
-                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
+          html = "<iframe srcdoc=\"" + html
+              + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
           json.put(MATHCELL_STR, html);
         } catch (Exception ex) {
           LOGGER.debug("Pods.createJSONFormat() failed", ex);
@@ -670,13 +535,11 @@ public class Pods {
       if (plainText != null && plainText.length() > 0) {
         try {
           String html = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_IFRAME_TEMPLATE, plainText);
-          //          String html = JSXGRAPH_IFRAME;
-          //          html = StringUtils.replace(html, "`1`", plainText);
+          // String html = JSXGRAPH_IFRAME;
+          // html = StringUtils.replace(html, "`1`", plainText);
           html = StringEscapeUtils.escapeHtml4(html);
-          html =
-              "<iframe srcdoc=\""
-                  + html
-                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
+          html = "<iframe srcdoc=\"" + html
+              + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
           json.put(JSXGRAPH_STR, html);
         } catch (Exception ex) {
           LOGGER.debug("ChineseRemainder.chineseRemainderBigInteger() failed", ex);
@@ -691,13 +554,11 @@ public class Pods {
       if (plainText != null && plainText.length() > 0) {
         try {
           String html = JSBuilder.buildPlotly(JSBuilder.PLOTLY_IFRAME_TEMPLATE, plainText);
-          //          String html = PLOTLY_IFRAME;
-          //          html = StringUtils.replace(html, "`1`", plainText);
+          // String html = PLOTLY_IFRAME;
+          // html = StringUtils.replace(html, "`1`", plainText);
           html = StringEscapeUtils.escapeHtml4(html);
-          html =
-              "<iframe srcdoc=\""
-                  + html
-                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
+          html = "<iframe srcdoc=\"" + html
+              + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
           json.put(PLOTLY_STR, html);
         } catch (Exception ex) {
           LOGGER.debug("Pods.createJSONFormat() failed", ex);
@@ -713,34 +574,19 @@ public class Pods {
         try {
           String html = VISJS_IFRAME;
           html = StringUtils.replace(html, "`1`", plainText);
-          html =
-              StringUtils.replace(
-                  html,
-                  "`2`", //
-                  "  var options = {\n"
-                      + "		  edges: {\n"
-                      + "              smooth: {\n"
-                      + "                  type: 'cubicBezier',\n"
-                      + "                  forceDirection:  'vertical',\n"
-                      + "                  roundness: 0.4\n"
-                      + "              }\n"
-                      + "          },\n"
-                      + "          layout: {\n"
-                      + "              hierarchical: {\n"
-                      + "                  direction: \"UD\"\n"
-                      + "              }\n"
-                      + "          },\n"
-                      + "          nodes: {\n"
-                      + "            shape: 'box'\n"
-                      + "          },\n"
-                      + "          physics:false\n"
-                      + "      }; " //
-                  );
+          html = StringUtils.replace(html, "`2`", //
+              "  var options = {\n" + "		  edges: {\n" + "              smooth: {\n"
+                  + "                  type: 'cubicBezier',\n"
+                  + "                  forceDirection:  'vertical',\n"
+                  + "                  roundness: 0.4\n" + "              }\n" + "          },\n"
+                  + "          layout: {\n" + "              hierarchical: {\n"
+                  + "                  direction: \"UD\"\n" + "              }\n" + "          },\n"
+                  + "          nodes: {\n" + "            shape: 'box'\n" + "          },\n"
+                  + "          physics:false\n" + "      }; " //
+          );
           html = StringEscapeUtils.escapeHtml4(html);
-          html =
-              "<iframe srcdoc=\""
-                  + html
-                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
+          html = "<iframe srcdoc=\"" + html
+              + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
           json.put(VISJS_STR, html);
         } catch (Exception ex) {
           LOGGER.debug("Pods.createJSONFormat() failed", ex);
@@ -752,18 +598,13 @@ public class Pods {
     }
   }
 
-  private static void createJSONFormat(
-      ObjectNode json, EvalEngine engine, String sinput, IExpr outExpr, int formats) {
+  private static void createJSONFormat(ObjectNode json, EvalEngine engine, String sinput,
+      IExpr outExpr, int formats) {
     createJSONFormat(json, engine, outExpr, null, sinput, formats);
   }
 
-  private static void createJSONFormat(
-      ObjectNode json,
-      EvalEngine engine,
-      String plaintext,
-      String sinput,
-      IExpr outExpr,
-      int formats) {
+  private static void createJSONFormat(ObjectNode json, EvalEngine engine, String plaintext,
+      String sinput, IExpr outExpr, int formats) {
     createJSONFormat(json, engine, outExpr, plaintext, sinput, formats);
   }
 
@@ -818,40 +659,21 @@ public class Pods {
               if (javaScriptStr != null) {
                 String html = VISJS_IFRAME;
                 html = StringUtils.replace(html, "`1`", javaScriptStr);
-                html =
-                    StringUtils.replace(
-                        html,
-                        "`2`", //
-                        "  var options = { };\n" //
-                        );
+                html = StringUtils.replace(html, "`2`", //
+                    "  var options = { };\n" //
+                );
                 // html = StringEscapeUtils.escapeHtml4(html);
                 int form = internFormat(SYMJA, "visjs");
                 addPod(podsArray, inExpr, outExpr, html, "Graph data", "Graph", form, engine);
                 numpods++;
               } else {
-                addSymjaPod(
-                    podsArray,
-                    inExpr,
-                    outExpr,
-                    errorString,
-                    "Evaluated result",
-                    "Expression",
-                    formats,
-                    engine,
-                    true);
+                addSymjaPod(podsArray, inExpr, outExpr, errorString, "Evaluated result",
+                    "Expression", formats, engine, true);
                 numpods++;
               }
             } else {
-              addSymjaPod(
-                  podsArray,
-                  inExpr,
-                  outExpr,
-                  errorString,
-                  "Evaluated result",
-                  "Expression",
-                  formats,
-                  engine,
-                  true);
+              addSymjaPod(podsArray, inExpr, outExpr, errorString, "Evaluated result", "Expression",
+                  formats, engine, true);
               numpods++;
             }
             resultStatistics(queryresult, error, numpods, podsArray);
@@ -911,18 +733,17 @@ public class Pods {
               numpods++;
             }
 
-            if (numExpr.isPresent()
-                && //
+            if (numExpr.isPresent() && //
                 (evaledNumExpr.isInexactNumber() || evaledNumExpr.isQuantity())) {
-              addSymjaPod(
-                  podsArray, numExpr, evaledNumExpr, "Decimal form", "Numeric", formats, engine);
+              addSymjaPod(podsArray, numExpr, evaledNumExpr, "Decimal form", "Numeric", formats,
+                  engine);
               numpods++;
               if (!outExpr.isRational()) {
                 if (evaledNumExpr.isInexactNumber()) {
                   inExpr = F.Rationalize(evaledNumExpr);
                   podOut = engine.evaluate(inExpr);
-                  addSymjaPod(
-                      podsArray, inExpr, podOut, "Rational form", "Numeric", formats, engine);
+                  addSymjaPod(podsArray, inExpr, podOut, "Rational form", "Numeric", formats,
+                      engine);
                   numpods++;
                 }
               }
@@ -934,15 +755,8 @@ public class Pods {
                 inExpr = F.List(F.IntegerPart(outExpr), F.FractionalPart(outExpr));
                 podOut = engine.evaluate(inExpr);
                 String plaintext = podOut.first().toString() + " " + podOut.second().toString();
-                addSymjaPod(
-                    podsArray,
-                    inExpr,
-                    podOut,
-                    plaintext,
-                    "Mixed fraction",
-                    "Rational",
-                    formats,
-                    engine);
+                addSymjaPod(podsArray, inExpr, podOut, plaintext, "Mixed fraction", "Rational",
+                    formats, engine);
                 numpods++;
 
                 inExpr = F.ContinuedFraction(outExpr);
@@ -962,15 +776,8 @@ public class Pods {
                   }
                   plainBuf.append(']');
                 }
-                addSymjaPod(
-                    podsArray,
-                    inExpr,
-                    podOut,
-                    plainBuf.toString(),
-                    "Continued fraction",
-                    "ContinuedFraction",
-                    formats,
-                    engine);
+                addSymjaPod(podsArray, inExpr, podOut, plainBuf.toString(), "Continued fraction",
+                    "ContinuedFraction", formats, engine);
                 numpods++;
               }
             }
@@ -988,11 +795,10 @@ public class Pods {
             numpods += listPod.addJSON(podsArray, formats, engine);
           }
 
-          if (numExpr.isPresent()
-              && //
+          if (numExpr.isPresent() && //
               (evaledNumExpr.isInexactNumber() || evaledNumExpr.isQuantity())) {
-            addSymjaPod(
-                podsArray, numExpr, evaledNumExpr, "Decimal form", "Numeric", formats, engine);
+            addSymjaPod(podsArray, numExpr, evaledNumExpr, "Decimal form", "Numeric", formats,
+                engine);
             numpods++;
           }
 
@@ -1023,20 +829,18 @@ public class Pods {
             // }
             if (outExpr.isSymbol() && Documentation.getMarkdown(buf, inputWord)) {
 
-              numpods +=
-                  DocumentationPod.addDocumentationPod(
-                      new DocumentationPod((ISymbol) outExpr), podsArray, buf, formats);
+              numpods += DocumentationPod.addDocumentationPod(
+                  new DocumentationPod((ISymbol) outExpr), podsArray, buf, formats);
               resultStatistics(queryresult, error, numpods, podsArray);
               return messageJSON;
             } else {
               if (outExpr.isString()) {
                 int mimeTyp = ((IStringX) outExpr).getMimeType();
-                if (mimeTyp == IStringX.APPLICATION_SYMJA
-                    || mimeTyp == IStringX.APPLICATION_JAVA
+                if (mimeTyp == IStringX.APPLICATION_SYMJA || mimeTyp == IStringX.APPLICATION_JAVA
                     || mimeTyp == IStringX.APPLICATION_JAVASCRIPT) {
                   String html = toHighligthedCode(outExpr.toString());
-                  addSymjaPod(
-                      podsArray, inExpr, F.NIL, html, "Result", "String form", HTML, engine);
+                  addSymjaPod(podsArray, inExpr, F.NIL, html, "Result", "String form", HTML,
+                      engine);
                   numpods++;
                   resultStatistics(queryresult, error, numpods, podsArray);
                   return messageJSON;
@@ -1091,16 +895,10 @@ public class Pods {
               if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
                 inExpr = F.TrigToExp(outExpr);
                 podOut = engine.evaluate(inExpr);
-                //                if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+                // if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
                 if (!podOut.equals(outExpr)) {
-                  addSymjaPod(
-                      podsArray, //
-                      inExpr,
-                      podOut,
-                      "Alternate form",
-                      "Simplification",
-                      formats,
-                      engine);
+                  addSymjaPod(podsArray, //
+                      inExpr, podOut, "Alternate form", "Simplification", formats, engine);
                   numpods++;
                 }
               }
@@ -1123,14 +921,8 @@ public class Pods {
                 inExpr = F.TrigToExp(outExpr);
                 podOut = engine.evaluate(inExpr);
                 if (!podOut.equals(outExpr)) {
-                  addSymjaPod(
-                      podsArray,
-                      inExpr,
-                      podOut,
-                      "Alternate form",
-                      "Simplification",
-                      formats,
-                      engine);
+                  addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification",
+                      formats, engine);
                   numpods++;
                 }
               }
@@ -1152,16 +944,10 @@ public class Pods {
               if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
                 inExpr = F.TrigToExp(outExpr);
                 podOut = engine.evaluate(inExpr);
-                //                if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
+                // if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr))) {
                 if (!podOut.equals(outExpr)) {
-                  addSymjaPod(
-                      podsArray, //
-                      inExpr,
-                      podOut,
-                      "Alternate form",
-                      "Simplification",
-                      formats,
-                      engine);
+                  addSymjaPod(podsArray, //
+                      inExpr, podOut, "Alternate form", "Simplification", formats, engine);
                   numpods++;
                 }
               }
@@ -1174,28 +960,17 @@ public class Pods {
               if (outExpr.isAST(S.JSFormData, 3)) {
                 podOut = outExpr;
                 int form = internFormat(SYMJA, podOut.second().toString());
-                addPod(
-                    podsArray,
-                    inExpr,
-                    podOut,
-                    podOut.first().toString(),
-                    StringFunctions.inputForm(inExpr),
-                    "Function",
-                    "Plotter",
-                    form,
-                    engine);
+                addPod(podsArray, inExpr, podOut, podOut.first().toString(),
+                    StringFunctions.inputForm(inExpr), "Function", "Plotter", form, engine);
                 numpods++;
               } else if (outExpr instanceof GraphExpr) {
                 String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) outExpr);
                 if (javaScriptStr != null) {
                   String html = VISJS_IFRAME;
                   html = StringUtils.replace(html, "`1`", javaScriptStr);
-                  html =
-                      StringUtils.replace(
-                          html,
-                          "`2`", //
-                          "  var options = { };\n" //
-                          );
+                  html = StringUtils.replace(html, "`2`", //
+                      "  var options = { };\n" //
+                  );
                   // html = StringEscapeUtils.escapeHtml4(html);
                   int form = internFormat(SYMJA, "visjs");
                   addPod(podsArray, inExpr, podOut, html, "Graph data", "Graph", form, engine);
@@ -1224,36 +999,21 @@ public class Pods {
                   if (arg1.isNumericFunction(varSet) //
                       && arg2.isNumericFunction(varSet)) {
                     if (variables.argSize() == 1) {
-                      IExpr plot2D =
-                          F.Plot(
-                              F.List(arg1, arg2), F.List(variables.arg1(), F.num(-20), F.num(20)));
+                      IExpr plot2D = F.Plot(F.List(arg1, arg2),
+                          F.List(variables.arg1(), F.num(-20), F.num(20)));
                       podOut = engine.evaluate(plot2D);
                       if (podOut.isAST(S.JSFormData, 3)) {
                         int form = internFormat(SYMJA, podOut.second().toString());
-                        addPod(
-                            podsArray,
-                            inExpr,
-                            podOut,
-                            podOut.first().toString(),
-                            StringFunctions.inputForm(plot2D),
-                            "Function",
-                            "Plotter",
-                            form,
-                            engine);
+                        addPod(podsArray, inExpr, podOut, podOut.first().toString(),
+                            StringFunctions.inputForm(plot2D), "Function", "Plotter", form, engine);
                         numpods++;
                       }
                     }
                     if (!arg1.isZero() && !arg2.isZero()) {
                       inExpr = F.Equal(engine.evaluate(F.Subtract(arg1, arg2)), F.C0);
                       podOut = inExpr;
-                      addSymjaPod(
-                          podsArray,
-                          inExpr,
-                          podOut,
-                          "Alternate form",
-                          "Simplification",
-                          formats,
-                          engine);
+                      addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification",
+                          formats, engine);
                       numpods++;
                     }
                     inExpr = F.Solve(F.binaryAST2(S.Equal, arg1, arg2), variables);
@@ -1278,37 +1038,19 @@ public class Pods {
                     podOut = engine.evaluate(plot2D);
                     if (podOut.isAST(S.JSFormData, 3)) {
                       int form = internFormat(SYMJA, podOut.second().toString());
-                      addPod(
-                          podsArray,
-                          inExpr,
-                          podOut,
-                          podOut.first().toString(),
-                          StringFunctions.inputForm(plot2D),
-                          "Function",
-                          "Plotter",
-                          form,
-                          engine);
+                      addPod(podsArray, inExpr, podOut, podOut.first().toString(),
+                          StringFunctions.inputForm(plot2D), "Function", "Plotter", form, engine);
                       numpods++;
                     }
                   } else if (variables.argSize() == 2) {
                     IExpr plot3D =
-                        F.Plot3D(
-                            outExpr,
-                            F.List(variables.arg1(), F.num(-3.5), F.num(3.5)),
+                        F.Plot3D(outExpr, F.List(variables.arg1(), F.num(-3.5), F.num(3.5)),
                             F.List(variables.arg2(), F.num(-3.5), F.num(3.5)));
                     podOut = engine.evaluate(plot3D);
                     if (podOut.isAST(S.JSFormData, 3)) {
                       int form = internFormat(SYMJA, podOut.second().toString());
-                      addPod(
-                          podsArray,
-                          inExpr,
-                          podOut,
-                          podOut.first().toString(),
-                          StringFunctions.inputForm(plot3D),
-                          "3D plot",
-                          "Plot",
-                          form,
-                          engine);
+                      addPod(podsArray, inExpr, podOut, podOut.first().toString(),
+                          StringFunctions.inputForm(plot3D), "3D plot", "Plot", form, engine);
                       numpods++;
                     }
                   }
@@ -1316,17 +1058,11 @@ public class Pods {
                 if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
                   inExpr = F.TrigToExp(outExpr);
                   podOut = engine.evaluate(inExpr);
-                  //                  if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr)))
+                  // if (!S.PossibleZeroQ.ofQ(engine, F.Subtract(podOut, outExpr)))
                   // {
                   if (!podOut.equals(outExpr)) {
-                    addSymjaPod(
-                        podsArray,
-                        inExpr,
-                        podOut,
-                        "Alternate form",
-                        "Simplification",
-                        formats,
-                        engine);
+                    addSymjaPod(podsArray, inExpr, podOut, "Alternate form", "Simplification",
+                        formats, engine);
                     numpods++;
                   }
                 }
@@ -1341,8 +1077,7 @@ public class Pods {
                     IExpr x = variables.first();
                     inExpr = F.Minimize(outExpr, x);
                     podOut = engine.evaluate(inExpr);
-                    if (podOut.isAST(S.List, 3)
-                        && podOut.first().isNumber()
+                    if (podOut.isAST(S.List, 3) && podOut.first().isNumber()
                         && podOut.second().isAST(S.List, 2)) {
                       IExpr rule = podOut.second().first();
                       if (rule.isRule()) {
@@ -1355,23 +1090,15 @@ public class Pods {
                         buf.append(rule.first().toString());
                         buf.append(" = ");
                         buf.append(rule.second().toString());
-                        addSymjaPod(
-                            podsArray,
-                            inExpr,
-                            podOut,
-                            buf.toString(),
-                            "GlobalExtrema",
-                            "GlobalMinimum",
-                            formats,
-                            engine);
+                        addSymjaPod(podsArray, inExpr, podOut, buf.toString(), "GlobalExtrema",
+                            "GlobalMinimum", formats, engine);
                         numpods++;
                       }
                     }
 
                     inExpr = F.Maximize(outExpr, x);
                     podOut = engine.evaluate(inExpr);
-                    if (podOut.isAST(S.List, 3)
-                        && podOut.first().isNumber()
+                    if (podOut.isAST(S.List, 3) && podOut.first().isNumber()
                         && podOut.second().isAST(S.List, 2)) {
                       IExpr rule = podOut.second().first();
                       if (rule.isRule()) {
@@ -1384,57 +1111,35 @@ public class Pods {
                         buf.append(rule.first().toString());
                         buf.append(" = ");
                         buf.append(rule.second().toString());
-                        addSymjaPod(
-                            podsArray,
-                            inExpr,
-                            podOut,
-                            buf.toString(),
-                            "GlobalExtrema",
-                            "GlobalMaximum",
-                            formats,
-                            engine);
+                        addSymjaPod(podsArray, inExpr, podOut, buf.toString(), "GlobalExtrema",
+                            "GlobalMaximum", formats, engine);
                         numpods++;
                       }
                     }
                   }
                   inExpr = F.D(outExpr, variables.arg1());
                   podOut = engine.evaluate(inExpr);
-                  addSymjaPod(
-                      podsArray, inExpr, podOut, "Derivative", "Derivative", formats, engine);
+                  addSymjaPod(podsArray, inExpr, podOut, "Derivative", "Derivative", formats,
+                      engine);
                   numpods++;
 
                   inExpr = F.Integrate(outExpr, variables.arg1());
                   podOut = engine.evaluate(inExpr);
-                  addSymjaPod(
-                      podsArray,
-                      inExpr,
-                      podOut,
-                      "Indefinite integral",
-                      "Integral",
-                      formats,
+                  addSymjaPod(podsArray, inExpr, podOut, "Indefinite integral", "Integral", formats,
                       engine);
                   numpods++;
                 }
               }
               if (numpods == 1) {
                 // only Identity pod was appended
-                if (errorString.length() == 0
-                    && //
+                if (errorString.length() == 0 && //
                     !firstEval.isPresent()) {
-                  addSymjaPod(
-                      podsArray, expr, outExpr, "Evaluated result", "Expression", formats, engine);
+                  addSymjaPod(podsArray, expr, outExpr, "Evaluated result", "Expression", formats,
+                      engine);
                   numpods++;
                 } else {
-                  addSymjaPod(
-                      podsArray,
-                      expr,
-                      outExpr,
-                      errorString,
-                      "Evaluated result",
-                      "Expression",
-                      formats,
-                      engine,
-                      true);
+                  addSymjaPod(podsArray, expr, outExpr, errorString, "Evaluated result",
+                      "Expression", formats, engine, true);
                   numpods++;
                 }
               }
@@ -1457,21 +1162,20 @@ public class Pods {
 
   private static ThreadLocalNotifierClosable setLogEventNotifier(PrintStream errors) {
 
-    return ThreadLocalNotifyingAppender.addLogEventNotifier(
-        e -> {
-          if (e.getLevel().isMoreSpecificThan(Level.ERROR)) {
-            StringBuilder msg = new StringBuilder();
-            Message logMessage = e.getMessage();
-            if (logMessage != null) {
-              msg.append(logMessage.getFormattedMessage());
-            }
-            Throwable thrown = e.getThrown();
-            if (thrown != null) {
-              msg.append(": ").append(thrown.getMessage());
-            }
-            errors.println(msg.toString());
-          }
-        });
+    return ThreadLocalNotifyingAppender.addLogEventNotifier(e -> {
+      if (e.getLevel().isMoreSpecificThan(Level.ERROR)) {
+        StringBuilder msg = new StringBuilder();
+        Message logMessage = e.getMessage();
+        if (logMessage != null) {
+          msg.append(logMessage.getFormattedMessage());
+        }
+        Throwable thrown = e.getThrown();
+        if (thrown != null) {
+          msg.append(": ").append(thrown.getMessage());
+        }
+        errors.println(msg.toString());
+      }
+    });
   }
 
   public static String errorJSONString(String code, String msg) {
@@ -1510,25 +1214,23 @@ public class Pods {
     int[] newSize = new int[1];
     newSize[0] = 0;
     boolean[] flattened = new boolean[] {false};
-    ast.forEach(
-        expr -> {
-          if (ast.isTimes() && ast.isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
-            flattened[0] = true;
-            newSize[0] += ast.size();
-          } else {
-            newSize[0]++;
-          }
-        });
+    ast.forEach(expr -> {
+      if (ast.isTimes() && ast.isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
+        flattened[0] = true;
+        newSize[0] += ast.size();
+      } else {
+        newSize[0]++;
+      }
+    });
     if (flattened[0]) {
       IASTAppendable result = F.ast(ast.head(), newSize[0], false);
-      ast.forEach(
-          expr -> {
-            if (expr.isTimes() && ((IAST) expr).isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
-              result.appendArgs(flattenTimesRecursive((IAST) expr).orElse((IAST) expr));
-            } else {
-              result.append(expr);
-            }
-          });
+      ast.forEach(expr -> {
+        if (expr.isTimes() && ((IAST) expr).isEvalFlagOn(IAST.TIMES_PARSED_IMPLICIT)) {
+          result.appendArgs(flattenTimesRecursive((IAST) expr).orElse((IAST) expr));
+        } else {
+          result.append(expr);
+        }
+      });
       return result;
     }
     return F.NIL;
@@ -1593,8 +1295,8 @@ public class Pods {
   // return SOUNDEX_MAP;
   // }
 
-  private static int integerPods(
-      ArrayNode podsArray, IExpr inExpr, final IInteger outExpr, int formats, EvalEngine engine) {
+  private static int integerPods(ArrayNode podsArray, IExpr inExpr, final IInteger outExpr,
+      int formats, EvalEngine engine) {
     int htmlFormats = formats | HTML;
     if ((htmlFormats & PLAIN) == PLAIN) {
       htmlFormats ^= PLAIN;
@@ -1631,8 +1333,8 @@ public class Pods {
       plainText.append("_");
       plainText.append(podOut.second().toString());
     }
-    addSymjaPod(
-        podsArray, inExpr, podOut, plainText.toString(), "Binary form", "Integer", formats, engine);
+    addSymjaPod(podsArray, inExpr, podOut, plainText.toString(), "Binary form", "Integer", formats,
+        engine);
     numpods++;
 
     if (n.bitLength() < Config.MAX_BIT_LENGTH / 1000) {
@@ -1643,15 +1345,8 @@ public class Pods {
       if (n.isProbablePrime()) {
         plainText.append(n.toString());
         plainText.append(" is a prime number.");
-        addSymjaPod(
-            podsArray,
-            inExpr,
-            podOut,
-            plainText.toString(),
-            "Prime factorization",
-            "Integer",
-            formats,
-            engine);
+        addSymjaPod(podsArray, inExpr, podOut, plainText.toString(), "Prime factorization",
+            "Integer", formats, engine);
         numpods++;
       } else {
         if (matrixDimension[1] == 2) {
@@ -1672,15 +1367,8 @@ public class Pods {
               plainText.append("*");
             }
           }
-          addSymjaPod(
-              podsArray,
-              inExpr,
-              times.oneIdentity0(),
-              plainText.toString(),
-              "Prime factorization",
-              "Integer",
-              formats,
-              engine);
+          addSymjaPod(podsArray, inExpr, times.oneIdentity0(), plainText.toString(),
+              "Prime factorization", "Integer", formats, engine);
           numpods++;
         }
       }
@@ -1737,15 +1425,8 @@ public class Pods {
       tableForm.append("</tr></tbody>");
       tableForm.append("</table>");
 
-      addSymjaPod(
-          podsArray,
-          inExpr,
-          podOut,
-          tableForm.toString(),
-          "Residues modulo small integers",
-          "Integer",
-          htmlFormats,
-          engine);
+      addSymjaPod(podsArray, inExpr, podOut, tableForm.toString(), "Residues modulo small integers",
+          "Integer", htmlFormats, engine);
       numpods++;
     }
 
@@ -1755,44 +1436,24 @@ public class Pods {
     if (n.isPositive() && n.isLT(F.ZZ(100))) {
       inExpr = F.Union(F.PowerMod(F.Range(F.C0, F.QQ(n, F.C2)), F.C2, n));
       podOut = engine.evaluate(inExpr);
-      addSymjaPod(
-          podsArray,
-          inExpr,
-          podOut,
-          "Quadratic residues modulo " + n.toString(),
-          "Integer",
-          formats,
-          engine);
+      addSymjaPod(podsArray, inExpr, podOut, "Quadratic residues modulo " + n.toString(), "Integer",
+          formats, engine);
       numpods++;
 
       if (n.isProbablePrime()) {
-        inExpr =
-            F.Select(
-                F.Range(n.add(F.CN1)),
-                F.Function(F.Equal(F.MultiplicativeOrder(F.Slot1, n), F.EulerPhi(n))));
+        inExpr = F.Select(F.Range(n.add(F.CN1)),
+            F.Function(F.Equal(F.MultiplicativeOrder(F.Slot1, n), F.EulerPhi(n))));
         podOut = engine.evaluate(inExpr);
-        addSymjaPod(
-            podsArray,
-            inExpr,
-            podOut,
-            "Primitive roots modulo " + n.toString(),
-            "Integer",
-            formats,
-            engine);
+        addSymjaPod(podsArray, inExpr, podOut, "Primitive roots modulo " + n.toString(), "Integer",
+            formats, engine);
         numpods++;
       }
     }
     return numpods;
   }
 
-  static void integerPropertiesPod(
-      ArrayNode podsArray,
-      IInteger inExpr,
-      IExpr outExpr,
-      String title,
-      String scanner,
-      int formats,
-      EvalEngine engine) {
+  static void integerPropertiesPod(ArrayNode podsArray, IInteger inExpr, IExpr outExpr,
+      String title, String scanner, int formats, EvalEngine engine) {
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
     int numsubpods = 0;
     ObjectNode subpodsResult = JSON_OBJECT_MAPPER.createObjectNode();
@@ -1807,25 +1468,15 @@ public class Pods {
       if (inExpr.isEven()) {
         ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
         temp.add(node);
-        createJSONFormat(
-            node,
-            engine,
-            F.NIL,
-            inExpr.toString() + " is an even number.",
-            StringFunctions.inputForm(F.EvenQ(inExpr)),
-            formats);
+        createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is an even number.",
+            StringFunctions.inputForm(F.EvenQ(inExpr)), formats);
 
         numsubpods++;
       } else {
         ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
         temp.add(node);
-        createJSONFormat(
-            node,
-            engine,
-            F.NIL,
-            inExpr.toString() + " is an odd number.",
-            StringFunctions.inputForm(F.OddQ(inExpr)),
-            formats);
+        createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is an odd number.",
+            StringFunctions.inputForm(F.OddQ(inExpr)), formats);
 
         numsubpods++;
       }
@@ -1835,24 +1486,15 @@ public class Pods {
         if (primePi.isInteger() && inExpr.isPositive()) {
           ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
           temp.add(node);
-          createJSONFormat(
-              node,
-              engine,
-              F.NIL,
+          createJSONFormat(node, engine, F.NIL,
               inExpr.toString() + " is the " + primePi.toString() + "th prime number.",
-              StringFunctions.inputForm(primePiExpr),
-              formats);
+              StringFunctions.inputForm(primePiExpr), formats);
           numsubpods++;
         } else {
           ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
           temp.add(node);
-          createJSONFormat(
-              node,
-              engine,
-              F.NIL,
-              inExpr.toString() + " is a prime number.",
-              StringFunctions.inputForm(primePiExpr),
-              formats);
+          createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is a prime number.",
+              StringFunctions.inputForm(primePiExpr), formats);
           numsubpods++;
         }
       }
@@ -1912,12 +1554,12 @@ public class Pods {
   static IExpr parseInput(String inputStr, EvalEngine engine) {
     engine.setPackageMode(false);
     IExpr inExpr = F.NIL;
-    //    try {
-    //      inExpr = Ask.ask(inputStr, engine);
-    //    } catch (Exception ex) {
-    //      // this includes syntax errors
-    //      LOGGER.debug("Pods: Ask.ask() failed", ex);
-    //    }
+    // try {
+    // inExpr = Ask.ask(inputStr, engine);
+    // } catch (Exception ex) {
+    // // this includes syntax errors
+    // LOGGER.debug("Pods: Ask.ask() failed", ex);
+    // }
     if (!inExpr.isPresent()) {
       final FuzzyParser parser = new FuzzyParser(engine);
       try {
@@ -2000,8 +1642,8 @@ public class Pods {
     return inExpr;
   }
 
-  private static void resultStatistics(
-      ObjectNode queryresult, boolean error, int numpods, ArrayNode podsArray) {
+  private static void resultStatistics(ObjectNode queryresult, boolean error, int numpods,
+      ArrayNode podsArray) {
     queryresult.putPOJO("pods", podsArray);
     queryresult.put("success", "true");
     queryresult.put("error", error ? "true" : "false");
@@ -2025,8 +1667,8 @@ public class Pods {
     }
   }
 
-  private static int statisticsPods(
-      ArrayNode podsArray, IAST inExpr, IExpr outExpr, int formats, EvalEngine engine) {
+  private static int statisticsPods(ArrayNode podsArray, IAST inExpr, IExpr outExpr, int formats,
+      EvalEngine engine) {
     int numpods = 0;
     int htmlFormats = formats | HTML;
     if ((htmlFormats & PLAIN) == PLAIN) {
@@ -2038,12 +1680,11 @@ public class Pods {
       IExpr standardDeviation = S.StandardDeviation.of(engine, inExpr);
       IExpr variance = S.Variance.of(engine, inExpr);
       IExpr skewness = S.Skewness.of(engine, inExpr);
-      IExpr podOut =
-          F.List( //
-              F.Mean(inExpr), //
-              F.StandardDeviation(inExpr), //
-              F.Variance(inExpr), //
-              F.Skewness(inExpr));
+      IExpr podOut = F.List( //
+          F.Mean(inExpr), //
+          F.StandardDeviation(inExpr), //
+          F.Variance(inExpr), //
+          F.Skewness(inExpr));
 
       StringBuilder tableForm = new StringBuilder();
       tableForm.append("<table style=\"border:solid 1px;\">");
@@ -2080,39 +1721,20 @@ public class Pods {
       tableForm.append("</tbody>");
       tableForm.append("</table>");
 
-      addSymjaPod(
-          podsArray,
-          F.List(),
-          podOut,
-          tableForm.toString(),
-          "Statistical properties",
-          "Statistics",
-          htmlFormats,
-          engine);
+      addSymjaPod(podsArray, F.List(), podOut, tableForm.toString(), "Statistical properties",
+          "Statistics", htmlFormats, engine);
       numpods++;
 
       inExpr = F.PDF(outExpr, S.x);
       podOut = engine.evaluate(inExpr);
-      addSymjaPod(
-          podsArray,
-          inExpr,
-          podOut,
-          "Probability density function (PDF)",
-          "Statistics",
-          formats,
-          engine);
+      addSymjaPod(podsArray, inExpr, podOut, "Probability density function (PDF)", "Statistics",
+          formats, engine);
       numpods++;
 
       inExpr = F.CDF(outExpr, S.x);
       podOut = engine.evaluate(inExpr);
-      addSymjaPod(
-          podsArray,
-          inExpr,
-          podOut,
-          "Cumulative distribution function (CDF)",
-          "Statistics",
-          formats,
-          engine);
+      addSymjaPod(podsArray, inExpr, podOut, "Cumulative distribution function (CDF)", "Statistics",
+          formats, engine);
     }
     numpods++;
     return numpods;
@@ -2129,10 +1751,8 @@ public class Pods {
       String html = HIGHLIGHT_IFRAME;
       html = StringUtils.replace(html, "`1`", sourceCode);
       html = StringEscapeUtils.escapeHtml4(html);
-      html =
-          "<iframe srcdoc=\""
-              + html
-              + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
+      html = "<iframe srcdoc=\"" + html
+          + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
       return html;
     } catch (Exception ex) {
       LOGGER.debug("Pods.toHighligthedCode() failed", ex);

@@ -8,17 +8,14 @@ public class BioTest extends AbstractTestCase {
   }
 
   public void testBioSequence001() {
-    check(
-        "BioSequence(\"DNA\",\"ATAAACGTACGTTTTTAGGCT\")", //
+    check("BioSequence(\"DNA\",\"ATAAACGTACGTTTTTAGGCT\")", //
         "BioSequence[Type: DNA Sequence, Content: ATAAAC-GCT (21 letters)]");
-    check(
-        "BioSequence(\"DNA\",\"GTAC\")", //
+    check("BioSequence(\"DNA\",\"GTAC\")", //
         "BioSequence[Type: DNA Sequence, Content: GTAC (4 letters)]");
   }
 
   public void testBioSequenceRNA() {
-    check(
-        "BioSequence(\"RNA\", \"AUAACGUAUGUA\")", //
+    check("BioSequence(\"RNA\", \"AUAACGUAUGUA\")", //
         "BioSequence[Type: RNA Sequence, Content: AUAACG-GUA (12 letters)]");
   }
 

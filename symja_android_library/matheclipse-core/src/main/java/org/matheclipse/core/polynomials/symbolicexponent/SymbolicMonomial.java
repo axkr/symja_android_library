@@ -55,16 +55,23 @@ public final class SymbolicMonomial implements Comparable<SymbolicMonomial> {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
     SymbolicMonomial other = (SymbolicMonomial) obj;
     if (c == null) {
-      if (other.c != null) return false;
-    } else if (!c.equals(other.c)) return false;
+      if (other.c != null)
+        return false;
+    } else if (!c.equals(other.c))
+      return false;
     if (e == null) {
-      if (other.e != null) return false;
-    } else if (!e.equals(other.e)) return false;
+      if (other.e != null)
+        return false;
+    } else if (!e.equals(other.e))
+      return false;
     return true;
   }
 

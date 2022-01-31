@@ -82,44 +82,44 @@ public abstract class AbstractPatternMatcherMethod extends PatternMatcher {
     return F.NIL;
   }
 
-  //	@Override
-  //	public int equivalent(final IPatternMatcher obj) {
-  //		// don't compare fSetSymbol here
-  //		int comp = super.equivalent(obj);
-  //		if (comp == 0) {
-  //			if (obj instanceof AbstractPatternMatcherMethod) {
-  //				// AbstractPatternMatcherMethod pm = (AbstractPatternMatcherMethod) obj;
-  //				// if (fRightHandSide != null) {
-  //				// if (fRightHandSide.isCondition()) {
-  //				// if (pm.fRightHandSide.isCondition()) {
-  //				// if (equivalentRHS(fRightHandSide.getAt(2),
-  //				// pm.fRightHandSide.getAt(2), fPatternMap,
-  //				// pm.fPatternMap)) {
-  //				// return 0;
-  //				// }
-  //				// return 1;
-  //				// }
-  //				// return -1;
-  //				// } else if (pm.fRightHandSide.isCondition()) {
-  //				// return 1;
-  //				// } else if (fRightHandSide.isModule()) {
-  //				// if (pm.fRightHandSide.isModule()) {
-  //				// if (equivalentRHS(fRightHandSide.getAt(2),
-  //				// pm.fRightHandSide.getAt(2), fPatternMap,
-  //				// pm.fPatternMap)) {
-  //				// return 0;
-  //				// }
-  //				// return 1;
-  //				// }
-  //				// return -1;
-  //				// } else if (pm.fRightHandSide.isModule()) {
-  //				// return 1;
-  //				// }
-  //				// }
-  //				return 0;
-  //			}
-  //		}
-  //		return comp;
-  //	}
+  // @Override
+  // public int equivalent(final IPatternMatcher obj) {
+  // // don't compare fSetSymbol here
+  // int comp = super.equivalent(obj);
+  // if (comp == 0) {
+  // if (obj instanceof AbstractPatternMatcherMethod) {
+  // // AbstractPatternMatcherMethod pm = (AbstractPatternMatcherMethod) obj;
+  // // if (fRightHandSide != null) {
+  // // if (fRightHandSide.isCondition()) {
+  // // if (pm.fRightHandSide.isCondition()) {
+  // // if (equivalentRHS(fRightHandSide.getAt(2),
+  // // pm.fRightHandSide.getAt(2), fPatternMap,
+  // // pm.fPatternMap)) {
+  // // return 0;
+  // // }
+  // // return 1;
+  // // }
+  // // return -1;
+  // // } else if (pm.fRightHandSide.isCondition()) {
+  // // return 1;
+  // // } else if (fRightHandSide.isModule()) {
+  // // if (pm.fRightHandSide.isModule()) {
+  // // if (equivalentRHS(fRightHandSide.getAt(2),
+  // // pm.fRightHandSide.getAt(2), fPatternMap,
+  // // pm.fPatternMap)) {
+  // // return 0;
+  // // }
+  // // return 1;
+  // // }
+  // // return -1;
+  // // } else if (pm.fRightHandSide.isModule()) {
+  // // return 1;
+  // // }
+  // // }
+  // return 0;
+  // }
+  // }
+  // return comp;
+  // }
 
 }

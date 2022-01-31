@@ -59,8 +59,8 @@ public class AlgebraicNotInvertibleException extends NotInvertibleException {
    * @param f1 polynomial.
    * @param f2 polynomial.
    */
-  public AlgebraicNotInvertibleException(
-      String c, ExprPolynomial f, ExprPolynomial f1, ExprPolynomial f2) {
+  public AlgebraicNotInvertibleException(String c, ExprPolynomial f, ExprPolynomial f1,
+      ExprPolynomial f2) {
     super(c);
     this.f = f;
     this.f1 = f1;
@@ -74,8 +74,8 @@ public class AlgebraicNotInvertibleException extends NotInvertibleException {
    * @param f1 polynomial.
    * @param f2 polynomial.
    */
-  public AlgebraicNotInvertibleException(
-      String c, Throwable t, ExprPolynomial f, ExprPolynomial f1, ExprPolynomial f2) {
+  public AlgebraicNotInvertibleException(String c, Throwable t, ExprPolynomial f, ExprPolynomial f1,
+      ExprPolynomial f2) {
     super(c, t);
     this.f = f;
     this.f1 = f1;
@@ -89,8 +89,8 @@ public class AlgebraicNotInvertibleException extends NotInvertibleException {
    * @param f1 polynomial.
    * @param f2 polynomial.
    */
-  public AlgebraicNotInvertibleException(
-      Throwable t, ExprPolynomial f, ExprPolynomial f1, ExprPolynomial f2) {
+  public AlgebraicNotInvertibleException(Throwable t, ExprPolynomial f, ExprPolynomial f1,
+      ExprPolynomial f2) {
     super("AlgebraicNotInvertibleException", t);
     this.f = f;
     this.f1 = f1;

@@ -201,8 +201,8 @@ public class EvalDoubleCallbackTestCase extends TestCase {
       double d = engine.evaluate("aTest[1.0]");
       assertEquals(Double.toString(d), "");
     } catch (MathException e) {
-      assertEquals(
-          "EvalDouble#evaluateFunction(FunctionNode) not possible for: aTest(1.0)", e.getMessage());
+      assertEquals("EvalDouble#evaluateFunction(FunctionNode) not possible for: aTest(1.0)",
+          e.getMessage());
     }
   }
 
@@ -217,8 +217,8 @@ public class EvalDoubleCallbackTestCase extends TestCase {
       assertEquals(Double.toString(d), "4.0");
     } catch (MathException e) {
       e.printStackTrace();
-      assertEquals(
-          "EvalDouble#evaluateFunction(FunctionNode) not possible for: aTest(1.0)", e.getMessage());
+      assertEquals("EvalDouble#evaluateFunction(FunctionNode) not possible for: aTest(1.0)",
+          e.getMessage());
     }
   }
 }

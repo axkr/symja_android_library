@@ -15,8 +15,8 @@ public class ZetaJS {
 
   private ZetaJS() {}
 
-  public static Complex summation(
-      java.util.function.Function<Complex, Complex> f, double a, double b, int iterationLimit) {
+  public static Complex summation(java.util.function.Function<Complex, Complex> f, double a,
+      double b, int iterationLimit) {
 
     Complex s = Complex.ZERO;
     int counter = 0;
@@ -44,8 +44,8 @@ public class ZetaJS {
     return arg1.add(arg2).divide(2.0);
   }
 
-  public static Complex complexSummation(
-      java.util.function.DoubleFunction<Complex> f, double a, double b, int iterationLimit) {
+  public static Complex complexSummation(java.util.function.DoubleFunction<Complex> f, double a,
+      double b, int iterationLimit) {
     Complex s = Complex.ZERO;
     int counter = 0;
     for (double i = a; i <= b; i++) {
@@ -57,8 +57,8 @@ public class ZetaJS {
     return s;
   }
 
-  public static double sumDouble(
-      java.util.function.DoubleUnaryOperator f, double a, double b, int iterationLimit) {
+  public static double sumDouble(java.util.function.DoubleUnaryOperator f, double a, double b,
+      int iterationLimit) {
     double s = 0.0;
     int counter = 0;
     for (double i = a; i <= b; i++) {
@@ -70,8 +70,8 @@ public class ZetaJS {
     return s;
   }
 
-  public static double sumInt(
-      java.util.function.IntToDoubleFunction f, int a, int b, int iterationLimit) {
+  public static double sumInt(java.util.function.IntToDoubleFunction f, int a, int b,
+      int iterationLimit) {
     double s = 0;
     if ((b - a) > iterationLimit && iterationLimit > 0) {
       IterationLimitExceeded.throwIt((b - a), S.Sum);
@@ -160,9 +160,9 @@ public class ZetaJS {
 
   public static Complex bernoulli(int n, Complex x) {
 
-    //  if (!Number.isInteger(n) ) {
-    //	  throw Error( 'Noninteger index for Bernoulli number' );
-    //  }
+    // if (!Number.isInteger(n) ) {
+    // throw Error( 'Noninteger index for Bernoulli number' );
+    // }
 
     if (n < 0) {
       throw new ArgumentTypeException("Unsupported index for Bernoulli number");
@@ -213,9 +213,9 @@ public class ZetaJS {
 
     // Euler-Maclaurin has differences of large values in left-hand plane
     boolean useArbitrary = x.getReal() < 0;
-    //    if ( useArbitrary ) {
+    // if ( useArbitrary ) {
     //
-    //    }
+    // }
 
     double switchForms = -5.0;
 
@@ -241,11 +241,8 @@ public class ZetaJS {
         throw new ArgumentTypeException("Hurwitz zeta: i > MAX_VALUE_HALF");
       }
       int iPlusi = i + i;
-      p =
-          p.multiply(
-              x.add(iPlusi - 2.0)
-                  .multiply(x.add(iPlusi - 3.0))
-                  .multiply(a.add(n).pow(2.0).multiply(iPlusi * (iPlusi - 1)).reciprocal()));
+      p = p.multiply(x.add(iPlusi - 2.0).multiply(x.add(iPlusi - 3.0))
+          .multiply(a.add(n).pow(2.0).multiply(iPlusi * (iPlusi - 1)).reciprocal()));
       t = t.add(p.multiply(bernoulliInt(iPlusi)));
     }
 
@@ -318,10 +315,8 @@ public class ZetaJS {
         throw new ArgumentTypeException("Hurwitz zeta: i > MAX_VALUE_HALF");
       }
       int iPlusi = i + i;
-      p *=
-          (x + iPlusi - 2.0)
-              * (x + iPlusi - 3.0)
-              / (iPlusi * (iPlusi - 1.0) * Math.pow(a + n, 2.0));
+      p *= (x + iPlusi - 2.0) * (x + iPlusi - 3.0)
+          / (iPlusi * (iPlusi - 1.0) * Math.pow(a + n, 2.0));
       t += bernoulliInt(iPlusi) * p;
     }
 
@@ -361,17 +356,13 @@ public class ZetaJS {
         // Crandall, Note on Fast Polylogarithm Computation
 
         Complex t1 = polyLog(n, x.reciprocal()).multiply(Math.pow(-1.0, nInt));
-        Complex t2 =
-            twoPiI
-                .pow(nInt)
-                .divide(GammaJS.factorialInt(nInt))
-                .multiply(bernoulli(nInt, x.log().divide(twoPiI)));
+        Complex t2 = twoPiI.pow(nInt).divide(GammaJS.factorialInt(nInt))
+            .multiply(bernoulli(nInt, x.log().divide(twoPiI)));
 
         // Complex y = x; // just for test
-        Complex t3 =
-            x.getImaginary() < 0.0 || (F.isZero(x.getImaginary()) && x.getReal() >= 1.0)
-                ? twoPiI.multiply(x.log().pow(nInt - 1).divide(GammaJS.factorialInt(nInt - 1)))
-                : Complex.ZERO;
+        Complex t3 = x.getImaginary() < 0.0 || (F.isZero(x.getImaginary()) && x.getReal() >= 1.0)
+            ? twoPiI.multiply(x.log().pow(nInt - 1).divide(GammaJS.factorialInt(nInt - 1)))
+            : Complex.ZERO;
 
         return t1.add(t2).add(t3).negate();
         // return complexAverage(nInt -> polyLog(nInt, x), n);
@@ -384,8 +375,7 @@ public class ZetaJS {
       Complex z1 = I.pow(v).multiply(hurwitzZeta(v, L.add(0.5)));
       Complex z2 = I.pow(v.negate()).multiply(hurwitzZeta(v, new Complex(0.5).subtract(L)));
 
-      return GammaJS.gamma(v)
-          .multiply(new Complex(2.0 * Math.PI).pow(v.negate()))
+      return GammaJS.gamma(v).multiply(new Complex(2.0 * Math.PI).pow(v.negate()))
           .multiply(z1.add(z2));
     }
 
@@ -437,17 +427,13 @@ public class ZetaJS {
 
         Complex t1 = polyLog(n, 1 / x).multiply(Math.pow(-1.0, nInt));
 
-        Complex t2 =
-            twoPiI
-                .pow(nInt)
-                .divide(GammaJS.factorialInt(n))
-                .multiply(bernoulli(nInt, new Complex(x).log().divide(twoPiI)));
+        Complex t2 = twoPiI.pow(nInt).divide(GammaJS.factorialInt(n))
+            .multiply(bernoulli(nInt, new Complex(x).log().divide(twoPiI)));
 
         Complex y = new Complex(x); // just for test
-        Complex t3 =
-            y.getImaginary() < 0.0 || (F.isZero(y.getImaginary()) && y.getReal() >= 1.0)
-                ? twoPiI.multiply(Math.pow(Math.log(x), n - 1) / GammaJS.factorialInt(n - 1))
-                : Complex.ZERO;
+        Complex t3 = y.getImaginary() < 0.0 || (F.isZero(y.getImaginary()) && y.getReal() >= 1.0)
+            ? twoPiI.multiply(Math.pow(Math.log(x), n - 1) / GammaJS.factorialInt(n - 1))
+            : Complex.ZERO;
 
         Complex result = t1.add(t2).add(t3).negate();
 

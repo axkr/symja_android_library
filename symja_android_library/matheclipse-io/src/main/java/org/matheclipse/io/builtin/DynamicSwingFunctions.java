@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.ParserConfig;
 
 public class DynamicSwingFunctions {
-	
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -38,16 +38,15 @@ public class DynamicSwingFunctions {
         Object obj = ((JavaObjectExpr) arg).toData();
         if (obj instanceof java.awt.Window) {
           final java.awt.Window window = (java.awt.Window) obj;
-          SwingUtilities.invokeLater(
-              new Runnable() {
-                public void run() {
-                  window.setSize(new Dimension(640, 400));
-                  // center the window
-                  window.setLocationRelativeTo(null);
-                  // display the window
-                  window.setVisible(true);
-                }
-              });
+          SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+              window.setSize(new Dimension(640, 400));
+              // center the window
+              window.setLocationRelativeTo(null);
+              // display the window
+              window.setVisible(true);
+            }
+          });
         }
       }
       return F.NIL;

@@ -35,8 +35,8 @@ public final class MutableInt {
   }
 
   /**
-   * Create a new <code>histogramMap</code> from the elements of <code>ast</code> for method {@link
-   * #isPermutable(IAST, Map)}.
+   * Create a new <code>histogramMap</code> from the elements of <code>ast</code> for method
+   * {@link #isPermutable(IAST, Map)}.
    *
    * @param ast
    * @return
@@ -58,7 +58,7 @@ public final class MutableInt {
    * @param ast
    * @param histogram the map where all values should be reduced to zero
    * @return <code>true</code> if all values in <code>histogramMap</code> could be reduced to zero
-   *     for all elements of <code>ast</code>
+   *         for all elements of <code>ast</code>
    */
   public static boolean isEqualPermutable(IAST ast, Map<IExpr, MutableInt> histogram) {
     for (int i = 1; i < ast.size(); i++) {

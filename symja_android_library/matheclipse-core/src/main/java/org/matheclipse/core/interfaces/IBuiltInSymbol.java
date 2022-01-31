@@ -10,7 +10,7 @@ public interface IBuiltInSymbol extends ISymbol {
    * Get the current evaluator for this symbol
    *
    * @return the evaluator which is associated to this symbol or <code>null</code> if no evaluator
-   *     is associated
+   *         is associated
    */
   public IEvaluator getEvaluator();
 

@@ -45,14 +45,11 @@ public class IndexedLevel {
    * @param function the function which should be applied for an element
    * @param unevaledLevelExpr the given <i>level specification</i>
    * @param includeHeads set to <code>true</code>, if the header of an AST expression should be
-   *     included
+   *        included
    * @throws SymjaMathException if the <code>expr</code> is not a <i>level specification</i>
    */
-  public IndexedLevel(
-      final BiFunction<IExpr, IExpr, IExpr> function,
-      final IExpr unevaledLevelExpr,
-      boolean includeHeads,
-      final EvalEngine engine) {
+  public IndexedLevel(final BiFunction<IExpr, IExpr, IExpr> function, final IExpr unevaledLevelExpr,
+      boolean includeHeads, final EvalEngine engine) {
     IExpr levelExpr = engine.evaluate(unevaledLevelExpr);
     fFromLevel = fToLevel = -1;
     fFromDepth = fToDepth = 0;
@@ -158,16 +155,13 @@ public class IndexedLevel {
     throw new SymjaMathException("Invalid Level specification: " + levelExpr.toString());
   }
 
-  public IndexedLevel(
-      final BiFunction<IExpr, IExpr, IExpr> function, final int level, final boolean includeHeads) {
+  public IndexedLevel(final BiFunction<IExpr, IExpr, IExpr> function, final int level,
+      final boolean includeHeads) {
     this(function, level, level, includeHeads);
   }
 
-  public IndexedLevel(
-      final BiFunction<IExpr, IExpr, IExpr> function,
-      final int fromLevel,
-      final int toLevel,
-      final boolean includeHeads) {
+  public IndexedLevel(final BiFunction<IExpr, IExpr, IExpr> function, final int fromLevel,
+      final int toLevel, final boolean includeHeads) {
     this(function, fromLevel, toLevel, Integer.MIN_VALUE, -1, includeHeads);
   }
 
@@ -185,13 +179,8 @@ public class IndexedLevel {
    * @param toDepth
    * @param includeHeads
    */
-  public IndexedLevel(
-      final BiFunction<IExpr, IExpr, IExpr> function,
-      final int fromLevel,
-      final int toLevel,
-      final int fromDepth,
-      final int toDepth,
-      final boolean includeHeads) {
+  public IndexedLevel(final BiFunction<IExpr, IExpr, IExpr> function, final int fromLevel,
+      final int toLevel, final int fromDepth, final int toDepth, final boolean includeHeads) {
     fFunction = function;
     fFromLevel = fromLevel;
     fToLevel = toLevel;
@@ -211,9 +200,7 @@ public class IndexedLevel {
   }
 
   public boolean isInRange(int level, int depth) {
-    return (level >= fFromLevel)
-        && (level <= fToLevel)
-        && (depth >= fFromDepth)
+    return (level >= fFromLevel) && (level <= fToLevel) && (depth >= fFromDepth)
         && (depth <= fToDepth);
   }
 
@@ -257,34 +244,33 @@ public class IndexedLevel {
           minDepth[0] = fCurrentDepth;
         }
       }
-      ast.forEach(
-          (x, i) -> {
-            newIndx[size] = i;
-            IExpr element = x;
-            boolean evaled = false;
-            if (element.isAST()) {
-              IExpr temp = visitAST((IAST) element, newIndx);
-              if (temp.isPresent()) {
-                evaled = true;
-                element = temp;
-              }
-            }
-            final IExpr temp = visitExpr(element, newIndx);
-            if (temp.isPresent()) {
-              if (!result[0].isPresent()) {
-                result[0] = createResult(ast, temp);
-              }
-              result[0].set(i, temp);
-            } else if (evaled) {
-              if (!result[0].isPresent()) {
-                result[0] = createResult(ast, temp);
-              }
-              result[0].set(i, element);
-            }
-            if (fCurrentDepth < minDepth[0]) {
-              minDepth[0] = fCurrentDepth;
-            }
-          });
+      ast.forEach((x, i) -> {
+        newIndx[size] = i;
+        IExpr element = x;
+        boolean evaled = false;
+        if (element.isAST()) {
+          IExpr temp = visitAST((IAST) element, newIndx);
+          if (temp.isPresent()) {
+            evaled = true;
+            element = temp;
+          }
+        }
+        final IExpr temp = visitExpr(element, newIndx);
+        if (temp.isPresent()) {
+          if (!result[0].isPresent()) {
+            result[0] = createResult(ast, temp);
+          }
+          result[0].set(i, temp);
+        } else if (evaled) {
+          if (!result[0].isPresent()) {
+            result[0] = createResult(ast, temp);
+          }
+          result[0].set(i, element);
+        }
+        if (fCurrentDepth < minDepth[0]) {
+          minDepth[0] = fCurrentDepth;
+        }
+      });
 
       fCurrentDepth = --minDepth[0];
     } finally {

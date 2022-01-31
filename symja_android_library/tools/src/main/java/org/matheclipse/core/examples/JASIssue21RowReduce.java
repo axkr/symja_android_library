@@ -41,17 +41,17 @@ public class JASIssue21RowReduce {
       GenMatrix<IExpr> rowEchelonForm = lalg.rowEchelonForm(matrix);
 
       // prints wrong result:
-      //      [
-      //      [ 1, a, 2 ],
-      //      [ 0, 1, -1/(1-a) ],
-      //      [ 0, 0, 1 ] ]
+      // [
+      // [ 1, a, 2 ],
+      // [ 0, 1, -1/(1-a) ],
+      // [ 0, 0, 1 ] ]
       System.out.println(rowEchelonForm);
 
       // should return
-      //      [
-      //      [ 1, 0, 0 ],
-      //      [ 0, 1, 0 ],
-      //      [ 0, 0, 1 ] ]
+      // [
+      // [ 1, 0, 0 ],
+      // [ 0, 1, 0 ],
+      // [ 0, 0, 1 ] ]
     }
   }
 }

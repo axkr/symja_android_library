@@ -1,17 +1,15 @@
 /*
  * Copyright 2005-2008 Axel Kramer (axelclk@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.matheclipse.api.parser;
 
@@ -60,14 +58,14 @@ public class FuzzyParserFactory implements IParserFactory {
 
   /** @@@ operator (not @@ operator) */
   private static class ApplyOperator extends FuzzyInfixExprOperator {
-    public ApplyOperator(
-        final String oper, final String functionName, final int precedence, final int grouping) {
+    public ApplyOperator(final String oper, final String functionName, final int precedence,
+        final int grouping) {
       super(oper, functionName, precedence, grouping);
     }
 
     @Override
-    public IASTMutable createFunction(
-        final IParserFactory factory, FuzzyParser parser, final IExpr lhs, final IExpr rhs) {
+    public IASTMutable createFunction(final IParserFactory factory, FuzzyParser parser,
+        final IExpr lhs, final IExpr rhs) {
       if (fOperatorString.equals("@")) {
         return F.unaryAST1(lhs, rhs);
       }
@@ -80,14 +78,14 @@ public class FuzzyParserFactory implements IParserFactory {
   }
 
   private static class TagSetOperator extends FuzzyInfixExprOperator {
-    public TagSetOperator(
-        final String oper, final String functionName, final int precedence, final int grouping) {
+    public TagSetOperator(final String oper, final String functionName, final int precedence,
+        final int grouping) {
       super(oper, functionName, precedence, grouping);
     }
 
     @Override
-    public IASTMutable createFunction(
-        final IParserFactory factory, FuzzyParser parser, final IExpr lhs, final IExpr rhs) {
+    public IASTMutable createFunction(final IParserFactory factory, FuzzyParser parser,
+        final IExpr lhs, final IExpr rhs) {
       if (rhs.isAST()) {
         IAST r = (IAST) rhs;
 
@@ -102,14 +100,14 @@ public class FuzzyParserFactory implements IParserFactory {
   }
 
   private static class DivideExprOperator extends FuzzyInfixExprOperator {
-    public DivideExprOperator(
-        final String oper, final String functionName, final int precedence, final int grouping) {
+    public DivideExprOperator(final String oper, final String functionName, final int precedence,
+        final int grouping) {
       super(oper, functionName, precedence, grouping);
     }
 
     @Override
-    public IASTMutable createFunction(
-        final IParserFactory factory, FuzzyParser parser, final IExpr lhs, final IExpr rhs) {
+    public IASTMutable createFunction(final IParserFactory factory, FuzzyParser parser,
+        final IExpr lhs, final IExpr rhs) {
 
       if (rhs.isInteger() && !rhs.isZero()) {
         if (lhs.isInteger()) {
@@ -130,8 +128,8 @@ public class FuzzyParserFactory implements IParserFactory {
 
   private static class PreMinusExprOperator extends FuzzyPrefixExprOperator {
 
-    public PreMinusExprOperator(
-        final String oper, final String functionName, final int precedence) {
+    public PreMinusExprOperator(final String oper, final String functionName,
+        final int precedence) {
       super(oper, functionName, precedence);
     }
 
@@ -154,14 +152,14 @@ public class FuzzyParserFactory implements IParserFactory {
   }
 
   private static class SubtractExprOperator extends FuzzyInfixExprOperator {
-    public SubtractExprOperator(
-        final String oper, final String functionName, final int precedence, final int grouping) {
+    public SubtractExprOperator(final String oper, final String functionName, final int precedence,
+        final int grouping) {
       super(oper, functionName, precedence, grouping);
     }
 
     @Override
-    public IASTMutable createFunction(
-        final IParserFactory factory, FuzzyParser parser, final IExpr lhs, final IExpr rhs) {
+    public IASTMutable createFunction(final IParserFactory factory, FuzzyParser parser,
+        final IExpr lhs, final IExpr rhs) {
       if (rhs.isNumber()) {
         return (IASTMutable) F.Plus(lhs, rhs.negate());
       }
@@ -220,8 +218,8 @@ public class FuzzyParserFactory implements IParserFactory {
       new FuzzyInfixExprOperator("**", "NonCommutativeMultiply", 510, FuzzyInfixExprOperator.NONE);
 
   public static final FuzzyInfixExprOperator POWER_OPERATOR = //
-      new FuzzyInfixExprOperator(
-          "^", "Power", POWER_PRECEDENCE, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE);
+      new FuzzyInfixExprOperator("^", "Power", POWER_PRECEDENCE,
+          FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE);
 
   public static final FuzzyInfixExprOperator SET_OPERATOR = //
       new FuzzyInfixExprOperator("=", "Set", 40, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE);
@@ -232,147 +230,29 @@ public class FuzzyParserFactory implements IParserFactory {
   public static final TagSetOperator TAG_SET_OPERATOR = //
       new TagSetOperator("/:", "TagSet", 40, FuzzyInfixExprOperator.NONE);
 
-  static final String[] HEADER_STRINGS = {
-    "MessageName",
-    "Information",
-    "Information",
-    "Get",
-    "PatternTest",
-    "MapAll",
-    "TimesBy",
-    "Plus",
-    "UpSet",
-    "CompoundExpression",
-    "Apply",
-    "Map",
-    "Unset",
-    "Apply",
-    "Apply",
-    "ReplaceRepeated",
-    "Less",
-    "And",
-    "Divide",
-    "Set",
-    "Increment",
-    "Factorial2",
-    "LessEqual",
-    "NonCommutativeMultiply",
-    "Factorial",
-    "Times",
-    "Power",
-    "Dot",
-    "Not",
-    "PreMinus",
-    "SameQ",
-    "RuleDelayed",
-    "GreaterEqual",
-    "Condition",
-    "Colon",
-    "//",
-    "DivideBy",
-    "Or",
-    "Span",
-    "Equal",
-    "StringJoin",
-    "Unequal",
-    "Decrement",
-    "SubtractFrom",
-    "PrePlus",
-    "RepeatedNull",
-    "UnsameQ",
-    "Rule",
-    "UpSetDelayed",
-    "PreIncrement",
-    "Function",
-    "Greater",
-    "PreDecrement",
-    "Subtract",
-    "SetDelayed",
-    "Alternatives",
-    "AddTo",
-    "Repeated",
-    "ReplaceAll",
-    "TagSet",
-    "Composition",
-    "StringExpression",
-    "TwoWayRule",
-    "TwoWayRule",
-    "DirectedEdge",
-    "UndirectedEdge",
-    "CenterDot",
-    "CircleDot"
-  };
+  static final String[] HEADER_STRINGS = {"MessageName", "Information", "Information", "Get",
+      "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet", "CompoundExpression", "Apply", "Map",
+      "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide", "Set", "Increment",
+      "Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power", "Dot",
+      "Not", "PreMinus", "SameQ", "RuleDelayed", "GreaterEqual", "Condition", "Colon", "//",
+      "DivideBy", "Or", "Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom",
+      "PrePlus", "RepeatedNull", "UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function",
+      "Greater", "PreDecrement", "Subtract", "SetDelayed", "Alternatives", "AddTo", "Repeated",
+      "ReplaceAll", "TagSet", "Composition", "StringExpression", "TwoWayRule", "TwoWayRule",
+      "DirectedEdge", "UndirectedEdge", "CenterDot", "CircleDot"};
 
-  static final String[] OPERATOR_STRINGS = {
-    "::",
-    "<<",
-    "?",
-    "??",
-    "?",
-    "//@",
-    "*=",
-    "+",
-    "^=",
-    ";",
-    "@",
-    "/@",
-    "=.",
-    "@@",
-    "@@@",
-    "//.",
-    "<",
-    "&&",
-    "/",
-    "=",
-    "++",
-    "!!",
-    "<=",
-    "**",
-    "!",
-    "*",
-    "^",
-    ".",
-    "!",
-    "-",
-    "===",
-    ":>",
-    ">=",
-    "/;",
-    ":",
-    "//",
-    "/=",
-    "||",
-    ";;",
-    "==",
-    "<>",
-    "!=",
-    "--",
-    "-=",
-    "+",
-    "...",
-    "=!=",
-    "->",
-    "^:=",
-    "++",
-    "&",
-    ">",
-    "--",
-    "-",
-    ":=",
-    "|",
-    "+=",
-    "..",
-    "/.",
-    "/:",
-    "@*",
-    "~~", //
-    "<->", // TwoWayRule
-    "\uF120", // TwoWayRule
-    "\uF3D5", // DirectedEdge
-    "\uF3D4", // UndirectedEdge
-    "\u00B7", // CenterDot
-    "\u2299" // CircleDot
-  };
+  static final String[] OPERATOR_STRINGS =
+      {"::", "<<", "?", "??", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.", "@@", "@@@", "//.",
+          "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>",
+          ">=", "/;", ":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=",
+          "->", "^:=", "++", "&", ">", "--", "-", ":=", "|", "+=", "..", "/.", "/:", "@*", "~~", //
+          "<->", // TwoWayRule
+          "\uF120", // TwoWayRule
+          "\uF3D5", // DirectedEdge
+          "\uF3D4", // UndirectedEdge
+          "\u00B7", // CenterDot
+          "\u2299" // CircleDot
+      };
   private static Operator[] OPERATORS;
 
   public static final FuzzyParserFactory RELAXED_STYLE_FACTORY = new FuzzyParserFactory();
@@ -391,99 +271,88 @@ public class FuzzyParserFactory implements IParserFactory {
 
     private static void init() {
 
-      OPERATORS =
-          new Operator[] {
-            new FuzzyInfixExprOperator("::", "MessageName", 750, FuzzyInfixExprOperator.NONE),
-            new FuzzyPrefixExprOperator("<<", "Get", 720), //
-            INFORMATION_SHORT, //
-            INFORMATION_LONG, //
-            new FuzzyInfixExprOperator("?", "PatternTest", 680, FuzzyInfixExprOperator.NONE), //
-            new FuzzyInfixExprOperator(
-                "//@", "MapAll", 620, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
-            new FuzzyInfixExprOperator(
-                "*=", "TimesBy", 100, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
-            new FuzzyInfixExprOperator(
-                "+", "Plus", PLUS_PRECEDENCE, FuzzyInfixExprOperator.NONE), //
-            new FuzzyInfixExprOperator(
-                "^=", "UpSet", 40, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
-            new FuzzyInfixExprOperator(
-                ";", "CompoundExpression", 10, FuzzyInfixExprOperator.NONE), //
-            APPLY_HEAD_OPERATOR, //
-            new FuzzyInfixExprOperator(
-                "/@", "Map", 620, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
-            new FuzzyPostfixExprOperator("=.", "Unset", 670), //
-            APPLY_OPERATOR, //
-            APPLY_LEVEL_OPERATOR, //
-            new FuzzyInfixExprOperator(
-                "//.", "ReplaceRepeated", 110, FuzzyInfixExprOperator.LEFT_ASSOCIATIVE), //
-            new FuzzyInfixExprOperator("<", "Less", 290, FuzzyInfixExprOperator.NONE), //
-            AND_OPERATOR, //
-            new DivideExprOperator(
-                "/", "Divide", DIVIDE_PRECEDENCE, FuzzyInfixExprOperator.LEFT_ASSOCIATIVE), //
-            Config.FUZZY_PARSER ? EQUAL_OPERATOR : SET_OPERATOR, //
-            new FuzzyPostfixExprOperator("++", "Increment", 660), //
-            new FuzzyPostfixExprOperator("!!", "Factorial2", 610), //
-            new FuzzyInfixExprOperator("<=", "LessEqual", 290, FuzzyInfixExprOperator.NONE), //
-            Config.FUZZY_PARSER ? POWER_OPERATOR : NON_COMMUTATIVE_MULTIPLY_OPERATOR, //
-            new FuzzyPostfixExprOperator("!", "Factorial", FACTORIAL_PRECEDENCE), //
-            new FuzzyInfixExprOperator(
-                "*", "Times", TIMES_PRECEDENCE, FuzzyInfixExprOperator.NONE), //
-            POWER_OPERATOR, //
-            new FuzzyInfixExprOperator(".", "Dot", 490, FuzzyInfixExprOperator.NONE), //
-            new FuzzyPrefixExprOperator("!", "Not", 230), //
-            new PreMinusExprOperator("-", "PreMinus", 485), //
-            new FuzzyInfixExprOperator("===", "SameQ", 290, FuzzyInfixExprOperator.NONE), //
-            new FuzzyInfixExprOperator(
-                ":>", "RuleDelayed", 120, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
-            new FuzzyInfixExprOperator(">=", "GreaterEqual", 290, FuzzyInfixExprOperator.NONE), //
-            new FuzzyInfixExprOperator(
-                "/;", "Condition", 130, FuzzyInfixExprOperator.LEFT_ASSOCIATIVE), //
-            new FuzzyInfixExprOperator(":", "Colon", 80, FuzzyInfixExprOperator.NONE), //
-            new FuzzyInfixExprOperator("//", "//", 70, FuzzyInfixExprOperator.LEFT_ASSOCIATIVE), //
-            new FuzzyInfixExprOperator(
-                "/=", "DivideBy", 100, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
-            OR_OPERATOR, //
-            new FuzzyInfixExprOperator(";;", "Span", 305, FuzzyInfixExprOperator.NONE), //
-            EQUAL_OPERATOR, //
-            new FuzzyInfixExprOperator("<>", "StringJoin", 600, FuzzyInfixExprOperator.NONE), //
-            new FuzzyInfixExprOperator("!=", "Unequal", 290, FuzzyInfixExprOperator.NONE), //
-            new FuzzyPostfixExprOperator("--", "Decrement", 660), //
-            new FuzzyInfixExprOperator(
-                "-=", "SubtractFrom", 100, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
-            new PrePlusExprOperator("+", "PrePlus", 670), //
-            new FuzzyPostfixExprOperator("...", "RepeatedNull", 170), //
-            new FuzzyInfixExprOperator("=!=", "UnsameQ", 290, FuzzyInfixExprOperator.NONE), //
-            new FuzzyInfixExprOperator(
-                "->", "Rule", 120, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
-            new FuzzyInfixExprOperator(
-                "^:=", "UpSetDelayed", 40, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
-            new FuzzyPrefixExprOperator("++", "PreIncrement", 660), //
-            Config.FUZZY_PARSER ? AND_OPERATOR : FUNCTION_OPERATOR, //
-            new FuzzyInfixExprOperator(">", "Greater", 290, FuzzyInfixExprOperator.NONE), //
-            new FuzzyPrefixExprOperator("--", "PreDecrement", 660), //
-            new SubtractExprOperator(
-                "-", "Subtract", 310, FuzzyInfixExprOperator.LEFT_ASSOCIATIVE), //
-            Config.FUZZY_PARSER ? EQUAL_OPERATOR : SET_DELAYED_OPERATOR, //
-            Config.FUZZY_PARSER ? OR_OPERATOR : ALTERNATIVES_OPERATOR, //
-            new FuzzyInfixExprOperator(
-                "+=", "AddTo", 100, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
-            new FuzzyPostfixExprOperator("..", "Repeated", 170), //
-            new FuzzyInfixExprOperator(
-                "/.", "ReplaceAll", 110, FuzzyInfixExprOperator.LEFT_ASSOCIATIVE), //
-            TAG_SET_OPERATOR, //
-            new FuzzyInfixExprOperator("@*", "Composition", 625, InfixOperator.NONE),
-            new FuzzyInfixExprOperator("~~", "StringExpression", 135, InfixOperator.NONE),
-            new FuzzyInfixExprOperator(
-                "<->", "TwoWayRule", 125, InfixOperator.RIGHT_ASSOCIATIVE), //
-            new FuzzyInfixExprOperator(
-                "\uF120", "TwoWayRule", 125, InfixOperator.RIGHT_ASSOCIATIVE), //
-            new FuzzyInfixExprOperator(
-                "\uF3D5", "DirectedEdge", 120, InfixOperator.RIGHT_ASSOCIATIVE), //
-            new FuzzyInfixExprOperator(
-                "\uF3D4", "UndirectedEdge", 120, InfixOperator.RIGHT_ASSOCIATIVE), //
-            new FuzzyInfixExprOperator("\u00B7", "CenterDot", 410, FuzzyInfixExprOperator.NONE), //
-            new FuzzyInfixExprOperator("\u2299", "CircleDot", 520, FuzzyInfixExprOperator.NONE) //
-          };
+      OPERATORS = new Operator[] {
+          new FuzzyInfixExprOperator("::", "MessageName", 750, FuzzyInfixExprOperator.NONE),
+          new FuzzyPrefixExprOperator("<<", "Get", 720), //
+          INFORMATION_SHORT, //
+          INFORMATION_LONG, //
+          new FuzzyInfixExprOperator("?", "PatternTest", 680, FuzzyInfixExprOperator.NONE), //
+          new FuzzyInfixExprOperator("//@", "MapAll", 620,
+              FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
+          new FuzzyInfixExprOperator("*=", "TimesBy", 100,
+              FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
+          new FuzzyInfixExprOperator("+", "Plus", PLUS_PRECEDENCE, FuzzyInfixExprOperator.NONE), //
+          new FuzzyInfixExprOperator("^=", "UpSet", 40, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
+          new FuzzyInfixExprOperator(";", "CompoundExpression", 10, FuzzyInfixExprOperator.NONE), //
+          APPLY_HEAD_OPERATOR, //
+          new FuzzyInfixExprOperator("/@", "Map", 620, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
+          new FuzzyPostfixExprOperator("=.", "Unset", 670), //
+          APPLY_OPERATOR, //
+          APPLY_LEVEL_OPERATOR, //
+          new FuzzyInfixExprOperator("//.", "ReplaceRepeated", 110,
+              FuzzyInfixExprOperator.LEFT_ASSOCIATIVE), //
+          new FuzzyInfixExprOperator("<", "Less", 290, FuzzyInfixExprOperator.NONE), //
+          AND_OPERATOR, //
+          new DivideExprOperator("/", "Divide", DIVIDE_PRECEDENCE,
+              FuzzyInfixExprOperator.LEFT_ASSOCIATIVE), //
+          Config.FUZZY_PARSER ? EQUAL_OPERATOR : SET_OPERATOR, //
+          new FuzzyPostfixExprOperator("++", "Increment", 660), //
+          new FuzzyPostfixExprOperator("!!", "Factorial2", 610), //
+          new FuzzyInfixExprOperator("<=", "LessEqual", 290, FuzzyInfixExprOperator.NONE), //
+          Config.FUZZY_PARSER ? POWER_OPERATOR : NON_COMMUTATIVE_MULTIPLY_OPERATOR, //
+          new FuzzyPostfixExprOperator("!", "Factorial", FACTORIAL_PRECEDENCE), //
+          new FuzzyInfixExprOperator("*", "Times", TIMES_PRECEDENCE, FuzzyInfixExprOperator.NONE), //
+          POWER_OPERATOR, //
+          new FuzzyInfixExprOperator(".", "Dot", 490, FuzzyInfixExprOperator.NONE), //
+          new FuzzyPrefixExprOperator("!", "Not", 230), //
+          new PreMinusExprOperator("-", "PreMinus", 485), //
+          new FuzzyInfixExprOperator("===", "SameQ", 290, FuzzyInfixExprOperator.NONE), //
+          new FuzzyInfixExprOperator(":>", "RuleDelayed", 120,
+              FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
+          new FuzzyInfixExprOperator(">=", "GreaterEqual", 290, FuzzyInfixExprOperator.NONE), //
+          new FuzzyInfixExprOperator("/;", "Condition", 130,
+              FuzzyInfixExprOperator.LEFT_ASSOCIATIVE), //
+          new FuzzyInfixExprOperator(":", "Colon", 80, FuzzyInfixExprOperator.NONE), //
+          new FuzzyInfixExprOperator("//", "//", 70, FuzzyInfixExprOperator.LEFT_ASSOCIATIVE), //
+          new FuzzyInfixExprOperator("/=", "DivideBy", 100,
+              FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
+          OR_OPERATOR, //
+          new FuzzyInfixExprOperator(";;", "Span", 305, FuzzyInfixExprOperator.NONE), //
+          EQUAL_OPERATOR, //
+          new FuzzyInfixExprOperator("<>", "StringJoin", 600, FuzzyInfixExprOperator.NONE), //
+          new FuzzyInfixExprOperator("!=", "Unequal", 290, FuzzyInfixExprOperator.NONE), //
+          new FuzzyPostfixExprOperator("--", "Decrement", 660), //
+          new FuzzyInfixExprOperator("-=", "SubtractFrom", 100,
+              FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
+          new PrePlusExprOperator("+", "PrePlus", 670), //
+          new FuzzyPostfixExprOperator("...", "RepeatedNull", 170), //
+          new FuzzyInfixExprOperator("=!=", "UnsameQ", 290, FuzzyInfixExprOperator.NONE), //
+          new FuzzyInfixExprOperator("->", "Rule", 120, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
+          new FuzzyInfixExprOperator("^:=", "UpSetDelayed", 40,
+              FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
+          new FuzzyPrefixExprOperator("++", "PreIncrement", 660), //
+          Config.FUZZY_PARSER ? AND_OPERATOR : FUNCTION_OPERATOR, //
+          new FuzzyInfixExprOperator(">", "Greater", 290, FuzzyInfixExprOperator.NONE), //
+          new FuzzyPrefixExprOperator("--", "PreDecrement", 660), //
+          new SubtractExprOperator("-", "Subtract", 310, FuzzyInfixExprOperator.LEFT_ASSOCIATIVE), //
+          Config.FUZZY_PARSER ? EQUAL_OPERATOR : SET_DELAYED_OPERATOR, //
+          Config.FUZZY_PARSER ? OR_OPERATOR : ALTERNATIVES_OPERATOR, //
+          new FuzzyInfixExprOperator("+=", "AddTo", 100, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE), //
+          new FuzzyPostfixExprOperator("..", "Repeated", 170), //
+          new FuzzyInfixExprOperator("/.", "ReplaceAll", 110,
+              FuzzyInfixExprOperator.LEFT_ASSOCIATIVE), //
+          TAG_SET_OPERATOR, //
+          new FuzzyInfixExprOperator("@*", "Composition", 625, InfixOperator.NONE),
+          new FuzzyInfixExprOperator("~~", "StringExpression", 135, InfixOperator.NONE),
+          new FuzzyInfixExprOperator("<->", "TwoWayRule", 125, InfixOperator.RIGHT_ASSOCIATIVE), //
+          new FuzzyInfixExprOperator("\uF120", "TwoWayRule", 125, InfixOperator.RIGHT_ASSOCIATIVE), //
+          new FuzzyInfixExprOperator("\uF3D5", "DirectedEdge", 120,
+              InfixOperator.RIGHT_ASSOCIATIVE), //
+          new FuzzyInfixExprOperator("\uF3D4", "UndirectedEdge", 120,
+              InfixOperator.RIGHT_ASSOCIATIVE), //
+          new FuzzyInfixExprOperator("\u00B7", "CenterDot", 410, FuzzyInfixExprOperator.NONE), //
+          new FuzzyInfixExprOperator("\u2299", "CircleDot", 520, FuzzyInfixExprOperator.NONE) //
+      };
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 
       fOperatorMap = ParserConfig.TRIE_STRING2OPERATOR_BUILDER.withMatch(TrieMatch.EXACT).build();
@@ -509,17 +378,13 @@ public class FuzzyParserFactory implements IParserFactory {
       // }
       // } else {
       for (int i = 0; i < HEADER_STRINGS.length; i++) {
-        addOperator(
-            fOperatorMap,
-            fOperatorTokenStartSet,
-            OPERATOR_STRINGS[i],
-            HEADER_STRINGS[i],
+        addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], HEADER_STRINGS[i],
             OPERATORS[i]);
         String unicodeChar =
             org.matheclipse.parser.client.Characters.NamedCharactersMap.get(HEADER_STRINGS[i]);
         if (unicodeChar != null) {
-          addOperator(
-              fOperatorMap, fOperatorTokenStartSet, unicodeChar, HEADER_STRINGS[i], OPERATORS[i]);
+          addOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, HEADER_STRINGS[i],
+              OPERATORS[i]);
           buf.append(unicodeChar);
         }
       }
@@ -532,12 +397,9 @@ public class FuzzyParserFactory implements IParserFactory {
     Initializer.init();
   }
 
-  public static void addOperator(
-      final Map<String, Operator> operatorMap,
-      final Map<String, ArrayList<Operator>> operatorTokenStartSet,
-      final String operatorStr,
-      final String headStr,
-      final Operator oper) {
+  public static void addOperator(final Map<String, Operator> operatorMap,
+      final Map<String, ArrayList<Operator>> operatorTokenStartSet, final String operatorStr,
+      final String headStr, final Operator oper) {
     ArrayList<Operator> list;
     operatorMap.put(headStr, oper);
     list = operatorTokenStartSet.get(operatorStr);

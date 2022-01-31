@@ -54,8 +54,8 @@ public class ContainsFunctions {
     static final ContainsAny CONST = new ContainsAny();
 
     @Override
-    public IExpr evaluate(
-        final IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
       if (argSize >= 2 && validateArgs(ast.arg1(), ast.arg2(), engine)) {
         IExpr sameTest = option[0].equals(S.Automatic) ? S.SameQ : option[0];
         IAST list1 = (IAST) ast.arg1();

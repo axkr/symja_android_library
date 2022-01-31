@@ -4,11 +4,11 @@ import org.hipparchus.distribution.RealDistribution;
 import org.matheclipse.core.expression.F;
 
 /**
- * Any distribution for which an analytic expression of the mean exists should implement {@link
- * IDistribution}.
+ * Any distribution for which an analytic expression of the mean exists should implement
+ * {@link IDistribution}.
  *
- * <p>The function is used in {@link Expectation} to provide the mean of a given {@link
- * IDistribution}.
+ * <p>
+ * The function is used in {@link Expectation} to provide the mean of a given {@link IDistribution}.
  */
 public interface IDistribution {
   default RealDistribution dist() {

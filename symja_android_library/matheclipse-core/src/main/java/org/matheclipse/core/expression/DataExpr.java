@@ -86,9 +86,9 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
       return -1;
     }
     if (expr.isAST()) {
-      //			if (expr.isDirectedInfinity()) {
+      // if (expr.isDirectedInfinity()) {
       return -1 * expr.compareTo(this);
-      //			}
+      // }
     }
     final int x = hierarchy();
     final int y = expr.hierarchy();

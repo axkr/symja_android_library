@@ -16,7 +16,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * (A)bstract (S)yntax (T)ree of a given function.
  *
- * <p>In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
+ * <p>
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
  * structure of the Symja source code. Each node of the tree denotes a construct occurring in the
  * source code. The syntax is 'abstract' in the sense that it does not represent every detail that
  * appears in the real syntax. For instance, grouping parentheses are implicit in the tree
@@ -25,12 +26,13 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>x</code>. Internally an AST is represented as a list which contains
  *
  * <ul>
- *   <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
- *       Times,...) at index <code>0</code> and
- *   <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
+ * Times,...) at index <code>0</code> and
+ * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
  * </ul>
  *
- * <p>See: <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Wikipedia: Abstract syntax
+ * <p>
+ * See: <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Wikipedia: Abstract syntax
  * tree</a>.
  */
 public class AST extends HMArrayList implements Externalizable {
@@ -55,7 +57,7 @@ public class AST extends HMArrayList implements Externalizable {
 
   /**
    * @param initialCapacity the initial capacity (i.e. number of arguments without the header
-   *     element) of the list.
+   *        element) of the list.
    * @param head the header expression of the function. If the ast represents a function like <code>
    *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
    * @param initNull initialize all elements with <code>null</code>.
@@ -89,12 +91,12 @@ public class AST extends HMArrayList implements Externalizable {
    *
    * @param symbol
    * @param evalComplex if <code>true</code> test if the imaginary part of the complex number is
-   *     zero and insert a {@link Num} real value.
+   *        zero and insert a {@link Num} real value.
    * @param arr the complex number arguments
    * @return
    */
-  public static AST newInstance(
-      final ISymbol symbol, boolean evalComplex, final org.hipparchus.complex.Complex... arr) {
+  public static AST newInstance(final ISymbol symbol, boolean evalComplex,
+      final org.hipparchus.complex.Complex... arr) {
     if (Config.MAX_AST_SIZE < arr.length) {
       ASTElementLimitExceeded.throwIt(arr.length);
     }
@@ -175,7 +177,8 @@ public class AST extends HMArrayList implements Externalizable {
    * simple parser to simplify unit tests. The parser assumes that the String contains no syntax
    * errors.
    *
-   * <p>Example &quot;List[x,List[y]]&quot;
+   * <p>
+   * Example &quot;List[x,List[y]]&quot;
    *
    * @param inputString
    * @return
@@ -243,7 +246,7 @@ public class AST extends HMArrayList implements Externalizable {
    * Constructs an empty list with the specified initial capacity.
    *
    * @param initialCapacity the initial capacity (i.e. number of arguments without the header
-   *     element) of the list.
+   *        element) of the list.
    * @param setLength if <code>true</code>, sets the array's size to initialCapacity.
    */
   protected AST(final int initialCapacity, final boolean setLength) {
@@ -271,17 +274,17 @@ public class AST extends HMArrayList implements Externalizable {
    *
    * @return a clone of this <tt>AST</tt> instance.
    */
-  //	@Override
-  //	public IAST clone() {
-  //		 throw new UnsupportedOperationException();
-  ////		AST ast = new AST();
-  ////		// ast.fProperties = null;
-  ////		ast.array = array.clone();
-  ////		ast.hashValue = 0;
-  ////		ast.firstIndex = firstIndex;
-  ////		ast.lastIndex = lastIndex;
-  ////		return ast;
-  //	}
+  // @Override
+  // public IAST clone() {
+  // throw new UnsupportedOperationException();
+  //// AST ast = new AST();
+  //// // ast.fProperties = null;
+  //// ast.array = array.clone();
+  //// ast.hashValue = 0;
+  //// ast.firstIndex = firstIndex;
+  //// ast.lastIndex = lastIndex;
+  //// return ast;
+  // }
 
   @Override
   public IASTAppendable copyAppendable() {
@@ -359,15 +362,15 @@ public class AST extends HMArrayList implements Externalizable {
         return F.headAST0(head());
       case 3:
         return F.unaryAST1(head(), arg2());
-        // case 4:
-        // return F.binaryAST2(head(), arg2(), arg3());
-        // case 5:
-        // return F.ternaryAST3(head(), arg2(), arg3(), arg4());
+      // case 4:
+      // return F.binaryAST2(head(), arg2(), arg3());
+      // case 5:
+      // return F.ternaryAST3(head(), arg2(), arg3(), arg4());
       default:
         if (isOrderlessAST()) {
           return super.rest();
         }
-        //        return new ASTProxy(this, 2);
+        // return new ASTProxy(this, 2);
         return super.rest();
     }
   }
@@ -383,11 +386,8 @@ public class AST extends HMArrayList implements Externalizable {
       ast.lastIndex = firstIndex + fromPosition;
       return ast;
     } else {
-      throw new IndexOutOfBoundsException(
-          "Index: "
-              + Integer.valueOf(fromPosition)
-              + ", Size: "
-              + Integer.valueOf(lastIndex - firstIndex));
+      throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(fromPosition) + ", Size: "
+          + Integer.valueOf(lastIndex - firstIndex));
     }
   }
 
@@ -412,7 +412,7 @@ public class AST extends HMArrayList implements Externalizable {
           if (isOrderlessAST()) {
             return copyFrom(firstPosition);
           }
-          //          return new ASTProxy(this, firstPosition);
+          // return new ASTProxy(this, firstPosition);
           return copyFrom(firstPosition);
       }
     } else {

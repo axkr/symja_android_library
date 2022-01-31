@@ -66,19 +66,16 @@ public class QuantityFunctions {
       DATEVALUE_MAP.put("SecondShort", x -> F.ZZ(x.getSecond()));
 
       // strings
-      DATEVALUE_MAP.put(
-          "MonthName", x -> F.stringx(x.getMonth().getDisplayName(TextStyle.FULL, Locale.US)));
-      DATEVALUE_MAP.put(
-          "MonthNameShort",
+      DATEVALUE_MAP.put("MonthName",
+          x -> F.stringx(x.getMonth().getDisplayName(TextStyle.FULL, Locale.US)));
+      DATEVALUE_MAP.put("MonthNameShort",
           x -> F.stringx(x.getMonth().getDisplayName(TextStyle.SHORT, Locale.US)));
-      DATEVALUE_MAP.put(
-          "MonthNameInitial",
+      DATEVALUE_MAP.put("MonthNameInitial",
           x -> F.stringx(x.getMonth().getDisplayName(TextStyle.NARROW, Locale.US)));
 
-      DATEVALUE_MAP.put(
-          "DayName", x -> F.stringx(x.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.US)));
-      DATEVALUE_MAP.put(
-          "DayNameShort",
+      DATEVALUE_MAP.put("DayName",
+          x -> F.stringx(x.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.US)));
+      DATEVALUE_MAP.put("DayNameShort",
           x -> F.stringx(x.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.US)));
     }
   }
@@ -99,10 +96,8 @@ public class QuantityFunctions {
               int year = list.arg1().toIntDefault();
               int month = list.arg2().toIntDefault();
               int day = list.arg3().toIntDefault();
-              if (year != Integer.MIN_VALUE
-                  && //
-                  month != Integer.MIN_VALUE
-                  && //
+              if (year != Integer.MIN_VALUE && //
+                  month != Integer.MIN_VALUE && //
                   day != Integer.MIN_VALUE) {
                 return DateObjectExpr.newInstance(LocalDateTime.of(year, month, day, 0, 0));
               }
@@ -111,8 +106,7 @@ public class QuantityFunctions {
           return F.NIL;
         }
         if (ast.size() == 3) {
-          if (ast.arg1() instanceof DateObjectExpr
-              && //
+          if (ast.arg1() instanceof DateObjectExpr && //
               ast.arg2() instanceof TimeObjectExpr) {
             LocalDate ld = ((DateObjectExpr) ast.arg1()).toData().toLocalDate();
             LocalTime lt = ((TimeObjectExpr) ast.arg2()).toData();
@@ -219,8 +213,8 @@ public class QuantityFunctions {
       try {
         if (ast.size() == 1) {
           LocalTime now = LocalTime.now();
-          return TimeObjectExpr.newInstance(
-              LocalTime.of(now.getHour(), now.getMinute(), now.getSecond()));
+          return TimeObjectExpr
+              .newInstance(LocalTime.of(now.getHour(), now.getMinute(), now.getSecond()));
         }
         if (ast.size() == 2) {
           IExpr arg1 = ast.arg1();
@@ -236,10 +230,8 @@ public class QuantityFunctions {
               if (list.size() == 4) {
                 second = list.arg3().toIntDefault();
               }
-              if (hour >= 0
-                  && //
-                  minute >= 0
-                  && //
+              if (hour >= 0 && //
+                  minute >= 0 && //
                   second >= 0) {
                 return TimeObjectExpr.newInstance(LocalTime.of(hour, minute, second));
               }
@@ -268,7 +260,8 @@ public class QuantityFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the quantity for <code>value</code> and <code>unit</code>
+   * <p>
+   * returns the quantity for <code>value</code> and <code>unit</code>
    *
    * </blockquote>
    */
@@ -319,7 +312,8 @@ public class QuantityFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the value of the <code>quantity</code>
+   * <p>
+   * returns the value of the <code>quantity</code>
    *
    * </blockquote>
    *
@@ -329,7 +323,8 @@ public class QuantityFunctions {
    *
    * <blockquote>
    *
-   * <p>returns the value of the <code>quantity</code> for the given <code>unit</code>
+   * <p>
+   * returns the value of the <code>quantity</code> for the given <code>unit</code>
    *
    * </blockquote>
    */
@@ -378,7 +373,8 @@ public class QuantityFunctions {
    *
    * <blockquote>
    *
-   * <p>convert the <code>quantity</code> to the base unit
+   * <p>
+   * convert the <code>quantity</code> to the base unit
    *
    * </blockquote>
    *
@@ -388,7 +384,8 @@ public class QuantityFunctions {
    *
    * <blockquote>
    *
-   * <p>convert the <code>quantity</code> to the given <code>unit</code>
+   * <p>
+   * convert the <code>quantity</code> to the given <code>unit</code>
    *
    * </blockquote>
    */

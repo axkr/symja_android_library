@@ -69,23 +69,22 @@ public class ArraySet<T> extends AbstractSet<T> implements Iterable<T> {
 
   @Override
   public final Iterator<T> iterator() {
-    Iterator<T> iter =
-        new Iterator<T>() {
-          int offset = 0;
+    Iterator<T> iter = new Iterator<T>() {
+      int offset = 0;
 
-          @Override
-          public boolean hasNext() {
-            return offset < size;
-          }
+      @Override
+      public boolean hasNext() {
+        return offset < size;
+      }
 
-          @Override
-          public T next() {
-            if (offset < size) {
-              return (T) array[offset++];
-            }
-            return null;
-          }
-        };
+      @Override
+      public T next() {
+        if (offset < size) {
+          return (T) array[offset++];
+        }
+        return null;
+      }
+    };
     return iter;
   }
 }

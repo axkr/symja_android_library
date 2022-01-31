@@ -11,7 +11,7 @@ public class ExprParserTestCase extends AbstractTestCase {
   }
 
   public void testIntegerMIN_VALUE() {
-    //	  Integer.MIN_VALUE
+    // Integer.MIN_VALUE
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
     ExprParser parser = new ExprParser(engine, true);
     IExpr expr = parser.parse("-2147483648");
@@ -19,7 +19,7 @@ public class ExprParserTestCase extends AbstractTestCase {
   }
 
   public void testLongMIN_VALUE() {
-    //	  Long.MIN_VALUE
+    // Long.MIN_VALUE
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
     ExprParser parser = new ExprParser(engine, true);
     IExpr expr = parser.parse("-9223372036854775808");

@@ -43,8 +43,8 @@ public final class Validate {
    * @param engine
    * @return <code>null</code> if the conversion isn't possible
    */
-  public static long[] checkListOfLongs(
-      IAST ast, IExpr arg, long startValue, boolean quiet, EvalEngine engine) {
+  public static long[] checkListOfLongs(IAST ast, IExpr arg, long startValue, boolean quiet,
+      EvalEngine engine) {
     if (arg.isList()) {
       IAST list = (IAST) arg;
       if (list.argSize() > 0) {
@@ -89,8 +89,8 @@ public final class Validate {
    * @param engine
    * @return <code>null</code> if the conversion isn't possible
    */
-  public static BigInteger[] checkListOfBigIntegers(
-      IAST ast, IExpr arg, boolean nonNegative, EvalEngine engine) {
+  public static BigInteger[] checkListOfBigIntegers(IAST ast, IExpr arg, boolean nonNegative,
+      EvalEngine engine) {
     if (arg.isNonEmptyList()) {
       IAST list = (IAST) arg;
       if (list.argSize() > 0) {
@@ -136,8 +136,8 @@ public final class Validate {
    * @param engine
    * @return <code>null</code> if the conversion isn't possible
    */
-  public static int[] checkListOfInts(
-      IAST ast, IExpr arg, boolean nonNegative, boolean quiet, EvalEngine engine) {
+  public static int[] checkListOfInts(IAST ast, IExpr arg, boolean nonNegative, boolean quiet,
+      EvalEngine engine) {
     if (arg.isNonEmptyList()) {
       IAST list = (IAST) arg;
       if (list.argSize() > 0) {
@@ -188,8 +188,8 @@ public final class Validate {
    * @param engine
    * @return <code>null</code> if the conversion isn't possible
    */
-  public static int[] checkListOfInts(
-      IAST ast, IExpr arg, int minValue, int maxValue, EvalEngine engine) {
+  public static int[] checkListOfInts(IAST ast, IExpr arg, int minValue, int maxValue,
+      EvalEngine engine) {
     if (arg.isList()) {
       IAST list = (IAST) arg;
       if (list.argSize() > 0) {
@@ -231,14 +231,8 @@ public final class Validate {
    * @param engine
    * @return <code>null</code> if the conversion isn't possible
    */
-  public static int[][] checkListOfSequenceSpec(
-      IAST ast,
-      IExpr arg,
-      int position,
-      int stringLength,
-      int minValue,
-      int maxValue,
-      EvalEngine engine) {
+  public static int[][] checkListOfSequenceSpec(IAST ast, IExpr arg, int position, int stringLength,
+      int minValue, int maxValue, EvalEngine engine) {
     if (arg.isList()) {
       IAST list = (IAST) arg;
       if (list.argSize() > 0) {
@@ -253,8 +247,8 @@ public final class Validate {
               if (intValue == Integer.MIN_VALUE) {
                 // Sequence specification or a list of sequence specifications expected at position
                 // `1` in `2`.
-                IOFunctions.printMessage(
-                    ast.topHead(), "mseqs", F.List(F.ZZ(position), ast), engine);
+                IOFunctions.printMessage(ast.topHead(), "mseqs", F.List(F.ZZ(position), ast),
+                    engine);
                 return null;
               }
               result[i - 1][0] = intValue;
@@ -263,8 +257,8 @@ public final class Validate {
               if (intValue == Integer.MIN_VALUE) {
                 // Sequence specification or a list of sequence specifications expected at position
                 // `1` in `2`.
-                IOFunctions.printMessage(
-                    ast.topHead(), "mseqs", F.List(F.ZZ(position), ast), engine);
+                IOFunctions.printMessage(ast.topHead(), "mseqs", F.List(F.ZZ(position), ast),
+                    engine);
                 return null;
               }
               result[i - 1][0] = intValue;
@@ -441,7 +435,7 @@ public final class Validate {
    * Integer.MAX_VALUE]
    *
    * @param expr a signed number which will be converted to a Java <code>int</code> if possible,
-   *     otherwise throw a <code>ArgumentTypeException</code> exception.
+   *        otherwise throw a <code>ArgumentTypeException</code> exception.
    * @throws ArgumentTypeException
    */
   public static int checkIntLevelType(IExpr expr, int startValue) {
@@ -450,9 +444,8 @@ public final class Validate {
       int result = Integer.MAX_VALUE;
       if (startValue > result) {
         // Level value greater equal `1` expected instead of `2`.
-        String str =
-            IOFunctions.getMessage(
-                "intlevel", F.List(F.ZZ(startValue), F.CInfinity), EvalEngine.get());
+        String str = IOFunctions.getMessage("intlevel", F.List(F.ZZ(startValue), F.CInfinity),
+            EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
@@ -472,9 +465,8 @@ public final class Validate {
       int result = Integer.MIN_VALUE;
       if (startValue > result) {
         // Level specification value greater equal `1` expected instead of `2`.
-        String str =
-            IOFunctions.getMessage(
-                "intlevel", F.List(F.ZZ(startValue), F.CNInfinity), EvalEngine.get());
+        String str = IOFunctions.getMessage("intlevel", F.List(F.ZZ(startValue), F.CNInfinity),
+            EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
@@ -490,7 +482,7 @@ public final class Validate {
    * Integer.MAX_VALUE]
    *
    * @param expr a signed number which will be converted to a Java <code>int</code> if possible,
-   *     otherwise return <code>Integer.MIN_VALUE</code>
+   *        otherwise return <code>Integer.MIN_VALUE</code>
    * @return <code>Integer.MIN_VALUE</code> if a <code>Java int</code> value couldn't be determined.
    */
   public static int checkIntType(ISymbol head, IExpr expr, int startValue, EvalEngine engine) {
@@ -606,8 +598,8 @@ public final class Validate {
   }
 
   /**
-   * Check if the argument at the given position is a list of symbols or <code>Set</code> and <code>SefDelayed</code>
-   * definitions from a local variable definition.
+   * Check if the argument at the given position is a list of symbols or <code>Set</code> and
+   * <code>SefDelayed</code> definitions from a local variable definition.
    *
    * @param ast
    * @param position the position which has to be a list of symbols
@@ -630,8 +622,8 @@ public final class Validate {
         }
         // Local variable specification `1` contains `2` which is not a symbol or an assignment to
         // a symbol.
-        return IOFunctions.printMessage(
-            ast.topHead(), "lvsym", F.List(ast.get(position), arg), engine);
+        return IOFunctions.printMessage(ast.topHead(), "lvsym", F.List(ast.get(position), arg),
+            engine);
       }
       return listOfSymbols;
     }
@@ -646,10 +638,10 @@ public final class Validate {
    * @param position the position which has to be a variable or list of variables.
    * @param engine engine to print a message if the expression is no variable
    * @return a list of symbols defined at <code>ast.get(position)</code> or <code>F.NIL</code>
-   *     otherwise.
+   *         otherwise.
    */
-  public static IAST checkIsVariableOrVariableList(
-      IAST ast, int position, ISymbol head, EvalEngine engine) {
+  public static IAST checkIsVariableOrVariableList(IAST ast, int position, ISymbol head,
+      EvalEngine engine) {
     IAST vars = null;
     IExpr temp = null;
     if (ast.get(position).isList()) {
@@ -756,8 +748,8 @@ public final class Validate {
    * @param engine
    * @return <code>F.NIL</code> if the expression is no <code>IAST</code> object.
    */
-  public static IAST checkASTOrAssociationType(
-      IAST ast, IExpr arg1, int position, EvalEngine engine) {
+  public static IAST checkASTOrAssociationType(IAST ast, IExpr arg1, int position,
+      EvalEngine engine) {
     if (arg1.isASTOrAssociation()) {
       return (IAST) arg1;
     }
@@ -841,23 +833,17 @@ public final class Validate {
         }
         return;
       }
-      termsEqualZeroList.append(
-          F.Equal(subtract.isTimes() ? subtract : F.evalExpandAll(subtract), F.C0));
+      termsEqualZeroList
+          .append(F.Equal(subtract.isTimes() ? subtract : F.evalExpandAll(subtract), F.C0));
       return;
     }
     if (eq.isAST2()) {
       IAST equal = (IAST) eq;
       IExpr head = equal.head();
-      if (head.equals(S.Equal)
-          || head.equals(S.Unequal)
-          || head.equals(S.Greater)
-          || head.equals(S.GreaterEqual)
-          || head.equals(S.Less)
-          || head.equals(S.LessEqual)) {
-        final IExpr[] arr =
-            new IExpr[] {
-              F.expandAll(equal.arg1(), true, true), F.expandAll(equal.arg2(), true, true)
-            };
+      if (head.equals(S.Equal) || head.equals(S.Unequal) || head.equals(S.Greater)
+          || head.equals(S.GreaterEqual) || head.equals(S.Less) || head.equals(S.LessEqual)) {
+        final IExpr[] arr = new IExpr[] {F.expandAll(equal.arg1(), true, true),
+            F.expandAll(equal.arg2(), true, true)};
         termsEqualZeroList.append(F.ast(arr, head));
         return;
       }

@@ -39,7 +39,8 @@ public class SparseArrayFunctions {
    *
    * <blockquote>
    *
-   * <p>return the array of rules which define the sparse array.
+   * <p>
+   * return the array of rules which define the sparse array.
    *
    * </blockquote>
    *
@@ -50,7 +51,8 @@ public class SparseArrayFunctions {
    *
    * <blockquote>
    *
-   * <p>return the array of rules which define the nested lists.
+   * <p>
+   * return the array of rules which define the nested lists.
    *
    * </blockquote>
    *
@@ -67,7 +69,8 @@ public class SparseArrayFunctions {
    *
    * <h3>Related terms</h3>
    *
-   * <p><a href="SparseArray.md">SparseArray</a>
+   * <p>
+   * <a href="SparseArray.md">SparseArray</a>
    */
   private static class ArrayRules extends AbstractFunctionEvaluator {
 
@@ -86,11 +89,8 @@ public class SparseArrayFunctions {
           defaultValue = d;
         } else if (ast.isAST2()) {
           if (!d.equals(defaultValue)) {
-            LOGGER.log(
-                engine.getLogLevel(),
-                "{}: Sparse array default value: {} unequals default value {}",
-                ast.topHead(),
-                d,
+            LOGGER.log(engine.getLogLevel(),
+                "{}: Sparse array default value: {} unequals default value {}", ast.topHead(), d,
                 defaultValue);
             return F.NIL;
           }
@@ -112,40 +112,50 @@ public class SparseArrayFunctions {
   /**
    *
    *
-   * <pre><code>SparseArray(nested-list)
-   * </code></pre>
+   * <pre>
+   * <code>SparseArray(nested-list)
+   * </code>
+   * </pre>
    *
    * <blockquote>
    *
-   * <p>create a sparse array from a <code>nested-list</code> structure.
+   * <p>
+   * create a sparse array from a <code>nested-list</code> structure.
    *
    * </blockquote>
    *
-   * <pre><code>SparseArray(array-rules, list-of-integers, default-value)
-   * </code></pre>
+   * <pre>
+   * <code>SparseArray(array-rules, list-of-integers, default-value)
+   * </code>
+   * </pre>
    *
    * <blockquote>
    *
-   * <p>create a sparse array from <code>array-rules</code> with dimension <code>list-of-integers
+   * <p>
+   * create a sparse array from <code>array-rules</code> with dimension <code>list-of-integers
    * </code> and undefined elements are having <code>default-value</code>.
    *
    * </blockquote>
    *
-   * <pre><code>SparseArray(Automatic, list-of-integers, default-value, crs-list)
-   * </code></pre>
+   * <pre>
+   * <code>SparseArray(Automatic, list-of-integers, default-value, crs-list)
+   * </code>
+   * </pre>
    *
    * <blockquote>
    *
-   * <p>create a sparse array from the compressed-row-storage <code>crs-list</code> with dimension
+   * <p>
+   * create a sparse array from the compressed-row-storage <code>crs-list</code> with dimension
    * <code>list-of-integers</code> and undefined elements are having <code>default-value</code>.
    *
    * </blockquote>
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="http://netlib.org/utk/papers/templates/node91.html">Netlib - Compressed Row
-   *       Storage (CRS)</a>
+   * <li><a href="http://netlib.org/utk/papers/templates/node91.html">Netlib - Compressed Row
+   * Storage (CRS)</a>
    * </ul>
    *
    * <h3>Examples</h3>
@@ -156,7 +166,8 @@ public class SparseArrayFunctions {
    *
    * &gt;&gt; SparseArray({{1, 1} -&gt; 1, {2, 2} -&gt; 2, {3, 3} -&gt; 3, {1, 3} -&gt; 4}, Automatic, 0)
    * SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)
-   * </code></pre>
+   * </code>
+   * </pre>
    */
   private static class SparseArray extends AbstractFunctionEvaluator {
 
@@ -193,16 +204,14 @@ public class SparseArrayFunctions {
               if (version == 1 && list.arg2().isList2() && list.arg3().isList()) {
                 IAST second = (IAST) list.arg2();
                 int[] columnIndicesDimension = second.arg2().isMatrix(false);
-                if (second.arg1().isList()
-                    && //
+                if (second.arg1().isList() && //
                     columnIndicesDimension != null) {
                   int[] rowPointers =
                       Validate.checkListOfInts(ast, second.arg1(), 0, Integer.MAX_VALUE, engine);
                   IAST columnIndices = (IAST) second.arg2();
                   IAST nonZeroValues = (IAST) list.arg3();
-                  ISparseArray result =
-                      SparseArrayExpr.newInputForm(
-                          dimension, defaultValue, rowPointers, columnIndices, nonZeroValues);
+                  ISparseArray result = SparseArrayExpr.newInputForm(dimension, defaultValue,
+                      rowPointers, columnIndices, nonZeroValues);
                   if (result != null) {
                     return result;
                   }

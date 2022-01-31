@@ -14,90 +14,72 @@ public class JavaLinkTests extends AbstractRubiTestCase {
 
   public void testJavaNew001() {
 
-    check(
-        "loc= JavaNew[\"java.util.Locale\",\"US\"];" //
-            + "ds =  JavaNew[\"java.text.DecimalFormatSymbols\", loc];"
-            + "dm = JavaNew[\"java.text.DecimalFormat\", \"#.00\", ds]", //
+    check("loc= JavaNew[\"java.util.Locale\",\"US\"];" //
+        + "ds =  JavaNew[\"java.text.DecimalFormatSymbols\", loc];"
+        + "dm = JavaNew[\"java.text.DecimalFormat\", \"#.00\", ds]", //
         "JavaObject[class java.text.DecimalFormat]");
-    check(
-        "dm@format[0.815]", //
+    check("dm@format[0.815]", //
         "\".81\"");
   }
 
   public void testInstanceOf001() {
 
-    check(
-        "loc= JavaNew[\"java.util.Locale\",\"US\"]", //
+    check("loc= JavaNew[\"java.util.Locale\",\"US\"]", //
         "JavaObject[class java.util.Locale]");
-    check(
-        "InstanceOf[loc, \"java.util.Locale\"]", //
+    check("InstanceOf[loc, \"java.util.Locale\"]", //
         "True");
-    check(
-        "InstanceOf[loc, \"java.io.Serializable\"]", //
+    check("InstanceOf[loc, \"java.io.Serializable\"]", //
         "True");
-    check(
-        "InstanceOf[loc, \"test\"]", //
+    check("InstanceOf[loc, \"test\"]", //
         "False");
   }
 
   public void testLoadJavaClass001() {
 
-    check(
-        "clazz= LoadJavaClass[\"java.lang.Math\"]", //
+    check("clazz= LoadJavaClass[\"java.lang.Math\"]", //
         "JavaClass[java.lang.Math]");
-    check(
-        "Math`sin[0.5]", //
+    check("Math`sin[0.5]", //
         "0.479425538604203");
   }
 
   public void testLoadJavaClass002() {
-    check(
-        "clazz= LoadJavaClass[\"org.jsoup.Jsoup\"]", //
+    check("clazz= LoadJavaClass[\"org.jsoup.Jsoup\"]", //
         "JavaClass[org.jsoup.Jsoup]");
-    check(
-        "conn=Jsoup`connect[\"https://jsoup.org/\"];", //
+    check("conn=Jsoup`connect[\"https://jsoup.org/\"];", //
         "Null");
-    check(
-        "doc=conn@get[ ];", //
+    check("doc=conn@get[ ];", //
         "Null");
-    check(
-        "Print[doc@title[ ]];", //
+    check("Print[doc@title[ ]];", //
         "Null");
   }
 
   public void testJavaObjectQ001() {
 
-    check(
-        "loc = JavaNew[\"java.util.Locale\",\"US\"]", //
+    check("loc = JavaNew[\"java.util.Locale\",\"US\"]", //
         "JavaObject[class java.util.Locale]");
-    check(
-        "JavaObjectQ[loc]", //
+    check("JavaObjectQ[loc]", //
         "True");
   }
 
   public void testSameObject001() {
 
-    check(
-        "loc1= JavaNew[\"java.util.Locale\",\"US\"]", //
+    check("loc1= JavaNew[\"java.util.Locale\",\"US\"]", //
         "JavaObject[class java.util.Locale]");
-    check(
-        "loc2= JavaNew[\"java.util.Locale\",\"US\"]", //
+    check("loc2= JavaNew[\"java.util.Locale\",\"US\"]", //
         "JavaObject[class java.util.Locale]");
-    check(
-        "SameObjectQ[loc1, loc2]", //
+    check("SameObjectQ[loc1, loc2]", //
         "False");
-    check(
-        "SameObjectQ[loc1, loc1]", //
+    check("SameObjectQ[loc1, loc1]", //
         "True");
   }
 
   public void testJavaShow001() {
-//    check(
-//        "frame= JavaNew[ \"javax.swing.JFrame\", \"Simple JFrame Demo\"];", //
-//        "Null");
-//    check(
-//        "loc= JavaShow[frame ];Pause[10]", //
-//        ""); 
+    // check(
+    // "frame= JavaNew[ \"javax.swing.JFrame\", \"Simple JFrame Demo\"];", //
+    // "Null");
+    // check(
+    // "loc= JavaShow[frame ];Pause[10]", //
+    // "");
   }
 
   /** The JUnit setup method */

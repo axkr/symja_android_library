@@ -89,11 +89,8 @@ public class ComplexSym implements IComplex {
     return c;
   }
 
-  public static ComplexSym valueOf(
-      final long real_numerator,
-      final long real_denominator,
-      final long imag_numerator,
-      final long imag_denominator) {
+  public static ComplexSym valueOf(final long real_numerator, final long real_denominator,
+      final long imag_numerator, final long imag_denominator) {
     final ComplexSym c = new ComplexSym();
     if (real_denominator == 1L) {
       c.fReal = AbstractIntegerSym.valueOf(real_numerator);
@@ -199,8 +196,8 @@ public class ComplexSym implements IComplex {
 
   @Override
   public IComplex add(final IComplex parm1) {
-    return ComplexSym.valueOf(
-        fReal.add(parm1.getRealPart()), fImaginary.add(parm1.getImaginaryPart()));
+    return ComplexSym.valueOf(fReal.add(parm1.getRealPart()),
+        fImaginary.add(parm1.getImaginaryPart()));
   }
 
   @Override
@@ -211,14 +208,10 @@ public class ComplexSym implements IComplex {
   public Apcomplex apcomplexValue() {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     long precision = h.precision();
-    Apfloat real =
-        h.divide(
-            new Apfloat(fReal.toBigNumerator(), precision),
-            new Apfloat(fReal.toBigDenominator(), precision));
-    Apfloat imag =
-        h.divide(
-            new Apfloat(fImaginary.toBigNumerator(), precision),
-            new Apfloat(fImaginary.toBigDenominator(), precision));
+    Apfloat real = h.divide(new Apfloat(fReal.toBigNumerator(), precision),
+        new Apfloat(fReal.toBigDenominator(), precision));
+    Apfloat imag = h.divide(new Apfloat(fImaginary.toBigNumerator(), precision),
+        new Apfloat(fImaginary.toBigDenominator(), precision));
     return new Apcomplex(real, imag);
   }
 
@@ -509,30 +502,17 @@ public class ComplexSym implements IComplex {
     int realDenominator = NumberUtil.toIntDefault(fReal.toBigDenominator());
     int imagNumerator = NumberUtil.toIntDefault(fImaginary.toBigNumerator());
     int imagDenominator = NumberUtil.toIntDefault(fImaginary.toBigDenominator());
-    if (realNumerator != Integer.MIN_VALUE
-        && //
-        realDenominator != Integer.MIN_VALUE
-        && //
-        imagNumerator != Integer.MIN_VALUE
-        && //
+    if (realNumerator != Integer.MIN_VALUE && //
+        realDenominator != Integer.MIN_VALUE && //
+        imagNumerator != Integer.MIN_VALUE && //
         imagDenominator != Integer.MIN_VALUE) {
-      return new StringBuilder(prefix)
-          .append("CC(")
-          .append(realNumerator)
-          .append("L,")
-          .append(realDenominator)
-          .append("L,")
-          .append(imagNumerator)
-          .append("L,")
-          .append(imagDenominator)
-          .append("L)");
+      return new StringBuilder(prefix).append("CC(").append(realNumerator).append("L,")
+          .append(realDenominator).append("L,").append(imagNumerator).append("L,")
+          .append(imagDenominator).append("L)");
     }
-    return new StringBuilder(prefix)
-        .append("CC(")
-        .append(fReal.internalJavaString(properties, depth, variables))
-        .append(",")
-        .append(fImaginary.internalJavaString(properties, depth, variables))
-        .append(")");
+    return new StringBuilder(prefix).append("CC(")
+        .append(fReal.internalJavaString(properties, depth, variables)).append(",")
+        .append(fImaginary.internalJavaString(properties, depth, variables)).append(")");
   }
 
   @Override
@@ -585,13 +565,14 @@ public class ComplexSym implements IComplex {
    * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the
    * division of <code>IComplex</code> numbers <code>this / c2</code>.
    *
-   * <p>See
+   * <p>
+   * See
    *
    * <ul>
-   *   <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
-   *   <li><a
-   *       href="http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
-   *       Algorithm for Gaussian Integers </a>
+   * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
+   * <li><a href=
+   * "http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
+   * Algorithm for Gaussian Integers </a>
    * </ul>
    *
    * @param c2
@@ -601,22 +582,14 @@ public class ComplexSym implements IComplex {
   public IComplex[] quotientRemainder(final IComplex c2) {
     final IRational re = c2.re();
     final IRational im = c2.im();
-    IRational numeratorReal =
-        fReal
-            .multiply(re)
-            .subtract( //
-                fImaginary.multiply(im.negate()));
+    IRational numeratorReal = fReal.multiply(re).subtract( //
+        fImaginary.multiply(im.negate()));
 
-    IRational numeratorImaginary =
-        fReal
-            .multiply(im.negate())
-            .add( //
-                re.multiply(fImaginary));
+    IRational numeratorImaginary = fReal.multiply(im.negate()).add( //
+        re.multiply(fImaginary));
 
-    IRational denominator =
-        re.multiply(re)
-            .add( //
-                im.multiply(im));
+    IRational denominator = re.multiply(re).add( //
+        im.multiply(im));
 
     if (denominator.isZero()) {
       throw new IllegalArgumentException("Denominator can not be zero.");
@@ -631,9 +604,8 @@ public class ComplexSym implements IComplex {
         fImaginary.subtract(re.multiply(divisionImaginary)).subtract(im.multiply(divisionReal));
 
     return new ComplexSym[] { //
-      valueOf(divisionReal, divisionImaginary), //
-      valueOf(remainderReal, remainderImaginary)
-    };
+        valueOf(divisionReal, divisionImaginary), //
+        valueOf(remainderReal, remainderImaginary)};
   }
 
   @Override
@@ -861,7 +833,7 @@ public class ComplexSym implements IComplex {
           return valueOf( //
               (IRational) a, //
               (d.complexSign() >= 0) ? b : b.negate() //
-              );
+          );
         }
       }
     }
@@ -891,8 +863,8 @@ public class ComplexSym implements IComplex {
   public String toString() {
     try {
       StringBuilder sb = new StringBuilder();
-      OutputFormFactory.get()
-          .convertComplex(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
+      OutputFormFactory.get().convertComplex(sb, this, Integer.MIN_VALUE,
+          OutputFormFactory.NO_PLUS_CALL);
       return sb.toString();
     } catch (Exception e1) {
       // fall back to simple output format

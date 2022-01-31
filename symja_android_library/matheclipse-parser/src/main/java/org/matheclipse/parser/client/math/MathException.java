@@ -26,8 +26,8 @@ public class MathException extends RuntimeException {
     super();
   }
 
-  public MathException(
-      String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+  public MathException(String message, Throwable cause, boolean enableSuppression,
+      boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
   }
 

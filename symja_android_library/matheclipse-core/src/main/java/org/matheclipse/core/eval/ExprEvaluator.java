@@ -32,89 +32,91 @@ import com.google.common.util.concurrent.TimeLimiter;
 /**
  * Evaluate math expressions to <code>IExpr</code> results.
  *
- * <p><b>Example 1</b>:
+ * <p>
+ * <b>Example 1</b>:
  *
  * <pre>
  * try {
- * 	// don't distinguish between lower and upper case identifiers
- * 	Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
+ *   // don't distinguish between lower and upper case identifiers
+ *   Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
  *
- * 	ExprEvaluator util = new ExprEvaluator(false, 100);
+ *   ExprEvaluator util = new ExprEvaluator(false, 100);
  *
- * 	// Show an expression in the Java form:
- * 	// Note: single character identifiers are case sensistive
- * 	// (the "D()" function input must be written as upper case
- * 	// character)
- * 	String javaForm = util.toJavaForm("D(sin(x)*cos(x),x)");
- * 	// prints: D(Times(Sin(x),Cos(x)),x)
- * 	System.out.println(javaForm.toString());
+ *   // Show an expression in the Java form:
+ *   // Note: single character identifiers are case sensistive
+ *   // (the "D()" function input must be written as upper case
+ *   // character)
+ *   String javaForm = util.toJavaForm("D(sin(x)*cos(x),x)");
+ *   // prints: D(Times(Sin(x),Cos(x)),x)
+ *   System.out.println(javaForm.toString());
  *
- * 	// Use the Java form to create an expression with F.* static
- * 	// methods:
- * 	IAST function = D(Times(Sin(x), Cos(x)), x);
- * 	IExpr result = util.eval(function);
- * 	// print: Cos(x)^2-Sin(x)^2
- * 	System.out.println(result.toString());
+ *   // Use the Java form to create an expression with F.* static
+ *   // methods:
+ *   IAST function = D(Times(Sin(x), Cos(x)), x);
+ *   IExpr result = util.eval(function);
+ *   // print: Cos(x)^2-Sin(x)^2
+ *   System.out.println(result.toString());
  *
- * 	// Note "diff" is an alias for the "D" function
- * 	result = util.eval("diff(sin(x)*cos(x),x)");
- * 	// print: Cos(x)^2-Sin(x)^2
- * 	System.out.println(result.toString());
+ *   // Note "diff" is an alias for the "D" function
+ *   result = util.eval("diff(sin(x)*cos(x),x)");
+ *   // print: Cos(x)^2-Sin(x)^2
+ *   System.out.println(result.toString());
  *
- * 	// evaluate the last result ($ans contains "last answer")
- * 	result = util.eval("$ans+cos(x)^2");
- * 	// print: 2*Cos(x)^2-Sin(x)^2
- * 	System.out.println(result.toString());
+ *   // evaluate the last result ($ans contains "last answer")
+ *   result = util.eval("$ans+cos(x)^2");
+ *   // print: 2*Cos(x)^2-Sin(x)^2
+ *   System.out.println(result.toString());
  *
- * 	// evaluate an Integrate[] expression
- * 	result = util.eval("integrate(sin(x)^5,x)");
- * 	// print: 2/3*Cos(x)^3-1/5*Cos(x)^5-Cos(x)
- * 	System.out.println(result.toString());
+ *   // evaluate an Integrate[] expression
+ *   result = util.eval("integrate(sin(x)^5,x)");
+ *   // print: 2/3*Cos(x)^3-1/5*Cos(x)^5-Cos(x)
+ *   System.out.println(result.toString());
  *
- * 	// set the value of a variable "a" to 10
- * 	// Note: in server mode the variable name must have a preceding '$'
- * 	// character
- * 	result = util.eval("a=10");
- * 	// print: 10
- * 	System.out.println(result.toString());
+ *   // set the value of a variable "a" to 10
+ *   // Note: in server mode the variable name must have a preceding '$'
+ *   // character
+ *   result = util.eval("a=10");
+ *   // print: 10
+ *   System.out.println(result.toString());
  *
- * 	// do a calculation with variable "a"
- * 	result = util.eval("a*3+b");
- * 	// print: 30+b
- * 	System.out.println(result.toString());
+ *   // do a calculation with variable "a"
+ *   result = util.eval("a*3+b");
+ *   // print: 30+b
+ *   System.out.println(result.toString());
  *
- * 	// Do a calculation in "numeric mode" with the N() function
- * 	// Note: single character identifiers are case sensistive
- * 	// (the "N()" function input must be written as upper case
- * 	// character)
- * 	result = util.eval("N(sinh(5))");
- * 	// print: 74.20321057778875
- * 	System.out.println(result.toString());
+ *   // Do a calculation in "numeric mode" with the N() function
+ *   // Note: single character identifiers are case sensistive
+ *   // (the "N()" function input must be written as upper case
+ *   // character)
+ *   result = util.eval("N(sinh(5))");
+ *   // print: 74.20321057778875
+ *   System.out.println(result.toString());
  *
- * 	// define a function with a recursive factorial function definition.
- * 	// Note: fac(0) is the stop condition.
- * 	result = util.eval("fac(x_Integer):=x*fac(x-1);fac(0)=1");
- * 	// now calculate factorial of 10:
- * 	result = util.eval("fac(10)");
- * 	// print: 3628800
- * 	System.out.println(result.toString());
+ *   // define a function with a recursive factorial function definition.
+ *   // Note: fac(0) is the stop condition.
+ *   result = util.eval("fac(x_Integer):=x*fac(x-1);fac(0)=1");
+ *   // now calculate factorial of 10:
+ *   result = util.eval("fac(10)");
+ *   // print: 3628800
+ *   System.out.println(result.toString());
  *
  * } catch (SyntaxError e) {
- * 	// catch Symja parser errors here
- * 	System.out.println(e.getMessage());
+ *   // catch Symja parser errors here
+ *   System.out.println(e.getMessage());
  * } catch (MathException me) {
- * 	// catch Symja math errors here
- * 	System.out.println(me.getMessage());
+ *   // catch Symja math errors here
+ *   System.out.println(me.getMessage());
  * } catch (final Exception ex) {
- * 	System.out.println(ex.getMessage());
+ *   System.out.println(ex.getMessage());
  * } catch (final StackOverflowError soe) {
- * 	System.out.println(soe.getMessage());
+ *   System.out.println(soe.getMessage());
  * } catch (final OutOfMemoryError oome) {
- * 	System.out.println(oome.getMessage());
+ *   System.out.println(oome.getMessage());
  * }
  * </pre>
  *
- * <p><b>Example 2</b>:
+ * <p>
+ * <b>Example 2</b>:
  *
  * <pre>
  * EvalEngine engine = new EvalEngine(true);
@@ -159,8 +161,8 @@ public class ExprEvaluator {
    *
    * @param outListDisabled if <code>false</code> create a <code>
    *     LastCalculationsHistory(historyCapacity)</code>, otherwise no history of the last
-   *     calculations will be saved and the <code>Out()</code> function (or <code>$ans</code>
-   *     variable or the <code>%</code> operator) will be unevaluated.
+   *        calculations will be saved and the <code>Out()</code> function (or <code>$ans</code>
+   *        variable or the <code>%</code> operator) will be unevaluated.
    * @param historyCapacity the number of last entries of the calculations which should be stored.
    */
   public ExprEvaluator(boolean outListDisabled, short historyCapacity) {
@@ -175,8 +177,8 @@ public class ExprEvaluator {
    * @parm engine
    * @param outListDisabled if <code>false</code> create a <code>
    *     LastCalculationsHistory(historyCapacity)</code>, otherwise no history of the last
-   *     calculations will be saved and the <code>Out()</code> function (or <code>$ans</code>
-   *     variable or the <code>%</code> operator) will be unevaluated.
+   *        calculations will be saved and the <code>Out()</code> function (or <code>$ans</code>
+   *        variable or the <code>%</code> operator) will be unevaluated.
    * @param historyCapacity the number of last entries of the calculations which should be stored.
    */
   public ExprEvaluator(EvalEngine engine, boolean outListDisabled, short historyCapacity) {
@@ -357,7 +359,7 @@ public class ExprEvaluator {
   public static IExpr evalTryCatch(final IExpr expr, EvalEngine[] engineRef) {
     EvalEngine engine = engineRef[0];
     EvalEngine.set(engine);
-    //  engine.reset()  must be done before parsing step
+    // engine.reset() must be done before parsing step
     IExpr preRead = S.$PreRead.assignedValue();
     IExpr temp;
     try {
@@ -388,21 +390,15 @@ public class ExprEvaluator {
       LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
       // Iteration limit of `1` exceeded.
       int iterationLimit = engine.getIterationLimit();
-      IOFunctions.printMessage(
-          S.$IterationLimit,
-          "itlim",
-          F.List(iterationLimit < 0 ? F.CInfinity : F.ZZ(iterationLimit), expr),
-          engine);
+      IOFunctions.printMessage(S.$IterationLimit, "itlim",
+          F.List(iterationLimit < 0 ? F.CInfinity : F.ZZ(iterationLimit), expr), engine);
       temp = F.Hold(expr);
     } catch (RecursionLimitExceeded e) {
       LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
       // Recursion depth of `1` exceeded during evaluation of `2`.
       int recursionLimit = engine.getRecursionLimit();
-      IOFunctions.printMessage(
-          S.$RecursionLimit,
-          "reclim2",
-          F.List(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), expr),
-          engine);
+      IOFunctions.printMessage(S.$RecursionLimit, "reclim2",
+          F.List(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), expr), engine);
       temp = F.Hold(expr);
     }
     if (!engine.isOutListDisabled()) {
@@ -480,17 +476,13 @@ public class ExprEvaluator {
    * @param timeoutDuration with timeoutUnit, the maximum length of time to wait
    * @param timeUnit with timeoutDuration, the maximum length of time to wait
    * @param interruptible whether to respond to thread interruption by aborting the operation and
-   *     throwing InterruptedException; if false, the operation is allowed to complete or time out,
-   *     and the current thread's interrupt status is re-asserted.
+   *        throwing InterruptedException; if false, the operation is allowed to complete or time
+   *        out, and the current thread's interrupt status is re-asserted.
    * @return
    * @throws SyntaxError
    */
-  public IExpr evaluateWithTimeout(
-      final String inputExpression,
-      long timeoutDuration,
-      TimeUnit timeUnit,
-      boolean interruptible,
-      EvalControlledCallable call) {
+  public IExpr evaluateWithTimeout(final String inputExpression, long timeoutDuration,
+      TimeUnit timeUnit, boolean interruptible, EvalControlledCallable call) {
     if (inputExpression != null) {
       // F.join();
       EvalEngine.setReset(fEngine);
@@ -629,7 +621,7 @@ public class ExprEvaluator {
     }
     return Complex.NaN;
   }
-  
+
   public Complex evalComplex(final String inputExpression) {
     if (inputExpression != null) {
       EvalEngine.setReset(fEngine);

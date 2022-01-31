@@ -1,20 +1,18 @@
 package org.matheclipse.core.convert;
 
 /*
- *  Licensed to the Apache Software Foundation (ASF) under one or more
- *  contributor license agreements.  See the NOTICE file distributed with
- *  this work for additional information regarding copyright ownership.
- *  The ASF licenses this file to You under the Apache License, Version 2.0
- *  (the "License"); you may not use this file except in compliance with
- *  the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 import java.io.Serializable;
@@ -24,15 +22,15 @@ import java.io.Serializable;
  * Every RGBColor contains alpha value. The alpha value defines the transparency of a color and can
  * be represented by a float value in the range 0.0 - 1.0 or 0 - 255.
  *
- * <p>Copied from Apache harmony project sources and modified for Symja
+ * <p>
+ * Copied from Apache harmony project sources and modified for Symja
  */
 public class RGBColor implements Serializable {
   /** */
   private static final long serialVersionUID = 9105970624690865276L;
   /*
-   * The values of the following colors are based on 1.5 release behavior
-   * which can be revealed using the following or similar code: RGBColor c =
-   * RGBColor.white; System.out.println(c);
+   * The values of the following colors are based on 1.5 release behavior which can be revealed
+   * using the following or similar code: RGBColor c = RGBColor.white; System.out.println(c);
    */
   /** The color white. */
   public static final RGBColor white = new RGBColor(255, 255, 255);
@@ -99,13 +97,12 @@ public class RGBColor implements Serializable {
   private float falpha;
 
   /*
-   * The value of the SCALE_FACTOR is based on 1.5 release behavior which can
-   * be revealed using the following code: RGBColor c = new RGBColor(100, 100, 100);
-   * RGBColor bc = c.brighter(); System.out.println("Brighter factor: " +
-   * ((float)c.getRed())/((float)bc.getRed())); RGBColor dc = c.darker();
-   * System.out.println("Darker factor: " +
-   * ((float)dc.getRed())/((float)c.getRed())); The result is the same for
-   * brighter and darker methods, so we need only one scale factor for both.
+   * The value of the SCALE_FACTOR is based on 1.5 release behavior which can be revealed using the
+   * following code: RGBColor c = new RGBColor(100, 100, 100); RGBColor bc = c.brighter();
+   * System.out.println("Brighter factor: " + ((float)c.getRed())/((float)bc.getRed())); RGBColor dc
+   * = c.darker(); System.out.println("Darker factor: " + ((float)dc.getRed())/((float)c.getRed()));
+   * The result is the same for brighter and darker methods, so we need only one scale factor for
+   * both.
    */
   /** The Constant SCALE_FACTOR. */
   private static final double SCALE_FACTOR = 0.7;
@@ -129,6 +126,7 @@ public class RGBColor implements Serializable {
       value = rgba;
     }
   }
+
   /**
    * Instantiates a new color with the specified red, green, blue and alpha components.
    *
@@ -140,11 +138,11 @@ public class RGBColor implements Serializable {
   public RGBColor(int r, int g, int b, int a) {
     if ((r & 0xFF) != r || (g & 0xFF) != g || (b & 0xFF) != b || (a & 0xFF) != a) {
       // awt.109=RGBColor parameter outside of expected range.
-      throw new IllegalArgumentException(
-          "RGBColor parameter outside of expected range"); //$NON-NLS-1$
+      throw new IllegalArgumentException("RGBColor parameter outside of expected range"); //$NON-NLS-1$
     }
     value = b | (g << 8) | (r << 16) | (a << 24);
   }
+
   /**
    * Instantiates a new opaque sRGB color with the specified red, green, and blue values. The Alpha
    * component is set to the default - 1.0.
@@ -156,8 +154,7 @@ public class RGBColor implements Serializable {
   public RGBColor(int r, int g, int b) {
     if ((r & 0xFF) != r || (g & 0xFF) != g || (b & 0xFF) != b) {
       // awt.109=RGBColor parameter outside of expected range.
-      throw new IllegalArgumentException(
-          "RGBColor parameter outside of expected range"); //$NON-NLS-1$
+      throw new IllegalArgumentException("RGBColor parameter outside of expected range"); //$NON-NLS-1$
     }
     // 0xFF for alpha channel
     value = b | (g << 8) | (r << 16) | 0xFF000000;
@@ -183,8 +180,8 @@ public class RGBColor implements Serializable {
    * @param a the alpha component.
    */
   public RGBColor(float r, float g, float b, float a) {
-    this(
-        (int) (r * 255 + 0.5), (int) (g * 255 + 0.5), (int) (b * 255 + 0.5), (int) (a * 255 + 0.5));
+    this((int) (r * 255 + 0.5), (int) (g * 255 + 0.5), (int) (b * 255 + 0.5),
+        (int) (a * 255 + 0.5));
     falpha = a;
     fvalue = new float[3];
     fvalue[0] = r;
@@ -192,6 +189,7 @@ public class RGBColor implements Serializable {
     fvalue[2] = b;
     frgbvalue = fvalue;
   }
+
   /**
    * Instantiates a new color with the specified red, green, and blue components and default alpha
    * value - 1.0.
@@ -203,6 +201,7 @@ public class RGBColor implements Serializable {
   public RGBColor(float r, float g, float b) {
     this(r, g, b, 1.0f);
   }
+
   /**
    * Returns a string representation of the RGBColor object.
    *
@@ -211,25 +210,18 @@ public class RGBColor implements Serializable {
   @Override
   public String toString() {
     /*
-     * The format of the string is based on 1.5 release behavior which can
-     * be revealed using the following code: RGBColor c = new RGBColor(1, 2, 3);
-     * System.out.println(c);
+     * The format of the string is based on 1.5 release behavior which can be revealed using the
+     * following code: RGBColor c = new RGBColor(1, 2, 3); System.out.println(c);
      */
-    return getClass().getName()
-        + "[r="
-        + getRed()
-        + ",g="
-        + getGreen()
-        + ",b="
-        + getBlue()
-        + "]"; //$NON-NLS-1$
+    return getClass().getName() + "[r=" + getRed() + ",g=" + getGreen() + ",b=" + getBlue() + "]"; //$NON-NLS-4$
   }
+
   /**
    * Compares the specified Object to the RGBColor.
    *
    * @param obj the Object to be compared.
    * @return true, if the specified Object is a RGBColor whose value is equal to this RGBColor,
-   *     false otherwise.
+   *         false otherwise.
    */
   @Override
   public boolean equals(Object obj) {
@@ -245,11 +237,10 @@ public class RGBColor implements Serializable {
    * @return the darker RGBColor.
    */
   public RGBColor darker() {
-    return new RGBColor(
-        (int) (getRed() * SCALE_FACTOR),
-        (int) (getGreen() * SCALE_FACTOR),
+    return new RGBColor((int) (getRed() * SCALE_FACTOR), (int) (getGreen() * SCALE_FACTOR),
         (int) (getBlue() * SCALE_FACTOR));
   }
+
   /**
    * Creates a new RGBColor which is a brighter than this RGBColor.
    *
@@ -282,12 +273,13 @@ public class RGBColor implements Serializable {
     }
     return new RGBColor(r, g, b);
   }
+
   /**
    * Returns a float array containing the color and alpha components of the RGBColor in the default
    * sRGB color space.
    *
    * @param components the results of this method will be written to this float array. A new float
-   *     array will be created if this argument is null.
+   *        array will be created if this argument is null.
    * @return the RGB color and alpha components in a float array.
    */
   public float[] getRGBComponents(float[] components) {
@@ -302,12 +294,13 @@ public class RGBColor implements Serializable {
     getRGBColorComponents(components);
     return components;
   }
+
   /**
    * Returns a float array containing the color components of the RGBColor in the default sRGB color
    * space.
    *
    * @param components the results of this method will be written to this float array. A new float
-   *     array will be created if this argument is null.
+   *        array will be created if this argument is null.
    * @return the RGB color components in a float array.
    */
   public float[] getRGBColorComponents(float[] components) {
@@ -325,12 +318,13 @@ public class RGBColor implements Serializable {
     }
     return components;
   }
+
   /**
    * Returns a float array which contains the color and alpha components of the RGBColor in the
    * ColorSpace of the RGBColor.
    *
    * @param components the results of this method will be written to this float array. A new float
-   *     array will be created if this argument is null.
+   *        array will be created if this argument is null.
    * @return the color and alpha components in a float array.
    */
   public float[] getComponents(float[] components) {
@@ -345,12 +339,13 @@ public class RGBColor implements Serializable {
     components[nColorComps] = falpha;
     return components;
   }
+
   /**
    * Returns a float array which contains the color components of the RGBColor in the ColorSpace of
    * the RGBColor.
    *
    * @param components the results of this method will be written to this float array. A new float
-   *     array will be created if this argument is null.
+   *        array will be created if this argument is null.
    * @return the color components in a float array.
    */
   public float[] getColorComponents(float[] components) {
@@ -365,6 +360,7 @@ public class RGBColor implements Serializable {
     }
     return components;
   }
+
   /**
    * Returns a hash code of this RGBColor object.
    *
@@ -383,6 +379,7 @@ public class RGBColor implements Serializable {
   public int getRed() {
     return (value >> 16) & 0xFF;
   }
+
   /**
    * Gets the RGB value that represents the color in the default sRGB ColorModel.
    *
@@ -391,6 +388,7 @@ public class RGBColor implements Serializable {
   public int getRGB() {
     return value;
   }
+
   /**
    * Gets the green component of the RGBColor in the range 0-255.
    *
@@ -399,6 +397,7 @@ public class RGBColor implements Serializable {
   public int getGreen() {
     return (value >> 8) & 0xFF;
   }
+
   /**
    * Gets the blue component of the RGBColor in the range 0-255.
    *
@@ -407,6 +406,7 @@ public class RGBColor implements Serializable {
   public int getBlue() {
     return value & 0xFF;
   }
+
   /**
    * Gets the alpha component of the RGBColor in the range 0-255.
    *
@@ -415,6 +415,7 @@ public class RGBColor implements Serializable {
   public int getAlpha() {
     return (value >> 24) & 0xFF;
   }
+
   /**
    * Gets the RGBColor from the specified string, or returns the RGBColor specified by the second
    * parameter.
@@ -430,6 +431,7 @@ public class RGBColor implements Serializable {
     }
     return new RGBColor(integer.intValue());
   }
+
   /**
    * Gets the RGBColor from the specified string, or returns the RGBColor converted from the second
    * parameter.
@@ -437,7 +439,7 @@ public class RGBColor implements Serializable {
    * @param nm the specified string.
    * @param def the default RGBColor.
    * @return the color from the specified string, or the RGBColor converted from the second
-   *     parameter.
+   *         parameter.
    */
   public static RGBColor getColor(String nm, int def) {
     Integer integer = Integer.getInteger(nm);
@@ -446,6 +448,7 @@ public class RGBColor implements Serializable {
     }
     return new RGBColor(integer.intValue());
   }
+
   /**
    * Gets the RGBColor from the specified String.
    *
@@ -459,6 +462,7 @@ public class RGBColor implements Serializable {
     }
     return new RGBColor(integer.intValue());
   }
+
   /**
    * Decodes a String to an integer and returns the specified opaque RGBColor.
    *
@@ -470,6 +474,7 @@ public class RGBColor implements Serializable {
     Integer integer = Integer.decode(nm);
     return new RGBColor(integer.intValue());
   }
+
   /**
    * Gets a RGBColor object using the specified values of the HSB color model.
    *
@@ -481,6 +486,7 @@ public class RGBColor implements Serializable {
   public static RGBColor getHSBColor(float h, float s, float b) {
     return new RGBColor(HSBtoRGB(h, s, b));
   }
+
   /**
    * Converts the RGBColor specified by the RGB model to an equivalent color in the HSB model.
    *
@@ -522,6 +528,7 @@ public class RGBColor implements Serializable {
     hsbvals[2] = B;
     return hsbvals;
   }
+
   /**
    * Converts the RGBColor specified by the HSB model to an equivalent color in the default RGB
    * model.

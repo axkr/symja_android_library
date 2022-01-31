@@ -36,11 +36,11 @@ public class PatternSequence implements IPatternSequence {
    * @param check a header check.Maybe <code>null</code>.
    * @param def if <code>true</code> replace with default value, if no matching was possible
    * @param zeroArgsAllowed if <code>true</code>, 0 arguments are allowed, otherwise the number of
-   *     args has to be >= 1.
+   *        args has to be >= 1.
    * @return
    */
-  public static PatternSequence valueOf(
-      final ISymbol symbol, final IExpr check, final boolean def, boolean zeroArgsAllowed) {
+  public static PatternSequence valueOf(final ISymbol symbol, final IExpr check, final boolean def,
+      boolean zeroArgsAllowed) {
     PatternSequence p = new PatternSequence();
     p.fSymbol = symbol;
     p.fHeadTest = check;
@@ -55,11 +55,11 @@ public class PatternSequence implements IPatternSequence {
    * @param symbol the associated symbol of the pattern sequence. Maybe <code>null</code>.
    * @param check a header check.Maybe <code>null</code>.
    * @param zeroArgsAllowed if <code>true</code>, 0 arguments are allowed, otherwise the number of
-   *     args has to be >= 1.
+   *        args has to be >= 1.
    * @return
    */
-  public static PatternSequence valueOf(
-      final ISymbol symbol, final IExpr check, boolean zeroArgsAllowed) {
+  public static PatternSequence valueOf(final ISymbol symbol, final IExpr check,
+      boolean zeroArgsAllowed) {
     PatternSequence p = new PatternSequence();
     p.fSymbol = symbol;
     p.fHeadTest = check;
@@ -72,7 +72,7 @@ public class PatternSequence implements IPatternSequence {
    *
    * @param symbol the associated symbol of the pattern sequence. Maybe <code>null</code>.
    * @param zeroArgsAllowed if <code>true</code>, 0 arguments are allowed, otherwise the number of
-   *     args has to be >= 1.
+   *        args has to be >= 1.
    * @return
    */
   public static PatternSequence valueOf(final ISymbol symbol, boolean zeroArgsAllowed) {
@@ -123,8 +123,7 @@ public class PatternSequence implements IPatternSequence {
         }
         return false;
       }
-      if (fSymbol.equals(pattern.fSymbol)
-          && fDefault == pattern.fDefault
+      if (fSymbol.equals(pattern.fSymbol) && fDefault == pattern.fDefault
           && fZeroArgsAllowed == pattern.fZeroArgsAllowed) {
         if ((fHeadTest != null) && (pattern.fHeadTest != null)) {
           return fHeadTest.equals(pattern.fHeadTest);
@@ -145,8 +144,8 @@ public class PatternSequence implements IPatternSequence {
    * @return
    */
   @Override
-  public boolean equivalent(
-      final IPatternObject patternExpr2, final IPatternMap pm1, IPatternMap pm2) {
+  public boolean equivalent(final IPatternObject patternExpr2, final IPatternMap pm1,
+      IPatternMap pm2) {
     if (this == patternExpr2) {
       return true;
     }
@@ -174,8 +173,8 @@ public class PatternSequence implements IPatternSequence {
   }
 
   @Override
-  public boolean matchPatternSequence(
-      final IAST sequence, IPatternMap patternMap, ISymbol optionsPatternHead) {
+  public boolean matchPatternSequence(final IAST sequence, IPatternMap patternMap,
+      ISymbol optionsPatternHead) {
     if (!isConditionMatchedSequence(sequence, patternMap)) {
       return false;
     }
@@ -407,8 +406,8 @@ public class PatternSequence implements IPatternSequence {
 
   /** {@inheritDoc} */
   @Override
-  public IExpr variables2Slots(
-      final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
+  public IExpr variables2Slots(final Map<IExpr, IExpr> map,
+      final Collection<IExpr> variableCollector) {
     return F.NIL;
   }
 

@@ -33,8 +33,8 @@ public class Console {
           }
           if ((expr.length() >= 6) && expr.toLowerCase().substring(0, 6).equals("double")) {
             // console.fComplexEvaluatorMode = false;
-            System.out.println(
-                "Double evaluation mode (switch to other mode with keyword 'complex')");
+            System.out
+                .println("Double evaluation mode (switch to other mode with keyword 'complex')");
             continue;
           }
           // if ((expr.length() >= 7) && expr.toLowerCase().substring(0, 7).equals("complex")) {

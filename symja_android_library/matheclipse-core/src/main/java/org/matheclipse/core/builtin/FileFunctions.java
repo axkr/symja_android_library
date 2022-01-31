@@ -142,7 +142,7 @@ public class FileFunctions {
           try (FileInputStream fis = new FileInputStream(ast.get(j).toString());
               Reader r = new InputStreamReader(fis, StandardCharsets.UTF_8);
               BufferedReader reader =
-                  new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8)); ) {
+                  new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));) {
             Get.loadPackage(engine, reader);
           } catch (IOException e) {
             LOGGER.debug("BeginPackage.evaluate() failed", e);
@@ -393,7 +393,8 @@ public class FileFunctions {
    *
    * <blockquote>
    *
-   * <p>end a context definition started with <code>Begin</code>
+   * <p>
+   * end a context definition started with <code>Begin</code>
    *
    * </blockquote>
    *
@@ -451,7 +452,8 @@ public class FileFunctions {
    *
    * <blockquote>
    *
-   * <p>end a package definition
+   * <p>
+   * end a package definition
    *
    * </blockquote>
    *
@@ -767,7 +769,7 @@ public class FileFunctions {
     /**
      * @param ast
      * @param append if <code>true</code>, then bytes will be written to the end of the file rather
-     *     than the beginning
+     *        than the beginning
      * @param engine
      * @return
      */
@@ -992,18 +994,9 @@ public class FileFunctions {
             }
             return F.$Failed;
           case ID.Number:
-            IAST numberSeparators =
-                F.list(
-                    F.stringx("0"), //
-                    F.stringx("1"),
-                    F.stringx("2"),
-                    F.stringx("3"),
-                    F.stringx("4"),
-                    F.stringx("5"),
-                    F.stringx("6"),
-                    F.stringx("7"),
-                    F.stringx("8"),
-                    F.stringx("9"));
+            IAST numberSeparators = F.list(F.stringx("0"), //
+                F.stringx("1"), F.stringx("2"), F.stringx("3"), F.stringx("4"), F.stringx("5"),
+                F.stringx("6"), F.stringx("7"), F.stringx("8"), F.stringx("9"));
             String tempNumber = numberReader(reader, numberSeparators);
             if (tempNumber == null) {
               return S.EndOfFile;
@@ -1244,12 +1237,10 @@ public class FileFunctions {
           if (arg1 instanceof FileExpr) {
             File file = ((FileExpr) arg1).toData();
             OutputStreamExpr out = OutputStreamExpr.newInstance(file, false);
-            writer = out.getWriter();
-            ;
+            writer = out.getWriter();;
           }
           if (arg1 instanceof OutputStreamExpr) {
-            writer = ((OutputStreamExpr) arg1).getWriter();
-            ;
+            writer = ((OutputStreamExpr) arg1).getWriter();;
           }
           if (writer != null) {
             String arg2String = StringFunctions.inputForm(arg2);
@@ -1310,22 +1301,16 @@ public class FileFunctions {
     return evaluatePackageRecursive(node, 0, compoundExpression, ast2Expr, engine);
   }
 
-  private static IExpr evaluatePackageRecursive(
-      final List<ASTNode> node,
-      int i,
-      String compoundExpression,
-      AST2Expr ast2Expr,
-      final EvalEngine engine) {
+  private static IExpr evaluatePackageRecursive(final List<ASTNode> node, int i,
+      String compoundExpression, AST2Expr ast2Expr, final EvalEngine engine) {
     IExpr temp;
     IExpr result = S.Null;
     while (i < node.size()) {
       ASTNode astNode = node.get(i);
-      if (astNode instanceof FunctionNode
-          && //
+      if (astNode instanceof FunctionNode && //
           ((FunctionNode) astNode).get(0).getString().equals(compoundExpression)) {
-        result =
-            evaluatePackageRecursive(
-                ((FunctionNode) astNode), 1, compoundExpression, ast2Expr, engine);
+        result = evaluatePackageRecursive(((FunctionNode) astNode), 1, compoundExpression, ast2Expr,
+            engine);
       } else {
         temp = ast2Expr.convert(astNode);
         result = engine.evaluate(temp);
@@ -1338,11 +1323,13 @@ public class FileFunctions {
   /**
    * Parse the <code>reader</code> input.
    *
-   * <p>This method ignores the first line of the script if it starts with the <code>#!</code>
+   * <p>
+   * This method ignores the first line of the script if it starts with the <code>#!</code>
    * characters (i.e. Unix Script Executables)
    *
-   * <p><b>Note</b>: uses the <code>ASTNode</code> parser and not the <code>ExprParser</code>,
-   * because otherwise the symbols couldn't be assigned to the contexts.
+   * <p>
+   * <b>Note</b>: uses the <code>ASTNode</code> parser and not the <code>ExprParser</code>, because
+   * otherwise the symbols couldn't be assigned to the contexts.
    *
    * @param reader
    * @param engine
@@ -1357,11 +1344,13 @@ public class FileFunctions {
   /**
    * Parse the <code>reader</code> input.
    *
-   * <p>This method ignores the first line of the script if it starts with the <code>#!</code>
+   * <p>
+   * This method ignores the first line of the script if it starts with the <code>#!</code>
    * characters (i.e. Unix Script Executables)
    *
-   * <p><b>Note</b>: uses the <code>ASTNode</code> parser and not the <code>ExprParser</code>,
-   * because otherwise the symbols couldn't be assigned to the contexts.
+   * <p>
+   * <b>Note</b>: uses the <code>ASTNode</code> parser and not the <code>ExprParser</code>, because
+   * otherwise the symbols couldn't be assigned to the contexts.
    *
    * @param reader
    * @param engine

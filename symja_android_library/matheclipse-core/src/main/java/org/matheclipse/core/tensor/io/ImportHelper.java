@@ -26,13 +26,13 @@ import java.util.stream.Stream;
    * @throws ClassNotFoundException
    * @throws DataFormatException
    */
-  //  static <T> T object(InputStream inputStream) throws IOException, ClassNotFoundException,
+  // static <T> T object(InputStream inputStream) throws IOException, ClassNotFoundException,
   // DataFormatException {
-  //    int length = inputStream.available();
-  //    byte[] bytes = new byte[length];
-  //    inputStream.read(bytes);
-  //    return ObjectFormat.parse(bytes);
-  //  }
+  // int length = inputStream.available();
+  // byte[] bytes = new byte[length];
+  // inputStream.read(bytes);
+  // return ObjectFormat.parse(bytes);
+  // }
 
   /**
    * @param inputStream

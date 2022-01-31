@@ -14,8 +14,7 @@ public abstract class FlowControlException extends SymjaMathException {
    * <code>cause=null</code>, <code>enableSuppression=false</code>, and <code>
    * writableStackTrace=false</code> .
    */
-  protected FlowControlException() {
-  }
+  protected FlowControlException() {}
 
   protected FlowControlException(String message) {
     super(message);

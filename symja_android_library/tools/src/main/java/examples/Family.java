@@ -8,16 +8,19 @@ import jp.ac.kobe_u.cs.cream.*;
 /**
  * Example obtained from "Finite Domain Constraint Programming in Oz"
  *
- * <p>Maria and Clara are both heads of households, and both families have three boys and three
- * girls. Neither family includes any children closer in age than one year, and all children are
- * under age 10. The youngest child in Maria's family is a girl, and Clara has just given birth to a
- * little girl.
+ * <p>
+ * Maria and Clara are both heads of households, and both families have three boys and three girls.
+ * Neither family includes any children closer in age than one year, and all children are under age
+ * 10. The youngest child in Maria's family is a girl, and Clara has just given birth to a little
+ * girl.
  *
- * <p>In each family, the sum of the ages of the boys equals the sum of the ages of the girls, and
- * the sum of the squares of the ages of the boys equals the sum of the the squares of ages of the
+ * <p>
+ * In each family, the sum of the ages of the boys equals the sum of the ages of the girls, and the
+ * sum of the squares of the ages of the boys equals the sum of the the squares of ages of the
  * girls. The sum of the ages of all children is 60.
  *
- * <p>What are the ages of the children in each family?
+ * <p>
+ * What are the ages of the children in each family?
  *
  * @author Naoyuki Tamura (tamura@kobe-u.ac.jp)
  */
@@ -66,7 +69,8 @@ public class Family {
       for (int child = 0; child < CHILDREN; child++) {
         isBoy[family][child] = new IntVariable(net, 0, 1);
         age[family][child] = new IntVariable(net, 0, maxAge);
-        if (child > 0) age[family][child].gt(age[family][child - 1]);
+        if (child > 0)
+          age[family][child].gt(age[family][child - 1]);
         boyAge[family][child] = age[family][child].multiply(isBoy[family][child]);
         girlAge[family][child] = age[family][child].subtract(boyAge[family][child]);
       }

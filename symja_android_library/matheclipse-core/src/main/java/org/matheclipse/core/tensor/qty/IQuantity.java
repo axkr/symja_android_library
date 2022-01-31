@@ -10,17 +10,20 @@ import com.univocity.parsers.csv.CsvFormat;
 /**
  * {@link IQuantity} represents a magnitude and unit.
  *
- * <p>The sum of two quantities is well defined whenever the units are identical. Two quantities
- * with different units are added if one of the values equals to zero. In that case the result
- * carries the unit of the non-zero input quantity.
+ * <p>
+ * The sum of two quantities is well defined whenever the units are identical. Two quantities with
+ * different units are added if one of the values equals to zero. In that case the result carries
+ * the unit of the non-zero input quantity.
  *
- * <p>For export and import of tensors with scalars of type {@link IQuantity} use {@link
- * ObjectFormat} and {@link CsvFormat}.
+ * <p>
+ * For export and import of tensors with scalars of type {@link IQuantity} use {@link ObjectFormat}
+ * and {@link CsvFormat}.
  *
- * <p>Two quantities are comparable only if they have the same unit. Otherwise an exception is
- * thrown.
+ * <p>
+ * Two quantities are comparable only if they have the same unit. Otherwise an exception is thrown.
  *
- * <p>Different units should mapped to a common unit system before carrying out operations.
+ * <p>
+ * Different units should mapped to a common unit system before carrying out operations.
  *
  * <pre>
  * Scalar a = Quantity.of(200, "g");
@@ -70,7 +73,8 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
   /**
    * creates quantity with number encoded as {@link ISignedNumber}
    *
-   * <p>Hint: function does not check parameters for null, although null as input is likely to cause
+   * <p>
+   * Hint: function does not check parameters for null, although null as input is likely to cause
    * problems subsequently.
    *
    * @param number non-null

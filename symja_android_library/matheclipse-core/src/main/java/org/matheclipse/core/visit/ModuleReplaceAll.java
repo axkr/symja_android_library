@@ -23,18 +23,13 @@ public class ModuleReplaceAll extends VisitorExpr {
   final EvalEngine fEngine;
   final String moduleCounter;
 
-  public ModuleReplaceAll(
-      Map<ISymbol, ? extends IExpr> moduleVariables,
-      EvalEngine engine,
+  public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
       String moduleCounter) {
     this(moduleVariables, engine, moduleCounter, 0);
   }
 
-  public ModuleReplaceAll(
-      Map<ISymbol, ? extends IExpr> moduleVariables,
-      EvalEngine engine,
-      String moduleCounter,
-      int offset) {
+  public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
+      String moduleCounter, int offset) {
     this.fModuleVariables = moduleVariables;
     this.fOffset = offset;
     this.fEngine = engine;
@@ -69,8 +64,8 @@ public class ModuleReplaceAll extends VisitorExpr {
     if (symbol != null) {
       IExpr expr = apply(symbol);
       if (expr.isPresent() && expr.isSymbol()) {
-        return F.$ps(
-            (ISymbol) expr, element.getHeadTest(), element.isDefault(), element.isNullSequence());
+        return F.$ps((ISymbol) expr, element.getHeadTest(), element.isDefault(),
+            element.isNullSequence());
       }
     }
     return F.NIL;
@@ -131,8 +126,8 @@ public class ModuleReplaceAll extends VisitorExpr {
     return F.NIL;
   }
 
-  private IdentityHashMap<ISymbol, IExpr> renamedVariables(
-      IAST localVariablesList, boolean isFunction) {
+  private IdentityHashMap<ISymbol, IExpr> renamedVariables(IAST localVariablesList,
+      boolean isFunction) {
     IdentityHashMap<ISymbol, IExpr> variables = null;
     final String varAppend = moduleCounter;
     int size = localVariablesList.size();
@@ -156,11 +151,8 @@ public class ModuleReplaceAll extends VisitorExpr {
     return variables;
   }
 
-  private IdentityHashMap<ISymbol, IExpr> putSingleVariable(
-      ISymbol symbol,
-      IdentityHashMap<ISymbol, IExpr> variables,
-      final String varAppend,
-      boolean isFunction) {
+  private IdentityHashMap<ISymbol, IExpr> putSingleVariable(ISymbol symbol,
+      IdentityHashMap<ISymbol, IExpr> variables, final String varAppend, boolean isFunction) {
     IExpr temp = fModuleVariables.get(symbol);
     if (isFunction) {
       if (variables == null) {
@@ -188,15 +180,12 @@ public class ModuleReplaceAll extends VisitorExpr {
       if (temp.isPresent()) {
         // something was evaluated - return a new IAST:
         IASTMutable result = ast.setAtCopy(i++, temp);
-        ast.forEach(
-            i,
-            size,
-            (x, j) -> {
-              IExpr t = x.accept(this);
-              if (t.isPresent()) {
-                result.set(j, t);
-              }
-            });
+        ast.forEach(i, size, (x, j) -> {
+          IExpr t = x.accept(this);
+          if (t.isPresent()) {
+            result.set(j, t);
+          }
+        });
         return result;
       }
       i++;

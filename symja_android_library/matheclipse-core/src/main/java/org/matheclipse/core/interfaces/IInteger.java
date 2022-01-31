@@ -30,7 +30,7 @@ public interface IInteger extends IRational {
    * in the ordinary binary representation.
    *
    * @return number of bits in the minimal two's-complement representation of this IInteger,
-   *     <i>excluding</i> a sign bit.
+   *         <i>excluding</i> a sign bit.
    */
   public long bitLength();
 
@@ -77,10 +77,11 @@ public interface IInteger extends IRational {
   /**
    * Return the divisors of this integer number.
    *
-   * <p>divisors for <code>24</code> gives:
+   * <p>
+   * divisors for <code>24</code> gives:
    *
    * <pre>
-   * { 1, 2, 3, 4, 6, 8, 12, 24 }
+   * {1, 2, 3, 4, 6, 8, 12, 24}
    * </pre>
    *
    * @return a list of the divisors
@@ -90,7 +91,8 @@ public interface IInteger extends IRational {
   /**
    * Euler phi function.
    *
-   * <p>See: <a href="http://en.wikipedia.org/wiki/Euler%27s_totient_function">Euler's totient
+   * <p>
+   * See: <a href="http://en.wikipedia.org/wiki/Euler%27s_totient_function">Euler's totient
    * function</a>
    *
    * @return Euler's totient function
@@ -143,7 +145,7 @@ public interface IInteger extends IRational {
    * exception, if this integer cannot be represented by an <code>int</code> type.
    *
    * @return the numeric value represented by this integer after conversion to type <code>int</code>
-   *     .
+   *         .
    */
   public int intValue();
 
@@ -166,7 +168,7 @@ public interface IInteger extends IRational {
    * composite. A negative integer p is prime, if <code>p.negate()</code> is a prime number
    *
    * @return {@code true} if this IInteger is probably prime, {@code false} if it's definitely
-   *     composite.
+   *         composite.
    */
   public boolean isProbablePrime();
 
@@ -175,11 +177,11 @@ public interface IInteger extends IRational {
    * composite. If {@code certainty} is &le; 0, {@code true} is returned.
    *
    * @param certainty a measure of the uncertainty that the caller is willing to tolerate: if the
-   *     call returns {@code true} the probability that this IInteger is prime exceeds (1 - 1/2<sup>
-   *     {@code certainty}</sup>). The execution time of this method is proportional to the value of
-   *     this parameter.
+   *        call returns {@code true} the probability that this IInteger is prime exceeds (1 -
+   *        1/2<sup> {@code certainty}</sup>). The execution time of this method is proportional to
+   *        the value of this parameter.
    * @return {@code true} if this IInteger is probably prime, {@code false} if it's definitely
-   *     composite.
+   *         composite.
    */
   public boolean isProbablePrime(int certainty);
 
@@ -318,7 +320,8 @@ public interface IInteger extends IRational {
    *
    * <blockquote>
    *
-   * <p>returns the list of the primitive roots of <code>this</code> integer.
+   * <p>
+   * returns the list of the primitive roots of <code>this</code> integer.
    *
    * </blockquote>
    *
@@ -348,7 +351,7 @@ public interface IInteger extends IRational {
    * and its remainder {@code this - s*s}, respectively.
    *
    * @return an array of two IIntegers with the integer square root at offset 0 and the remainder at
-   *     offset 1 or <code>null</code> if <code>this</code> is negative.
+   *         offset 1 or <code>null</code> if <code>this</code> is negative.
    */
   public IInteger[] sqrtAndRemainder();
 

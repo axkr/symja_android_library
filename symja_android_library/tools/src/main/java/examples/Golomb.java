@@ -1,7 +1,5 @@
 /*
- * @(#)Golomb.java
- * See http://4c.ucc.ie/~tw/csplib/prob/prob006/index.html
- * in http://csplib.org/
+ * @(#)Golomb.java See http://4c.ucc.ie/~tw/csplib/prob/prob006/index.html in http://csplib.org/
  */
 package examples;
 

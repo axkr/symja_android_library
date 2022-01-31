@@ -33,21 +33,23 @@ import org.matheclipse.core.interfaces.ISignedNumber;
  *
  * <blockquote>
  *
- * <p>the <code>LinearProgramming</code> function provides an implementation of <a
- * href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a> for
- * solving linear optimization problems with linear equality and inequality constraints and implicit
- * non-negative variables.
+ * <p>
+ * the <code>LinearProgramming</code> function provides an implementation of
+ * <a href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a>
+ * for solving linear optimization problems with linear equality and inequality constraints and
+ * implicit non-negative variables.
  *
  * </blockquote>
  *
- * <p>See:<br>
+ * <p>
+ * See:<br>
  *
  * <ul>
- *   <li><a href="http://en.wikipedia.org/wiki/Linear_programming">Wikipedia - Linear
- *       programming</a>
+ * <li><a href="http://en.wikipedia.org/wiki/Linear_programming">Wikipedia - Linear programming</a>
  * </ul>
  *
- * <p>See also: <a href="NMaximize.md">NMaximize</a>, <a href="NMinimize.md">NMinimize</a>
+ * <p>
+ * See also: <a href="NMaximize.md">NMaximize</a>, <a href="NMinimize.md">NMinimize</a>
  *
  * <h3>Examples</h3>
  *
@@ -56,13 +58,15 @@ import org.matheclipse.core.interfaces.ISignedNumber;
  * {4.0,0.0,1.0}
  * </pre>
  *
- * <p>solves the linear problem:
+ * <p>
+ * solves the linear problem:
  *
  * <pre>
  * Minimize -2x + y - 5
  * </pre>
  *
- * <p>with the constraints:
+ * <p>
+ * with the constraints:
  *
  * <pre>
  *   x  + 2y &lt;=  6
@@ -79,8 +83,8 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
   }
 
   /**
-   * The LinearProgramming provides an implementation of <a
-   * href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a>
+   * The LinearProgramming provides an implementation of
+   * <a href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a>
    * for solving linear optimization problems with linear equality and inequality constraints.
    */
   @Override
@@ -144,21 +148,16 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
           }
           SimplexSolver solver = new SimplexSolver();
           // PointValuePair solution = solver.optimize(f, constraints, GoalType.MINIMIZE, true);
-          PointValuePair solution =
-              solver.optimize(
-                  f,
-                  new LinearConstraintSet(constraints),
-                  GoalType.MINIMIZE,
-                  new NonNegativeConstraint(true),
-                  PivotSelectionRule.BLAND);
+          PointValuePair solution = solver.optimize(f, new LinearConstraintSet(constraints),
+              GoalType.MINIMIZE, new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
           double[] values = solution.getPointRef();
           return F.List(values);
         }
       }
     } catch (MathIllegalArgumentException miae) {
       // `1`.
-      return IOFunctions.printMessage(
-          ast.topHead(), "error", F.List(F.$str(miae.getMessage())), engine);
+      return IOFunctions.printMessage(ast.topHead(), "error", F.List(F.$str(miae.getMessage())),
+          engine);
     } catch (MathRuntimeException mre) {
       LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
     }

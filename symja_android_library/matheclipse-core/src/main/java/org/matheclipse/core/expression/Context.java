@@ -65,9 +65,7 @@ public class Context implements Serializable {
     if (this == SYSTEM) {
       return SYSTEM;
     }
-    return new Context(
-        contextName,
-        parentContext,
+    return new Context(contextName, parentContext,
         (Map<String, ISymbol>) ((HashMap<String, ISymbol>) symbolTable).clone());
   }
 

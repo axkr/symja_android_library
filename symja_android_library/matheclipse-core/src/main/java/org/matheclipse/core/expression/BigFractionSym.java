@@ -121,7 +121,8 @@ public class BigFractionSym extends AbstractFractionSym {
       return AbstractIntegerSym.valueOf(toBigNumerator());
     }
     BigInteger div = toBigNumerator().divide(toBigDenominator());
-    if (toBigNumerator().signum() > 0) div = div.add(BigInteger.ONE);
+    if (toBigNumerator().signum() > 0)
+      div = div.add(BigInteger.ONE);
     return AbstractIntegerSym.valueOf(div);
   }
 
@@ -167,8 +168,8 @@ public class BigFractionSym extends AbstractFractionSym {
         return valthis.compareTo(valo);
       }
       if (expr instanceof IInteger) {
-        return fFraction.compareTo(
-            new BigFraction(((IInteger) expr).toBigNumerator(), BigInteger.ONE));
+        return fFraction
+            .compareTo(new BigFraction(((IInteger) expr).toBigNumerator(), BigInteger.ONE));
       }
     }
     if (expr.isReal()) {
@@ -215,7 +216,8 @@ public class BigFractionSym extends AbstractFractionSym {
     BigInteger denom = toBigDenominator().multiply(other.toBigNumerator());
     BigInteger nom = toBigNumerator().multiply(other.toBigDenominator());
     // +-inf : -c = -+inf
-    if (denom.equals(BigInteger.ZERO) && other.toBigNumerator().signum() == -1) nom = nom.negate();
+    if (denom.equals(BigInteger.ZERO) && other.toBigNumerator().signum() == -1)
+      nom = nom.negate();
     return valueOf(nom, denom);
   }
 
@@ -251,17 +253,14 @@ public class BigFractionSym extends AbstractFractionSym {
   public final boolean equalsFraction(final int numerator, final int denominator) {
     BigInteger num = fFraction.getNumerator();
     BigInteger den = fFraction.getDenominator();
-    return num.intValue() == numerator
-        && den.intValue() == denominator
-        && num.bitLength() <= 31
+    return num.intValue() == numerator && den.intValue() == denominator && num.bitLength() <= 31
         && den.bitLength() <= 31;
   }
 
   @Override
   public boolean equalsInt(final int numerator) {
     BigInteger num = fFraction.getNumerator();
-    return num.intValue() == numerator
-        && fFraction.getDenominator().equals(BigInteger.ONE)
+    return num.intValue() == numerator && fFraction.getDenominator().equals(BigInteger.ONE)
         && num.bitLength() <= 31;
   }
 
@@ -336,8 +335,7 @@ public class BigFractionSym extends AbstractFractionSym {
   public IExpr gcd(IExpr that) {
     if (that instanceof IFraction) {
       BigFraction arg2 = ((IFraction) that).toBigFraction();
-      return valueOf(
-          fFraction.getNumerator().gcd(arg2.getNumerator()),
+      return valueOf(fFraction.getNumerator().gcd(arg2.getNumerator()),
           AbstractIntegerSym.lcm(fFraction.getDenominator(), arg2.getDenominator()));
     }
     return super.gcd(that);
@@ -433,12 +431,8 @@ public class BigFractionSym extends AbstractFractionSym {
         }
       }
     }
-    return javaForm
-        .append("QQ(")
-        .append(fFraction.getNumerator().toString())
-        .append("L,")
-        .append(fFraction.getDenominator().toString())
-        .append("L)");
+    return javaForm.append("QQ(").append(fFraction.getNumerator().toString()).append("L,")
+        .append(fFraction.getDenominator().toString()).append("L)");
   }
 
   /**
@@ -637,8 +631,8 @@ public class BigFractionSym extends AbstractFractionSym {
   public String toString() {
     try {
       StringBuilder sb = new StringBuilder();
-      OutputFormFactory.get()
-          .convertFraction(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
+      OutputFormFactory.get().convertFraction(sb, this, Integer.MIN_VALUE,
+          OutputFormFactory.NO_PLUS_CALL);
       return sb.toString();
     } catch (Exception e1) {
       // fall back to simple output format

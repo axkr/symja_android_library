@@ -300,10 +300,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
    * @param listOfVariables names for the variables.
    */
   public SymbolicPolynomialRing(IAST listOfVariables) {
-    this(
-        ExprRingFactory.CONST,
-        listOfVariables,
-        listOfVariables.argSize(),
+    this(ExprRingFactory.CONST, listOfVariables, listOfVariables.argSize(),
         SymbolicTermOrderByName.Lexicographic);
   }
 
@@ -365,8 +362,8 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
    * @param n number of variables.
    * @param t a term order.
    */
-  private SymbolicPolynomialRing(
-      ExprRingFactory cf, IAST listOfVariables, int n, SymbolicTermOrder t) {
+  private SymbolicPolynomialRing(ExprRingFactory cf, IAST listOfVariables, int n,
+      SymbolicTermOrder t) {
     this(cf, listOfVariables, n, t, false);
   }
 
@@ -378,12 +375,8 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
    * @param n number of variables.
    * @param t a term order.
    */
-  public SymbolicPolynomialRing(
-      ExprRingFactory cf,
-      IAST listOfVariables,
-      int n,
-      SymbolicTermOrder t,
-      boolean numericFunction) {
+  public SymbolicPolynomialRing(ExprRingFactory cf, IAST listOfVariables, int n,
+      SymbolicTermOrder t, boolean numericFunction) {
     coFac = cf;
     nvar = n;
     tord = t;
@@ -460,18 +453,15 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
    *
    * @param exprPoly the polynomial expression
    * @param coefficient set to <code>true</code> if called by the <code>Coefficient()</code>
-   *     function
+   *        function
    * @param checkNegativeExponents if <code>true</code> don't allow negative exponents and throw an
-   *     ArithmeticException
+   *        ArithmeticException
    * @param coefficientListMode if in coefficient list mode don't collect negative <code>Power()
    *     </code> exponents
    * @return
    */
-  public SymbolicPolynomial create(
-      final IExpr exprPoly,
-      boolean coefficient,
-      boolean checkNegativeExponents,
-      boolean coefficientListMode)
+  public SymbolicPolynomial create(final IExpr exprPoly, boolean coefficient,
+      boolean checkNegativeExponents, boolean coefficientListMode)
       throws ArithmeticException, ClassCastException {
     int ix = ExpVectorSymbolic.indexVar(exprPoly, getVars());
     if (ix >= 0) {
@@ -505,8 +495,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
         ix = ExpVectorSymbolic.indexVar(base, getVars());
         if (ix >= 0) {
           IExpr exponent = ast.exponent();
-          if (checkNegativeExponents
-              && //
+          if (checkNegativeExponents && //
               (!exponent.isInteger() || exponent.isNegative())) {
             throw new ArithmeticException(
                 "SymbolicPolynomialRing - invalid exponent: " + ast.arg2().toString());
@@ -558,9 +547,8 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
    * @return
    * @throws ArithmeticException
    */
-  public static Map<IExpr, IExpr> create(
-      final IExpr exprPoly, IExpr x, Map<IExpr, IExpr> coefficientMap, IASTAppendable restList)
-      throws ArithmeticException {
+  public static Map<IExpr, IExpr> create(final IExpr exprPoly, IExpr x,
+      Map<IExpr, IExpr> coefficientMap, IASTAppendable restList) throws ArithmeticException {
     if (exprPoly instanceof IAST) {
       final IAST ast = (IAST) exprPoly;
       if (ast.isPlus()) {
@@ -599,8 +587,8 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
     return coefficientMap;
   }
 
-  private static Map<IExpr, IExpr> createTimesSub(
-      final IAST ast, IExpr x, Map<IExpr, IExpr> coefficientMap, IASTAppendable restList) {
+  private static Map<IExpr, IExpr> createTimesSub(final IAST ast, IExpr x,
+      Map<IExpr, IExpr> coefficientMap, IASTAppendable restList) {
     IExpr mainExponent = F.NIL;
     IExpr expr;
     IASTAppendable times = F.TimesAlloc(ast.size());
@@ -633,8 +621,8 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
     return addCoefficient(coefficientMap, mainExponent, times.oneIdentity1());
   }
 
-  public static Map<IExpr, IExpr> createTimes(
-      final IAST ast, IExpr x, Map<IExpr, IExpr> coefficientMap, IASTAppendable restList) {
+  public static Map<IExpr, IExpr> createTimes(final IAST ast, IExpr x,
+      Map<IExpr, IExpr> coefficientMap, IASTAppendable restList) {
     IExpr mainExponent = F.NIL;
     IExpr expr;
     IASTAppendable times = F.TimesAlloc(ast.size());
@@ -674,8 +662,8 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
    * @param coefficient the coefficient
    * @return
    */
-  private static Map<IExpr, IExpr> addCoefficient(
-      Map<IExpr, IExpr> coefficientMap, final IExpr exponent, IExpr coefficient) {
+  private static Map<IExpr, IExpr> addCoefficient(Map<IExpr, IExpr> coefficientMap,
+      final IExpr exponent, IExpr coefficient) {
     if (exponent.isPresent()) {
       IExpr oldCoefficient = coefficientMap.get(exponent);
       if (oldCoefficient != null) {
@@ -710,7 +698,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
    *
    * @param expression the expression which should be checked if it's a polynomial
    * @param coefficient set to <code>true</code> if called by the <code>Coefficient()</code>
-   *     function
+   *        function
    * @return <code>true</code> if the given expression is a polynomial
    */
   public boolean isPolynomial(final IExpr expression, boolean coefficient)
@@ -721,8 +709,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
       if (variable.equals(expression)) {
         return true;
       }
-      if (variable.isPower()
-          && variable.base().equals(expression)
+      if (variable.isPower() && variable.base().equals(expression)
           && variable.exponent().isRational()) {
         IExpr expr = variable.exponent().reciprocal();
         if (!expr.isZero()) {
@@ -759,8 +746,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
               return false;
             }
             return true;
-          } else if (variable.isPower()
-              && variable.base().equals(ast.base())
+          } else if (variable.isPower() && variable.base().equals(ast.base())
               && variable.exponent().isRational()) {
             IExpr expr = variable.exponent().reciprocal().times(ast.exponent());
             if (!expr.isZero()) {

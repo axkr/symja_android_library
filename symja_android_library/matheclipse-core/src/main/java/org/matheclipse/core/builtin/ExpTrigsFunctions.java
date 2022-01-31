@@ -201,7 +201,8 @@ public class ExpTrigsFunctions {
   /**
    * Arccosine
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
    * Inverse_trigonometric functions</a>
    */
   private static final class ArcCos extends AbstractTrigArg1
@@ -280,18 +281,16 @@ public class ExpTrigsFunctions {
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ Pi/2 + I*Log(I*arg1 + Sqrt(1 - arg1^2)) $]
-      F.Plus(
-          F.CPiHalf,
-          F.Times(
-              F.CI,
-              F.Log(F.Plus(F.Times(F.CI, arg1), F.Sqrt(F.Subtract(F.C1, F.Sqr(arg1))))))); // $$;
+      F.Plus(F.CPiHalf,
+          F.Times(F.CI, F.Log(F.Plus(F.Times(F.CI, arg1), F.Sqrt(F.Subtract(F.C1, F.Sqr(arg1))))))); // $$;
     }
   }
 
   /**
    * Inverse hyperbolic cosine
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
    * functions</a>
    */
   private static final class ArcCosh extends AbstractTrigArg1
@@ -367,7 +366,8 @@ public class ExpTrigsFunctions {
   /**
    * Arccotangent
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
    * Inverse_trigonometric functions</a>
    */
   private static final class ArcCot extends AbstractTrigArg1
@@ -388,12 +388,8 @@ public class ExpTrigsFunctions {
       Apcomplex ac = Apcomplex.I.divide(arg1);
 
       // (I/2) (Log(1 - I/arg1) - Log(1 + I/arg1))
-      Apcomplex result =
-          Apcomplex.I
-              .divide(new Apfloat(2))
-              .multiply(
-                  ApcomplexMath.log(Apcomplex.ONE.subtract(ac))
-                      .subtract(ApcomplexMath.log(Apcomplex.ONE.add(ac))));
+      Apcomplex result = Apcomplex.I.divide(new Apfloat(2)).multiply(ApcomplexMath
+          .log(Apcomplex.ONE.subtract(ac)).subtract(ApcomplexMath.log(Apcomplex.ONE.add(ac))));
       return F.complexNum(result);
     }
 
@@ -412,10 +408,8 @@ public class ExpTrigsFunctions {
       Complex c = Complex.I.divide(arg1);
 
       // (I/2) (Log(1 - I/arg1) - Log(1 + I/arg1))
-      Complex result =
-          Complex.I
-              .divide(new Complex(2.0))
-              .multiply(Complex.ONE.subtract(c).log().subtract(Complex.ONE.add(c).log()));
+      Complex result = Complex.I.divide(new Complex(2.0))
+          .multiply(Complex.ONE.subtract(c).log().subtract(Complex.ONE.add(c).log()));
       return F.complexNum(result);
     }
 
@@ -464,8 +458,7 @@ public class ExpTrigsFunctions {
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ (1/2)*I*Log(1 - I/arg1) - (1/2)*I*Log(1 + I/arg1) $]
-      F.Plus(
-          F.Times(F.C1D2, F.CI, F.Log(F.Plus(F.C1, F.Times(F.CNI, F.Power(arg1, F.CN1))))),
+      F.Plus(F.Times(F.C1D2, F.CI, F.Log(F.Plus(F.C1, F.Times(F.CNI, F.Power(arg1, F.CN1))))),
           F.Times(F.CN1D2, F.CI, F.Log(F.Plus(F.C1, F.Times(F.CI, F.Power(arg1, F.CN1)))))); // $$;
     }
   }
@@ -473,7 +466,8 @@ public class ExpTrigsFunctions {
   /**
    * Arccotangent hyperbolic
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
    * functions</a>
    */
   private static final class ArcCoth extends AbstractTrigArg1
@@ -496,8 +490,7 @@ public class ExpTrigsFunctions {
 
       // (1/2) (Log(1 + 1/arg1) - Log(1 - 1/arg1))
       Apcomplex result =
-          h.divide(
-              h.subtract(h.log(Apcomplex.ONE.add(c)), h.log(Apcomplex.ONE.subtract(c))),
+          h.divide(h.subtract(h.log(Apcomplex.ONE.add(c)), h.log(Apcomplex.ONE.subtract(c))),
               new Apfloat(2));
       return F.complexNum(result);
     }
@@ -518,9 +511,8 @@ public class ExpTrigsFunctions {
       Complex c = arg1.reciprocal();
 
       // (1/2) (Log(1 + 1/arg1) - Log(1 - 1/arg1))
-      Complex result =
-          new Complex(0.5)
-              .multiply(Complex.ONE.add(c).log().subtract(Complex.ONE.subtract(c).log()));
+      Complex result = new Complex(0.5)
+          .multiply(Complex.ONE.add(c).log().subtract(Complex.ONE.subtract(c).log()));
       return F.complexNum(result);
     }
 
@@ -569,8 +561,7 @@ public class ExpTrigsFunctions {
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ (-(1/2))*Log(1 - 1/arg1) + (1/2)*Log(1 + 1/arg1) $]
-      F.Plus(
-          F.Times(F.CN1D2, F.Log(F.Subtract(F.C1, F.Power(arg1, F.CN1)))),
+      F.Plus(F.Times(F.CN1D2, F.Log(F.Subtract(F.C1, F.Power(arg1, F.CN1)))),
           F.Times(F.C1D2, F.Log(F.Plus(F.C1, F.Power(arg1, F.CN1))))); // $$;
     }
   }
@@ -578,7 +569,8 @@ public class ExpTrigsFunctions {
   /**
    * Inverse hyperbolic tangent
    *
-   * <p>See <a href="https://en.wikipedia.org/wiki/Inverse_trigonometric_functions">Inverse
+   * <p>
+   * See <a href="https://en.wikipedia.org/wiki/Inverse_trigonometric_functions">Inverse
    * trigonometric functions</a>
    */
   private static final class ArcCsc extends AbstractTrigArg1 implements IRewrite, ArcCscRules {
@@ -630,19 +622,16 @@ public class ExpTrigsFunctions {
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ (-I)*Log(Sqrt(1 - 1/arg1^2) + I/arg1) $]
-      F.Times(
-          F.CNI,
-          F.Log(
-              F.Plus(
-                  F.Sqrt(F.Subtract(F.C1, F.Power(arg1, F.CN2))),
-                  F.Times(F.CI, F.Power(arg1, F.CN1))))); // $$;
+      F.Times(F.CNI, F.Log(F.Plus(F.Sqrt(F.Subtract(F.C1, F.Power(arg1, F.CN2))),
+          F.Times(F.CI, F.Power(arg1, F.CN1))))); // $$;
     }
   }
 
   /**
    * Inverse hyperbolic tangent
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
    * functions</a>
    */
   private static final class ArcCsch extends AbstractTrigArg1 implements IRewrite, ArcCschRules {
@@ -692,7 +681,8 @@ public class ExpTrigsFunctions {
   /**
    * Inverse hyperbolic secant
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
    * functions</a>
    */
   private static final class ArcSech extends AbstractTrigArg1 implements IRewrite, ArcSechRules {
@@ -726,12 +716,8 @@ public class ExpTrigsFunctions {
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ Log(Sqrt(-1 + 1/arg1)*Sqrt(1 + 1/arg1) + 1/arg1) $]
-      F.Log(
-          F.Plus(
-              F.Times(
-                  F.Sqrt(F.Plus(F.CN1, F.Power(arg1, F.CN1))),
-                  F.Sqrt(F.Plus(F.C1, F.Power(arg1, F.CN1)))),
-              F.Power(arg1, F.CN1))); // $$;
+      F.Log(F.Plus(F.Times(F.Sqrt(F.Plus(F.CN1, F.Power(arg1, F.CN1))),
+          F.Sqrt(F.Plus(F.C1, F.Power(arg1, F.CN1)))), F.Power(arg1, F.CN1))); // $$;
     }
   }
 
@@ -772,21 +758,16 @@ public class ExpTrigsFunctions {
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ Pi/2 + I*Log(Sqrt(1 - 1/arg1^2) + I/arg1) $]
-      F.Plus(
-          F.CPiHalf,
-          F.Times(
-              F.CI,
-              F.Log(
-                  F.Plus(
-                      F.Sqrt(F.Subtract(F.C1, F.Power(arg1, F.CN2))),
-                      F.Times(F.CI, F.Power(arg1, F.CN1)))))); // $$;
+      F.Plus(F.CPiHalf, F.Times(F.CI, F.Log(F.Plus(F.Sqrt(F.Subtract(F.C1, F.Power(arg1, F.CN2))),
+          F.Times(F.CI, F.Power(arg1, F.CN1)))))); // $$;
     }
   }
 
   /**
    * Arcsine
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
    * Inverse_trigonometric functions</a>
    */
   private static final class ArcSin extends AbstractTrigArg1
@@ -874,15 +855,15 @@ public class ExpTrigsFunctions {
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ -I*Log(I*arg1+Sqrt(1-arg1^2)) $]
-      F.Times(
-          F.CNI, F.Log(F.Plus(F.Times(F.CI, arg1), F.Sqrt(F.Subtract(F.C1, F.Sqr(arg1)))))); // $$;
+      F.Times(F.CNI, F.Log(F.Plus(F.Times(F.CI, arg1), F.Sqrt(F.Subtract(F.C1, F.Sqr(arg1)))))); // $$;
     }
   }
 
   /**
    * Arcsin hyperbolic
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
    * functions</a>
    */
   private static final class ArcSinh extends AbstractTrigArg1
@@ -959,7 +940,8 @@ public class ExpTrigsFunctions {
   /**
    * Arctangent
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
    * Inverse_trigonometric functions</a>
    */
   private static final class ArcTan extends AbstractArg12
@@ -1015,8 +997,8 @@ public class ExpTrigsFunctions {
       IExpr yUnitStep = y.unitStep();
       if (x.isNumericFunction(true) && yUnitStep.isInteger()) {
         if (x.re().isNegative()) {
-          return F.Plus(
-              F.ArcTan(F.Divide(y, x)), F.Times(F.Subtract(F.Times(F.C2, yUnitStep), F.C1), S.Pi));
+          return F.Plus(F.ArcTan(F.Divide(y, x)),
+              F.Times(F.Subtract(F.Times(F.C2, yUnitStep), F.C1), S.Pi));
         }
         IExpr argX = x.complexArg();
         // -Pi/2 < Arg(x) <= Pi/2
@@ -1038,15 +1020,15 @@ public class ExpTrigsFunctions {
           y = engine.evalN(y);
 
           if (x.isReal() && y.isReal()) {
-            //            long precision = engine.getNumericPrecision();
+            // long precision = engine.getNumericPrecision();
             Apfloat xa = ((ISignedNumber) x).apfloatValue();
             Apfloat ya = ((ISignedNumber) y).apfloatValue();
             return F.num(engine.apfloatHelper().atan2(ya, xa));
           }
           if (x.isNumber() && y.isNumber()) {
-//            long precision = engine.getNumericPrecision();
-            x = ((INumber) x).apcomplexNumValue( );
-            y = ((INumber) y).apcomplexNumValue( );
+            // long precision = engine.getNumericPrecision();
+            x = ((INumber) x).apcomplexNumValue();
+            y = ((INumber) y).apcomplexNumValue();
             return y.atan2(x);
           }
           return F.NIL;
@@ -1130,8 +1112,7 @@ public class ExpTrigsFunctions {
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ (1/2)*I*Log(1 - I*arg1) - (1/2)*I*Log(1 + I*arg1) $]
-      F.Plus(
-          F.Times(F.C1D2, F.CI, F.Log(F.Plus(F.C1, F.Times(F.CNI, arg1)))),
+      F.Plus(F.Times(F.C1D2, F.CI, F.Log(F.Plus(F.C1, F.Times(F.CNI, arg1)))),
           F.Times(F.CN1D2, F.CI, F.Log(F.Plus(F.C1, F.Times(F.CI, arg1))))); // $$;
     }
 
@@ -1139,19 +1120,16 @@ public class ExpTrigsFunctions {
     public IExpr rewriteLog(IExpr arg1, IExpr arg2, EvalEngine engine) {
       return
       // [$ (-I)*Log((arg1 + I*arg2)/Sqrt(arg1^2 + arg2^2)) $]
-      F.Times(
-          F.CNI,
-          F.Log(
-              F.Times(
-                  F.Plus(arg1, F.Times(F.CI, arg2)),
-                  F.Power(F.Plus(F.Sqr(arg1), F.Sqr(arg2)), F.CN1D2)))); // $$;
+      F.Times(F.CNI, F.Log(F.Times(F.Plus(arg1, F.Times(F.CI, arg2)),
+          F.Power(F.Plus(F.Sqr(arg1), F.Sqr(arg2)), F.CN1D2)))); // $$;
     }
   }
 
   /**
    * Inverse hyperbolic tangent
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
    * functions</a>
    */
   private static final class ArcTanh extends AbstractTrigArg1
@@ -1231,8 +1209,7 @@ public class ExpTrigsFunctions {
     public IExpr rewriteLog(IExpr arg1, EvalEngine engine) {
       return
       // [$ (-(1/2))*Log(1 - arg1) + (1/2)*Log(1 + arg1) $]
-      F.Plus(
-          F.Times(F.CN1D2, F.Log(F.Subtract(F.C1, arg1))),
+      F.Plus(F.Times(F.CN1D2, F.Log(F.Subtract(F.C1, arg1))),
           F.Times(F.C1D2, F.Log(F.Plus(F.C1, arg1)))); // $$;
     }
   }
@@ -1278,9 +1255,10 @@ public class ExpTrigsFunctions {
   /**
    * Cosine function
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
-   * functions</a> and <a href="http://en.wikipedia.org/wiki/Exact_trigonometric_constants">
-   * Wikipedia - Exact trigonometric constants</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
+   * and <a href="http://en.wikipedia.org/wiki/Exact_trigonometric_constants"> Wikipedia - Exact
+   * trigonometric constants</a>
    */
   private static final class Cos extends AbstractTrigArg1
       implements INumeric, IRewrite, CosRules, DoubleUnaryOperator {
@@ -1438,8 +1416,7 @@ public class ExpTrigsFunctions {
       // }
       return
       // [$ Exp(arg1*I)/ 2 + Exp(-arg1*I)/ 2 $]
-      F.Plus(
-          F.Times(F.C1D2, F.Exp(F.Times(arg1, F.CI))),
+      F.Plus(F.Times(F.C1D2, F.Exp(F.Times(arg1, F.CI))),
           F.Times(F.C1D2, F.Exp(F.Times(F.CN1, arg1, F.CI)))); // $$;
     }
   }
@@ -1447,7 +1424,8 @@ public class ExpTrigsFunctions {
   /**
    * Hyperbolic cotangent
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
    */
   private static final class Coth extends AbstractTrigArg1
       implements INumeric, IRewrite, CothRules, DoubleUnaryOperator {
@@ -1508,8 +1486,8 @@ public class ExpTrigsFunctions {
             IRational t = (IRational) k;
             if (t.isLT(F.C0)) {
               // Coth(arg1-I*Pi*IntegerPart(t) + I*Pi )
-              return F.Coth(
-                  F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart()), F.Times(F.CI, S.Pi)));
+              return F
+                  .Coth(F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart()), F.Times(F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
@@ -1554,8 +1532,8 @@ public class ExpTrigsFunctions {
   /**
    * Cosecant function
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
-   * functions</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Csc extends AbstractTrigArg1
       implements INumeric, IRewrite, CscRules, DoubleUnaryOperator {
@@ -1604,8 +1582,8 @@ public class ExpTrigsFunctions {
             IRational t = (IRational) k;
             if (t.isLT(F.C0)) {
               // Csc(arg1 - 2*Pi*IntegerPart(1/2*t) + 2*Pi)
-              return F.Csc(
-                  F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t))), F.C2Pi));
+              return F
+                  .Csc(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t))), F.C2Pi));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
@@ -1703,19 +1681,16 @@ public class ExpTrigsFunctions {
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       return
       // [$ -((2*I)/(E^((-I)*arg1) - E^(I*arg1))) $]
-      F.Times(
-          F.CN1,
-          F.C2,
-          F.CI,
-          F.Power(
-              F.Subtract(F.Exp(F.Times(F.CNI, arg1)), F.Exp(F.Times(F.CI, arg1))), F.CN1)); // $$;
+      F.Times(F.CN1, F.C2, F.CI,
+          F.Power(F.Subtract(F.Exp(F.Times(F.CNI, arg1)), F.Exp(F.Times(F.CI, arg1))), F.CN1)); // $$;
     }
   }
 
   /**
    * Hyperbolic cosine
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
    */
   private static final class Cosh extends AbstractTrigArg1
       implements INumeric, IRewrite, CoshRules, DoubleUnaryOperator {
@@ -1771,10 +1746,8 @@ public class ExpTrigsFunctions {
             IRational t = (IRational) k;
             if (t.isLT(F.C0)) {
               // Cosh(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
-              return F.Cosh(
-                  F.Plus(
-                      arg1,
-                      F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
+              return F
+                  .Cosh(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
                       F.Times(F.C2, F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
@@ -1786,8 +1759,8 @@ public class ExpTrigsFunctions {
               return F.Negate(F.Cosh(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
             }
             // Cosh(arg1-2*I*Pi*IntegerPart(1/2*t) )
-            return F.Cosh(
-                F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+            return F
+                .Cosh(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Cosh( arg1 - list.arg2() )
             return F.Times(F.Power(F.CN1, k), F.Cosh(F.Subtract(arg1, list.arg2())));
@@ -1827,8 +1800,8 @@ public class ExpTrigsFunctions {
   /**
    * Cotangent function
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
-   * functions</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Cot extends AbstractTrigArg1
       implements INumeric, IRewrite, CotRules, DoubleUnaryOperator {
@@ -1976,19 +1949,16 @@ public class ExpTrigsFunctions {
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       return
       // [$ -((I*(E^((-I)*arg1) + E^(I*arg1)))/(E^((-I)*arg1) - E^(I*arg1))) $]
-      F.Times(
-          F.CN1,
-          F.CI,
-          F.Plus(F.Exp(F.Times(F.CNI, arg1)), F.Exp(F.Times(F.CI, arg1))),
-          F.Power(
-              F.Subtract(F.Exp(F.Times(F.CNI, arg1)), F.Exp(F.Times(F.CI, arg1))), F.CN1)); // $$;
+      F.Times(F.CN1, F.CI, F.Plus(F.Exp(F.Times(F.CNI, arg1)), F.Exp(F.Times(F.CI, arg1))),
+          F.Power(F.Subtract(F.Exp(F.Times(F.CNI, arg1)), F.Exp(F.Times(F.CI, arg1))), F.CN1)); // $$;
     }
   }
 
   /**
    * Hyperbolic Cosecant function
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic functions</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic functions</a>
    */
   private static final class Csch extends AbstractTrigArg1
       implements INumeric, IRewrite, CschRules, DoubleUnaryOperator {
@@ -2048,10 +2018,8 @@ public class ExpTrigsFunctions {
             IRational t = (IRational) k;
             if (t.isLT(F.C0)) {
               // Csch(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
-              return F.Csch(
-                  F.Plus(
-                      arg1,
-                      F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
+              return F
+                  .Csch(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
                       F.Times(F.C2, F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
@@ -2063,8 +2031,8 @@ public class ExpTrigsFunctions {
               return F.Negate(F.Csch(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
             }
             // Csch(arg1-2*I*Pi*IntegerPart(1/2*t) )
-            return F.Csch(
-                F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+            return F
+                .Csch(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Csch( arg1 - list.arg2() )
             return F.Times(F.Power(F.CN1, k), F.Csch(F.Subtract(arg1, list.arg2())));
@@ -2133,26 +2101,23 @@ public class ExpTrigsFunctions {
           if (z.isNumber()) {
             // see https://github.com/paulmasson/math/issues/24
 
-            // Re(z)>0  ||  (Re(z)==0&&Im(z)>=0)
+            // Re(z)>0 || (Re(z)==0&&Im(z)>=0)
             if (((INumber) z).complexSign() >= 0) {
               // (1/2)*(Pi - 4*ArcCot(E^z))
-              return F.Times.of(
-                  engine, F.C1D2, F.Subtract(S.Pi, F.Times(F.C4, F.ArcCot(F.Power(S.E, z)))));
+              return F.Times.of(engine, F.C1D2,
+                  F.Subtract(S.Pi, F.Times(F.C4, F.ArcCot(F.Power(S.E, z)))));
             }
 
             // 2*ArcTan( Tan( z/2 )
-            return F.Times.of(
-                engine,
-                F.C2,
-                F.ArcTan( //
-                    F.Tanh(F.Times(F.C1D2, z)) //
-                    ));
+            return F.Times.of(engine, F.C2, F.ArcTan( //
+                F.Tanh(F.Times(F.C1D2, z)) //
+            ));
 
-            //            // (1/2)*(-Pi + 4*ArcTan(E^z))
-            //            return F.Times.of(
-            //                engine,
-            //                F.C1D2,
-            //                F.Plus(F.Times(F.CN1, S.Pi), F.Times(F.C4, F.ArcTan(F.Power(S.E,
+            // // (1/2)*(-Pi + 4*ArcTan(E^z))
+            // return F.Times.of(
+            // engine,
+            // F.C1D2,
+            // F.Plus(F.Times(F.CN1, S.Pi), F.Times(F.C4, F.ArcTan(F.Power(S.E,
             // z)))));
           }
         } catch (ValidateException ve) {
@@ -2221,12 +2186,9 @@ public class ExpTrigsFunctions {
             // see https://github.com/paulmasson/math/issues/24
 
             // 2*ArcTanh( Tan( z/2 )
-            return F.Times.of(
-                engine,
-                F.C2,
-                F.ArcTanh( //
-                    F.Tan(F.Times(F.C1D2, z)) //
-                    ));
+            return F.Times.of(engine, F.C2, F.ArcTanh( //
+                F.Tan(F.Times(F.C1D2, z)) //
+            ));
           }
         } catch (ValidateException ve) {
           return IOFunctions.printMessage(ast.topHead(), ve, engine);
@@ -2410,8 +2372,8 @@ public class ExpTrigsFunctions {
   /**
    * Logistic function
    *
-   * <p>See <a href="https://en.wikipedia.org/wiki/Logistic_function">Wikipedia: Logistic
-   * function</a>
+   * <p>
+   * See <a href="https://en.wikipedia.org/wiki/Logistic_function">Wikipedia: Logistic function</a>
    */
   private static final class LogisticSigmoid extends AbstractEvaluator {
 
@@ -2499,8 +2461,8 @@ public class ExpTrigsFunctions {
   /**
    * Secant function
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
-   * functions</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Sec extends AbstractTrigArg1
       implements INumeric, IRewrite, SecRules, DoubleUnaryOperator {
@@ -2548,8 +2510,8 @@ public class ExpTrigsFunctions {
             IRational t = (IRational) k;
             if (t.isLT(F.C0)) {
               // Sec(arg1 - 2*Pi*IntegerPart(1/2*t) + 2*Pi)
-              return F.Sec(
-                  F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t))), F.C2Pi));
+              return F
+                  .Sec(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t))), F.C2Pi));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
@@ -2644,8 +2606,7 @@ public class ExpTrigsFunctions {
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       return
       // [$ 2/(E^((-I)*arg1) + E^(I*arg1)) $]
-      F.Times(
-          F.C2,
+      F.Times(F.C2,
           F.Power(F.Plus(F.Exp(F.Times(F.CNI, arg1)), F.Exp(F.Times(F.CI, arg1))), F.CN1)); // $$;
     }
   }
@@ -2653,7 +2614,8 @@ public class ExpTrigsFunctions {
   /**
    * Hyperbolic Secant function
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic functions</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic functions</a>
    */
   private static final class Sech extends AbstractTrigArg1
       implements INumeric, IRewrite, SechRules, DoubleUnaryOperator {
@@ -2713,10 +2675,8 @@ public class ExpTrigsFunctions {
             IRational t = (IRational) k;
             if (t.isLT(F.C0)) {
               // Sech(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
-              return F.Sech(
-                  F.Plus(
-                      arg1,
-                      F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
+              return F
+                  .Sech(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
                       F.Times(F.C2, F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
@@ -2728,8 +2688,8 @@ public class ExpTrigsFunctions {
               return F.Negate(F.Sech(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
             }
             // Sech(arg1-2*I*Pi*IntegerPart(1/2*t) )
-            return F.Sech(
-                F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+            return F
+                .Sech(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Sech( arg1 - list.arg2() )
             return F.Times(F.Power(F.CN1, k), F.Sech(F.Subtract(arg1, list.arg2())));
@@ -2764,8 +2724,8 @@ public class ExpTrigsFunctions {
   /**
    * Sine function.
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
-   * functions</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Sin extends AbstractTrigArg1
       implements INumeric, IRewrite, SinRules, DoubleUnaryOperator {
@@ -2926,8 +2886,7 @@ public class ExpTrigsFunctions {
       // }
       return
       // [$ Exp(arg1*I) / (2*I) - Exp(-arg1*I) / (2*I) $]
-      F.Plus(
-          F.Times(F.CN1, F.Power(F.Times(F.C2, F.CI), F.CN1), F.Exp(F.Times(F.CN1, arg1, F.CI))),
+      F.Plus(F.Times(F.CN1, F.Power(F.Times(F.C2, F.CI), F.CN1), F.Exp(F.Times(F.CN1, arg1, F.CI))),
           F.Times(F.Power(F.Times(F.C2, F.CI), F.CN1), F.Exp(F.Times(arg1, F.CI)))); // $$;
     }
   }
@@ -2935,7 +2894,8 @@ public class ExpTrigsFunctions {
   /**
    * Sinc function.
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Sinc_function">Sinc function</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Sinc_function">Sinc function</a>
    */
   private static class Sinc extends AbstractTrigArg1
       implements INumeric, SincRules, DoubleUnaryOperator {
@@ -3039,7 +2999,8 @@ public class ExpTrigsFunctions {
   /**
    * Hyperbolic sine
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
    */
   private static final class Sinh extends AbstractTrigArg1
       implements INumeric, IRewrite, SinhRules, DoubleUnaryOperator {
@@ -3099,10 +3060,8 @@ public class ExpTrigsFunctions {
             IRational t = (IRational) k;
             if (t.isLT(F.C0)) {
               // Sinh(arg1-2*I*Pi*IntegerPart(1/2*t) + 2*I*Pi)
-              return F.Sinh(
-                  F.Plus(
-                      arg1,
-                      F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
+              return F
+                  .Sinh(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t))),
                       F.Times(F.C2, F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
@@ -3114,8 +3073,8 @@ public class ExpTrigsFunctions {
               return F.Negate(F.Sinh(F.Subtract(arg1, F.Times(F.CI, S.Pi))));
             }
             // Sinh(arg1-2*I*Pi*IntegerPart(1/2*t) )
-            return F.Sinh(
-                F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
+            return F
+                .Sinh(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Sinh( arg1 - list.arg2() )
             return F.Times(F.Power(F.CN1, k), F.Sinh(F.Subtract(arg1, list.arg2())));
@@ -3160,17 +3119,15 @@ public class ExpTrigsFunctions {
     public IExpr rewriteExp(IExpr arg1, EvalEngine engine) {
       return
       // [$ -(1/(E^arg1*2)) + E^arg1/2 $]
-      F.Plus(
-          F.Negate(F.Power(F.Times(F.Exp(arg1), F.C2), F.CN1)),
-          F.Times(F.C1D2, F.Exp(arg1))); // $$;
+      F.Plus(F.Negate(F.Power(F.Times(F.Exp(arg1), F.C2), F.CN1)), F.Times(F.C1D2, F.Exp(arg1))); // $$;
     }
   }
 
   /**
    * Tan
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
-   * functions</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Tan extends AbstractTrigArg1
       implements INumeric, IRewrite, TanRules, DoubleUnaryOperator {
@@ -3306,9 +3263,7 @@ public class ExpTrigsFunctions {
       // }
       return
       // [$ (I*(E^((-I)*arg1) - E^(I*arg1)))/(E^((-I)*arg1) + E^(I*arg1)) $]
-      F.Times(
-          F.CI,
-          F.Subtract(F.Exp(F.Times(F.CNI, arg1)), F.Exp(F.Times(F.CI, arg1))),
+      F.Times(F.CI, F.Subtract(F.Exp(F.Times(F.CNI, arg1)), F.Exp(F.Times(F.CI, arg1))),
           F.Power(F.Plus(F.Exp(F.Times(F.CNI, arg1)), F.Exp(F.Times(F.CI, arg1))), F.CN1)); // $$;
     }
   }
@@ -3316,7 +3271,8 @@ public class ExpTrigsFunctions {
   /**
    * Hyperbolic tangent
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
    */
   private static final class Tanh extends AbstractTrigArg1
       implements INumeric, IRewrite, TanhRules, DoubleUnaryOperator {
@@ -3377,8 +3333,8 @@ public class ExpTrigsFunctions {
             IRational t = (IRational) k;
             if (t.isLT(F.C0)) {
               // Tanh(arg1-I*Pi*IntegerPart(t) + I*Pi )
-              return F.Tanh(
-                  F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart()), F.Times(F.CI, S.Pi)));
+              return F
+                  .Tanh(F.Plus(arg1, F.Times(F.CNI, S.Pi, t.integerPart()), F.Times(F.CI, S.Pi)));
             } else if (t.isLT(F.C1D2)) { // t < 1/2
               return F.NIL;
             } else if (t.isLT(F.C1)) { // t < 1
@@ -3534,10 +3490,8 @@ public class ExpTrigsFunctions {
       // (k+1)*Pi
       IExpr max = S.Times.of(k.inc(), Pi);
       // (-1)^k * (z - Pi*k - Pi/2) + Pi/2
-      IAST result =
-          F.Plus(
-              F.Times(F.Power(F.CN1, k), F.Plus(z, F.Times(F.CN1, k, S.Pi), F.CNPiHalf)),
-              F.CPiHalf);
+      IAST result = F.Plus(
+          F.Times(F.Power(F.CN1, k), F.Plus(z, F.Times(F.CN1, k, S.Pi), F.CNPiHalf)), F.CPiHalf);
 
       // (k*Pi < Re(z) < (k + 1)*Pi
       if (S.Less.ofQ(min, zRe) && S.Greater.ofQ(max, zRe)) {

@@ -35,7 +35,8 @@ import com.google.common.base.Suppliers;
  *
  * <blockquote>
  *
- * <p>evaluates the discrete product of <code>expr</code> with <code>i</code> ranging from <code>
+ * <p>
+ * evaluates the discrete product of <code>expr</code> with <code>i</code> ranging from <code>
  * imin</code> to <code>imax</code>.
  *
  * </blockquote>
@@ -46,7 +47,8 @@ import com.google.common.base.Suppliers;
  *
  * <blockquote>
  *
- * <p><code>i</code> ranges from <code>imin</code> to <code>imax</code> in steps of <code>di</code>.
+ * <p>
+ * <code>i</code> ranges from <code>imin</code> to <code>imax</code> in steps of <code>di</code>.
  *
  * </blockquote>
  *
@@ -58,8 +60,9 @@ import com.google.common.base.Suppliers;
  *
  * <blockquote>
  *
- * <p>evaluates <code>expr</code> as a multiple sum, with <code>{i, ...}, {j, ...}, ...</code> being
- * in outermost-to-innermost order.
+ * <p>
+ * evaluates <code>expr</code> as a multiple sum, with <code>{i, ...}, {j, ...}, ...</code> being in
+ * outermost-to-innermost order.
  *
  * </blockquote>
  *
@@ -81,14 +84,16 @@ import com.google.common.base.Suppliers;
  * 2^(1/2*n*(1+n))
  * </pre>
  *
- * <p>Symbolic products involving the factorial are evaluated:
+ * <p>
+ * Symbolic products involving the factorial are evaluated:
  *
  * <pre>
  * &gt;&gt; Product(k, {k, 3, n})
  * n! / 2
  * </pre>
  *
- * <p>Evaluate the <code>n</code>th primorial:
+ * <p>
+ * Evaluate the <code>n</code>th primorial:
  *
  * <pre>
  * &gt;&gt; primorial(0) = 1;
@@ -111,7 +116,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
   /**
    * Product of expressions.
    *
-   * <p>See <a href="http://en.wikipedia.org/wiki/Multiplication#Capital_Pi_notation">Wikipedia
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Multiplication#Capital_Pi_notation">Wikipedia
    * Multiplication</a>
    */
   @Override
@@ -272,11 +278,9 @@ public class Product extends ListFunctions.Table implements ProductRules {
       } catch (final ValidateException ve) {
         return IOFunctions.printMessage(S.Product, ve, engine);
       } catch (RecursionLimitExceeded rle) {
-        //        Recursion depth of `1` exceeded during evaluation of `2`.
+        // Recursion depth of `1` exceeded during evaluation of `2`.
         int recursionLimit = engine.getRecursionLimit();
-        IOFunctions.printMessage(
-            S.Product,
-            "reclim2",
+        IOFunctions.printMessage(S.Product, "reclim2",
             F.List(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), preevaledProduct),
             engine);
         return F.NIL;

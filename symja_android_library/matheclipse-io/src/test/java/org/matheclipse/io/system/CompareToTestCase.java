@@ -71,20 +71,20 @@ public class CompareToTestCase extends AbstractTestCase {
     assertEquals(1, res);
   }
 
-  //	public void testCT004() {
-  //		IExpr ast1, ast2;
+  // public void testCT004() {
+  // IExpr ast1, ast2;
   //
-  //		ast1 = Slot1;
-  //		ast2 = Power(Slot1, C2);
-  //		// ast1 = eval(ast1);
-  //		// ast2 = eval(ast2);
+  // ast1 = Slot1;
+  // ast2 = Power(Slot1, C2);
+  // // ast1 = eval(ast1);
+  // // ast2 = eval(ast2);
   //
-  //		int res = ast1.compareTo(ast2);
-  //		assertEquals(-1, res);
+  // int res = ast1.compareTo(ast2);
+  // assertEquals(-1, res);
   //
-  //		res = ast2.compareTo(ast1);
-  //		assertEquals(1, res);
-  //	}
+  // res = ast2.compareTo(ast1);
+  // assertEquals(1, res);
+  // }
 
   public void testOut001() {
     IExpr ast1, ast2;
@@ -98,8 +98,7 @@ public class CompareToTestCase extends AbstractTestCase {
     int res = ast1.compareTo(ast2);
     assertEquals(1, res);
 
-    check(
-        "-Infinity+b+a", //
+    check("-Infinity+b+a", //
         "a+b-Infinity");
   }
 
@@ -115,8 +114,7 @@ public class CompareToTestCase extends AbstractTestCase {
     int res = ast1.compareTo(ast2);
     assertEquals(1, res);
 
-    check(
-        "-Infinity+b+a", //
+    check("-Infinity+b+a", //
         "a+b-Infinity");
   }
 
@@ -152,8 +150,7 @@ public class CompareToTestCase extends AbstractTestCase {
     res = ast2.compareTo(ast1);
     assertEquals(1, res);
 
-    check(
-        "-Infinity+b+a", //
+    check("-Infinity+b+a", //
         "a+b-Infinity");
   }
 
@@ -177,8 +174,7 @@ public class CompareToTestCase extends AbstractTestCase {
     res = ast2.compareTo(x5_c);
     assertEquals(-1, res);
 
-    check(
-        "-Infinity+b+a", //
+    check("-Infinity+b+a", //
         "a+b-Infinity");
   }
 
@@ -202,8 +198,7 @@ public class CompareToTestCase extends AbstractTestCase {
     res = ast2.compareTo(ast1);
     assertEquals(-1, res);
 
-    check(
-        "-Infinity+b+a", //
+    check("-Infinity+b+a", //
         "a+b-Infinity");
   }
 }

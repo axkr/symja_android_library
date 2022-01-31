@@ -22,8 +22,9 @@ public class JavaClassExpr extends DataExpr<Class<?>> implements Externalizable 
     return new JavaClassExpr(clazz);
   }
 
-  public static JavaClassExpr newInstance(final String className, ClassLoader classLoader) throws ClassNotFoundException {
-    Class<?> clazz = classLoader.loadClass(className);  
+  public static JavaClassExpr newInstance(final String className, ClassLoader classLoader)
+      throws ClassNotFoundException {
+    Class<?> clazz = classLoader.loadClass(className);
     return new JavaClassExpr(clazz);
   }
 

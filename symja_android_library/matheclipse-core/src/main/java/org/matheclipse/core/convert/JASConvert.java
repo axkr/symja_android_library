@@ -116,10 +116,10 @@ public class JASConvert<C extends RingElem<C>> {
    * @param fac result polynomial factory.
    * @param A polynomial with BigRational coefficients to be converted.
    * @return Object[] with 3 entries: [0]->gcd [1]->lcm and [2]->polynomial with BigInteger
-   *     coefficients.
+   *         coefficients.
    */
-  public static Object[] rationalFromRationalCoefficientsFactor(
-      GenPolynomialRing<BigRational> fac, GenPolynomial<BigRational> A) {
+  public static Object[] rationalFromRationalCoefficientsFactor(GenPolynomialRing<BigRational> fac,
+      GenPolynomial<BigRational> A) {
     Object[] result = new Object[3];
     if (A == null || A.isZERO()) {
       result[0] = java.math.BigInteger.ONE;
@@ -186,17 +186,16 @@ public class JASConvert<C extends RingElem<C>> {
     }
     this.fTermOrder = TermOrderByName.INVLEX;
     this.fPolyFactory = new GenPolynomialRing<C>(fRingFactory, fVariables.size(), fTermOrder, vars);
-    this.fBigIntegerPolyFactory =
-        new GenPolynomialRing<edu.jas.arith.BigInteger>(
-            edu.jas.arith.BigInteger.ZERO, fVariables.size(), fTermOrder, vars);
+    this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(
+        edu.jas.arith.BigInteger.ZERO, fVariables.size(), fTermOrder, vars);
   }
 
   public JASConvert(final List<? extends IExpr> variablesList, RingFactory<C> ringFactory) {
     this(variablesList, ringFactory, TermOrderByName.INVLEX);
   }
 
-  public JASConvert(
-      final List<? extends IExpr> variablesList, RingFactory<C> ringFactory, TermOrder termOrder) {
+  public JASConvert(final List<? extends IExpr> variablesList, RingFactory<C> ringFactory,
+      TermOrder termOrder) {
     this.fRingFactory = ringFactory;
     this.fVariables = variablesList;
     String[] vars = new String[fVariables.size()];
@@ -205,9 +204,8 @@ public class JASConvert<C extends RingElem<C>> {
     }
     this.fTermOrder = termOrder;
     this.fPolyFactory = new GenPolynomialRing<C>(fRingFactory, fVariables.size(), fTermOrder, vars);
-    this.fBigIntegerPolyFactory =
-        new GenPolynomialRing<edu.jas.arith.BigInteger>(
-            edu.jas.arith.BigInteger.ZERO, fVariables.size(), fTermOrder, vars);
+    this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(
+        edu.jas.arith.BigInteger.ZERO, fVariables.size(), fTermOrder, vars);
   }
 
   public IAST algebraicNumber2Expr(final AlgebraicNumber<BigRational> coeff)
@@ -301,7 +299,7 @@ public class JASConvert<C extends RingElem<C>> {
    *
    * @param exprPoly
    * @param numeric2Rational if <code>true</code>, <code>INum</code> double values are converted to
-   *     <code>BigRational</code> internally
+   *        <code>BigRational</code> internally
    * @return
    * @throws ArithmeticException
    * @throws JASConversionException
@@ -422,8 +420,8 @@ public class JASConvert<C extends RingElem<C>> {
    *
    * @param poly polynomial with BigRational coefficients to be converted.
    * @return Object[] with 3 entries: [0]->gcd (java.math.BigInteger) [1]->lcm
-   *     (java.math.BigInteger) and [2]->polynomial (GenPolynomial<edu.jas.arith.BigInteger>) with
-   *     BigInteger coefficients.
+   *         (java.math.BigInteger) and [2]->polynomial (GenPolynomial<edu.jas.arith.BigInteger>)
+   *         with BigInteger coefficients.
    */
   public Object[] factorTerms(GenPolynomial<BigRational> poly) {
     return PolyUtil.integerFromRationalCoefficientsFactor(fBigIntegerPolyFactory, poly);
@@ -514,10 +512,8 @@ public class JASConvert<C extends RingElem<C>> {
     if (rational.size() != 0) {
       int i = 0;
       while (i < rational.size()) {
-        sum.append(
-            F.Times(
-                rationalPoly2Expr(rational.get(i++), false),
-                F.Power(rationalPoly2Expr(rational.get(i++), false), F.CN1)));
+        sum.append(F.Times(rationalPoly2Expr(rational.get(i++), false),
+            F.Power(rationalPoly2Expr(rational.get(i++), false), F.CN1)));
       }
     }
     if (logarithm.size() != 0) {
@@ -548,9 +544,8 @@ public class JASConvert<C extends RingElem<C>> {
       for (int i = 0; i < cfactors.size(); i++) {
         BigRational cp = cfactors.get(i);
         GenPolynomial<BigRational> p = cdenom.get(i);
-        plus.append(
-            F.Times(
-                F.fraction(cp.numerator(), cp.denominator()), F.Log(rationalPoly2Expr(p, false))));
+        plus.append(F.Times(F.fraction(cp.numerator(), cp.denominator()),
+            F.Log(rationalPoly2Expr(p, false))));
       }
     }
 
@@ -561,7 +556,8 @@ public class JASConvert<C extends RingElem<C>> {
         AlgebraicNumber<BigRational> ap = afactors.get(i);
         AlgebraicNumberRing<BigRational> ar = ap.factory();
         GenPolynomial<AlgebraicNumber<BigRational>> p = adenom.get(i);
-        if (p.degree(0) < ar.modul.degree(0) && ar.modul.degree(0) > 2) {}
+        if (p.degree(0) < ar.modul.degree(0) && ar.modul.degree(0) > 2) {
+        }
 
         GenPolynomial<BigRational> v = ap.getVal();
         IASTAppendable times = F.TimesAlloc(2);
@@ -582,16 +578,16 @@ public class JASConvert<C extends RingElem<C>> {
     return plus;
   }
 
-  public boolean monomialIntegerToExpr(
-      Complex<edu.jas.arith.BigInteger> coeff, ExpVector exp, IASTAppendable monomTimes) {
+  public boolean monomialIntegerToExpr(Complex<edu.jas.arith.BigInteger> coeff, ExpVector exp,
+      IASTAppendable monomTimes) {
     edu.jas.arith.BigInteger re = coeff.getRe();
     edu.jas.arith.BigInteger im = coeff.getIm();
     monomTimes.append(F.complex(F.integer(re.getVal()), F.integer(im.getVal())));
     return expVectorToExpr(exp, monomTimes);
   }
 
-  public boolean monomialToExpr(
-      AlgebraicNumber<BigRational> coeff, ExpVector exp, IASTAppendable monomTimes) {
+  public boolean monomialToExpr(AlgebraicNumber<BigRational> coeff, ExpVector exp,
+      IASTAppendable monomTimes) {
     if (!coeff.isONE()) {
       monomTimes.append(algebraicNumber2Expr(coeff));
     }
@@ -606,19 +602,17 @@ public class JASConvert<C extends RingElem<C>> {
     return expVectorToExpr(exp, monomTimes);
   }
 
-  public boolean monomialToExpr(
-      Complex<BigRational> coeff, ExpVector exp, IASTAppendable monomTimes) {
+  public boolean monomialToExpr(Complex<BigRational> coeff, ExpVector exp,
+      IASTAppendable monomTimes) {
     BigRational re = coeff.getRe();
     BigRational im = coeff.getIm();
-    monomTimes.append(
-        F.complex(
-            F.fraction(re.numerator(), re.denominator()).normalize(),
-            F.fraction(im.numerator(), im.denominator()).normalize()));
+    monomTimes.append(F.complex(F.fraction(re.numerator(), re.denominator()).normalize(),
+        F.fraction(im.numerator(), im.denominator()).normalize()));
     return expVectorToExpr(exp, monomTimes);
   }
 
-  public boolean monomialToExpr(
-      edu.jas.arith.BigInteger coeff, ExpVector exp, IASTAppendable monomTimes) {
+  public boolean monomialToExpr(edu.jas.arith.BigInteger coeff, ExpVector exp,
+      IASTAppendable monomTimes) {
     if (!coeff.isONE()) {
       IInteger coeffValue = F.integer(coeff.getVal());
       monomTimes.append(coeffValue);
@@ -700,9 +694,8 @@ public class JASConvert<C extends RingElem<C>> {
         qTemp = rational.get(i);
         qNum = qTemp.num;
         qDen = qTemp.den;
-        sum.append(
-            F.Times(
-                rationalPoly2Expr(qNum, false), F.Power(rationalPoly2Expr(qDen, false), F.CN1)));
+        sum.append(F.Times(rationalPoly2Expr(qNum, false),
+            F.Power(rationalPoly2Expr(qDen, false), F.CN1)));
       }
       return sum;
     }
@@ -794,8 +787,8 @@ public class JASConvert<C extends RingElem<C>> {
    * @param poly
    * @return <code>false</code> if the polynomials degree > 2 and number of variables <> 1
    */
-  private static boolean isQuadratic(
-      GenPolynomial<edu.jas.arith.BigInteger> poly, edu.jas.arith.BigInteger[] result) {
+  private static boolean isQuadratic(GenPolynomial<edu.jas.arith.BigInteger> poly,
+      edu.jas.arith.BigInteger[] result) {
     if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
       result[0] = edu.jas.arith.BigInteger.ZERO;
       result[1] = edu.jas.arith.BigInteger.ZERO;

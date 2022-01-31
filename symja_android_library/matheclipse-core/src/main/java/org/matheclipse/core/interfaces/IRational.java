@@ -161,9 +161,9 @@ public interface IRational extends ISignedNumber, IBigNumber {
   public IInteger numerator();
 
   /**
-   * Returns this number raised at the specified exponent. See <a
-   * href="https://en.wikipedia.org/wiki/Exponentiation_by_squaring">Wikipedia - Exponentiation by
-   * squaring</a>
+   * Returns this number raised at the specified exponent. See
+   * <a href="https://en.wikipedia.org/wiki/Exponentiation_by_squaring">Wikipedia - Exponentiation
+   * by squaring</a>
    *
    * @param exp the exponent.
    * @return <code>this<sup>exp</sup></code>

@@ -135,34 +135,32 @@ public class RubiTests002 extends AbstractRubiTestCase {
 
   // {(a+b*x^2)^(4/3)/(c*x)^(17/3), x, 1, (-3*(a+b*x^2)^(7/3))/(14*a*c*(c*x)^(14/3))}
   public void test00694() {
-    check(
-        "Integrate((a+b*x^2)^(4/3)/(c*x)^(17/3), x)", "(-3*(a+b*x^2)^(7/3))/(14*a*c*(c*x)^(14/3))");
+    check("Integrate((a+b*x^2)^(4/3)/(c*x)^(17/3), x)",
+        "(-3*(a+b*x^2)^(7/3))/(14*a*c*(c*x)^(14/3))");
   }
 
   // {1/((c*x)^(5/3)*(a+b*x^2)^(2/3)), x, 1, (-3*(a+b*x^2)^(1/3))/(2*a*c*(c*x)^(2/3))}
   public void test00695() {
-    check(
-        "Integrate(1/((c*x)^(5/3)*(a+b*x^2)^(2/3)), x)",
+    check("Integrate(1/((c*x)^(5/3)*(a+b*x^2)^(2/3)), x)",
         "(-3*(a+b*x^2)^(1/3))/(2*a*c*(c*x)^(2/3))");
   }
 
   // {(2-3*x^2)^(-1/4), x, 1, (2*2^(1/4)*EllipticE(ArcSin(Sqrt(3/2)*x)/2, 2))/Sqrt(3)}
   public void test00696() {
-    check(
-        "Integrate((2-3*x^2)^(-1/4), x)",
+    check("Integrate((2-3*x^2)^(-1/4), x)",
         "(2*2^(1/4)*EllipticE(ArcSin(Sqrt(3/2)*x)/2, 2))/Sqrt(3)");
   }
 
   // {(2+3*x^2)^(-3/4), x, 1, (2^(3/4)*EllipticF(ArcTan(Sqrt(3/2)*x)/2, 2))/Sqrt(3)}
   public void test00697() {
-    check(
-        "Integrate((2+3*x^2)^(-3/4), x)", "(2^(3/4)*EllipticF(ArcTan(Sqrt(3/2)*x)/2, 2))/Sqrt(3)");
+    check("Integrate((2+3*x^2)^(-3/4), x)",
+        "(2^(3/4)*EllipticF(ArcTan(Sqrt(3/2)*x)/2, 2))/Sqrt(3)");
   }
 
   // {(2-3*x^2)^(-3/4), x, 1, (2^(3/4)*EllipticF(ArcSin(Sqrt(3/2)*x)/2, 2))/Sqrt(3)}
   public void test00698() {
-    check(
-        "Integrate((2-3*x^2)^(-3/4), x)", "(2^(3/4)*EllipticF(ArcSin(Sqrt(3/2)*x)/2, 2))/Sqrt(3)");
+    check("Integrate((2-3*x^2)^(-3/4), x)",
+        "(2^(3/4)*EllipticF(ArcSin(Sqrt(3/2)*x)/2, 2))/Sqrt(3)");
   }
 
   // {(a+b*x^2)^(1/4)/(c*x)^(7/2), x, 1, (-2*(a+b*x^2)^(5/4))/(5*a*c*(c*x)^(5/2))}

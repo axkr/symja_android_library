@@ -45,23 +45,14 @@ public class BuiltinGenerator {
           out.print("\n        /**");
           out.print(
               " @see <a href=\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/"
-                  + sym
-                  + ".md\">"
-                  + sym
-                  + " documentation</a>");
+                  + sym + ".md\">" + sym + " documentation</a>");
           out.print(" */\n");
         } else {
           out.println();
         }
       }
-      out.println(
-          "        public final static IBuiltInSymbol "
-              + sym
-              + " = F.initFinalSymbol(\""
-              + sym
-              + "\", ID."
-              + sym
-              + ");");
+      out.println("        public final static IBuiltInSymbol " + sym + " = F.initFinalSymbol(\""
+          + sym + "\", ID." + sym + ");");
     }
   }
 }

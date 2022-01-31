@@ -21,8 +21,8 @@ public class RepeatedPattern extends PatternSequence {
     return valueOf(patternExpr, 1, Integer.MAX_VALUE, false, engine);
   }
 
-  public static RepeatedPattern valueOf(
-      IExpr patternExpr, int min, int max, boolean zeroArgsAllowed, EvalEngine engine) {
+  public static RepeatedPattern valueOf(IExpr patternExpr, int min, int max,
+      boolean zeroArgsAllowed, EvalEngine engine) {
     RepeatedPattern p = new RepeatedPattern();
     p.fSymbol = null;
     p.fHeadTest = null;
@@ -88,8 +88,7 @@ public class RepeatedPattern extends PatternSequence {
         }
         return false;
       }
-      if (fSymbol.equals(pattern.fSymbol)
-          && fDefault == pattern.fDefault
+      if (fSymbol.equals(pattern.fSymbol) && fDefault == pattern.fDefault
           && fZeroArgsAllowed == pattern.fZeroArgsAllowed) {
         return fRepeatedExpr.equals(pattern.fRepeatedExpr);
       }
@@ -126,8 +125,8 @@ public class RepeatedPattern extends PatternSequence {
   }
 
   @Override
-  public boolean matchPatternSequence(
-      final IAST sequence, IPatternMap patternMap, ISymbol optionsPatternHead) {
+  public boolean matchPatternSequence(final IAST sequence, IPatternMap patternMap,
+      ISymbol optionsPatternHead) {
     final int size = sequence.argSize();
     if (size < fMin || size > fMax) {
       return false;
@@ -152,9 +151,9 @@ public class RepeatedPattern extends PatternSequence {
     }
     return buffer.toString();
   }
-  
+
   @Override
-  public  String toWolframString() {
+  public String toWolframString() {
     final StringBuilder buffer = new StringBuilder();
     buffer.append(WolframFormFactory.get().toString(fRepeatedExpr));
     if (fZeroArgsAllowed) {
@@ -162,6 +161,6 @@ public class RepeatedPattern extends PatternSequence {
     } else {
       buffer.append("..");
     }
-    return buffer.toString(); 
+    return buffer.toString();
   }
 }

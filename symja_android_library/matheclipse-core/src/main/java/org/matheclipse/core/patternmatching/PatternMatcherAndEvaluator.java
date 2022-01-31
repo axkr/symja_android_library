@@ -44,28 +44,24 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    * Define a pattern-matching rule.
    *
    * @param setSymbol the flags for the symbol which defines this pattern-matching rule (i.e. Set,
-   *     SetDelayed,...)
+   *        SetDelayed,...)
    * @param leftHandSide could contain pattern expressions for "pattern-matching"
    * @param rightHandSide the result which should be evaluated if the "pattern-matching" succeeds
    */
-  public PatternMatcherAndEvaluator(
-      final int setSymbol, final IExpr leftHandSide, final IExpr rightHandSide) {
+  public PatternMatcherAndEvaluator(final int setSymbol, final IExpr leftHandSide,
+      final IExpr rightHandSide) {
     this(setSymbol, leftHandSide, rightHandSide, true, 0);
   }
 
-  public PatternMatcherAndEvaluator(
-      final int setSymbol,
-      final IExpr leftHandSide,
-      final IExpr rightHandSide,
-      boolean initAll,
-      int patternHash) {
+  public PatternMatcherAndEvaluator(final int setSymbol, final IExpr leftHandSide,
+      final IExpr rightHandSide, boolean initAll, int patternHash) {
     super(setSymbol, leftHandSide, initAll);
     // fSetFlags = setSymbol;
     fRightHandSide = rightHandSide;
     fPatterHash = patternHash;
-    //    if (initAll) {
-    //      initRHSleafCountSimplify();
-    //    }
+    // if (initAll) {
+    // initRHSleafCountSimplify();
+    // }
   }
 
   /**
@@ -97,11 +93,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    * @param pm2
    * @return
    */
-  private static int equivalentRHS(
-      final IExpr patternExpr1,
-      final IExpr patternExpr2,
-      final IPatternMap pm1,
-      final IPatternMap pm2) {
+  private static int equivalentRHS(final IExpr patternExpr1, final IExpr patternExpr2,
+      final IPatternMap pm1, final IPatternMap pm2) {
     IExpr p1, p2;
     if (patternExpr1.isCondition()) {
       p1 = patternExpr1.second();
@@ -142,7 +135,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    * expressions evaluates to <code>true</code>.
    *
    * @return <code>true</code> if the right-hand-sides condition is fulfilled or not all patterns
-   *     are assigned.
+   *         are assigned.
    */
   @Override
   public boolean checkRHSCondition(EvalEngine engine) {
@@ -227,8 +220,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     }
 
     if (fLhsPatternExpr.isASTOrAssociation() && leftHandSide.isASTOrAssociation()) {
-      return replaceSubExpressionOrderlessFlat(
-          (IAST) fLhsPatternExpr, (IAST) leftHandSide, fRightHandSide, engine);
+      return replaceSubExpressionOrderlessFlat((IAST) fLhsPatternExpr, (IAST) leftHandSide,
+          fRightHandSide, engine);
     }
     return F.NIL;
   }
@@ -236,7 +229,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   /**
    * A match which contains a pattern was found.
    *
-   * <p>Assumption <code>
+   * <p>
+   * Assumption <code>
    * matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine)) == true</code>.
    *
    * @param leftHandSide
@@ -245,8 +239,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    * @param evaluate
    * @return
    */
-  private IExpr replacePatternMatch(
-      final IExpr leftHandSide, IPatternMap patternMap, EvalEngine engine, boolean evaluate) {
+  private IExpr replacePatternMatch(final IExpr leftHandSide, IPatternMap patternMap,
+      EvalEngine engine, boolean evaluate) {
     if (RulesData.showSteps) {
       if (fLhsPatternExpr.head().equals(S.Integrate)) {
         IExpr rhs = fRightHandSide.orElse(S.Null);
@@ -265,8 +259,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       IExpr result = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
       if (evaluate) {
         if (Config.TRACE_REWRITE_RULE) {
-          return engine.addEvaluatedTraceStep(
-              leftHandSide, result, leftHandSide.topHead(), F.$str("RewriteRule"));
+          return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
+              F.$str("RewriteRule"));
         }
         return engine.evaluate(result);
       } else {
@@ -281,8 +275,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       IExpr result = e.getValue();
       if (evaluate) {
         if (Config.TRACE_REWRITE_RULE) {
-          return engine.addEvaluatedTraceStep(
-              leftHandSide, result, leftHandSide.topHead(), F.$str("RewriteRule"));
+          return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
+              F.$str("RewriteRule"));
         }
         return engine.evaluate(result);
       }
@@ -295,7 +289,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   /**
    * A match which contains no pattern was found.
    *
-   * <p>Assumption <code>fLhsPatternExpr.equals(leftHandSide) == true</code>
+   * <p>
+   * Assumption <code>fLhsPatternExpr.equals(leftHandSide) == true</code>
    *
    * @param leftHandSide
    * @param engine
@@ -307,8 +302,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     try {
       if (evaluate) {
         if (Config.TRACE_REWRITE_RULE) {
-          return engine.addEvaluatedTraceStep(
-              leftHandSide, result, leftHandSide.topHead(), F.$str("RewriteRule"));
+          return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
+              F.$str("RewriteRule"));
         }
         return engine.evaluate(result);
       }
@@ -321,8 +316,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     } catch (final ReturnException e) {
       result = e.getValue();
       if (Config.TRACE_REWRITE_RULE) {
-        return engine.addEvaluatedTraceStep(
-            leftHandSide, result, leftHandSide.topHead(), F.$str("RewriteRule"));
+        return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
+            F.$str("RewriteRule"));
       }
       return engine.evaluate(result);
     }
@@ -371,6 +366,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     }
     return null;
   }
+
   @Override
   public String toString() {
     if (fPatternMap == null) {

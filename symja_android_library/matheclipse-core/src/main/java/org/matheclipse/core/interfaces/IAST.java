@@ -22,7 +22,8 @@ import org.matheclipse.core.visit.IVisitor;
 /**
  * (I)nterface for the (A)bstract (S)yntax (T)ree of a given function.
  *
- * <p>In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
+ * <p>
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
  * structure of the Symja source code. Each node of the tree denotes a construct occurring in the
  * source code. The syntax is 'abstract' in the sense that it does not represent every detail that
  * appears in the real syntax. For instance, grouping parentheses are implicit in the tree
@@ -31,13 +32,13 @@ import org.matheclipse.core.visit.IVisitor;
  * <code>x</code>. Internally an AST is represented as a list which contains
  *
  * <ul>
- *   <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
- *       Times,...) at index <code>0</code> and
- *   <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
+ * Times,...) at index <code>0</code> and
+ * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
  * </ul>
  *
- * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>, <a
- * href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph</a>
+ * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>,
+ * <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph</a>
  */
 public interface IAST extends IExpr, Iterable<IExpr> {
 
@@ -296,8 +297,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @return a clone of this <code>IAST</code> instance.
    * @deprecated use {@link #copyAppendable()} or {@link #copy()}
    */
-  //  @Deprecated
-  //  public IAST clone() throws CloneNotSupportedException;
+  // @Deprecated
+  // public IAST clone() throws CloneNotSupportedException;
 
   /**
    * Compare all adjacent elements from lowest to highest index and return true, if the binary
@@ -324,11 +325,11 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    *
    * @param collection the collection of objects.
    * @return {@code true} if all objects in the specified {@code Collection} are elements of this
-   *     {@code Collection}, {@code false} otherwise.
+   *         {@code Collection}, {@code false} otherwise.
    * @throws ClassCastException if one or more elements of {@code collection} isn't of the correct
-   *     type.
+   *         type.
    * @throws NullPointerException if {@code collection} contains at least one {@code null} element
-   *     and this {@code Collection} doesn't support {@code null} elements.
+   *         and this {@code Collection} doesn't support {@code null} elements.
    * @throws NullPointerException if {@code collection} is {@code null}.
    */
   public default boolean containsAll(Collection<?> collection) {
@@ -471,7 +472,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    *
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @return the <code>true</code> if the predicate is true the first time or <code>false</code>
-   *     otherwise
+   *         otherwise
    */
   default boolean exists(ObjIntPredicate<? super IExpr> predicate) {
     return exists(predicate, 1);
@@ -485,7 +486,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @param startOffset start offset from which the element have to be tested
    * @return the <code>true</code> if the predicate is true the first time or <code>false</code>
-   *     otherwise
+   *         otherwise
    */
   public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset);
 
@@ -511,7 +512,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @param startOffset start offset from which the element have to be tested
    * @return the <code>true</code> if the predicate is true the first time or <code>false</code>
-   *     otherwise
+   *         otherwise
    */
   public boolean exists(Predicate<? super IExpr> predicate, int startOffset);
 
@@ -545,7 +546,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/ConditionalExpression.md">ConditionalExpression</a>
    *
    * @param isUnaryConditionalExpression if <code>true</code> <code>this</code> is of the form
-   *     <code>head( ConditionalExpression(expr, condition) )</code>
+   *        <code>head( ConditionalExpression(expr, condition) )</code>
    * @return
    */
   public IExpr extractConditionalExpression(boolean isUnaryConditionalExpression);
@@ -561,8 +562,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @return the <code>filterAST</code>
    */
-  public IAST filter(
-      IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate);
+  public IAST filter(IASTAppendable filterAST, IASTAppendable restAST,
+      Predicate<? super IExpr> predicate);
 
   /**
    * Select all elements by applying the <code>Predicates.isTrue(expr)</code> predicate to each
@@ -647,8 +648,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * Find the first argument position, where the the <code>function</code> doesn't return <code>
    * F.NIL</code>. The search starts at index <code>1</code>.
    *
-   * <p><b>Note</b>: If this is an <code>IAssociation</code> the rule at the position will be
-   * returned.
+   * <p>
+   * <b>Note</b>: If this is an <code>IAssociation</code> the rule at the position will be returned.
    *
    * @param function
    * @return <code>F.NIL</code> if no position was found
@@ -686,8 +687,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param startValue
    * @return the accumulated elements or {@link F#NIL} if the function returns {@link F#NIL}
    */
-  public IExpr foldLeft(
-      final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start);
+  public IExpr foldLeft(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue,
+      int start);
 
   /**
    * Apply the functor to the elements of the range from right to left and return the final result.
@@ -698,8 +699,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param startValue
    * @return the accumulated elements or {@link F#NIL} if the function returns {@link F#NIL}
    */
-  public IExpr foldRight(
-      final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start);
+  public IExpr foldRight(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue,
+      int start);
 
   /**
    * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST
@@ -708,7 +709,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    *
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @return <code>true</code> if the predicate is true for all elements or <code>false</code>
-   *     otherwise
+   *         otherwise
    */
   default boolean forAll(ObjIntPredicate<? super IExpr> predicate) {
     return forAll(predicate, 1);
@@ -719,13 +720,13 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * </code> and return <code>true</code> if all of the arguments starting from index <code>
    * startOffset</code> satisfy the predicate.
    *
-   * <p><b>Note</b>: If this is an <code>IAssociation</code> the rule at the position will be
-   * returned.
+   * <p>
+   * <b>Note</b>: If this is an <code>IAssociation</code> the rule at the position will be returned.
    *
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @param startOffset start offset from which the element have to be tested
    * @return <code>true</code> if the predicate is true for all elements or <code>false</code>
-   *     otherwise
+   *         otherwise
    */
   public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset);
 
@@ -736,7 +737,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    *
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @return <code>true</code> if the predicate is true for all elements or <code>false</code>
-   *     otherwise
+   *         otherwise
    */
   @Override
   default boolean forAll(Predicate<? super IExpr> predicate) {
@@ -748,13 +749,13 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * </code> and return <code>true</code> if all of the arguments starting from index <code>
    * startOffset</code> satisfy the predicate.
    *
-   * <p><b>Note</b>: If this is an <code>IAssociation</code> the rule at the position will be
-   * returned.
+   * <p>
+   * <b>Note</b>: If this is an <code>IAssociation</code> the rule at the position will be returned.
    *
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @param startOffset start offset from which the element have to be tested
    * @return <code>true</code> if the predicate is true for all elements or <code>false</code>
-   *     otherwise
+   *         otherwise
    */
   public boolean forAll(Predicate<? super IExpr> predicate, int startOffset);
 
@@ -767,7 +768,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @param startOffset start offset from which the leave elements have to be tested
    * @return the <code>true</code> if the predicate is true for all elements or <code>false</code>
-   *     otherwise
+   *         otherwise
    */
   public boolean forAllLeaves(Predicate<? super IExpr> predicate, int startOffset);
 
@@ -839,8 +840,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   public IExpr get(IInteger location);
 
   /**
-   * Returns the element at the specified location in this {@code IAST}. If this is an {@link
-   * IAssociation} return the value of the rule at the specified location.
+   * Returns the element at the specified location in this {@code IAST}. If this is an
+   * {@link IAssociation} return the value of the rule at the specified location.
    *
    * @param location the index of the element to return.
    * @return the element at the specified location.
@@ -896,7 +897,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param items ascending ordered array of positions which should be selected from this {@code
    *     IAST}.
    * @param length the end position (exclusive) to which the <code>items</code> array is filled with
-   *     valid element positions
+   *        valid element positions
    * @return
    */
   public IAST getItems(int[] items, int length);
@@ -967,8 +968,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   public IExpr getPart(final List<Integer> positions);
 
   /**
-   * If this is an <code>IAssociation</code> return the rule at the position. Otherwise call {@link
-   * #get(int)}.
+   * If this is an <code>IAssociation</code> return the rule at the position. Otherwise call
+   * {@link #get(int)}.
    *
    * @param position
    * @return
@@ -1120,8 +1121,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param builder join the elements as strings
    * @param delimiter the delimiter that separates each element
    */
-  default void joinToString(
-      StringBuilder builder, BiConsumer<StringBuilder, IExpr> consumer, CharSequence delimiter) {
+  default void joinToString(StringBuilder builder, BiConsumer<StringBuilder, IExpr> consumer,
+      CharSequence delimiter) {
     final int size = size();
     for (int i = 1; i < size; i++) {
       consumer.accept(builder, get(i));
@@ -1175,8 +1176,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @return the given resultAST.
    * @throws IndexOutOfBoundsException if the secondAST size is lesser than this AST size
    */
-  public IAST map(
-      IASTAppendable resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function);
+  public IAST map(IASTAppendable resultAST, IAST secondAST,
+      BiFunction<IExpr, IExpr, IExpr> function);
 
   /**
    * Append the mapped ranges elements directly to the given <code>list</code>
@@ -1192,7 +1193,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * </code> the original element of the result list is used.
    *
    * @param clonedResultAST a list which is cloned from <code>this</code> list or greater or equal
-   *     in size of <code>this</code> list.
+   *        in size of <code>this</code> list.
    * @param functor a unary function
    * @return
    */
@@ -1220,8 +1221,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param leftArg left argument of the binary functions <code>apply()</code> method.
    * @return {@link F#NIL} if <code>binaryFunction</code> returns {@link F#NIL}
    */
-  public IAST mapLeft(
-      IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg);
+  public IAST mapLeft(IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction,
+      IExpr leftArg);
 
   /**
    * This method assumes that <code>this</code> is a list of list in matrix form. It combines the
@@ -1254,8 +1255,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param rightArg right argument of the binary functions <code>apply()</code> method.
    * @return {@link F#NIL} if <code>binaryFunction</code> returns {@link F#NIL}
    */
-  public IAST mapRight(
-      IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr rightArg);
+  public IAST mapRight(IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction,
+      IExpr rightArg);
 
   /**
    * Maps the elements of this {@link IAST} on the first level of arguments with the unary functor
@@ -1265,7 +1266,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * can be used to create an effect as if &quot;the <code>position</code>-th argument of an IAST
    * object would be <code>Listable</code>&quot;.
    *
-   * <p>Example for mapping with <code>Functors#replaceArg()</code>, where the argument at the given
+   * <p>
+   * Example for mapping with <code>Functors#replaceArg()</code>, where the argument at the given
    * position will be replaced by the current argument of this AST:
    *
    * <pre>
@@ -1273,9 +1275,9 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * </pre>
    *
    * @param replacement an IAST there the argument at the given position is replaced by the
-   *     currently mapped argument of this {@link IAST}.
+   *        currently mapped argument of this {@link IAST}.
    * @param positionInReplacement the position in <code>replacement</code> which should be replaced
-   *     by the corresponding argument of this {@link IAST}
+   *        by the corresponding argument of this {@link IAST}
    * @return
    * @see IAST#map(Function, int)
    */
@@ -1288,7 +1290,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * currently mapped element. This can be used to create an effect as if &quot;the <code>position
    * </code>-th argument of an IAST object would be <code>Listable</code>&quot;.
    *
-   * <p>Example for mapping with <code>Functors#replaceArg()</code>, where the argument at the given
+   * <p>
+   * Example for mapping with <code>Functors#replaceArg()</code>, where the argument at the given
    * position will be replaced by the current argument of this AST:
    *
    * <pre>
@@ -1297,21 +1300,21 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    *
    * @param engine
    * @param replacement an IAST there the argument at the given position is replaced by the
-   *     currently mapped argument of this {@link IAST}.
+   *        currently mapped argument of this {@link IAST}.
    * @param positionInReplacement the position in <code>replacement</code> which should be replaced
-   *     by the corresponding argument of this {@link IAST}
+   *        by the corresponding argument of this {@link IAST}
    * @return
    * @see IAST#map(Function, int)
    */
-  public IASTMutable mapThreadEvaled(
-      EvalEngine engine, final IAST replacement, int positionInReplacement);
+  public IASTMutable mapThreadEvaled(EvalEngine engine, final IAST replacement,
+      int positionInReplacement);
 
   /**
    * Maps the elements of this IAST on the first level of arguments with the unary <code>function)
    * </code>. <br>
    *
    * @param function an IAST there the argument at the given position is replaced by the currently
-   *     mapped argument of this IAST.
+   *        mapped argument of this IAST.
    * @return
    */
   public IASTMutable mapThread(Function<IExpr, IExpr> function);
@@ -1325,13 +1328,13 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param engine TODO
    * @param appendAST
    * @param replacement an IAST there the argument at the given position is replaced by the
-   *     currently mapped argument of this IAST.
+   *        currently mapped argument of this IAST.
    * @param position
    * @return <code>appendAST</code>
    * @see IAST#map(Function, int)
    */
-  public IASTAppendable mapThreadEvaled(
-      EvalEngine engine, IASTAppendable appendAST, final IAST replacement, int position);
+  public IASTAppendable mapThreadEvaled(EvalEngine engine, IASTAppendable appendAST,
+      final IAST replacement, int position);
 
   /** {@inheritDoc} */
   @Override
@@ -1383,7 +1386,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    *
    * @param other
    * @return <code>this</code> if <code>this</code> unequals <code>F.NIL</code>, otherwise return
-   *     <code>other</code>.
+   *         <code>other</code>.
    * @see java.util.Optional#orElse(Object)
    */
   public IAST orElse(final IAST other);
@@ -1595,10 +1598,10 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * start</code> argument, and ends at, but does not include, the given <code>end</code> argument.
    *
    * @param start An integer that specifies where to start the selection (the first argument has an
-   *     index of <code>1</code>, the head of the AST is at index <code>0</code>).
+   *        index of <code>1</code>, the head of the AST is at index <code>0</code>).
    * @param end An integer that specifies where to end the selection.
    * @return a copy of sub <code>AST</code> from <code>start</code> (inclusive) to <code>end</code>
-   *     (exclusive).
+   *         (exclusive).
    */
   default IASTAppendable slice(int start, int end) {
     if (0 < start && start <= size() && start < end && end <= size()) {
@@ -1648,7 +1651,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @return a {@code Stream} for the internal array range
    * @throws ArrayIndexOutOfBoundsException if {@code startInclusive} is negative, {@code
    *     endExclusive} is less than {@code startInclusive}, or {@code endExclusive} is greater than
-   *     the array size
+   *         the array size
    */
   public Stream<IExpr> stream(int startInclusive, int endExclusive);
 

@@ -40,8 +40,8 @@ public class GeodesyFunctions {
         GlobalPosition p2 = ((GeoPositionExpr) rhs).toData();
 
         GeodeticMeasurement gm = geoCalc.calculateGeodeticMeasurement(reference, p1, p2);
-        return F.UnitConvert(
-            F.Quantity(F.num(gm.getPointToPointDistance()), F.stringx("m")), F.stringx("mi"));
+        return F.UnitConvert(F.Quantity(F.num(gm.getPointToPointDistance()), F.stringx("m")),
+            F.stringx("mi"));
       }
       if (ast.arg1().isAST(S.List, 3) && ast.arg2().isAST(S.List, 3)) {
         GeodeticCalculator geoCalc = new GeodeticCalculator();
@@ -54,8 +54,8 @@ public class GeodesyFunctions {
           GlobalPosition p2 = new GlobalPosition(list2[0], list2[1], 0.0);
 
           GeodeticMeasurement gm = geoCalc.calculateGeodeticMeasurement(reference, p1, p2);
-          return F.UnitConvert(
-              F.Quantity(F.num(gm.getPointToPointDistance()), F.stringx("m")), F.stringx("mi"));
+          return F.UnitConvert(F.Quantity(F.num(gm.getPointToPointDistance()), F.stringx("m")),
+              F.stringx("mi"));
         }
       }
       return F.NIL;

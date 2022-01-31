@@ -21,17 +21,13 @@ public class NumberTest extends TestCase {
     // test for Android bug:
     // https://github.com/tranleduy2000/symja_android_library/commit/2f03d0b6c8095c2c71b1f56c8e5fc5f0b30f927d
     // 3802951800684688204490109616127/1267650600228229401496703205376
-    IFraction f =
-        AbstractFractionSym.valueOf(
-            new BigInteger("3802951800684688204490109616127"),
-            new BigInteger("1267650600228229401496703205376"));
+    IFraction f = AbstractFractionSym.valueOf(new BigInteger("3802951800684688204490109616127"),
+        new BigInteger("1267650600228229401496703205376"));
     ComplexNum cn = f.complexNumValue();
     assertEquals(cn.toString(), "(3.0)");
     // 2535301200456458802993406410751/1267650600228229401496703205376
-    f =
-        AbstractFractionSym.valueOf(
-            new BigInteger("2535301200456458802993406410751"),
-            new BigInteger("1267650600228229401496703205376"));
+    f = AbstractFractionSym.valueOf(new BigInteger("2535301200456458802993406410751"),
+        new BigInteger("1267650600228229401496703205376"));
     cn = f.complexNumValue();
     assertEquals(cn.toString(), "(2.0)");
   }
@@ -48,8 +44,8 @@ public class NumberTest extends TestCase {
   /**
    * Format a double value with a <code>java.text.DecimalFormat</code> object.
    *
-   * <p>See: <a
-   * href="https://docs.oracle.com/javase/tutorial/java/data/numberformat.html">numberformat
+   * <p>
+   * See: <a href="https://docs.oracle.com/javase/tutorial/java/data/numberformat.html">numberformat
    * article</a>
    */
   public void testNumberFormat() {

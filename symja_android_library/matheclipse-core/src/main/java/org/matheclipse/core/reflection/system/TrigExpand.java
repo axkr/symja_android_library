@@ -31,7 +31,8 @@ import org.matheclipse.core.visit.VisitorPlusTimesPowerReplaceAll;
  *
  * <blockquote>
  *
- * <p>expands out trigonometric expressions in <code>expr</code>.
+ * <p>
+ * expands out trigonometric expressions in <code>expr</code>.
  *
  * </blockquote>
  *
@@ -139,10 +140,8 @@ public class TrigExpand extends AbstractEvaluator {
               return expandCoshPlus(theta.constantArray(S.Plus, 0, nInt), 1);
             } else if (ast.isAST(S.Csch, 2)) {
               // Csch(theta)/ChebyshevU(n - 1, Cosh(theta))
-              return F.TrigExpand(
-                  F.Times(
-                      F.Csch(theta),
-                      F.Power(F.ChebyshevU(F.Subtract(n, F.C1), F.Cosh(theta)), F.CN1)));
+              return F.TrigExpand(F.Times(F.Csch(theta),
+                  F.Power(F.ChebyshevU(F.Subtract(n, F.C1), F.Cosh(theta)), F.CN1)));
               // int nInt = n.toInt();
               // I^(n - 1)*2^(1 - n)* Product(Csch(theta + (I*k*Pi)/n], {k, 0, n - 1})
               // return F.Times(F.Power(F.C2, F.Plus(F.C1, F.Negate(n))), F.Power(F.CI,
@@ -171,16 +170,8 @@ public class TrigExpand extends AbstractEvaluator {
     private static IExpr expandCosTimes(IInteger n, IExpr theta) {
       int ni = n.toIntDefault();
       if (ni > Integer.MIN_VALUE) {
-        return F.sum(
-            i ->
-                Times(
-                    Times(
-                        Times(Power(CN1, Times(i, C1D2)), Binomial(n, i)),
-                        Power(Cos(theta), Plus(n, Times(CN1, i)))),
-                    Power(Sin(theta), i)),
-            0,
-            ni,
-            2);
+        return F.sum(i -> Times(Times(Times(Power(CN1, Times(i, C1D2)), Binomial(n, i)),
+            Power(Cos(theta), Plus(n, Times(CN1, i)))), Power(Sin(theta), i)), 0, ni, 2);
       }
       return F.NIL;
     }
@@ -195,16 +186,8 @@ public class TrigExpand extends AbstractEvaluator {
     private static IExpr expandSinTimes(IInteger n, IExpr theta) {
       int ni = n.toIntDefault();
       if (ni > Integer.MIN_VALUE) {
-        return F.sum(
-            i ->
-                Times(
-                    Times(
-                        Times(Power(CN1, Times(Plus(i, CN1), C1D2)), Binomial(n, i)),
-                        Power(Cos(theta), Plus(n, Times(CN1, i)))),
-                    Power(Sin(theta), i)),
-            1,
-            ni,
-            2);
+        return F.sum(i -> Times(Times(Times(Power(CN1, Times(Plus(i, CN1), C1D2)), Binomial(n, i)),
+            Power(Cos(theta), Plus(n, Times(CN1, i)))), Power(Sin(theta), i)), 1, ni, 2);
       }
       return F.NIL;
     }
@@ -312,10 +295,8 @@ public class TrigExpand extends AbstractEvaluator {
         // b = expandCschPlus(plusAST, startPosition + 1);
         return F.NIL;
       }
-      return F.eval(
-          F.Plus(
-              F.Power(
-                  F.Plus(F.Times(F.Cosh(b), F.Sinh(a)), F.Times(F.Cosh(a), F.Sinh(b))), F.CN1)));
+      return F.eval(F.Plus(
+          F.Power(F.Plus(F.Times(F.Cosh(b), F.Sinh(a)), F.Times(F.Cosh(a), F.Sinh(b))), F.CN1)));
     }
 
     /**
@@ -335,10 +316,8 @@ public class TrigExpand extends AbstractEvaluator {
         return F.NIL;
       }
       // Sech(a + b) --> 1/(Cosh(b)*Cosh(a) + Sinh(a)*Sinh(b))
-      return F.eval(
-          F.Plus(
-              F.Power(
-                  F.Plus(F.Times(F.Cosh(b), F.Cosh(a)), F.Times(F.Sinh(a), F.Sinh(b))), F.CN1)));
+      return F.eval(F.Plus(
+          F.Power(F.Plus(F.Times(F.Cosh(b), F.Cosh(a)), F.Times(F.Sinh(a), F.Sinh(b))), F.CN1)));
     }
 
     /**
@@ -358,9 +337,8 @@ public class TrigExpand extends AbstractEvaluator {
         result.append(F.Power(Plus(F.C1, Times(F.Tanh(lhs), F.Tanh(rhs))), F.CN1));
       } else {
         result.append(Plus(F.Tanh(lhs), expandTanhPlus(plusAST, startPosition + 1)));
-        result.append(
-            F.Power(
-                Plus(F.C1, Times(F.Tanh(lhs), expandTanhPlus(plusAST, startPosition + 1))), F.CN1));
+        result.append(F.Power(
+            Plus(F.C1, Times(F.Tanh(lhs), expandTanhPlus(plusAST, startPosition + 1))), F.CN1));
       }
       return result;
     }
@@ -371,8 +349,9 @@ public class TrigExpand extends AbstractEvaluator {
   /**
    * Expands the argument of sine and cosine functions.
    *
-   * <p><a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities" >List of
-   * trigonometric identities</a>
+   * <p>
+   * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities" >List of trigonometric
+   * identities</a>
    */
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {

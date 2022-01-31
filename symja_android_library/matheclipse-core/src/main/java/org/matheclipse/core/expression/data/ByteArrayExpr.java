@@ -17,8 +17,8 @@ public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
   private static final long serialVersionUID = 5799157739970931450L;
 
   /**
-   * Create a new <a
-   * href="https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/ByteArray.md">ByteArray</a>
+   * Create a new <a href=
+   * "https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/ByteArray.md">ByteArray</a>
    * object.
    *
    * @param array the byte array which should be wrapped
@@ -33,8 +33,8 @@ public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
   }
 
   /**
-   * Create a new <a
-   * href="https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/ByteArray.md">ByteArray</a>
+   * Create a new <a href=
+   * "https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/ByteArray.md">ByteArray</a>
    * object.
    *
    * @param array the byte array which should be wrapped

@@ -22,7 +22,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * <blockquote>
  *
- * <p>gives the value of the property for the chemical specified by name.
+ * <p>
+ * gives the value of the property for the chemical specified by name.
  *
  * </blockquote>
  *
@@ -32,13 +33,15 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * <blockquote>
  *
- * <p>gives the value of the property for the nth chemical element.
+ * <p>
+ * gives the value of the property for the nth chemical element.
  *
  * </blockquote>
  *
- * <p><code>ElementData</code> uses data from <a href=
- * "https://en.wikipedia.org/wiki/List_of_data_references_for_chemical_elements">Wikipedia - List of
- * data references for chemical elements</a>
+ * <p>
+ * <code>ElementData</code> uses data from
+ * <a href= "https://en.wikipedia.org/wiki/List_of_data_references_for_chemical_elements">Wikipedia
+ * - List of data references for chemical elements</a>
  *
  * <h3>Examples</h3>
  *
@@ -59,21 +62,24 @@ import org.matheclipse.core.interfaces.ISymbol;
  * {{2},{2,6},{2,6,10},{2,6,10,14},{2,6,3},{2}}
  * </pre>
  *
- * <p>Some properties are not appropriate for certain elements:
+ * <p>
+ * Some properties are not appropriate for certain elements:
  *
  * <pre>
  * &gt;&gt; ElementData("He", "ElectroNegativity")
  * Missing(NotApplicable)
  * </pre>
  *
- * <p>Some data is missing:
+ * <p>
+ * Some data is missing:
  *
  * <pre>
  * &gt;&gt; ElementData("Tc", "SpecificHeat")
  * Missing(NotAvailable)
  * </pre>
  *
- * <p>All the known properties:
+ * <p>
+ * All the known properties:
  *
  * <pre>
  * &gt;&gt; ElementData("Properties")
@@ -87,45 +93,14 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class ElementData extends AbstractFunctionEvaluator {
 
-  public static final String[] PROPERTIES_DATA = {
-    "StandardName",
-    "AtomicNumber",
-    "Abbreviation",
-    "AbsoluteBoilingPoint",
-    "AbsoluteMeltingPoint",
-    "AtomicRadius",
-    "AtomicWeight",
-    "Block",
-    "BoilingPoint",
-    "BrinellHardness",
-    "BulkModulus",
-    "CovalentRadius",
-    "CrustAbundance",
-    "Density",
-    "DiscoveryYear",
-    "ElectroNegativity",
-    "ElectronAffinity",
-    "ElectronConfiguration",
-    "ElectronConfigurationString",
-    "ElectronShellConfiguration",
-    "FusionHeat",
-    "Group",
-    "IonizationEnergies",
-    "LiquidDensity",
-    "MeltingPoint",
-    "MohsHardness",
-    "Name",
-    "Period",
-    "PoissonRatio",
-    "Series",
-    "ShearModulus",
-    "SpecificHeat",
-    "ThermalConductivity",
-    "VanDerWaalsRadius",
-    "VaporizationHeat",
-    "VickersHardness",
-    "YoungModulus"
-  };
+  public static final String[] PROPERTIES_DATA = {"StandardName", "AtomicNumber", "Abbreviation",
+      "AbsoluteBoilingPoint", "AbsoluteMeltingPoint", "AtomicRadius", "AtomicWeight", "Block",
+      "BoilingPoint", "BrinellHardness", "BulkModulus", "CovalentRadius", "CrustAbundance",
+      "Density", "DiscoveryYear", "ElectroNegativity", "ElectronAffinity", "ElectronConfiguration",
+      "ElectronConfigurationString", "ElectronShellConfiguration", "FusionHeat", "Group",
+      "IonizationEnergies", "LiquidDensity", "MeltingPoint", "MohsHardness", "Name", "Period",
+      "PoissonRatio", "Series", "ShearModulus", "SpecificHeat", "ThermalConductivity",
+      "VanDerWaalsRadius", "VaporizationHeat", "VickersHardness", "YoungModulus"};
 
   private static java.util.Map<IExpr, IExpr> MAP_NUMBER_NAME = new HashMap<IExpr, IExpr>();
 

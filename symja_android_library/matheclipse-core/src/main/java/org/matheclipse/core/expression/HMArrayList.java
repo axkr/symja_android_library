@@ -1,18 +1,16 @@
 /*
- *  Licensed to the Apache Software Foundation (ASF) under one or more
- *  contributor license agreements.  See the NOTICE file distributed with
- *  this work for additional information regarding copyright ownership.
- *  The ASF licenses this file to You under the Apache License, Version 2.0
- *  (the "License"); you may not use this file except in compliance with
- *  the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.matheclipse.core.expression;
@@ -115,49 +113,20 @@ public abstract class HMArrayList extends AbstractAST
         array = new IExpr[] {headExpr, arguments[0], arguments[1], arguments[2], arguments[3]};
         break;
       case 6:
-        array =
-            new IExpr[] {
-              headExpr, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]
-            };
+        array = new IExpr[] {headExpr, arguments[0], arguments[1], arguments[2], arguments[3],
+            arguments[4]};
         break;
       case 7:
-        array =
-            new IExpr[] {
-              headExpr,
-              arguments[0],
-              arguments[1],
-              arguments[2],
-              arguments[3],
-              arguments[4],
-              arguments[5]
-            };
+        array = new IExpr[] {headExpr, arguments[0], arguments[1], arguments[2], arguments[3],
+            arguments[4], arguments[5]};
         break;
       case 8:
-        array =
-            new IExpr[] {
-              headExpr,
-              arguments[0],
-              arguments[1],
-              arguments[2],
-              arguments[3],
-              arguments[4],
-              arguments[5],
-              arguments[6]
-            };
+        array = new IExpr[] {headExpr, arguments[0], arguments[1], arguments[2], arguments[3],
+            arguments[4], arguments[5], arguments[6]};
         break;
       case 9:
-        array =
-            new IExpr[] {
-              headExpr,
-              arguments[0],
-              arguments[1],
-              arguments[2],
-              arguments[3],
-              arguments[4],
-              arguments[5],
-              arguments[6],
-              arguments[7]
-            };
+        array = new IExpr[] {headExpr, arguments[0], arguments[1], arguments[2], arguments[3],
+            arguments[4], arguments[5], arguments[6], arguments[7]};
         break;
       default:
         array = newElementArray(lastIndex);
@@ -245,11 +214,8 @@ public abstract class HMArrayList extends AbstractAST
       }
       array[lastIndex++] = object;
     } else {
-      throw new IndexOutOfBoundsException(
-          "Index: "
-              + Integer.valueOf(location)
-              + ", Size: "
-              + Integer.valueOf(lastIndex - firstIndex));
+      throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
+          + Integer.valueOf(lastIndex - firstIndex));
     }
   }
 
@@ -693,8 +659,8 @@ public abstract class HMArrayList extends AbstractAST
 
   /** {@inheritDoc} */
   @Override
-  public final IAST filter(
-      IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
+  public final IAST filter(IASTAppendable filterAST, IASTAppendable restAST,
+      Predicate<? super IExpr> predicate) {
     for (int i = firstIndex + 1; i < lastIndex; i++) {
       IExpr temp = array[i];
       if (predicate.test(temp)) {
@@ -708,8 +674,8 @@ public abstract class HMArrayList extends AbstractAST
 
   /** {@inheritDoc} */
   @Override
-  public final IAST filterFunction(
-      IASTAppendable filterAST, IASTAppendable restAST, final Function<IExpr, IExpr> function) {
+  public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+      final Function<IExpr, IExpr> function) {
     for (int i = firstIndex + 1; i < lastIndex; i++) {
       IExpr temp = array[i];
       IExpr expr = function.apply(temp);
@@ -804,11 +770,8 @@ public abstract class HMArrayList extends AbstractAST
       if ((index = firstIndex + location) < lastIndex) {
         return array[index];
       }
-      throw new IndexOutOfBoundsException(
-          "Index: "
-              + Integer.valueOf(location)
-              + ", Size: "
-              + Integer.valueOf(lastIndex - firstIndex));
+      throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
+          + Integer.valueOf(lastIndex - firstIndex));
     }
     return array[firstIndex + location];
   }
@@ -825,9 +788,9 @@ public abstract class HMArrayList extends AbstractAST
       firstIndex = 0;
       lastIndex = newLast;
     } else {
-      //      if (Config.FUZZ_TESTING) {
-      //        throw new NullPointerException();
-      //      }
+      // if (Config.FUZZ_TESTING) {
+      // throw new NullPointerException();
+      // }
       int increment = size / 2;
       if (required > increment) {
         increment = required;
@@ -887,8 +850,8 @@ public abstract class HMArrayList extends AbstractAST
     int newFirst = increment - required;
     // Copy elements after location to the new array skipping inserted
     // elements
-    System.arraycopy(
-        array, location + firstIndex, newArray, newFirst + location + required, size - location);
+    System.arraycopy(array, location + firstIndex, newArray, newFirst + location + required,
+        size - location);
     // Copy elements before location to the new array from firstIndex
     System.arraycopy(array, firstIndex, newArray, newFirst, location);
     firstIndex = newFirst;
@@ -969,15 +932,14 @@ public abstract class HMArrayList extends AbstractAST
 
   /** {@inheritDoc} */
   @Override
-  public final IASTAppendable mapThreadEvaled(
-      EvalEngine engine, IASTAppendable appendAST, final IAST replacement, int position) {
+  public final IASTAppendable mapThreadEvaled(EvalEngine engine, IASTAppendable appendAST,
+      final IAST replacement, int position) {
     // final Function<IExpr, IExpr> function = Functors.replaceArg(replacement,
     // position);
-    final Function<IExpr, IExpr> function =
-        x -> {
-          IAST a = replacement.setAtCopy(position, x);
-          return engine.evaluate(a);
-        };
+    final Function<IExpr, IExpr> function = x -> {
+      IAST a = replacement.setAtCopy(position, x);
+      return engine.evaluate(a);
+    };
     IExpr temp;
     for (int i = firstIndex + 1; i < lastIndex; i++) {
       temp = function.apply(array[i]);
@@ -1038,11 +1000,8 @@ public abstract class HMArrayList extends AbstractAST
         firstIndex = lastIndex = 0;
       }
     } else {
-      throw new IndexOutOfBoundsException(
-          "Index: "
-              + Integer.valueOf(location)
-              + ", Size: "
-              + Integer.valueOf(lastIndex - firstIndex));
+      throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
+          + Integer.valueOf(lastIndex - firstIndex));
     }
 
     return result;

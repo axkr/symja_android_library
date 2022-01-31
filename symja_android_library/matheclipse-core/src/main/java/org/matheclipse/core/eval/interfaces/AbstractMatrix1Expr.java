@@ -20,7 +20,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
 
   public final static PossibleZeroQTest POSSIBLE_ZEROQ_TEST = new PossibleZeroQTest();
-  
+
   public static class PossibleZeroQTest implements Predicate<IExpr> {
     @Override
     public boolean test(IExpr x) {

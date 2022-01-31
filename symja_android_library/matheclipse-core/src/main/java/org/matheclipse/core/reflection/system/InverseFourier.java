@@ -50,9 +50,9 @@ public class InverseFourier extends AbstractFunctionEvaluator {
     if (array == null) {
       return F.NIL;
     }
-    //    FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.UNITARY);
-    //    org.hipparchus.complex.Complex[] result = fft.transform(array, TransformType.INVERSE);
-    //    return Object2Expr.convertComplex(true, result);
+    // FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.UNITARY);
+    // org.hipparchus.complex.Complex[] result = fft.transform(array, TransformType.INVERSE);
+    // return Object2Expr.convertComplex(true, result);
 
     int j = 0;
     for (int i = 0; i < n; ++i) {

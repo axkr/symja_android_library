@@ -1,17 +1,15 @@
 /*
  * Copyright 2005-2013 Axel Kramer (axelclk@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.matheclipse.api.parser;
 
@@ -53,7 +51,8 @@ import org.matheclipse.parser.client.operator.Operator;
  * Create an expression of the {@link IExpr} class-hierarchy from a math formula's string
  * representation.
  *
- * <p>See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator -precedence
+ * <p>
+ * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator -precedence
  * parser</a> for the idea, how to parse the operators depending on their precedence.
  */
 public class FuzzyParser extends Scanner {
@@ -129,8 +128,8 @@ public class FuzzyParser extends Scanner {
     this(engine, factory, false, ParserConfig.EXPLICIT_TIMES_OPERATOR);
   }
 
-  public FuzzyParser(
-      final EvalEngine engine, IParserFactory factory, boolean packageMode, boolean explicitTimes) {
+  public FuzzyParser(final EvalEngine engine, IParserFactory factory, boolean packageMode,
+      boolean explicitTimes) {
     super(packageMode, explicitTimes);
     this.fFactory = factory;
     this.fEngine = engine;
@@ -156,11 +155,11 @@ public class FuzzyParser extends Scanner {
         case ID.HoldForm:
           return ast;
 
-          // case ID.N:
-          // if (ast.isAST(F.N, 3)) {
-          // return convertN(ast);
-          // }
-          // break;
+        // case ID.N:
+        // if (ast.isAST(F.N, 3)) {
+        // return convertN(ast);
+        // }
+        // break;
 
         case ID.Sqrt:
           if (ast.isAST(S.Sqrt, 2)) {
@@ -599,14 +598,8 @@ public class FuzzyParser extends Scanner {
         break;
     }
 
-    throwSyntaxError(
-        "Error in factor at character: '"
-            + fCurrentChar
-            + "' (Token:"
-            + fToken
-            + " \\u"
-            + Integer.toHexString(fCurrentChar | 0x10000).substring(1)
-            + ")");
+    throwSyntaxError("Error in factor at character: '" + fCurrentChar + "' (Token:" + fToken
+        + " \\u" + Integer.toHexString(fCurrentChar | 0x10000).substring(1) + ")");
     return null;
   }
 
@@ -1017,9 +1010,8 @@ public class FuzzyParser extends Scanner {
     }
     final int endPosition = fCurrentPosition--;
     fCurrentPosition = startPosition;
-    throwSyntaxError(
-        "Operator token not found: "
-            + new String(fInputString, startPosition, endPosition - 1 - startPosition));
+    throwSyntaxError("Operator token not found: "
+        + new String(fInputString, startPosition, endPosition - 1 - startPosition));
     return null;
   }
 
@@ -1210,11 +1202,8 @@ public class FuzzyParser extends Scanner {
 
   private IExpr parseCompoundExpressionNull(FuzzyInfixExprOperator infixOperator, IExpr rhs) {
     if (infixOperator.isOperator(";")) {
-      if (fToken == TT_EOF
-          || fToken == TT_ARGUMENTS_CLOSE
-          || fToken == TT_LIST_CLOSE
-          || fToken == TT_PRECEDENCE_CLOSE
-          || fToken == TT_COMMA) {
+      if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
+          || fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
         return createInfixFunction(infixOperator, rhs, S.Null);
         // return infixOperator.createFunction(fFactory, rhs,
         // fFactory.createSymbol("Null"));
@@ -1234,15 +1223,11 @@ public class FuzzyParser extends Scanner {
       if (fToken == TT_SPAN) {
         span.append(S.All);
         getNextToken();
-        if (fToken == TT_COMMA
-            || fToken == TT_PARTCLOSE
-            || fToken == TT_ARGUMENTS_CLOSE
+        if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
             || fToken == TT_PRECEDENCE_CLOSE) {
           return span;
         }
-      } else if (fToken == TT_COMMA
-          || fToken == TT_PARTCLOSE
-          || fToken == TT_ARGUMENTS_CLOSE
+      } else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
           || fToken == TT_PRECEDENCE_CLOSE) {
         span.append(S.All);
         return span;
@@ -1259,15 +1244,11 @@ public class FuzzyParser extends Scanner {
       if (fToken == TT_SPAN) {
         span.append(S.All);
         getNextToken();
-        if (fToken == TT_COMMA
-            || fToken == TT_PARTCLOSE
-            || fToken == TT_ARGUMENTS_CLOSE
+        if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
             || fToken == TT_PRECEDENCE_CLOSE) {
           return span;
         }
-      } else if (fToken == TT_COMMA
-          || fToken == TT_PARTCLOSE
-          || fToken == TT_ARGUMENTS_CLOSE
+      } else if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
           || fToken == TT_PRECEDENCE_CLOSE) {
         span.append(S.All);
         return span;
@@ -1275,9 +1256,7 @@ public class FuzzyParser extends Scanner {
       span.append(parseExpression(parsePrimary(0), 0));
       if (fToken == TT_SPAN) {
         getNextToken();
-        if (fToken == TT_COMMA
-            || fToken == TT_PARTCLOSE
-            || fToken == TT_ARGUMENTS_CLOSE
+        if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE
             || fToken == TT_PRECEDENCE_CLOSE) {
           return span;
         }
@@ -1305,14 +1284,9 @@ public class FuzzyParser extends Scanner {
       if (fToken == TT_NEWLINE) {
         return lhs;
       }
-      if ((fToken == TT_LIST_OPEN)
-          || (fToken == TT_PRECEDENCE_OPEN)
-          || (fToken == TT_ASSOCIATION_OPEN)
-          || (fToken == TT_IDENTIFIER)
-          || (fToken == TT_STRING)
-          || (fToken == TT_DIGIT)
-          || (fToken == TT_SLOT)
-          || (fToken == TT_SLOTSEQUENCE)) {
+      if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN)
+          || (fToken == TT_ASSOCIATION_OPEN) || (fToken == TT_IDENTIFIER) || (fToken == TT_STRING)
+          || (fToken == TT_DIGIT) || (fToken == TT_SLOT) || (fToken == TT_SLOTSEQUENCE)) {
         // if (fPackageMode && fRecursionDepth < 1) {
         // return lhs;
         // }
@@ -1384,16 +1358,10 @@ public class FuzzyParser extends Scanner {
     if (lhs instanceof IASTAppendable) {
       IASTAppendable ast = (IASTAppendable) lhs;
       int headID = ast.headID();
-      if ((headID >= ID.Equal && headID <= ID.Unequal)
-          && //
-          (headID == ID.Equal
-              || headID == ID.Greater
-              || headID == ID.GreaterEqual
-              || headID == ID.Less
-              || headID == ID.LessEqual
-              || headID == ID.Unequal)) {
-        while (fToken == TT_OPERATOR
-            && infixOperator.getGrouping() == InfixOperator.NONE
+      if ((headID >= ID.Equal && headID <= ID.Unequal) && //
+          (headID == ID.Equal || headID == ID.Greater || headID == ID.GreaterEqual
+              || headID == ID.Less || headID == ID.LessEqual || headID == ID.Unequal)) {
+        while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
             && isComparatorOperator(fOperatorString)) {
           if (!infixOperator.isOperator(fOperatorString)) {
             // rewrite to Inequality
@@ -1408,16 +1376,12 @@ public class FuzzyParser extends Scanner {
         }
         return ast;
       }
-      while (fToken == TT_OPERATOR
-          && infixOperator.getGrouping() == InfixOperator.NONE
+      while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
           && infixOperator.isOperator(fOperatorString)) {
         getNextToken();
         if (infixOperator.isOperator(";")) {
-          if (fToken == TT_EOF
-              || fToken == TT_ARGUMENTS_CLOSE
-              || fToken == TT_LIST_CLOSE
-              || fToken == TT_PRECEDENCE_CLOSE
-              || fToken == TT_COMMA) {
+          if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
+              || fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
             ast.append(S.Null);
             break;
           }
@@ -1431,8 +1395,7 @@ public class FuzzyParser extends Scanner {
 
       return ast;
     } else {
-      if (fToken == TT_OPERATOR
-          && infixOperator.getGrouping() == InfixOperator.NONE
+      if (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
           && infixOperator.isOperator(fOperatorString)) {
         throwSyntaxError(
             "Operator: \'" + fOperatorString + "\' not created properly (no grouping defined)");
@@ -1453,11 +1416,10 @@ public class FuzzyParser extends Scanner {
     // rewrite to Inequality
     IBuiltInSymbol head = (IBuiltInSymbol) ast.head();
     IASTAppendable result = F.ast(S.Inequality, ast.size() + 2, false);
-    ast.forEach(
-        x -> {
-          result.append(x);
-          result.append(head);
-        });
+    ast.forEach(x -> {
+      result.append(x);
+      result.append(head);
+    });
     FuzzyInfixExprOperator compareOperator = determineBinaryOperator();
     result.set(result.size() - 1, F.$s(compareOperator.getFunctionName()));
     getNextToken();
@@ -1494,17 +1456,14 @@ public class FuzzyParser extends Scanner {
       if (fToken == TT_NEWLINE) {
         break;
       }
-      if ((fToken == TT_LIST_OPEN)
-          || (fToken == TT_PRECEDENCE_OPEN)
-          || (fToken == TT_ASSOCIATION_OPEN)
-          || (fToken == TT_IDENTIFIER)
-          || (fToken == TT_STRING)
-          || (fToken == TT_DIGIT)
-          || (fToken == TT_SLOT)) {
+      if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN)
+          || (fToken == TT_ASSOCIATION_OPEN) || (fToken == TT_IDENTIFIER) || (fToken == TT_STRING)
+          || (fToken == TT_DIGIT) || (fToken == TT_SLOT)) {
         if (!fExplicitTimes) {
           // lazy evaluation of multiplication
           FuzzyInfixExprOperator timesOperator = (FuzzyInfixExprOperator) fFactory.get("Times");
-          if (ParserConfig.DOMINANT_IMPLICIT_TIMES || timesOperator.getPrecedence() > min_precedence) {
+          if (ParserConfig.DOMINANT_IMPLICIT_TIMES
+              || timesOperator.getPrecedence() > min_precedence) {
             rhs = parseExpression(rhs, timesOperator.getPrecedence());
             continue;
           } else if ((timesOperator.getPrecedence() == min_precedence)

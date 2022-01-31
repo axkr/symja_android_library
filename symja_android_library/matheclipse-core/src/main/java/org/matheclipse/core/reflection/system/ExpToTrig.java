@@ -26,7 +26,8 @@ public class ExpToTrig extends AbstractEvaluator {
   /**
    * Exponential definitions for trigonometric functions
    *
-   * <p>See <a href=
+   * <p>
+   * See <a href=
    * "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Exponential_definitions"> List
    * of trigonometric identities - Exponential definitions</a>,<br>
    * <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
@@ -40,40 +41,36 @@ public class ExpToTrig extends AbstractEvaluator {
     }
 
     IExpr arg1 = ast.arg1();
-    VisitorReplaceAll visitor =
-        new VisitorReplaceAll(
-            x -> {
-              if (x.isPower()) {
-                IExpr exponent = F.NIL;
-                IExpr base = x.base();
-                if (base.equals(S.E)) {
-                  exponent = x.exponent();
-                  // return F.Plus(F.Cosh(exponent), F.Sinh(exponent));
-                } else if (base.isNumber()) {
-                  // base^exponent => E ^(exponent*Log(base))
-                  exponent = S.Expand.of(engine, F.Times(x.exponent(), F.Log(base)));
-                }
-                if (exponent.isPresent()) {
-                  if (exponent.isPlus()) {
-                    // E ^ (a+b+...) => map on plus args
-                    IASTAppendable result = F.TimesAlloc(exponent.size());
-                    ((IAST) exponent)
-                        .forEach(arg -> result.append(F.Plus(F.Cosh(arg), F.Sinh(arg))));
-                    return result;
-                  }
-                  return F.Plus(F.Cosh(exponent), F.Sinh(exponent));
-                }
-              }
-              return F.NIL;
-            });
-
-    visitor.setPostProcessing(
-        x -> {
-          if (x.isTimes() && x.arg1().isNumber() && x.arg2().isPlus()) {
-            return F.Expand(x);
+    VisitorReplaceAll visitor = new VisitorReplaceAll(x -> {
+      if (x.isPower()) {
+        IExpr exponent = F.NIL;
+        IExpr base = x.base();
+        if (base.equals(S.E)) {
+          exponent = x.exponent();
+          // return F.Plus(F.Cosh(exponent), F.Sinh(exponent));
+        } else if (base.isNumber()) {
+          // base^exponent => E ^(exponent*Log(base))
+          exponent = S.Expand.of(engine, F.Times(x.exponent(), F.Log(base)));
+        }
+        if (exponent.isPresent()) {
+          if (exponent.isPlus()) {
+            // E ^ (a+b+...) => map on plus args
+            IASTAppendable result = F.TimesAlloc(exponent.size());
+            ((IAST) exponent).forEach(arg -> result.append(F.Plus(F.Cosh(arg), F.Sinh(arg))));
+            return result;
           }
-          return x;
-        });
+          return F.Plus(F.Cosh(exponent), F.Sinh(exponent));
+        }
+      }
+      return F.NIL;
+    });
+
+    visitor.setPostProcessing(x -> {
+      if (x.isTimes() && x.arg1().isNumber() && x.arg2().isPlus()) {
+        return F.Expand(x);
+      }
+      return x;
+    });
 
     temp = arg1.accept(visitor);
 

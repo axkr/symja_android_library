@@ -18,7 +18,8 @@ public class Lambda {
    * Replace all occurrences of Slot[&lt;index&gt;] expressions with the expression at the
    * appropriate <code>index</code> in the given <code>slotsList</code>.
    *
-   * <p><b>Note:</b> If a slot value is <code>null</code> the Slot will not be substituted.
+   * <p>
+   * <b>Note:</b> If a slot value is <code>null</code> the Slot will not be substituted.
    *
    * @param expr
    * @param slotsList the values for the slots.
@@ -54,8 +55,8 @@ public class Lambda {
    * @param function
    * @return
    */
-  public static IAST forEachAppend(
-      IAST ast, IASTAppendable result, Function<IExpr, IExpr> function) {
+  public static IAST forEachAppend(IAST ast, IASTAppendable result,
+      Function<IExpr, IExpr> function) {
     int size = ast.size();
     for (int i = 1; i < size; i++) {
       result.append(function.apply(ast.get(i)));
@@ -94,8 +95,8 @@ public class Lambda {
    * @deprecated use IAST#existsLeft()
    */
   @Deprecated
-  public static IExpr existsLeft(
-      IAST ast, BiPredicate<IExpr, IExpr> stopPredicate, IExpr stopExpr, IExpr resultExpr) {
+  public static IExpr existsLeft(IAST ast, BiPredicate<IExpr, IExpr> stopPredicate, IExpr stopExpr,
+      IExpr resultExpr) {
     int size = ast.size();
     for (int i = 2; i < size; i++) {
       if (stopPredicate.test(ast.get(i - 1), ast.get(i))) {
@@ -149,8 +150,8 @@ public class Lambda {
     return true;
   }
 
-  private static IExpr testMap(
-      IAST ast, Predicate<IExpr> predicate, Function<IExpr, IExpr> function) {
+  private static IExpr testMap(IAST ast, Predicate<IExpr> predicate,
+      Function<IExpr, IExpr> function) {
     IASTAppendable result = F.NIL;
     int size = ast.size();
     for (int i = 1; i < size; i++) {
@@ -170,11 +171,8 @@ public class Lambda {
     return result;
   }
 
-  private static IExpr testMap2(
-      IAST list,
-      Predicate<IExpr> predicate,
-      Function<IExpr, IExpr> function1,
-      Function<IExpr, IExpr> function2) {
+  private static IExpr testMap2(IAST list, Predicate<IExpr> predicate,
+      Function<IExpr, IExpr> function1, Function<IExpr, IExpr> function2) {
     IASTAppendable result = F.NIL;
     int size = list.size();
     for (int i = 1; i < size; i++) {

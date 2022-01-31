@@ -141,7 +141,7 @@ public class Import extends AbstractEvaluator {
     }
 
     String str = com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
-    
+
     AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
     final ASTNode node = parser.parse(str);
@@ -173,9 +173,9 @@ public class Import extends AbstractEvaluator {
         return GraphExpr.newInstance(result);
       case GRAPHML:
         result = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
-        //        Map<String, Map<String, Attribute>> vertexAttributes = new HashMap<>();
-        //        Map<ExprEdge, Map<String, Attribute>> edgeAttributes =
-        //            new HashMap<ExprEdge, Map<String, Attribute>>();
+        // Map<String, Map<String, Attribute>> vertexAttributes = new HashMap<>();
+        // Map<ExprEdge, Map<String, Attribute>> edgeAttributes =
+        // new HashMap<ExprEdge, Map<String, Attribute>>();
         GraphMLImporter<IExpr, ExprEdge> graphMLImporter = new GraphMLImporter<IExpr, ExprEdge>();
         graphMLImporter.setVertexFactory(label -> engine.parse(label));
         graphMLImporter.importGraph(result, reader);

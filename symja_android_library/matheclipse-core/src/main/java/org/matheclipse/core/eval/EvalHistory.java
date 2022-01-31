@@ -30,7 +30,7 @@ public class EvalHistory implements Serializable {
    * Contains the last <code>n</code> output entries of the calculation history.
    *
    * @param historyLength maximum capacity of the last calculated entries which the history could
-   *     contain.
+   *        contain.
    */
   public EvalHistory(short historyLength) {
     fHistoryLength = historyLength;
@@ -89,8 +89,8 @@ public class EvalHistory implements Serializable {
     return defintion(set, S.Out, false);
   }
 
-  private IAST defintion(
-      ObjectSortedSet<Int2ObjectMap.Entry<IExpr>> set, IBuiltInSymbol symbol, boolean setDelayed) {
+  private IAST defintion(ObjectSortedSet<Int2ObjectMap.Entry<IExpr>> set, IBuiltInSymbol symbol,
+      boolean setDelayed) {
     IASTAppendable result = F.ListAlloc(set.size());
 
     for (Int2ObjectMap.Entry<IExpr> entry : set) {

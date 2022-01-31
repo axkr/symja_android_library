@@ -103,7 +103,7 @@ public interface ISymbol extends IExpr {
    * ISymbol attribute to indicate that a symbols evaluation should be printed to Console with
    * System.out.println();
    */
-  //  public static final int DELAYED_RULE_EVALUATION = 0x00020000;
+  // public static final int DELAYED_RULE_EVALUATION = 0x00020000;
 
   //
   // Flags definition starts here
@@ -137,7 +137,7 @@ public interface ISymbol extends IExpr {
    *
    * @param value the assigned 'right-hand-side' expression
    * @param setDelayed if <code>true</code>, the value is assigned with the ':=' SetDelayed operator
-   *     otherwise with the '=' operator.
+   *        otherwise with the '=' operator.
    */
   public void assignValue(IExpr value, boolean setDelayed);
 
@@ -193,7 +193,7 @@ public interface ISymbol extends IExpr {
    * Create internal rules data structure with precalculated sizes
    *
    * <ul>
-   *   <li>index 0 - number of equal rules in <code>RULES</code>
+   * <li>index 0 - number of equal rules in <code>RULES</code>
    * </ul>
    *
    * @param sizes
@@ -320,7 +320,7 @@ public interface ISymbol extends IExpr {
    * Does this symbols attribute set contains the <code>Flat</code> attribute?
    *
    * @return <code>true</code> if this symbols attribute set contains the <code>Flat</code>
-   *     attribute.
+   *         attribute.
    */
   boolean hasFlatAttribute();
 
@@ -338,12 +338,12 @@ public interface ISymbol extends IExpr {
    *     </code> attribute.
    */
   boolean hasListableAttribute();
-  
+
   /**
    * Does the attributes flag set contains the {@link ISymbol#FLAT} bit set?
    *
    * @return <code>true</code> if this attribute set contains the <code>ISymbol.Flat</code>
-   *     attribute.
+   *         attribute.
    */
   public static boolean hasFlatAttribute(int attributes) {
     return (attributes & FLAT) == FLAT;
@@ -368,12 +368,12 @@ public interface ISymbol extends IExpr {
   public static boolean hasListableAttribute(int attributes) {
     return (attributes & LISTABLE) == LISTABLE;
   }
-  
+
   /**
    * Does this symbols attribute set contains the <code>Orderless</code> attribute?
    *
    * @return <code>true</code> if this symbols attribute set contains the <code>Orderless</code>
-   *     attribute.
+   *         attribute.
    */
   public static boolean hasOrderlessAttribute(int attributes) {
     return (attributes & ORDERLESS) == ORDERLESS;
@@ -384,7 +384,7 @@ public interface ISymbol extends IExpr {
    * </code> bits set?
    *
    * @return <code>true</code> if this attribute set contains the <code>ISymbol.Flat</code> and
-   *     <code>ISymbol.Orderless</code> attribute.
+   *         <code>ISymbol.Orderless</code> attribute.
    */
   public static boolean hasOrderlessFlatAttribute(int attributes) {
     return (attributes & FLATORDERLESS) == FLATORDERLESS;
@@ -394,7 +394,7 @@ public interface ISymbol extends IExpr {
    * Does this symbols attribute set contains the <code>OneIdentity</code> attribute?
    *
    * @return <code>true</code> if this symbols attribute set contains the <code>OneIdentity</code>
-   *     attribute.
+   *         attribute.
    */
   boolean hasOneIdentityAttribute();
 
@@ -402,7 +402,7 @@ public interface ISymbol extends IExpr {
    * Does this symbols attribute set contains the <code>Orderless</code> attribute?
    *
    * @return <code>true</code> if this symbols attribute set contains the <code>Orderless</code>
-   *     attribute.
+   *         attribute.
    */
   boolean hasOrderlessAttribute();
 
@@ -411,7 +411,7 @@ public interface ISymbol extends IExpr {
    * attribute?
    *
    * @return <code>true</code> if this symbols attribute set contains the <code>Flat</code> and the
-   *     <code>Orderless</code> attribute.
+   *         <code>Orderless</code> attribute.
    */
   boolean hasOrderlessFlatAttribute();
 
@@ -516,7 +516,7 @@ public interface ISymbol extends IExpr {
    * function and return the result, otherwise return <code>F.NIL</code>.
    *
    * @param function applys the function to a <code>double</code> value, resulting in an object of
-   *     type {@code IExpr}.
+   *        type {@code IExpr}.
    * @return the resulting expression from the function or <code>F.NIL</code>.
    * @see org.matheclipse.core.reflection.system.Abs
    * @see org.matheclipse.core.reflection.system.Ceiling
@@ -532,7 +532,7 @@ public interface ISymbol extends IExpr {
    * @param engine the current evaluation engine
    * @param args the arguments for which this function symbol should be evaluated
    * @return the evaluated expression; if no evaluation was possible return the created input
-   *     expression.
+   *         expression.
    */
   public IExpr of(EvalEngine engine, IExpr... args);
 
@@ -544,7 +544,7 @@ public interface ISymbol extends IExpr {
    * @param arg the main argument
    * @param parts the arguments for which this function symbol should be evaluated
    * @return the evaluated expression; if no evaluation was possible return the created input
-   *     expression.
+   *         expression.
    */
   public IExpr of1(EvalEngine engine, IExpr arg, IExpr... parts);
 
@@ -553,7 +553,7 @@ public interface ISymbol extends IExpr {
    *
    * @param args the arguments for which this function symbol should be evaluated
    * @return the evaluated expression; if no evaluation was possible return the created input
-   *     expression.
+   *         expression.
    */
   default IExpr of(IExpr... args) {
     return of(EvalEngine.get(), args);
@@ -561,12 +561,12 @@ public interface ISymbol extends IExpr {
 
   /**
    * Evaluate this symbol for the arguments as function <code>
-   * symbol(F.ZZ(arg1), F.ZZ(arg2), .... ,F.ZZ(argN))</code> by converting the args to {@link
-   * IInteger} objects.
+   * symbol(F.ZZ(arg1), F.ZZ(arg2), .... ,F.ZZ(argN))</code> by converting the args to
+   * {@link IInteger} objects.
    *
    * @param args
    * @return the evaluated expression; if no evaluation was possible return the created input
-   *     expression.
+   *         expression.
    */
   default IExpr of(int... args) {
     IExpr[] array = new IExpr[args.length];
@@ -654,8 +654,8 @@ public interface ISymbol extends IExpr {
 
   /**
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
-   * The objects are converted from Java form to IExpr for according to method {@link
-   * Object2Expr#convert(Object, boolean, boolean)}.
+   * The objects are converted from Java form to IExpr for according to method
+   * {@link Object2Expr#convert(Object, boolean, boolean)}.
    *
    * @param args the objects which should be used as arguments
    * @return
@@ -682,7 +682,7 @@ public interface ISymbol extends IExpr {
    * Associate a new &quot;down value&quot; rule with default priority to this symbol.
    *
    * @param setSymbol which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was
-   *     used for defining this rule
+   *        used for defining this rule
    * @param equalRule <code>true</code> if the leftHandSide could be matched with equality
    * @param leftHandSide
    * @param rightHandSide
@@ -690,19 +690,15 @@ public interface ISymbol extends IExpr {
    * @return
    * @see PatternMap#DEFAULT_RULE_PRIORITY
    */
-  public void putDownRule(
-      final int setSymbol,
-      boolean equalRule,
-      IExpr leftHandSide,
-      IExpr rightHandSide,
-      boolean packageMode);
+  public void putDownRule(final int setSymbol, boolean equalRule, IExpr leftHandSide,
+      IExpr rightHandSide, boolean packageMode);
 
   /**
    * Associate a new rule with the given priority to this symbol.<br>
    * Rules with lower numbers have higher priorities.
    *
    * @param setSymbol which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was
-   *     used for defining this rule
+   *        used for defining this rule
    * @param equalRule <code>true</code> if the leftHandSide could be matched with equality
    * @param leftHandSide
    * @param rightHandSide
@@ -711,13 +707,8 @@ public interface ISymbol extends IExpr {
    * @return
    * @see PatternMap#DEFAULT_RULE_PRIORITY
    */
-  public void putDownRule(
-      final int setSymbol,
-      boolean equalRule,
-      IExpr leftHandSide,
-      IExpr rightHandSide,
-      int priority,
-      boolean packageMode);
+  public void putDownRule(final int setSymbol, boolean equalRule, IExpr leftHandSide,
+      IExpr rightHandSide, int priority, boolean packageMode);
 
   /**
    * Associate a new rule, which invokes a method, to this symbol.
@@ -733,22 +724,22 @@ public interface ISymbol extends IExpr {
    * Associate a new &quot;up value&quot; rule with default priority to this symbol.
    *
    * @param setSymbol which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was
-   *     used for defining this rule
+   *        used for defining this rule
    * @param equalRule <code>true</code> if the leftHandSide could be matched with equality
    * @param leftHandSide
    * @param rightHandSide
    * @return
    * @see PatternMap#DEFAULT_RULE_PRIORITY
    */
-  public IPatternMatcher putUpRule(
-      final int setSymbol, boolean equalRule, IAST leftHandSide, IExpr rightHandSide);
+  public IPatternMatcher putUpRule(final int setSymbol, boolean equalRule, IAST leftHandSide,
+      IExpr rightHandSide);
 
   /**
    * Associate a new &quot;up value&quot; rule with the given priority to this symbol.<br>
    * Rules with lower numbers have higher priorities.
    *
    * @param setSymbol which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was
-   *     used for defining this rule
+   *        used for defining this rule
    * @param equalRule <code>true</code> if the leftHandSide could be matched with equality
    * @param leftHandSide
    * @param rightHandSide
@@ -756,12 +747,8 @@ public interface ISymbol extends IExpr {
    * @return
    * @see PatternMap#DEFAULT_RULE_PRIORITY
    */
-  public IPatternMatcher putUpRule(
-      final int setSymbol,
-      final boolean equalRule,
-      final IAST leftHandSide,
-      final IExpr rightHandSide,
-      final int priority);
+  public IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule,
+      final IAST leftHandSide, final IExpr rightHandSide, final int priority);
 
   /**
    * Deserialize the rules associated to this object
@@ -779,13 +766,13 @@ public interface ISymbol extends IExpr {
    *
    * @param function the function which should be applied
    * @param functionSymbol if this method throws an exception the symbol will be displayed in the
-   *     exceptions message
+   *        exceptions message
    * @param engine the evaluation engine
    * @return an array with the currently assigned value of the symbol and the new calculated value
-   *     of the symbol or <code>null</code> if the reassignment isn't possible.
+   *         of the symbol or <code>null</code> if the reassignment isn't possible.
    */
-  public IExpr[] reassignSymbolValue(
-      Function<IExpr, IExpr> function, ISymbol functionSymbol, EvalEngine engine);
+  public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol,
+      EvalEngine engine);
 
   /**
    * Apply the ast to the currently assigned value of the symbol and reassign the result value to
@@ -793,12 +780,12 @@ public interface ISymbol extends IExpr {
    *
    * @param ast
    * @param ast the ast which should be evaluated by replacing the first argument with the current
-   *     value of the symbol
+   *        value of the symbol
    * @param functionSymbol if this method throws an exception the symbol will be displayed in the
-   *     exceptions message
+   *        exceptions message
    * @param engine the evaluation engine
    * @return an array with the currently assigned value of the symbol and the new calculated value
-   *     of the symbol or <code>null</code> if the reassignment isn't possible.
+   *         of the symbol or <code>null</code> if the reassignment isn't possible.
    */
   public IExpr[] reassignSymbolValue(IASTMutable ast, ISymbol functionSymbol, EvalEngine engine);
 
@@ -812,8 +799,8 @@ public interface ISymbol extends IExpr {
    * @param packageMode
    * @return <code>true</code> if a rule could be removed, <code>false</code> otherwise
    */
-  public boolean removeRule(
-      final int setSymbol, final boolean equalRule, final IExpr leftHandSide, boolean packageMode);
+  public boolean removeRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
+      boolean packageMode);
 
   /**
    * Set the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
