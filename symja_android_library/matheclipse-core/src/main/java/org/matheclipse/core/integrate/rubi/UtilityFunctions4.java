@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IAST;
 /**
  * UtilityFunctions rules from the <a href="https://rulebasedintegration.org/">Rubi - rule-based
  * integrator</a>.
- * 
+ *
  */
 class UtilityFunctions4 {
   public static IAST RULES = List(ISetDelayed(30, IGtQ(u_, n_), And(IntegerQ(u), Greater(u, n))),

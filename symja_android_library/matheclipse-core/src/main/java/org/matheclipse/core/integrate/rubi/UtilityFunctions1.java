@@ -48,7 +48,7 @@ import org.matheclipse.core.interfaces.IAST;
 /**
  * UtilityFunctions rules from the <a href="https://rulebasedintegration.org/">Rubi - rule-based
  * integrator</a>.
- * 
+ *
  */
 class UtilityFunctions1 {
   public static IAST RULES =

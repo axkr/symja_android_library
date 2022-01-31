@@ -9,7 +9,7 @@ import junit.framework.TestCase;
 
 /**
  * Convert a <code>Apfloat</code> value into a string similar to the Mathematica output format.
- * 
+ *
  */
 public class ApfloatToMMATest extends TestCase {
 

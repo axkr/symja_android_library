@@ -299,7 +299,7 @@ public final class ContextPath implements Iterable<Context> {
   /**
    * Test if the <code>symbolName</code> is defined in the one of the contexts available on the
    * context path.
-   * 
+   *
    * @param symbolName
    * @param relaxedSyntax
    * @return

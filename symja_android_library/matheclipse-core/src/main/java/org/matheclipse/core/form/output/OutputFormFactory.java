@@ -86,7 +86,7 @@ public class OutputFormFactory {
 
   /**
    * Reset the column counter.
-   * 
+   *
    * @param useSignificantFiguresInApfloat shorten an Apfloat to the number of significantFigures if
    *        possible
    */

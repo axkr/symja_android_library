@@ -4,7 +4,7 @@ import java.io.File;
 
 /**
  * Generate java init sources for Symja symbol names.
- * 
+ *
  * @deprecated
  */
 @Deprecated

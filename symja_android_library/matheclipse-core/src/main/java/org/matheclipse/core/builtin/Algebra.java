@@ -1868,7 +1868,7 @@ public class Algebra {
       /**
        * Evaluate <code>expr1 * expr2</code> and expand the resulting expression, if it's an <code>
        * IAST</code>.
-       * 
+       *
        * @param expr1
        * @param expr1Eval
        * @param expr2

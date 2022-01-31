@@ -9,7 +9,7 @@ public interface Multiset<T> {
 
   /**
    * Add an entry with multiplicity 1.
-   * 
+   *
    * @param entry
    * @return the previous multiplicity of the entry
    */
@@ -17,7 +17,7 @@ public interface Multiset<T> {
 
   /**
    * Add one entry with given multiplicity.
-   * 
+   *
    * @param entry
    * @param mult
    * @return the previous multiplicity of the entry
@@ -26,31 +26,31 @@ public interface Multiset<T> {
 
   /**
    * Add another multiset to this.
-   * 
+   *
    * @param other
    */
   void addAll(Multiset<T> other);
 
   /**
    * Add all values of the given collection.
-   * 
+   *
    * @param values
    */
   void addAll(Collection<T> values);
 
   /**
    * Add all values of the given array.
-   * 
+   *
    * @param values
    */
   void addAll(T[] values);
 
   /**
    * Returns the multiplicity of the given value.
-   * 
+   *
    * The key is declared as Object and not as T to match exactly the signature of the same method in
    * the Map-interface. Nevertheless, of course the arguments should be of type T.
-   * 
+   *
    * @param value
    * @return multiplicity
    */
@@ -59,10 +59,10 @@ public interface Multiset<T> {
   /**
    * Removes one instance of the given value from this multiset, if at least one element is
    * contained.
-   * 
+   *
    * The key is declared as Object and not as T to match exactly the signature of the same method in
    * the Map-interface. Nevertheless, of course the arguments should be of type T.
-   * 
+   *
    * @param key
    * @return previous multiplicity of the argument
    */
@@ -70,7 +70,7 @@ public interface Multiset<T> {
 
   /**
    * Remove the given key multiple times.
-   * 
+   *
    * @param key
    * @param mult
    * @return old multiplicity
@@ -79,7 +79,7 @@ public interface Multiset<T> {
 
   /**
    * Removes the key-value pair of the given key no matter what its multiplicity was
-   * 
+   *
    * @param key
    * @return previous multiplicity of the argument
    */
@@ -87,7 +87,7 @@ public interface Multiset<T> {
 
   /**
    * Returns the multiset of elements contained in both this and in the other multiset.
-   * 
+   *
    * @param other
    * @return intersection of this and other
    */

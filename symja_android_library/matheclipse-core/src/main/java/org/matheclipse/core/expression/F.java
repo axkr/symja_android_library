@@ -2740,7 +2740,7 @@ public class F extends S {
 
   /**
    * Create a symbolic complex number.
-   * 
+   *
    * @param realPart the real double value which should be converted to the real part of symbolic a
    *        complex number
    * @param imagPart the imaginary double value which should be converted to the imaginary part of
@@ -7296,7 +7296,7 @@ public class F extends S {
   /**
    * Test if the <code>symbolName</code> is defined in the one of the contexts available on the
    * context path.
-   * 
+   *
    * @param symbolName the name of a symbol
    * @param engine
    * @return

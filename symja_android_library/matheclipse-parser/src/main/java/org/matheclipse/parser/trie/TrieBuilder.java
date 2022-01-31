@@ -9,7 +9,7 @@
  * website or email, your feedback is much appreciated.
  *
  * @copyright Copyright (c) 2011 Magnos Software (http://www.magnos.org)
- * 
+ *
  * @license http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 

@@ -1632,7 +1632,7 @@ public class GraphicsFunctions {
   /**
    * Get an {@link F#RGBColor(double, double, double)} color for the function number from the
    * internal color wheel.
-   * 
+   *
    * @param functionColorNumber the number of the function which should be plotted
    * @param plotStyle if present a <code>List()</code> is expected
    * @return

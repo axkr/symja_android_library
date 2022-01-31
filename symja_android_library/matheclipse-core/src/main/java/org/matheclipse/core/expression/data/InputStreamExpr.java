@@ -40,7 +40,7 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
 
   /**
    * Get data input for binary based operation {@link S#BinaryRead}
-   * 
+   *
    * @return
    * @throws IOException
    */
@@ -57,7 +57,7 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
 
   /**
    * Get reader for text based operation {@link S#Read}.
-   * 
+   *
    * @return
    * @throws IOException
    */
