@@ -24,7 +24,7 @@ import java.util.ListIterator;
  * function (i.e. Sin, Cos, Times,...) is stored in the 0-th index of the list.<br>
  * The arguments of the function are stored in the 1...n-th index of the list.
  */
-public final class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
+public final class FunctionNode extends ASTNode implements List<ASTNode> {
 
   private final ArrayList<ASTNode> fNodesList;
 
@@ -223,7 +223,7 @@ public final class FunctionNode extends ASTNode implements java.util.List<ASTNod
   }
 
   @Override
-  public Object[] toArray(final Object[] a) {
+  public <T> T[] toArray(T[] a) {
     return fNodesList.toArray(a);
   }
 

@@ -78,8 +78,8 @@ public final class ContextPath implements Iterable<Context> {
 
   public ContextPath copy() {
     ContextPath cp = new ContextPath();
-    cp.fContextMap = (HashMap<String, Context>) fContextMap.clone();
-    cp.path = (ArrayList<Context>) path.clone();
+    cp.fContextMap = new HashMap<>(fContextMap);
+    cp.path = new ArrayList<>(path);
     cp.fContext = fContext;
     return cp;
   }

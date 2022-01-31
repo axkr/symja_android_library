@@ -612,9 +612,9 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public IAssumptions copy() {
     Assumptions assumptions = new Assumptions();
-    assumptions.distributionsMap = (HashMap) distributionsMap.clone();
-    assumptions.elementsMap = (HashMap) elementsMap.clone();
-    assumptions.valueMap = (HashMap) valueMap.clone();
+    assumptions.distributionsMap = new HashMap<>(distributionsMap);
+    assumptions.elementsMap = new HashMap<>(elementsMap);
+    assumptions.valueMap = new HashMap<>(valueMap);
     assumptions.$assumptions = $assumptions.copy();
     return assumptions;
   }
