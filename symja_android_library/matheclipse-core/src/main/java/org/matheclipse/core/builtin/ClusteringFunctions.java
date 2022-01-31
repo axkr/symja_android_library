@@ -31,6 +31,7 @@ public class ClusteringFunctions {
 
   private abstract static class AbstractDistance extends AbstractEvaluator
       implements DistanceMeasure {
+    private static final long serialVersionUID = -295980120043414467L;
 
     public abstract IExpr distance(IExpr a, IExpr b);
 
@@ -72,6 +73,8 @@ public class ClusteringFunctions {
   }
 
   private static final class BinaryDistance extends AbstractDistance {
+
+    private static final long serialVersionUID = 6407163419470076191L;
 
     @Override
     public double compute(double[] a, double[] b) throws MathIllegalArgumentException {
@@ -121,6 +124,7 @@ public class ClusteringFunctions {
    * </pre>
    */
   private static final class BrayCurtisDistance extends AbstractDistance {
+    private static final long serialVersionUID = 669052613809997063L;
 
     private static double distancePlus(double[] p1, double[] p2)
         throws MathIllegalArgumentException {
@@ -165,6 +169,8 @@ public class ClusteringFunctions {
    * </pre>
    */
   private static final class CanberraDistance extends AbstractDistance {
+    private static final long serialVersionUID = 6257588266259496269L;
+
     static final DistanceMeasure distance =
         new org.hipparchus.clustering.distance.CanberraDistance();
 
@@ -208,6 +214,7 @@ public class ClusteringFunctions {
    * </pre>
    */
   private static final class ChessboardDistance extends AbstractDistance {
+    private static final long serialVersionUID = 6473415254245961676L;
 
     @Override
     public double compute(double[] a, double[] b) throws MathIllegalArgumentException {
@@ -253,6 +260,7 @@ public class ClusteringFunctions {
    * </pre>
    */
   private static final class CosineDistance extends AbstractDistance {
+    private static final long serialVersionUID = -108468814401695919L;
 
     @Override
     public double compute(double[] a, double[] b) throws MathIllegalArgumentException {
@@ -295,6 +303,8 @@ public class ClusteringFunctions {
    * </pre>
    */
   private static final class EuclideanDistance extends AbstractDistance {
+    private static final long serialVersionUID = 2872848600632425591L;
+
     static final DistanceMeasure distance =
         new org.hipparchus.clustering.distance.EuclideanDistance();
 
@@ -480,6 +490,8 @@ public class ClusteringFunctions {
    * </pre>
    */
   private static final class ManhattanDistance extends AbstractDistance {
+    private static final long serialVersionUID = -3203931866584067444L;
+
     static final DistanceMeasure distance =
         new org.hipparchus.clustering.distance.ManhattanDistance();
 
@@ -520,6 +532,7 @@ public class ClusteringFunctions {
    * </pre>
    */
   static final class SquaredEuclideanDistance extends AbstractDistance {
+    private static final long serialVersionUID = -34208439139174441L;
 
     @Override
     public double compute(double[] p1, double[] p2) throws MathIllegalArgumentException {

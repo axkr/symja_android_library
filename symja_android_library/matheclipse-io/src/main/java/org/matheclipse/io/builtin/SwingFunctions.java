@@ -311,6 +311,8 @@ public class SwingFunctions {
               dialog.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
                   .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CANCEL");
               dialog.getRootPane().getActionMap().put("CANCEL", new AbstractAction() {
+                private static final long serialVersionUID = 1293680722774511195L;
+
                 @Override
                 public void actionPerformed(ActionEvent e) {
                   consumer.accept(cancelAction);

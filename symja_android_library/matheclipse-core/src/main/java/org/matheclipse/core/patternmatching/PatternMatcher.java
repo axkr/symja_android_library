@@ -171,8 +171,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    * expression of the pair and try to evaluate to <code>True</code>.
    * </ul>
    */
-  @SuppressWarnings("serial")
   /* package private */ final class StackMatcher extends ArrayDeque<Entry> {
+    private static final long serialVersionUID = 6051475896607762506L;
+
     final EvalEngine fEngine;
 
     public StackMatcher(EvalEngine engine) {

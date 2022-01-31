@@ -32,12 +32,16 @@ import com.google.common.primitives.UnsignedLong;
 public class NumericArrayExpr extends DataExpr<Object> implements INumericArray, Externalizable {
 
   public static class RangeException extends Exception {
+    private static final long serialVersionUID = 5301913995459242598L;
+
     RangeException(String message) {
       super(message);
     }
   }
 
   public static class TypeException extends Exception {
+    private static final long serialVersionUID = -8868546084855177025L;
+
     TypeException(String message) {
       super(message);
     }
