@@ -69,9 +69,9 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
   @Override
   public int add(T entry) {
     Integer myMult = super.get(entry);
-    int oldMult = (myMult != null) ? myMult.intValue() : 0;
+    int oldMult = (myMult != null) ? myMult : 0;
     int newMult = oldMult + 1;
-    super.put(entry, Integer.valueOf(newMult));
+    super.put(entry, newMult);
     return oldMult;
   }
 
@@ -79,10 +79,10 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
   public int add(T entry, int mult) {
     // LOG.debug("entry " + entry + " has " + entry.getClass());
     Integer myMult = super.get(entry);
-    int oldMult = (myMult != null) ? myMult.intValue() : 0;
+    int oldMult = (myMult != null) ? myMult : 0;
     if (mult > 0) {
       int newMult = oldMult + mult;
-      super.put(entry, Integer.valueOf(newMult));
+      super.put(entry, newMult);
     }
     return oldMult;
   }
@@ -93,7 +93,7 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
       // we need to recreate the entries of the internal set to avoid
       // that changes in the copy affect the old original
       for (Map.Entry<T, Integer> entry : other.entrySet()) {
-        this.add(entry.getKey(), entry.getValue().intValue());
+        this.add(entry.getKey(), entry.getValue());
       }
     }
   }
@@ -120,14 +120,14 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
   public Integer remove(Object key) {
     Integer mult = this.get(key);
     if (mult != null) {
-      int imult = mult.intValue();
+      int imult = mult;
       if (imult > 0) {
         if (imult > 1) {
           // the cast works if we only put T-type keys into the map
           // which should be guaranteed in the add-methods
           @SuppressWarnings("unchecked")
           T castedKey = (T) key;
-          this.put(castedKey, Integer.valueOf(imult - 1));
+          this.put(castedKey, imult - 1);
         } else {
           // delete entry from internal map
           super.remove(key);
@@ -140,14 +140,14 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
   @Override
   public int remove(T key, int mult) {
     Integer myMult = super.get(key);
-    int oldMult = (myMult != null) ? myMult.intValue() : 0;
+    int oldMult = (myMult != null) ? myMult : 0;
     if (oldMult > 0) {
       int newMult = Math.max(0, oldMult - mult);
       if (newMult > 0) {
-        super.put(key, Integer.valueOf(newMult));
+        super.put(key, newMult);
         return oldMult;
       }
-      return super.remove(key).intValue();
+      return super.remove(key);
     }
     // nothing to remove
     return 0;
@@ -157,7 +157,7 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
   public int removeAll(T key) {
     Integer mult = this.get(key);
     if (mult != null) {
-      int imult = mult.intValue();
+      int imult = mult;
       if (imult > 0) {
         // delete entry from internal map
         super.remove(key);
@@ -172,12 +172,12 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
     SortedMultiset<T> resultset = new SortedMultiset_BottomUp<T>();
     if (other != null) {
       for (Map.Entry<T, Integer> myEntry : this.entrySet()) {
-        int myMult = myEntry.getValue().intValue();
+        int myMult = myEntry.getValue();
         if (myMult > 0) {
           T myKey = myEntry.getKey();
           Integer otherMult = other.get(myKey);
           if (otherMult != null) {
-            int jointMult = Math.min(myMult, otherMult.intValue());
+            int jointMult = Math.min(myMult, otherMult);
             if (jointMult > 0) {
               resultset.add(myKey, jointMult);
             }
@@ -212,7 +212,7 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
     List<T> flatList = new ArrayList<T>(totalCount());
     for (Map.Entry<T, Integer> entry : this.entrySet()) {
       T value = entry.getKey();
-      int multiplicity = entry.getValue().intValue();
+      int multiplicity = entry.getValue();
       for (int i = 0; i < multiplicity; i++) {
         flatList.add(value);
       }
@@ -252,8 +252,8 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
         // else keys are equal...
         Integer myMultiplicity = myEntry.getValue();
         Integer otherMultiplicity = otherEntry.getValue();
-        int myMult = (myMultiplicity != null) ? myMultiplicity.intValue() : 0;
-        int otherMult = (otherMultiplicity != null) ? otherMultiplicity.intValue() : 0;
+        int myMult = (myMultiplicity != null) ? myMultiplicity : 0;
+        int otherMult = (otherMultiplicity != null) ? otherMultiplicity : 0;
         int multCmp = myMult - otherMult;
         if (multCmp != 0)
           return multCmp;

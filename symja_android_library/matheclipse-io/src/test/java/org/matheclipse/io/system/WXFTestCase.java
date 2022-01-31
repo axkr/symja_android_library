@@ -21,7 +21,7 @@ public class WXFTestCase extends AbstractTestCase {
   private String toString(byte[] bytes) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < bytes.length; i++) {
-      sb.append((int) bytes[i] & 0x00ff);
+      sb.append(bytes[i] & 0x00ff);
       sb.append(' ');
     }
     return sb.toString();

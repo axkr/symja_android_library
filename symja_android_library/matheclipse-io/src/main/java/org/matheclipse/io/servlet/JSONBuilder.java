@@ -103,7 +103,7 @@ public class JSONBuilder {
   public static String[] createJSONJavaScript(String script) {
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
-    resultsJSON.put("line", Integer.valueOf(21));
+    resultsJSON.put("line", 21);
     resultsJSON.put("result", script);
 
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
@@ -122,12 +122,12 @@ public class JSONBuilder {
     stw.append("<math><mtable><mtr><mtd>");
     if (show.isAST() && show.size() > 1 && show.arg1().isAST(S.Graphics, 2)) {
       StringBuilder buf = new StringBuilder(2048);
-      GraphicsFunctions.graphicsToSVG((IAST) ((IAST) show).arg1(), stw);
+      GraphicsFunctions.graphicsToSVG((IAST) show.arg1(), stw);
     }
     stw.append("</mtd></mtr></mtable></math>");
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
-    resultsJSON.put("line", Integer.valueOf(21));
+    resultsJSON.put("line", 21);
     resultsJSON.put("result", stw.toString());
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
     resultsJSON.putPOJO("out", temp);
@@ -151,7 +151,7 @@ public class JSONBuilder {
     }
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
-    resultsJSON.put("line", Integer.valueOf(21));
+    resultsJSON.put("line", 21);
     resultsJSON.put("result", stw.toString());
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
 
@@ -195,7 +195,7 @@ public class JSONBuilder {
     // stw.append(html);
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
-    resultsJSON.put("line", Integer.valueOf(21));
+    resultsJSON.put("line", 21);
     resultsJSON.put("result", html);
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
 

@@ -112,11 +112,11 @@ public class OptionArgs {
         IExpr arg = currentOptionsList.get(i);
         arg = evaluate ? engine.evaluate(arg) : arg;
         if (arg.isRule()) {
-          this.fCurrentOptionsList.append((IAST) arg);
+          this.fCurrentOptionsList.append(arg);
         } else if (arg.isListOfRules(false)) {
           IAST listOfRules = (IAST) arg;
           for (int j = 1; j < listOfRules.size(); j++) {
-            this.fCurrentOptionsList.append((IAST) listOfRules.get(j));
+            this.fCurrentOptionsList.append(listOfRules.get(j));
           }
         }
       }

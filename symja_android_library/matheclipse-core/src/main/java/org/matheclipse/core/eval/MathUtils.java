@@ -19,11 +19,11 @@ public class MathUtils {
     if (j == 0) {
       return rom[i][0];
     } else if (rom[i][j] != null) {
-      return rom[i][j].doubleValue();
+      return rom[i][j];
     } else {
       double temp =
           (Math.pow(4, j) * romberg(i, j - 1) - romberg(i - 1, j - 1)) / (Math.pow(4, j) - 1);
-      rom[i][j] = Double.valueOf(temp);
+      rom[i][j] = temp;
       return temp;
     }
   }
@@ -196,7 +196,7 @@ public class MathUtils {
         integParser.defineVariable(integVarY, b);
         valueY += integParser.evaluateNode(integFun) / 2;
         valueY *= stepY;
-        rom[j][0] = Double.valueOf(valueY);
+        rom[j][0] = valueY;
       }
       double valueX = romberg(romI - 1, romI - 1) / 2;
 
@@ -228,7 +228,7 @@ public class MathUtils {
           integParser.defineVariable(integVarY, b);
           valueY += integParser.evaluateNode(integFun) / 2;
           valueY *= stepY;
-          rom[j][0] = Double.valueOf(valueY);
+          rom[j][0] = valueY;
         }
         valueX += romberg(romI - 1, romI - 1);
       }
@@ -260,11 +260,11 @@ public class MathUtils {
         integParser.defineVariable(integVarY, b);
         valueY += integParser.evaluateNode(integFun) / 2;
         valueY *= stepY;
-        rom[j][0] = Double.valueOf(valueY);
+        rom[j][0] = valueY;
       }
       valueX += romberg(romI - 1, romI - 1) / 2;
       valueX *= step;
-      romX[i][0] = Double.valueOf(valueX);
+      romX[i][0] = valueX;
     }
     rom = romX;
 

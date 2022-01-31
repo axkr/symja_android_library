@@ -33,9 +33,9 @@ public class RubiIssue77 extends AbstractRubiTestCase {
       // {x*(a+c*x^2+d*x^3)^n,2*c+3*d*x,1}
       // {x*(2*c+3*d*x),a+c*x^2+d*x^3,n}
       // {x*(2*c+3*d*x),(a+c*x^2+d*x^3)^n,1}
-      IExpr expr = (IExpr) fEvaluator
-          .eval("myfunction[(pp_)*(qq_)^(m_.), x_Symbol] := {pp,qq,m}/;Print[{pp,qq,m}]");
-      IExpr lhsEval = (IExpr) fEvaluator.eval("myfunction[x*(2*c+3*d*x)*(a+c*x^2+d*x^3)^n, x]");
+      IExpr expr =
+          fEvaluator.eval("myfunction[(pp_)*(qq_)^(m_.), x_Symbol] := {pp,qq,m}/;Print[{pp,qq,m}]");
+      IExpr lhsEval = fEvaluator.eval("myfunction[x*(2*c+3*d*x)*(a+c*x^2+d*x^3)^n, x]");
       assertEquals(lhsEval.toString(), "myfunction(x*(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,x)");
     } catch (Exception ex) {
       ex.printStackTrace();
@@ -44,7 +44,7 @@ public class RubiIssue77 extends AbstractRubiTestCase {
 
   public void testRuleNo1588b() {
     try {
-      IExpr lhsEval = (IExpr) fEvaluator.eval("Integrate[x*(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,x]");
+      IExpr lhsEval = fEvaluator.eval("Integrate[x*(2*c+3*d*x)*(a+c*x^2+d*x^3)^n,x]");
       assertEquals(lhsEval.toString(), "(a+c*x^2+d*x^3)^(1+n)/(1+n)");
     } catch (Exception ex) {
       ex.printStackTrace();

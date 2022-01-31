@@ -76,7 +76,7 @@ public class Object2Expr {
       }
     }
     if (obj instanceof Boolean) {
-      return ((Boolean) obj).booleanValue() ? S.True : S.False;
+      return ((Boolean) obj) ? S.True : S.False;
     }
     if (obj instanceof Number) {
       if (obj instanceof org.hipparchus.fraction.Fraction) {
@@ -166,10 +166,10 @@ public class Object2Expr {
       return F.ZZ(((Integer) n).longValue());
     }
     if (n instanceof Double) {
-      return F.num(((Double) n).doubleValue());
+      return F.num(((Double) n));
     }
     if (n instanceof Long) {
-      return F.ZZ(((Long) n).longValue());
+      return F.ZZ(((Long) n));
     }
     if (n instanceof BigInteger) {
       return F.ZZ((BigInteger) n);

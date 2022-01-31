@@ -61,7 +61,7 @@ public class PrintClassHierarchy {
     if (!moreClassesInHierarchy.empty()) {
       for (final Boolean hasColumn : moreClassesInHierarchy.subList(0,
           moreClassesInHierarchy.size() - 1)) {
-        System.out.print(hasColumn.booleanValue() ? PADDING_WITH_COLUMN : PADDING);
+        System.out.print(hasColumn ? PADDING_WITH_COLUMN : PADDING);
       }
     }
 

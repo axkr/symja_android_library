@@ -774,7 +774,7 @@ public class Parser extends Scanner {
     try {
       final Object[] result = getNumberString();
       numberStr = (String) result[0];
-      final int numFormat = ((Integer) result[1]).intValue();
+      final int numFormat = ((Integer) result[1]);
       String exponentStr = (String) result[2];
       if (negative) {
         numberStr = '-' + numberStr;

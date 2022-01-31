@@ -2592,9 +2592,9 @@ public final class ListFunctions {
       for (int i = 1; i < list.size(); i++) {
         Integer value = map.get(list.get(i));
         if (value == null) {
-          map.put(list.get(i), Integer.valueOf(1));
+          map.put(list.get(i), 1);
         } else {
-          map.put(list.get(i), Integer.valueOf(value + 1));
+          map.put(list.get(i), value + 1);
         }
       }
       IASTAppendable result = F.PlusAlloc(map.size());
@@ -7280,7 +7280,7 @@ public final class ListFunctions {
       for (int i = 1; i < list.size(); i++) {
         IExpr arg = list.get(i);
         Integer value = map.get(arg);
-        map.put(arg, Integer.valueOf(value == null ? 1 : value + 1));
+        map.put(arg, value == null ? 1 : value + 1);
       }
       return createResultList(map);
     }
@@ -7291,11 +7291,11 @@ public final class ListFunctions {
         IExpr arg = list.get(i);
         for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
           if (test.test(entry.getKey(), arg)) {
-            map.put(entry.getKey(), Integer.valueOf(entry.getValue() + 1));
+            map.put(entry.getKey(), entry.getValue() + 1);
             continue iLoop;
           }
         }
-        map.put(arg, Integer.valueOf(1));
+        map.put(arg, 1);
       }
       return createResultList(map);
     }

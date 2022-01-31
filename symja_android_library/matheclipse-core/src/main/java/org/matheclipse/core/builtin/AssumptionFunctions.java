@@ -60,7 +60,7 @@ public class AssumptionFunctions {
       IExpr value = S.True;
       if (oldValue == null) {
         if (ast.arg1().isList()) {
-          value = (IAST) ast.arg1();
+          value = ast.arg1();
         } else {
           value = F.List(ast.arg1());
         }

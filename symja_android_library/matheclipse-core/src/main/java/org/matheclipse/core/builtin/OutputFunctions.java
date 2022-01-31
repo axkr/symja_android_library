@@ -802,8 +802,7 @@ public final class OutputFunctions {
     private static void treeToGraph(IAST tree, final int level, final int maxLevel,
         int[] currentCount, List<SimpleImmutableEntry<String, Integer>> vertexList,
         List<SimpleImmutableEntry<Integer, Integer>> edgeList) {
-      vertexList.add(new SimpleImmutableEntry<String, Integer>(tree.head().toString(),
-          Integer.valueOf(level)));
+      vertexList.add(new SimpleImmutableEntry<String, Integer>(tree.head().toString(), level));
       int currentNode = vertexList.size();
       final int nextLevel = level + 1;
       for (int i = 1; i < tree.size(); i++) {
@@ -865,8 +864,7 @@ public final class OutputFunctions {
           edgesToVisjs(jsControl, edgeList);
           return F.JSFormData(jsControl.toString(), "treeform");
         } else {
-          vertexList
-              .add(new SimpleImmutableEntry<String, Integer>(arg1.toString(), Integer.valueOf(0)));
+          vertexList.add(new SimpleImmutableEntry<String, Integer>(arg1.toString(), 0));
           vertexToVisjs(jsControl, vertexList);
           edgesToVisjs(jsControl, edgeList);
           return F.JSFormData(jsControl.toString(), "treeform");
