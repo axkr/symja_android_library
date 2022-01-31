@@ -1,9 +1,53 @@
 package org.matheclipse.core.integrate.rubi;
 
 
-import static org.matheclipse.core.expression.F.*;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;
-
+import static org.matheclipse.core.expression.F.$;
+import static org.matheclipse.core.expression.F.$p;
+import static org.matheclipse.core.expression.F.$s;
+import static org.matheclipse.core.expression.F.$str;
+import static org.matheclipse.core.expression.F.And;
+import static org.matheclipse.core.expression.F.AtomQ;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.C4;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Condition;
+import static org.matheclipse.core.expression.F.F_;
+import static org.matheclipse.core.expression.F.G_;
+import static org.matheclipse.core.expression.F.Head;
+import static org.matheclipse.core.expression.F.ISetDelayed;
+import static org.matheclipse.core.expression.F.If;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Or;
+import static org.matheclipse.core.expression.F.Part;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Print;
+import static org.matheclipse.core.expression.F.ReplacePart;
+import static org.matheclipse.core.expression.F.Rule;
+import static org.matheclipse.core.expression.F.RuleDelayed;
+import static org.matheclipse.core.expression.F.SameQ;
+import static org.matheclipse.core.expression.F.Subtract;
+import static org.matheclipse.core.expression.F.u_;
+import static org.matheclipse.core.expression.F.v_;
+import static org.matheclipse.core.expression.F.x_;
+import static org.matheclipse.core.expression.S.Block;
+import static org.matheclipse.core.expression.S.Condition;
+import static org.matheclipse.core.expression.S.FSymbol;
+import static org.matheclipse.core.expression.S.GSymbol;
+import static org.matheclipse.core.expression.S.Hold;
+import static org.matheclipse.core.expression.S.Module;
+import static org.matheclipse.core.expression.S.Pattern;
+import static org.matheclipse.core.expression.S.With;
+import static org.matheclipse.core.expression.S.u;
+import static org.matheclipse.core.expression.S.v;
+import static org.matheclipse.core.expression.S.x;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.F;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FixIntRule;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FixRhsIntRule;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.G;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.H;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.J;
 import org.matheclipse.core.interfaces.IAST;
 
 /**

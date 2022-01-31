@@ -1,9 +1,26 @@
 package org.matheclipse.core.reflection.system.rules;
 
 import static org.matheclipse.core.expression.F.*;
-import org.matheclipse.core.interfaces.ISymbol;
+import static org.matheclipse.core.expression.S.EulerGamma;
+import static org.matheclipse.core.expression.S.Integer;
+import static org.matheclipse.core.expression.S.Integers;
+import static org.matheclipse.core.expression.S.Pi;
+import static org.matheclipse.core.expression.S.Reals;
+import static org.matheclipse.core.expression.S.a;
+import static org.matheclipse.core.expression.S.b;
+import static org.matheclipse.core.expression.S.c;
+import static org.matheclipse.core.expression.S.f;
+import static org.matheclipse.core.expression.S.g;
+import static org.matheclipse.core.expression.S.k;
+import static org.matheclipse.core.expression.S.l;
+import static org.matheclipse.core.expression.S.m;
+import static org.matheclipse.core.expression.S.n;
+import static org.matheclipse.core.expression.S.p;
+import static org.matheclipse.core.expression.S.t;
+import static org.matheclipse.core.expression.S.x;
+import static org.matheclipse.core.expression.S.y;
+import static org.matheclipse.core.expression.S.z;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

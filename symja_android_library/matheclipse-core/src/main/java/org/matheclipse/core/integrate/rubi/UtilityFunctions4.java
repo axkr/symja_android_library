@@ -1,9 +1,41 @@
 package org.matheclipse.core.integrate.rubi;
 
 
-import static org.matheclipse.core.expression.F.*;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;
-
+import static org.matheclipse.core.expression.F.$s;
+import static org.matheclipse.core.expression.F.And;
+import static org.matheclipse.core.expression.F.Greater;
+import static org.matheclipse.core.expression.F.GreaterEqual;
+import static org.matheclipse.core.expression.F.Head;
+import static org.matheclipse.core.expression.F.ISetDelayed;
+import static org.matheclipse.core.expression.F.If;
+import static org.matheclipse.core.expression.F.IntegerQ;
+import static org.matheclipse.core.expression.F.Less;
+import static org.matheclipse.core.expression.F.LessEqual;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.N;
+import static org.matheclipse.core.expression.F.RealNumberQ;
+import static org.matheclipse.core.expression.F.SameQ;
+import static org.matheclipse.core.expression.F.Set;
+import static org.matheclipse.core.expression.F.Together;
+import static org.matheclipse.core.expression.F.With;
+import static org.matheclipse.core.expression.F.n_;
+import static org.matheclipse.core.expression.F.u_;
+import static org.matheclipse.core.expression.F.v_;
+import static org.matheclipse.core.expression.F.w_;
+import static org.matheclipse.core.expression.S.False;
+import static org.matheclipse.core.expression.S.Real;
+import static org.matheclipse.core.expression.S.n;
+import static org.matheclipse.core.expression.S.u;
+import static org.matheclipse.core.expression.S.v;
+import static org.matheclipse.core.expression.S.w;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.GeQ;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.GtQ;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.IGeQ;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.IGtQ;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ILeQ;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ILtQ;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.LeQ;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.LtQ;
 import org.matheclipse.core.interfaces.IAST;
 
 /**

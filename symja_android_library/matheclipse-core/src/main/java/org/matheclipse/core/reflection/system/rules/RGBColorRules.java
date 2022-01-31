@@ -1,9 +1,38 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.*;
-import org.matheclipse.core.interfaces.ISymbol;
+import static org.matheclipse.core.expression.F.CD0;
+import static org.matheclipse.core.expression.F.CD1;
+import static org.matheclipse.core.expression.F.IInit;
+import static org.matheclipse.core.expression.F.ISet;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.RGBColor;
+import static org.matheclipse.core.expression.F.num;
+import static org.matheclipse.core.expression.S.Black;
+import static org.matheclipse.core.expression.S.Blue;
+import static org.matheclipse.core.expression.S.Brown;
+import static org.matheclipse.core.expression.S.Cyan;
+import static org.matheclipse.core.expression.S.Gray;
+import static org.matheclipse.core.expression.S.Green;
+import static org.matheclipse.core.expression.S.LightBlue;
+import static org.matheclipse.core.expression.S.LightBrown;
+import static org.matheclipse.core.expression.S.LightCyan;
+import static org.matheclipse.core.expression.S.LightGray;
+import static org.matheclipse.core.expression.S.LightGreen;
+import static org.matheclipse.core.expression.S.LightMagenta;
+import static org.matheclipse.core.expression.S.LightOrange;
+import static org.matheclipse.core.expression.S.LightPink;
+import static org.matheclipse.core.expression.S.LightPurple;
+import static org.matheclipse.core.expression.S.LightRed;
+import static org.matheclipse.core.expression.S.LightYellow;
+import static org.matheclipse.core.expression.S.Magenta;
+import static org.matheclipse.core.expression.S.Orange;
+import static org.matheclipse.core.expression.S.Pink;
+import static org.matheclipse.core.expression.S.Purple;
+import static org.matheclipse.core.expression.S.RGBColor;
+import static org.matheclipse.core.expression.S.Red;
+import static org.matheclipse.core.expression.S.White;
+import static org.matheclipse.core.expression.S.Yellow;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

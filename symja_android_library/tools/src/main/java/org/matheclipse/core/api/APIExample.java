@@ -3,7 +3,6 @@ package org.matheclipse.core.api;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;

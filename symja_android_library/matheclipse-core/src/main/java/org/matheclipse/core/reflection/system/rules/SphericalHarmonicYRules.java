@@ -1,9 +1,44 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.*;
-import org.matheclipse.core.interfaces.ISymbol;
+import static org.matheclipse.core.expression.F.$p;
+import static org.matheclipse.core.expression.F.And;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.C2Pi;
+import static org.matheclipse.core.expression.F.C3;
+import static org.matheclipse.core.expression.F.CI;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.CN1D2;
+import static org.matheclipse.core.expression.F.Condition;
+import static org.matheclipse.core.expression.F.Cos;
+import static org.matheclipse.core.expression.F.Equal;
+import static org.matheclipse.core.expression.F.Exp;
+import static org.matheclipse.core.expression.F.Greater;
+import static org.matheclipse.core.expression.F.GreaterEqual;
+import static org.matheclipse.core.expression.F.IInit;
+import static org.matheclipse.core.expression.F.ISetDelayed;
+import static org.matheclipse.core.expression.F.LegendreP;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Sin;
+import static org.matheclipse.core.expression.F.SphericalHarmonicY;
+import static org.matheclipse.core.expression.F.Sqrt;
+import static org.matheclipse.core.expression.F.Subtract;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.m_;
+import static org.matheclipse.core.expression.F.n_;
+import static org.matheclipse.core.expression.F.p_;
+import static org.matheclipse.core.expression.F.t_;
+import static org.matheclipse.core.expression.S.Integer;
+import static org.matheclipse.core.expression.S.Pi;
+import static org.matheclipse.core.expression.S.SphericalHarmonicY;
+import static org.matheclipse.core.expression.S.m;
+import static org.matheclipse.core.expression.S.n;
+import static org.matheclipse.core.expression.S.p;
+import static org.matheclipse.core.expression.S.t;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

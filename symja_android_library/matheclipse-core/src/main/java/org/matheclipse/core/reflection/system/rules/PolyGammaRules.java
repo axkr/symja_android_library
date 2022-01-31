@@ -1,9 +1,44 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.*;
-import org.matheclipse.core.interfaces.ISymbol;
+import static org.matheclipse.core.expression.F.$p;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C1D4;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.C3;
+import static org.matheclipse.core.expression.F.C4;
+import static org.matheclipse.core.expression.F.C8;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.CN8;
+import static org.matheclipse.core.expression.F.CSqrt3;
+import static org.matheclipse.core.expression.F.Condition;
+import static org.matheclipse.core.expression.F.Greater;
+import static org.matheclipse.core.expression.F.HarmonicNumber;
+import static org.matheclipse.core.expression.F.IInit;
+import static org.matheclipse.core.expression.F.ISet;
+import static org.matheclipse.core.expression.F.ISetDelayed;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Log;
+import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.PolyGamma;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.QQ;
+import static org.matheclipse.core.expression.F.Sqr;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.ZZ;
+import static org.matheclipse.core.expression.F.Zeta;
+import static org.matheclipse.core.expression.F.oo;
+import static org.matheclipse.core.expression.F.x_;
+import static org.matheclipse.core.expression.F.y_;
+import static org.matheclipse.core.expression.S.Catalan;
+import static org.matheclipse.core.expression.S.EulerGamma;
+import static org.matheclipse.core.expression.S.Integer;
+import static org.matheclipse.core.expression.S.Pi;
+import static org.matheclipse.core.expression.S.PolyGamma;
+import static org.matheclipse.core.expression.S.Undefined;
+import static org.matheclipse.core.expression.S.n;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

@@ -2,7 +2,6 @@ package org.matheclipse.core.preprocessor;
 
 import java.util.ArrayList;
 import java.util.Collections;
-
 import org.matheclipse.core.convert.AST2Expr;
 
 /** @deprecated not needed anymore */

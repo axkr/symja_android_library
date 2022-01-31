@@ -3,7 +3,12 @@
  */
 package examples;
 
-import jp.ac.kobe_u.cs.cream.*;
+import jp.ac.kobe_u.cs.cream.DefaultSolver;
+import jp.ac.kobe_u.cs.cream.IntVariable;
+import jp.ac.kobe_u.cs.cream.Network;
+import jp.ac.kobe_u.cs.cream.NotEquals;
+import jp.ac.kobe_u.cs.cream.Solution;
+import jp.ac.kobe_u.cs.cream.Solver;
 
 /**
  * Magic squares. There is only one magic square of 3*3. There are 880 magic squares of 4*4.

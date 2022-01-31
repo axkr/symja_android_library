@@ -1,9 +1,33 @@
 package org.matheclipse.core.reflection.system.rules;
 
 import static org.matheclipse.core.expression.F.*;
-import org.matheclipse.core.interfaces.ISymbol;
+import static org.matheclipse.core.expression.S.BesselJ;
+import static org.matheclipse.core.expression.S.BesselY;
+import static org.matheclipse.core.expression.S.D;
+import static org.matheclipse.core.expression.S.Indeterminate;
+import static org.matheclipse.core.expression.S.Integer;
+import static org.matheclipse.core.expression.S.Integers;
+import static org.matheclipse.core.expression.S.NotListQ;
+import static org.matheclipse.core.expression.S.NumberQ;
+import static org.matheclipse.core.expression.S.Pi;
+import static org.matheclipse.core.expression.S.PolyLog;
+import static org.matheclipse.core.expression.S.ProductLog;
+import static org.matheclipse.core.expression.S.Reals;
+import static org.matheclipse.core.expression.S.StruveH;
+import static org.matheclipse.core.expression.S.StruveL;
+import static org.matheclipse.core.expression.S.True;
+import static org.matheclipse.core.expression.S.a;
+import static org.matheclipse.core.expression.S.b;
+import static org.matheclipse.core.expression.S.c;
+import static org.matheclipse.core.expression.S.d;
+import static org.matheclipse.core.expression.S.f;
+import static org.matheclipse.core.expression.S.g;
+import static org.matheclipse.core.expression.S.h;
+import static org.matheclipse.core.expression.S.j;
+import static org.matheclipse.core.expression.S.k;
+import static org.matheclipse.core.expression.S.n;
+import static org.matheclipse.core.expression.S.x;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

@@ -3,7 +3,6 @@ package org.matheclipse.core.preprocessor;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
-
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.form.Documentation;
 

@@ -1,9 +1,44 @@
 package org.matheclipse.core.integrate.rubi;
 
 
-import static org.matheclipse.core.expression.F.*;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;
-
+import static org.matheclipse.core.expression.F.$;
+import static org.matheclipse.core.expression.F.$s;
+import static org.matheclipse.core.expression.F.And;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Condition;
+import static org.matheclipse.core.expression.F.FreeQ;
+import static org.matheclipse.core.expression.F.ISetDelayed;
+import static org.matheclipse.core.expression.F.IntegerQ;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.a_;
+import static org.matheclipse.core.expression.F.a_DEFAULT;
+import static org.matheclipse.core.expression.F.b_DEFAULT;
+import static org.matheclipse.core.expression.F.c_DEFAULT;
+import static org.matheclipse.core.expression.F.m_DEFAULT;
+import static org.matheclipse.core.expression.F.n_DEFAULT;
+import static org.matheclipse.core.expression.F.p_DEFAULT;
+import static org.matheclipse.core.expression.F.u_;
+import static org.matheclipse.core.expression.F.u_DEFAULT;
+import static org.matheclipse.core.expression.F.v_;
+import static org.matheclipse.core.expression.F.w_;
+import static org.matheclipse.core.expression.F.x_;
+import static org.matheclipse.core.expression.S.a;
+import static org.matheclipse.core.expression.S.b;
+import static org.matheclipse.core.expression.S.c;
+import static org.matheclipse.core.expression.S.m;
+import static org.matheclipse.core.expression.S.n;
+import static org.matheclipse.core.expression.S.p;
+import static org.matheclipse.core.expression.S.u;
+import static org.matheclipse.core.expression.S.v;
+import static org.matheclipse.core.expression.S.w;
+import static org.matheclipse.core.expression.S.x;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FixInertTrigFunction;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.IntegersQ;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.PowerOfInertTrigSumQ;
 import org.matheclipse.core.interfaces.IAST;
 
 /**

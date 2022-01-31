@@ -3,7 +3,12 @@
  */
 package examples;
 
-import jp.ac.kobe_u.cs.cream.*;
+import jp.ac.kobe_u.cs.cream.DefaultSolver;
+import jp.ac.kobe_u.cs.cream.IntVariable;
+import jp.ac.kobe_u.cs.cream.Network;
+import jp.ac.kobe_u.cs.cream.NotEquals;
+import jp.ac.kobe_u.cs.cream.Solution;
+import jp.ac.kobe_u.cs.cream.Solver;
 
 /**
  * Golomb ruler. See http://4c.ucc.ie/~tw/csplib/prob/prob006/index.html in http://csplib.org/

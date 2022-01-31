@@ -1,9 +1,16 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.*;
-import org.matheclipse.core.interfaces.ISymbol;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.IInit;
+import static org.matheclipse.core.expression.F.ISetDelayed;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.NormalDistribution;
+import static org.matheclipse.core.expression.F.StandardDeviation;
+import static org.matheclipse.core.expression.F.m_;
+import static org.matheclipse.core.expression.F.s_;
+import static org.matheclipse.core.expression.S.StandardDeviation;
+import static org.matheclipse.core.expression.S.s;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

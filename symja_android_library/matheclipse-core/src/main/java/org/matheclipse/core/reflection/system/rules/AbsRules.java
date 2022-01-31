@@ -1,9 +1,21 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.*;
-import org.matheclipse.core.interfaces.ISymbol;
+import static org.matheclipse.core.expression.F.Abs;
+import static org.matheclipse.core.expression.F.ArcTan;
+import static org.matheclipse.core.expression.F.CComplexInfinity;
+import static org.matheclipse.core.expression.F.CPiHalf;
+import static org.matheclipse.core.expression.F.Conjugate;
+import static org.matheclipse.core.expression.F.IInit;
+import static org.matheclipse.core.expression.F.ISet;
+import static org.matheclipse.core.expression.F.ISetDelayed;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.x_;
+import static org.matheclipse.core.expression.S.Abs;
+import static org.matheclipse.core.expression.S.E;
+import static org.matheclipse.core.expression.S.Pi;
+import static org.matheclipse.core.expression.S.Undefined;
+import static org.matheclipse.core.expression.S.x;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

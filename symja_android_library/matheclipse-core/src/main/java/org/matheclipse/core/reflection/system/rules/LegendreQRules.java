@@ -1,9 +1,42 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.*;
-import org.matheclipse.core.interfaces.ISymbol;
+import static org.matheclipse.core.expression.F.$p;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.CComplexInfinity;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.CN1D2;
+import static org.matheclipse.core.expression.F.CN2;
+import static org.matheclipse.core.expression.F.CN4;
+import static org.matheclipse.core.expression.F.Condition;
+import static org.matheclipse.core.expression.F.EllipticK;
+import static org.matheclipse.core.expression.F.Floor;
+import static org.matheclipse.core.expression.F.GreaterEqual;
+import static org.matheclipse.core.expression.F.IInit;
+import static org.matheclipse.core.expression.F.ISet;
+import static org.matheclipse.core.expression.F.ISetDelayed;
+import static org.matheclipse.core.expression.F.LegendreP;
+import static org.matheclipse.core.expression.F.LegendreQ;
+import static org.matheclipse.core.expression.F.Less;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Log;
+import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Subtract;
+import static org.matheclipse.core.expression.F.Sum;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.x_;
+import static org.matheclipse.core.expression.F.z_;
+import static org.matheclipse.core.expression.S.Integer;
+import static org.matheclipse.core.expression.S.LegendreQ;
+import static org.matheclipse.core.expression.S.k;
+import static org.matheclipse.core.expression.S.n;
+import static org.matheclipse.core.expression.S.x;
+import static org.matheclipse.core.expression.S.z;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

@@ -3,7 +3,6 @@ package org.matheclipse.core.examples;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
-
 import edu.jas.vector.GenMatrix;
 import edu.jas.vector.GenMatrixRing;
 import edu.jas.vector.LinAlg;

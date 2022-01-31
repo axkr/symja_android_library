@@ -1,9 +1,49 @@
 package org.matheclipse.core.integrate.rubi;
 
 
-import static org.matheclipse.core.expression.F.*;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;
-
+import static org.matheclipse.core.expression.F.And;
+import static org.matheclipse.core.expression.F.ArcCot;
+import static org.matheclipse.core.expression.F.ArcCoth;
+import static org.matheclipse.core.expression.F.ArcTan;
+import static org.matheclipse.core.expression.F.ArcTanh;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.CI;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.CNI;
+import static org.matheclipse.core.expression.F.Condition;
+import static org.matheclipse.core.expression.F.Cot;
+import static org.matheclipse.core.expression.F.Coth;
+import static org.matheclipse.core.expression.F.FreeQ;
+import static org.matheclipse.core.expression.F.ISetDelayed;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Log;
+import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Sin;
+import static org.matheclipse.core.expression.F.Sqr;
+import static org.matheclipse.core.expression.F.Subtract;
+import static org.matheclipse.core.expression.F.Tan;
+import static org.matheclipse.core.expression.F.Tanh;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.a_;
+import static org.matheclipse.core.expression.F.a_DEFAULT;
+import static org.matheclipse.core.expression.F.b_DEFAULT;
+import static org.matheclipse.core.expression.F.c_DEFAULT;
+import static org.matheclipse.core.expression.F.u_;
+import static org.matheclipse.core.expression.F.x_Symbol;
+import static org.matheclipse.core.expression.S.a;
+import static org.matheclipse.core.expression.S.b;
+import static org.matheclipse.core.expression.S.c;
+import static org.matheclipse.core.expression.S.u;
+import static org.matheclipse.core.expression.S.x;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ComplexFreeQ;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.EqQ;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.GtQ;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.RectifyCotangent;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.RectifyTangent;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SimplifyAntiderivative;
 import org.matheclipse.core.interfaces.IAST;
 
 /**
