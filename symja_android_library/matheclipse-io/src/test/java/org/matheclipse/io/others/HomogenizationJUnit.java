@@ -45,6 +45,7 @@ public class HomogenizationJUnit extends AbstractTestCase {
       return arg1;
     }
 
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_1_1;
     }

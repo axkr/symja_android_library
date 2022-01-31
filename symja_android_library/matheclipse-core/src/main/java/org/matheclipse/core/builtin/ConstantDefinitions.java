@@ -890,6 +890,7 @@ public class ConstantDefinitions {
       return F.num(GLAISHER);
     }
 
+    @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // `1` currently not supported in `2`.
       return IOFunctions.printMessage(S.Glaisher, "unsupported",
@@ -1183,6 +1184,7 @@ public class ConstantDefinitions {
       return KHINCHIN;
     }
 
+    @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // `1` currently not supported in `2`.
       return IOFunctions.printMessage(S.Khinchin, "unsupported",

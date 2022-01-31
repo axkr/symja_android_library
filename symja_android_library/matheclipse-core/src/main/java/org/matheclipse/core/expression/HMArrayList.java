@@ -889,6 +889,7 @@ public abstract class HMArrayList extends AbstractAST
     this.lastIndex = array.length;
   }
 
+  @Override
   public IAST mapReverse(final Function<IExpr, IExpr> function) {
     IASTMutable result = F.NIL;
     int i = firstIndex + 1;

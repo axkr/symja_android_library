@@ -559,6 +559,7 @@ public final class NumberTheory {
       return F.NIL;
     }
 
+    @Override
     public IExpr numericEval(final IAST ast, final EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       try {

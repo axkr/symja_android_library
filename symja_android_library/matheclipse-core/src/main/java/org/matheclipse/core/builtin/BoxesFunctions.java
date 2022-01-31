@@ -190,11 +190,13 @@ public class BoxesFunctions {
 
   private static class ToBoxes extends MakeBoxes {
 
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // the arguments are first evaluated in ToBoxes
       return super.evaluate(ast, engine);
     }
 
+    @Override
     public void setUp(final ISymbol newSymbol) {
       // don't call super.setUp() here!
     }

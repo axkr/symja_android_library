@@ -66,6 +66,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
     this.addAll(original);
   }
 
+  @Override
   public int add(T entry) {
     Integer myMult = super.get(entry);
     int oldMult = (myMult != null) ? myMult.intValue() : 0;
@@ -74,6 +75,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
     return oldMult;
   }
 
+  @Override
   public int add(T entry, int mult) {
     // LOG.debug("entry " + entry + " has " + entry.getClass());
     Integer myMult = super.get(entry);
@@ -85,6 +87,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
     return oldMult;
   }
 
+  @Override
   public void addAll(Multiset<T> other) {
     if (other != null) {
       // we need to recreate the entries of the internal set to avoid
@@ -95,6 +98,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
     }
   }
 
+  @Override
   public void addAll(Collection<T> values) {
     if (values != null) {
       for (T value : values) {
@@ -103,6 +107,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
     }
   }
 
+  @Override
   public void addAll(T[] values) {
     if (values != null) {
       for (T value : values) {
@@ -111,6 +116,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
     }
   }
 
+  @Override
   public Integer remove(Object key) {
     Integer mult = this.get(key);
     if (mult != null) {
@@ -131,6 +137,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
     return mult;
   }
 
+  @Override
   public int remove(T key, int mult) {
     Integer myMult = super.get(key);
     int oldMult = (myMult != null) ? myMult.intValue() : 0;
@@ -146,6 +153,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
     return 0;
   }
 
+  @Override
   public int removeAll(T key) {
     Integer mult = this.get(key);
     if (mult != null) {
@@ -159,6 +167,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
     return 0;
   }
 
+  @Override
   public SortedMultiset<T> intersect(Multiset<T> other) {
     SortedMultiset<T> resultset = new SortedMultiset_TopDown<T>();
     if (other != null) {
@@ -179,6 +188,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
     return resultset;
   }
 
+  @Override
   public int totalCount() {
     int sum = 0;
     for (Integer mult : this.values()) {
@@ -187,14 +197,17 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
     return sum;
   }
 
+  @Override
   public T getSmallestElement() {
     return ((SortedSet<T>) (this.keySet())).last();
   }
 
+  @Override
   public T getBiggestElement() {
     return (this.size() > 0) ? this.keySet().iterator().next() : null;
   }
 
+  @Override
   public List<T> toList() {
     List<T> flatList = new ArrayList<T>(totalCount());
     for (Map.Entry<T, Integer> entry : this.entrySet()) {
@@ -220,6 +233,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
    *
    * @return <0/0/>0 if this is smaller than/equal to /bigger than <code>other</code>.
    */
+  @Override
   public int compareTo(SortedMultiset<T> other) {
     if (other == null)
       return Integer.MAX_VALUE;
@@ -261,6 +275,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
    * Sorted multisets are equal if they have exactly the same elements and these elements the same
    * multiplicity.
    */
+  @Override
   public boolean equals(Object o) {
     if (o != null && o instanceof SortedMultiset) {
       @SuppressWarnings("unchecked")
@@ -288,6 +303,7 @@ public class SortedMultiset_TopDown<T extends Comparable<T>> extends TreeMap<T, 
     throw new IllegalStateException("SortedMultisets are not ready to be used in hash structures");
   }
 
+  @Override
   public String toString(String entrySep, String expSep) {
     String ret = "";
     for (Map.Entry<T, Integer> entry : this.entrySet()) {

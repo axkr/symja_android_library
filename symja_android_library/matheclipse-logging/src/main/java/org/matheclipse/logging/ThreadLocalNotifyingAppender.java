@@ -23,6 +23,7 @@ public class ThreadLocalNotifyingAppender extends AbstractAppender {
 
   public static class Builder<B extends Builder<B>> extends AbstractAppender.Builder<B>
       implements org.apache.logging.log4j.core.util.Builder<ThreadLocalNotifyingAppender> {
+    @Override
     public ThreadLocalNotifyingAppender build() {
       return new ThreadLocalNotifyingAppender(getName(), getFilter(), getLayout(),
           isIgnoreExceptions(), getPropertyArray());

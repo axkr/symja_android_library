@@ -224,6 +224,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
     return (startOffset == 0) ? predicate.test(arg0) : false;
   }
 
+  @Override
   public boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
     return false;
   }

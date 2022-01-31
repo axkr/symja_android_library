@@ -390,6 +390,7 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
   }
 
   /** {@inheritDoc} */
+  @Override
   public boolean isNumericFunction(boolean allowList) {
     return allowList;
   }

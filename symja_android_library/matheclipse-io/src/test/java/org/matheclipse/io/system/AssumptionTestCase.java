@@ -25,6 +25,7 @@ public class AssumptionTestCase extends TestCase {
   /** Assumption which implements <code>x > 0</code> or <code>y is integer number</code> */
   public class XGreaterZeroOrYInteger extends AbstractAssumptions {
 
+    @Override
     public IAssumptions copy() {
       XGreaterZeroOrYInteger assumptions = new XGreaterZeroOrYInteger();
       return assumptions;

@@ -186,6 +186,7 @@ public final class AST3 extends AST2 {
     return false;
   }
 
+  @Override
   public boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
     if (stopPredicate.test(arg1, arg2)) {
       return true;
@@ -402,6 +403,7 @@ public final class AST3 extends AST2 {
     }
   }
 
+  @Override
   public int indexOf(final IExpr expr) {
     if (arg1.equals(expr)) {
       return 1;

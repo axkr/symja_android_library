@@ -22,10 +22,12 @@ public abstract class AbstractSequence implements ISequence {
     fStep = step;
   }
 
+  @Override
   public int getStartOffset() {
     return fStartOffset;
   }
 
+  @Override
   public int getEndOffset() {
     return fEndOffset;
   }

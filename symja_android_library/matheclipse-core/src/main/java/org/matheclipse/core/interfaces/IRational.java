@@ -13,6 +13,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 
   public IRational add(IRational parm1);
 
+  @Override
   public IInteger ceil();
 
   public void checkBitLength();
@@ -62,6 +63,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
    */
   public IAST factorSmallPrimes(int numerator, int root);
 
+  @Override
   public IInteger floor();
 
   /**

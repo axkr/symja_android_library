@@ -36,6 +36,7 @@ public class WolframFormFactory extends OutputFormFactory {
     }
   }
 
+  @Override
   public void convertPattern(final Appendable buf, final IPatternObject pattern)
       throws IOException {
     append(buf, pattern.toWolframString());

@@ -176,6 +176,7 @@ public class AST2 extends AST1 {
     return false;
   }
 
+  @Override
   public boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
     return stopPredicate.test(arg1, arg2);
   }

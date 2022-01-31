@@ -2259,6 +2259,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    *
    * @deprecated
    */
+  @Deprecated
   public IAST coefficientArrays(int degree) {
     int numberOfVariables = ring.nvar;
     IASTAppendable result = F.ListAlloc(degree + 1);

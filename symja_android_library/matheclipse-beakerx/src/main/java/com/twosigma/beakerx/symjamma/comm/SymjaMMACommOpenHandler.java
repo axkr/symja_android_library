@@ -32,6 +32,7 @@ public class SymjaMMACommOpenHandler extends CommOpenHandler {
     super(kernel);
   }
 
+  @Override
   public Handler<Message>[] getKernelControlChanelHandlers(String targetName) {
     if (TargetNamesEnum.KERNEL_CONTROL_CHANNEL.getTargetName().equalsIgnoreCase(targetName)) {
       return (Handler<Message>[]) KERNEL_CONTROL_CHANNEL_HANDLERS;

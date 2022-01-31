@@ -37,6 +37,7 @@ public interface SortedMultiset<T extends Comparable<T>>
    * @param other
    * @return the intersection of this and the other multiset
    */
+  @Override
   SortedMultiset<T> intersect(Multiset<T> other);
 
   /**
@@ -49,6 +50,7 @@ public interface SortedMultiset<T extends Comparable<T>>
   String toString(String entrySep, String expSep);
 
   /** @return set of pairs (value, multiplicity) */
+  @Override
   Set<Map.Entry<T, Integer>> entrySet();
 
   /**
@@ -62,6 +64,7 @@ public interface SortedMultiset<T extends Comparable<T>>
    * @param key
    * @return previous multiplicity of the argument
    */
+  @Override
   Integer remove(Object key);
 
   /**
@@ -71,5 +74,6 @@ public interface SortedMultiset<T extends Comparable<T>>
    * @param mult
    * @return old multiplicity
    */
+  @Override
   int remove(T key, int mult);
 }

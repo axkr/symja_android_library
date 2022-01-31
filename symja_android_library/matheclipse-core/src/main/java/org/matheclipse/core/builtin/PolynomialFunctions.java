@@ -229,6 +229,7 @@ public class PolynomialFunctions {
    *
    * @deprecated
    */
+  @Deprecated
   private static class CoefficientArrays extends AbstractFunctionEvaluator {
 
     /**
@@ -236,6 +237,7 @@ public class PolynomialFunctions {
      *
      * @deprecated
      */
+    @Deprecated
     @Override
     public IExpr evaluate(final IAST ast, final EvalEngine engine) {
 
