@@ -40,7 +40,7 @@ public class ExprEvaluatorTest extends TestCase {
     String str = "sin(x)";
     IExpr e = eval.eval(str);
     int i = 100;
-    eval.defineVariable("x", (double) i);
+    eval.defineVariable("x", i);
     double result = e.evalDouble();
     assertEquals(-0.5063656411097588, result, 0E-10);
   }

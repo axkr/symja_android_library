@@ -1368,7 +1368,7 @@ public final class LinearAlgebra {
       List<Integer> dims = dimensions(list, header, maximumLevel - 1);
       int dimsSize = dims.size();
       IASTAppendable res = F.ListAlloc(dimsSize);
-      return res.appendArgs(0, dimsSize, i -> F.ZZ(dims.get(i).intValue()));
+      return res.appendArgs(0, dimsSize, i -> F.ZZ(dims.get(i)));
     }
 
     private IExpr getDimensions(int[] dims, int maximumLevel) {

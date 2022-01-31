@@ -2393,8 +2393,7 @@ public final class PatternMatching {
       try {
         if (leftHandSide.isList()) {
           // thread over lists
-          IExpr temp =
-              engine.threadASTListArgs((IASTMutable) F.Unset(leftHandSide), S.Unset, "tdlen");
+          IExpr temp = engine.threadASTListArgs(F.Unset(leftHandSide), S.Unset, "tdlen");
           if (temp.isPresent()) {
             return engine.evaluate(temp);
           }
@@ -2485,8 +2484,8 @@ public final class PatternMatching {
           } catch (final ReturnException e) {
             rightHandSide = e.getValue();
           }
-          IExpr temp = engine.threadASTListArgs((IASTMutable) F.UpSet(leftHandSide, rightHandSide),
-              S.UpSet, "tdlen");
+          IExpr temp =
+              engine.threadASTListArgs(F.UpSet(leftHandSide, rightHandSide), S.UpSet, "tdlen");
           if (temp.isPresent()) {
             return engine.evaluate(temp);
           }

@@ -548,7 +548,7 @@ public class Assumptions extends AbstractAssumptions {
       if (expr.isList()) {
         Assumptions.addList((IAST) expr, assumptions);
       } else if (expr.isAST()) {
-        assumptions.addAssumption((IAST) expr);
+        assumptions.addAssumption(expr);
       }
       return assumptions;
     }

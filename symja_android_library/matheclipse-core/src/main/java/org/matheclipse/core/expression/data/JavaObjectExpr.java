@@ -59,7 +59,7 @@ public class JavaObjectExpr extends DataExpr<Object> implements Externalizable {
 
   @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    fData = (Object) in.readObject();
+    fData = in.readObject();
   }
 
   @Override

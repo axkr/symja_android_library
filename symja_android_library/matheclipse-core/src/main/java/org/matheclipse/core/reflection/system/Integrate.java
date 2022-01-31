@@ -197,7 +197,7 @@ public class Integrate extends AbstractFunctionEvaluator {
       if (holdallAST.size() > 3) {
         options = new OptionArgs(S.Integrate, holdallAST, holdallAST.size() - 1, engine);
         if (!options.isInvalidPosition()) {
-          holdallAST = (IAST) holdallAST.most();
+          holdallAST = holdallAST.most();
         }
       }
       IExpr assumptionExpr = OptionArgs.determineAssumptions(holdallAST, -1, options);

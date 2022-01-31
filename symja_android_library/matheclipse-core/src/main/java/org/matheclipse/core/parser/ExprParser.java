@@ -903,7 +903,7 @@ public class ExprParser extends Scanner {
     IExpr temp = null;
     final Object[] result = getNumberString();
     String numberStr = (String) result[0];
-    int numFormat = ((Integer) result[1]).intValue();
+    int numFormat = ((Integer) result[1]);
     String exponentStr = (String) result[2];
     try {
       if (negative) {

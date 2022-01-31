@@ -212,19 +212,14 @@ public class DoubleEvaluator {
 
   static {
     SYMBOL_DOUBLE_MAP = new ConcurrentHashMap<String, Double>();
-    SYMBOL_DOUBLE_MAP.put("Catalan",
-        Double.valueOf(0.91596559417721901505460351493238411077414937428167));
-    SYMBOL_DOUBLE_MAP.put("Degree", Double.valueOf(Math.PI / 180));
-    SYMBOL_DOUBLE_MAP.put("E", Double.valueOf(Math.E));
-    SYMBOL_DOUBLE_MAP.put("Pi", Double.valueOf(Math.PI));
-    SYMBOL_DOUBLE_MAP.put("EulerGamma",
-        Double.valueOf(0.57721566490153286060651209008240243104215933593992));
-    SYMBOL_DOUBLE_MAP.put("Glaisher",
-        Double.valueOf(1.2824271291006226368753425688697917277676889273250));
-    SYMBOL_DOUBLE_MAP.put("GoldenRatio",
-        Double.valueOf(1.6180339887498948482045868343656381177203091798058));
-    SYMBOL_DOUBLE_MAP.put("Khinchin",
-        Double.valueOf(2.6854520010653064453097148354817956938203822939945));
+    SYMBOL_DOUBLE_MAP.put("Catalan", 0.91596559417721901505460351493238411077414937428167);
+    SYMBOL_DOUBLE_MAP.put("Degree", Math.PI / 180);
+    SYMBOL_DOUBLE_MAP.put("E", Math.E);
+    SYMBOL_DOUBLE_MAP.put("Pi", Math.PI);
+    SYMBOL_DOUBLE_MAP.put("EulerGamma", 0.57721566490153286060651209008240243104215933593992);
+    SYMBOL_DOUBLE_MAP.put("Glaisher", 1.2824271291006226368753425688697917277676889273250);
+    SYMBOL_DOUBLE_MAP.put("GoldenRatio", 1.6180339887498948482045868343656381177203091798058);
+    SYMBOL_DOUBLE_MAP.put("Khinchin", 2.6854520010653064453097148354817956938203822939945);
 
     SYMBOL_BOOLEAN_MAP = new ConcurrentHashMap<String, Boolean>();
     SYMBOL_BOOLEAN_MAP.put("False", Boolean.FALSE);
@@ -544,7 +539,7 @@ public class DoubleEvaluator {
       }
       Double dbl = SYMBOL_DOUBLE_MAP.get(node.toString());
       if (dbl != null) {
-        return dbl.doubleValue();
+        return dbl;
       }
     } else if (node instanceof NumberNode) {
       return ((NumberNode) node).doubleValue();
@@ -792,7 +787,7 @@ public class DoubleEvaluator {
       }
       Boolean boole = SYMBOL_BOOLEAN_MAP.get(node.toString());
       if (boole != null) {
-        return boole.booleanValue();
+        return boole;
       }
     }
 
@@ -855,7 +850,7 @@ public class DoubleEvaluator {
         } else if (node instanceof SymbolNode) {
           Double dbl = SYMBOL_DOUBLE_MAP.get(node.toString());
           if (dbl != null) {
-            functionNode.set(i, new DoubleNode(dbl.doubleValue()));
+            functionNode.set(i, new DoubleNode(dbl));
           } else {
             doubleOnly = false;
           }

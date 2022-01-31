@@ -300,7 +300,7 @@ public class Iterator {
         throw NoEvalException.CONST;
       }
 
-      if (maxCounterOrListIndex <= ((IAST) maxCounterOrList).size()) {
+      if (maxCounterOrListIndex <= maxCounterOrList.size()) {
         return true;
       }
       return false;
@@ -333,11 +333,11 @@ public class Iterator {
       }
       final IExpr temp = count;
       if (maxCounterOrList.isList()) {
-        if (maxCounterOrListIndex == ((IAST) maxCounterOrList).size()) {
+        if (maxCounterOrListIndex == maxCounterOrList.size()) {
           maxCounterOrListIndex++;
           return temp;
         }
-        count = ((IAST) maxCounterOrList).get(maxCounterOrListIndex++);
+        count = maxCounterOrList.get(maxCounterOrListIndex++);
       }
       return temp;
     }

@@ -76,18 +76,18 @@ public final class ExpVectorLong {
       while ((k = s.indexOf(',', b)) >= 0) {
         teil = s.substring(b, k);
         a = Long.parseLong(teil);
-        exps.add(Long.valueOf(a));
+        exps.add(a);
         b = k + 1;
       }
       if (b <= e) {
         teil = s.substring(b, e);
         a = Long.parseLong(teil);
-        exps.add(Long.valueOf(a));
+        exps.add(a);
       }
       int length = exps.size();
       val = new long[length];
       for (int j = 0; j < length; j++) {
-        val[j] = exps.get(j).longValue();
+        val[j] = exps.get(j);
       }
     } else {
       // not implemented

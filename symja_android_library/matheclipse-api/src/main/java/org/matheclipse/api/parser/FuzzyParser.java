@@ -924,7 +924,7 @@ public class FuzzyParser extends Scanner {
     IExpr temp = null;
     final Object[] result = getNumberString();
     String number = (String) result[0];
-    int numFormat = ((Integer) result[1]).intValue();
+    int numFormat = ((Integer) result[1]);
     try {
       if (negative) {
         number = '-' + number;

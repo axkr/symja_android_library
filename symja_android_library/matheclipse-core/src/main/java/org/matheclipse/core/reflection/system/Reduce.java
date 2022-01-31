@@ -287,7 +287,7 @@ public class Reduce extends AbstractEvaluator {
     }
 
     private IExpr reduceOr(IAST expr, VariableInterval cd) throws ArgumentTypeException {
-      IAST orAST = (IAST) expr;
+      IAST orAST = expr;
       if (orAST.isAST0()) {
         throw new ArgumentTypeException("Or: size == 0");
       }
@@ -450,7 +450,7 @@ public class Reduce extends AbstractEvaluator {
         IAST[] reduced =
             Eliminate.eliminateOneVariable(F.List(lastArg), cd.variable, false, EvalEngine.get());
         if (reduced != null && reduced[0].isEmptyList() && reduced[1].isRule()) {
-          IAST rule = (IAST) reduced[1];
+          IAST rule = reduced[1];
           lastArg = F.Equal(variable, rule.second());
         }
       } else {

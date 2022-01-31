@@ -429,7 +429,7 @@ public class RGBColor implements Serializable {
     if (integer == null) {
       return def;
     }
-    return new RGBColor(integer.intValue());
+    return new RGBColor(integer);
   }
 
   /**
@@ -446,7 +446,7 @@ public class RGBColor implements Serializable {
     if (integer == null) {
       return new RGBColor(def);
     }
-    return new RGBColor(integer.intValue());
+    return new RGBColor(integer);
   }
 
   /**
@@ -460,7 +460,7 @@ public class RGBColor implements Serializable {
     if (integer == null) {
       return null;
     }
-    return new RGBColor(integer.intValue());
+    return new RGBColor(integer);
   }
 
   /**
@@ -472,7 +472,7 @@ public class RGBColor implements Serializable {
    */
   public static RGBColor decode(String nm) throws NumberFormatException {
     Integer integer = Integer.decode(nm);
-    return new RGBColor(integer.intValue());
+    return new RGBColor(integer);
   }
 
   /**

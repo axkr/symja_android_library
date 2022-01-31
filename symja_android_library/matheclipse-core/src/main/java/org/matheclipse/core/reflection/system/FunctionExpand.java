@@ -403,7 +403,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
           assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
         } else {
           assumptions = oldAssumptions.copy();
-          assumptions = assumptions.addAssumption((IAST) assumptionExpr);
+          assumptions = assumptions.addAssumption(assumptionExpr);
         }
         if (assumptions != null) {
           try {

@@ -244,7 +244,7 @@ public class ASTDataset extends AbstractAST
     Object obj = fTable.get(rowPosition, columnPosition);
     if (t.equals(ColumnType.BOOLEAN)) {
       Boolean b = (Boolean) obj;
-      if (b.booleanValue()) {
+      if (b) {
         return S.True;
       } else {
         return S.False;
@@ -405,7 +405,7 @@ public class ASTDataset extends AbstractAST
           ruleCache(cache, assoc, F.Rule(colName, expr));
         } else if (t.equals(ColumnType.BOOLEAN)) {
           Boolean b = row.getBoolean(j);
-          if (b.booleanValue()) {
+          if (b) {
             ruleCache(cache, assoc, F.Rule(colName, S.True));
           } else {
             ruleCache(cache, assoc, F.Rule(colName, S.False));
@@ -459,7 +459,7 @@ public class ASTDataset extends AbstractAST
       expr = (IExpr) obj;
     } else if (t.equals(ColumnType.BOOLEAN)) {
       Boolean b = (Boolean) obj;
-      if (b.booleanValue()) {
+      if (b) {
         expr = S.True;
       } else {
         expr = S.False;
