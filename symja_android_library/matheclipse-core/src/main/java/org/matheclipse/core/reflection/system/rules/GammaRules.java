@@ -1,52 +1,9 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.CComplexInfinity;
-import static org.matheclipse.core.expression.F.CI;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.CN1D2;
-import static org.matheclipse.core.expression.F.CN2;
-import static org.matheclipse.core.expression.F.CNI;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.DirectedInfinity;
-import static org.matheclipse.core.expression.F.Erfc;
-import static org.matheclipse.core.expression.F.Exp;
-import static org.matheclipse.core.expression.F.Gamma;
-import static org.matheclipse.core.expression.F.Greater;
-import static org.matheclipse.core.expression.F.IInit;
-import static org.matheclipse.core.expression.F.ISet;
-import static org.matheclipse.core.expression.F.ISetDelayed;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Noo;
-import static org.matheclipse.core.expression.F.PatternTest;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.QQ;
-import static org.matheclipse.core.expression.F.Re;
-import static org.matheclipse.core.expression.F.Sqrt;
-import static org.matheclipse.core.expression.F.Subfactorial;
-import static org.matheclipse.core.expression.F.Subtract;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.a_;
-import static org.matheclipse.core.expression.F.oo;
-import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.F.y_;
-import static org.matheclipse.core.expression.F.z_;
-import static org.matheclipse.core.expression.S.E;
-import static org.matheclipse.core.expression.S.Gamma;
-import static org.matheclipse.core.expression.S.Indeterminate;
-import static org.matheclipse.core.expression.S.NumericQ;
-import static org.matheclipse.core.expression.S.Pi;
-import static org.matheclipse.core.expression.S.Undefined;
-import static org.matheclipse.core.expression.S.a;
-import static org.matheclipse.core.expression.S.x;
-import static org.matheclipse.core.expression.S.y;
-import static org.matheclipse.core.expression.S.z;
+import static org.matheclipse.core.expression.F.*;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

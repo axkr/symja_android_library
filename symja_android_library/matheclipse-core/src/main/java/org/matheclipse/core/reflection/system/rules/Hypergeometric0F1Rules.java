@@ -1,29 +1,9 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.Cos;
-import static org.matheclipse.core.expression.F.Cosh;
-import static org.matheclipse.core.expression.F.Hypergeometric0F1;
-import static org.matheclipse.core.expression.F.IInit;
-import static org.matheclipse.core.expression.F.ISetDelayed;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Negative;
-import static org.matheclipse.core.expression.F.Not;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.QQ;
-import static org.matheclipse.core.expression.F.Sin;
-import static org.matheclipse.core.expression.F.Sinh;
-import static org.matheclipse.core.expression.F.Sqrt;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.TrueQ;
-import static org.matheclipse.core.expression.F.z_;
-import static org.matheclipse.core.expression.S.Hypergeometric0F1;
-import static org.matheclipse.core.expression.S.z;
+import static org.matheclipse.core.expression.F.*;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

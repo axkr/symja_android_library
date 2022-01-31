@@ -1,26 +1,8 @@
 package org.matheclipse.core.reflection.system.rulesets;
 
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.FreeQ;
-import static org.matheclipse.core.expression.F.Less;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Pochhammer;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Product;
-import static org.matheclipse.core.expression.F.m_;
-import static org.matheclipse.core.expression.F.n_;
-import static org.matheclipse.core.expression.F.s_;
-import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.F.x_Symbol;
-import static org.matheclipse.core.expression.F.y_;
-import static org.matheclipse.core.expression.S.m;
-import static org.matheclipse.core.expression.S.n;
-import static org.matheclipse.core.expression.S.x;
-import static org.matheclipse.core.expression.S.y;
+import static org.matheclipse.core.expression.F.*;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.patternmatching.Matcher;
 
 /**

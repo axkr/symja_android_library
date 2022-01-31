@@ -1,27 +1,9 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.CC;
-import static org.matheclipse.core.expression.F.CI;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.CN1D2;
-import static org.matheclipse.core.expression.F.CSqrt3;
-import static org.matheclipse.core.expression.F.CSqrt7;
-import static org.matheclipse.core.expression.F.DirectedInfinity;
-import static org.matheclipse.core.expression.F.IInit;
-import static org.matheclipse.core.expression.F.ISet;
-import static org.matheclipse.core.expression.F.KleinInvariantJ;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.QQ;
-import static org.matheclipse.core.expression.F.Sqrt;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.ZZ;
-import static org.matheclipse.core.expression.F.oo;
-import static org.matheclipse.core.expression.S.KleinInvariantJ;
+import static org.matheclipse.core.expression.F.*;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

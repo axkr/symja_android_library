@@ -1,21 +1,9 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.IInit;
-import static org.matheclipse.core.expression.F.ISet;
-import static org.matheclipse.core.expression.F.ISetDelayed;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.PolyGamma;
-import static org.matheclipse.core.expression.F.StieltjesGamma;
-import static org.matheclipse.core.expression.F.a_;
-import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.F.y_;
-import static org.matheclipse.core.expression.S.EulerGamma;
-import static org.matheclipse.core.expression.S.StieltjesGamma;
-import static org.matheclipse.core.expression.S.Undefined;
-import static org.matheclipse.core.expression.S.a;
+import static org.matheclipse.core.expression.F.*;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

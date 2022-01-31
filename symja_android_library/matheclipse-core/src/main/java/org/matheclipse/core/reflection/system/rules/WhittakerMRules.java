@@ -1,19 +1,9 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.CComplexInfinity;
-import static org.matheclipse.core.expression.F.CN1D2;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.Greater;
-import static org.matheclipse.core.expression.F.ISetDelayed;
-import static org.matheclipse.core.expression.F.Less;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Re;
-import static org.matheclipse.core.expression.F.WhittakerM;
-import static org.matheclipse.core.expression.F.m_;
-import static org.matheclipse.core.expression.F.n_;
-import static org.matheclipse.core.expression.S.m;
+import static org.matheclipse.core.expression.F.*;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

@@ -1,30 +1,9 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.CC;
-import static org.matheclipse.core.expression.F.CI;
-import static org.matheclipse.core.expression.F.CN1D2;
-import static org.matheclipse.core.expression.F.CN1D4;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.EllipticK;
-import static org.matheclipse.core.expression.F.Equal;
-import static org.matheclipse.core.expression.F.IInit;
-import static org.matheclipse.core.expression.F.ISetDelayed;
-import static org.matheclipse.core.expression.F.JacobiSC;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Sqrt;
-import static org.matheclipse.core.expression.F.Subtract;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.l_;
-import static org.matheclipse.core.expression.F.m_;
-import static org.matheclipse.core.expression.S.JacobiSC;
-import static org.matheclipse.core.expression.S.l;
-import static org.matheclipse.core.expression.S.m;
+import static org.matheclipse.core.expression.F.*;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

@@ -1,33 +1,9 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Det;
-import static org.matheclipse.core.expression.F.Dot;
-import static org.matheclipse.core.expression.F.Equal;
-import static org.matheclipse.core.expression.F.IInit;
-import static org.matheclipse.core.expression.F.ISetDelayed;
-import static org.matheclipse.core.expression.F.Inverse;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Log;
-import static org.matheclipse.core.expression.F.MatrixD;
-import static org.matheclipse.core.expression.F.MatrixPower;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.PatternTest;
-import static org.matheclipse.core.expression.F.TensorRank;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.Transpose;
-import static org.matheclipse.core.expression.F.a_;
-import static org.matheclipse.core.expression.F.b_;
-import static org.matheclipse.core.expression.F.k_;
-import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.S.$SingleEntryMatrix;
-import static org.matheclipse.core.expression.S.MatrixD;
-import static org.matheclipse.core.expression.S.a;
-import static org.matheclipse.core.expression.S.b;
-import static org.matheclipse.core.expression.S.k;
-import static org.matheclipse.core.expression.S.x;
+import static org.matheclipse.core.expression.F.*;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

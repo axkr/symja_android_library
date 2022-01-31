@@ -1,17 +1,9 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.Conjugate;
-import static org.matheclipse.core.expression.F.Erf;
-import static org.matheclipse.core.expression.F.Erfc;
-import static org.matheclipse.core.expression.F.IInit;
-import static org.matheclipse.core.expression.F.ISet;
-import static org.matheclipse.core.expression.F.ISetDelayed;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.S.Conjugate;
-import static org.matheclipse.core.expression.S.Undefined;
-import static org.matheclipse.core.expression.S.x;
+import static org.matheclipse.core.expression.F.*;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>

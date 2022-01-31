@@ -1,20 +1,9 @@
 package org.matheclipse.core.reflection.system.rules;
 
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.Equal;
-import static org.matheclipse.core.expression.F.ExpIntegralEi;
-import static org.matheclipse.core.expression.F.FunctionRange;
-import static org.matheclipse.core.expression.F.Im;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.LogIntegral;
-import static org.matheclipse.core.expression.F.Re;
-import static org.matheclipse.core.expression.F.SetDelayed;
-import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.F.y_;
-import static org.matheclipse.core.expression.S.Complexes;
-import static org.matheclipse.core.expression.S.True;
-import static org.matheclipse.core.expression.S.y;
+import static org.matheclipse.core.expression.F.*;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.patternmatching.Matcher;
 
 /**
  * <p>
