@@ -3992,6 +3992,30 @@ public class F extends S {
     return AbstractFractionSym.valueOfConvergent(value);
   }
 
+  /**
+   * Create a "fractional" expression that exactly represents the given double number.
+   * <p>
+   * This methods returns an {@link IExpr} that, when being evaluated to a double value (using
+   * {@link IExpr#evalDouble()}), results to the exact same value (per bit) as the given one.
+   * <p>
+   * <p>
+   * Because double values are not exact in all cases but this method returns an exact
+   * representation of the given double the results may be unexpected. For example for the value
+   * {@code 0.7} the result is {@code 3152519739159347/4503599627370496} and not {@code 7/10} as one
+   * would actually expect.
+   * </p>
+   * <p>
+   * While in most cases the returned reference is a {@link IFraction}, it is not guaranteed for all
+   * cases so users should not expect an IFraction.
+   * </p>
+   * 
+   * @param value numerator of the fractional number
+   * @return
+   * @see AbstractFractionSym#valueOfExact
+   */
+  public static IExpr fractionExact(final double value) {
+    return AbstractFractionSym.valueOfExact(value);
+  }
   public static IAST FractionBox(final IExpr a0, final IExpr a1) {
     return new AST2(FractionBox, a0, a1);
   }

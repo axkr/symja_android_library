@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.DoubleFunction;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.apache.logging.log4j.LogManager;
@@ -38,6 +39,8 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import it.unimi.dsi.fastutil.doubles.Double2ObjectMap;
+import it.unimi.dsi.fastutil.doubles.Double2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
 
@@ -297,6 +300,75 @@ public abstract class AbstractFractionSym implements IFraction {
     }
   }
 
+  /**
+   * Rationalizes the given double value exactly.
+   * <p>
+   * This methods returns an {@link IExpr} that, when being evaluated to a double value (using
+   * {@link IExpr#evalDouble()}), results to the exact same value (per bit) as the given one.
+   * <p>
+   * Although it is not possible to express all real numbers as a fraction of two integers, it is
+   * possible for all finite floating-point numbers to be expressed as fraction with exact same
+   * value, because floating-point numbers are finite in their representation and therefore cannot
+   * express all real numbers exactly. But this allows the exact representation as a fraction.<br>
+   * Nevertheless this may lead to unexpected results. For example the value {@code 0.7} is
+   * rationalized to {@code 3152519739159347/4503599627370496} and not the expected {@code 7/10}.
+   * </p>
+   * </p>
+   * There is no guarantee made about the specific type of the returned expression. Not all possible
+   * values of a double, especially small ones, can be expressed as {@link IFraction} in such way
+   * that it evaluates to the same double value. In such cases the value is expressed by
+   * {@code  mantissa * 2 ^ power}.
+   * 
+   * @param value the double value to convert
+   * @return an IExpr that evaluates to the exact same double value
+   */
+  public static IExpr valueOfExact(double value) {
+    if (Double.isNaN(value)) {
+      return F.NIL;
+    } else if (value == Double.POSITIVE_INFINITY) {
+      return F.CInfinity;
+    } else if (value == Double.NEGATIVE_INFINITY) {
+      return F.CNInfinity;
+    }
+    IRational rational = getIntegerOrPowerOfTen(value);
+    if (rational != null) {
+      return rational; // take shortcut
+    }
+    BigFraction exactFraction = new BigFraction(value); // computes exact fraction representation
+    int denominatorExponent2 = exactFraction.getDenominator().bitLength() - 1;
+    if (denominatorExponent2 <= Double.MAX_EXPONENT) {
+      return valueOf(exactFraction);
+    }
+    // The fractions denominator cannot be expressed as double value and would lead to an infinite
+    // denominator double-value this has the consequence that the fraction will become return zero
+    // when evaluated to double. Instead express the value as mantissa2 * 2 ^ exp2
+
+    int exp2 = Math.getExponent(value);
+    double mantissa2 = value * Math.pow(2, -exp2);
+
+    IRational mantissaFraction = getIntegerOrPowerOfTen(mantissa2); // try shortcut
+    if (mantissaFraction == null) {
+      mantissaFraction = valueOf(new BigFraction(mantissa2));
+    }
+    return F.Times(mantissaFraction, F.Power(F.C2, F.ZZ(exp2)));
+  }
+
+  private static final Double2ObjectMap<IRational> NEGATIVE_POWERS_OF_TEN =
+      IntStream.range(1, 100).collect(() -> new Double2ObjectOpenHashMap<>(100),
+          (m, e) -> m.put(Math.pow(10.0, -e), FractionSym.TEN.powerRational(-e)),
+          Double2ObjectOpenHashMap::putAll);
+
+  private static IRational getIntegerOrPowerOfTen(double value) {
+    long integerValue = (long) value;
+    if (value == integerValue) { // also catches value == 0
+      return F.ZZ(integerValue);
+    }
+    IRational num = NEGATIVE_POWERS_OF_TEN.get(value);
+    if (num != null) {
+      return num;
+    }
+    return null;
+  }
 
   /** {@inheritDoc} */
   @Override
