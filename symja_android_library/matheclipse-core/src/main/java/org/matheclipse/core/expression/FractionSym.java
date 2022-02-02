@@ -22,8 +22,11 @@ import org.matheclipse.parser.client.ParserConfig;
  * @see BigFractionSym
  */
 public class FractionSym extends AbstractFractionSym {
-  /** */
   private static final long serialVersionUID = 1225728601457694359L;
+
+  public static final FractionSym ZERO = new FractionSym(0, 1);
+  public static final FractionSym ONE = new FractionSym(1, 1);
+  public static final FractionSym MONE = new FractionSym(-1, 1);
 
   /**
    * Check if numerator and denominator are equal and the numerator isn't zero.
@@ -319,7 +322,7 @@ public class FractionSym extends AbstractFractionSym {
   @Override
   public IFraction fractionalPart() {
     if (fDenominator == 1) {
-      return AbstractFractionSym.ZERO;
+      return FractionSym.ZERO;
     }
     return valueOf(fNumerator % fDenominator, fDenominator);
   }

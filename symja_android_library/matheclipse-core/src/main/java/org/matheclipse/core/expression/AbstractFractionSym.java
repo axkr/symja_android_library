@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
@@ -46,6 +47,8 @@ import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
  * @see BigFractionSym
  */
 public abstract class AbstractFractionSym implements IFraction {
+  private static final long serialVersionUID = -8743141041586314213L;
+
   /**
    * Generate a {@link Stream stream} of convergents from a real number.
    * <p>
@@ -56,13 +59,15 @@ public abstract class AbstractFractionSym implements IFraction {
    * @param maxConbvergents maximum number of convergents.
    * @return stream of {@link BigFraction} convergents approximating {@code value}
    */
-  public static Stream<BigFraction> convergents(final double value, final int maxConvergents) {
+  // TODO: replace this by Hipparcus BigFraction.convergents() after next Hipparchus release
+  public static Stream<BigFraction> convergents(double value, int maxConvergents) {
     if (FastMath.abs(value) > Integer.MAX_VALUE) {
       throw new MathIllegalStateException(LocalizedCoreFormats.FRACTION_CONVERSION_OVERFLOW, value,
           value, 1l);
     }
-    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
-        generatingIterator(value, maxConvergents), Spliterator.DISTINCT), false);
+    return StreamSupport
+        .stream(Spliterators.spliteratorUnknownSize(generatingIterator(value, maxConvergents),
+            Spliterator.DISTINCT | Spliterator.ORDERED), false);
   }
 
   /**
@@ -73,8 +78,7 @@ public abstract class AbstractFractionSym implements IFraction {
    * @return iterator iterating over continuous fractions aproximating {@code value}
    * @since 2.1
    */
-  private static Iterator<BigFraction> generatingIterator(final double value,
-      final int maxConvergents) {
+  private static Iterator<BigFraction> generatingIterator(double value, int maxConvergents) {
     return new Iterator<BigFraction>() {
       private static final long OVERFLOW = Integer.MAX_VALUE;
       private long p0 = 0;
@@ -118,14 +122,6 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   private static final Logger LOGGER = LogManager.getLogger();
-
-  public static final FractionSym ZERO = new FractionSym(0, 1);
-
-  public static final FractionSym ONE = new FractionSym(1, 1);
-
-  public static final FractionSym MONE = new FractionSym(-1, 1);
-  /** */
-  private static final long serialVersionUID = -8743141041586314213L;
 
   public static BigInteger gcd(BigInteger i1, BigInteger i2) {
     if (i1.equals(BigInteger.ONE) || i2.equals(BigInteger.ONE))
@@ -206,13 +202,13 @@ public abstract class AbstractFractionSym implements IFraction {
    */
   public static IFraction valueOf(long newnum) {
     if (newnum == 0) {
-      return ZERO;
+      return FractionSym.ZERO;
     }
     if (newnum == 1) {
-      return ONE;
+      return FractionSym.ONE;
     }
     if (newnum == -1) {
-      return MONE;
+      return FractionSym.MONE;
     }
 
     if (Integer.MIN_VALUE < newnum && newnum <= Integer.MAX_VALUE) {
@@ -237,9 +233,9 @@ public abstract class AbstractFractionSym implements IFraction {
           EvalEngine.get());
       throw new ArgumentTypeException(str);
     } else if (newnum == 0) {
-      return ZERO;
+      return FractionSym.ZERO;
     } else if (newnum == newdenom) {
-      return ONE;
+      return FractionSym.ONE;
     }
     if (newnum > Long.MIN_VALUE && newdenom > Long.MIN_VALUE) {
       if (newnum != 1 && newdenom != 1) {
@@ -253,13 +249,13 @@ public abstract class AbstractFractionSym implements IFraction {
 
       if (newdenom == 1) {
         if (newnum == 1) {
-          return ONE;
+          return FractionSym.ONE;
         }
         if (newnum == -1) {
-          return MONE;
+          return FractionSym.MONE;
         }
         if (newnum == 0) {
-          return ZERO;
+          return FractionSym.ZERO;
         }
       }
 
@@ -278,7 +274,7 @@ public abstract class AbstractFractionSym implements IFraction {
    * @param value
    * @return
    */
-  public static IFraction valueOfEpsilon(final double value) {
+  public static IFraction valueOfEpsilon(double value) {
     return valueOfEpsilon(value, Config.DOUBLE_EPSILON);
   }
 
@@ -290,7 +286,7 @@ public abstract class AbstractFractionSym implements IFraction {
    *        absolute terms.
    * @return
    */
-  public static IFraction valueOfEpsilon(final double value, final double epsilon) {
+  public static IFraction valueOfEpsilon(double value, double epsilon) {
     BigFraction fraction;
     try {
       if (value < 0.0) {
@@ -306,39 +302,24 @@ public abstract class AbstractFractionSym implements IFraction {
     return valueOf(fraction);
   }
 
-  public static IFraction valueOfConvergent(final double value) {
-    BigFraction fraction;
+  public static IFraction valueOfConvergent(double value) {
     try {
-      if (value < 0.0) {
-        double v = -value;
-        fraction = convergents(v, 20).filter(f -> convergencePredicate(v, f)).findFirst().get();
-        return valueOf(fraction.negate());
-      } else {
-        fraction =
-            convergents(value, 20).filter(f -> convergencePredicate(value, f)).findFirst().get();
-        return valueOf(fraction);
-      }
+      double v = value < 0.0 ? -value : value;
+      BigFraction fraction =
+          convergents(v, 20).filter(f -> isConverged(v, f)).findFirst().orElseThrow(
+              () -> new NoSuchElementException("No converging fraction found for value " + value));
+      return valueOf(value < 0.0 ? fraction.negate() : fraction);
     } catch (MathIllegalStateException e) {
-      fraction = new BigFraction(value);
+      return valueOf(new BigFraction(value));
     }
-    return valueOf(fraction);
   }
 
-  private static boolean convergencePredicate(final double value, BigFraction result) {
+  private static boolean isConverged(double value, BigFraction result) {
     BigInteger denominator = result.getDenominator();
     double qSquared = denominator.multiply(denominator).doubleValue();
     double lhs = FastMath.abs(result.doubleValue() - value) * qSquared;
-    return lhs < (1E-4);
+    return lhs < 1E-4;
   }
-
-
-  /**
-   * Compute the absolute of this rational.
-   *
-   * @return Rational that is equal to the absolute value of this rational.
-   */
-  @Override
-  public abstract IFraction abs();
 
   /** {@inheritDoc} */
   @Override
@@ -364,8 +345,6 @@ public abstract class AbstractFractionSym implements IFraction {
     return visitor.visit(this);
   }
 
-  @Override
-  public abstract IFraction add(IFraction other);
 
   /**
    * Returns <code>this+(fac1*fac2)</code>.
@@ -405,10 +384,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
-  public abstract IInteger ceilFraction();
-
-  @Override
-  public int compareTo(final IExpr expr) {
+  public int compareTo(IExpr expr) {
     if (expr.isNumber()) {
       int c = this.compareTo(((INumber) expr).re());
       if (c != 0) {
@@ -461,7 +437,7 @@ public abstract class AbstractFractionSym implements IFraction {
     if (engine.isNumericMode()) {
       return numericNumber();
     }
-    final INumber cTemp = normalize();
+    INumber cTemp = normalize();
     return (cTemp == this) ? F.NIL : cTemp;
   }
 
@@ -580,9 +556,6 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
-  public abstract IFraction inverse();
-
-  @Override
   public boolean isGT(ISignedNumber obj) {
     if (obj instanceof FractionSym) {
       return compareTo((obj)) > 0;
@@ -658,8 +631,6 @@ public abstract class AbstractFractionSym implements IFraction {
     return valueOf(newnum, newdenom);
   }
 
-  @Override
-  public abstract IFraction negate();
 
   @Override
   public INumber numericNumber() {
@@ -681,7 +652,7 @@ public abstract class AbstractFractionSym implements IFraction {
    * @return
    */
   @Override
-  public IExpr plus(final IExpr that) {
+  public IExpr plus(IExpr that) {
     if (that instanceof IFraction) {
       return this.add((IFraction) that).normalize();
     }
@@ -698,7 +669,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
-  public IExpr power(final IExpr that) {
+  public IExpr power(IExpr that) {
     if (that instanceof IInteger) {
       if (that.isZero()) {
         if (!this.isZero()) {
@@ -720,10 +691,10 @@ public abstract class AbstractFractionSym implements IFraction {
 
   /** {@inheritDoc} */
   @Override
-  public final IFraction powerRational(final long n) throws ArithmeticException {
+  public final IFraction powerRational(long n) throws ArithmeticException {
     if (n == 0L) {
       if (!this.isZero()) {
-        return AbstractFractionSym.ONE;
+        return FractionSym.ONE;
       }
       throw new ArithmeticException("Indeterminate: 0^0");
     } else if (n == 1L) {
@@ -769,7 +740,7 @@ public abstract class AbstractFractionSym implements IFraction {
   @Override
   public void checkBitLength() {
     if (Integer.MAX_VALUE > Config.MAX_BIT_LENGTH) {
-      final long bitLength = toBigNumerator().bitLength() + toBigDenominator().bitLength();
+      long bitLength = (long) toBigNumerator().bitLength() + toBigDenominator().bitLength();
       if (bitLength > Config.MAX_BIT_LENGTH) {
         BigIntegerLimitExceeded.throwIt(bitLength);
       }
@@ -824,7 +795,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
   /** {@inheritDoc} */
   @Override
-  public IExpr times(final IExpr that) {
+  public IExpr times(IExpr that) {
     if (that instanceof IFraction) {
       return this.mul((IFraction) that).normalize();
     }
