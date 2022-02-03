@@ -1,7 +1,9 @@
 package org.matheclipse.core.interfaces;
 
 import org.apfloat.Apcomplex;
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
@@ -236,4 +238,9 @@ public interface INumber extends IExpr {
    * @return
    */
   public IAST toPolarCoordinates();
+
+  @Override
+  default Complex evalComplex() throws ArgumentTypeException {
+    return new Complex(reDoubleValue(), imDoubleValue());
+  }
 }

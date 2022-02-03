@@ -310,12 +310,6 @@ public class Num implements INum {
     return this;
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public double evalDouble() {
-    return fDouble;
-  }
-
   @Override
   public ISignedNumber evalReal() {
     return this;
