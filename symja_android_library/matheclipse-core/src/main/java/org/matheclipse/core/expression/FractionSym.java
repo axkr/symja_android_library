@@ -26,8 +26,6 @@ public class FractionSym extends AbstractFractionSym {
 
   public static final FractionSym ZERO = new FractionSym(0, 1);
   public static final FractionSym ONE = new FractionSym(1, 1);
-  public static final FractionSym TWO = new FractionSym(2, 1);
-  public static final FractionSym TEN = new FractionSym(10, 1);
   public static final FractionSym MONE = new FractionSym(-1, 1);
 
   /**
