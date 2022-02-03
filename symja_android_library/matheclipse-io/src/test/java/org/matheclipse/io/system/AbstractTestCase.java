@@ -7,18 +7,15 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Locale;
 import java.util.regex.Pattern;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TimeConstrainedEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.io.IOInit;
 import junit.framework.TestCase;
 
@@ -48,23 +45,6 @@ public abstract class AbstractTestCase extends TestCase {
     Config.SERVER_MODE = false;
   }
 
-  public void ESameTest(String expectedString, String evalString) {
-    try {
-      if (evalString.length() == 0 && expectedString.length() == 0) {
-        return;
-      }
-      // scriptEngine.put("STEPWISE",Boolean.TRUE);
-      String evaledResult = (String) fScriptEngine.eval(evalString);
-      String expectedResult = (String) fScriptEngine.eval(expectedString);
-
-      assertEquals(expectedResult, evaledResult);
-
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("", "1");
-    }
-  }
-
   public void check(String evalString, String expectedResult) {
     check(fScriptEngine, evalString, expectedResult, -1);
   }
@@ -78,7 +58,7 @@ public abstract class AbstractTestCase extends TestCase {
       if (evalString.length() == 0) {
         return;
       }
-      String evaledResult = (String) fScriptEngine.eval(evalString);
+      fScriptEngine.eval(evalString);
     } catch (Exception e) {
       e.printStackTrace();
       assertEquals("", "1");
@@ -178,32 +158,6 @@ public abstract class AbstractTestCase extends TestCase {
     }
   }
 
-  public void checkSVGGraphics(String evalString, String expectedResult) {
-    checkSVGGraphics(fScriptEngine, evalString, expectedResult);
-  }
-
-  public void checkSVGGraphics(ScriptEngine scriptEngine, String evalString,
-      String expectedResult) {
-    try {
-      if (evalString.length() == 0 && expectedResult.length() == 0) {
-        return;
-      }
-      scriptEngine.getContext().setAttribute("RETURN_OBJECT", Boolean.TRUE,
-          ScriptContext.ENGINE_SCOPE);
-      IExpr result = (IExpr) scriptEngine.eval(evalString);
-      if (result.isAST() && result.size() > 1 && result.first().isAST()) {
-        StringBuilder buf = new StringBuilder(2048);
-        GraphicsFunctions.graphicsToSVG((IAST) ((IAST) result).arg1(), buf);
-        assertEquals(expectedResult, buf.toString());
-      } else {
-        assertEquals("", "1");
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals("", "1");
-    }
-  }
-
   /** The JUnit setup method */
   @Override
   protected void setUp() {
@@ -241,18 +195,6 @@ public abstract class AbstractTestCase extends TestCase {
       }
     } catch (Exception e) {
       e.printStackTrace();
-    }
-  }
-
-  public static void writeFile(String fileName, StringBuffer buffer) {
-    try {
-      File file = new File(fileName);
-      final BufferedWriter f = new BufferedWriter(new FileWriter(file));
-      f.append(buffer);
-      f.close();
-    } catch (Exception e) {
-      e.printStackTrace();
-      // assertEquals("", e.getMessage());
     }
   }
 }
