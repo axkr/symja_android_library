@@ -307,7 +307,7 @@ class FractionTestCase {
     assertExactNiceSameValue("623/5", 124.6);
     assertExactNiceSameValue("1943/4", 485.75);
 
-    assertExactNiceSameValue("245850922/78256779", Math.PI);
+    assertExactNiceSameValue("884279719003555/281474976710656", Math.PI);
     assertExactNiceSameValue("6121026514868073/2251799813685248", Math.E);
     assertExactNiceSameValue("1/(2251799813685248*2^1023)", Double.MIN_VALUE);
     assertExactNiceSameValue(
@@ -339,7 +339,7 @@ class FractionTestCase {
     assertExactNiceSameValue("703791863104313034795615518720", 7.03791863104313E29);
     assertExactNiceSameValue("420022924/420022925", 0.9999999976191776);
     assertExactNiceSameValue("2251798983481815/1125899906842624", 1.9999992626312268);
-    assertExactNiceSameValue("341343277/85335758", 4.000002871012173);
+    assertExactNiceSameValue("2251801429921417/562949953421312", 4.000002871012173);
     assertExactNiceSameValue(
         "8379190137388997/102844034832575377634685573909834406561420991602098741459288064",
         8.147473162667989E-47);

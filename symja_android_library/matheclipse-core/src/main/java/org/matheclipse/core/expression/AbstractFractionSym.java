@@ -303,7 +303,7 @@ public abstract class AbstractFractionSym implements IFraction {
     int exp2 = Math.getExponent(value);
     double mantissa2 = value * Math.pow(2, -exp2);
 
-    IRational mantissaFraction = getInteger(mantissa2); // try shortcut
+    IExpr mantissaFraction = getInfiniteOrInteger(mantissa2); // try shortcut
     if (mantissaFraction == null) {
       mantissaFraction = valueOf(new BigFraction(mantissa2));
     }
@@ -318,10 +318,6 @@ public abstract class AbstractFractionSym implements IFraction {
     } else if (value == Double.NEGATIVE_INFINITY) {
       return F.CNInfinity;
     }
-    return getInteger(value);
-  }
-
-  private static IInteger getInteger(double value) {
     long integerValue = (long) value;
     if (value == integerValue) { // also catches value == 0
       return F.ZZ(integerValue); // take shortcut
@@ -336,10 +332,13 @@ public abstract class AbstractFractionSym implements IFraction {
     }
     if (FastMath.abs(Math.getExponent(value)) < 100) {
       // For values in the order of small powers of ten and only a few decimals (e.g. 3.75, 0.01,
-      // 124.6) the convergence
-      // approach usually achieves
-      // results that are closer to what a human would compute and are therefore considered 'nicer'
-      IFraction fraction = convergeFraction(value, 20, 0.0);
+      // 124.6) the convergence approach usually achieves results that are closer to what a human
+      // would compute and are therefore considered 'nicer'. To honor this we try a few convergence
+      // iterations a take a result if it is exact.
+      // The number of maxIterations is a tuning parameter and reflects how bad we want nicer
+      // results. Since valueOfExact() is faster the fewer iterations are attempted before giving up
+      // the faster this method is in average.
+      IFraction fraction = convergeFraction(value, 5, 0.0);
       if (fraction != null && value == fraction.doubleValue()) {
         return fraction;
       }
