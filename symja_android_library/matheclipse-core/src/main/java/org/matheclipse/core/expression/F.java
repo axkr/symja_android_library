@@ -3925,7 +3925,7 @@ public class F extends S {
    * @return IFraction
    */
   public static IFraction fraction(final BigFraction value) {
-    return AbstractFractionSym.valueOf(value.getNumerator(), value.getDenominator());
+    return AbstractFractionSym.valueOf(value);
   }
 
   /**
@@ -3937,37 +3937,6 @@ public class F extends S {
    */
   public static IFraction fraction(final BigInteger numerator, final BigInteger denominator) {
     return AbstractFractionSym.valueOf(numerator, denominator);
-  }
-
-  /**
-   * Create a "fractional" number
-   *
-   * @param value the double value which should be converted to a fractional number
-   * @return IFraction
-   */
-  public static IFraction fraction(final double value) {
-    return AbstractFractionSym.valueOfEpsilon(value);
-  }
-
-  /**
-   * Create a "fractional" number from a double number.
-   *
-   * @param value numerator of the fractional number
-   * @param epsilon
-   * @return
-   */
-  public static IFraction fraction(final double value, final double epsilon) {
-    return AbstractFractionSym.valueOfEpsilon(value, epsilon);
-  }
-
-  /**
-   * Create a "fractional" number from a double number.
-   *
-   * @param value numerator of the fractional number
-   * @return
-   */
-  public static IFraction fractionConvergent(final double value) {
-    return AbstractFractionSym.valueOfConvergent(value);
   }
 
   /**
@@ -3990,6 +3959,37 @@ public class F extends S {
    */
   public static IRational fraction(final long numerator, final long denominator) {
     return AbstractFractionSym.valueOf(numerator, denominator);
+  }
+
+  /**
+   * Create a "fractional" number from a double number with <code>Config.DOUBLE_EPSILON</code>
+   * maximum error allowed.
+   *
+   * @param value the double value which should be converted to a fractional number
+   */
+  public static IFraction fraction(final double value) {
+    return AbstractFractionSym.valueOfEpsilon(value, Config.DOUBLE_EPSILON);
+  }
+
+  /**
+   * Create a "fractional" number from a double number.
+   *
+   * @param value numerator of the fractional number
+   * @param epsilon maximum error allowed. The resulting fraction is within epsilon of value, in
+   *        absolute terms
+   */
+  public static IFraction fraction(final double value, final double epsilon) {
+    return AbstractFractionSym.valueOfEpsilon(value, epsilon);
+  }
+
+  /**
+   * Create a "fractional" number from a double number.
+   *
+   * @param value numerator of the fractional number
+   * @return
+   */
+  public static IFraction fractionConvergent(final double value) {
+    return AbstractFractionSym.valueOfConvergent(value);
   }
 
   public static IAST FractionBox(final IExpr a0, final IExpr a1) {

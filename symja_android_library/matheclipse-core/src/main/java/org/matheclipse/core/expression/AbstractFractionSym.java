@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.DoubleFunction;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.apache.logging.log4j.LogManager;
@@ -138,22 +139,8 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   public static IFraction valueOf(BigFraction fraction) {
-    BigInteger num = fraction.getNumerator();
-    BigInteger den = fraction.getDenominator();
-    if (BigInteger.ZERO.equals(den)) {
-      // Infinite expression `1` encountered.
-      String str =
-          IOFunctions.getMessage("infy", F.List(F.Rational(F.ZZ(num), F.C0)), EvalEngine.get());
-      throw new ArgumentTypeException(str);
-    }
-    if (den.bitLength() <= 31 && num.bitLength() <= 31) {
-      return valueOf(num.intValue(), den.intValue());
-    }
-    return new BigFractionSym(fraction);
-  }
-
-  public static IFraction valueOf(BigInteger num) {
-    return valueOf(num, BigInteger.ONE);
+    IFraction f = fractionOf(fraction.getNumerator(), fraction.getDenominator());
+    return f != null ? f : new BigFractionSym(fraction);
   }
 
   /**
@@ -161,28 +148,23 @@ public abstract class AbstractFractionSym implements IFraction {
    * numerator or denominator may be to big to fit in an Java int. This method normalizes the
    * rational number.
    *
-   * @param num Numerator
-   * @param den Denominator
+   * @param numerator Numerator
+   * @param denominator Denominator
    * @return
    */
-  public static IFraction valueOf(BigInteger num, BigInteger den) {
-    if (BigInteger.ZERO.equals(den)) {
-      // Infinite expression `1` encountered.
-      String str =
-          IOFunctions.getMessage("infy", F.List(F.Rational(F.ZZ(num), F.C0)), EvalEngine.get());
-      throw new ArgumentTypeException(str);
-    }
-    if (den.bitLength() <= 31 && num.bitLength() <= 31) {
-      return valueOf(num.intValue(), den.intValue());
-    }
-    return new BigFractionSym(num, den);
+  public static IFraction valueOf(BigInteger numerator, BigInteger denominator) {
+    IFraction f = fractionOf(numerator, denominator);
+    return f != null ? f : new BigFractionSym(numerator, denominator);
   }
 
-  public static IFraction valueOf(IInteger numerator) {
-    if (numerator instanceof IntegerSym) {
-      return valueOf(((IntegerSym) numerator).fIntValue);
+  private static IFraction fractionOf(BigInteger numerator, BigInteger denominator) {
+    if (BigInteger.ZERO.equals(denominator)) {
+      throw getDivisionTroughZeroException(F.ZZ(numerator)); // Infinite expression `1` encountered.
     }
-    return valueOf(numerator.toBigNumerator());
+    if (denominator.bitLength() <= 31 && numerator.bitLength() <= 31) {
+      return valueOf(numerator.intValue(), denominator.intValue());
+    }
+    return null;
   }
 
   public static IFraction valueOf(IInteger numerator, IInteger denominator) {
@@ -197,24 +179,62 @@ public abstract class AbstractFractionSym implements IFraction {
    * normalizes the rational number and may return a previously created one. This method does not
    * work if called with value Long.MIN_VALUE.
    *
-   * @param newnum Numerator.
+   * @param numerator Numerator.
+   * @param denominator Denominator.
    * @return
    */
-  public static IFraction valueOf(long newnum) {
-    if (newnum == 0) {
+  public static IFraction valueOf(long numerator, long denominator) {
+    if (denominator == 0) {
+      throw getDivisionTroughZeroException(F.ZZ(numerator)); // Infinite expression `1` encountered.
+    } else if (numerator == 0) {
       return FractionSym.ZERO;
-    }
-    if (newnum == 1) {
+    } else if (numerator == denominator) {
       return FractionSym.ONE;
     }
-    if (newnum == -1) {
-      return FractionSym.MONE;
-    }
+    if (numerator > Long.MIN_VALUE && denominator > Long.MIN_VALUE) {
+      if (numerator != 1 && denominator != 1) {
+        long gcd = Math.abs(ArithmeticUtils.gcd(numerator, denominator));
+        if (denominator < 0) {
+          gcd = -gcd;
+        }
+        numerator /= gcd;
+        denominator /= gcd;
+      }
 
-    if (Integer.MIN_VALUE < newnum && newnum <= Integer.MAX_VALUE) {
-      return new FractionSym((int) newnum, 1);
+      if (denominator == 1) {
+        if (numerator == 1) {
+          return FractionSym.ONE;
+        }
+        if (numerator == -1) {
+          return FractionSym.MONE;
+        }
+        if (numerator == 0) {
+          return FractionSym.ZERO;
+        }
+      }
+
+      if (Integer.MIN_VALUE < numerator && numerator <= Integer.MAX_VALUE
+          && denominator <= Integer.MAX_VALUE) {
+        return new FractionSym((int) numerator, (int) denominator);
+      }
     }
-    return new BigFractionSym(BigInteger.valueOf(newnum), BigInteger.ONE);
+    return new BigFractionSym(BigInteger.valueOf(numerator), BigInteger.valueOf(denominator));
+  }
+
+  private static ArgumentTypeException getDivisionTroughZeroException(IInteger num) {
+    String str = IOFunctions.getMessage("infy", F.List(F.Rational(num, F.C0)), EvalEngine.get());
+    return new ArgumentTypeException(str);
+  }
+
+  public static IFraction valueOf(IInteger numerator) {
+    if (numerator instanceof IntegerSym) {
+      return valueOf(((IntegerSym) numerator).fIntValue);
+    }
+    return valueOf(numerator.toBigNumerator());
+  }
+
+  public static IFraction valueOf(BigInteger numerator) {
+    return valueOf(numerator, BigInteger.ONE);
   }
 
   /**
@@ -222,60 +242,24 @@ public abstract class AbstractFractionSym implements IFraction {
    * normalizes the rational number and may return a previously created one. This method does not
    * work if called with value Long.MIN_VALUE.
    *
-   * @param newnum Numerator.
-   * @param newdenom Denominator.
+   * @param numerator Numerator.
    * @return
    */
-  public static IFraction valueOf(long newnum, long newdenom) {
-    if (newdenom == 0) {
-      // Infinite expression `1` encountered.
-      String str = IOFunctions.getMessage("infy", F.List(F.Rational(F.ZZ(newnum), F.ZZ(newdenom))),
-          EvalEngine.get());
-      throw new ArgumentTypeException(str);
-    } else if (newnum == 0) {
+  public static IFraction valueOf(long numerator) {
+    if (numerator == 0) {
       return FractionSym.ZERO;
-    } else if (newnum == newdenom) {
+    }
+    if (numerator == 1) {
       return FractionSym.ONE;
     }
-    if (newnum > Long.MIN_VALUE && newdenom > Long.MIN_VALUE) {
-      if (newnum != 1 && newdenom != 1) {
-        long gcd = Math.abs(ArithmeticUtils.gcd(newnum, newdenom));
-        if (newdenom < 0) {
-          gcd = -gcd;
-        }
-        newnum /= gcd;
-        newdenom /= gcd;
-      }
-
-      if (newdenom == 1) {
-        if (newnum == 1) {
-          return FractionSym.ONE;
-        }
-        if (newnum == -1) {
-          return FractionSym.MONE;
-        }
-        if (newnum == 0) {
-          return FractionSym.ZERO;
-        }
-      }
-
-      if (Integer.MIN_VALUE < newnum && newnum <= Integer.MAX_VALUE
-          && newdenom <= Integer.MAX_VALUE) {
-        return new FractionSym((int) newnum, (int) newdenom);
-      }
+    if (numerator == -1) {
+      return FractionSym.MONE;
     }
-    return new BigFractionSym(BigInteger.valueOf(newnum), BigInteger.valueOf(newdenom));
-  }
 
-  /**
-   * Rationalize the given double value with <code>Config.DOUBLE_EPSILON</code> maximum error
-   * allowed.
-   *
-   * @param value
-   * @return
-   */
-  public static IFraction valueOfEpsilon(double value) {
-    return valueOfEpsilon(value, Config.DOUBLE_EPSILON);
+    if (Integer.MIN_VALUE < numerator && numerator <= Integer.MAX_VALUE) {
+      return new FractionSym((int) numerator, 1);
+    }
+    return new BigFractionSym(BigInteger.valueOf(numerator), BigInteger.ONE);
   }
 
   /**
@@ -287,31 +271,14 @@ public abstract class AbstractFractionSym implements IFraction {
    * @return
    */
   public static IFraction valueOfEpsilon(double value, double epsilon) {
-    BigFraction fraction;
-    try {
-      if (value < 0.0) {
-        fraction = new BigFraction(-value, epsilon, 200);
-        return valueOf(fraction.negate());
-      } else {
-        fraction = new BigFraction(value, epsilon, 200);
-        return valueOf(fraction);
-      }
-    } catch (MathIllegalStateException e) {
-      fraction = new BigFraction(value);
-    }
-    return valueOf(fraction);
+    return rationalize(value, v -> new BigFraction(v, epsilon, 200));
   }
 
+
   public static IFraction valueOfConvergent(double value) {
-    try {
-      double v = value < 0.0 ? -value : value;
-      BigFraction fraction =
-          convergents(v, 20).filter(f -> isConverged(v, f)).findFirst().orElseThrow(
-              () -> new NoSuchElementException("No converging fraction found for value " + value));
-      return valueOf(value < 0.0 ? fraction.negate() : fraction);
-    } catch (MathIllegalStateException e) {
-      return valueOf(new BigFraction(value));
-    }
+    return rationalize(value,
+        v -> convergents(v, 20).filter(f -> isConverged(v, f)).findFirst().orElseThrow(
+            () -> new NoSuchElementException("No converging fraction found for value " + value)));
   }
 
   private static boolean isConverged(double value, BigFraction result) {
@@ -320,6 +287,16 @@ public abstract class AbstractFractionSym implements IFraction {
     double lhs = FastMath.abs(result.doubleValue() - value) * qSquared;
     return lhs < 1E-4;
   }
+
+  private static IFraction rationalize(double value, DoubleFunction<BigFraction> f) {
+    try {
+      BigFraction fraction = f.apply(value < 0 ? -value : value);
+      return valueOf(value < 0 ? fraction.negate() : fraction);
+    } catch (MathIllegalStateException e) {
+      return valueOf(new BigFraction(value));
+    }
+  }
+
 
   /** {@inheritDoc} */
   @Override
