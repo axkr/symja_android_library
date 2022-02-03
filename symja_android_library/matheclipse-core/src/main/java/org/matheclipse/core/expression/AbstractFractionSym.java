@@ -240,7 +240,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   public static IFraction valueOfConvergent(double value) {
-    IFraction fraction = convergeFraction(value, 20, 1E-5);
+    IFraction fraction = convergeFraction(value, 20, 0.5E-4);
     if (fraction == null) {
       throw new NoSuchElementException("No converging fraction found for value " + value);
     }
