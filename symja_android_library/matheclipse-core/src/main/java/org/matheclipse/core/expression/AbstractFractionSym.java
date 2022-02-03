@@ -1,13 +1,8 @@
 package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.function.DoubleFunction;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -50,76 +45,46 @@ import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
 public abstract class AbstractFractionSym implements IFraction {
   private static final long serialVersionUID = -8743141041586314213L;
 
-  /**
-   * Generate a {@link Stream stream} of convergents from a real number.
-   * <p>
-   * See:
-   * <a href="https://github.com/Hipparchus-Math/hipparchus/issues/176">hipparchus/issues/176</a>
-   *
-   * @param value value to approximate
-   * @param maxConbvergents maximum number of convergents.
-   * @return stream of {@link BigFraction} convergents approximating {@code value}
-   */
-  // TODO: replace this by Hipparcus BigFraction.convergents() after next Hipparchus release
-  public static Stream<BigFraction> convergents(double value, int maxConvergents) {
-    if (FastMath.abs(value) > Integer.MAX_VALUE) {
-      throw new MathIllegalStateException(LocalizedCoreFormats.FRACTION_CONVERSION_OVERFLOW, value,
-          value, 1l);
-    }
-    return StreamSupport
-        .stream(Spliterators.spliteratorUnknownSize(generatingIterator(value, maxConvergents),
-            Spliterator.DISTINCT | Spliterator.ORDERED), false);
+  @FunctionalInterface
+  private interface ConvergencePredicate {
+    boolean test(long numerator, long denominator);
   }
 
+  private static final long RATIONALIZATION_OVERFLOW = Integer.MAX_VALUE;
+
   /**
-   * Iterator for generating continuous fractions.
+   * Iteratively creates a fraction that converges towards the given value
    *
    * @param value value to approximate
-   * @param maxConbvergents maximum number of convergents.
-   * @return iterator iterating over continuous fractions aproximating {@code value}
-   * @since 2.1
+   * @param maxConbvergents maximum number of iterations.
    */
-  private static Iterator<BigFraction> generatingIterator(double value, int maxConvergents) {
-    return new Iterator<BigFraction>() {
-      private static final long OVERFLOW = Integer.MAX_VALUE;
-      private long p0 = 0;
-      private long q0 = 1;
-      private long p1 = 1;
-      private long q1 = 0;
-      private double r1 = value;
-      private boolean stop = false;
-      private int n = 0;
+  private static BigFraction converge(double value, int maxIterations,
+      ConvergencePredicate convergence) {
+    long p0 = 0;
+    long q0 = 1;
+    long p1 = 1;
+    long q1 = 0;
+    double r1 = value;
 
-      /** {@inheritDoc} */
-      @Override
-      public boolean hasNext() {
-        return n < maxConvergents && !stop;
-      }
+    for (int i = 0; i < maxIterations; i++) {
+      final long a1 = (long) FastMath.floor(r1);
+      long p2 = (a1 * p1) + p0;
+      long q2 = (a1 * q1) + q0;
 
-      /** {@inheritDoc} */
-      @Override
-      public BigFraction next() {
-        ++n;
-
-        final long a1 = (long) FastMath.floor(r1);
-        long p2 = (a1 * p1) + p0;
-        long q2 = (a1 * q1) + q0;
-
-        final double convergent = (double) p2 / (double) q2;
-        // stop = Precision.equals(convergent, value, 1);
-        // if ((p2 > OVERFLOW || q2 > OVERFLOW) && !stop) {
-        // throw new MathIllegalStateException(LocalizedCoreFormats.FRACTION_CONVERSION_OVERFLOW,
-        // value, p2, q2);
-        // }
-        p0 = p1;
-        p1 = p2;
-        q0 = q1;
-        q1 = q2;
-        r1 = 1.0 / (r1 - a1);
+      if (convergence.test(p2, q2)) {
         return new BigFraction(p2, q2);
       }
-
-    };
+      if (p2 > RATIONALIZATION_OVERFLOW || q2 > RATIONALIZATION_OVERFLOW) {
+        throw new MathIllegalStateException(LocalizedCoreFormats.FRACTION_CONVERSION_OVERFLOW,
+            value, p2, q2);
+      }
+      p0 = p1;
+      q0 = q1;
+      p1 = p2;
+      q1 = q2;
+      r1 = 1.0 / (r1 - a1);
+    }
+    return null;
   }
 
   private static final Logger LOGGER = LogManager.getLogger();
@@ -274,23 +239,25 @@ public abstract class AbstractFractionSym implements IFraction {
     return rationalize(value, v -> new BigFraction(v, epsilon, 200));
   }
 
-
   public static IFraction valueOfConvergent(double value) {
-    return rationalize(value,
-        v -> convergents(v, 20).filter(f -> isConverged(v, f)).findFirst().orElseThrow(
-            () -> new NoSuchElementException("No converging fraction found for value " + value)));
+    IFraction fraction = convergeFraction(value, 20, 1E-4);
+    if (fraction == null) {
+      throw new NoSuchElementException("No converging fraction found for value " + value);
+    }
+    return fraction;
   }
 
-  private static boolean isConverged(double value, BigFraction result) {
-    BigInteger denominator = result.getDenominator();
-    double qSquared = denominator.multiply(denominator).doubleValue();
-    double lhs = FastMath.abs(result.doubleValue() - value) * qSquared;
-    return lhs < 1E-4;
+  private static IFraction convergeFraction(double value, int maxIterations, double lhs) {
+    return rationalize(value,
+        v -> converge(v, maxIterations, (p, q) -> FastMath.abs(p * q - v * q * q) < lhs));
   }
 
   private static IFraction rationalize(double value, DoubleFunction<BigFraction> f) {
     try {
       BigFraction fraction = f.apply(value < 0 ? -value : value);
+      if (fraction == null) {
+        return null;
+      }
       return valueOf(value < 0 ? fraction.negate() : fraction);
     } catch (MathIllegalStateException e) {
       return valueOf(new BigFraction(value));
@@ -321,7 +288,6 @@ public abstract class AbstractFractionSym implements IFraction {
   public long accept(IVisitorLong visitor) {
     return visitor.visit(this);
   }
-
 
   /**
    * Returns <code>this+(fac1*fac2)</code>.
@@ -607,7 +573,6 @@ public abstract class AbstractFractionSym implements IFraction {
     BigInteger newdenom = toBigDenominator().multiply(other.toBigDenominator());
     return valueOf(newnum, newdenom);
   }
-
 
   @Override
   public INumber numericNumber() {
