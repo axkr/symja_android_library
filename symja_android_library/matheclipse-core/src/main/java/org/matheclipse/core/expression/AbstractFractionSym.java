@@ -325,6 +325,19 @@ public abstract class AbstractFractionSym implements IFraction {
     return null;
   }
 
+  /**
+   * Rationalizes the given double value exactly while tending to return results that are closer to
+   * what a human would expect and are therefore considered 'nicer'.
+   * <p>
+   * This method has the same constraints for the returned value like {@link #valueOfExact(double)},
+   * which often does return less 'nice' results, but tends to run longer.
+   * </p>
+   * 
+   * @param value the double value to convert
+   * @return an IExpr that evaluates to the exact same double value
+   * @see #valueOfExact(double)
+   * @see #valueOfConvergent(double)
+   */
   public static IExpr valueOfExactNice(double value) {
     IExpr ii = getInfiniteOrInteger(value);
     if (ii != null) {
