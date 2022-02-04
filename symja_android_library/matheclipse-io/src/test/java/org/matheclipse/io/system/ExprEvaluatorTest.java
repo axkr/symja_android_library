@@ -228,7 +228,7 @@ public class ExprEvaluatorTest extends TestCase {
       assertEquals("1.8", buf.toString());
 
       expr = util.eval("10.0^-15");
-      assertEquals("1.00000*10^-15", expr.toString());
+      assertEquals("1.*10^-15", expr.toString());
 
       buf = new StringWriter();
       OutputFormFactory.get(util.getEvalEngine().isRelaxedSyntax()).convert(buf, expr);

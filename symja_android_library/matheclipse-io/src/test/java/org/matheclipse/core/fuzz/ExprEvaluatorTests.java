@@ -859,6 +859,15 @@ public class ExprEvaluatorTests {
         // System.out.print(".");
         thread = new SlowComputationThread(">> " + ast.toString(), engine);
         thread.start();
+        
+        // IAST debugTest = (IAST) engine.parse(
+        // "Integrate(2/(1+Sqrt(5)))[x^(Heads->True), {{0}}+I,OptionValue(
+        // {{1}}),{x,5,Quantity(1.2,\"m\")}]");
+        // if (evaluator != null) {
+        // evaluator.evaluate(debugTest, engine);
+        // } else {
+        // eval.eval(debugTest);
+        // }
         // engine.evaluate(ast);
         if (evaluator != null) {
           evaluator.evaluate(ast, engine);

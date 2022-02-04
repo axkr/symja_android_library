@@ -496,7 +496,7 @@ public class SolveTest extends AbstractTestCase {
     check("Solve(30*x/0.0002==30,{x})", //
         "{{x->0.0002}}");
     check("Solve(30*x/0.000000002==30,x)", //
-        "{{x->2.00000*10^-9}}");
+        "{{x->2.*10^-9}}");
 
     // check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
     // "((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
@@ -876,50 +876,44 @@ public class SolveTest extends AbstractTestCase {
     check("NSolve(8*x^3-26x^2+3x+9==0,x)", //
         "{{x->-0.5},{x->0.75},{x->3.0}}");
 
-    // check("NSolve((a*x^2+1)==0,x)", //
-    // "{{x->-I/Sqrt(a)},{x->I/Sqrt(a)}}");
-    // check("NSolve(Sqrt(x)-2*x+x^2==0,x)", //
-    // "{{x->0},{x->1}}");
-    // check("NSolve((2*x+x^2)^2-x==0,x)", //
-    // "{{x->0},{x->-4/3+(43/2+3/2*Sqrt(177))^(1/3)/3+4/3*2^(1/3)/(43+3*Sqrt(177))^(1/3)},{x->-\n"
-    // + "4/3-2/3*2^(1/3)/(43+3*Sqrt(177))^(1/3)+(I*2*2^(1/3))/(Sqrt(3)*(43+3*Sqrt(177))^(\n"
-    // + "1/3))-(43+3*Sqrt(177))^(1/3)/(6*2^(1/3))+(-I*1/2*(43+3*Sqrt(177))^(1/3))/(2^(1/3)*Sqrt(\n"
-    // + "3))},{x->-4/3-2/3*2^(1/3)/(43+3*Sqrt(177))^(1/3)+(-I*2*2^(1/3))/(Sqrt(3)*(43+3*Sqrt(\n"
-    // + "177))^(1/3))-(43+3*Sqrt(177))^(1/3)/(6*2^(1/3))+(I*1/2*(43+3*Sqrt(177))^(1/3))/(\n"
-    // + "2^(1/3)*Sqrt(3))}}");
+    check("NSolve((a*x^2+1)==0,x)", //
+        "{{x->(I*(-1.0))/Sqrt(a)},{x->(I*1.0)/Sqrt(a)}}");
+    check("NSolve(Sqrt(x)-2*x+x^2==0,x)", //
+        "{{x->0.0},{x->1.0}}");
+    check("NSolve((2*x+x^2)^2-x==0,x)", //
+        "{{x->0.0},{x->0.205569},{x->-2.10278+I*(-0.665457)},{x->-2.10278+I*0.665457}}");
+
+    check("NSolve({x^2-11==y, x+y==-9}, {x,y})", //
+        "{{x->-2.0,y->-7.0},{x->1.0,y->-10.0}}");
+
+    check("NSolve(30*x/0.0002==30,{x})", //
+        "{{x->0.0002}}");
+    // see Config.DEFAULT_CHOP_DELTA
+    check("NSolve(30*x/0.000000002==30,x)", //
+        "{{x->0.0}}");
+
+    // check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
+    // "((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
+    check("NSolve((-3+E^(2*x))==0,x)", //
+        "{{x->ConditionalExpression(0.5*(1.09861+(I*6.28319)*C(1.0)),C(1)∈Integers)}}");
+    check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
+        "{{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(0.5*(1.09861+(I*6.28319)*C(1.0)),C(\n"
+            + "1)∈Integers)},{x->ConditionalExpression((I*6.28319)*C(1.0),C(1)∈Integers)}}");
+    check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
+        "{{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(0.5*(1.09861+(I*6.28319)*C(1.0)),C(\n"
+            + //
+            "1)∈Integers)},{x->ConditionalExpression((I*6.28319)*C(1.0),C(1)∈Integers)}}");
+
+    check("NSolve(1+E^x==0,x)", //
+        "{{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(1)∈Integers)}}");
+    check("NSolve(a+E^(b*x)==0,x)", //
+        "{{x->ConditionalExpression(((I*6.28319)*C(1.0)+Log(-a))/b,C(1)∈Integers)}}");
+
+    check("NSolve(E^x==b,x)", //
+        "{{x->ConditionalExpression((I*6.28319)*C(1.0)+Log(b),C(1)∈Integers)}}");
+    check("NSolve(a^x==42,x)", //
+        "{{x->3.73767/Log(a)}}");
     //
-    // check("NSolve({x^2-11==y, x+y==-9}, {x,y})", //
-    // "{{x->-2,y->-7},{x->1,y->-10}}");
-    //
-    // check("NSolve(30*x/0.0002==30,{x})", //
-    // "{{x->0.0002}}");
-    // check("NSolve(30*x/0.000000002==30,x)", //
-    // "{{x->2.00000*10^-9}}");
-    //
-    // // check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
-    // // "((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
-    // check("NSolve((-3+E^(2*x))==0,x)", //
-    // "{{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(3)),C(1)∈Integers)}}");
-    // check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
-    // "{{x->ConditionalExpression(I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n" +
-    // //
-    // "I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(3)),C(\n" + //
-    // "1)∈Integers)}}");
-    // check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
-    // "{{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(0.5*(1.09861+(I*6.28319)*C(1.0)),C(\n"
-    // + //
-    // "1)∈Integers)},{x->ConditionalExpression((I*6.28319)*C(1.0),C(1)∈Integers)}}");
-    //
-    // check("NSolve(1+E^x==0,x)", //
-    // "{{x->ConditionalExpression(I*Pi+I*2*Pi*C(1),C(1)∈Integers)}}");
-    // check("NSolve(a+E^(b*x)==0,x)", //
-    // "{{x->ConditionalExpression((I*2*Pi*C(1)+Log(-a))/b,C(1)∈Integers)}}");
-    //
-    // check("NSolve(E^x==b,x)", //
-    // "{{x->ConditionalExpression(I*2*Pi*C(1)+Log(b),C(1)∈Integers)}}");
-    // check("NSolve(a^x==42,x)", //
-    // "{{x->Log(42)/Log(a)}}");
-    // //
     // check("NSolve(2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-I*3*x)+E^(I*3*x))==0,x)",
     // // //
     // //

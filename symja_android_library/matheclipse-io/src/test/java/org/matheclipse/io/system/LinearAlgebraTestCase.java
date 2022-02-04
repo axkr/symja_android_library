@@ -377,12 +377,12 @@ public class LinearAlgebraTestCase extends AbstractTestCase {
     check("Eigenvalues({{-8, 12, 4}, {12, -20, 0}, {4, 0, -2}})", //
         "{2.24386,-4.6517,-27.59215}");
     check("Eigenvalues(SparseArray({{1.0, 2, 3}, {4, 5, 6}, {7, 8, 9}}))", //
-        "{16.11684,-1.11684,-9.29650*10^-16}");
+        "{16.11684,-1.11684,-9.2965*10^-16}");
 
     check("Eigenvalues(A)", //
         "Eigenvalues(A)");
     check("Eigenvalues({{1.0, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
-        "{16.11684,-1.11684,-9.29650*10^-16}");
+        "{16.11684,-1.11684,-9.2965*10^-16}");
     check("Eigenvalues({{a}})", //
         "{a}");
     check("Eigenvalues({{a, b}, {0, a}})", //
@@ -394,7 +394,7 @@ public class LinearAlgebraTestCase extends AbstractTestCase {
     check("Eigenvalues({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", //
         "{1.0,1.0,1.0}");
     check("Eigenvalues({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
-        "{16.11684,-1.11684,-9.29650*10^-16}");
+        "{16.11684,-1.11684,-9.2965*10^-16}");
   }
 
   public void testEigenvectors() {
