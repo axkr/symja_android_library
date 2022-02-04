@@ -4016,6 +4016,7 @@ public class F extends S {
   public static IExpr fractionExact(final double value) {
     return AbstractFractionSym.valueOfExact(value);
   }
+
   public static IAST FractionBox(final IExpr a0, final IExpr a1) {
     return new AST2(FractionBox, a0, a1);
   }
