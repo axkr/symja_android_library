@@ -1,6 +1,8 @@
 package org.matheclipse.core.interfaces;
 
 import org.apfloat.Apfloat;
+import org.hipparchus.complex.Complex;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -50,6 +52,16 @@ public interface ISignedNumber extends INumber {
    * @return the numeric value represented by this object after conversion to type {@code double}.
    */
   public double doubleValue();
+
+  @Override
+  default double evalDouble() throws ArgumentTypeException {
+    return doubleValue();
+  }
+
+  @Override
+  default Complex evalComplex() throws ArgumentTypeException {
+    return new Complex(doubleValue());
+  }
 
   @Override
   public IInteger ceilFraction() throws ArithmeticException;
