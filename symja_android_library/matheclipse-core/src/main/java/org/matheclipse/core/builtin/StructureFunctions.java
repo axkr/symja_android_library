@@ -42,6 +42,7 @@ import org.matheclipse.core.visit.AbstractVisitorLong;
 import org.matheclipse.core.visit.IndexedLevel;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
+import it.unimi.dsi.fastutil.ints.IntList;
 
 public class StructureFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -1277,7 +1278,7 @@ public class StructureFunctions {
         }
 
         IAST tensor = (IAST) ast.arg2();
-        List<Integer> dims = LinearAlgebra.dimensions(tensor, tensor.head());
+        IntList dims = LinearAlgebra.dimensions(tensor, tensor.head());
         if (dims.size() > level) {
           if (level == 0) {
             return tensor.apply(ast.arg1());

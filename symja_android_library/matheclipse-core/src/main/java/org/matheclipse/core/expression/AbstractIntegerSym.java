@@ -39,6 +39,8 @@ import com.google.common.math.BigIntegerMath;
 import edu.jas.arith.PrimeInteger;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 
 /**
  * Abstract base class for IntegerSym and BigIntegerSym
@@ -96,7 +98,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     }
 
     ArrayList<IInteger> primes = new ArrayList<>();
-    ArrayList<Integer> maxPowers = new ArrayList<>();
+    IntList maxPowers = new IntArrayList();
     for (int i = 1; i < factors.size(); i++) {
       IExpr arg = factors.get(i);
       primes.add((IInteger) arg.first());
@@ -108,19 +110,19 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       return divisors;
     }
 
-    Stack<ArrayList<Integer>> stack = new Stack<ArrayList<Integer>>();
-    ArrayList<Integer> emptyPowers = new ArrayList<Integer>();
+    Stack<IntArrayList> stack = new Stack<IntArrayList>();
+    IntArrayList emptyPowers = new IntArrayList();
     for (int i = 0; i < maxPowers.size(); i++) {
       emptyPowers.add(0);
     }
     stack.push(emptyPowers);
 
     while (!stack.isEmpty()) {
-      ArrayList<Integer> powers = stack.pop();
+      IntArrayList powers = stack.pop();
       // compute divisor from stack element
       IInteger divisor = F.C1;
       for (int i = 0; i < powers.size(); i++) {
-        int power = powers.get(i);
+        int power = powers.getInt(i);
         if (power > 0) {
           // multiply entry to divisor
           divisor = divisor.multiply(primes.get(i).powerRational(power));
@@ -128,11 +130,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       }
       if (divisors.add(divisor)) {
         for (int i = 0; i < maxPowers.size(); i++) {
-          int maxPower = maxPowers.get(i);
-          int power = powers.get(i);
+          int maxPower = maxPowers.getInt(i);
+          int power = powers.getInt(i);
           if (power < maxPower) {
             // create new entry
-            ArrayList<Integer> enhancedPowers = new ArrayList<Integer>(powers); // copy
+            IntArrayList enhancedPowers = new IntArrayList(powers); // copy
             enhancedPowers.set(i, power + 1);
             stack.push(enhancedPowers);
           }

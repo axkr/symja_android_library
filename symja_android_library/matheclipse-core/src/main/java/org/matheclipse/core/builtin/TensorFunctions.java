@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -23,6 +22,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
+import it.unimi.dsi.fastutil.ints.IntList;
 
 public class TensorFunctions {
   /**
@@ -179,9 +179,9 @@ public class TensorFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr tensor = ast.arg1();
       if (tensor.isList()) {
-        List<Integer> dims = LinearAlgebra.dimensions((IAST) tensor);
+        IntList dims = LinearAlgebra.dimensions((IAST) tensor);
         if (dims.size() > 0) {
-          IInteger d = F.ZZ(dims.get(dims.size() - 1));
+          IInteger d = F.ZZ(dims.getInt(dims.size() - 1));
           int rank = S.TensorRank.of(engine, tensor).toIntDefault();
           if (rank == 1) {
 
@@ -613,11 +613,11 @@ public class TensorFunctions {
       IExpr arg1 = ast.arg1().normal(false);
       if (arg1.isAST()) {
         IAST tensor = (IAST) arg1;
-        List<Integer> dims = LinearAlgebra.dimensions(tensor, tensor.head());
+        IntList dims = LinearAlgebra.dimensions(tensor, tensor.head());
         if (dims.size() > 0) {
-          if (dims.size() == 2 && dims.get(0).equals(dims.get(1))) {
+          if (dims.size() == 2 && dims.getInt(0) == dims.getInt(1)) {
             // square matrix
-            int rowColumnSize = dims.get(0) + 1;
+            int rowColumnSize = dims.getInt(0) + 1;
             if (rowColumnSize == 2) {
               if (tensor.getPart(1, 1).isZero()) {
                 return F.ZeroSymmetric(F.List());
@@ -773,11 +773,11 @@ public class TensorFunctions {
       }
       if (ast.arg1().isList() && ast.arg2().isList()) {
         IAST tensor1 = (IAST) ast.arg1();
-        List<Integer> dim1 = LinearAlgebra.dimensions(tensor1, S.List);
+        IntList dim1 = LinearAlgebra.dimensions(tensor1, S.List);
         if (dim1.size() > 0) {
           for (int i = 2; i < ast.size(); i++) {
             IAST tensor2 = (IAST) ast.get(i);
-            List<Integer> dim2 = LinearAlgebra.dimensions(tensor2, S.List);
+            IntList dim2 = LinearAlgebra.dimensions(tensor2, S.List);
             if (dim2.size() > 0) {
               IExpr temp = tensorProduct(tensor1, tensor2, dim1.size(), engine);
               if (temp.isPresent()) {
@@ -844,7 +844,7 @@ public class TensorFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
-        List<Integer> intList = LinearAlgebra.dimensions((IAST) arg1, list.head());
+        IntList intList = LinearAlgebra.dimensions((IAST) arg1, list.head());
         return F.ZZ(intList.size());
       } else if (arg1.isNumber()) {
         return F.C0;

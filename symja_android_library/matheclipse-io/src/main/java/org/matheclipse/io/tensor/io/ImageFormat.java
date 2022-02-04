@@ -6,7 +6,6 @@ import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.stream.IntStream;
 import javax.imageio.ImageIO;
 import org.matheclipse.core.builtin.LinearAlgebra;
@@ -16,6 +15,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.io.Extension;
+import it.unimi.dsi.fastutil.ints.IntList;
 
 /**
  * ImageFormat uses the data alignment of {@link BufferedImage}.
@@ -80,10 +80,10 @@ public class ImageFormat {
    * @return image of type BufferedImage.TYPE_BYTE_GRAY or BufferedImage.TYPE_INT_ARGB
    */
   public static BufferedImage of(IAST ast) {
-    List<Integer> dims = LinearAlgebra.dimensions(ast);
+    IntList dims = LinearAlgebra.dimensions(ast);
     if (dims.size() == 2)
-      return toTYPE_BYTE_GRAY(ast, dims.get(1), dims.get(0));
-    return toTYPE_INT(ast, dims.get(1), dims.get(0), BufferedImage.TYPE_INT_ARGB);
+      return toTYPE_BYTE_GRAY(ast, dims.getInt(1), dims.getInt(0));
+    return toTYPE_INT(ast, dims.getInt(1), dims.getInt(0), BufferedImage.TYPE_INT_ARGB);
   }
 
   /**
@@ -134,10 +134,10 @@ public class ImageFormat {
    * @return image of type BufferedImage.TYPE_BYTE_GRAY or BufferedImage.TYPE_INT_BGR
    */
   public static BufferedImage jpg(IAST ast) {
-    List<Integer> dims = LinearAlgebra.dimensions(ast);
+    IntList dims = LinearAlgebra.dimensions(ast);
     if (dims.size() == 2) {
-      return toTYPE_BYTE_GRAY(ast, dims.get(1), dims.get(0));
+      return toTYPE_BYTE_GRAY(ast, dims.getInt(1), dims.getInt(0));
     }
-    return toTYPE_INT(ast, dims.get(1), dims.get(0), BufferedImage.TYPE_INT_BGR);
+    return toTYPE_INT(ast, dims.getInt(1), dims.getInt(0), BufferedImage.TYPE_INT_BGR);
   }
 }

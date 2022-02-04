@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.visit.IVisitor;
+import it.unimi.dsi.fastutil.ints.IntList;
 
 /**
  * (I)nterface for the (A)bstract (S)yntax (T)ree of a given function.
@@ -965,7 +966,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @return the element at the specified positions in this nested AST
    * @throws IndexOutOfBoundsException if one of the positions are out of range
    */
-  public IExpr getPart(final List<Integer> positions);
+  public IExpr getPart(final IntList positions);
 
   /**
    * If this is an <code>IAssociation</code> return the rule at the position. Otherwise call

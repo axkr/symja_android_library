@@ -27,8 +27,6 @@ import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -79,6 +77,8 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 
 public final class LinearAlgebra {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -708,9 +708,7 @@ public final class LinearAlgebra {
       if (arg1.isAST()) {
         IAST list = (IAST) arg1;
         IExpr header = list.head();
-        // List<Integer> dims = new ArrayList<Integer>();
-        // arrayDepthRecursive(list, header, dims);
-        List<Integer> dims = LinearAlgebra.dimensions(list, header);
+        IntList dims = LinearAlgebra.dimensions(list, header);
         return F.ZZ(dims.size());
       }
       if (arg1.isSparseArray()) {
@@ -1365,10 +1363,10 @@ public final class LinearAlgebra {
     private static IAST getDimensions(final IAST ast, int maximumLevel) {
       IAST list = (IAST) ast.arg1();
       IExpr header = list.head();
-      List<Integer> dims = dimensions(list, header, maximumLevel - 1);
+      IntList dims = dimensions(list, header, maximumLevel - 1);
       int dimsSize = dims.size();
       IASTAppendable res = F.ListAlloc(dimsSize);
-      return res.appendArgs(0, dimsSize, i -> F.ZZ(dims.get(i)));
+      return res.appendArgs(0, dimsSize, i -> F.ZZ(dims.getInt(i)));
     }
 
     private IExpr getDimensions(int[] dims, int maximumLevel) {
@@ -1469,15 +1467,15 @@ public final class LinearAlgebra {
           return temp;
         }
 
-        List<Integer> dimensions1 = dimensions(arg1, S.List, Integer.MAX_VALUE, true);
+        IntList dimensions1 = dimensions(arg1, S.List, Integer.MAX_VALUE, true);
         if (dimensions1.size() == 0) {
           return F.NIL;
         }
-        List<Integer> dimensions2 = dimensions(arg2, S.List, Integer.MAX_VALUE, true);
+        IntList dimensions2 = dimensions(arg2, S.List, Integer.MAX_VALUE, true);
         if (dimensions2.size() == 0) {
           return F.NIL;
         }
-        if (!dimensions1.get(dimensions1.size() - 1).equals(dimensions2.get(0))) {
+        if (dimensions1.getInt(dimensions1.size() - 1) != dimensions2.getInt(0)) {
           // Tensors `1` and `2` have incompatible shapes.
           return IOFunctions.printMessage(ast.topHead(), "dotsh", F.List(arg1, arg2), engine);
         }
@@ -2300,22 +2298,21 @@ public final class LinearAlgebra {
       }
 
       private IAST inner() {
-        List<Integer> list1Dimensions = dimensions(list1, list1.head(), Integer.MAX_VALUE);
-        List<Integer> list2Dimensions = dimensions(list2, list2.head(), Integer.MAX_VALUE);
-        list2Dim0 = list2Dimensions.get(0);
-        return recursionInner(new ArrayList<Integer>(), new ArrayList<Integer>(),
+        IntArrayList list1Dimensions = dimensions(list1, list1.head(), Integer.MAX_VALUE);
+        IntArrayList list2Dimensions = dimensions(list2, list2.head(), Integer.MAX_VALUE);
+        list2Dim0 = list2Dimensions.getInt(0);
+        return recursionInner(new IntArrayList(), new IntArrayList(),
             list1Dimensions.subList(0, list1Dimensions.size() - 1),
             list2Dimensions.subList(1, list2Dimensions.size()));
       }
 
-      @SuppressWarnings("unchecked")
-      private IAST recursionInner(ArrayList<Integer> list1Cur, ArrayList<Integer> list2Cur,
-          List<Integer> list1RestDimensions, List<Integer> list2RestDimensions) {
+      private IAST recursionInner(IntList list1Cur, IntList list2Cur, IntList list1RestDimensions,
+          IntList list2RestDimensions) {
         if (list1RestDimensions.size() > 0) {
-          int size = list1RestDimensions.get(0) + 1;
+          int size = list1RestDimensions.getInt(0) + 1;
           IASTAppendable newResult = F.ast(head, size);
           for (int i = 1; i < size; i++) {
-            ArrayList<Integer> list1CurClone = new ArrayList<>(list1Cur);
+            IntArrayList list1CurClone = new IntArrayList(list1Cur);
             list1CurClone.add(i);
             IAST recursionInner = recursionInner(list1CurClone, list2Cur,
                 list1RestDimensions.subList(1, list1RestDimensions.size()), list2RestDimensions);
@@ -2327,10 +2324,10 @@ public final class LinearAlgebra {
           }
           return newResult;
         } else if (list2RestDimensions.size() > 0) {
-          int size = list2RestDimensions.get(0) + 1;
+          int size = list2RestDimensions.getInt(0) + 1;
           IASTAppendable newResult = F.ast(head, size);
           for (int i = 1; i < size; i++) {
-            ArrayList<Integer> list2CurClone = new ArrayList<>(list2Cur);
+            IntArrayList list2CurClone = new IntArrayList(list2Cur);
             list2CurClone.add(i);
             IAST recursionInner = recursionInner(list1Cur, list2CurClone, list1RestDimensions,
                 list2RestDimensions.subList(1, list2RestDimensions.size()));
@@ -2358,12 +2355,12 @@ public final class LinearAlgebra {
         }
       }
 
-      private IAST summand(List<Integer> list1Cur, List<Integer> list2Cur, final int i) {
+      private IAST summand(IntList list1Cur, IntList list2Cur, final int i) {
         IASTAppendable result = F.ast(f, 2);
-        List<Integer> list1CurClone = new ArrayList<>(list1Cur);
+        IntArrayList list1CurClone = new IntArrayList(list1Cur);
         list1CurClone.add(i);
         result.append(list1.getPart(list1CurClone));
-        List<Integer> list2CurClone = new ArrayList<>(list2Cur);
+        IntArrayList list2CurClone = new IntArrayList(list2Cur);
         list2CurClone.add(0, i);
         result.append(list2.getPart(list2CurClone));
         return result;
@@ -2389,8 +2386,8 @@ public final class LinearAlgebra {
         if (!list1.head().equals(head2)) {
           return F.NIL;
         }
-        List<Integer> dim1 = dimensions(list1);
-        List<Integer> dim2 = dimensions(list2);
+        IntArrayList dim1 = dimensions(list1);
+        IntArrayList dim2 = dimensions(list2);
         if (dim1.size() == 0) {
           // Nonatomic expression expected at position `1` in `2`.
           return IOFunctions.printMessage(S.Inner, "normal", F.List(F.C2, list1), EvalEngine.get());
@@ -2399,8 +2396,8 @@ public final class LinearAlgebra {
           // Nonatomic expression expected at position `1` in `2`.
           return IOFunctions.printMessage(S.Inner, "normal", F.List(F.C3, list2), EvalEngine.get());
         }
-        int dimSize1 = dim1.get(dim1.size() - 1);
-        int dimSize2 = dim2.get(0);
+        int dimSize1 = dim1.getInt(dim1.size() - 1);
+        int dimSize2 = dim2.getInt(0);
         if (dimSize1 != dimSize2) {
           // Length `1` of dimension `2` in `3` is incommensurate with length `4` of dimension `5`
           // in `6`.
@@ -4743,7 +4740,7 @@ public final class LinearAlgebra {
       }
 
       try {
-        List<Integer> dimensions = dimensions(arg1, S.List, Integer.MAX_VALUE, true);
+        IntList dimensions = dimensions(arg1, S.List, Integer.MAX_VALUE, true);
         if (dimensions.size() == 0) {
           return F.NIL;
         }
@@ -4805,8 +4802,8 @@ public final class LinearAlgebra {
         // determine the sum of elements with equal indices for tensors
         int minLength = Integer.MAX_VALUE;
         for (int i = 0; i < dimensions.size(); i++) {
-          if (minLength > dimensions.get(i)) {
-            minLength = dimensions.get(i);
+          if (minLength > dimensions.getInt(i)) {
+            minLength = dimensions.getInt(i);
           }
         }
         if (arg1.isSparseArray()) {
@@ -4896,11 +4893,11 @@ public final class LinearAlgebra {
       /** The position from which to extract the current element */
       int[] positions;
 
-      private TransposePermute(IAST tensor, List<Integer> tensorDimensions, int[] permutation) {
+      private TransposePermute(IAST tensor, IntList tensorDimensions, int[] permutation) {
         this.tensor = tensor;
         this.dimensions = new int[tensorDimensions.size()];
         for (int i = 0; i < tensorDimensions.size(); i++) {
-          dimensions[i] = tensorDimensions.get(i);
+          dimensions[i] = tensorDimensions.getInt(i);
         }
         this.permutation = permutation;
         this.positions = new int[dimensions.length];
@@ -4942,7 +4939,7 @@ public final class LinearAlgebra {
       if (ast.size() == 3) {
         if (ast.arg1().isList() && ast.arg2().isList()) {
           IAST tensor = (IAST) ast.arg1();
-          List<Integer> dims = dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
+          IntArrayList dims = dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
           int[] permutation = Validate.checkListOfInts(ast, ast.arg2(), 1, dims.size(), engine);
           if (permutation == null) {
             return F.NIL;
@@ -5376,7 +5373,7 @@ public final class LinearAlgebra {
    * Create a diagonal matrix from <code>valueArray[0]</code> (non-diagonal elements) and <code>
    * valueArray[1]</code> (diagonal elements).
    *
-   * @param valueArray 2 values for non-diagonal and diagonal elemnets of the matrix.
+   * @param valueArray 2 values for non-diagonal and diagonal elements of the matrix.
    * @param dimension of the square matrix
    * @return
    */
@@ -5394,29 +5391,29 @@ public final class LinearAlgebra {
     return matrix;
   }
 
-  public static List<Integer> dimensions(IAST ast) {
-    return dimensionsRecursive(ast, ast.head(), Integer.MAX_VALUE, false, new ArrayList<Integer>());
+  public static IntArrayList dimensions(IAST ast) {
+    return dimensionsRecursive(ast, ast.head(), Integer.MAX_VALUE, false, new IntArrayList());
   }
 
-  public static List<Integer> dimensions(IAST ast, IExpr header) {
+  public static IntArrayList dimensions(IAST ast, IExpr header) {
     return dimensions(ast, header, Integer.MAX_VALUE);
   }
 
-  public static List<Integer> dimensions(IAST ast, IExpr header, int maxLevel) {
-    return dimensionsRecursive(ast, header, maxLevel, false, new ArrayList<Integer>());
+  public static IntArrayList dimensions(IAST ast, IExpr header, int maxLevel) {
+    return dimensionsRecursive(ast, header, maxLevel, false, new IntArrayList());
   }
 
-  public static List<Integer> dimensions(IExpr expr, IExpr header, int maxLevel,
+  public static IntArrayList dimensions(IExpr expr, IExpr header, int maxLevel,
       boolean throwIllegalArgumentException) {
     if (expr.isAST()) {
       return dimensionsRecursive((IAST) expr, header, maxLevel, throwIllegalArgumentException,
-          new ArrayList<Integer>());
+          new IntArrayList());
     }
     if (expr.isSparseArray()) {
       int[] dims = ((ISparseArray) expr).getDimension();
 
       if (dims.length > maxLevel) {
-        ArrayList<Integer> list = new ArrayList<Integer>(maxLevel);
+        IntArrayList list = new IntArrayList(maxLevel);
         if (throwIllegalArgumentException) {
           throw new IllegalArgumentException();
         }
@@ -5425,18 +5422,18 @@ public final class LinearAlgebra {
         }
         return list;
       }
-      ArrayList<Integer> list = new ArrayList<Integer>(dims.length);
+      IntArrayList list = new IntArrayList(dims.length);
       for (int i = 0; i < dims.length; i++) {
         list.add(dims[i]);
       }
       return list;
     }
 
-    return new ArrayList<Integer>();
+    return new IntArrayList();
   }
 
-  private static ArrayList<Integer> dimensionsRecursive(IAST ast, IExpr header, int maxLevel,
-      boolean throwIllegalArgumentException, ArrayList<Integer> dims)
+  private static IntArrayList dimensionsRecursive(IAST ast, IExpr header, int maxLevel,
+      boolean throwIllegalArgumentException, IntArrayList dims)
       throws IllegalArgumentException {
 
     int size = ast.size();
@@ -5491,8 +5488,8 @@ public final class LinearAlgebra {
    * @param dims
    * @return
    */
-  private static ArrayList<Integer> checkRectangularDimensions(IAST ast, IExpr header,
-      boolean throwIllegalArgumentException, ArrayList<Integer> dims)
+  private static IntArrayList checkRectangularDimensions(IAST ast, IExpr header,
+      boolean throwIllegalArgumentException, IntArrayList dims)
       throws IllegalArgumentException {
     if (throwIllegalArgumentException) {
       for (int i = 1; i < ast.size(); i++) {

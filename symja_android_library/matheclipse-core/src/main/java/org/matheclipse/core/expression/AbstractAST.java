@@ -87,6 +87,7 @@ import org.matheclipse.parser.client.ParserConfig;
 import com.google.common.base.Suppliers;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import it.unimi.dsi.fastutil.ints.IntList;
 
 public abstract class AbstractAST implements IASTMutable {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -2339,14 +2340,14 @@ public abstract class AbstractAST implements IASTMutable {
   }
 
   @Override
-  public final IExpr getPart(final List<Integer> positions) {
+  public final IExpr getPart(final IntList positions) {
     IExpr expr = this;
     int size = positions.size();
     for (int i = 0; i < size; i++) {
       if (!expr.isAST()) {
         break;
       }
-      expr = ((IAST) expr).get(positions.get(i));
+      expr = ((IAST) expr).get(positions.getInt(i));
       if (i == (size - 1)) {
         return expr;
       }

@@ -6,7 +6,6 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -29,6 +28,7 @@ import org.organicdesign.fp.collections.ImSet;
 import org.organicdesign.fp.collections.MutMap;
 import org.organicdesign.fp.collections.RrbTree;
 import org.organicdesign.fp.collections.RrbTree.MutRrbt;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
@@ -884,7 +884,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   @Override
   public IAssociation sort(Comparator<IExpr> comp) {
-    List<Integer> indices = new ArrayList<Integer>(argSize());
+    IntArrayList indices = new IntArrayList(argSize());
     for (int i = 1; i < size(); i++) {
       indices.add(i);
     }
@@ -911,12 +911,12 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     for (Entry<IExpr, Integer> element : set) {
       int indx = element.getValue();
       for (int i = 0; i < indices.size(); i++) {
-        if (indices.get(i) == indx) {
+        if (indices.getInt(i) == indx) {
           indx = i + 1;
           break;
         }
       }
-      int newValue = indices.get(indx - 1);
+      int newValue = indices.getInt(indx - 1);
       result.set(indx, getRule(newValue));
       mutable.assoc(element.getKey(), indx);
     }
