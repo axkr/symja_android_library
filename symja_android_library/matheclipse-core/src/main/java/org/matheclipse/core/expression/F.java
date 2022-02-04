@@ -3974,7 +3974,7 @@ public class F extends S {
   /**
    * Create a "fractional" number from a double number.
    *
-   * @param value numerator of the fractional number
+   * @param value the double value which should be converted to a fractional number
    * @param epsilon maximum error allowed. The resulting fraction is within epsilon of value, in
    *        absolute terms
    */
@@ -3985,7 +3985,7 @@ public class F extends S {
   /**
    * Create a "fractional" number from a double number.
    *
-   * @param value numerator of the fractional number
+   * @param value the double value which should be converted to a fractional number
    * @return
    */
   public static IFraction fractionConvergent(final double value) {
@@ -4000,21 +4000,30 @@ public class F extends S {
    * <p>
    * <p>
    * Because double values are not exact in all cases but this method returns an exact
-   * representation of the given double the results may be unexpected. For example for the value
-   * {@code 0.7} the result is {@code 3152519739159347/4503599627370496} and not {@code 7/10} as one
-   * would actually expect.
+   * representation of the given double the results may be unexpected if
+   * {@code attemptNiceFraction = false}. For example for the value {@code 0.7} the result is
+   * {@code 3152519739159347/4503599627370496} and not {@code 7/10} as one would actually
+   * expect.<br>
+   * When this method is called with {@code attemptNiceFraction=true} it is attempted to compute a
+   * result that often meets a human's expectations better and is therefore considered 'nicer'. For
+   * example the input {@code 0.7} then results in {@code 7/10}. The 'nicer' results comes with the
+   * cost of an increased runtime. Nevertheless the same requirement regarding an evaluation of the
+   * result to the exact same value also applies in this case.
    * </p>
    * <p>
    * While in most cases the returned reference is a {@link IFraction}, it is not guaranteed for all
    * cases so users should not expect an IFraction.
    * </p>
    * 
-   * @param value numerator of the fractional number
-   * @return
+   * @param value the double value which should be converted to a fractional number
+   * @param attemptNiceFraction if it should be attempted to compute a 'nicer' fraction
+   * @return an expression without floating-point numbers that evaluates to the exact same value
    * @see AbstractFractionSym#valueOfExact
+   * @see AbstractFractionSym#valueOfConvergent(double)
    */
-  public static IExpr fractionExact(final double value) {
-    return AbstractFractionSym.valueOfExact(value);
+  public static IExpr fractionExact(final double value, final boolean attemptNiceFraction) {
+    return !attemptNiceFraction ? AbstractFractionSym.valueOfExact(value)
+        : AbstractFractionSym.valueOfExactNice(value);
   }
 
   public static IAST FractionBox(final IExpr a0, final IExpr a1) {
