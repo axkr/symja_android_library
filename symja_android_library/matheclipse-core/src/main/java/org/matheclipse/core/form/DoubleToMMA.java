@@ -139,14 +139,20 @@ public class DoubleToMMA {
    */
   public static void doubleToScientific(Appendable buf, double value, int significantFigures,
       int exponent, boolean texScientificNotation) throws IOException {
-    String s;
     int start;
-    s = String.format(Locale.US, "%1." + (significantFigures - 1) + "E", value);
+    String s = String.format(Locale.US, "%1." + (significantFigures - 1) + "E", value);
     start = s.indexOf('E');
     if (exponent == Integer.MIN_VALUE) {
       exponent = Integer.parseInt(s.substring(start + 1));
     }
     s = s.substring(0, start);
+
+    if (s.charAt(s.length() - 1) == '0') {
+      int indx = s.indexOf(".");
+      if (indx > 0) {
+        s = removeTrailingZeroes(s);
+      }
+    }
     buf.append(s.trim());
     if (texScientificNotation) {
       buf.append("*10^{");
@@ -156,6 +162,20 @@ public class DoubleToMMA {
       buf.append("*10^");
       buf.append(Integer.toString(exponent));
     }
+  }
+
+  /**
+   * Remove zeros from the end of the string.
+   * 
+   * @param s
+   * @return
+   */
+  private static String removeTrailingZeroes(String s) {
+    StringBuilder sb = new StringBuilder(s);
+    while (sb.charAt(sb.length() - 1) == '0') {
+      sb.setLength(sb.length() - 1);
+    }
+    return sb.toString();
   }
 
   /**
