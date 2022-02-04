@@ -240,7 +240,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   public static IFraction valueOfConvergent(double value) {
-    IFraction fraction = convergeFraction(value, 20, 1E-4);
+    IFraction fraction = convergeFraction(value, 20, 0.5E-4);
     if (fraction == null) {
       throw new NoSuchElementException("No converging fraction found for value " + value);
     }
@@ -249,7 +249,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
   private static IFraction convergeFraction(double value, int maxIterations, double lhs) {
     return rationalize(value,
-        v -> converge(v, maxIterations, (p, q) -> FastMath.abs(p * q - v * q * q) < lhs));
+        v -> converge(v, maxIterations, (p, q) -> FastMath.abs(p * q - v * q * q) <= lhs));
   }
 
   private static IFraction rationalize(double value, DoubleFunction<BigFraction> f) {
@@ -264,6 +264,100 @@ public abstract class AbstractFractionSym implements IFraction {
     }
   }
 
+  /**
+   * Rationalizes the given double value exactly.
+   * <p>
+   * This methods returns an {@link IExpr} that, when being evaluated to a double value (using
+   * {@link IExpr#evalDouble()}), results to the exact same value (per bit) as the given one.
+   * <p>
+   * Although it is not possible to express all real numbers as a fraction of two integers, it is
+   * possible for all finite floating-point numbers to be expressed as fraction with exact same
+   * value, because floating-point numbers are finite in their representation and therefore cannot
+   * express all real numbers exactly. But this allows the exact representation as a fraction.<br>
+   * Nevertheless this may lead to unexpected results. For example the value {@code 0.7} is
+   * rationalized to {@code 3152519739159347/4503599627370496} and not the expected {@code 7/10}.
+   * </p>
+   * </p>
+   * There is no guarantee made about the specific type of the returned expression. Not all possible
+   * values of a double, especially small ones, can be expressed as {@link IFraction} in such way
+   * that it evaluates to the same double value. In such cases the value is expressed by
+   * {@code  mantissa * 2 ^ power}.
+   * 
+   * @param value the double value to convert
+   * @return an IExpr that evaluates to the exact same double value
+   */
+  public static IExpr valueOfExact(double value) {
+    IExpr ii = getInfiniteOrInteger(value);
+    if (ii != null) {
+      return ii;
+    }
+    BigFraction exactFraction = new BigFraction(value); // computes exact fraction representation
+    int denominatorExponent2 = exactFraction.getDenominator().bitLength() - 1;
+    if (denominatorExponent2 <= Double.MAX_EXPONENT) {
+      return valueOf(exactFraction);
+    }
+    // The fractions denominator cannot be expressed as double value and would lead to an infinite
+    // denominator double-value this has the consequence that the fraction will become return zero
+    // when evaluated to double. Instead express the value as mantissa2 * 2 ^ exp2
+
+    int exp2 = Math.getExponent(value);
+    double mantissa2 = value * Math.pow(2, -exp2);
+
+    IExpr mantissaFraction = getInfiniteOrInteger(mantissa2); // try shortcut
+    if (mantissaFraction == null) {
+      mantissaFraction = valueOf(new BigFraction(mantissa2));
+    }
+    return F.Times(mantissaFraction, F.Power(F.C2, F.ZZ(exp2)));
+  }
+
+  private static IExpr getInfiniteOrInteger(double value) {
+    if (Double.isNaN(value)) {
+      return F.NIL;
+    } else if (value == Double.POSITIVE_INFINITY) {
+      return F.CInfinity;
+    } else if (value == Double.NEGATIVE_INFINITY) {
+      return F.CNInfinity;
+    }
+    long integerValue = (long) value;
+    if (value == integerValue) { // also catches value == 0
+      return F.ZZ(integerValue); // take shortcut
+    }
+    return null;
+  }
+
+  /**
+   * Rationalizes the given double value exactly while tending to return results that are closer to
+   * what a human would expect and are therefore considered 'nicer'.
+   * <p>
+   * This method has the same constraints for the returned value like {@link #valueOfExact(double)},
+   * which often does return less 'nice' results, but tends to run longer.
+   * </p>
+   * 
+   * @param value the double value to convert
+   * @return an IExpr that evaluates to the exact same double value
+   * @see #valueOfExact(double)
+   * @see #valueOfConvergent(double)
+   */
+  public static IExpr valueOfExactNice(double value) {
+    IExpr ii = getInfiniteOrInteger(value);
+    if (ii != null) {
+      return ii;
+    }
+    if (FastMath.abs(Math.getExponent(value)) < 100) {
+      // For values in the order of small powers of ten and only a few decimals (e.g. 3.75, 0.01,
+      // 124.6) the convergence approach usually achieves results that are closer to what a human
+      // would compute and are therefore considered 'nicer'. To honor this we try a few convergence
+      // iterations a take a result if it is exact.
+      // The number of maxIterations is a tuning parameter and reflects how bad we want nicer
+      // results. Since valueOfExact() is faster the fewer iterations are attempted before giving up
+      // the faster this method is in average.
+      IFraction fraction = convergeFraction(value, 5, 0.0);
+      if (fraction != null && value == fraction.doubleValue()) {
+        return fraction;
+      }
+    }
+    return valueOfExact(value);
+  }
 
   /** {@inheritDoc} */
   @Override
