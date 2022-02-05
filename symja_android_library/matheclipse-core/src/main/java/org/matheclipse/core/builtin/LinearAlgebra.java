@@ -1363,8 +1363,8 @@ public final class LinearAlgebra {
     private static IAST getDimensions(final IAST ast, int maximumLevel) {
       IAST list = (IAST) ast.arg1();
       IExpr header = list.head();
-      IntList dims = dimensions(list, header, maximumLevel - 1);
-      int dimsSize = dims.size();
+      final IntList dims = dimensions(list, header, maximumLevel - 1);
+      final int dimsSize = dims.size();
       IASTAppendable res = F.ListAlloc(dimsSize);
       return res.appendArgs(0, dimsSize, i -> F.ZZ(dims.getInt(i)));
     }
@@ -1467,29 +1467,31 @@ public final class LinearAlgebra {
           return temp;
         }
 
-        IntList dimensions1 = dimensions(arg1, S.List, Integer.MAX_VALUE, true);
-        if (dimensions1.size() == 0) {
+        final IntList dimensions1 = dimensions(arg1, S.List, Integer.MAX_VALUE, true);
+        final int dims1Size = dimensions1.size();
+        if (dims1Size == 0) {
           return F.NIL;
         }
-        IntList dimensions2 = dimensions(arg2, S.List, Integer.MAX_VALUE, true);
-        if (dimensions2.size() == 0) {
+        final IntList dimensions2 = dimensions(arg2, S.List, Integer.MAX_VALUE, true);
+        final int dims2Size = dimensions2.size();
+        if (dims2Size == 0) {
           return F.NIL;
         }
-        if (dimensions1.getInt(dimensions1.size() - 1) != dimensions2.getInt(0)) {
+        if (dimensions1.getInt(dims1Size - 1) != dimensions2.getInt(0)) {
           // Tensors `1` and `2` have incompatible shapes.
           return IOFunctions.printMessage(ast.topHead(), "dotsh", F.List(arg1, arg2), engine);
         }
 
-        if (dimensions1.size() == 2) {
+        if (dims1Size == 2) {
           FieldMatrix<IExpr> matrix0;
           matrix0 = Convert.list2Matrix(arg1);
           if (matrix0 != null) {
-            if (dimensions2.size() == 2) {
+            if (dims2Size == 2) {
               FieldMatrix<IExpr> matrix1 = Convert.list2Matrix(arg2);
               if (matrix1 != null) {
                 return Convert.matrix2Expr(matrix0.multiply(matrix1));
               }
-            } else if (dimensions2.size() == 1) {
+            } else if (dims2Size == 1) {
               FieldVector<IExpr> vector1 = Convert.list2Vector(arg2);
               if (vector1 != null) {
                 return Convert.vector2Expr(matrix0.operate(vector1));
@@ -1497,8 +1499,8 @@ public final class LinearAlgebra {
             }
           }
         } else {
-          if (dimensions1.size() == 2) {
-            int dim = dimensions1.get(0);
+          if (dims1Size == 2) {
+            int dim = dimensions1.getInt(0);
             if (dim == 0) {
               if (arg2.isVector() == 0) {
                 return F.C0;
@@ -1506,12 +1508,12 @@ public final class LinearAlgebra {
             } else {
               FieldVector<IExpr> vector0 = Convert.list2Vector(arg1);
               if (vector0 != null) {
-                if (dimensions2.size() == 2) {
+                if (dims2Size == 2) {
                   FieldMatrix<IExpr> matrix1 = Convert.list2Matrix(arg2);
                   if (matrix1 != null) {
                     return Convert.vector2Expr(matrix1.preMultiply(vector0));
                   }
-                } else if (dimensions2.size() == 1) {
+                } else if (dims2Size == 1) {
                   FieldVector<IExpr> vector1 = Convert.list2Vector(arg2);
                   if (vector1 != null) {
                     return vector0.dotProduct(vector1);
@@ -4740,8 +4742,9 @@ public final class LinearAlgebra {
       }
 
       try {
-        IntList dimensions = dimensions(arg1, S.List, Integer.MAX_VALUE, true);
-        if (dimensions.size() == 0) {
+        final IntList dimensions = dimensions(arg1, S.List, Integer.MAX_VALUE, true);
+        final int dimsSize = dimensions.size();
+        if (dimsSize == 0) {
           return F.NIL;
         }
 
@@ -4751,67 +4754,23 @@ public final class LinearAlgebra {
             return F.NIL;
           }
 
-          // TODO calculate for level restriction
+          // TODO calculate for level restrictions
           return F.NIL;
         }
 
-        // if (level < 0) {
-        // if (dimensions.size() == 2) {
-        // int rowLength = dimensions.get(0);
-        // int columnLength = dimensions.get(1);
-        // if (arg1.isAST()) {
-        // final IAST mat = (IAST) arg1;
-        // int len = rowLength < columnLength ? rowLength : columnLength;
-        // IASTAppendable tr = F.ast(header, len, true);
-        // mat.forEach(1, len + 1, (x, i) -> tr.set(i, ((IAST) x).get(i)));
-        // return tr;
-        // } else {
-        // FieldMatrix<IExpr> matrix = Convert.list2Matrix(arg1);
-        // if (matrix != null) {
-        // int len = rowLength < columnLength ? rowLength : columnLength;
-        // IASTAppendable tr = F.ast(header, len, true);
-        // for (int i = 0; i < len; i++) {
-        // tr.set(i + 1, matrix.getEntry(i, i));
-        // }
-        // return tr;
-        // }
-        // }
-        // return F.NIL;
-        // }
-        //
-        // if (dimensions.size() == 1) {
-        // int length = dimensions.get(0);
-        // if (arg1.isAST()) {
-        // IASTAppendable tr = F.ast(header, length, true);
-        // ((IAST) arg1).forEach(1, length + 1, (x, i) -> tr.set(i, x));
-        // return tr;
-        // } else {
-        // FieldVector<IExpr> vector = Convert.list2Vector(arg1);
-        // if (vector != null) {
-        // IASTAppendable tr = F.ast(header, length, true);
-        // for (int i = 0; i < length; i++) {
-        // tr.set(i + 1, vector.getEntry(i));
-        // }
-        // return tr;
-        // }
-        // }
-        // return F.NIL;
-        // }
-        // }
-
         // determine the sum of elements with equal indices for tensors
         int minLength = Integer.MAX_VALUE;
-        for (int i = 0; i < dimensions.size(); i++) {
+        for (int i = 0; i < dimsSize; i++) {
           if (minLength > dimensions.getInt(i)) {
             minLength = dimensions.getInt(i);
           }
         }
         if (arg1.isSparseArray()) {
           final ISparseArray tensor = (ISparseArray) arg1;
-          int[] part = new int[dimensions.size()];
+          int[] part = new int[dimsSize];
           IASTMutable tr = F.astMutable(header, minLength++);
           for (int d = 1; d < minLength; d++) {
-            for (int i = 0; i < dimensions.size(); i++) {
+            for (int i = 0; i < dimsSize; i++) {
               part[i] = d;
             }
             tr.set(d, tensor.getIndex(part));
@@ -4821,10 +4780,10 @@ public final class LinearAlgebra {
         }
 
         final IAST tensor = (IAST) arg1.normal(false);
-        int[] part = new int[dimensions.size()];
+        int[] part = new int[dimsSize];
         IASTMutable tr = F.astMutable(header, minLength++);
         for (int d = 1; d < minLength; d++) {
-          for (int i = 0; i < dimensions.size(); i++) {
+          for (int i = 0; i < dimsSize; i++) {
             part[i] = d;
           }
           tr.set(d, tensor.getPart(part));
@@ -5355,7 +5314,7 @@ public final class LinearAlgebra {
    * the matrix are already checked by the caller.
    *
    * @param matrix a 3x3 matrix
-   * @return
+   * @return the expression for the determinant
    */
   public static IExpr determinant3x3(final FieldMatrix<IExpr> matrix) {
     // 3x3 matrix
@@ -5375,9 +5334,9 @@ public final class LinearAlgebra {
    *
    * @param valueArray 2 values for non-diagonal and diagonal elements of the matrix.
    * @param dimension of the square matrix
-   * @return
+   * @return the diagonal matrix
    */
-  public static IAST diagonalMatrix(final IExpr[] valueArray, int dimension) {
+  private static IAST diagonalMatrix(final IExpr[] valueArray, int dimension) {
     final int[] indexArray = new int[2];
     indexArray[0] = dimension;
     indexArray[1] = dimension;
@@ -5385,24 +5344,64 @@ public final class LinearAlgebra {
         new IndexTableGenerator(indexArray, S.List, new IndexFunctionDiagonal(valueArray));
     final IAST matrix = (IAST) generator.table();
     // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-    // isMatrix() must be
-    // used!
+    // isMatrix() must be used!
     matrix.isMatrix(true);
     return matrix;
   }
 
+  /**
+   * Return the <a href=
+   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
+   * of an {@link IAST}.
+   * 
+   * @param ast
+   * @return a list of size <code>0</code> if no dimensions are found
+   */
   public static IntArrayList dimensions(IAST ast) {
     return dimensionsRecursive(ast, ast.head(), Integer.MAX_VALUE, false, new IntArrayList());
   }
 
+  /**
+   * Return the <a href=
+   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
+   * of an {@link IAST}. All (sub-)expressions in the dimension must have the same
+   * <code>header</code>.
+   * 
+   * @param ast
+   * @param header the header, which all sub-expressions of the detected dimension must contain
+   * @return a list of size <code>0</code> if no dimensions are found
+   */
   public static IntArrayList dimensions(IAST ast, IExpr header) {
     return dimensions(ast, header, Integer.MAX_VALUE);
   }
 
+  /**
+   * Return the <a href=
+   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
+   * of an {@link IAST}. All (sub-)expressions in the dimension must have the same
+   * <code>header</code>.
+   * 
+   * @param ast
+   * @param header the header, which all sub-expressions of the detected dimension must contain
+   * @param maxLevel
+   * @return a list of size <code>0</code> if no dimensions are found
+   */
   public static IntArrayList dimensions(IAST ast, IExpr header, int maxLevel) {
     return dimensionsRecursive(ast, header, maxLevel, false, new IntArrayList());
   }
 
+  /**
+   * Return the <a href=
+   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
+   * of an <code>expr</code>. All (sub-)expressions in the dimension must have the same
+   * <code>header</code>.
+   * 
+   * @param expr
+   * @param header the header, which all sub-expressions of the detected dimension must contain
+   * @param maxLevel the maximum level (depth) of analyzing for the dimension
+   * @param throwIllegalArgumentException
+   * @return a list of size <code>0</code> if no dimensions are found
+   */
   public static IntArrayList dimensions(IExpr expr, IExpr header, int maxLevel,
       boolean throwIllegalArgumentException) {
     if (expr.isAST()) {
@@ -5432,9 +5431,21 @@ public final class LinearAlgebra {
     return new IntArrayList();
   }
 
+  /**
+   * Determine the <a href=
+   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
+   * recursively.
+   * 
+   * @param ast
+   * @param header the header, which all sub-expressions of the detected dimension must contain
+   * @param maxLevel the maximum level (depth) of analyzing for the dimension
+   * @param throwIllegalArgumentException
+   * @param dims
+   * @return a list of size <code>0</code> if no dimensions are found
+   * @throws IllegalArgumentException
+   */
   private static IntArrayList dimensionsRecursive(IAST ast, IExpr header, int maxLevel,
-      boolean throwIllegalArgumentException, IntArrayList dims)
-      throws IllegalArgumentException {
+      boolean throwIllegalArgumentException, IntArrayList dims) throws IllegalArgumentException {
 
     int size = ast.size();
     if (header.equals(ast.head())) {
@@ -5489,8 +5500,7 @@ public final class LinearAlgebra {
    * @return
    */
   private static IntArrayList checkRectangularDimensions(IAST ast, IExpr header,
-      boolean throwIllegalArgumentException, IntArrayList dims)
-      throws IllegalArgumentException {
+      boolean throwIllegalArgumentException, IntArrayList dims) throws IllegalArgumentException {
     if (throwIllegalArgumentException) {
       for (int i = 1; i < ast.size(); i++) {
         IExpr arg = ast.get(i);

@@ -8,7 +8,6 @@ import java.io.ObjectOutput;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -28,6 +27,7 @@ import org.matheclipse.parser.trie.Trie;
 import com.google.common.primitives.UnsignedBytes;
 import com.google.common.primitives.UnsignedInts;
 import com.google.common.primitives.UnsignedLong;
+import it.unimi.dsi.fastutil.ints.IntList;
 
 public class NumericArrayExpr extends DataExpr<Object> implements INumericArray, Externalizable {
 
@@ -564,12 +564,13 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
   private static NumericArrayExpr newList(final IAST list, byte type)
       throws RangeException, TypeException {
     int[] dimension = null;
-    List<Integer> dims = LinearAlgebra.dimensions(list);
-    if (dims != null && dims.size() > 0) {
+    final IntList dims = LinearAlgebra.dimensions(list);
+    final int dimsSize = dims.size();
+    if (dimsSize > 0) {
       int size = 1;
-      dimension = new int[dims.size()];
-      for (int i = 0; i < dims.size(); i++) {
-        dimension[i] = dims.get(i);
+      dimension = new int[dimsSize];
+      for (int i = 0; i < dimsSize; i++) {
+        dimension[i] = dims.getInt(i);
         size *= dimension[i];
       }
 

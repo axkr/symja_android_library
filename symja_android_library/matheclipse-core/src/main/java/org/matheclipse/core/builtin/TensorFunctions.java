@@ -179,9 +179,10 @@ public class TensorFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr tensor = ast.arg1();
       if (tensor.isList()) {
-        IntList dims = LinearAlgebra.dimensions((IAST) tensor);
-        if (dims.size() > 0) {
-          IInteger d = F.ZZ(dims.getInt(dims.size() - 1));
+        final IntList dims = LinearAlgebra.dimensions((IAST) tensor);
+        final int dimsSize = dims.size();
+        if (dimsSize > 0) {
+          IInteger d = F.ZZ(dims.getInt(dimsSize - 1));
           int rank = S.TensorRank.of(engine, tensor).toIntDefault();
           if (rank == 1) {
 
@@ -613,9 +614,10 @@ public class TensorFunctions {
       IExpr arg1 = ast.arg1().normal(false);
       if (arg1.isAST()) {
         IAST tensor = (IAST) arg1;
-        IntList dims = LinearAlgebra.dimensions(tensor, tensor.head());
-        if (dims.size() > 0) {
-          if (dims.size() == 2 && dims.getInt(0) == dims.getInt(1)) {
+        final IntList dims = LinearAlgebra.dimensions(tensor, tensor.head());
+        final int dimsSize = dims.size();
+        if (dimsSize > 0) {
+          if (dimsSize == 2 && dims.getInt(0) == dims.getInt(1)) {
             // square matrix
             int rowColumnSize = dims.getInt(0) + 1;
             if (rowColumnSize == 2) {

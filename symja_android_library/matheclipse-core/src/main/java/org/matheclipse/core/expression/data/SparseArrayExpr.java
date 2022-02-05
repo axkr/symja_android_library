@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,6 +40,7 @@ import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieNode;
+import it.unimi.dsi.fastutil.ints.IntList;
 
 /**
  * Sparse array implementation. <b>Note:</b> in Symja sparse arrays the offset is +1 compared to
@@ -1211,15 +1211,16 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created.
    */
   public static SparseArrayExpr newDenseList(IAST denseList, IExpr defaultValue) {
-    List<Integer> dims = LinearAlgebra.dimensions(denseList);
-    if (dims != null && dims.size() > 0) {
+    IntList dims = LinearAlgebra.dimensions(denseList);
+    int dimsSize = dims.size();
+    if (dimsSize > 0) {
       defaultValue = defaultValue.orElse(F.C0);
       IAST listOfRules = SparseArrayExpr.arrayRules(denseList, defaultValue);
       if (listOfRules.isPresent()) {
         SparseArrayExpr result = SparseArrayExpr.newArrayRules(listOfRules, null, -1, defaultValue);
-        int[] dimension = new int[dims.size()];
-        for (int i = 0; i < dims.size(); i++) {
-          dimension[i] = dims.get(i);
+        int[] dimension = new int[dimsSize];
+        for (int i = 0; i < dimsSize; i++) {
+          dimension[i] = dims.getInt(i);
         }
         result.fDimension = dimension;
         return result;
@@ -1872,14 +1873,14 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   }
 
   /**
-   * Determine the value for the given <code>index</code>. Return the default value if no element is
-   * stored in the internal map.
+   * Determine the value for the given <code>index</code>. Return the value stored at the
+   * <code>index</code> position or otherwise the default value of this sparse array.
    *
    * @param index
-   * @return
+   * @return the default value if no element is stored for the index in the internal map.
    */
   @Override
-  public IExpr getIndex(int[] index) {
+  public IExpr getIndex(int... index) {
     IExpr expr = fData.get(index);
     if (expr == null) {
       return fDefaultValue;
