@@ -84,7 +84,8 @@ public class ArchUnitTests {
   @ArchTest
   public static final ArchRule LogicNG = classes().that() //
       .resideInAPackage("org.logicng..") //
-      .should().onlyBeAccessed().byAnyPackage("org.logicng..", "..core.builtin..");
+      .should().onlyBeAccessed().byAnyPackage("org.logicng..", //
+          "..core.builtin..");
 
   // JGraphT library
   // TODO reduce package dependencies
@@ -97,6 +98,20 @@ public class ArchUnitTests {
           "..core.expression", //
           "..core.expression.data", //
           "..core.reflection.system..");
+
+  @ArchTest
+  public static final ArchRule apfloatRule = classes().that().resideInAPackage("org.apfloat..") //
+      .should().onlyBeAccessed().byAnyPackage( //
+          "org.apfloat..", //
+          "..core.builtin..", //
+          "..core.convert..", //
+          "..core.eval..", //
+          "..core.expression", //
+          "..core.form..", //
+          "..core.interfaces", //
+          "..io.form.mathml", //
+          "..io.others", //
+          "..io.system");
 
   @ArchIgnore
   @ArchTest

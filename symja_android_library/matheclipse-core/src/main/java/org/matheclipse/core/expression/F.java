@@ -2788,7 +2788,7 @@ public class F extends S {
   }
 
   /**
-   * Create a Complex(a, b) symbolic expression?
+   * Create a <code>Complex(a, b)</code> AST symbolic expression.
    *
    * @param a0
    * @param a1
@@ -2798,18 +2798,67 @@ public class F extends S {
     return new AST2(Complex, a0, a1);
   }
 
+  /**
+   * Return a {@link ApcomplexNum} which wraps a {@link Apcomplex} arbitrary precision
+   * floating-point complex number.
+   * 
+   * @param c
+   * @return
+   */
   public static IComplexNum complexNum(final Apcomplex c) {
     return ApcomplexNum.valueOf(c);
   }
 
-  public static IComplexNum complexNum(final Apfloat r) {
-    return ApcomplexNum.valueOf(r, Apcomplex.ZERO);
+  /**
+   * Return a {@link ApcomplexNum} which wraps two {@link Apfloat} arbitrary precision
+   * floating-point numbers for the real and imaginary part with imaginary part set to
+   * <code>0</code>.
+   * 
+   * @param realPart
+   * @return a {@link ApcomplexNum} which wraps two {@link Apfloat} arbitrary precision
+   *         floating-point numbers for the real and imaginary part with imaginary part set to
+   *         <code>0</code>.
+   */
+  public static IComplexNum complexNum(final Apfloat realPart) {
+    return ApcomplexNum.valueOf(realPart, Apcomplex.ZERO);
   }
 
-  public static IComplexNum complexNum(final Apfloat r, final Apfloat i) {
-    return ApcomplexNum.valueOf(r, i);
+
+  /**
+   * Return a {@link ApcomplexNum} which wraps two {@link Apfloat} arbitrary precision
+   * floating-point numbers for the real and imaginary part.
+   * 
+   * @param realPart
+   * @param imaginaryPart
+   * @return a {@link ApcomplexNum} which wraps two {@link Apfloat} arbitrary precision
+   *         floating-point numbers for the real and imaginary part.
+   */
+  public static IComplexNum complexNum(final Apfloat realPart, final Apfloat imaginaryPart) {
+    return ApcomplexNum.valueOf(realPart, imaginaryPart);
   }
 
+  /**
+   * Return a {@link ApcomplexNum} which wraps two {@link Apfloat} arbitrary precision
+   * floating-point numbers for the real and imaginary part.
+   * 
+   * @param realPart
+   * @param imaginaryPart
+   * @param precision
+   * @return a {@link ApcomplexNum} which wraps two {@link Apfloat} arbitrary precision
+   *         floating-point numbers for the real and imaginary part.
+   */
+  public static IComplexNum complexNum(String realPart, String imaginaryPart, long precision) {
+    return ApcomplexNum.valueOf(new Apfloat(realPart, precision),
+        new Apfloat(imaginaryPart, precision));
+  }
+
+  /**
+   * Return a {@link ComplexNum} which wraps a {@link Complex} number with Java double values for
+   * the real and imaginary part.
+   * 
+   * @param c
+   * @return
+   */
   public static IComplexNum complexNum(final Complex c) {
     return ComplexNum.valueOf(c);
   }
@@ -2818,7 +2867,7 @@ public class F extends S {
    * Create a complex numeric number with imaginary part = 0.0
    *
    * @param r the real part of the number
-   * @return
+   * @return a complex numeric number with imaginary part = 0.0
    */
   public static IComplexNum complexNum(final double r) {
     return complexNum(r, 0.0);
@@ -6292,18 +6341,54 @@ public class F extends S {
     return new AST1(NullSpace, a0);
   }
 
+  /**
+   * Return a {@link ApfloatNum} which wraps a {@link Apfloat} arbitrary precision floating-point
+   * number.
+   * 
+   * @param af
+   * @return
+   */
   public static INum num(final Apfloat af) {
     return ApfloatNum.valueOf(af);
   }
 
   /**
-   * Create a numeric value
+   * Create a numeric value from the input string. If {@link EvalEngine#isArbitraryMode()} is
+   * <code>true</code> return a {@link ApfloatNum} which wraps a {@link Apfloat} arbitrary precision
+   * floating-point number with the engines precision.
    *
-   * @param d
+   * @param valueString the numeric value represented as a string.
    * @return
    */
-  public static INum num(final double d) {
-    return Num.valueOf(d);
+  public static INum num(final String valueString) {
+    EvalEngine engine = EvalEngine.get();
+    if (engine.isArbitraryMode()) {
+      return ApfloatNum.valueOf(valueString, engine.getNumericPrecision());
+    }
+    return Num.valueOf(Double.parseDouble(valueString));
+  }
+
+  /**
+   * Return a {@link ApfloatNum} which wraps a {@link Apfloat} arbitrary precision floating-point
+   * number.
+   * 
+   * @param numberStr
+   * @param precision
+   * @return a {@link ApfloatNum} which wraps a {@link Apfloat} Arbitrary precision floating-point
+   *         number.
+   */
+  public static INum num(String numberStr, long precision) {
+    return num(new Apfloat(numberStr, precision));
+  }
+
+  /**
+   * Return a {@link Num} which wraps a Java double number.
+   *
+   * @param value
+   * @return
+   */
+  public static INum num(final double value) {
+    return Num.valueOf(value);
   }
 
   public static INum num(final IFraction value) {
@@ -6322,20 +6407,6 @@ public class F extends S {
       return ApfloatNum.valueOf(value.toBigNumerator());
     }
     return num(value.doubleValue());
-  }
-
-  /**
-   * Create a numeric value from the input string.
-   *
-   * @param valueString the numeric value represented as a string.
-   * @return
-   */
-  public static INum num(final String valueString) {
-    EvalEngine engine = EvalEngine.get();
-    if (engine.isArbitraryMode()) {
-      return ApfloatNum.valueOf(valueString, engine.getNumericPrecision());
-    }
-    return Num.valueOf(Double.parseDouble(valueString));
   }
 
   /**

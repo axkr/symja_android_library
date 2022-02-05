@@ -15,9 +15,6 @@ package org.matheclipse.core.parser;
 
 import java.util.List;
 import java.util.Locale;
-import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
-import org.apfloat.Apint;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.PatternMatching;
@@ -34,10 +31,8 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
@@ -54,28 +49,6 @@ import org.matheclipse.parser.client.operator.Operator;
  * parser</a> for the idea, how to parse the operators depending on their precedence.
  */
 public class ExprParser extends Scanner {
-  static class NVisitorExpr extends VisitorExpr {
-    final int fPrecision;
-
-    NVisitorExpr(int precision) {
-      super();
-      fPrecision = precision;
-    }
-
-    @Override
-    public IExpr visit(INum element) {
-      if (element instanceof NumStr) {
-        Apfloat apfloatValue = new Apfloat(((NumStr) element).getFloatStr(), fPrecision);
-        int exponent = ((NumStr) element).getExponent();
-        if (exponent != 1) {
-          // value * 10 ^ exponent
-          return F.num(apfloatValue.multiply(ApfloatMath.pow(new Apint(10), new Apint(exponent))));
-        }
-        return F.num(apfloatValue);
-      }
-      return F.NIL;
-    }
-  }
 
   static {
     F.initSymbols();
@@ -929,7 +902,7 @@ public class ExprParser extends Scanner {
             if (precision < ParserConfig.MACHINE_PRECISION) {
               precision = ParserConfig.MACHINE_PRECISION;
             }
-            return F.num(new Apfloat(numberStr, precision));
+            return F.num(numberStr, precision);
           } else {
             if (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
               fCurrentPosition++;
@@ -937,7 +910,7 @@ public class ExprParser extends Scanner {
               if (precision < ParserConfig.MACHINE_PRECISION) {
                 precision = ParserConfig.MACHINE_PRECISION;
               }
-              return F.num(new Apfloat(numberStr, precision));
+              return F.num( numberStr, precision );
             } else {
               getNextToken();
               return F.num(numberStr);

@@ -8,7 +8,6 @@ import java.io.FileReader;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -121,7 +120,7 @@ public class ExprEvaluatorTests {
         F.complex(2.0, 1.0), //
         F.complex(-2.0, -2.0), //
         F.complex(-2.0, 2.0), //
-        F.complexNum(new Apfloat("-0.8", 30), new Apfloat("1.2", 30)), //
+        F.complexNum("-0.8", "1.2", 30), //
         // F.complexNum(new Apfloat(Long.MIN_VALUE, 30), new Apfloat(Long.MAX_VALUE,
         // 30)), //
         F.num(0.5), //
@@ -132,7 +131,7 @@ public class ExprEvaluatorTests {
         F.num(Math.PI), //
         F.num(-Math.E), //
         F.num(Math.E), //
-        F.num(new Apfloat("-0.8", 30)), //
+        F.num("-0.8", 30), //
         // F.num(new Apfloat(Long.MAX_VALUE, 30)), //
         // F.num(new Apfloat(Long.MIN_VALUE, 30)), //
         F.C0, //
@@ -187,8 +186,8 @@ public class ExprEvaluatorTests {
         F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
         F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
         F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
-        F.List(F.num(new Apfloat("-3.1415", 30)), F.num(new Apfloat("2.987", 30)),
-            F.num(new Apfloat(-1, 30)), F.num(new Apfloat("0.0", 30)), F.num(new Apfloat(1, 30))), //
+        F.List(F.num("-3.1415", 30), F.num("2.987", 30), F.num( "-1", 30 ),
+            F.num("0.0", 30), F.num("1", 30)), //
         F.List(F.CN1, F.CN2, F.C3), //
         F.List(F.CN1D2, F.CN2, F.C3), //
         F.List(F.x, F.CN2, F.C3), //
@@ -441,7 +440,7 @@ public class ExprEvaluatorTests {
         F.complex(2.0, 1.0), //
         F.complex(-2.0, -2.0), //
         F.complex(-2.0, 2.0), //
-        F.complexNum(new Apfloat("-0.8", 30), new Apfloat("1.2", 30)), //
+        F.complexNum("-0.8", "1.2", 30), //
         // F.complexNum(new Apfloat(Long.MIN_VALUE, 30), new Apfloat(Long.MAX_VALUE,
         // 30)), //
         F.num(0.5), //
@@ -452,7 +451,7 @@ public class ExprEvaluatorTests {
         F.num(Math.PI), //
         F.num(-Math.E), //
         F.num(Math.E), //
-        F.num(new Apfloat("-0.8", 30)), //
+        F.num("-0.8", 30), //
         // F.num(new Apfloat(Long.MAX_VALUE, 30)), //
         // F.num(new Apfloat(Long.MIN_VALUE, 30)), //
         F.C0, //
@@ -522,8 +521,8 @@ public class ExprEvaluatorTests {
         F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
         F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
         F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
-        F.List(F.num(new Apfloat("-3.1415", 30)), F.num(new Apfloat("2.987", 30)),
-            F.num(new Apfloat(-1, 30)), F.num(new Apfloat("0.0", 30)), F.num(new Apfloat(1, 30))), //
+        F.List(F.num("-3.1415", 30), F.num("2.987", 30), F.num("-1", 30), F.num("0.0", 30),
+            F.num("1", 30)), //
         F.List(F.CN1, F.CN2, F.C3), //
         F.List(F.CN1D2, F.CN2, F.C3), //
         F.List(F.x, F.CN2, F.C3), //
@@ -859,7 +858,7 @@ public class ExprEvaluatorTests {
         // System.out.print(".");
         thread = new SlowComputationThread(">> " + ast.toString(), engine);
         thread.start();
-        
+
         // IAST debugTest = (IAST) engine.parse(
         // "Integrate(2/(1+Sqrt(5)))[x^(Heads->True), {{0}}+I,OptionValue(
         // {{1}}),{x,5,Quantity(1.2,\"m\")}]");
