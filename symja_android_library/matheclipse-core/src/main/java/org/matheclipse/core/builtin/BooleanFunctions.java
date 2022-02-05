@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.logicng.datastructures.Assignment;
 import org.logicng.datastructures.Tristate;
 import org.logicng.formulas.CFalse;
@@ -59,9 +57,10 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.math.MathException;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
 public final class BooleanFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public static final Equal CONST_EQUAL = new Equal();
   public static final Greater CONST_GREATER = new Greater();
@@ -152,8 +151,9 @@ public final class BooleanFunctions {
      * @param vars an array of variables
      * @return
      */
-    public static Map<String, Integer> name2Position(Variable[] vars) {
-      Map<String, Integer> map = new HashMap<String, Integer>();
+    public static Object2IntMap<String> name2Position(Variable[] vars) {
+      Object2IntMap<String> map = new Object2IntArrayMap<String>();
+      map.defaultReturnValue(-1);
       for (int i = 0; i < vars.length; i++) {
         map.put(vars[i].name(), i);
       }
@@ -460,7 +460,7 @@ public final class BooleanFunctions {
      * @param map a map which maps a variable name to the position in the resulting list
      * @return
      */
-    public IAST literals2BooleanList(final SortedSet<Literal> literals, Map<String, Integer> map) {
+    public IAST literals2BooleanList(final SortedSet<Literal> literals, Object2IntMap<String> map) {
       IASTMutable list = F.astMutable(S.List, map.size());
 
       // initialize all list elements with Null
@@ -469,8 +469,8 @@ public final class BooleanFunctions {
       }
 
       for (Literal a : literals) {
-        final Integer val = map.get(a.name());
-        if (val != null) {
+        int val = map.getInt(a.name());
+        if (val != -1) {
           if (a.phase()) {
             list.set(val + 1, S.True);
           } else {
@@ -481,17 +481,18 @@ public final class BooleanFunctions {
       return list;
     }
 
-    public IAST literals2VariableList(final SortedSet<Literal> literals, Map<String, Integer> map) {
+    public IAST literals2VariableList(final SortedSet<Literal> literals,
+        Object2IntMap<String> map) {
       IASTMutable list = F.astMutable(S.List, map.size());
 
-      // initialize all list elements with Null
+      // initialize all list elements with S.Null
       for (int i = 0; i < map.size(); i++) {
         list.set(i + 1, S.Null);
       }
 
       for (Literal a : literals) {
-        final Integer val = map.get(a.name());
-        if (val != null) {
+        final int val = map.getInt(a.name());
+        if (val != -1) {
           if (a.phase()) {
             list.set(val + 1, F.Rule(variable2symbolMap.get(a.variable()), S.True));
           } else {
@@ -4537,7 +4538,7 @@ public final class BooleanFunctions {
     Variable[] vars = lf.ast2Variable(variables);
     List<Assignment> assignments =
         logicNGSatisfiabilityInstances(booleanExpression, vars, lf, maxChoices);
-    Map<String, Integer> map = LogicFormula.name2Position(vars);
+    Object2IntMap<String> map = LogicFormula.name2Position(vars);
     IASTAppendable list = F.ListAlloc(assignments.size());
     for (int i = 0; i < assignments.size(); i++) {
       if (i >= maxChoices) {
@@ -4568,15 +4569,13 @@ public final class BooleanFunctions {
     Variable[] vars = lf.ast2Variable(variables);
     List<Assignment> assignments =
         logicNGSatisfiabilityInstances(booleanExpression, vars, lf, maximumNumberOfResults);
-    Map<String, Integer> map = LogicFormula.name2Position(vars);
+    Object2IntMap<String> map = LogicFormula.name2Position(vars);
     IASTAppendable list = F.ListAlloc(assignments.size());
     for (int i = 0; i < assignments.size(); i++) {
       if (i >= maximumNumberOfResults) {
         break;
       }
-      list.append( //
-          lf.literals2VariableList(assignments.get(i).literals(), map) //
-      );
+      list.append(lf.literals2VariableList(assignments.get(i).literals(), map));
     }
     EvalAttributes.sort(list, Comparators.REVERSE_CANONICAL_COMPARATOR);
     return list;
@@ -4597,7 +4596,8 @@ public final class BooleanFunctions {
       if (method.equals("DNF") || method.equals("SOP")) {
         return new DNFFactorization();
       } else if (method.equals("CNF") || method.equals("POS")) {
-        return new BDDCNFTransformation(); // new CNFFactorization( );
+        // don't use CNFFactorization, because of bad memory space complexity
+        return new BDDCNFTransformation();
       }
       // `1` currently not supported in `2`.
       IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(lastArg, S.Method), engine);

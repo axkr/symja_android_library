@@ -508,11 +508,9 @@ public abstract class AbstractFractionSym implements IFraction {
     if (numerator != 1) {
       d = d.powerRational(numerator);
     }
-    // SortedMap<Integer, Integer> bMap = new TreeMap<Integer, Integer>();
     Int2IntMap bMap = new Int2IntRBTreeMap();
     BigInteger number = b.toBigNumerator();
     IAST bAST = AbstractIntegerSym.factorBigInteger(number, isNegative, numerator, root, bMap);
-    // SortedMap<Integer, Integer> dMap = new TreeMap<Integer, Integer>();
     Int2IntMap dMap = new Int2IntRBTreeMap();
     number = d.toBigNumerator();
     IAST dAST = AbstractIntegerSym.factorBigInteger(number, false, numerator, root, dMap);
