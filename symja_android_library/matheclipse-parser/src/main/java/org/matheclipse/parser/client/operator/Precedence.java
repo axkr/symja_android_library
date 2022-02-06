@@ -12,6 +12,7 @@ public class Precedence {
   public static final int CIRCLETIMES = 420;
   public static final int COLON = 80;
   public static final int COMPOSITION = 625;
+  public static final int DISTRIBUTED = 250;
   public static final int RIGHTCOMPOSITION = 648;
   public static final int COMPOUNDEXPRESSION = 10;
   /**

@@ -18097,6 +18097,18 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPiecewiseExpand() {
+    // PiecewiseExpand
+    check("PiecewiseExpand(f(x) + Piecewise({{g(x),x>=0}},0) + z(x) )", //
+        "Piecewise({{f(x)+g(x)+z(x),x>=0}},f(x)+z(x))");
+    check("PiecewiseExpand(f(x) + Piecewise({{g(x),x>=0}},0) )", //
+        "Piecewise({{f(x)+g(x),x>=0}},f(x))");
+
+    check("PiecewiseExpand(f(x) * Piecewise({{g(x),x>=0}},0) * z(x) )", //
+        "Piecewise({{f(x)*g(x)*z(x),x>=0}},0)");
+    check("PiecewiseExpand(f(x) * Piecewise({{g(x),x>=0}},0) )", //
+        "Piecewise({{f(x)*g(x),x>=0}},0)");
+    check("PiecewiseExpand(f(x)*Boole(x))", //
+        "Piecewise({{f(x),x}},0)");
     check("PiecewiseExpand(KroneckerDelta(x))", //
         "Piecewise({{1,x==0}},0)");
     check("PiecewiseExpand(DiscreteDelta(x))", //
@@ -20259,8 +20271,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testExpectation() {
     // TODO improve integration for piecewise functions
-    // check("Expectation((x + 3)/(x + 5), Distributed(x, ExponentialDistribution(2)))", //
-    // "Expectation((3+x)/(5+x),Distributed(x,ExponentialDistribution(2)))");
+    check("Expectation((x + 3)/(x + 5), Distributed(x, ExponentialDistribution(2)))", //
+        "Expectation((3+x)/(5+x),x\uF3D2ExponentialDistribution(2))");
+
+    check("Expectation(2*x+3, x \\[Distributed] NormalDistribution() )", //
+        "3");
     check("Expectation(3*x^2 + 5, Distributed(x, NormalDistribution()))", //
         "8");
 

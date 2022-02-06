@@ -277,8 +277,8 @@ public class ExprParserFactory implements IParserFactory {
       "Function", "Greater", "PreDecrement", "Subtract", "SetDelayed", "Alternatives", "AddTo",
       "Repeated", "ReplaceAll", "TagSet", "Composition", "RightComposition", "StringExpression",
       "Pattern", "TwoWayRule", "TwoWayRule", "DirectedEdge", "UndirectedEdge", "CenterDot",
-      "CircleDot", "CircleTimes", "Element", "Intersection", "NotEqual", "Wedge", "TensorProduct",
-      "Equivalent", "Implies", "§TILDE§"};
+      "CircleDot", "CircleTimes", "Distributed", "Element", "Intersection", "NotEqual", "Wedge",
+      "TensorProduct", "Equivalent", "Implies", "§TILDE§"};
 
   static final String[] OPERATOR_STRINGS = {"::", "<<", "?", "??", "?", "//@", "*=", "+", "^=", ";",
       "@", "/@", "=.", "@@", "@@@", "//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*",
@@ -293,6 +293,7 @@ public class ExprParserFactory implements IParserFactory {
       "\u00B7", // CenterDot
       "\u2299", // CircleDot
       "\u2297", // CircleTimes
+      "\uF3D2", // Distributed
       "\u2208", // Element
       "\u22C2", // Intersection
       "\u2260", // NotEqual
@@ -424,6 +425,8 @@ public class ExprParserFactory implements IParserFactory {
           new InfixExprOperator("\u2299", "CircleDot", Precedence.CIRCLEDOT,
               InfixExprOperator.NONE), //
           new InfixExprOperator("\u2297", "CircleTimes", Precedence.CIRCLETIMES,
+              InfixExprOperator.NONE), //
+          new InfixExprOperator("\uF3D2", "Distributed", Precedence.DISTRIBUTED,
               InfixExprOperator.NONE), //
           new InfixExprOperator("\u2208", "Element", Precedence.ELEMENT, InfixExprOperator.NONE), //
           new InfixExprOperator("\u22C2", "Intersection", Precedence.INTERSECTION,

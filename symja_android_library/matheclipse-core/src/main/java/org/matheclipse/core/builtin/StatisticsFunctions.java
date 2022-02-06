@@ -3552,6 +3552,11 @@ public class StatisticsFunctions {
       }
       return F.NIL;
     }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
   }
 
   private static final class ExponentialDistribution extends AbstractEvaluator
