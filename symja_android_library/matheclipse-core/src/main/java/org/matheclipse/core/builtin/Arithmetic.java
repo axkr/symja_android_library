@@ -6860,6 +6860,49 @@ public final class Arithmetic {
    * @return {@link F#NIL} if evaluation wasn't possible
    */
   public static IAST piecewiseExpand(final IAST function, IBuiltInSymbol domain) {
+    EvalEngine engine = EvalEngine.get();
+    if (function.isPlus()) {
+      int piecewisePosition = function.indexOf(x -> x.isPiecewise() != null);
+      if (piecewisePosition > 0) {
+        IAST piecewise = (IAST) function.get(piecewisePosition);
+        int[] piecewiseDimension = piecewise.isPiecewise();
+        if (piecewiseDimension[0] > 0 && piecewiseDimension[1] == 2) {
+          IAST piecewiseList = (IAST) piecewise.arg1();
+          IExpr rest = function.removeAtCopy(piecewisePosition).oneIdentity1();
+          IASTAppendable result = F.ListAlloc(piecewiseList.size());
+          for (int i = 1; i < piecewiseList.size(); i++) {
+            IAST subList = (IAST) piecewiseList.get(i);
+            result.append(F.List(F.Plus(rest, subList.arg1()), subList.arg2()));
+          }
+          if (piecewise.argSize() == 2) {
+            return F.Piecewise(result, S.Plus.of(engine, rest, piecewise.arg2()));
+          }
+          return F.Piecewise(result);
+        }
+      }
+      return F.NIL;
+    }
+    if (function.isTimes()) {
+      int piecewisePosition = function.indexOf(x -> x.isPiecewise() != null);
+      if (piecewisePosition > 0) {
+        IAST piecewise = (IAST) function.get(piecewisePosition);
+        int[] piecewiseDimension = piecewise.isPiecewise();
+        if (piecewiseDimension[0] > 0 && piecewiseDimension[1] == 2) {
+          IAST piecewiseList = (IAST) piecewise.arg1();
+          IExpr rest = function.removeAtCopy(piecewisePosition).oneIdentity1();
+          IASTAppendable result = F.ListAlloc(piecewiseList.size());
+          for (int i = 1; i < piecewiseList.size(); i++) {
+            IAST subList = (IAST) piecewiseList.get(i);
+            result.append(F.List(F.Times(rest, subList.arg1()), subList.arg2()));
+          }
+          if (piecewise.argSize() == 2) {
+            return F.Piecewise(result, S.Times.of(engine, rest, piecewise.arg2()));
+          }
+          return F.Piecewise(result);
+        }
+      }
+      return F.NIL;
+    }
     if (function.argSize() == 1) {
       IExpr x = function.arg1();
       if ((domain.equals(S.Reals) || function.arg1().isRealResult())) {
@@ -6873,6 +6916,9 @@ public final class Arithmetic {
           return F.Piecewise(F.List(F.List(F.CN1, F.Less(x, F.C0)), //
               F.List(F.C1, F.Greater(x, F.C0))), F.C0);
         }
+      }
+      if (function.isAST(S.Boole)) {
+        return F.Piecewise(F.List(F.List(F.C1, x)), F.C0);
       }
     }
     if (function.isAST(S.BernsteinBasis, 4)) {
