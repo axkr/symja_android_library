@@ -31,8 +31,8 @@ import org.matheclipse.parser.client.operator.PrefixOperator;
 
 /**
  * Create an expression of the <code>ASTNode</code> class-hierarchy from a math formulas string
- * representation
- *
+ * representation.
+ * 
  * <p>
  * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator -precedence
  * parser</a> for the idea, how to parse the operators depending on their precedence.

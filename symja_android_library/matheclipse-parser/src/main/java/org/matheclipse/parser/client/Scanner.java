@@ -99,8 +99,8 @@ public abstract class Scanner {
 
   /**
    * New line token for character '\n'. This token will only be scanned, if {@link #fPackageMode} is
-   * <code>true</code> and the recursion depth {@link #fRecursionDepth} of the parsed AST nodes has
-   * depth <code>0</code>. Otherwise the newline is scanned like a whitespace character.
+   * <code>true</code> and the recursion depth {@link #fRecursionDepth} of the already parsed AST
+   * nodes has depth <code>0</code>. Otherwise the newline is scanned like a whitespace character.
    */
   protected static final int TT_NEWLINE = 150;
 
