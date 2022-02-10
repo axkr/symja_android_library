@@ -65,6 +65,7 @@ import edu.jas.ufd.GreatestCommonDivisor;
 import edu.jas.ufd.GreatestCommonDivisorAbstract;
 
 public class PolynomialFunctions {
+
   private static final Logger LOGGER = LogManager.getLogger();
 
   /**
@@ -980,13 +981,14 @@ public class PolynomialFunctions {
         try {
           // check if b is a polynomial otherwise check ArithmeticException, ClassCastException
           ring.create(b);
+          IExpr resultant = resultant(a, b, x, engine);
+          if (resultant.isPresent()) {
+            return F.Together(resultant);
+          }
         } catch (RuntimeException ex) {
+          // Polynomial expected at position `1` in `2`.
           return IOFunctions.printMessage(ast.topHead(), "polynomial", F.List(ast.get(2), F.C2),
               engine);
-        }
-        IExpr resultant = resultant(a, b, x, engine);
-        if (resultant.isPresent()) {
-          return F.Together(resultant);
         }
       }
       return F.NIL;
