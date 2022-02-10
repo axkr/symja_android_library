@@ -910,7 +910,7 @@ public class ExprParser extends Scanner {
               if (precision < ParserConfig.MACHINE_PRECISION) {
                 precision = ParserConfig.MACHINE_PRECISION;
               }
-              return F.num( numberStr, precision );
+              return F.num(numberStr, precision);
             } else {
               getNextToken();
               return F.num(numberStr);
@@ -1276,7 +1276,12 @@ public class ExprParser extends Scanner {
           return parseInfixOperator(span, infixOperator);
         }
       }
-      span.append(parseExpression(parsePrimary(0), 0));
+      if (fToken == TT_NEWLINE || fToken == TT_EOF) {
+        span.append(S.All);
+        getNextToken();
+      } else {
+        span.append(parseExpression(parsePrimary(0), 0));
+      }
       if (fToken == TT_SPAN) {
         getNextToken();
         if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE

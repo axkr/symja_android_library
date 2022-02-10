@@ -1111,7 +1111,12 @@ public class Parser extends Scanner {
           return parseInfixOperator(span, infixOperator);
         }
       }
-      span.add(parseExpression(parsePrimary(0), 0));
+      if (fToken == TT_NEWLINE || fToken == TT_EOF) {
+        span.add(new SymbolNode("All"));
+        getNextToken();
+      } else {
+        span.add(parseExpression(parsePrimary(0), 0));
+      }
       if (fToken == TT_SPAN) {
         getNextToken();
         if (fToken == TT_COMMA || fToken == TT_PARTCLOSE || fToken == TT_ARGUMENTS_CLOSE

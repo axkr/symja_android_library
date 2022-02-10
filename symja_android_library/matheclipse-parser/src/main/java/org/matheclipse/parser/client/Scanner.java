@@ -97,7 +97,11 @@ public abstract class Scanner {
   /** Token type: pattern ''' (single apostrophe) for writing derivatives */
   protected static final int TT_DERIVATIVE = 147;
 
-  /** New line token */
+  /**
+   * New line token for character '\n'. This token will only be scanned, if {@link #fPackageMode} is
+   * <code>true</code> and the recursion depth {@link #fRecursionDepth} of the parsed AST nodes has
+   * depth <code>0</code>. Otherwise the newline is scanned like a whitespace character.
+   */
   protected static final int TT_NEWLINE = 150;
 
   // ----------------optimized identifier management------------------
@@ -310,7 +314,7 @@ public abstract class Scanner {
   /** Row counter for reporting the row where a syntax error occurred. */
   protected int fRowCounter;
 
-  /** Is true if the parser should parse a <code>package</code>. */
+  /** Is true if the parser is parsing a <code>package</code>. */
   protected boolean fPackageMode = false;
 
   /** Current rows start position for reporting syntax errors */

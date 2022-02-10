@@ -10147,6 +10147,8 @@ public class LowercaseTestCase extends AbstractTestCase {
     // new lambda operator |->
     check("Array(x |-> 1+x^2, 10)", //
         "{2,5,10,17,26,37,50,65,82,101}");
+    check("(x |-> {#1, x}) /@ #2 &[n0, {n1, n2, n3, n4, n5}]", //
+        "{{n0,n1},{n0,n2},{n0,n3},{n0,n4},{n0,n5}}");
   }
 
   public void testFunctionRange() {
@@ -23123,6 +23125,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testSpan() {
+    check("OddQ^(n) && n > 0;;", //
+        "(OddQ^n&&n>0);;All");
     check("Infinity[[2;;4]]", //
         "Infinity[[2;;4]]");
 
