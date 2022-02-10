@@ -127,12 +127,12 @@ public class JSBuilder {
 
   /** CSS libraries */
   private static final String[] CSS_CDN_JSXGRAPH =
-      {"https://cdn.jsdelivr.net/npm/jsxgraph@1.4.1/distrib/jsxgraph.css"};
+      {"https://cdn.jsdelivr.net/npm/jsxgraph@1.4.2/distrib/jsxgraph.css"};
 
   /** CDN JavaScript libraries */
   private static final String[] JS_CDN_JSXGRAPH =
       {"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.6/build/math.js",
-          "https://cdn.jsdelivr.net/npm/jsxgraph@1.4.1/distrib/jsxgraphcore.js"};
+          "https://cdn.jsdelivr.net/npm/jsxgraph@1.4.2/distrib/jsxgraphcore.js"};
 
   /** CSS libraries */
   private static final String[] CSS_CDN_MATHCELL = {};
