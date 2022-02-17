@@ -3391,8 +3391,16 @@ public class F extends S {
     return new AST1(Eigenvectors, m);
   }
 
-  public static IAST Element(final IExpr x, final IExpr domain) {
-    return new AST2(Element, x, domain);
+  /**
+   * Set a domain as an assumption for a variable.
+   * 
+   * @param variable the variable for which an assumption should be defined
+   * @param domain very often used domains are {@link S#Booleans}, {@link S#Integers},
+   *        {@link S#Reals}
+   * @return
+   */
+  public static IAST Element(final IExpr variable, final IExpr domain) {
+    return new AST2(Element, variable, domain);
   }
 
   /**
@@ -7569,8 +7577,12 @@ public class F extends S {
     return new AST1(RomanNumeral, a);
   }
 
-  public static IAST Root(final IExpr a0, final IExpr a1) {
-    return new AST2(Root, a0, a1);
+  public static IAST Root(final IExpr function, final IExpr k) {
+    return new AST2(Root, function, k);
+  }
+
+  public static IAST Root(final IExpr function, final int k) {
+    return new AST2(Root, function, F.ZZ(k));
   }
 
   public static IAST Roots(final IExpr a0) {

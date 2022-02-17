@@ -29,6 +29,8 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.Assumptions;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -1044,64 +1046,42 @@ public class Solve extends AbstractFunctionEvaluator {
                 engine);
           }
 
-          // if (domain.equals(S.Reals)) {
-          // if (!userDefinedVariables.isEmpty()) {
-          // IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast,
-          // 1);
-          // if (!equationsAndInequations.isEmpty()) {
-          // try {
-          // // call choco solver
-          // try {
-          // IAST resultList =
-          // ChocoConvert.realSolve(
-          // equationsAndInequations,
-          // equationVariables,
-          // userDefinedVariables,
-          // engine);
-          // if (resultList.isPresent()) {
-          // EvalAttributes.sort((IASTMutable) resultList);
-          // return resultList;
-          // }
-          // } catch (RuntimeException rex) {
-          // // try 2nd solver
-          // LOGGER.error("Solve.of() failed", rex);
-          // }
-          // } catch (LimitException le) {
-          // LOGGER.debug("Solve.of() failed", le);
-          // throw le;
-          // } catch (RuntimeException rex) {
-          // LOGGER.debug("Solve.of() failed", rex);
-          // return engine.printMessage(
-          // "Solve: " + "Reals solution not found: " + rex.getMessage());
-          // }
-          // }
-          // }
-          // }
-
           if (!domain.equals(S.Reals) && !domain.equals(S.Complexes)) {
             Level level = engine.getLogLevel();
             LOGGER.log(level, "{}: domain definition expected at position 3 instead of {}",
                 ast.topHead(), domain);
             return F.NIL;
           }
+
         }
-        IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
-        IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL, isNumeric);
-        boolean numericFlag = isNumeric[0] || numeric;
-        if (lists[2].isPresent()) {
-          IExpr result = solveNumeric(lists[2], numericFlag, engine);
+
+        IAssumptions oldAssumptions = engine.getAssumptions();
+        try {
+          IAssumptions assum = setVariablesReals(userDefinedVariables, domain);
+          if (assum != null) {
+            engine.setAssumptions(assum);
+          }
+          IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
+          IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL, isNumeric);
+          boolean numericFlag = isNumeric[0] || numeric;
+          if (lists[2].isPresent()) {
+            IExpr result = solveNumeric(lists[2], numericFlag, engine);
+            if (!result.isPresent()) {
+              return IOFunctions.printMessage(ast.topHead(), "nsmet", F.List(ast.topHead()),
+                  engine);
+            }
+            return checkDomain(result, domain);
+          }
+          IASTMutable termsEqualZeroList = lists[0];
+          IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag,
+              userDefinedVariables, engine);
           if (!result.isPresent()) {
             return IOFunctions.printMessage(ast.topHead(), "nsmet", F.List(ast.topHead()), engine);
           }
           return checkDomain(result, domain);
+        } finally {
+          engine.setAssumptions(oldAssumptions);
         }
-        IASTMutable termsEqualZeroList = lists[0];
-        IExpr result =
-            solveRecursive(termsEqualZeroList, lists[1], numericFlag, userDefinedVariables, engine);
-        if (!result.isPresent()) {
-          return IOFunctions.printMessage(ast.topHead(), "nsmet", F.List(ast.topHead()), engine);
-        }
-        return checkDomain(result, domain);
       }
     } catch (ValidateException ve) {
       return IOFunctions.printMessage(S.Solve, ve, engine);
@@ -1111,6 +1091,27 @@ public class Solve extends AbstractFunctionEvaluator {
       LOGGER.debug("Solve.of() failed() failed", rex);
     }
     return F.NIL;
+  }
+
+  /**
+   * If <code>domain</code> is {@link S#Reals} create the {@link F#Element(IExpr, Reals)} assumption
+   * for each variable.
+   * 
+   * @param userDefinedVariables
+   * @param domain
+   * @return <code>null</code> if no assumption was created
+   */
+  private static IAssumptions setVariablesReals(IAST userDefinedVariables, ISymbol domain) {
+    IAssumptions assum;
+    if (domain.equals(S.Reals)) {
+      IASTAppendable list = F.ListAlloc(userDefinedVariables.size());
+      for (int i = 1; i < userDefinedVariables.size(); i++) {
+        list.append(F.Element(userDefinedVariables.get(i), domain));
+      }
+      assum = Assumptions.getInstance(list);
+      return assum;
+    }
+    return null;
   }
 
   public static IExpr solveIntegers(final IAST ast, IAST equationVariables,
@@ -1176,8 +1177,8 @@ public class Solve extends AbstractFunctionEvaluator {
         IASTAppendable appendable;
         for (int i = 1; i < expr.size(); i++) {
           IAST listOfRules = (IAST) ((IAST) expr).get(i);
-          appendable = listOfRules.copyAppendable();
           if (!isComplex(listOfRules)) {
+            appendable = listOfRules.copyAppendable();
             result.append(appendable);
           }
         }
@@ -1204,6 +1205,58 @@ public class Solve extends AbstractFunctionEvaluator {
     }
     return false;
   }
+
+  // /**
+  // * Check if all rules in the list return a real result. Try to get a real solution from
+  // * <code>ConditionalExpression</code>s.
+  // *
+  // * @param listOfRules a list of rules <code>Rule(variable, value)</code>
+  // * @return
+  // */
+  // private static boolean isReal(IASTAppendable listOfRules) {
+  // if (listOfRules.isListOfRules(false)) {
+  // for (int i = 1; i < listOfRules.size(); i++) {
+  // IAST rule = listOfRules.getAST(i);
+  // IExpr rhs = rule.second();
+  // if (!rhs.isRealResult()) {
+  // try {
+  // IExpr res = rhs.replaceAll(x -> rewriteConditionalExpressionIfReal(x));
+  // if (res.isPresent()) {
+  // listOfRules.set(i, rule.setAtCopy(2, res));
+  // continue;
+  // }
+  // return false;
+  // } catch (NoEvalException noeex) {
+  // return false;
+  // }
+  // }
+  // }
+  // return true;
+  // }
+  // return false;
+  // }
+
+  // /**
+  // * If <code>expr</code> is a <code>ConditionalExpression</code> try to rewrite <code>expr</code>
+  // * as a real expression.
+  // *
+  // * @param expr
+  // * @return {@link F#NIL} if no <code>ConditionalExpression</code> was matched
+  // * @throws NoEvalException if <code>ConditionalExpression</code> can not be rewritten as a real
+  // * result.
+  // */
+  // private static IExpr rewriteConditionalExpressionIfReal(IExpr expr) throws NoEvalException {
+  // if (expr.isConditionalExpression()) {
+  // IExpr function = expr.first();
+  // IExpr condition = expr.last();
+  // IExpr result = EvalEngine.get().evaluate(F.Refine(F.Re(function), condition));
+  // if (result.isRealResult()) {
+  // return result;
+  // }
+  // throw NoEvalException.CONST;
+  // }
+  // return F.NIL;
+  // }
 
   /**
    * Solve the list of equations recursively. Return a list of rules <code>

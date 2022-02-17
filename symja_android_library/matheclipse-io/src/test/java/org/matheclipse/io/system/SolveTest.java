@@ -1285,6 +1285,12 @@ public class SolveTest extends AbstractTestCase {
             + "14-Sqrt(197)}}");
   }
 
+  public void testSolveConditionalExpression() {
+    check("Solve(E^x-2==0,x,Reals)", //
+        "{{x->Log(2)}}");
+    check("Solve(E^x-2==0,x)", //
+        "{{x->ConditionalExpression(I*2*Pi*C(1)+Log(2),C(1)∈Integers)}}");
+  }
 
   /** The JUnit setup method */
   @Override

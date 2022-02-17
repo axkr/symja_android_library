@@ -3227,6 +3227,9 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isIntegerResult() {
+    if (S.True.equals(AbstractAssumptions.assumeReal(this))) {
+      return true;
+    }
     ISymbol symbol = topHead();
     if (symbol.equals(S.Floor) || symbol.equals(S.Ceiling) || symbol.equals(S.IntegerPart)) {
       return true;
@@ -3966,6 +3969,9 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public boolean isRealResult() {
+    if (S.True.equals(AbstractAssumptions.assumeReal(this))) {
+      return true;
+    }
     IExpr head = head();
     if (size() == 2 && S.Cos.equals(head) && S.Sin.equals(head)) {
       // TODO add more functions

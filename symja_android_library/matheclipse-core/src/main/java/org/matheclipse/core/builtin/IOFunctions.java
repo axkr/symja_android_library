@@ -11,6 +11,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -706,11 +707,13 @@ public class IOFunctions {
       "wrsym", "Symbol `1` is Protected.", //
       "ucdec", "An invalid unicode sequence was encountered and ignored.", //
       // Symja special
+      "zzdivzero", "Division by zero `1`.", //
       "zzmaxast", "Maximum AST limit `1` exceeded.", //
       "zznotimpl", "Function `1` not implemented.", //
       "zzprime", "Maximum Prime limit `1` exceeded.", //
       "zzregex", "Regex expression `1` error message: `2`.", //
       "zzapfloatcld", "Complete loss of accurate digits (apfloat)." //
+
   };
 
   public static void initialize() {
@@ -767,11 +770,36 @@ public class IOFunctions {
         F.List(head, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);
   }
 
+  /**
+   * Print the Symja <code>ValidateException</code> into the default error log.
+   * 
+   * @param symbol
+   * @param ve
+   * @param engine
+   * @return
+   */
   public static IExpr printMessage(ISymbol symbol, final ValidateException ve, EvalEngine engine) {
     if (Config.SHOW_STACKTRACE) {
       ve.printStackTrace();
     }
     LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, ve.getMessage());
+    return F.NIL;
+  }
+
+  /**
+   * Print the hipparchus <code>MathRuntimeException</code> into the default error log.
+   * 
+   * @param symbol
+   * @param mex
+   * @param engine
+   * @return
+   */
+  public static IExpr printMessage(ISymbol symbol, final MathRuntimeException mex,
+      EvalEngine engine) {
+    if (Config.SHOW_STACKTRACE) {
+      mex.printStackTrace();
+    }
+    LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, mex.getMessage());
     return F.NIL;
   }
 

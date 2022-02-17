@@ -478,7 +478,13 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
                 engine);
           } else if (base.isFree(predicate, true)) {
             if (base.isE()) {
-              // E ^ f(x)
+              if (exponent.isRealResult()) {
+                // E ^ f(x) /; Element(f(x), Reals)
+                return extractVariableRecursive(exponent, F.Log(exprWithoutVariable), predicate,
+                    variable, multipleValues,
+                    engine);
+              }
+              // E ^ f(x) /; Element(f(x), Complexes)
               IExpr c1 = F.C(1);
               final IExpr exprwovar = exprWithoutVariable;
               IExpr temp =

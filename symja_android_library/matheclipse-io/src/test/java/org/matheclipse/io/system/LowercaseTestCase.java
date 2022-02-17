@@ -20970,6 +20970,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     // "True");
     // check("Refine((-1)^(x+y), Element(k/2, Integers))", //
     // "(-1)^y");
+
+    check("Refine(Re(2*I*Pi*C(1) + Log(2)) ,Element(C(1) ,Reals))", //
+        "Log(2)");
     check("Refine(7+2*m+3*n>0)", //
         "2*m+3*n>-7");
     check("Refine(Sqrt(x^2), x>0)", //
