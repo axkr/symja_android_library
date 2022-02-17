@@ -397,6 +397,12 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
 
   /** {@inheritDoc} */
   @Override
+  public boolean isNumericMode() {
+    return true;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public int[] isPiecewise() {
     return null;
   }

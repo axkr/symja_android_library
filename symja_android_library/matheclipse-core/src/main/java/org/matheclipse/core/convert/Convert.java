@@ -68,29 +68,8 @@ public class Convert {
     return map;
   }
 
-  /**
-   * Returns a <code>FieldMatrix<IExpr></code> if possible.
-   *
-   * @param expr
-   * @return <code>null</code> if the conversion isn't possible.
-   * @throws ClassCastException
-   * @throws IndexOutOfBoundsException
-   */
-  public static FieldMatrix<IExpr> list2Matrix(final IExpr expr)
-      throws ClassCastException, IndexOutOfBoundsException {
-    return list2Matrix(expr, false);
-  }
 
-  /**
-   * Returns a <code>FieldMatrix<IExpr></code> if possible.
-   *
-   * @param expr
-   * @param ifNumericReturnNull if all elements are numeric stop conversion by returning null
-   * @return <code>null</code> if the conversion isn't possible.
-   * @throws ClassCastException
-   * @throws IndexOutOfBoundsException
-   */
-  public static FieldMatrix<IExpr> list2Matrix(final IExpr expr, boolean ifNumericReturnNull)
+  private static IExpr[][] list2Array(final IExpr expr, boolean ifNumericReturnNull)
       throws ClassCastException, IndexOutOfBoundsException {
     if (expr == null) {
       return null;
@@ -99,17 +78,13 @@ public class Convert {
     if (dim == null || dim[0] == 0 || dim[1] == 0) {
       return null;
     }
-    if (expr.isSparseArray()) {
-      ISparseArray array = (ISparseArray) expr;
-      return array.toFieldMatrix(false);
-    }
     if (expr.isList()) {
       IAST list = (IAST) expr;
       IAST currInRow = (IAST) list.arg1();
       if (currInRow.isAST0()) {
         // special case 0-Matrix
         IExpr[][] array = new IExpr[0][0];
-        return new Array2DRowFieldMatrix<IExpr>(array, false);
+        return array;
       }
       final int rowSize = expr.argSize();
       final int colSize = currInRow.argSize();
@@ -152,9 +127,126 @@ public class Convert {
           elements[i - 1][j - 1] = currInRow.get(j);
         }
       }
-      return new Array2DRowFieldMatrix<IExpr>(elements, false);
+      return elements;
     }
     return null;
+  }
+
+  /**
+   * Returns a <code>FieldMatrix<IExpr></code> if possible.
+   *
+   * @param expr
+   * @return <code>null</code> if the conversion isn't possible.
+   * @throws ClassCastException
+   * @throws IndexOutOfBoundsException
+   */
+  public static FieldMatrix<IExpr> list2Matrix(final IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    return list2Matrix(expr, false);
+  }
+
+  /**
+   * Returns a <code>FieldMatrix<IExpr></code> if possible.
+   *
+   * @param expr
+   * @param ifNumericReturnNull if all elements are numeric stop conversion by returning null
+   * @return <code>null</code> if the conversion isn't possible.
+   * @throws ClassCastException
+   * @throws IndexOutOfBoundsException
+   */
+  public static FieldMatrix<IExpr> list2Matrix(final IExpr expr, boolean ifNumericReturnNull)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix(false);
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    if (expr.isSparseArray()) {
+      ISparseArray array = (ISparseArray) expr;
+      return array.toFieldMatrix(false);
+    }
+    if (expr.isList()) {
+      IExpr[][] elements = list2Array(expr, ifNumericReturnNull);
+      if (elements != null) {
+        return new Array2DRowFieldMatrix<IExpr>(elements, false);
+      }
+    }
+    return null;
+  }
+
+  public static List<FieldVector<IExpr>> list2ListOfVectors(final IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    return list2ListOfVectors(expr, false);
+  }
+
+  public static List<FieldVector<IExpr>> list2ListOfVectors(final IExpr expr,
+      boolean ifNumericReturnNull) throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix(false);
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    // if (expr.isSparseArray()) {
+    // ISparseArray array = (ISparseArray) expr;
+    // return array.toFieldMatrix(false);
+    // }
+    if (expr.isList()) {
+      IExpr[][] elements = list2Array(expr, ifNumericReturnNull);
+      if (elements != null) {
+        int length = elements.length;
+        List<FieldVector<IExpr>> listOfVectors = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+          listOfVectors.add(new ArrayFieldVector<>(elements[i], false));
+        }
+        return listOfVectors;
+      }
+    }
+    return null;
+  }
+
+
+  /**
+   * Converts a FieldMatrix to the list expression representation.
+   *
+   * @param listOfVectors
+   * @return <code>F.NIL</code> if no conversion was possible
+   */
+  public static IASTAppendable listOfVectors2ListOfLists(
+      final List<FieldVector<IExpr>> listOfVectors) {
+    if (listOfVectors == null) {
+      return F.NIL;
+    }
+    final int rowSize = listOfVectors.size();
+    if (rowSize <= 0) {
+      return F.NIL;
+    }
+    final IASTAppendable result = F.ListAlloc(rowSize);
+    IASTAppendable currOutRow;
+    for (int i = 0; i < rowSize; i++) {
+      FieldVector<IExpr> fieldVector = listOfVectors.get(i);
+      int colSize = fieldVector.getDimension();
+      currOutRow = F.ListAlloc(colSize);
+      result.append(currOutRow);
+
+      for (int j = 0; j < colSize; j++) {
+        IExpr expr = fieldVector.getEntry(j);
+        if (expr.isNumber()) {
+          currOutRow.append(expr);
+        } else {
+          // if (expr.isPlusTimesPower()) {
+          // // TODO Performance hotspot
+          // currOutRow.append(F.eval(F.Together(expr)));
+          // } else {
+          currOutRow.append(expr);
+          // }
+        }
+      }
+    }
+    return result;
   }
 
   /**
@@ -565,11 +657,11 @@ public class Convert {
     final int rowSize = matrix.getRowDimension();
     final int colSize = matrix.getColumnDimension();
 
-    final IASTAppendable out = F.ListAlloc(rowSize);
+    final IASTAppendable result = F.ListAlloc(rowSize);
     IASTAppendable currOutRow;
     for (int i = 0; i < rowSize; i++) {
       currOutRow = F.ListAlloc(colSize);
-      out.append(currOutRow);
+      result.append(currOutRow);
       for (int j = 0; j < colSize; j++) {
         IExpr expr = matrix.getEntry(i, j);
         if (expr.isNumber()) {
@@ -588,9 +680,9 @@ public class Convert {
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
       // isMatrix() must be
       // used!
-      out.isMatrix(true);
+      result.isMatrix(true);
     }
-    return out;
+    return result;
   }
 
   public static IASTAppendable genmatrix2List(final GenMatrix<IExpr> matrix, boolean matrixFormat) {
@@ -689,11 +781,11 @@ public class Convert {
     final int rowSize = matrix.getRowDimension();
     final int colSize = matrix.getColumnDimension();
 
-    final IASTAppendable out = F.ListAlloc(rowSize);
+    final IASTAppendable result = F.ListAlloc(rowSize);
     IASTAppendable currOutRow;
     for (int i = 0; i < rowSize; i++) {
       currOutRow = F.ListAlloc(colSize);
-      out.append(currOutRow);
+      result.append(currOutRow);
       for (int j = 0; j < colSize; j++) {
         IExpr expr = F.num(matrix.getEntry(i, j));
         if (expr.isNumber()) {
@@ -712,9 +804,9 @@ public class Convert {
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
       // isMatrix() must be
       // used!
-      out.isMatrix(true);
+      result.isMatrix(true);
     }
-    return out;
+    return result;
   }
 
   /**

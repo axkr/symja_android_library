@@ -415,9 +415,16 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
     return true;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean isNumericFunction(boolean allowList) {
     return allowList;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNumericMode() {
+    return true;
   }
 
   /**

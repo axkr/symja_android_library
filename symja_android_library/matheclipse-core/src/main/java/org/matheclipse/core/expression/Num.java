@@ -223,14 +223,6 @@ public class Num implements INum {
     }
   }
 
-  // /**
-  // * @param that
-  // * @return
-  // */
-  // public double divide(final double that) {
-  // return fDouble / that;
-  // }
-
   @Override
   public ISignedNumber divideBy(ISignedNumber that) {
     if (that instanceof Num) {
