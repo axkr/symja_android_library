@@ -3974,7 +3974,7 @@ public class Algebra {
      * @param nthRoot <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
      * @return
      */
-    private static IExpr root1(IExpr a, IExpr b, int nthRoot) {
+    private static IAST root1(IExpr a, IExpr b, int nthRoot) {
       if (nthRoot != 1) {
         return F.NIL;
       }
@@ -3990,7 +3990,7 @@ public class Algebra {
      * @param nthRoot <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
      * @return
      */
-    private static IExpr root2(IExpr a, IExpr b, IExpr c, int nthRoot) {
+    private static IAST root2(IExpr a, IExpr b, IExpr c, int nthRoot) {
       if (nthRoot < 1 || nthRoot > 3) {
         return F.NIL;
       }
@@ -4011,10 +4011,11 @@ public class Algebra {
      * @param nthRoot <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
      * @return
      */
-    private static IExpr root3(IExpr a, IExpr b, IExpr c, IExpr d, int nthRoot) {
+    private static IAST root3(IExpr a, IExpr b, IExpr c, IExpr d, int nthRoot) {
       if (nthRoot < 1 || nthRoot > 3) {
         return F.NIL;
       }
+      // System.out.println(F.List(a, b, c, d));
       IExpr k = F.ZZ(nthRoot);
 
       // r = 3*b*d - c^2
@@ -4044,7 +4045,7 @@ public class Algebra {
      * @param nthRoot <code>1 <= nthRoot <= 4</code> otherwise return F.NIL;
      * @return
      */
-    private static IExpr root4(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e, int nthRoot) {
+    private static IAST root4(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e, int nthRoot) {
       if (nthRoot < 1 || nthRoot > 4) {
         return F.NIL;
       }
@@ -4135,7 +4136,7 @@ public class Algebra {
           if (temp.isPresent()) {
             return temp;
           }
-          temp = rootToRadicals((IAST) arg1, 4);
+          temp = rootToRadicals((IAST) arg1, engine);
           if (temp.isPresent()) {
             return temp;
           }
@@ -4145,7 +4146,7 @@ public class Algebra {
       return F.NIL;
     }
 
-    private static IExpr rootToRadicals(final IAST ast, int maxDegree) {
+    private static IExpr rootToRadicals(final IAST ast, EvalEngine engine) {
       if (ast.size() == 3 && ast.arg2().isInteger()) {
         IExpr expr = ast.arg1();
         if (expr.isFunction()) {
@@ -4168,7 +4169,7 @@ public class Algebra {
             IExpr c;
             IExpr d;
             IExpr e;
-            if (varDegree >= 1 && varDegree <= maxDegree) {
+            if (varDegree >= 1 && varDegree <= 4) {
               a = C0;
               b = C0;
               c = C0;
@@ -4191,14 +4192,18 @@ public class Algebra {
                   throw new ArithmeticException("Root::Unexpected exponent value: " + lExp);
                 }
               }
+              IAST result = F.NIL;
               if (varDegree == 1) {
-                return root1(a, b, k);
+                result = root1(a, b, k);
               } else if (varDegree == 2) {
-                return root2(a, b, c, k);
+                result = root2(a, b, c, k);
               } else if (varDegree == 3) {
-                return root3(a, b, c, d, k);
+                result = root3(a, b, c, d, k);
               } else if (varDegree == 4) {
-                return root4(a, b, c, d, e, k);
+                result = root4(a, b, c, d, e, k);
+              }
+              if (result.isPresent()) {
+                return engine.evaluate(result);
               }
             }
           } catch (JASConversionException e2) {
@@ -4214,7 +4219,7 @@ public class Algebra {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      return ToRadicals.rootToRadicals(ast, 2);
+      return ToRadicals.rootToRadicals(ast, engine);
     }
   }
 

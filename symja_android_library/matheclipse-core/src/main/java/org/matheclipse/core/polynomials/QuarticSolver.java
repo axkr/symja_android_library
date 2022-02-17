@@ -448,20 +448,20 @@ public class QuarticSolver {
    * @param b
    * @param c
    * @param d
-   * @param additionalSulution TODO
+   * @param additionalSolution ann additional solution, which should be appended to the result
    * @return
    */
   public static IASTAppendable cubicSolve(IExpr a, IExpr b, IExpr c, IExpr d,
-      IExpr additionalSulution) {
+      IExpr additionalSolution) {
     if (a.isPossibleZero(false)) {
-      return quadraticSolve(b, c, d, additionalSulution, null);
+      return quadraticSolve(b, c, d, additionalSolution, null);
     } else {
       if (d.isPossibleZero(false)) {
-        return quadraticSolve(a, b, c, additionalSulution, C0);
+        return quadraticSolve(a, b, c, additionalSolution, C0);
       }
       IASTAppendable result = F.ListAlloc(4);
-      if (additionalSulution != null) {
-        result.append(additionalSulution);
+      if (additionalSolution != null) {
+        result.append(additionalSolution);
       }
       // 18*a*b*c*d-4*b^3*d+b^2*c^2-4*a*c^3-27*a^2*d^2
       IExpr discriminant = F.eval(Plus(Times(ZZ(18L), a, b, c, d), Times(CN4, Power(b, C3), d),

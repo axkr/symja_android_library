@@ -113,9 +113,12 @@ public class ListLinePlot3D extends AbstractEvaluator {
     IASTAppendable resultList = F.NIL;
 
     IExpr flattenHeights = engine.evaluate(F.Flatten(heights));
-    double deltaHeight =
+    final double deltaHeight =
         engine.evaluate(F.Max(flattenHeights).subtract(F.Min(flattenHeights))).evalDouble();
-
+    if (F.isZero(deltaHeight)) {
+      // Division by zero `1`.
+      throw new ArgumentTypeException("zzdivzero", F.List("- delta height is 0"));
+    }
     int lineColorNumber = 1;
 
     for (int i = 1; i < valuesSize; i++) {
