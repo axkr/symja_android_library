@@ -2324,6 +2324,30 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
   }
 
+  /**
+   * Convert to a MathML <code>mext</code> string with line breaks.
+   * 
+   * @param str
+   * @return
+   */
+  public static String mathMLMtext(final String str) {
+    StringBuilder buf = new StringBuilder();
+    String[] splittedStr = str.split("\\n");
+    final int splittedStrLength = splittedStr.length;
+    for (int i = 0; i < splittedStrLength; i++) {
+      buf.append("<mtext>");
+      String text = splittedStr[i].replaceAll("\\&", "&amp;").replaceAll("\\<", "&lt;")
+          .replaceAll("\\>", "&gt;");
+      text = text.replaceAll("\\\"", "&quot;").replace(" ", "&nbsp;");
+      appendUnicodeMapped(buf, text);
+      buf.append("</mtext>");
+      if (splittedStrLength > 1) {
+        buf.append("<mspace linebreak='newline' />");
+      }
+    }
+    return buf.toString();
+  }
+
   @Override
   public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
     Context context = sym.getContext();
