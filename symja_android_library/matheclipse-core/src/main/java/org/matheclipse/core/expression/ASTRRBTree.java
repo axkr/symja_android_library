@@ -80,18 +80,23 @@ public class ASTRRBTree extends AbstractAST
   }
 
   /**
-   * @param rrbTree the vector which should be wrapped in this object.
-   * @param deepCopy if <code>true</code> allocate new memory and copy all elements from the vector
+   * Copy constructor. Do a shallow copy of all <code>ast</code> elements to a new
+   * {@link ASTRRBTree}.
+   * 
+   * @param ast
    */
   public ASTRRBTree(IAST ast) {
     super();
     if (Config.MAX_AST_SIZE < ast.size()) {
       throw new ASTElementLimitExceeded(ast.size());
     }
-
-    rrbTree = StaticImports.mutableRrb();
-    for (int i = 0; i < ast.size(); i++) {
-      rrbTree.append(ast.getRule(i));
+    if (ast instanceof ASTRRBTree) {
+      rrbTree = ((ASTRRBTree) ast).rrbTree.toMutRrbt();
+    } else {
+      rrbTree = StaticImports.mutableRrb();
+      for (int i = 0; i < ast.size(); i++) {
+        rrbTree.append(ast.getRule(i));
+      }
     }
   }
 
@@ -234,7 +239,7 @@ public class ASTRRBTree extends AbstractAST
   /** {@inheritDoc} */
   @Override
   public ASTRRBTree copy() {
-    return new ASTRRBTree(rrbTree.toMutRrbt());
+    return new ASTRRBTree(rrbTree);
   }
 
   @Override
@@ -434,7 +439,7 @@ public class ASTRRBTree extends AbstractAST
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
     this.fEvalFlags = objectInput.readShort();
     // MutRrbt is not serializable
-    this.rrbTree = ((ImRrbt) objectInput.readObject()).toMutRrbt();
+    this.rrbTree = ((ImRrbt<IExpr>) objectInput.readObject()).toMutRrbt();
   }
 
   /**
