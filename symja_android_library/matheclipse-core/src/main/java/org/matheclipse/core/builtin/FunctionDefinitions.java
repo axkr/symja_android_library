@@ -42,6 +42,7 @@ import static org.matheclipse.core.expression.S.NDSolve;
 import static org.matheclipse.core.expression.S.NFourierTransform;
 import static org.matheclipse.core.expression.S.NIntegrate;
 import static org.matheclipse.core.expression.S.NSolve;
+import static org.matheclipse.core.expression.S.NewLimit;
 import static org.matheclipse.core.expression.S.NonCommutativeMultiply;
 import static org.matheclipse.core.expression.S.OptimizeExpression;
 import static org.matheclipse.core.expression.S.Out;
@@ -111,6 +112,7 @@ public final class FunctionDefinitions {
       ListPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot3D());
       ListPointPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPointPlot3D());
       MatrixD.setEvaluator(new org.matheclipse.core.reflection.system.MatrixD());
+      NewLimit.setEvaluator(new org.matheclipse.core.reflection.system.NewLimit());
       ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
       NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
       NFourierTransform

@@ -6503,6 +6503,8 @@ public class S {
   public final static IBuiltInSymbol NestWhileList =
       F.initFinalSymbol("NestWhileList", ID.NestWhileList);
 
+  public final static IBuiltInSymbol NewLimit = F.initFinalSymbol("NewLimit", ID.NewLimit);
+
   /**
    * NextPrime(n) - gives the next prime after `n`.
    *

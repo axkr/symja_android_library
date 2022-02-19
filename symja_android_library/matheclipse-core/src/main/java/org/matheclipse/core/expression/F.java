@@ -6289,6 +6289,14 @@ public class F extends S {
     return AST.newInstance(intialArgumentsCapacity, head, false);
   }
 
+  public static IAST NewLimit(final IExpr f, final IExpr rule) {
+    return new AST2(NewLimit, f, rule);
+  }
+
+  public static IAST NewLimit(final IExpr f, final IExpr rule, final IExpr direction) {
+    return new AST3(NewLimit, f, rule, direction);
+  }
+
   public static IAST NMaximize(final IExpr a0, final IExpr a1) {
     return new AST2(NMaximize, a0, a1);
   }
