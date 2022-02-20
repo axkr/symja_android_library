@@ -34,6 +34,7 @@ import static org.matheclipse.core.expression.F.Slot1;
 import static org.matheclipse.core.expression.F.Sow;
 import static org.matheclipse.core.expression.F.Throw;
 import static org.matheclipse.core.expression.F.With;
+import static org.matheclipse.core.expression.F.list;
 import static org.matheclipse.core.expression.F.u_;
 import static org.matheclipse.core.expression.F.x_Symbol;
 import static org.matheclipse.core.expression.S.False;
@@ -53,14 +54,14 @@ import org.matheclipse.core.interfaces.IAST;
 /**
  * UtilityFunctions rules from the <a href="https://rulebasedintegration.org/">Rubi - rule-based
  * integrator</a>.
- *
+ * 
  */
 class UtilityFunctions0 {
   public static IAST RULES =
       List(
           ISetDelayed(1, IntHide(u_, x_Symbol),
               Block(
-                  List(Set($s("§$showsteps"), False),
+                  list(Set($s("§$showsteps"), False),
                       Set($s("§$stepcounter"), Null)),
                   Integrate(u, x))),
           ISetDelayed(
@@ -75,24 +76,24 @@ class UtilityFunctions0 {
               3, Map2($p("func"), $p("lst1"), $p(
                   "lst2")),
               Module(
-                  List($s(
+                  list($s(
                       "ii")),
                   ReapList(
                       Do(Sow($($s("func"), Part($s("lst1"), $s("ii")), Part($s("lst2"), $s("ii")))),
-                          List($s("ii"), Length($s("lst1"))))))),
+                          list($s("ii"), Length($s("lst1"))))))),
           ISetDelayed(4, ReapList(u_),
               With(
-                  List(Set($s("lst"),
+                  list(Set($s("lst"),
                       Part(Reap(u), C2))),
                   If(SameQ($s("lst"), List()), $s("lst"), Part($s("lst"), C1)))),
           ISetDelayed(5, HalfIntegerQ($ps("u")),
               SameQ(
                   Scan(Function(If(And(SameQ(Head(Slot1), Rational), Equal(Denominator(Slot1), C2)),
-                      Null, Return(False))), List(u)),
+                      Null, Return(False))), list(u)),
                   Null)),
           ISetDelayed(6, RationalQ($ps("u")),
               SameQ(Scan(
                   Function(
                       If(Or(IntegerQ(Slot1), SameQ(Head(Slot1), Rational)), Null, Return(False))),
-                  List(u)), Null)));
+                  list(u)), Null)));
 }

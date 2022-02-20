@@ -96,10 +96,10 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
       fRulesData = new RulesData();
       if (fCondition != null) {
         fRulesData.putDownRule(IPatternMatcher.SET_DELAYED, false,
-            F.List(fLHSPattern1, fLHSPattern2), F.Condition(fRHS, fCondition));
+            F.list(fLHSPattern1, fLHSPattern2), F.Condition(fRHS, fCondition));
       } else {
         fRulesData.putDownRule(IPatternMatcher.SET_DELAYED, false,
-            F.List(fLHSPattern1, fLHSPattern2), fRHS);
+            F.list(fLHSPattern1, fLHSPattern2), fRHS);
       }
     }
     return fRulesData;
@@ -108,7 +108,7 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
   /** {@inheritDoc} */
   @Override
   public IExpr evalDownRule(IExpr arg1, IExpr num1, IExpr arg2, IExpr num2, EvalEngine engine) {
-    return getRulesData().evalDownRule(F.List(arg1, arg2), engine);
+    return getRulesData().evalDownRule(F.list(arg1, arg2), engine);
   }
 
   /** {@inheritDoc} */

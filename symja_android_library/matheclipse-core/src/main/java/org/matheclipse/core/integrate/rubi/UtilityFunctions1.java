@@ -23,6 +23,7 @@ import static org.matheclipse.core.expression.F.Scan;
 import static org.matheclipse.core.expression.F.Slot1;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.list;
 import static org.matheclipse.core.expression.F.m_;
 import static org.matheclipse.core.expression.F.n_;
 import static org.matheclipse.core.expression.F.u_;
@@ -48,14 +49,14 @@ import org.matheclipse.core.interfaces.IAST;
 /**
  * UtilityFunctions rules from the <a href="https://rulebasedintegration.org/">Rubi - rule-based
  * integrator</a>.
- *
+ * 
  */
 class UtilityFunctions1 {
   public static IAST RULES =
       List(
           ISetDelayed(7, FractionOrNegativeQ($ps("u")),
               SameQ(Scan(Function(If(Or(FractionQ(Slot1), And(IntegerQ(Slot1), Less(Slot1, C0))),
-                  Null, Return(False))), List(u)), Null)),
+                  Null, Return(False))), list(u)), Null)),
           ISetDelayed(8, SqrtNumberQ(Power(m_, n_)),
               Or(And(IntegerQ(n), SqrtNumberQ(m)), And(IntegerQ(Subtract(n, C1D2)), RationalQ(m)))),
           ISetDelayed(9, SqrtNumberQ(Times(u_, v_)), And(SqrtNumberQ(u), SqrtNumberQ(v))),

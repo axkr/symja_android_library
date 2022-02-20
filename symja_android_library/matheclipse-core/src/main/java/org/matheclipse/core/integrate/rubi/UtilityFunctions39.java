@@ -18,6 +18,7 @@ import static org.matheclipse.core.expression.F.SameQ;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.Unevaluated;
 import static org.matheclipse.core.expression.F.a_;
+import static org.matheclipse.core.expression.F.list;
 import static org.matheclipse.core.expression.F.u_;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.S.Integrate;
@@ -32,14 +33,14 @@ import org.matheclipse.core.interfaces.IAST;
 /**
  * UtilityFunctions rules from the <a href="https://rulebasedintegration.org/">Rubi - rule-based
  * integrator</a>.
- *
+ * 
  */
 class UtilityFunctions39 {
   public static IAST RULES =
       List(
           ISetDelayed(708, FixRhsIntRule(Times(a_, u_), x_),
               Condition(Dist(a, u, x),
-                  MemberQ(List(Integrate, $rubi("Subst")), Head(Unevaluated(u))))),
+                  MemberQ(list(Integrate, $rubi("Subst")), Head(Unevaluated(u))))),
           ISetDelayed(709, FixRhsIntRule(u_, x_),
               If(And(SameQ(Head(Unevaluated(u)), $rubi("Dist")), Equal(Length(Unevaluated(u)), C2)),
                   Insert(Unevaluated(u), x, C3),
