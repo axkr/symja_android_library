@@ -22,4 +22,4 @@ See
 
 ### Github
 
-* [Implementation of SquaredEuclideanDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ClusteringFunctions.java#L514) 
+* [Implementation of SquaredEuclideanDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ClusteringFunctions.java#L534) 

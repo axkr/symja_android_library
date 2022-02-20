@@ -18,4 +18,4 @@ CosineDistance(u, v)
 
 ### Github
 
-* [Implementation of CosineDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ClusteringFunctions.java#L251) 
+* [Implementation of CosineDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ClusteringFunctions.java#L262) 

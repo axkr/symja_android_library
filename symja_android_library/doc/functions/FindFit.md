@@ -46,4 +46,4 @@ You can omit `1.0` in the parameter list because it's the default value:
 
 ### Github
 
-* [Implementation of FindFit](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/CurveFitterFunctions.java#L96) 
+* [Implementation of FindFit](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/CurveFitterFunctions.java#L101) 

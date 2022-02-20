@@ -22,4 +22,4 @@ ConditionalExpression(1,Element(a,Reals))
 
 ### Github
 
-* [Implementation of ConditionalExpression](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L1126) 
+* [Implementation of ConditionalExpression](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L1125) 

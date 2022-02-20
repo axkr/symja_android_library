@@ -18,4 +18,4 @@ FindInstance(equations, vars)
 
 ### Github
 
-* [Implementation of FindInstance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindInstance.java#L42) 
+* [Implementation of FindInstance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindInstance.java#L44) 

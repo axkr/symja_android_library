@@ -61,4 +61,4 @@ Evaluate at `0`:
 
 ### Github
 
-* [Implementation of Outer](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Outer.java#L73) 
+* [Implementation of Outer](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Outer.java#L80) 

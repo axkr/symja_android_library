@@ -23,4 +23,4 @@ See
 
 ### Github
 
-* [Implementation of InverseHaversine](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2251) 
+* [Implementation of InverseHaversine](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2213) 

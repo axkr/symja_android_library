@@ -54,4 +54,4 @@ The two examples that follow have the same effect, but the use of `HoldPattern` 
 
 ### Github
 
-* [Implementation of HoldPattern](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L837) 
+* [Implementation of HoldPattern](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L854) 

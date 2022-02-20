@@ -22,4 +22,4 @@ x==2+z
 
 ### Github
 
-* [Implementation of Eliminate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Eliminate.java#L66) 
+* [Implementation of Eliminate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Eliminate.java#L68) 

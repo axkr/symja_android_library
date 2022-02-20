@@ -67,4 +67,4 @@ With this "complexity function" the `Abs` expression gets a "heavier weight".
 
 ### Github
 
-* [Implementation of Simplify](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SimplifyFunctions.java#L135) 
+* [Implementation of Simplify](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SimplifyFunctions.java#L140) 

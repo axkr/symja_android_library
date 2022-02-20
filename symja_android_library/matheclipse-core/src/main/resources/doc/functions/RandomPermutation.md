@@ -27,4 +27,4 @@ Cycles({{1,2,7,3,8,10,5,9,4,6}})
 
 ### Github
 
-* [Implementation of RandomPermutation](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RandomFunctions.java#L393) 
+* [Implementation of RandomPermutation](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RandomFunctions.java#L391) 

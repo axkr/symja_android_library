@@ -15,4 +15,4 @@ Cos(x)*Sin(y)+Cos(y)*Sin(x)
 
 ### Github
 
-* [Implementation of TrigExpand](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/TrigExpand.java#L45) 
+* [Implementation of TrigExpand](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/TrigExpand.java#L46) 
