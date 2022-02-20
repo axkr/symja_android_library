@@ -74,7 +74,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
       return super.append(expr);
     }
     // The argument `1` is not a rule or a list of rules.
-    throw new ArgumentTypeException("invdt2", F.List(expr));
+    throw new ArgumentTypeException("invdt2", F.list(expr));
   }
 
   /**
@@ -683,7 +683,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
       for (Entry<IExpr, Integer> element : set) {
         IExpr key = element.getKey();
         int value = element.getValue();
-        list.append(F.List(key, getValue(value)));
+        list.append(F.list(key, getValue(value)));
       }
       return list;
     } else {

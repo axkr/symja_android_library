@@ -629,7 +629,7 @@ public class FileFunctions {
       } catch (IOException e) {
         LOGGER.debug("Get.getFile() failed", e);
         // Cannot open `1`.
-        return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+        return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       } finally {
         engine.setPackageMode(packageMode);
         engine.set$Input(input);
@@ -650,7 +650,7 @@ public class FileFunctions {
       } catch (IOException e) {
         LOGGER.debug("FileFunctions.Get.getURL() failed", e);
         // Cannot open `1`.
-        return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+        return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       } finally {
         engine.setPackageMode(packageMode);
         engine.set$Input(input);
@@ -687,7 +687,7 @@ public class FileFunctions {
           return F.NIL;
         }
         // Cannot open `1`.
-        return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+        return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       }
       return F.NIL;
     }
@@ -994,7 +994,7 @@ public class FileFunctions {
             }
             return F.$Failed;
           case ID.Number:
-            IAST numberSeparators = F.list(F.stringx("0"), //
+            IAST numberSeparators = F.List(F.stringx("0"), //
                 F.stringx("1"), F.stringx("2"), F.stringx("3"), F.stringx("4"), F.stringx("5"),
                 F.stringx("6"), F.stringx("7"), F.stringx("8"), F.stringx("9"));
             String tempNumber = numberReader(reader, numberSeparators);
@@ -1211,11 +1211,11 @@ public class FileFunctions {
         } catch (IOException e) {
           LOGGER.debug("URLFetch.evaluate() failed", e);
           // Cannot open `1`.
-          return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+          return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
         }
       }
       // Cannot open `1`.
-      return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+      return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
     }
 
     @Override
@@ -1269,11 +1269,11 @@ public class FileFunctions {
 
         if (!(ast.arg1().isString())) {
           // String expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.C1, ast), engine);
+          return IOFunctions.printMessage(ast.topHead(), "string", F.list(F.C1, ast), engine);
         }
         if (!(ast.arg2().isString())) {
           // String expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.C2, ast), engine);
+          return IOFunctions.printMessage(ast.topHead(), "string", F.list(F.C2, ast), engine);
         }
         IStringX fileName = (IStringX) ast.arg1();
         IStringX str = (IStringX) ast.arg2();

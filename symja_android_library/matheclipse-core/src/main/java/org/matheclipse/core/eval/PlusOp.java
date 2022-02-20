@@ -209,7 +209,7 @@ public final class PlusOp {
           }
           if (arg.isDirectedInfinity()) {
             // Indeterminate expression `1` encountered.
-            IOFunctions.printMessage(S.Infinity, "indet", F.List(F.Plus(numberValue, arg)),
+            IOFunctions.printMessage(S.Infinity, "indet", F.list(F.Plus(numberValue, arg)),
                 EvalEngine.get());
             return S.Indeterminate;
           }
@@ -237,7 +237,7 @@ public final class PlusOp {
         if (numberValue.isInfinity()) {
           if (arg.isNegativeInfinity()) {
             // Indeterminate expression `1` encountered.
-            IOFunctions.printMessage(S.Infinity, "indet", F.List(F.Plus(numberValue, arg)),
+            IOFunctions.printMessage(S.Infinity, "indet", F.list(F.Plus(numberValue, arg)),
                 EvalEngine.get());
             return S.Indeterminate;
           }
@@ -302,7 +302,7 @@ public final class PlusOp {
                 if (arg.isInfinity()) {
                   if (numberValue.isNegativeInfinity()) {
                     // Indeterminate expression `1` encountered.
-                    IOFunctions.printMessage(S.Infinity, "indet", F.List(F.Plus(arg, numberValue)),
+                    IOFunctions.printMessage(S.Infinity, "indet", F.list(F.Plus(arg, numberValue)),
                         EvalEngine.get());
                     return S.Indeterminate;
                   }
@@ -319,7 +319,7 @@ public final class PlusOp {
                 } else if (arg.isComplexInfinity()) {
                   if (numberValue.isDirectedInfinity()) {
                     // Indeterminate expression `1` encountered.
-                    IOFunctions.printMessage(S.Infinity, "indet", F.List(F.Plus(arg, numberValue)),
+                    IOFunctions.printMessage(S.Infinity, "indet", F.list(F.Plus(arg, numberValue)),
                         EvalEngine.get());
                     return S.Indeterminate;
                   }
@@ -409,6 +409,6 @@ public final class PlusOp {
   }
 
   // private static IExpr plusInterval(final IExpr o0, final IExpr o1) {
-  // return F.Interval(F.List(o0.lower().plus(o1.lower()), o0.upper().plus(o1.upper())));
+  // return F.Interval(F.list(o0.lower().plus(o1.lower()), o0.upper().plus(o1.upper())));
   // }
 }

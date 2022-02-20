@@ -744,12 +744,12 @@ public class ComplexNum implements IComplexNum {
     if (Complex.equals(fComplex, Complex.ZERO, Config.DOUBLE_EPSILON)) {
       ISignedNumber sn = val.re();
       if (sn.isNegative()) {
-        IOFunctions.printMessage(S.Power, "infy", F.List(F.Power(F.C0, sn)), EvalEngine.get());
+        IOFunctions.printMessage(S.Power, "infy", F.list(F.Power(F.C0, sn)), EvalEngine.get());
         // EvalEngine.get().printMessage("Infinite expression 0^(negative number)");
         return INF;
       }
       if (sn.isZero()) {
-        IOFunctions.printMessage(S.Power, "indet", F.List(F.Power(F.C0, F.C0)), EvalEngine.get());
+        IOFunctions.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
         // EvalEngine.get().printMessage("Infinite expression 0^0.");
         return NaN;
       }

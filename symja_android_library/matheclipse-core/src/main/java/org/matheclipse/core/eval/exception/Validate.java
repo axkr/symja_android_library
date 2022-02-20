@@ -63,7 +63,7 @@ public final class Validate {
             if (startValue > longValue) {
               if (!quiet) {
                 // List of Java long numbers expected in `1`.
-                IOFunctions.printMessage(ast.topHead(), "listoflongs", F.List(arg), engine);
+                IOFunctions.printMessage(ast.topHead(), "listoflongs", F.list(arg), engine);
               }
               return null;
             }
@@ -77,7 +77,7 @@ public final class Validate {
     }
     if (!quiet) {
       // List of Java long numbers expected in `1`.
-      IOFunctions.printMessage(ast.topHead(), "listoflongs", F.List(arg), engine);
+      IOFunctions.printMessage(ast.topHead(), "listoflongs", F.list(arg), engine);
     }
     return null;
   }
@@ -109,7 +109,7 @@ public final class Validate {
             }
             if ((longValue == null) || (nonNegative && longValue.compareTo(BigInteger.ZERO) <= 0)) {
               // The first argument `1` of `2` should be a non-empty list of positive integers.
-              IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+              IOFunctions.printMessage(ast.topHead(), "coef", F.list(arg, ast.topHead()), engine);
               return null;
             }
             result[i - 1] = longValue;
@@ -121,7 +121,7 @@ public final class Validate {
       }
     }
     // The first argument `1` of `2` should be a non-empty list of positive integers.
-    IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+    IOFunctions.printMessage(ast.topHead(), "coef", F.list(arg, ast.topHead()), engine);
     return null;
   }
 
@@ -151,14 +151,14 @@ public final class Validate {
             if (intValue == Integer.MIN_VALUE) {
               if (!quiet) {
                 // The first argument `1` of `2` should be a non-empty list of positive integers.
-                IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+                IOFunctions.printMessage(ast.topHead(), "coef", F.list(arg, ast.topHead()), engine);
               }
               return null;
             }
             if (nonNegative && intValue < 0) {
               if (!quiet) {
                 // The first argument `1` of `2` should be a non-empty list of positive integers.
-                IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+                IOFunctions.printMessage(ast.topHead(), "coef", F.list(arg, ast.topHead()), engine);
               }
               return null;
             }
@@ -172,7 +172,7 @@ public final class Validate {
     }
     if (!quiet) {
       // The first argument `1` of `2` should be a non-empty list of positive integers.
-      IOFunctions.printMessage(ast.topHead(), "coef", F.List(arg, ast.topHead()), engine);
+      IOFunctions.printMessage(ast.topHead(), "coef", F.list(arg, ast.topHead()), engine);
     }
     return null;
   }
@@ -201,12 +201,12 @@ public final class Validate {
             intValue = list.get(i).toIntDefault();
             if (intValue == Integer.MIN_VALUE) {
               // List of Java int numbers expected in `1`.
-              IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+              IOFunctions.printMessage(ast.topHead(), "listofints", F.list(arg), engine);
               return null;
             }
             if (minValue > intValue || intValue > maxValue) {
               // List of Java int numbers expected in `1`.
-              IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+              IOFunctions.printMessage(ast.topHead(), "listofints", F.list(arg), engine);
               return null;
             }
             result[i - 1] = intValue;
@@ -217,7 +217,7 @@ public final class Validate {
         }
       }
     }
-    IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+    IOFunctions.printMessage(ast.topHead(), "listofints", F.list(arg), engine);
     return null;
   }
 
@@ -247,7 +247,7 @@ public final class Validate {
               if (intValue == Integer.MIN_VALUE) {
                 // Sequence specification or a list of sequence specifications expected at position
                 // `1` in `2`.
-                IOFunctions.printMessage(ast.topHead(), "mseqs", F.List(F.ZZ(position), ast),
+                IOFunctions.printMessage(ast.topHead(), "mseqs", F.list(F.ZZ(position), ast),
                     engine);
                 return null;
               }
@@ -257,7 +257,7 @@ public final class Validate {
               if (intValue == Integer.MIN_VALUE) {
                 // Sequence specification or a list of sequence specifications expected at position
                 // `1` in `2`.
-                IOFunctions.printMessage(ast.topHead(), "mseqs", F.List(F.ZZ(position), ast),
+                IOFunctions.printMessage(ast.topHead(), "mseqs", F.list(F.ZZ(position), ast),
                     engine);
                 return null;
               }
@@ -266,12 +266,12 @@ public final class Validate {
               intValue = expr.toIntDefault();
               if (intValue == Integer.MIN_VALUE) {
                 // List of Java int numbers expected in `1`.
-                IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+                IOFunctions.printMessage(ast.topHead(), "listofints", F.list(arg), engine);
                 return null;
               }
               if (minValue > intValue || intValue > maxValue) {
                 // List of Java int numbers expected in `1`.
-                IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+                IOFunctions.printMessage(ast.topHead(), "listofints", F.list(arg), engine);
                 return null;
               }
               if (intValue >= 0) {
@@ -289,7 +289,7 @@ public final class Validate {
         }
       }
     }
-    IOFunctions.printMessage(ast.topHead(), "listofints", F.List(arg), engine);
+    IOFunctions.printMessage(ast.topHead(), "listofints", F.list(arg), engine);
     return null;
   }
 
@@ -320,7 +320,7 @@ public final class Validate {
             if (intValue <= 0) {
               // The dimension parameter `1` is expected to be a positive integer or a list of
               // positive integers
-              IOFunctions.printMessage(ast.topHead(), "posdim", F.List(arg), engine);
+              IOFunctions.printMessage(ast.topHead(), "posdim", F.list(arg), engine);
               return null;
             }
             result[i - 1] = intValue;
@@ -333,7 +333,7 @@ public final class Validate {
     }
     // The dimension parameter `1` is expected to be a positive integer or a list of positive
     // integers
-    IOFunctions.printMessage(ast.topHead(), "posdim", F.List(arg), engine);
+    IOFunctions.printMessage(ast.topHead(), "posdim", F.list(arg), engine);
     return null;
   }
 
@@ -353,7 +353,7 @@ public final class Validate {
       int result = ((IntegerSym) arg).toInt();
       if (startValue > result) {
         // Machine-sized integer expected at position `2` in `1`.
-        String str = IOFunctions.getMessage("intm", F.List(ast, F.ZZ(position)), EvalEngine.get());
+        String str = IOFunctions.getMessage("intm", F.list(ast, F.ZZ(position)), EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
@@ -362,13 +362,13 @@ public final class Validate {
       int result = arg.toIntDefault();
       if (result == Integer.MIN_VALUE || startValue > result) {
         // Machine-sized integer expected at position `2` in `1`.
-        String str = IOFunctions.getMessage("intm", F.List(ast, F.ZZ(position)), EvalEngine.get());
+        String str = IOFunctions.getMessage("intm", F.list(ast, F.ZZ(position)), EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
     }
     // Machine-sized integer expected at position `2` in `1`.
-    String str = IOFunctions.getMessage("intm", F.List(ast, F.ZZ(position)), EvalEngine.get());
+    String str = IOFunctions.getMessage("intm", F.list(ast, F.ZZ(position)), EvalEngine.get());
     throw new ArgumentTypeException(str);
   }
 
@@ -378,7 +378,7 @@ public final class Validate {
       int result = ast.get(pos).toIntDefault();
       if (result == Integer.MIN_VALUE || 0 > result) {
         // Non-negative machine-sized integer expected at position `2` in `1`.
-        String str = IOFunctions.getMessage("intnm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
+        String str = IOFunctions.getMessage("intnm", F.list(ast, F.ZZ(pos)), EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
@@ -387,13 +387,13 @@ public final class Validate {
       int result = ast.get(pos).toIntDefault();
       if (result == Integer.MIN_VALUE || 0 > result) {
         // Non-negative machine-sized integer expected at position `2` in `1`.
-        String str = IOFunctions.getMessage("intnm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
+        String str = IOFunctions.getMessage("intnm", F.list(ast, F.ZZ(pos)), EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
     }
     // Non-negative machine-sized integer expected at position `2` in `1`.
-    String str = IOFunctions.getMessage("intnm", F.List(ast, F.ZZ(pos)), EvalEngine.get());
+    String str = IOFunctions.getMessage("intnm", F.list(ast, F.ZZ(pos)), EvalEngine.get());
     throw new ArgumentTypeException(str);
   }
 
@@ -404,7 +404,7 @@ public final class Validate {
       if (result == Integer.MIN_VALUE || 0 >= result) {
         // Positive machine-sized integer expected at position `2` in `1`.
         String str =
-            IOFunctions.getMessage("intpm", F.List(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
+            IOFunctions.getMessage("intpm", F.list(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
@@ -414,14 +414,14 @@ public final class Validate {
       if (result == Integer.MIN_VALUE || 0 >= result) {
         // Positive machine-sized integer expected at position `2` in `1`.
         String str =
-            IOFunctions.getMessage("intpm", F.List(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
+            IOFunctions.getMessage("intpm", F.list(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
     }
     // Positive machine-sized integer expected at position `2` in `1`.
     String str =
-        IOFunctions.getMessage("intpm", F.List(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
+        IOFunctions.getMessage("intpm", F.list(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
     throw new ArgumentTypeException(str);
   }
 
@@ -444,7 +444,7 @@ public final class Validate {
       int result = Integer.MAX_VALUE;
       if (startValue > result) {
         // Level value greater equal `1` expected instead of `2`.
-        String str = IOFunctions.getMessage("intlevel", F.List(F.ZZ(startValue), F.CInfinity),
+        String str = IOFunctions.getMessage("intlevel", F.list(F.ZZ(startValue), F.CInfinity),
             EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
@@ -455,7 +455,7 @@ public final class Validate {
       if (result == Integer.MIN_VALUE || startValue > result) {
         // Level specification value greater equal `1` expected instead of `2`.
         String str =
-            IOFunctions.getMessage("intlevel", F.List(F.ZZ(startValue), expr), EvalEngine.get());
+            IOFunctions.getMessage("intlevel", F.list(F.ZZ(startValue), expr), EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
@@ -465,7 +465,7 @@ public final class Validate {
       int result = Integer.MIN_VALUE;
       if (startValue > result) {
         // Level specification value greater equal `1` expected instead of `2`.
-        String str = IOFunctions.getMessage("intlevel", F.List(F.ZZ(startValue), F.CNInfinity),
+        String str = IOFunctions.getMessage("intlevel", F.list(F.ZZ(startValue), F.CNInfinity),
             EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
@@ -473,7 +473,7 @@ public final class Validate {
     }
     // Level specification value greater equal `1` expected instead of `2`.
     String str =
-        IOFunctions.getMessage("intlevel", F.List(F.ZZ(startValue), expr), EvalEngine.get());
+        IOFunctions.getMessage("intlevel", F.list(F.ZZ(startValue), expr), EvalEngine.get());
     throw new ArgumentTypeException(str);
   }
 
@@ -489,7 +489,7 @@ public final class Validate {
     int result = expr.toIntDefault();
     if (result == Integer.MIN_VALUE || startValue > result) {
       // Java int value greater equal `1` expected instead of `2`.
-      IOFunctions.printMessage(head, "intjava", F.List(F.ZZ(startValue), expr), engine);
+      IOFunctions.printMessage(head, "intjava", F.list(F.ZZ(startValue), expr), engine);
       return Integer.MIN_VALUE;
     }
     return result;
@@ -509,7 +509,7 @@ public final class Validate {
     int result = expr.toIntDefault();
     if (result == Integer.MIN_VALUE || startValue > result) {
       // Java int value greater equal `1` expected instead of `2`.
-      String str = IOFunctions.getMessage("intjava", F.List(F.ZZ(startValue), expr), engine);
+      String str = IOFunctions.getMessage("intjava", F.list(F.ZZ(startValue), expr), engine);
       throw new ArgumentTypeException(str);
     }
     return result;
@@ -528,7 +528,7 @@ public final class Validate {
       return (IAST) ast.get(position);
     }
     // List expected at position `1` in `2`.
-    return IOFunctions.printMessage(ast.topHead(), "list", F.List(F.ZZ(position), ast), engine);
+    return IOFunctions.printMessage(ast.topHead(), "list", F.list(F.ZZ(position), ast), engine);
   }
 
   /**
@@ -543,7 +543,7 @@ public final class Validate {
       return ast.get(position);
     }
     // String expected at position `1` in `2`
-    return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.ZZ(position), ast), engine);
+    return IOFunctions.printMessage(ast.topHead(), "string", F.list(F.ZZ(position), ast), engine);
   }
 
   /**
@@ -559,14 +559,14 @@ public final class Validate {
       if (contextName.length() > 0) {
         if (contextName.charAt(contextName.length() - 1) != '`') {
           // `1` is not a valid context name.
-          String str = IOFunctions.getMessage("cxt", F.List(strX), EvalEngine.get());
+          String str = IOFunctions.getMessage("cxt", F.list(strX), EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
         return contextName;
       }
     }
     // `1` is not a valid context name.
-    String str = IOFunctions.getMessage("cxt", F.List(ast.get(position)), EvalEngine.get());
+    String str = IOFunctions.getMessage("cxt", F.list(ast.get(position)), EvalEngine.get());
     throw new ArgumentTypeException(str);
   }
 
@@ -591,7 +591,7 @@ public final class Validate {
     } else {
       IExpr temp = Validate.checkSymbolType(ast, position, engine);
       if (temp.isPresent()) {
-        return F.List(temp);
+        return F.list(temp);
       }
     }
     return F.NIL;
@@ -622,13 +622,13 @@ public final class Validate {
         }
         // Local variable specification `1` contains `2` which is not a symbol or an assignment to
         // a symbol.
-        return IOFunctions.printMessage(ast.topHead(), "lvsym", F.List(ast.get(position), arg),
+        return IOFunctions.printMessage(ast.topHead(), "lvsym", F.list(ast.get(position), arg),
             engine);
       }
       return listOfSymbols;
     }
     // Local variable specification `1` is not a List.
-    return IOFunctions.printMessage(ast.topHead(), "lvlist", F.List(ast.get(position)), engine);
+    return IOFunctions.printMessage(ast.topHead(), "lvlist", F.list(ast.get(position)), engine);
   }
 
   /**
@@ -658,7 +658,7 @@ public final class Validate {
       if (!temp.isPresent()) {
         return F.NIL;
       }
-      return F.List(temp);
+      return F.list(temp);
     }
   }
 
@@ -676,7 +676,7 @@ public final class Validate {
       return arg;
     }
     // Argument `1` at position `2` is expected to be a symbol.
-    return IOFunctions.printMessage(ast.topHead(), "sym", F.List(arg, F.ZZ(position)), engine);
+    return IOFunctions.printMessage(ast.topHead(), "sym", F.list(arg, F.ZZ(position)), engine);
   }
 
   /**
@@ -706,7 +706,7 @@ public final class Validate {
       return arg;
     }
     // `1` is not a valid variable.
-    return IOFunctions.printMessage(head, "ivar", F.List(arg), engine);
+    return IOFunctions.printMessage(head, "ivar", F.list(arg), engine);
   }
 
   /**
@@ -720,7 +720,7 @@ public final class Validate {
       return (IAST) expr;
     }
     // Cannot assign to raw object `1`.
-    String str = IOFunctions.getMessage("setraw", F.List(expr), EvalEngine.get());
+    String str = IOFunctions.getMessage("setraw", F.list(expr), EvalEngine.get());
     throw new ArgumentTypeException(str);
   }
 
@@ -737,7 +737,7 @@ public final class Validate {
       return (IAST) arg1;
     }
     // Nonatomic expression expected.
-    return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.ZZ(position), ast), engine);
+    return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.ZZ(position), ast), engine);
   }
 
   /**
@@ -754,7 +754,7 @@ public final class Validate {
       return (IAST) arg1;
     }
     // Nonatomic expression expected.
-    return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.ZZ(position), ast), engine);
+    return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.ZZ(position), ast), engine);
   }
 
   private Validate() {}
@@ -916,7 +916,7 @@ public final class Validate {
     }
     if (upTo < 0) {
       // Non-negative integer or Infinity expected at position `1` in `2`.
-      IOFunctions.printMessage(S.UpTo, "innf", F.List(F.C1, upToAST), engine);
+      IOFunctions.printMessage(S.UpTo, "innf", F.list(F.C1, upToAST), engine);
       return Integer.MIN_VALUE;
     }
     return upTo;
@@ -938,14 +938,14 @@ public final class Validate {
       String identifier = expr.toString();
       if (!Scanner.isIdentifier(identifier)) {
         // Argument `1` at position `2` is expected to be a symbol.
-        return IOFunctions.printMessage(ast.topHead(), "sym", F.List(expr, F.C1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "sym", F.list(expr, F.C1), engine);
       }
       sym = F.symbol(identifier, engine);
     } else if (expr.isSymbol()) {
       sym = (ISymbol) expr;
     } else {
       // Argument `1` at position `2` is expected to be a symbol.
-      return IOFunctions.printMessage(ast.topHead(), "sym", F.List(expr, F.C1), engine);
+      return IOFunctions.printMessage(ast.topHead(), "sym", F.list(expr, F.C1), engine);
     }
     return sym;
   }
@@ -956,7 +956,7 @@ public final class Validate {
       String identifier = expr.toString();
       if (!Scanner.isIdentifier(identifier)) {
         // Argument `1` at position `2` is expected to be a symbol.
-        return IOFunctions.printMessage(ast.topHead(), "sym", F.List(expr, F.C1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "sym", F.list(expr, F.C1), engine);
       }
       int indx = identifier.lastIndexOf('`');
       if (indx > 0) {
@@ -972,7 +972,7 @@ public final class Validate {
       sym = (ISymbol) expr.first();
     } else {
       // Symbol, string or HoldPattern(symbol) expected at position `2` in `1`.
-      return IOFunctions.printMessage(ast.topHead(), "ssle", F.List(expr, F.C1), engine);
+      return IOFunctions.printMessage(ast.topHead(), "ssle", F.list(expr, F.C1), engine);
     }
     return sym;
   }
@@ -991,7 +991,7 @@ public final class Validate {
       return expr.toString();
     } else {
       // Argument `1` at position `2` is expected to be a symbol.
-      IOFunctions.printMessage(ast.topHead(), "sym", F.List(expr, F.C1), engine);
+      IOFunctions.printMessage(ast.topHead(), "sym", F.list(expr, F.C1), engine);
     }
     return null;
   }

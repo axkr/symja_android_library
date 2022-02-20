@@ -2112,7 +2112,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
           convertInfixOperator(buf, list, ASTNodeFactory.APPLY_OPERATOR, precedence);
           return true;
         }
-        if (list.size() == 4 && list.arg2().equals(F.List(F.C1))) {
+        if (list.size() == 4 && list.arg2().equals(F.CListC1)) {
           convertInfixOperator(buf, list, ASTNodeFactory.APPLY_LEVEL_OPERATOR, precedence);
           return true;
         }

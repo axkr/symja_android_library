@@ -31,7 +31,7 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
     if (variable.isPresent()) {
       if (!variable.isSymbol()) {
         // `1` is not a valid variable.
-        return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(variable), engine);
+        return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(variable), engine);
       }
       // IExpr omega = ast.arg3();
       if (ast.size() > 4) {

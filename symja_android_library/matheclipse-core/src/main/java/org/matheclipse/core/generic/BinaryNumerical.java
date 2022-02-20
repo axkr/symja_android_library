@@ -31,12 +31,12 @@ public class BinaryNumerical implements BiFunction<IExpr, IExpr, IExpr> {
     if (!v1.isVariable() || v1.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
-          IOFunctions.getMessage("setraw", F.List(v1), EvalEngine.get()));
+          IOFunctions.getMessage("setraw", F.list(v1), EvalEngine.get()));
     }
     if (!v2.isVariable() || v2.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
-          IOFunctions.getMessage("setraw", F.List(v2), EvalEngine.get()));
+          IOFunctions.getMessage("setraw", F.list(v2), EvalEngine.get()));
     }
     variable1 = v1;
     variable2 = v2;
@@ -47,7 +47,7 @@ public class BinaryNumerical implements BiFunction<IExpr, IExpr, IExpr> {
   @Override
   public IExpr apply(final IExpr firstArg, final IExpr secondArg) {
     return fEngine
-        .evalN(F.subst(fun, F.List(F.Rule(variable1, firstArg), F.Rule(variable2, secondArg))));
+        .evalN(F.subst(fun, F.list(F.Rule(variable1, firstArg), F.Rule(variable2, secondArg))));
   }
 
   public double value(final double x, final double y) {

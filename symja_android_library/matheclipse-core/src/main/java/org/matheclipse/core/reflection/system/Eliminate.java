@@ -288,19 +288,19 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           equalList.append(BooleanFunctions.equals(equalAST));
         } else {
           // `1` is not a well-formed equation.
-          return IOFunctions.printMessage(ast.topHead(), "eqf", F.List(list.get(i)), engine);
+          return IOFunctions.printMessage(ast.topHead(), "eqf", F.list(list.get(i)), engine);
         }
       }
       return equalList;
     }
     if (arg.isEqual()) {
       IAST equalAST = (IAST) arg;
-      return F.List(F.Equal(F.evalExpandAll(equalAST.arg1(), engine),
+      return F.list(F.Equal(F.evalExpandAll(equalAST.arg1(), engine),
           F.evalExpandAll(equalAST.arg2(), engine)));
       // return equalList;
     }
     // `1` is not a well-formed equation.
-    return IOFunctions.printMessage(ast.topHead(), "eqf", F.List(arg), engine);
+    return IOFunctions.printMessage(ast.topHead(), "eqf", F.list(arg), engine);
   }
 
   /**
@@ -406,7 +406,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           if (exprWithoutVariable.isNumericFunction() //
               && ast.isPolynomial(variable) && ast.isNumericFunction(variable)) {
             IAST temp = RootsFunctions.rootsOfVariable(F.Subtract.of(ast, exprWithoutVariable),
-                F.C1, F.List(variable), engine.isNumericMode(), engine);
+                F.C1, F.list(variable), engine.isNumericMode(), engine);
             if (temp.isList() && temp.size() > 1) {
               if (!multipleValues || temp.size() == 2) {
                 return temp.first();

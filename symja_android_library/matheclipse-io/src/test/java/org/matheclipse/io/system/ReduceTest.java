@@ -80,7 +80,7 @@ public class ReduceTest extends AbstractTestCase {
     check("Reduce(x^6-1==0&&x>0,x)", //
         "x==1");
     check("Reduce(x^6-1==0,x)", //
-        "x==1||x==-1||x==(-1)^(1/3)||x==-(-1)^(1/3)||x==(-1)^(2/3)||x==-(-1)^(2/3)");
+        "x==-1||x==1||x==(-1)^(1/3)||x==-(-1)^(1/3)||x==(-1)^(2/3)||x==-(-1)^(2/3)");
     check("Reduce(x==1&&x>0,x)", //
         "x==1");
 

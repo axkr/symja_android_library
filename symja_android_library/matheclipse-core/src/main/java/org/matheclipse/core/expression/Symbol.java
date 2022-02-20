@@ -738,7 +738,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public boolean isPolynomial(IExpr variable) {
-    return isPolynomial(F.List(variable));
+    return isPolynomial(F.list(variable));
     // if (variable == null) {
     // return true;
     // }
@@ -1019,7 +1019,7 @@ public class Symbol implements ISymbol, Serializable {
       }
     }
     // `1` is not a variable with a value, so its value cannot be changed.
-    IOFunctions.printMessage(functionSymbol, "rvalue", F.List(this), engine);
+    IOFunctions.printMessage(functionSymbol, "rvalue", F.list(this), engine);
     // engine.printMessage(
     // functionSymbol.toString()
     // + ": "

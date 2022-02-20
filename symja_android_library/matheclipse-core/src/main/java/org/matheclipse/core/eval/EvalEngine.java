@@ -1572,7 +1572,7 @@ public class EvalEngine implements Serializable {
               if (LOGGER.isDebugEnabled()) {
                 if (temp.equals(result)) {
                   // Endless iteration detected in `1` in evaluation loop.
-                  IOFunctions.printMessage(result.topHead(), "itendless", F.List(temp), this);
+                  IOFunctions.printMessage(result.topHead(), "itendless", F.list(temp), this);
                   IterationLimitExceeded.throwIt(fIterationLimit, result);
                 }
               }
@@ -1616,7 +1616,7 @@ public class EvalEngine implements Serializable {
               if (LOGGER.isDebugEnabled()) {
                 if (temp.equals(result)) {
                   // Endless iteration detected in `1` in evaluation loop.
-                  IOFunctions.printMessage(result.topHead(), "itendless", F.List(temp), this);
+                  IOFunctions.printMessage(result.topHead(), "itendless", F.list(temp), this);
                   IterationLimitExceeded.throwIt(fIterationLimit, result);
                 }
               }
@@ -3198,7 +3198,7 @@ public class EvalEngine implements Serializable {
         } else {
           if (listLength[0] != ((IAST) x).argSize()) {
             // tdlen: Objects of unequal length in `1` cannot be combined.
-            IOFunctions.printMessage(commandHead, messageShortcut, F.List(ast), EvalEngine.get());
+            IOFunctions.printMessage(commandHead, messageShortcut, F.list(ast), EvalEngine.get());
             // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
             return true;
           }
@@ -3215,7 +3215,7 @@ public class EvalEngine implements Serializable {
           } else {
             if (listLength[0] != dimensions[0]) {
               // Objects of unequal length in `1` cannot be combined.
-              IOFunctions.printMessage(S.Thread, "tdlen", F.List(ast), EvalEngine.get());
+              IOFunctions.printMessage(S.Thread, "tdlen", F.list(ast), EvalEngine.get());
               // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
               return true;
             }

@@ -290,7 +290,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
       IExpr x = ast.arg2();
       if (!(x.isVariable() || x.isList())) {
         // `1` is not a valid variable.
-        return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+        return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(x), engine);
       }
 
       if (fx.isList()) {
@@ -305,7 +305,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
         if (xList.isAST1() && xList.arg1().isListOfLists()) {
           IAST subList = (IAST) xList.arg1();
           IASTAppendable result = F.ListAlloc(subList.size());
-          result.appendArgs(subList.size(), i -> F.D(fx, F.List(subList.get(i))));
+          result.appendArgs(subList.size(), i -> F.D(fx, F.list(subList.get(i))));
           return result;
         } else if (xList.isAST1() && xList.arg1().isList()) {
           IAST subList = (IAST) xList.arg1();
@@ -315,7 +315,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
             return F.NIL;
           }
           if (xList.arg1().isList()) {
-            x = F.List(xList.arg1());
+            x = F.list(xList.arg1());
           } else {
             x = xList.arg1();
           }
@@ -337,12 +337,12 @@ public class D extends AbstractFunctionEvaluator implements DRules {
             }
             if (fx.isFree(x, true)) {
               // Piecewise({{fx, arg2 == 0}}, 0)
-              return F.Piecewise(F.List(F.List(fx, F.Equal(arg2, F.C0))), F.C0);
+              return F.Piecewise(F.list(F.list(fx, F.Equal(arg2, F.C0))), F.C0);
             }
             if (fx.equals(x)) {
               // Piecewise({{fx, arg2 == 0}, {1, arg2 == 1}}, 0)
               return F.Piecewise(
-                  F.List(F.List(fx, F.Equal(arg2, F.C0)), F.List(F.C1, F.Equal(arg2, F.C1))), F.C0);
+                  F.list(F.list(fx, F.Equal(arg2, F.C0)), F.list(F.C1, F.Equal(arg2, F.C1))), F.C0);
             }
             if (fx.isAST()) {
               final IAST function = (IAST) fx;
@@ -356,21 +356,21 @@ public class D extends AbstractFunctionEvaluator implements DRules {
           }
           if (!x.isVariable()) {
             // `1` is not a valid variable.
-            return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+            return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(x), engine);
           }
           if (arg2.isAST()) {
             return F.NIL;
           }
           // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
           // symbolic expression or a non-negative integer.
-          return IOFunctions.printMessage(ast.topHead(), "dvar", F.List(xList), engine);
+          return IOFunctions.printMessage(ast.topHead(), "dvar", F.list(xList), engine);
         }
         return F.NIL;
       }
 
       if (!x.isVariable()) {
         // `1` is not a valid variable.
-        return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+        return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(x), engine);
       }
       return binaryD(fx, x, ast, engine);
     } catch (final ValidateException ve) {
@@ -534,12 +534,12 @@ public class D extends AbstractFunctionEvaluator implements DRules {
       for (int i = 1; i < list.size(); i++) {
         IASTMutable piecewiseD = ast.copy();
         piecewiseD.set(1, list.get(i).first());
-        pwResult.append(F.List(piecewiseD, list.get(i).second()));
+        pwResult.append(F.list(piecewiseD, list.get(i).second()));
       }
       if (piecewiseFunction.size() > 2) {
         IASTMutable piecewiseD = ast.copy();
         piecewiseD.set(1, piecewiseFunction.arg2());
-        pwResult.append(F.List(engine.evaluate(piecewiseD), S.True));
+        pwResult.append(F.list(engine.evaluate(piecewiseD), S.True));
       }
       IASTMutable piecewise = piecewiseFunction.copy();
       piecewise.set(1, pwResult);

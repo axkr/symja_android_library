@@ -2001,7 +2001,8 @@ public class AlgebraicFunctions extends AbstractRubiTestCase {
     // Power[a, -1], x]], Times[Rational[-1,2], n]]]");
     check( //
         "Integrate[(1 + x/a)^(n/2)/(x^2*(1 - x/a)^(n/2)), x]", //
-        "(-4*(1 - x/a)^(1 - n/2)*(1 + x/a)^((-2 + n)/2)*Hypergeometric2F1[2, 1 - n/2, 2 - n/2, (a - x)/(a + x)])/(a*(2 - n))", //
+        "(4*(1+x/a)^(1/2*(2+n))*Hypergeometric2F1[2,1/2*(2+n),1/2*(4+n),(a+x)/(a-x)])/(a*(\n"
+            + "2+n)*(1-x/a)^(1+n/2))", //
         131);
   }
 

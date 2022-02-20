@@ -70,7 +70,7 @@ public class UnitTestingFunctions {
         }
         if (!(ast.arg1() instanceof IStringX)) {
           // String expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
+          return IOFunctions.printMessage(ast.topHead(), "string", F.CEmptyList, engine);
         }
         String arg1 = ast.arg1().toString();
         if (arg1.startsWith("https://") || arg1.startsWith("http://")) {
@@ -81,7 +81,7 @@ public class UnitTestingFunctions {
           } catch (MalformedURLException mue) {
             LOGGER.debug("TestReport.evaluate() failed", mue);
             // Cannot open `1`.
-            return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+            return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
           }
         }
         File file = new File(arg1);
@@ -95,7 +95,7 @@ public class UnitTestingFunctions {
           }
         }
         // Cannot open `1`.
-        return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+        return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       }
       return F.NIL;
     }
@@ -109,7 +109,7 @@ public class UnitTestingFunctions {
       } catch (IOException e) {
         LOGGER.debug("TestReport.getFile() failed", e);
         // Cannot open `1`.
-        return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+        return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       } finally {
         // engine.setPackageMode(packageMode);
       }
@@ -124,7 +124,7 @@ public class UnitTestingFunctions {
       } catch (IOException e) {
         LOGGER.debug("TestReport.getURL() failed", e);
         // Cannot open `1`.
-        return IOFunctions.printMessage(ast.topHead(), "noopen", F.List(ast.arg1()), engine);
+        return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       } finally {
         // engine.setPackageMode(packageMode);
       }

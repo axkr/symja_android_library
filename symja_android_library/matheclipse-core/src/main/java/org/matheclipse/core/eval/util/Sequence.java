@@ -44,7 +44,7 @@ public class Sequence extends ListSizeSequence {
           if (num == Integer.MIN_VALUE) {
             // default value for overflow from toIntDefault()
             // Cannot <messageShortcut> positions `1` through `2` in `3`.
-            IOFunctions.printMessage(ast.topHead(), messageShortcut, F.List(F.C1, ast.arg2(), ast),
+            IOFunctions.printMessage(ast.topHead(), messageShortcut, F.list(F.C1, ast.arg2(), ast),
                 engine);
             return null;
           }

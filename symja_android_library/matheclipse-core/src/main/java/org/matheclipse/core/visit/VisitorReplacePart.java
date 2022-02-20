@@ -44,7 +44,7 @@ public class VisitorReplacePart extends AbstractVisitor {
     super();
     engine = EvalEngine.get();
     if (rule.isRuleAST()) {
-      rule = F.List(rule);
+      rule = F.list(rule);
     }
     if (rule.isListOfRules()) {
       IAST list = rule;

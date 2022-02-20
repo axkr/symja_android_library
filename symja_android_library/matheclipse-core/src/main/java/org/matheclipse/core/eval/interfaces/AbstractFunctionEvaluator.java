@@ -386,7 +386,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
         if (peeled.isPresent()) {
           IExpr x = S.Times.of(F.CNI, peeled);
           if (x.isRational() || x.isIntegerResult()) {
-            return F.List(x, arg);
+            return F.list(x, arg);
           }
         }
       }

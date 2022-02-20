@@ -264,7 +264,7 @@ public class VisitorReplaceAll extends VisitorExpr {
     } else {
       // (`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for
       // replacing.
-      throw new ArgumentTypeException("reps", F.List(arg));
+      throw new ArgumentTypeException("reps", F.list(arg));
     }
   }
 }

@@ -364,7 +364,7 @@ public class GraphicsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        return F.Cone(F.List(F.List(0, 0, -1), F.List(0, 0, 1)), F.C1);
+        return F.Cone(F.list(F.List(0, 0, -1), F.List(0, 0, 1)), F.C1);
       }
       if (ast.isAST1()) {
         return F.Cone(ast.arg1(), F.C1);
@@ -406,7 +406,7 @@ public class GraphicsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        return F.Cylinder(F.List(F.List(0, 0, -1), F.List(0, 0, 1)), F.C1);
+        return F.Cylinder(F.list(F.List(0, 0, -1), F.List(0, 0, 1)), F.C1);
       }
       if (ast.isAST1()) {
         return F.Cylinder(ast.arg1(), F.C1);
@@ -955,7 +955,7 @@ public class GraphicsFunctions {
       setColor(buf, color, color, true);
       setOpacity(buf, opacity.orElse(F.C1D2));
       buf.append("radius: " + sphereRadius + ",");
-      if (sphereCoords.isList3() && graphics3DCoords(buf, F.List(sphereCoords))) {
+      if (sphereCoords.isList3() && graphics3DCoords(buf, F.list(sphereCoords))) {
         buf.append("}");
         return true;
       }
@@ -1013,7 +1013,7 @@ public class GraphicsFunctions {
     @Override
     public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
 
-      IAST list = F.List(F.List(F.C0, F.C0, F.C0));
+      IAST list = F.list(F.list(F.C0, F.C0, F.C0));
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         list = (IAST) ast.arg1();
       }
@@ -1250,7 +1250,7 @@ public class GraphicsFunctions {
       EvalEngine engine) {
     IExpr arg1 = graphics3DAST.first();
     if (!arg1.isList()) {
-      arg1 = F.List(arg1);
+      arg1 = F.list(arg1);
     }
     IExpr lighting = S.Automatic; // .List(F.$str("Auto"), F.RGBColor(F.C1, F.C1, F.C1));
     OptionArgs options = OptionArgs.createOptionArgs(graphics3DAST, engine);
@@ -1557,7 +1557,7 @@ public class GraphicsFunctions {
       if (ast.size() > 1) {
         IExpr arg1 = ast.arg1();
         if (!arg1.isList()) {
-          arg1 = F.List(arg1);
+          arg1 = F.list(arg1);
         }
         primitivesDimension((IAST) arg1, dim);
 

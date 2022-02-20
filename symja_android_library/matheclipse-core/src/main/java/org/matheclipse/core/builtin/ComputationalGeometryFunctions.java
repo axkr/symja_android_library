@@ -80,7 +80,7 @@ public class ComputationalGeometryFunctions {
               continue;
             } else {
               // `1` should be a non-empty list of points.
-              return IOFunctions.printMessage(ast.topHead(), "pts", F.List(listOfPoints), engine);
+              return IOFunctions.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
             }
           }
           return S.True;
@@ -99,7 +99,7 @@ public class ComputationalGeometryFunctions {
               result.append(temp);
             } else {
               // `1` should be a non-empty list of points.
-              return IOFunctions.printMessage(ast.topHead(), "pts", F.List(listOfPoints), engine);
+              return IOFunctions.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
             }
           }
           if (result.argSize() == 1) {
@@ -228,7 +228,7 @@ public class ComputationalGeometryFunctions {
               result.append(temp);
             } else {
               // `1` should be a non-empty list of points.
-              return IOFunctions.printMessage(ast.topHead(), "pts", F.List(listOfPoints), engine);
+              return IOFunctions.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
             }
           }
           if (result.argSize() == 1) {
@@ -251,7 +251,7 @@ public class ComputationalGeometryFunctions {
               result.append(temp);
             } else {
               // `1` should be a non-empty list of points.
-              return IOFunctions.printMessage(ast.topHead(), "pts", F.List(listOfPoints), engine);
+              return IOFunctions.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
             }
           }
           if (result.argSize() == 1) {

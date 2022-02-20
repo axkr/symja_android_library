@@ -185,7 +185,7 @@ public class ComplexExpand extends AbstractEvaluator {
       IExpr arg1 = ast.arg1();
       IAST arg2 = F.NIL;
       if (ast.isAST2()) {
-        arg2 = ast.arg2().isList() ? (IAST) ast.arg2() : F.List(ast.arg2());
+        arg2 = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
       }
       VariablesSet eVar = new VariablesSet(arg1);
       List<IExpr> varList = eVar.getVarList().copyTo();

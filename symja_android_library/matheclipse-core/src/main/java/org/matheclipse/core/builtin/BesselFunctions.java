@@ -270,7 +270,7 @@ public class BesselFunctions {
                                       F.Factorial(
                                           F.Plus(F.QQ(-3L, 2L), F.Times(F.CN2, j), F.Abs(n)))),
                                   -1)),
-                              F.List(j, F.C0,
+                              F.list(j, F.C0,
                                   F.Floor(
                                       F.Times(F.C1D4, F.Plus(F.CN3, F.Times(F.C2, F.Abs(n)))))))),
                       F.Times(F.CN1,
@@ -281,7 +281,7 @@ public class BesselFunctions {
                                   F.Factorial(F.Plus(F.CN1D2, F.Times(F.CN2, j), F.Abs(n))),
                                   F.Power(F.Times(F.C2, z), F.Times(F.C2, j))), -1),
                               F.Factorial(F.Plus(F.CN1D2, F.Times(F.C2, j), F.Abs(n)))),
-                              F.List(j, F.C0, F.Floor(
+                              F.list(j, F.C0, F.Floor(
                                   F.Times(F.C1D4, F.Plus(F.CN1, F.Times(F.C2, F.Abs(n))))))))));
     }
 

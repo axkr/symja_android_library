@@ -53,7 +53,7 @@ public class SidesFunctions {
         }
       }
       // `1` should be an equation or inequality.
-      return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg1), engine);
+      return IOFunctions.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
     }
 
     private IExpr addSides(IAST comparator, final IExpr arg2) {
@@ -104,7 +104,7 @@ public class SidesFunctions {
       }
 
       // `1` should be an equation or inequality.
-      return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg2), engine);
+      return IOFunctions.printMessage(ast.topHead(), "eqin", F.list(arg2), engine);
     }
 
     @Override
@@ -160,7 +160,7 @@ public class SidesFunctions {
           IExpr temp = divideSides(a1, arg2);
           if (temp.isPresent()) {
             temp = engine.evaluate(temp);
-            IExpr piecewise = F.Piecewise(F.List(F.List(temp), F.Unequal(arg2, F.C0)), a1);
+            IExpr piecewise = F.Piecewise(F.list(F.list(temp), F.Unequal(arg2, F.C0)), a1);
             return F.ConditionalExpression(piecewise, arg1.second());
           }
         } else if (arg1.isComparatorFunction()) {
@@ -177,7 +177,7 @@ public class SidesFunctions {
         }
       }
       // `1` should be an equation or inequality.
-      return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg1), engine);
+      return IOFunctions.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
     }
 
     private IExpr divideSides(IAST comparator, IExpr arg2) {
@@ -254,7 +254,7 @@ public class SidesFunctions {
           IExpr temp = multiplySides(a1, arg2);
           if (temp.isPresent()) {
             temp = engine.evaluate(temp);
-            IExpr piecewise = F.Piecewise(F.List(F.List(temp), F.Unequal(arg2, F.C0)), a1);
+            IExpr piecewise = F.Piecewise(F.list(F.list(temp), F.Unequal(arg2, F.C0)), a1);
             return F.ConditionalExpression(piecewise, arg1.second());
           }
         } else if (arg1.isComparatorFunction()) {
@@ -266,7 +266,7 @@ public class SidesFunctions {
         }
       }
       // `1` should be an equation or inequality.
-      return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg1), engine);
+      return IOFunctions.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
     }
 
     private IExpr multiplySides(IAST comparator, final IExpr arg2) {
@@ -381,7 +381,7 @@ public class SidesFunctions {
         }
       }
       // `1` should be an equation or inequality.
-      return IOFunctions.printMessage(ast.topHead(), "eqin", F.List(arg1), engine);
+      return IOFunctions.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
     }
 
     private IExpr subtractSides(IAST comparator, final IExpr arg2) {
@@ -408,9 +408,9 @@ public class SidesFunctions {
       Function<IExpr, IExpr> function) {
     IAST list1 = comparator.map(function);
     IAST list2 = comparator.mapReverse(function);
-    IAST listOfConditions = F.List( //
-        F.List(list1, F.Greater(value, F.C0)), //
-        F.List(list2, F.Less(value, F.C0)));
+    IAST listOfConditions = F.list( //
+        F.list(list1, F.Greater(value, F.C0)), //
+        F.list(list2, F.Less(value, F.C0)));
     return F.Piecewise(listOfConditions, comparator);
   }
 

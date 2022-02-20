@@ -40,13 +40,13 @@ public class ListPlot3D extends AbstractEvaluator {
 
         if (dimension[0] == 3 && dimension[1] == 3) {
           // Draw a triangle with x, y and z coordinates.
-          IAST polygons = F.Polygon(F.List(F.List(//
+          IAST polygons = F.Polygon(F.list(F.list(//
               ((IAST) values.arg1()).arg1(), ((IAST) values.arg2()).arg1(),
               ((IAST) values.arg3()).arg1()),
-              F.List(//
+              F.list(//
                   ((IAST) values.arg1()).arg2(), ((IAST) values.arg2()).arg2(),
                   ((IAST) values.arg3()).arg2()),
-              F.List(//
+              F.list(//
                   ((IAST) values.arg1()).arg3(), ((IAST) values.arg2()).arg3(),
                   ((IAST) values.arg3()).arg3())));
           IASTAppendable result = F.Graphics3D(polygons);
@@ -95,14 +95,14 @@ public class ListPlot3D extends AbstractEvaluator {
             double[] nextHeights = heightRows.get(i + 1);
             if (heights.length > 0 && nextHeights.length == heights.length) {
               for (int j = 0; j < heights.length - 1; j++) {
-                polygonList.append(F.Polygon(F.List(//
-                    F.List(F.num(i + 1), F.num(j + 1), F.num(heights[j] / deltaHeight)),
-                    F.List(F.num(i + 2), F.num(j + 2), F.num(nextHeights[j + 1] / deltaHeight)),
-                    F.List(F.num(i + 1), F.num(j + 2), F.num(heights[j + 1] / deltaHeight)))));
+                polygonList.append(F.Polygon(F.list(//
+                    F.list(F.num(i + 1), F.num(j + 1), F.num(heights[j] / deltaHeight)),
+                    F.list(F.num(i + 2), F.num(j + 2), F.num(nextHeights[j + 1] / deltaHeight)),
+                    F.list(F.num(i + 1), F.num(j + 2), F.num(heights[j + 1] / deltaHeight)))));
                 polygonList.append(F.Polygon(
-                    F.List(F.List(F.num(i + 1), F.num(j + 1), F.num(heights[j] / deltaHeight)),
-                        F.List(F.num(i + 2), F.num(j + 2), F.num(nextHeights[j + 1] / deltaHeight)),
-                        F.List(F.num(i + 2), F.num(j + 1), F.num(nextHeights[j] / deltaHeight)))));
+                    F.list(F.list(F.num(i + 1), F.num(j + 1), F.num(heights[j] / deltaHeight)),
+                        F.list(F.num(i + 2), F.num(j + 2), F.num(nextHeights[j + 1] / deltaHeight)),
+                        F.list(F.num(i + 2), F.num(j + 1), F.num(nextHeights[j] / deltaHeight)))));
               }
             }
           }

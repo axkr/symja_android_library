@@ -74,7 +74,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   @Override
   public IAST divisors() {
     if (isOne() || isMinusOne()) {
-      return F.List(F.C1);
+      return F.CListC1;
     }
     Set<IInteger> set = divisorsSet();
     final IASTAppendable resultList = F.ListAlloc(set.size() + 1);
@@ -681,7 +681,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       return NumberTheory.factorial(ni);
     }
     // Machine-sized integer expected at position `2` in `1`.
-    throw new ArgumentTypeException("intm", F.List(F.Factorial(this), F.C1));
+    throw new ArgumentTypeException("intm", F.list(F.Factorial(this), F.C1));
   }
 
   /** {@inheritDoc} */

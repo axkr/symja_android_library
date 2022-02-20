@@ -150,7 +150,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
               primaryState = finalstate.getPrimaryState();
 
               for (int j = 0; j < primaryState.length; j++) {
-                resultLists[j].append(F.List(F.num(time), F.num(primaryState[j])));
+                resultLists[j].append(F.list(F.num(time), F.num(primaryState[j])));
               }
             }
 

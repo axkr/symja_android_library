@@ -209,7 +209,7 @@ public class GraphFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
-          F.List(F.Rule(S.EdgeWeight, S.Automatic)));
+          F.list(F.Rule(S.EdgeWeight, S.Automatic)));
     }
 
     @Override
@@ -590,7 +590,7 @@ public class GraphFunctions {
                     sum.append(F.EuclideanDistance(m.get(lastPosition), m.get(position)));
                     lastPosition = position;
                   }
-                  return F.List(sum, shortestTourList);
+                  return F.list(sum, shortestTourList);
                 }
               }
             }
@@ -633,7 +633,7 @@ public class GraphFunctions {
                 sum.append(F.GeoDistance(list.get(lastPosition), list.get(position)));
                 lastPosition = position;
               }
-              return F.List(sum, shortestTourList);
+              return F.list(sum, shortestTourList);
             }
             // } else {
             // GraphExpr<ExprEdge> gex = createGraph(ast.arg1());
@@ -1322,7 +1322,7 @@ public class GraphFunctions {
         for (Entry<IExpr, IExpr> entry : forwardMapping.entrySet()) {
           list.append(F.Rule(entry.getKey(), entry.getValue()));
         }
-        return F.List(F.assoc(list));
+        return F.list(F.assoc(list));
       } catch (RuntimeException rex) {
         LOGGER.debug("FindGraphIsomorphism.evaluate() failed", rex);
       }
@@ -1931,13 +1931,13 @@ public class GraphFunctions {
     if (edgeData[1] == null) {
       return F.Graph(vertexes, edgeData[0]);
     }
-    return F.Graph(vertexes, edgeData[0], F.List(F.Rule(S.EdgeWeight, edgeData[1])));
+    return F.Graph(vertexes, edgeData[0], F.list(F.Rule(S.EdgeWeight, edgeData[1])));
   }
 
   public static IExpr weightedGraphToIExpr(AbstractBaseGraph<IExpr, ExprWeightedEdge> g) {
     IASTAppendable vertexes = vertexToIExpr(g);
     IASTAppendable[] res = weightedEdgesToIExpr(g);
-    IExpr graph = F.Graph(vertexes, res[0], F.List(F.Rule(S.EdgeWeight, res[1])));
+    IExpr graph = F.Graph(vertexes, res[0], F.list(F.Rule(S.EdgeWeight, res[1])));
     return graph;
   }
 

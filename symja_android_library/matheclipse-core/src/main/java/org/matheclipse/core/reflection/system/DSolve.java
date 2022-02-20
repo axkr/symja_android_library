@@ -124,7 +124,7 @@ public class DSolve extends AbstractFunctionEvaluator {
    */
   private IExpr unaryODE(IAST uFunction1Arg, IExpr arg2, IExpr xVar, IASTAppendable listOfEquations,
       IExpr[] boundaryCondition, EvalEngine engine) {
-    IAST listOfVariables = F.List(uFunction1Arg);
+    IAST listOfVariables = F.list(uFunction1Arg);
     if (listOfEquations.size() == 2) {
       IExpr C_1 = F.unaryAST1(S.C, F.C1); // constant C(1)
       IExpr equation = listOfEquations.arg1();
@@ -134,17 +134,17 @@ public class DSolve extends AbstractFunctionEvaluator {
       }
       if (temp.isPresent()) {
         if (boundaryCondition != null) {
-          IExpr res = F.subst(temp, F.List(F.Rule(xVar, boundaryCondition[0])));
+          IExpr res = F.subst(temp, F.list(F.Rule(xVar, boundaryCondition[0])));
           IExpr C1 = S.Roots.of(engine, F.Equal(res, boundaryCondition[1]), C_1);
           if (C1.isAST(S.Equal, 3, C_1)) {
-            res = F.subst(temp, F.List(F.Rule(C_1, C1.second())));
+            res = F.subst(temp, F.list(F.Rule(C_1, C1.second())));
             temp = res;
           }
         }
         if (arg2.isSymbol() && xVar.isSymbol()) {
-          return F.List(F.List(F.Rule(arg2, F.Function(F.List(xVar), temp))));
+          return F.list(F.list(F.Rule(arg2, F.Function(F.list(xVar), temp))));
         }
-        return F.List(F.List(F.Rule(arg2, temp)));
+        return F.list(F.list(F.Rule(arg2, temp)));
       }
     }
     return F.NIL;

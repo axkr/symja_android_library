@@ -41,7 +41,7 @@ public class UnaryNumerical
     if (!variable.isVariable() || variable.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
-          IOFunctions.getMessage("setraw", F.List(variable), EvalEngine.get()));
+          IOFunctions.getMessage("setraw", F.list(variable), EvalEngine.get()));
     }
     fVariable = variable;
     fFunction = function;

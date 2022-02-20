@@ -187,7 +187,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   private static ArgumentTypeException getDivisionTroughZeroException(IInteger num) {
-    String str = IOFunctions.getMessage("infy", F.List(F.Rational(num, F.C0)), EvalEngine.get());
+    String str = IOFunctions.getMessage("infy", F.list(F.Rational(num, F.C0)), EvalEngine.get());
     return new ArgumentTypeException(str);
   }
 

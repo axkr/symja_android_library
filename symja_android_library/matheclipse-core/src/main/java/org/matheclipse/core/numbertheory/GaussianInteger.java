@@ -48,12 +48,12 @@ public final class GaussianInteger {
     }
     factor = F.eval(F.Divide(num, ast));
     if (!factor.isOne()) {
-      list.append(F.List(factor, F.C1));
+      list.append(F.list(factor, F.C1));
     }
     for (Map.Entry<ComplexSym, Integer> entry : complexMap.entrySet()) {
       ComplexSym key = entry.getKey();
       IInteger is = F.ZZ(entry.getValue());
-      list.append(F.List(key, is));
+      list.append(F.list(key, is));
     }
     return list;
   }

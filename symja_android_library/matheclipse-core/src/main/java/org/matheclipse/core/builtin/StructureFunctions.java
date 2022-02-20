@@ -521,7 +521,7 @@ public class StructureFunctions {
         return F.NIL;
       }
       // Nonatomic expression expected at position `1` in `2`.
-      return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
+      return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
     }
 
     @Override
@@ -634,11 +634,11 @@ public class StructureFunctions {
             if (arg1.isList()) {
               symbolSlots = (IAST) arg1;
             } else {
-              symbolSlots = F.List(arg1);
+              symbolSlots = F.list(arg1);
             }
             if (symbolSlots.size() > ast.size()) {
               // To many parameters in `1` to be filled from `2`.
-              return IOFunctions.printMessage(S.Function, "fpct", F.List(symbolSlots, function),
+              return IOFunctions.printMessage(S.Function, "fpct", F.list(symbolSlots, function),
                   engine);
             }
             java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables =
@@ -935,7 +935,7 @@ public class StructureFunctions {
             final IExpr arg1 = ast.arg1();
             IExpr arg3 = ast.arg3();
             if (arg3.isInteger() || arg3.isString() || arg3.isAST(S.Key, 2) || arg3.equals(S.All)) {
-              arg3 = F.List(arg3);
+              arg3 = F.list(arg3);
             }
             if (arg3.isListOfLists()) {
               IAST listOfLists = ((IAST) arg3);
@@ -1020,14 +1020,14 @@ public class StructureFunctions {
             }
           }
           // Part `1` of `2` does not exist.
-          throw new ArgumentTypeException("partw", F.List(F.List(pos), result));
+          throw new ArgumentTypeException("partw", F.list(F.list(pos), result));
         }
       }
 
       int p = pos.toIntDefault();
       if (p == Integer.MIN_VALUE) {
         // Part `1` of `2` does not exist.
-        throw new ArgumentTypeException("partw", F.List(F.List(pos), result));
+        throw new ArgumentTypeException("partw", F.list(F.list(pos), result));
       }
       if (p < 0) {
         p = result.size() + p;
@@ -1055,7 +1055,7 @@ public class StructureFunctions {
         }
       }
       // Part `1` of `2` does not exist.
-      throw new ArgumentTypeException("partw", F.List(F.List(pos), result));
+      throw new ArgumentTypeException("partw", F.list(F.list(pos), result));
     }
 
     @Override
@@ -1490,7 +1490,7 @@ public class StructureFunctions {
         IInteger depth = (IInteger) ast.arg3();
         if (depth.isNegative()) {
           // Non-negative integer expected.
-          return IOFunctions.printMessage(ast.topHead(), "intnn", F.List(), engine);
+          return IOFunctions.printMessage(ast.topHead(), "intnn", F.CEmptyList, engine);
           // LOGGER.log(
           // engine.getLogLevel(), "Non-negative integer expected at position 3 in
           // Operate()");
@@ -1606,7 +1606,7 @@ public class StructureFunctions {
       if (ast.isAST1()) {
         int value = ast.arg1().toIntDefault();
         if (value < 0) {
-          return IOFunctions.printMessage(ast.topHead(), "intnn", F.List(), newEngine);
+          return IOFunctions.printMessage(ast.topHead(), "intnn", F.CEmptyList, newEngine);
         }
         if (value > 0) {
           return F.ZZ(value);
@@ -2078,7 +2078,7 @@ public class StructureFunctions {
           } else {
             if (listLength != ((IAST) list.get(i)).argSize()) {
               // Objects of unequal length in `1` cannot be combined.
-              IOFunctions.printMessage(S.Thread, "tdlen", F.List(list), EvalEngine.get());
+              IOFunctions.printMessage(S.Thread, "tdlen", F.list(list), EvalEngine.get());
               listLength = -1;
               return F.NIL;
               // for loop

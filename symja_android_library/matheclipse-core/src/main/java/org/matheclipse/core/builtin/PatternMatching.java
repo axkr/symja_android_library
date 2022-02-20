@@ -228,7 +228,7 @@ public final class PatternMatching {
         }
         if (((ISymbol) x).isProtected()) {
           // Symbol `1` is Protected.
-          IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(x), engine);
+          IOFunctions.printMessage(ast.topHead(), "wrsym", F.list(x), engine);
           return S.Null;
         }
         mutable.set(i, x);
@@ -269,7 +269,7 @@ public final class PatternMatching {
         }
         if (((ISymbol) x).isProtected()) {
           // Symbol `1` is Protected.
-          IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(x), engine);
+          IOFunctions.printMessage(ast.topHead(), "wrsym", F.list(x), engine);
           return S.Null;
         }
         mutable.set(i, x);
@@ -427,12 +427,12 @@ public final class PatternMatching {
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isAST(S.Default) && leftHandSide.size() > 1) {
         if (!leftHandSide.first().isSymbol()) {
-          IOFunctions.printMessage(builtinSymbol, "setps", F.List(leftHandSide.first()), engine);
+          IOFunctions.printMessage(builtinSymbol, "setps", F.list(leftHandSide.first()), engine);
           return rightHandSide;
         }
         ISymbol symbol = (ISymbol) leftHandSide.first();
         if (symbol.isProtected()) {
-          IOFunctions.printMessage(S.Default, "write", F.List(symbol, leftHandSide),
+          IOFunctions.printMessage(S.Default, "write", F.list(symbol, leftHandSide),
               EvalEngine.get());
           throw new FailedException();
         }
@@ -1275,7 +1275,7 @@ public final class PatternMatching {
         if (value == null) {
           return F.CEmptyList;
         }
-        return F.List(F.RuleDelayed(F.HoldPattern(symbol), value));
+        return F.list(F.RuleDelayed(F.HoldPattern(symbol), value));
       }
       return F.NIL;
     }
@@ -1371,7 +1371,7 @@ public final class PatternMatching {
             return PatternNested.valueOf(symbol, arg2);
           } else {
             // First element in `1` is not a valid pattern name.
-            return IOFunctions.printMessage(ast.topHead(), "patvar", F.List(ast), engine);
+            return IOFunctions.printMessage(ast.topHead(), "patvar", F.list(ast), engine);
           }
         }
       }
@@ -1803,7 +1803,7 @@ public final class PatternMatching {
         return createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);
       } catch (RuleCreationError rce) {
         // Cannot unset object `1`.
-        IOFunctions.printMessage(ast.topHead(), "usraw", F.List(leftHandSide), engine);
+        IOFunctions.printMessage(ast.topHead(), "usraw", F.list(leftHandSide), engine);
         return rightHandSide;
       }
     }
@@ -1923,7 +1923,7 @@ public final class PatternMatching {
         return S.Null;
       } catch (RuleCreationError rce) {
         // Cannot unset object `1`.
-        IOFunctions.printMessage(ast.topHead(), "usraw", F.List(leftHandSide), engine);
+        IOFunctions.printMessage(ast.topHead(), "usraw", F.list(leftHandSide), engine);
         return S.$Failed;
       }
     }
@@ -1979,7 +1979,7 @@ public final class PatternMatching {
               S.Implies, S.Positive, S.Negative, S.NonPositive, S.NonNegative, S.Replace,
               S.ReplaceAll, S.ReplaceRepeated);
           IAST excludedFunctions = F.Rule("ExcludedFunctions", list);
-          return F.List(F.Rule("DifferentiationOptions", F.List(excludedFunctions)));
+          return F.list(F.Rule("DifferentiationOptions", F.list(excludedFunctions)));
         }
       }
       return F.CEmptyList;
@@ -2001,7 +2001,7 @@ public final class PatternMatching {
       final ISymbol lhsSymbol = determineRuleTag(leftHandSide);
       if (lhsSymbol.isProtected()) {
         // Symbol `1` is Protected.
-        IOFunctions.printMessage(S.Set, "wrsym", F.List(lhsSymbol), EvalEngine.get());
+        IOFunctions.printMessage(S.Set, "wrsym", F.list(lhsSymbol), EvalEngine.get());
         return rightHandSide;
       }
       lhsSymbol.putDownRule(IPatternMatcher.SET, false, leftHandSide, rightHandSide, packageMode);
@@ -2011,7 +2011,7 @@ public final class PatternMatching {
       final ISymbol lhsSymbol = (ISymbol) leftHandSide;
       if (lhsSymbol.isProtected()) {
         // Symbol `1` is Protected.
-        IOFunctions.printMessage(S.Set, "wrsym", F.List(lhsSymbol), EvalEngine.get());
+        IOFunctions.printMessage(S.Set, "wrsym", F.list(lhsSymbol), EvalEngine.get());
         return rightHandSide;
       }
       lhsSymbol.assignValue(rightHandSide, false);
@@ -2066,7 +2066,7 @@ public final class PatternMatching {
     if (lhsSymbol != null) {
       if (lhsSymbol.isProtected()) {
         // Symbol `1` is Protected.
-        IOFunctions.printMessage(S.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
+        IOFunctions.printMessage(S.SetDelayed, "wrsym", F.list(lhsSymbol), EvalEngine.get());
         throw new FailedException();
       }
       lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
@@ -2077,7 +2077,7 @@ public final class PatternMatching {
       lhsSymbol = (ISymbol) leftHandSide;
       if (lhsSymbol.isProtected()) {
         // Symbol `1` is Protected.
-        IOFunctions.printMessage(S.SetDelayed, "wrsym", F.List(lhsSymbol), EvalEngine.get());
+        IOFunctions.printMessage(S.SetDelayed, "wrsym", F.list(lhsSymbol), EvalEngine.get());
         throw new FailedException();
       }
       ((ISymbol) leftHandSide).assignValue(rightHandSide, true);
@@ -2119,7 +2119,7 @@ public final class PatternMatching {
         }
         if (symbol.isProtected()) {
           // Tag `1` in `2` is Protected.
-          IOFunctions.printMessage(S.TagSet, "write", F.List(symbol, leftHandSide),
+          IOFunctions.printMessage(S.TagSet, "write", F.list(symbol, leftHandSide),
               EvalEngine.get());
           throw new FailedException();
         }
@@ -2195,7 +2195,7 @@ public final class PatternMatching {
         return result;
       }
       // Tag `1` not found in `2`
-      IOFunctions.printMessage(tagSymbol, "tagnf", F.List(tagSetSymbol, lhsAST), engine);
+      IOFunctions.printMessage(tagSymbol, "tagnf", F.list(tagSetSymbol, lhsAST), engine);
       return result;
     }
 
@@ -2232,7 +2232,7 @@ public final class PatternMatching {
         final IExpr rightHandSide = ast.arg3();
         if (symbol.isProtected()) {
           // Tag `1` in `2` is Protected.
-          IOFunctions.printMessage(ast.topHead(), "write", F.List(symbol, leftHandSide),
+          IOFunctions.printMessage(ast.topHead(), "write", F.list(symbol, leftHandSide),
               EvalEngine.get());
           throw new FailedException();
         }
@@ -2404,7 +2404,7 @@ public final class PatternMatching {
           final ISymbol lhsSymbol = determineRuleTag(leftHandSide);
           if (lhsSymbol.isProtected()) {
             // Symbol `1` is Protected.
-            IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(lhsSymbol), EvalEngine.get());
+            IOFunctions.printMessage(ast.topHead(), "wrsym", F.list(lhsSymbol), EvalEngine.get());
             throw new FailedException();
           }
         }
@@ -2412,7 +2412,7 @@ public final class PatternMatching {
           final ISymbol lhsSymbol = (ISymbol) leftHandSide;
           if (lhsSymbol.isProtected()) {
             // Symbol `1` is Protected.
-            IOFunctions.printMessage(ast.topHead(), "wrsym", F.List(lhsSymbol), EvalEngine.get());
+            IOFunctions.printMessage(ast.topHead(), "wrsym", F.list(lhsSymbol), EvalEngine.get());
             throw new FailedException();
           }
         }
@@ -2421,7 +2421,7 @@ public final class PatternMatching {
         return S.Null;
       } catch (RuleCreationError rce) {
         // Cannot unset object `1`.
-        IOFunctions.printMessage(ast.topHead(), "usraw", F.List(leftHandSide), engine);
+        IOFunctions.printMessage(ast.topHead(), "usraw", F.list(leftHandSide), engine);
         return S.$Failed;
       }
     }
@@ -2714,7 +2714,7 @@ public final class PatternMatching {
         if (temp.isList()) {
           return (IAST) temp;
         }
-        return F.List(temp);
+        return F.list(temp);
       }
     }
     return F.CEmptyList;
@@ -2757,7 +2757,7 @@ public final class PatternMatching {
         }
         if (!quiet) {
           // Option name `2` not found in defaults for `1`
-          IOFunctions.printMessage(ast.topHead(), "optnf", F.List(optionsPattern, optionValue),
+          IOFunctions.printMessage(ast.topHead(), "optnf", F.list(optionsPattern, optionValue),
               engine);
         }
         return optionValue;
@@ -2802,7 +2802,7 @@ public final class PatternMatching {
         }
         if (!quiet) {
           // Option name `2` not found in defaults for `1`
-          IOFunctions.printMessage(ast.topHead(), "optnf", F.List(optionsPattern, optionValue),
+          IOFunctions.printMessage(ast.topHead(), "optnf", F.list(optionsPattern, optionValue),
               engine);
         }
         return optionValue;
@@ -2835,7 +2835,7 @@ public final class PatternMatching {
     if (optionsPattern != null) {
       if (!quiet) {
         // Option name `2` not found in defaults for `1`
-        IOFunctions.printMessage(ast.topHead(), "optnf", F.List(optionsPattern, optionValue),
+        IOFunctions.printMessage(ast.topHead(), "optnf", F.list(optionsPattern, optionValue),
             engine);
       }
       return optionValue;

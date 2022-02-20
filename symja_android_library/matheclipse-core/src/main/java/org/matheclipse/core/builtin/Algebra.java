@@ -1224,7 +1224,7 @@ public class Algebra {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Trig, S.False)));
+          F.list(F.Rule(S.Trig, S.False)));
     }
 
     /**
@@ -2161,7 +2161,7 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Extension, S.None), F.Rule(S.GaussianIntegers, S.False),
+          F.list(F.Rule(S.Extension, S.None), F.Rule(S.GaussianIntegers, S.False),
               F.Rule(S.Modulus, F.C0)));
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
@@ -2571,9 +2571,9 @@ public class Algebra {
         throws JASConversionException {
       if (!expr.isAST()) {
         if (expr.isNumber()) {
-          return F.List(F.List(expr, F.C1));
+          return F.list(F.list(expr, F.C1));
         }
-        return F.List(F.List(F.C1, F.C1), F.List(expr, F.C1));
+        return F.list(F.list(F.C1, F.C1), F.list(expr, F.C1));
       }
       JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
       GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
@@ -2594,17 +2594,17 @@ public class Algebra {
         }
       } catch (RuntimeException rex) {
         // JAS may throw RuntimeExceptions
-        return F.List(expr);
+        return F.list(expr);
       }
       IASTAppendable result = F.ListAlloc(map.size() + 1);
       if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
-        result.append(F.List(F.fraction(gcd, lcm), F.C1));
+        result.append(F.list(F.fraction(gcd, lcm), F.C1));
       }
       for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
         if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
           continue;
         }
-        result.append(F.List(jas.integerPoly2Expr(entry.getKey()), F.ZZ(entry.getValue())));
+        result.append(F.list(jas.integerPoly2Expr(entry.getKey()), F.ZZ(entry.getValue())));
       }
       return result;
     }
@@ -2648,7 +2648,7 @@ public class Algebra {
       if (ast.isAST2()) {
         if (ast.arg2().isSymbol()) {
           ISymbol variable = (ISymbol) ast.arg2();
-          variableList = F.List(variable);
+          variableList = F.list(variable);
         } else if (ast.arg2().isList()) {
           variableList = (IAST) ast.arg2();
         } else {
@@ -2789,7 +2789,7 @@ public class Algebra {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Trig, S.False)));
+          F.list(F.Rule(S.Trig, S.False)));
     }
 
     /**
@@ -2876,17 +2876,17 @@ public class Algebra {
       IAST variables = VariablesSet.getAlgebraicVariables(ast.arg3());
       if (variables.size() != 2) {
         // `1` is not a valid variable.
-        return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(ast.arg3()), engine);
+        return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(ast.arg3()), engine);
       }
       IExpr expr1 = F.evalExpandAll(ast.arg1(), engine);
       IExpr expr2 = F.evalExpandAll(ast.arg2(), engine);
       if (!expr1.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        return IOFunctions.printMessage(ast.topHead(), "poly", F.List(expr1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "poly", F.list(expr1), engine);
       }
       if (!expr2.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        return IOFunctions.printMessage(ast.topHead(), "poly", F.List(expr2), engine);
+        return IOFunctions.printMessage(ast.topHead(), "poly", F.list(expr2), engine);
       }
 
       if (ast.size() == 5) {
@@ -2983,7 +2983,7 @@ public class Algebra {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Modulus, F.C0)));
+          F.list(F.Rule(S.Modulus, F.C0)));
     }
   }
 
@@ -3163,7 +3163,7 @@ public class Algebra {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Modulus, F.C0)));
+          F.list(F.Rule(S.Modulus, F.C0)));
     }
   }
 
@@ -3315,7 +3315,7 @@ public class Algebra {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Modulus, F.C0)));
+          F.list(F.Rule(S.Modulus, F.C0)));
     }
   }
 
@@ -3371,7 +3371,7 @@ public class Algebra {
         if (arg2.isList()) {
           variablesList = (IAST) arg2;
         } else {
-          variablesList = F.List(arg2);
+          variablesList = F.list(arg2);
         }
         IAST subst = substituteVariablesInPolynomial(arg1, variablesList, "§PolynomialQ");
         IExpr result = F.bool(subst.arg1().isPolynomial((IAST) subst.arg2()));
@@ -3462,11 +3462,11 @@ public class Algebra {
           }
           if (!arg1.isPolynomialStruct()) {
             // `1` is not a polynomial.
-            return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg1), engine);
+            return IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
           }
           if (!arg2.isPolynomialStruct()) {
             // `1` is not a polynomial.
-            return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg2), engine);
+            return IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
           }
           if (ast.size() == 5) {
             final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
@@ -3497,7 +3497,7 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Modulus, F.C0)));
+          F.list(F.Rule(S.Modulus, F.C0)));
     }
   }
 
@@ -3551,7 +3551,7 @@ public class Algebra {
             jas.rationalPoly2Expr(divRem[1], false)};
       } catch (JASConversionException e1) {
         try {
-          ExprPolynomialRing ring = new ExprPolynomialRing(F.List(variable));
+          ExprPolynomialRing ring = new ExprPolynomialRing(F.list(variable));
           ExprPolynomial poly1 = ring.create(arg1);
           ExprPolynomial poly2 = ring.create(arg2);
           ExprPolynomial[] divRem = poly1.quotientRemainder(poly2);
@@ -3591,11 +3591,11 @@ public class Algebra {
       IExpr arg2 = ast.arg2();
       if (!arg1.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
       }
       if (!arg2.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg2), engine);
+        return IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
       }
 
       try {
@@ -3621,7 +3621,7 @@ public class Algebra {
             IExpr[] quotientRemainderModInteger =
                 quotientRemainderModInteger(arg1, arg2, variable, option);
             if (quotientRemainderModInteger != null) {
-              result = F.List(quotientRemainderModInteger[0], quotientRemainderModInteger[1]);
+              result = F.list(quotientRemainderModInteger[0], quotientRemainderModInteger[1]);
             }
           }
           F.REMEMBER_AST_CACHE.put(ast, result);
@@ -3629,7 +3629,7 @@ public class Algebra {
         }
         IExpr[] quotientRemainder = quotientRemainder(arg1, arg2, variable);
         if (quotientRemainder != null) {
-          result = F.List(quotientRemainder[0], quotientRemainder[1]);
+          result = F.list(quotientRemainder[0], quotientRemainder[1]);
         }
         F.REMEMBER_AST_CACHE.put(ast, result);
         return result;
@@ -3672,7 +3672,7 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Modulus, F.C0)));
+          F.list(F.Rule(S.Modulus, F.C0)));
     }
   }
 
@@ -3727,11 +3727,11 @@ public class Algebra {
       }
       if (!arg1.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
       }
       if (!arg2.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg2), engine);
+        return IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
       }
       try {
         if (ast.size() == 5) {
@@ -3768,7 +3768,7 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Modulus, F.C0)));
+          F.list(F.Rule(S.Modulus, F.C0)));
     }
   }
 
@@ -3960,7 +3960,7 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Assumptions, S.Automatic)));
+          F.list(F.Rule(S.Assumptions, S.Automatic)));
     }
   }
 
@@ -4156,7 +4156,7 @@ public class Algebra {
             if (k < 0) {
               return F.NIL;
             }
-            final IAST variables = F.List(F.Slot1);
+            final IAST variables = F.list(F.Slot1);
             ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables);
             ExprPolynomial polynomial = ring.create(expr, false, true, false);
 
@@ -4276,12 +4276,12 @@ public class Algebra {
     private static IBuiltInSymbol reduceConstantTerm =
         F.localFunction("reduceConstantTerm", (c) -> {
           if (c.isNumber()) {
-            return F.List(c, F.C1);
+            return F.list(c, F.C1);
           }
           if (c.isTimes() && c.first().isNumber()) {
-            return F.List(c.first(), c.rest().oneIdentity1());
+            return F.list(c.first(), c.rest().oneIdentity1());
           }
-          return F.List(F.C1, c);
+          return F.list(F.C1, c);
         });
 
     private static IExpr reduceFactorConstant(IExpr p, EvalEngine engine) {
@@ -4661,7 +4661,7 @@ public class Algebra {
       }
       if (!arg.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg), engine);
+        IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg), engine);
         return false;
       }
     }
@@ -5310,7 +5310,7 @@ public class Algebra {
    */
   public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf,
       IExpr[] parts, IExpr variable) {
-    return partialFractionDecompositionRational(pf, parts, F.List(variable));
+    return partialFractionDecompositionRational(pf, parts, F.list(variable));
   }
 
   /**
@@ -5509,7 +5509,7 @@ public class Algebra {
         substitutedVariableList.append(variable);
       }
     }
-    return F.List(polyExpr, substitutedVariableList);
+    return F.list(polyExpr, substitutedVariableList);
   }
 
   public static void initialize() {

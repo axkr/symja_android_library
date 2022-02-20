@@ -1213,6 +1213,11 @@ public class SimplifyFunctions {
         switch (headID) {
           case ID.List:
             return list1.mapThread(ast, 1);
+          case ID.Rule:
+            if (list1.size() == 3) {
+              return F.Rule(ast.setAtClone(1, list1.arg1()), ast.setAtClone(1, list1.arg2()));
+            }
+            break;
           case ID.Equal:
           case ID.Unequal:
           case ID.Greater:
@@ -1220,7 +1225,7 @@ public class SimplifyFunctions {
           case ID.Less:
           case ID.LessEqual:
             if (list1.size() == 3 && !list1.arg2().isZero()) {
-              IExpr sub = ast.topHead().of(F.Subtract(list1.arg1(), list1.arg2()));
+              IExpr sub = ast.setAtClone(1, F.Subtract(list1.arg1(), list1.arg2()));
               return F.binaryAST2(list1.head(), sub, F.C0);
             }
             break;
@@ -1269,7 +1274,7 @@ public class SimplifyFunctions {
           }
         }
 
-        IExpr temp = arg1.replaceAll(F.List( //
+        IExpr temp = arg1.replaceAll(F.list( //
             F.Rule(S.GoldenAngle, //
                 F.Times(F.Subtract(F.C3, F.CSqrt5), S.Pi)), //
             F.Rule(S.GoldenRatio, //
@@ -1303,7 +1308,7 @@ public class SimplifyFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Assumptions, S.$Assumptions), //
+          F.list(F.Rule(S.Assumptions, S.$Assumptions), //
               F.Rule(S.ComplexityFunction, S.Automatic)));
     }
 

@@ -148,7 +148,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
             }
             // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
             // symbolic expression or a non-negative integer.
-            return IOFunctions.printMessage(ast.topHead(), "dvar", F.List(F.List(F.Slot1, nTimes)),
+            return IOFunctions.printMessage(ast.topHead(), "dvar", F.list(F.list(F.Slot1, nTimes)),
                 engine);
           }
         }
@@ -217,11 +217,11 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         int iterationLimit = engine.getIterationLimit();
         if (iterationLimit > 0 && iterationLimit < ni) {
           // Iteration limit of `1` exceeded.
-          return IOFunctions.printMessage(S.Derivative, "itlim", F.List(F.ZZ(iterationLimit)),
+          return IOFunctions.printMessage(S.Derivative, "itlim", F.list(F.ZZ(iterationLimit)),
               engine);
         }
       }
-      dExpr = F.D(newFunction, F.List(symbol, n));
+      dExpr = F.D(newFunction, F.list(symbol, n));
     }
     dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);
 
@@ -279,7 +279,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         int ni = n.toIntDefault();
         if (ni < 0) {
           if (ni == Integer.MIN_VALUE) {
-            list.append(F.List(symbol, n));
+            list.append(F.list(symbol, n));
           } else {
             return F.NIL;
           }
@@ -287,10 +287,10 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
           int iterationLimit = engine.getIterationLimit();
           if (iterationLimit > 0 && iterationLimit < ni) {
             // Iteration limit of `1` exceeded.
-            return IOFunctions.printMessage(S.Derivative, "itlim", F.List(F.ZZ(iterationLimit)),
+            return IOFunctions.printMessage(S.Derivative, "itlim", F.list(F.ZZ(iterationLimit)),
                 engine);
           }
-          list.append(F.List(symbol, n));
+          list.append(F.list(symbol, n));
         }
       }
     }

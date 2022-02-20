@@ -170,7 +170,7 @@ public class CompilerFunctionsTest extends AbstractTestCase {
               + "return compoundExpression2();\n" + "} finally {top = oldTop; vars = oldVars;}\n"
               + "}\n" + "\n" + "public IExpr compoundExpression2() {\n" + " int oldTop =  top;\n"
               + " try {\n"
-              + "F.eval(F.Do(F.CompoundExpression(F.Set(vars.get(\"x\"),F.RandomInteger(F.List(F.C1,vars.get(\"i\")))),F.Set(vars.get(\"t\"),F.Part(vars.get(\"p\"),vars.get(\"i\"))),F.Set(F.Part(vars.get(\"p\"),vars.get(\"i\")),F.Part(vars.get(\"p\"),vars.get(\"x\"))),F.Set(F.Part(vars.get(\"p\"),vars.get(\"x\")),vars.get(\"t\"))),F.List(\n"
+              + "F.eval(F.Do(F.CompoundExpression(F.Set(vars.get(\"x\"),F.RandomInteger(F.list(F.C1,vars.get(\"i\")))),F.Set(vars.get(\"t\"),F.Part(vars.get(\"p\"),vars.get(\"i\"))),F.Set(F.Part(vars.get(\"p\"),vars.get(\"i\")),F.Part(vars.get(\"p\"),vars.get(\"x\"))),F.Set(F.Part(vars.get(\"p\"),vars.get(\"x\")),vars.get(\"t\"))),F.List(\n"
               + "vars.get(\"i\"),\n" + "stack.get(1),\n" + "F.C2,\n" + "F.CN1\n" + ")));\n"
               + "return F.eval(vars.get(\"p\"));\n" + "} finally {top = oldTop;}\n" + "}\n" + "\n"
               + "\n"

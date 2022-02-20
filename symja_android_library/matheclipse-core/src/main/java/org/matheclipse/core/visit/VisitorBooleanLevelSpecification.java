@@ -134,7 +134,7 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
           } else if ((lst.arg1() instanceof IInteger) && (lst.arg2().isInfinity())) {
             final IInteger i0 = (IInteger) lst.arg1();
             if (i0.isNegative()) {
-              String str = IOFunctions.getMessage("level", F.List(levelExpr), EvalEngine.get());
+              String str = IOFunctions.getMessage("level", F.list(levelExpr), EvalEngine.get());
               throw new ArgumentTypeException(str);
               // throw new MathException("Invalid Level specification: " +
               // levelExpr.toString());
@@ -164,7 +164,7 @@ public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
       fToDepth = -1;
       return;
     }
-    String str = IOFunctions.getMessage("level", F.List(levelExpr), EvalEngine.get());
+    String str = IOFunctions.getMessage("level", F.list(levelExpr), EvalEngine.get());
     throw new ArgumentTypeException(str);
     // throw new MathException("Invalid Level specification: " + levelExpr.toString());
   }

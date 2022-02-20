@@ -486,7 +486,7 @@ public class RootsFunctions {
 
     IASTAppendable resultList = RootIntervals.croots(expr, true);
     if (resultList.isPresent()) {
-      // IAST result = F.List();
+      // IAST result = F.list();
       // if (resultList.size() > 0) {
       // result.appendArgs(resultList);
       // }
@@ -992,7 +992,7 @@ public class RootsFunctions {
   public static double[] coefficients(IExpr polynomial, final ISymbol variable)
       throws JASConversionException {
     try {
-      ExprPolynomialRing ring = new ExprPolynomialRing(F.List(variable));
+      ExprPolynomialRing ring = new ExprPolynomialRing(F.list(variable));
       ExprPolynomial poly = ring.create(polynomial);
 
       IAST list = poly.coefficientList();

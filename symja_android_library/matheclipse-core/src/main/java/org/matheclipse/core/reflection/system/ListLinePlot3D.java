@@ -39,7 +39,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
       if (ast.arg1().isASTSizeGE(S.List, 2)) {
         try {
           double d = ((IAST) ast.arg1()).arg1().evalDouble();
-          IExpr heightLinePlot = heightLinePlot(F.List(ast.arg1()), plotStyle, engine);
+          IExpr heightLinePlot = heightLinePlot(F.list(ast.arg1()), plotStyle, engine);
           if (heightLinePlot.isPresent()) {
             IASTAppendable result = F.Graphics3D(heightLinePlot);
             if (ast.argSize() > 1) {
@@ -61,7 +61,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
       // e.g.: ListLinePlot3D[{{x_1, y_1, z_1}, {x_2, y_2, z_2}}]
       if (dimension != null && dimension.length == 2 && dimension[1] == 3) {
         IASTAppendable result =
-            F.Graphics3D(coordinateLinePlot(F.List(ast.arg1()), plotStyle, engine));
+            F.Graphics3D(coordinateLinePlot(F.list(ast.arg1()), plotStyle, engine));
         if (ast.argSize() > 1) {
           // add same options to Graphics3D
           result.appendAll(ast, 2, ast.size());
@@ -105,7 +105,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
     }
 
     // `1` is not a valid dataset or a list of datasets.
-    return IOFunctions.printMessage(ast.topHead(), "ldata", F.List(ast.arg1()), engine);
+    return IOFunctions.printMessage(ast.topHead(), "ldata", F.list(ast.arg1()), engine);
   }
 
   private IExpr heightLinePlot(IAST heights, IAST plotStyle, EvalEngine engine) {

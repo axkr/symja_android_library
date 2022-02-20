@@ -372,7 +372,7 @@ public final class StringFunctions {
           // Arguments `1` and `2` of `3` should be either non-negative integers or one-character
           // strings.
           return IOFunctions.printMessage(ast.topHead(), "argtype",
-              F.List(ast.arg1(), ast.arg2(), ast.topHead()), engine);
+              F.list(ast.arg1(), ast.arg2(), ast.topHead()), engine);
         } else {
           int from = ast.arg1().toIntDefault();
           int to = ast.arg2().toIntDefault();
@@ -380,7 +380,7 @@ public final class StringFunctions {
             // Arguments `1` and `2` of `3` should be either non-negative integers or one-character
             // strings.
             return IOFunctions.printMessage(ast.topHead(), "argtype",
-                F.List(ast.arg1(), ast.arg2(), ast.topHead()), engine);
+                F.list(ast.arg1(), ast.arg2(), ast.topHead()), engine);
           }
           int size = to - from + 1;
           if (size <= 0) {
@@ -399,7 +399,7 @@ public final class StringFunctions {
           // Arguments `1` and `2` of `3` should be either non-negative integers or one-character
           // strings.
           return IOFunctions.printMessage(ast.topHead(), "argtype",
-              F.List(ast.arg1(), ast.arg2(), ast.topHead()), engine);
+              F.list(ast.arg1(), ast.arg2(), ast.topHead()), engine);
         }
         char from = str1.charAt(0);
         char to = str2.charAt(0);
@@ -452,7 +452,7 @@ public final class StringFunctions {
       } catch (IndexOutOfBoundsException iob) {
         // from substring
         // Cannot take positions `1` through `2` in `3`.
-        return IOFunctions.printMessage(ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1),
+        return IOFunctions.printMessage(ast.topHead(), "take", F.list(F.ZZ(from), F.ZZ(to), arg1),
             engine);
       }
       return F.NIL;
@@ -496,7 +496,7 @@ public final class StringFunctions {
       } catch (IndexOutOfBoundsException iob) {
         // from substring
         // Cannot take positions `1` through `2` in `3`.
-        return IOFunctions.printMessage(ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1),
+        return IOFunctions.printMessage(ast.topHead(), "take", F.list(F.ZZ(from), F.ZZ(to), arg1),
             engine);
       }
       return F.NIL;
@@ -568,7 +568,7 @@ public final class StringFunctions {
             // expected at
             // position `2` in `1`.
             return IOFunctions.printMessage(S.FromCharacterCode, "notunicode",
-                F.List(charList, F.ZZ(i)), engine);
+                F.list(charList, F.ZZ(i)), engine);
           }
           ch = (char) unicode;
 
@@ -644,7 +644,7 @@ public final class StringFunctions {
               String[] strs = ALPHABET_CSV_MAP.get(str);
               if (strs == null) {
                 // The alphabet `1` is not known or not available.
-                IOFunctions.printMessage(ast.topHead(), "nalph", F.List(ast.arg2()), engine);
+                IOFunctions.printMessage(ast.topHead(), "nalph", F.list(ast.arg2()), engine);
                 return F.Missing(S.NotAvailable);
               }
               int length = strs.length;
@@ -694,7 +694,7 @@ public final class StringFunctions {
         String str2 = arg2.toString();
         if (str1.length() != str2.length()) {
           // `1` and `2` must have the same length.
-          return IOFunctions.printMessage(ast.topHead(), "idim", F.List(arg1, arg2), engine);
+          return IOFunctions.printMessage(ast.topHead(), "idim", F.list(arg1, arg2), engine);
         }
 
         if (ignoreCase) {
@@ -764,7 +764,7 @@ public final class StringFunctions {
           String[] strs = ALPHABET_CSV_MAP.get(str);
           if (strs == null) {
             // The alphabet `1` is not known or not available.
-            return IOFunctions.printMessage(ast.topHead(), "nalph", F.List(ast.arg1()), engine);
+            return IOFunctions.printMessage(ast.topHead(), "nalph", F.list(ast.arg1()), engine);
           }
           return F.List(strs);
         }
@@ -843,7 +843,7 @@ public final class StringFunctions {
             String[] strs = ALPHABET_CSV_MAP.get(str);
             if (strs == null) {
               // The alphabet `1` is not known or not available.
-              IOFunctions.printMessage(ast.topHead(), "nalph", F.List(ast.arg2()), engine);
+              IOFunctions.printMessage(ast.topHead(), "nalph", F.list(ast.arg2()), engine);
               return F.C0;
             }
             for (int i = 0; i < strs.length; i++) {
@@ -875,7 +875,7 @@ public final class StringFunctions {
         return F.C0;
       }
       // The argument `1` is not a string.
-      return IOFunctions.printMessage(ast.topHead(), "nas", F.List(ast.arg1()), engine);
+      return IOFunctions.printMessage(ast.topHead(), "nas", F.list(ast.arg1()), engine);
     }
 
     @Override
@@ -1228,7 +1228,7 @@ public final class StringFunctions {
           String str = ((IStringX) arg1).toString();
           IExpr arg2 = ast.arg2();
           if (!arg2.isList()) {
-            arg2 = F.List(arg2);
+            arg2 = F.list(arg2);
           }
           IAST list = (IAST) arg2;
           IASTAppendable result = F.ListAlloc();
@@ -1308,7 +1308,7 @@ public final class StringFunctions {
           String str = ((IStringX) arg1).toString();
           IExpr arg2 = ast.arg2();
           if (!arg2.isList()) {
-            arg2 = F.List(arg2);
+            arg2 = F.list(arg2);
           }
           IAST list = (IAST) arg2;
           int counter = 0;
@@ -1433,7 +1433,7 @@ public final class StringFunctions {
         // from substring
         // Cannot drop positions `1` through `2` in `3`.
         return IOFunctions.printMessage(ast.topHead(), "drop",
-            F.List(F.ZZ(from - 1), F.ZZ(to), ast.arg1()), engine);
+            F.list(F.ZZ(from - 1), F.ZZ(to), ast.arg1()), engine);
       }
       return F.NIL;
     }
@@ -1526,7 +1526,7 @@ public final class StringFunctions {
         }
         if (!arg1.isString()) {
           // String or list of strings expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "strse", F.List(F.C1, ast), engine);
+          return IOFunctions.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
         }
 
         IExpr arg2 = ast.arg2();
@@ -1658,7 +1658,7 @@ public final class StringFunctions {
       } else {
         int pos = ast.arg3().toIntDefault();
         if (Math.abs(pos) > str1.length() + 1) {
-          return IOFunctions.printMessage(ast.topHead(), "ins", F.List(ast.arg3(), arg1), engine);
+          return IOFunctions.printMessage(ast.topHead(), "ins", F.list(ast.arg3(), arg1), engine);
         }
         listOfInts = new int[] {pos};
       }
@@ -1671,7 +1671,7 @@ public final class StringFunctions {
           if (listOfInts[i] < 0) {
             listOfInts[i] = str1.length() + listOfInts[i] + 2;
           } else if (listOfInts[i] == 0) {
-            return IOFunctions.printMessage(ast.topHead(), "ins", F.List(F.C0, arg1), engine);
+            return IOFunctions.printMessage(ast.topHead(), "ins", F.list(F.C0, arg1), engine);
           }
         }
         Arrays.sort(listOfInts);
@@ -1749,7 +1749,7 @@ public final class StringFunctions {
               return arg1;
             }
             // String expected at position `1` in `2`.
-            return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.C1, ast), engine);
+            return IOFunctions.printMessage(ast.topHead(), "string", F.list(F.C1, ast), engine);
           }
         }
         StringBuilder buf = new StringBuilder();
@@ -1758,7 +1758,7 @@ public final class StringFunctions {
             buf.append(list.get(i).toString());
           } else {
             // String expected at position `1` in `2`.
-            return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.ZZ(i), ast), engine);
+            return IOFunctions.printMessage(ast.topHead(), "string", F.list(F.ZZ(i), ast), engine);
           }
         }
         return F.$str(buf.toString());
@@ -1950,7 +1950,7 @@ public final class StringFunctions {
       if (part > 0) {
         if (part > str.length()) {
           // Part `1` of `2` does not exist.
-          return IOFunctions.printMessage(ast.topHead(), "partw", F.List(F.ZZ(part), ast.arg1()),
+          return IOFunctions.printMessage(ast.topHead(), "partw", F.list(F.ZZ(part), ast.arg1()),
               engine);
         }
         return F.stringx(str.charAt(part - 1));
@@ -2028,7 +2028,7 @@ public final class StringFunctions {
         if (maxOccurences < result.size()) {
           return result;
         }
-        result.append(F.List(F.ZZ(matcher.start() + 1), F.ZZ(matcher.end())));
+        result.append(F.list(F.ZZ(matcher.start() + 1), F.ZZ(matcher.end())));
       }
       return result;
     }
@@ -2089,7 +2089,7 @@ public final class StringFunctions {
         IExpr arg2 = ast.arg2();
         if (!arg2.isListOfRules(false)) {
           if (arg2.isRuleAST()) {
-            arg2 = F.List(arg2);
+            arg2 = F.list(arg2);
           } else {
             return F.NIL;
           }
@@ -2266,7 +2266,7 @@ public final class StringFunctions {
           right = list.arg3().toString();
         } else {
           // String expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.C2, ast), engine);
+          return IOFunctions.printMessage(ast.topHead(), "string", F.list(F.C2, ast), engine);
         }
       }
       if (ast.isAST3()) {
@@ -2275,7 +2275,7 @@ public final class StringFunctions {
           sep2 = arg3.toString();
         } else {
           // String expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "string", F.List(F.C3, ast), engine);
+          return IOFunctions.printMessage(ast.topHead(), "string", F.list(F.C3, ast), engine);
         }
       }
       if (isListOfLists) {
@@ -2392,7 +2392,7 @@ public final class StringFunctions {
           return ((IAST) arg1).mapThread(ast, 1);
         }
         // String or list of strings expected at position `1` in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "strse", F.List(F.C1, ast), engine);
+        return IOFunctions.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
       }
       String str1 = ((IStringX) arg1).toString().trim();
       if (ast.isAST1()) {
@@ -2448,7 +2448,7 @@ public final class StringFunctions {
             return ((IAST) arg1).mapThread(ast, 1);
           }
           // String or list of strings expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "strse", F.List(F.C1, ast), engine);
+          return IOFunctions.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
         } else {
           // final ISequence[] sequ = Sequence.createSequences(ast, 2, "take", engine);
           // if (sequ == null) {
@@ -2581,7 +2581,7 @@ public final class StringFunctions {
       } catch (IndexOutOfBoundsException iob) {
         // from substring
         // Cannot take positions `1` through `2` in `3`.
-        return IOFunctions.printMessage(ast.topHead(), "take", F.List(F.ZZ(from), F.ZZ(to), arg1),
+        return IOFunctions.printMessage(ast.topHead(), "take", F.list(F.ZZ(from), F.ZZ(to), arg1),
             engine);
       }
     }
@@ -3017,7 +3017,7 @@ public final class StringFunctions {
         }
       } else {
         // `1` is not a string.
-        return IOFunctions.printMessage(ast.topHead(), "nostr", F.List(ast.arg1()), engine);
+        return IOFunctions.printMessage(ast.topHead(), "nostr", F.list(ast.arg1()), engine);
       }
       return F.NIL;
     }
@@ -3377,7 +3377,7 @@ public final class StringFunctions {
       PatternSyntaxException pse = (PatternSyntaxException) iae;
       // Regex expression `1` error message: `2`
       return IOFunctions.printMessage(S.RegularExpression, "zzregex",
-          F.List(F.$str(pse.getPattern()), F.$str(pse.getMessage())), engine);
+          F.list(F.$str(pse.getPattern()), F.$str(pse.getMessage())), engine);
     } else {
       LOGGER.log(engine.getLogLevel(), ast.topHead(), iae);
       return F.NIL;
@@ -3591,7 +3591,7 @@ public final class StringFunctions {
         if (str == null) {
           // `1` currently not supported in `2`.
           IOFunctions.printMessage(stringFunction.topHead(), "unsupported",
-              F.List(alternatives.get(i), stringFunction.topHead()), engine);
+              F.list(alternatives.get(i), stringFunction.topHead()), engine);
           return null;
         }
         pieces.append(str);
@@ -3640,14 +3640,14 @@ public final class StringFunctions {
         default:
           // `1` currently not supported in `2`.
           IOFunctions.printMessage(stringFunction.topHead(), "unsupported",
-              F.List(partOfRegex, stringFunction.topHead()), engine);
+              F.list(partOfRegex, stringFunction.topHead()), engine);
           return null;
       }
     }
 
     // `1` currently not supported in `2`.
     IOFunctions.printMessage(stringFunction.topHead(), "unsupported",
-        F.List(partOfRegex, stringFunction.topHead()), engine);
+        F.list(partOfRegex, stringFunction.topHead()), engine);
     return null;
   }
 

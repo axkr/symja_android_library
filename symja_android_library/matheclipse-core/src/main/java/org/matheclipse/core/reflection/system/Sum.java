@@ -175,7 +175,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
         if (preevaledSum.last().isList()) {
           list = (IAST) preevaledSum.last();
         } else {
-          list = F.List(preevaledSum.last());
+          list = F.list(preevaledSum.last());
         }
         if (list.isAST1()) {
           // indefinite sum case
@@ -207,11 +207,11 @@ public class Sum extends ListFunctions.Table implements SumRules {
             iterator = Iterator.create((IAST) argN, preevaledSum.argSize(), engine);
           } else {
             if (argN.isReal()) {
-              iterator = Iterator.create(F.List(argN), preevaledSum.argSize(), engine);
+              iterator = Iterator.create(F.list(argN), preevaledSum.argSize(), engine);
             } else {
               // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
               return IOFunctions.printMessage(preevaledSum.topHead(), "nliter",
-                  F.List(argN, F.ZZ(preevaledSum.size() - 1)), engine);
+                  F.list(argN, F.ZZ(preevaledSum.size() - 1)), engine);
             }
           }
         }
@@ -438,9 +438,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
       // }
     }
     if (from.isPositive()) {
-      IExpr temp1 = engine.evalQuiet(F.Sum(expr, F.List(var, C0, from.minus(F.C1))));
+      IExpr temp1 = engine.evalQuiet(F.Sum(expr, F.list(var, C0, from.minus(F.C1))));
       if (!temp1.isComplexInfinity() && temp1.isFreeAST(S.Sum)) {
-        IExpr temp2 = engine.evalQuietNull(F.Sum(expr, F.List(var, C0, to)));
+        IExpr temp2 = engine.evalQuietNull(F.Sum(expr, F.list(var, C0, to)));
         if (temp2.isPresent() && !temp2.isComplexInfinity()) {
           return F.Subtract(temp2, temp1);
         }
@@ -468,13 +468,13 @@ public class Sum extends ListFunctions.Table implements SumRules {
       return F.C0;
     }
     if (from.isInteger() && !from.isOne()) {
-      IExpr subSum = engine.evaluateNIL(F.Sum(expr, F.List(var, C1, to)));
+      IExpr subSum = engine.evaluateNIL(F.Sum(expr, F.list(var, C1, to)));
       if (subSum.isPresent()) {
         if (S.Less.ofQ(engine, from, C1)) {
-          return F.Plus(F.Sum(expr, F.List(var, from, C0)), subSum);
+          return F.Plus(F.Sum(expr, F.list(var, from, C0)), subSum);
         }
         if (S.Greater.ofQ(engine, from, C1)) {
-          return F.Subtract(subSum, F.Sum(expr, F.List(var, C1, from.minus(F.C1))));
+          return F.Subtract(subSum, F.Sum(expr, F.list(var, C1, from.minus(F.C1))));
         }
       }
     }
@@ -562,7 +562,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
             Times(Power(Plus(fromMinusOne, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
             Sum(Times(Times(Times(Power(Plus(fromMinusOne, C1), Plus(Plus(p, Times(CN1, k)), C1)),
                 Binomial(p, k)), BernoulliB(k)), Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)),
-                List(k, C1, p)))));
+                F.list(k, C1, p)))));
       }
     }
     IExpr term2;

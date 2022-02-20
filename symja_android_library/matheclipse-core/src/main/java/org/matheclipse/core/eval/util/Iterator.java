@@ -1188,7 +1188,7 @@ public class Iterator {
           }
           if (!list.arg1().isVariable()) {
             throw new ArgumentTypeException(
-                IOFunctions.getMessage("vloc", F.List(list.arg1()), EvalEngine.get()));
+                IOFunctions.getMessage("vloc", F.list(list.arg1()), EvalEngine.get()));
           }
           break;
         case 3:
@@ -1201,13 +1201,13 @@ public class Iterator {
             if (!sym.isVariable() || sym.isProtected()) {
               // Cannot assign to raw object `1`.
               throw new ArgumentTypeException(
-                  IOFunctions.getMessage("setraw", F.List(sym), EvalEngine.get()));
+                  IOFunctions.getMessage("setraw", F.list(sym), EvalEngine.get()));
             }
             variable = sym;
           } else {
             // Raw object `1` cannot be used as an iterator.
             throw new ArgumentTypeException(
-                IOFunctions.getMessage("itraw", F.List(list.arg1()), EvalEngine.get()));
+                IOFunctions.getMessage("itraw", F.list(list.arg1()), EvalEngine.get()));
           }
           if (upperLimit.isList()) {
             return new ExprListIterator(variable, (IAST) upperLimit, evalEngine);
@@ -1245,13 +1245,13 @@ public class Iterator {
             if (!sym.isVariable() || sym.isProtected()) {
               // Cannot assign to raw object `1`.
               throw new ArgumentTypeException(
-                  IOFunctions.getMessage("setraw", F.List(sym), EvalEngine.get()));
+                  IOFunctions.getMessage("setraw", F.list(sym), EvalEngine.get()));
             }
             variable = sym;
           } else {
             // Raw object `1` cannot be used as an iterator.
             throw new ArgumentTypeException(
-                IOFunctions.getMessage("itraw", F.List(list.arg1()), EvalEngine.get()));
+                IOFunctions.getMessage("itraw", F.list(list.arg1()), EvalEngine.get()));
           }
           if (lowerLimit instanceof Num && upperLimit instanceof Num) {
             return new DoubleIterator(variable, ((INum) lowerLimit).doubleValue(),
@@ -1290,13 +1290,13 @@ public class Iterator {
             if (!sym.isVariable() || sym.isProtected()) {
               // Cannot assign to raw object `1`.
               throw new ArgumentTypeException(
-                  IOFunctions.getMessage("setraw", F.List(sym), EvalEngine.get()));
+                  IOFunctions.getMessage("setraw", F.list(sym), EvalEngine.get()));
             }
             variable = sym;
           } else {
             // Raw object `1` cannot be used as an iterator.
             throw new ArgumentTypeException(
-                IOFunctions.getMessage("itraw", F.List(list.arg1()), EvalEngine.get()));
+                IOFunctions.getMessage("itraw", F.list(list.arg1()), EvalEngine.get()));
           }
           if (lowerLimit instanceof Num && upperLimit instanceof Num && step instanceof Num) {
             return new DoubleIterator(variable, ((INum) lowerLimit).doubleValue(),
@@ -1330,7 +1330,7 @@ public class Iterator {
         default:
           // Argument `1` at position `2` does not have the correct form for an iterator.
           String str =
-              IOFunctions.getMessage("itform", F.List(list, F.ZZ(position)), EvalEngine.get());
+              IOFunctions.getMessage("itform", F.list(list, F.ZZ(position)), EvalEngine.get());
           throw new ArgumentTypeException(str);
 
         // lowerLimit = null;
@@ -1346,7 +1346,7 @@ public class Iterator {
       throw atex;
     } catch (RuntimeException rex) {
       // Argument `1` at position `2` does not have the correct form for an iterator.
-      String str = IOFunctions.getMessage("itform", F.List(list, F.ZZ(position)), EvalEngine.get());
+      String str = IOFunctions.getMessage("itform", F.list(list, F.ZZ(position)), EvalEngine.get());
       throw new ArgumentTypeException(str);
     } finally {
       evalEngine.setNumericMode(localNumericMode);
@@ -1374,7 +1374,7 @@ public class Iterator {
     if (symbol != null && (!symbol.isVariable() || symbol.isProtected())) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
-          IOFunctions.getMessage("setraw", F.List(symbol), EvalEngine.get()));
+          IOFunctions.getMessage("setraw", F.list(symbol), EvalEngine.get()));
     }
 
     boolean localNumericMode = evalEngine.isNumericMode();
@@ -1421,12 +1421,12 @@ public class Iterator {
               if (!variable.isVariable() || variable.isProtected()) {
                 // Cannot assign to raw object `1`.
                 throw new ArgumentTypeException(
-                    IOFunctions.getMessage("setraw", F.List(variable), EvalEngine.get()));
+                    IOFunctions.getMessage("setraw", F.list(variable), EvalEngine.get()));
               }
             } else {
               // Raw object `1` cannot be used as an iterator.
               throw new ArgumentTypeException(
-                  IOFunctions.getMessage("itraw", F.List(list.arg1()), EvalEngine.get()));
+                  IOFunctions.getMessage("itraw", F.list(list.arg1()), EvalEngine.get()));
             }
             return new ExprListIterator(variable, (IAST) upperLimit, evalEngine);
           }

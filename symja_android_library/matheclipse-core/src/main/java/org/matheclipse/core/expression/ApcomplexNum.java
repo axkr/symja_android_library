@@ -261,7 +261,7 @@ public class ApcomplexNum implements IComplexNum {
   public IExpr divide(final IExpr that) {
     if (that.isZero()) {
       // Infinite expression `1` encountered.
-      IOFunctions.printMessage(S.Divide, "infy", F.List(F.Divide(this, that)), EvalEngine.get());
+      IOFunctions.printMessage(S.Divide, "infy", F.list(F.Divide(this, that)), EvalEngine.get());
       return F.CComplexInfinity;
     }
     if (that instanceof IComplexNum) {
@@ -339,7 +339,7 @@ public class ApcomplexNum implements IComplexNum {
       return F.num(EvalEngine.getApfloat().arg(fApcomplex));
     } catch (ArithmeticException aex) {
       // Indeterminate expression `1` encountered.
-      IOFunctions.printMessage(S.Arg, "indet", F.List(F.Arg(this)), EvalEngine.get());
+      IOFunctions.printMessage(S.Arg, "indet", F.list(F.Arg(this)), EvalEngine.get());
       return S.Indeterminate;
     }
   }
@@ -454,7 +454,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IAST toPolarCoordinates() {
-    return F.List(abs(), complexArg());
+    return F.list(abs(), complexArg());
   }
 
   @Override
@@ -726,7 +726,7 @@ public class ApcomplexNum implements IComplexNum {
       return IComplexNum.super.atan2(value);
     } catch (ArithmeticException aex) {
       // Indeterminate expression `1` encountered.
-      IOFunctions.printMessage(S.ArcTan, "indet", F.List(F.ArcTan(value, this)), EvalEngine.get());
+      IOFunctions.printMessage(S.ArcTan, "indet", F.list(F.ArcTan(value, this)), EvalEngine.get());
       return S.Indeterminate;
     }
   }

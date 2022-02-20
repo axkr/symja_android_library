@@ -701,16 +701,16 @@ public class IntegerFunctions {
         return ((INumber) arg1).fractionalPart();
       }
       if (arg1.isInfinity() || arg1.isComplexInfinity()) {
-        return F.Interval(F.List(F.C0, F.C1));
+        return F.Interval(F.list(F.C0, F.C1));
       }
       if (arg1.isNegativeInfinity()) {
-        return F.Interval(F.List(F.CN1, F.C0));
+        return F.Interval(F.list(F.CN1, F.C0));
       }
       if (arg1.isDirectedInfinity(F.CI)) {
-        return F.Times(F.CI, F.Interval(F.List(F.C0, F.C1)));
+        return F.Times(F.CI, F.Interval(F.list(F.C0, F.C1)));
       }
       if (arg1.isDirectedInfinity(F.CNI)) {
-        return F.Times(F.CNI, F.Interval(F.List(F.C0, F.C1)));
+        return F.Times(F.CNI, F.Interval(F.list(F.C0, F.C1)));
       }
       if (arg1.isIntegerResult()) {
         return F.C0;
@@ -1058,7 +1058,7 @@ public class IntegerFunctions {
       IExpr n = ast.arg2();
       if (n.isZero()) {
         // Indeterminate expression `1` encountered.
-        IOFunctions.printMessage(ast.topHead(), "indet", F.List(ast), engine);
+        IOFunctions.printMessage(ast.topHead(), "indet", F.list(ast), engine);
         return S.Indeterminate;
       }
       if (ast.isAST3()) {
@@ -1171,11 +1171,11 @@ public class IntegerFunctions {
       try {
         if (arg1.isZero() && arg2.isNegativeResult()) {
           // `1` is not invertible modulo `2`.
-          return IOFunctions.printMessage(ast.topHead(), "ninv", F.List(arg1, arg3), engine);
+          return IOFunctions.printMessage(ast.topHead(), "ninv", F.list(arg1, arg3), engine);
         }
         if (arg3.isZero()) {
           // The argument `1` should be nonzero.
-          return IOFunctions.printMessage(ast.topHead(), "divz", F.List(arg3, ast), engine);
+          return IOFunctions.printMessage(ast.topHead(), "divz", F.list(arg3, ast), engine);
         }
         if (arg2.isMinusOne()) {
           return arg1.modInverse(arg3);
@@ -1404,7 +1404,7 @@ public class IntegerFunctions {
               if (c2 != null) {
                 IComplex[] result = c1.quotientRemainder(c2);
                 if (result != null) {
-                  return F.List(result[0], result[1]);
+                  return F.list(result[0], result[1]);
                 }
               }
             }
@@ -1424,11 +1424,11 @@ public class IntegerFunctions {
               Complex zComplex = arg1.evalComplex();
               Complex nComplex = arg2.evalComplex();
               Complex[] qr = ComplexNum.quotientRemainder(zComplex, nComplex);
-              return F.List(F.complexNum(qr[0]).floorFraction(), F.complexNum(qr[1]));
+              return F.list(F.complexNum(qr[0]).floorFraction(), F.complexNum(qr[1]));
             } else {
               IInteger quotient = F.num(zDouble / nDouble).floorFraction();
               IExpr remainder = S.Plus.of(engine, arg1, F.Negate(F.Times(quotient, arg2)));
-              return F.List(quotient, remainder);
+              return F.list(quotient, remainder);
             }
           } catch (ValidateException ve) {
             return IOFunctions.printMessage(ast.topHead(), ve, engine);
@@ -1470,7 +1470,7 @@ public class IntegerFunctions {
           number = number.abs();
         }
         IAST list = integerDigits(number, F.C10, 0);
-        return F.List(list, F.ZZ(list.size() - 1));
+        return F.list(list, F.ZZ(list.size() - 1));
       }
       try {
         ISignedNumber number = null;
@@ -1506,7 +1506,7 @@ public class IntegerFunctions {
               list.append(ch);
             }
 
-            return F.List(list, F.ZZ(numberOfLeftDigits));
+            return F.list(list, F.ZZ(numberOfLeftDigits));
           } else if (number instanceof Num) {
             String str = Double.toString(number.doubleValue());
             IASTAppendable list = F.ListAlloc(str.length() + 1);
@@ -1526,7 +1526,7 @@ public class IntegerFunctions {
               list.append(ch);
             }
 
-            return F.List(list, F.ZZ(numberOfLeftDigits));
+            return F.list(list, F.ZZ(numberOfLeftDigits));
           }
         }
       } catch (NumberFormatException | ArgumentTypeException atex) {
@@ -1536,7 +1536,7 @@ public class IntegerFunctions {
 
       if (arg1.isNumber()) {
         // The value `1` is not a real number.
-        return IOFunctions.printMessage(ast.topHead(), "realx", F.List(arg1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "realx", F.list(arg1), engine);
       }
       return F.NIL;
     }
@@ -1777,20 +1777,20 @@ public class IntegerFunctions {
                 ISignedNumber max = (ISignedNumber) u;
                 if (min.complexSign() < 0) {
                   if (max.complexSign() < 0) {
-                    return F.Interval(F.List(F.C0, F.C0));
+                    return F.Interval(F.list(F.C0, F.C0));
                   } else {
                     if (size == 2) {
-                      return F.Interval(F.List(F.C0, F.C1));
+                      return F.Interval(F.list(F.C0, F.C1));
                     }
                   }
                 } else {
                   if (max.complexSign() < 0) {
                     if (size == 2) {
-                      return F.Interval(F.List(F.C1, F.C0));
+                      return F.Interval(F.list(F.C1, F.C0));
                     }
                   } else {
                     if (size == 2) {
-                      return F.Interval(F.List(F.C1, F.C1));
+                      return F.Interval(F.list(F.C1, F.C1));
                     }
                     continue;
                   }

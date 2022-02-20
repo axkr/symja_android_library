@@ -59,7 +59,7 @@ public class ListLinePlot extends AbstractEvaluator {
               } else if (allPoints[i] < yMinD) {
                 yMinD = allPoints[i];
               }
-              points.append(F.List(F.num(i), F.num(allPoints[i])));
+              points.append(F.list(F.num(i), F.num(allPoints[i])));
             }
           }
         } else {
@@ -84,7 +84,7 @@ public class ListLinePlot extends AbstractEvaluator {
                     yMinD = allPoints[i][1];
                   }
                 }
-                points.append(F.List(F.num(allPoints[i][0]), F.num(allPoints[i][1])));
+                points.append(F.list(F.num(allPoints[i][0]), F.num(allPoints[i][1])));
               }
             }
           }
@@ -96,7 +96,7 @@ public class ListLinePlot extends AbstractEvaluator {
           IAST plotRange;
           if (dim.isValidRange()) {
             plotRange =
-                Rule(S.PlotRange, F.List(F.List(dim.xMin, dim.xMax), F.List(dim.yMin, dim.yMax)));
+                Rule(S.PlotRange, F.list(F.List(dim.xMin, dim.xMax), F.List(dim.yMin, dim.yMax)));
           } else {
             plotRange = Rule(S.PlotRange, S.Automatic);
           }

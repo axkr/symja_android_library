@@ -100,10 +100,10 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       return findExtremum(ast, engine, goalType);
     } catch (MathIllegalStateException miae) {
       // `1`.
-      return IOFunctions.printMessage(ast.topHead(), "error", F.List(F.$str(miae.getMessage())),
+      return IOFunctions.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
           engine);
     } catch (MathRuntimeException mre) {
-      IOFunctions.printMessage(ast.topHead(), "error", F.List(F.$str(mre.getMessage())), engine);
+      IOFunctions.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
       return F.CEmptyList;
     }
   }
@@ -150,11 +150,11 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       if (list.argSize() == 1) {
         initialValues = new double[1];
         initialValues[0] = 1.0;
-        variableList = F.List(list.arg1());
+        variableList = F.list(list.arg1());
       } else if (list.argSize() == 2 && !list.arg2().isSymbol()) {
         initialValues = new double[1];
         initialValues[0] = list.arg2().evalDouble();
-        variableList = F.List(list.arg1());
+        variableList = F.list(list.arg1());
       } else {
         initialValues = new double[list.argSize()];
         variableList = list;
@@ -257,7 +257,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
         for (int j = 1; j < variableList.size(); j++) {
           ruleList.append(F.Rule(variableList.get(j), F.num(point[j - 1])));
         }
-        return F.List(F.num(value), ruleList);
+        return F.list(F.num(value), ruleList);
       }
       return F.NIL;
     }

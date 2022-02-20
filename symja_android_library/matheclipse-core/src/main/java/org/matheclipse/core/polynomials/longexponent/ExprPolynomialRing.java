@@ -255,7 +255,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    * @param symbol name of a variable.
    */
   public ExprPolynomialRing(ISymbol symbol) {
-    this(ExprRingFactory.CONST, F.List(symbol), 1, ExprTermOrderByName.Lexicographic);
+    this(ExprRingFactory.CONST, F.list(symbol), 1, ExprTermOrderByName.Lexicographic);
   }
 
   /**
@@ -265,7 +265,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
    * @param t a term order.
    */
   public ExprPolynomialRing(ISymbol symbol, ExprTermOrder t) {
-    this(ExprRingFactory.CONST, F.List(symbol), 1, t);
+    this(ExprRingFactory.CONST, F.list(symbol), 1, t);
   }
 
   /**

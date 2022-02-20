@@ -82,14 +82,14 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
           F.Condition(
               F.Times(F.Beta(a, b), F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Subtract(F.C1, z), b),
                   F.Sum(F.Times(F.Power(z, k), F.Power(F.Factorial(k), F.CN1), F.Pochhammer(b, k)),
-                      F.List(k, F.C0, F.Plus(F.CN1, a)))))),
+                      F.list(k, F.C0, F.Plus(F.CN1, a)))))),
               F.And(F.IntegerQ(a), F.Greater(a, F.C0)))); // $$);
 
       MATCHER.caseOf(Beta(a_, b_), //
           // [$ Factorial(a-1)*Product((k+b)^(-1),{k,0,a-1}) /; IntegerQ(a)&&a>0 $]
           F.Condition(
               F.Times(F.Factorial(F.Plus(F.CN1, a)),
-                  F.Product(F.Power(F.Plus(k, b), F.CN1), F.List(k, F.C0, F.Plus(F.CN1, a)))),
+                  F.Product(F.Power(F.Plus(k, b), F.CN1), F.list(k, F.C0, F.Plus(F.CN1, a)))),
               F.And(F.IntegerQ(a), F.Greater(a, F.C0)))); // $$);
 
       MATCHER.caseOf(BetaRegularized(z_, a_, b_), //
@@ -107,27 +107,14 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
               F.Times(
                   F.Power(F
                       .Factorial(b), F.CN1),
-                  F.Product(F.Subtract(a, c), F.List(c, F.C0, F.Plus(F.CN1, b)))),
+                  F.Product(F.Subtract(a, c), F.list(c, F.C0, F.Plus(F.CN1, b)))),
               F.If(F.And(F.IntegerQ(a), F.Positive(a)),
-                  F.Times(F.Power(F.Times(F.Product(F.Subtract(b, c), F.List(c, F.C0, a)), S.Pi),
-                      F.CN1), F.Factorial(a), F.Sin(F.Times(b, S.Pi))),
+                  F.Times(F.Power(F.Times(F.Product(F.Subtract(b, c), F.list(c, F.C0, a)), F.Pi),
+                      F.CN1), F.Factorial(a), F.Sin(F.Times(b, F.Pi))),
                   F.Times(F.Gamma(F.Plus(F.C1, a)),
                       F.Power(
                           F.Times(F.Gamma(F.Plus(F.C1, b)), F.Gamma(F.Plus(F.C1, F.Negate(b), a))),
                           F.CN1))))); // $$);
-
-      // // ChebyshevT
-      // MATCHER.caseOf(
-      // ChebyshevT(n_, x_), //
-      // // [$ Cos(n*ArcCos(x)) $]
-      // F.Cos(F.Times(n, F.ArcCos(x)))); // $$);
-      // // ChebyshevU
-      // MATCHER.caseOf(
-      // ChebyshevU(n_, x_), //
-      // // [$ Sin((1 + n)*ArcCos(x))/(Sqrt(1 - x)*Sqrt(1 + x)) $]
-      // F.Times(
-      // F.Power(F.Times(F.Sqrt(F.Subtract(F.C1, x)), F.Sqrt(F.Plus(F.C1, x))), F.CN1),
-      // F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(x))))); // $$);
 
       // Cos
       MATCHER.caseOf(F.Cos(F.Sqrt(F.Sqr(x_))), //
@@ -182,17 +169,17 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
       // PolyGamma
       MATCHER.caseOf(F.PolyGamma(F.CN2, F.C1), //
           // [$ (1/2)*(Log(2)+Log(Pi)) $]
-          F.Times(F.C1D2, F.Plus(F.Log(F.C2), F.Log(S.Pi)))); // $$);
+          F.Times(F.C1D2, F.Plus(F.Log(F.C2), F.Log(F.Pi)))); // $$);
       MATCHER.caseOf(F.PolyGamma(F.CN3, F.C1), //
           // [$ Log(Glaisher) + (1/4)*(Log(2) + Log(Pi)) $]
-          F.Plus(F.Log(S.Glaisher), F.Times(F.C1D4, F.Plus(F.Log(F.C2), F.Log(S.Pi))))); // $$);
+          F.Plus(F.Log(F.Glaisher), F.Times(F.C1D4, F.Plus(F.Log(F.C2), F.Log(F.Pi))))); // $$);
 
       MATCHER.caseOf(S.Degree, //
           // [$ Pi/180 $]
-          F.Times(F.QQ(1L, 180L), S.Pi)); // $$);
+          F.Times(F.QQ(1L, 180L), F.Pi)); // $$);
       MATCHER.caseOf(S.GoldenAngle, //
           // [$ (3-Sqrt(5))*Pi $]
-          F.Times(F.Subtract(F.C3, F.CSqrt5), S.Pi)); // $$);
+          F.Times(F.Subtract(F.C3, F.CSqrt5), F.Pi)); // $$);
       MATCHER.caseOf(S.GoldenRatio, //
           // [$ 1/2*(1+Sqrt(5)) $]
           F.Times(F.C1D2, F.Plus(F.C1, F.CSqrt5))); // $$);

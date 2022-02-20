@@ -2,7 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Integrate;
-import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
@@ -259,7 +258,7 @@ public class Integrate extends AbstractFunctionEvaluator {
       final IExpr x = ast.arg2();
       if (!x.isVariable()) {
         // `1` is not a valid variable.
-        return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+        return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(x), engine);
       }
       if (arg1.isNumber()) {
         // Integrate[x_?NumberQ,y_Symbol] -> x*y
@@ -378,7 +377,7 @@ public class Integrate extends AbstractFunctionEvaluator {
       for (int i = 1; i < list.size(); i++) {
         IASTMutable integrate = integrateFunction.copy();
         integrate.set(1, list.get(i).first());
-        pwResult.append(F.List(integrate, list.get(i).second()));
+        pwResult.append(F.list(integrate, list.get(i).second()));
       }
       IASTMutable piecewise = piecewiseFunction.copy();
       piecewise.set(1, pwResult);
@@ -427,7 +426,7 @@ public class Integrate extends AbstractFunctionEvaluator {
           if (exp.isOne()) {
             // Piecewise({{(-l0)*x - (l1*x^2)/2, x <= constant}}, l0^2/Pi + l0*x + (l1*x^2)/2)
             return F.Piecewise( //
-                F.List(F.List( //
+                F.list(F.list( //
                     F.Plus(F.Times(F.CN1, l0, S.x), F.Times(F.CN1D2, l1, F.Sqr(S.x))),
                     F.LessEqual(S.x, constant))),
                 F.Plus(F.Times(F.Sqr(l0), F.Power(S.Pi, F.CN1)), F.Times(l0, S.x),
@@ -439,10 +438,10 @@ public class Integrate extends AbstractFunctionEvaluator {
               // Piecewise({{l0*x + l1*Log(x), x <= -(l1/l0)},
               // {(-l0)*x - l1*(2 - I*l1 - Log(l1)) + l1*(-2 + I*l1 + Log(l1)) - l1*Log(x),
               // Inequality(-(l1/l0), Less, x, LessEqual, 0)}}, l0*x + l1*Log(x))
-              return F.Piecewise(F.List(F.List( //
+              return F.Piecewise(F.list(F.list( //
                   F.Plus(F.Times(l0, S.x), F.Times(l1, F.Log(S.x))),
                   F.LessEqual(S.x, F.Times(F.CN1, F.Power(l0, F.CN1), l1))),
-                  F.List(
+                  F.list(
                       F.Plus(F.Times(F.CN1, l0, S.x),
                           F.Times(F.C2, l1, F.Plus(F.CN2, F.Times(F.CI, l1), F.Log(l1))),
                           F.Times(F.CN1, l1, F.Log(S.x))),
@@ -482,14 +481,14 @@ public class Integrate extends AbstractFunctionEvaluator {
               // Abs(l0 + l1 * x) ^ (-1)
 
               return F.Piecewise( //
-                  F.List(F.List(F.Negate(F.Log(x)), F.LessEqual(x, constant))), //
+                  F.list(F.list(F.Negate(F.Log(x)), F.LessEqual(x, constant))), //
                   F.Log(x));
             }
             if (exp.isEven()) {
               return F.Times(expP1.inverse().negate(), F.Power(x, expP1));
             }
             return F.Piecewise( //
-                F.List(F.List(F.Times(expP1.inverse().negate(), F.Power(x, expP1)),
+                F.list(F.list(F.Times(expP1.inverse().negate(), F.Power(x, expP1)),
                     F.LessEqual(x, constant))), //
                 F.Times(expP1.inverse(), F.Power(x, expP1)));
           }
@@ -497,7 +496,7 @@ public class Integrate extends AbstractFunctionEvaluator {
             return F.Divide(F.Power(x, expP1), expP1);
           }
           return F.Piecewise( //
-              F.List(F.List(F.Divide(F.Power(x, expP1), expP1.negate()), F.LessEqual(x, constant))), //
+              F.list(F.list(F.Divide(F.Power(x, expP1), expP1.negate()), F.LessEqual(x, constant))), //
               F.Divide(F.Power(x, expP1), expP1));
         }
       }
@@ -724,7 +723,7 @@ public class Integrate extends AbstractFunctionEvaluator {
               if (temp.equals(ast)) {
                 if (LOGGER.isDebugEnabled()) {
                   engine.setQuietMode(false);
-                  IOFunctions.printMessage(S.Integrate, "rubiendless", F.List(temp), engine);
+                  IOFunctions.printMessage(S.Integrate, "rubiendless", F.list(temp), engine);
                 }
                 return F.NIL;
               }
@@ -818,7 +817,7 @@ public class Integrate extends AbstractFunctionEvaluator {
       } else if (temp.equals(symbol)) {
         polyTimes.append(temp);
         continue;
-      } else if (temp.isPolynomial(List(symbol))) {
+      } else if (temp.isPolynomial(F.list(symbol))) {
         polyTimes.append(temp);
         continue;
       }
@@ -842,6 +841,6 @@ public class Integrate extends AbstractFunctionEvaluator {
     } else {
       // see #evaluate() method
     }
-    setOptions(newSymbol, F.List(F.Rule(S.Assumptions, S.$Assumptions)));
+    setOptions(newSymbol, F.list(F.Rule(S.Assumptions, S.$Assumptions)));
   }
 }

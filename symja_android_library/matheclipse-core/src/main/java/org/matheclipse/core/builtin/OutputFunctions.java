@@ -944,7 +944,7 @@ public final class OutputFunctions {
       for (int i = 1; i < list.size(); i++) {
         if (!checkVariable(list.get(i), i, result[0], result[1], engine)) {
           // `1` is not a valid variable.
-          IOFunctions.printMessage(ast.topHead(), "ivar", F.List(list.get(i)), engine);
+          IOFunctions.printMessage(ast.topHead(), "ivar", F.list(list.get(i)), engine);
           return null;
         }
       }
@@ -953,7 +953,7 @@ public final class OutputFunctions {
       result[1] = F.unaryAST1(S.List, S.Real);
       if (!checkVariable(arg1, 1, result[0], result[1], engine)) {
         // `1` is not a valid variable.
-        IOFunctions.printMessage(ast.topHead(), "ivar", F.List(arg1), engine);
+        IOFunctions.printMessage(ast.topHead(), "ivar", F.list(arg1), engine);
         return null;
       }
     }

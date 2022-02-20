@@ -66,7 +66,7 @@ public class LevelSpecification extends LevelSpec {
             fFromLevel = 0;
             fToLevel = Integer.MAX_VALUE;
             if (fToDepth < fFromDepth) {
-              String str = IOFunctions.getMessage("level", F.List(expr), EvalEngine.get());
+              String str = IOFunctions.getMessage("level", F.list(expr), EvalEngine.get());
               throw new ArgumentTypeException(str);
               // throw new MathException("Invalid Level specification: " + expr.toString());
             }
@@ -76,7 +76,7 @@ public class LevelSpecification extends LevelSpec {
             fFromDepth = Integer.MIN_VALUE;
             fToDepth = -1;
             if (fToLevel < fFromLevel) {
-              String str = IOFunctions.getMessage("level", F.List(expr), EvalEngine.get());
+              String str = IOFunctions.getMessage("level", F.list(expr), EvalEngine.get());
               throw new ArgumentTypeException(str);
               // throw new MathException("Invalid Level specification: " + expr.toString());
             }
@@ -94,7 +94,7 @@ public class LevelSpecification extends LevelSpec {
               fFromLevel = 0;
               fToLevel = Integer.MAX_VALUE;
             } else if (i0.isNegative()) {
-              String str = IOFunctions.getMessage("level", F.List(expr), EvalEngine.get());
+              String str = IOFunctions.getMessage("level", F.list(expr), EvalEngine.get());
               throw new ArgumentTypeException(str);
               // throw new MathException("Invalid Level specification: " + expr.toString());
             } else if (i1.isNegative()) {
@@ -112,7 +112,7 @@ public class LevelSpecification extends LevelSpec {
           } else if ((lst.arg1() instanceof IInteger) && (lst.arg2().isInfinity())) {
             final IInteger i0 = (IInteger) lst.arg1();
             if (i0.isNegative()) {
-              String str = IOFunctions.getMessage("level", F.List(expr), EvalEngine.get());
+              String str = IOFunctions.getMessage("level", F.list(expr), EvalEngine.get());
               throw new ArgumentTypeException(str);
               // throw new MathException("Invalid Level specification: " + expr.toString());
             } else {
@@ -133,7 +133,7 @@ public class LevelSpecification extends LevelSpec {
       fToDepth = -1;
       return;
     }
-    String str = IOFunctions.getMessage("level", F.List(expr), EvalEngine.get());
+    String str = IOFunctions.getMessage("level", F.list(expr), EvalEngine.get());
     throw new ArgumentTypeException(str);
     // throw new MathException("Invalid Level specification: " + expr.toString());
   }

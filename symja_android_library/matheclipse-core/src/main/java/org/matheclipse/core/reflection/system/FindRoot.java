@@ -320,13 +320,13 @@ public class FindRoot extends AbstractFunctionEvaluator {
             UnivariateSolverSupplier optimizeSupplier = new UnivariateSolverSupplier(ast.arg1(),
                 list, min, max, maxIterations, method, engine);
             IExpr result = engine.evalBlock(optimizeSupplier, list);
-            return F.List(F.Rule(list.arg1(), result));
+            return F.list(F.Rule(list.arg1(), result));
           } catch (MathIllegalStateException miae) {
             // `1`.
             return IOFunctions.printMessage(ast.topHead(), "error",
-                F.List(F.$str(miae.getMessage())), engine);
+                F.list(F.$str(miae.getMessage())), engine);
           } catch (MathRuntimeException mre) {
-            IOFunctions.printMessage(ast.topHead(), "error", F.List(F.$str(mre.getMessage())),
+            IOFunctions.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())),
                 engine);
             return F.CEmptyList;
           }

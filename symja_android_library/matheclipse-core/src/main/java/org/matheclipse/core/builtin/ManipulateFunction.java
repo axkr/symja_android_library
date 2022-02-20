@@ -355,12 +355,12 @@ public class ManipulateFunction {
             colorMap = "watermelon";
           } else {
             // `2` is not a known entity, class, or tag for `1`.
-            IOFunctions.printMessage(S.ColorData, "notent", F.List(S.ColorData, colorFunction),
+            IOFunctions.printMessage(S.ColorData, "notent", F.list(S.ColorData, colorFunction),
                 engine);
           }
         } else if (colorFunction.isPresent()) {
           // `2` is not a known entity, class, or tag for `1`.
-          IOFunctions.printMessage(S.ColorData, "notent", F.List(S.ColorData, colorFunction),
+          IOFunctions.printMessage(S.ColorData, "notent", F.list(S.ColorData, colorFunction),
               engine);
         }
       } else {
@@ -370,21 +370,21 @@ public class ManipulateFunction {
       IAST optionPlotRange = F.NIL;
       if (plotRange.isPresent()) {
         if (plotRange.isAST(S.List, 3)) {
-          optionPlotRange = F.List(S.Full, F.List(plotRange.first(), plotRange.second()));
+          optionPlotRange = F.list(S.Full, F.list(plotRange.first(), plotRange.second()));
         } else if (plotRange.isReal()) {
           if (plotID == ID.Plot) {
-            optionPlotRange = F.List(S.Full, F.List(plotRange.negate(), plotRange));
+            optionPlotRange = F.list(S.Full, F.list(plotRange.negate(), plotRange));
           } else if (plotID == ID.ListPlot || plotID == ID.ListLinePlot) {
-            optionPlotRange = F.List(S.Full, F.List(F.C0, plotRange));
+            optionPlotRange = F.list(S.Full, F.list(F.C0, plotRange));
           } else if ((plotID == ID.PolarPlot) || (plotID == ID.ParametricPlot)) {
-            optionPlotRange = F.List(F.List(plotRange.negate(), plotRange), //
-                F.List(plotRange.negate(), plotRange));
+            optionPlotRange = F.list(F.list(plotRange.negate(), plotRange), //
+                F.list(plotRange.negate(), plotRange));
           }
         }
         if (!optionPlotRange.isPresent()) {
           // Value of option `1` is not All, Full, Automatic, a positive machine
           // number, or an appropriate list of range specifications.
-          IOFunctions.printMessage(plot.topHead(), "prng", F.List(F.Rule(S.PlotRange, plotRange)),
+          IOFunctions.printMessage(plot.topHead(), "prng", F.list(F.Rule(S.PlotRange, plotRange)),
               engine);
         }
       }
@@ -499,7 +499,7 @@ public class ManipulateFunction {
         if (optionPlotRange.isPresent()) {
           // IExpr option = optionPlotRange.arg2();
           // if (option.isAST(S.List, 3)) {
-          // plotRangeY = F.List(option.first(), option.second());
+          // plotRangeY = F.list(option.first(), option.second());
           // }
         }
         if (optionPlotRange.isPresent() && optionPlotRange.second().isAST(S.List, 3)) {
@@ -972,7 +972,7 @@ public class ManipulateFunction {
           if (plot.size() < 3 || !plot.arg2().isList3() || !plot.arg2().first().isSymbol()) {
             // Range specification `1` is not of the form {x, xmin, xmax}.
             IExpr arg2 = plot.size() >= 3 ? plot.arg2() : F.CEmptyString;
-            return IOFunctions.printMessage(plot.topHead(), "pllim", F.List(arg2), engine);
+            return IOFunctions.printMessage(plot.topHead(), "pllim", F.list(arg2), engine);
           }
           if (plot.size() >= 3 && plot.arg2().isList()) {
             IAST plotRangeX = (IAST) plot.arg2();
@@ -1053,7 +1053,7 @@ public class ManipulateFunction {
       IAST plotStyle = F.NIL;
       if (option.isPresent()) {
         if (!option.isList()) {
-          option = F.List(option);
+          option = F.list(option);
         }
         option = engine.evaluate(option);
         if (option.isList()) {
@@ -1097,7 +1097,7 @@ public class ManipulateFunction {
         if (!plotRangeEvaled) {
           // Value of option `1` is not All, Full, Automatic, a positive machine
           // number, or an appropriate list of range specifications.
-          IOFunctions.printMessage(plot.topHead(), "prng", F.List(F.Rule(S.PlotRange, plotRangeY)),
+          IOFunctions.printMessage(plot.topHead(), "prng", F.list(F.Rule(S.PlotRange, plotRangeY)),
               engine);
         }
       }
@@ -1109,7 +1109,7 @@ public class ManipulateFunction {
       JSXGraph.sliderNamesFromList(manipulateAST, toJS);
       IExpr arg1 = engine.evaluate(plot.arg1());
       if (!arg1.isList()) {
-        arg1 = F.List(arg1);
+        arg1 = F.list(arg1);
       }
 
       ISymbol plotSymbolX = (ISymbol) plotRangeX.arg1();
@@ -1215,7 +1215,7 @@ public class ManipulateFunction {
         if (vectorDim != 2) {
           return false;
         }
-        list = F.List(arg);
+        list = F.list(arg);
       } else {
         if (dim[1] != 2) {
           return false;
@@ -1869,7 +1869,7 @@ public class ManipulateFunction {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       return redirectToManipulate(ast, engine);
       // "Function `1` not implemented.", //
-      // return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.List(ast.topHead()),
+      // return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.list(ast.topHead()),
       // engine);
       // return redirectToManipulate(ast, engine);
     }
@@ -1887,7 +1887,7 @@ public class ManipulateFunction {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // "Function `1` not implemented.", //
-      return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.List(ast.topHead()), engine);
+      return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.list(ast.topHead()), engine);
       // return redirectToManipulate(ast, engine);
     }
   }
@@ -1897,7 +1897,7 @@ public class ManipulateFunction {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // "Function `1` not implemented.", //
-      return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.List(ast.topHead()), engine);
+      return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.list(ast.topHead()), engine);
       // return redirectToManipulate(ast, engine);
     }
   }
@@ -1967,7 +1967,7 @@ public class ManipulateFunction {
       } else {
         if (expr.isAST(S.ListLinePlot) || expr.isAST(S.ListPlot) || expr.isAST(S.Plot)
             || expr.isAST(S.ParametricPlot) || expr.isAST(S.PolarPlot)) {
-          return F.List(expr);
+          return F.list(expr);
         }
       }
       return F.NIL;
@@ -1984,7 +1984,7 @@ public class ManipulateFunction {
         // if (arg1.isAST(F.ComplexPlot3D)) {
         // // `1` currently not supported in `2`.
         // return IOFunctions.printMessage(ast.topHead(), "unsupported",
-        // F.List(F.ComplexPlot3D, F.stringx("Symja")), engine);
+        // F.list(F.ComplexPlot3D, F.stringx("Symja")), engine);
         // }
 
         if (arg1.isAST(S.BarChart) || arg1.isAST(S.BoxWhiskerChart)
@@ -1999,7 +1999,7 @@ public class ManipulateFunction {
           if (plot.size() >= 3) {
             if (!plot.arg2().isList3() || !plot.arg2().first().isSymbol()) {
               // Range specification `1` is not of the form {x, xmin, xmax}.
-              return IOFunctions.printMessage(plot.topHead(), "pllim", F.List(plot.arg2()), engine);
+              return IOFunctions.printMessage(plot.topHead(), "pllim", F.list(plot.arg2()), engine);
             }
             IAST plotRangeX = (IAST) plot.arg2();
             IAST plotRangeY = F.NIL;
@@ -2009,7 +2009,7 @@ public class ManipulateFunction {
               } else if (!arg1.isAST(S.ComplexPlot3D)) {
                 if (!plot.arg3().isList3() || !plot.arg3().first().isSymbol()) {
                   // Range specification `1` is not of the form {x, xmin, xmax}.
-                  return IOFunctions.printMessage(plot.topHead(), "pllim", F.List(plot.arg3()),
+                  return IOFunctions.printMessage(plot.topHead(), "pllim", F.list(plot.arg3()),
                       engine);
                 }
               }

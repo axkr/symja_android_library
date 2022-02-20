@@ -2,7 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.Graphics;
 import static org.matheclipse.core.expression.F.Line;
-import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
 import java.util.Arrays;
@@ -52,7 +51,7 @@ public class Plot extends AbstractEvaluator {
         if (rangeList.isAST3()) {
           if (!rangeList.arg1().isSymbol()) {
             // `1` is not a valid variable.
-            return IOFunctions.printMessage(S.Plot, "ivar", F.List(rangeList.arg1()), engine);
+            return IOFunctions.printMessage(S.Plot, "ivar", F.list(rangeList.arg1()), engine);
           }
           final ISymbol x = (ISymbol) rangeList.arg1();
           final IExpr xMin = engine.evalN(rangeList.arg2());
@@ -110,12 +109,12 @@ public class Plot extends AbstractEvaluator {
           IAST plotRange;
           if (dim.isValidRange()) {
             plotRange =
-                Rule(S.PlotRange, F.List(F.List(dim.xMin, dim.xMax), F.List(dim.yMin, dim.yMax)));
+                Rule(S.PlotRange, F.list(F.List(dim.xMin, dim.xMax), F.List(dim.yMin, dim.yMax)));
           } else {
             plotRange = Rule(S.PlotRange, S.Automatic);
           }
           final IExpr options[] =
-              {plotRange, Rule(S.AxesStyle, S.Automatic), Rule(S.AxesOrigin, List(F.C0, F.C0)),
+              {plotRange, Rule(S.AxesStyle, S.Automatic), Rule(S.AxesOrigin, F.list(F.C0, F.C0)),
                   Rule(S.Axes, S.True), Rule(S.Background, S.White)};
           graphics.appendAll(F.function(S.List, options), 1, options.length);
           return Show(graphics);

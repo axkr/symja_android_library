@@ -144,7 +144,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
       if (preevaledProduct.last().isList()) {
         list = (IAST) preevaledProduct.last();
       } else {
-        list = F.List(preevaledProduct.last());
+        list = F.list(preevaledProduct.last());
       }
       if (list.isAST1()) {
         // indefinite product case
@@ -178,7 +178,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
         if (preevaledProduct.get(i).isList()) {
           iterator = Iterator.create((IAST) preevaledProduct.get(i), i, engine);
         } else {
-          iterator = Iterator.create(F.List(preevaledProduct.get(i)), i, engine);
+          iterator = Iterator.create(F.list(preevaledProduct.get(i)), i, engine);
         }
         if (iterator.isValidVariable() && exponent.isFree(iterator.getVariable())) {
           continue;
@@ -281,7 +281,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
         // Recursion depth of `1` exceeded during evaluation of `2`.
         int recursionLimit = engine.getRecursionLimit();
         IOFunctions.printMessage(S.Product, "reclim2",
-            F.List(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), preevaledProduct),
+            F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), preevaledProduct),
             engine);
         return F.NIL;
       }

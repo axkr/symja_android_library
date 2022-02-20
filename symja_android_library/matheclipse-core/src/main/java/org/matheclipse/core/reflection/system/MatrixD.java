@@ -45,7 +45,7 @@ public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
     IExpr x = ast.arg2();
     if (!(x.isVariable() || x.isList())) {
       // `1` is not a valid variable.
-      return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+      return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(x), engine);
     }
 
     if (fx.isList()) {
@@ -60,14 +60,14 @@ public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
       if (xList.isAST1() && xList.arg1().isListOfLists()) {
         IAST subList = (IAST) xList.arg1();
         IASTAppendable result = F.ListAlloc(subList.size());
-        result.appendArgs(subList.size(), i -> F.MatrixD(fx, F.List(subList.get(i))));
+        result.appendArgs(subList.size(), i -> F.MatrixD(fx, F.list(subList.get(i))));
         return result;
       } else if (xList.isAST1() && xList.arg1().isList()) {
         IAST subList = (IAST) xList.arg1();
         return subList.mapLeft(F.ListAlloc(), (a, b) -> engine.evaluateNIL(F.MatrixD(a, b)), fx);
       } else if (xList.isAST2()) {
         if (xList.arg1().isList()) {
-          x = F.List(xList.arg1());
+          x = F.list(xList.arg1());
         } else {
           x = xList.arg1();
         }
@@ -98,21 +98,21 @@ public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
         }
         if (!x.isVariable()) {
           // `1` is not a valid variable.
-          return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+          return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(x), engine);
         }
         if (arg2.isAST()) {
           return F.NIL;
         }
         // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
         // symbolic expression or a non-negative integer.
-        return IOFunctions.printMessage(ast.topHead(), "dvar", F.List(xList), engine);
+        return IOFunctions.printMessage(ast.topHead(), "dvar", F.list(xList), engine);
       }
       return F.NIL;
     }
 
     if (!x.isVariable()) {
       // `1` is not a valid variable.
-      return IOFunctions.printMessage(ast.topHead(), "ivar", F.List(x), engine);
+      return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(x), engine);
     }
 
     return binaryMatrixD(fx, x);

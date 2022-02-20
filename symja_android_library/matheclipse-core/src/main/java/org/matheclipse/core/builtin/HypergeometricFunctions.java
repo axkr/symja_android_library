@@ -78,10 +78,17 @@ public class HypergeometricFunctions {
       IExpr c = ast.arg4();
       IExpr z1 = ast.arg5();
       IExpr z2 = ast.get(6);
-      if (b1.compareTo(b2) > 0) {
-        // permutation symmetry
-        return F.AppellF1(a, b2, b1, c, z1, z2);
-      }
+      // // https://functions.wolfram.com/HypergeometricFunctions/AppellF1/04/03/02/0001/
+      // if (b1.compareTo(b2) > 0) {
+      // // MMA doesn't swap args
+      // // permutation symmetry
+      // return F.AppellF1(a, b2, b1, c, z1, z2);
+      // }
+      // if (z1.compareTo(z2) > 0) {
+      // // MMA doesn't swap args
+      // // permutation symmetry
+      // return F.AppellF1(a, b1, b2, c, z2, z1);
+      // }
       if (z1.isZero() && z2.isZero()) {
         return F.C1;
       }
@@ -102,8 +109,8 @@ public class HypergeometricFunctions {
       }
       if (b1.subtract(b2).isPossibleZero(true) && z1.plus(z2).isPossibleZero(true)) {
         // HypergeometricPFQ({1/2+a/2,a/2,b1},{1/2+c/2,c/2},z1^2)
-        return F.HypergeometricPFQ(F.List(F.Plus(F.C1D2, F.Divide(a, F.C2)), F.Divide(a, F.C2), b1), //
-            F.List(F.Plus(F.C1D2, F.Divide(c, F.C2)), F.Divide(c, F.C2)), F.Sqr(z1));
+        return F.HypergeometricPFQ(F.list(F.Plus(F.C1D2, F.Divide(a, F.C2)), F.Divide(a, F.C2), b1), //
+            F.list(F.Plus(F.C1D2, F.Divide(c, F.C2)), F.Divide(c, F.C2)), F.Sqr(z1));
       }
       if (b1.plus(b2).subtract(c).isPossibleZero(true)) {
         // Hypergeometric2F1(a, b1, b1 + b2, (z1 - z2)/(1 - z2)) / (1 - z2)^a

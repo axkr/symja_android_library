@@ -165,12 +165,12 @@ public class ExpTrigsFunctions {
             // AngleVector({x_, y_}, {r_, phi_}) := {x + r * Cos(phi), y + r * Sin(phi)}
             IExpr r = arg2.first();
             phi = arg2.second();
-            return F.List(F.Plus(x, F.Times(r, F.Cos(phi))), F.Plus(y, F.Times(r, F.Sin(phi))));
+            return F.list(F.Plus(x, F.Times(r, F.Cos(phi))), F.Plus(y, F.Times(r, F.Sin(phi))));
           } else {
             phi = arg2;
           }
           // AngleVector({x_, y_}, phi_) := {x + Cos(phi), y + Sin(phi)}
-          return F.List(F.Plus(x, F.Cos(phi)), F.Plus(y, F.Sin(phi)));
+          return F.list(F.Plus(x, F.Cos(phi)), F.Plus(y, F.Sin(phi)));
         }
         return F.NIL;
       }
@@ -179,12 +179,12 @@ public class ExpTrigsFunctions {
         // AngleVector({r_, phi_}) := {r * Cos(phi), r * Sin(phi)}
         IExpr r = ((IAST) arg1).arg1();
         phi = ((IAST) arg1).arg2();
-        return F.List(F.Times(r, F.Cos(phi)), F.Times(r, F.Sin(phi)));
+        return F.list(F.Times(r, F.Cos(phi)), F.Times(r, F.Sin(phi)));
       } else {
         phi = arg1;
       }
       // AngleVector(phi_) := {Cos(phi), Sin(phi)}
-      return F.List(F.Cos(phi), F.Sin(phi));
+      return F.list(F.Cos(phi), F.Sin(phi));
     }
 
     @Override
@@ -1221,7 +1221,7 @@ public class ExpTrigsFunctions {
       if (arg1.isReal()) {
         if (arg1.isNegative()) {
           // Argument `1` should be a real non-negative number.
-          return IOFunctions.printMessage(ast.topHead(), "noneg", F.List(arg1), engine);
+          return IOFunctions.printMessage(ast.topHead(), "noneg", F.list(arg1), engine);
         }
         int i = arg1.toIntDefault();
         if (i > 0) {

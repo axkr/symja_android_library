@@ -103,7 +103,7 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
         if (value < min || value > max) {
           // Input value `1` lies outside the range of data in the interpolating function.
           // Extrapolation will be used.
-          IOFunctions.printMessage(ast.topHead(), "dmval", F.List(F.List(arg1)), engine);
+          IOFunctions.printMessage(ast.topHead(), "dmval", F.list(F.list(arg1)), engine);
         }
       } catch (ArgumentTypeException atex) {
         // fall through for symbolic arguments

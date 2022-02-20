@@ -91,7 +91,7 @@ public class AttributeFunctions {
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isAST(S.Attributes, 2)) {
         if (!leftHandSide.first().isSymbol()) {
-          IOFunctions.printMessage(builtinSymbol, "setps", F.List(leftHandSide.first()), engine);
+          IOFunctions.printMessage(builtinSymbol, "setps", F.list(leftHandSide.first()), engine);
           return rightHandSide;
         }
         IExpr temp = engine.evaluate(F.SetAttributes(leftHandSide.first(), rightHandSide));
@@ -197,7 +197,7 @@ public class AttributeFunctions {
         }
       }
       if (sym.isProtected()) {
-        IOFunctions.printMessage(S.ClearAttributes, "write", F.List(sym), EvalEngine.get());
+        IOFunctions.printMessage(S.ClearAttributes, "write", F.list(sym), EvalEngine.get());
         throw new FailedException();
       }
       if (attributes.isSymbol()) {
@@ -454,7 +454,7 @@ public class AttributeFunctions {
      */
     private static void addAttributes(final ISymbol sym, ISymbol attribute) {
       if (sym.isProtected()) {
-        IOFunctions.printMessage(S.SetAttributes, "write", F.List(sym), EvalEngine.get());
+        IOFunctions.printMessage(S.SetAttributes, "write", F.list(sym), EvalEngine.get());
         throw new FailedException();
       }
       int functionID = attribute.ordinal();

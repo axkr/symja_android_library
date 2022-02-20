@@ -1057,7 +1057,7 @@ public class Convert {
           ((IAST) arg1).setEvalFlags(IAST.NO_FLAG);
         }
         // Argument `1` at position `2` is not a non-empty square matrix.
-        IOFunctions.printMessage(symbol, "matsq", F.List(arg1, F.C1), EvalEngine.get());
+        IOFunctions.printMessage(symbol, "matsq", F.list(arg1, F.C1), EvalEngine.get());
         return null;
       }
     }
@@ -1072,7 +1072,7 @@ public class Convert {
           ((IAST) arg1).setEvalFlags(IAST.NO_FLAG);
         }
         // Argument `1` at position `2` is not a non-empty rectangular matrix.
-        IOFunctions.printMessage(symbol, "matrix", F.List(arg1, F.C1), EvalEngine.get());
+        IOFunctions.printMessage(symbol, "matrix", F.list(arg1, F.C1), EvalEngine.get());
       }
       return null;
     }

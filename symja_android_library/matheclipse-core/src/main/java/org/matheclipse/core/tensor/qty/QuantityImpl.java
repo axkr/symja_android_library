@@ -310,7 +310,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     // }
     // String str =
     // IOFunctions.getMessage(
-    // "compat", F.List(F.stringx(fData.toString()), F.stringx(unit.toString())));
+    // "compat", F.list(F.stringx(fData.toString()), F.stringx(unit.toString())));
     // throw new ArgumentTypeException(str);
     // // quantity = (IQuantity) UnitConvert.SI().to(unit).apply(quantity);
     // }
@@ -352,7 +352,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
         }
         // `1` and `2` are incompatible units
         throw new ArgumentTypeException("compat",
-            F.List(F.stringx(fData.toString()), F.stringx(unit.toString())));
+            F.list(F.stringx(fData.toString()), F.stringx(unit.toString())));
       }
       if (fData.equals(unit)) {
         return ofUnit(arg1.plus(quantity.value())); // 0[m] + 0[m] gives 0[m]

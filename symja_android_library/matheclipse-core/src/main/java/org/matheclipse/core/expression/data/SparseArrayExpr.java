@@ -1017,7 +1017,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
             } else if (!defaultValue[0].equals(rule1.arg2())) {
               // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
               IOFunctions.printMessage(S.SparseArray, "posr",
-                  F.List(arrayRulesList, rule1.arg1(), F.ZZ(depth)), engine);
+                  F.list(arrayRulesList, rule1.arg1(), F.ZZ(depth)), engine);
               return null;
             }
           } else if (!patternPositionsList(trie, rule1.arg1(), rule1.arg2(), dimension,
@@ -1060,7 +1060,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
             if (positions.length != depth) {
               // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
               IOFunctions.printMessage(S.SparseArray, "posr",
-                  F.List(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
+                  F.list(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
               return null;
             }
             if (determineDimension) {
@@ -1091,7 +1091,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
               } else if (!defaultValue[0].equals(rule.arg2())) {
                 // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
                 IOFunctions.printMessage(S.SparseArray, "posr",
-                    F.List(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
+                    F.list(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
                 return null;
               }
             } else if (!patternPositionsList(trie, rule.arg1(), rule.arg2(), dimension,
@@ -1130,7 +1130,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       } else if (!defaultValue[0].equals(ruleRHS)) {
         // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
         IOFunctions.printMessage(S.SparseArray, "posr",
-            F.List(arrayRulesList, ruleLHSPositionsList, F.ZZ(depth)), engine);
+            F.list(arrayRulesList, ruleLHSPositionsList, F.ZZ(depth)), engine);
         return false;
       }
     } else {
@@ -1143,7 +1143,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       } else {
         // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
         IOFunctions.printMessage(S.SparseArray, "posr",
-            F.List(arrayRulesList, ruleLHSPositionsList, F.ZZ(depth)), engine);
+            F.list(arrayRulesList, ruleLHSPositionsList, F.ZZ(depth)), engine);
         return false;
       }
     }
@@ -1298,7 +1298,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     PatternMatcherAndEvaluator matcher = new PatternMatcherAndEvaluator(ruleLHS, ruleRHS);
     if (matcher.isRuleWithoutPatterns()) {
       // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-      IOFunctions.printMessage(S.SparseArray, "posr", F.List(arrayRulesList, ruleLHS, F.ZZ(depth)),
+      IOFunctions.printMessage(S.SparseArray, "posr", F.list(arrayRulesList, ruleLHS, F.ZZ(depth)),
           EvalEngine.get());
       return false;
     }
@@ -1663,7 +1663,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           count++;
         } else if (partIndex[i - startPosition] > dims[i - startPosition]
             || partIndex[i - startPosition] <= 0) {
-          return IOFunctions.printMessage(S.Part, "partw", F.List(ast.get(i), ast),
+          return IOFunctions.printMessage(S.Part, "partw", F.list(ast.get(i), ast),
               EvalEngine.get());
         }
       }
@@ -1708,7 +1708,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       }
       return new SparseArrayExpr(trie, newDimension, fDefaultValue.orElse(F.C0), false);
     }
-    return IOFunctions.printMessage(S.Part, "partd", F.List(ast), EvalEngine.get());
+    return IOFunctions.printMessage(S.Part, "partd", F.list(ast), EvalEngine.get());
   }
 
   @Override

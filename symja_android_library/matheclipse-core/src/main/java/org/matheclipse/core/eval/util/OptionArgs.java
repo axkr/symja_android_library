@@ -297,7 +297,7 @@ public class OptionArgs {
       if (maxIterations <= 0) {
         // Value of option `1` should be a non-negative integer or Infinity.
         IOFunctions.printMessage(fCurrentOptionsList.topHead(), "iopnf",
-            F.List(F.Rule(S.MaxIterations, optionMaxIterations)), fEngine);
+            F.list(F.Rule(S.MaxIterations, optionMaxIterations)), fEngine);
         return Integer.MIN_VALUE;
       }
       return maxIterations;
@@ -331,7 +331,7 @@ public class OptionArgs {
       // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a
       // rule or a list of rules.
       IOFunctions.printMessage(ast.topHead(), "nonopt",
-          F.List(ast.get(invalidPosition), F.ZZ(greaterThanPositon), ast), EvalEngine.get());
+          F.list(ast.get(invalidPosition), F.ZZ(greaterThanPositon), ast), EvalEngine.get());
       return true;
     }
     return false;
@@ -376,7 +376,7 @@ public class OptionArgs {
     // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or
     // a list of rules.
     return IOFunctions.printMessage(ast.topHead(), "nonopt",
-        F.List(ast.get(fInvalidPosition), F.ZZ(optionPosition), ast), engine);
+        F.list(ast.get(fInvalidPosition), F.ZZ(optionPosition), ast), engine);
   }
 
   public IAST replaceAll(final IAST options) {

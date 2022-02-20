@@ -959,7 +959,6 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
   public void test0152() {
     check( //
         "Integrate[(Cosh[a + b*x] - Sinh[a + b*x])/(Cosh[a + b*x] + Sinh[a + b*x]), x]", //
-        "-1/(2*b*(Cosh[a + b*x] + Sinh[a + b*x])^2)", //
         "-(Cosh[a+b*x]-Sinh[a+b*x])^2/(2*b)", //
         4385);
   }

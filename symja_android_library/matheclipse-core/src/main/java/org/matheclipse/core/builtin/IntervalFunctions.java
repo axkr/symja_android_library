@@ -297,7 +297,7 @@ public class IntervalFunctions {
           if (S.GreaterEqual.ofQ(engine, max1, max2)) {
             max1 = max2;
           }
-          result.append(F.List(min1, max1));
+          result.append(F.list(min1, max1));
         }
       }
       return result;

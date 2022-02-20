@@ -150,12 +150,12 @@ public class BoxesFunctions {
           IRational re = complex.re();
           IRational im = complex.im();
           if (re.isZero()) {
-            return F.RowBox(F.List(standardFormRecursive(im, precedence), F.$str(" "),
+            return F.RowBox(F.list(standardFormRecursive(im, precedence), F.$str(" "),
                 F.$str("\\[ImaginaryI]")));
           }
           return F.RowBox( //
-              F.List(standardFormRecursive(re, precedence), F.$str("+"),
-                  F.RowBox(F.List(standardFormRecursive(im, precedence), F.$str(" "),
+              F.list(standardFormRecursive(re, precedence), F.$str("+"),
+                  F.RowBox(F.list(standardFormRecursive(im, precedence), F.$str(" "),
                       F.$str("\\[ImaginaryI]")))));
         } else if (expr.isReal()) {
           return F.$str(expr.toString());
@@ -164,11 +164,11 @@ public class BoxesFunctions {
           ISignedNumber re = complex.re();
           ISignedNumber im = complex.im();
           if (re.isZero()) {
-            return F.RowBox(F.List(F.$str(im.toString()), F.$str(" "), F.$str("\\[ImaginaryI]")));
+            return F.RowBox(F.list(F.$str(im.toString()), F.$str(" "), F.$str("\\[ImaginaryI]")));
           }
           return F.RowBox( //
-              F.List(F.$str(re.toString()), F.$str("+"),
-                  F.RowBox(F.List(F.$str(im.toString()), F.$str(" "), F.$str("\\[ImaginaryI]")))));
+              F.list(F.$str(re.toString()), F.$str("+"),
+                  F.RowBox(F.list(F.$str(im.toString()), F.$str(" "), F.$str("\\[ImaginaryI]")))));
         }
       }
       return F.$str(expr.toString());

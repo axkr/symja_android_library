@@ -22353,6 +22353,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   // }
 
   public void testSimplify() {
+
+    check(" Simplify(y -> 1+Cot(x)^2)", //
+        "y->Csc(x)^2");
     // TODO ???
     // check("Simplify(Sqrt(1+a*x)/Sqrt(1-a^2*x^2) )", //
     // "1/Sqrt(1-a*x)");

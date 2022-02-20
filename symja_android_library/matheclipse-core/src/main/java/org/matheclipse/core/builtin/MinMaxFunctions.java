@@ -697,14 +697,14 @@ public class MinMaxFunctions {
       for (int i = 0; i < values.length; i++) {
         list.append(F.Rule(varList.get(i), F.num(values[i])));
       }
-      IAST result = F.List(F.num(f.value(values)), list);
+      IAST result = F.list(F.num(f.value(values)), list);
       return result;
     }
   }
 
   private static IExpr maximize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
     try {
-      IExpr temp = maximizeExprPolynomial(function, F.List(x));
+      IExpr temp = maximizeExprPolynomial(function, F.list(x));
       if (temp.isPresent()) {
         return temp;
       }
@@ -712,12 +712,12 @@ public class MinMaxFunctions {
       IExpr yNInf = S.Limit.of(function, F.Rule(x, F.CNInfinity));
       if (yNInf.isInfinity()) {
         LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.", head);
-        return F.List(F.CInfinity, F.List(F.Rule(x, F.CNInfinity)));
+        return F.list(F.CInfinity, F.list(F.Rule(x, F.CNInfinity)));
       }
       IExpr yInf = S.Limit.of(function, F.Rule(x, F.CInfinity));
       if (yInf.isInfinity()) {
         LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.", head);
-        return F.List(F.CInfinity, F.List(F.Rule(x, F.CInfinity)));
+        return F.list(F.CInfinity, F.list(F.Rule(x, F.CInfinity)));
       }
 
       IExpr first_derivative = S.D.of(engine, function, x);
@@ -739,7 +739,7 @@ public class MinMaxFunctions {
             }
           }
           if (maxCandidate.isPresent()) {
-            return F.List(maxValue, F.List(F.Rule(x, maxCandidate)));
+            return F.list(maxValue, F.list(F.Rule(x, maxCandidate)));
           }
         }
         return F.CEmptyList;
@@ -803,53 +803,49 @@ public class MinMaxFunctions {
           // quadratic
           if (c.isPossibleZero(false)) {
             if (d.isPossibleZero(false)) {
-              return F.List(e, F.List());
+              return F.list(e, F.CEmptyList);
             } else {
               // linear
-              return F.List(F.Piecewise(F.List(F.List(e, F.Equal(d, F.C0))), F.CInfinity), F.List(
-                  F.Rule(x, F.Piecewise(F.List(F.List(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
+              return F.list(F.Piecewise(F.list(F.list(e, F.Equal(d, F.C0))), F.CInfinity), F.list(
+                  F.Rule(x, F.Piecewise(F.list(F.list(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
             }
           } else {
             return F
                 .List(
                     F.Piecewise(
-                        F.List(F.List(e, F.And(F.Equal(d, 0), F.LessEqual(c, 0))),
-                            F.List(
+                        F.list(F.list(e, F.And(F.Equal(d, 0), F.LessEqual(c, 0))), F.list(
                                 F.Times(F.C1D4, F.Power(c, -1),
                                     F.Plus(F.Times(-1, F.Power(d, 2)), F.Times(4, c, e))),
                                 F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)),
                                     F.And(F.Less(d, 0), F.Less(c, 0))))),
                         F.CInfinity),
-                    F.List(F.Rule(x,
+                    F.list(F.Rule(x,
                         F.Piecewise(
-                            F.List(
-                                F.List(F.Times(F.CN1D2, F.Power(c, -1), d),
+                            F.list(F.list(F.Times(F.CN1D2, F.Power(c, -1), d),
                                     F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)),
                                         F.And(F.Less(d, 0), F.Less(c, 0)))),
-                                F.List(F.C0, F.And(F.Equal(d, 0), F.LessEqual(c, 0)))),
+                                F.list(F.C0, F.And(F.Equal(d, 0), F.LessEqual(c, 0)))),
                             S.Indeterminate))));
           }
         } else {
           // cubic
-          return F.List(
+          return F.list(
               F.Piecewise(
-                  F.List(
-                      F.List(e,
+                  F.list(F.list(e,
                           F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
                               F.And(F.Equal(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
-                      F.List(
+                      F.list(
                           F.Times(F.C1D4, F.Power(c, F.CN1),
                               F.Plus(F.Negate(F.Sqr(d)), F.Times(F.C4, c, e))),
                           F.Or(F.And(F.Greater(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)),
                               F.And(F.Less(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0))))),
                   F.oo),
-              F.List(F.Rule(x,
+              F.list(F.Rule(x,
                   F.Piecewise(
-                      F.List(
-                          F.List(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
+                      F.list(F.list(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
                               F.Or(F.And(F.Greater(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)),
                                   F.And(F.Less(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
-                          F.List(F.C0,
+                          F.list(F.C0,
                               F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
                                   F.And(F.Equal(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0))))),
                       F.Indeterminate))));
@@ -862,7 +858,7 @@ public class MinMaxFunctions {
 
   private static final IExpr minimize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
     try {
-      IExpr temp = minimizeExprPolynomial(function, F.List(x));
+      IExpr temp = minimizeExprPolynomial(function, F.list(x));
       if (temp.isPresent()) {
         return temp;
       }
@@ -870,12 +866,12 @@ public class MinMaxFunctions {
       IExpr yNInf = S.Limit.of(function, F.Rule(x, F.CNInfinity));
       if (yNInf.isNegativeInfinity()) {
         LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.", head);
-        return F.List(F.CNInfinity, F.List(F.Rule(x, F.CNInfinity)));
+        return F.list(F.CNInfinity, F.list(F.Rule(x, F.CNInfinity)));
       }
       IExpr yInf = S.Limit.of(function, F.Rule(x, F.CInfinity));
       if (yInf.isNegativeInfinity()) {
         LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.", head);
-        return F.List(F.CNInfinity, F.List(F.Rule(x, F.CInfinity)));
+        return F.list(F.CNInfinity, F.list(F.Rule(x, F.CInfinity)));
       }
 
       IExpr first_derivative = S.D.of(engine, function, x);
@@ -897,7 +893,7 @@ public class MinMaxFunctions {
             }
           }
           if (minCandidate.isPresent()) {
-            return F.List(minValue, F.List(F.Rule(x, minCandidate)));
+            return F.list(minValue, F.list(F.Rule(x, minCandidate)));
           }
         }
         return F.CEmptyList;
@@ -961,56 +957,52 @@ public class MinMaxFunctions {
           // quadratic
           if (c.isPossibleZero(false)) {
             if (d.isPossibleZero(false)) {
-              return F.List(e, F.List());
+              return F.list(e, F.CEmptyList);
             } else {
               // linear
-              return F.List(F.Piecewise(F.List(F.List(e, F.Equal(d, F.C0))), F.CNInfinity), F.List(
-                  F.Rule(x, F.Piecewise(F.List(F.List(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
+              return F.list(F.Piecewise(F.list(F.list(e, F.Equal(d, F.C0))), F.CNInfinity), F.list(
+                  F.Rule(x, F.Piecewise(F.list(F.list(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
             }
           } else {
             return F
                 .List(
                     F.Piecewise(
-                        F.List(
-                            F.List(e, F.And(F.Equal(d, 0),
+                        F.list(F.list(e, F.And(F.Equal(d, 0),
                                 F.GreaterEqual(c, 0))),
-                            F.List(
+                            F.list(
                                 F.Times(
                                     F.C1D4, F.Power(c, -1), F.Plus(F.Times(-1, F.Power(d, 2)),
                                         F.Times(4, c, e))),
                                 F.Or(F.And(F.Greater(d, 0), F.Greater(c, 0)),
                                     F.And(F.Less(d, 0), F.Greater(c, 0))))),
                         F.CNInfinity),
-                    F.List(F.Rule(x,
+                    F.list(F.Rule(x,
                         F.Piecewise(
-                            F.List(
-                                F.List(F.Times(F.CN1D2, F.Power(c, -1), d),
+                            F.list(F.list(F.Times(F.CN1D2, F.Power(c, -1), d),
                                     F.Or(F.And(F.Greater(d, 0), F.Greater(c, 0)),
                                         F.And(F.Less(d, 0), F.Greater(c, 0)))),
-                                F.List(F.C0, F.And(F.Equal(d, 0), F.GreaterEqual(c, 0)))),
+                                F.list(F.C0, F.And(F.Equal(d, 0), F.GreaterEqual(c, 0)))),
                             S.Indeterminate))));
           }
         } else {
           // cubic
-          return F.List(
+          return F.list(
               F.Piecewise(
-                  F.List(
-                      F.List(e,
+                  F.list(F.list(e,
                           F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
                               F.And(F.Equal(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
-                      F.List(
+                      F.list(
                           F.Times(F.C1D4, F.Power(c, F.CN1),
                               F.Plus(F.Negate(F.Sqr(d)), F.Times(F.C4, c, e))),
                           F.Or(F.And(F.Greater(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)),
                               F.And(F.Less(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0))))),
                   F.Noo),
-              F.List(F.Rule(x,
+              F.list(F.Rule(x,
                   F.Piecewise(
-                      F.List(
-                          F.List(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
+                      F.list(F.list(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
                               F.Or(F.And(F.Greater(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)),
                                   F.And(F.Less(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
-                          F.List(F.C0,
+                          F.list(F.C0,
                               F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
                                   F.And(F.Equal(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0))))),
                       F.Indeterminate))));

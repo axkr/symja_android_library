@@ -2637,6 +2637,22 @@ public abstract class AbstractAST implements IASTMutable {
             .append(arg2().second().internalJavaString(properties, depth + 1, variables))
             .append(")");
       }
+    } else if (isList() && size() <= 4) {
+      switch (size()) {
+        case 2:
+          return new StringBuilder(prefix).append("list(")
+              .append(arg1().internalJavaString(properties, depth + 1, variables)).append(")");
+        case 3:
+          return new StringBuilder(prefix).append("list(")
+              .append(arg1().internalJavaString(properties, depth + 1, variables)).append(",")
+              .append(arg2().internalJavaString(properties, depth + 1, variables)).append(")");
+        case 4:
+          return new StringBuilder(prefix).append("list(")
+              .append(arg1().internalJavaString(properties, depth + 1, variables)).append(",")
+              .append(arg2().internalJavaString(properties, depth + 1, variables)).append(",")
+              .append(arg3().internalJavaString(properties, depth + 1, variables)).append(")");
+
+      }
     }
 
     if (properties.useOperators && size() == 3) {
@@ -3810,7 +3826,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isPolynomial(IExpr variable) {
-    return isPolynomial(F.List(variable));
+    return isPolynomial(F.list(variable));
   }
 
   /** {@inheritDoc} */
@@ -3842,7 +3858,7 @@ public abstract class AbstractAST implements IASTMutable {
   /** {@inheritDoc} */
   @Override
   public final boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
-    return isPolynomialOfMaxDegree(F.List(variable), maxDegree);
+    return isPolynomialOfMaxDegree(F.list(variable), maxDegree);
   }
 
   /** {@inheritDoc} */

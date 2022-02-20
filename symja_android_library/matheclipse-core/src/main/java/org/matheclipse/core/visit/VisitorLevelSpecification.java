@@ -139,7 +139,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
             final IInteger i0 = (IInteger) lst.arg1();
             if (i0.isNegative()) {
               // Level specification `1` is not of the form n, {n}, or {m, n}.
-              String str = IOFunctions.getMessage("level", F.List(levelExpr), EvalEngine.get());
+              String str = IOFunctions.getMessage("level", F.list(levelExpr), EvalEngine.get());
               throw new ArgumentTypeException(str);
               // throw new MathException("Invalid Level specification: " + levelExpr.toString());
             } else {
@@ -169,7 +169,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
       return;
     }
     // Level specification `1` is not of the form n, {n}, or {m, n}.
-    String str = IOFunctions.getMessage("level", F.List(levelExpr), EvalEngine.get());
+    String str = IOFunctions.getMessage("level", F.list(levelExpr), EvalEngine.get());
     throw new ArgumentTypeException(str);
     // throw new MathException("Invalid Level specification: " + levelExpr.toString());
   }

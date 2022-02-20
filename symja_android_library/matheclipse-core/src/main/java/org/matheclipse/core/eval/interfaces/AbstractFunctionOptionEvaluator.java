@@ -27,7 +27,7 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
 
   protected void setOptions(final ISymbol symbol, IBuiltInSymbol lhsOptionSymbol, IExpr rhsValue) {
     optionSymbols = new IBuiltInSymbol[] {lhsOptionSymbol};
-    super.setOptions(symbol, F.List(F.Rule(lhsOptionSymbol, rhsValue)));
+    super.setOptions(symbol, F.list(F.Rule(lhsOptionSymbol, rhsValue)));
   }
 
   protected void setOptions(final ISymbol symbol, IBuiltInSymbol[] lhsOptionSymbols,

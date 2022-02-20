@@ -79,10 +79,10 @@ public class FindMaximum extends FindMinimum {
       return findExtremum(ast, engine, goalType);
     } catch (MathIllegalStateException miae) {
       // `1`.
-      return IOFunctions.printMessage(ast.topHead(), "error", F.List(F.$str(miae.getMessage())),
+      return IOFunctions.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
           engine);
     } catch (MathRuntimeException mre) {
-      IOFunctions.printMessage(ast.topHead(), "error", F.List(F.$str(mre.getMessage())), engine);
+      IOFunctions.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
       return F.CEmptyList;
     }
   }

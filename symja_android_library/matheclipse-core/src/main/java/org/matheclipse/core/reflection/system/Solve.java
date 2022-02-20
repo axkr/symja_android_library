@@ -813,7 +813,7 @@ public class Solve extends AbstractFunctionEvaluator {
           ++currEquation;
           for (int k = 1; k < listOfRules.size(); k++) {
             if (currEquation >= analyzerList.size()) {
-              resultList.append(F.List(listOfRules.getAST(k)));
+              resultList.append(F.list(listOfRules.getAST(k)));
               if (maximumNumberOfResults > 0 && maximumNumberOfResults <= resultList.size()) {
                 return resultList;
               }
@@ -950,10 +950,10 @@ public class Solve extends AbstractFunctionEvaluator {
       IExpr variable, EvalEngine engine) {
     IExpr temp = F.NIL;
     if (numerator.isNumericMode() && denominator.isOne()) {
-      temp = RootsFunctions.roots(numerator, F.List(variable), engine);
+      temp = RootsFunctions.roots(numerator, F.list(variable), engine);
     }
     if (!temp.isPresent()) {
-      temp = RootsFunctions.rootsOfVariable(numerator, denominator, F.List(variable),
+      temp = RootsFunctions.rootsOfVariable(numerator, denominator, F.list(variable),
           numerator.isNumericMode(), engine);
     }
     if (temp.isPresent()) {
@@ -1018,7 +1018,7 @@ public class Solve extends AbstractFunctionEvaluator {
     boolean[] isNumeric = new boolean[] {numeric};
     try {
       if (ast.arg1().isEmptyList()) {
-        return F.List(F.CEmptyList);
+        return F.list(F.CEmptyList);
       }
       IAST userDefinedVariables =
           Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
@@ -1067,7 +1067,7 @@ public class Solve extends AbstractFunctionEvaluator {
           if (lists[2].isPresent()) {
             IExpr result = solveNumeric(lists[2], numericFlag, engine);
             if (!result.isPresent()) {
-              return IOFunctions.printMessage(ast.topHead(), "nsmet", F.List(ast.topHead()),
+              return IOFunctions.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()),
                   engine);
             }
             return checkDomain(result, domain);
@@ -1076,7 +1076,7 @@ public class Solve extends AbstractFunctionEvaluator {
           IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag,
               userDefinedVariables, engine);
           if (!result.isPresent()) {
-            return IOFunctions.printMessage(ast.topHead(), "nsmet", F.List(ast.topHead()), engine);
+            return IOFunctions.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
           }
           return checkDomain(result, domain);
         } finally {
@@ -1169,7 +1169,7 @@ public class Solve extends AbstractFunctionEvaluator {
    */
   private static IExpr checkDomain(IExpr expr, ISymbol domain) {
     if (expr.isListOfRules() && expr.argSize() > 0) {
-      expr = F.List(expr);
+      expr = F.list(expr);
     }
     if (expr.isList() && domain.equals(S.Reals)) {
       if (expr.isListOfLists()) {
@@ -1289,7 +1289,7 @@ public class Solve extends AbstractFunctionEvaluator {
         if (numericFlag) {
           // find numerically with start value 0
           res =
-              engine.evalQuiet(F.FindRoot(termsEqualZeroList.arg1(), F.List(firstVariable, F.C0)));
+              engine.evalQuiet(F.FindRoot(termsEqualZeroList.arg1(), F.list(firstVariable, F.C0)));
         }
       }
       if (!res.isList() || !res.isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
@@ -1302,7 +1302,7 @@ public class Solve extends AbstractFunctionEvaluator {
       // expensive recursion try
       IExpr firstEquation = termsEqualZeroList.arg1();
       IExpr firstVariable = variables.arg1();
-      IAST[] reduced = Eliminate.eliminateOneVariable(F.List(F.Equal(firstEquation, F.C0)),
+      IAST[] reduced = Eliminate.eliminateOneVariable(F.list(F.Equal(firstEquation, F.C0)),
           firstVariable, true, engine);
       if (reduced != null) {
         variables = variables.splice(1);
@@ -1379,10 +1379,10 @@ public class Solve extends AbstractFunctionEvaluator {
         if (tempAST[1].isList()) {
           IAST list = tempAST[1];
           IASTAppendable result = F.ListAlloc(list.size());
-          list.forEach(x -> result.append(F.List(x)));
+          list.forEach(x -> result.append(F.list(x)));
           return result;
         }
-        return F.List(F.List(tempAST[1]));
+        return F.list(F.list(tempAST[1]));
       }
     }
     return F.NIL;
@@ -1585,7 +1585,7 @@ public class Solve extends AbstractFunctionEvaluator {
               if (numericFlag) {
                 // find numerically with start value 0
                 res = S.FindRoot.ofNIL(engine, clonedEqualZeroList.arg1(),
-                    F.List(firstVariable, F.C0));
+                    F.list(firstVariable, F.C0));
               }
             }
             if (!res.isList()

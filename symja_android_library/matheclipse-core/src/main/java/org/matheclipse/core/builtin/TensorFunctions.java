@@ -214,7 +214,7 @@ public class TensorFunctions {
           return F.NIL;
         }
         // Positive machine-sized integer expected at position `2` in `1`.
-        return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
       }
 
       double value = n;
@@ -229,7 +229,7 @@ public class TensorFunctions {
       IAST nCopies = F.constantArray(F.ZZ(n), n);
       // TODO improve performance by directly transforming to sparse array
       IExpr leviCivitaNormalForm =
-          S.Array.of(engine, F.Function(F.Signature(F.List(F.SlotSequence(1)))), nCopies);
+          S.Array.of(engine, F.Function(F.Signature(F.list(F.SlotSequence(1)))), nCopies);
       if (leviCivitaNormalForm.isList()) {
         return SparseArrayExpr.newDenseList((IAST) leviCivitaNormalForm, F.C0);
       }
@@ -529,7 +529,7 @@ public class TensorFunctions {
           IAST tensorArg1 = tensorProperties.get(arg1);
           if (tensorArg1 != null) {
             if (tensorArg1.isAST(S.Vectors)) {
-              return F.List(tensorArg1.arg1());
+              return F.list(tensorArg1.arg1());
             }
             return tensorArg1.arg1();
           }
@@ -591,7 +591,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, F.List(F.Rule(S.Assumptions, S.$Assumptions)));
+      setOptions(newSymbol, F.list(F.Rule(S.Assumptions, S.$Assumptions)));
     }
   }
 
@@ -622,9 +622,9 @@ public class TensorFunctions {
             int rowColumnSize = dims.getInt(0) + 1;
             if (rowColumnSize == 2) {
               if (tensor.getPart(1, 1).isZero()) {
-                return F.ZeroSymmetric(F.List());
+                return F.ZeroSymmetric(F.CEmptyList);
               }
-              return F.Symmetric(F.List(F.C1, F.C2));
+              return F.Symmetric(F.list(F.C1, F.C2));
             }
             return tensorSymmetrySquareMatrix(tensor, rowColumnSize, sameTest, engine);
           }
@@ -724,12 +724,12 @@ public class TensorFunctions {
         }
       }
       if (isSymmetric) {
-        return F.Symmetric(F.List(F.C1, F.C2));
+        return F.Symmetric(F.list(F.C1, F.C2));
       }
       if (isAntiSymmetric) {
-        return F.AntiSymmetric(F.List(F.C1, F.C2));
+        return F.AntiSymmetric(F.list(F.C1, F.C2));
       }
-      return F.List();
+      return F.CEmptyList;
     }
 
     /**
@@ -758,7 +758,7 @@ public class TensorFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, F.List(F.Rule(S.Assumptions, S.$Assumptions), //
+      setOptions(newSymbol, F.list(F.Rule(S.Assumptions, S.$Assumptions), //
           F.Rule(S.SameTest, S.Automatic)));
     }
   }
@@ -897,7 +897,7 @@ public class TensorFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Assumptions, S.$Assumptions)));
+          F.list(F.Rule(S.Assumptions, S.$Assumptions)));
     }
   }
 

@@ -635,7 +635,7 @@ public class CompilerFunctions {
       IExpr variable = variables.get(i);
       if (numericVariables.get(variable) != null) {
         // Duplicate parameter `1` found in `2`.
-        IOFunctions.printMessage(ast.topHead(), "fdup", F.List(variable, ast.arg1()), engine);
+        IOFunctions.printMessage(ast.topHead(), "fdup", F.list(variable, ast.arg1()), engine);
         return null;
       }
       if (argType.equals(S.Real)) {

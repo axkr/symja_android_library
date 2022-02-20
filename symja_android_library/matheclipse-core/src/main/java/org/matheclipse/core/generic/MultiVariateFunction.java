@@ -28,7 +28,7 @@ public class MultiVariateFunction implements MultivariateFunction {
       if (!x.isVariable() || x.isBuiltInSymbol()) {
         // Cannot assign to raw object `1`.
         throw new ArgumentTypeException(
-            IOFunctions.getMessage("setraw", F.List(x), EvalEngine.get()));
+            IOFunctions.getMessage("setraw", F.list(x), EvalEngine.get()));
       }
       return false;
     });

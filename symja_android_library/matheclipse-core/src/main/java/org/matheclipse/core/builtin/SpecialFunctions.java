@@ -152,7 +152,7 @@ public class SpecialFunctions {
             // // [$ (Beta(a,n)*z^a*Sum((Pochhammer(a, k)*(1-z)^k)/k!, {k, 0, n - 1})) $]
             // F.Times(F.Beta(a, n), F.Power(z, a),
             // F.Sum(F.Times(F.Power(F.Subtract(F.C1, z), k), F.Power(F.Factorial(k), F.CN1),
-            // F.Pochhammer(a, k)), F.List(k, F.C0, F.Plus(F.CN1, n)))); // $$;
+            // F.Pochhammer(a, k)), F.list(k, F.C0, F.Plus(F.CN1, n)))); // $$;
             // }
           }
         } catch (ThrowException te) {
@@ -630,10 +630,10 @@ public class SpecialFunctions {
         return gammaRegularized2(a, z1, ast, engine);
       } catch (MathIllegalArgumentException miae) {
         return IOFunctions.printMessage(S.GammaRegularized, "argillegal",
-            F.List(F.stringx(miae.getMessage()), ast), engine);
+            F.list(F.stringx(miae.getMessage()), ast), engine);
       } catch (RuntimeException rex) {
         return IOFunctions.printMessage(S.GammaRegularized, "argillegal",
-            F.List(F.stringx(rex.getMessage()), ast), engine);
+            F.list(F.stringx(rex.getMessage()), ast), engine);
       }
     }
 
@@ -1018,10 +1018,10 @@ public class SpecialFunctions {
         }
       } catch (MathIllegalArgumentException miae) {
         return IOFunctions.printMessage(S.InverseBetaRegularized, "argillegal",
-            F.List(F.stringx(miae.getMessage()), ast), engine);
+            F.list(F.stringx(miae.getMessage()), ast), engine);
       } catch (RuntimeException rex) {
         return IOFunctions.printMessage(S.InverseBetaRegularized, "argillegal",
-            F.List(F.stringx(rex.getMessage()), ast), engine);
+            F.list(F.stringx(rex.getMessage()), ast), engine);
       }
       return F.NIL;
     }
@@ -1606,7 +1606,7 @@ public class SpecialFunctions {
         ki = k.toIntDefault();
         if (ki == Integer.MIN_VALUE) {
           // Machine-sized integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.ProductLog, "intm", F.List(F.ProductLog(k, z), F.C1),
+          return IOFunctions.printMessage(S.ProductLog, "intm", F.list(F.ProductLog(k, z), F.C1),
               EvalEngine.get());
         }
         // ProductLog(0,z_) := ProductLog(z)

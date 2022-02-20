@@ -182,7 +182,7 @@ public final class BooleanFunctions {
             ISymbol symbol = (ISymbol) arg;
             if (symbol.isFalse() || symbol.isTrue()) {
               // `1` is not a valid variable.
-              String str = IOFunctions.getMessage("ivar", F.List(symbol), EvalEngine.get());
+              String str = IOFunctions.getMessage("ivar", F.list(symbol), EvalEngine.get());
               throw new ArgumentTypeException(str);
             }
             Variable v = symbol2variableMap.get(symbol);
@@ -196,7 +196,7 @@ public final class BooleanFunctions {
             }
           } else {
             // `1` is not a valid variable.
-            String str = IOFunctions.getMessage("ivar", F.List(arg), EvalEngine.get());
+            String str = IOFunctions.getMessage("ivar", F.list(arg), EvalEngine.get());
             throw new ArgumentTypeException(str);
           }
         }
@@ -204,7 +204,7 @@ public final class BooleanFunctions {
       }
 
       // `1` is not a valid variable.
-      String str = IOFunctions.getMessage("ivar", F.List(listOfSymbols), EvalEngine.get());
+      String str = IOFunctions.getMessage("ivar", F.list(listOfSymbols), EvalEngine.get());
       throw new ArgumentTypeException(str);
     }
 
@@ -251,7 +251,7 @@ public final class BooleanFunctions {
       }
       // illegal arguments: \"`1`\" in `2`
       String str = IOFunctions.getMessage("argillegal",
-          F.List(F.stringx(formula.toString()), F.stringx("LogicFormula")), EvalEngine.get());
+          F.list(F.stringx(formula.toString()), F.stringx("LogicFormula")), EvalEngine.get());
       throw new ArgumentTypeException(str);
     }
 
@@ -381,7 +381,7 @@ public final class BooleanFunctions {
         }
         if (!symbol.isVariable() || symbol.isProtected()) {
           // `1` is not a valid variable.
-          String message = IOFunctions.getMessage("ivar", F.List(symbol), EvalEngine.get());
+          String message = IOFunctions.getMessage("ivar", F.list(symbol), EvalEngine.get());
           throw new ArgumentTypeException(message);
         }
         Variable v = symbol2variableMap.get(symbol);
@@ -405,7 +405,7 @@ public final class BooleanFunctions {
       }
       // illegal arguments: \"`1`\" in `2`
       String str = IOFunctions.getMessage("argillegal",
-          F.List(logicExpr, F.stringx("LogicFormula")), EvalEngine.get());
+          F.list(logicExpr, F.stringx("LogicFormula")), EvalEngine.get());
       throw new ArgumentTypeException(str);
     }
 
@@ -435,7 +435,7 @@ public final class BooleanFunctions {
         final IExpr arg = list.get(i);
         if (!arg.isSymbol()) {
           // illegal arguments: \"`1`\" in `2`
-          String str = IOFunctions.getMessage("argillegal", F.List(arg, list), EvalEngine.get());
+          String str = IOFunctions.getMessage("argillegal", F.list(arg, list), EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
 
@@ -1069,7 +1069,7 @@ public final class BooleanFunctions {
           if (sym.isBuiltInSymbol() || !sym.isVariable()) {
             // Cannot assign to raw object `1`.
             throw new ArgumentTypeException(
-                IOFunctions.getMessage("setraw", F.List(sym), EvalEngine.get()));
+                IOFunctions.getMessage("setraw", F.list(sym), EvalEngine.get()));
           }
           ISymbol symbol = (ISymbol) sym;
           IExpr value = symbol.assignedValue();
@@ -1920,7 +1920,7 @@ public final class BooleanFunctions {
           IAST result = lhsAST.partitionTimes(x -> x.isNumericFunction(true), F.C0, F.C1, S.List);
           if (!result.arg1().isZero()) {
             if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
-              return IOFunctions.printMessage(originalHead, "nord", F.List(result.arg1()),
+              return IOFunctions.printMessage(originalHead, "nord", F.list(result.arg1()),
                   EvalEngine.get());
             }
             if (result.arg1().isNegative()) {
@@ -1934,7 +1934,7 @@ public final class BooleanFunctions {
           IAST result = lhsAST.partitionPlus(x -> x.isNumericFunction(true), F.C0, F.C0, S.List);
           if (!result.arg1().isZero()) {
             if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
-              return IOFunctions.printMessage(originalHead, "nord", F.List(result.arg1()),
+              return IOFunctions.printMessage(originalHead, "nord", F.list(result.arg1()),
                   EvalEngine.get());
             }
             rhs = rhs.subtract(result.arg1());
@@ -2830,7 +2830,7 @@ public final class BooleanFunctions {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
         if (arg1.isList() || arg1.isAssociation()) {
-          return F.List(F.Min(arg1), F.Max(arg1));
+          return F.list(F.Min(arg1), F.Max(arg1));
         }
       } else if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
@@ -2839,16 +2839,16 @@ public final class BooleanFunctions {
             if (arg2.size() == 3 && //
                 arg2.first().isNumericFunction(true) && //
                 arg2.second().isNumericFunction(true)) {
-              return F.List(F.Subtract(F.Min(arg1), arg2.first()),
+              return F.list(F.Subtract(F.Min(arg1), arg2.first()),
                   F.Plus(F.Max(arg1), arg2.second()));
             }
           } else if (arg2.isNumericFunction(true)) {
-            return F.List(F.Subtract(F.Min(arg1), arg2), F.Plus(F.Max(arg1), arg2));
+            return F.list(F.Subtract(F.Min(arg1), arg2), F.Plus(F.Max(arg1), arg2));
           } else if (arg2.isAST(S.Scaled, 2) && //
               arg2.first().isNumericFunction(true)) {
             IExpr delta =
                 engine.evaluate(F.Times(arg2.first(), F.Subtract(F.Max(arg1), F.Min(arg1))));
-            return F.List(F.Subtract(F.Min(arg1), delta), F.Plus(F.Max(arg1), delta));
+            return F.list(F.Subtract(F.Min(arg1), delta), F.Plus(F.Max(arg1), delta));
           }
         }
       }
@@ -3900,7 +3900,7 @@ public final class BooleanFunctions {
         if (sym.isBuiltInSymbol() || !sym.isVariable()) {
           // Cannot assign to raw object `1`.
           throw new ArgumentTypeException(
-              IOFunctions.getMessage("setraw", F.List(sym), EvalEngine.get()));
+              IOFunctions.getMessage("setraw", F.list(sym), EvalEngine.get()));
         }
         ISymbol symbol = (ISymbol) sym;
         IExpr value = symbol.assignedValue();
@@ -4018,7 +4018,7 @@ public final class BooleanFunctions {
         if (sym.isBuiltInSymbol() || !sym.isVariable()) {
           // Cannot assign to raw object `1`.
           throw new ArgumentTypeException(
-              IOFunctions.getMessage("setraw", F.List(sym), EvalEngine.get()));
+              IOFunctions.getMessage("setraw", F.list(sym), EvalEngine.get()));
         }
         ISymbol symbol = (ISymbol) sym;
         IExpr value = symbol.assignedValue();
@@ -4600,7 +4600,7 @@ public final class BooleanFunctions {
         return new BDDCNFTransformation();
       }
       // `1` currently not supported in `2`.
-      IOFunctions.printMessage(ast.topHead(), "unsupported", F.List(lastArg, S.Method), engine);
+      IOFunctions.printMessage(ast.topHead(), "unsupported", F.list(lastArg, S.Method), engine);
       return null;
     }
     return new DNFFactorization();

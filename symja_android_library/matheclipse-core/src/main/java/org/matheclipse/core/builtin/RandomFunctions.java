@@ -244,7 +244,7 @@ public final class RandomFunctions {
             IExpr[] arr = new IExpr[list.size()];
             arr[0] = F.RandomComplex(ast.arg1());
             for (int i = 1; i < list.size(); i++) {
-              arr[i] = F.List(list.get(i));
+              arr[i] = F.list(list.get(i));
             }
             return F.ast(arr, S.Table);
           }
@@ -396,11 +396,11 @@ public final class RandomFunctions {
       int d = ast.arg1().toIntDefault();
 
       if (d > 0) {
-        IAST randomVariate = F.RandomVariate(F.UniformDistribution(F.List(F.C0, F.C1)), F.ZZ(d));
+        IAST randomVariate = F.RandomVariate(F.UniformDistribution(F.list(F.C0, F.C1)), F.ZZ(d));
         if (ast.isAST1()) {
           // one permutation
           IExpr ordering = S.Ordering.of(engine, randomVariate);
-          return F.Cycles(F.List(ordering));
+          return F.Cycles(F.list(ordering));
         } else {
           int n = ast.arg2().toIntDefault();
           if (n > 0) {
@@ -408,7 +408,7 @@ public final class RandomFunctions {
             IASTAppendable list = F.ListAlloc(n);
             for (int i = 0; i < n; i++) {
               IExpr ordering = S.Ordering.of(engine, randomVariate);
-              list.append(F.Cycles(F.List(ordering)));
+              list.append(F.Cycles(F.list(ordering)));
             }
             return list;
           }
@@ -437,11 +437,11 @@ public final class RandomFunctions {
         upperLimit = ((IInteger) arg1).toBigNumerator();
         if (upperLimit.compareTo(TWO) < 0) {
           // Positive integer expected.
-          return IOFunctions.printMessage(ast.topHead(), "intp", F.List(), engine);
+          return IOFunctions.printMessage(ast.topHead(), "intp", F.CEmptyList, engine);
         }
         if (upperLimit.compareTo(TWO) < 0) {
           // There are no primes in the specified interval.
-          return IOFunctions.printMessage(ast.topHead(), "noprime", F.List(), engine);
+          return IOFunctions.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
         }
         parametersChecked = true;
       } else if (arg1.isList2() && arg1.first().isInteger() && arg1.second().isInteger()) {
@@ -449,25 +449,25 @@ public final class RandomFunctions {
         upperLimit = ((IInteger) arg1.second()).toBigNumerator();
         if (lowerLimit.compareTo(TWO) < 0) {
           // Positive integer expected.
-          return IOFunctions.printMessage(ast.topHead(), "intp", F.List(), engine);
+          return IOFunctions.printMessage(ast.topHead(), "intp", F.CEmptyList, engine);
         }
         if (upperLimit.compareTo(TWO) < 0) {
           // Positive integer expected.
-          return IOFunctions.printMessage(ast.topHead(), "intp", F.List(), engine);
+          return IOFunctions.printMessage(ast.topHead(), "intp", F.CEmptyList, engine);
         }
         if (upperLimit.compareTo(lowerLimit) < 0) {
           // There are no primes in the specified interval.
-          return IOFunctions.printMessage(ast.topHead(), "noprime", F.List(), engine);
+          return IOFunctions.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
         }
         if (!lowerLimit.isProbablePrime(32)
             && upperLimit.compareTo(lowerLimit.nextProbablePrime()) < 0) {
           // There are no primes in the specified interval.
-          return IOFunctions.printMessage(ast.topHead(), "noprime", F.List(), engine);
+          return IOFunctions.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
         }
         parametersChecked = true;
       } else {
         // Positive integer expected.
-        IOFunctions.printMessage(ast.topHead(), "intp", F.List(), engine);
+        IOFunctions.printMessage(ast.topHead(), "intp", F.CEmptyList, engine);
         return F.NIL;
       }
       if (parametersChecked) {
@@ -487,7 +487,7 @@ public final class RandomFunctions {
         } catch (RuntimeException rex) {
           LOGGER.debug("RandomPrime.evaluate() failed", rex);
           // There are no primes in the specified interval.
-          return IOFunctions.printMessage(ast.topHead(), "noprime", F.List(), engine);
+          return IOFunctions.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
         }
       }
       return F.NIL;

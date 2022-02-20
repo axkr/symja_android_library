@@ -103,7 +103,7 @@ public class GraphDataFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
-          F.List(F.Rule(S.EdgeWeight, S.Automatic)));
+          F.list(F.Rule(S.EdgeWeight, S.Automatic)));
     }
 
     @Override
@@ -120,7 +120,7 @@ public class GraphDataFunctions {
       int order = ast.arg1().toIntDefault();
       if (order <= 0) {
         // Positive machine-sized integer expected at position `2` in `1`
-        return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
       }
       if (order > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(order);
@@ -155,7 +155,7 @@ public class GraphDataFunctions {
       int order = ast.arg1().toIntDefault();
       if (order <= 0) {
         // Positive machine-sized integer expected at position `2` in `1`
-        return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
       }
       if (order > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(order);
@@ -191,7 +191,7 @@ public class GraphDataFunctions {
       int order = ast.arg1().toIntDefault();
       if (order <= 0) {
         // Positive machine-sized integer expected at position `2` in `1`
-        return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
       }
       if (order > Config.MAX_GRAPH_VERTICES_SIZE / 10) {
         ASTElementLimitExceeded.throwIt(order);
@@ -224,7 +224,7 @@ public class GraphDataFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         // The argument `2` in `1` is not valid. 0 or 2 arguments expected.
-        return IOFunctions.printMessage(ast.topHead(), "inv", F.List(ast, ast.arg1()), engine);
+        return IOFunctions.printMessage(ast.topHead(), "inv", F.list(ast, ast.arg1()), engine);
       }
 
       if (ast.isAST0()) {
@@ -241,7 +241,7 @@ public class GraphDataFunctions {
         int order = ast.arg1().toIntDefault();
         if (order <= 0) {
           // Positive machine-sized integer expected at position `2` in `1`
-          return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
+          return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
         }
         if (order > Config.MAX_AST_SIZE / 2) {
           ASTElementLimitExceeded.throwIt(order);
@@ -249,7 +249,7 @@ public class GraphDataFunctions {
         int k = ast.arg2().toIntDefault();
         if (k <= 0 || k > order) {
           // Positive machine-sized integer expected at position `2` in `1`
-          return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C2), engine);
+          return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
         }
         try {
           Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
@@ -281,7 +281,7 @@ public class GraphDataFunctions {
         int vertices = ast.arg1().first().toIntDefault();
         if (vertices <= 0) {
           // Positive machine-sized integer expected at position `2` in `1`
-          return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast.arg1(), F.C1), engine);
+          return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(ast.arg1(), F.C1), engine);
         }
         if (vertices > Config.MAX_GRAPH_VERTICES_SIZE) {
           ASTElementLimitExceeded.throwIt(vertices);
@@ -290,7 +290,7 @@ public class GraphDataFunctions {
         int edges = ast.arg1().second().toIntDefault();
         if (edges <= 0) {
           // Positive machine-sized integer expected at position `2` in `1`
-          return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast.arg1(), F.C2), engine);
+          return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(ast.arg1(), F.C2), engine);
         }
         if (edges > Config.MAX_AST_SIZE) {
           ASTElementLimitExceeded.throwIt(edges);
@@ -301,7 +301,7 @@ public class GraphDataFunctions {
             int k = ast.arg2().toIntDefault();
             if (k <= 0) {
               // Positive machine-sized integer expected at position `2` in `1`
-              return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C2), engine);
+              return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
             }
             if (k > Config.MAX_AST_SIZE) {
               ASTElementLimitExceeded.throwIt(k);
@@ -345,7 +345,7 @@ public class GraphDataFunctions {
       int order = ast.arg1().toIntDefault();
       if (order <= 0) {
         // Positive machine-sized integer expected at position `2` in `1`
-        return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
       }
       if (order > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(order);
@@ -381,7 +381,7 @@ public class GraphDataFunctions {
       int order = ast.arg1().toIntDefault();
       if (order <= 0) {
         // Positive machine-sized integer expected at position `2` in `1`
-        return IOFunctions.printMessage(ast.topHead(), "intpm", F.List(ast, F.C1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
       }
       if (order > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(order);

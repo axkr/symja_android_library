@@ -62,7 +62,7 @@ public class AssumptionFunctions {
         if (ast.arg1().isList()) {
           value = ast.arg1();
         } else {
-          value = F.List(ast.arg1());
+          value = F.list(ast.arg1());
         }
       } else {
         value = oldValue;
@@ -294,7 +294,7 @@ public class AssumptionFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
-      setOptions(newSymbol, F.List(F.Rule(S.Assumptions, S.$Assumptions)));
+      setOptions(newSymbol, F.list(F.Rule(S.Assumptions, S.$Assumptions)));
     }
   }
 

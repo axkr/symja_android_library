@@ -269,7 +269,7 @@ public class TeXParser {
                 return args;
               }
               if (lhs.isFunction() && lhs.size() == 2) {
-                IExpr temp = Lambda.replaceSlots(lhs.first(), F.List(args));
+                IExpr temp = Lambda.replaceSlots(lhs.first(), F.list(args));
                 if (temp.isPresent()) {
                   lhs = temp;
                 }
@@ -586,9 +586,9 @@ public class TeXParser {
           IExpr a1 = toExpr(arg1);
           if (list.getLength() == 3) {
             IExpr a2 = toExpr(list.item(2));
-            arg2 = F.List(dummySymbol, a1, a2);
+            arg2 = F.list(dummySymbol, a1, a2);
           } else if (list.getLength() == 2) {
-            arg2 = F.List(dummySymbol, a1);
+            arg2 = F.list(dummySymbol, a1);
           }
         }
         if (parentList != null) {
@@ -657,9 +657,9 @@ public class TeXParser {
           }
           if (list.getLength() == 3) {
             IExpr a2 = toExpr(list.item(2));
-            arg2 = F.List(sym, a1, a2);
+            arg2 = F.list(sym, a1, a2);
           } else if (list.getLength() == 2) {
-            arg2 = F.List(sym, a1);
+            arg2 = F.list(sym, a1);
           }
         }
 

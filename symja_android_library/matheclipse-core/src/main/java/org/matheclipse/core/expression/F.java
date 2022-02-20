@@ -1641,7 +1641,7 @@ public class F extends S {
    * @return
    */
   public static IAST And(final IExpr expr1, final IExpr expr2, final IExpr expr3) {
-    return new AST3(And, expr1, expr2, expr3);
+    return new B3.And(expr1, expr2, expr3);
   }
 
   public static IAST AngleVector(final IExpr a0) {
@@ -4464,7 +4464,7 @@ public class F extends S {
    * @return
    */
   public static IAST If(final IExpr condition, final IExpr trueExpr, final IExpr falseExpr) {
-    return new AST3(If, condition, trueExpr, falseExpr);
+    return new B3.If(condition, trueExpr, falseExpr);
   }
 
   /**
@@ -5684,13 +5684,14 @@ public class F extends S {
   }
 
   /**
-   * Create an immutable list <code>{ }</code> by converting the expressions into IExpr type.
+   * Create an immutable list <code>{ }</code> by converting the {@link Object}s expression types
+   * into {@link IExpr} types.
    *
    * @param objects the objects which should be converted, before adding them to the list
-   * @return
-   * @see {@link #ListAlloc(final IExpr...)} to create an appendable list
+   * @return a <code>List(...)</code> of expressions
+   * @see {@link Object2Expr#convert(Object, boolean, boolean)} for the conversion rules.
    */
-  public static IAST list(final Object... objects) {
+  public static IAST listOfObjects(final Object... objects) {
     IExpr[] a = new IExpr[objects.length];
     for (int i = 0; i < objects.length; i++) {
       a[i] = Object2Expr.convert(objects[i], true, false);
@@ -5708,7 +5709,7 @@ public class F extends S {
   public static IAST List(final IExpr... a) {
     switch (a.length) {
       case 1:
-        if (a[0] != null) {
+        if (a[0] instanceof IntegerSym) {
           if (a[0].equals(C0)) {
             return CListC0;
           }
@@ -5718,11 +5719,10 @@ public class F extends S {
           if (a[0].equals(C2)) {
             return CListC2;
           }
-          return new B1.List(a[0]);
         }
-        break;
+        return new B1.List(a[0]);
       case 2:
-        if (a[0] != null) {
+        if (a[0] instanceof IntegerSym) {
           if (a[0].equals(C1)) {
             if (a[1].equals(C1)) {
               return CListC1C1;
@@ -5738,11 +5738,10 @@ public class F extends S {
               return CListC2C2;
             }
           }
-          return new B2.List(a[0], a[1]);
         }
-        break;
+        return new B2.List(a[0], a[1]);
       case 3:
-        return new AST3(List, a[0], a[1], a[2]);
+        return new B3.List(a[0], a[1], a[2]);
       default:
         break;
     }
@@ -5778,8 +5777,8 @@ public class F extends S {
    * @param a2
    * @return
    */
-  public static IAST list(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(List, a0, a1, a2);
+  public static IAST list(final IExpr x1, final IExpr x2, final IExpr x3) {
+    return new B3.List(x1, x2, x3);
   }
 
   public static IAST List(final long... numbers) {
@@ -6590,7 +6589,7 @@ public class F extends S {
    * @return
    */
   public static IAST Or(final IExpr expr1, final IExpr expr2, final IExpr expr3) {
-    return new AST3(Or, expr1, expr2, expr3);
+    return new B3.Or(expr1, expr2, expr3);
   }
 
   public static IAST Or(final IExpr... expr) {
@@ -6653,7 +6652,7 @@ public class F extends S {
    * @return
    */
   public static IAST Part(final IExpr expr, final IExpr i, final IExpr j) {
-    return new AST3(Part, expr, i, j);
+    return new B3.Part(expr, i, j);
   }
 
   /**
@@ -6841,7 +6840,10 @@ public class F extends S {
    * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static IAST Plus(final IExpr x, final IExpr y, final IExpr z) {
-    return new AST3(Plus, x, y, z);
+    if (x != null && y != null && z != null) {
+      return plusOrderless(IExpr::isPlus, x, y, z);
+    }
+    return new B3.Plus(x, y, z);
   }
 
   /**
@@ -8497,7 +8499,10 @@ public class F extends S {
    * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
   public static IAST Times(final IExpr x, final IExpr y, final IExpr z) {
-    return new AST3(Times, x, y, z);
+    if (x != null && y != null && z != null) {
+      return timesOrderless(IExpr::isTimes, x, y, z);
+    }
+    return new B3.Times(x, y, z);
   }
 
   private static IASTMutable plusOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2) {
@@ -8527,6 +8532,39 @@ public class F extends S {
     return new B2.Plus(a1, a2);
   }
 
+  private static IASTMutable plusOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
+    final boolean test1 = t.test(a1);
+    final boolean test2 = t.test(a2);
+    final boolean test3 = t.test(a3);
+    if (test1 || test2 || test3) {
+      int size = test1 ? a1.size() : 1;
+      size += test2 ? a2.size() : 1;
+      size += test3 ? a3.size() : 1;
+      IASTAppendable result = ast(Plus, size);
+      if (test1) {
+        result.appendArgs((IAST) a1);
+      } else {
+        result.append(a1);
+      }
+      if (test2) {
+        result.appendArgs((IAST) a2);
+      } else {
+        result.append(a2);
+      }
+      if (test3) {
+        result.appendArgs((IAST) a3);
+      } else {
+        result.append(a3);
+      }
+      EvalAttributes.sort(result);
+      return result;
+    }
+    IASTMutable result = new B3.Plus(a1, a2, a3);
+    EvalAttributes.sort(result);
+    return result;
+  }
+
   private static IASTMutable timesOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2) {
     final boolean test1 = t.test(a1);
     final boolean test2 = t.test(a2);
@@ -8552,6 +8590,39 @@ public class F extends S {
       return new B2.Times(a2, a1);
     }
     return new B2.Times(a1, a2);
+  }
+
+  private static IASTMutable timesOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
+    final boolean test1 = t.test(a1);
+    final boolean test2 = t.test(a2);
+    final boolean test3 = t.test(a3);
+    if (test1 || test2 || test3) {
+      int size = test1 ? a1.size() : 1;
+      size += test2 ? a2.size() : 1;
+      size += test3 ? a3.size() : 1;
+      IASTAppendable result = ast(Times, size);
+      if (test1) {
+        result.appendArgs((IAST) a1);
+      } else {
+        result.append(a1);
+      }
+      if (test2) {
+        result.appendArgs((IAST) a2);
+      } else {
+        result.append(a2);
+      }
+      if (test3) {
+        result.appendArgs((IAST) a3);
+      } else {
+        result.append(a3);
+      }
+      EvalAttributes.sort(result);
+      return result;
+    }
+    IASTMutable result = new B3.Times(a1, a2, a3);
+    EvalAttributes.sort(result);
+    return result;
   }
 
   /**

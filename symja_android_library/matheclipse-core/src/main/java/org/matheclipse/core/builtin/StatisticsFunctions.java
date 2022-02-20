@@ -598,7 +598,7 @@ public class StatisticsFunctions {
     public IExpr median(IAST dist) {
       if (dist.isAST1()) {
         // (p) => Piecewise({{1, p > 1/2}}, 0)
-        return F.Piecewise(F.List(F.List(F.C1, F.Greater(dist.arg1(), F.C1D2))), F.C0);
+        return F.Piecewise(F.list(F.list(F.C1, F.Greater(dist.arg1(), F.C1D2))), F.C0);
       }
       return F.NIL;
     }
@@ -610,7 +610,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ (Piecewise({{0, # < 0}, {1 - p, 0<=#<1 }}, 1)) & $]
             F.Function(
-                F.Piecewise(F.List(F.List(F.C0, F.Less(F.Slot1, F.C0)), F.List(F.Subtract(F.C1, p),
+                F.Piecewise(F.list(F.list(F.C0, F.Less(F.Slot1, F.C0)), F.list(F.Subtract(F.C1, p),
                     F.And(F.LessEqual(F.C0, F.Slot1), F.Less(F.Slot1, F.C1)))), F.C1)); // $$;
         return callFunction(function, k);
       }
@@ -624,7 +624,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ ( ConditionalExpression(Piecewise({{1, # > 1 - p}}, 0), 0 <= # <= 1)& ) $]
             F.Function(F.ConditionalExpression(
-                F.Piecewise(F.List(F.List(F.C1, F.Greater(F.Slot1, F.Subtract(F.C1, p)))), F.C0),
+                F.Piecewise(F.list(F.list(F.C1, F.Greater(F.Slot1, F.Subtract(F.C1, p)))), F.C0),
                 F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       }
@@ -638,8 +638,8 @@ public class StatisticsFunctions {
         //
         IExpr function =
             // [$ Piecewise({{1 - p, # == 0}, {p, # == 1}}, 0) & $]
-            F.Function(F.Piecewise(F.List(F.List(F.Subtract(F.C1, p), F.Equal(F.Slot1, F.C0)),
-                F.List(p, F.Equal(F.Slot1, F.C1))), F.C0)); // $$;
+            F.Function(F.Piecewise(F.list(F.list(F.Subtract(F.C1, p), F.Equal(F.Slot1, F.C0)),
+                F.list(p, F.Equal(F.Slot1, F.C1))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -712,8 +712,8 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ (Piecewise({{BetaRegularized(#, a, b), 0 < # < 1}, {1, # >= 1}}, 0)&) $]
             F.Function(F.Piecewise(
-                F.List(F.List(F.BetaRegularized(F.Slot1, a, b), F.Less(F.C0, F.Slot1, F.C1)),
-                    F.List(F.C1, F.GreaterEqual(F.Slot1, F.C1))),
+                F.list(F.list(F.BetaRegularized(F.Slot1, a, b), F.Less(F.C0, F.Slot1, F.C1)),
+                    F.list(F.C1, F.GreaterEqual(F.Slot1, F.C1))),
                 F.C0)); // $$;
         return callFunction(function, k);
       }
@@ -744,10 +744,10 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(F.InverseBetaRegularized(F.Slot1, a, b),
+                        F.list(
+                            F.list(F.InverseBetaRegularized(F.Slot1, a, b),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
+                            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.C1),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
@@ -835,7 +835,7 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ ( Piecewise({{((1 - #)^(-1 + b)*#^(-1 + a))/Beta(a, b), 0 < #< 1}}, 0)&) $]
-            F.Function(F.Piecewise(F.List(F.List(F.Times(F.Power(F.Beta(a, b), F.CN1),
+            F.Function(F.Piecewise(F.list(F.list(F.Times(F.Power(F.Beta(a, b), F.CN1),
                 F.Power(F.Subtract(F.C1, F.Slot1), F.Plus(F.CN1, b)),
                 F.Power(F.Slot1, F.Plus(F.CN1, a))), F.Less(F.C0, F.Slot1, F.C1))), F.C0)); // $$;
         return callFunction(function, k);
@@ -919,7 +919,7 @@ public class StatisticsFunctions {
           }
           if (dx < 0) {
             // The step size `1` is expected to be positive
-            return IOFunctions.printMessage(ast.topHead(), "step", F.List(list.arg3()), engine);
+            return IOFunctions.printMessage(ast.topHead(), "step", F.list(list.arg3()), engine);
           }
           xMin = list.arg1().toIntDefault();
           if (xMin == Integer.MIN_VALUE) {
@@ -1113,12 +1113,12 @@ public class StatisticsFunctions {
             // [$ (Piecewise({{BetaRegularized(1 - m, n - Floor(#), 1 + Floor(#)), 0<=#<n}, {1, # >=
             // n}},
             // 0)) & $]
-            F.Function(F.Piecewise(F.List(
-                F.List(
+            F.Function(F.Piecewise(F.list(
+                F.list(
                     F.BetaRegularized(F.Subtract(F.C1, m), F.Subtract(n, F.Floor(F.Slot1)),
                         F.Plus(F.C1, F.Floor(F.Slot1))),
                     F.And(F.LessEqual(F.C0, F.Slot1), F.Less(F.Slot1, n))),
-                F.List(F.C1, F.GreaterEqual(F.Slot1, n))), F.C0)); // $$;
+                F.list(F.C1, F.GreaterEqual(F.Slot1, n))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -1138,7 +1138,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{(1 - m)^(-# + n)*m^#*Binomial(n, #), 0 <= # <= n}}, 0) & $]
             F.Function(
-                F.Piecewise(F.List(F.List(
+                F.Piecewise(F.list(F.list(
                     F.Times(F.Power(F.Subtract(F.C1, m), F.Plus(F.Negate(F.Slot1), n)),
                         F.Power(m, F.Slot1), F.Binomial(n, F.Slot1)),
                     F.LessEqual(F.C0, F.Slot1, n))), F.C0)); // $$;
@@ -1282,7 +1282,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{GammaRegularized(v/2, 0, #/2), # > 0}}, 0) & $]
             F.Function(F.Piecewise(F
-                .List(F.List(F.GammaRegularized(F.Times(F.C1D2, v), F.C0, F.Times(F.C1D2, F.Slot1)),
+                .list(F.list(F.GammaRegularized(F.Times(F.C1D2, v), F.C0, F.Times(F.C1D2, F.Slot1)),
                     F.Greater(F.Slot1, F.C0))),
                 F.C0)); // $$;
         return callFunction(function, k);
@@ -1311,12 +1311,12 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(
+                        F.list(
+                            F.list(
                                 F.Times(F.C2,
                                     F.InverseGammaRegularized(F.Times(F.C1D2, v), F.C0, F.Slot1)),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
+                            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
@@ -1340,7 +1340,7 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ Piecewise({{#^(-1 + v/2)/(2^(v/2)*E^(#/2)*Gamma(v/2)), # > 0}}, 0) & $]
-            F.Function(F.Piecewise(F.List(F.List(
+            F.Function(F.Piecewise(F.list(F.list(
                 F.Times(
                     F.Power(F.Times(F.Power(F.C2, F.Times(F.C1D2, v)),
                         F.Exp(F.Times(F.C1D2, F.Slot1)), F.Gamma(F.Times(F.C1D2, v))), F.CN1),
@@ -1539,12 +1539,12 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(
+                        F.list(
+                            F.list(
                                 F.Plus(a,
                                     F.Times(b, F.Tan(F.Times(F.Plus(F.CN1D2, F.Slot1), F.Pi)))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))),
+                            F.list(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
@@ -1658,8 +1658,8 @@ public class StatisticsFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int size = ast.arg1().isVector();
       if (size >= 0) {
-        IAST param = F.List(F.List(F.C1D2, F.C0), //
-            F.List(F.C0, F.C1));
+        IAST param = F.list(F.list(F.C1D2, F.C0), //
+            F.list(F.C0, F.C1));
 
         IExpr list = ast.arg1();
         // if (engine.isDoubleMode()) {
@@ -1713,7 +1713,7 @@ public class StatisticsFunctions {
         return
         // [$ Piecewise({{m/(-2 + m), m > 2}}, Indeterminate) $]
         F.Piecewise(
-            F.List(F.List(F.Times(F.Power(F.Plus(F.CN2, m), F.CN1), m), F.Greater(m, F.C2))),
+            F.list(F.list(F.Times(F.Power(F.Plus(F.CN2, m), F.CN1), m), F.Greater(m, F.C2))),
             F.Indeterminate); // $$;
       }
       return F.NIL;
@@ -1751,7 +1751,7 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ Piecewise({{BetaRegularized((#*n)/(m + #*n), n/2, m/2), # > 0}}, 0) & $]
-            F.Function(F.Piecewise(F.List(F.List(F.BetaRegularized(
+            F.Function(F.Piecewise(F.list(F.list(F.BetaRegularized(
                 F.Times(n, F.Power(F.Plus(m, F.Times(F.Slot1, n)), F.CN1), F.Slot1),
                 F.Times(F.C1D2, n), F.Times(F.C1D2, m)), F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
@@ -1780,14 +1780,14 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(
+                        F.list(
+                            F.list(
                                 F.Times(m, F.Power(n, F.CN1),
                                     F.Plus(F.CN1,
                                         F.Power(F.InverseBetaRegularized(F.C1, F.Negate(F.Slot1),
                                             F.Times(F.C1D2, m), F.Times(F.C1D2, n)), F.CN1))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
+                            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
@@ -1814,7 +1814,7 @@ public class StatisticsFunctions {
             // [$ Piecewise({{(#^(-1 + n/2)*m^(m/2)*n^(n/2)*(m + #*n)^((1/2)*(-m - n)))/Beta(n/2,
             // m/2), # >
             // 0}}, 0) & $]
-            F.Function(F.Piecewise(F.List(F.List(
+            F.Function(F.Piecewise(F.list(F.list(
                 F.Times(F.Power(m, F.Times(F.C1D2, m)), F.Power(n, F.Times(F.C1D2, n)),
                     F.Power(F.Plus(m, F.Times(F.Slot1, n)),
                         F.Times(F.C1D2, F.Subtract(F.Negate(m), n))),
@@ -1833,7 +1833,7 @@ public class StatisticsFunctions {
         IExpr m = dist.arg2();
         return
         // [$ Piecewise({{(2*m^2*(-2 + m + n))/((-4 + m)*(-2 + m)^2*n), m > 4}}, Indeterminate) $]
-        F.Piecewise(F.List(F.List(
+        F.Piecewise(F.list(F.list(
             F.Times(F.C2, F.Sqr(m), F.Plus(F.CN2, m, n),
                 F.Power(F.Times(F.Plus(F.CN4, m), F.Sqr(F.Plus(F.CN2, m)), n), F.CN1)),
             F.Greater(m, F.C4))), F.Indeterminate); // $$;
@@ -1851,7 +1851,7 @@ public class StatisticsFunctions {
         // n)), m > 6}},
         // Indeterminate) $]
         F.Piecewise(
-            F.List(F.List(
+            F.list(F.list(
                 F.Times(F.C2, F.CSqrt2, F.Sqrt(F.Plus(F.CN4, m)),
                     F.Plus(F.CN2, m, F.Times(F.C2, n)), F.Power(
                         F.Times(F.Plus(F.CN6, m), F.Sqrt(n), F.Sqrt(F.Plus(F.CN2, m, n))), F.CN1)),
@@ -1911,8 +1911,8 @@ public class StatisticsFunctions {
         IExpr m = dist.arg2();
         // Piecewise({{m*Gamma(1 - 1/n), 1 < n}}, Infinity)
         return F.Piecewise(
-            F.List(
-                F.List(F.Times(m, F.Gamma(F.Subtract(F.C1, F.Power(n, F.CN1)))), F.Less(F.C1, n))),
+            F.list(
+                F.list(F.Times(m, F.Gamma(F.Subtract(F.C1, F.Power(n, F.CN1)))), F.Less(F.C1, n))),
             F.CInfinity);
       }
       return F.NIL;
@@ -1936,8 +1936,8 @@ public class StatisticsFunctions {
         IExpr m = dist.arg2();
         IExpr function =
             // [$ (Piecewise({{E^(-(#/m)^(-n)), # > 0}}, 0)) & $]
-            F.Function(F.Piecewise(F.List(
-                F.List(F.Exp(F.Negate(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), F.Negate(n)))),
+            F.Function(F.Piecewise(F.list(
+                F.list(F.Exp(F.Negate(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), F.Negate(n)))),
                     F.Greater(F.Slot1, F.C0))),
                 F.C0)); // $$;
         return callFunction(function, k);
@@ -1956,12 +1956,12 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(F.Times(m,
+                        F.list(
+                            F.list(F.Times(m,
                                 F.Power(F.Power(F.Negate(F.Log(F.Slot1)), F.Power(n, F.CN1)),
                                     F.CN1)),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
+                            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
@@ -1979,8 +1979,8 @@ public class StatisticsFunctions {
             // [$ Piecewise({{((#/m)^(-1 - n)*n)/(E^(#/m)^(-n)*m), # > 0}}, 0) & $]
             F.Function(
                 F.Piecewise(
-                    F.List(
-                        F.List(
+                    F.list(
+                        F.list(
                             F.Times(
                                 F.Power(F.Times(
                                     F.Exp(
@@ -2001,7 +2001,7 @@ public class StatisticsFunctions {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         // Piecewise({{m^2*(Gamma(1 - 2/n) - Gamma(1 - 1/n)^2), n > 2}}, Infinity)
-        return F.Piecewise(F.List(F.List(
+        return F.Piecewise(F.list(F.list(
             F.Times(F.Sqr(m),
                 F.Plus(F.Gamma(F.Plus(F.C1, F.Times(F.CN2, F.Power(n, -1)))),
                     F.Negate(F.Sqr(F.Gamma(F.Plus(F.C1, F.Negate(F.Power(n, -1)))))))),
@@ -2020,8 +2020,8 @@ public class StatisticsFunctions {
         // 2*Gamma(1 - 1/n)^3)/(Gamma(1 - 2/n) - Gamma(1 - 1/n)^2)^(3/2), n > 3}},
         // Infinity) $]
         F.Piecewise(
-            F.List(
-                F.List(
+            F.list(
+                F.list(
                     F.Times(
                         F.Plus(
                             F.Gamma(F.Plus(F.C1,
@@ -2090,7 +2090,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ (Piecewise({{GammaRegularized(a, 0, #/b), # > 0}}, 0)&) $]
             F.Function(F.Piecewise(
-                F.List(F.List(F.GammaRegularized(a, F.C0, F.Times(F.Power(b, F.CN1), F.Slot1)),
+                F.list(F.list(F.GammaRegularized(a, F.C0, F.Times(F.Power(b, F.CN1), F.Slot1)),
                     F.Greater(F.Slot1, F.C0))),
                 F.C0)); // $$;
         return callFunction(function, k);
@@ -2102,7 +2102,7 @@ public class StatisticsFunctions {
         IExpr d = dist.arg4();
         IExpr function =
             // [$ (Piecewise({{GammaRegularized(a, 0, ((# - d)/b)^g), # > d}}, 0)&) $]
-            F.Function(F.Piecewise(F.List(F.List(
+            F.Function(F.Piecewise(F.list(F.list(
                 F.GammaRegularized(a, F.C0,
                     F.Power(F.Times(F.Power(b, F.CN1), F.Plus(F.Negate(d), F.Slot1)), g)),
                 F.Greater(F.Slot1, d))), F.C0)); // $$;
@@ -2136,10 +2136,10 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(F.Times(b, F.InverseGammaRegularized(a, F.C0, F.Slot1)),
+                        F.list(
+                            F.list(F.Times(b, F.InverseGammaRegularized(a, F.C0, F.Slot1)),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
+                            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
@@ -2154,13 +2154,13 @@ public class StatisticsFunctions {
             // 0 < # <
             // 1}, {d, # <= 0}}, Infinity), 0 <= # <= 1)& ) $]
             F.Function(F.ConditionalExpression(
-                F.Piecewise(F.List(
-                    F.List(F.Plus(d,
+                F.Piecewise(F.list(
+                    F.list(F.Plus(d,
                         F.Times(b,
                             F.Power(F.InverseGammaRegularized(a, F.C0, F.Slot1),
                                 F.Power(g, F.CN1)))),
                         F.Less(F.C0, F.Slot1, F.C1)),
-                    F.List(d, F.LessEqual(F.Slot1, F.C0))), F.oo),
+                    F.list(d, F.LessEqual(F.Slot1, F.C0))), F.oo),
                 F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       }
@@ -2263,8 +2263,8 @@ public class StatisticsFunctions {
             // [$ ( Piecewise({{#^(-1 + a)/(b^a*E^(#/b)*Gamma(a)), # > 0}}, 0) & ) $]
             F.Function(
                 F.Piecewise(
-                    F.List(
-                        F.List(
+                    F.list(
+                        F.list(
                             F.Times(
                                 F.Power(
                                     F.Times(F.Power(b, a),
@@ -2284,7 +2284,7 @@ public class StatisticsFunctions {
             // [$ ( Piecewise( {{(((# - d)/b)^(-1 + a*g)*g)/(E^((# - d)/b)^g*(b*Gamma(a))), # > d}},
             // 0) & )
             // $]
-            F.Function(F.Piecewise(F.List(F.List(F.Times(g,
+            F.Function(F.Piecewise(F.list(F.list(F.Times(g,
                 F.Power(F.Times(
                     F.Exp(F.Power(F.Times(F.Power(b, F.CN1), F.Plus(F.Negate(d), F.Slot1)), g)), b,
                     F.Gamma(a)), F.CN1),
@@ -2377,7 +2377,7 @@ public class StatisticsFunctions {
         IExpr n = dist.arg1();
         IExpr function =
             // [$ (Piecewise({{1 - (1 - n)^(1 + Floor(#)), # >= 0}}, 0)) & $]
-            F.Function(F.Piecewise(F.List(F.List(
+            F.Function(F.Piecewise(F.list(F.list(
                 F.Subtract(F.C1, F.Power(F.Subtract(F.C1, n), F.Plus(F.C1, F.Floor(F.Slot1)))),
                 F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
@@ -2397,7 +2397,7 @@ public class StatisticsFunctions {
         //
         IExpr function =
             // [$ (Piecewise({{(1 - n)^#*n, # >= 0}}, 0)) & $]
-            F.Function(F.Piecewise(F.List(F.List(F.Times(F.Power(F.Subtract(F.C1, n), F.Slot1), n),
+            F.Function(F.Piecewise(F.list(F.list(F.Times(F.Power(F.Subtract(F.C1, n), F.Slot1), n),
                 F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
@@ -2469,7 +2469,7 @@ public class StatisticsFunctions {
         IExpr n = dist.arg2();
         IExpr function =
             // [$ Piecewise({{1 - E^((1 - E^(#*m))*n), # >= 0}}, 0) & $]
-            F.Function(F.Piecewise(F.List(F.List(
+            F.Function(F.Piecewise(F.list(F.list(
                 F.Subtract(F.C1, F.Exp(F.Times(F.Subtract(F.C1, F.Exp(F.Times(F.Slot1, m))), n))),
                 F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
@@ -2489,14 +2489,14 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(
+                        F.list(
+                            F.list(
                                 F.Times(F.Power(m, F.CN1),
                                     F.Log(F.Plus(F.C1,
                                         F.Times(F.CN1, F.Power(n, F.CN1),
                                             F.Log(F.Subtract(F.C1, F.Slot1)))))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
+                            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
@@ -2511,7 +2511,7 @@ public class StatisticsFunctions {
         IExpr n = dist.arg2();
         IExpr function =
             // [$ Piecewise({{E^(#*m + (1 - E^(#*m))*n)*m*n, # >= 0}}, 0) & $]
-            F.Function(F.Piecewise(F.List(F.List(
+            F.Function(F.Piecewise(F.list(F.list(
                 F.Times(F.Exp(F.Plus(F.Times(F.Slot1, m),
                     F.Times(F.Subtract(F.C1, F.Exp(F.Times(F.Slot1, m))), n))), m, n),
                 F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
@@ -2533,7 +2533,7 @@ public class StatisticsFunctions {
             F.Plus(F.Times(F.CN6, F.Sqr(F.EulerGamma)), F.Negate(F.Sqr(F.Pi)),
                 F.Times(F.C6, F.Exp(n), F.Sqr(F.ExpIntegralEi(F.Negate(n)))),
                 F.Times(F.ZZ(12L), n,
-                    F.HypergeometricPFQ(F.List(F.C1, F.C1, F.C1), F.List(F.C2, F.C2, F.C2),
+                    F.HypergeometricPFQ(F.list(F.C1, F.C1, F.C1), F.list(F.C2, F.C2, F.C2),
                         F.Negate(n))),
                 F.Times(F.ZZ(-12L), F.EulerGamma, F.Log(n)), F.Times(F.CN6, F.Sqr(F.Log(n))))); // $$;
       }
@@ -2698,12 +2698,12 @@ public class StatisticsFunctions {
             // 0}}, Infinity), 0 <= # <= 1)& ) $]
             F.Function(
                 F.ConditionalExpression(
-                    F.Piecewise(F.List(
-                        F.List(
+                    F.Piecewise(F.list(
+                        F.list(
                             F.Plus(n,
                                 F.Times(m, F.Log(F.Negate(F.Log(F.Subtract(F.C1, F.Slot1)))))),
                             F.Less(F.C0, F.Slot1, F.C1)),
-                        F.List(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))), F.oo),
+                        F.list(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))), F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       }
@@ -2896,8 +2896,8 @@ public class StatisticsFunctions {
             // {1, # >= n
             // || # >= ns}}, 0) & $]
             F.Function(F.Piecewise(
-                F.List(
-                    F.List(
+                F.list(
+                    F.list(
                         F.Plus(F.C1, F.Times(F.CN1, F.Factorial(ns),
                             F.Factorial(F.Plus(F.Negate(ns), nt)),
                             F.Power(
@@ -2906,15 +2906,15 @@ public class StatisticsFunctions {
                                     F.Factorial(F.Plus(F.CN1, ns, F.Negate(F.Floor(F.Slot1))))),
                                 F.CN1),
                             F.HypergeometricPFQRegularized(
-                                F.List(F.C1, F.Plus(F.C1, F.Negate(n), F.Floor(F.Slot1)),
+                                F.list(F.C1, F.Plus(F.C1, F.Negate(n), F.Floor(F.Slot1)),
                                     F.Plus(F.C1, F.Negate(ns), F.Floor(F.Slot1))),
-                                F.List(F.Plus(F.C2, F.Floor(F.Slot1)),
+                                F.list(F.Plus(F.C2, F.Floor(F.Slot1)),
                                     F.Plus(F.C2, F.Negate(n), F.Negate(ns), nt, F.Floor(F.Slot1))),
                                 F.C1))),
                         F.And(F.LessEqual(F.C0, F.Slot1),
                             F.LessEqual(F.Plus(n, ns, F.Negate(nt)), F.Slot1), F.Less(F.Slot1, n),
                             F.Less(F.Slot1, ns))),
-                    F.List(F.C1, F.Or(F.GreaterEqual(F.Slot1, n), F.GreaterEqual(F.Slot1, ns)))),
+                    F.list(F.C1, F.Or(F.GreaterEqual(F.Slot1, n), F.GreaterEqual(F.Slot1, ns)))),
                 F.C0)); // $$;
         return callFunction(function, k);
       }
@@ -2936,7 +2936,7 @@ public class StatisticsFunctions {
             // [$ (Piecewise({{(Binomial(ns, #)*Binomial(-ns + nt, -# + n))/Binomial(nt, n), 0 <= #
             // <= n &&
             // n + ns - nt <= # <= n && 0 <= # <= ns && n + ns - nt <= # <= ns}}, 0)) & $]
-            F.Function(F.Piecewise(F.List(F.List(
+            F.Function(F.Piecewise(F.list(F.list(
                 F.Times(F.Binomial(ns, F.Slot1), F.Power(F.Binomial(nt, n), F.CN1),
                     F.Binomial(F.Plus(F.Negate(ns), nt), F.Plus(F.Negate(F.Slot1), n))),
                 F.And(F.LessEqual(F.C0, F.Slot1, n),
@@ -3229,12 +3229,12 @@ public class StatisticsFunctions {
         IExpr b = minMax[1];
         IExpr function =
             // [$ (Piecewise({{(1 - a + Floor(#))/(1 - a + b), a<=#<b}, {1, # >= b}}, 0)) & $]
-            F.Function(F.Piecewise(F.List(
-                F.List(
+            F.Function(F.Piecewise(F.list(
+                F.list(
                     F.Times(F.Power(F.Plus(F.C1, F.Negate(a), b), F.CN1),
                         F.Plus(F.C1, F.Negate(a), F.Floor(F.Slot1))),
                     F.And(F.LessEqual(a, F.Slot1), F.Less(F.Slot1, b))),
-                F.List(F.C1, F.GreaterEqual(F.Slot1, b))), F.C0)); // $$;
+                F.list(F.C1, F.GreaterEqual(F.Slot1, b))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -3253,13 +3253,13 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(
+                        F.list(
+                            F.list(
                                 F.Plus(F.CN1, a,
                                     F.Max(F.C1,
                                         F.Ceiling(F.Times(F.Slot1, F.Plus(F.C1, F.Negate(a), b))))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(a, F.LessEqual(F.Slot1, F.C0))),
+                            F.list(a, F.LessEqual(F.Slot1, F.C0))),
                         b),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
@@ -3275,8 +3275,8 @@ public class StatisticsFunctions {
         IExpr b = minMax[1];
         IExpr function =
             // [$ ( Piecewise({{1/(1 - a + b), a <= # <= b}}, 0) & ) $]
-            F.Function(F.Piecewise(F.List(
-                F.List(F.Power(F.Plus(F.C1, F.Negate(a), b), F.CN1), F.LessEqual(a, F.Slot1, b))),
+            F.Function(F.Piecewise(F.list(
+                F.list(F.Power(F.Plus(F.C1, F.Negate(a), b), F.CN1), F.LessEqual(a, F.Slot1, b))),
                 F.C0)); // $$;
         return callFunction(function, k);
       }
@@ -3370,8 +3370,8 @@ public class StatisticsFunctions {
         IExpr m = dist.arg2();
         IExpr function =
             // [$ (Piecewise({{GammaRegularized(n, 0, #*m), # > 0}}, 0)) & $]
-            F.Function(F.Piecewise(F.List(
-                F.List(F.GammaRegularized(n, F.C0, F.Times(F.Slot1, m)), F.Greater(F.Slot1, F.C0))),
+            F.Function(F.Piecewise(F.list(
+                F.list(F.GammaRegularized(n, F.C0, F.Times(F.Slot1, m)), F.Greater(F.Slot1, F.C0))),
                 F.C0)); // $$;
         return callFunction(function, k);
       }
@@ -3390,12 +3390,12 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(
+                        F.list(
+                            F.list(
                                 F.Times(F.Power(m, F.CN1),
                                     F.InverseGammaRegularized(n, F.C0, F.Slot1)),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
+                            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
@@ -3411,7 +3411,7 @@ public class StatisticsFunctions {
         //
         IExpr function =
             // [$ Piecewise({{(#^(-1 + n)*m^n)/(E^(#*m)*Gamma(n)), # > 0}}, 0) & $]
-            F.Function(F.Piecewise(F.List(F.List(F.Times(F.Power(m, n),
+            F.Function(F.Piecewise(F.list(F.list(F.Times(F.Power(m, n),
                 F.Power(F.Times(F.Exp(F.Times(F.Slot1, m)), F.Gamma(n)), F.CN1),
                 F.Power(F.Slot1, F.Plus(F.CN1, n))), F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
@@ -3542,7 +3542,7 @@ public class StatisticsFunctions {
               IExpr pdf = S.PDF.of(engine, distribution, x);
               if (pdf.isFree(S.Piecewise)) {
                 // TODO improve integration for piecewise functions
-                return F.Integrate(F.Times(ast.arg1(), pdf), F.List(x, F.CNInfinity, F.CInfinity));
+                return F.Integrate(F.Times(ast.arg1(), pdf), F.list(x, F.CNInfinity, F.CInfinity));
               }
             }
           }
@@ -3630,7 +3630,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ (Piecewise({{1 - E^((-#)*n), # >= 0}}, 0)) & $]
             F.Function(
-                F.Piecewise(F.List(F.List(F.Subtract(F.C1, F.Exp(F.Times(F.CN1, F.Slot1, n))),
+                F.Piecewise(F.list(F.list(F.Subtract(F.C1, F.Exp(F.Times(F.CN1, F.Slot1, n))),
                     F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
@@ -3661,7 +3661,7 @@ public class StatisticsFunctions {
             // 1)& )
             // $]
             F.Function(F.ConditionalExpression(F.Piecewise(
-                F.List(F.List(F.Times(F.CN1, F.Power(n, F.CN1), F.Log(F.Subtract(F.C1, F.Slot1))),
+                F.list(F.list(F.Times(F.CN1, F.Power(n, F.CN1), F.Log(F.Subtract(F.C1, F.Slot1))),
                     F.Less(F.Slot1, F.C1))),
                 F.oo), F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
@@ -3677,7 +3677,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{n/E^(#*n), # >= 0}}, 0) & $]
             F.Function(
-                F.Piecewise(F.List(F.List(F.Times(F.Power(F.Exp(F.Times(F.Slot1, n)), F.CN1), n),
+                F.Piecewise(F.list(F.list(F.Times(F.Power(F.Exp(F.Times(F.Slot1, n)), F.CN1), n),
                     F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
@@ -4013,8 +4013,8 @@ public class StatisticsFunctions {
             // [$ Piecewise({{(1/2)*Erfc((n - Log(#))/(Sqrt(2)*m)), # > 0}}, 0) & $]
             F.Function(
                 F.Piecewise(
-                    F.List(
-                        F.List(F.Times(F.C1D2,
+                    F.list(
+                        F.list(F.Times(F.C1D2,
                             F.Erfc(F.Times(F.Power(F.Times(F.CSqrt2, m), F.CN1),
                                 F.Subtract(n, F.Log(F.Slot1))))),
                             F.Greater(F.Slot1, F.C0))),
@@ -4046,13 +4046,13 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(
+                        F.list(
+                            F.list(
                                 F.Exp(F.Plus(n,
                                     F.Times(F.CN1, F.CSqrt2, m,
                                         F.InverseErfc(F.Times(F.C2, F.Slot1))))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
+                            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
@@ -4078,7 +4078,7 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ (Piecewise({{1/(E^((-n + Log(#))^2/(2*m^2))*(#*m*Sqrt(2*Pi))), # > 0}}, 0)) & $]
-            F.Function(F.Piecewise(F.List(F.List(F.Power(
+            F.Function(F.Piecewise(F.list(F.list(F.Power(
                 F.Times(F.Exp(F.Times(F.Power(F.Times(F.C2, F.Sqr(m)), F.CN1),
                     F.Sqr(F.Plus(F.Negate(n), F.Log(F.Slot1))))), F.Slot1, m, F.Sqrt(F.C2Pi)),
                 F.CN1), F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
@@ -4274,7 +4274,7 @@ public class StatisticsFunctions {
 
       if (arg1.isNumber()) {
         // Rectangular array expected at position `1` in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "rectt", F.List(F.C1, ast), engine);
+        return IOFunctions.printMessage(ast.topHead(), "rectt", F.list(F.C1, ast), engine);
       }
       return F.NIL;
     }
@@ -4563,8 +4563,8 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ Piecewise({{GammaRegularized(n, 0, (#^2*n)/m), # > 0}}, 0) & $]
-            F.Function(F.Piecewise(F.List(
-                F.List(F.GammaRegularized(n, F.C0, F.Times(F.Power(m, F.CN1), n, F.Sqr(F.Slot1))),
+            F.Function(F.Piecewise(F.list(
+                F.list(F.GammaRegularized(n, F.C0, F.Times(F.Power(m, F.CN1), n, F.Sqr(F.Slot1))),
                     F.Greater(F.Slot1, F.C0))),
                 F.C0)); // $$;
         return callFunction(function, k);
@@ -4595,12 +4595,12 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(
+                        F.list(
+                            F.list(
                                 F.Sqrt(F.Times(m, F.Power(n, F.CN1),
                                     F.InverseGammaRegularized(n, F.C0, F.Slot1))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
+                            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
@@ -4628,7 +4628,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ (Piecewise({{(2*#^(-1 + 2*n)*(n/m)^n)/(E^((#^2*n)/m)*Gamma(n)), # > 0}}, 0)) & $]
             F.Function(
-                F.Piecewise(F.List(F.List(
+                F.Piecewise(F.list(F.list(
                     F.Times(F.C2, F.Power(F.Times(F.Power(m, F.CN1), n), n),
                         F.Power(F.Times(F.Exp(F.Times(F.Power(m, F.CN1), n, F.Sqr(F.Slot1))),
                             F.Gamma(n)), F.CN1),
@@ -4783,7 +4783,7 @@ public class StatisticsFunctions {
           if (v != Double.MIN_VALUE) {
             // Parameter `1` at position `2` in `3` is expected to be positive.
             return IOFunctions.printMessage(S.NormalDistribution, "posprm",
-                F.List(dist.arg2(), F.C2, dist), EvalEngine.get());
+                F.list(dist.arg2(), F.C2, dist), EvalEngine.get());
           }
           return F.NIL;
         }
@@ -5190,7 +5190,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{(k*a)/(-1 + a), a > 1}}, Indeterminate) $]
             F.Piecewise(
-                F.List(F.List(F.Times(F.Power(F.Plus(F.CN1, a), F.CN1), a, k), F.Greater(a, F.C1))),
+                F.list(F.list(F.Times(F.Power(F.Plus(F.CN1, a), F.CN1), a, k), F.Greater(a, F.C1))),
                 F.Indeterminate); // $$;
         //
         return function;
@@ -5201,7 +5201,7 @@ public class StatisticsFunctions {
         //
         IExpr function =
             // [$ Piecewise({{k/(-1 + a) + m, a > 1}}, Indeterminate) $]
-            F.Piecewise(F.List(F.List(F.Plus(F.Times(F.Power(F.Plus(F.CN1, a), F.CN1), k), m),
+            F.Piecewise(F.list(F.list(F.Plus(F.Times(F.Power(F.Plus(F.CN1, a), F.CN1), k), m),
                 F.Greater(a, F.C1))), F.Indeterminate); // $$;
         //
         return function;
@@ -5214,7 +5214,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{m + (k*Gamma(a - g)*Gamma(1 + g))/Gamma(a), a > g}}, Indeterminate) $]
             F.Piecewise(
-                F.List(F.List(F.Plus(m, F.Times(k, F.Power(F.Gamma(a), F.CN1),
+                F.list(F.list(F.Plus(m, F.Times(k, F.Power(F.Gamma(a), F.CN1),
                     F.Gamma(F.Subtract(a, g)), F.Gamma(F.Plus(F.C1, g)))), F.Greater(a, g))),
                 F.Indeterminate); // $$;
         //
@@ -5267,8 +5267,8 @@ public class StatisticsFunctions {
         //
         IExpr function =
             // [$ Piecewise({{(a*k^2)/((-2 + a)*(-1 + a)^2), a > 2}}, Indeterminate) $]
-            F.Piecewise(F.List(
-                F.List(F.Times(F.Power(F.Times(F.Plus(F.CN2, a), F.Sqr(F.Plus(F.CN1, a))), F.CN1),
+            F.Piecewise(F.list(
+                F.list(F.Times(F.Power(F.Times(F.Plus(F.CN2, a), F.Sqr(F.Plus(F.CN1, a))), F.CN1),
                     a, F.Sqr(k)), F.Greater(a, F.C2))),
                 F.Indeterminate); // $$;
         return function;
@@ -5280,7 +5280,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{(k^2*((-Gamma(a - g)^2)*Gamma(1 + g)^2 + Gamma(a)*Gamma(a - 2*g)*
             // Gamma(1 + 2*g)))/Gamma(a)^2, a > 2*g}}, Indeterminate) $]
-            F.Piecewise(F.List(F.List(F.Times(F.Sqr(k), F.Power(F.Gamma(a), F.CN2), F.Plus(
+            F.Piecewise(F.list(F.list(F.Times(F.Sqr(k), F.Power(F.Gamma(a), F.CN2), F.Plus(
                 F.Times(F.CN1, F.Sqr(F.Gamma(F.Subtract(a, g))), F.Sqr(F.Gamma(F.Plus(F.C1, g)))),
                 F.Times(F.Gamma(a), F.Gamma(F.Plus(a, F.Times(F.CN2, g))),
                     F.Gamma(F.Plus(F.C1, F.Times(F.C2, g)))))),
@@ -5298,7 +5298,7 @@ public class StatisticsFunctions {
         //
         IExpr function =
             // [$ Piecewise({{(2*Sqrt[(-2 + a)/a]*(1 + a))/(-3 + a), a > 3}}, Indeterminate) $]
-            F.Piecewise(F.List(F.List(
+            F.Piecewise(F.list(F.list(
                 F.Times(F.C2, F.Power(F.Plus(F.CN3, a), F.CN1),
                     F.Sqrt(F.Times(F.Power(a, F.CN1), F.Plus(F.CN2, a))), F.Plus(F.C1, a)),
                 F.Greater(a, F.C3))), F.Indeterminate); // $$;
@@ -5315,7 +5315,7 @@ public class StatisticsFunctions {
             // 3*g)))/(k^2*((-Gamma(a - g)^2)*Gamma(1 + g)^2+Gamma(a)*Gamma(a - 2*g)*Gamma(1 +
             // 2*g)))^(3/2), a > 3*g}}, Indeterminate) $]
             F.Piecewise(
-                F.List(F.List(
+                F.list(F.list(
                     F.Times(
                         F.Power(k, F.C3), F
                             .Power(
@@ -5352,7 +5352,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{1-(k/#)^a, #>=k}}, 0) & $]
             F.Function(F.Piecewise(
-                F.List(F.List(F.Subtract(F.C1, F.Power(F.Times(k, F.Power(F.Slot1, F.CN1)), a)),
+                F.list(F.list(F.Subtract(F.C1, F.Power(F.Times(k, F.Power(F.Slot1, F.CN1)), a)),
                     F.GreaterEqual(F.Slot1, k))),
                 F.C0)); // $$;
         return callFunction(function, x);
@@ -5363,7 +5363,7 @@ public class StatisticsFunctions {
         IExpr m = dist.arg3();
         IExpr function =
             // [$ Piecewise({{1-(1+(-m+#)/k)^(-a),#>=m}},0) & $]
-            F.Function(F.Piecewise(F.List(F.List(F.Subtract(F.C1,
+            F.Function(F.Piecewise(F.list(F.list(F.Subtract(F.C1,
                 F.Power(F.Plus(F.C1, F.Times(F.Power(k, F.CN1), F.Plus(F.Negate(m), F.Slot1))),
                     F.Negate(a))),
                 F.GreaterEqual(F.Slot1, m))), F.C0)); // $$;
@@ -5378,8 +5378,8 @@ public class StatisticsFunctions {
             // [$ Piecewise({{1-(1+((-m+#)/k)^(1/g))^(-a), #>=m}}, 0) & $]
             F.Function(
                 F.Piecewise(
-                    F.List(
-                        F.List(
+                    F.list(
+                        F.list(
                             F.Subtract(F.C1,
                                 F.Power(
                                     F.Plus(F.C1,
@@ -5402,7 +5402,7 @@ public class StatisticsFunctions {
 
         IExpr function =
             // [$ ConditionalExpression(Piecewise({{k/(1-#)^a^(-1), #<1}}, Infinity), 0 <=#<=1) & $]
-            F.Function(F.ConditionalExpression(F.Piecewise(F.List(F.List(
+            F.Function(F.ConditionalExpression(F.Piecewise(F.list(F.list(
                 F.Times(k, F.Power(F.Power(F.Subtract(F.C1, F.Slot1), F.Power(a, F.CN1)), F.CN1)),
                 F.Less(F.Slot1, F.C1))), F.oo), F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, x);
@@ -5417,15 +5417,15 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(
+                        F.list(
+                            F.list(
                                 F.Plus(m,
                                     F.Times(k,
                                         F.Plus(F.CN1,
                                             F.Power(F.Subtract(F.C1, F.Slot1),
                                                 F.Negate(F.Power(a, F.CN1)))))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(m, F.LessEqual(F.Slot1, F.C0))),
+                            F.list(m, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, x);
@@ -5441,8 +5441,8 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(
+                        F.list(
+                            F.list(
                                 F.Plus(m,
                                     F.Times(k,
                                         F.Power(F.Plus(F.CN1,
@@ -5450,7 +5450,7 @@ public class StatisticsFunctions {
                                                 F.Negate(F.Power(a, F.CN1)))),
                                             g))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(m, F.LessEqual(F.Slot1, F.C0))),
+                            F.list(m, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, x);
@@ -5468,7 +5468,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{a*k^a*#^(-1 - a), # >= k}}, 0) & $]
             F.Function(F.Piecewise(
-                F.List(F.List(F.Times(a, F.Power(k, a), F.Power(F.Slot1, F.Subtract(F.CN1, a))),
+                F.list(F.list(F.Times(a, F.Power(k, a), F.Power(F.Slot1, F.Subtract(F.CN1, a))),
                     F.GreaterEqual(F.Slot1, k))),
                 F.C0)); // $$;
         return callFunction(function, x);
@@ -5479,7 +5479,7 @@ public class StatisticsFunctions {
         IExpr m = dist.arg3();
         IExpr function =
             // [$ Piecewise({{(a*((k-m+#)/k)^(-1-a))/k, #>=m}}, 0) & $]
-            F.Function(F.Piecewise(F.List(F.List(F.Times(a, F.Power(k, F.CN1), F.Power(
+            F.Function(F.Piecewise(F.list(F.list(F.Times(a, F.Power(k, F.CN1), F.Power(
                 F.Times(F.Power(k, F.CN1), F.Plus(k, F.Negate(m), F.Slot1)), F.Subtract(F.CN1, a))),
                 F.GreaterEqual(F.Slot1, m))), F.C0)); // $$;
         return callFunction(function, x);
@@ -5494,8 +5494,8 @@ public class StatisticsFunctions {
             // #>=m}}, 0) & $]
             F.Function(
                 F.Piecewise(
-                    F.List(
-                        F.List(
+                    F.list(
+                        F.list(
                             F.Times(
                                 a, F.Power(F.Times(F.Power(k, F.Power(g, F.CN1)),
                                     g), F.CN1),
@@ -5587,7 +5587,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{GammaRegularized(1 + Floor(#), p), # >= 0}}, 0) & $]
             F.Function(
-                F.Piecewise(F.List(F.List(F.GammaRegularized(F.Plus(F.C1, F.Floor(F.Slot1)), p),
+                F.Piecewise(F.list(F.list(F.GammaRegularized(F.Plus(F.C1, F.Floor(F.Slot1)), p),
                     F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
       }
@@ -5606,7 +5606,7 @@ public class StatisticsFunctions {
         //
         IExpr function =
             // [$ Piecewise({{p^#/(E ^ p * #!), # >= 0}}, 0) & $]
-            F.Function(F.Piecewise(F.List(F.List(
+            F.Function(F.Piecewise(F.list(F.list(
                 F.Times(F.Power(p, F.Slot1),
                     F.Power(F.Times(F.Exp(p), F.Factorial(F.Slot1)), F.CN1)),
                 F.GreaterEqual(F.Slot1, F.C0))), F.C0)); // $$;
@@ -5738,7 +5738,7 @@ public class StatisticsFunctions {
           try {
             if (dim1 == 0) {
               // Argument `1` should be a non-empty list.
-              return IOFunctions.printMessage(ast.topHead(), "empt", F.List(list), engine);
+              return IOFunctions.printMessage(ast.topHead(), "empt", F.list(list), engine);
             }
             if (dim1 > 0 && ast.size() >= 3) {
 
@@ -5757,7 +5757,7 @@ public class StatisticsFunctions {
                 if (q.isReal()) {
                   ISignedNumber qi = (ISignedNumber) q;
                   if (!qi.isRange(F.C0, F.C1)) {
-                    return IOFunctions.printMessage(ast.topHead(), "nquan", F.List(qi, F.C0, F.C1),
+                    return IOFunctions.printMessage(ast.topHead(), "nquan", F.list(qi, F.C0, F.C1),
                         engine);
                   }
                   // x = a + (length + b) * q
@@ -5841,9 +5841,9 @@ public class StatisticsFunctions {
 
   private static class Quartiles extends AbstractFunctionEvaluator {
 
-    private static final IAST Q = F.List(F.C1D4, F.C1D2, F.C3D4);
+    private static final IAST Q = F.list(F.C1D4, F.C1D2, F.C3D4);
 
-    private static final IAST PARAMETER = F.List(F.List(F.C1D2, F.C0), F.List(F.C0, F.C1));
+    private static final IAST PARAMETER = F.list(F.list(F.C1D2, F.C0), F.list(F.C0, F.C1));
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -5945,7 +5945,7 @@ public class StatisticsFunctions {
         EvalEngine engine) {
       // The specification `1` is not a random distribution recognized by the system.
       if (head.getSymbolName().toLowerCase().endsWith("distribution")) {
-        return IOFunctions.printMessage(ast.topHead(), "udist", F.List(dist), engine);
+        return IOFunctions.printMessage(ast.topHead(), "udist", F.list(dist), engine);
       }
       return F.NIL;
     }
@@ -6280,11 +6280,11 @@ public class StatisticsFunctions {
     public IExpr mean(IAST dist) {
       if (dist.isAST1()) {
         // (v) -> Piecewise({{0, v > 1}}, Indeterminate)
-        return F.Piecewise(F.List(F.List(F.C0, F.Greater(dist.arg1(), F.C1))), S.Indeterminate);
+        return F.Piecewise(F.list(F.list(F.C0, F.Greater(dist.arg1(), F.C1))), S.Indeterminate);
       }
       if (dist.isAST3()) {
         // (m,s,v) -> Piecewise({{m, v > 1}}, Indeterminate)
-        return F.Piecewise(F.List(F.List(dist.arg1(), F.Greater(dist.arg3(), F.C1))),
+        return F.Piecewise(F.list(F.list(dist.arg1(), F.Greater(dist.arg3(), F.C1))),
             S.Indeterminate);
       }
       return F.NIL;
@@ -6322,7 +6322,7 @@ public class StatisticsFunctions {
             // [$ Piecewise({{(1/2)*BetaRegularized(n/(#^2 + n), n/2, 1/2), # <= 0}}, (1/2)*(1 +
             // BetaRegularized(#^2/(#^2 + n), 1/2, n/2))) & $]
             F.Function(F.Piecewise(
-                F.List(F.List(F.Times(F.C1D2,
+                F.list(F.list(F.Times(F.C1D2,
                     F.BetaRegularized(F.Times(n, F.Power(F.Plus(F.Sqr(F.Slot1), n), F.CN1)),
                         F.Times(F.C1D2, n), F.C1D2)),
                     F.LessEqual(F.Slot1, F.C0))),
@@ -6358,7 +6358,7 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(F.List(
-                        F.List(
+                        F.list(
                             F.Times(F.CN1, F.Sqrt(n),
                                 F.Sqrt(
                                     F.Plus(F.CN1,
@@ -6367,15 +6367,15 @@ public class StatisticsFunctions {
                                                 F.Times(F.C1D2, n), F.C1D2),
                                             F.CN1)))),
                             F.Less(F.C0, F.Slot1, F.C1D2)),
-                        F.List(F.C0, F.Equal(F.Slot1, F.C1D2)),
-                        F.List(
+                        F.list(F.C0, F.Equal(F.Slot1, F.C1D2)),
+                        F.list(
                             F.Times(F.Sqrt(n),
                                 F.Sqrt(F.Plus(F.CN1,
                                     F.Power(F.InverseBetaRegularized(
                                         F.Times(F.C2, F.Subtract(F.C1, F.Slot1)),
                                         F.Times(F.C1D2, n), F.C1D2), F.CN1)))),
                             F.Less(F.C1D2, F.Slot1, F.C1)),
-                        F.List(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))), F.oo),
+                        F.list(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))), F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       }
@@ -6411,7 +6411,7 @@ public class StatisticsFunctions {
     public IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
-        return F.Piecewise(F.List(F.List(F.Divide(n, F.Plus(F.CN2, n)), F.Greater(n, F.C2))),
+        return F.Piecewise(F.list(F.list(F.Divide(n, F.Plus(F.CN2, n)), F.Greater(n, F.C2))),
             S.Indeterminate);
       }
       return F.NIL;
@@ -6422,7 +6422,7 @@ public class StatisticsFunctions {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         // Piecewise({{0, n > 3}}, Indeterminate)
-        return F.Piecewise(F.List(F.List(F.C0, F.Greater(n, F.C3))), S.Indeterminate);
+        return F.Piecewise(F.list(F.list(F.C0, F.Greater(n, F.C3))), S.Indeterminate);
       }
       return F.NIL;
     }
@@ -6495,7 +6495,7 @@ public class StatisticsFunctions {
                   // numbers with length greater than the dimension of the array or two such arrays
                   // with
                   // of equal dimension.
-                  return IOFunctions.printMessage(ast.topHead(), "rctndm1", F.List(arg1, F.C1),
+                  return IOFunctions.printMessage(ast.topHead(), "rctndm1", F.list(arg1, F.C1),
                       engine);
                 }
                 org.hipparchus.stat.inference.TTest tTest =
@@ -6516,7 +6516,7 @@ public class StatisticsFunctions {
             // The argument `1` at position `2` should be a rectangular array of real
             // numbers with length greater than the dimension of the array or two such arrays with
             // of equal dimension.
-            return IOFunctions.printMessage(ast.topHead(), "rctndm1", F.List(arg1, F.C1), engine);
+            return IOFunctions.printMessage(ast.topHead(), "rctndm1", F.list(arg1, F.C1), engine);
           }
 
           org.hipparchus.stat.inference.TTest tTest = new org.hipparchus.stat.inference.TTest();
@@ -6671,10 +6671,10 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{(# - a)/(b - a), a <= # <= b}, {1, # > b}}, 0) & $]
             F.Function(
-                F.Piecewise(F.List(
-                    F.List(F.Times(F.Power(F.Plus(F.Negate(a), b), F.CN1),
+                F.Piecewise(F.list(
+                    F.list(F.Times(F.Power(F.Plus(F.Negate(a), b), F.CN1),
                         F.Plus(F.Negate(a), F.Slot1)), F.LessEqual(a, F.Slot1, b)),
-                    F.List(F.C1, F.Greater(F.Slot1, b))), F.C0)); // $$;
+                    F.list(F.C1, F.Greater(F.Slot1, b))), F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -6702,10 +6702,10 @@ public class StatisticsFunctions {
             // <= 1)& ) $]
             F.Function(
                 F.ConditionalExpression(F.Piecewise(
-                    F.List(
-                        F.List(F.Plus(F.Times(F.Subtract(F.C1, F.Slot1), a), F.Times(F.Slot1, b)),
+                    F.list(
+                        F.list(F.Plus(F.Times(F.Subtract(F.C1, F.Slot1), a), F.Times(F.Slot1, b)),
                             F.Less(F.C0, F.Slot1, F.C1)),
-                        F.List(a, F.LessEqual(F.Slot1, F.C0))),
+                        F.list(a, F.LessEqual(F.Slot1, F.C0))),
                     b), F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       }
@@ -6721,7 +6721,7 @@ public class StatisticsFunctions {
         IExpr function =
             // [$ Piecewise({{1/(b - a), a <= # <= b}}, 0)& $]
             F.Function(F.Piecewise(
-                F.List(F.List(F.Power(F.Plus(F.Negate(a), b), F.CN1), F.LessEqual(a, F.Slot1, b))),
+                F.list(F.list(F.Power(F.Plus(F.Negate(a), b), F.CN1), F.LessEqual(a, F.Slot1, b))),
                 F.C0)); // $$;
         return callFunction(function, k);
       }
@@ -6974,7 +6974,7 @@ public class StatisticsFunctions {
         }
         IExpr function =
             // [$ Piecewise({{1 - E^(-(#/m)^n),# > 0}}, 0) & $]
-            F.Function(F.Piecewise(F.List(F.List(
+            F.Function(F.Piecewise(F.list(F.list(
                 F.Subtract(F.C1, F.Exp(F.Negate(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), n)))),
                 F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
@@ -7005,12 +7005,12 @@ public class StatisticsFunctions {
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(
-                        F.List(
-                            F.List(F.Times(m,
+                        F.list(
+                            F.list(F.Times(m,
                                 F.Power(F.Negate(F.Log(F.Subtract(F.C1, F.Slot1))),
                                     F.Power(n, F.CN1))),
                                 F.Less(F.C0, F.Slot1, F.C1)),
-                            F.List(F.C0, F.LessEqual(F.Slot1, F.C0))),
+                            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
@@ -7039,8 +7039,8 @@ public class StatisticsFunctions {
             // [$ Piecewise({{((#/m)^(-1 + n)*n)/(E^(#/m)^n*m), # > 0}}, 0) & $]
             F.Function(
                 F.Piecewise(
-                    F.List(
-                        F.List(
+                    F.list(
+                        F.list(
                             F.Times(
                                 F.Power(
                                     F.Times(F.Exp(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), n)),

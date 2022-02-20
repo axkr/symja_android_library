@@ -106,7 +106,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 
     if (!list.arg1().isSymbol()) {
       // `1` is not a valid variable.
-      String str = IOFunctions.getMessage("ivar", F.List(list.arg1()), EvalEngine.get());
+      String str = IOFunctions.getMessage("ivar", F.list(list.arg1()), EvalEngine.get());
       throw new ArgumentTypeException(str);
     }
     ISymbol xVar = (ISymbol) list.arg1();
@@ -205,7 +205,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
           } catch (MathIllegalArgumentException | MathIllegalStateException miae) {
             // `1`.
             return IOFunctions.printMessage(ast.topHead(), "error",
-                F.List(F.$str(miae.getMessage())), engine);
+                F.list(F.$str(miae.getMessage())), engine);
           } catch (MathRuntimeException mre) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
           } catch (Exception e) {

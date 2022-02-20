@@ -52,7 +52,7 @@ public class ListPointPlot3D extends AbstractEvaluator {
               IAST rowList = (IAST) heightValueMatrix.get(i);
               for (int j = 1; j < rowList.size(); j++) {
                 pointList.append(//
-                    F.List(F.ZZ(i), F.ZZ(j), rowList.get(j)));
+                    F.list(F.ZZ(i), F.ZZ(j), rowList.get(j)));
               }
             }
             IASTAppendable result = F.Graphics3D(F.Point(pointList));

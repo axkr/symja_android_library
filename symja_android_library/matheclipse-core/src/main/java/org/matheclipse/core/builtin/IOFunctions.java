@@ -755,16 +755,16 @@ public class IOFunctions {
     int argSize = ast.argSize();
     if (expected[0] == expected[1]) {
       if (expected[0] == 1) {
-        return printMessage(topHead, "argx", F.List(head, F.ZZ(argSize), F.ZZ(expected[0])),
+        return printMessage(topHead, "argx", F.list(head, F.ZZ(argSize), F.ZZ(expected[0])),
             engine);
       }
       if (argSize == 1) {
-        return printMessage(topHead, "argr", F.List(head, F.ZZ(expected[0])), engine);
+        return printMessage(topHead, "argr", F.list(head, F.ZZ(expected[0])), engine);
       }
-      return printMessage(topHead, "argrx", F.List(head, F.ZZ(argSize), F.ZZ(expected[0])), engine);
+      return printMessage(topHead, "argrx", F.list(head, F.ZZ(argSize), F.ZZ(expected[0])), engine);
     }
     if (expected[1] == Integer.MAX_VALUE) {
-      return printMessage(topHead, "argm", F.List(head, F.ZZ(argSize), F.ZZ(expected[0])), engine);
+      return printMessage(topHead, "argm", F.list(head, F.ZZ(argSize), F.ZZ(expected[0])), engine);
     }
     return printMessage(topHead, "argt",
         F.List(head, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);
@@ -813,7 +813,7 @@ public class IOFunctions {
   public static IAST printExperimental(IBuiltInSymbol symbol) {
     EvalEngine engine = EvalEngine.get();
     if (!engine.containsExperimental(symbol)) {
-      printMessage(symbol, "experimental", F.List(symbol), EvalEngine.get());
+      printMessage(symbol, "experimental", F.list(symbol), EvalEngine.get());
       engine.incExperimentalCounter(symbol);
     }
     return F.NIL;
@@ -836,7 +836,7 @@ public class IOFunctions {
    *
    * <pre>
    *    // corresponding long text of "&lt;message-shortcut&gt;" stored in the MESSAGES array
-   *    printMessage(S.&lt;builtin-symbol&gt;, "&lt;message-shortcut&gt;", F.List(&lt;param1&gt;, &lt;param2&gt;, ...), engine);
+   *    printMessage(S.&lt;builtin-symbol&gt;, "&lt;message-shortcut&gt;", F.list(&lt;param1&gt;, &lt;param2&gt;, ...), engine);
    * </pre>
    *
    * @param symbol
@@ -1165,7 +1165,7 @@ public class IOFunctions {
   public static IAST getNamesByPrefix(String name) {
 
     if (name.length() == 0) {
-      return F.List();
+      return F.CEmptyList;
     }
     boolean exact = true;
     if (name.charAt(name.length() - 1) == '*') {
@@ -1197,7 +1197,7 @@ public class IOFunctions {
       }
       return list;
     }
-    return F.List();
+    return F.CEmptyList;
   }
 
   public static List<String> getAutoCompletionList(String namePrefix) {

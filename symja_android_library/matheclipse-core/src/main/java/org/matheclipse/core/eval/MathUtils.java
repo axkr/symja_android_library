@@ -97,7 +97,7 @@ public class MathUtils {
 
     IExpr function = parse(fun, null);
     IExpr var = parse(v, null);
-    IAST list = F.List(var, F.num(a), F.num(b));
+    IAST list = F.list(var, F.num(a), F.num(b));
     return NIntegrate.integrate("LegendreGauss", list, a, b, function,
         NIntegrate.DEFAULT_MAX_POINTS, NIntegrate.DEFAULT_MAX_ITERATIONS);
   }
@@ -475,7 +475,7 @@ public class MathUtils {
     if (sym instanceof ISymbol) {
       IExpr center = parse(cen, null);
       if (center != null) {
-        return evaluateReaplaceAll(fun, F.Taylor(F.Slot1, F.List(sym, center, F.ZZ(iter))));
+        return evaluateReaplaceAll(fun, F.Taylor(F.Slot1, F.list(sym, center, F.ZZ(iter))));
       }
     }
     return "error in MathUtils#getPowerSeries()";

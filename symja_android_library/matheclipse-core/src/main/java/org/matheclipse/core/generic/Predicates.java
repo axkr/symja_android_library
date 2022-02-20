@@ -169,7 +169,7 @@ public class Predicates {
    * @return a <code>java.util.function.Predicate</code> predicate of one argument.
    */
   public static Predicate<IExpr> in(IExpr expr) {
-    return new InASTPredicate(F.List(expr));
+    return new InASTPredicate(F.list(expr));
   }
 
   /**

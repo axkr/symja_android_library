@@ -95,8 +95,8 @@ public class EllipticIntegrals {
           // 1 / Sqrt(x)
           return F.Power.of(engine, x, F.CN1D2);
         }
-        return F.Piecewise(F.List(
-            F.List(F.CComplexInfinity, F.And(F.LessEqual(F.Re(x), F.C0), F.Equal(F.Im(x), F.C0)))),
+        return F.Piecewise(F.list(
+            F.list(F.CComplexInfinity, F.And(F.LessEqual(F.Re(x), F.C0), F.Equal(F.Im(x), F.C0)))),
             F.Power(x, F.CN1D2));
       }
       if (y.isZero()) {

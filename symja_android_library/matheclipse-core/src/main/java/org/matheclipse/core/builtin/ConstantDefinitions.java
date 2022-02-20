@@ -204,7 +204,8 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      return F.List(F.ZZ(YEAR), F.ZZ(MONTH), F.ZZ(DAY), F.ZZ(HOUR), F.ZZ(MINUTE), F.ZZ(SECOND));
+      return F.listOfObjects(F.ZZ(YEAR), F.ZZ(MONTH), F.ZZ(DAY), F.ZZ(HOUR), F.ZZ(MINUTE),
+          F.ZZ(SECOND));
     }
   }
 
@@ -234,7 +235,7 @@ public class ConstantDefinitions {
         } else {
           // Positive machine-sized integer expected at position `2` in `1`.
           return IOFunctions.printMessage(S.$HistoryLength, "intpm",
-              F.List(F.C2, F.Set(S.$HistoryLength, rightHandSide)), engine);
+              F.list(F.C2, F.Set(S.$HistoryLength, rightHandSide)), engine);
         }
       } else if (iValue < Short.MAX_VALUE) {
         historyLength = (short) iValue;
@@ -308,7 +309,7 @@ public class ConstantDefinitions {
       int iterationLimit = rightHandSide.toIntDefault();
       if (iterationLimit < 20) {
         // Cannot set $IterationLimit to `1`; value must be Infinity or an integer at least 20.
-        return IOFunctions.printMessage(S.$IterationLimit, "limset", F.List(rightHandSide), engine);
+        return IOFunctions.printMessage(S.$IterationLimit, "limset", F.list(rightHandSide), engine);
       }
       S.$IterationLimit.assignValue(F.ZZ(iterationLimit), setDelayed);
       engine.setIterationLimit(iterationLimit);
@@ -464,7 +465,7 @@ public class ConstantDefinitions {
       int recursionLimit = rightHandSide.toIntDefault();
       if (recursionLimit < 20) {
         // Cannot set $RecursionLimit to `1`; value must be Infinity or an integer at least 20.
-        return IOFunctions.printMessage(S.$RecursionLimit, "limset", F.List(rightHandSide), engine);
+        return IOFunctions.printMessage(S.$RecursionLimit, "limset", F.list(rightHandSide), engine);
       }
       S.$RecursionLimit.assignValue(F.ZZ(recursionLimit), setDelayed);
       engine.setRecursionLimit(recursionLimit);
@@ -577,7 +578,7 @@ public class ConstantDefinitions {
     @Override
     public void setUp(ISymbol newSymbol) {
       super.setUp(newSymbol);
-      S.RecordSeparators.assignValue(F.List(F.stringx("\n"), F.stringx("\r\n"), F.stringx("\r")),
+      S.RecordSeparators.assignValue(F.list(F.stringx("\n"), F.stringx("\r\n"), F.stringx("\r")),
           false);
     }
   }
@@ -603,7 +604,7 @@ public class ConstantDefinitions {
     @Override
     public void setUp(ISymbol newSymbol) {
       super.setUp(newSymbol);
-      S.WordSeparators.assignValue(F.List(F.stringx(" "), F.stringx("\t")), false);
+      S.WordSeparators.assignValue(F.list(F.stringx(" "), F.stringx("\t")), false);
     }
   }
 
@@ -652,7 +653,7 @@ public class ConstantDefinitions {
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // `1` currently not supported in `2`.
       return IOFunctions.printMessage(S.Catalan, "unsupported",
-          F.List(S.Catalan, F.$str("Apfloat")), engine);
+          F.list(S.Catalan, F.$str("Apfloat")), engine);
     }
 
     @Override
@@ -894,7 +895,7 @@ public class ConstantDefinitions {
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // `1` currently not supported in `2`.
       return IOFunctions.printMessage(S.Glaisher, "unsupported",
-          F.List(S.Glaisher, F.$str("Apfloat")), engine);
+          F.list(S.Glaisher, F.$str("Apfloat")), engine);
     }
 
     @Override
@@ -1188,7 +1189,7 @@ public class ConstantDefinitions {
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // `1` currently not supported in `2`.
       return IOFunctions.printMessage(S.Khinchin, "unsupported",
-          F.List(S.Khinchin, F.$str("Apfloat")), engine);
+          F.list(S.Khinchin, F.$str("Apfloat")), engine);
     }
   }
 

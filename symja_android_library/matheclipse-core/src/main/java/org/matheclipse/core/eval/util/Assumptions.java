@@ -183,7 +183,7 @@ public class Assumptions extends AbstractAssumptions {
           return true;
         } else {
           // The list `1` of dimensions must have length `2`.
-          IOFunctions.printMessage(S.Arrays, "rankl", F.List(arrays.arg1(), F.C2),
+          IOFunctions.printMessage(S.Arrays, "rankl", F.list(arrays.arg1(), F.C2),
               EvalEngine.get());
         }
       } else if (element.arg2().isAST(S.Matrices, 2, 4)) {
@@ -202,7 +202,7 @@ public class Assumptions extends AbstractAssumptions {
           return true;
         } else {
           // The list `1` of dimensions must have length `2`.
-          IOFunctions.printMessage(S.Matrices, "rankl", F.List(matrices.arg1(), F.C2),
+          IOFunctions.printMessage(S.Matrices, "rankl", F.list(matrices.arg1(), F.C2),
               EvalEngine.get());
         }
       } else if (element.arg2().isAST(S.Vectors, 2, 3)) {
@@ -221,7 +221,7 @@ public class Assumptions extends AbstractAssumptions {
           return true;
         } else {
           // The list `1` of dimensions must have length `2`.
-          IOFunctions.printMessage(S.Vectors, "rankl", F.List(vectors.arg1(), F.C2),
+          IOFunctions.printMessage(S.Vectors, "rankl", F.list(vectors.arg1(), F.C2),
               EvalEngine.get());
         }
       }

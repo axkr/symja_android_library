@@ -33,13 +33,13 @@ public class MultiVariateVectorGradient implements MultivariateVectorFunction {
     } else {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
-          IOFunctions.getMessage("setraw", F.List(gradientList), EvalEngine.get()));
+          IOFunctions.getMessage("setraw", F.list(gradientList), EvalEngine.get()));
     }
     variablesList.exists(x -> {
       if (!x.isVariable() || x.isBuiltInSymbol()) {
         // Cannot assign to raw object `1`.
         throw new ArgumentTypeException(
-            IOFunctions.getMessage("setraw", F.List(x), EvalEngine.get()));
+            IOFunctions.getMessage("setraw", F.list(x), EvalEngine.get()));
       }
       return false;
     });

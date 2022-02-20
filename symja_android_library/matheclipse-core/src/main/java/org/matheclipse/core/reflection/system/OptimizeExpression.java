@@ -187,10 +187,10 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
       }
       sharedExpr = sharedExpr.replaceRepeated(variableSubstitutions);
       if (sharedExpr.isPresent()) {
-        return F.List(sharedExpr, replaceList);
+        return F.list(sharedExpr, replaceList);
       }
     }
-    return F.List(ast);
+    return F.list(ast);
   }
 
   public static IAST cseArray(final IAST ast, int minReferences, int minLeafCounter) {

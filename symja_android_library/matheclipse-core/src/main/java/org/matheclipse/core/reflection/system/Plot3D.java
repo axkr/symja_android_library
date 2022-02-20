@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
 import static org.matheclipse.core.expression.F.SurfaceGraphics;
@@ -91,7 +90,7 @@ public class Plot3D extends AbstractEvaluator {
           // options.add(Rule(optionsArray[i], allOptions.get(i)));
           // }
           options.append(Rule(S.PlotRange, S.Automatic));
-          options.append(Rule(S.MeshRange, List(List(xMin, xMax), List(yMin, yMax))));
+          options.append(Rule(S.MeshRange, F.list(F.list(xMin, xMax), F.List(yMin, yMax))));
 
           graphics.appendAll(options, 1, options.size());
           return Show(graphics);

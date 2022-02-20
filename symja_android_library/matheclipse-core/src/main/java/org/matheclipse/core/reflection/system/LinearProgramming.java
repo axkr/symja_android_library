@@ -156,7 +156,7 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
       }
     } catch (MathIllegalArgumentException miae) {
       // `1`.
-      return IOFunctions.printMessage(ast.topHead(), "error", F.List(F.$str(miae.getMessage())),
+      return IOFunctions.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
           engine);
     } catch (MathRuntimeException mre) {
       LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);

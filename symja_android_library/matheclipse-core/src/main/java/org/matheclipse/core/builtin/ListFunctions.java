@@ -629,7 +629,7 @@ public final class ListFunctions {
           return result;
         } else {
           // The argument is not a rule or a list of rules.
-          return IOFunctions.printMessage(ast.topHead(), "invdt", F.List(), EvalEngine.get());
+          return IOFunctions.printMessage(ast.topHead(), "invdt", F.CEmptyList, EvalEngine.get());
         }
       }
       return arg1AST.appendClone(arg2);
@@ -712,7 +712,7 @@ public final class ListFunctions {
             return result;
           } else {
             // The argument is not a rule or a list of rules.
-            return IOFunctions.printMessage(S.AppendTo, "invdt", F.List(), EvalEngine.get());
+            return IOFunctions.printMessage(S.AppendTo, "invdt", F.CEmptyList, EvalEngine.get());
           }
         }
         if (!symbolValue.isASTOrAssociation()) {
@@ -924,7 +924,7 @@ public final class ListFunctions {
           head = ast.arg4();
           prototypeList = F.ast(head);
         } else {
-          prototypeList = F.List();
+          prototypeList = F.CEmptyList;
         }
         final IExpr arg1 = ast.arg1();
         final IExpr arg2 = ast.arg2();
@@ -936,7 +936,7 @@ public final class ListFunctions {
             if (length <= 0) {
               // Single or list of non-negative machine-sized integers expected at position `1` of
               // `2`.
-              return IOFunctions.printMessage(ast.topHead(), "ilsmn", F.List(F.C2, ast), engine);
+              return IOFunctions.printMessage(ast.topHead(), "ilsmn", F.list(F.C2, ast), engine);
             }
             IExpr indexOrigin = arg3;
 
@@ -958,7 +958,7 @@ public final class ListFunctions {
             if (n <= 0) {
               // Single or list of non-negative machine-sized integers expected at position `1` of
               // `2`.
-              return IOFunctions.printMessage(ast.topHead(), "ilsmn", F.List(F.C2, ast), engine);
+              return IOFunctions.printMessage(ast.topHead(), "ilsmn", F.list(F.C2, ast), engine);
             }
             final IAST interval = (IAST) arg3;
             final IExpr from = interval.arg1();
@@ -977,7 +977,7 @@ public final class ListFunctions {
             final IAST originIter = (IAST) arg3; // origins
             if (dimIter.size() != originIter.size()) {
               // `1` and `2` should have the same length.
-              return IOFunctions.printMessage(ast.topHead(), "plen", F.List(dimIter, originIter),
+              return IOFunctions.printMessage(ast.topHead(), "plen", F.list(dimIter, originIter),
                   engine);
             }
             for (int i = 1; i < dimIter.size(); i++) {
@@ -1313,7 +1313,7 @@ public final class ListFunctions {
               return cases((IAST) arg1, arg2, heads, engine);
             }
           }
-          return F.List();
+          return F.CEmptyList;
         }
       } catch (final ValidateException ve) {
         // see level specification and int number validation
@@ -1364,7 +1364,7 @@ public final class ListFunctions {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Heads, S.False)));
+          F.list(F.Rule(S.Heads, S.False)));
     }
   }
 
@@ -1541,7 +1541,7 @@ public final class ListFunctions {
             return result;
           }
         }
-        return F.List();
+        return F.CEmptyList;
       }
       return F.NIL;
     }
@@ -1806,7 +1806,7 @@ public final class ListFunctions {
           }
 
           if (iterList.size() > 0) {
-            IAST resultList = F.List();
+            IAST resultList = F.CEmptyList;
             if (ast.size() == 5) {
               resultList = F.ast(ast.arg4());
             }
@@ -1984,7 +1984,7 @@ public final class ListFunctions {
             if (indx >= list.size()) {
               return IOFunctions.printMessage(
                   // Part `1` of `2` does not exist.
-                  ast.topHead(), "partw", F.List(F.List(ast.arg2()), list), engine);
+                  ast.topHead(), "partw", F.list(F.list(ast.arg2()), list), engine);
             }
 
             return list.splice(indx);
@@ -2298,7 +2298,7 @@ public final class ListFunctions {
           if (evaledArg1.isListOfRules(false)) {
             return DispatchExpr.newInstance((IAST) evaledArg1);
           } else if (evaledArg1.isRuleAST()) {
-            return DispatchExpr.newInstance(F.List(evaledArg1));
+            return DispatchExpr.newInstance(F.list(evaledArg1));
           } else if (evaledArg1.isAssociation()) {
             return DispatchExpr.newInstance((IAssociation) evaledArg1);
             // } else {
@@ -2719,7 +2719,7 @@ public final class ListFunctions {
         int intValue = arg.toIntDefault();
         if (intValue == Integer.MIN_VALUE) {
           // Position specification `1` in `2` is not applicable.
-          IOFunctions.printMessage(ast.topHead(), "psl1", F.List(ast.arg2(), ast), engine);
+          IOFunctions.printMessage(ast.topHead(), "psl1", F.list(ast.arg2(), ast), engine);
           return false;
         }
       }
@@ -2837,10 +2837,10 @@ public final class ListFunctions {
       }
       if (ast.arg1().size() == 1) {
         // `1` has zero length and no first element.
-        return IOFunctions.printMessage(ast.topHead(), "nofirst", F.List(ast.arg1()), engine);
+        return IOFunctions.printMessage(ast.topHead(), "nofirst", F.list(ast.arg1()), engine);
       }
       // Nonatomic expression expected at position `1` in `2`.
-      return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
+      return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
     }
 
     @Override
@@ -3134,7 +3134,7 @@ public final class ListFunctions {
           if (arg2.size() <= 1) {
             if (!arg2.isAST()) {
               // Nonatomic expression expected at position `1` in `2`.
-              return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C2, ast), engine);
+              return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C2, ast), engine);
             }
             // an empty IAST cannot be folded
             return F.NIL;
@@ -3188,7 +3188,7 @@ public final class ListFunctions {
           if (arg2.size() <= 1) {
             if (!arg2.isAST()) {
               // Nonatomic expression expected at position `1` in `2`.
-              return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C2, ast), engine);
+              return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C2, ast), engine);
             }
           }
           return evaluateNestList3(ast, engine);
@@ -3377,7 +3377,7 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isList()) {
-        return IOFunctions.printMessage(ast.topHead(), "list", F.List(), engine);
+        return IOFunctions.printMessage(ast.topHead(), "list", F.CEmptyList, engine);
       }
       IAST list1 = (IAST) ast.arg1();
       if (ast.isAST1()) {
@@ -3400,7 +3400,7 @@ public final class ListFunctions {
         IExpr f = list2.last();
         // GatherBy(l_, {r__, f_}) := Map(GatherBy(#, f)&, GatherBy(l, {r}), {Length({r})})
         return F.Map(F.Function(F.GatherBy(F.Slot1, f)), F.GatherBy(list1, r),
-            F.List(F.ZZ(r.argSize())));
+            F.list(F.ZZ(r.argSize())));
       }
       java.util.Map<IExpr, IASTAppendable> map = new TreeMap<IExpr, IASTAppendable>();
       IASTAppendable result = F.ListAlloc(F.allocMin8(list1.size()));
@@ -3436,7 +3436,7 @@ public final class ListFunctions {
       if (ast.size() >= 3) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
-        IAST list2 = arg2.isList() ? (IAST) ast.arg2() : F.List(arg2);
+        IAST list2 = arg2.isList() ? (IAST) ast.arg2() : F.list(arg2);
         if (list2.isEmptyList()) {
           return arg1;
         }
@@ -3658,14 +3658,14 @@ public final class ListFunctions {
             return arg1AST.appendAtClone(i, arg2);
           } else {
             // Cannot insert at position `1` in `2`.
-            return IOFunctions.printMessage(ast.topHead(), "ins", F.List(arg3, arg1), engine);
+            return IOFunctions.printMessage(ast.topHead(), "ins", F.list(arg3, arg1), engine);
           }
         } catch (final ArgumentTypeException ate) {
           IOFunctions.printMessage(ast.topHead(), ate, engine);
           return arg1;
         } catch (final IndexOutOfBoundsException e) {
           // Cannot insert at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "ins", F.List(arg3, arg1), engine);
+          return IOFunctions.printMessage(ast.topHead(), "ins", F.list(arg3, arg1), engine);
         }
       }
       return F.NIL;
@@ -3739,7 +3739,7 @@ public final class ListFunctions {
       int index = ast.indexOf(x -> x.isAtom() && !x.isAssociation() && !x.isSparseArray());
       if (index > 0) {
         // Nonatomic expression expected at position `1` in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.ZZ(index), ast), engine);
+        return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.ZZ(index), ast), engine);
       }
       if (ast.size() == 2) {
         return ast.arg1();
@@ -3762,7 +3762,7 @@ public final class ListFunctions {
           }
           if (i > 1 && !isSparseArray) {
             // incompatible elements in `1` cannot be joined.
-            return IOFunctions.printMessage(ast.topHead(), "incpt", F.List(ast), engine);
+            return IOFunctions.printMessage(ast.topHead(), "incpt", F.list(ast), engine);
           }
           continue;
         }
@@ -3776,18 +3776,18 @@ public final class ListFunctions {
         } else {
           if (!head.equals(temp.head())) {
             // incompatible elements in `1` cannot be joined.
-            return IOFunctions.printMessage(ast.topHead(), "incpt", F.List(ast), engine);
+            return IOFunctions.printMessage(ast.topHead(), "incpt", F.list(ast), engine);
           }
           if (temp.isAssociation() != isAssociation) {
             // incompatible elements in `1` cannot be joined.
-            return IOFunctions.printMessage(ast.topHead(), "incpt", F.List(ast), engine);
+            return IOFunctions.printMessage(ast.topHead(), "incpt", F.list(ast), engine);
           }
         }
       }
       if (isAssociation) {
         if (isSparseArray) {
           // incompatible elements in `1` cannot be joined.
-          return IOFunctions.printMessage(ast.topHead(), "incpt", F.List(ast), engine);
+          return IOFunctions.printMessage(ast.topHead(), "incpt", F.list(ast), engine);
         }
         final IAssociation result = F.assoc(F.CEmptyList);
         for (int i = 1; i < ast.size(); i++) {
@@ -3892,10 +3892,10 @@ public final class ListFunctions {
       }
       if (ast.arg1().size() == 1) {
         // `1` has zero length and no last element.
-        return IOFunctions.printMessage(ast.topHead(), "nolast", F.List(ast.arg1()), engine);
+        return IOFunctions.printMessage(ast.topHead(), "nolast", F.list(ast.arg1()), engine);
       }
       // Nonatomic expression expected at position `1` in `2`.
-      return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
+      return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
     }
 
     @Override
@@ -4135,7 +4135,7 @@ public final class ListFunctions {
 
         return resultList;
       }
-      return F.List();
+      return F.CEmptyList;
     }
 
     @Override
@@ -4246,10 +4246,10 @@ public final class ListFunctions {
           return ((IAST) arg1).most();
         }
         // Cannot take Most of expression `1` with length zero.
-        return IOFunctions.printMessage(ast.topHead(), "nomost", F.List(arg1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "nomost", F.list(arg1), engine);
       }
       // Nonatomic expression expected at position `1` in `2`.
-      return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
+      return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
     }
 
     @Override
@@ -4417,7 +4417,7 @@ public final class ListFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isAST()) {
         // Nonatomic expression expected at position `1` in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
+        return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
       }
       IAST list = (IAST) ast.arg1();
 
@@ -4651,7 +4651,7 @@ public final class ListFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isAtom()) {
         // Nonatomic expression expected at position `1` in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
+        return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
       }
       IAST list = (IAST) ast.arg1();
 
@@ -4869,7 +4869,7 @@ public final class ListFunctions {
         IAST arg2AST = (IAST) selection.normal(false);
         if (arg1AST.size() != arg2AST.size()) {
           // Expressions `1` and `2` have incompatible shapes.
-          return IOFunctions.printMessage(ast.topHead(), "incomp", F.List(list, selection), engine);
+          return IOFunctions.printMessage(ast.topHead(), "incomp", F.list(list, selection), engine);
         }
         try {
           IASTAppendable result = arg1AST.copyHead();
@@ -4877,7 +4877,7 @@ public final class ListFunctions {
           return temp;
         } catch (AbortException aex) {
           // Expressions `1` and `2` have incompatible shapes.
-          return IOFunctions.printMessage(ast.topHead(), "incomp", F.List(list, selection), engine);
+          return IOFunctions.printMessage(ast.topHead(), "incomp", F.list(list, selection), engine);
         }
       }
       return F.CEmptySequence;
@@ -5065,7 +5065,7 @@ public final class ListFunctions {
      * @param maxResults the maximum number of results which should be returned in the resulting
      *        <code>List</code>
      * @param engine
-     * @return a <code>F.List()</code> of result positions
+     * @return a <code>F.list()</code> of result positions
      */
     private static IAST position(final IAST ast, final IExpr pattern, final LevelSpec level,
         int maxResults, EvalEngine engine) {
@@ -5141,7 +5141,7 @@ public final class ListFunctions {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDREST);
       setOptions(newSymbol, //
-          F.List(F.Rule(S.Heads, S.True)));
+          F.list(F.Rule(S.Heads, S.True)));
     }
   }
 
@@ -5212,7 +5212,7 @@ public final class ListFunctions {
           return result;
         } else {
           // The argument is not a rule or a list of rules.
-          return IOFunctions.printMessage(ast.topHead(), "invdt", F.List(), EvalEngine.get());
+          return IOFunctions.printMessage(ast.topHead(), "invdt", F.CEmptyList, EvalEngine.get());
         }
       }
       return arg1AST.appendAtClone(1, arg2);
@@ -5322,7 +5322,7 @@ public final class ListFunctions {
             return result;
           } else {
             // The argument is not a rule or a list of rules.
-            return IOFunctions.printMessage(S.PrependTo, "invdt", F.List(), EvalEngine.get());
+            return IOFunctions.printMessage(S.PrependTo, "invdt", F.CEmptyList, EvalEngine.get());
           }
         }
         if (!symbolValue.isASTOrAssociation()) {
@@ -5432,7 +5432,7 @@ public final class ListFunctions {
       if (ast.isAST3()) {
         if (ast.arg3().isZero()) {
           // Infinite expression `1` encountered.
-          return IOFunctions.printMessage(ast.topHead(), "infy", F.List(F.Divide(ast.arg2(), F.C0)),
+          return IOFunctions.printMessage(ast.topHead(), "infy", F.list(F.Divide(ast.arg2(), F.C0)),
               engine);
         }
         if (ast.arg3().isDirectedInfinity()) {
@@ -5469,7 +5469,7 @@ public final class ListFunctions {
         IASTAppendable result = F.ListAlloc(size + 1);
         return result.appendArgs(startInclusive, endExclusive, i -> F.ZZ(i));
       }
-      return F.List();
+      return F.CEmptyList;
     }
 
     public IExpr evaluateTable(final IAST ast, final IAST resultList, EvalEngine engine) {
@@ -5485,7 +5485,7 @@ public final class ListFunctions {
         }
       } catch (NoEvalException nev) {
         // Range specification in `1` does not have appropriate bounds.
-        return IOFunctions.printMessage(ast.topHead(), "range", F.List(ast), engine);
+        return IOFunctions.printMessage(ast.topHead(), "range", F.list(ast), engine);
       } catch (final ArithmeticException | ClassCastException e) {
         // ClassCastException: the iterators are generated only from IASTs
       }
@@ -5525,7 +5525,7 @@ public final class ListFunctions {
             if (pn < 1 || pn > argSize) {
               // The rank `1` is not an integer between `2` and `3`.
               return IOFunctions.printMessage(ast.topHead(), "rank",
-                  F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+                  F.list(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
             }
             return rankedMin(list, pn, ast, engine);
           } else {
@@ -5533,7 +5533,7 @@ public final class ListFunctions {
             if (n < 1 || n > argSize) {
               // The rank `1` is not an integer between `2` and `3`.
               return IOFunctions.printMessage(ast.topHead(), "rank",
-                  F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+                  F.list(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
             }
             return rankedMin(list, list.size() - n, ast, engine);
           }
@@ -5570,7 +5570,7 @@ public final class ListFunctions {
             if (pn < 1 || pn > argSize) {
               // The rank `1` is not an integer between `2` and `3`.
               return IOFunctions.printMessage(ast.topHead(), "rank",
-                  F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+                  F.list(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
             }
             return rankedMin(list, list.size() + n, ast, engine);
           } else {
@@ -5578,7 +5578,7 @@ public final class ListFunctions {
             if (n < 1 || n > argSize) {
               // The rank `1` is not an integer between `2` and `3`.
               return IOFunctions.printMessage(ast.topHead(), "rank",
-                  F.List(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
+                  F.list(F.ZZ(n), F.C1, F.ZZ(argSize)), engine);
             }
             return rankedMin(list, n, ast, engine);
           }
@@ -6243,7 +6243,7 @@ public final class ListFunctions {
       // return arg1.rest();
       // }
       // Nonatomic expression expected at position `1` in `2`.
-      return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
+      return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
     }
 
     @Override
@@ -6368,7 +6368,7 @@ public final class ListFunctions {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (!arg1.isList()) {
         // List expected at position `1` in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
+        return IOFunctions.printMessage(ast.topHead(), "list", F.list(F.C1, ast), engine);
       }
       IExpr arg2 = engine.evaluate(ast.arg2());
 
@@ -6891,7 +6891,7 @@ public final class ListFunctions {
         if (n <= 0) {
           // The number of subdivisions given in position `1` of `2` should be a positive
           // machine-sized integer.
-          return IOFunctions.printMessage(S.Subdivide, "sdmint", F.List(F.C1, ast), engine);
+          return IOFunctions.printMessage(S.Subdivide, "sdmint", F.list(F.C1, ast), engine);
         }
         return Range.range(0, n + 1).map(x -> x.divide(arg1), 1);
       }
@@ -6901,7 +6901,7 @@ public final class ListFunctions {
         if (n <= 0) {
           // The number of subdivisions given in position `1` of `2` should be a positive
           // machine-sized integer.
-          return IOFunctions.printMessage(S.Subdivide, "sdmint", F.List(F.C2, ast), engine);
+          return IOFunctions.printMessage(S.Subdivide, "sdmint", F.list(F.C2, ast), engine);
         }
         IAST factorList = Range.range(0, n + 1).map(x -> x.divide(arg2), 1);
         return factorList.map(x -> arg1.times(x), 1);
@@ -6917,7 +6917,7 @@ public final class ListFunctions {
       if (n <= 0) {
         // The number of subdivisions given in position `1` of `2` should be a positive
         // machine-sized integer.
-        return IOFunctions.printMessage(S.Subdivide, "sdmint", F.List(F.C3, ast), engine);
+        return IOFunctions.printMessage(S.Subdivide, "sdmint", F.list(F.C3, ast), engine);
       }
       IAST factorList = Range.range(0, n + 1).map(x -> x.divide(arg3), 1);
       return factorList.map(x -> arg1.plus(arg2.times(x).subtract(arg1.times(x))), 1);
@@ -7049,10 +7049,10 @@ public final class ListFunctions {
             } else {
               IExpr evaledArg = engine.evaluate(arg);
               if (evaledArg.isReal()) {
-                iterList.add(Iterator.create(F.List(evaledArg), i, engine));
+                iterList.add(Iterator.create(F.list(evaledArg), i, engine));
               } else {
                 // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
-                return IOFunctions.printMessage(ast.topHead(), "nliter", F.List(arg, F.ZZ(i)),
+                return IOFunctions.printMessage(ast.topHead(), "nliter", F.list(arg, F.ZZ(i)),
                     engine);
               }
             }
@@ -7078,7 +7078,7 @@ public final class ListFunctions {
           final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
           for (int i = 2; i < ast.size(); i++) {
             IExpr arg = ast.get(i);
-            iterList.add(Iterator.create(arg.isList() ? (IAST) arg : F.List(arg), i, engine));
+            iterList.add(Iterator.create(arg.isList() ? (IAST) arg : F.list(arg), i, engine));
           }
 
           final TableGenerator generator = new TableGenerator(iterList, resultList,
@@ -7246,7 +7246,7 @@ public final class ListFunctions {
     private static IASTAppendable createResultList(java.util.Map<IExpr, Integer> map) {
       IASTAppendable result = F.ListAlloc(map.size());
       for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
-        result.append(F.List(entry.getKey(), F.ZZ(entry.getValue())));
+        result.append(F.list(entry.getKey(), F.ZZ(entry.getValue())));
       }
       return result;
     }
@@ -7456,7 +7456,7 @@ public final class ListFunctions {
         end--;
         if (start < end || end <= 0 || start >= list.size()) {
           // Cannot take positions `1` through `2` in `3`.
-          String str = IOFunctions.getMessage("take", F.List(F.ZZ(start), F.ZZ(end), list),
+          String str = IOFunctions.getMessage("take", F.list(F.ZZ(start), F.ZZ(end), list),
               EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
@@ -7482,7 +7482,7 @@ public final class ListFunctions {
         }
         if (end > list.size()) {
           // Cannot take positions `1` through `2` in `3`.
-          String str = IOFunctions.getMessage("take", F.List(F.ZZ(start), F.ZZ(end - 1), list),
+          String str = IOFunctions.getMessage("take", F.list(F.ZZ(start), F.ZZ(end - 1), list),
               EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
@@ -7495,7 +7495,7 @@ public final class ListFunctions {
               resultList.append(take((IAST) arg, newLevel, sequenceSpecifications));
             } else {
               // List expected at position `1` in `2`.
-              String str = IOFunctions.getMessage("list", F.List(F.ZZ(i), list), EvalEngine.get());
+              String str = IOFunctions.getMessage("list", F.list(F.ZZ(i), list), EvalEngine.get());
               throw new ArgumentTypeException(str);
             }
           } else {
@@ -7521,7 +7521,7 @@ public final class ListFunctions {
         end--;
         if (start < end || end <= 0 || start >= assoc2.size()) {
           // Cannot take positions `1` through `2` in `3`.
-          String str = IOFunctions.getMessage("take", F.List(F.ZZ(start), F.ZZ(end), assoc2),
+          String str = IOFunctions.getMessage("take", F.list(F.ZZ(start), F.ZZ(end), assoc2),
               EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
@@ -7550,7 +7550,7 @@ public final class ListFunctions {
         }
         if (end > assoc2.size()) {
           // Cannot take positions `1` through `2` in `3`.
-          String str = IOFunctions.getMessage("take", F.List(F.ZZ(start), F.ZZ(end - 1), assoc2),
+          String str = IOFunctions.getMessage("take", F.list(F.ZZ(start), F.ZZ(end - 1), assoc2),
               EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
@@ -7567,7 +7567,7 @@ public final class ListFunctions {
             } else {
               // List expected at position `1` in `2`.
               String str =
-                  IOFunctions.getMessage("list", F.List(F.ZZ(i), assoc2), EvalEngine.get());
+                  IOFunctions.getMessage("list", F.list(F.ZZ(i), assoc2), EvalEngine.get());
               throw new ArgumentTypeException(str);
             }
           } else {
@@ -7606,7 +7606,7 @@ public final class ListFunctions {
               }
             } catch (NoEvalException neex) {
               // Input `1` is not a real-valued vector.
-              return IOFunctions.printMessage(ast.topHead(), "rvec2", F.List(cleanedList), engine);
+              return IOFunctions.printMessage(ast.topHead(), "rvec2", F.list(cleanedList), engine);
             }
           }
         } catch (RuntimeException rex) {
@@ -7654,7 +7654,7 @@ public final class ListFunctions {
               } catch (NoEvalException neex) {
                 // Values `1` produced by the function `2` cannot be used for numerical sorting
                 // because they are not all real.
-                return IOFunctions.printMessage(ast.topHead(), "tbnval", F.List(list, ast.arg2()),
+                return IOFunctions.printMessage(ast.topHead(), "tbnval", F.list(list, ast.arg2()),
                     engine);
               }
             }
@@ -7698,7 +7698,7 @@ public final class ListFunctions {
               }
             } catch (NoEvalException neex) {
               // Input `1` is not a real-valued vector.
-              return IOFunctions.printMessage(ast.topHead(), "rvec2", F.List(cleanedList), engine);
+              return IOFunctions.printMessage(ast.topHead(), "rvec2", F.list(cleanedList), engine);
             }
           }
         } catch (RuntimeException rex) {
@@ -7746,7 +7746,7 @@ public final class ListFunctions {
               } catch (NoEvalException neex) {
                 // Values `1` produced by the function `2` cannot be used for numerical sorting
                 // because they are not all real.
-                return IOFunctions.printMessage(ast.topHead(), "tbnval", F.List(list, ast.arg2()),
+                return IOFunctions.printMessage(ast.topHead(), "tbnval", F.list(list, ast.arg2()),
                     engine);
               }
             }
@@ -8072,7 +8072,7 @@ public final class ListFunctions {
       return partAppend;
     }
     // `1` is not a variable with a value, so its value cannot be changed.
-    return IOFunctions.printMessage(ast.topHead(), "rvalue", F.List(symbol), engine);
+    return IOFunctions.printMessage(ast.topHead(), "rvalue", F.list(symbol), engine);
   }
 
   /**
@@ -8115,7 +8115,7 @@ public final class ListFunctions {
           element = listOrAssociation.get(j);
           if (element.isComplexNumeric() || element.isComplex()) {
             // Input `1` is not a vector of reals or integers.
-            return IOFunctions.printMessage(ast.topHead(), "rvec", F.List(listOrAssociation),
+            return IOFunctions.printMessage(ast.topHead(), "rvec", F.list(listOrAssociation),
                 engine);
           }
         }

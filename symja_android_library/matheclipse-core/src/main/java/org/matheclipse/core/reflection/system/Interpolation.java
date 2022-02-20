@@ -32,7 +32,7 @@ public class Interpolation extends AbstractEvaluator {
         if ("Hermite".equals(method)) {
           return hermiteInterpolate((IAST) ast.arg1(), dims, engine);
         }
-        return IOFunctions.printMessage(ast.topHead(), "optx", F.List(S.Method, ast), engine);
+        return IOFunctions.printMessage(ast.topHead(), "optx", F.list(S.Method, ast), engine);
       }
       if (ast.isAST1()) {
         if (dims[1] >= 2) {
@@ -76,7 +76,7 @@ public class Interpolation extends AbstractEvaluator {
           for (int k = i; k <= j; k++) {
             data.append(matrix.get(k));
           }
-          IAST list = F.List(F.InterpolatingPolynomial(data, F.Slot1), compare);
+          IAST list = F.list(F.InterpolatingPolynomial(data, F.Slot1), compare);
           list1.append(list);
           i++;
         }

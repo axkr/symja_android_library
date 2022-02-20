@@ -227,14 +227,14 @@ public class SparseArrayFunctions {
       if (arg1.isListOfRules()) {
         if (arg1.size() < 2) {
           // The dimensions cannot be determined from the position `1`.
-          return IOFunctions.printMessage(ast.topHead(), "exdims", F.List(arg1), engine);
+          return IOFunctions.printMessage(ast.topHead(), "exdims", F.list(arg1), engine);
         }
         result =
             SparseArrayExpr.newArrayRules((IAST) arg1, dimension, defaultDimension, defaultValue);
       } else if (arg1.isList()) {
         if (arg1.size() < 2) {
           // The dimensions cannot be determined from the position `1`.
-          return IOFunctions.printMessage(ast.topHead(), "exdims", F.List(arg1), engine);
+          return IOFunctions.printMessage(ast.topHead(), "exdims", F.list(arg1), engine);
         }
         result = SparseArrayExpr.newDenseList((IAST) arg1.normal(false), defaultValue);
       } else if (arg1.isSparseArray()) {
@@ -265,14 +265,14 @@ public class SparseArrayFunctions {
 
       } else if (arg1.isRule()) {
         result =
-            SparseArrayExpr.newArrayRules(F.List(arg1), dimension, defaultDimension, defaultValue);
+            SparseArrayExpr.newArrayRules(F.list(arg1), dimension, defaultDimension, defaultValue);
       }
       if (result != null) {
         return result;
       }
 
       // List expected at position `1` in `2`.
-      return IOFunctions.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
+      return IOFunctions.printMessage(ast.topHead(), "list", F.list(F.C1, ast), engine);
     }
 
     @Override

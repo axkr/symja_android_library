@@ -127,7 +127,7 @@ public class AssociationFunctions {
           }
         }
         // The argument `1` is not a valid Association.
-        return IOFunctions.printMessage(S.AssociateTo, "invak", F.List(symbolValue),
+        return IOFunctions.printMessage(S.AssociateTo, "invak", F.list(symbolValue),
             EvalEngine.get());
       }
     }
@@ -151,7 +151,7 @@ public class AssociationFunctions {
       }
 
       // `1` is not a variable with a value, so its value cannot be changed.
-      return IOFunctions.printMessage(ast.topHead(), "rvalue", F.List(leftHandSide), engine);
+      return IOFunctions.printMessage(ast.topHead(), "rvalue", F.list(leftHandSide), engine);
     }
 
     private static IExpr assignPartTo(ISymbol symbol, IAST part, final IAST ast,
@@ -167,14 +167,14 @@ public class AssociationFunctions {
             return symbol.assignedValue();
           }
           // The argument `1` is not a valid Association.
-          return IOFunctions.printMessage(ast.topHead(), "invak", F.List(oldValue),
+          return IOFunctions.printMessage(ast.topHead(), "invak", F.list(oldValue),
               EvalEngine.get());
         }
         // The argument is not a rule or a list of rules.
         return IOFunctions.printMessage(ast.topHead(), "invdt", F.List(), EvalEngine.get());
       }
       // `1` is not a variable with a value, so its value cannot be changed.
-      return IOFunctions.printMessage(ast.topHead(), "rvalue", F.List(symbol), engine);
+      return IOFunctions.printMessage(ast.topHead(), "rvalue", F.list(symbol), engine);
     }
 
     @Override
@@ -304,11 +304,11 @@ public class AssociationFunctions {
         IExpr temp = symbol.assignedValue();
         if (temp == null) {
           // `1` is not a variable with a value, so its value cannot be changed.
-          return IOFunctions.printMessage(builtinSymbol, "rvalue", F.List(symbol), engine);
+          return IOFunctions.printMessage(builtinSymbol, "rvalue", F.list(symbol), engine);
         } else {
           if (symbol.isProtected()) {
             // Symbol `1` is Protected.
-            return IOFunctions.printMessage(builtinSymbol, "wrsym", F.List(symbol),
+            return IOFunctions.printMessage(builtinSymbol, "wrsym", F.list(symbol),
                 EvalEngine.get());
           }
           try {
@@ -325,7 +325,7 @@ public class AssociationFunctions {
           }
         }
       }
-      IOFunctions.printMessage(builtinSymbol, "setps", F.List(leftHandSide.head()), engine);
+      IOFunctions.printMessage(builtinSymbol, "setps", F.list(leftHandSide.head()), engine);
       return rightHandSide;
     }
   }
@@ -671,7 +671,7 @@ public class AssociationFunctions {
               list.append(rule);
             } else {
               // The argument `1` is not a vaild Association or list of rules.
-              throw new ArgumentTypeException("invrl", F.List(rule));
+              throw new ArgumentTypeException("invrl", F.list(rule));
             }
           }
           return mapHeadIfPresent(list, head);
@@ -741,7 +741,7 @@ public class AssociationFunctions {
           return keySelect(list, x -> engine.evalTrue(predicateHead, x));
         }
         // The argument `1` is not a valid Association or a list of rules.
-        return IOFunctions.printMessage(ast.topHead(), "invrl", F.List(arg1), engine);
+        return IOFunctions.printMessage(ast.topHead(), "invrl", F.list(arg1), engine);
       }
       return F.NIL;
     }
@@ -1088,7 +1088,7 @@ public class AssociationFunctions {
           }
           IExpr arg2 = ast.arg2();
           if (!arg2.isList()) {
-            arg2 = F.List(arg2);
+            arg2 = F.list(arg2);
           }
           return keyTake(arg1, (IAST) arg2);
         } else {

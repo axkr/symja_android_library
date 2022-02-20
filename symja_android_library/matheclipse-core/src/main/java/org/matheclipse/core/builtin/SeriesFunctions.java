@@ -984,7 +984,7 @@ public class SeriesFunctions {
         if (ast.arg2().isList()) {
           heads = (IAST) ast.arg2();
         } else {
-          heads = F.List(ast.arg2());
+          heads = F.list(ast.arg2());
         }
       }
       final IExpr arg1 = ast.arg1();
@@ -1195,7 +1195,7 @@ public class SeriesFunctions {
           return temp;
         }
       } else if (function.isLog() && function.first().equals(x) && x0.isZero() && n >= 0) {
-        return new ASTSeriesData(x, x0, F.List(function), 0, n + 1, 1);
+        return new ASTSeriesData(x, x0, F.list(function), 0, n + 1, 1);
       }
       return null;
     }
@@ -1245,7 +1245,7 @@ public class SeriesFunctions {
     private static ASTSeriesData seriesCoefficient(final IExpr function, IExpr x, IExpr x0,
         final int n, final int denominator, VariablesSet varSet, EvalEngine engine) {
       ISymbol power = F.Dummy("$$$n");
-      IExpr temp = engine.evalQuiet(F.SeriesCoefficient(function, F.List(x, x0, power)));
+      IExpr temp = engine.evalQuiet(F.SeriesCoefficient(function, F.list(x, x0, power)));
       if (temp.isNumericFunction(varSet)) {
         int end = n;
         if (n < 0) {
@@ -1261,13 +1261,13 @@ public class SeriesFunctions {
         if (n < 0) {
           end = 0;
         }
-        temp = engine.evalQuiet(F.SeriesCoefficient(function, F.List(x, x0, F.C0)));
+        temp = engine.evalQuiet(F.SeriesCoefficient(function, F.list(x, x0, F.C0)));
         if (temp.isNumericFunction(varSet)) {
           boolean evaled = true;
           ASTSeriesData ps = new ASTSeriesData(x, x0, end + 1, end + denominator, denominator);
           ps.setCoeff(0, temp);
           for (int i = 1; i <= end; i++) {
-            temp = engine.evalQuiet(F.SeriesCoefficient(function, F.List(x, x0, F.ZZ(i))));
+            temp = engine.evalQuiet(F.SeriesCoefficient(function, F.list(x, x0, F.ZZ(i))));
             if (temp.isNumericFunction(varSet)) {
               ps.setCoeff(i, temp);
             } else {
@@ -1598,7 +1598,7 @@ public class SeriesFunctions {
         if (n.isZero()) {
           return function;
         }
-        return F.Piecewise(F.List(F.List(function, F.Equal(n, F.C0))), F.C0);
+        return F.Piecewise(F.list(F.list(function, F.Equal(n, F.C0))), F.C0);
       }
       IExpr temp = polynomialSeriesCoefficient(function, x, x0, n, ast, engine);
       if (temp.isPresent()) {
@@ -1613,10 +1613,10 @@ public class SeriesFunctions {
             INumber exp = (INumber) exponent;
             if (exp.isInteger()) {
               if (x0.isZero()) {
-                return F.Piecewise(F.List(F.List(F.C1, F.Equal(n, exp))), F.C0);
+                return F.Piecewise(F.list(F.list(F.C1, F.Equal(n, exp))), F.C0);
               }
               return F.Piecewise(
-                  F.List(F.List(F.Times(F.Power(x0, F.Plus(exp, n.negate())), F.Binomial(exp, n)),
+                  F.list(F.list(F.Times(F.Power(x0, F.Plus(exp, n.negate())), F.Binomial(exp, n)),
                       F.LessEqual(F.C0, n, exp))),
                   F.C0);
             }
@@ -1624,7 +1624,7 @@ public class SeriesFunctions {
           if (!x0.isZero() && exponent.isFree(x)) {
             IExpr exp = exponent;
             return F.Piecewise(
-                F.List(F.List(F.Times(F.Power(x0, F.Plus(exp, n.negate())), F.Binomial(exp, n)),
+                F.list(F.list(F.Times(F.Power(x0, F.Plus(exp, n.negate())), F.Binomial(exp, n)),
                     F.GreaterEqual(n, F.C0))),
                 F.C0);
           }
@@ -1638,13 +1638,13 @@ public class SeriesFunctions {
               IExpr c = linear[1];
               return
               // [$ Piecewise({{(b^a*(c*Log(b))^n)/n!, n >= 0}}, 0) $]
-              F.Piecewise(F.List(F.List(F.Times(F.Power(b, a), F.Power(F.Factorial(n), F.CN1),
+              F.Piecewise(F.list(F.list(F.Times(F.Power(b, a), F.Power(F.Factorial(n), F.CN1),
                   F.Power(F.Times(c, F.Log(b)), n)), F.GreaterEqual(n, F.C0))), F.C0); // $$;
             }
             if (linear[0].isZero() && linear[1].isOne()) {
               // b^x with b is free of x
 
-              return F.Piecewise(F.List(F.List(
+              return F.Piecewise(F.list(F.list(
                   F.Times(F.Power(b, x0), F.Power(F.Factorial(n), F.CN1), F.Power(F.Log(b), n)),
                   F.GreaterEqual(n, F.C0))), F.C0);
             }
@@ -1654,7 +1654,7 @@ public class SeriesFunctions {
           if (exponent.equals(x)) {
             // x^x or b^x with b is free of x
 
-            return F.Piecewise(F.List(F.List(
+            return F.Piecewise(F.list(F.list(
                 F.Times(F.Power(b, x0), F.Power(F.Factorial(n), F.CN1), F.Power(F.Log(b), n)),
                 F.GreaterEqual(n, F.C0))), F.C0);
           }
@@ -1678,7 +1678,7 @@ public class SeriesFunctions {
       if (degree == 0) {
         return F.ReplaceAll(function, F.Rule(x, x0));
       }
-      IExpr derivedFunction = S.D.of(engine, function, F.List(x, n));
+      IExpr derivedFunction = S.D.of(engine, function, F.list(x, n));
       return F.Times(F.Power(F.Factorial(n), F.CN1), F.ReplaceAll(derivedFunction, F.Rule(x, x0)));
     }
 
@@ -1758,7 +1758,7 @@ public class SeriesFunctions {
           IExpr temp = engine.evaluate(plus);
           if (!temp.isZero()) {
             rules.append(
-                F.List(engine.evaluate(F.Times(F.Power(x0, n.negate()), plus)), comparator));
+                F.list(engine.evaluate(F.Times(F.Power(x0, n.negate()), plus)), comparator));
           }
           if (comparator.isAST(S.Greater)) {
             plus = F.PlusAlloc(coefficientMap.size());
@@ -1774,7 +1774,7 @@ public class SeriesFunctions {
                 plus.append(F.Times(coefficient, F.Power(x0, exp)));
               }
             }
-            rules.append(F.List(engine.evaluate(plus), F.Equal(n, F.C0)));
+            rules.append(F.list(engine.evaluate(plus), F.Equal(n, F.C0)));
           }
           piecewiseAST.append(rules);
 
@@ -1850,7 +1850,7 @@ public class SeriesFunctions {
           if (!ToggleFeature.SERIES_DENOMINATOR && denominator != 1) {
             // ToggleFeature `1` is disabled.
             return IOFunctions.printMessage(ast.topHead(), "toggle",
-                F.List(F.stringx("SERIES_DENOMINATOR")), engine);
+                F.list(F.stringx("SERIES_DENOMINATOR")), engine);
           }
         }
         return new ASTSeriesData(x, x0, coefficients, nMin, truncate, denominator);

@@ -378,27 +378,27 @@ public class ExprEvaluator {
         ast = F.Break();
       }
       // No enclosing For, While or Do found for `1`.
-      IOFunctions.printMessage(S.Continue, "nofwd", F.List(ast), engine);
+      IOFunctions.printMessage(S.Continue, "nofwd", F.list(ast), engine);
       temp = F.Hold(ast);
     } catch (ThrowException e) {
       LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
       // Uncaught `1` returned to top level.
       IAST ast = F.Throw(e.getValue());
-      IOFunctions.printMessage(S.Throw, "nocatch", F.List(ast), engine);
+      IOFunctions.printMessage(S.Throw, "nocatch", F.list(ast), engine);
       temp = F.Hold(ast);
     } catch (IterationLimitExceeded e) {
       LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
       // Iteration limit of `1` exceeded.
       int iterationLimit = engine.getIterationLimit();
       IOFunctions.printMessage(S.$IterationLimit, "itlim",
-          F.List(iterationLimit < 0 ? F.CInfinity : F.ZZ(iterationLimit), expr), engine);
+          F.list(iterationLimit < 0 ? F.CInfinity : F.ZZ(iterationLimit), expr), engine);
       temp = F.Hold(expr);
     } catch (RecursionLimitExceeded e) {
       LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
       // Recursion depth of `1` exceeded during evaluation of `2`.
       int recursionLimit = engine.getRecursionLimit();
       IOFunctions.printMessage(S.$RecursionLimit, "reclim2",
-          F.List(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), expr), engine);
+          F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), expr), engine);
       temp = F.Hold(expr);
     }
     if (!engine.isOutListDisabled()) {

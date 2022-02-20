@@ -93,7 +93,7 @@ public class ModuleReplaceAll extends VisitorExpr {
   private IAST visitNestedScope(IAST ast, boolean isFunction) {
     IAST localVariablesList = F.NIL;
     if (ast.arg1().isSymbol()) {
-      localVariablesList = F.List(ast.arg1());
+      localVariablesList = F.list(ast.arg1());
     } else if (ast.arg1().isList()) {
       localVariablesList = (IAST) ast.arg1();
     }

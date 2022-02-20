@@ -320,7 +320,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
    * @param symbol name of a variable.
    */
   public SymbolicPolynomialRing(ISymbol symbol) {
-    this(ExprRingFactory.CONST, F.List(symbol), 1, SymbolicTermOrderByName.Lexicographic);
+    this(ExprRingFactory.CONST, F.list(symbol), 1, SymbolicTermOrderByName.Lexicographic);
   }
 
   /**
@@ -330,7 +330,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
    * @param t a term order.
    */
   public SymbolicPolynomialRing(ISymbol symbol, SymbolicTermOrder t) {
-    this(ExprRingFactory.CONST, F.List(symbol), 1, t);
+    this(ExprRingFactory.CONST, F.list(symbol), 1, t);
   }
 
   /**

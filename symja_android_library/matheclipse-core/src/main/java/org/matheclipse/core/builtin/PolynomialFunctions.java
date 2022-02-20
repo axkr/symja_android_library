@@ -280,7 +280,7 @@ public class PolynomialFunctions {
       for (int j = 1; j < symbolList.size(); j++) {
         ruleList.append(F.C0);
       }
-      return F.List(F.Rule(ruleList, expr));
+      return F.list(F.Rule(ruleList, expr));
     }
 
     @Override
@@ -374,7 +374,7 @@ public class PolynomialFunctions {
       for (int j = 1; j < symbolList.size(); j++) {
         ruleList.append(F.C0);
       }
-      return F.List(F.Rule(ruleList, expr));
+      return F.list(F.Rule(ruleList, expr));
     }
 
     @Override
@@ -496,7 +496,7 @@ public class PolynomialFunctions {
       }
       if (ast.arg1().isNumber()) {
         // Non-negative machine-sized integer expected at position `2` in `1`.
-        IOFunctions.printMessage(ast.topHead(), "intnm", F.List(F.C1, ast), engine);
+        IOFunctions.printMessage(ast.topHead(), "intnm", F.list(F.C1, ast), engine);
       }
       return F.NIL;
     }
@@ -709,7 +709,7 @@ public class PolynomialFunctions {
       }
       IExpr expr = F.evalExpandAll(ast.arg1(), engine);
       try {
-        IAST univariateVariables = F.List(arg2);
+        IAST univariateVariables = F.list(arg2);
         ExprPolynomialRing ring = new ExprPolynomialRing(univariateVariables);
         ExprPolynomial poly = ring.create(expr);
 
@@ -806,7 +806,7 @@ public class PolynomialFunctions {
       // }
       // }
       IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal(false);
-      IAST subst = Algebra.substituteVariablesInPolynomial(expr, F.List(form), "§Exponent");
+      IAST subst = Algebra.substituteVariablesInPolynomial(expr, F.list(form), "§Exponent");
       expr = subst.arg1();
       form = subst.arg2().first();
       // if (expr.isTimes()) {
@@ -969,13 +969,13 @@ public class PolynomialFunctions {
         IExpr x = arg3;
         IExpr a = F.evalExpandAll(arg1, engine);
         IExpr b = F.evalExpandAll(arg2, engine);
-        ExprPolynomialRing ring = new ExprPolynomialRing(F.List(x));
+        ExprPolynomialRing ring = new ExprPolynomialRing(F.list(x));
         try {
           // check if a is a polynomial otherwise check ArithmeticException, ClassCastException
           ring.create(a);
         } catch (RuntimeException ex) {
           // Polynomial expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "polynomial", F.List(ast.get(1), F.C1),
+          return IOFunctions.printMessage(ast.topHead(), "polynomial", F.list(ast.get(1), F.C1),
               engine);
         }
         try {
@@ -987,7 +987,7 @@ public class PolynomialFunctions {
           }
         } catch (RuntimeException ex) {
           // Polynomial expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "polynomial", F.List(ast.get(2), F.C2),
+          return IOFunctions.printMessage(ast.topHead(), "polynomial", F.list(ast.get(2), F.C2),
               engine);
         }
       }
@@ -1064,8 +1064,8 @@ public class PolynomialFunctions {
 
     // public static IExpr resultant(IAST result, IAST resultListDiff) {
     // // create sylvester matrix
-    // IAST sylvester = F.List();
-    // IAST row = F.List();
+    // IAST sylvester = F.list();
+    // IAST row = F.list();
     // IAST srow;
     // final int n = resultListDiff.size() - 2;
     // final int m = result.size() - 2;
@@ -1076,7 +1076,7 @@ public class PolynomialFunctions {
     // }
     // for (int i = 0; i < n; i++) {
     // // for each row
-    // srow = F.List();
+    // srow = F.list();
     // int j = 0;
     // while (j < n2) {
     // if (j < i) {
@@ -1095,13 +1095,13 @@ public class PolynomialFunctions {
     // sylvester.add(srow);
     // }
     //
-    // row = F.List();
+    // row = F.list();
     // for (int i = resultListDiff.argSize(); i > 0; i--) {
     // row.add(resultListDiff.get(i));
     // }
     // for (int i = n; i < n2; i++) {
     // // for each row
-    // srow = F.List();
+    // srow = F.list();
     // int j = 0;
     // int k = n;
     // while (j < n2) {
@@ -1929,7 +1929,7 @@ public class PolynomialFunctions {
         LOGGER.debug("MonomialList.evaluate() failed", rex);
       }
       // default mapping
-      return F.List(expr);
+      return F.list(expr);
     }
 
     @Override
@@ -2018,7 +2018,7 @@ public class PolynomialFunctions {
       ExprPolynomialRing ring = new ExprPolynomialRing(listOfVariables);
       ExprPolynomial poly = ring.create(expr, true, false, true);
       if (poly.isZero()) {
-        return F.List();
+        return F.CEmptyList;
       }
       return poly.coefficientList();
     } catch (LimitException le) {
