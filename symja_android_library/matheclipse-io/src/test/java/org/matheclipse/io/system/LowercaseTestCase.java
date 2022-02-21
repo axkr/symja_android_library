@@ -22353,6 +22353,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   // }
 
   public void testSimplify() {
+    check("Simplify(0^x, x==0)", //
+        "Indeterminate");
+    check("Simplify(0^x, x>0)", //
+        "0");
+    check("Simplify(0^x, x<0)", //
+        "ComplexInfinity");
 
     check(" Simplify(y -> 1+Cot(x)^2)", //
         "y->Csc(x)^2");

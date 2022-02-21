@@ -63,6 +63,16 @@ public interface IAssumptions {
   public boolean isComplex(IExpr expr);
 
   /**
+   * Gives <code>true</code>, if the expression is assumed to equal the number, <code>false
+   * </code> in all other cases.
+   * 
+   * @param expr
+   * @param number
+   * @return
+   */
+  public boolean isEqual(IExpr expr, ISignedNumber number);
+
+  /**
    * Gives <code>true</code>, if the expression is assumed to be greater equal number, <code>false
    * </code> in all other cases.
    *

@@ -626,6 +626,21 @@ public class Assumptions extends AbstractAssumptions {
   }
 
   @Override
+  public boolean isEqual(IExpr expr, ISignedNumber number) {
+    ISignedNumber num;
+    SignedNumberRelations gla = valueMap.get(expr);
+    if (gla != null) {
+      num = gla.getEquals();
+      if (num != null) {
+        if (num.equals(number)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  @Override
   public final IAST tensors(IExpr expr) {
     IAST tensor = tensorsMap.get(expr);
     return (tensor == null) ? F.NIL : tensor;

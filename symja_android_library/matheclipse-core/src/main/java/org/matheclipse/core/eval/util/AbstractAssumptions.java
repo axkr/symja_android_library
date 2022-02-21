@@ -2,6 +2,7 @@ package org.matheclipse.core.eval.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
@@ -10,6 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -199,6 +201,24 @@ public abstract class AbstractAssumptions implements IAssumptions {
       }
     }
     return null;
+  }
+
+  public static boolean assumeEqual(final IExpr expr, final ISignedNumber number) {
+    if (expr.isNumber()) {
+      return ((INumber) expr).equals(number);
+    }
+    if (expr.isRealConstant()) {
+      return F.isFuzzyEquals(
+          ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal(),
+          number.doubleValue(), Config.MACHINE_EPSILON);
+    }
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      if (assumptions.isEqual(expr, number)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -701,6 +721,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
 
   @Override
   public boolean isComplex(IExpr expr) {
+    return false;
+  }
+
+
+  @Override
+  public boolean isEqual(IExpr expr, ISignedNumber number) {
     return false;
   }
 

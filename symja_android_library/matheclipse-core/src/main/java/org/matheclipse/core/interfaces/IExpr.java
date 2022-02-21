@@ -3623,6 +3623,16 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression equals <code>0</code> in symbolic or numeric mode or an assumption is
+   * set that the expression equals <code>0</code>.
+   * 
+   * @return
+   */
+  default boolean isZeroResult() {
+    return isZero() || AbstractAssumptions.assumeEqual(this, F.C0);
+  }
+
+  /**
    * Test if this expression equals <code>0</code> in symbolic or numeric mode. For the numeric test
    * multiple random numbers with a <code>Chop()</code> function test are used.
    *

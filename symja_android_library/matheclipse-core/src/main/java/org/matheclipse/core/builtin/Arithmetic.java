@@ -4413,18 +4413,29 @@ public final class Arithmetic {
      */
     private static IExpr powerZeroArg1(final IExpr exponent) {
       EvalEngine engine = EvalEngine.get();
-      if (exponent.isZero()) {
+      if (exponent.isZeroResult()) {
         // 0^0
         // engine.printMessage("Infinite expression 0^0");
         IOFunctions.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
         return S.Indeterminate;
+      }
+      if (exponent.isPositiveResult()) {
+        // 0^x /; x>0
+        return F.C0;
+      }
+      if (exponent.isNegativeResult()) {
+        // 0^x /; x<0
+        IOFunctions.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
+            EvalEngine.get());
+        return F.CComplexInfinity;
       }
 
       IExpr a = exponent.re();
       if (a.isReal()) {
         if (a.isNegative()) {
           // engine.printMessage("Infinite expression 0^(negative number)");
-          IOFunctions.printMessage(S.Power, "infy", F.list(F.Power(F.C0, a)), EvalEngine.get());
+          IOFunctions.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
+              EvalEngine.get());
           return F.CComplexInfinity;
         }
         if (a.isZero()) {
