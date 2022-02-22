@@ -6,7 +6,6 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
@@ -23,28 +22,23 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.IVisitor;
 import org.organicdesign.fp.StaticImports;
-import org.organicdesign.fp.collections.ImMap;
-import org.organicdesign.fp.collections.ImSet;
 import org.organicdesign.fp.collections.MutMap;
 import org.organicdesign.fp.collections.RrbTree;
-import org.organicdesign.fp.collections.RrbTree.MutRrbt;
+import org.organicdesign.fp.collections.UnmodIterator;
+import org.organicdesign.fp.collections.UnmodMap.UnEntry;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   /**
-   * Map the <code>IExpr()</code> keys to the index of the values in this AST. For <code>Rule()
-   * </code> the index is greater 0 and <code>get(index)</code> returns the value of the <code>
-   * Rule()</code. For <code>RuleDelyed()</code> the index is less 0 and must be multiplied by -1
-   * and <code>get(index * (-1))</code> returns the value of the <code>RuleDelayed()</code>.
+   * Map the <code>IExpr()</code> keys to the index of the values in this AST.
    */
-  private transient ImMap<IExpr, Integer> keyToIndexMap;
+  private transient MutMap<IExpr, Integer> keyToIndexMap;
 
   /** Public no-arg constructor needed for serialization. */
   public ASTAssociation() {
     super(10, false);
-    // keyToIndexMap = new Object2IntOpenHashMap<IExpr>();
-    keyToIndexMap = StaticImports.map();
+    keyToIndexMap = StaticImports.mutableMap();
     append(S.Association);
   }
 
@@ -55,8 +49,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
    */
   /* package private */ ASTAssociation(IAST listOfRules) {
     super(listOfRules.size(), false);
-    // keyToIndexMap = new Object2IntOpenHashMap<IExpr>();
-    keyToIndexMap = StaticImports.map();
+    keyToIndexMap = StaticImports.mutableMap();
     append(S.Association);
 
     appendRules(listOfRules);
@@ -82,7 +75,6 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
    * replaced by the new rule.
    *
    * @param rule the rule to add at the end of this association
-   * @return always true
    */
   @Override
   public final void appendRule(IExpr rule) {
@@ -91,10 +83,9 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
       int value = getInt(rule.first());
       if (value == 0) {
         append(rule);
-        keyToIndexMap = keyToIndexMap.mutable().assoc(rule.first(), index++).immutable();
+        keyToIndexMap.assoc(rule.first(), index++);
       } else {
         set(value, rule);
-        keyToIndexMap = keyToIndexMap.mutable().assoc(rule.first(), index++).immutable();
       }
     } else if (rule.isEmptyList()) {
       // ignore empty list entries
@@ -103,31 +94,28 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     }
   }
 
-  private static final int appendRule(ASTAssociation assoc, MutMap<IExpr, Integer> map, int index,
-      IExpr rule) {
+  private static final int appendRule(ASTAssociation assoc, int index, IAST rule) {
     if (rule.isRuleAST()) {
-      Integer value = map.get(rule.first());
-      if (value == null) {
-        assoc.append(rule);
-        map.assoc(rule.first(), index++);
+      int indexValue = assoc.getInt(rule.first());
+      if (indexValue == 0) {
+        assoc.appendRule(rule);
       } else {
-        assoc.set(value, rule);
-        map.assoc(rule.first(), value);
+        assoc.set(indexValue, rule);
       }
-    } else if (rule.isEmptyList()) {
-      // ignore empty list entries
-    } else {
-      throw new ArgumentTypeException("rule expression expected instead of " + rule.toString());
+      return index;
     }
-    return index;
+    throw new ArgumentTypeException("rule expression expected instead of " + rule.toString());
   }
 
+  /**
+   * Get the value-index from the internal map for the <code>key</code>
+   * 
+   * @param key
+   * @return <code>0</code> if no value-index was found for the key
+   */
   private int getInt(IExpr key) {
     Integer value = keyToIndexMap.get(key);
-    if (value == null) {
-      return 0;
-    }
-    return value;
+    return (value == null) ? 0 : value;
   }
 
   @Override
@@ -137,35 +125,30 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   @Override
   public void appendRules(IAST listOfRules, int startPosition, int endPosition) {
-    MutMap<IExpr, Integer> temp = keyToIndexMap.mutable();
-    appendRules(temp, size(), listOfRules, startPosition, endPosition);
-    keyToIndexMap = temp.immutable();
+    appendRules(size(), listOfRules, startPosition, endPosition);
   }
 
-  private int appendRules(MutMap<IExpr, Integer> temp, int index, IAST listOfRules,
-      int startPosition, int endPosition) {
+  private void appendRules(int index, IAST listOfRules, int startPosition, int endPosition) {
     if (listOfRules.isRuleAST()) {
-      index = appendRule(this, temp, index, listOfRules);
+      appendRule(this, index, listOfRules);
     } else {
       for (int i = startPosition; i < endPosition; i++) {
         IExpr rule = listOfRules.getRule(i);
         if (rule.isAssociation()) {
           ASTAssociation assoc = (ASTAssociation) rule;
           for (int j = 1; j < assoc.size(); j++) {
-            rule = assoc.getRule(j);
-            index = appendRule(this, temp, index, rule);
+            index = appendRule(this, index, assoc.getRule(j));
           }
         } else if (rule.isRuleAST()) {
-          index = appendRule(this, temp, index, rule);
+          index = appendRule(this, index, (IAST) rule);
         } else if (rule.isList()) {
           IAST list = (IAST) rule;
-          index = appendRules(temp, index, list, 1, list.size());
+          appendRules(index, list, 1, list.size());
         } else {
           throw new ArgumentTypeException("rule expression expected instead of " + rule.toString());
         }
       }
     }
-    return index;
   }
 
   @Override
@@ -196,10 +179,9 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
   @Override
   public ASTAssociation copy() {
     ASTAssociation ast = new ASTAssociation();
-    // ast.fProperties = null;
     ast.rrbTree = rrbTree.toMutRrbt();
     ast.hashValue = 0;
-    ast.keyToIndexMap = keyToIndexMap.mutable().immutable();
+    ast.keyToIndexMap = keyToIndexMap.toMutMap(x -> x);
     return ast;
   }
 
@@ -233,21 +215,6 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
   public IASTAppendable copyHead(final int intialCapacity) {
     return F.ast(S.Association, intialCapacity);
   }
-
-  // public boolean appendAllRules(ASTAssociation ast, int startPosition, int endPosition) {
-  // if (ast.size() > 0 && startPosition < endPosition) {
-  // normalCache = null;
-  // appendAll(ast, startPosition, endPosition);
-  // for (Object2IntMap.Entry<IExpr> element : ast.map.object2IntEntrySet()) {
-  // int value = element.getIntValue();
-  // if (Math.abs(value) >= startPosition && Math.abs(value) < endPosition) {
-  // keyToIndexMap = keyToIndexMap.__put(element.getKey(), value);
-  // }
-  // }
-  // return true;
-  // }
-  // return false;
-  // }
 
   /** {@inheritDoc} */
   @Override
@@ -484,7 +451,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
    * Test if this AST is an association <code>&lt;|a-&gt;b, c-&gt;d|&gt;</code>(i.e. type <code>
    * AssociationAST</code>)
    *
-   * @return
+   * @return <code>true</code>
    */
   @Override
   public boolean isAssociation() {
@@ -575,8 +542,9 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
   @Override
   public ArrayList<String> keyNames() {
     ArrayList<String> list = new ArrayList<String>();
-    ImSet<Entry<IExpr, Integer>> set = keyToIndexMap.entrySet();
-    for (Entry<IExpr, Integer> element : set) {
+    UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyToIndexMap.iterator();
+    while (iterator.hasNext()) {
+      UnEntry<IExpr, Integer> element = iterator.next();
       list.add(element.getKey().toString());
     }
     return list;
@@ -589,12 +557,11 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   protected IASTMutable keys(IBuiltInSymbol symbol) {
     IASTMutable list = F.astMutable(symbol, argSize());
-    ImSet<Entry<IExpr, Integer>> set = keyToIndexMap.entrySet();
-    for (Entry<IExpr, Integer> element : set) {
+
+    UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyToIndexMap.iterator();
+    while (iterator.hasNext()) {
+      UnEntry<IExpr, Integer> element = iterator.next();
       int value = element.getValue();
-      if (value < 0) {
-        value *= -1;
-      }
       list.set(value, element.getKey());
     }
     return list;
@@ -665,10 +632,12 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
     boolean numericKeys = true;
     try {
-      ImSet<Entry<IExpr, Integer>> set = keyToIndexMap.entrySet();
-      for (Entry<IExpr, Integer> element : set) {
+      UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyToIndexMap.iterator();
+      while (iterator.hasNext()) {
+        UnEntry<IExpr, Integer> element = iterator.next();
         IExpr key = element.getKey();
         if (!key.isReal()) {
+          @SuppressWarnings("unused")
           double d = key.evalDouble(); // create possible exception
           numericKeys = false;
           break;
@@ -679,8 +648,9 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     }
     if (numericKeys) {
       IASTAppendable list = F.ListAlloc(keyToIndexMap.size());
-      ImSet<Entry<IExpr, Integer>> set = keyToIndexMap.entrySet();
-      for (Entry<IExpr, Integer> element : set) {
+      UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyToIndexMap.iterator();
+      while (iterator.hasNext()) {
+        UnEntry<IExpr, Integer> element = iterator.next();
         IExpr key = element.getKey();
         int value = element.getValue();
         list.append(F.list(key, getValue(value)));
@@ -719,7 +689,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   /**
    * Adds the specified rule at the start of this association. Existing duplicate rule keys will be
-   * replaced by the new rule.
+   * replaced by the new rule at position 1.
    *
    * @param rule the rule to add at the end of this association
    * @return always true
@@ -729,35 +699,35 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     if (rule.isRuleAST()) {
       int value = getInt(rule.first());
       hashValue = 0;
-      if (value == 0) {
-        final int firstPosition = 1;
-        MutRrbt<IExpr> mutableList = StaticImports.mutableRrb();
-        mutableList.append(S.Association);
-        mutableList.append(rule);
-        for (int i = 1; i < rrbTree.size(); i++) {
-          mutableList.append(rrbTree.get(i));
-        }
-        rrbTree = mutableList.toMutRrbt();
-
-        MutMap<IExpr, Integer> mutableMap = keyToIndexMap.mutable();
-        ImSet<Entry<IExpr, Integer>> set = keyToIndexMap.entrySet();
-        for (Entry<IExpr, Integer> element : set) {
-          int indx = element.getValue();
-          if (indx >= firstPosition) {
-            mutableMap.assoc(element.getKey(), indx + 1);
-          }
-        }
-        mutableMap.assoc(rule.first(), firstPosition);
-        keyToIndexMap = mutableMap.immutable();
-      } else {
-        super.set(value, rule);
-        keyToIndexMap = keyToIndexMap.mutable().assoc(rule.first(), value).immutable();
+      if (value != 0) {
+        remove(value);
       }
+      insertAt(1, rule);
     } else if (rule.isEmptyList()) {
       // ignore empty list entries
     } else {
       throw new ArgumentTypeException("rule expression expected instead of " + rule.toString());
     }
+  }
+
+  /**
+   * Insert the rule at the position. Re-index the existing positions greater equal the
+   * <code>position</code>.
+   * 
+   * @param position
+   * @param rule
+   */
+  private void insertAt(int position, IExpr rule) {
+    rrbTree.insert(position, rule);
+    UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyToIndexMap.iterator();
+    while (iterator.hasNext()) {
+      UnEntry<IExpr, Integer> element = iterator.next();
+      int indx = element.getValue();
+      if (indx >= position) {
+        keyToIndexMap.assoc(element.getKey(), indx + 1);
+      }
+    }
+    keyToIndexMap.assoc(rule.first(), 1);
   }
 
   @Override
@@ -770,7 +740,8 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     if (listOfRules.isRuleAST()) {
       prependRule(listOfRules);
     } else {
-      for (int i = startPosition; i < endPosition; i++) {
+      // iterate backwards for prepend
+      for (int i = endPosition - 1; i >= startPosition; i--) {
         IExpr rule = listOfRules.getRule(i);
         if (rule.isAssociation()) {
           ASTAssociation assoc = (ASTAssociation) rule;
@@ -803,16 +774,17 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     hashValue = 0;
     // throws IndexOutOfBoundsException
     IExpr result = super.remove(location);
-    MutMap<IExpr, Integer> mutable = keyToIndexMap.mutable();
+    MutMap<IExpr, Integer> mutable = keyToIndexMap.toMutMap(x -> x);
     mutable.without(result.first());
-    ImSet<Entry<IExpr, Integer>> set = keyToIndexMap.entrySet();
-    for (Entry<IExpr, Integer> element : set) {
+    UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyToIndexMap.iterator();
+    while (iterator.hasNext()) {
+      UnEntry<IExpr, Integer> element = iterator.next();
       int indx = element.getValue();
       if (indx >= location) {
-        mutable.assoc(element.getKey(), indx - 1);
+        mutable = mutable.assoc(element.getKey(), indx - 1);
       }
     }
-    keyToIndexMap = mutable.immutable();
+    keyToIndexMap = mutable;
     return result;
   }
 
@@ -846,13 +818,11 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     if (location > 0) {
       if (rule.isRuleAST()) {
         final IAST oldRule = getRule(location);
-        MutMap<IExpr, Integer> mutable = keyToIndexMap.mutable();
         if (oldRule.isPresent()) {
-          mutable.without(oldRule.first());
+          keyToIndexMap.without(oldRule.first());
         }
-        mutable.assoc(rule.first(), location);
+        keyToIndexMap.assoc(rule.first(), location);
         rrbTree = rrbTree.replace(location, rule);
-        keyToIndexMap = mutable.immutable();
         return oldRule;
       }
       // illegal arguments: \"`1`\" in `2`
@@ -867,10 +837,10 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
   public IExpr setValue(final int location, final IExpr value) {
     if (location > 0) {
       final IAST oldRule = getRule(location);
-      MutMap<IExpr, Integer> mutable = keyToIndexMap.mutable();
+      MutMap<IExpr, Integer> mutable = keyToIndexMap.toMutMap(x -> x);
       // mutable.without(oldRule.first());
-      mutable.assoc(oldRule.first(), location);
-      keyToIndexMap = mutable.immutable();
+      mutable = mutable.assoc(oldRule.first(), location);
+      keyToIndexMap = mutable;
       return super.set(location, oldRule.setAtCopy(2, value));
     }
     // set header
@@ -906,9 +876,10 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     }
     Collections.sort(indices, comparator);
     ASTAssociation result = copy();
-    MutMap<IExpr, Integer> mutable = keyToIndexMap.mutable();
-    ImSet<Entry<IExpr, Integer>> set = keyToIndexMap.entrySet();
-    for (Entry<IExpr, Integer> element : set) {
+    MutMap<IExpr, Integer> mutable = keyToIndexMap.toMutMap(x -> x);
+    UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyToIndexMap.iterator();
+    while (iterator.hasNext()) {
+      UnEntry<IExpr, Integer> element = iterator.next();
       int indx = element.getValue();
       for (int i = 0; i < indices.size(); i++) {
         if (indices.getInt(i) == indx) {
@@ -918,9 +889,9 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
       }
       int newValue = indices.getInt(indx - 1);
       result.set(indx, getRule(newValue));
-      mutable.assoc(element.getKey(), indx);
+      mutable = mutable.assoc(element.getKey(), indx);
     }
-    result.keyToIndexMap = mutable.immutable();
+    result.keyToIndexMap = mutable;
     return result;
   }
 

@@ -8,16 +8,18 @@ public class PartTest extends AbstractTestCase {
   }
 
   public void testPartErrors() {
+
+    //
+    check("<|a->0,b:>1|>[[{-2+I*2,1,1,1}]]", //
+        "<|a->0,b:>1|>[[{-2+I*2,1,1,1}]]");
+
+
     // Part: Part specification x[[2]] is longer than depth of object.
     check("x[[2]]", //
         "x[[2]]");
     // Part: The expression 3;;1 cannot be used as a part specification.
     check("{1, 2, 3, 4}[[3;;1]]", //
         "{1,2,3,4}[[3;;1]]");
-
-    //
-    check("<|a->0,b:>1|>[[{-2+I*2,1,1,1}]]", //
-        "<|a->0,b:>1|>[[{-2+I*2,1,1,1}]]");
   }
 
   public void testPartRead() {

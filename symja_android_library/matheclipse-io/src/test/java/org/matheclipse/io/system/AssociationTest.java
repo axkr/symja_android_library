@@ -295,6 +295,8 @@ public class AssociationTest extends AbstractTestCase {
   }
 
   public void testKeys02() {
+    check("Keys(<|a -> x, a -> y, <|a -> z, <|b -> t|>, <||>, {}|>|>)", //
+        "{a,b}");
     check("Keys(<|a -> x, b -> y|>)", //
         "{a,b}");
     check("Keys({a -> x, b -> y})", //
@@ -562,18 +564,38 @@ public class AssociationTest extends AbstractTestCase {
         "<|age->18,sex->F|>");
   }
 
+  public void testPrependTo() {
+    check("x = <|1 :> a, 2 :> b|>;PrependTo(x, 4 -> d)", //
+        "<|4->d,1:>a,2:>b|>");
+    check("x = <|1 :> a, 2 :> b|>;PrependTo(x, 4 -> d);PrependTo(x, 2 :> d)", //
+        "<|2:>d,4->d,1:>a|>");
+    check("x = <|1 -> a, 2 -> b|>;PrependTo(x, 4 -> d)", //
+        "<|4->d,1->a,2->b|>");
+  }
+
+  final static String timing1 = "GetKey(assoc_, index_) := First @ Keys @ Take(assoc, {index});\n"
+      + "a = 100*100;\r\n" + "k = Table(i, {i, a}); \n" + "v = RandomReal({0, 1000000}, {a}); \n"
+      + "assoc = Association(MapThread(Rule, {k, v})); \n"
+      + "Print(AbsoluteTiming(Keys(assoc)[[10000]]) );\n"
+      + "Print(AbsoluteTiming(GetKey(assoc, 10000)) )";
+
+  public void testTiming() {
+    check(timing1, //
+        "");
+  }
   /** The JUnit setup method */
   @Override
   protected void setUp() {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
-    Config.MAX_AST_SIZE = 1000000;
+    Config.MAX_AST_SIZE = Integer.MAX_VALUE;
     EvalEngine.get().setIterationLimit(50000);
   }
 
   @Override
   protected void tearDown() throws Exception {
     super.tearDown();
+    Config.MAX_AST_SIZE = 1000000;
     Config.SHORTEN_STRING_LENGTH = 80;
   }
 }

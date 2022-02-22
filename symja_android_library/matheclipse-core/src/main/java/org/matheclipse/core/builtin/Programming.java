@@ -3799,6 +3799,9 @@ public final class Programming {
             result.appendRule(assoc.getRule(listArg.first()));
           } else if (listArg.isString()) {
             result.appendRule(assoc.getRule(listArg));
+          } else if (listArg.isNumber()) {
+            // The expression `1` cannot be used as a part specification.
+            return IOFunctions.printMessage(S.Part, "pkspec1", F.list(list), engine);
           }
         }
         return result;
@@ -3856,6 +3859,9 @@ public final class Programming {
           } else {
             return F.NIL;
           }
+        } else if (listArg.isNumber() || listArg.isString()) {
+          // The expression `1` cannot be used as a part specification.
+          return IOFunctions.printMessage(S.Part, "pkspec1", F.list(list), engine);
         }
       }
       return result;
