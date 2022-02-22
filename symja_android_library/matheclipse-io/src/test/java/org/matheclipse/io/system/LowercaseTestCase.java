@@ -11333,6 +11333,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testImportString() {
+    check("ImportString(\"{\\\"id\\\":1,\\\"text\\\":\\\"ñía\\\"}\", \"JSON\") // InputForm", //
+        "{\"id\"->1,\"text\"->\"ñía\"}");
     check("ImportString(\"3,4,6\\na,b,c\", \"Table\")", //
         "{{3,4,6},{a,b,c}}");
     check("ImportString(\"3,4,6\\na,b,c\", \"Text\") // InputForm", //
@@ -15241,6 +15243,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testMean() {
+    check("Mean(Array(Subscript(a, ##) &, {2, 2}))", //
+        "{1/2*(Subscript(a,1,1)+Subscript(a,2,1)),1/2*(Subscript(a,1,2)+Subscript(a,2,2))}");
+    check("Mean(Array(Subscript(a, ##) &, {2, 2, 2}))", //
+        "{{1/2*(Subscript(a,1,1,1)+Subscript(a,2,1,1)),1/2*(Subscript(a,1,1,2)+Subscript(a,\n"
+            + "2,1,2))},{1/2*(Subscript(a,1,2,1)+Subscript(a,2,2,1)),1/2*(Subscript(a,1,2,2)+Subscript(a,\n"
+            + "2,2,2))}}");
     check("Mean({26, 64, 36})", //
         "42");
     check("Mean({1, 1, 2, 3, 5, 8})", //
@@ -19514,13 +19522,13 @@ public class LowercaseTestCase extends AbstractTestCase {
     check("Prepend(<|a->0,b:>1|>,<|a->0,b:>1|>)", //
         "<|a->0,b:>1|>");
     check("Prepend(<|a->0,b:>1|>,<|b:>1,a->0|>)", //
-        "<|a->0,b:>1|>");
+        "<|b:>1,a->0|>");
     check("$n=4;Prepend(Table(0,{$n +(-1)*1}),1)", //
         "{1,0,0,0}");
     check("Prepend(1/Sqrt(5),<|x->y|>)", //
         "<|x->y^(1/Sqrt(5))|>");
     check("Prepend(<|1 -> a, 2 -> b|>, {3 -> d, 4 -> e})", //
-        "<|4->e,3->d,1->a,2->b|>");
+        "<|3->d,4->e,1->a,2->b|>");
     check("Prepend(1/Sqrt(5),<|x->y|>)", //
         "<|x->y^(1/Sqrt(5))|>");
     check("Prepend(Infinity,-I)", //
@@ -20971,6 +20979,11 @@ public class LowercaseTestCase extends AbstractTestCase {
     // check("Refine((-1)^(x+y), Element(k/2, Integers))", //
     // "(-1)^y");
 
+    check("Refine(Abs(a^b),Element(b,Reals))", //
+        "Abs(a)^b");
+    check("Refine(Abs(a^b), b<0)", //
+        "Abs(a)^b");
+
     check("Refine(Re(2*I*Pi*C(1) + Log(2)) ,Element(C(1) ,Reals))", //
         "Log(2)");
     check("Refine(7+2*m+3*n>0)", //
@@ -22353,6 +22366,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   // }
 
   public void testSimplify() {
+
     check("Simplify(0^x, x==0)", //
         "Indeterminate");
     check("Simplify(0^x, x>0)", //
@@ -22530,6 +22544,9 @@ public class LowercaseTestCase extends AbstractTestCase {
         "1");
     check(
         "Simplify((1/3+(1/3)*(-2)^(-1/3)*2^(-2/3)*(1+(0+-1*I)*3^(1/2))+(1/6)*(-1)^(1/3)*(1+(0+1*I)*3^(1/2)))^2)", //
+        "0");
+
+    check("$Assumptions=(x>0);Simplify(0^x)", //
         "0");
   }
 
