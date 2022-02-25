@@ -19,6 +19,8 @@ import org.jgrapht.nio.dot.DOTImporter;
 import org.jgrapht.nio.graphml.GraphMLImporter;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.convert.ExpressionJSONConvert;
+import org.matheclipse.core.convert.JSONConvert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -32,13 +34,10 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
-import org.matheclipse.core.reflection.system.ImportString;
 import org.matheclipse.io.tensor.io.ImageFormat;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -75,6 +74,8 @@ public class Import extends AbstractEvaluator {
             // graph Format
             reader = new FileReader(fileName);
             return graphImport(reader, format, engine);
+          case EXPRESSIONJSON:
+            return expressionJSONImport(fileName);
           case JSON:
             return jsonImport(fileName);
           case M:
@@ -127,21 +128,17 @@ public class Import extends AbstractEvaluator {
     return F.NIL;
   }
 
-  private static IExpr jsonImport(String fileName) {
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      JsonNode node = mapper.readTree(new URL(fileName));
-      return ImportString.importJSONRecursive(node);
-    } catch (JsonParseException e) {
-      e.printStackTrace();
-    } catch (JsonMappingException e) {
-      e.printStackTrace();
-    } catch (MalformedURLException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return F.NIL;
+  private static IExpr expressionJSONImport(String fileName)
+      throws MalformedURLException, IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode node = mapper.readTree(new URL(fileName));
+    return ExpressionJSONConvert.importExpressionJSONRecursive(node);
+  }
+
+  private static IExpr jsonImport(String fileName) throws MalformedURLException, IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode node = mapper.readTree(new URL(fileName));
+    return JSONConvert.importJSONRecursive(node);
   }
 
   @Override

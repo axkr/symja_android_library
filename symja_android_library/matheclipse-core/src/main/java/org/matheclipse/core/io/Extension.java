@@ -15,6 +15,8 @@ public enum Extension {
   DAT, //
   /** graph (theory) format */
   DOT, //
+  /** ExpressionJSON */
+  EXPRESSIONJSON, //
   /** animation format */
   GIF, //
   /** graph (theory) format */
@@ -68,7 +70,7 @@ public enum Extension {
           return DAT;
         }
         if (ucExtension.equals("ExpressionJSON")) {
-          return JSON;
+          return EXPRESSIONJSON;
         }
         return valueOf(ucExtension);
       }
@@ -88,7 +90,7 @@ public enum Extension {
   public static Extension exportExtension(String extensionString) {
     try {
       if (extensionString.equals("ExpressionJSON")) {
-        return JSON;
+        return EXPRESSIONJSON;
       }
       String ucExtension = extensionString.toUpperCase();
       if (ucExtension.equals("DATA")) {

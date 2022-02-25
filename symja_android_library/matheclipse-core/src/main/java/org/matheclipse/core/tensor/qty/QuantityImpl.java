@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.math.MathException;
 
 public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, Externalizable {
@@ -115,6 +116,21 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
   @Override
   public IExpr floor() {
     return ofUnit(S.Floor.of(arg1));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String fullFormString() {
+    final String sep = ", ";
+    StringBuilder text = new StringBuilder();
+    text.append("Quantity");
+    text.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
+    text.append(arg1.fullFormString());
+    text.append(sep + "\"");
+    text.append(fData.toString());
+    text.append("\"");
+    text.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
+    return text.toString();
   }
 
   @Override

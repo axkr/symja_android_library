@@ -11333,6 +11333,22 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testImportString() {
+    check(
+        "ImportString( \"[\\\"Association\\\",[\\\"Rule\\\",\\\"'x'\\\",\\\"1\\\"],[\\\"Rule\\\",\\\"'y'\\\",\\\"2\\\"],[\\\"Rule\\\",\\\"'z'\\\",\\\"3\\\"]]\", \"ExpressionJSON\") // InputForm", //
+        "<|\"x\"->1,\"y\"->2,\"z\"->3|>");
+    check(
+        "ImportString(\"[\\\"Graphics3D\\\", [\\\"Line\\\",[\\\"List\\\", [\\\"List\\\",1.0,1.0,-1.0], [\\\"List\\\",2.0,2.0,1.0], [\\\"List\\\",3.0,3.0,-1.0], [\\\"List\\\",4.0,4.0,1.0]] ] ]\", \"ExpressionJSON\")", //
+        "Graphics3D(Line({{1.0,1.0,-1.0},{2.0,2.0,1.0},{3.0,3.0,-1.0},{4.0,4.0,1.0}}))");
+
+    check(
+        "ImportString(\"[ \\\"Quantity\\\", 2.45, \\\"'Meters'\\\"]\", \"ExpressionJSON\") // FullForm", //
+        "Quantity(2.45`, \"Meters\")");
+    check("ImportString(\"\\\"'abc'\\\"\", \"ExpressionJSON\") // FullForm", //
+        "\"abc\"");
+    check("ImportString(\"[\\\"List\\\", 1, 2, 3 ]\", \"ExpressionJSON\")", //
+        "{1,2,3}");
+
+
     check("ImportString(\"{\\\"id\\\":1,\\\"text\\\":\\\"ñía\\\"}\", \"JSON\") // InputForm", //
         "{\"id\"->1,\"text\"->\"ñía\"}");
     check("ImportString(\"3,4,6\\na,b,c\", \"Table\")", //

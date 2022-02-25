@@ -42,13 +42,13 @@ public class ExportString extends AbstractEvaluator {
     }
     Extension format = Extension.exportExtension(((IStringX) ast.arg2()).toString());
     try (StringWriter writer = new StringWriter()) {
-      if (format.equals(Extension.JSON)) {
+      if (format.equals(Extension.EXPRESSIONJSON)) {
         if (arg1.isNumber() || arg1.isSymbol()) {
           return F.stringx(arg1.toString());
         } else if (arg1.isString()) {
           return F.stringx("'" + arg1.toString() + "'");
         }
-        return ExpressionJSONConvert.exportIStringX(arg1);
+        return ExpressionJSONConvert.exportExpressionJSONIStringX(arg1);
       }
 
       if (arg1 instanceof GraphExpr) {
