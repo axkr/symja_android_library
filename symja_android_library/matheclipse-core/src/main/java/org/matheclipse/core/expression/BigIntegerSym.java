@@ -29,7 +29,6 @@ import com.google.common.math.BigIntegerMath;
  */
 public class BigIntegerSym extends AbstractIntegerSym {
 
-  /** */
   private static final long serialVersionUID = 6389228668633533063L;
 
   public static BigInteger eulerPhi(BigInteger value) throws ArithmeticException {
@@ -781,11 +780,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   /** {@inheritDoc} */
   @Override
   public int toInt() throws ArithmeticException {
-    int val = NumberUtil.toIntDefault(fBigIntValue);
-    if (val != Integer.MIN_VALUE) {
-      return val;
-    }
-    throw new ArithmeticException("toInt: numerator is a big integer");
+    return fBigIntValue.intValueExact();
   }
 
   /** {@inheritDoc} */
@@ -811,7 +806,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   /** {@inheritDoc} */
   @Override
   public long toLong() throws ArithmeticException {
-    return NumberUtil.toLong(fBigIntValue);
+    return fBigIntValue.longValueExact();
   }
 
   @Override

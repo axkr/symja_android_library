@@ -498,22 +498,18 @@ public class ComplexSym implements IComplex {
         return new StringBuilder(prefix).append("CNI");
       }
     }
-
-    int realNumerator = NumberUtil.toIntDefault(fReal.toBigNumerator());
-    int realDenominator = NumberUtil.toIntDefault(fReal.toBigDenominator());
-    int imagNumerator = NumberUtil.toIntDefault(fImaginary.toBigNumerator());
-    int imagDenominator = NumberUtil.toIntDefault(fImaginary.toBigDenominator());
-    if (realNumerator != Integer.MIN_VALUE && //
-        realDenominator != Integer.MIN_VALUE && //
-        imagNumerator != Integer.MIN_VALUE && //
-        imagDenominator != Integer.MIN_VALUE) {
-      return new StringBuilder(prefix).append("CC(").append(realNumerator).append("L,")
-          .append(realDenominator).append("L,").append(imagNumerator).append("L,")
-          .append(imagDenominator).append("L)");
+    BigInteger realNumerator = fReal.toBigNumerator();
+    BigInteger realDenominator = fReal.toBigDenominator();
+    BigInteger imagNumerator = fImaginary.toBigNumerator();
+    BigInteger imagDenominator = fImaginary.toBigDenominator();
+    if (NumberUtil.hasIntValue(realNumerator) && NumberUtil.hasIntValue(realDenominator)
+        && NumberUtil.hasIntValue(imagNumerator) && NumberUtil.hasIntValue(imagDenominator)) {
+      return prefix + "CC(" //
+          + realNumerator.intValue() + "L," + realDenominator.intValue() + "L,"
+          + imagNumerator.intValue() + "L," + imagDenominator.intValue() + "L)";
     }
-    return new StringBuilder(prefix).append("CC(")
-        .append(fReal.internalJavaString(properties, depth, variables)).append(",")
-        .append(fImaginary.internalJavaString(properties, depth, variables)).append(")");
+    return prefix + "CC(" + fReal.internalJavaString(properties, depth, variables) + ","
+        + fImaginary.internalJavaString(properties, depth, variables) + ")";
   }
 
   @Override

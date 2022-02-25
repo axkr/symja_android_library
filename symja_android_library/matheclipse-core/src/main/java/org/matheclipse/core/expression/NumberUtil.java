@@ -154,48 +154,14 @@ public class NumberUtil {
     return a.testBit(0);
   }
 
-  public static long toLong(BigInteger a) throws ArithmeticException {
-    long val = a.longValue();
-    if (!a.equals(BigInteger.valueOf(val))) {
-      throw new ArithmeticException("BigInteger:toLong: number out of range");
-    }
-    return val;
+  public static boolean hasIntValue(BigInteger value) {
+    // This is simlar to what is checked in BigInteger.intValueExact()
+    return value.bitLength() <= 31;
   }
 
-  /**
-   * Converts this number to <code>int</code>. If this integer cannot be represented by an <code>int
-   * </code> type, return the <code>Integer.MIN_VALUE</code> .
-   *
-   * @return the numeric value represented by this integer after conversion to type <code>int</code>
-   *         or the <code>Integer.MIN_VALUE</code> if the cast is not possible
-   */
-  public static int toIntDefault(BigInteger a) {
-    return toIntDefault(a, Integer.MIN_VALUE);
-  }
-
-  /**
-   * Converts this number to <code>int</code>. If this integer cannot be represented by an <code>int
-   * </code> type, return the <code>defaultValue</code> .
-   *
-   * @return the numeric value represented by this integer after conversion to type <code>int</code>
-   *         or the <code>defaultValue</code> if the cast is not possible
-   */
-  public static int toIntDefault(BigInteger a, final int defaultValue) {
-    int val = a.intValue();
-    if (!a.equals(BigInteger.valueOf(val))) {
-      return defaultValue;
-      // throw new ArithmeticException("BigInteger:toInt: number out of range");
-    }
-    return val;
-  }
-
-  /** Test if this BigInteger equals the given <code>int</code> value. */
-  public static boolean isInt(BigInteger a, int value) throws ArithmeticException {
-    // int val = a.intValue();
-    // if (!a.equals(BigInteger.valueOf(val))) {
-    // return false;
-    // }
-    return a.intValue() == value && a.bitLength() <= 31;
+  public static boolean hasLongValue(BigInteger value) {
+    // This is simlar to what is checked in BigInteger.longValueExact()
+    return value.bitLength() <= 63;
   }
 
   /**
@@ -447,10 +413,8 @@ public class NumberUtil {
    * @return <code>true</code> if the number is a perfect square.
    */
   public static final boolean isPerfectSquare(BigInteger bi) {
-    try {
-      return isPerfectSquare(toLong(bi));
-    } catch (ArithmeticException ae) {
-
+    if (hasLongValue(bi))  {
+      return isPerfectSquare(bi.longValueExact());
     }
     return false; // number out of range exception
   }
@@ -465,12 +429,10 @@ public class NumberUtil {
    * @return <code>true</code> if the number is a perfect square.
    */
   public static final boolean isPerfectSquare(BigFraction bf) {
-    try {
-      long num = toLong(bf.getNumerator());
-      long den = toLong(bf.getDenominator());
-      return isPerfectSquare(den) && isPerfectSquare(num);
-    } catch (ArithmeticException ae) {
-
+    BigInteger num = bf.getNumerator();
+    BigInteger den = bf.getDenominator();
+    if (hasLongValue(num) && hasLongValue(den)) {
+      return isPerfectSquare(den.longValueExact()) && isPerfectSquare(num.longValueExact());
     }
     return false; // number out of range exception
   }
@@ -485,12 +447,10 @@ public class NumberUtil {
    * @return <code>true</code> if the number is a perfect square.
    */
   public static final boolean isPerfectSquare(IRational bf) {
-    try {
-      long num = toLong(bf.toBigNumerator());
-      long den = toLong(bf.toBigDenominator());
-      return isPerfectSquare(den) && isPerfectSquare(num);
-    } catch (ArithmeticException ae) {
-
+    BigInteger num = bf.toBigNumerator();
+    BigInteger den = bf.toBigDenominator();
+    if (hasLongValue(num) && hasLongValue(den)) {
+      return isPerfectSquare(den.longValueExact()) && isPerfectSquare(num.longValueExact());
     }
     return false; // number out of range exception
   }

@@ -1,5 +1,7 @@
 package org.matheclipse.core.expression;
 
+import static org.matheclipse.core.expression.NumberUtil.hasIntValue;
+import static org.matheclipse.core.expression.NumberUtil.hasLongValue;
 import java.math.BigInteger;
 import java.util.NoSuchElementException;
 import java.util.function.DoubleFunction;
@@ -90,13 +92,11 @@ public abstract class AbstractFractionSym implements IFraction {
   private static final Logger LOGGER = LogManager.getLogger();
 
   public static BigInteger gcd(BigInteger i1, BigInteger i2) {
-    if (i1.equals(BigInteger.ONE) || i2.equals(BigInteger.ONE))
+    if (i1.equals(BigInteger.ONE) || i2.equals(BigInteger.ONE)) {
       return BigInteger.ONE;
-    int l1 = i1.bitLength();
-    int l2 = i2.bitLength();
-    if (l1 < 31 && l2 < 31) {
+    } else if (hasIntValue(i1) && hasIntValue(i2)) {
       return BigInteger.valueOf(ArithmeticUtils.gcd(i1.intValue(), i2.intValue()));
-    } else if (l1 < 63 && l2 < 63) {
+    } else if (hasLongValue(i1) && hasLongValue(i2)) {
       return BigInteger.valueOf(ArithmeticUtils.gcd(i1.longValue(), i2.longValue()));
     } else {
       return i1.gcd(i2);
@@ -126,7 +126,7 @@ public abstract class AbstractFractionSym implements IFraction {
     if (BigInteger.ZERO.equals(denominator)) {
       throw getDivisionTroughZeroException(F.ZZ(numerator)); // Infinite expression `1` encountered.
     }
-    if (denominator.bitLength() <= 31 && numerator.bitLength() <= 31) {
+    if (hasIntValue(denominator) && hasIntValue(numerator)) {
       return valueOf(numerator.intValue(), denominator.intValue());
     }
     return null;
