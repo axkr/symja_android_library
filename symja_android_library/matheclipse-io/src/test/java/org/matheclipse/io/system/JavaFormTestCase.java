@@ -105,4 +105,19 @@ public class JavaFormTestCase extends AbstractTestCase {
         "org.matheclipse.core.tensor.qty.IQuantity.of(org.matheclipse.core.expression.F.ZZ(43L),org.matheclipse.core.tensor.qty.IUnit.ONE)",
         quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, null).toString());
   }
+
+  public void testJavaFormBigFraction_tooLargeForLong() {
+    IExpr quantity =
+        F.QQ(F.ZZ("43000000000000000000000000000000000000000000000000000000", 10), F.ZZ(3));
+    assertEquals(
+        "F.QQ(F.ZZ(\"43000000000000000000000000000000000000000000000000000000\", 10),F.C3)",
+        quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES, -1, null).toString());
+
+    IExpr quantity2 =
+        F.QQ(F.ZZ("43000000000000000000000000000000000000000000000000000000", 10), F.ZZ(27));
+    assertEquals(
+        "F.QQ(F.ZZ(\"43000000000000000000000000000000000000000000000000000000\", 10),F.ZZ(27))",
+        quantity2.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES, -1, null).toString());
+
+  }
 }

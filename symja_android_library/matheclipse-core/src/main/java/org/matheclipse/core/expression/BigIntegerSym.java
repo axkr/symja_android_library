@@ -356,57 +356,58 @@ public class BigIntegerSym extends AbstractIntegerSym {
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
-    StringBuilder javaForm = new StringBuilder(prefix);
-    int value = toIntDefault(); // NumberUtil.toInt(fBigIntValue);
-    if (value != Integer.MIN_VALUE) {
-      switch (value) {
+    if (NumberUtil.hasIntValue(fBigIntValue)) {
+      int intValue = fBigIntValue.intValueExact();
+      switch (intValue) {
         case -1:
-          return javaForm.append("CN1");
+          return prefix + "CN1";
         case -2:
-          return javaForm.append("CN2");
+          return prefix + "CN2";
         case -3:
-          return javaForm.append("CN3");
+          return prefix + "CN3";
         case -4:
-          return javaForm.append("CN4");
+          return prefix + "CN4";
         case -5:
-          return javaForm.append("CN5");
+          return prefix + "CN5";
         case -6:
-          return javaForm.append("CN6");
+          return prefix + "CN6";
         case -7:
-          return javaForm.append("CN7");
+          return prefix + "CN7";
         case -8:
-          return javaForm.append("CN8");
+          return prefix + "CN8";
         case -9:
-          return javaForm.append("CN9");
+          return prefix + "CN9";
         case -10:
-          return javaForm.append("CN10");
+          return prefix + "CN10";
         case 0:
-          return javaForm.append("C0");
+          return prefix + "C0";
         case 1:
-          return javaForm.append("C1");
+          return prefix + "C1";
         case 2:
-          return javaForm.append("C2");
+          return prefix + "C2";
         case 3:
-          return javaForm.append("C3");
+          return prefix + "C3";
         case 4:
-          return javaForm.append("C4");
+          return prefix + "C4";
         case 5:
-          return javaForm.append("C5");
+          return prefix + "C5";
         case 6:
-          return javaForm.append("C6");
+          return prefix + "C6";
         case 7:
-          return javaForm.append("C7");
+          return prefix + "C7";
         case 8:
-          return javaForm.append("C8");
+          return prefix + "C8";
         case 9:
-          return javaForm.append("C9");
+          return prefix + "C9";
         case 10:
-          return javaForm.append("C10");
+          return prefix + "C10";
         default:
-          return javaForm.append("ZZ(").append(value).append("L)");
+          return prefix + "ZZ(" + intValue + ")";
       }
+    } else if (NumberUtil.hasLongValue(fBigIntValue)) {
+      return prefix + "ZZ(" + fBigIntValue.longValueExact() + "L)";
     } else {
-      return javaForm.append("ZZ(\"").append(fBigIntValue.toString()).append("\", 10)");
+      return prefix + "ZZ(\"" + fBigIntValue.toString() + "\", 10)"  ;
     }
   }
 
