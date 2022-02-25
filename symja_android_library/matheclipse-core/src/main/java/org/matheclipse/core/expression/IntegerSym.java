@@ -27,8 +27,19 @@ import com.google.common.math.LongMath;
  */
 public class IntegerSym extends AbstractIntegerSym {
 
-  /** */
   private static final long serialVersionUID = 6389228668633533063L;
+
+  static final int LOW = -128;
+  static final int HIGH = 128;
+  static final IntegerSym[] CACHE;
+
+  static {
+    CACHE = new IntegerSym[(HIGH - LOW) + 1];
+    int j = LOW;
+    for (int k = 0; k < CACHE.length; k++) {
+      CACHE[k] = new IntegerSym(j++);
+    }
+  }
 
   /* package private */ int fIntValue;
 
