@@ -885,13 +885,13 @@ public interface IExpr
 
   /**
    * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the
-   * expression itself, did not match the given pattern. Calls <code>isFree(pattern, true)</code>.
+   * expression itself, did not match the given pattern. Calls {@link #has(pattern, true)}.
    *
    * @param pattern a pattern-matching expression
    * @return
    */
   default boolean has(IExpr pattern) {
-    return isFree(pattern, true);
+    return has(pattern, true);
   }
 
   /**
