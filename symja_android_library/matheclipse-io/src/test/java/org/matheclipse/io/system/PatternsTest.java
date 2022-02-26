@@ -91,6 +91,10 @@ public class PatternsTest extends AbstractTestCase {
   }
 
   public void testOptional() {
+
+    check("g(b_.?IntegerQ) :={b}", //
+        "");
+
     check("f(a)/.f(a,b_.)->{a,b}", //
         "f(a)");
     check("f(a,b)/.f(a,b_.)->{a,b}", //

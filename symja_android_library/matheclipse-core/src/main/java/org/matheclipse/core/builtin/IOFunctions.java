@@ -631,6 +631,7 @@ public class IOFunctions {
       "pairs", "The first argument `1` of `2` is not a list of pairs.", //
       "partd", "Part specification `1` is longer than depth of object.", //
       "partw", "Part `1` of `2` does not exist.", //
+      "patop", "Pattern `1` contains inappropriate optional object.", //
       "patvar", "First element in `1` is not a valid pattern name.", //
       "perm", "`1` is not a valid permutation.", //
       "permlist", "Invalid permutation list `1`.", //

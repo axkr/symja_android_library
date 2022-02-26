@@ -85,6 +85,7 @@ public final class PatternMatching {
         S.BlankNullSequence.setEvaluator(BlankNullSequence.CONST);
         S.DownValues.setEvaluator(new DownValues());
         S.Pattern.setEvaluator(Pattern.CONST);
+        S.PatternTest.setEvaluator(new PatternTest());
         S.Clear.setEvaluator(new Clear());
         S.ClearAll.setEvaluator(new ClearAll());
         S.Context.setEvaluator(new Context());
@@ -1387,6 +1388,28 @@ public final class PatternMatching {
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
+  }
+
+  private static final class PatternTest extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1 instanceof IPatternObject) {
+        IPatternObject po = (IPatternObject) arg1;
+        if (po.isPatternOptional() || po.isPatternDefault()) {
+          // Pattern `1` contains inappropriate optional object.
+          return IOFunctions.printMessage(S.PatternTest, "patop", F.list(ast), engine);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
   }
 
   private static final class ReleaseHold extends AbstractCoreFunctionEvaluator {

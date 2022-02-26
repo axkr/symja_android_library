@@ -30,6 +30,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
+import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -373,6 +374,7 @@ public class ExprEvaluatorTests {
 
   static {
     Config.UNPROTECT_ALLOWED = false;
+
     // wait for initializing of Integrate() rules:
     try {
       F.await();
@@ -380,6 +382,7 @@ public class ExprEvaluatorTests {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
+    IOInit.init();
     // define after initialization
     Config.FUZZ_TESTING = true;
     Config.MAX_LOOP_COUNT = Short.MAX_VALUE;
