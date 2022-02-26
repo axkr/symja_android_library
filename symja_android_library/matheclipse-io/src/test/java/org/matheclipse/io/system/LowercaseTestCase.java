@@ -9992,6 +9992,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFullSimplify() {
+    check("FullSimplify(Gamma(z) / Gamma(z-2))", //
+        "(-2+z)*(-1+z)");
     check("FullSimplify( Sqrt(-9+4*Sqrt(5)))", //
         "I*(-2+Sqrt(5))");
 
@@ -22382,7 +22384,6 @@ public class LowercaseTestCase extends AbstractTestCase {
   // }
 
   public void testSimplify() {
-
     check("Simplify(0^x, x==0)", //
         "Indeterminate");
     check("Simplify(0^x, x>0)", //

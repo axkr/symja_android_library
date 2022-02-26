@@ -11,6 +11,18 @@ public class FunctionExpandTest extends AbstractTestCase {
   }
 
   public void testFunctionExpand() {
+    check("FunctionExpand(Gamma(x)/Gamma(x-1))", //
+        "-1+x");
+    check("FunctionExpand(Gamma(x-2)/Gamma(x-11))", //
+        "(-11+x)*(-10+x)*(-9+x)*(-8+x)*(-7+x)*(-6+x)*(-5+x)*(-4+x)*(-3+x)");
+    check("FunctionExpand(Gamma(x+2)/Gamma(x+11))", //
+        "1/((2+x)*(3+x)*(4+x)*(5+x)*(6+x)*(7+x)*(8+x)*(9+x)*(10+x))");
+    check("FunctionExpand(Gamma(x+2)/Gamma(x))", //
+        "x*(1+x)");
+    check("FunctionExpand(Gamma(x-2)/Gamma(x-1))", //
+        "1/(-2+x)");
+    check("FunctionExpand(Gamma(x)/Gamma(x+3))", //
+        "1/(x*(1+x)*(2+x))");
     check("FunctionExpand(E^ProductLog(x))", //
         "x/ProductLog(x)");
     check("FunctionExpand(Log(ProductLog(x)))", //
