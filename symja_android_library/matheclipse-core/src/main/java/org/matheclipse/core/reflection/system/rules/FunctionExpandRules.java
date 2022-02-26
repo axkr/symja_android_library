@@ -86,9 +86,9 @@ public interface FunctionExpandRules {
     // Fibonacci(n_+a_):=((2/(1+Sqrt(5)))^(-a-n)-Cos((a+n)*Pi)/(1/2*(1+Sqrt(5)))^(a+n))/Sqrt(5)/;n∈Integers
     SetDelayed(Fibonacci(Plus(a_,n_)),
       Condition(Times(C1DSqrt5,Plus(Power(Times(C2,Power(Plus(C1,CSqrt5),CN1)),Subtract(Negate(a),n)),Times(CN1,Power(Times(C1D2,Plus(C1,CSqrt5)),Subtract(Negate(a),n)),Cos(Times(Plus(a,n),Pi))))),Element(n,Integers))),
-    // Gamma(a_.Integer+z_)/Gamma(b_.Integer+z_):=If(b<a,Product(z+i,{i,b,-1+a}),1/Product(z+i,{i,a,-1+b}))
-    SetDelayed(Times(Gamma(Plus($p(a, Integer,true),z_)),Power(Gamma(Plus($p(b, Integer,true),z_)),CN1)),
-      If(Less(b,a),Product(Plus(z,i),list(i,b,Plus(CN1,a))),Power(Product(Plus(z,i),list(i,a,Plus(CN1,b))),CN1))),
+    // (Gamma(a_.Integer+z_)*x_.)/Gamma(b_.Integer+z_):=If(b<a,x*Product(z+i,{i,b,-1+a}),x/Product(z+i,{i,a,-1+b}))
+    SetDelayed(Times(Gamma(Plus($p(a, Integer,true),z_)),Power(Gamma(Plus($p(b, Integer,true),z_)),CN1),x_DEFAULT),
+      If(Less(b,a),Times(x,Product(Plus(z,i),list(i,b,Plus(CN1,a)))),Times(x,Power(Product(Plus(z,i),list(i,a,Plus(CN1,b))),CN1)))),
     // Gamma(-1,z_):=1/(E^z*z)+ExpIntegralEi(-z)+1/2*(Log(-1/z)-Log(-z))+Log(z)
     SetDelayed(Gamma(CN1,z_),
       Plus(Power(Times(Exp(z),z),CN1),ExpIntegralEi(Negate(z)),Times(C1D2,Subtract(Log(Negate(Power(z,CN1))),Log(Negate(z)))),Log(z))),

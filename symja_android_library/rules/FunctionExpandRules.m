@@ -36,7 +36,7 @@
  Fibonacci(n_+a_) := ((2/(1 + Sqrt(5)))^(-a-n)-((1/2)*(1+Sqrt(5)))^(-a-n)*Cos((a+n)*Pi))/Sqrt(5)
   /; Element(n, Integers),
   
- Gamma(a_.Integer+z_)*Gamma(b_.Integer+z_)^(-1) := If(b<a, Product((z+i), {i,b,a-1}), Product((z+i), {i,a,b-1})^(-1)),
+ Gamma(a_.Integer+z_)*Gamma(b_.Integer+z_)^(-1)*x_. := If(b<a, x*Product((z+i), {i,b,a-1}), x*Product((z+i), {i,a,b-1})^(-1)),
  Gamma(-1, z_) := 1/(E^z*z) + ExpIntegralEi(-z) + (1/2)*(Log(-(1/z)) - Log(-z)) + Log(z),
  Gamma(-1/2, z_) := 2/(E^z*Sqrt(z)) - 2*Sqrt(Pi)*(1 - Erf(Sqrt(z))),
  Gamma(0, z_) := -ExpIntegralEi(-z) + (1/2)*(-Log(-(1/z)) + Log(-z)) - Log(z),
