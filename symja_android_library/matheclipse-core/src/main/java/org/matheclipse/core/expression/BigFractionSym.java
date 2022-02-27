@@ -431,7 +431,13 @@ public class BigFractionSym extends AbstractFractionSym {
         }
       }
     }
-    return prefix + "QQ(" + numerator.toString() + "L," + denominator.toString() + "L)";
+    if (NumberUtil.hasLongValue(numerator) && NumberUtil.hasLongValue(denominator)) {
+      return prefix + "QQ(" + numerator.toString() + "L," + denominator.toString() + "L)";
+    } else {
+      CharSequence numCode = new BigIntegerSym(numerator).internalJavaString(properties, 0, null);
+      CharSequence denCode = new BigIntegerSym(denominator).internalJavaString(properties, 0, null);
+      return prefix + "QQ(" + numCode + "," + denCode + ")";
+    }
   }
 
   /**
