@@ -405,34 +405,33 @@ public class BigFractionSym extends AbstractFractionSym {
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
-    StringBuilder javaForm = new StringBuilder(prefix);
-    int numerator = NumberUtil.toIntDefault(fFraction.getNumerator());
-    if (numerator == 1 || numerator == -1) {
-      int denominator = NumberUtil.toIntDefault(fFraction.getDenominator());
-      if (numerator == 1) {
-        switch (denominator) {
+    BigInteger numerator = fFraction.getNumerator();
+    BigInteger denominator = fFraction.getDenominator();
+    if (NumberUtil.hasIntValue(numerator) && NumberUtil.hasIntValue(denominator)) {
+      int num = numerator.intValue();
+      if (num == 1) {
+        switch (denominator.intValue()) {
           case 2:
-            return javaForm.append("C1D2");
+            return prefix + "C1D2";
           case 3:
-            return javaForm.append("C1D3");
+            return prefix + "C1D3";
           case 4:
-            return javaForm.append("C1D4");
+            return prefix + "C1D4";
           default:
         }
-      } else if (numerator == -1) {
-        switch (denominator) {
+      } else if (num == -1) {
+        switch (denominator.intValue()) {
           case 2:
-            return javaForm.append("CN1D2");
+            return prefix + "CN1D2";
           case 3:
-            return javaForm.append("CN1D3");
+            return prefix + "CN1D3";
           case 4:
-            return javaForm.append("CN1D4");
+            return prefix + "CN1D4";
           default:
         }
       }
     }
-    return javaForm.append("QQ(").append(fFraction.getNumerator().toString()).append("L,")
-        .append(fFraction.getDenominator().toString()).append("L)");
+    return prefix + "QQ(" + numerator.toString() + "L," + denominator.toString() + "L)";
   }
 
   /**
@@ -619,7 +618,7 @@ public class BigFractionSym extends AbstractFractionSym {
   @Override
   public long toLong() throws ArithmeticException {
     if (toBigDenominator().equals(BigInteger.ONE)) {
-      return NumberUtil.toLong(toBigNumerator());
+      return toBigNumerator().longValueExact();
     }
     if (toBigNumerator().equals(BigInteger.ZERO)) {
       return 0L;
