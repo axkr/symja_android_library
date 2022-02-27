@@ -51,17 +51,6 @@ import it.unimi.dsi.fastutil.ints.IntList;
 public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   private static final Logger LOGGER = LogManager.getLogger();
 
-  static final int low = -128;
-  static final int high = 128;
-  static final IntegerSym cache[];
-
-  static {
-    cache = new IntegerSym[(high - low) + 1];
-    int j = low;
-    for (int k = 0; k < cache.length; k++) {
-      cache[k] = new IntegerSym(j++);
-    }
-  }
   /** The BigInteger constant minus one. */
   public static final BigInteger BI_MINUS_ONE = BigInteger.valueOf(-1L);
 
@@ -228,7 +217,12 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (newnum == Integer.MIN_VALUE) {
       return new BigIntegerSym(newnum);
     }
-    return (newnum >= low && newnum <= high) ? cache[newnum + (-low)] : new IntegerSym(newnum);
+    if (newnum == 1000) {
+      return F.C1000;
+    }
+    return (newnum >= IntegerSym.LOW && newnum <= IntegerSym.HIGH)
+        ? IntegerSym.CACHE[newnum + (-IntegerSym.LOW)]
+        : new IntegerSym(newnum);
   }
 
   public static IInteger valueOf(final long newnum) {

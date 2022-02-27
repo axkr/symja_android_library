@@ -519,7 +519,7 @@ public class F extends S {
   public static final IInteger C100 = AbstractIntegerSym.valueOf(100);
 
   /** Constant integer &quot;1000&quot; */
-  public static final IInteger C1000 = AbstractIntegerSym.valueOf(1000);
+  public static final IInteger C1000 = new IntegerSym(1000);
 
   /**
    * Complex imaginary unit. The parsed symbol &quot;I&quot; is converted on input to this constant.
