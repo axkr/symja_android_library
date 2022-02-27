@@ -10051,6 +10051,8 @@ public class LowercaseTestCase extends AbstractTestCase {
         "4");
     check("-Sqrt(9-4*Sqrt(5))+Sqrt(9+4*Sqrt(5.0))", //
         "4.0");
+    check("FullSimplify(f(x*y,-Sqrt(9-4*Sqrt(5))+Sqrt(9+4*Sqrt(5)),Sqrt(-9-4*Sqrt(5))))", //
+        "f(x*y,4,I*(2+Sqrt(5)))");
 
     check("FullSimplify(Sqrt(2) + Sqrt(3) - Sqrt(5 + 2*Sqrt(6)))", //
         "0");
@@ -13100,7 +13102,7 @@ public class LowercaseTestCase extends AbstractTestCase {
         "double f2(double x) {\n" //
             + "double v1 = 1+x;\n" + "return Math.pow(v1,2)+Math.pow(v1,3);\n" + "}\n" + "");
     check("JavaForm(f(123456789123456789))", //
-        "$(f,ZZ(\"123456789123456789\", 10))");
+        "$(f,ZZ(123456789123456789L))");
 
     check("JavaForm(E^3-Cos(Pi^2/x), Prefix->True)", //
         "F.Subtract(F.Exp(F.C3),F.Cos(F.Times(F.Sqr(F.Pi),F.Power(F.x,F.CN1))))");
