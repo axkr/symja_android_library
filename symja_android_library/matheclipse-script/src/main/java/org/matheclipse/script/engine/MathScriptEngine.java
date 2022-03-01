@@ -42,7 +42,17 @@ public class MathScriptEngine extends AbstractScriptEngine {
   private String fDecimalFormat;
 
   public MathScriptEngine() {
-    fEngine = new EvalEngine(true);
+    this(new EvalEngine(true));
+  }
+
+  /**
+   * This constructor is needed for external JUnit tests
+   * 
+   * @param engine
+   */
+  @Deprecated
+  public MathScriptEngine(EvalEngine engine) {
+    fEngine = engine;
     if (!initialized) {
       initialized = true;
       try {

@@ -74,6 +74,10 @@ public class DistributionTest extends AbstractTestCase {
   }
 
   public void testGammaDistribution() {
+    check("CentralMoment(GammaDistribution(a, b),n)", //
+        "b^n*Hypergeometric1F1(-n,1-a-n,-a)*Pochhammer(a,n)");
+    check("CentralMoment(GammaDistribution(a, b),2)", //
+        "a*b^2");
     check("Mean(GammaDistribution(a, b))", //
         "a*b");
     check("Mean(GammaDistribution(a, b, g, d))", //
@@ -99,6 +103,13 @@ public class DistributionTest extends AbstractTestCase {
   }
 
   public void testNormalDistribution() {
+
+    check("CentralMoment(NormalDistribution(a, b),n)", //
+        "Piecewise({{b^n*(-1+n)!!,Mod(n,2)==0&&n>=0}},0)");
+    check("CentralMoment(NormalDistribution(a, b),2)", //
+        "b^2");
+    check("CentralMoment(NormalDistribution(a, b),3)", //
+        "0");
     check("PDF(NormalDistribution(m,0), x)", //
         "PDF(NormalDistribution(m,0),x)");
     check("Mean(NormalDistribution( ) )", //

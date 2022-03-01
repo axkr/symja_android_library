@@ -1226,6 +1226,29 @@ public class StatisticsFunctions {
         IExpr r = ast.arg2();
         return F.Divide(F.Total(F.Power(F.Subtract(list, F.Mean(list)), r)), F.Length(list));
       }
+      try {
+        if (ast.arg1().isAST()) {
+          IAST dist = (IAST) ast.arg1();
+          IExpr order = ast.arg2();
+          if (dist.head().isSymbol()) {
+            ISymbol head = (ISymbol) dist.head();
+            if (dist.head().isSymbol()) {
+              if (head instanceof IBuiltInSymbol) {
+                IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+                if (evaluator instanceof ICentralMoment) {
+                  ICentralMoment centralMoment = (ICentralMoment) evaluator;
+                  dist = centralMoment.checkParameters(dist);
+                  if (dist.isPresent()) {
+                    return centralMoment.centralMoment(dist, order, engine);
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (Exception ex) {
+        LOGGER.debug("PDF.evaluate() failed", ex);
+      }
       return F.NIL;
     }
 
@@ -1236,6 +1259,11 @@ public class StatisticsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+  /** central moment function */
+  private interface ICentralMoment extends IDistribution {
+    IExpr centralMoment(IAST dist, IExpr n, EvalEngine engine);
   }
 
   private static final class ChiSquareDistribution extends AbstractEvaluator
@@ -2062,11 +2090,27 @@ public class StatisticsFunctions {
   }
 
   private static final class GammaDistribution extends AbstractEvaluator
-      implements IDistribution, IRandomVariate, IStatistics, IPDF, ICDF {
+      implements ICentralMoment, IDistribution, IRandomVariate, IStatistics, IPDF, ICDF {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 2 or 4 arguments
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr centralMoment(IAST dist, IExpr n, EvalEngine engine) {
+      if (dist.isAST2()) {
+        IExpr a = dist.arg1();
+        IExpr b = dist.arg2();
+        IExpr aMinus = a.negate();
+        IExpr nMinus = n.negate();
+        // b^n*Hypergeometric1F1(-n, 1 - a - n, -a)*Pochhammer(a, n)
+        return F.Together(F.Times(//
+            F.Power(b, n), //
+            F.Hypergeometric1F1(nMinus, F.Plus(F.C1, aMinus, nMinus), aMinus), //
+            F.Pochhammer(a, n)));
+      }
       return F.NIL;
     }
 
@@ -4759,11 +4803,40 @@ public class StatisticsFunctions {
    * </pre>
    */
   private static final class NormalDistribution extends AbstractEvaluator
-      implements IContinuousDistribution, IStatistics, IRandomVariate, IPDF, ICDF {
+      implements ICentralMoment, IContinuousDistribution, IStatistics, IRandomVariate, IPDF, ICDF {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 0 or 2 args are allowed
+      if (ast.isAST1()) {
+        // `1` called with 1 argument; `2` arguments are expected.
+        return IOFunctions.printMessage(ast.topHead(), "argr", F.List(S.NormalDistribution, F.C2),
+            engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
+
+    @Override
+    public IExpr centralMoment(IAST dist, IExpr n, EvalEngine engine) {
+      IExpr b = F.C1;
+      if (dist.isAST0() || dist.isAST2()) {
+        if (dist.isAST2()) {
+          b = dist.arg2();
+        }
+        // don't use EvenQ, it evals to false in most cases
+        // Piecewise({{b^n*Factorial2(-1 + n), Mod(n,2)==0 && n >= 0}}, 0)
+        IExpr function = engine.evaluate(F.Times(//
+            F.Power(b, n), //
+            F.Factorial2(F.Plus(F.CN1, n))));
+        return F.Piecewise(
+            F.List(F.List(function, F.And(F.Equal(F.Mod(n, F.C2), F.C0), F.GreaterEqual(n, F.C0)))),
+            F.C0);
+      }
       return F.NIL;
     }
 
