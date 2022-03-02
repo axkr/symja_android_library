@@ -78,7 +78,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
    *
    * @return the set of divisors of the number thats prime factorization is calculated
    */
-  private SortedSet<IInteger> divisorsSet() {
+  private SortedSet<IInteger> divisorsSet() throws ASTElementLimitExceeded {
     IAST factors = factorInteger();
     if (factors.size() == 1) {
       TreeSet<IInteger> treeSet = new TreeSet<IInteger>();
@@ -118,6 +118,9 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
         }
       }
       if (divisors.add(divisor)) {
+        if (Config.MAX_AST_SIZE < divisors.size()) {
+          ASTElementLimitExceeded.throwIt(divisors.size());
+        }
         for (int i = 0; i < maxPowers.size(); i++) {
           int maxPower = maxPowers.getInt(i);
           int power = powers.getInt(i);

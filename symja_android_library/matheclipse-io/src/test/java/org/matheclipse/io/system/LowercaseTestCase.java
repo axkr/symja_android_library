@@ -6004,6 +6004,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testDivisors() {
+    check("Length(Divisors(Factorial(18)))", //
+        "14688");
     check("Divisors(5)", //
         "{1,5}");
     check("Divisors(101)", //
