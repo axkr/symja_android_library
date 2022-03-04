@@ -5,13 +5,11 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -275,7 +273,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
   protected IAST vars;
 
   /** The names of all known variables. */
-  private static Set<IExpr> knownVars = new HashSet<IExpr>();
+  // private Set<IExpr> knownVars = new HashSet<IExpr>();
 
   /** The constant polynomial 0 for this ring. */
   public final SymbolicPolynomial ZERO;
@@ -400,7 +398,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
     if (vars.argSize() != nvar) {
       throw new IllegalArgumentException("incompatible variable size " + vars.size() + ", " + nvar);
     }
-    addVars(vars);
+    // addVars(vars);
     // }
   }
 
@@ -1360,16 +1358,14 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
    *
    * @param vars variable names to be recorded.
    */
-  public static void addVars(IAST vars) {
-    if (vars == null) {
-      return;
-    }
-    synchronized (knownVars) {
-      for (int i = 1; i < vars.size(); i++) {
-        knownVars.add(vars.get(i)); // eventualy names 'overwritten'
-      }
-    }
-  }
+  // public void addVars(IAST vars) {
+  // if (vars == null) {
+  // return;
+  // }
+  // for (int i = 1; i < vars.size(); i++) {
+  // knownVars.add(vars.get(i)); // eventualy names 'overwritten'
+  // }
+  // }
 
   /**
    * Permute variable names.

@@ -1233,7 +1233,7 @@ public class SimplifyFunctions {
       }
 
       // note: this should also cache FullSimplify calls
-      IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);
+      IExpr result = engine.getCache(ast);
       if (result != null) {
         return result;
       }
@@ -1288,7 +1288,7 @@ public class SimplifyFunctions {
 
         temp = simplifyStep(arg1, complexityFunction, minCounter, result, engine,
             isFullSimplifyMode());
-        F.REMEMBER_AST_CACHE.put(ast, temp);
+        engine.putCache(ast, temp);
         return temp;
 
       } catch (ArithmeticException e) {

@@ -263,7 +263,7 @@ public class MinMaxFunctions {
       IBuiltInSymbol domain = S.Reals;
       try {
         if (xExpr.isSymbol() && yExpr.isSymbol()) {
-          IExpr match = callMatcher(ast, function);
+          IExpr match = callMatcher(ast, function, engine);
           if (match.isPresent()) {
             return match;
           }
@@ -344,10 +344,10 @@ public class MinMaxFunctions {
       return LAZY_MATCHER.get();
     }
 
-    public static IExpr callMatcher(final IAST ast, IExpr arg1) {
+    public static IExpr callMatcher(final IAST ast, IExpr arg1, EvalEngine engine) {
       IExpr temp = getMatcher().replaceAll(ast);
       if (temp.isPresent()) {
-        F.REMEMBER_AST_CACHE.put(ast, temp);
+        engine.putCache(ast, temp);
       }
       return temp;
     }

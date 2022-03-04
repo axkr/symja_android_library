@@ -335,6 +335,16 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public boolean equals(final Object obj) {
+    if (Config.FUZZ_TESTING) {
+      if (obj instanceof ISymbol) {
+        if (fSymbolName.equals(((ISymbol) obj).getSymbolName())
+            && fContext.equals(((ISymbol) obj).getContext())) {
+          if (this != obj) {
+            throw new NullPointerException();
+          }
+        }
+      }
+    }
     return this == obj;
   }
 

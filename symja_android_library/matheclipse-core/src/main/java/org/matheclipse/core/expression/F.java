@@ -150,20 +150,6 @@ public class F extends S {
   public static final Cache<IAST, IExpr> REMEMBER_INTEGER_CACHE =
       CacheBuilder.newBuilder().maximumSize(500).build();
 
-  /**
-   * In computing, memoization or memoisation is an optimization technique used primarily to speed
-   * up computer programs by storing the results of expensive function calls and returning the
-   * cached result when the same inputs occur again.
-   *
-   * <p>
-   * This cache is especially used for expensive functions like <code>FullSimplify, Factor,...
-   * </code> to remember the results of the function call. It often also stores the <code>F.NIL
-   * </code> result to indicate that a new evaluation of a function is unnecessary. See:
-   * <a href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
-   */
-  public static final Cache<IAST, IExpr> REMEMBER_AST_CACHE =
-      CacheBuilder.newBuilder().maximumSize(500).build();
-
   /** Set to <code>true</code> at the start of initSymbols() method */
   private static volatile boolean isSystemStarted = false;
 

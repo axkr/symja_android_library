@@ -959,7 +959,7 @@ public class BesselFunctions {
         try {
           Complex nc = n.evalComplex();
           Complex zc = z.evalComplex();
-          return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast);
+          return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
 
         } catch (ValidateException ve) {
           return IOFunctions.printMessage(ast.topHead(), ve, engine);
@@ -991,7 +991,7 @@ public class BesselFunctions {
         try {
           Complex nc = n.evalComplex();
           Complex zc = z.evalComplex();
-          return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast);
+          return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
         } catch (ValidateException ve) {
           ve.printStackTrace();
           return IOFunctions.printMessage(ast.topHead(), ve, engine);
@@ -1096,7 +1096,7 @@ public class BesselFunctions {
           if (ast.isAST3()) {
             Complex a3 = ast.arg3().evalComplex();
           }
-          return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast);
+          return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
 
         } catch (ValidateException ve) {
           return IOFunctions.printMessage(ast.topHead(), ve, engine);

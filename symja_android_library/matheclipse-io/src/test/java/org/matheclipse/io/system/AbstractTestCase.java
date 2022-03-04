@@ -187,11 +187,6 @@ public abstract class AbstractTestCase extends TestCase {
         engine.setIterationLimit(500);
         engine.setOutListDisabled(false, (short) 10);
 
-        EvalEngine numericEngine = (EvalEngine) fScriptEngine.get("EVAL_ENGINE");
-        numericEngine.init();
-        numericEngine.setRecursionLimit(512);
-        numericEngine.setIterationLimit(500);
-        numericEngine.setOutListDisabled(false, (short) 10);
       }
     } catch (Exception e) {
       e.printStackTrace();

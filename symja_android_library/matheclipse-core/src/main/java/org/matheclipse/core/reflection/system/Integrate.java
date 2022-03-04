@@ -699,8 +699,8 @@ public class Integrate extends AbstractFunctionEvaluator {
         boolean newCache = false;
         try {
 
-          if (engine.rememberASTCache != null) {
-            IExpr result = engine.rememberASTCache.getIfPresent(ast);
+          if (engine.rubiASTCache != null) {
+            IExpr result = engine.rubiASTCache.getIfPresent(ast);
             if (result != null) { // &&engine.getRecursionCounter()>0) {
               if (result.isPresent()) {
                 return result;
@@ -709,7 +709,7 @@ public class Integrate extends AbstractFunctionEvaluator {
             }
           } else {
             newCache = true;
-            engine.rememberASTCache = CacheBuilder.newBuilder().maximumSize(50).build();
+            engine.rubiASTCache = CacheBuilder.newBuilder().maximumSize(50).build();
           }
           try {
             engine.setQuietMode(true);
@@ -717,7 +717,7 @@ public class Integrate extends AbstractFunctionEvaluator {
               engine.setRecursionLimit(Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT);
             }
 
-            engine.rememberASTCache.put(ast, F.NIL);
+            engine.rubiASTCache.put(ast, F.NIL);
             IExpr temp = S.Integrate.evalDownRule(EvalEngine.get(), ast);
             if (temp.isPresent()) {
               if (temp.equals(ast)) {
@@ -728,7 +728,7 @@ public class Integrate extends AbstractFunctionEvaluator {
                 return F.NIL;
               }
               if (temp.isAST()) {
-                engine.rememberASTCache.put(ast, temp);
+                engine.rubiASTCache.put(ast, temp);
               }
               return temp;
             }
@@ -754,7 +754,7 @@ public class Integrate extends AbstractFunctionEvaluator {
         } finally {
           engine.setRecursionLimit(limit);
           if (newCache) {
-            engine.rememberASTCache = null;
+            engine.rubiASTCache = null;
           }
           engine.setQuietMode(quietMode);
         }

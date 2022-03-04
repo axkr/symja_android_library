@@ -2173,7 +2173,7 @@ public class Algebra {
         return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
       }
 
-      IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);
+      IExpr result = engine.getCache(ast);
       if (result != null) {
         if (result.isPresent()) {
           return result;
@@ -2194,12 +2194,12 @@ public class Algebra {
               IExpr denominator = factorExpr(F.Factor(parts[1]), parts[1], eVar, false, engine);
               if (numerator.isPresent() && denominator.isPresent()) {
                 IExpr temp = F.Divide(numerator, denominator);
-                F.REMEMBER_AST_CACHE.put(ast, temp);
+                engine.putCache(ast, temp);
                 if (temp.isPresent()) {
                   return temp;
                 }
               } else {
-                F.REMEMBER_AST_CACHE.put(ast, F.NIL);
+                engine.putCache(ast, F.NIL);
               }
             } catch (JASConversionException e) {
               LOGGER.debug("Factor.evaluate() failed", e);
@@ -2217,7 +2217,7 @@ public class Algebra {
           }
         }
         IExpr temp = factorExpr(ast, expr, eVar, false, engine);
-        F.REMEMBER_AST_CACHE.put(ast, temp);
+        engine.putCache(ast, temp);
         if (temp.isPresent()) {
           return temp;
         }
@@ -2476,7 +2476,7 @@ public class Algebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       VariablesSet eVar = new VariablesSet(ast.arg1());
-      IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);
+      IExpr result = engine.getCache(ast);
       if (result != null) {
         if (result.isPresent()) {
           return result;
@@ -2496,7 +2496,7 @@ public class Algebra {
           }
         } else if (expr.isAST()) {
           IExpr temp = factorExpr((IAST) expr, (IAST) expr, eVar, true, engine);
-          F.REMEMBER_AST_CACHE.put(ast, temp);
+          engine.putCache(ast, temp);
           if (temp.isPresent()) {
             return temp;
           }
@@ -3360,7 +3360,7 @@ public class Algebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
-        IExpr cached = F.REMEMBER_AST_CACHE.getIfPresent(ast);
+        IExpr cached = engine.getCache(ast);
         if (cached != null) {
           return cached;
         }
@@ -3375,7 +3375,7 @@ public class Algebra {
         }
         IAST subst = substituteVariablesInPolynomial(arg1, variablesList, "§PolynomialQ");
         IExpr result = F.bool(subst.arg1().isPolynomial((IAST) subst.arg2()));
-        F.REMEMBER_AST_CACHE.put(ast, result);
+        engine.putCache(ast, result);
         return result;
       }
       if (ast.isAST1()) {
@@ -3572,7 +3572,7 @@ public class Algebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr temp = F.REMEMBER_AST_CACHE.getIfPresent(ast);
+      IExpr temp = engine.getCache(ast);
       if (temp != null) {
         return temp;
       }
@@ -3624,14 +3624,14 @@ public class Algebra {
               result = F.list(quotientRemainderModInteger[0], quotientRemainderModInteger[1]);
             }
           }
-          F.REMEMBER_AST_CACHE.put(ast, result);
+          engine.putCache(ast, result);
           return result;
         }
         IExpr[] quotientRemainder = quotientRemainder(arg1, arg2, variable);
         if (quotientRemainder != null) {
           result = F.list(quotientRemainder[0], quotientRemainder[1]);
         }
-        F.REMEMBER_AST_CACHE.put(ast, result);
+        engine.putCache(ast, result);
         return result;
       } catch (ArithmeticException aex) {
         // division by zero

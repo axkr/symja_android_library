@@ -368,7 +368,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-    IExpr result = F.REMEMBER_AST_CACHE.getIfPresent(ast);
+    IExpr result = engine.getCache(ast);
     if (result != null) {
       return result;
     }
@@ -395,7 +395,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
         if (assumptions != null) {
           try {
             engine.setAssumptions(assumptions);
-            return callMatcher(ast, arg1);
+            return callMatcher(ast, arg1, engine);
           } finally {
             engine.setAssumptions(oldAssumptions);
           }
@@ -403,7 +403,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
       }
     }
     // don't call PowerExpand
-    return callMatcher(ast, arg1);
+    return callMatcher(ast, arg1, engine);
   }
 
   /**
@@ -411,9 +411,9 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
    * @param arg1
    * @return {@link F#NIL} if no match was found
    */
-  public static IExpr callMatcher(final IAST ast, IExpr arg1) {
+  public static IExpr callMatcher(final IAST ast, IExpr arg1, EvalEngine engine) {
     IExpr temp = getMatcher().replaceAll(arg1, FunctionExpand::beforeRules).orElse(arg1);
-    F.REMEMBER_AST_CACHE.put(ast, temp);
+    engine.putCache(ast, temp);
     return temp;
   }
 

@@ -299,6 +299,16 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public boolean equals(final Object obj) {
+    if (Config.FUZZ_TESTING) {
+      if (obj instanceof ISymbol) {
+        if (fSymbolName.equals(((ISymbol) obj).getSymbolName())
+            && getContext().equals(((ISymbol) obj).getContext())) {
+          if (this != obj) {
+            throw new NullPointerException();
+          }
+        }
+      }
+    }
     if (this == obj) {
       return true;
     }

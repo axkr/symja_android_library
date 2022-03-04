@@ -310,6 +310,15 @@ public interface ISymbol extends IExpr {
   public String getSymbolName();
 
   /**
+   * Get the full symbol name string with the context prefix included.
+   *
+   * @return
+   */
+  default String getContextSymbolName() {
+    return getContext().getContextName() + getSymbolName();
+  }
+
+  /**
    * Is a (local or global) value assigned for this symbol?
    *
    * @return <code>true</code> if this symbol has an assigned value.

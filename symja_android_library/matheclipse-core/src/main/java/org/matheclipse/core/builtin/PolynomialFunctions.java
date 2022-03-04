@@ -139,7 +139,7 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr cached = F.REMEMBER_AST_CACHE.getIfPresent(ast);
+      IExpr cached = engine.getCache(ast);
       if (cached != null) {
         return cached;
       }
@@ -204,7 +204,7 @@ public class PolynomialFunctions {
             new SymbolicPolynomialRing(ExprRingFactory.CONST, listOfVariables);
         SymbolicPolynomial poly = ring.create(expr, true, false, false);
         IExpr temp = poly.coefficient(expArr);
-        F.REMEMBER_AST_CACHE.put(ast, temp);
+        engine.putCache(ast, temp);
         return temp;
       } catch (LimitException le) {
         throw le;
@@ -779,7 +779,7 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr cached = F.REMEMBER_AST_CACHE.getIfPresent(ast);
+      IExpr cached = engine.getCache(ast);
       if (cached != null) {
         return cached;
       }
@@ -867,7 +867,7 @@ public class PolynomialFunctions {
         collector.add(F.C0);
       }
       IASTAppendable result = F.ast(sym, collector);
-      F.REMEMBER_AST_CACHE.put(ast, result);
+      engine.putCache(ast, result);
       return result;
     }
 

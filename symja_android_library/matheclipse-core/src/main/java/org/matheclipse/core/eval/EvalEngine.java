@@ -74,6 +74,7 @@ import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.math.MathException;
 import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
  * The main evaluation algorithms for the Symja computer algebra system. A single <code>EvalEngine
@@ -111,10 +112,27 @@ public class EvalEngine implements Serializable {
     }
   }
 
+  /**
+   * In computing, memoization or memoisation is an optimization technique used primarily to speed
+   * up computer programs by storing the results of expensive function calls and returning the
+   * cached result when the same inputs occur again.
+   *
+   * <p>
+   * This cache is especially used for expensive functions like <code>FullSimplify, Factor,...
+   * </code> to remember the results of the function call. It often also stores the <code>F.NIL
+   * </code> result to indicate that a new evaluation of a function is unnecessary. See:
+   * <a href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
+   */
+  private transient final Cache<IAST, IExpr> globalASTCache =
+      CacheBuilder.newBuilder().maximumSize(500).build();
+
   /** */
   private static final long serialVersionUID = 8402201556123198590L;
 
-  public transient Cache<IAST, IExpr> rememberASTCache = null;
+  /**
+   * Cache for the Rubi integration rules evaluation
+   */
+  public transient Cache<IAST, IExpr> rubiASTCache = null;
 
   public transient Map<Object, IExpr> rememberMap = null;
 
@@ -545,7 +563,7 @@ public class EvalEngine implements Serializable {
    */
   public synchronized EvalEngine copy() {
     EvalEngine engine = new EvalEngine();
-    engine.rememberASTCache = null; // rememberASTCache;
+    engine.rubiASTCache = null; // rememberASTCache;
     engine.rememberMap = rememberMap;
     engine.fAnswer = fAnswer;
     engine.fAssumptions = fAssumptions;
@@ -2430,6 +2448,17 @@ public class EvalEngine implements Serializable {
     return fAssumptions;
   }
 
+  /**
+   * Returns the value associated with key in the {@link EvalEngine#globalASTCache}, or null if
+   * there is no cached value for key.
+   * 
+   * @param ast
+   * @return
+   */
+  public IExpr getCache(IAST key) {
+    return globalASTCache.getIfPresent(key);
+  }
+
   public final Context getContext() {
     return fContextPath.currentContext();
   }
@@ -2515,6 +2544,17 @@ public class EvalEngine implements Serializable {
   public OptionsStack pushOptionsStack() {
     fOptionsStack.push();
     return fOptionsStack;
+  }
+
+  /**
+   * Associates value with key in the {@link EvalEngine#globalASTCache}. If the cache previously
+   * contained a value associated with key, the old value is replaced by value.
+   * 
+   * @param key
+   * @param value
+   */
+  public void putCache(IAST key, IExpr value) {
+    globalASTCache.put(key, value);
   }
 
   public void popOptionsStack() {
@@ -2686,7 +2726,7 @@ public class EvalEngine implements Serializable {
     f$Input = "";
     f$InputFileName = "";
     fOptionsStack = new OptionsStack();
-    rememberASTCache = null;
+    rubiASTCache = null;
     rememberMap = new IdentityHashMap<Object, IExpr>();
   }
 
@@ -2899,7 +2939,7 @@ public class EvalEngine implements Serializable {
     fSeconds = 0;
     fModifiedVariablesList = null;
     fMessageShortcut = null;
-    rememberASTCache = null;
+    rubiASTCache = null;
     fOptionsStack = new OptionsStack();
 
     if (fOnOffMode && fOnOffUnique) {
