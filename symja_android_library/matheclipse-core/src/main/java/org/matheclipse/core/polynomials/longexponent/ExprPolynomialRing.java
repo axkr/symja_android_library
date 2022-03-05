@@ -29,7 +29,8 @@ import edu.jas.util.LongIterable;
 
 /**
  * GenPolynomialRing generic polynomial factory implementing ExprRingFactory; Factory for n-variate
- * ordered polynomials over C. Almost immutable object, except variable names.
+ * ordered polynomials over C with Java long exponents.. Almost immutable object, except variable
+ * names.
  */
 public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
   /** Polynomial monomial iterator. */
@@ -207,9 +208,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
   /** The names of the variables. This value can be modified. */
   protected IAST vars;
 
-  /** The names of all known variables. */
-  // private Set<IExpr> knownVars = new HashSet<IExpr>();
-
   /** The constant polynomial 0 for this ring. */
   public final ExprPolynomial ZERO;
 
@@ -313,28 +311,16 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     coFac = cf;
     nvar = n;
     tord = t;
-    partial = false;
-    // if (v == null) {
-    // vars = null;
-    // } else {
-    vars = listOfVariables.copyAppendable(); // Arrays.copyOf(v, v.length); // >
-    // Java-5
-    // }
+    partial = false; 
+    vars = listOfVariables.copyAppendable();
     ZERO = new ExprPolynomial(this);
     IExpr coeff = coFac.getONE();
     evzero = new ExpVectorLong(nvar);
     this.numericFunction = numericFunction;
-    ONE = new ExprPolynomial(this, coeff, evzero);
-    // if (vars == null) {
-    // if (PrettyPrint.isTrue()) {
-    // vars = newVars("x", nvar);
-    // }
-    // } else {
+    ONE = new ExprPolynomial(this, coeff, evzero); 
     if (vars.argSize() != nvar) {
       throw new IllegalArgumentException("incompatible variable size " + vars.size() + ", " + nvar);
-    }
-    // addVars(vars);
-    // }
+    } 
   }
 
   /**
@@ -1255,29 +1241,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
   }
 
   /**
-   * Distributive representation as polynomial with all main variables.
-   *
-   * @return distributive polynomial ring factory.
-   */
-  @SuppressWarnings("cast")
-  public ExprPolynomialRing distribute() {
-    // if (!(coFac instanceof GenPolynomialRing)) {
-    return this;
-    // }
-    // ExprRingFactory cf = coFac;
-    // ExprRingFactory<GenPolynomial> cfp = (ExprRingFactory<GenPolynomial>)
-    // cf;
-    // GenPolynomialRing cr = (GenPolynomialRing) cfp;
-    // GenPolynomialRing pfac;
-    // if (cr.vars != null) {
-    // pfac = extend(cr.vars);
-    // } else {
-    // pfac = extend(cr.nvar);
-    // }
-    // return pfac;
-  }
-
-  /**
    * Get PolynomialComparator.
    *
    * @return polynomial comparator.
@@ -1295,20 +1258,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
   public ExprPolynomialComparator getComparator(boolean rev) {
     return new ExprPolynomialComparator(tord, rev);
   }
-
-  /**
-   * Add variable names.
-   *
-   * @param vars variable names to be recorded.
-   */
-  // public void addVars(IAST vars) {
-  // if (vars == null) {
-  // return;
-  // }
-  // for (int i = 1; i < vars.size(); i++) {
-  // knownVars.add(vars.get(i)); // eventualy names 'overwritten'
-  // }
-  // }
 
   /**
    * Permute variable names.

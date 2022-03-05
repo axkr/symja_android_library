@@ -30,7 +30,8 @@ import edu.jas.util.LongIterable;
 
 /**
  * GenPolynomialRing generic polynomial factory implementing ExprRingFactory; Factory for n-variate
- * ordered polynomials over C. Almost immutable object, except variable names.
+ * ordered polynomials over C with Java {@link IExpr} exponents. Almost immutable object, except
+ * variable names.
  */
 public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 
@@ -272,10 +273,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
   /** The names of the variables. This value can be modified. */
   protected IAST vars;
 
-  /** The names of all known variables. */
-  // private Set<IExpr> knownVars = new HashSet<IExpr>();
-
-  /** The constant polynomial 0 for this ring. */
+  /** The constant polyl 0 for this ring. */
   public final SymbolicPolynomial ZERO;
 
   /** The constant polynomial 1 for this ring. */
@@ -372,6 +370,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
    * @param listOfVariables names for the variables.
    * @param n number of variables.
    * @param t a term order.
+   * @param numericFunction
    */
   public SymbolicPolynomialRing(ExprRingFactory cf, IAST listOfVariables, int n,
       SymbolicTermOrder t, boolean numericFunction) {
@@ -379,27 +378,15 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
     nvar = n;
     tord = t;
     partial = false;
-    // if (v == null) {
-    // vars = null;
-    // } else {
-    vars = listOfVariables.copyAppendable(); // Arrays.copyOf(v, v.length); // >
-    // Java-5
-    // }
+    vars = listOfVariables.copyAppendable();
     ZERO = new SymbolicPolynomial(this);
     IExpr coeff = coFac.getONE();
     evzero = new ExpVectorSymbolic(nvar);
     this.numericFunction = numericFunction;
     ONE = new SymbolicPolynomial(this, coeff, evzero);
-    // if (vars == null) {
-    // if (PrettyPrint.isTrue()) {
-    // vars = newVars("x", nvar);
-    // }
-    // } else {
     if (vars.argSize() != nvar) {
       throw new IllegalArgumentException("incompatible variable size " + vars.size() + ", " + nvar);
     }
-    // addVars(vars);
-    // }
   }
 
   /**
@@ -1312,29 +1299,6 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
   }
 
   /**
-   * Distributive representation as polynomial with all main variables.
-   *
-   * @return distributive polynomial ring factory.
-   */
-  @SuppressWarnings("cast")
-  public SymbolicPolynomialRing distribute() {
-    // if (!(coFac instanceof GenPolynomialRing)) {
-    return this;
-    // }
-    // ExprRingFactory cf = coFac;
-    // ExprRingFactory<GenPolynomial> cfp = (ExprRingFactory<GenPolynomial>)
-    // cf;
-    // GenPolynomialRing cr = (GenPolynomialRing) cfp;
-    // GenPolynomialRing pfac;
-    // if (cr.vars != null) {
-    // pfac = extend(cr.vars);
-    // } else {
-    // pfac = extend(cr.nvar);
-    // }
-    // return pfac;
-  }
-
-  /**
    * Get PolynomialComparator.
    *
    * @return polynomial comparator.
@@ -1352,20 +1316,6 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
   public SymbolicPolynomialComparator getComparator(boolean rev) {
     return new SymbolicPolynomialComparator(tord, rev);
   }
-
-  /**
-   * Add variable names.
-   *
-   * @param vars variable names to be recorded.
-   */
-  // public void addVars(IAST vars) {
-  // if (vars == null) {
-  // return;
-  // }
-  // for (int i = 1; i < vars.size(); i++) {
-  // knownVars.add(vars.get(i)); // eventualy names 'overwritten'
-  // }
-  // }
 
   /**
    * Permute variable names.
