@@ -538,7 +538,7 @@ public class RulePreprocessor {
               return;
             } else {
               buffer = new StringBuilder(100000);
-              PrintWriter out;
+              // PrintWriter out;
               try {
                 String className = files[i].substring(0, files[i].length() - 2);
                 String symbolName = className.substring(0, className.length() - 5);
@@ -554,9 +554,10 @@ public class RulePreprocessor {
                 System.out.println(className);
                 if (className.equals("FunctionExpandRules")) {
                   // || className.equals("PodDefaultsRules")) {
-                  out = new PrintWriter(targetFile.getCanonicalPath());
-                  byte[] binaryData = convertListSerialized(expr, buffer, out, engine);
-                  com.google.common.io.Files.write(binaryData, targetFile);
+                  try (PrintWriter out = new PrintWriter(targetFile.getCanonicalPath())) {
+                    byte[] binaryData = convertListSerialized(expr, buffer, out, engine);
+                    com.google.common.io.Files.write(binaryData, targetFile);
+                  }
                 }
               } catch (Exception e) {
                 System.err.println();

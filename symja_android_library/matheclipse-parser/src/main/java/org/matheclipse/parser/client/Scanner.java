@@ -848,11 +848,7 @@ public abstract class Scanner {
     int numFormat = 10;
     int startPosition = fCurrentPosition - 1;
     final char firstCh = fCurrentChar;
-    boolean dFlag = false;
-    // first digit
-    if (fCurrentChar == '.') {
-      dFlag = true;
-    }
+    boolean isFloatPointNumber = firstCh == '.' ? true : false;
     getChar();
     if (fExplicitTimes) {
       if (firstCh == '0') {
@@ -895,12 +891,10 @@ public abstract class Scanner {
     if (numFormat == 10) {
       while (Character.isDigit(fCurrentChar) || (fCurrentChar == '.')) {
         if (fCurrentChar == '.') {
-          if ((fCurrentChar == '.') && dFlag) {
+          if (isFloatPointNumber) {
             break;
           }
-          if (fCurrentChar != ' ') {
-            dFlag = true;
-          }
+          isFloatPointNumber = true;
         }
 
         if (isValidPosition()) {
@@ -917,7 +911,7 @@ public abstract class Scanner {
         fCurrentChar = ' ';
         fToken = TT_EOF;
       }
-      if (dFlag) {
+      if (isFloatPointNumber) {
         numFormat = -1;
       }
       if (numFormat == 10 && fCurrentChar == '^' && isValidPosition()) {
@@ -1111,7 +1105,7 @@ public abstract class Scanner {
           throwSyntaxError("string - end of string not reached.");
         }
       } else {
-        if ((fCurrentChar != '"') && (fToken == TT_EOF)) {
+        if (fToken == TT_EOF) {
           throwSyntaxError("string -" + ident.toString() + "- not closed.");
         }
 

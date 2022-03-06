@@ -1372,17 +1372,19 @@ public class Solve extends AbstractFunctionEvaluator {
     IAST[] tempAST =
         Eliminate.eliminateOneVariable(equalsASTList, variable, multipleValues, engine);
     if (tempAST != null) {
-      if (tempAST[1] != null && tempAST[1].isRule() && tempAST[1].second().isTrue()) {
-        return F.CEmptyList;
-      }
-      if (tempAST != null && tempAST[1] != null) {
-        if (tempAST[1].isList()) {
-          IAST list = tempAST[1];
+      IAST lastRuleUsedForVariableElimination = tempAST[1];
+      if (lastRuleUsedForVariableElimination != null) {
+        if (lastRuleUsedForVariableElimination.isRule()
+            && lastRuleUsedForVariableElimination.second().isTrue()) {
+          return F.CEmptyList;
+        }
+        if (lastRuleUsedForVariableElimination.isList()) {
+          IAST list = lastRuleUsedForVariableElimination;
           IASTAppendable result = F.ListAlloc(list.size());
           list.forEach(x -> result.append(F.list(x)));
           return result;
         }
-        return F.list(F.list(tempAST[1]));
+        return F.list(F.list(lastRuleUsedForVariableElimination));
       }
     }
     return F.NIL;

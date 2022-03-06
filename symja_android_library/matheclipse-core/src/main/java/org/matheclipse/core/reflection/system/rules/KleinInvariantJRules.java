@@ -45,7 +45,7 @@ public interface KleinInvariantJRules {
       ZZ(-85184000L)),
     // KleinInvariantJ(1/2*(1+I*Sqrt(163)))=-151931373056000
     ISet(KleinInvariantJ(Times(C1D2,Plus(C1,Times(CI,Sqrt(ZZ(163L)))))),
-      ZZ("-151931373056000", 10)),
+      ZZ(-151931373056000L)),
     // KleinInvariantJ(1/2+I*1/2*Sqrt(3))=0
     ISet(KleinInvariantJ(Plus(C1D2,Times(CC(0L,1L,1L,2L),CSqrt3))),
       C0),

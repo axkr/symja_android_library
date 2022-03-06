@@ -1946,7 +1946,8 @@ public class Algebra {
        * @param expr1Eval
        * @param expr2
        * @param expr2Eval
-       * @param result
+       * @param plusOp
+       * @param engine
        */
       private void evalAndExpandAST(IExpr expr1, boolean expr1Eval, IExpr expr2, boolean expr2Eval,
           PlusOp plusOp, EvalEngine engine) {
@@ -4160,7 +4161,7 @@ public class Algebra {
             ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables);
             ExprPolynomial polynomial = ring.create(expr, false, true, false);
 
-            long varDegree = polynomial.degree(0);
+            final long varDegree = polynomial.degree(0);
             if (polynomial.isConstant()) {
               return F.CEmptyList;
             }
@@ -4199,7 +4200,7 @@ public class Algebra {
                 result = root2(a, b, c, k);
               } else if (varDegree == 3) {
                 result = root3(a, b, c, d, k);
-              } else if (varDegree == 4) {
+              } else {
                 result = root4(a, b, c, d, e, k);
               }
               if (result.isPresent()) {

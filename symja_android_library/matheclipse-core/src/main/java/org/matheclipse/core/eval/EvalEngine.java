@@ -2452,7 +2452,7 @@ public class EvalEngine implements Serializable {
    * Returns the value associated with key in the {@link EvalEngine#globalASTCache}, or null if
    * there is no cached value for key.
    * 
-   * @param ast
+   * @param key
    * @return
    */
   public IExpr getCache(IAST key) {

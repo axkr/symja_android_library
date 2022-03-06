@@ -59,7 +59,7 @@ public class FileExpr extends DataExpr<File> implements Externalizable {
     try {
       return fHead + "[" + fData.getCanonicalPath() + "]";
     } catch (IOException e) {
-      return fHead + "[" + e.getMessage() + "]";
+      return fHead + "[IOException in File#getCanonicalPath()]";
     }
   }
 

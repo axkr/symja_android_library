@@ -184,18 +184,38 @@ public class FindRoot extends AbstractFunctionEvaluator {
   private static class UnivariateSolverSupplier implements Supplier<IExpr> {
     final IExpr originalFunction;
     final IAST variableList;
+    /**
+     * Starting point or minimum of a user defined interval; <code>min</code> is not allowed to be
+     * <code>null</code>
+     */
     final ISignedNumber min;
-    final ISignedNumber max;
+    /**
+     * Maximum of a user defined interval; the maximum can be <code>null</code>, if no interval was
+     * defined
+     */
+    final ISignedNumber maxMaybeNull;
     final int maxIterations;
     final String method;
     final EvalEngine engine;
 
+    /**
+     * 
+     * @param function
+     * @param variableList
+     * @param min starting point or minimum of a given interval; <code>min</code> is not allowed to
+     *        be <code>null</code>
+     * @param max maximum of a given interval; <code>max</code> can be <code>null</code>, if no
+     *        interval was defined
+     * @param maxIterations
+     * @param method
+     * @param engine
+     */
     public UnivariateSolverSupplier(IExpr function, IAST variableList, ISignedNumber min,
         ISignedNumber max, int maxIterations, String method, EvalEngine engine) {
       this.originalFunction = function;
       this.variableList = variableList;
       this.min = min;
-      this.max = max;
+      this.maxMaybeNull = max;
       this.maxIterations = maxIterations;
       this.method = method;
       this.engine = engine;
@@ -231,13 +251,14 @@ public class FindRoot extends AbstractFunctionEvaluator {
           solver = new IllinoisSolver();
         } else if (method.equalsIgnoreCase("Pegasus")) {
           solver = new PegasusSolver();
-        } else if (max == null || method.equalsIgnoreCase("Newton")) {
+        } else if (maxMaybeNull == null || method.equalsIgnoreCase("Newton")) {
           try {
             NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
-            if (max == null) {
+            if (maxMaybeNull == null) {
               return F.num(nrs.solve(maxIterations, f, min.doubleValue()));
             }
-            return F.num(nrs.solve(maxIterations, f, min.doubleValue(), max.doubleValue()));
+            return F
+                .num(nrs.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
           } catch (MathRuntimeException mex) {
             // switch to BracketingNthOrderBrentSolver
             solver = new BracketingNthOrderBrentSolver();
@@ -246,19 +267,21 @@ public class FindRoot extends AbstractFunctionEvaluator {
           // default: BracketingNthOrderBrentSolver
           try {
             solver = new BracketingNthOrderBrentSolver();
-            return F.num(solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue()));
+            return F
+                .num(solver.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
           } catch (MathRuntimeException mex) {
             // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a
             // root
 
             if (mex instanceof org.hipparchus.exception.MathIllegalArgumentException) {
-              if (min != null) {
-                try {
-                  NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
-                  return F.num(nrs.solve(maxIterations, f, min.doubleValue(), max.doubleValue()));
-                } catch (MathRuntimeException mre) {
-                }
+
+              try {
+                NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
+                return F.num(
+                    nrs.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
+              } catch (MathRuntimeException mre) {
               }
+
             }
 
             // switch to BisectionSolver
@@ -266,10 +289,10 @@ public class FindRoot extends AbstractFunctionEvaluator {
           }
         }
 
-        if (max == null) {
+        if (maxMaybeNull == null) {
           return F.num(solver.solve(maxIterations, f, min.doubleValue()));
         }
-        return F.num(solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue()));
+        return F.num(solver.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
       } finally {
         engine.setAssumptions(oldAssumptions);
       }

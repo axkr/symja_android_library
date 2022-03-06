@@ -5,7 +5,6 @@ package examples;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import jp.ac.kobe_u.cs.cream.DefaultSolver;
 import jp.ac.kobe_u.cs.cream.IntVariable;
@@ -170,11 +169,11 @@ public class Akari {
         + "- - - - - - 0 -\n" + "X - - - X - - -\n" + "- - - 4 - - - 0\n" + "- 2 - - - - - -\n"
         + "- - - - - 1 X -\n" + "- - X - - - - -\n" + "end\n";
     BufferedReader in;
-    if (data == null) {
-      in = new BufferedReader(new InputStreamReader(System.in));
-    } else {
-      in = new BufferedReader(new StringReader(data));
-    }
+    // if (data == null) {
+    // in = new BufferedReader(new InputStreamReader(System.in));
+    // } else {
+    in = new BufferedReader(new StringReader(data));
+    // }
     while (parse(in)) {
       solve();
     }

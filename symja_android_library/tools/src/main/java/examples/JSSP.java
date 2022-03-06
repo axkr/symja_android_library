@@ -329,13 +329,14 @@ public class JSSP {
     // problem = "abz08";
     // problem = "ta44";
 
-    long timeout = 10 * 60 * 1000;
+    long timeout = 10L * 60L * 1000L;
     String[] solverNames = {"sa", "ibb", "taboo"};
     int i = 0;
     if (i < args.length)
       problem = args[i++];
-    if (i < args.length)
-      timeout = Integer.parseInt(args[i++]) * 1000;
+    if (i < args.length) {
+      timeout = Long.parseLong(args[i++]) * 1000L;
+    }
     if (i < args.length) {
       solverNames = new String[args.length - i];
       int j = 0;

@@ -102,7 +102,7 @@ public interface IASTMutable extends IAST {
    * <b>Warning</b> only call this method in certain steps of the evaluation chain (for example for
    * evaluating attribute {@link ISymbol#ORDERLESS})
    *
-   * @param ast the AST will be sorted in place.
+   * @param comparator the comparator used for sorting inplace.
    */
   public void sortInplace(Comparator<IExpr> comparator);
 }

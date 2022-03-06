@@ -1499,7 +1499,7 @@ public final class LinearAlgebra {
             }
           }
         } else {
-          if (dims1Size == 2) {
+          if (dims1Size == 1) {
             int dim = dimensions1.getInt(0);
             if (dim == 0) {
               if (arg2.isVector() == 0) {
@@ -4550,7 +4550,7 @@ public final class LinearAlgebra {
      * Singular values are kept only when their <code>Abs(singularValue)</code> is larger than
      * {@link Config#DEFAULT_ROOTS_CHOP_DELTA}.
      *
-     * @param x
+     * @param singularValue
      * @param engine
      * @return <code>true</code> if the value should be kept; <code>false</code> otherwise.
      */

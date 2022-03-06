@@ -83,6 +83,7 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
     File file = fileExpr.toData();
     IExpr temp = engine.rememberMap.get(file);
     if (temp == null || !(temp instanceof InputStreamExpr)) {
+      // don't close FileInputStream here
       InputStreamExpr stream = new InputStreamExpr(new FileInputStream(file));
       engine.rememberMap.put(file, stream);
       return stream;

@@ -58,7 +58,9 @@ public abstract class AbstractFractionSym implements IFraction {
    * Iteratively creates a fraction that converges towards the given value
    *
    * @param value value to approximate
-   * @param maxConbvergents maximum number of iterations.
+   * @param maxIterations the maximum number of iterations which are allowed to get a convergent
+   *        result
+   * @param convergence predicate which tests for convergence of the determined {@link BigFraction}
    */
   private static BigFraction converge(double value, int maxIterations,
       ConvergencePredicate convergence) {

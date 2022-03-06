@@ -5758,9 +5758,9 @@ public class F extends S {
   /**
    * Return a triple of values as a <code>List()</code>
    *
-   * @param a0
-   * @param a1
-   * @param a2
+   * @param x1
+   * @param x2
+   * @param x3
    * @return
    */
   public static IAST list(final IExpr x1, final IExpr x2, final IExpr x3) {
