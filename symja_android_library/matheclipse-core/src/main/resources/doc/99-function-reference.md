@@ -667,6 +667,7 @@
 * [PolarPlot](functions/PolarPlot.md)
 * [PolyGamma](functions/PolyGamma.md)
 * [Polygon](functions/Polygon.md)
+* [PolygonalNumber](functions/PolygonalNumber.md)
 * [PolynomialExtendedGCD](functions/PolynomialExtendedGCD.md)
 * [PolynomialGCD](functions/PolynomialGCD.md)
 * [PolynomialLCM](functions/PolynomialLCM.md)

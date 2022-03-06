@@ -120,6 +120,20 @@ public class CombinatoricTestCase extends AbstractTestCase {
         "True");
   }
 
+  public void testPolygonalNumber() {
+    check("Table(PolygonalNumber(r, 3), {r, 1, 5})", //
+        "{0,3,6,9,12}");
+    check("PolygonalNumber(4,-2)", //
+        "4");
+    check("PolygonalNumber(-3,-2)", //
+        "-17");
+    check("Table(PolygonalNumber(n), {n, 10})", //
+        "{1,3,6,10,15,21,28,36,45,55}");
+    check("Table(PolygonalNumber(r, 10), {r, 3, 10})", //
+        "{55,100,145,190,235,280,325,370}");
+
+  }
+
   public void testPermutationCycles() {
     check("PermutationCycles({4,2,7,6,5,8,1,3})", //
         "Cycles({{1,4,6,8,3,7}})");

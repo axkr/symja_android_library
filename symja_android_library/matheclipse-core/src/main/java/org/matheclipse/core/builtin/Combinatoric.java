@@ -60,6 +60,7 @@ public final class Combinatoric {
       S.PermutationListQ.setEvaluator(new PermutationListQ());
       S.PermutationReplace.setEvaluator(new PermutationReplace());
       S.Permutations.setEvaluator(new Permutations());
+      S.PolygonalNumber.setEvaluator(new PolygonalNumber());
       S.RogersTanimotoDissimilarity.setEvaluator(new RogersTanimotoDissimilarity());
       S.RussellRaoDissimilarity.setEvaluator(new RussellRaoDissimilarity());
       S.Signature.setEvaluator(new Signature());
@@ -2244,6 +2245,25 @@ public final class Combinatoric {
         }
       }
       return result;
+    }
+  }
+
+  private static final class PolygonalNumber extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr r = ast.arg1();
+        IExpr n = ast.arg2();
+        return F.Times(F.C1D2, n, F.Plus(F.C4, F.Times(n, F.Plus(F.CN2, r)), F.Negate(r)));
+      }
+      IExpr n = ast.arg1();
+      return F.Times(F.C1D2, n, F.Plus(F.C1, n));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 

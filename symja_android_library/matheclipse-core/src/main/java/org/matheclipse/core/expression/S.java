@@ -7364,6 +7364,9 @@ public class S {
    */
   public final static IBuiltInSymbol Polygon = F.initFinalSymbol("Polygon", ID.Polygon);
 
+  public final static IBuiltInSymbol PolygonalNumber =
+      F.initFinalSymbol("PolygonalNumber", ID.PolygonalNumber);
+
   public final static IBuiltInSymbol Polyhedron = F.initFinalSymbol("Polyhedron", ID.Polyhedron);
 
   /**
