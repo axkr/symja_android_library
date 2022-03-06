@@ -2265,6 +2265,12 @@ public final class Combinatoric {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
   }
 
   /**
