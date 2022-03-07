@@ -32,35 +32,21 @@ jobs:
 
     - run: mvn -f symja_android_library -B release:clean release:prepare -DpushChanges=false
 
-    - name: Read release version and date
+    - name: Read release version
       run: | # Create environment variables associcated to release version, derived from the release tag
         releaseGitTag=$(git describe --abbrev=0)
         echo "release_tag=${releaseGitTag}" >> $GITHUB_ENV
         echo "release_version=${releaseGitTag#v}" >> $GITHUB_ENV
-        echo "release_date=$(date +"%Y-%m-%d")" >> $GITHUB_ENV
 
     # Edit the 'release' commit with updates of the changelog:
     - name: Checkout release commit
       run: git checkout ${{ env.release_tag }} # headless checkout!
 
     - name: Finalize changelog entry
-      uses: jacobtomlinson/gha-find-replace@v2
+      uses: stefanzweifel/changelog-updater-action@v1
+      id: "update-changelog"
       with:
-        include: "**CHANGELOG.md"
-        find: '## \[Unreleased\]'
-        replace: "
-          ## [Unreleased](https://github.com/${{ github.repository }}/compare/${{ env.release_tag }}...HEAD)\n
-          \n
-          \n
-          ## [${{ env.release_version }}](https://github.com/${{ github.repository }}/releases/tag/${{ env.release_tag }}) - ${{ env.release_date }}
-          "
-
-    - name: Compose release entry marker
-      run: |
-        text="${{ env.release_version }} - ${{ env.release_date }}"
-        marker=${text//./}		# remove dots
-        marker=${marker// /-}	# replace space by dash
-        echo "release_marker=${marker}" >> $GITHUB_ENV
+        latest-version: ${{ env.release_tag }}
 
     - name: Amend release commit and tag and cherry-pick preparation commit
       run: |
@@ -101,14 +87,15 @@ jobs:
           
           This release is available on Maven central using the following coordinates:
           ```
-          <dependencies>
-          	<dependency>
-          		<groupId>org.matheclipse</groupId>
-          		<artifactId>matheclipse</artifactId>
-          		<version>${{ env.release_version }}</version>
-          	</dependency>
-          </dependencies>
+          <dependency>
+          	<groupId>org.matheclipse</groupId>
+          	<artifactId>matheclipse-core</artifactId>
+          	<version>${{ env.release_version }}</version>
+          </dependency>
           ```
-          For more informations see the [changelog of Symja ${{ env.release_version }}](CHANGELOG.md#${{ env.release_marker }}).
+          You can obtain the other Symja-modules using their corresponding `artifactId`.
+          
+          See the [changelog for Symja ${{ env.release_version }}](CHANGELOG.md${{ steps.update-changelog.outputs.release_url_fragment }}) for all noteworthy changes.
+          The exact changes are: ${{ steps.update-changelog.outputs.release_compare_url }}
           
           Thanks to everyone who contributed to this release!
