@@ -27,6 +27,7 @@ public class MMAAJAXQueryServlet extends AJAXQueryServlet {
     INITIALIZED = true;
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     ToggleFeature.COMPILE = true;
+    ToggleFeature.COMPILE_PRINT = true;
     Config.UNPROTECT_ALLOWED = false;
     Config.USE_MANIPULATE_JS = true;
     // disable threads for JAS only on google appengine

@@ -18,6 +18,12 @@ public class ToggleFeature {
   public static boolean COMPILE = false;
 
   /**
+   * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.CompilePrint</code>
+   * function.
+   */
+  public static boolean COMPILE_PRINT = false;
+
+  /**
    * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.Defer</code> function.
    */
   // public static boolean DEFER = true;

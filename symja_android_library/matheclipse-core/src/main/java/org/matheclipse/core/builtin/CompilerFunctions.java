@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class CompilerFunctions {
 
   /** Template for CompilePrint */
   public static final String JAVA_SOURCE_CODE = //
-      "/* an in-memory compiled function */                                      \n"
+      "/** Compile with <a href=\"https://github.com/janino-compiler/janino\">Janino compiler</a> */\n"
           + "package org.matheclipse.core.compile;                                      \n"
           + "                                                                           \n"
           + "import java.util.ArrayList;                                                \n"
@@ -75,8 +76,8 @@ public class CompilerFunctions {
       if (!Config.FUZZY_PARSER) {
         S.Compile.setEvaluator(new Compile());
         S.CompiledFunction.setEvaluator(new CompiledFunction());
-        S.CompilePrint.setEvaluator(new CompilePrint());
       }
+      S.CompilePrint.setEvaluator(new CompilePrint());
     }
   }
 
@@ -84,6 +85,118 @@ public class CompilerFunctions {
     Initializer.init();
   }
 
+  private static class JavaIndenter {
+    private static class JavaSourceLine {
+      private String java = "";
+      private int lenJava = 0;
+      private int block = 0;
+
+      /**
+       * Constructor
+       * 
+       * @param line of a java program
+       */
+      public JavaSourceLine(String line, int lenJava) {
+        line = line.trim();
+        int PosOfComment = line.length();
+        this.lenJava = lenJava;
+
+        for (int i = 0; i < line.length() && PosOfComment == line.length(); i++) {
+          switch (line.charAt(i)) {
+            case '"':
+              for (i++; i < line.length(); i++) {
+                if (line.charAt(i) == '"' && line.charAt(i - 1) != '\\') {
+                  break;
+                }
+              }
+              break;
+            case '{':
+              block++;
+              break;
+            case '}':
+              block--;
+              break;
+            default:
+          }
+        }
+        if (block == -1) {
+          this.lenJava--;
+        }
+        java = line.substring(0, PosOfComment);
+      }
+
+      public int getIndentation() {
+        return this.lenJava;
+      }
+
+      public boolean startOfBlock() {
+        return block > 0 && block % 2 == 1;
+      }
+
+      /**
+       * Return as an 'indented' line
+       * 
+       * <PRE>
+       * JavaLine j = new JavaLine("int a;  
+       * String res = j.returnLineWithCommentAt(10);
+       * Would set res to be the following string:
+       * int a;
+       * </PRE>
+       * 
+       * @return a new version of the line
+       */
+      public String returnIndentedLine() {
+        int number = 2 * this.lenJava;
+        StringBuilder buf = new StringBuilder(number + java.length());
+        for (int i = 0; i < number; i++) {
+          buf.append(" ");
+        }
+        buf.append(java);
+        return buf.toString();
+      }
+
+    }
+
+    // The Java source lines
+    private ArrayList<JavaSourceLine> programLines = new ArrayList<>();
+
+    public JavaIndenter() {
+      programLines.clear();
+    }
+
+    /**
+     * Add the next line of Java source code
+     * 
+     * @param sourceLine A line of Java code
+     */
+    public void addSourceLine(String sourceLine) {
+      if (programLines.size() == 0) {
+        programLines.add(new JavaSourceLine(sourceLine, 0));
+        return;
+      }
+      JavaSourceLine previous = programLines.get(programLines.size() - 1);
+      int indentation = previous.getIndentation();
+
+      if (previous.startOfBlock()) {
+        indentation++;
+      }
+      programLines.add(new JavaSourceLine(sourceLine, indentation));
+    }
+
+    /**
+     * Return the indented Java program
+     * 
+     * @return The Java program as a string
+     */
+    public String indentProgram() {
+      String res = "";
+      for (JavaSourceLine line : programLines) {
+        res += line.returnIndentedLine() + "\n";
+      }
+      return res;
+    }
+
+  }
   static class MemoryClassLoader extends URLClassLoader {
 
     // class name to class bytes:
@@ -568,7 +681,9 @@ public class CompilerFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
+      if (!ToggleFeature.COMPILE_PRINT) {
+        return F.NIL;
+      }
       if (ast.isAST3()) {
         // TODO implement for 3 args
         return F.NIL;
@@ -582,9 +697,26 @@ public class CompilerFunctions {
 
       String source = compilePrint(ast, variables, types, engine);
       if (source != null) {
+        source = indentSource(source);
         return F.stringx(source, IStringX.APPLICATION_JAVA);
       }
       return F.NIL;
+    }
+
+    /**
+     * Indent the source code blocks with spaces.
+     * 
+     * @param source
+     * @return the indented source code
+     */
+    private String indentSource(String source) {
+      String[] split = source.split("\n");
+      JavaIndenter p = new JavaIndenter();
+      for (int i = 0; i < split.length; i++) {
+        p.addSourceLine(split[i].trim());
+      }
+      source = p.indentProgram();
+      return source;
     }
 
     @Override
@@ -687,4 +819,5 @@ public class CompilerFunctions {
     source = source.replace("{$size}", Integer.toString(variables.argSize()));
     return source;
   }
+
 }

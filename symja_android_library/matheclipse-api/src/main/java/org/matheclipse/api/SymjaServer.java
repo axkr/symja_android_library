@@ -75,6 +75,7 @@ public class SymjaServer {
 
     try {
       ToggleFeature.COMPILE = false;
+      ToggleFeature.COMPILE_PRINT = true;
       Config.FUZZY_PARSER = true;
       Config.UNPROTECT_ALLOWED = false;
       Config.USE_MANIPULATE_JS = true;

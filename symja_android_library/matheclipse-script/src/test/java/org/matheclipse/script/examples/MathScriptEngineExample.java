@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.EvalEngine;
 public class MathScriptEngineExample {
   public static void main(String[] args) {
     ToggleFeature.COMPILE = true;
+    ToggleFeature.COMPILE_PRINT = true;
     Config.SHORTEN_STRING_LENGTH = 80;
     Config.MAX_AST_SIZE = 20000;
     Config.MAX_MATRIX_DIMENSION_SIZE = 100;

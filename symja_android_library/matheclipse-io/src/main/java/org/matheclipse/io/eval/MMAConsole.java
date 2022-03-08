@@ -97,6 +97,7 @@ public class MMAConsole {
     // distinguish between lower- and uppercase identifiers
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     ToggleFeature.COMPILE = true;
+    ToggleFeature.COMPILE_PRINT = true;
     Config.BUILTIN_PROTECTED = ISymbol.NOATTRIBUTE;
     Config.JAVA_UNSAFE = true;
     Config.SHORTEN_STRING_LENGTH = 1024;

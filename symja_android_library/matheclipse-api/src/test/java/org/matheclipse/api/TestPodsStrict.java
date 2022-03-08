@@ -21,6 +21,7 @@ public class TestPodsStrict {
 
   static {
     ToggleFeature.COMPILE = false;
+    ToggleFeature.COMPILE_PRINT = true;
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
     Config.FUZZY_PARSER = true;
     Config.UNPROTECT_ALLOWED = false;

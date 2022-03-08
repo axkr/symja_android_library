@@ -21,6 +21,7 @@ public abstract class BasePlotExample {
     Locale.setDefault(Locale.US);
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
     ToggleFeature.COMPILE = true;
+    ToggleFeature.COMPILE_PRINT = true;
     Config.JAVA_UNSAFE = true;
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.USE_VISJS = true;
