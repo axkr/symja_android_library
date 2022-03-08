@@ -3781,6 +3781,9 @@ public class MainTestCase extends AbstractTestCase {
   }
 
   public void testSystem998() {
+    check("RootIntervals(0^Sequence())", //
+        "RootIntervals(0)");
+
     check("RootIntervals(x^4-2)", //
         "{{-1246977/1048576+I*5/1048576,-1246977/1048576-I*1/2097152,-2493943/2097152-\n"
             + "I*1/2097152,-2493943/2097152+I*5/1048576},{-1/2097152-I*2493943/2097152,-1/\n"

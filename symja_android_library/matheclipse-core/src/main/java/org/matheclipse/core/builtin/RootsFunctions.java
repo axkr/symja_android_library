@@ -67,7 +67,7 @@ public class RootsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return croots(ast.arg1(), false);
+      return croots(ast.arg1(), false, engine);
     }
 
     @Override
@@ -83,13 +83,13 @@ public class RootsFunctions {
      *        symbolic result.
      * @return
      */
-    public static IASTAppendable croots(final IExpr arg, boolean numeric) {
+    public static IAST croots(final IExpr arg, boolean numeric, EvalEngine engine) {
 
       try {
         VariablesSet eVar = new VariablesSet(arg);
         if (!eVar.isSize(1)) {
-          // only possible for univariate polynomials
-          return F.NIL;
+          // `1` is not a univariate polynomial with rational number coefficients
+          return IOFunctions.printMessage(S.RootIntervals, "nupr", F.List(arg), engine);
         }
         IExpr expr = F.evalExpandAll(arg);
         // ASTRange r = new ASTRange(eVar.getVarList(), 1);
@@ -102,9 +102,9 @@ public class RootsFunctions {
         JASConvert<Complex<BigRational>> jas = new JASConvert<Complex<BigRational>>(varList, cfac);
         GenPolynomial<Complex<BigRational>> poly = jas.numericExpr2JAS(expr);
 
-        Squarefree<Complex<BigRational>> engine =
+        Squarefree<Complex<BigRational>> squarefreeEngine =
             SquarefreeFactory.<Complex<BigRational>>getImplementation(cfac);
-        poly = engine.squarefreePart(poly);
+        poly = squarefreeEngine.squarefreePart(poly);
 
         List<Rectangle<BigRational>> roots = cr.complexRoots(poly);
 
@@ -133,10 +133,10 @@ public class RootsFunctions {
         }
         EvalAttributes.sort(resultList);
         return resultList;
-      } catch (InvalidBoundaryException | JASConversionException e) {
-        LOGGER.debug("RootIntervals.croots() failed", e);
+      } catch (IllegalArgumentException | InvalidBoundaryException | JASConversionException e) {
+        // Illegal arguments: \"`1`\" in `2`
+        return IOFunctions.printMessage(S.RootIntervals, "argillegal", F.List(arg), engine);
       }
-      return F.NIL;
     }
   }
 
@@ -484,7 +484,7 @@ public class RootsFunctions {
 
   private static IAST rootsOfVariable(final IExpr expr, final IExpr denom) {
 
-    IASTAppendable resultList = RootIntervals.croots(expr, true);
+    IAST resultList = RootIntervals.croots(expr, true, EvalEngine.get());
     if (resultList.isPresent()) {
       // IAST result = F.list();
       // if (resultList.size() > 0) {

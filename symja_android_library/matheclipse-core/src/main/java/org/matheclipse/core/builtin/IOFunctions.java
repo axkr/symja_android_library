@@ -618,7 +618,7 @@ public class IOFunctions {
       "noprime", "There are no primes in the specified interval.", //
       "norel", "Expressions `1` and `2` cannot be related by a permutation.", //
       "noval", "Symbol `1` in part assignment does not have an immediate value.", //
-      "nsmet", "This system cannot be solved with the methods available to `1`", //
+      "nupr", "`1` is not a univariate polynomial with rational number coefficients.", //
       "nvm", "The first Norm argument should be a scalar, vector or matrix.", //
       "openx", "`1` is not open.", //
       "optb", "Optional object `1` in `2` is not a single blank.", //
