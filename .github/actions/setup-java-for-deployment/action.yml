@@ -1,0 +1,24 @@
+name: 'setup-java-for-deployment'
+description: Check-out and set up Java for deployment to Maven Central Repository
+
+inputs:
+  gpg-private-key:
+    description: The GPG private key used to GPG-sign the build artifacts
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up JDK 11 for Maven Central Repository deployment
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: 'maven' # Cache Maven dependencies between workflow runs
+        # Properties for deployment to OSSRH:
+        server-id: ossrh
+        server-username: MAVEN_USERNAME
+        server-password: MAVEN_PASSWORD
+        # Properties for gpg signing:
+        gpg-private-key: ${{ inputs.gpg-private-key }}
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE

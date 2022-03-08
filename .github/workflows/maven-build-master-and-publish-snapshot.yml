@@ -1,4 +1,4 @@
-# This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
+# This workflow will build a Java project with Maven and will publish snapshot versions to the OSSRH Snapshots repository
 # For more information see:
 # https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#Publishing-using-Apache-Maven
 # https://docs.github.com/en/actions/publishing-packages/publishing-java-packages-with-maven
@@ -11,26 +11,16 @@ on:
 
 jobs:
   maven-build-master-and-publish-to-maven-central:
-  
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up JDK 11 for Maven Central Repository deployment
-      uses: actions/setup-java@v2
+    - name: Set up Java for deployment
+      uses: ./.github/actions/setup-java-for-deployment
       with:
-        java-version: '11'
-        distribution: 'temurin'
-        cache: 'maven' # Cache Maven dependencies between workflow runs
-        # Properties for deployment to OSSRH:
-        server-id: ossrh
-        server-username: MAVEN_USERNAME
-        server-password: MAVEN_PASSWORD
-        # Properties for gpg signing:
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-        gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
     - run: mvn -f symja_android_library -B -U -P publish-to-maven-central deploy
       # Deployment of all modules is deferred to the last module by nexus-staging-maven-plugin
