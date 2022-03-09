@@ -12,8 +12,9 @@ Noteworthy changes are documented in this file.
 - Symja script engine moved to Maven module matheclipse-script 
 - unified/refactored logging - moved basics into new matheclipse-logging Maven module (contributed by [@HannesWell](https://github.com/HannesWell))
 - new matheclipse-jar Maven module to create docker container: https://hub.docker.com/r/symja/symja-2.0
-- new matheclipse-discord Maven module for a discord bot
+- new matheclipse-discord Maven module for a discord bot based on `Discord4J`
 - improved graphical output in browser apps: https://github.com/axkr/symja_android_library/wiki/Browser-apps
+- browser app Javascript graphics now contains a `jsfiddle` button to analyze the generated `jsxgraph`, `mathcell` and `plotly` iframe sources.
 - improved JSON API: https://github.com/axkr/symja_android_library/wiki/API
 - pattern-matching made more compatible with Mathematica pattern-matching 
 - improved rationalization of Java `double` numbers in `Rationalize`
