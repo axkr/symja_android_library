@@ -40,6 +40,7 @@ public class SymjaBot {
       Locale.setDefault(Locale.US);
       ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
       ToggleFeature.COMPILE = false;
+      ToggleFeature.COMPILE_PRINT = true;
       Config.JAVA_UNSAFE = true;
       Config.SHORTEN_STRING_LENGTH = 512;
       Config.USE_VISJS = true;
@@ -49,7 +50,7 @@ public class SymjaBot {
       Config.USE_MANIPULATE_JS = true;
       Config.JAS_NO_THREADS = true;
       Config.MATHML_TRIG_LOWERCASE = false;
-      Config.MAX_AST_SIZE = 10000;
+      Config.MAX_AST_SIZE = 20000;
       Config.MAX_OUTPUT_SIZE = 10000;
       Config.MAX_BIT_LENGTH = 200000;
       Config.MAX_POLYNOMIAL_DEGREE = 100;
@@ -226,6 +227,11 @@ public class SymjaBot {
     if (result.isString()) {
       IStringX str = (IStringX) result;
       int mimeType = str.getMimeType();
+       
+      String strTemp = str.toString();
+      if (strTemp.length() < 8196) {
+        output = strTemp;
+      }
       switch (mimeType) {
         case IStringX.APPLICATION_JAVA:
           buf.append("\nOutput:\n```java\n" + output + "\n```\n");
