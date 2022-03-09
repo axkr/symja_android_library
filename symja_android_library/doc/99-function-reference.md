@@ -509,6 +509,7 @@
 * [ListConvolve](functions/ListConvolve.md)
 * [ListCorrelate](functions/ListCorrelate.md)
 * [ListLinePlot](functions/ListLinePlot.md)
+* [ListLinePlot3D](functions/ListLinePlot3D.md)
 * [ListPlot](functions/ListPlot.md)
 * [ListPlot3D](functions/ListPlot3D.md)
 * [ListPointPlot3D](functions/ListPointPlot3D.md)

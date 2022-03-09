@@ -23,4 +23,4 @@ The variance of the log-normal distribution is
 
 ### Github
 
-* [Implementation of LogNormalDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L3968) 
+* [Implementation of LogNormalDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L4012) 

@@ -15,4 +15,4 @@ RogersTanimotoDissimilarity(u, v)
 
 ### Github
 
-* [Implementation of RogersTanimotoDissimilarity](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L2272) 
+* [Implementation of RogersTanimotoDissimilarity](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L2298) 

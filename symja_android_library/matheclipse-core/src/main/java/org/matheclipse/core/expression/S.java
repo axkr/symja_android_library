@@ -5651,6 +5651,14 @@ public class S {
   public final static IBuiltInSymbol ListLinePlot =
       F.initFinalSymbol("ListLinePlot", ID.ListLinePlot);
 
+  /**
+   * ListLinePlot3D( { list-of-lines } ) - generate a JavaScript list plot 3D control for the
+   * `list-of-lines`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListLinePlot3D.md">ListLinePlot3D
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ListLinePlot3D =
       F.initFinalSymbol("ListLinePlot3D", ID.ListLinePlot3D);
 
@@ -7364,6 +7372,13 @@ public class S {
    */
   public final static IBuiltInSymbol Polygon = F.initFinalSymbol("Polygon", ID.Polygon);
 
+  /**
+   * PolygonalNumber(nPoints) - returns the triangular number for `nPoints`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolygonalNumber.md">PolygonalNumber
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol PolygonalNumber =
       F.initFinalSymbol("PolygonalNumber", ID.PolygonalNumber);
 
