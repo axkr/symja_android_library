@@ -18,3 +18,7 @@ In the console apps, this command shows an HTML page with a JavaScript list plot
 
 ### Related terms 
 [JSForm](JSForm.md), [ListPointPlot3D](ListPointPlot3D.md), [Manipulate](Manipulate.md), [ParametricPlot](ParametricPlot.md), [Plot](Plot.md), [Plot3D](Plot3D.md)
+
+### Github
+
+* [Implementation of ListLinePlot3D](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/ListLinePlot3D.java#L17) 

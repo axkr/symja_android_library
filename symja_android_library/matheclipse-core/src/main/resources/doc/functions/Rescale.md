@@ -34,4 +34,4 @@ Rescale(x,{xmin, xmax},{ymin, ymax})
 
 ### Github
 
-* [Implementation of Rescale](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L6025) 
+* [Implementation of Rescale](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L6098) 
