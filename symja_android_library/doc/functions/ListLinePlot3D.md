@@ -13,7 +13,7 @@ ListLinePlot3D( { list-of-lines } )
 In the console apps, this command shows an HTML page with a JavaScript list plot control.
  
 ```
->> ListLinePlot3D({{0,1,0}, {1,0,2}, {1,1,2}, {2,2,-3}, {2,20,3}}
+>> ListLinePlot3D({{0,1,0}, {1,0,2}, {1,1,2}, {2,2,-3}, {2,20,3}})
 ```
 
 ### Related terms 
