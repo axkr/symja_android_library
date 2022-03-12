@@ -73,7 +73,6 @@ public final class GaussianInteger {
       return;
     }
     if (norm.compareTo(BigInteger.ONE) > 0) {
-      // SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
       SortedMap<BigInteger, Integer> bigMap = Config.PRIME_FACTORS.factorInteger(norm);
       Ind = bigMap.size();
       Primes = new BigInteger[Ind];

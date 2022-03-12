@@ -523,7 +523,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   /** {@inheritDoc} */
   @Override
   public IAST factorSmallPrimes(int numerator, int root) {
-    // SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
     Int2IntMap map = new Int2IntRBTreeMap();
     IInteger b = this;
     boolean isNegative = false;

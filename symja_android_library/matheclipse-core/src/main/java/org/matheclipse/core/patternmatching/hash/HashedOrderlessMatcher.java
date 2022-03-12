@@ -194,8 +194,7 @@ public class HashedOrderlessMatcher {
    */
   protected static boolean exists2ASTArguments(IAST ast) {
     final int[] counter = {0};
-    // x -> x.isAST() &&
-    return ast.exists(x -> x.size() < MAX_AST_SIZE_ARGUMENT && ++counter[0] == 2);
+    return ast.exists(x -> x.isAST() && x.size() < MAX_AST_SIZE_ARGUMENT && ++counter[0] == 2);
   }
 
   /**
