@@ -3,7 +3,10 @@
 Noteworthy changes are documented in this file.
 
 
-## [Unreleased]
+ ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v2.0.0...HEAD)
+ 
+ 
+ ## [2.0.0](https://github.com/axkr/symja_android_library/releases/tag/v2.0.0) - 2022-03-12 
 
 - Java 11 required
 - first Maven Central release (contributed by [@HannesWell](https://github.com/HannesWell))
