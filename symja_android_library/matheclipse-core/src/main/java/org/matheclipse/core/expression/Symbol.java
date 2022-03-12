@@ -64,12 +64,7 @@ public class Symbol implements ISymbol, Serializable {
    */
   protected String fSymbolName;
 
-  // public static ISymbol valueOf(final String symbolName, final Context context) {
-  // return new Symbol(symbolName, context);
-  // }
-
-  public Symbol(final String symbolName, final Context context) {
-    super();
+  public Symbol(String symbolName, Context context) {
     fContext = context;
     fSymbolName = symbolName;
   }
@@ -100,7 +95,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final void addAttributes(final int attributes) {
+  public final void addAttributes(int attributes) {
     fAttributes |= attributes;
     if (isLocked()) {
       throw new RuleCreationError(this);
@@ -111,7 +106,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final ISymbol addEvalFlags(final int flags) {
+  public final ISymbol addEvalFlags(int flags) {
     fEvalFlags |= flags;
     return this;
   }
@@ -134,7 +129,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public void assignValue(final IExpr value, boolean setDelayed) {
+  public void assignValue(IExpr value, boolean setDelayed) {
     fValue = value;
     clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
     if (setDelayed) {
@@ -147,10 +142,8 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final void clear(EvalEngine engine) {
-    if (!engine.isPackageMode()) {
-      if (isLocked()) {
-        throw new RuleCreationError(this);
-      }
+    if (!engine.isPackageMode() && isLocked()) {
+      throw new RuleCreationError(this);
     }
     clearValue();
     if (fRulesData != null) {
@@ -161,21 +154,17 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public void clearAll(EvalEngine engine) {
-    if (!engine.isPackageMode()) {
-      if (isLocked()) {
-        throw new RuleCreationError(this);
-      }
+    if (!engine.isPackageMode() && isLocked()) {
+      throw new RuleCreationError(this);
     }
     fAttributes = NOATTRIBUTE;
     clearValue();
-    if (fRulesData != null) {
-      fRulesData = null;
-    }
+    fRulesData = null;
   }
 
   /** {@inheritDoc} */
   @Override
-  public void clearAttributes(final int attributes) {
+  public void clearAttributes(int attributes) {
     fAttributes &= (0xffffffff ^ attributes);
     if (isLocked()) {
       throw new RuleCreationError(this);
@@ -185,7 +174,7 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   @Override
-  public void clearEvalFlags(final int flags) {
+  public void clearEvalFlags(int flags) {
     fEvalFlags &= (0xffffffff ^ flags);
   }
 
@@ -202,7 +191,7 @@ public class Symbol implements ISymbol, Serializable {
    * than the specified expression.
    */
   @Override
-  public int compareTo(final IExpr expr) {
+  public int compareTo(IExpr expr) {
     if (expr instanceof ISymbol) {
       // O-2
       if (this == expr) {
@@ -214,13 +203,13 @@ public class Symbol implements ISymbol, Serializable {
       return StringX.US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());
     }
     if (expr.isAST()) {
-      final int id = expr.headID();
+      int id = expr.headID();
       if (id == ID.DirectedInfinity && expr.isDirectedInfinity()) {
         return -1;
       }
       if (id >= ID.Not && id <= ID.Power) {
         if (expr.isNot() && expr.first().isSymbol()) {
-          final int cp = compareTo(expr.first());
+          int cp = compareTo(expr.first());
           return cp != 0 ? cp : -1;
         } else if (expr.isPower()) {
           // O-4
@@ -231,15 +220,9 @@ public class Symbol implements ISymbol, Serializable {
           return baseCompare;
         }
       }
-      // if (!expr.isDirectedInfinity()) {
-      return -1 * expr.compareTo(this);
-      // }
-      // return -1;
+      return -expr.compareTo(this);
     }
-
-    int x = hierarchy();
-    int y = expr.hierarchy();
-    return (x < y) ? -1 : ((x == y) ? 0 : 1);
+    return Integer.compare(hierarchy(), expr.hierarchy());
   }
 
   /** {@inheritDoc} */
@@ -326,7 +309,7 @@ public class Symbol implements ISymbol, Serializable {
     if (inverse.isMinusOne()) {
       return negate();
     }
-    if (hasNoValue() && !(this == that) && !that.isPlusTimesPower()) {
+    if (hasNoValue() && this != that && !that.isPlusTimesPower()) {
       return F.Times(this, inverse);
     }
     return ISymbol.super.times(inverse);
@@ -334,16 +317,11 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public boolean equals(final Object obj) {
-    if (Config.FUZZ_TESTING) {
-      if (obj instanceof ISymbol) {
-        if (fSymbolName.equals(((ISymbol) obj).getSymbolName())
-            && fContext.equals(((ISymbol) obj).getContext())) {
-          if (this != obj) {
-            throw new NullPointerException();
-          }
-        }
-      }
+  public boolean equals(Object obj) {
+    if (Config.FUZZ_TESTING && obj instanceof ISymbol
+        && fSymbolName.equals(((ISymbol) obj).getSymbolName())
+        && fContext.equals(((ISymbol) obj).getContext()) && this != obj) {
+      throw new NullPointerException();
     }
     return this == obj;
   }
@@ -360,7 +338,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final IExpr evalDownRule(final EvalEngine engine, final IExpr expression) {
+  public final IExpr evalDownRule(EvalEngine engine, IExpr expression) {
     if (fRulesData == null) {
       return F.NIL;
     }
@@ -456,7 +434,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final IExpr evalUpRules(final IExpr expression, final EvalEngine engine) {
+  public final IExpr evalUpRules(IExpr expression, EvalEngine engine) {
     if (fRulesData == null) {
       return F.NIL;
     }
@@ -682,13 +660,13 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isEvalFlagOff(final int i) {
+  public final boolean isEvalFlagOff(int i) {
     return (fEvalFlags & i) == 0;
   }
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isEvalFlagOn(final int i) {
+  public final boolean isEvalFlagOn(int i) {
     return (fEvalFlags & i) == i;
   }
 
@@ -758,12 +736,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
-    if (maxDegree == 0L) {
-      if (this.equals(variable)) {
-        return false;
-      }
-    }
-    return true;
+    return maxDegree != 0L || !this.equals(variable);
   }
 
   /** {@inheritDoc} */
@@ -786,12 +759,12 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isString(final String str) {
+  public final boolean isString(String str) {
     return fSymbolName.equals(str);
   }
 
   @Override
-  public final boolean isStringIgnoreCase(final String str) {
+  public final boolean isStringIgnoreCase(String str) {
     return fSymbolName.equalsIgnoreCase(str);
   }
 
@@ -816,8 +789,8 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public final boolean isVariable() {
     return ((fAttributes & (CONSTANT | NUMERICFUNCTION)) == NOATTRIBUTE)
-        && (this != S.ComplexInfinity) && (this != S.Indeterminate) && (this != S.DirectedInfinity)
-        && (this != S.Infinity);
+        && this != S.ComplexInfinity && this != S.Indeterminate && this != S.DirectedInfinity
+        && this != S.Infinity;
   }
 
   /** {@inheritDoc} */
@@ -876,7 +849,7 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   @Override
-  public IExpr plus(final IExpr that) {
+  public IExpr plus(IExpr that) {
     if (hasNoValue() && this != that && !that.isPlusTimesPower()) {
       if (that.isZero()) {
         return this;
@@ -888,17 +861,16 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final void putDownRule(final int setSymbol, final boolean equalRule,
-      final IExpr leftHandSide, final IExpr rightHandSide, boolean packageMode) {
+  public final void putDownRule(int setSymbol, boolean equalRule, IExpr leftHandSide,
+      IExpr rightHandSide, boolean packageMode) {
     putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide,
         IPatternMap.DEFAULT_RULE_PRIORITY, packageMode);
   }
 
   /** {@inheritDoc} */
   @Override
-  public final void putDownRule(final int setSymbol, final boolean equalRule,
-      final IExpr leftHandSide, final IExpr rightHandSide, final int priority,
-      boolean packageMode) {
+  public final void putDownRule(int setSymbol, boolean equalRule, IExpr leftHandSide,
+      IExpr rightHandSide, int priority, boolean packageMode) {
     if (!packageMode) {
       if (isLocked(packageMode)) {
         throw new RuleCreationError(leftHandSide);
@@ -917,7 +889,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final void putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
+  public final void putDownRule(PatternMatcherAndInvoker pmEvaluator) {
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
@@ -925,7 +897,7 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   @Override
-  public void putMessage(final int setSymbol, String messageName, IStringX message) {
+  public void putMessage(int setSymbol, String messageName, IStringX message) {
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
@@ -934,7 +906,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final IPatternMatcher putUpRule(final int setSymbol, boolean equalRule, IAST leftHandSide,
+  public final IPatternMatcher putUpRule(int setSymbol, boolean equalRule, IAST leftHandSide,
       IExpr rightHandSide) {
     return putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide,
         IPatternMap.DEFAULT_RULE_PRIORITY);
@@ -942,8 +914,8 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule,
-      final IAST leftHandSide, final IExpr rightHandSide, final int priority) {
+  public final IPatternMatcher putUpRule(int setSymbol, boolean equalRule, IAST leftHandSide,
+      IExpr rightHandSide, int priority) {
     EvalEngine engine = EvalEngine.get();
     if (!engine.isPackageMode()) {
       if (isLocked(false)) {
@@ -1061,8 +1033,8 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean removeRule(final int setSymbol, final boolean equalRule,
-      final IExpr leftHandSide, boolean packageMode) {
+  public final boolean removeRule(int setSymbol, boolean equalRule, IExpr leftHandSide,
+      boolean packageMode) {
     if (!packageMode) {
       if (isLocked(packageMode)) {
         throw new RuleCreationError(leftHandSide);
@@ -1081,7 +1053,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public void setAttributes(final int attributes) {
+  public void setAttributes(int attributes) {
     fAttributes = attributes;
     if (isLocked()) {
       throw new RuleCreationError(this);
@@ -1124,8 +1096,8 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   @Override
-  public IExpr times(final IExpr that) {
-    if (hasNoValue() && !(this == that) && !that.isPlusTimesPower()) {
+  public IExpr times(IExpr that) {
+    if (hasNoValue() && this != that && !that.isPlusTimesPower()) {
       if (that.isZero()) {
         return F.C0;
       }
@@ -1148,9 +1120,8 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public IExpr variables2Slots(final Map<IExpr, IExpr> map,
-      final Collection<IExpr> variableCollector) {
-    final UnaryVariable2Slot uv2s = new UnaryVariable2Slot(map, variableCollector);
+  public IExpr variables2Slots(Map<IExpr, IExpr> map, Collection<IExpr> variableCollector) {
+    UnaryVariable2Slot uv2s = new UnaryVariable2Slot(map, variableCollector);
     return uv2s.apply(this);
   }
 
