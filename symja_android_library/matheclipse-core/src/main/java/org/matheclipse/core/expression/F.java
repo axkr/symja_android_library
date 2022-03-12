@@ -12,11 +12,12 @@ import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -7496,20 +7497,16 @@ public class F extends S {
     return Dummy(EvalEngine.uniqueName("$"));
   }
 
-  public static IBuiltInSymbol localBiFunction(final String symbolName,
-      BiFunction<IExpr, IExpr, IExpr> function) {
-    IBuiltInSymbol localBuittIn = new BuiltInSymbol(symbolName, java.lang.Integer.MAX_VALUE);
-    localBuittIn.setEvaluator(new AbstractCoreFunctionEvaluator() {
+  public static IBuiltInSymbol localBiFunction(String symbolName, BinaryOperator<IExpr> function) {
+    return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
       @Override
       public IExpr evaluate(IAST ast, EvalEngine engine) {
         return function.apply(ast.arg1(), ast.arg2());
       }
     });
-    return localBuittIn;
   }
 
-  public static IBuiltInSymbol localFunction(final String symbolName,
-      Function<IExpr, IExpr> function) {
+  public static IBuiltInSymbol localFunction(String symbolName, UnaryOperator<IExpr> function) {
     return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
       @Override
       public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -7518,13 +7515,13 @@ public class F extends S {
     });
   }
 
-  public static IBuiltInSymbol localFunction(final String symbolName, IEvaluator evaluator) {
+  public static IBuiltInSymbol localFunction(String symbolName, IEvaluator evaluator) {
     IBuiltInSymbol localBuiltIn = new BuiltInDummy(symbolName);
     localBuiltIn.setEvaluator(evaluator);
     return localBuiltIn;
   }
 
-  public static IBuiltInSymbol localBiPredicate(final String symbolName,
+  public static IBuiltInSymbol localBiPredicate(String symbolName,
       BiPredicate<IExpr, IExpr> function) {
     return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
       @Override
@@ -7534,7 +7531,7 @@ public class F extends S {
     });
   }
 
-  public static IBuiltInSymbol localPredicate(final String symbolName, Predicate<IExpr> function) {
+  public static IBuiltInSymbol localPredicate(String symbolName, Predicate<IExpr> function) {
     return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
       @Override
       public IExpr evaluate(IAST ast, EvalEngine engine) {

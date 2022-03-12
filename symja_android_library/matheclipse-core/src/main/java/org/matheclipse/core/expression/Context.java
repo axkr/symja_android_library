@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.JavaFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -18,7 +19,7 @@ public class Context implements Serializable {
 
   /** The map for predefined (context &quot;System&quot;) symbols */
   public static final Map<String, ISymbol> PREDEFINED_SYMBOLS_MAP =
-      Config.TRIE_STRING2SYMBOL_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+      Config.TRIE_STRING2SYMBOL_BUILDER.withMatch(TrieMatch.EXACT).build();
 
   public static final String DUMMY_CONTEXT_NAME = "DUMMY`";
 
@@ -43,16 +44,16 @@ public class Context implements Serializable {
 
   private Map<String, ISymbol> symbolTable;
 
-  private transient Class<?> javaClass = null;;
+  private transient Class<?> javaClass = null;
 
   public static final String GLOBAL_CONTEXT_NAME = "Global`";
 
   public Context(String contextName) {
-    this(contextName, null, new HashMap<String, ISymbol>());
+    this(contextName, null, new HashMap<>());
   }
 
   public Context(String contextName, Context parentContext) {
-    this(contextName, parentContext, new HashMap<String, ISymbol>());
+    this(contextName, parentContext, new HashMap<>());
   }
 
   private Context(String contextName, Context parentContext, Map<String, ISymbol> symbolTable) {
@@ -140,19 +141,22 @@ public class Context implements Serializable {
     return symbolTable.put(key, value);
   }
 
+  public ISymbol computeIfAbsent(String key, Function<String, ISymbol> mappingFunction) {
+    return symbolTable.computeIfAbsent(key, mappingFunction);
+  }
+
   private void readObject(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     contextName = stream.readUTF();
     int size = stream.readInt();
-    symbolTable = new HashMap<String, ISymbol>(size + size / 10);
+    symbolTable = new HashMap<>(size + size / 10);
     EvalEngine.get().getContextPath().setGlobalContext(this);
     String[] table = new String[size];
     for (int i = 0; i < size; i++) {
       table[i] = stream.readUTF();
     }
-    for (int i = 0; i < size; i++) {
-      ISymbol symbol = (ISymbol) stream.readObject();
-      symbolTable.put(table[i], symbol);
+    for (String key : table) {
+      symbolTable.put(key, (ISymbol) stream.readObject());
     }
   }
 
@@ -189,13 +193,12 @@ public class Context implements Serializable {
 
   private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
     stream.writeUTF(contextName);
-    Set<Entry<String, ISymbol>> entrySet = symbolTable.entrySet();
-    stream.writeInt(entrySet.size());
-    for (Entry<String, ISymbol> entry : entrySet) {
-      stream.writeUTF(entry.getKey());
+    stream.writeInt(symbolTable.size());
+    for (String key : symbolTable.keySet()) {
+      stream.writeUTF(key);
     }
-    for (Entry<String, ISymbol> entry : entrySet) {
-      stream.writeObject(entry.getValue());
+    for (ISymbol symbol : symbolTable.values()) {
+      stream.writeObject(symbol);
     }
   }
 }
