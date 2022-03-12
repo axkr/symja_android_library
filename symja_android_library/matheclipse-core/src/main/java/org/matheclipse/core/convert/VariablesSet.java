@@ -1,16 +1,19 @@
 package org.matheclipse.core.convert;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Predicate;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -190,6 +193,7 @@ public class VariablesSet {
     while (iter.hasNext()) {
       list.append(iter.next());
     }
+    list.sortInplace(Comparators.CANONICAL_COMPARATOR);
     return list;
   }
 
@@ -207,6 +211,7 @@ public class VariablesSet {
     while (iter.hasNext()) {
       list.append(iter.next());
     }
+    list.sortInplace(Comparators.CANONICAL_COMPARATOR);
     return list;
   }
 
@@ -219,7 +224,7 @@ public class VariablesSet {
    * @return the ordered list of variables.
    */
   public static IAST getAlgebraicVariables(IExpr expr) {
-    Set<IExpr> fVariablesSet = new TreeSet<IExpr>();
+    Set<IExpr> fVariablesSet = new HashSet<IExpr>();
     return addAlgebraicVariables(fVariablesSet, expr);
   }
 
@@ -229,7 +234,7 @@ public class VariablesSet {
    * @return the ordered list of variables.
    */
   public static IAST getVariables(IExpr expr) {
-    Set<IExpr> fVariablesSet = new TreeSet<IExpr>();
+    Set<IExpr> fVariablesSet = new HashSet<IExpr>();
     return addVariables(fVariablesSet, expr);
   }
 
@@ -264,19 +269,19 @@ public class VariablesSet {
   /** Constructor for an empty instance. */
   public VariablesSet() {
     super();
-    fVariablesSet = new TreeSet<IExpr>();
+    fVariablesSet = new HashSet<IExpr>();
   }
 
   /** Determine the variable symbols from a Symja expression. */
   public VariablesSet(final IExpr expression) {
     super();
-    fVariablesSet = new TreeSet<IExpr>();
+    fVariablesSet = new HashSet<IExpr>();
     expression.accept(new VariablesVisitor(fVariablesSet));
   }
 
   public VariablesSet(final int offset, final IExpr expression) {
     super();
-    fVariablesSet = new TreeSet<IExpr>();
+    fVariablesSet = new HashSet<IExpr>();
     expression.accept(new VariablesVisitor(offset, fVariablesSet));
   }
 
@@ -339,6 +344,7 @@ public class VariablesSet {
     for (int i = 1; i < ast.size(); i++) {
       list.add(ast.get(i));
     }
+    Collections.sort(list);
     return list;
   }
 
@@ -352,6 +358,7 @@ public class VariablesSet {
     while (iter.hasNext()) {
       list.add(iter.next());
     }
+    Collections.sort(list);
     return list;
   }
 
@@ -392,6 +399,7 @@ public class VariablesSet {
     while (iter.hasNext()) {
       list.add(iter.next());
     }
+    Collections.sort(list);
     return list;
   }
 
@@ -406,6 +414,7 @@ public class VariablesSet {
     while (iter.hasNext()) {
       list.append(iter.next());
     }
+    list.sortInplace(Comparators.CANONICAL_COMPARATOR);
     return list;
   }
 
@@ -416,6 +425,7 @@ public class VariablesSet {
     while (iter.hasNext()) {
       result[i++] = iter.next().toString();
     }
+    Arrays.sort(result);
     return result;
   }
 
@@ -446,15 +456,6 @@ public class VariablesSet {
    */
   public int size() {
     return fVariablesSet.size();
-  }
-
-  /**
-   * @param a
-   * @return
-   * @see java.util.Set#toArray(T[])
-   */
-  public IExpr[] toArray(IExpr[] a) {
-    return fVariablesSet.toArray(a);
   }
 
   /**
