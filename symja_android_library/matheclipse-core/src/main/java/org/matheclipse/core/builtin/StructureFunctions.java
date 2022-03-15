@@ -1385,6 +1385,9 @@ public class StructureFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, ast.arg1(), 1, engine);
       if (arg1AST.isPresent()) {
+        if (ast.isAST2()) {
+          return F.bool(test(arg1AST, ast.arg2(), engine));
+        }
         return F.bool(test(arg1AST));
       }
       return F.NIL;
@@ -1392,12 +1395,25 @@ public class StructureFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
     @Override
     public boolean test(IAST ast) {
       return ast.compareAdjacent((x, y) -> x.isLEOrdered(y));
+    }
+
+    /**
+     * Test the ordering of elements with the <code>comparatorHead</code> as head of a binary
+     * predicate: <code>comparatorHead(x,y)</code>.
+     * 
+     * @param ast
+     * @param comparatorHead
+     * @param engine
+     * @return
+     */
+    private boolean test(IAST ast, IExpr comparatorHead, EvalEngine engine) {
+      return ast.compareAdjacent((x, y) -> engine.evalTrue(F.binaryAST2(comparatorHead, x, y)));
     }
   }
 
