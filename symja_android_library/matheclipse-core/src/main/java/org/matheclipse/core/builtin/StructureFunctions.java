@@ -1412,8 +1412,17 @@ public class StructureFunctions {
      * @param engine
      * @return
      */
-    private boolean test(IAST ast, IExpr comparatorHead, EvalEngine engine) {
-      return ast.compareAdjacent((x, y) -> engine.evalTrue(F.binaryAST2(comparatorHead, x, y)));
+    private static boolean test(IAST ast, IExpr comparatorHead, EvalEngine engine) {
+      return ast.compareAdjacent((x, y) -> comparatorFunction(comparatorHead, x, y, engine));
+    }
+
+    private static boolean comparatorFunction(IExpr comparatorHead, IExpr x, IExpr y,
+        EvalEngine engine) {
+      IExpr temp = engine.evaluate(F.binaryAST2(comparatorHead, x, y));
+      if (temp.isTrue() || temp.isOne() || temp.isZero()) {
+        return true;
+      }
+      return false;
     }
   }
 
