@@ -539,39 +539,20 @@ public class Integrate extends AbstractFunctionEvaluator {
       lowerDirection = F.Rule(F.Direction, F.CN1);
       upperDirection = F.Rule(F.Direction, F.C1);
     }
-    IExpr lowerLimit = F.Limit.of(engine, function, F.Rule(x, lower), lowerDirection);
+    IExpr lowerLimit = engine.evaluate(F.Limit(function, F.Rule(x, lower), lowerDirection));
     if (!lowerLimit.isFree(S.DirectedInfinity, true) || !lowerLimit.isFree(S.Indeterminate, true)) {
       LOGGER.log(engine.getLogLevel(), "Not integrable: {} for limit {} -> {}", function, x, lower);
       return F.NIL;
     }
-    IExpr upperLimit = F.Limit.of(engine, function, F.Rule(x, upper), upperDirection);
+    IExpr upperLimit = engine.evaluate(F.Limit(function, F.Rule(x, upper), upperDirection));
     if (!upperLimit.isFree(S.DirectedInfinity, true) || !upperLimit.isFree(S.Indeterminate, true)) {
       LOGGER.log(engine.getLogLevel(), "Not integrable: {} for limit {} -> {}", function, x, upper);
       return F.NIL;
     }
 
-    // if (lower.isNegativeResult() && upper.isPositiveResult()) {
-    // // 0 is a value inside the given interval
-    // IExpr FZeroAbove =
-    // engine.evaluate(F.Limit(function, F.Rule(x, F.C0), F.Rule(S.Direction, F.CN1)));
-    // if (!FZeroAbove.isFree(S.DirectedInfinity, true)
-    // || !FZeroAbove.isFree(S.Indeterminate, true)) {
-    // return engine.printMessage("Not integrable: " + function + " for limit " + x + " ->
-    // 0");
-    // }
-    // IExpr FZeroBelow =
-    // engine.evaluate(F.Limit(function, F.Rule(x, F.C0), F.Rule(S.Direction, F.C1)));
-    // if (!FZeroBelow.isFree(S.DirectedInfinity, true)
-    // || !FZeroBelow.isFree(S.Indeterminate, true)) {
-    // return engine.printMessage("Not integrable: " + function + " for limit " + x + " ->
-    // 0");
-    // }
-    // return F.Plus(F.Subtract(upperLimit, FZeroAbove), F.Subtract(FZeroBelow, lowerLimit));
-    // }
-
     if (upperLimit.isAST() && lowerLimit.isAST()) {
-      IExpr bDenominator = S.Denominator.of(engine, upperLimit);
-      IExpr aDenominator = S.Denominator.of(engine, lowerLimit);
+      IExpr bDenominator = engine.evaluate(F.Denominator(upperLimit));
+      IExpr aDenominator = engine.evaluate(F.Denominator(lowerLimit));
       if (bDenominator.equals(aDenominator)) {
         return F.Divide(F.Subtract(F.Numerator(upperLimit), F.Numerator(lowerLimit)), bDenominator);
       }

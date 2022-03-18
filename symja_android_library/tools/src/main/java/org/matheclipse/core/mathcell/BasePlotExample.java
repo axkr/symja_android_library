@@ -1,12 +1,19 @@
 package org.matheclipse.core.mathcell;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.util.Base64;
 import java.util.Locale;
+import javax.imageio.ImageIO;
 import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ManipulateFunction;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -40,7 +47,21 @@ public abstract class BasePlotExample {
       ExprEvaluator util = new ExprEvaluator();
 
       IExpr result = util.eval(exampleFunction());
-      if (result.isAST(F.JSFormData, 3)) {
+      if (result instanceof ImageExpr) {
+        ImageExpr imageExpr = (ImageExpr) result;
+        // https://stackoverflow.com/a/22891895/24819
+        BufferedImage bImage = imageExpr.toData();
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
+          ImageIO.write(bImage, "png", b64);
+          String html = JSBuilder.IMAGE_TEMPLATE;
+          String[] argsToRender = new String[3];
+          argsToRender[0] = outputStream.toString();
+          html = IOFunctions.templateRender(html, argsToRender);
+          System.out.println(html);
+          F.openHTMLOnDesktop(html);
+        }
+      } else if (result.isAST(F.JSFormData, 3)) {
         String js;
         if (result.second().toString().equals("mathcell")) {
           String manipulateStr = ((IAST) result).arg1().toString();
