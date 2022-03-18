@@ -22,7 +22,7 @@ import org.matheclipse.core.expression.S;
  * Ported from JavaScript file <a href=
  * "https://github.com/paulmasson/math/blob/master/src/functions/elliptic-functions.js">elliptic-functions.js</a>
  */
-public class EllipticFunctionsJS {
+public class EllipticFunctionsJS extends JS {
   private EllipticFunctionsJS() {}
 
   public static double trunc(double value) {
@@ -141,7 +141,7 @@ public class EllipticFunctionsJS {
 
   public static Complex jacobiTheta(int n, Complex x, Complex q, double tolerance) {
 
-    if (q.norm() >= 1) {
+    if (cabs(q) >= 1) {
       throw new ArgumentTypeException("unsupported elliptic nome");
     }
 

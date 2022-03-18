@@ -10,7 +10,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.expression.S;
 
-public class ZetaJS {
+public class ZetaJS extends JS {
   private static final int MAX_VALUE_HALF = Integer.MAX_VALUE / 2;
 
   private ZetaJS() {}
@@ -346,7 +346,7 @@ public class ZetaJS {
       return x.divide(Complex.ONE.subtract(x).multiply(Complex.ONE.subtract(x)));
     }
 
-    if (x.norm() >= 1.0) {
+    if (cabs(x) >= 1.0) {
 
       if (F.isZero(n.getImaginary()) && F.isNumIntValue(n.getReal()) && n.getReal() > 0.0) {
 

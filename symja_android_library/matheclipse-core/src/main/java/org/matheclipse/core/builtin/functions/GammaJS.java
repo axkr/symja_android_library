@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin.functions;
 
 import static de.lab4inf.math.util.Accuracy.hasConverged;
-import static java.lang.Math.exp;
 import static java.lang.Math.log;
 import static org.matheclipse.core.builtin.functions.HypergeometricJS.hypergeometric1F1;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -28,7 +27,7 @@ import de.lab4inf.math.util.ContinuedFraction;
  * Ported from JavaScript file
  * <a href="https://github.com/paulmasson/math/blob/master/src/functions/gamma.js">gamma.js</a>
  */
-public class GammaJS {
+public class GammaJS extends JS {
 
   private GammaJS() {}
 
@@ -104,7 +103,7 @@ public class GammaJS {
     } else if (x > 0) {
       // calculate series expansion A&S 6.5.29
       int n = 1;
-      final double ea = exp(-x + (a * log(x)) - GammaJS.logGamma(a));
+      final double ea = Math.exp(-x + (a * log(x)) - GammaJS.logGamma(a));
       final double err = eps;
       double an = 1.0 / a, so, sn = an;
       do {
@@ -141,7 +140,7 @@ public class GammaJS {
       // create continued fraction analog to A&S 6.5.31 / 26.4.10 ?
       // this implementation is due to Wolfram research
       // http://functions.wolfram.com/GammaBetaErf/GammaRegularized/10/0003/
-      final double ea = exp(-x + (a * log(x)) - GammaJS.logGamma(a));
+      final double ea = Math.exp(-x + (a * log(x)) - GammaJS.logGamma(a));
       final double err = epsilon;
       final ContinuedFraction cf = new RegularizedGammaFraction(a);
       ret = 1.0 / cf.evaluate(x, err, maxIterations);
@@ -230,8 +229,7 @@ public class GammaJS {
     Complex m2 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
         new Complex(0, -Math.PI / 2).multiply(x.multiply(x)));
 
-    Complex result = x.multiply(m1.subtract(m2)).multiply(new Complex(0, -0.5));
-    return result;
+    return mul(new Complex(0, -0.5), x, sub(m1, m2));
   }
 
   public static Complex fresnelC(Complex x) {
@@ -241,8 +239,7 @@ public class GammaJS {
     Complex m2 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
         new Complex(0, -Math.PI / 2).multiply(x.multiply(x)));
 
-    Complex result = x.multiply(m1.add(m2)).multiply(0.5);
-    return result;
+    return mul(0.5, x, m1.add(m2));
   }
 
   public static Complex gamma(Complex x) {
@@ -300,7 +297,7 @@ public class GammaJS {
     }
 
     double delta = 1e-5;
-    if (x.norm() < delta) {
+    if (cabs(x) < delta) {
       // TODO implement case for abs value near 0
 
       // return taylorSeries( t => gamma(t,y), mul( x, delta/x.abs( ) ), 2.0)(x);
@@ -369,7 +366,7 @@ public class GammaJS {
 
   public static Complex expIntegralEi(Complex x) {
     double useAsymptotic = 26.0;
-    if (x.norm() > useAsymptotic) {
+    if (cabs(x) > useAsymptotic) {
 
       Complex s = Complex.ONE;
       Complex p = Complex.ONE;
@@ -386,7 +383,7 @@ public class GammaJS {
       // combination of logarithms adds/subtracts Complex(0,Pi)
       int sign = x.getImaginary() > 0 ? 1 : x.getImaginary() < 0 ? -1 : 0;
 
-      return s.multiply(x.exp()).multiply(xInverse).add(new Complex(0.0, sign * Math.PI));
+      return add(mul(s, exp(x), inv(x)), new Complex(0.0, sign * Math.PI));
     }
 
     Complex s = Complex.ZERO;
@@ -418,14 +415,6 @@ public class GammaJS {
 
   public static Complex logIntegral(Complex x) {
     return expIntegralEi(x.log());
-
-    // Complex result = gamma(Complex.ZERO, x.log().negate()).negate()
-    // .add(x.log().log().subtract(x.log().reciprocal().log()).multiply(0.5))
-    // .add(x.log().negate().log().negate());
-    //
-    // // if ( isComplex(x) ) return result;
-    // // return result.re;
-    // return result;
   }
 
   /**
@@ -454,8 +443,16 @@ public class GammaJS {
     return Math.pow(-1, n + 1) * factorialInt(n) * ZetaJS.hurwitzZeta((double) n + 1, x);
   }
 
+  public static Complex cosIntegral(Complex x) {
+    // complex for negative real argument
+    Complex ix = Complex.I.multiply(x);
+
+    return x.log().subtract(gammaZero(ix.negate()).add(gammaZero(ix))
+        .add(ix.negate().log()).add(ix.log()).multiply(0.5));
+  }
+
   public static Complex sinIntegral(Complex x) {
-    if (Complex.equals(x, Complex.ZERO, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+    if (F.isZero(x)) {
       return Complex.ZERO;
     }
 
@@ -472,17 +469,8 @@ public class GammaJS {
     return result;
   }
 
-  public static Complex cosIntegral(Complex x) {
-    // complex for negative real argument
-    Complex ix = Complex.I.multiply(x);
-
-    Complex result = x.log().subtract(gammaZero(ix.negate()).add(gammaZero(ix))
-        .add(ix.negate().log()).add(ix.log()).multiply(0.5));
-    return result;
-  }
-
   public static Complex sinhIntegral(Complex x) {
-    if (Complex.equals(x, Complex.ZERO, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+    if (F.isZero(x)) {
       return Complex.ZERO;
     }
 
@@ -539,7 +527,7 @@ public class GammaJS {
 
   public static Complex expIntegralE(Complex n, Complex x) {
 
-    if (n.equals(Complex.ZERO)) {
+    if (F.isZero(n)) {
       return x.negate().exp().divide(x);
     }
 
@@ -558,29 +546,36 @@ public class GammaJS {
       -.261908384015814087e-4, .368991826595316234e-5};
 
   public static Complex logGamma(Complex x) {
-    // if ( isComplex(x) ) {
 
-    if (F.isNumIntValue(x.getReal()) && x.getReal() <= 0 && F.isZero(x.getImaginary())) {
+    if (x.isMathematicalInteger() && x.getReal() <= 0) {
       throw new ArgumentTypeException("Gamma function pole");
     }
 
     // reflection formula with modified Hare correction to imaginary part
     if (x.getReal() < 0.0) {
-      Complex t = new Complex(Math.PI).divide(x.multiply(Math.PI).sin()).log()
-          .subtract(logGamma(x.negate().add(1.0)));
-      double s = x.getImaginary() < 0.0 ? -1.0 : 1.0;
+      Complex logRatio = div(Math.PI, mul(Math.PI, x).sin()).log();
+      // rounding errors can lead to wrong side of branch point
+      if (F.isFuzzyEquals(x.getReal() - trunc(x.getReal()), -0.5,
+          Config.SPECIAL_FUNCTIONS_TOLERANCE) && trunc(x.getReal()) % 2 == 0) {
+        logRatio = new Complex(logRatio.getReal(), Math.PI * (x.getImaginary() > 0 ? 1 : -1));
+      }
+
+      Complex t = sub(logRatio, logGamma(sub(1, x)));
+      double s = x.getImaginary() < 0 ? -1.0 : 1.0;
       double d = F.isZero(x.getImaginary()) ? 0.25 : 0;
       double k = Math.ceil(x.getReal() / 2.0 - 0.75 + d);
-      return t.add(new Complex(0.0, 2.0 * s * k * Math.PI));
+
+      return add(t, new Complex(0, 2 * s * k * Math.PI));
     }
 
-    Complex t = x.add(5.24218750000000000);
-    t = x.add(0.5).multiply(t.log()).subtract(t);
+    Complex t = add(x, 5.24218750000000000);
+    t = sub(mul(add(x, 0.5), t.log()), t);
     Complex s = new Complex(0.999999999999997092);
     for (int j = 0; j < 14; j++) {
-      s = s.add(x.add(j + 1).reciprocal().multiply(c[j]));
+      s = add(s, div(c[j], add(x, j + 1)));
     }
-    Complex u = t.add(s.divide(x).multiply(2.5066282746310005).log());
+    Complex u = add(t, mul(2.5066282746310005, div(s, x)).log());
+    u = t.add(s.divide(x).multiply(2.5066282746310005).log());
 
     // adjustment to keep imaginary part on same sheet
     if (s.getReal() < 0.0) {

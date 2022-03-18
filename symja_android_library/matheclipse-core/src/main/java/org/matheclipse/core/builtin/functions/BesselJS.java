@@ -18,7 +18,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Ported from JavaScript file
  * <a href="https://github.com/paulmasson/math/blob/master/src/functions/bessel.js">bessel.js</a>
  */
-public class BesselJS {
+public class BesselJS extends JS {
 
   private BesselJS() {}
 
@@ -52,7 +52,7 @@ public class BesselJS {
   }
 
   public static Complex besselJ(Complex n, Complex x) {
-    if (F.isNumIntValue(n.getReal()) && n.getReal() < 0.0 && F.isZero(n.getImaginary())) {
+    if (n.isMathematicalInteger() && n.getReal() < 0.0) {
       return new Complex(-1.0).pow(n).multiply(besselJ(n.negate(), x));
     }
 
@@ -190,9 +190,6 @@ public class BesselJS {
   }
 
   public static Complex besselI(double n, double x) {
-    // if (F.isNumIntValue(n) && n < 0)
-    // return besselI(-n, x);
-
     if (!F.isNumIntValue(n) && x < 0) {
       return besselI(new Complex(n), new Complex(x));
     }
@@ -203,8 +200,9 @@ public class BesselJS {
   }
 
   public static double besselIDouble(double n, double x) {
-    if (F.isNumIntValue(n) && n < 0)
+    if (F.isNumIntValue(n) && n < 0) {
       return besselIDouble(-n, x);
+    }
 
     if (!F.isNumIntValue(n) && x < 0) {
       throw new ArgumentTypeException(x + " < 0.0");
@@ -219,12 +217,14 @@ public class BesselJS {
   }
 
   public static Complex besselI(Complex n, Complex x) {
-    if (F.isNumIntValue(n.getReal()) && n.getReal() < 0 && n.getImaginary() == 0.0) {
+
+    if (n.isMathematicalInteger() && n.getReal() < 0.0) {
       return besselI(n.negate(), x);
     }
-    Complex product = x.divide(2).pow(n).divide(Arithmetic.lanczosApproxGamma(n.add(1)));
-    Complex sqrX = x.multiply(x);
-    return product.multiply(HypergeometricJS.hypergeometric0F1(n.add(1), sqrX.multiply(.25)));
+    Complex product = div(pow(div(x, 2.0), n), gamma(add(n, 1.0)));
+    return mul(product, HypergeometricJS.hypergeometric0F1(add(n, 1.0), mul(0.25, pow(x, 2.0))));
+    // Complex sqrX = x.multiply(x);
+    // return product.multiply(HypergeometricJS.hypergeometric0F1(n.add(1), sqrX.multiply(.25)));
   }
 
   public static Complex besselK(double n, double x) {
@@ -271,13 +271,9 @@ public class BesselJS {
     double delta = 1e-5;
 
     // asymptotic form as per Johansson
-    if (x.norm() > useAsymptotic) {
-      Complex t1 = new Complex(Math.PI / 2.0).divide(x).sqrt().multiply(x.negate().exp());
-      // Complex t2 = HypergeometricJS.hypergeometricSeries(new Complex[] { n.add(0.5),
-      // n.negate().add(0.5) },
-      // new Complex[0], new Complex(-0.5).divide(x));
-      Complex t2 = HypergeometricJS.hypergeometric2F0(n.add(0.5), new Complex(0.5).subtract(n),
-          new Complex(-0.5).divide(x));
+    if (x.isReal() && Math.abs(x.getReal()) > useAsymptotic) {
+      Complex t1 = mul(sqrt(div(Math.PI / 2.0, x)), exp(neg(x)));
+      Complex t2 = HypergeometricJS.hypergeometric2F0(add(n, 0.5), sub(0.5, n), div(-0.5, x));
       return t1.multiply(t2);
     }
 
@@ -297,7 +293,7 @@ public class BesselJS {
         return besselK(new Complex(nRe + delta), x).add(besselK(new Complex(nRe - delta), x))
             .divide(2.0);
       }
-      Complex product = new Complex(Math.PI / 2.0).divide(n.multiply(Math.PI).sin());
+      Complex product = div(Math.PI / 2.0, mul(n, Math.PI).sin());
       return product.multiply(besselI(n.negate(), x).subtract(besselI(n, x)));
     } finally {
       if (recursionLimit > 0) {
@@ -315,11 +311,11 @@ public class BesselJS {
   }
 
   public static Complex hankelH2(double n, double x) {
-    return besselJ(n, x).add(Complex.I.multiply(besselY(n, x).negate()));
+    return besselJ(n, x).subtract(Complex.I.multiply(besselY(n, x)));
   }
 
   public static Complex hankelH2(Complex n, Complex x) {
-    return besselJ(n, x).add(Complex.I.multiply(besselY(n, x).negate()));
+    return besselJ(n, x).subtract(Complex.I.multiply(besselY(n, x)));
   }
 
   public static Complex airyAi(double x) {
@@ -380,19 +376,7 @@ public class BesselJS {
   }
 
   public static Complex airyBi(double x) {
-    if (F.isZero(x)) {
-      return new Complex(1.0 / Math.pow(3.0, 1.0 / 6.0) / GammaJS.gamma(2.0 / 3.0));
-    }
-
-    if (x < 0) {
-      Complex xMinus = new Complex(-x);
-      Complex z = xMinus.pow(1.5).multiply(2.0 / 3.0);
-      return xMinus.divide(3.0).sqrt()
-          .multiply(besselJ(-1.0 / 3.0, z).subtract(besselJ(1.0 / 3.0, z)));
-    }
-    Complex xc = new Complex(x);
-    Complex z = xc.pow(1.5).multiply(2.0 / 3.0);
-    return xc.divide(3.0).sqrt().multiply(besselI(1.0 / 3.0, z).add(besselI(-1.0 / 3.0, z)));
+    return airyBi(new Complex(x));
   }
 
   public static Complex airyBi(Complex x) {
@@ -417,7 +401,7 @@ public class BesselJS {
 
   public static Complex airyBiPrime(Complex x) {
     if (F.isZero(x)) {
-      return new Complex(Math.pow(3.0, 1.6) / GammaJS.gamma(1.0 / 3.0));
+      return new Complex(Math.pow(3.0, 1.0 / 6.0) / GammaJS.gamma(1.0 / 3.0));
     }
 
     if (x.getReal() < 0) {
@@ -433,13 +417,11 @@ public class BesselJS {
   }
 
   public static Complex sphericalBesselJ(double n, double x) {
-    return besselJ(n + 0.5, x)
-        .multiply(new Complex(Math.sqrt(Math.PI / 2.0)).divide(new Complex(x).sqrt()));
+    return besselJ(n + 0.5, x).multiply(sqrt(Math.PI / 2.0).divide(new Complex(x).sqrt()));
   }
 
   public static Complex sphericalBesselJ(Complex n, Complex x) {
-    return besselJ(n.add(0.5), x)
-        .multiply(x.sqrt().reciprocal().multiply(Math.sqrt(Math.PI / 2.0)));
+    return mul(div(sqrt(Math.PI / 2.0), sqrt(x)), besselJ(add(n, .5), x));
   }
 
   public static Complex sphericalBesselY(double n, double x) {
@@ -448,16 +430,17 @@ public class BesselJS {
   }
 
   public static Complex sphericalBesselY(Complex n, Complex x) {
-    Complex besselY = besselY(n.add(0.5), x);
-    return besselY.multiply(x.sqrt().reciprocal().multiply(Math.sqrt(Math.PI / 2.0)));
+    return mul(div(sqrt(Math.PI / 2.0), sqrt(x)), besselY(add(n, 0.5), x));
   }
 
   public static Complex sphericalHankel1(double n, double x) {
-    return sphericalBesselJ(n, x).add(Complex.I.multiply(sphericalBesselY(n, x)));
+    return add(sphericalBesselJ(n, x), mul(Complex.I, sphericalBesselY(n, x)));
+    // return sphericalBesselJ(n, x).add(Complex.I.multiply(sphericalBesselY(n, x)));
   }
 
   public static Complex sphericalHankel2(double n, double x) {
-    return sphericalBesselJ(n, x).add(Complex.I.multiply(sphericalBesselY(n, x).negate()));
+    return sub(sphericalBesselJ(n, x), mul(Complex.I, sphericalBesselY(n, x)));
+    // return sphericalBesselJ(n, x).add(Complex.I.multiply(sphericalBesselY(n, x).negate()));
   }
 
   public static double struveH(double n, double x) {
@@ -470,11 +453,9 @@ public class BesselJS {
   public static Complex struveH(Complex n, Complex x) {
     // can also evaluate from hypergeometric0F1
     // could use to test hypergeometricPFQ
-    return x.pow(n.add(1.0))
-        .divide(Complex.valueOf(2.0).pow(n).multiply(Math.sqrt(Math.PI))
-            .multiply(Arithmetic.lanczosApproxGamma(n.add(1.5))))
-        .multiply(HypergeometricJS.hypergeometric1F2(Complex.ONE, new Complex(1.5), n.add(1.5),
-            x.multiply(x).multiply(-0.25)));
+    return mul(pow(x, add(n, 1)), inv(mul(pow(2.0, n), sqrt(Math.PI), gamma(add(n, 1.5)))),
+        HypergeometricJS.hypergeometric1F2(Complex.ONE, new Complex(1.5), add(1.5, n),
+            mul(-0.25, pow(x, 2.0))));
   }
 
   public static double struveL(double n, double x) {
@@ -486,10 +467,8 @@ public class BesselJS {
 
   public static Complex struveL(Complex n, Complex x) {
     // one sign different in 0.25 from struveH
-    return x.pow(n.add(1.0))
-        .multiply(Complex.valueOf(2.0).pow(n).multiply(Math.sqrt(Math.PI))
-            .multiply(Arithmetic.lanczosApproxGamma(n.add(1.5))).reciprocal())
-        .multiply(HypergeometricJS.hypergeometric1F2(Complex.ONE, new Complex(1.5), n.add(1.5),
-            x.multiply(x).multiply(0.25)));
+    return mul(pow(x, add(n, 1)), inv(mul(pow(2.0, n), sqrt(Math.PI), gamma(add(n, 1.5)))),
+        HypergeometricJS.hypergeometric1F2(Complex.ONE, new Complex(1.5), add(1.5, n),
+            mul(0.25, pow(x, 2.0))));
   }
 }

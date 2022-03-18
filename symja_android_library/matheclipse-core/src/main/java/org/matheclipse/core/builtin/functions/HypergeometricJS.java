@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin.functions;
 import static java.lang.Math.abs;
 import java.util.ArrayList;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.Gamma;
 import org.matheclipse.core.basic.Config;
@@ -20,7 +19,8 @@ import org.matheclipse.core.expression.S;
  * Ported from JavaScript file <a href=
  * "https://github.com/paulmasson/math/blob/master/src/functions/hypergeometric.js">hypergeometric.js</a>
  */
-public class HypergeometricJS {
+public class HypergeometricJS extends JS {
+
 
   private HypergeometricJS() {}
 
@@ -65,9 +65,7 @@ public class HypergeometricJS {
   // return hypergeometricSeries(A, B, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   // }
 
-  public static double hypergeometricSeries(double[] A, double[] B, double x) { // boolean
-                                                                                // complexArguments,
-    // double tolerance) {
+  public static double hypergeometricSeries(double[] A, double[] B, double x) {
     // see https://github.com/paulmasson/math/issues/12
     double sOld1 = 0.0, sOld2;
     double s = 1;
@@ -160,7 +158,7 @@ public class HypergeometricJS {
     }
 
     // asymptotic form as per Johansson
-    if (x.norm() > useAsymptotic) {
+    if (cabs(x) > useAsymptotic) {
       // transform variables for convenience
       Complex b = a.multiply(2).subtract(1);
       a = a.subtract(0.5);
@@ -200,28 +198,37 @@ public class HypergeometricJS {
   // return hypergeometric1F1(a, b, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   // }
 
-  public static Complex hypergeometric1F1(Complex a, Complex b, Complex x) {
-
+  public static Complex hypergeometric1F1(final Complex a, final Complex b, final Complex x) {
+    if (F.isFuzzyEquals(a, b, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      return exp(x);
+    }
     final double useAsymptotic = 30;
+
     if (b.isMathematicalInteger() && b.getReal() <= 0) {
       throw new ArgumentTypeException("hypergeometric function pole");
     }
+
+    if (F.isZero(a)) {
+      return Complex.ONE;
+    }
+
     // Kummer transformation
     if (x.getReal() < 0) {
       return x.exp().multiply(hypergeometric1F1(b.subtract(a), b, x.negate()));
     }
 
     // asymptotic form as per Johansson arxiv.org/abs/1606.06977
-    if (x.norm() > useAsymptotic) {
-      Complex t1 = Arithmetic.lanczosApproxGamma(b).multiply(x.negate().pow(a.negate()))
-          .multiply(Arithmetic.lanczosApproxGamma(b.subtract(a)).reciprocal());
-      t1 = t1
-          .multiply(hypergeometric2F0(a, a.add(b.negate()).add(1.0), new Complex(-1.0).divide(x)));
+    if (cabs(x) > useAsymptotic) {
+      Complex bSuba = sub(b, a);
+      if (a.isZero() || (bSuba.isMathematicalInteger() && sub(b, a).getReal() <= 0.0)) {
+        return complexAverage(l -> hypergeometric1F1(l, b, x), a);
+      }
 
-      Complex t2 = Arithmetic.lanczosApproxGamma(b).multiply(x.pow(a.subtract(b))).multiply(x.exp())
-          .multiply(Arithmetic.lanczosApproxGamma(a).reciprocal());
-      t2 = t2.multiply(
-          hypergeometric2F0(b.subtract(a), Complex.ONE.subtract(a), Complex.ONE.divide(x)));
+      Complex t1 = mul(gamma(b), pow(neg(x), neg(a)), inv(gamma(sub(b, a))),
+          hypergeometric2F0(a, add(1.0, a, neg(b)), div(-1.0, x)));
+
+      Complex t2 = mul(gamma(b), pow(x, sub(a, b)), exp(x), inv(gamma(a)),
+          hypergeometric2F0(sub(b, a), sub(1.0, a), div(1.0, x)));
 
       return t1.add(t2);
     }
@@ -231,12 +238,14 @@ public class HypergeometricJS {
     long i = 1;
 
     long iterationLimit = EvalEngine.get().getIterationLimit();
+    Complex a1 = a;
+    Complex b1 = b;
     while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
         || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
-      p = p.multiply(x).multiply(a).multiply(b.reciprocal()).divide(i);
+      p = p.multiply(x).multiply(a1).multiply(b1.reciprocal()).divide(i);
       s = s.add(p);
-      a = a.add(1.0);
-      b = b.add(1.0);
+      a1 = a1.add(1.0);
+      b1 = b1.add(1.0);
       if (i++ > iterationLimit && iterationLimit > 0) {
         IterationLimitExceeded.throwIt(i, S.Hypergeometric1F1);
       }
@@ -250,9 +259,16 @@ public class HypergeometricJS {
   // }
 
   public static double hypergeometric1F1(double a, double b, double x) {
+    if (F.isFuzzyEquals(a, b, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      return Math.exp(x);
+    }
     final double useAsymptotic = 30;
     if (F.isNumIntValue(b) && b <= 0) {
       throw new ArgumentTypeException("hypergeometric function pole");
+    }
+
+    if (F.isZero(a)) {
+      return 1.0;
     }
 
     // Kummer transformation
@@ -298,12 +314,12 @@ public class HypergeometricJS {
 
     while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
 
-      p = p.multiply(x).multiply(a).multiply(b).divide(i);
+      p = mul(1.0 / i, p, x, a, b);
 
-      if (p.norm() > pLast.norm() && converging) {
+      if (cabs(p) > cabs(pLast) && converging) {
         break; // prevent runaway sum
       }
-      if (p.norm() < pLast.norm()) {
+      if (cabs(p) < cabs(pLast)) {
         converging = true;
       }
       if (i > terms) {
@@ -326,10 +342,11 @@ public class HypergeometricJS {
 
   public static double hypergeometric2F0(double a, double b, double x, double tolerance) {
     int terms = 50;
-    double s = 1;
-    double p = 1, pLast = p;
+    double s = 1.0;
+    double p = 1.0;
+    double pLast = p;
     boolean converging = false;
-    double i = 1;
+    double i = 1.0;
 
     while (Math.abs(p) > tolerance) {
 
@@ -359,6 +376,7 @@ public class HypergeometricJS {
     return hypergeometric2F1(a, b, c, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }
 
+
   public static Complex hypergeometric2F1(Complex a, Complex b, Complex c, Complex x,
       double tolerance) {
 
@@ -384,12 +402,12 @@ public class HypergeometricJS {
       // transformations from Abramowitz & Stegun p.559
       // fewer operations compared to dlmf.nist.gov/15.8
 
-      double[] absArray = new double[] {x.norm(), //
-          x.divide(x.subtract(1)).norm(), //
-          new Complex(1).subtract(x).norm(), //
-          x.reciprocal().norm(), //
-          new Complex(1).subtract(x).reciprocal().norm(), //
-          new Complex(1).subtract(x.reciprocal()).norm()};
+      double[] absArray = new double[] {cabs(x), //
+          cabs(x.divide(x.subtract(1))), //
+          cabs(new Complex(1).subtract(x)), //
+          cabs(x.reciprocal()), //
+          cabs(new Complex(1).subtract(x).reciprocal()), //
+          cabs(new Complex(1).subtract(x.reciprocal()))};
 
       double min = Double.POSITIVE_INFINITY;
       double newMin = Double.POSITIVE_INFINITY;
@@ -413,8 +431,8 @@ public class HypergeometricJS {
           break;
 
         case 1:
-          return new Complex(1.0).subtract(x).pow(a.negate())
-              .multiply(hypergeometric2F1(a, c.subtract(b), c, x.divide(x.subtract(1))));
+          return Complex.ONE.subtract(x).pow(a.negate())
+              .multiply(hypergeometric2F1(a, c.subtract(b), c, x.divide(x.subtract(1.0))));
 
         case 2: {
           if (c.subtract(a.add(b)).isMathematicalInteger()
@@ -429,7 +447,7 @@ public class HypergeometricJS {
               .multiply(Arithmetic.lanczosApproxGamma(c.subtract(a.add(b))))
               .multiply(Arithmetic.lanczosApproxGamma(subtractCA).reciprocal())
               .multiply(Arithmetic.lanczosApproxGamma(c.subtract(b)).reciprocal())
-              .multiply(hypergeometric2F1(a, b, a.add(b).add(c.negate()).add(1),
+              .multiply(hypergeometric2F1(a, b, a.add(b).add(c.negate()).add(1.0),
                   new Complex(1).subtract(x)));
 
           Complex t2 = new Complex(1).subtract(x).pow(c.subtract(a.add(b)))
@@ -438,7 +456,7 @@ public class HypergeometricJS {
               .multiply(Arithmetic.lanczosApproxGamma(a).reciprocal())
               .multiply(Arithmetic.lanczosApproxGamma(b).reciprocal())
               .multiply(hypergeometric2F1(subtractCA, c.subtract(b),
-                  a.add(a.negate()).add(b.negate()).add(1), new Complex(1).subtract(x)));
+                  a.add(a.negate()).add(b.negate()).add(1.0), new Complex(1).subtract(x)));
 
           return t1.add(t2);
         }
@@ -617,103 +635,104 @@ public class HypergeometricJS {
     return s;
   }
 
-  public static double hypergeometric1F2(double a, double b, double c, double x, double tolerance) {
-    int useAsymptotic = 200;
-    // asymptotic form is complex
-    if (Math.abs(x) > useAsymptotic) {
-      return hypergeometric1F2(new Complex(a), new Complex(b), new Complex(c), new Complex(x))
-          .getReal();
-    }
-    return hypergeometricSeries(new double[] {a}, new double[] {b, c}, x);
-  }
-
   public static Complex hypergeometricPFQ(Complex[] A, Complex[] B, Complex x) {
     return hypergeometricPFQ(A, B, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }
 
   public static Complex hypergeometricPFQ(Complex[] A, Complex[] B, Complex x, double tolerance) {
     // dlmf.nist.gov/16.11 for general transformations
-    if (x.norm() > 1.0) {
+    if (cabs(x) > 1.0) {
 
       throw new ArgumentTypeException("general hypergeometric argument currently restricted");
     }
     return hypergeometricSeries(A, B, x);
   }
 
+  public static Complex w(int k, Complex x, Complex ckk) {
+    // function w( k ) { return mul( 1/2**k, ck[k], pow(neg(x),-k/2) ); }
+    return ckk.multiply(new Complex(0.5).pow(k))
+        .multiply(x.negate().pow(new Complex(-k).multiply(0.5)));
+  }
+
   public static Complex hypergeometric1F2(Complex a, Complex b, Complex c, Complex x) {
 
-    final int useAsymptotic = 200;
+    final int useAsymptotic = 150;
 
-    if (x.norm() > useAsymptotic) {
+    if (cabs(x) > useAsymptotic) {
+      Complex aNegbNegc = add(a, neg(b), neg(c));
 
-      Complex p = a.add(b.negate()).add(c.negate()).add(0.5).divide(2.0);
+      Complex p = div(add(aNegbNegc, 0.5), 2.0);
 
       ArrayList<Complex> ck = new ArrayList<Complex>();
-      ck.add(Complex.ONE); //
-      ck.add(
-          ((a.multiply(3.0).add(b).add(c).add(-2.0)).multiply(a.subtract(b.add(c))).multiply(0.5))
-              .add(b.multiply(c).multiply(2)).add(-3.0 / 8.0)); //
-      ck.add((a.multiply(3.0).add(b).add(c).add(-2.0)).multiply(a.subtract(b.add(c))).multiply(0.25)
-          .add(b.multiply(c).add(-3.0 / 16.0)).pow(2).multiply(2)); //
-      ck.add(new Complex(-1.0).multiply(a.multiply(2.0).subtract(3.0)).multiply(b).multiply(c)); //
-      ck.add(a.pow(2.0).multiply(-8.0).add(a.multiply(11.0)).add(b).add(c).add(-2.0)
-          .multiply(a.subtract(b.add(c))).multiply(0.25)); //
-      ck.add(new Complex(-3.0 / 16.0));
+      ck.add(Complex.ONE);
+      ck.add(add(mul(add(mul(3.0, a), b, c, new Complex(-2.0)), aNegbNegc, new Complex(0.5)),
+          mul(2.0, b, c), new Complex(-3.0 / 8.0)));
 
-      IntFunction<Complex> w =
-          k -> ck.get(k).multiply(x.negate().pow(-k / 2.0)).divide(Math.pow(2.0, k));
+      Complex toSquare = add(mul(b, c),
+          mul(aNegbNegc, add(mul(3.0, a), b, c, new Complex(-2.0)), new Complex(0.25)),
+          new Complex(-3.0 / 16.0));
 
-      Complex u1 =
-          Complex.I.multiply(p.multiply(Math.PI).add(x.negate().sqrt().multiply(2.0))).exp();
-      Complex u2 = new Complex(0.0, -1.0)
-          .multiply(p.multiply(Math.PI).add(x.negate().sqrt().multiply(2.0))).exp();
+      ck.add(add(mul(2.0, toSquare, toSquare), neg(mul(sub(mul(2.0, a), new Complex(3.0)), b, c)),
+          mul(aNegbNegc, add(mul(new Complex(-8.0), mul(a, a)), mul(new Complex(11.0), a), b, c,
+              new Complex(-2.0)), new Complex(0.250)),
+          new Complex(-3.0 / 16.0)));
 
-      Complex wLast = w.apply(2);
-      Complex w2Negate = wLast.negate();
-      Complex s =
-          u1.multiply(new Complex(0.0, -1.0).multiply(w.apply(1)).add(w2Negate).add(1.0)).add( //
-              u2.multiply(Complex.I.multiply(w.apply(1)).add(w2Negate).add(1.0)));
-      int k = 3;
+      Complex plusI = Complex.I, minusI = Complex.MINUS_I;
 
-      while (wLast.norm() > w.apply(k).norm()) {
+      Complex w1 = w(1, x, ck.get(1));
+      Complex w2 = w(2, x, ck.get(2));
 
-        ck.add( //
-            a.multiply(-6.0).add(b.multiply(2)).add(c.multiply(2.0)).add(-4.0).multiply(k)
-                .add(a.pow(a).multiply(3.0)).add(b.subtract(c).pow(2.0).negate())
-                .add(a.multiply(b.add(c).add(-2)).multiply(2.0).negate()).add(0.25).add(3.0 * k * k)
-                .multiply(1.0 / (2.0 * k)).multiply(ck.get(k - 1)).subtract( //
-                    a.negate().add(b).add(c.negate()).add(-0.5).add(k)
-                        .multiply(a.negate().add(b.negate()).add(c).add(-0.5).add(k))
-                        .multiply(a.negate().add(b).add(c).add(-2.5).add(k))
-                        .multiply(ck.get(k - 2))) //
-        );
+      Complex s1 = add(Complex.ONE, mul(minusI, w1), neg(w2));
+      Complex s2 = add(Complex.ONE, mul(plusI, w1), neg(w2));
 
-        wLast = w.apply(k);
-        s = s.add(u1.multiply(new Complex(0.0, -1.0).pow(k)).multiply(wLast).add( //
-            u2.multiply(Complex.I.pow(k)).multiply(wLast)));
+      int k = 2;
+      Complex wk = w(k, x, ck.get(k));
+      Complex powPlusI = Complex.MINUS_ONE;
+      Complex powMinusI = Complex.MINUS_ONE;
+
+      while (wk.isReal() && Math.abs(wk.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
         k++;
+        powPlusI = mul(powPlusI, plusI);
+        powMinusI = mul(powMinusI, minusI);
+
+        Complex t1 = mul(add(3.0 * k * k, mul(2.0 * k, add(mul(-3.0, a), b, c, new Complex(-2.0))),
+            mul(3.0, mul(a, a)), neg(mul(sub(b, c), sub(b, c))),
+            neg(mul(2.0, a, add(b, c, new Complex(-2.0)))), new Complex(0.25)), ck.get(k - 1));
+
+        Complex t2 = mul(add(k, neg(a), b, neg(c), new Complex(-0.5)),
+            add(k, neg(a), neg(b), c, new Complex(-0.5)), add(k, neg(a), b, c, new Complex(-2.5)),
+            ck.get(k - 2));
+
+        ck.add(div(sub(t1, t2), 2.0 * k));
+
+        wk = w(k, x, ck.get(k));
+
+        s1 = add(s1, mul(powMinusI, wk));
+        s2 = add(s2, mul(powPlusI, wk));
       }
 
-      Complex t1 = Arithmetic.lanczosApproxGamma(a).reciprocal().multiply(x.negate().pow(p))
-          .multiply(s).divide(2.0 * Math.sqrt(Math.PI));
+      Complex exponent = add(mul(Math.PI, p), mul(2, sqrt(neg(x))));
 
-      Complex t2 = Arithmetic.lanczosApproxGamma(b.subtract(a)).reciprocal()
-          .multiply(Arithmetic.lanczosApproxGamma(c.subtract(a)).reciprocal())
-          .multiply(x.negate().pow(a.negate()))
-          .multiply(hypergeometricSeries(
-              new Complex[] {a, a.add(b.negate()).add(1), a.add(c.negate().add(1.0))},
-              new Complex[] {}, x.reciprocal())); // , true ) );
-      // var t2 = mul( inv(gamma(sub(b,a))), inv(gamma(sub(c,a))), pow(neg(x),neg(a)),
-      // hypergeometricSeries( [ a, add(a,neg(b),1), add(a,neg(c),1) ], [], inv(x), true ) );
-      return Arithmetic.lanczosApproxGamma(b).multiply(Arithmetic.lanczosApproxGamma(c))
-          .multiply(t1.add(t2));
+      Complex u1 = exp(mul(plusI, exponent));
+      Complex u2 = exp(mul(minusI, exponent));
+
+      Complex s = add(mul(u1, s1), mul(u2, s2));
+
+      Complex t1 = mul(1 / (2 * Math.sqrt(Math.PI)), inv(gamma(a)), pow(neg(x), p), s);
+
+      Complex t2 = mul(inv(gamma(sub(b, a))), inv(gamma(sub(c, a))), pow(neg(x), neg(a)),
+          hypergeometricSeries(new Complex[] {a, add(1, a, neg(b)), add(1, a, neg(c))},
+              new Complex[] {}, inv(x)));// , true));
+
+      return mul(gamma(b), gamma(c), add(t1, t2));
+
     }
 
     return hypergeometricSeries(new Complex[] {a}, new Complex[] {b, c}, x);
   }
 
   public static double hypergeometric1F2(double a, double b, double c, double x) {
-    final double useAsymptotic = 200;
+    final double useAsymptotic = 150;
     // asymptotic form is complex
     if (Math.abs(x) > useAsymptotic)
       return hypergeometric1F2(new Complex(a), new Complex(b), new Complex(c), new Complex(x))
@@ -735,39 +754,44 @@ public class HypergeometricJS {
   }
 
   public static Complex hypergeometricU(Complex a, Complex b, Complex x) {
+    if (F.isFuzzyEquals(add(a, 1.0), b, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      return pow(x, neg(a));
+    }
+    if (a.isZero()) {
+      return Complex.ONE;
+    }
 
-    double useAsymptotic = 20;
+    double useAsymptotic = 25;
 
     // asymptotic form as per Johansson arxiv.org/abs/1606.06977
-    if (x.norm() > useAsymptotic) {
-
-      return x.pow(a.negate())
-          .multiply(hypergeometric2F0(a, a.add(b.negate()).add(1.0), x.reciprocal().negate()));
+    if (cabs(x) > useAsymptotic) {
+      return mul(pow(x, neg(a)), hypergeometric2F0(a, add(1.0, a, neg(b)), neg(inv(x))));
     }
 
     if (b.equals(Complex.ONE) || (F.isNumIntValue(b.getReal(), 1) && F.isZero(b.getImaginary()))) {
       return complexAverage(arg -> hypergeometricU(a, arg, x), b);
     }
 
-    Complex t1 = Arithmetic.lanczosApproxGamma(b.subtract(1))
-        .multiply(Arithmetic.lanczosApproxGamma(a).reciprocal())
-        .multiply(x.pow(Complex.ONE.subtract(b))
-            .multiply(hypergeometric1F1(a.add(b.negate()).add(1.0), b.negate().add(2.0), x)));
+    Complex t1 = mul(gamma(sub(b, 1.0)), inv(gamma(a)), pow(x, sub(1, b)),
+        hypergeometric1F1(add(1.0, a, neg(b)), sub(2.0, b), x));
 
-    Complex t2 = Arithmetic.lanczosApproxGamma(Complex.ONE.subtract(b))
-        .multiply(Arithmetic.lanczosApproxGamma(a.add(b.negate()).add(1.0)).reciprocal())
-        .multiply(hypergeometric1F1(a, b, x));
+    Complex t2 = mul(gamma(sub(1, b)), inv(gamma(add(1.0, a, neg(b)))), hypergeometric1F1(a, b, x));
+    // TODO implement arbitrary precision
+    // double max = Math.max(cabs(t1), cabs(t2));
+    // if (max < 100) {
+    // return add(t1, t2);
+    // }
 
     return t1.add(t2);
   }
 
   public static Complex whittakerM(Complex k, Complex m, Complex x) {
-    return x.multiply(-0.5).exp().multiply(x.pow(m.add(0.5)))
-        .multiply(hypergeometric1F1(m.add(k.negate()).add(0.5), m.multiply(2.0).add(1.0), x));
+    return mul(exp(mul(-0.5, x)), pow(x, add(m, 0.5)),
+        hypergeometric1F1(add(0.5, m, neg(k)), add(mul(2.0, m), 1), x));
   }
 
   public static Complex whittakerW(Complex k, Complex m, Complex x) {
-    return x.multiply(-0.5).exp().multiply(x.pow(m.add(0.5)))
-        .multiply(hypergeometricU(m.add(k.negate()).add(0.5), m.multiply(2.0).add(1.0), x));
+    return mul(exp(mul(-0.5, x)), pow(x, add(m, 0.5)),
+        hypergeometricU(add(0.5, m, neg(k)), add(mul(2.0, m), 1.0), x));
   }
 }

@@ -9,7 +9,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
  * Ported from JavaScript file <a href=
  * "https://github.com/paulmasson/math/blob/master/src/functions/elliptic-integrals.js">elliptic-integrals.js</a>
  */
-public class EllipticIntegralsJS {
+public class EllipticIntegralsJS extends JS {
   private EllipticIntegralsJS() {}
 
   public static Complex kleinJ(Complex x) {
@@ -85,12 +85,12 @@ public class EllipticIntegralsJS {
     Complex Am = A0;
 
     double Q = Math.pow(3.0 * tolerance, -1.0 / 6.0)
-        * Math.max(A0.subtract(x).norm(), Math.max(A0.subtract(y).norm(), A0.subtract(z).norm()));
+        * Math.max(cabs(A0.subtract(x)), Math.max(cabs(A0.subtract(y)), cabs(A0.subtract(z))));
     double g = 0.25;
     double pow4 = 1.0;
 
     while (true) {
-      double absAm = Am.norm();
+      double absAm = cabs(Am);
       if (Double.isNaN(absAm) || Double.isInfinite(absAm)) {
         throw new ArgumentTypeException("carlsonRF: Am is undefined");
       }
@@ -211,8 +211,8 @@ public class EllipticIntegralsJS {
     Complex Am = x.add(y).add(z).add(p.multiply(2)).divide(5.0);
     Complex A0 = Am;
     Complex delta = p.subtract(x).multiply(p.subtract(y)).multiply(p.subtract(z));
-    double Q = Math.pow(0.25 * tolerance, -1.0 / 6.0) * Math.max(A0.subtract(x).norm(),
-        Math.max(A0.subtract(y).norm(), Math.max(A0.subtract(z).norm(), A0.subtract(p).norm())));
+    double Q = Math.pow(0.25 * tolerance, -1.0 / 6.0) * Math.max(cabs(A0.subtract(x)),
+        Math.max(cabs(A0.subtract(y)), Math.max(cabs(A0.subtract(z)), cabs(A0.subtract(p)))));
     double m = 0.0;
     double g = 0.25;
     double pow4 = 1.0;
@@ -232,7 +232,7 @@ public class EllipticIntegralsJS {
       Complex dm = sp.add(sx).multiply(sp.add(sy)).multiply(sp.add(sz));
       Complex em = dm.reciprocal().multiply(dm.reciprocal()).multiply(delta)
           .multiply(Math.pow(4.0, -3.0 * m));
-      if (pow4 * Q < Am.norm()) {
+      if (pow4 * Q < cabs(Am)) {
         break;
       }
       Complex T = carlsonRC(Complex.ONE, em.add(1)).multiply(pow4).multiply(dm.reciprocal());
