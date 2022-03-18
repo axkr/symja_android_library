@@ -1412,17 +1412,19 @@ public class StructureFunctions {
      * @param engine
      * @return
      */
-    private static boolean test(IAST ast, IExpr comparatorHead, EvalEngine engine) {
-      return ast.compareAdjacent((x, y) -> comparatorFunction(comparatorHead, x, y, engine));
+    private static boolean test(final IAST ast, final IExpr comparatorHead,
+        final EvalEngine engine) {
+      return ast.compareAdjacent((x, y) -> comparatorBiPredicate(comparatorHead, x, y, engine));
     }
 
-    private static boolean comparatorFunction(IExpr comparatorHead, IExpr x, IExpr y,
-        EvalEngine engine) {
-      IExpr temp = engine.evaluate(F.binaryAST2(comparatorHead, x, y));
-      if (temp.isTrue() || temp.isOne() || temp.isZero()) {
-        return true;
+    private static boolean comparatorBiPredicate(final IExpr comparatorHead, final IExpr x,
+        final IExpr y, final EvalEngine engine) {
+      IExpr predicateResult = engine.evaluate(F.binaryAST2(comparatorHead, x, y));
+      if (predicateResult.isFalse() || predicateResult.isMinusOne()) {
+        return false;
       }
-      return false;
+      // all other values are interpreted as "x and y are in order"
+      return true;
     }
   }
 
