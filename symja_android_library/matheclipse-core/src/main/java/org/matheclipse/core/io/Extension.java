@@ -4,7 +4,7 @@ package org.matheclipse.core.io;
  * File extensions format.
  *
  * <p>
- * See Symja's <code>Import()</code> and <code>Export()</code> functiuons.
+ * See Symja's <code>Import()</code> and <code>Export()</code> functions.
  */
 public enum Extension {
   /** uncompressed loss-less image format, no alpha channel */

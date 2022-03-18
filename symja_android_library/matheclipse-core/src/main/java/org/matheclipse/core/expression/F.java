@@ -1,11 +1,15 @@
 package org.matheclipse.core.expression;
 
 import java.awt.Desktop;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigInteger;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -18,6 +22,7 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import javax.imageio.ImageIO;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -98,6 +103,7 @@ import org.matheclipse.core.eval.util.BiIntFunction;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.JSBuilder;
@@ -9171,6 +9177,18 @@ public class F extends S {
           String html = Config.VISJS_PAGE;
           html = StringUtils.replace(html, "`1`", javaScriptStr);
           html = StringUtils.replace(html, "`2`", "var options = {};");
+          return openHTMLOnDesktop(html);
+        }
+      } else if (expr instanceof ImageExpr) {
+        ImageExpr imageExpr = (ImageExpr) expr;
+        BufferedImage bImage = imageExpr.toData();
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
+          ImageIO.write(bImage, "png", b64);
+          String html = JSBuilder.IMAGE_TEMPLATE;
+          String[] argsToRender = new String[3];
+          argsToRender[0] = outputStream.toString();
+          html = IOFunctions.templateRender(html, argsToRender);
           return openHTMLOnDesktop(html);
         }
       } else if (expr.isAST(JSFormData, 3)) {

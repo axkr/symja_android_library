@@ -3,6 +3,7 @@ package org.matheclipse.io.builtin;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,6 +11,7 @@ import java.nio.charset.Charset;
 import javax.imageio.ImageIO;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
@@ -69,6 +71,14 @@ public class Import extends AbstractEvaluator {
       try {
         File file = new File(fileName);
         switch (format) {
+          case BMP:
+          case GIF:
+          case JPG:
+          case PNG:
+            try (
+                InputStream inputStream = new ReaderInputStream(reader, Charset.defaultCharset())) {
+              return ImageFormat.from(ImageIO.read(inputStream));
+            }
           case DOT:
           case GRAPHML:
             // graph Format

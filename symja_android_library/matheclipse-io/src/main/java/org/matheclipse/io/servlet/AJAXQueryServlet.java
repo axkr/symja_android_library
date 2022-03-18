@@ -1,11 +1,16 @@
 package org.matheclipse.io.servlet;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +24,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.builtin.GraphicsFunctions;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.MathMLUtilities;
@@ -29,6 +35,7 @@ import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -240,19 +247,25 @@ public class AJAXQueryServlet extends HttpServlet {
               return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
                   + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
             }
+          } else if (outExpr instanceof ImageExpr) {
+            ImageExpr imageExpr = (ImageExpr) outExpr;
+            BufferedImage bImage = imageExpr.toData();
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
+              ImageIO.write(bImage, "png", b64);
+              String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
+              String[] argsToRender = new String[3];
+              argsToRender[0] = outputStream.toString();
+              html = IOFunctions.templateRender(html, argsToRender);
+              html = StringEscapeUtils.escapeHtml4(html);
+              return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
+                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+            }
           } else if (outExpr instanceof ASTDataset) {
             String javaScriptStr = ((ASTDataset) outExpr).datasetToJSForm();
             if (javaScriptStr != null) {
               String htmlSnippet = javaScriptStr.trim();
-              // String html = HTML_IFRAME;
-              // html = StringUtils.replace(html, "`1`", htmlSnippet);
-              // html = StringEscapeUtils.escapeHtml4(html);
               return JSONBuilder.createJSONHTML(engine, htmlSnippet, outWriter, errorWriter);
-              // return JSONBuilder.createJSONJavaScript(
-              // "<iframe srcdoc=\""
-              // + html
-              // + "\" style=\"display: block; width: 100%; height: 100%;
-              // border: none;\"></iframe>");
             }
           } else if (outExpr.isAST(S.JSFormData, 3)) {
             IAST jsFormData = (IAST) outExpr;

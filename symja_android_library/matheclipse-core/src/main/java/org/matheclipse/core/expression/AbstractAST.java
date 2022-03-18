@@ -1416,7 +1416,7 @@ public abstract class AbstractAST implements IASTMutable {
    * predicate gives true in each step. If the size is &lt; 2 the method returns false;
    *
    * @param predicate the binary predicate
-   * @return
+   * @return <code>false</code> if the first comparison fails
    */
   @Override
   public boolean compareAdjacent(BiPredicate<IExpr, IExpr> predicate) {

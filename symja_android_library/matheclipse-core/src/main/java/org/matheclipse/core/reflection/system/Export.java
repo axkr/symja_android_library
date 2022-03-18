@@ -1,13 +1,16 @@
 package org.matheclipse.core.reflection.system;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
+import javax.imageio.ImageIO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
@@ -26,6 +29,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.img.ImageFormat;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IExpr;
@@ -45,7 +49,8 @@ public class Export extends AbstractEvaluator {
         return F.NIL;
       }
       IStringX arg1 = (IStringX) ast.arg1();
-      Extension format = Extension.exportFilename(arg1.toString());
+      String filename = arg1.toString();
+      Extension format = Extension.exportFilename(filename);
       if (ast.size() == 4) {
         if (!(ast.arg3() instanceof IStringX)) {
           return F.NIL;
@@ -55,7 +60,18 @@ public class Export extends AbstractEvaluator {
       }
 
       IExpr arg2 = ast.arg2();
-      try (FileWriter writer = new FileWriter(arg1.toString())) {
+
+      if (format.equals(Extension.GIF) || format.equals(Extension.PNG)) {
+        int[] dimensions = arg1.isMatrix();
+        if (dimensions != null && dimensions.length >= 2 && arg2.isAST()) {
+          if (exportImage(filename, (IAST) arg2, format)) {
+            return arg1;
+          }
+        }
+        return F.NIL;
+      }
+
+      try (FileWriter writer = new FileWriter(filename)) {
         if (arg2 instanceof GraphExpr) {
           graphExport(((GraphExpr<DefaultEdge>) arg2).toData(), writer, format);
           return arg1;
@@ -91,11 +107,11 @@ public class Export extends AbstractEvaluator {
             }
           }
         } else if (format.equals(Extension.DAT)) {
-          File file = new File(arg1.toString());
+          File file = new File(filename);
           com.google.common.io.Files.write(arg2.toString(), file, Charset.defaultCharset());
           return arg1;
         } else if (format.equals(Extension.WXF)) {
-          File file = new File(arg1.toString());
+          File file = new File(filename);
           byte[] bArray = WL.serialize(arg2);
           com.google.common.io.Files.write(bArray, file);
           return arg1;
@@ -108,6 +124,21 @@ public class Export extends AbstractEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  public static boolean exportImage(String filename, IAST matrix, Extension format) {
+    try (OutputStream outputStream = new FileOutputStream(filename)) {
+      exportImage(outputStream, matrix, format);
+      return true;
+    } catch (IOException e) {
+      // e.printStackTrace();
+    }
+    return false;
+  }
+
+  public static void exportImage(OutputStream outputStream, IAST matrix, Extension format)
+      throws IOException {
+    ImageIO.write(ImageFormat.toIntARGB(matrix), format.name(), outputStream);
   }
 
   private static final Function<IExpr, String> nameProvider = v -> String.valueOf(v);
@@ -148,26 +179,4 @@ public class Export extends AbstractEvaluator {
     return IFunctionEvaluator.ARGS_2_3;
   }
 
-  /**
-   * See the documentation of {@link CsvFormat}, {@link ImageFormat}, {@link MatlabExport}, and
-   * {@link ObjectFormat} for information on how tensors are encoded in the respective format.
-   *
-   * @param file destination
-   * @param tensor
-   * @throws IOException
-   */
-  // public static void of(File file, IAST tensor) throws IOException {
-  // String filename = file.getName();
-  // Extension extension = Extension.exportFilename(filename);
-  // if (extension.equals(Extension.JPG))
-  // ImageIO.write(ImageFormat.jpg(tensor), "jpg", file);
-  // // else if (filename.hasExtension("m"))
-  // // Files.write(file.toPath(), (Iterable<String>) MatlabExport.of(tensor)::iterator);
-  // if (extension.equals(Extension.PNG))
-  // ImageIO.write(ImageFormat.of(tensor), "png", file);
-  // // else if (filename.hasExtension("tensor"))
-  // // object(file, tensor);
-  // else
-  // throw new RuntimeException(file.toString());
-  // }
 }

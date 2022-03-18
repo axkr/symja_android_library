@@ -65,6 +65,27 @@ public class JSBuilder {
           // 3 - JSFiddle string
           + "`3`\n" + "</div>\n" + "</body>\n" + "</html>"; //
 
+  public static final String IMAGE_IFRAME_TEMPLATE = //
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%;margin: 0; padding: 0\">\n"
+          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Image</title>\n"//
+          + "</head>\n"
+          + "<body>\n"
+          + "<div id=\"image\" style=\"width:100%; height:100%; margin: 0; padding: 0\">\n"
+          + "    <img src=\"data:image/png;base64, `1`\"/> \n" //
+          + "</div>\n" //
+          + "</body>"; //
+
+  public static final String IMAGE_TEMPLATE = //
+      "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Image</title>\n"
+          + "</head>\n" + "<body>\n"
+          + "<div id=\"image\" style=\"width:100%; height:100%; margin: 0; padding: 0\">\n"
+          + "    <img src=\"data:image/png;base64, `1`\"/> \n" //
+          + "</div>\n" //
+          + "</body>\n" + "</html>"; //
+
   public static final String JSXGRAPH_IFRAME_TEMPLATE = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
           + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
