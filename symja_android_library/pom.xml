@@ -81,6 +81,19 @@
 		</snapshotRepository>
 	</distributionManagement>
 
+	<repositories> 
+		<repository>
+			<id>orekit</id>
+			<url>https://packages.orekit.org/repository/maven-public/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+		</repository>
+	</repositories>
+		
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>11</java.version>
