@@ -1,10 +1,16 @@
 package org.matheclipse.discord;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import javax.imageio.ImageIO;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -15,6 +21,7 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -29,7 +36,11 @@ import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.GuildMessageChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.core.spec.MessageCreateSpec;
+import reactor.core.publisher.Mono;
 
 public class SymjaBot {
   private static final DateTimeFormatter TIME_FORMATTER =
@@ -100,15 +111,41 @@ public class SymjaBot {
       // channel.createMessage("```\n" + str + "\n```").block();
       // }
       // } else
+      Mono<MessageChannel> mChannel = message.getChannel();
       if (start.equals("!~~")) {
-        String result = interpreter("N(" + content + ")");
-        final MessageChannel channel = message.getChannel().block();
-        channel.createMessage(result).block();
-      } else {
-        String result = interpreter(content);
-        final MessageChannel channel = message.getChannel().block();
-        channel.createMessage(result).block();
+        Object result = interpreter("N(" + content + ")");
+        if (result instanceof ImageExpr) {
+          sendBufferedImage((ImageExpr) result, mChannel);
+          return;
+        }
+        final MessageChannel channel = mChannel.block();
+        channel.createMessage(result.toString()).block();
+      } else if (start.equals("!>>")) {
+        Object result = interpreter(content);
+        if (result instanceof ImageExpr) {
+          sendBufferedImage((ImageExpr) result, mChannel);
+          return;
+        }
+        final MessageChannel channel = mChannel.block();
+        channel.createMessage(result.toString()).block();
       }
+    }
+  }
+
+  private static void sendBufferedImage(ImageExpr imageExpr, Mono<MessageChannel> mChannel) {
+    BufferedImage bufferedImage = imageExpr.toData();
+    try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+      ImageIO.write(bufferedImage, "png", outputStream);
+      InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+      EmbedCreateSpec embed = EmbedCreateSpec.builder().image("attachment://file-name.png").build();
+      mChannel //
+          .ofType(GuildMessageChannel.class)
+          .flatMap(ch -> ch.createMessage(MessageCreateSpec.builder() //
+              .addFile("file-name.png", inputStream).addEmbed(embed).build()))
+          .block();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
   }
 
@@ -123,7 +160,7 @@ public class SymjaBot {
     return false;
   }
 
-  private static String interpreter(final String trimmedInput) {
+  private static Object interpreter(final String trimmedInput) {
     ExprEvaluator evaluator = new ExprEvaluator(false, (short) 100);
     IExpr result;
     final StringWriter buf = new StringWriter();
@@ -154,7 +191,9 @@ public class SymjaBot {
 
       result = evaluator.evaluateWithTimeout(trimmedInput, 30, TimeUnit.SECONDS, true,
           new EvalControlledCallable(evaluator.getEvalEngine()));
-
+      if (result instanceof ImageExpr) {
+        return result;
+      }
       if (result != null) {
         return printResultShortened(trimmedInput, result);
       }
@@ -227,7 +266,6 @@ public class SymjaBot {
     if (result.isString()) {
       IStringX str = (IStringX) result;
       int mimeType = str.getMimeType();
-       
       String strTemp = str.toString();
       if (strTemp.length() < 8196) {
         output = strTemp;
