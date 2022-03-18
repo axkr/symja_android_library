@@ -576,10 +576,11 @@ public final class Arithmetic {
       if (arg1.isList()) {
         return ((IAST) arg1).mapThread(F.Arg(F.Slot1), 1);
       }
-      if (arg1.isIndeterminate()) {
+      if (arg1.isNumber()) {
+        return ((INumber) arg1).complexArg();
+      } else if (arg1.isIndeterminate()) {
         return S.Indeterminate;
-      }
-      if (arg1.isDirectedInfinity()) {
+      } else if (arg1.isDirectedInfinity()) {
         IAST directedInfininty = (IAST) arg1;
         if (directedInfininty.isAST1()) {
           if (directedInfininty.isInfinity()) {
@@ -591,8 +592,7 @@ public final class Arithmetic {
           IOFunctions.printMessage(ast.topHead(), "indet", F.list(ast), engine);
           return F.Interval(F.list(S.Pi.negate(), S.Pi));
         }
-      } else if (arg1.isNumber()) {
-        return ((INumber) arg1).complexArg();
+
       } else if (arg1.isTimes() && arg1.first().isRealResult()) {
         IExpr first = arg1.first();
         if (first.isPositive()) {
