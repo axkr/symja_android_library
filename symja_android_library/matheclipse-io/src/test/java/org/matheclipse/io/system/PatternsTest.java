@@ -310,6 +310,8 @@ public class PatternsTest extends AbstractTestCase {
 
 
   public void testReplace() {
+    check("Replace(<| key -> <|a -> 1, b -> 2|>|>, <|k_ -> v_, y___|> -> {k, v,  y}, {1})", //
+        "<|Key->{a,1,b->2}|>");
     check("f( <|key_ -> val_|> ) := <|val -> key|>", //
         "");
     check("f( <|a -> 1|> )", //
