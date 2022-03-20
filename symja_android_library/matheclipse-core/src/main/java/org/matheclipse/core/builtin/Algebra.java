@@ -455,7 +455,7 @@ public class Algebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      IAST tempAST = StructureFunctions.threadLogicEquationOperators(arg1, ast, 1);
+      IAST tempAST = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
       if (tempAST.isPresent()) {
         return tempAST;
       }
@@ -888,7 +888,7 @@ public class Algebra {
       if (ast.size() >= 3 && ast.size() <= 4) {
         try {
           IExpr arg1 = ast.arg1();
-          IAST temp = StructureFunctions.threadLogicEquationOperators(arg1, ast, 1);
+          IAST temp = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
           if (temp.isPresent()) {
             return temp;
           }
@@ -2169,9 +2169,10 @@ public class Algebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
-        IAST list = (IAST) ast.arg1();
-        return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
+      IExpr arg1 = ast.arg1();
+      IAST list = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
+      if (list.isPresent()) {
+        return list;
       }
 
       IExpr result = engine.getCache(ast);
@@ -2476,16 +2477,21 @@ public class Algebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      VariablesSet eVar = new VariablesSet(ast.arg1());
+      IExpr arg1 = ast.arg1();
+      IAST list = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
+      if (list.isPresent()) {
+        return list;
+      }
+      VariablesSet eVar = new VariablesSet(arg1);
       IExpr result = engine.getCache(ast);
       if (result != null) {
         if (result.isPresent()) {
           return result;
         }
-        return ast.arg1();
+        return arg1;
       }
       try {
-        IExpr expr = F.evalExpandAll(ast.arg1(), engine);
+        IExpr expr = F.evalExpandAll(arg1, engine);
         // ASTRange r = new ASTRange(eVar.getVarList(), 1);
         // List<IExpr> varList = r;
         List<IExpr> varList = eVar.getVarList().copyTo();
@@ -4127,7 +4133,7 @@ public class Algebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() >= 2) {
         IExpr arg1 = ast.arg1();
-        IExpr temp = StructureFunctions.threadLogicEquationOperators(arg1, ast, 1);
+        IExpr temp = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
         if (temp.isPresent()) {
           return temp;
         }
@@ -4533,7 +4539,7 @@ public class Algebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      IAST list = StructureFunctions.threadLogicEquationOperators(arg1, ast, 1);
+      IAST list = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
       if (list.isPresent()) {
         return list;
       }

@@ -355,7 +355,7 @@ public class TrigExpand extends AbstractEvaluator {
    */
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr temp = StructureFunctions.threadLogicEquationOperators(ast.arg1(), ast, 1);
+    IExpr temp = StructureFunctions.threadListLogicEquationOperators(ast.arg1(), ast, 1);
     if (temp.isPresent()) {
       return temp;
     }

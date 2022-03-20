@@ -7766,6 +7766,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     // " (-I*a+b)*(I*Cosh(x)+Sinh(x))");
     // }
 
+    check("a == d b + d c // Factor", //
+        "a==(b+c)*d");
+
     // Use heuristic?
     check("Factor(x^34 + x^17 + 1)", //
         "(1+x+x^2)*(1-x+x^3-x^4+x^6-x^7+x^9-x^10+x^12-x^13+x^15-x^16+x^17-x^19+x^20-x^22+x^\n"
@@ -8728,6 +8731,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFactorSquareFree() {
+    check("a == d b + d c // FactorSquareFree", //
+        "a==(b+c)*d");
     check("FactorSquareFree((b*c*x^2*Log(F))/(e^2-b^2*c^2*Log(F)^2))", //
         "(b*c*x^2*Log(F))/(e^2-b^2*c^2*Log(F)^2)");
     check("FactorSquareFree(x^2147483647)", //
