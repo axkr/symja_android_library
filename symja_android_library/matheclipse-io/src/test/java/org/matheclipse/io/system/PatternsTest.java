@@ -310,7 +310,22 @@ public class PatternsTest extends AbstractTestCase {
 
 
   public void testReplace() {
+    check("Replace(f(f(f(f(x)))), f(x_) :> g(x), All)", //
+        "g(g(g(g(x))))");
+    check("Replace(f(f(f(f(x)))), f(x_) :> g(x),{0,2})", //
+        "g(g(g(f(x))))");
 
+    check("Replace({1, 3, 2, x, 6, Pi}, _?PrimeQ -> \"prim\", {1})", //
+        "{1,prim,prim,x,6,Pi}");
+    check("Replace({1, 3, 2, x, 6, Pi}, t_ /; Mod[t, 3] == 0 -> \"3*n\", {1})", //
+        "{1,3*n,2,x,3*n,Pi}");
+
+    check("Replace(Hold(x + x), x -> 7, {-1})", //
+        "Hold(7+7)");
+    check("Replace(Hold(7+7), x_ -> x+x, {-1})", //
+        "Hold(2*7+2*7)");
+    check("Replace(Hold(7+7), x_ :> x+x, {-1})", //
+        "Hold(7+7+7+7)");
     check("Replace(x,x -> 1)", //
         "1");
     check("Replace({x,y},x -> 1)", //

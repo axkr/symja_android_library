@@ -14016,6 +14016,24 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{a,a,a,a,f}");
     check("Level(f(f(g(a), a), a, h(a), f), {-2})", //
         "{g(a),h(a)}");
+
+
+
+    check("x = F(G(a, K(d)), H(b, L(e)), J(c, M(P(f, g))))", //
+        "F(G(a,K(d)),H(b,L(e)),J(c,M(P(f,g))))");
+    check("Table(Level(x, {k}), {k, 0, 5})", //
+        "{{F(G(a,K(d)),H(b,L(e)),J(c,M(P(f,g))))},"//
+            + "{G(a,K(d)),H(b,L(e)),J(c,M(P(f,g)))},"//
+            + "{a,K(d),b,L(e),c,M(P(f,g))},"//
+            + "{d,e,P(f,g)},"//
+            + "{f,g},"//
+            + "{}}");
+    check("Table(Level(x, {-k}), {k, 1, 5})", //
+        "{{a,d,b,e,c,f,g},"//
+            + "{K(d),L(e),P(f,g)},"//
+            + "{G(a,K(d)),H(b,L(e)),M(P(f,g))},"//
+            + "{J(c,M(P(f,g)))}," //
+            + "{F(G(a,K(d)),H(b,L(e)),J(c,M(P(f,g))))}}");
   }
 
   public void testLevelQ() {
@@ -17253,11 +17271,19 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{x,g(x)}");
     check("Log(Sqrt(a*(b*c^d)^e)) //. logrules", //
         "1/2*(Log(a)+e*(Log(b)+d*Log(c)))");
+    check("Log(Sqrt(a (b c^d)^e)) /. logrules", //
+        "Log(a(b*c^d)^e)/2");
 
     check("ReplaceRepeated(1/6*(3+3*v1+v2+a*(4+v2)), {v1->a^2, v2->Sqrt(5+6*a+5*v1)})", //
         "1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))");
     check("ReplaceRepeated(1/6*(3+3*v1+v2+a*(4+v2)), {v2->Sqrt(5+6*a+5*v1), v1->a^2})", //
         "1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))");
+
+
+    check("x //. {a -> 42, b -> -1}", //
+        "x");
+    check("x //.  {{x -> 42}, {b -> -1}}", //
+        "{42,x}");
   }
 
   public void testOr() {

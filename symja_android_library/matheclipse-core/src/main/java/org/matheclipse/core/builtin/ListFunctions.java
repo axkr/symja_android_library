@@ -5620,12 +5620,10 @@ public final class ListFunctions {
   private static final class Replace extends AbstractEvaluator {
 
     private static final class ReplaceFunction implements Function<IExpr, IExpr> {
-      // private final IAST ast;
       private final EvalEngine engine;
       private IExpr rules;
 
       public ReplaceFunction(final IExpr rules, final EvalEngine engine) {
-        // this.ast = ast;
         this.rules = rules;
         this.engine = engine;
       }
@@ -5669,30 +5667,6 @@ public final class ListFunctions {
 
     private static IExpr replaceExpr(final IAST ast, IExpr arg1, IExpr rules,
         final EvalEngine engine) {
-      // if (rules.isListOfLists()) {
-      // IAST rulesList = (IAST) rules;
-      // IASTAppendable result = F.ListAlloc(rulesList.size());
-      //
-      // for (IExpr list : rulesList) {
-      // IAST subList = (IAST) list;
-      // IExpr temp = F.NIL;
-      // for (IExpr element : subList) {
-      // if (element.isRuleAST()) {
-      // IAST rule = (IAST) element;
-      // Function<IExpr, IExpr> function = Functors.rules(rule, engine);
-      // temp = function.apply(arg1);
-      // if (temp.isPresent()) {
-      // break;
-      // }
-      // } else {
-      // throw new ArgumentTypeException(
-      // "rule expressions (x->y) expected instead of " + element.toString());
-      // }
-      // }
-      // result.append(temp.orElse(arg1));
-      // }
-      // return result;
-      // } else
       if (rules.isList()) {
         for (IExpr element : (IAST) rules) {
           if (element.isRuleAST()) {
@@ -5717,37 +5691,12 @@ public final class ListFunctions {
     }
 
     private static IExpr replaceExprWithLevelSpecification(final IAST ast, IExpr arg1, IExpr rules,
-        IExpr exprLevelSpecification, EvalEngine engine) {
+        IExpr levelSpecification, EvalEngine engine) {
       // use replaceFunction#setRule() method to set the current rules which
       // are initialized with an empty list { }
       ReplaceFunction replaceFunction = new ReplaceFunction(F.CEmptyList, engine);
       VisitorLevelSpecification level =
-          new VisitorLevelSpecification(replaceFunction, exprLevelSpecification, false, engine);
-
-      // if (rules.isListOfLists()) {
-      // IAST rulesList = (IAST) rules;
-      // IASTAppendable result = F.ListAlloc(rulesList.size());
-      // for (IExpr list : rulesList) {
-      // IExpr temp = F.NIL;
-      // IAST subList = (IAST) list;
-      // for (IExpr element : subList) {
-      // if (element.isRuleAST()) {
-      // IAST rule = (IAST) element;
-      // replaceFunction.setRule(rule);
-      // temp = arg1.accept(level);
-      // if (temp.isPresent()) {
-      // break;
-      // }
-      // } else {
-      // throw new ArgumentTypeException(
-      // "rule expressions (x->y) expected instead of " + element.toString());
-      // }
-      // }
-      // result.append(temp.orElse(arg1));
-      // }
-      // return result;
-      // }
-
+          new VisitorLevelSpecification(replaceFunction, levelSpecification, false, 0, engine);
       replaceFunction.setRule(rules);
       return arg1.accept(level).orElse(arg1);
     }

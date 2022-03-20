@@ -49,20 +49,44 @@ public class VisitorLevelSpecification extends AbstractVisitor {
   /**
    * Create a LevelSpecification from an IInteger or IAST list-object.<br>
    * <br>
-   * An <code>expr</code> is interpreted as a <i>level specification</i> for the allowed levels in
-   * an AST.<br>
-   * If <code>expr</code> is a non-negative IInteger iValue set Level {1,iValue};<br>
-   * If <code>expr</code> is a negative IInteger iValue set Level {iValue, 0}; <br>
-   * If <code>expr</code> is a List {i0Value, i1Value} set Level {i0Value, i1Value};<br>
+   * An <code>unevaledLevelExpr</code> is interpreted as a <i>level specification</i> for the
+   * allowed levels in an AST.<br>
+   * If <code>unevaledLevelExpr</code> is a non-negative IInteger iValue set Level {1,iValue};<br>
+   * If <code>unevaledLevelExpr</code> is a negative IInteger iValue set Level {iValue, 0}; <br>
+   * If <code>unevaledLevelExpr</code> is a List {i0Value, i1Value} set Level {i0Value,
+   * i1Value};<br>
    *
    * @param function the function which should be applied for an element
    * @param unevaledLevelExpr the given <i>level specification</i>
    * @param includeHeads set to <code>true</code>, if the header of an AST expression should be
    *        included
+   * @param engine
    * @throws SymjaMathException if the <code>expr</code> is not a <i>level specification</i>
    */
   public VisitorLevelSpecification(final Function<IExpr, IExpr> function,
       final IExpr unevaledLevelExpr, boolean includeHeads, final EvalEngine engine) {
+    this(function, unevaledLevelExpr, includeHeads, 1, engine);
+  }
+
+  /**
+   * Create a LevelSpecification from an IInteger or IAST list-object.<br>
+   * <br>
+   * An <code>unevaledLevelExpr</code> is interpreted as a <i>level specification</i> for the
+   * allowed levels in an AST.<br>
+   * If <code>unevaledLevelExpr</code> is a non-negative IInteger iValue set Level {1,iValue};<br>
+   * If <code>unevaledLevelExpr</code> is a negative IInteger iValue set Level {iValue, 0}; <br>
+   * If <code>unevaledLevelExpr</code> is a List {i0Value, i1Value} set Level {i0Value,
+   * i1Value};<br>
+   * 
+   * @param function
+   * @param unevaledLevelExpr
+   * @param includeHeads
+   * @param startValueForAll
+   * @param engine
+   */
+  public VisitorLevelSpecification(final Function<IExpr, IExpr> function,
+      final IExpr unevaledLevelExpr, boolean includeHeads, int startValueForAll,
+      final EvalEngine engine) {
     IExpr levelExpr = engine.evaluate(unevaledLevelExpr);
     fFromLevel = fToLevel = -1;
     fFromDepth = fToDepth = 0;
@@ -163,7 +187,7 @@ public class VisitorLevelSpecification extends AbstractVisitor {
     if (levelExpr.isInfinity() || levelExpr.equals(S.All)) {
       // level specification Infinity and -1 are equivalent
       fToLevel = Integer.MAX_VALUE;
-      fFromLevel = 1;
+      fFromLevel = startValueForAll;
       fFromDepth = Integer.MIN_VALUE;
       fToDepth = -1;
       return;
