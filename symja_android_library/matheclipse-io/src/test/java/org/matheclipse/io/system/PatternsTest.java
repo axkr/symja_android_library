@@ -310,6 +310,16 @@ public class PatternsTest extends AbstractTestCase {
 
 
   public void testReplace() {
+    check("f( <|key_ -> val_|> ) := <|val -> key|>", //
+        "");
+    check("f( <|a -> 1|> )", //
+        "<|1->a|>");
+    check("Replace(<|a -> 1|>, <|key_ -> val_|> :> <|val -> key|>)", //
+        "<|1->a|>");
+    check("Replace({1, 2}, Dispatch[{1 -> a, 3 -> b}], 1)", //
+        "{a,2}");
+    check("Replace({a, b}, <|a -> 1, c -> 2|>, 1)", //
+        "{1,b}");
     check("Replace(f(f(f(f(x)))), f(x_) :> g(x), All)", //
         "g(g(g(g(x))))");
     check("Replace(f(f(f(f(x)))), f(x_) :> g(x),{0,2})", //

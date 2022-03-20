@@ -4,6 +4,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.function.Function;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -13,7 +14,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.VisitorReplaceAll;
 
 /** Maintain <code>Dispatch()</code> rules. */
-public class DispatchExpr extends DataExpr<VisitorReplaceAll> implements Externalizable {
+public class DispatchExpr extends DataExpr<VisitorReplaceAll>
+    implements Externalizable, Function<IExpr, IExpr> {
   public static DispatchExpr newInstance(final IAST listOfRules) {
     return new DispatchExpr(listOfRules);
   }
@@ -48,6 +50,18 @@ public class DispatchExpr extends DataExpr<VisitorReplaceAll> implements Externa
   protected DispatchExpr(final VisitorReplaceAll visitor, IAST listOfRules) {
     super(S.Dispatch, visitor);
     this.listOfRules = listOfRules;
+  }
+
+  /**
+   * Apply the dispatcher functions on an expression and return the right-hand-side if found or
+   * {@link F#NIL}.
+   * 
+   * @param expr
+   * @return {@link F#NIL} if no matching left-hand-side was found in this dispatcher
+   */
+  @Override
+  public IExpr apply(IExpr expr) {
+    return fData.getFunction().apply(expr);
   }
 
   @Override

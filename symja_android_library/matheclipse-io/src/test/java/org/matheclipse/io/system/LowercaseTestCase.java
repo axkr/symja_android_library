@@ -15065,6 +15065,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testMatchQ() {
+    check("MatchQ(<|a -> 1|>, <|key_ -> val_|>)", //
+        "True");
     check("MatchQ(22/7, _Rational)", //
         "True");
     check("MatchQ(42, _Rational)", //

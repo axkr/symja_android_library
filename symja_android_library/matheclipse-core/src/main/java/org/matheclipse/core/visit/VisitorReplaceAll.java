@@ -88,6 +88,16 @@ public class VisitorReplaceAll extends VisitorExpr {
         && Objects.equals(this.fPostProcessing, other.fPostProcessing);
   }
 
+  /**
+   * Get this visitors basic <code>replace</code> function. The basic <code>replace</code> function
+   * returns {@link F#NIL} if no element should be replaced.
+   * 
+   * @return
+   */
+  public Function<IExpr, IExpr> getFunction() {
+    return fFunction;
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;

@@ -872,7 +872,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
 
       for (int i = 1; i < lhsPatternAST.size(); i++) {
-        if (!stackMatcher.push(lhsPatternAST.get(i), lhsEvalAST.get(lhsEvalOffset + i))) {
+        if (!stackMatcher.push(lhsPatternAST.getRule(i), lhsEvalAST.getRule(lhsEvalOffset + i))) {
           matched = false;
           return false;
         }
@@ -912,9 +912,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             patternValues = fPatternMap.copyPattern();
             try {
               if (lhsEvalExpr.isAssociation()) {
-                IAST lhsPatternAssociation = lhsPatternAST;
-                // TODO set/determine pattern matching flags?
-                IASTMutable lhsPatternList = (IASTMutable) lhsPatternAssociation.normal(false);
+                IASTMutable lhsPatternList = (IASTMutable) lhsPatternAST.normal(false);
+                lhsPatternList.setEvalFlags(lhsPatternAST.getEvalFlags());
                 lhsPatternList.set(0, S.Association);
                 IAssociation lhsEvalAssociation = (IAssociation) lhsEvalExpr;
                 IASTMutable lhsEvalList = lhsEvalAssociation.normal(false);
@@ -1635,8 +1634,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     boolean evaled = false;
     boolean matched = false;
     while (i < lhsPattern.size()) {
-      IExpr lhs = lhsPattern.get(i);
-      IExpr rhs = lhsEval.get(i);
+      IExpr lhs = lhsPattern.getRule(i);
+      IExpr rhs = lhsEval.getRule(i);
       i++;
 
       if (lhs instanceof IPatternObject) {

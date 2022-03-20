@@ -2172,8 +2172,20 @@ public abstract class AbstractAST implements IASTMutable {
 
   /** {@inheritDoc} */
   @Override
+  public void forEachRule(Consumer<? super IExpr> action) {
+    forEachRule(action, 1);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public void forEach(Consumer<? super IExpr> action, int startOffset) {
     forEach(startOffset, size(), action);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void forEachRule(Consumer<? super IExpr> action, int startOffset) {
+    forEach(action, startOffset);
   }
 
   /** {@inheritDoc} */

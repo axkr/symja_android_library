@@ -5637,25 +5637,26 @@ public final class ListFunctions {
        */
       @Override
       public IExpr apply(IExpr input) {
-        if (rules.isList()) {
-          for (IExpr element : (IAST) rules) {
-            if (element.isRuleAST()) {
-              IAST rule = (IAST) element;
-              Function<IExpr, IExpr> function = Functors.rules(rule, engine);
-              IExpr temp = function.apply(input);
-              if (temp.isPresent()) {
-                return temp;
-              }
-            } else {
-              throw new ArgumentTypeException(
-                  "rule expressions (x->y) expected instead of " + element.toString());
-            }
-          }
-          return input;
-        }
         if (rules.isRuleAST()) {
           return replaceRule(input, (IAST) rules, engine);
+        } else if (rules.isListOfRules()) {
+          Function<IExpr, IExpr> function = Functors.rules((IAST) rules, engine);
+          IExpr temp = function.apply(input);
+          if (temp.isPresent()) {
+            return temp;
+          }
+          return input;
+        } else if (rules instanceof DispatchExpr) {
+          DispatchExpr dispatch = (DispatchExpr) rules; 
+          IExpr temp = dispatch.apply(input);
+          if (temp.isPresent()) {
+            return temp;
+          }
+          return input;
+        } else if (rules.isAssociation()) {
+          return replaceRule(input, (IAST) rules.normal(false), engine);
         }
+
         throw new ArgumentTypeException(
             "rule expressions (x->y) expected instead of " + rules.toString());
       }

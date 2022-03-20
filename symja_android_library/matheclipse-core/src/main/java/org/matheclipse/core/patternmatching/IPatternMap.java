@@ -1626,7 +1626,7 @@ public interface IPatternMap {
    * @param lhsPatternExpr the (left-hand-side) expression which could contain pattern objects.
    * @param treeLevel the level of the tree where the patterns are determined
    */
-  static int determinePatternsRecursive(List<Pair<IExpr, IPatternObject>> patternIndexMap,
+  private static int determinePatternsRecursive(List<Pair<IExpr, IPatternObject>> patternIndexMap,
       final IAST lhsPatternExpr, int[] priority, boolean[] ruleWithoutPattern, int treeLevel) {
 
     int[] listEvalFlags = new int[] {IAST.NO_FLAG};
@@ -1634,43 +1634,48 @@ public interface IPatternMap {
       ruleWithoutPattern[0] = false;
     }
 
-    lhsPatternExpr.forEach(x -> {
-      if (x.isASTOrAssociation()) {
-        final IAST lhsPatternAST = (IAST) x;
-        if (lhsPatternAST.isPatternMatchingFunction()) {
-          listEvalFlags[0] |= IAST.CONTAINS_PATTERN;
-        }
-        listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, lhsPatternAST, priority,
-            ruleWithoutPattern, treeLevel + 1);
-        priority[0] -= 11;
-        if (x.isPatternDefault()) {
-          listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN;
-        }
-      } else if (x instanceof IPatternObject) {
-        ruleWithoutPattern[0] = false;
-        int[] result = ((IPatternObject) x).addPattern(patternIndexMap);
-        listEvalFlags[0] |= result[0];
-        priority[0] -= result[1];
-        if (x instanceof PatternNested) {
-          IExpr patternExpr = ((PatternNested) x).getPatternExpr();
-          if (patternExpr.isASTOrAssociation()) {
-            listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, (IAST) patternExpr,
-                priority, ruleWithoutPattern, treeLevel + 1);
-            priority[0] -= 11;
-            if (x.isPatternDefault()) {
-              listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN;
-            }
-          }
-        }
-
-      } else {
-        priority[0] -= (50 - treeLevel);
-      }
-    }, 0);
+    lhsPatternExpr.forEachRule(x -> determinePatternsRecursive(x, patternIndexMap, priority,
+        ruleWithoutPattern, listEvalFlags, treeLevel), 0);
     lhsPatternExpr.setEvalFlags(listEvalFlags[0]);
     // disable flag "pattern with default value"
     // listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;
     return listEvalFlags[0];
+  }
+
+  private static void determinePatternsRecursive(final IExpr x,
+      List<Pair<IExpr, IPatternObject>> patternIndexMap, int[] priority,
+      boolean[] ruleWithoutPattern, int[] listEvalFlags, int treeLevel) {
+    if (x.isASTOrAssociation()) {
+      final IAST lhsPatternAST = (IAST) x;
+      if (lhsPatternAST.isPatternMatchingFunction()) {
+        listEvalFlags[0] |= IAST.CONTAINS_PATTERN;
+      }
+      listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, lhsPatternAST, priority,
+          ruleWithoutPattern, treeLevel + 1);
+      priority[0] -= 11;
+      if (x.isPatternDefault()) {
+        listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN;
+      }
+    } else if (x instanceof IPatternObject) {
+      ruleWithoutPattern[0] = false;
+      int[] result = ((IPatternObject) x).addPattern(patternIndexMap);
+      listEvalFlags[0] |= result[0];
+      priority[0] -= result[1];
+      if (x instanceof PatternNested) {
+        IExpr patternExpr = ((PatternNested) x).getPatternExpr();
+        if (patternExpr.isASTOrAssociation()) {
+          listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, (IAST) patternExpr,
+              priority, ruleWithoutPattern, treeLevel + 1);
+          priority[0] -= 11;
+          if (x.isPatternDefault()) {
+            listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN;
+          }
+        }
+      }
+
+    } else {
+      priority[0] -= (50 - treeLevel);
+    }
   }
 
   public IPatternMap copy();

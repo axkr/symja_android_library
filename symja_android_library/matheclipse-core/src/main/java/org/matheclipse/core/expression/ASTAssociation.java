@@ -324,6 +324,18 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   /** {@inheritDoc} */
   @Override
+  public void forEachRule(Consumer<? super IExpr> action, int startOffset) {
+    for (int i = startOffset; i < size(); i++) {
+      if (i == 0) {
+        action.accept(getValue(i));
+      } else {
+        action.accept(getRule(i));
+      }
+    }
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public void forEach(int startOffset, int endOffset, Consumer<? super IExpr> action) {
     for (int i = startOffset; i < endOffset; i++) {
       action.accept(getValue(i));
