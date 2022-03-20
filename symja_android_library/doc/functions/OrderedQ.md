@@ -1,10 +1,16 @@
 ## OrderedQ
 
 ```
-OrderedQ({a, b})
+OrderedQ({a, b,...})
 ```
 
-> is `True` if `a` sorts before `b` according to canonical ordering.
+> is `True` if `a` sorts before `b` according to canonical ordering for all adjacent elements.
+
+```
+OrderedQ({a, b,...}, comparator)
+```
+
+> is `True` if `a` sorts before `b` according to the `comparator` functions value for all adjacent elements. If the `comparator` function returns `False` or `-1` the `OrderedQ` function returns `False`.  If the `comparator` function doesn't return `False` or `-1` for all adjacent elements the `OrderedQ` function returns `True`.
 
 See
 * [Wikipedia - Order theory](https://en.wikipedia.org/wiki/Order_theory)
