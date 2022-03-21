@@ -2032,16 +2032,18 @@ public class Algebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAST()) {
-        IAST arg1 = (IAST) ast.arg1();
-        if (arg1.isList()) {
-          return arg1.mapThreadEvaled(engine, F.ListAlloc(arg1.size()), ast, 1);
-        }
+      IExpr arg1 = ast.arg1();
+      IAST tempAST = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
+      if (tempAST.isPresent()) {
+        return tempAST;
+      }
+      if (arg1.isAST()) {
+        IAST ast1 = (IAST) arg1;
         Predicate<IExpr> matcher = null;
         if (ast.size() > 2) {
           matcher = Predicates.toFreeQ(ast.arg2());
         }
-        return expand(arg1, matcher, false, true, true).orElse(arg1);
+        return expand(ast1, matcher, false, true, true).orElse(ast1);
       }
 
       return ast.arg1();
@@ -2101,6 +2103,10 @@ public class Algebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      IAST tempAST = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
+      if (tempAST.isPresent()) {
+        return tempAST;
+      }
       Predicate<IExpr> matcher = null;
       if (ast.size() > 2) {
         matcher = Predicates.toFreeQ(ast.arg2());
@@ -3938,7 +3944,12 @@ public class Algebra {
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAST()) {
+      IExpr arg1 = ast.arg1();
+      IAST tempAST = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
+      if (tempAST.isPresent()) {
+        return tempAST;
+      }
+      if (arg1.isAST()) {
         boolean assumptions = false;
         if (ast.isAST2()) {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
@@ -3949,9 +3960,9 @@ public class Algebra {
           }
         }
 
-        return powerExpand((IAST) ast.arg1(), assumptions);
+        return powerExpand((IAST) arg1, assumptions);
       }
-      return ast.arg1();
+      return arg1;
     }
 
     @Override
