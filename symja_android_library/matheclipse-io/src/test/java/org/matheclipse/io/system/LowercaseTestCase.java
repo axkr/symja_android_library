@@ -7766,9 +7766,16 @@ public class LowercaseTestCase extends AbstractTestCase {
     // " (-I*a+b)*(I*Cosh(x)+Sinh(x))");
     // }
 
-    check("a == d b + d c // Factor", //
-        "a==(b+c)*d");
+    // doc examples
+    check("Factor({x + x^2, 2*x + 2*y + 2})", //
+        "{x*(1+x),2*(1+x+y)}");
+    check("Factor(x*a == x*b+x*c)", //
+        "a*x==(b+c)*x");
+    check("Factor(x^3 + 3*x^2*y + 3*x*y^2 + y^3) ", //
+        "(x+y)^3");
 
+    check("a == d*b + d*c // Factor", //
+        "a==(b+c)*d");
     // Use heuristic?
     check("Factor(x^34 + x^17 + 1)", //
         "(1+x+x^2)*(1-x+x^3-x^4+x^6-x^7+x^9-x^10+x^12-x^13+x^15-x^16+x^17-x^19+x^20-x^22+x^\n"
