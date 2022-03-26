@@ -15,7 +15,11 @@ import org.matheclipse.core.interfaces.IPatternSequence;
  * F.NIL</code> if no substitution occurred.
  */
 public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
-  boolean onlyNamedPatterns;
+  private boolean onlyNamedPatterns;
+
+  public VisitorReplaceAllWithPatternFlags(Function<IExpr, IExpr> function) {
+    this(function,true); 
+  }
 
   public VisitorReplaceAllWithPatternFlags(Function<IExpr, IExpr> function,
       boolean onlyNamedPatterns) {

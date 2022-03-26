@@ -672,7 +672,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       if (lhsPatternAST.size() <= lhsEvalAST.size()) {
         if (lhsPatternAST.isOrderlessAST()) {
           IExpr temp =
-              fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, false).orElse(lhsPatternAST);
+              fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
+                  .orElse(lhsPatternAST);
           if (temp.isAST(lhsPatternAST.head())) {
             lhsPatternAST = (IAST) temp;
             IAST[] removed = removeOrderless(lhsPatternAST, lhsEvalAST);
@@ -684,7 +685,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           }
         } else if (lhsPatternAST.isFlatAST()) {
           IExpr temp =
-              fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, false).orElse(lhsPatternAST);
+              fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
+                  .orElse(lhsPatternAST);
           if (temp.isAST(lhsPatternAST.head())) {
             IAST[] removed = removeFlat((IAST) temp, lhsEvalAST);
             if (removed == null) {
@@ -1630,55 +1632,58 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    */
   private IAST[] remove(final IAST lhsPattern, final IAST lhsEval, EvalEngine engine,
       StackMatcher stackMatcher) {
-    IASTAppendable lhsPatternAST = F.NIL;
-    IASTAppendable lhsEvalAST = F.NIL;
-    int i = 1;
-    int iIndex = 1;
-    boolean evaled = false;
-    boolean matched = false;
-    while (i < lhsPattern.size()) {
+    int[] removedPositionsArray = new int[lhsPattern.size() - 1];
+    int removedPosition = 0;
+    boolean matchedPattern = false;
+    for (int i = 1; i < lhsPattern.size(); i++) {
       IExpr lhs = lhsPattern.getRule(i);
       IExpr rhs = lhsEval.getRule(i);
-      i++;
-
       if (lhs instanceof IPatternObject) {
         if (lhs instanceof IPatternSequence) {
+          if (i == lhsPattern.size() - 1) {
+            IPatternSequence pattern = (IPatternSequence) lhs;
+            if (pattern.getSymbol() != null && !pattern.isPatternOptional()) {
+              if (matchPattern((IPatternSequence) lhs, rhs, engine, stackMatcher)) {
+                removedPositionsArray[removedPosition++] = i;
+                matchedPattern = true;
+                continue;
+              } else {
+                return null;
+              }
+            }
+          }
           return UNEVALED;
         }
         IPatternObject pattern = (IPatternObject) lhs;
         if (pattern.getSymbol() != null && !pattern.isPatternOptional()) {
-          matched = matchPattern((IPatternObject) lhs, rhs, engine, stackMatcher);
-          if (matched) {
-            if (!evaled) {
-              lhsPatternAST = lhsPattern.copyAppendable();
-              lhsEvalAST = lhsEval.copyAppendable();
-            }
-            lhsPatternAST.remove(iIndex);
-            lhsEvalAST.remove(iIndex);
-            evaled = true;
-            continue;
+          if (matchPattern((IPatternObject) lhs, rhs, engine, stackMatcher)) {
+            removedPositionsArray[removedPosition++] = i;
+            matchedPattern = true;
+          } else {
+            return null;
           }
-          return null;
         }
       } else if (lhs.isFreeOfPatterns()) {
         if (lhs.equals(rhs)) {
-          if (!evaled) {
-            lhsPatternAST = lhsPattern.copyAppendable();
-            lhsEvalAST = lhsEval.copyAppendable();
-          }
-          lhsPatternAST.remove(iIndex);
-          lhsEvalAST.remove(iIndex);
-          evaled = true;
-          continue;
+          removedPositionsArray[removedPosition++] = i;
+        } else {
+          return null;
         }
-        return null;
       }
-      iIndex++;
     }
-    if (!evaled) {
-      return UNEVALED;
+
+    if (removedPosition > 0) {
+      IAST lhsPatternAST = lhsPattern.removePositionsAtCopy(removedPositionsArray, removedPosition);
+      IASTMutable lhsEvalAST =
+          lhsEval.removePositionsAtCopy(removedPositionsArray, removedPosition);
+      if (matchedPattern) {
+        lhsPatternAST =
+            fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine).orElse(lhsPatternAST);
+      }
+      return new IAST[] {lhsPatternAST, lhsEvalAST};
     }
-    return new IAST[] {lhsPatternAST, lhsEvalAST};
+    return UNEVALED;
+
   }
 
   /**

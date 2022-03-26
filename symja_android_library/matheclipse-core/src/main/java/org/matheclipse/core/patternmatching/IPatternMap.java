@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.hipparchus.util.Pair;
 import org.matheclipse.core.builtin.PatternMatching;
-import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.OptionsPattern;
@@ -1848,27 +1847,12 @@ public interface IPatternMap {
    * expression.
    *
    * @param lhsPatternExpr
-   * @param onlyNamedPatterns
+   * @param engine
    * @return {@link F#NIL} if no substitution can be found.
    */
-  default IExpr substituteASTPatternOrSymbols(final IAST lhsPatternExpr,
-      boolean onlyNamedPatterns) {
-    VisitorReplaceAllWithPatternFlags visitor = new VisitorReplaceAllWithPatternFlags(input -> {
-      if (input instanceof IPatternObject) {
-        if (onlyNamedPatterns && !(input instanceof Pattern)) {
-          return F.NIL;
-        }
-        IExpr symbolOrPatternObject = ((IPatternObject) input).getSymbol();
-        if (symbolOrPatternObject == null) {
-          if (onlyNamedPatterns) {
-            return F.NIL;
-          }
-          symbolOrPatternObject = input;
-        }
-        return substitute(symbolOrPatternObject);
-      }
-      return F.NIL;
-    }, onlyNamedPatterns);
+  default IAST substituteASTPatternOrSymbols(final IAST lhsPatternExpr, final EvalEngine engine) {
+    VisitorReplaceAllWithPatternFlags visitor =
+        new VisitorReplaceAllWithPatternFlags(input -> substituteSymbolPatterns(input));
 
     IASTMutable result = F.NIL;
     for (int i = 1; i < lhsPatternExpr.size(); i++) {
@@ -1884,21 +1868,35 @@ public interface IPatternMap {
     }
 
     if (result.isPresent()) {
-      return EvalAttributes.simpleEval(result);
+      return result.map(x -> {
+        if (x.isAST()) {
+          return engine.evalHoldPattern((IAST) x);
+        }
+        return F.NIL;
+      });
+      // return EvalAttributes.simpleEval(result);
+    }
+    return F.NIL;
+  }
 
-      // if (result.isFlatAST()) {
-      // IASTMutable temp = EvalAttributes.flattenDeep((IAST) result);
-      // if (temp.isPresent()) {
-      // result = temp;
-      // }
-      // }
-      // // don't test for OneIdentity attribute here !
-      // if (result.isOrderlessAST()) {
-      // EvalAttributes.sort(result);
-      // }
-      // // set the eval flags
-      // result.isFreeOfPatterns();
-      // return result;
+  /**
+   * If <code>expr</code> is a named {@link Pattern} object, return the substitution value from this
+   * pattern map, if available.
+   * 
+   * @param expr
+   * @return {@link F#NIL} if no substitution value was found
+   */
+  default IExpr substituteSymbolPatterns(IExpr expr) {
+    if (expr instanceof Pattern) {
+      Pattern pattern = (Pattern) expr;
+      IExpr symbolOrPatternObject = pattern.getSymbol();
+      if (symbolOrPatternObject == null) {
+        symbolOrPatternObject = expr;
+      }
+      IExpr temp = substitute(symbolOrPatternObject);
+      if (temp.isPresent() && pattern.matchPattern(temp, this)) {
+        return temp;
+      }
     }
     return F.NIL;
   }

@@ -810,6 +810,19 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   /** {@inheritDoc} */
   @Override
+  public IASTMutable removePositionsAtCopy(int[] removedPositions, int untilIndex) {
+    if (untilIndex == 1) {
+      return removeAtCopy(removedPositions[0]);
+    }
+    ASTAssociation assoc = copy();
+    for (int j = untilIndex - 1; j >= 0; j--) {
+      assoc.remove(removedPositions[j]);
+    }
+    return assoc;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public IAST rest() {
     if (size() > 1) {
       return removeAtCopy(1);

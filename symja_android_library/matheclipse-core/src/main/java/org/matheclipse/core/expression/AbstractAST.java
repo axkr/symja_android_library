@@ -4998,7 +4998,7 @@ public abstract class AbstractAST implements IASTMutable {
   @Override
   public IASTMutable removeAtCopy(int position) {
     int size = size();
-    if (position < size && !isAssociation()) {
+    if (position < size()) {
       switch (size) {
         case 2:
           switch (position) {
@@ -5031,6 +5031,19 @@ public abstract class AbstractAST implements IASTMutable {
     }
     IASTAppendable ast = copyAppendable();
     ast.remove(position);
+    return ast;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IASTMutable removePositionsAtCopy(int[] removedPositions, int untilIndex) {
+    if (untilIndex == 1) {
+      return removeAtCopy(removedPositions[0]);
+    }
+    IASTAppendable ast = copyAppendable();
+    for (int j = untilIndex - 1; j >= 0; j--) {
+      ast.remove(removedPositions[j]);
+    }
     return ast;
   }
 

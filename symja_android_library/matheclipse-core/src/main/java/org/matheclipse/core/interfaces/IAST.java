@@ -1461,6 +1461,17 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   public IASTMutable removeAtCopy(int position);
 
   /**
+   * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
+   * copied) and remove the elements defined in the given <code>removedPositionsArray</code> up to
+   * <code>untilIndex</code> (exclusive).
+   *
+   * @param removedPositions
+   * @param untilIndex up to this position (exclusive) the elements will be removed from the copy
+   * @return an IAST with removed element at the given position.
+   */
+  public IASTMutable removePositionsAtCopy(int[] removedPositions, int untilIndex);
+
+  /**
    * Create a new <code>IAST</code> and remove all arguments from position <code>fromPosition</code>
    * inclusive to the end of this AST.
    *
