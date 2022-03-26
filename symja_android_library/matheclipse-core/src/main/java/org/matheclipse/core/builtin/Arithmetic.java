@@ -1796,10 +1796,19 @@ public final class Arithmetic {
 
     @Override
     public IExpr e1DblArg(final INum arg1) {
-      if (arg1.isNumIntValue() && arg1.doubleValue() < 0) {
+      double d1 = arg1.doubleValue();
+      if (arg1.isNumIntValue() && d1 < 0) {
         return F.CComplexInfinity;
       }
-      double gamma = org.hipparchus.special.Gamma.gamma(arg1.doubleValue());
+      double gamma = org.hipparchus.special.Gamma.gamma(d1);
+      if (Double.isNaN(gamma)) {
+        if (d1 > 0.0) {
+          // Overflow occurred in computation.
+          IOFunctions.printMessage(y, "ovfl", F.CEmptyList, EvalEngine.get());
+          return F.Overflow();
+        }
+        return e1DblComArg(F.complexNum(d1));
+      }
       return num(gamma);
     }
 
@@ -1948,6 +1957,9 @@ public final class Arithmetic {
         if (z.isAST(Conjugate, 2)) {
           // mirror symmetry for Conjugate()
           return Conjugate(F.Gamma(z.arg1()));
+        }
+        if (z.isAST(S.Overflow, 1) || z.isAST(S.Underflow, 1)) {
+          return F.Overflow();
         }
       }
       return NIL;

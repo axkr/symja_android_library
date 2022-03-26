@@ -2354,6 +2354,12 @@ public class ExpTrigsFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.log((IAST) arg1);
       }
+      if (arg1.isAST(S.Overflow, 1)) {
+        return F.Overflow();
+      }
+      if (arg1.isAST(S.Underflow, 1)) {
+        return F.Underflow();
+      }
       return F.NIL;
     }
 
