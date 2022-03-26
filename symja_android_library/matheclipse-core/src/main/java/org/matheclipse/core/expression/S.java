@@ -41,6 +41,7 @@ public class S {
     return BUILT_IN_SYMBOLS[id];
   }
 
+
   public final static IBuiltInSymbol $Aborted = F.initFinalSymbol("$Aborted", ID.$Aborted);
 
   /**
@@ -3693,6 +3694,8 @@ public class S {
 
   public final static IBuiltInSymbol ForAll = F.initFinalSymbol("ForAll", ID.ForAll);
 
+  public final static IBuiltInSymbol FormBox = F.initFinalSymbol("FormBox", ID.FormBox);
+
   /**
    * Fourier(vector-of-complex-numbers) - Discrete Fourier transform of a
    * `vector-of-complex-numbers`. Fourier transform is restricted to vectors with length of power of
@@ -6884,7 +6887,8 @@ public class S {
   public final static IBuiltInSymbol Order = F.initFinalSymbol("Order", ID.Order);
 
   /**
-   * OrderedQ({a, b}) - is `True` if `a` sorts before `b` according to canonical ordering.
+   * OrderedQ({a, b,...}) - is `True` if `a` sorts before `b` according to canonical ordering for
+   * all adjacent elements.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OrderedQ.md">OrderedQ
@@ -6963,6 +6967,10 @@ public class S {
    */
   public final static IBuiltInSymbol OutputStream =
       F.initFinalSymbol("OutputStream", ID.OutputStream);
+
+  public final static IBuiltInSymbol Overflow = F.initFinalSymbol("Overflow", ID.Overflow);
+
+  public final static IBuiltInSymbol Overscript = F.initFinalSymbol("Overscript", ID.Overscript);
 
   public final static IBuiltInSymbol OverscriptBox =
       F.initFinalSymbol("OverscriptBox", ID.OverscriptBox);
@@ -7808,6 +7816,8 @@ public class S {
   public final static IBuiltInSymbol RSolve = F.initFinalSymbol("RSolve", ID.RSolve);
 
   public final static IBuiltInSymbol RSolveValue = F.initFinalSymbol("RSolveValue", ID.RSolveValue);
+
+  public final static IBuiltInSymbol RadicalBox = F.initFinalSymbol("RadicalBox", ID.RadicalBox);
 
   /**
    * Ramp(z) - The `Ramp` function is a unary real function, whose graph is shaped like a ramp.
@@ -8737,7 +8747,7 @@ public class S {
   public final static IBuiltInSymbol Sort = F.initFinalSymbol("Sort", ID.Sort);
 
   /**
-   * SortBy(list, f) - sorts `list` (or the leaves of any other expression) according to canonical
+   * SortBy(list, f) - sorts `list` (or the elements of any other expression) according to canonical
    * ordering of the keys that are extracted from the `list`'s elements using `f`. Chunks of leaves
    * that appear the same under `f` are sorted according to their natural order (without applying
    * `f`).
@@ -8844,6 +8854,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Sqrt = F.initFinalSymbol("Sqrt", ID.Sqrt);
+
+  public final static IBuiltInSymbol SqrtBox = F.initFinalSymbol("SqrtBox", ID.SqrtBox);
 
   /**
    * SquareFreeQ(n) - returns `True` if `n` is a square free integer number or a square free
@@ -9277,6 +9289,9 @@ public class S {
 
   public final static IBuiltInSymbol Subsuperscript =
       F.initFinalSymbol("Subsuperscript", ID.Subsuperscript);
+
+  public final static IBuiltInSymbol SubsuperscriptBox =
+      F.initFinalSymbol("SubsuperscriptBox", ID.SubsuperscriptBox);
 
   /**
    * Subtract(a, b) - represents the subtraction of `b` from `a`.
@@ -10012,8 +10027,25 @@ public class S {
 
   public final static IBuiltInSymbol Undefined = F.initFinalSymbol("Undefined", ID.Undefined);
 
+  /**
+   * Underflow( ) - represents a number too small to be represented by Symja.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Underflow.md">Underflow
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Underflow = F.initFinalSymbol("Underflow", ID.Underflow);
+
   public final static IBuiltInSymbol Underoverscript =
       F.initFinalSymbol("Underoverscript", ID.Underoverscript);
+
+  public final static IBuiltInSymbol UnderoverscriptBox =
+      F.initFinalSymbol("UnderoverscriptBox", ID.UnderoverscriptBox);
+
+  public final static IBuiltInSymbol Underscript = F.initFinalSymbol("Underscript", ID.Underscript);
+
+  public final static IBuiltInSymbol UnderscriptBox =
+      F.initFinalSymbol("UnderscriptBox", ID.UnderscriptBox);
 
   /**
    * UndirectedEdge(a, b) - is an undirected edge between the vertices `a` and `b` in a `graph`

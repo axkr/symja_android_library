@@ -6605,6 +6605,10 @@ public class F extends S {
     return new AST1(Out, a0);
   }
 
+  public static IAST Overflow() {
+    return new AST0(Overflow);
+  }
+
   public static IAST Parenthesis(final IExpr a0) {
     return new AST1(Parenthesis, a0);
   }
@@ -8722,6 +8726,10 @@ public class F extends S {
    */
   public static final IASTMutable unaryAST1(final IExpr head, final IExpr arg) {
     return new AST1(head, arg);
+  }
+
+  public static IAST Underflow() {
+    return new AST0(Underflow);
   }
 
   /**
