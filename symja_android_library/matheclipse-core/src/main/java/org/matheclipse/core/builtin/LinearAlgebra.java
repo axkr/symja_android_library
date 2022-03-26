@@ -27,15 +27,19 @@ import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.BlockFieldMatrix;
 import org.hipparchus.linear.ComplexEigenDecomposition;
 import org.hipparchus.linear.DecompositionSolver;
+import org.hipparchus.linear.DependentVectorsHandler;
 import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.FieldDecompositionSolver;
 import org.hipparchus.linear.FieldLUDecomposition;
@@ -3909,13 +3913,65 @@ public final class LinearAlgebra {
       IExpr arg1 = ast.arg1();
       int[] dim = arg1.isMatrix();
       if (dim != null) {
+        boolean isNumeric = arg1.isNumericMode();
+        if (isNumeric) {
+          RealMatrix realMatrix = arg1.toRealMatrix();
+          if (realMatrix != null) {
+            final int length = realMatrix.getRowDimension();
+            ArrayList<RealVector> arrayList = new ArrayList<RealVector>(length);
+            for (int i = 0; i < length; i++) {
+              arrayList.add(realMatrix.getRowVector(i));
+            }
+            try {
+              final List<RealVector> basis = MatrixUtils.orthonormalize(arrayList,
+                  Config.DOUBLE_TOLERANCE, DependentVectorsHandler.ADD_ZERO_VECTOR);
+              if (basis != null) {
+                IASTAppendable result = F.ListAlloc(basis.size());
+                for (int i = 0; i < length; i++) {
+                  result.append(Convert.realVectors2List(basis.get(i)));
+                }
+                return result;
+              }
+            } catch (MathIllegalArgumentException mex) {
+              return IOFunctions.printMessage(ast.topHead(), mex, engine);
+            }
+            return F.NIL;
+          } else {
+            FieldMatrix<Complex> list2ComplexMatrix = Convert.list2ComplexMatrix(arg1);
+            if (list2ComplexMatrix != null) {
+              org.hipparchus.complex.ComplexField field = ComplexField.getInstance();
+              final int length = list2ComplexMatrix.getRowDimension();
+              ArrayList<FieldVector<Complex>> arrayList =
+                  new ArrayList<FieldVector<Complex>>(length);
+              for (int i = 0; i < length; i++) {
+                arrayList.add(list2ComplexMatrix.getRowVector(i));
+              }
+              try {
+                final List<FieldVector<Complex>> basis = MatrixUtils.orthonormalize(field,
+                    arrayList, new Complex(Config.DOUBLE_TOLERANCE, Config.DOUBLE_TOLERANCE),
+                    DependentVectorsHandler.ADD_ZERO_VECTOR);
+                if (basis != null) {
+                  IASTAppendable result = F.ListAlloc(basis.size());
+                  for (int i = 0; i < length; i++) {
+                    result.append(Convert.complexVector2List(basis.get(i)));
+                  }
+                  return result;
+                }
+              } catch (MathIllegalArgumentException mex) {
+                return IOFunctions.printMessage(ast.topHead(), mex, engine);
+              }
+            }
+            return F.NIL;
+          }
+        }
+
         // Gram-Schmidt orthogonalization
         IExpr result = F.Map(F.Function(F.Normalize(F.Slot1)), //
             F.Fold(F.Function(F.Append(F.Slot1, F.binaryAST2(oneStep, F.Slot2, F.Slot1))),
-                F.CEmptyList,
-                arg1));
+                F.CEmptyList, arg1));
 
         return engine.evaluate(result);
+
       }
       return F.NIL;
     }

@@ -892,6 +892,16 @@ public class LinearAlgebraTestCase extends AbstractTestCase {
   }
 
   public void testOrthogonalize() {
+    check(
+        "Orthogonalize({{1. + I, 2., 3. - 2. I}, {0, 4., 5. I}, {1. + I, 6., 3. + 3. I}}) // MatrixForm", //
+        "{{0.138133+I*0.359969,0.498103+I*0.221836,0.96899+I*(-0.165348)},\n" //
+            + " {0.395836+I*(-0.108194),0.853462+I*(-0.151916),-0.512711+I*(-0.336411)},\n" //
+            + " {0.0,0.0,0.0}}");
+    check("Orthogonalize({{2.0-3.3*I,3}, {2,7}, {4.0+I,5}}) // MatrixForm", //
+        "{{1.0019+I*(-0.331784),0.624317+I*0.532447},\n" //
+            + " {-0.624317+I*(-0.532447),1.0019+I*(-0.331784)},\n" //
+        + " {0.0,0.0}}");
+
     // TODO
     // check("Orthogonalize({{1, 2}, {3, 1}, {6, 9}, {7, 8}})", //
     // "{{1/Sqrt(5),2/Sqrt(5)},{2/Sqrt(5),-1/Sqrt(5)},{0,0},{0,0}}");
@@ -927,8 +937,8 @@ public class LinearAlgebraTestCase extends AbstractTestCase {
         "{{3/Sqrt(10),1/Sqrt(10)},{-1/Sqrt(10),3/Sqrt(10)}}");
     check("Orthogonalize({{1,0,1},{1,1,1}})", //
         "{{1/Sqrt(2),0,1/Sqrt(2)},{0,1,0}}");
-    // check("Orthogonalize({{2,3}, {2,7}, {4.0,5}})", //
-    // "{{0.5547,0.83205},{-0.83205,0.5547},{0.0,0.0}}");
+    check("Orthogonalize({{2,3}, {2,7}, {4.0,5}})", //
+        "{{0.5547,0.83205},{-0.83205,0.5547},{0.0,0.0}}");
     check("Orthogonalize({{2,3}, {2,7}, {4,5}})", //
         "{{2/Sqrt(13),3/Sqrt(13)},{-3/Sqrt(13),2/Sqrt(13)},{0,0}}");
     check("Orthogonalize({{1,2,3},{5,2,7},{3,5,1}})", //
