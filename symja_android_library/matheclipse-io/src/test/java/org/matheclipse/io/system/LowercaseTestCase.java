@@ -2630,7 +2630,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     check("Catch(a; b; Throw(c); d; e)", //
         "c");
     check("$f(x_) := If(x > 10, Throw(overflow), x!);Catch($f(2) + $f(11))", //
-        "overflow");
+        "Overflow");
     check("$f(x_) := If(x > 10, Throw(overflow), x!);Catch($f(2) + $f(3))", //
         "8");
     check("catch(do(If(i0! > 10^10, throw(i0)), {i0, 100}))", //
@@ -7215,6 +7215,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testExp() {
+    // TODO return Overflow()
+    check("Exp(10.*^20)", //
+        "Infinity");
+
     check("Exp(x*Log(n))", //
         "n^x");
     check("Exp(42+Log(a)+Log(b))", //
@@ -10208,6 +10212,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testGamma() {
+    check("Gamma(Underflow())", //
+        "Overflow()");
+    check("Log(Gamma(1.*^20))", //
+        "Overflow()");
     check("Gamma(-1.0000)", //
         "ComplexInfinity");
     check("N(Gamma(-42), 100)", //
@@ -14506,6 +14514,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testLog() {
+    check("Log(Overflow())", //
+        "Overflow()");
+    check("Log(Underflow())", //
+        "Underflow()");
     check("Log(1000, 10)", //
         "1/3");
     check("Log(9) / Log(27)", //
@@ -19012,7 +19024,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPower() {
-
+    check("1/Overflow()", //
+        "Underflow()");
+    check("1/Underflow()", //
+        "Overflow()");
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       check(
           "(-9223372036854775807/9223372036854775808-I*9223372036854775808/9223372036854775807)^10007", //

@@ -26,7 +26,7 @@ public class JShellExampleTestCase extends AbstractTestCase {
             + ">> Im(0.5 + 2.3*I)\n" + "2.3\n" + "\n" + "### Related terms \n"
             + "[Complex](Complex.md), [Re](Re.md)\n" + "\n" + "### Github\n" + "\n"
             + "* [Implementation of Im](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L2297) \n"
-            + "[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L2297)\n"
+            + "[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L2309)\n"
             + "\n" + "");
   }
 }

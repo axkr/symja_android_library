@@ -58,6 +58,20 @@ public class PatternsTest extends AbstractTestCase {
     assertTrue(isComplicated);
   }
 
+  public void testEvalateddPatternRule() {
+    check("f(a_+b_,a_,b_) := {a,b}", //
+        "");
+    check("Definition(f)", //
+        "f(a_+b_,a_,b_):={a,b}");
+    check("f(5,3,2)", //
+        "f(5,3,2)");
+
+    check("g(a_,b_,a_+b_) := {a,b}", //
+        "");
+    check("g(3,2,5)", //
+        "g(3,2,5)");
+  }
+
   public void testDocOptions() {
     // TODO doc/Options
     check("Options(f) = {n -> 2}", //
