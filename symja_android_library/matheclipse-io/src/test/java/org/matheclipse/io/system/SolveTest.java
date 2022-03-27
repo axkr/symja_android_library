@@ -493,15 +493,13 @@ public class SolveTest extends AbstractTestCase {
     // check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
     // "((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
     check("Solve((-3+E^(2*x))==0,x)", //
-        "{{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(3)),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(I*Pi*C(1)+Log(3)/2,C(1)∈Integers)}}");
     check("Solve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
-        "{{x->ConditionalExpression(I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n" + //
-            "I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(3)),C(\n" + //
-            "1)∈Integers)}}");
+        "{{x->ConditionalExpression(I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n"
+            + "I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi*C(1)+Log(3)/2,C(1)∈Integers)}}");
     check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
-        "{{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(0.5*(1.09861+(I*6.28319)*C(1.0)),C(\n"
-            + //
-            "1)∈Integers)},{x->ConditionalExpression((I*6.28319)*C(1.0),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(0.549306+(I*3.14159)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(\n"
+            + "1)∈Integers)},{x->ConditionalExpression((I*6.28319)*C(1.0),C(1)∈Integers)}}");
 
     check("Solve(1+E^x==0,x)", //
         "{{x->ConditionalExpression(I*Pi+I*2*Pi*C(1),C(1)∈Integers)}}");
@@ -885,14 +883,13 @@ public class SolveTest extends AbstractTestCase {
     // check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
     // "((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
     check("NSolve((-3+E^(2*x))==0,x)", //
-        "{{x->ConditionalExpression(0.5*(1.09861+(I*6.28319)*C(1.0)),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(0.549306+(I*3.14159)*C(1.0),C(1)∈Integers)}}");
     check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
-        "{{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(0.5*(1.09861+(I*6.28319)*C(1.0)),C(\n"
+        "{{x->ConditionalExpression(0.549306+(I*3.14159)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(\n"
             + "1)∈Integers)},{x->ConditionalExpression((I*6.28319)*C(1.0),C(1)∈Integers)}}");
     check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
-        "{{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(0.5*(1.09861+(I*6.28319)*C(1.0)),C(\n"
-            + //
-            "1)∈Integers)},{x->ConditionalExpression((I*6.28319)*C(1.0),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(0.549306+(I*3.14159)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(\n"
+            + "1)∈Integers)},{x->ConditionalExpression((I*6.28319)*C(1.0),C(1)∈Integers)}}");
 
     check("NSolve(1+E^x==0,x)", //
         "{{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(1)∈Integers)}}");
@@ -1261,7 +1258,7 @@ public class SolveTest extends AbstractTestCase {
     check("Solve({x0^2.0*Sin(x1)==5.0,x1^3.0*Cos(x0)==5.0},{x0,x1}) ", //
         "Solve({x0^2.0*Sin(x1)==5.0,x1^3.0*Cos(x0)==5.0},{x0,x1})");
 
-    // ifun message will be printed:
+    // // ifun message will be printed:
     check("Solve({Sin(x0)==5.0},{x0})", //
         "{{x0->1.5708+I*(-2.29243)}}");
 
@@ -1287,8 +1284,7 @@ public class SolveTest extends AbstractTestCase {
     // TODO improve result by avoiding GCD 1/2
     check("Solve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
         "{{x->ConditionalExpression(I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n"
-            + "I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(3)),C(\n"
-            + "1)∈Integers)}}");
+            + "I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi*C(1)+Log(3)/2,C(1)∈Integers)}}");
   }
 
   public void testSolveHO2() {
@@ -1301,6 +1297,34 @@ public class SolveTest extends AbstractTestCase {
     // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     check("Solve(4^(1+2*x)/5^(2-x)-6^(1-x)==-42,x)", //
         "Solve(4^(1+2*x)/5^(2-x)-6^(1-x)==-42,x)");
+  }
+
+  public void testSolveHO4() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    check(
+        "Solve(Cos(x)+ Cos(x)^3 + Cos(x)^5 - 3*Cos(x)*Sin(x)^2 - 10*Cos(x)^3*Sin(x)^2 + 5*Cos(x)*Sin(x)^4 ==0,x)", //
+        "{{x->Pi/2},{x->ConditionalExpression(-Pi/8+1/2*Pi*C(1),C(1)∈Integers)}}");
+  }
+
+  public void testSolveHO5() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    check(
+        "Solve(1/(E^(I*x)*2) + E^(I*x)/2 + 1/2/E^(3*I*x) + (1/2)*E^(3*I*x) + 1/2/E^(5*I*x) +  (1/2)*E^(5*I*x)  ==0,x)", //
+        "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "2+2*Pi*C(1),C(1)∈Integers)}}");
+  }
+
+  public void testSolveHO6() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    check("Solve(Cos(x) + Cos(3*x) + Cos(5*x) == 0,x)", //
+        "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "2+2*Pi*C(1),C(1)∈Integers)}}");
+  }
+
+  public void testSolveHO7() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    check("Solve(Cos(x) + Tan(3*x) + Cos(5*x) ==0,x)", //
+        "Solve(Cos(x)+Cos(5*x)+Tan(3*x)==0,x)");
   }
 
   /** The JUnit setup method */

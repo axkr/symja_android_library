@@ -3750,7 +3750,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     check("Sin(ConditionalExpression(x,x>0))", //
         "ConditionalExpression(Sin(x),x>0)");
     check("Sin(ConditionalExpression(x, x > 0)) +  3*ConditionalExpression(Cos(x), x < 1)^2", //
-        "ConditionalExpression(3*Cos(x)^2+Sin(x),x>0&&x<1)");
+        "ConditionalExpression(3*Cos(x)^2+Sin(x),x<1&&x>0)");
 
     check("ConditionalExpression(a,True)", //
         "a");

@@ -435,16 +435,20 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
               return extractVariableRecursive(timesWithVariable.oneIdentity1(), rhsWithoutVariable,
                   predicate, variable, multipleValues, engine);
             }
-            return F.NIL;
+          } else {
+            IExpr rhsWithoutVariable =
+                engine.evaluate(F.Subtract(exprWithoutVariable, plusWithoutVariable));
+            IExpr res = extractVariableRecursive(plusWithVariable.oneIdentity0(),
+                rhsWithoutVariable, predicate, variable, multipleValues, engine);
+            if (res.isPresent()) {
+              return res;
+            }
           }
-          IExpr rhsWithoutVariable =
-              engine.evaluate(F.Subtract(exprWithoutVariable, plusWithoutVariable));
-          IExpr res = extractVariableRecursive(plusWithVariable.oneIdentity0(), rhsWithoutVariable,
-              predicate, variable, multipleValues, engine);
-          if (res.isPresent()) {
-            return res;
+          if (!ast.isFree(x -> x.isTrigFunction(), true)) {
+            return tryTrigToExp(ast, variable, multipleValues, engine);
+          } else if (ast.isFree(x -> x.isLog(), true)) {
+            return tryPowerExpand(ast, variable, multipleValues, engine);
           }
-          return tryPowerExpand(ast, variable, multipleValues, engine);
         } else if (ast.isTimes()) {
           // a * b * c....
           IAST[] timesFilter = ast.filter(x -> x.isFree(predicate, true));
@@ -469,7 +473,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             // no change for given expression
             return F.NIL;
           }
-          IExpr value = F.Divide(exprWithoutVariable, timesWithoutVariable);
+          IExpr value = engine.evaluate(F.Divide(exprWithoutVariable, timesWithoutVariable));
           return extractVariableRecursive(timesWithVariable.oneIdentity1(), value, predicate,
               variable, multipleValues, engine);
         } else if (ast.isPower()) {
@@ -490,11 +494,10 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
               }
               // E ^ f(x) /; Element(f(x), Complexes)
               IExpr c1 = F.C(1);
+              // ConditionalExpression(2*I*Pi*c1 + Log(exprwovar), Element(c1, Integers))
               final IExpr exprwovar = exprWithoutVariable;
-              IExpr temp =
-                  // [$ ConditionalExpression(2*I*Pi*c1 + Log(exprwovar), Element(c1, Integers)) $]
-                  F.ConditionalExpression(F.Plus(F.Times(F.C2, F.CI, S.Pi, c1), F.Log(exprwovar)),
-                      F.Element(c1, S.Integers)); // $$;
+              IExpr expr = engine.evaluate(F.Plus(F.Times(F.C2, F.CI, S.Pi, c1), F.Log(exprwovar)));
+              IExpr temp = F.ConditionalExpression(expr, F.Element(c1, S.Integers));
               return extractVariableRecursive(exponent, temp, predicate, variable, multipleValues,
                   engine);
             }
@@ -504,6 +507,21 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
                 engine);
           }
         }
+      }
+    }
+    return F.NIL;
+  }
+
+  private static IExpr tryTrigToExp(IAST plusAST, IExpr variable, boolean multipleValues,
+      EvalEngine engine) {
+    IExpr termsEqualZero = engine.evaluateNIL(F.TrigToExp(plusAST));
+    if (termsEqualZero.isPresent()) {
+      IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
+      IExpr result = Solve.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
+      if (result.isListOfLists()) {
+        // Inverse functions are being used. Values may be lost for multivalued inverses.
+        IOFunctions.printMessage(S.Solve, "ifun", F.CEmptyList, engine);
+        return listOfRulesToValues(result, variable, multipleValues);
       }
     }
     return F.NIL;

@@ -1158,21 +1158,16 @@ public class EvalEngine implements Serializable {
           if (mutableAST.exists(x -> x.isIndeterminate())) {
             return S.Indeterminate;
           }
-          IExpr temp = mutableAST.extractConditionalExpression(false);
-          if (temp.isPresent()) {
-            return temp;
-          }
-        }
-      } else if (mutableAST.isBooleanFunction() || mutableAST.isComparatorFunction()) {
-        IExpr temp = mutableAST.extractConditionalExpression(false);
-        if (temp.isPresent()) {
-          return temp;
         }
       }
 
       if (astSize > 2 && ISymbol.hasOrderlessAttribute(attributes)) {
         // commutative symbol
         EvalAttributes.sortWithFlags(mutableAST);
+      }
+      IExpr temp = mutableAST.extractConditionalExpression(false);
+      if (temp.isPresent()) {
+        return temp;
       }
       return returnResult;
     }

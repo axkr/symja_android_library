@@ -5508,26 +5508,38 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       copy.set(1, conditionalExpr.arg1());
       return conditionalExpr.setAtCopy(1, copy);
     }
-    int indx = indexOf(x -> x.isConditionalExpression());
-    if (indx > 0) {
-      IAST conditionalExpr = (IAST) get(indx);
-      IASTAppendable andExpr = F.And();
-      IASTMutable copy = copy();
-      copy.set(indx, conditionalExpr.arg1());
-      andExpr.append(conditionalExpr.arg2());
-      indx++;
-      for (int i = indx; i < copy.size(); i++) {
-        IExpr x = copy.get(i);
-        if (x.isConditionalExpression()) {
-          conditionalExpr = (IAST) x;
-          copy.set(i, conditionalExpr.arg1());
+    IExpr head = head();
+    if (head.isSymbol()) {
+      ISymbol symbol = (ISymbol) head;
+      if (symbol.isNumericFunctionAttribute() || symbol.isBooleanFormulaSymbol()
+          || symbol.isComparatorFunctionSymbol()) {
+        int indx = indexOf(x -> x.isConditionalExpression());
+        if (indx > 0) {
+          IAST conditionalExpr = (IAST) get(indx);
+          IASTAppendable andExpr = F.And();
+          IASTMutable copy = copy();
+          copy.set(indx, conditionalExpr.arg1());
           andExpr.append(conditionalExpr.arg2());
+          indx++;
+          for (int i = indx; i < copy.size(); i++) {
+            IExpr x = copy.get(i);
+            if (x.isConditionalExpression()) {
+              conditionalExpr = (IAST) x;
+              copy.set(i, conditionalExpr.arg1());
+              andExpr.append(conditionalExpr.arg2());
+            }
+          }
+          IExpr arg = copy;
+          if (isTimes() && arg1().isNumber()) {
+            arg = F.Expand(arg);
+          }
+          IASTMutable mergedResult = conditionalExpr.setAtCopy(1, arg);
+          mergedResult.set(2, andExpr);
+          return mergedResult;
         }
       }
-      IASTMutable mergedResult = conditionalExpr.setAtCopy(1, copy);
-      mergedResult.set(2, andExpr);
-      return mergedResult;
     }
+
     return F.NIL;
   }
 }
