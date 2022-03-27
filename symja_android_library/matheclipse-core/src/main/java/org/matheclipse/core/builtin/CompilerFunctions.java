@@ -130,7 +130,7 @@ public class CompilerFunctions {
       }
 
       public boolean startOfBlock() {
-        return block > 0 && block % 2 == 1;
+        return block > 0 && (block & 1) == 1;
       }
 
       /**

@@ -89,7 +89,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import it.unimi.dsi.fastutil.ints.IntList;
 
-public abstract class AbstractAST implements IASTMutable {
+public abstract class AbstractAST implements IASTMutable, Cloneable {
   private static final Logger LOGGER = LogManager.getLogger();
 
   protected static final class ASTIterator implements ListIterator<IExpr> {

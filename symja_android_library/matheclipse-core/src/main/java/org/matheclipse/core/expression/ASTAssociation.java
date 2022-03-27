@@ -385,7 +385,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   @Override
   public IAST getRule(String key) {
-    int index = keyToIndexMap.get(F.$str(key));
+    int index = getInt(F.$str(key));
     if (index > 0) {
       return getRule(index);
     }
