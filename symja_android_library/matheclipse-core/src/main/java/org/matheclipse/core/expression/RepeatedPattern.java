@@ -1,17 +1,20 @@
 package org.matheclipse.core.expression;
 
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hipparchus.util.Pair;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.parser.client.ParserConfig;
 
-public class RepeatedPattern extends PatternSequence {
+public class RepeatedPattern extends AbstractPatternSequence {
   private static final Logger LOGGER = LogManager.getLogger();
 
 
@@ -25,7 +28,6 @@ public class RepeatedPattern extends PatternSequence {
       boolean zeroArgsAllowed, EvalEngine engine) {
     RepeatedPattern p = new RepeatedPattern();
     p.fSymbol = null;
-    p.fHeadTest = null;
     p.fDefault = false;
     p.fZeroArgsAllowed = zeroArgsAllowed;
     p.fRepeatedExpr = patternExpr;
@@ -163,4 +165,25 @@ public class RepeatedPattern extends PatternSequence {
     }
     return buffer.toString();
   }
+
+  @Override
+  public IExpr getHeadTest() {
+    return null;
+  }
+
+  @Override
+  public boolean isConditionMatchedSequence(IAST sequence, IPatternMap patternMap) {
+    return patternMap.setValue(this, sequence);
+  }
+
+  @Override
+  public int[] addPattern(List<Pair<IExpr, IPatternObject>> patternIndexMap) {
+    IPatternMap.addPattern(patternIndexMap, this);
+    // the ast contains a pattern sequence (i.e. "x__")
+    int[] result = new int[2];
+    result[0] = IAST.CONTAINS_PATTERN_SEQUENCE;
+    result[1] = 1;
+    return result;
+  }
+
 }
