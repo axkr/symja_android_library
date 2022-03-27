@@ -20,14 +20,6 @@ public class SolveTest extends AbstractTestCase {
         "True");
   }
 
-  public void testSolveHomogenization() {
-    // TODO improve result by avoiding GCD 1/2
-    check("Solve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
-        "{{x->ConditionalExpression(I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n"
-            + "I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(3)),C(\n"
-            + "1)∈Integers)}}");
-  }
-
   public void testRootsX6001() {
     check("Roots(x^6-1==0, x)", //
         "x==-1||x==1||x==(-1)^(1/3)||x==-(-1)^(1/3)||x==(-1)^(2/3)||x==-(-1)^(2/3)");
@@ -525,8 +517,6 @@ public class SolveTest extends AbstractTestCase {
     // "((2-I*2)*(I+(-1/2-I*1/2)*E^(I*2*x)+E^(I*4*x)))/((-1-I*E^(I*x)+E^(I*2*x))*(-1+I*E^(I*x)+E^(\n"
     // + "I*2*x)))");
 
-    // check("Solve(4^(2*x+1)*5^(x-2)-6^(1-x)==0,x)", //
-    // "");
     check("Solve(Log(2,x)+4*Log(x,2)-5==0,x)", //
         "{{x->2},{x->16}}");
     check("Solve(x^(1/Log(2))-1==0,x)", //
@@ -1290,6 +1280,27 @@ public class SolveTest extends AbstractTestCase {
         "{{x->Log(2)}}");
     check("Solve(E^x-2==0,x)", //
         "{{x->ConditionalExpression(I*2*Pi*C(1)+Log(2),C(1)∈Integers)}}");
+  }
+
+  public void testSolveHO1() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    // TODO improve result by avoiding GCD 1/2
+    check("Solve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
+        "{{x->ConditionalExpression(I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n"
+            + "I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(1/2*(I*2*Pi*C(1)+Log(3)),C(\n"
+            + "1)∈Integers)}}");
+  }
+
+  public void testSolveHO2() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    check("Solve(4^(2*x+1)*5^(x-2)-6^(1-x)==0,x)", //
+        "{{x->(Log(2)-Log(75))/(-5*Log(2)-Log(3)-Log(5))}}");
+  }
+
+  public void testSolveHO3() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    check("Solve(4^(1+2*x)/5^(2-x)-6^(1-x)==-42,x)", //
+        "Solve(4^(1+2*x)/5^(2-x)-6^(1-x)==-42,x)");
   }
 
   /** The JUnit setup method */

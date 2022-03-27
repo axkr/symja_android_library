@@ -3970,10 +3970,6 @@ public class Algebra {
       return ARGS_1_2;
     }
 
-    public static IExpr powerExpand(final IAST ast, boolean assumptions) {
-      return ast.accept(new PowerExpandVisitor(assumptions)).orElse(ast);
-    }
-
     /** {@inheritDoc} */
     @Override
     public void setUp(final ISymbol newSymbol) {
@@ -5316,6 +5312,18 @@ public class Algebra {
     }
     return F.NIL;
   }
+
+  /**
+   * Expand out powers of the form `(x^y)^z` and `(x*y)^z` in `expr`.
+   * 
+   * @param ast
+   * @param assumptions
+   * @return <code>F.NIL</code> if no evaluation was necessary
+   */
+  public static IExpr powerExpand(final IAST ast, boolean assumptions) {
+    return ast.accept(new PowerExpand.PowerExpandVisitor(assumptions)).orElse(ast);
+  }
+
 
   /**
    * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition

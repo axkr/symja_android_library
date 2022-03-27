@@ -1067,6 +1067,7 @@ public class Solve extends AbstractFunctionEvaluator {
           if (lists[2].isPresent()) {
             IExpr result = solveNumeric(lists[2], numericFlag, engine);
             if (!result.isPresent()) {
+              // The system cannot be solved with the methods available to Solve.
               return IOFunctions.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()),
                   engine);
             }
@@ -1076,6 +1077,7 @@ public class Solve extends AbstractFunctionEvaluator {
           IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag,
               userDefinedVariables, engine);
           if (!result.isPresent()) {
+            // The system cannot be solved with the methods available to Solve.)
             return IOFunctions.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
           }
           return checkDomain(result, domain);
@@ -1274,7 +1276,7 @@ public class Solve extends AbstractFunctionEvaluator {
    * @return a list of rules (typically NSolve) or a list of list of rules (typically Solve) of the
    *         solutions, <code>F.NIL</code> otherwise.
    */
-  private static IExpr solveRecursive(IASTMutable termsEqualZeroList, IASTMutable inequationsList,
+  protected static IExpr solveRecursive(IASTMutable termsEqualZeroList, IAST inequationsList,
       boolean numericFlag, IAST variables, EvalEngine engine) {
     IASTMutable temp = solveTimesEquationsRecursively(termsEqualZeroList, inequationsList,
         numericFlag, variables, true, engine);

@@ -19,6 +19,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -438,8 +439,12 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           }
           IExpr rhsWithoutVariable =
               engine.evaluate(F.Subtract(exprWithoutVariable, plusWithoutVariable));
-          return extractVariableRecursive(plusWithVariable.oneIdentity0(), rhsWithoutVariable,
+          IExpr res = extractVariableRecursive(plusWithVariable.oneIdentity0(), rhsWithoutVariable,
               predicate, variable, multipleValues, engine);
+          if (res.isPresent()) {
+            return res;
+          }
+          return tryPowerExpand(ast, variable, multipleValues, engine);
         } else if (ast.isTimes()) {
           // a * b * c....
           IAST[] timesFilter = ast.filter(x -> x.isFree(predicate, true));
@@ -481,8 +486,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
               if (exponent.isRealResult()) {
                 // E ^ f(x) /; Element(f(x), Reals)
                 return extractVariableRecursive(exponent, F.Log(exprWithoutVariable), predicate,
-                    variable, multipleValues,
-                    engine);
+                    variable, multipleValues, engine);
               }
               // E ^ f(x) /; Element(f(x), Complexes)
               IExpr c1 = F.C(1);
@@ -506,6 +510,50 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
   }
 
   /**
+   * <p>
+   * Check if the <code>plusAST</code> has 2 arguments and try a <code>PowerExpand(Log(argX))</code>
+   * on the args.
+   * 
+   * <p>
+   * See: <a href="//
+   * https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf">Solving
+   * Symbolic Equations with PRESS</a>
+   * 
+   * @param plusAST
+   * @param variable
+   * @param multipleValues
+   * @param engine
+   * @return
+   */
+  private static IExpr tryPowerExpand(IAST plusAST, IExpr variable, boolean multipleValues,
+      EvalEngine engine) {
+    if (plusAST.argSize() == 2) {
+      // powerExpandLHS == powerExpandRHS
+      IExpr powerExpandLHS = Algebra.powerExpand(F.Log(plusAST.first()), false);
+      IExpr powerExpandRHS = Algebra.powerExpand(F.Log(plusAST.second().negate()), false);
+      if (powerExpandLHS.isPresent() || powerExpandRHS.isPresent()) {
+        if (!powerExpandLHS.isPresent()) {
+          powerExpandLHS = F.Log(plusAST.first());
+        }
+        if (!powerExpandRHS.isPresent()) {
+          powerExpandRHS = F.Log(plusAST.second());
+        }
+        IExpr termsEqualZero = engine.evaluate(F.Subtract(powerExpandLHS, powerExpandRHS));
+        IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
+        IExpr result = Solve.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
+        if (result.isListOfLists()) {
+          // Inverse functions are being used. Values may be lost for multivalued inverses.
+          IOFunctions.printMessage(S.Solve, "ifun", F.CEmptyList, engine);
+          return listOfRulesToValues(result, variable, multipleValues);
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Convert a list of rules for one variable back to a list of values.
+   * 
    * @param listOfRules
    * @param multipleValues if <code>false</code> return only the first found value in the list
    * @return
