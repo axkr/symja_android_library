@@ -4999,6 +4999,9 @@ public class S {
   public final static IBuiltInSymbol InverseWeierstrassP =
       F.initFinalSymbol("InverseWeierstrassP", ID.InverseWeierstrassP);
 
+  public final static IBuiltInSymbol InverseZTransform =
+      F.initFinalSymbol("InverseZTransform", ID.InverseZTransform);
+
   /**
    * IsomorphicGraphQ(graph1, graph2) - returns `True` if an isomorphism exists between `graph1` and
    * `graph2`. Return `False`in all other cases.
@@ -10507,6 +10510,8 @@ public class S {
       F.initFinalSymbol("ZeroSymmetric", ID.ZeroSymmetric);
 
   public final static IBuiltInSymbol ZeroTest = F.initFinalSymbol("ZeroTest", ID.ZeroTest);
+
+  public final static IBuiltInSymbol ZTransform = F.initFinalSymbol("ZTransform", ID.ZTransform);
 
   /**
    * Zeta(z) - returns the Riemann zeta function of `z`.

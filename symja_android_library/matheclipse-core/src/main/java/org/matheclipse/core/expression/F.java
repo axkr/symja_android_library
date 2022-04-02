@@ -3264,7 +3264,11 @@ public class F extends S {
   public static IAST DirectedInfinity(final IExpr a0) {
     return new AST1(DirectedInfinity, a0);
   }
-
+  
+  public static IAST DiscreteDelta(final IExpr a) {
+    return new AST1(DiscreteDelta, a);
+  }
+  
   public static IAST DiscreteUniformDistribution(final IExpr a) {
     return new AST1(DiscreteUniformDistribution, a);
   }
@@ -4895,6 +4899,11 @@ public class F extends S {
 
   public static IAST InverseLaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(InverseLaplaceTransform, a0, a1, a2);
+  }
+
+
+  public static IAST InverseZTransform(final IExpr expr, final IExpr z, final IExpr n) {
+    return new AST3(InverseZTransform, expr, z, n);
   }
 
   /**
@@ -8925,6 +8934,9 @@ public class F extends S {
     return new AST2(Zeta, s, a);
   }
 
+  public static IAST ZTransform(final IExpr expr, final IExpr n, final IExpr z) {
+    return new AST3(ZTransform, expr, n, z);
+  }
   /**
    * Create a large integer number.
    *

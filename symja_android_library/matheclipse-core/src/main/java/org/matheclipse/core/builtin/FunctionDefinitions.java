@@ -29,6 +29,7 @@ import static org.matheclipse.core.expression.S.Interpolation;
 import static org.matheclipse.core.expression.S.InverseFourier;
 import static org.matheclipse.core.expression.S.InverseFunction;
 import static org.matheclipse.core.expression.S.InverseLaplaceTransform;
+import static org.matheclipse.core.expression.S.InverseZTransform;
 import static org.matheclipse.core.expression.S.LaplaceTransform;
 import static org.matheclipse.core.expression.S.LinearProgramming;
 import static org.matheclipse.core.expression.S.ListLinePlot;
@@ -61,6 +62,7 @@ import static org.matheclipse.core.expression.S.Taylor;
 import static org.matheclipse.core.expression.S.TrigExpand;
 import static org.matheclipse.core.expression.S.TrigReduce;
 import static org.matheclipse.core.expression.S.TrigToExp;
+import static org.matheclipse.core.expression.S.ZTransform;
 import org.matheclipse.core.basic.Config;
 
 public final class FunctionDefinitions {
@@ -103,6 +105,8 @@ public final class FunctionDefinitions {
       InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
       InverseLaplaceTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
+      InverseZTransform
+          .setEvaluator(new org.matheclipse.core.reflection.system.InverseZTransform());
       LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
       LinearProgramming
           .setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
@@ -136,6 +140,7 @@ public final class FunctionDefinitions {
       TrigExpand.setEvaluator(new org.matheclipse.core.reflection.system.TrigExpand());
       TrigReduce.setEvaluator(new org.matheclipse.core.reflection.system.TrigReduce());
       TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());
+      ZTransform.setEvaluator(new org.matheclipse.core.reflection.system.ZTransform());
 
       if (!Config.FUZZY_PARSER) {
         Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
