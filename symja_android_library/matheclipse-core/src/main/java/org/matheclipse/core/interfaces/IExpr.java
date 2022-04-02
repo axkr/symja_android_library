@@ -3554,6 +3554,15 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is representing <code>Undefined</code>
+   *
+   * @return
+   */
+  default boolean isUndefined() {
+    return false;
+  }
+
+  /**
    * Test if this expression is the function <code>Unevaluated[&lt;arg&gt;]</code>
    *
    * @return

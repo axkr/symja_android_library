@@ -2163,7 +2163,7 @@ public class Algebra {
    * </code>
    * </pre>
    */
-  private static class Factor extends AbstractFunctionEvaluator {
+  public static class Factor extends AbstractFunctionEvaluator {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
@@ -2240,8 +2240,8 @@ public class Algebra {
       return ARGS_1_2;
     }
 
-    public IExpr factorExpr(final IAST ast, IExpr expr, VariablesSet eVar, boolean factorSquareFree,
-        EvalEngine engine) {
+    protected static IExpr factorExpr(final IAST ast, IExpr expr, VariablesSet eVar,
+        boolean factorSquareFree, EvalEngine engine) {
       if (expr.isAST()) {
         IExpr temp;
         // if (expr.isPower()&&expr.base().isPlus()) {
@@ -2304,7 +2304,6 @@ public class Algebra {
         try {
           GenPolynomial<edu.jas.arith.BigInteger> poly =
               (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-
           IExpr temp = heuristicXP2XPOne(poly, expr, eVar, engine);
           if (temp.isPresent()) {
             return temp;
@@ -2348,6 +2347,207 @@ public class Algebra {
           result.append(f);
         }
         return engine.evaluate(result);
+      }
+      return F.NIL;
+    }
+
+    public static IExpr evaluateSolve(IExpr expr, EvalEngine engine) {
+      VariablesSet eVar = new VariablesSet(expr);
+      if (!expr.isTimes() && !expr.isPower()) {
+        expr = S.Together.of(engine, expr);
+        if (expr.isAST()) {
+          IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine);
+          if (!parts[1].isOne()) {
+            try {
+              IExpr numerator = factorExprSolve(F.Factor(parts[0]), parts[0], eVar, engine);
+              if (numerator.isPresent()) {
+                IExpr denominator = factorExprSolve(F.Factor(parts[1]), parts[1], eVar, engine);
+                // TODO cross check for zeros-values in denominator
+              }
+              return numerator;
+            } catch (JASConversionException e) {
+              LOGGER.debug("Factor.evaluate() JAS conversion failed", e);
+            }
+          }
+        }
+      }
+
+      return F.NIL;
+    }
+
+    protected static IExpr factorExprSolve(final IAST ast, IExpr expr, VariablesSet eVar,
+        EvalEngine engine) {
+      if (expr.isAST()) {
+        IExpr temp;
+        if (expr.isPower()) {
+          IExpr p = factorExprSolve((IAST) expr, expr.base(), eVar, engine);
+          if (p.isPresent() && !p.equals(expr.base())) {
+            return F.Power(p, expr.exponent());
+          }
+          return expr;
+        } else if (expr.isTimes()) {
+          temp = ((IAST) expr).map(x -> {
+            if (x.isPlus()) {
+              return factorExprSolve(ast, x, eVar, engine);
+            }
+            if (x.isPower() && x.base().isPlus()) {
+              IExpr p = factorExprSolve(ast, x.base(), eVar, engine);
+              if (p.isPresent() && !p.equals(x.base())) {
+                return F.Power(p, x.exponent());
+              }
+            }
+            return F.NIL;
+          }, 1);
+          return temp;
+        } else {
+          return factorSolve((IAST) expr, eVar, engine);
+        }
+      }
+      return expr;
+    }
+
+    private static IExpr factorSolve(IAST expr, VariablesSet eVar, EvalEngine engine)
+        throws JASConversionException {
+      if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
+        return expr;
+      }
+      // use TermOrderByName.INVLEX here!
+      // See https://github.com/kredel/java-algebra-system/issues/8
+      Object[] objects = null;
+      JASConvert<BigRational> jas = new JASConvert<BigRational>(eVar.getArrayList(),
+          BigRational.ZERO, TermOrderByName.INVLEX);
+      try {
+        GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
+        if (polyRat.length() <= 1) {
+          return expr;
+        }
+        objects = jas.factorTerms(polyRat);
+      } catch (JASConversionException e) {
+        return factorWithPolynomialHomogenizationSolve(expr, eVar, engine);
+      }
+
+      if (objects != null) {
+
+        SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
+        try {
+          GenPolynomial<edu.jas.arith.BigInteger> poly =
+              (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+
+          IExpr temp = heuristicXP2XPOne(poly, expr, eVar, engine);
+          if (temp.isPresent()) {
+            return temp;
+          }
+
+          FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
+              FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
+          map = factorAbstract.factors(poly);
+        } catch (RuntimeException rex) {
+          LOGGER.debug("Factor.factor() failed", rex);
+          return expr;
+        }
+        IASTAppendable result = F.TimesAlloc(map.size() + 1);
+        java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+        java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+        IRational f = F.C1;
+        if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
+          f = F.fraction(gcd, lcm).normalize();
+        }
+        for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map
+            .entrySet()) {
+          if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
+            continue;
+          }
+          IExpr base = jas.integerPoly2Expr(entry.getKey());
+          if (entry.getValue() == 1L) {
+            if (f.isMinusOne() && base.isPlus()) {
+              base = ((IAST) base).map(x -> x.negate(), 1);
+              f = F.C1;
+            }
+            result.append(base);
+          } else {
+            result.append(F.Power(base, F.ZZ(entry.getValue())));
+          }
+        }
+        if (!f.isOne()) {
+          result.append(f);
+        }
+        return engine.evaluate(result);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr factorWithPolynomialHomogenizationSolve(IAST expr, VariablesSet eVar,
+        EvalEngine engine) {
+      boolean gaussianIntegers = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
+      IASTAppendable originalVarList = eVar.getVarList();
+      PolynomialHomogenization substitutions =
+          new PolynomialHomogenization(eVar.getVarList(), engine);
+      IExpr subsPolynomial = substitutions.replaceForward(expr);
+      // System.out.println(subsPolynomial.toString());
+      // System.out.println(substitutions.substitutedVariables());
+      if (substitutions.size() == 0) {
+        return factorComplex(expr, eVar.getArrayList(), S.Times, gaussianIntegers, engine);
+      }
+      if (subsPolynomial.isAST()) {
+        // System.out.println(subsPolynomial);
+        Set<ISymbol> varSet = substitutions.substitutedVariablesSet();
+        eVar.addAll(varSet);
+        IExpr factorization =
+            factorComplex(subsPolynomial, eVar.getArrayList(), S.Times, gaussianIntegers, engine);
+        return solveEquationRecursive(factorization, originalVarList, substitutions, varSet,
+            engine);
+      }
+      return expr;
+    }
+
+    private static IAST solveEquationRecursive(IExpr factorization, IASTAppendable originalVarList,
+        PolynomialHomogenization substitutions, Set<ISymbol> varSet, EvalEngine engine) {
+
+      if (factorization.isTimes() && factorization.size() > 1 && varSet.size() == 1) {
+        // System.out.println(factorization);
+        IAST varList = F.ListAlloc(varSet);
+        IAST timesAST = (IAST) factorization;
+        IASTAppendable list = F.ListAlloc(factorization.size());
+        for (int i = 1; i < timesAST.size(); i++) {
+          IExpr factor = timesAST.get(i);
+          IAST subList = RootsFunctions.rootsOfExprPolynomial(factor, varList, true);
+          if (subList.isPresent()) {
+            for (int j = 1; j < subList.size(); j++) {
+              IAST solveFunction = F.Solve(
+                  F.Equal(F.Subtract(substitutions.replaceBackward(varList.arg1()), subList.get(j)),
+                      F.C0),
+                  originalVarList.arg1());
+              // System.out.println(solveFunction);
+              IExpr result = engine.evaluate(solveFunction);
+              // Solve.solveRecursive(newList, F.CEmptyList, false, varList, engine);
+              if (result.isListOfLists()) {
+                IAST listOfRulesToValuesList =
+                    listOfRulesToValuesList(result, originalVarList.arg1());
+                if (listOfRulesToValuesList.isPresent()) {
+                  list.appendArgs(listOfRulesToValuesList);
+                }
+              }
+            }
+
+          }
+        }
+        // System.out.println(list);
+        return list;
+      }
+      return F.NIL;
+    }
+
+    public static IAST listOfRulesToValuesList(IExpr listOfRules, IExpr variable) {
+      IASTAppendable solveValues = F.ListAlloc(listOfRules.size());
+      ((IAST) listOfRules).map(a -> {
+        if (a.isList1() //
+            && a.first().isRuleAST() && a.first().first().equals(variable)) {
+          solveValues.append(a.first().second());
+        }
+        return F.NIL;
+      });
+      if (solveValues.size() > 1) {
+        return solveValues;
       }
       return F.NIL;
     }
@@ -2408,21 +2608,22 @@ public class Algebra {
     private static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar,
         EvalEngine engine) {
       boolean gaussianIntegers = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
-
+      IASTAppendable originalVarList = eVar.getVarList();
       PolynomialHomogenization substitutions =
           new PolynomialHomogenization(eVar.getVarList(), engine);
       IExpr subsPolynomial = substitutions.replaceForward(expr);
+      // System.out.println(subsPolynomial.toString());
+      // System.out.println(substitutions.substitutedVariables());
       if (substitutions.size() == 0) {
         return factorComplex(expr, eVar.getArrayList(), S.Times, gaussianIntegers, engine);
       }
       if (subsPolynomial.isAST()) {
-        eVar.addAll(substitutions.substitutedVariablesSet());
+        // System.out.println(subsPolynomial);
+        Set<ISymbol> varSet = substitutions.substitutedVariablesSet();
+        eVar.addAll(varSet);
         IExpr factorization =
             factorComplex(subsPolynomial, eVar.getArrayList(), S.Times, gaussianIntegers, engine);
-        // IExpr factorization = factor((IAST) subsPolynomial, eVar, factorSquareFree);
-        if (factorization.isPresent()) {
-          return substitutions.replaceBackward(factorization);
-        }
+        return substitutions.replaceBackward(factorization);
       }
       return expr;
     }
@@ -3980,142 +4181,7 @@ public class Algebra {
 
   private static class ToRadicals extends AbstractFunctionEvaluator {
 
-    /**
-     * Root of a polynomial: <code>a + b*Slot1</code>.
-     *
-     * @param a coefficient a of the polynomial
-     * @param b coefficient b of the polynomial
-     * @param nthRoot <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
-     * @return
-     */
-    private static IAST root1(IExpr a, IExpr b, int nthRoot) {
-      if (nthRoot != 1) {
-        return F.NIL;
-      }
-      return Times(F.CN1, a, Power(b, -1));
-    }
 
-    /**
-     * Root of a polynomial: <code>a + b*Slot1 + c*Slot1^2</code>.
-     *
-     * @param a coefficient a of the polynomial
-     * @param b coefficient b of the polynomial
-     * @param c coefficient c of the polynomial
-     * @param nthRoot <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
-     * @return
-     */
-    private static IAST root2(IExpr a, IExpr b, IExpr c, int nthRoot) {
-      if (nthRoot < 1 || nthRoot > 3) {
-        return F.NIL;
-      }
-      IExpr k = F.ZZ(nthRoot);
-      return Plus(
-          Times(C1D2, Power(F.CN1, k),
-              F.Sqrt(Times(Plus(F.Sqr(b), Times(F.CN4, a, c)), Power(c, -2)))),
-          Times(F.CN1D2, b, Power(c, -1)));
-    }
-
-    /**
-     * Root of a polynomial: <code>a + b*Slot1 + c*Slot1^2 + d*Slot1^3</code>.
-     *
-     * @param a coefficient a of the polynomial
-     * @param b coefficient b of the polynomial
-     * @param c coefficient c of the polynomial
-     * @param d coefficient d of the polynomial
-     * @param nthRoot <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
-     * @return
-     */
-    private static IAST root3(IExpr a, IExpr b, IExpr c, IExpr d, int nthRoot) {
-      if (nthRoot < 1 || nthRoot > 3) {
-        return F.NIL;
-      }
-      // System.out.println(F.List(a, b, c, d));
-      IExpr k = F.ZZ(nthRoot);
-
-      // r = 3*b*d - c^2
-      IExpr r = Plus(Negate(F.Sqr(c)), Times(F.C3, b, d));
-      // q = 9*b*c*d - 2*c^3 - 27*a*d^2
-      IExpr q =
-          Plus(Times(F.CN2, Power(c, 3)), Times(F.C9, b, c, d), Times(F.ZZ(-27), a, F.Sqr(d)));
-      // p = (q + Sqrt(q^2 + 4 r^3))^(1/3)
-      IExpr p = Power(Plus(q, F.Sqrt(Plus(F.Sqr(q), Times(F.C4, Power(r, 3))))), F.C1D3);
-      // -(c/(3*d)) + (E^((2*I*Pi*(k - 1))/3)*p)/(3*2^(1/3)*d) -
-      // (2^(1/3)*r)/(E^((2*I*Pi*(k - 1))/3)*(3*p*d))
-      return Plus(Times(F.CN1D3, c, Power(d, -1)),
-          Times(F.CN1D3, Power(S.E, Times(F.CC(0L, 1L, -2L, 3L), Plus(F.CN1, k), S.Pi)),
-              Power(p, -1), r, Power(C2, F.C1D3), Power(d, -1)),
-          Times(F.C1D3, Power(C2, F.CN1D3),
-              Power(S.E, Times(F.CC(0L, 1L, 2L, 3L), Plus(F.CN1, k), S.Pi)), Power(d, -1), p));
-    }
-
-    /**
-     * Root of a polynomial <code>a + b*Slot1 + c*Slot1^2 + d*Slot1^3 + e*Slot1^4</code>
-     *
-     * @param a
-     * @param b
-     * @param c
-     * @param d
-     * @param e
-     * @param nthRoot <code>1 <= nthRoot <= 4</code> otherwise return F.NIL;
-     * @return
-     */
-    private static IAST root4(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e, int nthRoot) {
-      if (nthRoot < 1 || nthRoot > 4) {
-        return F.NIL;
-      }
-      IExpr k = F.ZZ(nthRoot);
-
-      // t = Sqrt(-4*(c^2 - 3*b*d + 12*a*e)^3 + (2*c^3 - 9*c*(b*d + 8*a*e) + 27*(a*d^2
-      // + b^2*e))^2)
-      IExpr t = F.Sqrt(
-          Plus(Times(F.CN4, Power(Plus(F.Sqr(c), Times(F.CN3, b, d), Times(F.ZZ(12), a, e)), 3)),
-              F.Sqr(Plus(Times(F.CN9, c, Plus(Times(b, d), Times(F.C8, a, e))),
-                  Times(F.ZZ(27), Plus(Times(a, F.Sqr(d)), Times(F.Sqr(b), e))),
-                  Times(C2, Power(c, 3))))));
-      // s = (t + 2*c^3 - 9*c*(b*d + 8*a*e) + 27*(a*d^2 + b^2*e))^(1/3)
-      IExpr s = Power(
-          Plus(Times(C2, Power(c, 3)), t, Times(F.CN9, c, Plus(Times(b, d), Times(F.C8, a, e))),
-              Times(F.ZZ(27), Plus(Times(a, F.Sqr(d)), Times(F.Sqr(b), e)))),
-          F.C1D3);
-
-      // eps1 = (1/2)*Sqrt((2^(1/3)*(c^2 - 3*b*d + 12*a*e))/ (3*s*e) + (3*d^2 +
-      // 2*2^(2/3)*s*e - 8*c*e)/ (12 e^2))
-      IExpr eps1 = Times(C1D2,
-          F.Sqrt(Plus(
-              Times(F.QQ(1L, 12L),
-                  Plus(Times(F.C3, F.Sqr(d)), Times(F.CN8, c, e),
-                      Times(C2, e, s, Power(C2, F.QQ(2L, 3L)))),
-                  Power(e, -2)),
-              Times(F.C1D3, Plus(F.Sqr(c), Times(F.CN3, b, d), Times(F.ZZ(12), a, e)),
-                  Power(C2, F.C1D3), Power(e, -1), Power(s, -1)))));
-
-      // u = -((2^(1/3)*s^2 + 2*c^2 - 6*b*d + 24*a*e)/ (2^(2/3)*s*e)) + 8*eps1^2
-      IExpr u = Plus(Times(F.C8, F.Sqr(eps1)),
-          Times(F.CN1,
-              Plus(Times(C2, F.Sqr(c)), Times(F.CN6, b, d), Times(F.ZZ(24), a, e),
-                  Times(Power(C2, F.C1D3), F.Sqr(s))),
-              Power(C2, F.QQ(-2L, 3L)), Power(e, -1), Power(s, -1)));
-
-      // v = (d^3 - 4*c*d*e + 8*b*e^2)/ (8*e^3*eps1)
-      IExpr v =
-          Times(F.QQ(1L, 8L), Plus(Power(d, 3), Times(F.CN4, c, d, e), Times(F.C8, b, F.Sqr(e))),
-              Power(e, -3), Power(eps1, -1));
-
-      // eps2 = (1/2)*Sqrt(u + v)
-      IExpr eps2 = Times(C1D2, F.Sqrt(Plus(u, v)));
-
-      // eps3 = (1/2)*Sqrt(u - v)
-
-      IExpr eps3 = Times(C1D2, F.Sqrt(Plus(u, Negate(v))));
-
-      // -(d/(4*e)) + (2*Floor((k - 1)/2) - 1)*eps1 + (-1)^k*(1 - UnitStep(k -
-      // 3))*eps2 - (-1)^k*(UnitStep(2 - k)
-      // - 1)*eps3
-      return Plus(Times(eps1, Plus(F.CN1, Times(C2, Floor(Times(C1D2, Plus(F.CN1, k)))))),
-          Times(eps2, Plus(F.C1, Negate(F.UnitStep(Plus(F.CN3, k)))), Power(F.CN1, k)),
-          Times(eps3, Plus(F.CN1, F.UnitStep(Plus(C2, Negate(k)))), Power(F.CN1, Plus(F.C1, k))),
-          Times(F.CN1D4, d, Power(e, -1)));
-    }
 
     private static class ToRadicalsVisitor extends VisitorExpr {
       IAST replacement;
@@ -4160,80 +4226,14 @@ public class Algebra {
       return F.NIL;
     }
 
-    private static IExpr rootToRadicals(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 3 && ast.arg2().isInteger()) {
-        IExpr expr = ast.arg1();
-        if (expr.isFunction()) {
-          expr = expr.first();
-          try {
-            int k = ast.arg2().toIntDefault();
-            if (k < 0) {
-              return F.NIL;
-            }
-            final IAST variables = F.list(F.Slot1);
-            ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables);
-            ExprPolynomial polynomial = ring.create(expr, false, true, false);
 
-            final long varDegree = polynomial.degree(0);
-            if (polynomial.isConstant()) {
-              return F.CEmptyList;
-            }
-            IExpr a;
-            IExpr b;
-            IExpr c;
-            IExpr d;
-            IExpr e;
-            if (varDegree >= 1 && varDegree <= 4) {
-              a = C0;
-              b = C0;
-              c = C0;
-              d = C0;
-              e = C0;
-              for (ExprMonomial monomial : polynomial) {
-                final IExpr coeff = monomial.coefficient();
-                long lExp = monomial.exponent().getVal(0);
-                if (lExp == 4) {
-                  e = coeff;
-                } else if (lExp == 3) {
-                  d = coeff;
-                } else if (lExp == 2) {
-                  c = coeff;
-                } else if (lExp == 1) {
-                  b = coeff;
-                } else if (lExp == 0) {
-                  a = coeff;
-                } else {
-                  throw new ArithmeticException("Root::Unexpected exponent value: " + lExp);
-                }
-              }
-              IAST result = F.NIL;
-              if (varDegree == 1) {
-                result = root1(a, b, k);
-              } else if (varDegree == 2) {
-                result = root2(a, b, c, k);
-              } else if (varDegree == 3) {
-                result = root3(a, b, c, d, k);
-              } else {
-                result = root4(a, b, c, d, e, k);
-              }
-              if (result.isPresent()) {
-                return engine.evaluate(result);
-              }
-            }
-          } catch (JASConversionException e2) {
-            LOGGER.debug("ToRadicals.rootToRadicals() failed", e2);
-          }
-        }
-      }
-      return F.NIL;
-    }
   }
 
   private static class Root extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      return ToRadicals.rootToRadicals(ast, engine);
+      return rootToRadicals(ast, engine);
     }
   }
 
@@ -5536,6 +5536,209 @@ public class Algebra {
       }
     }
     return F.list(polyExpr, substitutedVariableList);
+  }
+
+  /**
+   * Root of a polynomial: <code>a + b*Slot1</code>.
+   *
+   * @param a coefficient a of the polynomial
+   * @param b coefficient b of the polynomial
+   * @param nthRoot <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
+   * @return
+   */
+  private static IAST root1(IExpr a, IExpr b, int nthRoot) {
+    if (nthRoot != 1) {
+      return F.NIL;
+    }
+    return Times(F.CN1, a, Power(b, -1));
+  }
+
+  /**
+   * Root of a polynomial: <code>a + b*Slot1 + c*Slot1^2</code>.
+   *
+   * @param a coefficient a of the polynomial
+   * @param b coefficient b of the polynomial
+   * @param c coefficient c of the polynomial
+   * @param nthRoot <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
+   * @return
+   */
+  private static IAST root2(IExpr a, IExpr b, IExpr c, int nthRoot) {
+    if (nthRoot < 1 || nthRoot > 3) {
+      return F.NIL;
+    }
+    IExpr k = F.ZZ(nthRoot);
+    return Plus(
+        Times(C1D2, Power(F.CN1, k),
+            F.Sqrt(Times(Plus(F.Sqr(b), Times(F.CN4, a, c)), Power(c, -2)))),
+        Times(F.CN1D2, b, Power(c, -1)));
+  }
+
+  /**
+   * Root of a polynomial: <code>a + b*Slot1 + c*Slot1^2 + d*Slot1^3</code>.
+   *
+   * @param a coefficient a of the polynomial
+   * @param b coefficient b of the polynomial
+   * @param c coefficient c of the polynomial
+   * @param d coefficient d of the polynomial
+   * @param nthRoot <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
+   * @return
+   */
+  private static IAST root3(IExpr a, IExpr b, IExpr c, IExpr d, int nthRoot) {
+    if (nthRoot < 1 || nthRoot > 3) {
+      return F.NIL;
+    }
+    // System.out.println(F.List(a, b, c, d));
+    IExpr k = F.ZZ(nthRoot);
+
+    // r = 3*b*d - c^2
+    IExpr r = Plus(Negate(F.Sqr(c)), Times(F.C3, b, d));
+    // q = 9*b*c*d - 2*c^3 - 27*a*d^2
+    IExpr q = Plus(Times(F.CN2, Power(c, 3)), Times(F.C9, b, c, d), Times(F.ZZ(-27), a, F.Sqr(d)));
+    // p = (q + Sqrt(q^2 + 4 r^3))^(1/3)
+    IExpr p = Power(Plus(q, F.Sqrt(Plus(F.Sqr(q), Times(F.C4, Power(r, 3))))), F.C1D3);
+    // -(c/(3*d)) + (E^((2*I*Pi*(k - 1))/3)*p)/(3*2^(1/3)*d) -
+    // (2^(1/3)*r)/(E^((2*I*Pi*(k - 1))/3)*(3*p*d))
+    return Plus(Times(F.CN1D3, c, Power(d, -1)),
+        Times(F.CN1D3, Power(S.E, Times(F.CC(0L, 1L, -2L, 3L), Plus(F.CN1, k), S.Pi)), Power(p, -1),
+            r, Power(C2, F.C1D3), Power(d, -1)),
+        Times(F.C1D3, Power(C2, F.CN1D3),
+            Power(S.E, Times(F.CC(0L, 1L, 2L, 3L), Plus(F.CN1, k), S.Pi)), Power(d, -1), p));
+  }
+
+  /**
+   * Root of a polynomial <code>a + b*Slot1 + c*Slot1^2 + d*Slot1^3 + e*Slot1^4</code>
+   *
+   * @param a
+   * @param b
+   * @param c
+   * @param d
+   * @param e
+   * @param nthRoot <code>1 <= nthRoot <= 4</code> otherwise return F.NIL;
+   * @return
+   */
+  private static IAST root4(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e, int nthRoot) {
+    if (nthRoot < 1 || nthRoot > 4) {
+      return F.NIL;
+    }
+    IExpr k = F.ZZ(nthRoot);
+
+    // t = Sqrt(-4*(c^2 - 3*b*d + 12*a*e)^3 + (2*c^3 - 9*c*(b*d + 8*a*e) + 27*(a*d^2
+    // + b^2*e))^2)
+    IExpr t = F.Sqrt(
+        Plus(Times(F.CN4, Power(Plus(F.Sqr(c), Times(F.CN3, b, d), Times(F.ZZ(12), a, e)), 3)),
+            F.Sqr(Plus(Times(F.CN9, c, Plus(Times(b, d), Times(F.C8, a, e))),
+                Times(F.ZZ(27), Plus(Times(a, F.Sqr(d)), Times(F.Sqr(b), e))),
+                Times(C2, Power(c, 3))))));
+    // s = (t + 2*c^3 - 9*c*(b*d + 8*a*e) + 27*(a*d^2 + b^2*e))^(1/3)
+    IExpr s =
+        Power(Plus(Times(C2, Power(c, 3)), t, Times(F.CN9, c, Plus(Times(b, d), Times(F.C8, a, e))),
+            Times(F.ZZ(27), Plus(Times(a, F.Sqr(d)), Times(F.Sqr(b), e)))), F.C1D3);
+
+    // eps1 = (1/2)*Sqrt((2^(1/3)*(c^2 - 3*b*d + 12*a*e))/ (3*s*e) + (3*d^2 +
+    // 2*2^(2/3)*s*e - 8*c*e)/ (12 e^2))
+    IExpr eps1 = Times(C1D2,
+        F.Sqrt(Plus(
+            Times(F.QQ(1L, 12L),
+                Plus(Times(F.C3, F.Sqr(d)), Times(F.CN8, c, e),
+                    Times(C2, e, s, Power(C2, F.QQ(2L, 3L)))),
+                Power(e, -2)),
+            Times(F.C1D3, Plus(F.Sqr(c), Times(F.CN3, b, d), Times(F.ZZ(12), a, e)),
+                Power(C2, F.C1D3), Power(e, -1), Power(s, -1)))));
+
+    // u = -((2^(1/3)*s^2 + 2*c^2 - 6*b*d + 24*a*e)/ (2^(2/3)*s*e)) + 8*eps1^2
+    IExpr u = Plus(Times(F.C8, F.Sqr(eps1)),
+        Times(F.CN1,
+            Plus(Times(C2, F.Sqr(c)), Times(F.CN6, b, d), Times(F.ZZ(24), a, e),
+                Times(Power(C2, F.C1D3), F.Sqr(s))),
+            Power(C2, F.QQ(-2L, 3L)), Power(e, -1), Power(s, -1)));
+
+    // v = (d^3 - 4*c*d*e + 8*b*e^2)/ (8*e^3*eps1)
+    IExpr v =
+        Times(F.QQ(1L, 8L), Plus(Power(d, 3), Times(F.CN4, c, d, e), Times(F.C8, b, F.Sqr(e))),
+            Power(e, -3), Power(eps1, -1));
+
+    // eps2 = (1/2)*Sqrt(u + v)
+    IExpr eps2 = Times(C1D2, F.Sqrt(Plus(u, v)));
+
+    // eps3 = (1/2)*Sqrt(u - v)
+
+    IExpr eps3 = Times(C1D2, F.Sqrt(Plus(u, Negate(v))));
+
+    // -(d/(4*e)) + (2*Floor((k - 1)/2) - 1)*eps1 + (-1)^k*(1 - UnitStep(k -
+    // 3))*eps2 - (-1)^k*(UnitStep(2 - k)
+    // - 1)*eps3
+    return Plus(Times(eps1, Plus(F.CN1, Times(C2, Floor(Times(C1D2, Plus(F.CN1, k)))))),
+        Times(eps2, Plus(F.C1, Negate(F.UnitStep(Plus(F.CN3, k)))), Power(F.CN1, k)),
+        Times(eps3, Plus(F.CN1, F.UnitStep(Plus(C2, Negate(k)))), Power(F.CN1, Plus(F.C1, k))),
+        Times(F.CN1D4, d, Power(e, -1)));
+  }
+
+  private static IExpr rootToRadicals(final IAST ast, EvalEngine engine) {
+    if (ast.size() == 3 && ast.arg2().isInteger()) {
+      IExpr expr = ast.arg1();
+      if (expr.isFunction()) {
+        expr = expr.first();
+        try {
+          int k = ast.arg2().toIntDefault();
+          if (k < 0) {
+            return F.NIL;
+          }
+          final IAST variables = F.list(F.Slot1);
+          ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables);
+          ExprPolynomial polynomial = ring.create(expr, false, true, false);
+
+          final long varDegree = polynomial.degree(0);
+          if (polynomial.isConstant()) {
+            return F.CEmptyList;
+          }
+          IExpr a;
+          IExpr b;
+          IExpr c;
+          IExpr d;
+          IExpr e;
+          if (varDegree >= 1 && varDegree <= 4) {
+            a = C0;
+            b = C0;
+            c = C0;
+            d = C0;
+            e = C0;
+            for (ExprMonomial monomial : polynomial) {
+              final IExpr coeff = monomial.coefficient();
+              long lExp = monomial.exponent().getVal(0);
+              if (lExp == 4) {
+                e = coeff;
+              } else if (lExp == 3) {
+                d = coeff;
+              } else if (lExp == 2) {
+                c = coeff;
+              } else if (lExp == 1) {
+                b = coeff;
+              } else if (lExp == 0) {
+                a = coeff;
+              } else {
+                throw new ArithmeticException("Root::Unexpected exponent value: " + lExp);
+              }
+            }
+            IAST result = F.NIL;
+            if (varDegree == 1) {
+              result = root1(a, b, k);
+            } else if (varDegree == 2) {
+              result = root2(a, b, c, k);
+            } else if (varDegree == 3) {
+              result = root3(a, b, c, d, k);
+            } else {
+              result = root4(a, b, c, d, e, k);
+            }
+            if (result.isPresent()) {
+              return engine.evaluate(result);
+            }
+          }
+        } catch (JASConversionException e2) {
+          LOGGER.debug("ToRadicals.rootToRadicals() failed", e2);
+        }
+      }
+    }
+    return F.NIL;
   }
 
   public static void initialize() {

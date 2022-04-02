@@ -898,6 +898,9 @@ public class EvalEngine implements Serializable {
       if (ast.arg1().isIndeterminate()) {
         return S.Indeterminate;
       }
+      if (ast.arg1().isUndefined()) {
+        return S.Undefined;
+      }
     }
 
     if (!(arg1 instanceof IPatternObject) && arg1.isPresent()) {
@@ -1157,6 +1160,9 @@ public class EvalEngine implements Serializable {
         if (!((ISymbol.HOLDALL & attributes) == ISymbol.HOLDALL)) {
           if (mutableAST.exists(x -> x.isIndeterminate())) {
             return S.Indeterminate;
+          }
+          if (mutableAST.exists(x -> x.isUndefined())) {
+            return S.Undefined;
           }
         }
       }

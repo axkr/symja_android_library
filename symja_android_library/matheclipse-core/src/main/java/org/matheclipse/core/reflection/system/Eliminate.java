@@ -512,6 +512,17 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     return F.NIL;
   }
 
+  /**
+   * Try to solve equations which contain trigonometric functions by using a
+   * {@link F#TrigToExp(IExpr)} transformation step, so that the equation contains
+   * <code>E^(...)</code> expressions.
+   * 
+   * @param plusAST
+   * @param variable
+   * @param multipleValues
+   * @param engine
+   * @return
+   */
   private static IExpr tryTrigToExp(IAST plusAST, IExpr variable, boolean multipleValues,
       EvalEngine engine) {
     IExpr termsEqualZero = engine.evaluateNIL(F.TrigToExp(plusAST));
@@ -529,8 +540,8 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
 
   /**
    * <p>
-   * Check if the <code>plusAST</code> has 2 arguments and try a <code>PowerExpand(Log(argX))</code>
-   * on the args.
+   * Check if the <code>plusAST</code> has 2 arguments and try a {@link F#PowerExpand(IExpr)}
+   * transformation step on the args.
    * 
    * <p>
    * See: <a href="//
@@ -576,7 +587,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param multipleValues if <code>false</code> return only the first found value in the list
    * @return
    */
-  private static IExpr listOfRulesToValues(IExpr listOfRules, IExpr variable,
+  protected static IExpr listOfRulesToValues(IExpr listOfRules, IExpr variable,
       boolean multipleValues) {
     if (multipleValues) {
       IASTAppendable solveValues = F.ListAlloc(listOfRules.size());
@@ -585,7 +596,6 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             && a.first().isRuleAST() && a.first().first().equals(variable)) {
           solveValues.append(a.first().second());
         }
-
         return F.NIL;
       });
       if (solveValues.size() > 1) {

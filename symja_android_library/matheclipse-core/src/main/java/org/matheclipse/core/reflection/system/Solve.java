@@ -1276,7 +1276,7 @@ public class Solve extends AbstractFunctionEvaluator {
    * @return a list of rules (typically NSolve) or a list of list of rules (typically Solve) of the
    *         solutions, <code>F.NIL</code> otherwise.
    */
-  protected static IExpr solveRecursive(IASTMutable termsEqualZeroList, IAST inequationsList,
+  public static IExpr solveRecursive(IASTMutable termsEqualZeroList, IAST inequationsList,
       boolean numericFlag, IAST variables, EvalEngine engine) {
     IASTMutable temp = solveTimesEquationsRecursively(termsEqualZeroList, inequationsList,
         numericFlag, variables, true, engine);
@@ -1527,16 +1527,24 @@ public class Solve extends AbstractFunctionEvaluator {
         if (termEQZero.isTimes()) {
           solveTimesAST((IAST) termEQZero, termsEqualZeroList, inequationsList, numericFlag,
               variables, multipleValues, engine, subSolutionSet, i);
-
         } else {
           if (termEQZero.isAST()) {
             // try factoring
+            if (variables.argSize() == 1) {
+              IExpr variable = variables.arg1();
+              IExpr temp = Algebra.Factor.evaluateSolve(termEQZero, engine);
+              if (temp.isList()) {
+                IAST listOfValues = (IAST) temp;
+                listOfValues.forEach(x -> subSolutionSet.add(F.List(F.Rule(variable, x))));
+                continue;
+              }
+            }
             termEQZero = S.Factor.of(engine, termEQZero);
-
             if (termEQZero.isTimes()) {
               solveTimesAST((IAST) termEQZero, termsEqualZeroList, inequationsList, numericFlag,
                   variables, multipleValues, engine, subSolutionSet, i);
             }
+
           }
         }
       }

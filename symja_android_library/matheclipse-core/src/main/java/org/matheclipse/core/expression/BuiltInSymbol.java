@@ -337,6 +337,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
+  public final boolean isUndefined() {
+    return this == S.Undefined;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public IExpr of(EvalEngine engine, IExpr... args) {
     if (fEvaluator instanceof ICoreFunctionEvaluator) {
       // evaluate a core function (without no rule definitions)
