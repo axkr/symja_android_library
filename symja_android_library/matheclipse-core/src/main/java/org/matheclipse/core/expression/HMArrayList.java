@@ -94,9 +94,6 @@ public abstract class HMArrayList extends AbstractAST
     firstIndex = hashValue = 0;
     lastIndex = arguments.length + 1;
     switch (lastIndex) {
-      case 0:
-        array = new IExpr[] {headExpr};
-        break;
       case 1:
         array = new IExpr[] {headExpr};
         break;
@@ -1071,7 +1068,7 @@ public abstract class HMArrayList extends AbstractAST
 
   @Override
   public Stream<IExpr> stream() {
-    return Arrays.stream(array, firstIndex + 1, lastIndex - firstIndex);
+    return Arrays.stream(array, firstIndex + 1, lastIndex);
   }
 
   @Override
