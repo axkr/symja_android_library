@@ -4,7 +4,6 @@ import static org.matheclipse.core.expression.F.BernoulliB;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.C4;
 import static org.matheclipse.core.expression.F.CComplexInfinity;
 import static org.matheclipse.core.expression.F.CInfinity;
 import static org.matheclipse.core.expression.F.CN1;
@@ -64,6 +63,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.HurwitzLerchPhiRules;
 import org.matheclipse.core.reflection.system.rules.PolyGammaRules;
 import org.matheclipse.core.reflection.system.rules.PolyLogRules;
 import org.matheclipse.core.reflection.system.rules.ProductLogRules;
@@ -89,6 +89,7 @@ public class SpecialFunctions {
       S.Erfc.setEvaluator(new Erfc());
       S.Erfi.setEvaluator(new Erfi());
       S.GammaRegularized.setEvaluator(new GammaRegularized());
+      S.HurwitzLerchPhi.setEvaluator(new HurwitzLerchPhi());
       S.HurwitzZeta.setEvaluator(new HurwitzZeta());
       S.HypergeometricPFQRegularized.setEvaluator(new HypergeometricPFQRegularized());
       S.InverseErf.setEvaluator(new InverseErf());
@@ -758,6 +759,41 @@ public class SpecialFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+  private static class HurwitzLerchPhi extends AbstractFunctionEvaluator
+      implements HurwitzLerchPhiRules {
+
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      IExpr s = ast.arg2();
+      IExpr a = ast.arg2();
+      if (z.isZero() && s.isOne() && a.isOne()) {
+        // special for numeric values
+        return F.C1;
+      }
+
+      // if (engine.isDoubleMode()) {
+      // }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -1463,13 +1499,6 @@ public class SpecialFunctions {
         } else if (arg1.isMinusOne()) {
           // arg2/(arg2 - 1)^2
           return Times(arg2, Power(Plus(C1, Negate(arg2)), -2));
-        } else if (arg1.equals(F.CN2)) {
-          // -((arg2*(1 + arg2))/(arg2 - 1)^3)
-          return Times(CN1, arg2, Plus(C1, arg2), Power(Plus(CN1, arg2), -3));
-        } else if (arg1.equals(F.CN3)) {
-          // (arg2*(1 + 4*arg2 + arg2^2))/(arg2 - 1)^4
-          return Times(arg2, Plus(C1, Times(C4, arg2), Sqr(arg2)),
-              Power(Plus(C1, Negate(arg2)), -4));
         }
       }
       if (engine.isDoubleMode()) {

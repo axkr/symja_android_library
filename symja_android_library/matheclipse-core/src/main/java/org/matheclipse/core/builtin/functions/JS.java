@@ -1,6 +1,8 @@
 package org.matheclipse.core.builtin.functions;
 
+import java.util.function.Function;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
 
 /**
@@ -17,6 +19,20 @@ public abstract class JS {
   protected static double cabs(Complex x) {
     return x.norm();
   }
+
+  protected static Complex complexAverage(Function<Complex, Complex> f, Complex x) {
+    return complexAverage(f, x, 1e-5);
+  }
+
+  protected static Complex complexAverage(Function<Complex, Complex> f, Complex x, double offset) {
+    return div(add(f.apply(add(x, offset)), f.apply(sub(x, offset))), 2);
+  }
+
+  protected static boolean isUnity(Complex x) {
+    return org.hipparchus.complex.Complex.equals(x, org.hipparchus.complex.Complex.ONE,
+        Config.MACHINE_EPSILON);
+  }
+
 
   protected static Complex exp(Complex x) {
     return x.exp();

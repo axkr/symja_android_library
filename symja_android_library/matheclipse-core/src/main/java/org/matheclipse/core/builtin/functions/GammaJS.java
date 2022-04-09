@@ -330,6 +330,11 @@ public class GammaJS extends JS {
   }
 
   public static double expIntegralEi(double x) {
+    if (F.isEqual(x, -1.0)) {
+      java.util.function.DoubleUnaryOperator f = arg -> expIntegralEi(arg);
+      return (f.applyAsDouble(x + 1e-5) + f.applyAsDouble(x - 1e-5)) / 2.0;
+    }
+
     double useAsymptotic = 26.0;
 
     if (x < 0.0) {
@@ -365,9 +370,15 @@ public class GammaJS extends JS {
   }
 
   public static Complex expIntegralEi(Complex x) {
+    if (isUnity(neg(x))) {
+      return complexAverage(arg -> expIntegralEi(arg), x);
+    }
+    var ix = mul(x, Complex.I);
+    if (isUnity(ix) || isUnity(neg(ix))) {
+      return complexAverage(arg -> expIntegralEi(arg), x);
+    }
     double useAsymptotic = 26.0;
     if (cabs(x) > useAsymptotic) {
-
       Complex s = Complex.ONE;
       Complex p = Complex.ONE;
       int i = 1;
@@ -447,8 +458,8 @@ public class GammaJS extends JS {
     // complex for negative real argument
     Complex ix = Complex.I.multiply(x);
 
-    return x.log().subtract(gammaZero(ix.negate()).add(gammaZero(ix))
-        .add(ix.negate().log()).add(ix.log()).multiply(0.5));
+    return x.log().subtract(gammaZero(ix.negate()).add(gammaZero(ix)).add(ix.negate().log())
+        .add(ix.log()).multiply(0.5));
   }
 
   public static Complex sinIntegral(Complex x) {
