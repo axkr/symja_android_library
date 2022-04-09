@@ -3050,6 +3050,10 @@ public class F extends S {
     return new AST1(Coth, z);
   }
 
+  public static IAST Count(final IExpr a0, final IExpr a1) {
+    return new AST2(Count, a0, a1);
+  }
+
   public static IAST Count(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(Count, a0, a1, a2);
   }
@@ -3264,11 +3268,11 @@ public class F extends S {
   public static IAST DirectedInfinity(final IExpr a0) {
     return new AST1(DirectedInfinity, a0);
   }
-  
+
   public static IAST DiscreteDelta(final IExpr a) {
     return new AST1(DiscreteDelta, a);
   }
-  
+
   public static IAST DiscreteUniformDistribution(final IExpr a) {
     return new AST1(DiscreteUniformDistribution, a);
   }
@@ -4393,6 +4397,10 @@ public class F extends S {
 
   public static IAST HoldPattern(final IExpr a0) {
     return new AST1(HoldPattern, a0);
+  }
+
+  public static IAST HurwitzLerchPhi(final IExpr z, final IExpr s, final IExpr a) {
+    return new AST3(HurwitzLerchPhi, z, s, a);
   }
 
   public static IAST HurwitzZeta(final IExpr a0, final IExpr a1) {
@@ -5579,7 +5587,7 @@ public class F extends S {
    * @param collection the collection which holds the elements which should be appended
    * @return
    */
-  public static IASTMutable ListAlloc(Collection<? extends IExpr> collection) {
+  public static IASTAppendable ListAlloc(Collection<? extends IExpr> collection) {
     return ListAlloc(collection, 0);
   }
 
@@ -8937,6 +8945,7 @@ public class F extends S {
   public static IAST ZTransform(final IExpr expr, final IExpr n, final IExpr z) {
     return new AST3(ZTransform, expr, n, z);
   }
+
   /**
    * Create a large integer number.
    *

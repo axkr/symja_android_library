@@ -41,7 +41,6 @@ public class S {
     return BUILT_IN_SYMBOLS[id];
   }
 
-
   public final static IBuiltInSymbol $Aborted = F.initFinalSymbol("$Aborted", ID.$Aborted);
 
   /**
@@ -3392,6 +3391,8 @@ public class S {
   public final static IBuiltInSymbol FindClusters =
       F.initFinalSymbol("FindClusters", ID.FindClusters);
 
+  public final static IBuiltInSymbol FindCycle = F.initFinalSymbol("FindCycle", ID.FindCycle);
+
   public final static IBuiltInSymbol FindEdgeCover =
       F.initFinalSymbol("FindEdgeCover", ID.FindEdgeCover);
 
@@ -4400,6 +4401,9 @@ public class S {
   public final static IBuiltInSymbol HornerForm = F.initFinalSymbol("HornerForm", ID.HornerForm);
 
   public final static IBuiltInSymbol Hue = F.initFinalSymbol("Hue", ID.Hue);
+
+  public final static IBuiltInSymbol HurwitzLerchPhi =
+      F.initFinalSymbol("HurwitzLerchPhi", ID.HurwitzLerchPhi);
 
   /**
    * HurwitzZeta(s, a) - returns the Hurwitz zeta function.
@@ -7499,7 +7503,7 @@ public class S {
   public final static IBuiltInSymbol PossibleZeroQ =
       F.initFinalSymbol("PossibleZeroQ", ID.PossibleZeroQ);
 
-  public final static IBuiltInSymbol Postefix = F.initFinalSymbol("Postefix", ID.Postefix);
+  public final static IBuiltInSymbol Postfix = F.initFinalSymbol("Postfix", ID.Postfix);
 
   /**
    * Power(a, b) - represents `a` raised to the power of `b`.
@@ -9124,6 +9128,8 @@ public class S {
    */
   public final static IBuiltInSymbol StringQ = F.initFinalSymbol("StringQ", ID.StringQ);
 
+  public final static IBuiltInSymbol StringRepeat =
+      F.initFinalSymbol("StringRepeat", ID.StringRepeat);
   /**
    * StringReplace(string, fromStr -> toStr) - replaces each occurrence of `fromStr` with `toStr` in
    * `string`.
