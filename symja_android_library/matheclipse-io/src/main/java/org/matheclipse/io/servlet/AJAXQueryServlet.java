@@ -36,7 +36,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.ImageExpr;
-import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
@@ -186,10 +185,6 @@ public class AJAXQueryServlet extends HttpServlet {
       final String numericMode, final String function, StringWriter outWriter,
       StringWriter errorWriter) {
     String input = inputString.trim();
-    if (input.length() > 1 && input.charAt(0) == '?') {
-      IExpr doc = Documentation.findDocumentation(input);
-      return JSONBuilder.createJSONResult(engine, doc, outWriter, errorWriter);
-    }
     try {
       EvalEngine.setReset(engine);
       ExprParser parser = new ExprParser(engine, isRelaxedSyntax());
@@ -206,8 +201,7 @@ public class AJAXQueryServlet extends HttpServlet {
         // inExpr contains the user input from the web interface in
         // internal format now
         StringWriter outBuffer = new StringWriter();
-        IExpr outExpr;
-        outExpr = evalTopLevel(engine, outBuffer, inExpr);
+        IExpr outExpr = evalTopLevel(engine, outBuffer, inExpr);
         if (outExpr != null) {
           if (outExpr.isAST(S.Graphics)) {
             try {

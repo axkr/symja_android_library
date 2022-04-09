@@ -192,10 +192,6 @@ public class Console {
           // stdout.println("Enabling timeout for evaluation to 60 seconds.");
           // console.fSeconds = 60;
           // continue;
-          // } else
-          // if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
-          // Documentation.findDocumentation(stdout, trimmedInput);
-          // continue;
           // }
           String postfix = Scanner.balanceCode(trimmedInput);
           if (postfix != null && postfix.length() > 0) {
@@ -437,10 +433,6 @@ public class Console {
     IExpr result;
     final StringWriter buf = new StringWriter();
     try {
-      if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
-        IExpr doc = Documentation.findDocumentation(trimmedInput);
-        return printResult(doc);
-      }
       if (fSeconds <= 0) {
         result = fEvaluator.eval(trimmedInput);
       } else {

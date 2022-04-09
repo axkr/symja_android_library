@@ -147,7 +147,7 @@ public class JSONBuilder {
     // DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
     MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
     StringWriter stw = new StringWriter();
-    if (!mathUtil.toMathML(outExpr, stw, true)) {
+    if (!outExpr.equals(S.Null) && !mathUtil.toMathML(outExpr, stw, true)) {
       return createJSONError("Max. output size exceeded " + Config.MAX_OUTPUT_SIZE);
     }
 

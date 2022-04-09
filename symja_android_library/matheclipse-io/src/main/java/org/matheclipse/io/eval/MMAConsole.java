@@ -171,14 +171,6 @@ public class MMAConsole {
             }
           }
 
-          // if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
-          // IAST list = Names.getNamesByPrefix(trimmedInput.substring(1));
-          // for (int i = 1; i < list.size(); i++) {
-          // stdout.print(list.get(i).toString());
-          // if (i != list.argSize()) {
-          // stdout.print(", ");
-          // }
-          // }
           // stdout.println();
           // if (list.size() == 2) {
           // printDocumentation(list.get(1).toString());
@@ -447,10 +439,6 @@ public class MMAConsole {
     IExpr result;
     final StringWriter buf = new StringWriter();
     try {
-      if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
-        IExpr doc = Documentation.findDocumentation(trimmedInput);
-        return printResult(doc);
-      }
       if (fSeconds <= 0) {
         result = fEvaluator.eval(trimmedInput);
       } else {
