@@ -17,16 +17,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.expression.AbstractPatternSequence;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.PatternNested;
-import org.matheclipse.core.expression.PatternSequence;
 import org.matheclipse.core.expression.RepeatedPattern;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
@@ -2069,6 +2070,9 @@ public final class StringFunctions {
           return F.CEmptyString;
         }
         int maxLength = n * str.length();
+        if (maxLength < 0 || maxLength > Config.MAX_AST_SIZE) {
+          throw new ASTElementLimitExceeded(maxLength);
+        }
         StringBuilder buf = new StringBuilder(maxLength);
         for (int i = 0; i < n; i++) {
           buf.append(str);
@@ -3603,7 +3607,7 @@ public final class StringFunctions {
         return "(?<" + groupName + ">" + str + ")";
       }
     } else if (partOfRegex.isPatternSequence(false)) {
-      PatternSequence ps = ((PatternSequence) partOfRegex);
+      AbstractPatternSequence ps = ((AbstractPatternSequence) partOfRegex);
       final ISymbol symbol = ps.getSymbol();
       final String str;
       if (ps.isNullSequence()) {

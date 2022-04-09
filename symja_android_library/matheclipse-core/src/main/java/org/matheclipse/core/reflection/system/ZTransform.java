@@ -99,6 +99,6 @@ public class ZTransform extends AbstractFunctionEvaluator implements ZTransformR
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_3;
+    return ARGS_3_3;
   }
 }

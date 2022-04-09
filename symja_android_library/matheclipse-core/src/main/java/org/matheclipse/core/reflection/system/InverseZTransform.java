@@ -66,6 +66,6 @@ public class InverseZTransform extends AbstractFunctionEvaluator implements Inve
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_3;
+    return ARGS_3_3;
   }
 }

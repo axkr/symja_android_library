@@ -55,15 +55,15 @@ public class ConsoleTestCase extends TestCase {
     check(args, "{a,b}");
   }
 
-  public void testDoc() {
-    assertEquals(
-        "Sin, Sinc, SingularValueDecomposition, SingularValueList, Sinh, SinIntegral, SinhIntegral\n",
-        console.interpreter("?Sin*"));
-  }
-
-  public void testMissingDoc() {
-    assertEquals(
-        "Sin, Sinc, SingularValueDecomposition, SingularValueList, Sinh, SinIntegral, SinhIntegral\n",
-        console.interpreter("?sin*"));
-  }
+  // public void testDoc() {
+  // assertEquals(
+  // "Sin, Sinc, SingularValueDecomposition, SingularValueList, Sinh, SinIntegral, SinhIntegral\n",
+  // console.interpreter("?Sin*"));
+  // }
+  //
+  // public void testMissingDoc() {
+  // assertEquals(
+  // "Sin, Sinc, SingularValueDecomposition, SingularValueList, Sinh, SinIntegral, SinhIntegral\n",
+  // console.interpreter("?sin*"));
+  // }
 }
