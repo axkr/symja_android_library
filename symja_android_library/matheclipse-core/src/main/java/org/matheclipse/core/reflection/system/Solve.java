@@ -1549,7 +1549,31 @@ public class Solve extends AbstractFunctionEvaluator {
         }
       }
       if (subSolutionSet.size() > 0) {
-        return F.ListAlloc(subSolutionSet);
+        // cross check
+        IASTAppendable result = F.ListAlloc(subSolutionSet);
+        int[] removedPositions = new int[result.size()];
+        int untilPosition = 0;
+        for (int j = 1; j < result.size(); j++) {
+          IExpr expr = result.get(j);
+          // if (expr.isFree(S.ConditionalExpression, true)) {
+          // TODO cross check for ConditionalExpression
+          for (int i = 1; i < termsEqualZeroList.size(); i++) {
+            IExpr termEQZero = termsEqualZeroList.get(i);
+            IExpr replaceAll = termEQZero.replaceAll((IAST) expr);
+            if (replaceAll.isNumericFunction()) {
+              if (!engine.evalTrue(F.PossibleZeroQ(replaceAll))) {
+                removedPositions[untilPosition++] = j;
+                break;
+              }
+            }
+          }
+          // }
+        }
+        if (untilPosition > 0) {
+          return result.removePositionsAtCopy(removedPositions, untilPosition);
+        }
+
+        return result;
       }
       return resultList;
     } catch (LimitException le) {

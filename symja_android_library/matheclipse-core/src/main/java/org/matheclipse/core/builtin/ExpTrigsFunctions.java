@@ -2331,6 +2331,16 @@ public class ExpTrigsFunctions {
       if (arg1.isPower()) {
         IExpr base = arg1.base();
         IExpr exponent = arg1.exponent();
+        if (exponent.isFraction()) {
+          IFraction frac = (IFraction) exponent;
+          if (frac.numerator().isOne()) {
+            IInteger denominator = frac.denominator();
+            if (!denominator.isMinusOne() && !denominator.isZero()) {
+              // Log(base^(1 / denominator)) /; denominator <> -1 && denominator <> 0
+              return F.Divide(F.Log(base), denominator);
+            }
+          }
+        }
         // arg2*Log(arg1)
         IExpr temp = F.eval(Times(exponent, F.Log(base)));
         IExpr imTemp = F.eval(F.Im(temp));
@@ -2343,9 +2353,21 @@ public class ExpTrigsFunctions {
           }
         }
         if (AbstractAssumptions.assumePositive(base) && exponent.isRealResult()) {
-          // Log(arg1 ^ arg2) == arg2*Log(arg1) ||| arg1 > 0 && arg2 is
-          // Real
+          // Log(arg1 ^ arg2) == arg2*Log(arg1) ||| arg1 > 0 && arg2 is real
           return temp;
+        }
+      } else if (arg1.isTimes()) {
+        EvalEngine engine = EvalEngine.get();
+        IAST timesAST = (IAST) arg1;
+        // Log(a*z) == Log(a) + Log(z) /; a > 0
+        for (int i = 1; i < timesAST.size(); i++) {
+          IExpr a = timesAST.get(i);
+          if (engine.evalTrue(F.Greater(a, F.C0))) {
+            IExpr temp = engine.evaluate(F.Log(a));
+            if (temp.isFree(S.Log, true)) {
+              return F.Plus(temp, F.Log(timesAST.removeAtCopy(i)));
+            }
+          }
         }
       }
       if (arg1.isNegativeResult()) {
@@ -2359,6 +2381,14 @@ public class ExpTrigsFunctions {
       }
       if (arg1.isAST(S.Underflow, 1)) {
         return F.Underflow();
+      }
+      // arg1.re()^2 + arg1.im()^2
+      EvalEngine engine = EvalEngine.get();
+      IExpr temp = engine.evaluate(F.Plus(F.Sqr(arg1.re()), F.Sqr(arg1.im())));
+      if (temp.isOne()) {
+        // Log(x + I*y) == (1/2)*Log(x^2 + y^2) + I*Arg(x + I y) with Log(1) == 0
+        // ==> I*Arg(x + I y)
+        return F.Times(F.CI, F.Arg(arg1));
       }
       return F.NIL;
     }

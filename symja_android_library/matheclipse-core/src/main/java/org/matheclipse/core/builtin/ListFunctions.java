@@ -45,6 +45,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.Sequence;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DispatchExpr;
 import org.matheclipse.core.generic.Comparators;
@@ -1897,22 +1898,36 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg1 = ast.arg1();
-      final VisitorLevelSpecification level;
-      CountFunctor mf = new CountFunctor(engine.evalPatternMatcher(ast.arg2()));
-      if (ast.isAST3()) {
-        final IExpr arg3 = engine.evaluate(ast.arg3());
-        level = new VisitorLevelSpecification(mf, arg3, false, engine);
+      if (ast.headID() != ID.Count) {
+        // operator form
+        if (!ast.isAST1()) {
+          return IOFunctions.printArgMessage(ast, ARGS_1_1, engine);
+        }
+        if (!ast.head().isAST1()) {
+          return IOFunctions.printArgMessage((IAST) ast.head(), ARGS_1_1, engine);
+        }
+        return F.Count(ast.arg1(), ast.head().first());
       } else {
-        level = new VisitorLevelSpecification(mf, 1, false);
+        if (ast.isAST1()) {
+          return F.NIL;
+        }
+        final IExpr arg1 = ast.arg1();
+        final VisitorLevelSpecification level;
+        CountFunctor mf = new CountFunctor(engine.evalPatternMatcher(ast.arg2()));
+        if (ast.isAST3()) {
+          final IExpr arg3 = engine.evaluate(ast.arg3());
+          level = new VisitorLevelSpecification(mf, arg3, false, engine);
+        } else {
+          level = new VisitorLevelSpecification(mf, 1, false);
+        }
+        arg1.accept(level);
+        return F.ZZ(mf.getCounter());
       }
-      arg1.accept(level);
-      return F.ZZ(mf.getCounter());
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_1_3_0;
     }
   }
 
@@ -5647,7 +5662,7 @@ public final class ListFunctions {
           }
           return input;
         } else if (rules instanceof DispatchExpr) {
-          DispatchExpr dispatch = (DispatchExpr) rules; 
+          DispatchExpr dispatch = (DispatchExpr) rules;
           IExpr temp = dispatch.apply(input);
           if (temp.isPresent()) {
             return temp;

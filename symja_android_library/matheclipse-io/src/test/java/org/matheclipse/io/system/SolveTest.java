@@ -367,7 +367,7 @@ public class SolveTest extends AbstractTestCase {
         "{{x->1}}");
     // message - Solve: Maximum AST dimension 9223372036854775807 exceeded
     check("Solve(x^(1/7)-x^(1/5)==x^(1/3)-x^(1/2),x)", //
-        "Solve(x^(1/7)-x^(1/5)==x^(1/3)-Sqrt(x),x)");
+        "{{x->1}}");
     check("Solve(Log(2,x)+4*Log(x,2)-5==0,x)", //
         "{{x->2},{x->16}}");
     // TODO
@@ -762,9 +762,8 @@ public class SolveTest extends AbstractTestCase {
 
     check("NSolve(2*Log(2)* x^2 - Log(4)*x^2 + x - 1 == 0, x)", //
         "{{x->1.0}}");
-    // message - Solve: Maximum AST dimension 9223372036854775807 exceeded
     check("NSolve(x^(1/7)-x^(1/5)==x^(1/3)-x^(1/2),x)", //
-        "NSolve(x^(1/7)-x^(1/5)==x^(1/3)-Sqrt(x),x)");
+        "{{x->1.0}}");
     check("NSolve(Log(2,x)+4*Log(x,2)-5==0,x)", //
         "{{x->2.0},{x->16.0}}");
 
@@ -796,7 +795,7 @@ public class SolveTest extends AbstractTestCase {
 
     // prints error message / wrong result in numeric mode
     check("NSolve(2*x^(x-3)==3^(x-2),x)", //
-        "{{x->0.0}}");
+        "{}");
 
     // https://github.com/tranleduy2000/ncalc/issues/79
     // 0x + 50y + 2z = 20
@@ -1278,69 +1277,172 @@ public class SolveTest extends AbstractTestCase {
     check("Solve(E^x-2==0,x)", //
         "{{x->ConditionalExpression(I*2*Pi*C(1)+Log(2),C(1)∈Integers)}}");
   }
-  //
-  // public void testSolveHO1() {
-  // //
-  // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
-  // // TODO improve result by avoiding GCD 1/2
-  // check("Solve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
-  // "{{x->ConditionalExpression(I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n"
-  // + "I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi*C(1)+Log(3)/2,C(1)∈Integers)}}");
-  // }
-  //
-  // public void testSolveHO2() {
-  // //
-  // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
-  // check("Solve(4^(2*x+1)*5^(x-2)-6^(1-x)==0,x)", //
-  // "{{x->(Log(2)-Log(75))/(-5*Log(2)-Log(3)-Log(5))}}");
-  // }
-  //
-  // public void testSolveHO3() {
-  // //
-  // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
-  // check("Solve(4^(1+2*x)/5^(2-x)-6^(1-x)==-42,x)", //
-  // "Solve(4^(1+2*x)/5^(2-x)-6^(1-x)==-42,x)");
-  // }
-  //
-  // public void testSolveHO4() {
-  // //
-  // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
-  // check(
-  // "Solve(Cos(x)+ Cos(x)^3 + Cos(x)^5 - 3*Cos(x)*Sin(x)^2 - 10*Cos(x)^3*Sin(x)^2 +
-  // 5*Cos(x)*Sin(x)^4 ==0,x)", //
-  // "{{x->Pi/2},{x->ConditionalExpression(-Pi/8+1/2*Pi*C(1),C(1)∈Integers)}}");
-  // }
-  //
-  // public void testSolveHO5() {
-  // //
-  // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
-  // check(
-  // "Solve(1/(E^(I*x)*2) + E^(I*x)/2 + 1/2/E^(3*I*x) + (1/2)*E^(3*I*x) + 1/2/E^(5*I*x) +
-  // (1/2)*E^(5*I*x) ==0,x)", //
-  // "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
-  // + "2+2*Pi*C(1),C(1)∈Integers)}}");
-  // }
-  //
-  // public void testSolveHO6() {
-  // // check("TrigToExp(Cos(x) + Cos(3*x) + Cos(5*x) )", //
-  // // "1/(2*E^(I*5*x))+1/(2*E^(I*3*x))+1/(2*E^(I*x))+E^(I*x)/2+E^(I*3*x)/2+E^(I*5*x)/2");
-  // //
-  // check("Factor(1/(2*E^(I*5*x))+1/(2*E^(I*3*x))+1/(2*E^(I*x))+E^(I*x)/2+E^(I*3*x)/2+E^(I*5*x)/2)",
-  // // //
-  // // "");
-  // //
-  // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
-  // check("Solve(Cos(x) + Cos(3*x) + Cos(5*x) == 0,x)", //
-  // "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
-  // + "2+2*Pi*C(1),C(1)∈Integers)}}");
-  // }
-  //
-  // public void testSolveHO7() {
-  // //
-  // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
-  // check("Solve(Cos(x) + Tan(3*x) + Cos(5*x) ==0,x)", //
-  // "Solve(Cos(x)+Cos(5*x)+Tan(3*x)==0,x)");
-  // }
+
+  public void testSolveHO1() {
+    // https: //
+    // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    // TODO improve result by avoiding GCD 1/2
+    check("Solve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
+        "{{x->ConditionalExpression(I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n"
+            + "I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*2*Pi*C(1)+Log(3)/2,C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n"
+            + "I*2*Pi*C(1)+Log(3)/2,C(1)∈Integers)}}");
+  }
+
+  public void testSolveHO2() {
+    // https: //
+    // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    check("Solve(4^(2*x+1)*5^(x-2)-6^(1-x)==0,x)", //
+        "{{x->(Log(2)-Log(75))/(-5*Log(2)-Log(3)-Log(5))}}");
+  }
+
+  public void testSolveHO3() {
+    // https: //
+    // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    check("Solve(4^(1+2*x)/5^(2-x)-6^(1-x)==-42,x)", //
+        "Solve(4^(1+2*x)/5^(2-x)-6^(1-x)==-42,x)");
+  }
+
+  public void testSolveHO4() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+
+    // TODO check result
+    check(
+        "Solve(Cos(x)+ Cos(x)^3 + Cos(x)^5 - 3*Cos(x)*Sin(x)^2 - 10*Cos(x)^3*Sin(x)^2 + 5*Cos(x)*Sin(x)^4 ==0,x)", //
+        "{{x->Pi/2},{x->ConditionalExpression(Pi/8+2*Pi*C(1),C(1)∈Integers)}}");
+  }
+
+  public void testSolveHO5() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+
+    // TODO check result
+    check(
+        "Solve(1/(E^(I*x)*2) + E^(I*x)/2 + 1/2/E^(3*I*x) + (1/2)*E^(3*I*x) + 1/2/E^(5*I*x) + (1/2)*E^(5*I*x) ==0,x)", //
+        "{{x->ConditionalExpression(-5/6*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-\n"
+            + "2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/\n"
+            + "3+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/3+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n"
+            + "5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
+  }
+
+  public void testSolveHO6() {
+    // check("TrigToExp(Cos(x) + Cos(3*x) + Cos(5*x) )", //
+    // "1/(2*E^(I*5*x))+1/(2*E^(I*3*x))+1/(2*E^(I*x))+E^(I*x)/2+E^(I*3*x)/2+E^(I*5*x)/2");
+    //
+    // check("Factor(1/(2*E^(I*5*x))+1/(2*E^(I*3*x))+1/(2*E^(I*x))+E^(I*x)/2+E^(I*3*x)/2+E^(I*5*x)/2)",
+    // //
+    // "");
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    check("Solve(Cos(x) + Cos(3*x) + Cos(5*x) == 0,x)", //
+        "{{x->ConditionalExpression(-5/6*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-\n"
+            + "2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/\n"
+            + "3+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/3+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n"
+            + "5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
+  }
+
+  public void testSolveHO7() {
+    //
+    https: // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    check("Solve(Cos(x) + Tan(3*x) + Cos(5*x) ==0,x)", //
+        "Solve(Cos(x)+Cos(5*x)+Tan(3*x)==0,x)");
+  }
+
+  public void testSystem805() {
+    check("Solve({x^2==4,x+20==10},x)", "{}");
+    check("Solve(4*x^(-2)-1==0,x)", //
+        "{{x->-2},{x->2}}");
+
+    check("Solve(x^2==a^2,x)", "{{x->-a},{x->a}}");
+    check("Solve((x^2-1)/(x-1)==0,x)", "{{x->-1}}");
+
+    // LinearSolve[{{1,1,1},{1,1,-1},{1,-1,-1}},{100,50,10}]
+    // Fraction[][] testData = { { new Fraction(1), new Fraction(1), new
+    // Fraction(1) },
+    // { new Fraction(1), new Fraction(1), new Fraction(-1) }, { new
+    // Fraction(1), new Fraction(-1), new Fraction(-1) } };
+    // Fraction[] testVector = { new Fraction(100), new Fraction(50), new
+    // Fraction(10) };
+    // FieldMatrix<Fraction> aMatrix = new Array2DRowFieldMatrix(testData);
+    // FieldVector<Fraction> bVector = new
+    // ArrayFieldVector<Fraction>(testVector);
+    // try {
+    //
+    // final FieldLUDecomposition<Fraction> lu = new
+    // FieldLUDecomposition<Fraction>(aMatrix);
+    //
+    // FieldDecompositionSolver<Fraction> fds = lu.getSolver();
+    // // lu.getL();
+    // FieldVector<Fraction> xVector = fds.solve(bVector);
+    // assertEquals("", xVector.toString());
+    //
+    // } catch (final ClassCastException e) {
+    // if (Config.SHOW_STACKTRACE) {
+    // e.printStackTrace();
+    // }
+    // } catch (final IndexOutOfBoundsException e) {
+    // if (Config.SHOW_STACKTRACE) {
+    // e.printStackTrace();
+    // }
+    // }
+
+    // check("solve({x + y + z == 100,x + y - z == 50,x - y - z ==
+    // 10},{x,y,z})", "{{x->55,y->20,z->25}}");
+    // check("Solve(y+x/a==0,y)", "{{y->-a^(-1)*x}}");
+    // check("Solve(((x-8.5)^2)+(y+9.5)^2==1.4,x)",
+    // "{{x->0.5*(-4.0*y^2.0-76.0*y-355.4)^0.5+8.5},{x->-0.5*(-4.0*y^2.0-76.0*y-355.4)^0.5+8.5}}");
+    // check("Solve(((x-8.5556577)^2)+(y+9.551234)^2==14/10,x)",
+    // "{{x->0.5*(-4.0*y^2.0-76.409872*y-359.30428369102395)^0.5+8.5556577},{x->-0.5*(-4.0*y^2.0-76.409872*y-359.30428369102395)^0.5+8.5556577}}");
+    //
+    // check("Solve(a+2x==0,x)", "{{x->(-1/2)*a}}");
+    // check("Together((x^2-1)/(x-1))", "x+1");
+
+    // check("Solve(x*(-0.006*x^2.0+1.0)^2.0-0.1*x==7.217,x)",
+    // "{{x->16.955857433561537},{x->-14.046984987941926+I*(-3.7076756332964123)},{x->-14.046984987941926+I*3.7076783744216715},{x->5.569057466623865+I*(-5.000248815113639)},{x->5.569057466623865+I*5.000251556238898}}");
+
+    // issue #68
+    check("Solve(x^(1/2)==0,x)", "{{x->0}}");
+    check("solve(sqrt(112*x)==0,x)", "{{x->0}}");
+    check("Solve(7^(1/2)*x^(1/2)==0,x)", "{{x->0}}");
+
+    check("Solve({x+y==1, x-y==0}, {x,y})", "{{x->1/2,y->1/2}}");
+    check("Solve(x*(-0.006*x^2.0+1.0)^2.0-0.1*x==7.217,x)",
+        "{{x->-14.04698+I*(-3.70768)},{x->-14.04698+I*3.70768},{x->5.56906+I*(-5.00025)},{x->5.56906+I*5.00025},{x->16.95586}}");
+
+    checkNumeric("CoefficientList(x*(-0.006*x^2.0+1.0)^2.0-0.1*x-7.217,x)",
+        "{-7.217,0.9,0,-0.012,0,3.6E-5}");
+
+    checkNumeric("Solve(2.5*x^2+1650==0,x)", //
+        "{{x->I*(-25.69046515733026)},{x->I*25.69046515733026}}");
+    checkNumeric("Solve(x*(x^2+1)^2==7,x)",
+        "{{x->-0.9784917834108953+I*(-1.038932735856145)},{x->-0.9784917834108953+I*1.038932735856145},{x->0.38213058392542043+I*(-1.6538990550344321)},{x->0.38213058392542043+I*1.6538990550344321},{x->1.1927223989709494}}");
+    checkNumeric("NSolve(x*(x^2+1)^2==7,x)",
+        "{{x->-0.9784917834108953+I*(-1.038932735856145)},{x->-0.9784917834108953+I*1.038932735856145},{x->0.38213058392542043+I*(-1.6538990550344321)},{x->0.38213058392542043+I*1.6538990550344321},{x->1.1927223989709494}}");
+    check("Solve(x^2==a^2,x)", "{{x->-a},{x->a}}");
+    check("Solve(4*x^(-2)-1==0,x)", //
+        "{{x->-2},{x->2}}");
+    check("Solve((x^2-1)/(x-1)==0,x)", //
+        "{{x->-1}}");
+
+    check("Solve(x+5==a,x)", "{{x->-5+a}}");
+    check("Solve(x+5==10,x)", "{{x->5}}");
+    check("Solve(x^2==a,x)", "{{x->-Sqrt(a)},{x->Sqrt(a)}}");
+    check("Solve(x^2+b*c*x+3==0, x)", //
+        "{{x->1/2*(-b*c-Sqrt(-12+b^2*c^2))},{x->1/2*(-b*c+Sqrt(-12+b^2*c^2))}}");
+    check("Solve({x+2*y==10,3*x+y==20},{x,y})", "{{x->6,y->2}}");
+    check("Solve(x^2==0,{x,y,z})", "{{x->0}}");
+    check("Solve(x^2==0,x)", "{{x->0}}");
+    check("Solve(x^2==4,x)", "{{x->-2},{x->2}}");
+    check("Solve({x^2==4,x+y==10},{x,y})", "{{x->-2,y->12},{x->2,y->8}}");
+
+    check("Solve({x^2==4,x+y^2==6},{x,y})",
+        "{{x->-2,y->-2*Sqrt(2)},{x->-2,y->2*Sqrt(2)},{x->2,y->-2},{x->2,y->2}}");
+    check("Solve({x^2==4,x+y^2==6,x+y^2+z^2==24},{x,y,z})",
+        "{{x->-2,y->-2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->-2*Sqrt(2),z->3*Sqrt(2)},{x->-2,y->\n"
+            + "2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->2*Sqrt(2),z->3*Sqrt(2)},{x->2,y->-2,z->-3*Sqrt(\n"
+            + "2)},{x->2,y->-2,z->3*Sqrt(2)},{x->2,y->2,z->-3*Sqrt(2)},{x->2,y->2,z->3*Sqrt(2)}}");
+  }
 
   /** The JUnit setup method */
   @Override
