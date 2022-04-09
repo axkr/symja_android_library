@@ -1471,6 +1471,8 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    */
   public IASTMutable removePositionsAtCopy(int[] removedPositions, int untilIndex);
 
+  public IAST removePositionsAtCopy(Predicate<IExpr> predicate);
+
   /**
    * Create a new <code>IAST</code> and remove all arguments from position <code>fromPosition</code>
    * inclusive to the end of this AST.

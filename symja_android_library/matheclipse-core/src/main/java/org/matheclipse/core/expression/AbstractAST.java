@@ -1108,6 +1108,19 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
+    public IASTMutable removePositionsAtCopy(int[] removedPositions, int untilIndex) {
+      ArgumentTypeException.throwNIL();
+      return null;
+    }
+
+    @Override
+    public IAST removePositionsAtCopy(Predicate<IExpr> predicate) {
+      ArgumentTypeException.throwNIL();
+      return null;
+    }
+
+
+    @Override
     public IAssociation reverse(IAssociation newAssoc) {
       ArgumentTypeException.throwNIL();
       return null;
@@ -5045,6 +5058,21 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       ast.remove(removedPositions[j]);
     }
     return ast;
+  }
+
+  @Override
+  public IAST removePositionsAtCopy(Predicate<IExpr> predicate) {
+    int[] removedPositions = new int[size()];
+    int untilIndex = 0;
+    for (int i = 1; i < size(); i++) {
+      if (predicate.test(getRule(i))) {
+        removedPositions[untilIndex++] = i;
+      }
+    }
+    if (untilIndex > 0) {
+      return removePositionsAtCopy(removedPositions, untilIndex);
+    }
+    return this;
   }
 
   /**

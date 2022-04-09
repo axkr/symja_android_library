@@ -25,6 +25,7 @@ import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.expression.BuiltinUsage;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
@@ -982,6 +983,13 @@ public final class PatternMatching {
           IExpr temp = symbol.evalMessage("usage");
           if (temp.isPresent()) {
             stream.println(temp.toString());
+          } else {
+            if (symbol.isBuiltInSymbol()) {
+              String summaryText = BuiltinUsage.summaryText(((IBuiltInSymbol) symbol));
+              if (summaryText.length() > 0) {
+                stream.println(symbol.toString() + " - " + summaryText);
+              }
+            }
           }
           if (longForm) {
             try {

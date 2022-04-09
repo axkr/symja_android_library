@@ -541,12 +541,13 @@ public class IOFunctions {
       "intnn", "Non-negative integer expected.", //
       "intnm", "Non-negative machine-sized integer expected at position `2` in `1`.", //
       "intm", "Machine-sized integer expected at position `2` in `1`.", //
-      "intp", "Positive integer expected.", //
+      "intp", "Positive integer expected at position `2` in `1`.", //
       "intpm", "Positive machine-sized integer expected at position `2` in `1`.", //
       "intpoint", "`1` is expected to contain a list of lists of integers.", //
       "intpp", "Positive integer argument expected in `1`.", //
       "intrange", "Integer expected in range `1` to `2`.", //
-      "inv", "The argument `2`  in  `1`  is not valid. 0 or 2 arguments expected.", //
+      "inv", "The argument `2`  in  `1`  is not a valid parameter.", //
+      "inv02", "The argument `2`  in  `1`  is not valid. 0 or 2 arguments expected.", //
       "invak", "The argument is not a rule or a list of rules.", //
       "invdt", "The argument `1` is not a valid Association.", //
       "invdt2", "The argument `1` is not a rule or a list of rules.", //

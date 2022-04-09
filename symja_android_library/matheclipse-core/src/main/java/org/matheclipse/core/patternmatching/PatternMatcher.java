@@ -1674,7 +1674,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
     if (removedPosition > 0) {
       IAST lhsPatternAST = lhsPattern.removePositionsAtCopy(removedPositionsArray, removedPosition);
-      IASTMutable lhsEvalAST =
+      IAST lhsEvalAST =
           lhsEval.removePositionsAtCopy(removedPositionsArray, removedPosition);
       if (matchedPattern) {
         lhsPatternAST =
