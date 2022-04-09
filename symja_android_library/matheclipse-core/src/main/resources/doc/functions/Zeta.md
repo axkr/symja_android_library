@@ -9,8 +9,7 @@ Zeta(z)
  
 See: 
 * [Wikipedia - Riemann zeta function](https://en.wikipedia.org/wiki/Riemann_zeta_function)
-* [Fungrim - Riemann zeta function](http://fungrim.org/topic/Riemann_zeta_function/)
-* [Youtube - Visualizing the Riemann zeta function and analytic continuation](https://youtu.be/sD0NjbwqlYw)
+* [Fungrim - Riemann zeta function](http://fungrim.org/topic/Riemann_zeta_function/) 
 
 ### Examples
 
