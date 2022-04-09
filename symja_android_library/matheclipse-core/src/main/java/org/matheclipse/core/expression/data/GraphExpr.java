@@ -4,6 +4,7 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
+import org.jgrapht.graph.SimpleGraph;
 import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.S;
@@ -62,6 +63,10 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
   public boolean isWeightedGraph() {
     return fData instanceof DefaultDirectedWeightedGraph
         || fData instanceof DefaultUndirectedWeightedGraph;
+  }
+
+  public boolean isUndirectedGraph() {
+    return fData instanceof SimpleGraph;
   }
 
   @Override

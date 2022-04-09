@@ -224,7 +224,7 @@ public class GraphDataFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         // The argument `2` in `1` is not valid. 0 or 2 arguments expected.
-        return IOFunctions.printMessage(ast.topHead(), "inv", F.list(ast, ast.arg1()), engine);
+        return IOFunctions.printMessage(ast.topHead(), "inv02", F.list(ast, ast.arg1()), engine);
       }
 
       if (ast.isAST0()) {

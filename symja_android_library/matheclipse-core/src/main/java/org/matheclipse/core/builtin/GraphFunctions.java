@@ -16,7 +16,12 @@ import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.GraphType;
 import org.jgrapht.Graphs;
+import org.jgrapht.alg.cycle.DirectedSimpleCycles;
 import org.jgrapht.alg.cycle.HierholzerEulerianCycle;
+import org.jgrapht.alg.cycle.PatonCycleBase;
+import org.jgrapht.alg.cycle.SzwarcfiterLauerSimpleCycles;
+import org.jgrapht.alg.interfaces.CycleBasisAlgorithm;
+import org.jgrapht.alg.interfaces.CycleBasisAlgorithm.CycleBasis;
 import org.jgrapht.alg.interfaces.EulerianCycleAlgorithm;
 import org.jgrapht.alg.interfaces.HamiltonianCycleAlgorithm;
 import org.jgrapht.alg.interfaces.PlanarityTestingAlgorithm;
@@ -83,6 +88,7 @@ public class GraphFunctions {
       S.EdgeQ.setEvaluator(new EdgeQ());
       S.EdgeRules.setEvaluator(new EdgeRules());
       S.EulerianGraphQ.setEvaluator(new EulerianGraphQ());
+      S.FindCycle.setEvaluator(new FindCycle());
       S.FindEulerianCycle.setEvaluator(new FindEulerianCycle());
       S.FindHamiltonianCycle.setEvaluator(new FindHamiltonianCycle());
       S.FindGraphIsomorphism.setEvaluator(new FindGraphIsomorphism());
@@ -719,7 +725,7 @@ public class GraphFunctions {
                 new BoruvkaMinimumSpanningTree<IExpr, ExprWeightedEdge>(g);
             Set<ExprWeightedEdge> edgeSet = k.getSpanningTree().getEdges();
             Graph<IExpr, ExprWeightedEdge> gResult =
-                new DefaultDirectedGraph<IExpr, ExprWeightedEdge>(ExprWeightedEdge.class);
+                new DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>(ExprWeightedEdge.class);
             Graphs.addAllEdges(gResult, g, edgeSet);
             return GraphExpr.newInstance(gResult);
           } else {
@@ -1160,6 +1166,73 @@ public class GraphFunctions {
     }
   }
 
+  private static class FindCycle extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        int minCycleLength = 0;
+        int maxCycleLength = Integer.MAX_VALUE;
+        int atMostCycles = 1;
+        if (ast.argSize() >= 2) {
+          IExpr arg2 = ast.arg2();
+          if (arg2.isInfinity()) {
+            // fall through
+          } else {
+            int vertexes = arg2.toIntDefault();
+            if (vertexes > 0) {
+              minCycleLength = vertexes;
+              maxCycleLength = vertexes;
+            } else if (arg2.isList2()) {
+              vertexes = arg2.first().toIntDefault();
+              if (vertexes <= 0) {
+                // The argument `2` in `1` is not a valid parameter.
+                return IOFunctions.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
+              }
+              minCycleLength = vertexes;
+              vertexes = arg2.second().toIntDefault();
+              if (vertexes <= 0) {
+                // The argument `2` in `1` is not a valid parameter.
+                return IOFunctions.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
+              }
+              maxCycleLength = vertexes;
+            } else {
+              // The argument `2` in `1` is not a valid parameter.
+              return IOFunctions.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
+            }
+          }
+        }
+        if (ast.isAST3()) {
+          IExpr arg3 = ast.arg3();
+          if (arg3.equals(S.All)) {
+            atMostCycles = Integer.MAX_VALUE;
+          } else {
+            atMostCycles = arg3.toIntDefault();
+            if (atMostCycles <= 0) {
+              // The argument `2` in `1` is not a valid parameter.
+              return IOFunctions.printMessage(ast.topHead(), "inv", F.List(ast, arg3), engine);
+            }
+          }
+        }
+        GraphExpr<?> gex = createGraph(ast.arg1());
+        if (gex == null) {
+          return F.NIL;
+        }
+
+        return findCycles(gex, minCycleLength, maxCycleLength, atMostCycles);
+      } catch (RuntimeException rex) {
+        LOGGER.debug("FindCycle.evaluate() failed", rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+  }
+
+
   /**
    *
    *
@@ -1231,6 +1304,7 @@ public class GraphFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -1297,6 +1371,7 @@ public class GraphFunctions {
     }
   }
 
+
   private static class FindGraphIsomorphism extends AbstractEvaluator {
 
     @Override
@@ -1334,6 +1409,8 @@ public class GraphFunctions {
       return ARGS_2_2;
     }
   }
+
+
   /**
    *
    *
@@ -1401,6 +1478,7 @@ public class GraphFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -1455,6 +1533,7 @@ public class GraphFunctions {
     }
   }
 
+
   private static class LineGraph extends AbstractEvaluator {
 
     @Override
@@ -1482,6 +1561,7 @@ public class GraphFunctions {
       return ARGS_1_1;
     }
   }
+
 
   private static class PlanarGraphQ extends AbstractEvaluator {
 
@@ -1517,6 +1597,7 @@ public class GraphFunctions {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -1581,6 +1662,7 @@ public class GraphFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -1643,6 +1725,7 @@ public class GraphFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -1700,6 +1783,7 @@ public class GraphFunctions {
     }
   }
 
+
   private static class WeightedAdjacencyMatrix extends AbstractEvaluator {
 
     @Override
@@ -1729,6 +1813,7 @@ public class GraphFunctions {
     }
   }
 
+
   private static class WeightedGraphQ extends AbstractEvaluator {
 
     @Override
@@ -1750,6 +1835,7 @@ public class GraphFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+
   }
 
   /**
@@ -1865,6 +1951,86 @@ public class GraphFunctions {
     return null;
   }
 
+  private static IAST findCycles(GraphExpr<?> gex, int minCycleLength, int maxCycleLength,
+      int atMostCycles) {
+    if (gex.isWeightedGraph()) {
+      Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>) gex.toData();
+      DirectedSimpleCycles<IExpr, ExprWeightedEdge> algorithm =
+          new SzwarcfiterLauerSimpleCycles<IExpr, ExprWeightedEdge>(
+              (Graph<IExpr, ExprWeightedEdge>) gex.toData());
+      return findCyclesList(algorithm, minCycleLength, maxCycleLength, atMostCycles);
+    } else {
+      if (gex.isUndirectedGraph()) {
+        Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
+        GraphType type = g.getType();
+        CycleBasisAlgorithm<IExpr, ExprEdge> algorithm =
+            new PatonCycleBase<IExpr, ExprEdge>((Graph<IExpr, ExprEdge>) gex.toData());
+        return findCyclesSet(algorithm, minCycleLength, maxCycleLength, atMostCycles, type);
+      } else {
+        Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
+        DirectedSimpleCycles<IExpr, ExprEdge> algorithm =
+            new SzwarcfiterLauerSimpleCycles<IExpr, ExprEdge>(
+                (Graph<IExpr, ExprEdge>) gex.toData());
+        return findCyclesList(algorithm, minCycleLength, maxCycleLength, atMostCycles);
+      }
+    }
+  }
+
+  private static IAST findCyclesSet(CycleBasisAlgorithm<IExpr, ExprEdge> algorithm,
+      int minCycleLength, int maxCycleLength, int atMostCycles, GraphType type) {
+    try {
+      CycleBasis<IExpr, ExprEdge> cycleBasis = algorithm.getCycleBasis();
+      Set<List<ExprEdge>> cycles = cycleBasis.getCycles();
+      // System.out.println(cycles.toString());
+      IASTAppendable result =
+          F.ListAlloc(cycles.size() < atMostCycles ? cycles.size() : atMostCycles);
+      int counter = 0;
+      for (List<ExprEdge> list : cycles) {
+        if (list.size() >= minCycleLength && list.size() <= maxCycleLength) {
+          if (counter++ >= atMostCycles) {
+            break;
+          }
+          int size = list.size();
+          IASTAppendable cycle = F.ListAlloc(size);
+          IASTAppendable weights = F.ListAlloc(size);
+          for (int i = 0; i < size; i++) {
+            edgeToIExpr(type, list.get(i), cycle, weights, size);
+          }
+          result.append(cycle);
+        }
+      }
+      return result;
+    } catch (IllegalArgumentException iae) {
+    }
+    return F.NIL;
+  }
+
+  private static IAST findCyclesList(DirectedSimpleCycles<IExpr, ?> algorithm, int minCycleLength,
+      int maxCycleLength, int atMostCycles) {
+    try {
+      List<List<IExpr>> path = algorithm.findSimpleCycles();
+      IASTAppendable result = F.ListAlloc(path.size() < atMostCycles ? path.size() : atMostCycles);
+      int counter = 0;
+      for (int i = 0; i < path.size(); i++) {
+        List<IExpr> vertexPath = path.get(i);
+        if (vertexPath.size() >= minCycleLength && vertexPath.size() <= maxCycleLength) {
+          if (counter++ >= atMostCycles) {
+            break;
+          }
+          IASTAppendable list = F.ListAlloc(vertexPath.size());
+          for (int j = 0; j < vertexPath.size() - 1; j++) {
+            list.append(F.DirectedEdge(vertexPath.get(j), vertexPath.get(j + 1)));
+          }
+          list.append(F.DirectedEdge(vertexPath.get(vertexPath.size() - 1), vertexPath.get(0)));
+          result.append(list);
+        }
+      }
+      return result;
+    } catch (IllegalArgumentException iae) {
+    }
+    return F.NIL;
+  }
+
   /**
    * Create an eulerian cycle.
    *
@@ -1928,7 +2094,7 @@ public class GraphFunctions {
   public static IExpr graphToIExpr(AbstractBaseGraph<IExpr, ExprEdge> g) {
     IASTAppendable vertexes = vertexToIExpr(g);
     IASTAppendable[] edgeData = edgesToIExpr(g);
-    if (edgeData[1] == null) {
+    if (!edgeData[1].isPresent()) {
       return F.Graph(vertexes, edgeData[0]);
     }
     return F.Graph(vertexes, edgeData[0], F.list(F.Rule(S.EdgeWeight, edgeData[1])));
@@ -1953,31 +2119,35 @@ public class GraphFunctions {
   private static IASTAppendable[] edgesToIExpr(Graph<IExpr, ?> g) {
     Set<Object> edgeSet = (Set<Object>) g.edgeSet();
     IASTAppendable edges = F.ListAlloc(edgeSet.size());
-    IASTAppendable weights = null;
     GraphType type = g.getType();
-
+    IASTAppendable weights = F.NIL;
+    if (type.isWeighted()) {
+      weights = F.ListAlloc(edgeSet.size());
+    }
     for (Object edge : edgeSet) {
-      if (edge instanceof ExprWeightedEdge) {
-        ExprWeightedEdge weightedEdge = (ExprWeightedEdge) edge;
-        if (type.isDirected()) {
-          edges.append(F.DirectedEdge(weightedEdge.lhs(), weightedEdge.rhs()));
-        } else {
-          edges.append(F.UndirectedEdge(weightedEdge.lhs(), weightedEdge.rhs()));
-        }
-        if (weights == null) {
-          weights = F.ListAlloc(edgeSet.size());
-        }
-        weights.append(weightedEdge.weight());
-      } else if (edge instanceof ExprEdge) {
-        ExprEdge exprEdge = (ExprEdge) edge;
-        if (type.isDirected()) {
-          edges.append(F.DirectedEdge(exprEdge.lhs(), exprEdge.rhs()));
-        } else {
-          edges.append(F.UndirectedEdge(exprEdge.lhs(), exprEdge.rhs()));
-        }
-      }
+      edgeToIExpr(type, edge, edges, weights, edgeSet.size());
     }
     return new IASTAppendable[] {edges, weights};
+  }
+
+  private static void edgeToIExpr(GraphType type, Object edge, IASTAppendable edges,
+      IASTAppendable weights, int size) {
+    if (edge instanceof ExprWeightedEdge) {
+      ExprWeightedEdge weightedEdge = (ExprWeightedEdge) edge;
+      if (type.isDirected()) {
+        edges.append(F.DirectedEdge(weightedEdge.lhs(), weightedEdge.rhs()));
+      } else {
+        edges.append(F.UndirectedEdge(weightedEdge.lhs(), weightedEdge.rhs()));
+      }
+      weights.append(weightedEdge.weight());
+    } else if (edge instanceof ExprEdge) {
+      ExprEdge exprEdge = (ExprEdge) edge;
+      if (type.isDirected()) {
+        edges.append(F.DirectedEdge(exprEdge.lhs(), exprEdge.rhs()));
+      } else {
+        edges.append(F.UndirectedEdge(exprEdge.lhs(), exprEdge.rhs()));
+      }
+    }
   }
 
   private static IASTAppendable[] edgesToRules(Graph<IExpr, ?> g) {
