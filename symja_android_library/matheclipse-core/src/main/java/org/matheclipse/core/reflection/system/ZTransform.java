@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.rules.ZTransformRules;
 
@@ -25,6 +26,7 @@ public class ZTransform extends AbstractFunctionEvaluator implements ZTransformR
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    // see http://www.reduce-algebra.com/docs/ztrans.pdf
     try {
       final IExpr fx = ast.arg1();
       if (fx.isIndeterminate()) {
@@ -62,6 +64,27 @@ public class ZTransform extends AbstractFunctionEvaluator implements ZTransformR
               IExpr arg = function.get(indx);
               IExpr rest = function.removeAtCopy(indx);
               return F.Times(arg, F.ZTransform(rest, n, z));
+            }
+            if (!function.isExpanded()) {
+              return ast.setAtCopy(1, F.ExpandAll(function));
+            }
+          } else if (function.isPower()) {
+            if (!function.isExpanded()) {
+              return ast.setAtCopy(1, F.ExpandAll(function));
+            }
+          }
+          if (function.isAST1() && function.arg1().isPlus2()) {
+            IAST plus2 = (IAST) function.arg1();
+            int k = plus2.first().toIntDefault();
+            if (k > 0 && plus2.second().equals(n)) {
+              // shift equation case
+              IASTAppendable sum = F.PlusAlloc(k + 1);
+              for (int i = 0; i < k; i++) {
+                sum.append(F.Times(F.CN1, F.Power(z, F.ZZ(k - i)), function.setAtCopy(1, F.ZZ(i))));
+              }
+              sum.append(
+                  F.Times(F.Power(z, F.ZZ(k)), F.ZTransform(function.setAtCopy(1, n), n, z)));
+              return sum;
             }
           }
         }

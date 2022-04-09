@@ -15,12 +15,63 @@ public interface ZTransformRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 1 };
+  final public static int[] SIZES = { 0, 15 };
 
   final public static IAST RULES = List(
     IInit(ZTransform, SIZES),
+    // ZTransform(a_^n_*f_,n_?NotListQ,z_?NotListQ):=ZTransform(f,n,z/a)/;FreeQ(a,n)&&FreeQ(a,z)
+    ISetDelayed(ZTransform(Times(Power(a_,n_),f_),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(ZTransform(f,n,Times(Power(a,CN1),z)),And(FreeQ(a,n),FreeQ(a,z)))),
+    // ZTransform(f_*n_,n_?NotListQ,z_?NotListQ):=-z*D(ZTransform(f,n,z),z)
+    ISetDelayed(ZTransform(Times(f_,n_),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Times(CN1,z,D(ZTransform(f,n,z),z))),
+    // ZTransform(f_*n_^2,n_?NotListQ,z_?NotListQ):=z*D(ZTransform(f,n,z),z)+z^2*D(ZTransform(f,n,z),{z,2})
+    ISetDelayed(ZTransform(Times(f_,Sqr(n_)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Plus(Times(z,D(ZTransform(f,n,z),z)),Times(Sqr(z),D(ZTransform(f,n,z),list(z,C2))))),
+    // ZTransform(f_*n_^3,n_?NotListQ,z_?NotListQ):=-z*D(ZTransform(f,n,z),z)-3*z^2*D(ZTransform(f,n,z),{z,2})-z^3*D(ZTransform(f,n,z),{z,3})
+    ISetDelayed(ZTransform(Times(f_,Power(n_,C3)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Plus(Times(CN1,z,D(ZTransform(f,n,z),z)),Times(CN3,Sqr(z),D(ZTransform(f,n,z),list(z,C2))),Times(CN1,Power(z,C3),D(ZTransform(f,n,z),list(z,C3))))),
     // ZTransform(a_^n_,n_?NotListQ,z_?NotListQ):=z/(-a+z)/;FreeQ(a,n)&&FreeQ(a,z)
     ISetDelayed(ZTransform(Power(a_,n_),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
-      Condition(Times(z,Power(Plus(Negate(a),z),CN1)),And(FreeQ(a,n),FreeQ(a,z))))
+      Condition(Times(z,Power(Plus(Negate(a),z),CN1)),And(FreeQ(a,n),FreeQ(a,z)))),
+    // ZTransform(a_^(f_*n_),n_?NotListQ,z_?NotListQ):=z/(-a^f+z)/;FreeQ({a,f},n)&&FreeQ({a,f},z)
+    ISetDelayed(ZTransform(Power(a_,Times(f_,n_)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(Times(z,Power(Plus(Negate(Power(a,f)),z),CN1)),And(FreeQ(list(a,f),n),FreeQ(list(a,f),z)))),
+    // ZTransform(f_./(g_+n_),n_?NotListQ,z_?NotListQ):=f*HurwitzLerchPhi(1/z,1,g)/;FreeQ({f,g},n)&&FreeQ({f,g},z)
+    ISetDelayed(ZTransform(Times(f_DEFAULT,Power(Plus(g_,n_),CN1)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(Times(f,HurwitzLerchPhi(Power(z,CN1),C1,g)),And(FreeQ(list(f,g),n),FreeQ(list(f,g),z)))),
+    // ZTransform(1/n_!,n_?NotListQ,z_?NotListQ):=E^(1/z)/;FreeQ({f,g},n)&&FreeQ({f,g},z)
+    ISetDelayed(ZTransform(Power(Factorial(n_),CN1),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(Exp(Power(z,CN1)),And(FreeQ(list(f,g),n),FreeQ(list(f,g),z)))),
+    // ZTransform(f_./(n_!*g_.),n_?NotListQ,z_?NotListQ):=(E^(1/z)*f)/g/;FreeQ({f,g},n)&&FreeQ({f,g},z)
+    ISetDelayed(ZTransform(Times(Power(Factorial(n_),CN1),f_DEFAULT,Power(g_DEFAULT,CN1)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(Times(Exp(Power(z,CN1)),f,Power(g,CN1)),And(FreeQ(list(f,g),n),FreeQ(list(f,g),z)))),
+    // ZTransform(f_./(1+2*n_)!,n_?NotListQ,z_?NotListQ):=Sqrt(z)*f*Sinh(1/Sqrt(z))/;FreeQ(f,n)&&FreeQ(f,z)
+    ISetDelayed(ZTransform(Times(Power(Factorial(Plus(C1,Times(C2,n_))),CN1),f_DEFAULT),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(Times(Sqrt(z),f,Sinh(Power(z,CN1D2))),And(FreeQ(f,n),FreeQ(f,z)))),
+    // ZTransform(Cos(f_.*n_)/n_!,n_?NotListQ,z_?NotListQ):=E^(Cos(f)/z)*Cos(Sin(f)/z)/;FreeQ(f,n)&&FreeQ(f,z)
+    ISetDelayed(ZTransform(Times(Cos(Times(f_DEFAULT,n_)),Power(Factorial(n_),CN1)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(Times(Exp(Times(Power(z,CN1),Cos(f))),Cos(Times(Power(z,CN1),Sin(f)))),And(FreeQ(f,n),FreeQ(f,z)))),
+    // ZTransform(Sin(f_.*n_)/n_!,n_?NotListQ,z_?NotListQ):=E^(Cos(f)/z)*Sin(Sin(f)/z)/;FreeQ(f,n)&&FreeQ(f,z)
+    ISetDelayed(ZTransform(Times(Power(Factorial(n_),CN1),Sin(Times(f_DEFAULT,n_))),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(Times(Exp(Times(Power(z,CN1),Cos(f))),Sin(Times(Power(z,CN1),Sin(f)))),And(FreeQ(f,n),FreeQ(f,z)))),
+    // ZTransform(Cos(f_.*(1+n_))/(1+n_),n_?NotListQ,z_?NotListQ):=1/2*z*(-Log((E^(I*f)-1/z)/E^(I*f))-Log(1-E^(I*f)/z))/;FreeQ(f,n)&&FreeQ(f,z)
+    ISetDelayed(ZTransform(Times(Cos(Times(f_DEFAULT,Plus(C1,n_))),Power(Plus(C1,n_),CN1)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(Times(C1D2,z,Subtract(Negate(Log(Times(Power(Exp(Times(CI,f)),CN1),Subtract(Exp(Times(CI,f)),Power(z,CN1))))),Log(Plus(C1,Times(CN1,Exp(Times(CI,f)),Power(z,CN1)))))),And(FreeQ(f,n),FreeQ(f,z)))),
+    // ZTransform(Sin(f_.*(1+n_))/(1+n_),n_?NotListQ,z_?NotListQ):=(-1/2)*I*z*(Log((E^(I*f)-1/z)/E^(I*f))-Log(1-E^(I*f)/z))/;FreeQ(f,n)&&FreeQ(f,z)
+    ISetDelayed(ZTransform(Times(Sin(Times(f_DEFAULT,Plus(C1,n_))),Power(Plus(C1,n_),CN1)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(Times(CN1D2,CI,z,Subtract(Log(Times(Power(Exp(Times(CI,f)),CN1),Subtract(Exp(Times(CI,f)),Power(z,CN1)))),Log(Plus(C1,Times(CN1,Exp(Times(CI,f)),Power(z,CN1)))))),And(FreeQ(f,n),FreeQ(f,z)))),
+    // ZTransform(Cos(f_.*n_+t_.),n_?NotListQ,z_?NotListQ):=(z*(-Cos(f-t)+z*Cos(t)))/(1+z^2-2*z*Cos(f))/;FreeQ({f,t},n)&&FreeQ({f,t},z)
+    ISetDelayed(ZTransform(Cos(Plus(Times(f_DEFAULT,n_),t_DEFAULT)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(Times(z,Power(Plus(C1,Sqr(z),Times(CN2,z,Cos(f))),CN1),Plus(Negate(Cos(Subtract(f,t))),Times(z,Cos(t)))),And(FreeQ(list(f,t),n),FreeQ(list(f,t),z)))),
+    // ZTransform(Cosh(f_.*n_+t_.),n_?NotListQ,z_?NotListQ):=(z*(-Cosh(f-t)+z*Cosh(t)))/(1+z^2-2*z*Cosh(f))/;FreeQ({f,t},n)&&FreeQ({f,t},z)
+    ISetDelayed(ZTransform(Cosh(Plus(Times(f_DEFAULT,n_),t_DEFAULT)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(Times(z,Power(Plus(C1,Sqr(z),Times(CN2,z,Cosh(f))),CN1),Plus(Negate(Cosh(Subtract(f,t))),Times(z,Cosh(t)))),And(FreeQ(list(f,t),n),FreeQ(list(f,t),z)))),
+    // ZTransform(Sin(f_.*n_+t_.),n_?NotListQ,z_?NotListQ):=(z*(Sin(f-t)+z*Sin(t)))/(1+z^2-2*z*Cos(f))/;FreeQ({f,t},n)&&FreeQ({f,t},z)
+    ISetDelayed(ZTransform(Sin(Plus(Times(f_DEFAULT,n_),t_DEFAULT)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(Times(z,Power(Plus(C1,Sqr(z),Times(CN2,z,Cos(f))),CN1),Plus(Sin(Subtract(f,t)),Times(z,Sin(t)))),And(FreeQ(list(f,t),n),FreeQ(list(f,t),z)))),
+    // ZTransform(Sinh(f_.*n_+t_.),n_?NotListQ,z_?NotListQ):=(z*(Sinh(f-t)+z*Sinh(t)))/(1+z^2-2*z*Cosh(f))/;FreeQ({f,t},n)&&FreeQ({f,t},z)
+    ISetDelayed(ZTransform(Sinh(Plus(Times(f_DEFAULT,n_),t_DEFAULT)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
+      Condition(Times(z,Power(Plus(C1,Sqr(z),Times(CN2,z,Cosh(f))),CN1),Plus(Sinh(Subtract(f,t)),Times(z,Sinh(t)))),And(FreeQ(list(f,t),n),FreeQ(list(f,t),z))))
   );
 }

@@ -15,7 +15,7 @@ public interface PolyLogRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 8, 1 };
+  final public static int[] SIZES = { 9, 1 };
 
   final public static IAST RULES = List(
     IInit(PolyLog, SIZES),
@@ -43,6 +43,12 @@ public interface PolyLogRules {
     // PolyLog(2,1+I)=Pi^2/16+I*Catalan+I*Pi*Log(2)/4
     ISet(PolyLog(C2,CC(1L,1L,1L,1L)),
       Plus(Times(CI,Catalan),Times(QQ(1L,16L),Sqr(Pi)),Times(CC(0L,1L,1L,4L),Pi,Log(C2)))),
+    // PolyLog(3,1/2)=1/24*(-2*Pi^2*Log(2)+4*Log(2)^3+21*Zeta(3))
+    ISet(PolyLog(C3,C1D2),
+      Times(QQ(1L,24L),Plus(Times(CN2,Sqr(Pi),Log(C2)),Times(C4,Power(Log(C2),C3)),Times(ZZ(21L),Zeta(C3))))),
+    // PolyLog(i_Integer,z_):=Module({n=-i},Sum(Sum((-1)^(k+1)*Binomial(n+1,-1+k)*(-k+m+1)^n,{k,1,m})*z^m,{m,1,n})/(1-z)^(n+1)/;i<0)
+    ISetDelayed(PolyLog($p(i, Integer),z_),
+      Module(list(Set(n,Negate(i))),Condition(Times(Power(Power(Subtract(C1,z),Plus(n,C1)),CN1),Sum(Times(Sum(Times(Power(CN1,Plus(k,C1)),Binomial(Plus(n,C1),Plus(CN1,k)),Power(Plus(Negate(k),m,C1),n)),list(k,C1,m)),Power(z,m)),list(m,C1,n))),Less(i,C0)))),
     // PolyLog(Undefined,y_):=Undefined
     ISetDelayed(PolyLog(Undefined,y_),
       Undefined),
