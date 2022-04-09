@@ -1,9 +1,6 @@
 package org.matheclipse.core.expression;
 
-import org.jgrapht.graph.AbstractBaseGraph;
-import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
@@ -103,12 +100,6 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
   /** {@inheritDoc} */
   @Override
   public String fullFormString() {
-    if (fHead.equals(S.Graph)) {
-      if (fData instanceof AbstractBaseGraph) {
-        AbstractBaseGraph<IExpr, ExprEdge> g = (AbstractBaseGraph<IExpr, ExprEdge>) fData;
-        return GraphFunctions.graphToIExpr(g).fullFormString();
-      }
-    }
     return fHead + "(" + fData.toString() + ")";
   }
 

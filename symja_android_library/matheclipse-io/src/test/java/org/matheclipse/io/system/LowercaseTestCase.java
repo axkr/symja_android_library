@@ -4495,6 +4495,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCount() {
+
+    check("Count(a)[{{a, a}, {a, a, a}, a}]", //
+        "1");
+    check("Count(a)[{{a, a}, {a, a, a}, a}, {2}]", //
+        "Count(a)[{{a,a},{a,a,a},a},{2}]");
+
     check("Count({1,List},List)", //
         "1");
     check("Count({1,List},Last({1,List}))", //
@@ -7714,6 +7720,14 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testExpIntegralEi() {
+    check("ExpIntegralEi(I*1.0)", //
+        "0.337404+I*2.51688");
+    check("ExpIntegralEi(-I*1.0)", //
+        "0.337404+I*(-2.51688)");
+    check("ExpIntegralEi(-1.0)", //
+        "-0.219384");
+    check("ExpIntegralEi(1.0)", //
+        "1.89512");
     check("ExpIntegralEi(I*Infinity)", //
         "I*Pi");
     check("ExpIntegralEi(-I*Infinity)", //
@@ -10952,6 +10966,17 @@ public class LowercaseTestCase extends AbstractTestCase {
         "2+x*(7+x*(-4+11*x))");
     check("HornerForm(a+b*x+c*x^2,x)", //
         "a+x*(b+c*x)");
+  }
+
+  public void testHurwitzLerchPhi() {
+    check("HurwitzLerchPhi(-1,-1,1)", //
+        "1/4");
+    check("HurwitzLerchPhi(2,1,1)", //
+        "-I*1/2*Pi");
+
+
+    check("Table(HurwitzLerchPhi(z , 1, 1), {z, -1, 2})", //
+        "{Log(2),1,Infinity,-I*1/2*Pi}");
   }
 
   public void testHurwitzZeta() {
@@ -14514,6 +14539,13 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testLog() {
+    check("Log((-1)^(1/8))", //
+        "I*1/8*Pi");
+    // check("Log(-(-1)^(1/8))", //
+    // "-I*1/3*Pi");
+    check("Log(1/2-I*1/2*Sqrt(3))", //
+        "-I*1/3*Pi");
+
     check("Log(Overflow())", //
         "Overflow()");
     check("Log(Underflow())", //
@@ -15618,6 +15650,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testMessageName() {
+    // print "ValueQ - test whether a symbol can be considered to have a value"
+    check("?ValueQ", //
+        "");
     check("FullForm(a::b)", //
         "MessageName(a, b)");
     check("FullForm(a::\"b\")", //
@@ -17265,10 +17300,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testReplaceRepeated() {
-
     check("ReplaceRepeated(x, x -> x + 1, MaxIterations -> 4)", //
         "4+x");
-
     // example from https://en.wikipedia.org/wiki/Wolfram_Language
     check("sortRule := {x___,y_,z_,k___} /; y>z -> {x,z,y,k}", //
         "");
@@ -17297,8 +17330,8 @@ public class LowercaseTestCase extends AbstractTestCase {
         "{x,g(x)}");
     check("Log(Sqrt(a*(b*c^d)^e)) //. logrules", //
         "1/2*(Log(a)+e*(Log(b)+d*Log(c)))");
-    check("Log(Sqrt(a (b c^d)^e)) /. logrules", //
-        "Log(a(b*c^d)^e)/2");
+    check("Log(Sqrt(a(b*c^d)^e)) /. logrules", //
+        "1/2*e*Log(a(b*c^d))");
 
     check("ReplaceRepeated(1/6*(3+3*v1+v2+a*(4+v2)), {v1->a^2, v2->Sqrt(5+6*a+5*v1)})", //
         "1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))");
@@ -18485,6 +18518,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPolyLog() {
+    check("PolyLog(-4,z)", //
+        "(z+11*z^2+11*z^3+z^4)/(1-z)^5");
     check("PolyLog(-2147483648,2.718281828459045)", //
         "PolyLog(-2.14748*10^9,2.71828)");
 
@@ -18526,14 +18561,14 @@ public class LowercaseTestCase extends AbstractTestCase {
     check("PolyLog(-1,f(x))", //
         "f(x)/(1-f(x))^2");
     check("PolyLog(-2,f(x))", //
-        "(-f(x)*(1+f(x)))/(-1+f(x))^3");
+        "(f(x)+f(x)^2)/(1-f(x))^3");
     check("PolyLog(-3,f(x))", //
-        "(f(x)*(1+4*f(x)+f(x)^2))/(1-f(x))^4");
+        "(f(x)+4*f(x)^2+f(x)^3)/(1-f(x))^4");
 
     check("Table(PolyLog(n, 1), {n, 1, 4})", //
         "{Infinity,Pi^2/6,Zeta(3),Pi^4/90}");
     check("Table(PolyLog(n, z),  {n, -2, 1})", //
-        "{(-z*(1+z))/(-1+z)^3,z/(1-z)^2,z/(1-z),-Log(1-z)}");
+        "{(z+z^2)/(1-z)^3,z/(1-z)^2,z/(1-z),-Log(1-z)}");
     check("PolyLog(n,-1)", //
         "(-1+2^(1-n))*Zeta(n)");
     checkNumeric("PolyLog(1.0,1.0)", //

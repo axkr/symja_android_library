@@ -25,6 +25,7 @@ public class InverseZTransform extends AbstractFunctionEvaluator implements Inve
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    // see http://www.reduce-algebra.com/docs/ztrans.pdf
     try {
       final IExpr fx = ast.arg1();
       if (fx.isIndeterminate()) {
