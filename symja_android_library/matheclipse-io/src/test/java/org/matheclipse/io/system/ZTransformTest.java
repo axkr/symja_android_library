@@ -8,8 +8,8 @@ public class ZTransformTest extends AbstractTestCase {
   }
 
   public void testInverseZTransform001() {
-    check("InverseZTransform((z)+ g(z)+h(z),z,n)", //
-        "InverseZTransform(z,n,z)+InverseZTransform(g(z),n,z)+InverseZTransform(h(z),n,z)");
+    check("InverseZTransform(f(z)+ g(z)+h(z),z,n)", //
+        "InverseZTransform(f(z),n,z)+InverseZTransform(g(z),n,z)+InverseZTransform(h(z),n,z)");
     check("InverseZTransform(z/(z + f(a)), z, n)", //
         "(-f(a))^n");
     check("InverseZTransform(42, z, n)", //

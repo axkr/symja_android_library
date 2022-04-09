@@ -13,6 +13,6 @@ See:
 ### Examples
 
 ```
->> InverseZTransform((z)+ g(z)+h(z),z,n) 
-InverseZTransform(z,n,z)+InverseZTransform(g(z),n,z)+InverseZTransform(h(z),n,z)
+>> InverseZTransform(f(z)+ g(z)+h(z),z,n) 
+InverseZTransform(f(z),n,z)+InverseZTransform(g(z),n,z)+InverseZTransform(h(z),n,z)
 ```
