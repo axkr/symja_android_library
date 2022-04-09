@@ -500,6 +500,13 @@ public class StringFunctionsTest extends AbstractTestCase {
         "ab~~_");
   }
 
+  public void testStringRepeat() {
+    check("StringRepeat(\"abc\", 3)", //
+        "abcabcabc");
+    check("StringRepeat(\"abc\", 10, 7)", //
+        "abcabca");
+  }
+
   public void testStringReplace() {
     check(
         "StringReplace(\"The number 17 is a prime number, 42 is not\", WordBoundary ~~ x:DigitCharacter.. ~~ WordBoundary /; PrimeQ(ToExpression(x)) :> \"*\" <> x <> \"*\")", //

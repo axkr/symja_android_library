@@ -207,6 +207,7 @@ public final class StringFunctions {
       S.StringMatchQ.setEvaluator(new StringMatchQ());
       S.StringPart.setEvaluator(new StringPart());
       S.StringPosition.setEvaluator(new StringPosition());
+      S.StringRepeat.setEvaluator(new StringRepeat());
       S.StringReplace.setEvaluator(new StringReplace());
       S.StringReverse.setEvaluator(new StringReverse());
       S.StringRiffle.setEvaluator(new StringRiffle());
@@ -2042,6 +2043,54 @@ public final class StringFunctions {
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, S.IgnoreCase, S.False);
     }
+  }
+
+  private static class StringRepeat extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isString()) {
+        String str = ast.arg1().toString();
+        int n = ast.arg2().toIntDefault();
+        if (n < 0) {
+          // Positive integer expected at position `2` in `1`.
+          return IOFunctions.printMessage(ast.topHead(), "intp", F.List(ast, F.C2), engine);
+        }
+        int max = Integer.MAX_VALUE;
+        if (ast.isAST3()) {
+          max = ast.arg3().toIntDefault();
+          if (max < 0) {
+            // Positive integer expected at position `2` in `1`.
+            return IOFunctions.printMessage(ast.topHead(), "intp", F.List(ast, F.C3), engine);
+          }
+        }
+
+        if (n == 0 || max == 0 || str.length() == 0) {
+          return F.CEmptyString;
+        }
+        int maxLength = n * str.length();
+        StringBuilder buf = new StringBuilder(maxLength);
+        for (int i = 0; i < n; i++) {
+          buf.append(str);
+          if (buf.length() > max) {
+            break;
+          }
+        }
+        if (max < maxLength) {
+          return F.$str(buf.substring(0, max));
+        }
+        return F.$str(buf.toString());
+
+
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
   }
   /**
    *
