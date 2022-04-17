@@ -874,14 +874,10 @@ public class MainTestCase extends AbstractTestCase {
     check("D(Sin(x)^Cos(x),x)", //
         "(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)");
     check("Trace(D(Sin(x)^Cos(x),x))", //
-        "{{{IntegerQ(#1)&&#1<0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{IntegerQ(#1)&&#1<\n"
-            + "0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}},{{{{NotListQ(x),True},{{D(x,x),\n"
+        "{D(Sin(x)^Cos(x),x),Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{{{NotListQ(x),True},{{D(x,x),\n"
             + "1},(-1)*1*Sin(x),-Sin(x)},-Sin(x)},-Sin(x)*Log(Sin(x)),-Log(Sin(x))*Sin(x)},{{{NotListQ(x),True},{{D(x,x),\n"
-            + "1},1*Cos(x),Cos(x)},Cos(x)},{{IntegerQ(#1)&&#1<0&[-1],IntegerQ(-1)&&-1<0,{IntegerQ(-\n"
-            + "1),True},{-1<0,True},True},{{(-1)*(-1),1},Csc(x)^1,{IntegerQ(#1)&&#1<0&[1],IntegerQ(\n"
-            + "1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Csc(x)},Csc(x)},Cos(x)*Cos(x)*Csc(x),Cot(x)^\n"
-            + "1*Cos(x),{{IntegerQ(#1)&&#1<0&[1],IntegerQ(1)&&1<0,{IntegerQ(1),True},{1<0,False},False},Cot(x)},Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x),{{IntegerQ(#1)&&#1<\n"
-            + "0&[Cos(x)],IntegerQ(Cos(x))&&Cos(x)<0,{IntegerQ(Cos(x)),False},False}}}");
+            + "1},1*Cos(x),Cos(x)},Cos(x)},{1/Sin(x),Csc(x)^1,Csc(x)},Cos(x)*Cos(x)*Csc(x),Cot(x)^\n"
+            + "1*Cos(x),{Cot(x)^1,Cot(x)},Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)}");
   }
 
   public void testSystem039() {
