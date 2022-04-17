@@ -32,9 +32,8 @@ import org.matheclipse.parser.client.ParserConfig;
 import com.google.common.math.DoubleMath;
 
 /**
- * <code>IComplexNum</code> implementation which wraps a <code>
- * org.apache.commons.math3.complex.Complex</code> value to represent a numeric complex
- * floating-point number.
+ * <code>IComplexNum</code> implementation which wraps a {@link Complex} value to represent a
+ * numeric complex floating-point number.
  */
 public class ComplexNum implements IComplexNum {
   private static final Logger LOGGER = LogManager.getLogger();

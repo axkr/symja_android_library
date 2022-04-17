@@ -29,9 +29,8 @@ import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.ParserConfig;
 
 /**
- * <code>IComplexNum</code> implementation which wraps a <code>
- * org.apache.commons.math3.complex.Apcomplex</code> value to represent a numeric complex
- * floating-point number.
+ * <code>IComplexNum</code> implementation which wraps a {@link Apcomplex} value to represent a
+ * numeric complex floating-point number.
  */
 public class ApcomplexNum implements IComplexNum {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -743,8 +742,9 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr ceil() {
-    return valueOf(ApfloatMath.ceil(fApcomplex.real()), //
-        ApfloatMath.ceil(fApcomplex.imag()));
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    return valueOf(h.ceil(fApcomplex.real()), //
+        h.ceil(fApcomplex.imag()));
   }
 
   @Override
@@ -779,8 +779,9 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr floor() {
-    return valueOf(ApfloatMath.floor(fApcomplex.real()), //
-        ApfloatMath.floor(fApcomplex.imag()));
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    return valueOf(h.floor(fApcomplex.real()), //
+        h.floor(fApcomplex.imag()));
   }
 
   @Override

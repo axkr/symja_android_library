@@ -26,7 +26,7 @@ import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.ParserConfig;
 
 /**
- * <code>INum</code> implementation which wraps a <code>Apfloat</code> value to represent a numeric
+ * <code>INum</code> implementation which wraps a {@link Apfloat} value to represent a numeric
  * floating-point number.
  */
 public class ApfloatNum implements INum {

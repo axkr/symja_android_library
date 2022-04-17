@@ -22,7 +22,7 @@ import org.matheclipse.core.numbertheory.Primality;
 import com.google.common.math.BigIntegerMath;
 
 /**
- * IInteger implementation which delegates most of the methods to the BigInteger methods.
+ * IInteger implementation which delegates most of the methods to the {@link BigInteger} methods.
  *
  * @see AbstractIntegerSym
  * @see IntegerSym

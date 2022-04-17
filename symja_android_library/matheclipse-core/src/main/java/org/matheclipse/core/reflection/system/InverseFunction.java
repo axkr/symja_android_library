@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -57,9 +58,22 @@ public class InverseFunction extends AbstractFunctionEvaluator {
         LOGGER.log(engine.getLogLevel(),
             "InverseFunction: using of inverse functions may omit some values.");
       }
-      IExpr temp = getUnaryInverseFunction((ISymbol) arg1);
-      if (temp != null) {
-        return temp;
+      if (ast.isAST1()) {
+        IExpr temp = getUnaryInverseFunction((ISymbol) arg1);
+        if (temp != null) {
+          return temp;
+        }
+      } else if (ast.isAST3()) {
+        int argSize = ast.arg3().toIntDefault();
+        if (argSize == 2) {
+          int argPosition = ast.arg2().toIntDefault();
+          if (argPosition == 1 || argPosition == 2) {
+            IExpr temp = getBinaryInverseFunction((ISymbol) arg1, argPosition, argSize);
+            if (temp != null) {
+              return temp;
+            }
+          }
+        }
       }
     } else if (arg1.isASTSizeGE(S.Composition, 2) || arg1.isASTSizeGE(S.RightComposition, 2)) {
       IAST composition = (IAST) arg1;
@@ -76,7 +90,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_1_1;
+    return IFunctionEvaluator.ARGS_1_3;
   }
 
   /**
@@ -88,6 +102,93 @@ public class InverseFunction extends AbstractFunctionEvaluator {
    */
   public static IExpr getUnaryInverseFunction(ISymbol headSymbol) {
     return F.getUnaryInverseFunction(headSymbol);
+  }
+
+  public static IExpr getBinaryInverseFunction(ISymbol headSymbol, int argPosition, int argSize) {
+    int id = headSymbol.ordinal();
+    if (id > 0) {
+      switch (id) {
+        case ID.ArcTan:
+          if (argPosition == 1 && argSize == 2) {
+            // I*(1+Cos(2*#)+I*Sin(2*#))*#2)/(-1+Cos(2*#)+I*Sin(2*#)
+            IExpr arg = F.Times(F.C2, F.Slot1);
+            IExpr numer =
+                F.Times(F.CI, F.Plus(F.C1, F.Cos(arg), F.Times(F.CI, F.Sin(arg)), F.Slot2));
+            IExpr denom = F.Plus(F.CN1, F.Cos(arg), F.Times(F.CI, F.Sin(arg)));
+            return F.Function(F.Times(numer, F.Power(denom, F.CN1)));
+          } else if (argPosition == 2 && argSize == 2) {
+            // -((I*(-1 +Cos(2*#2)+I*Sin(2*#2))*#)/(1+Cos(2*#2)+I*Sin(2*#2)))
+            IExpr arg = F.Times(F.C2, F.Slot2);
+            IExpr numer =
+                F.Times(F.CNI, F.Plus(F.CN1, F.Cos(arg), F.Times(F.CI, F.Sin(arg))), F.Slot1);
+            IExpr denom = F.Plus(F.C1, F.Cos(arg), F.Times(F.CI, F.Sin(arg)));
+            return F.Function(F.Times(numer, F.Power(denom, F.CN1)));
+          }
+          break;
+        case ID.InverseJacobiCD:
+          if (argPosition == 1 && argSize == 2) {
+            return S.JacobiCD;
+          }
+          break;
+        case ID.JacobiCD:
+          if (argPosition == 1 && argSize == 2) {
+            return S.InverseJacobiCD;
+          }
+          break;
+        case ID.InverseJacobiCN:
+          if (argPosition == 1 && argSize == 2) {
+            return S.JacobiCN;
+          }
+          break;
+        case ID.JacobiCN:
+          if (argPosition == 1 && argSize == 2) {
+            return S.InverseJacobiCN;
+          }
+          break;
+        case ID.InverseJacobiDN:
+          if (argPosition == 1 && argSize == 2) {
+            return S.JacobiDN;
+          }
+          break;
+        case ID.JacobiDN:
+          if (argPosition == 1 && argSize == 2) {
+            return S.InverseJacobiDN;
+          }
+          break;
+
+        case ID.InverseJacobiSD:
+          if (argPosition == 1 && argSize == 2) {
+            return S.JacobiSD;
+          }
+          break;
+        case ID.JacobiSD:
+          if (argPosition == 1 && argSize == 2) {
+            return S.InverseJacobiSD;
+          }
+          break;
+        case ID.InverseJacobiSN:
+          if (argPosition == 1 && argSize == 2) {
+            return S.JacobiSN;
+          }
+          break;
+        case ID.JacobiSN:
+          if (argPosition == 1 && argSize == 2) {
+            return S.InverseJacobiSN;
+          }
+          break;
+        case ID.InverseJacobiSC:
+          if (argPosition == 1 && argSize == 2) {
+            return S.JacobiSC;
+          }
+          break;
+        case ID.JacobiSC:
+          if (argPosition == 1 && argSize == 2) {
+            return S.InverseJacobiSC;
+          }
+          break;
+      }
+    }
+    return null;
   }
 
   /**

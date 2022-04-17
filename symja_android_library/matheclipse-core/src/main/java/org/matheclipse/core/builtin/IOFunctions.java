@@ -622,6 +622,8 @@ public class IOFunctions {
       "nsmet", "The system cannot be solved with the methods available to `1`.", //
       "nupr", "`1` is not a univariate polynomial with rational number coefficients.", //
       "nvm", "The first Norm argument should be a scalar, vector or matrix.", //
+      "nwargs",
+      "Argument `2` in `1` is not of the form i, {i,j}, {i,Infinity}, or All, where i and j are non-negative machine-sized integers.", //
       "openx", "`1` is not open.", //
       "optb", "Optional object `1` in `2` is not a single blank.", //
       "optnf", "Option name `2` not found in defaults for `1`.", //

@@ -547,7 +547,12 @@ public class GammaJS extends JS {
       return nSubtract1.reciprocal();
     }
 
-    return x.pow(nSubtract1).multiply(gamma(Complex.ONE.subtract(n), x));
+    Complex p = pow(x, nSubtract1);
+    // real on negative real axis for integer powers
+    if (n.isMathematicalInteger() && x.getReal() < 0) {
+      p = new Complex(p.getReal(), chop(p.getImaginary()));
+    }
+    return p.multiply(gamma(Complex.ONE.subtract(n), x));
   }
 
   static final double[] c = {57.1562356658629235, -59.5979603554754912, 14.1360979747417471,

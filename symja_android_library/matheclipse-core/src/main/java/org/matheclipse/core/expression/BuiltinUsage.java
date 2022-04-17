@@ -247,6 +247,7 @@ public class BuiltinUsage {
     USAGE[ID.Sin] = "sine function";
     USAGE[ID.Sinh] = "hyperbolic sine function";
     USAGE[ID.Skewness] = "skewness coefficient";
+    USAGE[ID.Slot] = "`#` serves as a pure function's first parameter ";
     USAGE[ID.Sow] = "send an expression to the innermost Reap";
     USAGE[ID.Span] = "general specification for spans or blocks of elements";
     USAGE[ID.Split] = "split into runs of identical elements";

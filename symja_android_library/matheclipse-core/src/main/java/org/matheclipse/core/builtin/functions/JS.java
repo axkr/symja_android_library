@@ -20,6 +20,28 @@ public abstract class JS {
     return x.norm();
   }
 
+  /**
+   * For approximate <code>x</code> values that are close to zero return the <code>double</code>
+   * value <code>0.0</code>.
+   * 
+   * @param x
+   * @return
+   */
+  protected static double chop(double x) {
+    return (Math.abs(x) < Config.SPECIAL_FUNCTIONS_TOLERANCE) ? 0.0 : x;
+  }
+
+  /**
+   * For approximate <code>x.getReal()</code> or <code>x.getImaginary()</code> values that are close
+   * to zero return the <code>double</code> value <code>0.0</code>.
+   * 
+   * @param x
+   * @return
+   */
+  protected static Complex chop(Complex x) { // , tolerance=1e-10 ) {
+    return new Complex(chop(x.getReal()), chop(x.getImaginary()));
+  }
+
   protected static Complex complexAverage(Function<Complex, Complex> f, Complex x) {
     return complexAverage(f, x, 1e-5);
   }
@@ -58,22 +80,57 @@ public abstract class JS {
     return x.negate();
   }
 
+  /**
+   * Return <code>x.pow(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex pow(Complex x, Complex y) {
     return x.pow(y);
   }
 
+  /**
+   * Return <code>x.pow(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex pow(Complex x, double y) {
     return x.pow(y);
   }
 
+  /**
+   * Return <code>new Complex(x).pow(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex pow(double x, Complex y) {
     return new Complex(x).pow(y);
   }
 
+  /**
+   * Return <code>x.add(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex add(Complex x, Complex y) {
     return x.add(y);
   }
 
+  /**
+   * Return <code>x.add(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex add(Complex x, double y) {
     return x.add(y);
   }
@@ -94,26 +151,68 @@ public abstract class JS {
     return result;
   }
 
+  /**
+   * Return <code>x.divide(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex div(Complex x, Complex y) {
     return x.divide(y);
   }
 
+  /**
+   * Return <code>x.divide(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex div(Complex x, double y) {
     return x.divide(y);
   }
 
+  /**
+   * Return <code>new Complex(x).divide(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex div(double x, Complex y) {
     return new Complex(x).divide(y);
   }
 
+  /**
+   * Return <code>x.multiply(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex mul(Complex x, Complex y) {
     return x.multiply(y);
   }
 
+  /**
+   * Return <code>new Complex(x).multiply(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex mul(double x, Complex y) {
-    return y.multiply(x);
+    return new Complex(x).multiply(y);
   }
 
+  /**
+   * Return <code>x.multiply(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex mul(Complex x, double y) {
     return x.multiply(y);
   }
@@ -134,14 +233,35 @@ public abstract class JS {
     return result;
   }
 
+  /**
+   * Return <code>x.subtract(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex sub(Complex x, Complex y) {
     return x.subtract(y);
   }
 
+  /**
+   * Return <code>x.subtract(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex sub(Complex x, double y) {
     return x.subtract(y);
   }
 
+  /**
+   * Return <code>new Complex(x).subtract(y)</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
   protected static Complex sub(double x, Complex y) {
     return new Complex(x).subtract(y);
   }

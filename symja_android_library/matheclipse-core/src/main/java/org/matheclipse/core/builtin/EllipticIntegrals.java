@@ -42,6 +42,12 @@ public class EllipticIntegrals {
       S.EllipticTheta.setEvaluator(new EllipticTheta());
 
       // S.InverseWeierstrassP.setEvaluator(new InverseWeierstrassP());
+      S.InverseJacobiCD.setEvaluator(new InverseJacobiCD());
+      S.InverseJacobiCN.setEvaluator(new InverseJacobiCN());
+      S.InverseJacobiDN.setEvaluator(new InverseJacobiDN());
+      S.InverseJacobiSC.setEvaluator(new InverseJacobiSC());
+      S.InverseJacobiSD.setEvaluator(new InverseJacobiSD());
+      S.InverseJacobiSN.setEvaluator(new InverseJacobiSN());
       S.JacobiAmplitude.setEvaluator(new JacobiAmplitude());
       S.JacobiCD.setEvaluator(new JacobiCD());
       S.JacobiCN.setEvaluator(new JacobiCN());
@@ -1055,6 +1061,346 @@ public class EllipticIntegrals {
   // super.setUp(newSymbol);
   // }
   // }
+
+
+  private static class InverseJacobiCD extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      IExpr m = ast.arg2();
+      if (m.isZero()) {
+        return F.ArcCos(z);
+      }
+      if (z.isZero()) {
+        return F.EllipticK(m);
+      }
+      if (z.isOne()) {
+        return F.C0;
+      }
+      if (m.isInfinity() || m.isNegativeInfinity()) {
+        return F.C0;
+      }
+      try {
+        // double zDouble = Double.NaN;
+        // double mDouble = Double.NaN;
+        // try {
+        // zDouble = z.evalDouble();
+        // mDouble = m.evalDouble();
+        // } catch (ValidateException ve) {
+        // }
+        // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+        return F.complexNum(EllipticFunctionsJS.inverseJacobiCD(z.evalComplex(), m.evalComplex()));
+        // } else {
+        // return F.num(EllipticFunctionsJS.inverseJacobiCD(zDouble, mDouble));
+        // }
+      } catch (ValidateException ve) {
+        LOGGER.debug("InverseJacobiCD.evaluate() failed", ve);
+      } catch (RuntimeException rex) {
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  private static class InverseJacobiCN extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      IExpr m = ast.arg2();
+      if (m.isZero()) {
+        return F.ArcCos(z);
+      }
+      if (m.isOne()) {
+        return F.ArcSech(z);
+      }
+      if (z.isMinusOne()) {
+        return F.Times(F.C2, F.EllipticK(m));
+      }
+      if (z.isZero()) {
+        return F.EllipticK(m);
+      }
+      if (z.isOne()) {
+        return F.C0;
+      }
+      if (m.isInfinity() || m.isNegativeInfinity()) {
+        return F.C0;
+      }
+      try {
+        // double zDouble = Double.NaN;
+        // double mDouble = Double.NaN;
+        // try {
+        // zDouble = z.evalDouble();
+        // mDouble = m.evalDouble();
+        // } catch (ValidateException ve) {
+        // }
+        // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+        return F.complexNum(EllipticFunctionsJS.inverseJacobiCN(z.evalComplex(), m.evalComplex()));
+        // } else {
+        // return F.num(EllipticFunctionsJS.inverseJacobiCN(zDouble, mDouble));
+        // }
+      } catch (ValidateException ve) {
+        LOGGER.debug("InverseJacobiCN.evaluate() failed", ve);
+      } catch (RuntimeException rex) {
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  private static class InverseJacobiDN extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      IExpr m = ast.arg2();
+      if (m.isOne()) {
+        return F.ArcSech(z);
+      }
+      if (z.isOne()) {
+        return F.C0;
+      }
+      if (m.isInfinity() || m.isNegativeInfinity()) {
+        return F.C0;
+      }
+      try {
+        // double zDouble = Double.NaN;
+        // double mDouble = Double.NaN;
+        // try {
+        // zDouble = z.evalDouble();
+        // mDouble = m.evalDouble();
+        // } catch (ValidateException ve) {
+        // }
+        // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+        return F.complexNum(EllipticFunctionsJS.inverseJacobiDN(z.evalComplex(), m.evalComplex()));
+        // } else {
+        // return F.num(EllipticFunctionsJS.inverseJacobiDN(zDouble, mDouble));
+        // }
+      } catch (ValidateException ve) {
+        LOGGER.debug("InverseJacobiDN.evaluate() failed", ve);
+      } catch (RuntimeException rex) {
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  private static class InverseJacobiSC extends AbstractFunctionEvaluator implements JacobiSCRules {
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      IExpr m = ast.arg2();
+      if (m.isZero()) {
+        return F.ArcTan(z);
+      }
+      if (m.isOne()) {
+        return F.ArcSinh(z);
+      }
+      if (z.isZero()) {
+        return F.C0;
+      }
+      if (z.isImaginaryUnit()) {
+        return F.Times(F.CI, F.EllipticK(F.Subtract(F.C1, m)));
+      }
+      if (z.isNegativeImaginaryUnit()) {
+        return F.Times(F.CNI, F.EllipticK(F.Subtract(F.C1, m)));
+      }
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+      if (negExpr.isPresent()) {
+        return F.Negate(F.InverseJacobiSC(negExpr, m));
+      }
+      if (engine.isDoubleMode()) {
+        try {
+          // double zDouble = Double.NaN;
+          // double mDouble = Double.NaN;
+          // try {
+          // zDouble = z.evalDouble();
+          // mDouble = m.evalDouble();
+          // } catch (ValidateException ve) {
+          // }
+          // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+          return F
+              .complexNum(EllipticFunctionsJS.inverseJacobiSC(z.evalComplex(), m.evalComplex()));
+          // } else {
+          // return F.num(EllipticFunctionsJS.inverseJacobiSC(zDouble, mDouble));
+          // }
+        } catch (ValidateException ve) {
+          LOGGER.debug("InverseJacobiSC.evaluate() failed", ve);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  private static class InverseJacobiSD extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      IExpr m = ast.arg2();
+      if (m.isZero()) {
+        return F.ArcSin(z);
+      }
+      if (m.isOne()) {
+        return F.ArcSinh(z);
+      }
+      if (z.isZero() || z.isInfinity() || z.isNegativeInfinity()) {
+        return F.C0;
+      }
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+      if (negExpr.isPresent()) {
+        return F.Negate(F.InverseJacobiSD(negExpr, m));
+      }
+      if (engine.isDoubleMode()) {
+        try {
+          // double zDouble = Double.NaN;
+          // double mDouble = Double.NaN;
+          // try {
+          // zDouble = z.evalDouble();
+          // mDouble = m.evalDouble();
+          // } catch (ValidateException ve) {
+          // }
+          // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+          return F
+              .complexNum(EllipticFunctionsJS.inverseJacobiSD(z.evalComplex(), m.evalComplex()));
+          // } else {
+          // return F.num(EllipticFunctionsJS.inverseJacobiSD(zDouble, mDouble));
+          // }
+        } catch (ValidateException ve) {
+          LOGGER.debug("InverseJacobiSD.evaluate() failed", ve);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  private static class InverseJacobiSN extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      IExpr m = ast.arg2();
+      if (m.isZero()) {
+        return F.ArcSin(z);
+      }
+      if (m.isOne()) {
+        return F.ArcTanh(z);
+      }
+      if (z.isMinusOne()) {
+        return F.Negate(F.EllipticK(m));
+      }
+      if (z.isZero() || z.isInfinity() || z.isNegativeInfinity()) {
+        return F.C0;
+      }
+      if (z.isOne()) {
+        return F.EllipticK(m);
+      }
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+      if (negExpr.isPresent()) {
+        return F.Negate(F.InverseJacobiSN(negExpr, m));
+      }
+      if (engine.isDoubleMode()) {
+        try {
+          // double zDouble = Double.NaN;
+          // double mDouble = Double.NaN;
+          // try {
+          // zDouble = z.evalDouble();
+          // mDouble = m.evalDouble();
+          // } catch (ValidateException ve) {
+          // }
+          // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+          return F
+              .complexNum(EllipticFunctionsJS.inverseJacobiSN(z.evalComplex(), m.evalComplex()));
+          // } else {
+          // return F.num(EllipticFunctionsJS.inverseJacobiSN(zDouble, mDouble));
+          // }
+        } catch (ValidateException ve) {
+          LOGGER.debug("InverseJacobiSN.evaluate() failed", ve);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+
 
   /**
    *

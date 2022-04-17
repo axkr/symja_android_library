@@ -41,6 +41,7 @@ public class S {
     return BUILT_IN_SYMBOLS[id];
   }
 
+
   public final static IBuiltInSymbol $Aborted = F.initFinalSymbol("$Aborted", ID.$Aborted);
 
   /**
@@ -4402,6 +4403,13 @@ public class S {
 
   public final static IBuiltInSymbol Hue = F.initFinalSymbol("Hue", ID.Hue);
 
+  /**
+   * HurwitzLerchPhi(z, s, a) - returns the Lerch transcendent function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HurwitzLerchPhi.md">HurwitzLerchPhi
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol HurwitzLerchPhi =
       F.initFinalSymbol("HurwitzLerchPhi", ID.HurwitzLerchPhi);
 
@@ -4980,6 +4988,33 @@ public class S {
   public final static IBuiltInSymbol InverseHaversine =
       F.initFinalSymbol("InverseHaversine", ID.InverseHaversine);
 
+  public final static IBuiltInSymbol InverseJacobiCD =
+      F.initFinalSymbol("InverseJacobiCD", ID.InverseJacobiCD);
+
+  public final static IBuiltInSymbol InverseJacobiCN =
+      F.initFinalSymbol("InverseJacobiCN", ID.InverseJacobiCN);
+
+  public final static IBuiltInSymbol InverseJacobiDC =
+      F.initFinalSymbol("InverseJacobiDC", ID.InverseJacobiDC);
+
+  public final static IBuiltInSymbol InverseJacobiDN =
+      F.initFinalSymbol("InverseJacobiDN", ID.InverseJacobiDN);
+
+  public final static IBuiltInSymbol InverseJacobiNC =
+      F.initFinalSymbol("InverseJacobiNC", ID.InverseJacobiNC);
+
+  public final static IBuiltInSymbol InverseJacobiND =
+      F.initFinalSymbol("InverseJacobiND", ID.InverseJacobiND);
+
+  public final static IBuiltInSymbol InverseJacobiSC =
+      F.initFinalSymbol("InverseJacobiSC", ID.InverseJacobiSC);
+
+  public final static IBuiltInSymbol InverseJacobiSD =
+      F.initFinalSymbol("InverseJacobiSD", ID.InverseJacobiSD);
+
+  public final static IBuiltInSymbol InverseJacobiSN =
+      F.initFinalSymbol("InverseJacobiSN", ID.InverseJacobiSN);
+
   /**
    * InverseLaplaceTransform(f,s,t) - returns the inverse laplace transform.
    * 
@@ -5003,6 +5038,13 @@ public class S {
   public final static IBuiltInSymbol InverseWeierstrassP =
       F.initFinalSymbol("InverseWeierstrassP", ID.InverseWeierstrassP);
 
+  /**
+   * InverseZTransform(x,z,n) - returns the inverse Z-Transform of `x`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseZTransform.md">InverseZTransform
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol InverseZTransform =
       F.initFinalSymbol("InverseZTransform", ID.InverseZTransform);
 
@@ -7376,6 +7418,13 @@ public class S {
    */
   public final static IBuiltInSymbol PolyGamma = F.initFinalSymbol("PolyGamma", ID.PolyGamma);
 
+  /**
+   * PolyLog(s, z) - returns the polylogarithm function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolyLog.md">PolyLog
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol PolyLog = F.initFinalSymbol("PolyLog", ID.PolyLog);
 
   /**
@@ -8467,6 +8516,8 @@ public class S {
 
   public final static IBuiltInSymbol Second = F.initFinalSymbol("Second", ID.Second);
 
+  public final static IBuiltInSymbol SeedRandom = F.initFinalSymbol("SeedRandom", ID.SeedRandom);
+
   /**
    * Select({e1, e2, ...}, head) - returns a list of the elements `ei` for which `head(ei)` returns
    * `True`.
@@ -9130,6 +9181,7 @@ public class S {
 
   public final static IBuiltInSymbol StringRepeat =
       F.initFinalSymbol("StringRepeat", ID.StringRepeat);
+
   /**
    * StringReplace(string, fromStr -> toStr) - replaces each occurrence of `fromStr` with `toStr` in
    * `string`.
@@ -9990,6 +10042,9 @@ public class S {
    */
   public final static IBuiltInSymbol TrigReduce = F.initFinalSymbol("TrigReduce", ID.TrigReduce);
 
+  public final static IBuiltInSymbol TrigSimplifyFu =
+      F.initFinalSymbol("TrigSimplifyFu", ID.TrigSimplifyFu);
+
   /**
    * TrigToExp(expr) - converts trigonometric functions in `expr` to exponentials.
    * 
@@ -10034,6 +10089,13 @@ public class S {
 
   public final static IBuiltInSymbol URLFetch = F.initFinalSymbol("URLFetch", ID.URLFetch);
 
+  /**
+   * Undefined - represents an undefined result for example in the `ConditionalExpression` function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Undefined.md">Undefined
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Undefined = F.initFinalSymbol("Undefined", ID.Undefined);
 
   /**
@@ -10512,12 +10574,19 @@ public class S {
   public final static IBuiltInSymbol YuleDissimilarity =
       F.initFinalSymbol("YuleDissimilarity", ID.YuleDissimilarity);
 
+  /**
+   * ZTransform(x,n,z) - returns the Z-Transform of `x`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ZTransform.md">ZTransform
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ZTransform = F.initFinalSymbol("ZTransform", ID.ZTransform);
+
   public final static IBuiltInSymbol ZeroSymmetric =
       F.initFinalSymbol("ZeroSymmetric", ID.ZeroSymmetric);
 
   public final static IBuiltInSymbol ZeroTest = F.initFinalSymbol("ZeroTest", ID.ZeroTest);
-
-  public final static IBuiltInSymbol ZTransform = F.initFinalSymbol("ZTransform", ID.ZTransform);
 
   /**
    * Zeta(z) - returns the Riemann zeta function of `z`.

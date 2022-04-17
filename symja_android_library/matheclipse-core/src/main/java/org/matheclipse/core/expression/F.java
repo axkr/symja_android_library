@@ -4905,6 +4905,43 @@ public class F extends S {
     return new AST1(InverseHaversine, a);
   }
 
+  public static IAST InverseJacobiCD(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseJacobiCD, a0, a1);
+  }
+
+  public static IAST InverseJacobiCN(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseJacobiCN, a0, a1);
+  }
+
+  public static IAST InverseJacobiDC(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseJacobiDC, a0, a1);
+  }
+
+  public static IAST InverseJacobiNC(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseJacobiNC, a0, a1);
+  }
+
+  public static IAST InverseJacobiND(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseJacobiND, a0, a1);
+  }
+
+  public static IAST InverseJacobiDN(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseJacobiDN, a0, a1);
+  }
+
+  public static IAST InverseJacobiSC(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseJacobiSC, a0, a1);
+  }
+
+  public static IAST InverseJacobiSD(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseJacobiSD, a0, a1);
+  }
+
+  public static IAST InverseJacobiSN(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseJacobiSN, a0, a1);
+  }
+
+
   public static IAST InverseLaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(InverseLaplaceTransform, a0, a1, a2);
   }
@@ -8706,6 +8743,10 @@ public class F extends S {
     return new AST1(TrigReduce, expr);
   }
 
+  public static IAST TrigSimplifyFu(final IExpr expr) {
+    return new AST1(TrigSimplifyFu, expr);
+  }
+
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/TrigToExp.md">TrigToExp</a>
@@ -9352,7 +9393,7 @@ public class F extends S {
     }
 
     final boolean isList = list.isList();
-    final int indx = list.indexOf(x -> x.isSequence() || (isList && x == Nothing));
+    final int indx = list.indexOf(x -> x.isSequence() || (isList && x == S.Nothing));
     if (indx > 0) {
       final int extraSize = list.get(indx).size();
       final IASTAppendable seqResult = F.ast(list.head(), list.size() + extraSize + 1);
@@ -9360,7 +9401,7 @@ public class F extends S {
       list.forEach(indx, list.size(), x -> {
         if (x.isSequence()) {
           seqResult.appendArgs((IAST) x);
-        } else if (isList && x == Nothing) {
+        } else if (isList && x == S.Nothing) {
         } else {
           seqResult.append(x);
         }

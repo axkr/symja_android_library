@@ -16,8 +16,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
 
 /**
- * IFraction implementation which uses methods of the Apache <code>
- * org.apache.commons.math3.fraction.BigFraction</code> methods.
+ * IFraction implementation which uses methods of the Apache {@link BigFraction} methods.
  *
  * @see IFraction
  * @see FractionSym
