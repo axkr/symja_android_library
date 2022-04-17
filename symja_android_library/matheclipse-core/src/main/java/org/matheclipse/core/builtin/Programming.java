@@ -56,6 +56,8 @@ import com.google.common.util.concurrent.TimeLimiter;
 public final class Programming {
   private static final Logger LOGGER = LogManager.getLogger();
 
+  private static final AbstractFunctionEvaluator NestWhileListEvaluator = new NestWhileList();
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -85,7 +87,7 @@ public final class Programming {
       S.Nest.setEvaluator(new Nest());
       S.NestList.setEvaluator(new NestList());
       S.NestWhile.setEvaluator(new NestWhile());
-      S.NestWhileList.setEvaluator(new NestWhileList());
+      S.NestWhileList.setEvaluator(NestWhileListEvaluator);
       S.Part.setEvaluator(new Part());
       S.Pause.setEvaluator(new Pause());
       S.Quiet.setEvaluator(new Quiet());
@@ -1523,26 +1525,22 @@ public final class Programming {
    * {1,2,4,8,16,32,64,128,256}
    * </pre>
    */
-  private static final class NestList extends AbstractCoreFunctionEvaluator {
+  private static final class NestList extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg3 = engine.evaluate(ast.arg3());
-      if (arg3.isInteger()) {
-        int n = arg3.toIntDefault();
-        if (n < 0) {
-          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.Nest, "intpm", F.list(ast, F.C3), engine);
-        }
-        int iterationLimit = engine.getIterationLimit();
-        if (iterationLimit >= 0 && iterationLimit <= n) {
-          IterationLimitExceeded.throwIt(n, ast);
-        }
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        IExpr arg2 = engine.evaluate(ast.arg2());
-        return nestList(arg2, n, x -> F.unaryAST1(arg1, x), S.List, engine);
+      int n = ast.arg3().toIntDefault();
+      if (n < 0) {
+        // Positive integer (less equal 2147483647) expected at position `2` in `1`.
+        return IOFunctions.printMessage(S.Nest, "intpm", F.list(ast, F.C3), engine);
       }
-      return F.NIL;
+      int iterationLimit = engine.getIterationLimit();
+      if (iterationLimit >= 0 && iterationLimit <= n) {
+        IterationLimitExceeded.throwIt(n, ast);
+      }
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      return nestList(arg2, n, x -> F.unaryAST1(arg1, x), S.List, engine);
     }
 
     public static IAST nestList(final IExpr expr, final int n, final Function<IExpr, IExpr> fn,
@@ -1562,10 +1560,6 @@ public final class Programming {
       return ARGS_3_3;
     }
 
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
-    }
   }
 
   /**
@@ -1615,21 +1609,27 @@ public final class Programming {
    * 625/2
    * </pre>
    */
-  private static final class NestWhile extends NestWhileList {
+  private static final class NestWhile extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = F.C1;
-      if (ast.argSize() == 4) {
+      if (ast.argSize() > 4) {
+        IExpr temp = NestWhileListEvaluator.evaluate(ast.setAtClone(0, S.NestWhileList), engine);
+        if (temp.isList()) {
+          return temp.last();
+        }
+        return F.NIL;
+      }
+      if (ast.argSize() >= 4) {
         n = ast.arg4();
       }
-      return nestWhile(ast.arg2(), engine.evaluate(ast.arg3()), x -> F.unaryAST1(ast.arg1(), x), n,
-          engine);
+      return nestWhile(ast.arg2(), ast.arg3(), x -> F.unaryAST1(ast.arg1(), x), n, engine);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_4;
+      return ARGS_3_6;
     }
 
     public static IExpr nestWhile(final IExpr expr, final IExpr test,
@@ -1716,71 +1716,146 @@ public final class Programming {
    *
    * <h3>Examples</h3>
    */
-  private static class NestWhileList extends AbstractCoreFunctionEvaluator {
+  private static class NestWhileList extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      IExpr n = F.C1;
-      if (ast.argSize() == 4) {
-        n = ast.arg4();
+      IExpr f = ast.arg1();
+      IExpr expr = ast.arg2();
+      IExpr test = ast.arg3(); 
+      int m = 1;
+      if (ast.argSize() >= 4) {
+        if (ast.arg4().equals(S.All)) {
+          m = -1;
+        } else {
+          int tmpInt = ast.arg4().toIntDefault();
+          if (tmpInt < 0) {
+            // Argument `2` in `1` is not of the form i, {i,j}, {i,Infinity}, or All, where i and j
+            // are non-negative machine-sized integer
+            return IOFunctions.printMessage(ast.topHead(), "nwargs", F.List(ast, F.C4), engine);
+          }
+          m = tmpInt;
+        }
       }
-      return nestList(ast.arg2(), engine.evaluate(ast.arg3()), n, x -> F.unaryAST1(arg1, x),
-          F.ListAlloc(15), engine);
-      // Functors.append(F.ast(ast.arg1())), List(), engine);
+      int max = -1;
+      if (ast.argSize() >= 5) {
+        if (ast.arg5().isInfinity()) {
+          max = -1;
+        } else {
+          int tmpInt = ast.arg5().toIntDefault();
+          if (tmpInt < 0) {
+            // Machine-sized integer expected at position `2` in `1`.
+            return IOFunctions.printMessage(ast.topHead(), "intm", F.List(ast, F.C5), engine);
+          }
+          max = tmpInt;
+        }
+      }
+      int n = 0;
+      if (ast.argSize() == 6) {
+        int tmpInt = ast.get(6).toIntDefault();
+        if (tmpInt == Integer.MIN_VALUE) {
+          return F.NIL;
+        }
+        n = tmpInt;
+      }
+      return nestList(expr, engine.evaluate(test), x -> F.unaryAST1(f, x), m, max, n, engine);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_4;
+      return ARGS_3_6;
     }
 
-    public static IAST nestList(final IExpr expr, final IExpr test, final IExpr n,
-        final Function<IExpr, IExpr> fn, final IASTAppendable resultList, EvalEngine engine) {
-      if (n == S.All) {
-        IExpr temp = expr;
-        IASTAppendable testFunction = F.ast(test);
-        testFunction.append(temp);
-        while (engine.evalTrue(testFunction)) {
-          resultList.append(temp);
-          temp = engine.evaluate(fn.apply(temp));
-          testFunction.append(temp);
+    /**
+     * 
+     * @param expr
+     * @param test
+     * @param function
+     * @param m apply <code>function</code> n extra times
+     * @param max
+     * @param n
+     * @param engine
+     * @param resultList
+     * @return
+     */
+    private static IAST nestList(final IExpr expr, final IExpr test,
+        final Function<IExpr, IExpr> function, int m, int max, int n, EvalEngine engine) {
+      IExpr temp = expr;
+      IExpr[] args;
+      int arrSize;
+      if (max != -1 && m > max) {
+        m = max + 1;
+      }
+      if (m <= 0) {
+        arrSize = 1;
+      } else {
+        arrSize = m;
+      }
+      if (Config.MAX_AST_SIZE < arrSize) {
+        // Maximum AST limit `1` exceeded.
+        return IOFunctions.printMessage(S.NestWhileList, "zzmaxast", F.List(m), engine);
+      }
+
+      args = new IExpr[arrSize];
+      final IASTAppendable resultList = F.ListAlloc(15);
+      args[0] = temp;
+
+      int count = 1;
+      for (int i = 1; i < m; i++) {
+        if (count++ > max && max != -1) {
+          break;
         }
         resultList.append(temp);
-        return resultList;
-      }
-      int extraTimes = n.toIntDefault();
-      if (extraTimes <= 0) {
-        return F.NIL;
-      }
-      if (Config.MAX_AST_SIZE < extraTimes) {
-        // Maximum AST limit `1` exceeded.
-        return IOFunctions.printMessage(S.NestWhileList, "zzmaxast", F.List(extraTimes), engine);
-      }
-      IExpr temp = expr;
-      IExpr[] args = new IExpr[extraTimes];
-      args[0] = temp;
-      for (int i = 1; i < extraTimes; i++) {
-        temp = engine.evaluate(fn.apply(temp));
+        temp = engine.evaluate(function.apply(temp));
         args[i] = temp;
       }
-      while (engine.evalTrue(F.ast(args, test))) {
-        resultList.append(temp);
-        temp = engine.evaluate(fn.apply(temp));
 
-        IExpr[] argsTemp = new IExpr[extraTimes];
-        System.arraycopy(args, 1, argsTemp, 0, extraTimes - 1);
-        argsTemp[extraTimes - 1] = temp;
+
+      while (engine.evalTrue(m == 1 ? F.unaryAST1(test, args[0]) : F.ast(args, test))) {
+        if (count++ > max && max != -1) {
+          break;
+        }
+        resultList.append(temp);
+        temp = engine.evaluate(function.apply(temp));
+
+        IExpr[] argsTemp;
+        if (m == (-1)) {
+          arrSize++;
+        }
+        if (Config.MAX_AST_SIZE < arrSize) {
+          // Maximum AST limit `1` exceeded.
+          return IOFunctions.printMessage(S.NestWhileList, "zzmaxast", F.List(m), engine);
+        }
+        if (m == (-1)) {
+          argsTemp = new IExpr[arrSize];
+          System.arraycopy(args, 0, argsTemp, 0, arrSize - 1);
+          argsTemp[arrSize - 1] = temp;
+        } else {
+          argsTemp = new IExpr[m];
+          System.arraycopy(args, 1, argsTemp, 0, m - 1);
+          argsTemp[m - 1] = temp;
+        }
         args = argsTemp;
       }
       resultList.append(temp);
+      if (n > 0) {
+        // append n values
+        for (int i = 0; i < n; i++) {
+          temp = engine.evaluate(function.apply(temp));
+          resultList.append(temp);
+        }
+      }
+
+      if (n < 0) {
+        // drop last n values
+        if (resultList.argSize() < -n) {
+          return F.CEmptyList;
+        }
+        return resultList.copyUntil(resultList.size() + n);
+      }
       return resultList;
     }
 
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
-    }
   }
 
   /**

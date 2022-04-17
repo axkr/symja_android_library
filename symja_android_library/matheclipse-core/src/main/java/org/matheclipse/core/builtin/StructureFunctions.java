@@ -1114,26 +1114,29 @@ public class StructureFunctions {
         }
       }
 
-      try {
-        IExpr arg1 = ast.arg1();
-        IndexedLevel level;
-        if (lastIndex == 3) {
-          level = new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), ast.get(lastIndex), heads,
-              engine);
-        } else {
-          level = new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), 1, heads);
-        }
-
-        IExpr arg2 = ast.arg2();
-        if (arg2.isAST()) {
-          return level.visitAST(((IAST) arg2), new int[0]).orElse(arg2);
-        }
-        return arg2;
-      } catch (final RuntimeException rex) {
-        // ArgumentTypeException from IndexedLevel level specification checks
-        LOGGER.log(engine.getLogLevel(), "MapIndexed", rex);
-        return F.NIL;
+      IExpr arg1 = ast.arg1();
+      IndexedLevel level;
+      if (lastIndex == 3) {
+        level =
+            new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), ast.get(lastIndex), heads, engine);
+      } else {
+        level = new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), 1, heads);
       }
+
+      IExpr arg2 = ast.arg2();
+      if (arg2.isSparseArray()) {
+        arg2 = arg2.normal(false);
+      }
+      if (arg2.isAssociation()) {
+        // `1` currently not supported in `2`.
+        return IOFunctions.printMessage(ast.topHead(), "unsupported",
+            F.List(S.Association, S.MapIndexed),
+            engine);
+      }
+      if (arg2.isAST()) {
+        return level.visitAST(((IAST) arg2), new int[0]).orElse(arg2);
+      }
+      return arg2;
     }
 
     @Override

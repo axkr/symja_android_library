@@ -1,8 +1,9 @@
 package org.matheclipse.core.visit;
 
 import java.util.function.BiFunction;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.SymjaMathException;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -46,7 +47,6 @@ public class IndexedLevel {
    * @param unevaledLevelExpr the given <i>level specification</i>
    * @param includeHeads set to <code>true</code>, if the header of an AST expression should be
    *        included
-   * @throws SymjaMathException if the <code>expr</code> is not a <i>level specification</i>
    */
   public IndexedLevel(final BiFunction<IExpr, IExpr, IExpr> function, final IExpr unevaledLevelExpr,
       boolean includeHeads, final EvalEngine engine) {
@@ -125,7 +125,10 @@ public class IndexedLevel {
           } else if ((lst.arg1() instanceof IInteger) && (lst.arg2().isInfinity())) {
             final IInteger i0 = (IInteger) lst.arg1();
             if (i0.isNegative()) {
-              throw new SymjaMathException("Invalid Level specification: " + levelExpr.toString());
+              fFromDepth = Validate.throwIntType(i0, Integer.MIN_VALUE, engine);
+              fToDepth = -1;
+              fFromLevel = 0;
+              fToLevel = Integer.MAX_VALUE;
             } else {
               fFromDepth = Integer.MIN_VALUE;
               fToDepth = -1;
@@ -133,7 +136,7 @@ public class IndexedLevel {
               fToLevel = Integer.MAX_VALUE;
             }
             return;
-          } else if ((lst.arg1().isNegativeInfinity()) && (lst.arg2().isInfinity())) {
+          } else if (lst.arg1().isNegativeInfinity() && lst.arg2().isInfinity()) {
             // level specification {-Infinity, Infinity} is effectively the same as {0,-1}
             fFromDepth = Integer.MIN_VALUE;
             fToDepth = -1;
@@ -152,7 +155,9 @@ public class IndexedLevel {
       fToDepth = -1;
       return;
     }
-    throw new SymjaMathException("Invalid Level specification: " + levelExpr.toString());
+    // Level specification `1` is not of the form n, {n}, or {m, n}.
+    String str = IOFunctions.getMessage("level", F.list(levelExpr), EvalEngine.get());
+    throw new ArgumentTypeException(str);
   }
 
   public IndexedLevel(final BiFunction<IExpr, IExpr, IExpr> function, final int level,
@@ -204,19 +209,29 @@ public class IndexedLevel {
         && (depth <= fToDepth);
   }
 
+  /**
+   * 
+   * @param element
+   * @param indx
+   * @return
+   * @deprecated use {@link #visitAtom(IExpr, int[])}
+   */
+  @Deprecated
   public IExpr visitExpr(IExpr element, int[] indx) {
-    if (element.isAtom()) {
-      fCurrentDepth = -1;
+    return visitAtom(element, indx);
+  }
+
+  protected IExpr visitAtom(IExpr element, int[] indx) {
+    if (element.isASTOrAssociation()) {
+      return F.NIL;
     }
-    if (isInRange(fCurrentLevel, fCurrentDepth)) {
-      return fFunction.apply(element, createIndexes(indx));
-    }
-    return F.NIL;
+    fCurrentDepth = -1;
+    return isInRange(fCurrentLevel, -1) ? fFunction.apply(element, createIndexes(indx)) : F.NIL;
   }
 
   public IExpr visitAST(IAST ast, int[] indx) {
-    int[] minDepth = new int[] {0};
     IASTMutable[] result = new IASTMutable[] {F.NIL};
+    int[] minDepth = new int[] {0};
     try {
       int size = indx.length;
       final int[] newIndx = new int[size + 1];
@@ -233,7 +248,7 @@ public class IndexedLevel {
             element = temp;
           }
         }
-        final IExpr temp = visitExpr(element, newIndx);
+        final IExpr temp = visitAtom(element, newIndx);
         if (temp.isPresent()) {
           if (!result[0].isPresent()) {
             result[0] = createResult(ast, temp);
@@ -248,14 +263,14 @@ public class IndexedLevel {
         newIndx[size] = i;
         IExpr element = x;
         boolean evaled = false;
-        if (element.isAST()) {
+        if (element.isASTOrAssociation()) {
           IExpr temp = visitAST((IAST) element, newIndx);
           if (temp.isPresent()) {
             evaled = true;
             element = temp;
           }
         }
-        final IExpr temp = visitExpr(element, newIndx);
+        final IExpr temp = visitAtom(element, newIndx);
         if (temp.isPresent()) {
           if (!result[0].isPresent()) {
             result[0] = createResult(ast, temp);
@@ -272,9 +287,19 @@ public class IndexedLevel {
         }
       });
 
-      fCurrentDepth = --minDepth[0];
     } finally {
       fCurrentLevel--;
+    }
+    fCurrentDepth = --minDepth[0];
+    if (isInRange(fCurrentLevel, minDepth[0])) {
+      if (!result[0].isPresent()) {
+        return fFunction.apply(ast, createIndexes(indx));
+      } else {
+        IExpr temp = fFunction.apply(result[0], createIndexes(indx));
+        if (temp.isPresent()) {
+          return temp;
+        }
+      }
     }
 
     return result[0];
