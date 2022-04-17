@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -5954,7 +5953,7 @@ public class StatisticsFunctions {
             if (head instanceof IBuiltInSymbol) {
               IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
               if (evaluator instanceof IRandomVariate) {
-                Random random = ThreadLocalRandom.current();
+                Random random = engine.getRandom();
                 IRandomVariate variate = (IRandomVariate) evaluator;
                 if (ast.size() == 3) {
                   IExpr arg2 = ast.arg2();

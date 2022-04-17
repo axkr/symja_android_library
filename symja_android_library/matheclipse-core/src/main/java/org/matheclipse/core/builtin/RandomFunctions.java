@@ -1,7 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.math.BigInteger;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
@@ -29,6 +29,59 @@ import org.matheclipse.core.interfaces.ISymbol;
 public final class RandomFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
 
+  protected static int boundedNextInt(Random rng, int origin, int bound) {
+    if (origin >= bound) {
+      throw new IllegalArgumentException("bound must be greater than origin");
+    }
+    int r = rng.nextInt();
+    if (origin < bound) {
+      // It's not case (1).
+      final int n = bound - origin;
+      final int m = n - 1;
+      if ((n & m) == 0) {
+        // It is case (2): length of range is a power of 2.
+        r = (r & m) + origin;
+      } else if (n > 0) {
+        // It is case (3): need to reject over-represented candidates.
+        for (int u = r >>> 1; u + m - (r = u % n) < 0; u = rng.nextInt() >>> 1);
+        r += origin;
+      } else {
+        // It is case (4): length of range not representable as long.
+        while (r < origin || r >= bound) {
+          r = rng.nextInt();
+        }
+      }
+    }
+    return r;
+  }
+
+  protected static double boundedNextDouble(Random rng, double origin, double bound) {
+    if (origin < bound) {
+      double r = rng.nextDouble();
+      r = r * (bound - origin) + origin;
+      if (r >= bound) {
+        // may need to correct a rounding problem
+        r = Double.longBitsToDouble(Double.doubleToLongBits(bound) - 1);
+      }
+      return r;
+    }
+    throw new IllegalArgumentException("bound must be greater than origin");
+  }
+
+  protected static double boundedNextDouble(Random rng, double bound) {
+    // Specialize boundedNextDouble for origin == 0, bound > 0
+    if (!(bound > 0.0 && bound < Double.POSITIVE_INFINITY)) {
+      throw new IllegalArgumentException("bound must be finite and positive");
+    }
+    double r = rng.nextDouble();
+    r = r * bound;
+    if (r >= bound) {
+      // may need to correct a rounding problem
+      r = Double.longBitsToDouble(Double.doubleToLongBits(bound) - 1);
+    }
+    return r;
+  }
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -36,6 +89,7 @@ public final class RandomFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.SeedRandom.setEvaluator(new SeedRandom());
       S.RandomInteger.setEvaluator(new RandomInteger());
       S.RandomPrime.setEvaluator(new RandomPrime());
       S.RandomChoice.setEvaluator(new RandomChoice());
@@ -147,7 +201,7 @@ public final class RandomFunctions {
         }
       } else if (arg1.isList()) {
         IAST list = (IAST) arg1;
-        ThreadLocalRandom random = ThreadLocalRandom.current();
+        Random random = engine.getRandom();
         final int listSize = list.argSize();
         if (listSize == 0) {
           return F.NIL;
@@ -199,7 +253,7 @@ public final class RandomFunctions {
       try {
         if (ast.isAST0()) {
           // RandomReal() gives a double value between 0.0 and 1.0
-          ThreadLocalRandom tlr = ThreadLocalRandom.current();
+          Random tlr = engine.getRandom();
           double re = tlr.nextDouble();
           double im = tlr.nextDouble();
           return F.complexNum(re, im);
@@ -227,12 +281,14 @@ public final class RandomFunctions {
                 F.complexNum(minRe, minIm);
               }
             }
-            ThreadLocalRandom tlr = ThreadLocalRandom.current();
-            return F.complexNum(tlr.nextDouble(minRe, maxRe), tlr.nextDouble(minIm, maxIm));
+            Random tlr = engine.getRandom();
+            return F.complexNum(boundedNextDouble(tlr, minRe, maxRe),
+                boundedNextDouble(tlr, minIm, maxIm));
           } else {
             Complex max = engine.evalComplex(ast.arg1());
-            ThreadLocalRandom tlr = ThreadLocalRandom.current();
-            return F.complexNum(tlr.nextDouble(max.getReal()), tlr.nextDouble(max.getImaginary()));
+            Random tlr = engine.getRandom();
+            return F.complexNum(boundedNextDouble(tlr, max.getReal()),
+                boundedNextDouble(tlr, max.getImaginary()));
           }
         } else if (ast.isAST2()) {
           if (ast.arg2().isList()) {
@@ -289,7 +345,7 @@ public final class RandomFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        ThreadLocalRandom tlr = ThreadLocalRandom.current();
+        Random tlr = engine.getRandom();
         return randomBigInteger(BigInteger.ONE, false, tlr);
       }
 
@@ -308,7 +364,7 @@ public final class RandomFunctions {
           if (max == Integer.MAX_VALUE) {
             return F.NIL;
           }
-          ThreadLocalRandom tlr = ThreadLocalRandom.current();
+          Random tlr = engine.getRandom();
           if (ast.isAST2()) {
             IExpr arg2 = ast.arg2();
             if (arg2.isList()) {
@@ -337,7 +393,7 @@ public final class RandomFunctions {
       }
       if (ast.arg1().isInteger()) {
         // RandomInteger(100) gives an integer between 0 and 100
-        ThreadLocalRandom tlr = ThreadLocalRandom.current();
+        Random tlr = engine.getRandom();
         BigInteger upperLimit = ((IInteger) ast.arg1()).toBigNumerator();
         boolean negative = false;
         if (upperLimit.compareTo(BigInteger.ZERO) < 0) {
@@ -373,7 +429,7 @@ public final class RandomFunctions {
       return F.NIL;
     }
 
-    private IExpr randomBigInteger(BigInteger upperLimit, boolean negative, ThreadLocalRandom tlr) {
+    private IExpr randomBigInteger(BigInteger upperLimit, boolean negative, Random tlr) {
       BigInteger r;
       final int nlen = upperLimit.bitLength();
       do {
@@ -503,11 +559,11 @@ public final class RandomFunctions {
 
       final int llen = lowerLimit.bitLength();
       final int ulen = upperLimit.bitLength();
-      ThreadLocalRandom tlr = ThreadLocalRandom.current();
+      Random tlr = engine.getRandom();
       BigInteger randomNumber;
       long counter = 0;
       do {
-        int blen = tlr.nextInt(llen, ulen + 1);
+        int blen = boundedNextInt(tlr, llen, ulen + 1);
         randomNumber = new BigInteger(blen, 32, tlr);
         if (counter++ > 100000) {
           randomNumber = lowerLimit.nextProbablePrime();
@@ -552,7 +608,7 @@ public final class RandomFunctions {
 
       if (ast.isAST0()) {
         // RandomReal() gives a double value between 0.0 and 1.0
-        ThreadLocalRandom tlr = ThreadLocalRandom.current();
+        Random tlr = engine.getRandom();
         double r = tlr.nextDouble();
         return F.num(r);
       } else {
@@ -597,8 +653,8 @@ public final class RandomFunctions {
           }
         }
 
-        ThreadLocalRandom tlr = ThreadLocalRandom.current();
-        return F.num(tlr.nextDouble(min, max));
+        Random tlr = engine.getRandom();
+        return F.num(boundedNextDouble(tlr, min, max));
       } else {
         boolean isNegative = false;
         double max = engine.evalDouble(arg1);
@@ -609,8 +665,8 @@ public final class RandomFunctions {
         if (F.isZero(max)) {
           return F.CD0;
         }
-        ThreadLocalRandom tlr = ThreadLocalRandom.current();
-        double nextDouble = tlr.nextDouble(max);
+        Random tlr = engine.getRandom();
+        double nextDouble = boundedNextDouble(tlr, max);
         if (isNegative) {
           nextDouble *= -1;
         }
@@ -628,7 +684,7 @@ public final class RandomFunctions {
       if (Config.MAX_AST_SIZE < n) {
         ASTElementLimitExceeded.throwIt(n);
       }
-
+      Random tlr = engine.getRandom();
       double[] array = new double[n];
       if (arg1.isList2()) {
         double min = engine.evalDouble(arg1.first());
@@ -641,9 +697,8 @@ public final class RandomFunctions {
             return F.num(min);
           }
         }
-        ThreadLocalRandom tlr = ThreadLocalRandom.current();
         for (int i = 0; i < array.length; i++) {
-          array[i] = tlr.nextDouble(min, max);
+          array[i] = boundedNextDouble(tlr, min, max);
         }
 
       } else {
@@ -666,13 +721,12 @@ public final class RandomFunctions {
           isNegative = true;
           max = Math.abs(max);
         }
-        ThreadLocalRandom tlr = ThreadLocalRandom.current();
         for (int i = 0; i < array.length; i++) {
           if (F.isZero(max)) {
             array[i] *= 0.0;
             continue;
           }
-          array[i] = tlr.nextDouble(max);
+          array[i] = boundedNextDouble(tlr, max);
           if (isNegative) {
             array[i] *= -1.0;
           }
@@ -752,6 +806,26 @@ public final class RandomFunctions {
       }
       // Create shuffled list.
       return list.copy().setArgs(1, len + 1, i -> list.get(indexList[i - 1] + 1));
+    }
+  }
+
+  private static final class SeedRandom extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      long seedValue = ast.arg1().toLongDefault();
+      if (seedValue <= 0L) {
+        // Non-negative machine-sized integer expected at position `2` in `1`.
+        return IOFunctions.printMessage(ast.topHead(), "intnm", F.List(F.C1, ast), engine);
+      }
+      Random random = engine.getRandom();
+      random.setSeed(seedValue);
+      return F.ZZ(seedValue);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 
