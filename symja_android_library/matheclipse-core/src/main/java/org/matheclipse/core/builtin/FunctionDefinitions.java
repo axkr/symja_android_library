@@ -61,6 +61,7 @@ import static org.matheclipse.core.expression.S.Sum;
 import static org.matheclipse.core.expression.S.Taylor;
 import static org.matheclipse.core.expression.S.TrigExpand;
 import static org.matheclipse.core.expression.S.TrigReduce;
+import static org.matheclipse.core.expression.S.TrigSimplifyFu;
 import static org.matheclipse.core.expression.S.TrigToExp;
 import static org.matheclipse.core.expression.S.ZTransform;
 import org.matheclipse.core.basic.Config;
@@ -139,6 +140,7 @@ public final class FunctionDefinitions {
       Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
       TrigExpand.setEvaluator(new org.matheclipse.core.reflection.system.TrigExpand());
       TrigReduce.setEvaluator(new org.matheclipse.core.reflection.system.TrigReduce());
+      TrigSimplifyFu.setEvaluator(new org.matheclipse.core.reflection.system.TrigSimplifyFu());
       TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());
       ZTransform.setEvaluator(new org.matheclipse.core.reflection.system.ZTransform());
 

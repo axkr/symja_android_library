@@ -3227,6 +3227,19 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return isSameHead(S.HoldPattern, 2) || isSameHead(S.Literal, 2);
   }
 
+  @Override
+  public boolean isFunctionID(int[] ids) {
+    int id = headID();
+    if (id >= 0) {
+      for (int i = 0; i < ids.length; i++) {
+        if (id == ids[i]) {
+           return true;
+         }
+      } 
+    }
+    return false;
+  }
+
   /** {@inheritDoc} */
   @Override
   public final boolean isHoldAllCompleteAST() {

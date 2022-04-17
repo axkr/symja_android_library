@@ -9,6 +9,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.DoubleUnaryOperator;
@@ -228,8 +229,14 @@ public class EvalEngine implements Serializable {
 
   transient boolean fEvalRHSMode;
 
+  /**
+   * If <code>true</code> disable the automatic trig simplifying rules.
+   */
+  transient boolean fDisabledTrigRules;
+
   /** @see Config#isFileSystemEnabled() */
   transient boolean fFileSystemEnabled;
+
 
   transient String fSessionID;
 
@@ -282,6 +289,10 @@ public class EvalEngine implements Serializable {
    * with the exception of identifiers with length 1.
    */
   private boolean fRelaxedSyntax;
+
+  private transient Random fRandom = new Random();
+
+  private transient long fRandomSeed = 0L;
 
   /**
    * The reap list object associated to the most enclosing <code>Reap()</code> statement. The even
@@ -390,6 +401,8 @@ public class EvalEngine implements Serializable {
    */
   public EvalEngine(String sessionID, int recursionLimit, int iterationLimit, PrintStream outStream,
       PrintStream errorStream, boolean relaxedSyntax) {
+    fRandomSeed = fRandom.nextLong();
+    fRandom.setSeed(fRandomSeed);
     fSessionID = sessionID;
     fRecursionLimit = recursionLimit;
     fIterationLimit = iterationLimit;
@@ -567,6 +580,7 @@ public class EvalEngine implements Serializable {
     engine.fErrorPrintStream = fErrorPrintStream;
     engine.fEvalLHSMode = fEvalLHSMode;
     engine.fEvalRHSMode = fEvalRHSMode;
+    engine.fDisabledTrigRules = fDisabledTrigRules;
     engine.fFileSystemEnabled = fFileSystemEnabled;
     engine.fIterationLimit = fIterationLimit;
     engine.fModifiedVariablesList = fModifiedVariablesList;
@@ -2707,6 +2721,7 @@ public class EvalEngine implements Serializable {
     fTogetherMode = false;
     fEvalLHSMode = false;
     fEvalRHSMode = false;
+    fDisabledTrigRules = false;
     fOnOffMode = false;
     fOnOffUnique = false;
     fOnOffUniqueMap = null;
@@ -2847,6 +2862,10 @@ public class EvalEngine implements Serializable {
     return fRelaxedSyntax;
   }
 
+  public boolean isDisabledTrigRules() {
+    return fDisabledTrigRules;
+  }
+
   /** @return Returns the stopRequested. */
   public final boolean isStopRequested() {
     return fStopRequested;
@@ -2927,6 +2946,7 @@ public class EvalEngine implements Serializable {
     fNumericMode = false;
     fEvalLHSMode = false;
     fEvalRHSMode = false;
+    fDisabledTrigRules = false;
     fRecursionCounter = 0;
     fTogetherMode = false;
     fTraceMode = false;
@@ -3144,6 +3164,19 @@ public class EvalEngine implements Serializable {
     this.fSeconds = fSeconds;
   }
 
+  public Random getRandom() {
+    return fRandom;
+  }
+
+  public long getSeed() {
+    return fRandomSeed;
+  }
+
+  public synchronized void setSeed(long seed) {
+    fRandomSeed = seed;
+    fRandom.setSeed(seed);
+  }
+
   /** @param string */
   public void setSessionID(final String string) {
     fSessionID = string;
@@ -3196,6 +3229,15 @@ public class EvalEngine implements Serializable {
   /** @param b */
   public void setTraceMode(final boolean b) {
     fTraceMode = b;
+  }
+
+  /**
+   * If <code>true</code> disable automatic trigonometric function simplification rules.
+   * 
+   * @param value
+   */
+  public void setDisabledTrigRules(boolean value) {
+    fDisabledTrigRules = value;
   }
 
   /**
@@ -3368,5 +3410,6 @@ public class EvalEngine implements Serializable {
   public static void setApfloat(final FixedPrecisionApfloatHelper helper) {
     get().fApfloatHelper = helper;
   }
+
 
 }

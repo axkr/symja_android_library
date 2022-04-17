@@ -3618,6 +3618,54 @@ public final class Arithmetic {
             if (base.isAtom()) {
               return F.NIL;
             }
+
+            if (exponent.isNegative() && base.isAST1()) {
+              if (base.isFunctionID(new int[] {ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch,
+                  ID.Sec, ID.Sech, ID.Sin, ID.Sinh, ID.Tan, ID.Tanh})) {
+                IExpr x = ((IAST) base).arg1();
+                IExpr mNeg = exponent.negate();
+                boolean disabledTrigRules = engine.isDisabledTrigRules();
+                int id = ((IAST) base).headID();
+                switch (id) {
+                  case ID.Tan:
+                    // Tan(x_)^m_?(IntegerQ(#)&&#<0 &):=Cot(x)^(-m),
+                    return disabledTrigRules ? F.NIL : F.Power(F.Cot(x), mNeg);
+                  case ID.Cot:
+                    // Cot(x_)^m_?(IntegerQ(#)&&#<0 &):=Tan(x)^(-m),
+                    return disabledTrigRules ? F.NIL : F.Power(F.Tan(x), mNeg);
+                  case ID.Sec:
+                    // Sec(x_)^m_?(IntegerQ(#)&&#<0 &):=Cos(x)^(-m),
+                    return disabledTrigRules ? F.NIL : F.Power(F.Cos(x), mNeg);
+                  case ID.Cos:
+                    // Cos(x_)^m_?(IntegerQ(#)&&#<0 &):=Sec(x)^(-m),
+                    return disabledTrigRules ? F.NIL : F.Power(F.Sec(x), mNeg);
+                  case ID.Csc:
+                    // Csc(x_)^m_?(IntegerQ(#)&&#<0 &):=Sin(x)^(-m),
+                    return disabledTrigRules ? F.NIL : F.Power(F.Sin(x), mNeg);
+                  case ID.Sin:
+                    // Sin(x_)^m_?(IntegerQ(#)&&#<0 &):=Csc(x)^(-m),
+                    return disabledTrigRules ? F.NIL : F.Power(F.Csc(x), mNeg);
+                  case ID.Tanh:
+                    // Tanh(x_)^m_?(IntegerQ(#)&&#<0 &):=Coth(x)^(-m),
+                    return disabledTrigRules ? F.NIL : F.Power(F.Coth(x), mNeg);
+                  case ID.Coth:
+                    // Coth(x_)^m_?(IntegerQ(#)&&#<0 &):=Tanh(x)^(-m),
+                    return disabledTrigRules ? F.NIL : F.Power(F.Tanh(x), mNeg);
+                  case ID.Sech:
+                    // Sech(x_)^m_?(IntegerQ(#)&&#<0 &):=Cosh(x)^(-m),
+                    return disabledTrigRules ? F.NIL : F.Power(F.Cosh(x), mNeg);
+                  case ID.Cosh:
+                    // Cosh(x_)^m_?(IntegerQ(#)&&#<0 &):=Sech(x)^(-m),
+                    return disabledTrigRules ? F.NIL : F.Power(F.Sech(x), mNeg);
+                  case ID.Csch:
+                    // Csch(x_)^m_?(IntegerQ(#)&&#<0 &):=Sinh(x)^(-m),
+                    return disabledTrigRules ? F.NIL : F.Power(F.Sinh(x), mNeg);
+                  case ID.Sinh:
+                    // Sinh(x_)^m_?(IntegerQ(#)&&#<0 &):=Csch(x)^(-m)
+                    return disabledTrigRules ? F.NIL : F.Power(F.Csch(x), mNeg);
+                }
+              }
+            }
           }
         }
 

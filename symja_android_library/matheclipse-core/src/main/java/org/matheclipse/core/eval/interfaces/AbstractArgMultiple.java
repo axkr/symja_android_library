@@ -118,11 +118,14 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
    * @see HashedPatternRules
    */
   public IAST evaluateHashsRepeated(final IAST orderlessAST, final EvalEngine engine) {
-    HashedOrderlessMatcher hashRuleMap = getHashRuleMap();
-    if (hashRuleMap == null) {
-      return F.NIL;
+    if (!engine.isDisabledTrigRules()) {
+      HashedOrderlessMatcher hashRuleMap = getHashRuleMap();
+      if (hashRuleMap == null) {
+        return F.NIL;
+      }
+      return hashRuleMap.evaluateRepeated(orderlessAST, engine);
     }
-    return hashRuleMap.evaluateRepeated(orderlessAST, engine);
+    return F.NIL;
   }
 
   /**

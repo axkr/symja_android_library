@@ -204,6 +204,12 @@ public interface IFunctionEvaluator extends IEvaluator {
   int[] ARGS_3_5 = new int[] {3, 5};
 
   /**
+   * The function is allowed to have 3 or 6 arguments and the head must be the built-in symbol name
+   * of the function.
+   */
+  int[] ARGS_3_6 = new int[] {3, 6};
+
+  /**
    * The function is allowed to have 4 arguments and the head must be the built-in symbol name of
    * the function.
    */

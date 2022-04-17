@@ -6,6 +6,8 @@
  Product(x_Symbol,{x_,m_,n_}) := Pochhammer(m, 1+n-m) 
      /; FreeQ({m,n},x),
  Product(x_Symbol,{y_,m_,n_}) := x^(1-m+n)
-     /; FreeQ({y,m,n},x)
+     /; FreeQ({y,m,n},x),
+
+ Product(Cos(x_*2^i_), {i_Symbol, 0, l_}) := Module({k=l-1}, (Csc(x)*Sin(2^k*x))/2^k /; ( !NumericQ(l) || (IntegerQ(l)&&l>0)) && FreeQ({x,l},i) )
 }
 }  

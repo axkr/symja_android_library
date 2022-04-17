@@ -10,17 +10,5 @@
  E^Log(x_):=x,
  E^(a_*Log(x_)):=x^a /; FreeQ(a,x),
  Overflow()^(-1) := Underflow(),
- Underflow()^(-1) := Overflow(),
- Tan(x_)^m_?(IntegerQ(#)&&#<0 &):=Cot(x)^(-m),
- Cot(x_)^m_?(IntegerQ(#)&&#<0 &):=Tan(x)^(-m),
- Sec(x_)^m_?(IntegerQ(#)&&#<0 &):=Cos(x)^(-m),
- Cos(x_)^m_?(IntegerQ(#)&&#<0 &):=Sec(x)^(-m),
- Csc(x_)^m_?(IntegerQ(#)&&#<0 &):=Sin(x)^(-m),
- Sin(x_)^m_?(IntegerQ(#)&&#<0 &):=Csc(x)^(-m),
- Tanh(x_)^m_?(IntegerQ(#)&&#<0 &):=Coth(x)^(-m),
- Coth(x_)^m_?(IntegerQ(#)&&#<0 &):=Tanh(x)^(-m),
- Sech(x_)^m_?(IntegerQ(#)&&#<0 &):=Cosh(x)^(-m),
- Cosh(x_)^m_?(IntegerQ(#)&&#<0 &):=Sech(x)^(-m),
- Csch(x_)^m_?(IntegerQ(#)&&#<0 &):=Sinh(x)^(-m),
- Sinh(x_)^m_?(IntegerQ(#)&&#<0 &):=Csch(x)^(-m)
+ Underflow()^(-1) := Overflow()
 }

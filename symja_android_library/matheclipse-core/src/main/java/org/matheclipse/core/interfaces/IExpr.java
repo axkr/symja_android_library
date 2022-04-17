@@ -952,7 +952,7 @@ public interface IExpr
    * Get the head of an expression and if it is a built-in symbol return the ID of this symbol,
    * otherwise return <code>-1</code> (ID.UNKNOWN)
    *
-   * @return return the ID of this built-in header symbol or <code>-1</code>
+   * @return the ID of this built-in header symbol or <code>-1</code>
    */
   default int headID() {
     final IExpr head = head();
@@ -2017,6 +2017,16 @@ public interface IExpr
    * @see #isPureFunction()
    */
   default boolean isFunction() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is a function with one of the built-in head IDs.
+   *
+   * @return
+   * @see #isPureFunction()
+   */
+  default boolean isFunctionID(int[] ids) {
     return false;
   }
 
@@ -3669,7 +3679,7 @@ public interface IExpr
 
   /**
    * Get the last element of the <code>AST</code> list (i.e. get(size()-1). Return <code>F.NIL
-   * </code> if this object isn't an <code>AST</code>or has <code>0</code> arguments (i.e. only a
+   * </code> if this object isn't an <code>AST</code> or has <code>0</code> arguments (i.e. only a
    * header element)
    *
    * @return the last argument of the function represented by this <code>AST</code> or {@link F#NIL}

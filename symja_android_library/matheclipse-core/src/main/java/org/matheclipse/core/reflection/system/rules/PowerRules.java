@@ -15,7 +15,7 @@ public interface PowerRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 5, 19 };
+  final public static int[] SIZES = { 5, 7 };
 
   final public static IAST RULES = List(
     IInit(Power, SIZES),
@@ -54,42 +54,6 @@ public interface PowerRules {
       Underflow()),
     // 1/Underflow():=Overflow()
     ISetDelayed(Power(Underflow(),CN1),
-      Overflow()),
-    // Tan(x_)^m_?(IntegerQ(#1)&&#1<0&):=Cot(x)^(-m)
-    ISetDelayed(Power(Tan(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
-      Power(Cot(x),Negate(m))),
-    // Cot(x_)^m_?(IntegerQ(#1)&&#1<0&):=Tan(x)^(-m)
-    ISetDelayed(Power(Cot(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
-      Power(Tan(x),Negate(m))),
-    // Sec(x_)^m_?(IntegerQ(#1)&&#1<0&):=Cos(x)^(-m)
-    ISetDelayed(Power(Sec(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
-      Power(Cos(x),Negate(m))),
-    // Cos(x_)^m_?(IntegerQ(#1)&&#1<0&):=Sec(x)^(-m)
-    ISetDelayed(Power(Cos(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
-      Power(Sec(x),Negate(m))),
-    // Csc(x_)^m_?(IntegerQ(#1)&&#1<0&):=Sin(x)^(-m)
-    ISetDelayed(Power(Csc(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
-      Power(Sin(x),Negate(m))),
-    // Sin(x_)^m_?(IntegerQ(#1)&&#1<0&):=Csc(x)^(-m)
-    ISetDelayed(Power(Sin(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
-      Power(Csc(x),Negate(m))),
-    // Tanh(x_)^m_?(IntegerQ(#1)&&#1<0&):=Coth(x)^(-m)
-    ISetDelayed(Power(Tanh(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
-      Power(Coth(x),Negate(m))),
-    // Coth(x_)^m_?(IntegerQ(#1)&&#1<0&):=Tanh(x)^(-m)
-    ISetDelayed(Power(Coth(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
-      Power(Tanh(x),Negate(m))),
-    // Sech(x_)^m_?(IntegerQ(#1)&&#1<0&):=Cosh(x)^(-m)
-    ISetDelayed(Power(Sech(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
-      Power(Cosh(x),Negate(m))),
-    // Cosh(x_)^m_?(IntegerQ(#1)&&#1<0&):=Sech(x)^(-m)
-    ISetDelayed(Power(Cosh(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
-      Power(Sech(x),Negate(m))),
-    // Csch(x_)^m_?(IntegerQ(#1)&&#1<0&):=Sinh(x)^(-m)
-    ISetDelayed(Power(Csch(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
-      Power(Sinh(x),Negate(m))),
-    // Sinh(x_)^m_?(IntegerQ(#1)&&#1<0&):=Csch(x)^(-m)
-    ISetDelayed(Power(Sinh(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
-      Power(Csch(x),Negate(m)))
+      Overflow())
   );
 }

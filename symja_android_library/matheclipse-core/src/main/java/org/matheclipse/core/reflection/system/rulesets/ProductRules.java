@@ -23,6 +23,9 @@ matcher.caseOf(Product(x_Symbol,list(x_,m_,n_)),
     // Product(x_Symbol,{y_,m_,n_}):=x^(1-m+n)/;FreeQ({y,m,n},x)
 matcher.caseOf(Product(x_Symbol,list(y_,m_,n_)),
       Condition(Power(x,Plus(C1,Negate(m),n)),FreeQ(list(y,m,n),x)));
+    // Product(Cos(x_*2^i_),{i_Symbol,0,l_}):=Module({k=-1+l},(Csc(x)*Sin(2^k*x))/2^k/;(!NumericQ(l)||(IntegerQ(l)&&l>0))&&FreeQ({x,l},i))
+matcher.caseOf(Product(Cos(Times(x_,Power(C2,i_))),list(i_Symbol,C0,l_)),
+      Module(list(Set(k,Plus(CN1,l))),Condition(Times(Power(Power(C2,k),CN1),Csc(x),Sin(Times(Power(C2,k),x))),And(Or(Not(NumericQ(l)),And(IntegerQ(l),Greater(l,C0))),FreeQ(list(x,l),i)))));
 return matcher;
 }
 }

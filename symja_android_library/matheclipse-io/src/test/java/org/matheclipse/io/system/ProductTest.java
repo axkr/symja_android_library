@@ -193,4 +193,12 @@ public class ProductTest extends AbstractTestCase {
     check("Product(i^(x),{i,1,n})", //
         "(n!)^x");
   }
+
+  public void testProduct012() {
+    // https://docs.sympy.org/latest/modules/simplify/fu.html#sympy.simplify.fu.TRmorrie
+    check("Product(Cos(x*2^i), {i, 0, 3})", //
+        "1/4*Csc(x)*Sin(4*x)");
+    check("Product(Cos(x*2^i), {i, 0, k})", //
+        "2^(1-k)*Csc(x)*Sin(x/2^(1-k))");
+  }
 }
