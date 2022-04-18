@@ -7825,7 +7825,7 @@ public final class ListFunctions {
       }
 
       @Override
-      public IASTMutable createResult(IASTMutable ast, final IExpr x) {
+      public IASTMutable createResult(IAST ast, final IExpr x) {
         if (x.isASTOrAssociation()) {
           return ast.copy();
         }

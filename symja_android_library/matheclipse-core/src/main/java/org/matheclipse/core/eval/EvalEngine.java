@@ -985,6 +985,7 @@ public class EvalEngine implements Serializable {
             }
           }
         } catch (ValidateException ve) {
+          ve.printStackTrace();
           return IOFunctions.printMessage(ast.topHead(), ve, this);
         } catch (FlowControlException e) {
           throw e;

@@ -1,6 +1,7 @@
 package org.matheclipse.core.visit;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IDataExpr;
@@ -80,6 +81,11 @@ public abstract class AbstractVisitor implements IVisitor {
   /** @return <code>F.NIL</code>, if no evaluation is possible */
   @Override
   public IExpr visit(IStringX element) {
+    return F.NIL;
+  }
+
+  @Override
+  public IExpr visit(IASTMutable ast) {
     return F.NIL;
   }
 }

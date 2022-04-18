@@ -344,10 +344,15 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   }
 
   /**
+   * <p>
    * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not
    * copied). In contrast to the {@link #copyAppendable()} method, this method returns exactly the
    * same type for <code>AST0, AST1, AST2, AST3</code> and tries to transform <code>AST</code>
    * objects to <code>AST0, AST1, AST2, AST3</code> if possible.
+   * <p>
+   * Because it's not allowed to set the header object (offset 0) to an arbitrary expression after a
+   * <code>copy()</code>, this method should only be used if the arguments (offset 1..argSize)
+   * should be set to new expressions.
    *
    * @return a copy of this <code>IAST</code> instance.
    */
@@ -355,9 +360,14 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   public IASTMutable copy();
 
   /**
+   * <p>
    * Return a copy of the pure <code>IAST</code> instance (the elements themselves are not copied).
    * Additionally to the <code>copy()</code> method, if this is a {@link IAssociation} the values of
    * the rules are copied.
+   * <p>
+   * Because it's not allowed to set the header object (offset 0) to an arbitrary expression after a
+   * <code>copy()</code>, this method should only be used if the arguments (offset 1..argSize)
+   * should be set to new expressions.
    *
    * @return a copy of this <code>IAST</code> instance.
    */
@@ -366,49 +376,64 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   }
 
   /**
+   * <p>
    * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not
    * copied). In contrast to the {@link #copy()} method, this method doesn't return exactly the same
    * type for a given <code>AST0, AST1, AST2, AST3...</code> object but transforms it into a new
-   * <code>AST</code> object, so that additional arguments could be appended or at the end.
+   * <code>AST</code> object, so that additional arguments could be appended at the end.
+   * <p>
+   * This also allows to set the header object to an arbitrary expression.
    *
    * @return a copy of this <code>IAST</code> instance.
    */
   public IASTAppendable copyAppendable();
 
   /**
+   * <p>
    * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not
    * copied). In contrast to the {@link #copy()} method, this method doesn't return exactly the same
    * type for a given <code>AST0, AST1, AST2, AST3...</code> object but transforms it into a new
    * <code>AST</code> object, so that additional arguments could be appended at the end.
+   * <p>
+   * This also allows to set the header object to an arbitrary expression.
    *
    * @return a copy of this <code>IAST</code> instance.
    */
   public IASTAppendable copyAppendable(int additionalCapacity);
 
   /**
+   * <p>
    * Create a copy of this <code>AST</code>, which contains the same head and all elements from the
    * given <code>position</code> (inclusive).
-   *
+   * <p>
+   * This also allows to set the header object to an arbitrary expression.
+   * 
    * @param position
    * @return
    */
   public IASTAppendable copyFrom(int position);
 
   /**
+   * <p>
    * Create a copy of this <code>AST</code>, which only contains the head element of the list (i.e.
    * the element with index 0). For <code>ASTAssociation</code>s create a copy of the full form
    * <code>AST</code>, which only contains the head <code>S.Association</code> (i.e. the element
    * with index 0). In further evaluation steps this full form can be converted back into a real
    * <code>ASTAssociation</code>.
+   * <p>
+   * This also allows to set the header object to an arbitrary expression.
    *
    * @return
    */
   public IASTAppendable copyHead();
 
   /**
+   * <p>
    * Create a copy of this <code>AST</code>, which only contains the head element of the list (i.e.
    * the element with index 0) and allocate the <code>intialCapacity</code> size of entries for the
    * arguments.
+   * <p>
+   * This also allows to set the header object to an arbitrary expression.
    *
    * @param intialCapacity the initial number of arguments
    * @return
