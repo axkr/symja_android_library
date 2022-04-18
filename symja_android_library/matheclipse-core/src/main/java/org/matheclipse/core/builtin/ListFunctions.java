@@ -1872,7 +1872,7 @@ public final class ListFunctions {
    * 5
    * </pre>
    */
-  private static final class Count extends AbstractFunctionEvaluator {
+  private static final class Count extends AbstractFunctionOptionEvaluator {
     private static class CountFunctor implements Function<IExpr, IExpr> {
       protected final IPatternMatcher matcher;
       protected int counter;
@@ -1897,7 +1897,11 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
+
+      boolean heads = option[0].isTrue();
+
       if (ast.headID() != ID.Count) {
         // operator form
         if (!ast.isAST1()) {
@@ -1914,11 +1918,11 @@ public final class ListFunctions {
         final IExpr arg1 = ast.arg1();
         final VisitorLevelSpecification level;
         CountFunctor mf = new CountFunctor(engine.evalPatternMatcher(ast.arg2()));
-        if (ast.isAST3()) {
+        if (ast.size() >= 4) {
           final IExpr arg3 = engine.evaluate(ast.arg3());
-          level = new VisitorLevelSpecification(mf, arg3, false, engine);
+          level = new VisitorLevelSpecification(mf, arg3, heads, engine);
         } else {
-          level = new VisitorLevelSpecification(mf, 1, false);
+          level = new VisitorLevelSpecification(mf, 1, heads);
         }
         arg1.accept(level);
         return F.ZZ(mf.getCounter());
@@ -1928,6 +1932,11 @@ public final class ListFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3_0;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.False);
     }
   }
 

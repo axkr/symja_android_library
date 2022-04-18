@@ -4495,7 +4495,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCount() {
-
+    check("SeedRandom(12345);Count(RandomReal(1, {100}), u_ /; u > 0.5)", //
+        "46");
+    check("Count(Sin(x) + Cos(x) + Sin(x)^2, Sin, -1 )", //
+        "0");
+    check("Count(Sin(x) + Cos(x) + Sin(x)^2, Sin, -1, Heads -> True)", //
+        "2");
     check("Count(a)[{{a, a}, {a, a, a}, a}]", //
         "1");
     check("Count(a)[{{a, a}, {a, a, a}, a}, {2}]", //
