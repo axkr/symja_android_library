@@ -1,9 +1,5 @@
 package org.matheclipse.io.system;
 
-import org.hipparchus.complex.Complex;
-import org.hipparchus.special.elliptic.jacobi.FieldJacobiElliptic;
-import org.hipparchus.special.elliptic.jacobi.JacobiEllipticBuilder;
-
 public class JacobiTestCase extends AbstractTestCase {
   public JacobiTestCase(String name) {
     super(name);
@@ -102,16 +98,16 @@ public class JacobiTestCase extends AbstractTestCase {
 
   public void testUInverseJacobiCN() {
     // https://github.com/Hipparchus-Math/hipparchus/issues/189
-    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(new Complex(0.3));
-    System.out.println(je.arccn(new Complex(2.5)));
+    // final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(new Complex(0.3));
+    // System.out.println(je.arccn(new Complex(2.5)));
     check("InverseJacobiCN(2.5,0.3)", //
-        "I*1.3652");
+        "I*(-1.3652)");
     check("JacobiCN(-I*1.3652,0.3)", //
         "2.49998");
     check("InverseJacobiCN(10.0,1/3)", //
-        "I*1.85604");
+        "I*(-1.85604)");
     check("InverseJacobiCN(2.0,1/3)", //
-        "I*1.1866");
+        "I*(-1.1866)");
     check("InverseJacobiCN(z, 0)", //
         "ArcCos(z)");
     check("InverseJacobiCN(0,z)", //
@@ -166,7 +162,7 @@ public class JacobiTestCase extends AbstractTestCase {
     check("JacobiDN(2.07536-I*(1.12475),0.7)", //
         "0.299999+I*1.37059*10^-6");
     check("InverseJacobiDN(4.0,2/3)", //
-        "I*1.48034");
+        "I*(-1.48034)");
     // check("InverseJacobiDN(10.0,1/3)", //
     // "3.46783+I*1.92868");
     check("InverseJacobiDN(-5/4, 1)", //
