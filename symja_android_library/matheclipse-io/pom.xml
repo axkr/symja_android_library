@@ -22,7 +22,7 @@
 		</license>
 	</licenses>
 
-	<dependencies> 
+	<dependencies>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -99,13 +99,13 @@
 		</dependency>
 
 		<!-- test dependencies -->
-        <dependency>
+		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-script</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.tngtech.archunit</groupId>
 			<artifactId>archunit-junit4</artifactId>
@@ -157,6 +157,45 @@
 							<configuration>
 								<mainClass>org.matheclipse.io.eval.MMAConsole</mainClass>
 							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>appassembler-maven-plugin</artifactId>
+					<version>2.1.0</version>
+					<configuration>
+						<assembleDirectory>${project.build.directory}/binary</assembleDirectory>
+						<repositoryLayout>flat</repositoryLayout>
+						<repositoryName>lib</repositoryName>
+						<useWildcardClassPath>true</useWildcardClassPath>
+						<programs>
+							<program>
+								<mainClass>org.matheclipse.io.servlet.ServletServer</mainClass>
+								<id>server</id>
+							</program>
+							<program>
+								<mainClass>org.matheclipse.io.servlet.MMAServletServer</mainClass>
+								<id>mmaserver</id>
+							</program>
+							<program>
+								<mainClass>org.matheclipse.io.eval.Console</mainClass>
+								<id>symja</id>
+							</program>
+							<program>
+								<mainClass>org.matheclipse.io.eval.MMAConsole</mainClass>
+								<id>mma</id>
+							</program>
+						</programs>
+					</configuration>
+					<executions>
+						<execution>
+							<id>make-distribution</id>
+							<phase>package</phase>
+							<goals>
+								<goal>assemble</goal>
+							</goals>
 						</execution>
 					</executions>
 				</plugin>

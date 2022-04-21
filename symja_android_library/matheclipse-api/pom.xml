@@ -62,13 +62,64 @@
 			<artifactId>matheclipse-logging</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<!-- test dependencies -->
-        <dependency>
+		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-script</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>server</id>
+							<goals>
+								<goal>java</goal>
+							</goals>
+							<configuration>
+								<mainClass>org.matheclipse.api.SymjaServer</mainClass>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>appassembler-maven-plugin</artifactId>
+					<version>2.1.0</version>
+					<configuration>
+						<assembleDirectory>${project.build.directory}/binary</assembleDirectory>
+						<repositoryLayout>flat</repositoryLayout>
+						<repositoryName>lib</repositoryName>
+						<useWildcardClassPath>true</useWildcardClassPath>
+						<programs>
+							<program>
+								<mainClass>org.matheclipse.api.SymjaServer</mainClass>
+								<id>symjaapi</id>
+							</program>
+						</programs>
+					</configuration>
+					<executions>
+						<execution>
+							<id>make-distribution</id>
+							<phase>package</phase>
+							<goals>
+								<goal>assemble</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+			</plugins>
+		</pluginManagement>
+	</build>
 </project>
