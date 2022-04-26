@@ -250,7 +250,20 @@ public final class RulesData implements Serializable {
   }
 
   public List<IAST> definition() {
-    ArrayList<IAST> definitionList = new ArrayList<IAST>();
+    int size = 4;
+    if (fEqualUpRules != null) {
+      size += fEqualUpRules.size();
+    }
+    if (fSimplePatternUpRules != null) {
+      size += fSimplePatternUpRules.size();
+    }
+    if (fEqualDownRules != null) {
+      size += fEqualDownRules.size();
+    }
+    if (fPatternDownRules != null) {
+      size += fPatternDownRules.size();
+    }
+    ArrayList<IAST> definitionList = new ArrayList<IAST>(size);
     Iterator<IExpr> iter;
     IExpr key;
     PatternMatcherEquals pmEquals;
