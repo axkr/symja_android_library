@@ -3281,7 +3281,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isIntegerResult() {
-    if (S.True.equals(AbstractAssumptions.assumeReal(this))) {
+    if (S.True.equals(AbstractAssumptions.assumeInteger(this))) {
       return true;
     }
     ISymbol symbol = topHead();
