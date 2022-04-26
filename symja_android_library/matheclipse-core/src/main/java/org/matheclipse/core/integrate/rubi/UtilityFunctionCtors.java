@@ -52,10 +52,9 @@ public class UtilityFunctionCtors {
   public static final ISymbol Y = initFinalHiddenSymbol("Y");
   public static final ISymbol Z = initFinalHiddenSymbol("Z");
 
-  public static ISymbol Dist = org.matheclipse.core.expression.F.$rubi("Dist");
-  public static ISymbol IntegerPowerQ = org.matheclipse.core.expression.F.$rubi("IntegerPowerQ");
-  public static ISymbol FractionalPowerQ =
-      org.matheclipse.core.expression.F.$rubi("FractionalPowerQ");
+  public static ISymbol Dist = F.$rubi("Dist");
+  public static ISymbol IntegerPowerQ = F.$rubi("IntegerPowerQ");
+  public static ISymbol FractionalPowerQ = F.$rubi("FractionalPowerQ");
 
   public static ISymbol EqQ = F.$rubi("EqQ");
   public static ISymbol GeQ = F.$rubi("GeQ");
@@ -79,6 +78,8 @@ public class UtilityFunctionCtors {
   public static ISymbol IntPart = F.$rubi("IntPart");
   public static ISymbol Simp = F.$rubi("Simp");
   public static ISymbol Unintegrable = F.$rubi("Unintegrable");
+
+  public static ISymbol NormalizeIntegrand = F.$rubi("NormalizeIntegrand");
 
   public static ISymbol ReapList = org.matheclipse.core.expression.F.$rubi("ReapList");
 
@@ -1373,7 +1374,7 @@ public class UtilityFunctionCtors {
   }
 
   public static IAST NormalizeIntegrand(final IExpr a0, final IExpr a1) {
-    return F.binaryAST2(F.$rubi("NormalizeIntegrand"), a0, a1);
+    return F.binaryAST2(NormalizeIntegrand, a0, a1);
   }
 
   public static IAST NormalizeIntegrandAux(final IExpr a0, final IExpr a1) {

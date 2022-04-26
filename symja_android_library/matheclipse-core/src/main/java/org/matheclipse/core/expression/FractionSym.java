@@ -44,6 +44,9 @@ public class FractionSym extends AbstractFractionSym {
 
   int fDenominator;
 
+  /** constructor for serialization */
+  private FractionSym() {}
+
   /**
    * Construct a rational from two ints. The constructor is private and does not normalize. Use the
    * static constructor valueOf instead.

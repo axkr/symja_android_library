@@ -50,6 +50,11 @@ public class Pattern extends Blank {
   /** The associated symbol for this pattern */
   protected final ISymbol fSymbol;
 
+  /** constructor for serialization */
+  private Pattern() {
+    fSymbol = null;
+  }
+
   /** package private */
   Pattern(final ISymbol symbol) {
     this(symbol, null, false);

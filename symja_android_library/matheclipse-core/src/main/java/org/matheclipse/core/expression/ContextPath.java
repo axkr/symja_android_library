@@ -196,20 +196,49 @@ public final class ContextPath implements Iterable<Context> {
   }
 
   /**
-   * Replace for example a &quot;serialized context&quot; in this context-path
+   * Replace for example a &quot;serialized context&quot; in this context-path.
    *
    * @param context
    * @return
    */
   public boolean setGlobalContext(Context context) {
+    String contextName = Context.GLOBAL_CONTEXT_NAME;
     for (int i = path.size() - 1; i >= 0; i--) {
-      Context temp = path.get(i);
-      if (temp.getContextName().equals(Context.GLOBAL_CONTEXT_NAME)) {
+      Context currentContext = path.get(i);
+      if (currentContext.getContextName().equals(contextName)) {
         path.set(i, context);
-        fContextMap.put(Context.GLOBAL_CONTEXT_NAME, context);
-        if (fContext.getContextName().equals(Context.GLOBAL_CONTEXT_NAME)) {
+        fContextMap.put(contextName, context);
+        if (fContext.getContextName().equals(contextName)) {
           fContext = context;
         }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Replace for example a &quot;serialized context&quot; in this context-path.
+   * 
+   * @param contextName
+   * @param context
+   * @return
+   */
+  public boolean setContext(String contextName, Context context) {
+    for (int i = path.size() - 1; i >= 0; i--) {
+      Context currentContext = path.get(i);
+      if (currentContext.getContextName().equals(contextName)) {
+        path.set(i, context);
+        fContextMap.put(contextName, context);
+        if (fContext.getContextName().equals(contextName)) {
+          fContext = context;
+        }
+        break;
+      }
+    }
+    for (int i = 0; i < path.size(); i++) {
+      if (path.get(i).getContextName().equals(contextName)) {
+        path.set(i, context);
         return true;
       }
     }

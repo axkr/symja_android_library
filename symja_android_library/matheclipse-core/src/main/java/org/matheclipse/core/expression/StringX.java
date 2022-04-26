@@ -161,6 +161,9 @@ public class StringX implements IStringX {
 
   private String fString;
 
+  /** constructor for serialization */
+  private StringX() {}
+
   private StringX(final String str) {
     fMimeType = TEXT_PLAIN;
     fString = str;

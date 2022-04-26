@@ -94,10 +94,6 @@ public class Integrate extends AbstractFunctionEvaluator {
     COUNT_DOWN_LATCH.await();
   }
 
-  /**
-   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
-   * in static initializer</a>
-   */
   public static class IntegrateInitializer implements Runnable {
 
     @Override
@@ -108,8 +104,35 @@ public class Integrate extends AbstractFunctionEvaluator {
         ContextPath path = engine.getContextPath();
         try {
           engine.getContextPath().add(org.matheclipse.core.expression.Context.RUBI);
+
+          /* Kryo DEL start */
           UtilityFunctionCtors.getUtilityFunctionsRuleASTRubi45();
           getRuleASTStatic();
+          /* Kryo DEL end */
+          /* Kryo INS start */
+          // Kryo kryo = KryoUtil.initKryo();
+          // try (
+          // InputStream resourceAsStream =
+          // Integrate.getClass().getResourceAsStream("/rubi_context.bin");
+          // Input input = new Input(resourceAsStream)) {
+          // // kryo sets Context.RUBI internally
+          // kryo.readClassAndObject(input);
+          // } catch (IOException e) {
+          // e.printStackTrace();
+          // }
+          // try (
+          // InputStream resourceAsStream =
+          // Integrate.getClass().getResourceAsStream("/integrate.bin");
+          // Input input = new Input(resourceAsStream)) {
+          // RulesData rulesData = (RulesData) kryo.readClassAndObject(input);
+          // S.Integrate.setRulesData(rulesData);
+          // } catch (IOException e) {
+          // e.printStackTrace();
+          // }
+          // } catch (ClassNotFoundException cnfex) {
+          // cnfex.printStackTrace();
+          /* Kryo INS end */
+
         } finally {
           engine.setContextPath(path);
         }
@@ -147,13 +170,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 
     private static void getRuleASTStatic() {
       INTEGRATE_RULES_DATA = S.Integrate.createRulesData(new int[] {0, 7000});
-      // IAST list = (IAST) WL.deserializeResource("/rules/IntegrateRules.bin", true);
-      // for (int i = 1; i < list.size(); i++) {
-      // IAST binaryList = (IAST)list.get(i);
-      // IExpr lhs=binaryList.arg1();
-      // IExpr rhs=binaryList.arg2();
-      // F.IIntegrate(i, (IAST)lhs, rhs);
-      // }
       UtilityFunctionCtors.getRuleASTRubi45();
 
       ISymbol[] rubiSymbols = {S.Derivative, S.D};

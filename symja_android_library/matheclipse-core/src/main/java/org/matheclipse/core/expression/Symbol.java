@@ -64,6 +64,9 @@ public class Symbol implements ISymbol, Serializable {
    */
   protected String fSymbolName;
 
+  /** constructor for serialization */
+  private Symbol() {}
+
   public Symbol(String symbolName, Context context) {
     fContext = context;
     fSymbolName = symbolName;

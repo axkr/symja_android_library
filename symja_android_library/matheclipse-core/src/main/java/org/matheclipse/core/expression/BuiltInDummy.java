@@ -64,6 +64,10 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   private IExpr fValue = null;
 
+
+  /** constructor for serialization */
+  protected BuiltInDummy() {}
+
   /**
    * The evaluation class of this built-in-function. See packages: package <code>
    * org.matheclipse.core.builtin.function</code> and <code>org.matheclipse.core.reflection.system

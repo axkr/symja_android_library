@@ -25,7 +25,7 @@ public class Context implements Serializable {
 
   public static final Context DUMMY = new Context(DUMMY_CONTEXT_NAME, null);
 
-  // Global context should not be defined global, but per EvalENgine
+  // Global context should not be defined global, but per EvalEngine
   // public final static Context GLOBAL = new Context("Global`");
   public static final String SYSTEM_CONTEXT_NAME = "System`";
 
@@ -36,7 +36,7 @@ public class Context implements Serializable {
 
   public static final String RUBI_STR = "Rubi`";
 
-  public static final Context RUBI = new Context(RUBI_STR);
+  public static Context RUBI = new Context(RUBI_STR);
 
   private String contextName;
 
@@ -47,6 +47,9 @@ public class Context implements Serializable {
   private transient Class<?> javaClass = null;
 
   public static final String GLOBAL_CONTEXT_NAME = "Global`";
+
+  /** constructor for serialization */
+  private Context() {}
 
   public Context(String contextName) {
     this(contextName, null, new HashMap<>());
