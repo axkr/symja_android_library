@@ -1805,6 +1805,10 @@ public final class NumberTheory {
           // integer to large?
         }
       } else {
+        if (S.True.equals(AbstractAssumptions.assumePrime(arg1))) {
+          // fungrim "cb410e"
+          return F.Plus(F.CN1, arg1);
+        }
         if (arg1.isPower() && arg1.exponent().isIntegerResult()
             && AbstractAssumptions.assumePrime(arg1.base()).isTrue()) {
           IExpr p = arg1.base();
@@ -2193,6 +2197,16 @@ public final class NumberTheory {
           return x;
         } else {
           if (engine.isDoubleMode()) {
+            if (!x.isMathematicalIntegerNegative()) {
+              Complex cx = x.evalComplex();
+              Complex cn = n.evalComplex();
+              cx = cx.add(1.0);
+              cn = cx.subtract(cn);
+              if (!(cn.isMathematicalInteger() && cn.getReal() < 0.0)) {
+                // Gamma(1+x)/Gamma(1-n+x)
+                return F.Divide(F.Gamma(F.complexNum(cx)), F.Gamma(F.complexNum(cn)));
+              }
+            }
             double real = Double.NaN;
             try {
               real = x.evalDouble();
@@ -2232,6 +2246,9 @@ public final class NumberTheory {
       if (ast.isAST3()) {
         IExpr result = F.C1;
         IExpr h = ast.arg3();
+        if (h.isZero()) {
+          return F.Power(x, n);
+        }
         // x*(x-h)* (x-(n-1)*h)
         if (engine.evalTrue(F.Less(n, F.C0))) {
           return F.NIL;
@@ -2241,6 +2258,21 @@ public final class NumberTheory {
           return x;
         } else {
           if (engine.isDoubleMode()) {
+            if (!x.isMathematicalIntegerNegative()) {
+              Complex cx = x.evalComplex();
+              Complex cn = n.evalComplex();
+              Complex ch = h.evalComplex();
+
+              Complex cxDch = cx.divide(ch);
+              Complex cxDchPlus1 = cxDch.add(1.0);
+              Complex cxDchPlus1SubtractN = cxDchPlus1.subtract(cn);
+              Complex factor = cx.pow(cn).divide(cxDch.pow(cn));
+              if (!(cxDchPlus1.isMathematicalInteger() && cxDchPlus1.getReal() < 0.0)) {
+                // (x^n*Gamma(1+x/h))/((x/h)^n*Gamma(1-n+x/h))
+                return F.Divide(F.Times(F.complexNum(factor), F.Gamma(F.complexNum(cxDchPlus1))),
+                    F.Gamma(F.complexNum(cxDchPlus1SubtractN)));
+              }
+            }
             double real = Double.NaN;
             try {
               real = x.evalDouble();
@@ -2279,6 +2311,7 @@ public final class NumberTheory {
               }
               return result;
             }
+
           } else if (x.isExactNumber() && n.isRational() && h.isRational()) {
             IRational real = (IRational) ((INumber) x).re();
             IRational dN = (IRational) n;

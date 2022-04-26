@@ -64,6 +64,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.HurwitzLerchPhiRules;
+import org.matheclipse.core.reflection.system.rules.LerchPhiRules;
 import org.matheclipse.core.reflection.system.rules.PolyGammaRules;
 import org.matheclipse.core.reflection.system.rules.PolyLogRules;
 import org.matheclipse.core.reflection.system.rules.ProductLogRules;
@@ -96,6 +97,7 @@ public class SpecialFunctions {
       S.InverseErfc.setEvaluator(new InverseErfc());
       S.InverseBetaRegularized.setEvaluator(new InverseBetaRegularized());
       S.InverseGammaRegularized.setEvaluator(new InverseGammaRegularized());
+      S.LerchPhi.setEvaluator(new LerchPhi());
       S.LogGamma.setEvaluator(new LogGamma());
       S.MeijerG.setEvaluator(new MeijerG());
       S.PolyGamma.setEvaluator(new PolyGamma());
@@ -770,7 +772,7 @@ public class SpecialFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr s = ast.arg2();
-      IExpr a = ast.arg2();
+      IExpr a = ast.arg3();
       if (z.isZero() && s.isOne() && a.isOne()) {
         // special for numeric values
         return F.C1;
@@ -1103,6 +1105,53 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  private static class LerchPhi extends AbstractFunctionEvaluator implements LerchPhiRules {
+
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      IExpr s = ast.arg2();
+      IExpr a = ast.arg3();
+      if (s.isZero()) {
+        return F.Power(F.Subtract(F.C1, z), F.CN1);
+      }
+
+      if (a.isZero()) {
+        return F.PolyLog(s, z);
+      }
+      if (a.isOne()) {
+        // PolyLog(s, z)/z
+        return F.Times(F.PolyLog(s, z), F.Power(z, F.CN1));
+      }
+
+      if (z.isZero()) {
+        if (s.isOne()) {
+          return F.Power(F.Power(a, 2), F.CN1D2);
+        }
+        // (a^2)^(-s/2)
+        return F.Power(F.Power(a, F.C2), F.Times(F.CN1D2, s));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
     }
 
     @Override

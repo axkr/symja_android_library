@@ -214,6 +214,17 @@ public class FunctionExpandTest extends AbstractTestCase {
         "(Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))");
   }
 
+  public void testFunctionExpandFactorialPower() {
+    check("FunctionExpand(FactorialPower(b,3))", //
+        "(-2+b)*(-1+b)*b");
+    check("FunctionExpand(FactorialPower(b,3,-1))", //
+        "b*(1+b)*(2+b)");
+    check("FunctionExpand(FactorialPower(a,b))", //
+        "Gamma(1+a)/Gamma(1+a-b)");
+    check("FunctionExpand(FactorialPower(a,b,-1))", //
+        "(a^b*Gamma(1-a))/((-a)^b*Gamma(1-a-b))");
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {

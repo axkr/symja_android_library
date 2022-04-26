@@ -50,6 +50,9 @@ matcher.caseOf(Sum(Times(Power(Factorial(i_),CN1),Power(x_,i_)),list(i_Symbol,C0
     // Sum(1/((-1)^i_*(2*i_+1)),{i_Symbol,1,Infinity}):=1/4*(-4+Pi)
 matcher.caseOf(Sum(Times(Power(CN1,Negate(i_)),Power(Plus(Times(C2,i_),C1),CN1)),list(i_Symbol,C1,oo)),
       Times(C1D4,Plus(CN4,Pi)));
+    // Sum(z_^k_*(k_+a_)^s_,{k_,0,Infinity}):=HurwitzLerchPhi(z,-s,a)
+matcher.caseOf(Sum(Times(Power(z_,k_),Power(Plus(k_,a_),s_)),list(k_,C0,oo)),
+      HurwitzLerchPhi(z,Negate(s),a));
     // Sum(i_^k_Symbol,{i_Symbol,1,n_Symbol}):=HarmonicNumber(n,-k)/;FreeQ(k,i)&&FreeQ(n,i)
 matcher.caseOf(Sum(Power(i_,k_Symbol),list(i_Symbol,C1,n_Symbol)),
       Condition(HarmonicNumber(n,Negate(k)),And(FreeQ(k,i),FreeQ(n,i))));

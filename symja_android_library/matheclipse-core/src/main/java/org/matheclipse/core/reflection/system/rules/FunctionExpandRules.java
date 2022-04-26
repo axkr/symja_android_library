@@ -80,6 +80,21 @@ public interface FunctionExpandRules {
     // n_!!:=2^(n/2+1/4*(1-Cos(n*Pi)))*Pi^(1/4*(-1+Cos(n*Pi)))*Gamma(1+n/2)
     SetDelayed(Factorial2(n_),
       Times(Power(C2,Plus(Times(C1D2,n),Times(C1D4,Subtract(C1,Cos(Times(n,Pi)))))),Power(Pi,Times(C1D4,Plus(CN1,Cos(Times(n,Pi))))),Gamma(Plus(C1,Times(C1D2,n))))),
+    // FactorialPower(x_,n_Integer,-1):=Product(x+k,{k,0,-1+n})/;n>0
+    SetDelayed(FactorialPower(x_,$p(n, Integer),CN1),
+      Condition(Product(Plus(x,k),list(k,C0,Plus(CN1,n))),Greater(n,C0))),
+    // FactorialPower(x_,n_,-1):=(x^n*Gamma(1-x))/((-x)^n*Gamma(1-n-x))
+    SetDelayed(FactorialPower(x_,n_,CN1),
+      Times(Power(x,n),Gamma(Subtract(C1,x)),Power(Times(Power(Negate(x),n),Gamma(Plus(C1,Negate(n),Negate(x)))),CN1))),
+    // FactorialPower(x_,n_Integer):=Product(-k+x,{k,0,-1+n})/;n>0
+    SetDelayed(FactorialPower(x_,$p(n, Integer)),
+      Condition(Product(Plus(Negate(k),x),list(k,C0,Plus(CN1,n))),Greater(n,C0))),
+    // FactorialPower(x_,n_):=Gamma(1+x)/Gamma(1-n+x)
+    SetDelayed(FactorialPower(x_,n_),
+      Times(Gamma(Plus(C1,x)),Power(Gamma(Plus(C1,Negate(n),x)),CN1))),
+    // FactorialPower(x_,n_,h_):=(x^n*Gamma(1+x/h))/((x/h)^n*Gamma(1-n+x/h))/;h=!=0
+    SetDelayed(FactorialPower(x_,n_,h_),
+      Condition(Times(Power(x,n),Gamma(Plus(C1,Times(Power(h,CN1),x))),Power(Times(Power(Times(Power(h,CN1),x),n),Gamma(Plus(C1,Negate(n),Times(Power(h,CN1),x)))),CN1)),UnsameQ(h,C0))),
     // Fibonacci(m_Integer+n_):=1/2*Fibonacci(m)*LucasL(n)+1/2*Fibonacci(n)*LucasL(m)/;n∈Integers
     SetDelayed(Fibonacci(Plus($p(m, Integer),n_)),
       Condition(Plus(Times(C1D2,Fibonacci(m),LucasL(n)),Times(C1D2,Fibonacci(n),LucasL(m))),Element(n,Integers))),
@@ -125,6 +140,9 @@ public interface FunctionExpandRules {
     // HypergeometricPFQ({1/2},{1,1},z_):=BesselI(0,Sqrt(z))^2
     SetDelayed(HypergeometricPFQ(list(C1D2),list(C1,C1),z_),
       Sqr(BesselI(C0,Sqrt(z)))),
+    // HypergeometricPFQ({a_},{b_},z_):=Hypergeometric1F1(a,b,z)
+    SetDelayed(HypergeometricPFQ(list(a_),list(b_),z_),
+      Hypergeometric1F1(a,b,z)),
     // Hypergeometric2F1(2,b_,c_,-1/2):=1/3*(3-b)/;5/2-b/2==Expand(c)
     SetDelayed(Hypergeometric2F1(C2,b_,c_,CN1D2),
       Condition(Times(C1D3,Subtract(C3,b)),Equal(Plus(QQ(5L,2L),Times(CN1D2,b)),Expand(c)))),

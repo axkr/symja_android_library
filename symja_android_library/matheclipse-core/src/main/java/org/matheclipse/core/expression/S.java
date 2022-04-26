@@ -5470,6 +5470,8 @@ public class S {
    */
   public final static IBuiltInSymbol LengthWhile = F.initFinalSymbol("LengthWhile", ID.LengthWhile);
 
+  public final static IBuiltInSymbol LerchPhi = F.initFinalSymbol("LerchPhi", ID.LerchPhi);
+
   /**
    * Less(x, y) - yields `True` if `x` is known to be less than `y`.
    * 

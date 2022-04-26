@@ -1866,7 +1866,7 @@ public final class Arithmetic {
         if (o0.isZero()) {
           return F.CInfinity;
         }
-        if (o0.isNegativeResult()) {
+        if (o0.isMathematicalIntegerNegative()) {
           return F.CComplexInfinity;
         }
         if (o0.isPositiveResult()) {
@@ -1926,10 +1926,13 @@ public final class Arithmetic {
       if (arg1.isZero()) {
         return F.CComplexInfinity;
       }
+      if (arg1.isMathematicalIntegerNegative()) {
+        return F.CComplexInfinity;
+      }
       if (arg1.isIntegerResult()) {
-        if (arg1.isNegative()) {
-          return F.CComplexInfinity;
-        }
+        // if (arg1.isNegative()) {
+        // return F.CComplexInfinity;
+        // }
         if (arg1.isNonNegativeResult()) {
           if (arg1.isInteger()) {
             return NumberTheory.factorial(((IInteger) arg1).subtract(F.C1));
@@ -2148,6 +2151,14 @@ public final class Arithmetic {
       // return engine.printMessage(ast.topHead(), rex);
       // }
       // }
+      if (engine.isDoubleMode()) {
+        if (arg1.isMathematicalIntegerNegative()) {
+          return F.CComplexInfinity;
+        }
+        org.hipparchus.complex.Complex cn = arg1.evalComplex();
+        cn = cn.add(1.0);
+        return F.Plus(S.EulerGamma, F.PolyGamma(F.C0, F.complexNum(cn)));
+      }
       if (arg1.isInteger()) {
         if (arg1.isNegative()) {
           return F.CComplexInfinity;

@@ -485,6 +485,18 @@ public class Num implements INum {
     return Double.isNaN(fDouble);
   }
 
+  /** @return */
+  @Override
+  public boolean isMathematicalIntegerNegative() {
+    return DoubleMath.isMathematicalInteger(fDouble) && fDouble < 0.0;
+  }
+
+  /** @return */
+  @Override
+  public boolean isMathematicalIntegerNonNegative() {
+    return DoubleMath.isMathematicalInteger(fDouble) && fDouble >= 0.0;
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isNegative() {

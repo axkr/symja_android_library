@@ -32,7 +32,9 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric0F1Rules;
+import org.matheclipse.core.reflection.system.rules.Hypergeometric1F1Rules;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric2F1Rules;
+import org.matheclipse.core.reflection.system.rules.HypergeometricPFQRules;
 import org.matheclipse.core.reflection.system.rules.HypergeometricURules;
 import org.matheclipse.core.reflection.system.rules.WhittakerMRules;
 import org.matheclipse.core.reflection.system.rules.WhittakerWRules;
@@ -798,7 +800,13 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class Hypergeometric1F1 extends AbstractFunctionEvaluator {
+  private static class Hypergeometric1F1 extends AbstractFunctionEvaluator
+      implements Hypergeometric1F1Rules {
+
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -880,11 +888,6 @@ public class HypergeometricFunctions {
                   F.Times(F.Power(S.E, z), F.Power(z, F.Plus(F.C2, F.Negate(b))),
                       F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z))))));
         }
-        if (a.isNumEqualInteger(F.CN2)) {
-          // 1 - (2*z)/b + z^2/(b*(1 + b))
-          return F.Plus(F.C1, F.Times(F.CN2, F.Power(b, -1), z),
-              F.Times(F.Power(b, -1), F.Power(F.Plus(F.C1, b), -1), F.Sqr(z)));
-        }
       } catch (ValidateException ve) {
         return IOFunctions.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
@@ -901,7 +904,9 @@ public class HypergeometricFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
     }
+
   }
 
   private static class Hypergeometric2F1 extends AbstractFunctionEvaluator
@@ -1041,7 +1046,13 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class HypergeometricPFQ extends AbstractFunctionEvaluator {
+  private static class HypergeometricPFQ extends AbstractFunctionEvaluator
+      implements HypergeometricPFQRules {
+
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1051,6 +1062,9 @@ public class HypergeometricFunctions {
       if (c.isList()) {
         // thread elementwise over list in arg3
         return ((IAST) c).mapThread(ast.setAtCopy(3, F.Slot1), 3);
+      }
+      if (c.isZero() && a.isList() && b.isList()) {
+        return F.C1;
       }
       if (a.isVector() > 0) {
         IAST aVector = (IAST) a.normal(false);

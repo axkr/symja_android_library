@@ -8016,13 +8016,18 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFactorialPower() {
-    // check("FactorialPower(2-I, 2)", //
-    // "1-I*3"
-    // TODO
-    // check("Gamma(2.0+1.0)/Gamma(2.0-0.9+1.0)", //
-    // "1.91116");
-    // check("FactorialPower(2, 0.9)", //
-    // "1.91116");
+    check("FactorialPower(-5, 3, 0.5)", //
+        "-165.0");
+
+    check("FactorialPower(x,n,0)", //
+        "x^n");
+     check("FactorialPower(2-I, 2)", //
+         "1-I*3");
+ 
+    check("Gamma(2.0+1.0)/Gamma(2.0-0.9+1.0)", //
+        "1.91116");
+    check("FactorialPower(2, 0.9)", //
+        "1.91116");
     check("FactorialPower(1,3)", //
         "0");
     check("FactorialPower(19,1317624576693539401)", //
@@ -10872,6 +10877,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testHypergeometric1F1() {
+    check("Hypergeometric1F1(-2,-1-a,-a)", //
+        "1+(2*a)/(-1-a)+a/(1+a)");
+    check("Hypergeometric1F1(-3,b,z)", //
+        "1+(-3*z)/b+(3*z^2)/(b*(1+b))-z^3/(b*(1+b)*(2+b))");
+    check("Hypergeometric1F1(-2,b,z)", //
+        "1+(-2*z)/b+z^2/(b*(1+b))");
     // slow
     check("Hypergeometric1F1(-9223372036854775808/11,{2,3,4},0.5)", //
         "{Hypergeometric1F1(-8.38488*10^17,2.0,0.5),Hypergeometric1F1(-8.38488*10^17,3.0,0.5),Hypergeometric1F1(-8.38488*10^17,4.0,0.5)}");
@@ -11017,6 +11028,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testHypergeometricPFQ() {
+    check("HypergeometricPFQ({1/2, b}, {3/2, b + 1}, z)", //
+        "(b*(Sqrt(Pi)*Sqrt(1/z)*Erfi(Sqrt(z))+(-Gamma(b)+Gamma(b,-z))/(-z)^b))/(-1+2*b)");
+    check("HypergeometricPFQ({a,b}, {c,d}, 0)", //
+        "1");
+    check("HypergeometricPFQ({a, b}, {c, b}, z)", //
+        "HypergeometricPFQ({a},{c},z)");
     check("HypergeometricPFQ({1, 1, 1}, {3/2, 3/2, 3/2}, 10.0)", //
         "HypergeometricPFQ({1.0,1.0,1.0},{1.5,1.5,1.5},10.0)");
     check("HypergeometricPFQ({1, 1}, {3, 3, 3}, 2.)", //
@@ -13625,6 +13642,16 @@ public class LowercaseTestCase extends AbstractTestCase {
         "2");
     check("LengthWhile(h(1, 1, 2, 3, a, 8, 13, b, c, d), IntegerQ)", //
         "4");
+  }
+
+  public void testLerchPhi() {
+    check("LerchPhi(0,1,a)", //
+        "1/Sqrt(a^2)");
+    check("LerchPhi(z,s,-2)", //
+        "z^2*(1/(2^s*z^2)+1/z+PolyLog(s,z))");
+    check("LerchPhi(-1,1,0)", //
+        "-Log(2)");
+
   }
 
   public void testLess() {

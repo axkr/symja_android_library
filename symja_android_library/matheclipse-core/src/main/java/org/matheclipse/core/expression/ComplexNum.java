@@ -617,6 +617,18 @@ public class ComplexNum implements IComplexNum {
 
   /** @return */
   @Override
+  public boolean isMathematicalIntegerNegative() {
+    return fComplex.isMathematicalInteger() && fComplex.getReal() < 0.0;
+  }
+
+  /** @return */
+  @Override
+  public boolean isMathematicalIntegerNonNegative() {
+    return fComplex.isMathematicalInteger() && fComplex.getReal() >= 0.0;
+  }
+
+  /** @return */
+  @Override
   public boolean isNaN() {
     return fComplex.isNaN();
   }

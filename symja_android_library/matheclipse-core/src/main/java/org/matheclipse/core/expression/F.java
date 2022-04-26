@@ -3888,8 +3888,12 @@ public class F extends S {
     return new AST1(Factorial2, a0);
   }
 
-  public static IAST FactorialPower(final IExpr a0, final IExpr a1) {
-    return new AST2(FactorialPower, a0, a1);
+  public static IAST FactorialPower(final IExpr x, final IExpr n) {
+    return new AST2(FactorialPower, x, n);
+  }
+
+  public static IAST FactorialPower(final IExpr x, final IExpr n, final IExpr h) {
+    return new AST3(FactorialPower, x, n, h);
   }
 
   public static IAST FactorInteger(final IExpr a0) {
@@ -5312,6 +5316,10 @@ public class F extends S {
 
   public static IAST Length(final IExpr expr) {
     return new AST1(Length, expr);
+  }
+
+  public static IAST LerchPhi(final IExpr z, final IExpr s, final IExpr a) {
+    return new AST3(LerchPhi, z, s, a);
   }
 
   /**

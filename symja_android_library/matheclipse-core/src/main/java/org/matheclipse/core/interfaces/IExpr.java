@@ -118,6 +118,70 @@ public interface IExpr
     TRUE, FALSE, UNDECIDABLE
   }
 
+  public static class SourceCodeProperties {
+    public enum Prefix {
+      NONE, CLASS_NAME, FULLY_QUALIFIED_CLASS_NAME;
+    }
+
+    /**
+     * Returns a {@link SourceCodeProperties} objects with the same values as the given one except
+     * that the field {@link #symbolsAsFactoryMethod} of the returned object is always <code>false
+     * </code>.
+     */
+    public static SourceCodeProperties copyWithoutSymbolsAsFactoryMethod(SourceCodeProperties o) {
+      return !o.symbolsAsFactoryMethod ? o
+          : new SourceCodeProperties(false, o.useOperators, o.prefix, o.noSymbolPrefix);
+    }
+
+    /**
+     * Reaturns a {@link SourceCodeProperties} object with the specified parameters.
+     *
+     * @param symbolsAsFactoryMethod if <code>true</code> use the <code>F.symbol()</code> method,
+     *        otherwise print the symbol name.
+     * @param useOperators use operators instead of function names for representation of Plus,
+     *        Times, Power,...
+     * @param prefix if {@link Prefix#CLASS_NAME} use the <code>F....</code> class prefix for
+     *        generating Java code, if {@link Prefix#FULLY_QUALIFIED_CLASS_NAME} use the fully
+     *        qualified class name, if {@link Prefix#NONE} use no prefix.
+     * @param noSymbolPrefix for symbols like <code>x,y,z,...</code> don't use the <code>F....
+     *     </code> class prefix for code generation
+     */
+    public static SourceCodeProperties of(boolean symbolsAsFactoryMethod, boolean useOperators,
+        Prefix prefix, boolean noSymbolPrefix) {
+      return new SourceCodeProperties(symbolsAsFactoryMethod, useOperators, prefix, noSymbolPrefix);
+    }
+
+    /**
+     * If <code>true</code> use the <code>F.symbol()</code> method, otherwise print the symbol name.
+     */
+    public final boolean symbolsAsFactoryMethod;
+    /**
+     * If true use operators instead of function names for representation of Plus, Times, Power,...
+     */
+    public final boolean useOperators;
+
+    /**
+     * If {@link Prefix#CLASS_NAME} use the <code>F....</code> class prefix for generating Java
+     * code, if {@link Prefix#FULLY_QUALIFIED_CLASS_NAME} use the fully qualified class name, if
+     * {@link Prefix#NONE} use no prefix.
+     */
+    public final Prefix prefix;
+
+    /**
+     * If <code>true</code>, for symbols like <code>x,y,z,...</code> don't use the <code>F....
+     * </code> class prefix for code generation.
+     */
+    public final boolean noSymbolPrefix;
+
+    private SourceCodeProperties(boolean symbolsAsFactoryMethod, boolean useOperators,
+        Prefix prefix, boolean noSymbolPrefix) {
+      this.symbolsAsFactoryMethod = symbolsAsFactoryMethod;
+      this.useOperators = useOperators;
+      this.prefix = Objects.requireNonNull(prefix, "Method prefix must not be null");
+      this.noSymbolPrefix = noSymbolPrefix;
+    }
+  }
+
   public static final int ASTID = 1024;
 
   public static final int BLANKID = 4096;
@@ -281,7 +345,8 @@ public interface IExpr
   public IExpr accept(IVisitor visitor);
 
   /**
-   * Accept a visitor with return type <code>boolean</code>
+   * Accept a visitor with return type <code>boolean</code>. The visitor should return
+   * <code>true</code> if one of it's members fulfills the specific condition of the visitor.
    *
    * @param visitor
    * @return
@@ -303,6 +368,21 @@ public interface IExpr
    * @return
    */
   public long accept(IVisitorLong visitor);
+
+  @Override
+  default IExpr acos() {
+    return S.ArcCos.of(this);
+  }
+
+  @Override
+  default IExpr acosh() {
+    return S.ArcCosh.of(this);
+  }
+
+  @Override
+  default IExpr add(double that) {
+    return plus(F.num(that));
+  }
 
   @Override
   default IExpr add(IExpr that) {
@@ -366,6 +446,16 @@ public interface IExpr
     return -1;
   }
 
+  @Override
+  default IExpr asin() {
+    return S.ArcSin.of(this);
+  }
+
+  @Override
+  default IExpr asinh() {
+    return S.ArcSinh.of(this);
+  }
+
   default Object asType(Class<?> clazz) {
     if (clazz.equals(Boolean.class)) {
       if (isTrue()) {
@@ -391,6 +481,27 @@ public interface IExpr
     throw new UnsupportedOperationException("ExprImpl.asType() - cast not supported.");
   }
 
+  @Override
+  default IExpr atan() {
+    return S.ArcTan.of(this);
+  }
+
+  @Override
+  default IExpr atan2(IExpr that) throws MathIllegalArgumentException {
+    // Beware of the order or arguments! As this is based on a two-arguments functions, in order to
+    // be consistent with arguments order, the instance is the first argument and the single
+    // provided argument is the second argument. In order to be consistent with programming
+    // languages Math.atan2, this method computes Math.atan2(y, x).
+
+    // The arguments of the Symja ArcTan() function is defined the other way round
+    return S.ArcTan.of(that, this);
+  }
+
+  @Override
+  default IExpr atanh() {
+    return S.ArcTanh.of(this);
+  }
+
   /**
    * Get the first element of this <code>AST</code> list (i.e. get(1)). Return <code>F.NIL</code> if
    * this object isn't an <code>AST</code>. Use this method if the AST gives <code>true</code> for
@@ -406,6 +517,16 @@ public interface IExpr
       }
     }
     return first();
+  }
+
+  @Override
+  default IExpr cbrt() {
+    return S.Power.of(this, F.C1D3);
+  }
+
+  @Override
+  default IExpr ceil() {
+    return S.Ceiling.of(this);
   }
 
   /**
@@ -474,6 +595,16 @@ public interface IExpr
     return F.ast(exprArr, head);
   }
 
+  @Override
+  default IExpr copySign(double that) {
+    return copySign(F.num(that));
+  }
+
+  @Override
+  default IExpr copySign(IExpr that) {
+    return abs().times(that.sign());
+  }
+
   /**
    * Return <code>negate()</code> if <code>number.sign() < 0</code>, otherwise return <code>this
    * </code>
@@ -483,6 +614,16 @@ public interface IExpr
    */
   default IExpr copySign(ISignedNumber number) {
     return number.complexSign() < 0 ? negate() : this;
+  }
+
+  @Override
+  default IExpr cos() {
+    return S.Cos.of(this);
+  }
+
+  @Override
+  default IExpr cosh() {
+    return S.Cosh.of(this);
   }
 
   /**
@@ -511,6 +652,11 @@ public interface IExpr
    */
   default long determinePrecision() {
     return -1;
+  }
+
+  @Override
+  default IExpr divide(double arg0) {
+    return divide(F.num(arg0));
   }
 
   /**
@@ -572,22 +718,6 @@ public interface IExpr
    */
   public default boolean equalsAt(int position, final IExpr expr) {
     return false;
-  }
-
-  /**
-   * Compare if <code>this == that</code:
-   * <ul>
-   * <li>return S.True if the comparison is <code>true</code></li>
-   * <li>return S.False if the comparison is <code>false</code></li>
-   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
-   * </ul>
-   *
-   * @param that
-   * @return <code>S.True, S.False or F.NIL</code
-   */
-  default IExpr equalTo(IExpr that) {
-    COMPARE_TERNARY temp = this.equalTernary(that, EvalEngine.get());
-    return convertToExpr(temp);
   }
 
   default IExpr.COMPARE_TERNARY equalTernary(IExpr that, EvalEngine engine) {
@@ -659,6 +789,22 @@ public interface IExpr
   }
 
   /**
+   * Compare if <code>this == that</code:
+   * <ul>
+   * <li>return S.True if the comparison is <code>true</code></li>
+   * <li>return S.False if the comparison is <code>false</code></li>
+   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * </ul>
+   *
+   * @param that
+   * @return <code>S.True, S.False or F.NIL</code
+   */
+  default IExpr equalTo(IExpr that) {
+    COMPARE_TERNARY temp = this.equalTernary(that, EvalEngine.get());
+    return convertToExpr(temp);
+  }
+
+  /**
    * Evaluate the expression to a <code>Complex</code> value.
    *
    * @return
@@ -670,22 +816,6 @@ public interface IExpr
 
   default double evalDouble() throws ArgumentTypeException {
     return EvalEngine.get().evalDouble(this);
-  }
-
-  /**
-   * Evaluate the expression to a Java <code>double</code> value. If the conversion to a double
-   * value is not possible, the method throws an exception.
-   *
-   * @return this expression converted to a Java <code>double</code> value.
-   */
-  @Override
-  default double getReal() throws ArgumentTypeException {
-    if (isInfinity()) {
-      return Double.POSITIVE_INFINITY;
-    } else if (isNegativeInfinity()) {
-      return Double.NEGATIVE_INFINITY;
-    }
-    return evalDouble();
   }
 
   /**
@@ -747,6 +877,29 @@ public interface IExpr
   }
 
   /**
+   * If this expr is an {@link IAST}, check all elements by applying the <code>predicate</code> to
+   * each argument in this {@link IAST} and return <code>true</code> if <b>one</b> of the arguments
+   * starting from index <code>1</code> satisfy the predicate.
+   *
+   * @param predicate the predicate which filters each argument in this <code>AST</code>
+   * @return the <code>true</code> if the predicate is true the first time or <code>false</code>
+   *         otherwise
+   */
+  default boolean exists(Predicate<? super IExpr> predicate) {
+    return false;
+  }
+
+  @Override
+  default IExpr exp() {
+    return S.Exp.of(this);
+  }
+
+  @Override
+  default IExpr expm1() {
+    return S.Exp.of(this).subtract(F.C1);
+  }
+
+  /**
    * Get the second element of this <code>AST</code> list (i.e. get(2)). Return <code>F.NIL</code>
    * if this object isn't an <code>AST</code>. Use this method if the AST gives <code>true</code>
    * for the <code>isPower()</code> method.
@@ -777,6 +930,24 @@ public interface IExpr
    */
   default IExpr first() {
     return F.NIL;
+  }
+
+  @Override
+  default IExpr floor() {
+    return S.Floor.of(this);
+  }
+
+  /**
+   * If this expr is an {@link IAST}, check all elements by applying the <code>predicate</code> to
+   * each argument in this {@link IAST} and return <code>true</code> if <b>all</b> of the arguments
+   * starting from index <code>1</code> satisfy the predicate.
+   *
+   * @param predicate the predicate which filters each argument in this <code>AST</code>
+   * @return <code>true</code> if the predicate is true for <b>all</b elements or <code>false</code>
+   *         otherwise
+   */
+  default boolean forAll(Predicate<? super IExpr> predicate) {
+    return false;
   }
 
   /**
@@ -821,6 +992,27 @@ public interface IExpr
 
   default IExpr getOptionalValue() {
     return null;
+  }
+
+  @Override
+  default IExpr getPi() {
+    return S.Pi;
+  }
+
+  /**
+   * Evaluate the expression to a Java <code>double</code> value. If the conversion to a double
+   * value is not possible, the method throws an exception.
+   *
+   * @return this expression converted to a Java <code>double</code> value.
+   */
+  @Override
+  default double getReal() throws ArgumentTypeException {
+    if (isInfinity()) {
+      return Double.POSITIVE_INFINITY;
+    } else if (isNegativeInfinity()) {
+      return Double.NEGATIVE_INFINITY;
+    }
+    return evalDouble();
   }
 
   /**
@@ -968,6 +1160,11 @@ public interface IExpr
    */
   public int hierarchy();
 
+  @Override
+  default IExpr hypot(IExpr y) throws MathIllegalArgumentException {
+    return S.Sqrt.of(F.Plus(F.Sqr(this), F.Sqr(y)));
+  }
+
   /**
    * If this expression unequals <code>F.NIL</code>, invoke the specified consumer with the <code>
    * this</code> object, otherwise return <code>F#NIL</code>.
@@ -1054,68 +1251,6 @@ public interface IExpr
    */
   default CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
     return toString();
-  }
-
-  public static class SourceCodeProperties {
-    public enum Prefix {
-      NONE, CLASS_NAME, FULLY_QUALIFIED_CLASS_NAME;
-    }
-
-    /**
-     * If <code>true</code> use the <code>F.symbol()</code> method, otherwise print the symbol name.
-     */
-    public final boolean symbolsAsFactoryMethod;
-    /**
-     * If true use operators instead of function names for representation of Plus, Times, Power,...
-     */
-    public final boolean useOperators;
-    /**
-     * If {@link Prefix#CLASS_NAME} use the <code>F....</code> class prefix for generating Java
-     * code, if {@link Prefix#FULLY_QUALIFIED_CLASS_NAME} use the fully qualified class name, if
-     * {@link Prefix#NONE} use no prefix.
-     */
-    public final Prefix prefix;
-    /**
-     * If <code>true</code>, for symbols like <code>x,y,z,...</code> don't use the <code>F....
-     * </code> class prefix for code generation.
-     */
-    public final boolean noSymbolPrefix;
-
-    private SourceCodeProperties(boolean symbolsAsFactoryMethod, boolean useOperators,
-        Prefix prefix, boolean noSymbolPrefix) {
-      this.symbolsAsFactoryMethod = symbolsAsFactoryMethod;
-      this.useOperators = useOperators;
-      this.prefix = Objects.requireNonNull(prefix, "Method prefix must not be null");
-      this.noSymbolPrefix = noSymbolPrefix;
-    }
-
-    /**
-     * Reaturns a {@link SourceCodeProperties} object with the specified parameters.
-     *
-     * @param symbolsAsFactoryMethod if <code>true</code> use the <code>F.symbol()</code> method,
-     *        otherwise print the symbol name.
-     * @param useOperators use operators instead of function names for representation of Plus,
-     *        Times, Power,...
-     * @param prefix if {@link Prefix#CLASS_NAME} use the <code>F....</code> class prefix for
-     *        generating Java code, if {@link Prefix#FULLY_QUALIFIED_CLASS_NAME} use the fully
-     *        qualified class name, if {@link Prefix#NONE} use no prefix.
-     * @param noSymbolPrefix for symbols like <code>x,y,z,...</code> don't use the <code>F....
-     *     </code> class prefix for code generation
-     */
-    public static SourceCodeProperties of(boolean symbolsAsFactoryMethod, boolean useOperators,
-        Prefix prefix, boolean noSymbolPrefix) {
-      return new SourceCodeProperties(symbolsAsFactoryMethod, useOperators, prefix, noSymbolPrefix);
-    }
-
-    /**
-     * Returns a {@link SourceCodeProperties} objects with the same values as the given one except
-     * that the field {@link #symbolsAsFactoryMethod} of the returned object is always <code>false
-     * </code>.
-     */
-    public static SourceCodeProperties copyWithoutSymbolsAsFactoryMethod(SourceCodeProperties o) {
-      return !o.symbolsAsFactoryMethod ? o
-          : new SourceCodeProperties(false, o.useOperators, o.prefix, o.noSymbolPrefix);
-    }
   }
 
   /**
@@ -1302,11 +1437,6 @@ public interface IExpr
     return false;
   }
 
-  default boolean isRGBColor() {
-    return isAST(S.RGBColor, 4, 5)
-        || (isAST(S.RGBColor, 1) && ((IAST) this).arg1().isAST(S.List, 4, 5));
-  }
-
   /**
    * Test if this expression is an AST function, which contains the given <b>header element</b> at
    * index position <code>0</code> and optional <b>argument elements</b> at the index positions
@@ -1380,17 +1510,6 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST function or an Association, which contains a <b>header
-   * element</b> (i.e. the function name) at index position <code>0</code> and some optional
-   * <b>argument elements</b> at the index positions <code>1..n</code>.
-   *
-   * @return
-   */
-  default boolean isASTOrAssociation() {
-    return false;
-  }
-
-  /**
    * Test if this expression is an AST function, which contains a <b>header element</b> (i.e. the
    * function name) at index position <code>0</code> and no <b>argument elements</b>. <br>
    * Therefore this expression is no <b>atomic expression</b>.
@@ -1438,6 +1557,17 @@ public interface IExpr
    * @see #isAtom()
    */
   default boolean isAST3() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is an AST function or an Association, which contains a <b>header
+   * element</b> (i.e. the function name) at index position <code>0</code> and some optional
+   * <b>argument elements</b> at the index positions <code>1..n</code>.
+   *
+   * @return
+   */
+  default boolean isASTOrAssociation() {
     return false;
   }
 
@@ -1894,6 +2024,30 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is the function <code>Power[&lt;arg1&gt;, 1/2]</code> (i.e. <code>
+   * Sqrt[&lt;arg1&gt;]</code>) or <code>-Power[&lt;arg1&gt;, 1/2]</code> (i.e. <code>
+   * -Sqrt[&lt;arg1&gt;]</code>)
+   *
+   * @return
+   */
+  default boolean isFactorSqrtExpr() {
+    if (isSqrt()) {
+      IExpr base = first();
+      if (base.isRational() && base.isPositive()) {
+        return true;
+      }
+      return false;
+    }
+    if (isTimes() && first().isRational() && size() == 3) {
+      IExpr factor2 = second();
+      if (factor2.isSqrt() && factor2.first().isRational() && factor2.first().isPositive()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Test if this expression equals the symbol "False"
    *
    * @return
@@ -2197,20 +2351,6 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an {@link IAST} list, which contains a <b>header element</b> (i.e. a
-   * function symbol at index position <code>0</code> and some optional <b>argument elements</b> at
-   * the index positions <code>1..n</code>. Examples for <code>Listable</code> functions are <code>
-   * Cos[], Plus[] or Times[]
-   * </code>. Therefore this expression is no <b>atomic expression</b>.
-   *
-   * @return
-   * @see #isAtom()
-   */
-  default boolean isListableAST() {
-    return false;
-  }
-
-  /**
    * Test if this expression is a list (i.e. an AST with head List) with all arguments fulfill the
    * predicate.
    *
@@ -2246,6 +2386,20 @@ public interface IExpr
    */
   default boolean isList3() {
     return isList() && size() == 4;
+  }
+
+  /**
+   * Test if this expression is an {@link IAST} list, which contains a <b>header element</b> (i.e. a
+   * function symbol at index position <code>0</code> and some optional <b>argument elements</b> at
+   * the index positions <code>1..n</code>. Examples for <code>Listable</code> functions are <code>
+   * Cos[], Plus[] or Times[]
+   * </code>. Therefore this expression is no <b>atomic expression</b>.
+   *
+   * @return
+   * @see #isAtom()
+   */
+  default boolean isListableAST() {
+    return false;
   }
 
   /**
@@ -2367,6 +2521,26 @@ public interface IExpr
    */
   default boolean isMachineNumber() {
     return this instanceof Num || this instanceof ComplexNum;
+  }
+
+  /**
+   * If this object mathematical has a negative integer number as the result return
+   * <code>true</code>.
+   * 
+   * @return
+   */
+  default boolean isMathematicalIntegerNegative() {
+    return isIntegerResult() && isNegativeResult();
+  }
+
+  /**
+   * If this object mathematical has a non-negative integer number as the result return
+   * <code>true</code>.
+   * 
+   * @return
+   */
+  default boolean isMathematicalIntegerNonNegative() {
+    return isIntegerResult() && isNonNegativeResult();
   }
 
   /**
@@ -2665,15 +2839,6 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an instance of NumericArrayExpr
-   *
-   * @return
-   */
-  default boolean isNumericArray() {
-    return false;
-  }
-
-  /**
    * Test if this expression is a numeric number (i.e. an instance of type <code>INum</code> or type
    * <code>IComplexNum</code>), an <code>ASTRealVector</code> or an <code>ASTRealMatrix</code>.
    *
@@ -2682,6 +2847,15 @@ public interface IExpr
   default boolean isNumericArgument() {
     return this instanceof INum || this instanceof IComplexNum || this instanceof ASTRealVector
         || this instanceof ASTRealMatrix;
+  }
+
+  /**
+   * Test if this expression is an instance of NumericArrayExpr
+   *
+   * @return
+   */
+  default boolean isNumericArray() {
+    return false;
   }
 
   /**
@@ -2721,13 +2895,13 @@ public interface IExpr
   /**
    * Test if this expression is a numeric function (i.e. a number, a symbolic constant or a function
    * (with attribute NumericFunction) where all arguments are also &quot;numeric functions&quot;)
-   * under the assumption, that all variables contained in <code>varSet</code> are also numeric.
+   * under the assumption, that all variables contained in <code>list</code> are also numeric.
    *
-   * @return <code>true</code>, if the given expression is a numeric function or value, assuming all
-   *         variables contained in <code>varSet</code> are also numeric.
+   * @param list a list of variable symbols
+   * @return
    */
-  default boolean isNumericFunction(VariablesSet varSet) {
-    return isNumericFunction(true) || varSet.contains(this);
+  default boolean isNumericFunction(Function<IExpr, String> list) {
+    return isNumericFunction(true) || list.apply(this) != null;
   }
 
   /**
@@ -2745,13 +2919,13 @@ public interface IExpr
   /**
    * Test if this expression is a numeric function (i.e. a number, a symbolic constant or a function
    * (with attribute NumericFunction) where all arguments are also &quot;numeric functions&quot;)
-   * under the assumption, that all variables contained in <code>list</code> are also numeric.
+   * under the assumption, that all variables contained in <code>varSet</code> are also numeric.
    *
-   * @param list a list of variable symbols
-   * @return
+   * @return <code>true</code>, if the given expression is a numeric function or value, assuming all
+   *         variables contained in <code>varSet</code> are also numeric.
    */
-  default boolean isNumericFunction(Function<IExpr, String> list) {
-    return isNumericFunction(true) || list.apply(this) != null;
+  default boolean isNumericFunction(VariablesSet varSet) {
+    return isNumericFunction(true) || varSet.contains(this);
   }
 
   /**
@@ -3058,6 +3232,17 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression equals <code>0</code> in symbolic or numeric mode. For the numeric test
+   * multiple random numbers with a <code>Chop()</code> function test are used.
+   *
+   * @param fastTest checks only numerical; no symbolic tests are tried.
+   * @return
+   */
+  default boolean isPossibleZero(boolean fastTest) {
+    return isZero();
+  }
+
+  /**
    * Test if this expression is the function <code>Power[&lt;arg1&gt;, &lt;arg2&gt;]</code>
    *
    * @return
@@ -3230,6 +3415,11 @@ public interface IExpr
    */
   default boolean isRepeated() {
     return false;
+  }
+
+  default boolean isRGBColor() {
+    return isAST(S.RGBColor, 4, 5)
+        || (isAST(S.RGBColor, 1) && ((IAST) this).arg1().isAST(S.List, 4, 5));
   }
 
   /**
@@ -3411,30 +3601,6 @@ public interface IExpr
     }
     if (isTimes() && first().equals(F.CN1) && size() == 3) {
       if (second().isPower() && second().second().isNumEqualRational(F.C1D2)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Test if this expression is the function <code>Power[&lt;arg1&gt;, 1/2]</code> (i.e. <code>
-   * Sqrt[&lt;arg1&gt;]</code>) or <code>-Power[&lt;arg1&gt;, 1/2]</code> (i.e. <code>
-   * -Sqrt[&lt;arg1&gt;]</code>)
-   *
-   * @return
-   */
-  default boolean isFactorSqrtExpr() {
-    if (isSqrt()) {
-      IExpr base = first();
-      if (base.isRational() && base.isPositive()) {
-        return true;
-      }
-      return false;
-    }
-    if (isTimes() && first().isRational() && size() == 3) {
-      IExpr factor2 = second();
-      if (factor2.isSqrt() && factor2.first().isRational() && factor2.first().isPositive()) {
         return true;
       }
     }
@@ -3642,27 +3808,6 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression equals <code>0</code> in symbolic or numeric mode or an assumption is
-   * set that the expression equals <code>0</code>.
-   * 
-   * @return
-   */
-  default boolean isZeroResult() {
-    return isZero() || AbstractAssumptions.assumeEqual(this, F.C0);
-  }
-
-  /**
-   * Test if this expression equals <code>0</code> in symbolic or numeric mode. For the numeric test
-   * multiple random numbers with a <code>Chop()</code> function test are used.
-   *
-   * @param fastTest checks only numerical; no symbolic tests are tried.
-   * @return
-   */
-  default boolean isPossibleZero(boolean fastTest) {
-    return isZero();
-  }
-
-  /**
    * {@inheritDoc}
    *
    * <p>
@@ -3675,6 +3820,16 @@ public interface IExpr
     }
     return isAST() && PredicateQ.isPossibleZeroQ((IAST) this, false, EvalEngine.get());
     // PredicateQ.isZeroTogether(this, EvalEngine.get());
+  }
+
+  /**
+   * Test if this expression equals <code>0</code> in symbolic or numeric mode or an assumption is
+   * set that the expression equals <code>0</code>.
+   * 
+   * @return
+   */
+  default boolean isZeroResult() {
+    return isZero() || AbstractAssumptions.assumeEqual(this, F.C0);
   }
 
   /**
@@ -3780,6 +3935,56 @@ public interface IExpr
     return null;
   }
 
+  @Override
+  default IExpr linearCombination(double a1, IExpr b1, double a2, IExpr b2) {
+    return linearCombination(new double[] {a1, a2}, new IExpr[] {b1, b2});
+  }
+
+  @Override
+  default IExpr linearCombination(double a1, IExpr b1, double a2, IExpr b2, double a3, IExpr b3) {
+    return linearCombination(new double[] {a1, a2, a3}, new IExpr[] {b1, b2, b3});
+  }
+
+  @Override
+  default IExpr linearCombination(double a1, IExpr b1, double a2, IExpr b2, double a3, IExpr b3,
+      double a4, IExpr b4) {
+    return linearCombination(new double[] {a1, a2, a3, a4}, new IExpr[] {b1, b2, b3, b4});
+  }
+
+  @Override
+  default IExpr linearCombination(double[] a, IExpr[] b) throws MathIllegalArgumentException {
+    IASTAppendable result = F.PlusAlloc(a.length);
+    for (int i = 0; i < a.length; i++) {
+      result.append(F.Times(F.num(a[i]), b[i]));
+    }
+    return result;
+  }
+
+  @Override
+  default IExpr linearCombination(IExpr a1, IExpr b1, IExpr a2, IExpr b2) {
+    return linearCombination(new IExpr[] {a1, a2}, new IExpr[] {b1, b2});
+  }
+
+  @Override
+  default IExpr linearCombination(IExpr a1, IExpr b1, IExpr a2, IExpr b2, IExpr a3, IExpr b3) {
+    return linearCombination(new IExpr[] {a1, a2, a3}, new IExpr[] {b1, b2, b3});
+  }
+
+  @Override
+  default IExpr linearCombination(IExpr a1, IExpr b1, IExpr a2, IExpr b2, IExpr a3, IExpr b3,
+      IExpr a4, IExpr b4) {
+    return linearCombination(new IExpr[] {a1, a2, a3, a4}, new IExpr[] {b1, b2, b3, b4});
+  }
+
+  @Override
+  default IExpr linearCombination(IExpr[] a, IExpr[] b) throws MathIllegalArgumentException {
+    IASTAppendable result = F.PlusAlloc(a.length);
+    for (int i = 0; i < a.length; i++) {
+      result.append(F.Times(a[i], b[i]));
+    }
+    return result;
+  }
+
   /**
    * If this is an expression of the form <code>a + b * x^n</code> with <code>n</code> integer,
    * return the addend at index <code>0</code> and the multiplicant at index <code>0</code> and the
@@ -3790,6 +3995,21 @@ public interface IExpr
    */
   default IExpr[] linearPower(IExpr variable) {
     return null;
+  }
+
+  @Override
+  default IExpr log() {
+    return S.Log.of(this);
+  }
+
+  @Override
+  default IExpr log10() {
+    return S.Log.of(F.C10, this);
+  }
+
+  @Override
+  default IExpr log1p() {
+    return S.Log.of(this.inc());
   }
 
   /**
@@ -3856,6 +4076,11 @@ public interface IExpr
    */
   default IExpr most() {
     return F.NIL;
+  }
+
+  @Override
+  default IExpr multiply(double that) {
+    return times(F.num(that));
   }
 
   /**
@@ -3976,6 +4201,11 @@ public interface IExpr
       temp = function.apply(temp);
     }
     return temp;
+  }
+
+  @Override
+  default IExpr newInstance(double arg) {
+    return F.num(arg);
   }
 
   /**
@@ -4171,6 +4401,21 @@ public interface IExpr
     return engine.evaluate(F.Plus(this, that));
   }
 
+  @Override
+  default IExpr pow(double n) {
+    return S.Power.of(this, F.num(n));
+  }
+
+  @Override
+  default IExpr pow(IExpr n) throws MathIllegalArgumentException {
+    return S.Power.of(this, n);
+  }
+
+  @Override
+  default IExpr pow(int n) {
+    return S.Power.of(this, F.ZZ(n));
+  }
+
   /**
    * Returns an <code>IExpr</code> whose value is <code>(this ^ that)</code>. Calculates <code>
    * F.eval(F.Power(this, that))</code> in the common case and uses a specialized implementation for
@@ -4283,6 +4528,11 @@ public interface IExpr
   @Override
   public default IExpr reciprocal() throws MathRuntimeException {
     return inverse();
+  }
+
+  @Override
+  default IExpr remainder(double arg0) {
+    return S.Mod.of(this);
   }
 
   @Override
@@ -4430,6 +4680,21 @@ public interface IExpr
     return F.NIL;
   }
 
+  @Override
+  default IExpr rint() {
+    return S.IntegerPart.of(this);
+  }
+
+  @Override
+  default IExpr rootN(int n) {
+    return S.Power.of(this, F.QQ(1, n));
+  }
+
+  @Override
+  default IExpr scalb(int n) {
+    return times(F.C2.pow(n));
+  }
+
   /**
    * Get the second element of this <code>AST</code> list (i.e. get(2)). Return <code>F.NIL</code>
    * if this object isn't an <code>AST</code>.
@@ -4439,6 +4704,11 @@ public interface IExpr
    */
   default IExpr second() {
     return F.NIL;
+  }
+
+  @Override
+  default IExpr sign() {
+    return S.Sign.of(this);
   }
 
   /**
@@ -4456,6 +4726,26 @@ public interface IExpr
       return ((INumber) this).complexSign();
     }
     return 1;
+  }
+
+  @Override
+  default IExpr sin() {
+    return S.Sin.of(this);
+  }
+
+  @Override
+  default FieldSinCos<IExpr> sinCos() {
+    return new FieldSinCos<IExpr>(sin(), cos());
+  }
+
+  @Override
+  default IExpr sinh() {
+    return S.Sinh.of(this);
+  }
+
+  @Override
+  default FieldSinhCosh<IExpr> sinhCosh() {
+    return new FieldSinhCosh<IExpr>(sinh(), cosh());
   }
 
   /**
@@ -4515,6 +4805,11 @@ public interface IExpr
   }
 
   @Override
+  default IExpr subtract(double arg0) {
+    return subtract(F.num(arg0));
+  }
+
+  @Override
   default IExpr subtract(IExpr that) {
     if (that.isZero()) {
       return this;
@@ -4530,6 +4825,16 @@ public interface IExpr
   @Override
   default IExpr sum(final IExpr that) {
     return add(that);
+  }
+
+  @Override
+  default IExpr tan() {
+    return S.Tan.of(this);
+  }
+
+  @Override
+  default IExpr tanh() {
+    return S.Tanh.of(this);
   }
 
   /**
@@ -4576,6 +4881,16 @@ public interface IExpr
   }
 
   /**
+   * Convert this object into a <code>byte[][]</code> matrix.
+   *
+   * @return <code>null</code> if this object can not be converted into a <code>byte[][]</code>
+   *         matrix
+   */
+  default byte[][] toByteMatrix() {
+    return null;
+  }
+
+  /**
    * Convert this object into a <code>Complex[]</code> vector.
    *
    * @return <code>null</code> if this object can not be converted into a <code>Complex[]</code>
@@ -4585,14 +4900,38 @@ public interface IExpr
     return null;
   }
 
+  @Override
+  default IExpr toDegrees() {
+    // radians * (180 / Pi)
+    return F.Times(this, F.ZZ(180), F.Inverse(S.Pi));
+  }
+
   /**
-   * Convert this object into a <code>byte[][]</code> matrix.
+   * Converts this number to a <code>doube</code> value; this method returns
+   * {@link Double#MIN_VALUE} if the value of this expression isn't in the range <code>
+   * Double.MIN_VALUE</code> to <code>Double.MAX_VALUE</code> or the expression is not convertible
+   * to the <code>double</code> range.
    *
-   * @return <code>null</code> if this object can not be converted into a <code>byte[][]</code>
-   *         matrix
+   * @return the numeric value represented by this expression after conversion to type <code>double
+   *     </code> or {@link Double#MIN_VALUE} if this expression cannot be converted.
    */
-  default byte[][] toByteMatrix() {
-    return null;
+  default double toDoubleDefault() {
+    return EvalEngine.get().evalDouble(this, Double.MIN_VALUE);
+  }
+
+  /**
+   * Converts this number to a <code>doube</code> value; this method returns <code>defaultValue
+   * </code> if the value of this expression isn't in the range <code>
+   * Double.MIN_VALUE</code> to <code>Double.MAX_VALUE</code> or the expression is not convertible
+   * to the <code>double</code> range.
+   *
+   * @param defaultValue
+   * @return the numeric value represented by this expression after conversion to type <code>double
+   *     </code> or <code>defaultValue</code> if this expression cannot be converted.
+   * @return
+   */
+  default double toDoubleDefault(double defaultValue) {
+    return EvalEngine.get().evalDouble(this, defaultValue);
   }
 
   /**
@@ -4638,44 +4977,6 @@ public interface IExpr
   }
 
   /**
-   * Converts this number to a <code>doube</code> value; this method returns
-   * {@link Double#MIN_VALUE} if the value of this expression isn't in the range <code>
-   * Double.MIN_VALUE</code> to <code>Double.MAX_VALUE</code> or the expression is not convertible
-   * to the <code>double</code> range.
-   *
-   * @return the numeric value represented by this expression after conversion to type <code>double
-   *     </code> or {@link Double#MIN_VALUE} if this expression cannot be converted.
-   */
-  default double toDoubleDefault() {
-    return EvalEngine.get().evalDouble(this, Double.MIN_VALUE);
-  }
-
-  /**
-   * Converts this number to a <code>doube</code> value; this method returns <code>defaultValue
-   * </code> if the value of this expression isn't in the range <code>
-   * Double.MIN_VALUE</code> to <code>Double.MAX_VALUE</code> or the expression is not convertible
-   * to the <code>double</code> range.
-   *
-   * @param defaultValue
-   * @return the numeric value represented by this expression after conversion to type <code>double
-   *     </code> or <code>defaultValue</code> if this expression cannot be converted.
-   * @return
-   */
-  default double toDoubleDefault(double defaultValue) {
-    return EvalEngine.get().evalDouble(this, defaultValue);
-  }
-
-  /**
-   * Convert this object into a <code>byte[][]</code> matrix.
-   *
-   * @return <code>null</code> if this object can not be converted into a <code>byte[][]</code>
-   *         matrix
-   */
-  default int[][] toIntMatrix() {
-    return null;
-  }
-
-  /**
    * Converts this number to an <code>int</code> value; unlike {@link #intValue} this method returns
    * <code>Integer.MIN_VALUE</code> if the value of this integer isn't in the range <code>
    * Integer.MIN_VALUE</code> to <code>Integer.MAX_VALUE</code> or the expression is not convertible
@@ -4699,6 +5000,25 @@ public interface IExpr
    */
   default int toIntDefault(int defaultValue) {
     return defaultValue;
+  }
+
+  /**
+   * Convert this object into a <code>byte[][]</code> matrix.
+   *
+   * @return <code>null</code> if this object can not be converted into a <code>byte[][]</code>
+   *         matrix
+   */
+  default int[][] toIntMatrix() {
+    return null;
+  }
+
+  /**
+   * Convert this object into a <code>int[]</code> vector.
+   *
+   * @return <code>null</code> if the conversion is not possible
+   */
+  default int[] toIntVector() {
+    return null;
   }
 
   /**
@@ -4729,12 +5049,12 @@ public interface IExpr
   }
 
   /**
-   * Convert this object into a <code>int[]</code> vector.
+   * Return the <code>Mathematica()</code> form of this expression
    *
-   * @return <code>null</code> if the conversion is not possible
+   * @return
    */
-  default int[] toIntVector() {
-    return null;
+  default String toMMA() {
+    return WolframFormFactory.get().toString(this);
   }
 
   /**
@@ -4745,6 +5065,12 @@ public interface IExpr
    */
   default ISymbol topHead() {
     return (ISymbol) head();
+  }
+
+  @Override
+  default IExpr toRadians() {
+    // degrees * (Pi / 180)
+    return F.Times(F.QQ(1L, 180L), this, S.Pi);
   }
 
   /**
@@ -4782,15 +5108,6 @@ public interface IExpr
     return null;
   }
 
-  /**
-   * Return the <code>Mathematica()</code> form of this expression
-   *
-   * @return
-   */
-  default String toMMA() {
-    return WolframFormFactory.get().toString(this);
-  }
-
   @Override
   default String toScript() {
     return toString();
@@ -4799,6 +5116,15 @@ public interface IExpr
   @Override
   default String toScriptFactory() {
     throw new UnsupportedOperationException(toString());
+  }
+
+  default String toWolframString() {
+    return toString();
+  }
+
+  @Override
+  default IExpr ulp() {
+    return F.C0;
   }
 
   /**
@@ -4860,308 +5186,5 @@ public interface IExpr
   default IExpr variables2Slots(final Map<IExpr, IExpr> map,
       final Collection<IExpr> variableCollector) {
     return this;
-  }
-
-  @Override
-  default IExpr sign() {
-    return S.Sign.of(this);
-  }
-
-  @Override
-  default IExpr acos() {
-    return S.ArcCos.of(this);
-  }
-
-  @Override
-  default IExpr acosh() {
-    return S.ArcCosh.of(this);
-  }
-
-  @Override
-  default IExpr add(double that) {
-    return plus(F.num(that));
-  }
-
-  @Override
-  default IExpr asin() {
-    return S.ArcSin.of(this);
-  }
-
-  @Override
-  default IExpr asinh() {
-    return S.ArcSinh.of(this);
-  }
-
-  @Override
-  default IExpr atan() {
-    return S.ArcTan.of(this);
-  }
-
-  @Override
-  default IExpr atan2(IExpr that) throws MathIllegalArgumentException {
-    // Beware of the order or arguments! As this is based on a two-arguments functions, in order to
-    // be consistent with arguments order, the instance is the first argument and the single
-    // provided argument is the second argument. In order to be consistent with programming
-    // languages Math.atan2, this method computes Math.atan2(y, x).
-
-    // The arguments of the Symja ArcTan() function is defined the other way round
-    return S.ArcTan.of(that, this);
-  }
-
-  @Override
-  default IExpr atanh() {
-    return S.ArcTanh.of(this);
-  }
-
-  @Override
-  default IExpr cbrt() {
-    return S.Power.of(this, F.C1D3);
-  }
-
-  @Override
-  default IExpr ceil() {
-    return S.Ceiling.of(this);
-  }
-
-  @Override
-  default IExpr copySign(double that) {
-    return copySign(F.num(that));
-  }
-
-  @Override
-  default IExpr copySign(IExpr that) {
-    return abs().times(that.sign());
-  }
-
-  @Override
-  default IExpr cos() {
-    return S.Cos.of(this);
-  }
-
-  @Override
-  default IExpr cosh() {
-    return S.Cosh.of(this);
-  }
-
-  @Override
-  default IExpr divide(double arg0) {
-    return divide(F.num(arg0));
-  }
-
-  /**
-   * If this expr is an {@link IAST}, check all elements by applying the <code>predicate</code> to
-   * each argument in this {@link IAST} and return <code>true</code> if <b>one</b> of the arguments
-   * starting from index <code>1</code> satisfy the predicate.
-   *
-   * @param predicate the predicate which filters each argument in this <code>AST</code>
-   * @return the <code>true</code> if the predicate is true the first time or <code>false</code>
-   *         otherwise
-   */
-  default boolean exists(Predicate<? super IExpr> predicate) {
-    return false;
-  }
-
-  @Override
-  default IExpr exp() {
-    return S.Exp.of(this);
-  }
-
-  @Override
-  default IExpr expm1() {
-    return S.Exp.of(this).subtract(F.C1);
-  }
-
-  @Override
-  default IExpr floor() {
-    return S.Floor.of(this);
-  }
-
-  /**
-   * If this expr is an {@link IAST}, check all elements by applying the <code>predicate</code> to
-   * each argument in this {@link IAST} and return <code>true</code> if <b>all</b> of the arguments
-   * starting from index <code>1</code> satisfy the predicate.
-   *
-   * @param predicate the predicate which filters each argument in this <code>AST</code>
-   * @return <code>true</code> if the predicate is true for <b>all</b elements or <code>false</code>
-   *         otherwise
-   */
-  default boolean forAll(Predicate<? super IExpr> predicate) {
-    return false;
-  }
-
-  @Override
-  default IExpr hypot(IExpr y) throws MathIllegalArgumentException {
-    return S.Sqrt.of(F.Plus(F.Sqr(this), F.Sqr(y)));
-  }
-
-  @Override
-  default IExpr linearCombination(double a1, IExpr b1, double a2, IExpr b2, double a3, IExpr b3,
-      double a4, IExpr b4) {
-    return linearCombination(new double[] {a1, a2, a3, a4}, new IExpr[] {b1, b2, b3, b4});
-  }
-
-  @Override
-  default IExpr linearCombination(double a1, IExpr b1, double a2, IExpr b2, double a3, IExpr b3) {
-    return linearCombination(new double[] {a1, a2, a3}, new IExpr[] {b1, b2, b3});
-  }
-
-  @Override
-  default IExpr linearCombination(double a1, IExpr b1, double a2, IExpr b2) {
-    return linearCombination(new double[] {a1, a2}, new IExpr[] {b1, b2});
-  }
-
-  @Override
-  default IExpr linearCombination(double[] a, IExpr[] b) throws MathIllegalArgumentException {
-    IASTAppendable result = F.PlusAlloc(a.length);
-    for (int i = 0; i < a.length; i++) {
-      result.append(F.Times(F.num(a[i]), b[i]));
-    }
-    return result;
-  }
-
-  @Override
-  default IExpr linearCombination(IExpr a1, IExpr b1, IExpr a2, IExpr b2, IExpr a3, IExpr b3,
-      IExpr a4, IExpr b4) {
-    return linearCombination(new IExpr[] {a1, a2, a3, a4}, new IExpr[] {b1, b2, b3, b4});
-  }
-
-  @Override
-  default IExpr linearCombination(IExpr a1, IExpr b1, IExpr a2, IExpr b2, IExpr a3, IExpr b3) {
-    return linearCombination(new IExpr[] {a1, a2, a3}, new IExpr[] {b1, b2, b3});
-  }
-
-  @Override
-  default IExpr linearCombination(IExpr a1, IExpr b1, IExpr a2, IExpr b2) {
-    return linearCombination(new IExpr[] {a1, a2}, new IExpr[] {b1, b2});
-  }
-
-  @Override
-  default IExpr linearCombination(IExpr[] a, IExpr[] b) throws MathIllegalArgumentException {
-    IASTAppendable result = F.PlusAlloc(a.length);
-    for (int i = 0; i < a.length; i++) {
-      result.append(F.Times(a[i], b[i]));
-    }
-    return result;
-  }
-
-  @Override
-  default IExpr log() {
-    return S.Log.of(this);
-  }
-
-  @Override
-  default IExpr log10() {
-    return S.Log.of(F.C10, this);
-  }
-
-  @Override
-  default IExpr log1p() {
-    return S.Log.of(this.inc());
-  }
-
-  @Override
-  default IExpr multiply(double that) {
-    return times(F.num(that));
-  }
-
-  @Override
-  default IExpr newInstance(double arg) {
-    return F.num(arg);
-  }
-
-  @Override
-  default IExpr pow(double n) {
-    return S.Power.of(this, F.num(n));
-  }
-
-  @Override
-  default IExpr pow(IExpr n) throws MathIllegalArgumentException {
-    return S.Power.of(this, n);
-  }
-
-  @Override
-  default IExpr pow(int n) {
-    return S.Power.of(this, F.ZZ(n));
-  }
-
-  @Override
-  default IExpr remainder(double arg0) {
-    return S.Mod.of(this);
-  }
-
-  @Override
-  default IExpr rint() {
-    return S.IntegerPart.of(this);
-  }
-
-  @Override
-  default IExpr rootN(int n) {
-    return S.Power.of(this, F.QQ(1, n));
-  }
-
-  @Override
-  default IExpr scalb(int n) {
-    return times(F.C2.pow(n));
-  }
-
-  @Override
-  default IExpr sin() {
-    return S.Sin.of(this);
-  }
-
-  @Override
-  default FieldSinCos<IExpr> sinCos() {
-    return new FieldSinCos<IExpr>(sin(), cos());
-  }
-
-  @Override
-  default IExpr sinh() {
-    return S.Sinh.of(this);
-  }
-
-  @Override
-  default FieldSinhCosh<IExpr> sinhCosh() {
-    return new FieldSinhCosh<IExpr>(sinh(), cosh());
-  }
-
-  @Override
-  default IExpr subtract(double arg0) {
-    return subtract(F.num(arg0));
-  }
-
-  @Override
-  default IExpr tan() {
-    return S.Tan.of(this);
-  }
-
-  @Override
-  default IExpr tanh() {
-    return S.Tanh.of(this);
-  }
-
-  @Override
-  default IExpr ulp() {
-    return F.C0;
-  }
-
-  @Override
-  default IExpr getPi() {
-    return S.Pi;
-  }
-
-  @Override
-  default IExpr toDegrees() {
-    // radians * (180 / Pi)
-    return F.Times(this, F.ZZ(180), F.Inverse(S.Pi));
-  }
-
-  @Override
-  default IExpr toRadians() {
-    // degrees * (Pi / 180)
-    return F.Times(F.QQ(1L, 180L), this, S.Pi);
-  }
-
-  default String toWolframString() {
-    return toString();
   }
 }

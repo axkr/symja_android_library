@@ -28,6 +28,7 @@ Sum(1/(i_!), {i_Symbol,0,Infinity}) := E
 Sum(x_^i_/(i_!), {i_Symbol,0,Infinity}) := E^x
   /;  FreeQ(x,i), 
 Sum( (-1)^(-i_)*(2*i_ + 1)^(-1), {i_Symbol, 1, Infinity}) := 1/4*(-4+Pi),
+Sum(z_^k_*(k_+a_)^(s_),{k_,0,Infinity}) := HurwitzLerchPhi(z,-s,a),
 
 Sum(i_^k_Symbol, {i_Symbol,1,n_Symbol}) := HarmonicNumber(n, -k)
   /; FreeQ(k,i)&&FreeQ(n,i),

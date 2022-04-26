@@ -359,13 +359,11 @@ public class ZetaJS extends JS {
         Complex t2 = twoPiI.pow(nInt).divide(GammaJS.factorialInt(nInt))
             .multiply(bernoulli(nInt, x.log().divide(twoPiI)));
 
-        // Complex y = x; // just for test
         Complex t3 = x.getImaginary() < 0.0 || (F.isZero(x.getImaginary()) && x.getReal() >= 1.0)
             ? twoPiI.multiply(x.log().pow(nInt - 1).divide(GammaJS.factorialInt(nInt - 1)))
             : Complex.ZERO;
 
         return t1.add(t2).add(t3).negate();
-        // return complexAverage(nInt -> polyLog(nInt, x), n);
       }
 
       Complex v = Complex.ONE.subtract(n);

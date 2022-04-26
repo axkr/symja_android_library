@@ -30,6 +30,14 @@
  
  Factorial(z_) := Gamma(1+z),  
  Factorial2(n_) := 2^(n/2 + (1/4)*(1 - Cos(n*Pi)))*Pi^((1/4)*(-1 + Cos(n*Pi)))*Gamma(1 + n/2),
+ FactorialPower(x_,n_Integer,-1) := Product(x+k,{k,0,n-1})
+   /; n>0,  
+ FactorialPower(x_,n_,-1) := (x^n*Gamma(1-x))/((-x)^n*Gamma(1-n-x)),
+ FactorialPower(x_,n_Integer) := Product(x-+k,{k,0,n-1})
+   /; n>0, 
+ FactorialPower(x_,n_) := Gamma(1+x)/Gamma(1-n+x),
+ FactorialPower(x_,n_,h_) := (x^n*Gamma(1+x/h))/((x/h)^n*Gamma(1-n+x/h))
+   /; UnsameQ(h,0),
  
  Fibonacci(m_Integer+n_) := ((1/2)*Fibonacci(m)*LucasL(n) + (1/2)*Fibonacci(n)*LucasL(m)) 
   /; Element(n, Integers),
@@ -55,6 +63,7 @@
   /; n>1,
    
  HypergeometricPFQ({1/2}, {1, 1}, z_) := BesselI(0, Sqrt(z))^2,
+ HypergeometricPFQ({a_}, {b_}, z_) := Hypergeometric1F1(a,b,z),
  Hypergeometric2F1(2, b_, c_, -1/2) := (3-b)/3
   /; (5/2 - 1/2*b)==Expand(c), 
  Hypergeometric2F1(a_, a_ + 1/2, c_, z_) := (2^(-1+2*a)*(1+Sqrt(1-z))^(1-2*a))/Sqrt(1-z)
