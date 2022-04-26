@@ -121,6 +121,11 @@
 			<groupId>org.organicdesign</groupId>
 			<artifactId>Paguro</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.esotericsoftware</groupId>
+			<artifactId>kryo</artifactId>
+		</dependency>
 
 		<!-- logging dependencies -->
 

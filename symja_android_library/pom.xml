@@ -10,7 +10,7 @@
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Symja Java Symbolic Math library.</description>
 	<url>https://github.com/axkr/symja_android_library</url>
- 
+
 	<licenses>
 		<license>
 			<name>GNU General Public License, Version 3</name>
@@ -81,19 +81,19 @@
 		</snapshotRepository>
 	</distributionManagement>
 
-	<repositories> 
+	<repositories>
 		<repository>
 			<id>orekit</id>
 			<url>https://packages.orekit.org/repository/maven-public/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
 		</repository>
 	</repositories>
-		
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>11</java.version>
@@ -361,6 +361,12 @@
 				<groupId>org.organicdesign</groupId>
 				<artifactId>Paguro</artifactId>
 				<version>3.10.1</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.esotericsoftware</groupId>
+				<artifactId>kryo</artifactId>
+				<version>5.3.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
