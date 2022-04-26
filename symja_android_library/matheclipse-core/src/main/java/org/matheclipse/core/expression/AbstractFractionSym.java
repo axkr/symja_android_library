@@ -10,11 +10,11 @@ import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
-import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Pair;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -46,50 +46,6 @@ import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
  */
 public abstract class AbstractFractionSym implements IFraction {
   private static final long serialVersionUID = -8743141041586314213L;
-
-  @FunctionalInterface
-  private interface ConvergencePredicate {
-    boolean test(long numerator, long denominator);
-  }
-
-  private static final long RATIONALIZATION_OVERFLOW = Integer.MAX_VALUE;
-
-  /**
-   * Iteratively creates a fraction that converges towards the given value
-   *
-   * @param value value to approximate
-   * @param maxIterations the maximum number of iterations which are allowed to get a convergent
-   *        result
-   * @param convergence predicate which tests for convergence of the determined {@link BigFraction}
-   */
-  private static BigFraction converge(double value, int maxIterations,
-      ConvergencePredicate convergence) {
-    long p0 = 0;
-    long q0 = 1;
-    long p1 = 1;
-    long q1 = 0;
-    double r1 = value;
-
-    for (int i = 0; i < maxIterations; i++) {
-      final long a1 = (long) FastMath.floor(r1);
-      long p2 = (a1 * p1) + p0;
-      long q2 = (a1 * q1) + q0;
-
-      if (convergence.test(p2, q2)) {
-        return new BigFraction(p2, q2);
-      }
-      if (p2 > RATIONALIZATION_OVERFLOW || q2 > RATIONALIZATION_OVERFLOW) {
-        throw new MathIllegalStateException(LocalizedCoreFormats.FRACTION_CONVERSION_OVERFLOW,
-            value, p2, q2);
-      }
-      p0 = p1;
-      q0 = q1;
-      p1 = p2;
-      q1 = q2;
-      r1 = 1.0 / (r1 - a1);
-    }
-    return null;
-  }
 
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -238,7 +194,8 @@ public abstract class AbstractFractionSym implements IFraction {
    * @return
    */
   public static IFraction valueOfEpsilon(double value, double epsilon) {
-    return rationalize(value, v -> new BigFraction(v, epsilon, 200));
+    IFraction fraction = rationalize(value, v -> new BigFraction(v, epsilon, 200));
+    return fraction != null ? fraction : valueOf(new BigFraction(value));
   }
 
   public static IFraction valueOfConvergent(double value) {
@@ -251,19 +208,22 @@ public abstract class AbstractFractionSym implements IFraction {
 
   private static IFraction convergeFraction(double value, int maxIterations, double lhs) {
     return rationalize(value,
-        v -> converge(v, maxIterations, (p, q) -> FastMath.abs(p * q - v * q * q) <= lhs));
+        v -> {
+          Pair<BigFraction, Boolean> convergent = BigFraction.convergent(v, maxIterations,
+              (p, q) -> FastMath.abs(p * q - v * q * q) <= lhs);
+          return convergent.getSecond().booleanValue() ? convergent.getFirst() : null;
+        });
   }
 
   private static IFraction rationalize(double value, DoubleFunction<BigFraction> f) {
     try {
       BigFraction fraction = f.apply(value < 0 ? -value : value);
-      if (fraction == null) {
-        return null;
+      if (fraction != null) {
+        return valueOf(value < 0 ? fraction.negate() : fraction);
       }
-      return valueOf(value < 0 ? fraction.negate() : fraction);
-    } catch (MathIllegalStateException e) {
-      return valueOf(new BigFraction(value));
+    } catch (MathRuntimeException e) { // assume no solution
     }
+    return null;
   }
 
   /**
@@ -294,8 +254,8 @@ public abstract class AbstractFractionSym implements IFraction {
       return ii;
     }
     BigFraction exactFraction = new BigFraction(value); // computes exact fraction representation
-    int denominatorExponent2 = exactFraction.getDenominator().bitLength() - 1;
-    if (denominatorExponent2 <= Double.MAX_EXPONENT) {
+    int denominatorExponent = exactFraction.getDenominator().bitLength() - 1;
+    if (denominatorExponent <= Double.MAX_EXPONENT) {
       return valueOf(exactFraction);
     }
     // The fractions denominator cannot be expressed as double value and would lead to an infinite
@@ -349,7 +309,7 @@ public abstract class AbstractFractionSym implements IFraction {
       // For values in the order of small powers of ten and only a few decimals (e.g. 3.75, 0.01,
       // 124.6) the convergence approach usually achieves results that are closer to what a human
       // would compute and are therefore considered 'nicer'. To honor this we try a few convergence
-      // iterations a take a result if it is exact.
+      // iterations and take that result if it is exact.
       // The number of maxIterations is a tuning parameter and reflects how bad we want nicer
       // results. Since valueOfExact() is faster the fewer iterations are attempted before giving up
       // the faster this method is in average.
