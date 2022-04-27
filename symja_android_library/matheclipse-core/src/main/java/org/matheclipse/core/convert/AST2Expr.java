@@ -321,13 +321,12 @@ public class AST2Expr {
   public static final String TRUE_STRING = "true"; // : "True";
 
   /** SuggestTree for all <code>DOLLAR_STRINGS, SYMBOL_STRINGS, FUNCTION_STRINGS</code> */
-  private static SuggestTree SUGGEST_TREE = null;
+  private static SuggestTree SUGGEST_TREE = new SuggestTree(10000);
 
   public static SuggestTree getSuggestTree() {
 
     synchronized (AST2Expr.class) {
-      if (SUGGEST_TREE == null) {
-        SUGGEST_TREE = new SuggestTree(100);
+      if (SUGGEST_TREE.size() == 0) {
         synchronized (SUGGEST_TREE) {
           for (String str : FUNCTION_STRINGS) {
             if (str.length() > 1) {
