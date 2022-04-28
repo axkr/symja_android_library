@@ -1,3 +1,4 @@
+//DEPS org.matheclipse:matheclipse-core:2.0.0,org.matheclipse:matheclipse-io:2.0.0 
 import java.io.*;
 import java.math.*;
 import java.net.*;
