@@ -84,10 +84,14 @@ public class ServletServer {
       server.start();
 
       URI uri = new URI("http://" + host + ":" + port + "/" + welcomeFile);
+      // this print line is intentionally and should display the uri to the user
+      System.out.println("Open browser URL: " + uri);
+      LOGGER.info("Open browser URL: {}", uri);
+
       if (Desktop.isDesktopSupported()) {
         Desktop.getDesktop().browse(uri);
       }
-      LOGGER.info("Open browser URL: {}", uri);
+
     } catch (Exception ex) {
       ex.printStackTrace();
     }
