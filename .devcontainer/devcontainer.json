@@ -1,0 +1,23 @@
+{
+  "name": "Java",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": { 
+      "VARIANT": "11", 
+      "INSTALL_MAVEN": "true",
+      "INSTALL_GRADLE": "false",
+      "INSTALL_NODE": "false",
+      "NODE_VERSION": "lts/*"
+    }
+  },
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash",
+    "java.home": "/docker-java-home",
+    "maven.executable.path": "/usr/local/sdkman/candidates/maven/current/bin/mvn"
+  },
+  "extensions": [
+    "vscjava.vscode-java-pack"
+  ],
+  "forwardPorts": [8080],
+  "remoteUser": "vscode"
+}    
