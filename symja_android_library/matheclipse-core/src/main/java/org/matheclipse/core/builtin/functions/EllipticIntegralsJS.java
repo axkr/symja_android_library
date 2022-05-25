@@ -129,56 +129,6 @@ public class EllipticIntegralsJS extends JS {
     // return carlsonRF(x, y, z, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }
 
-  private static double carlsonRF(double x, double y, double z, double tolerance) {
-    if (y == z) {
-      return carlsonRC(x, y);
-    }
-    if (x == z) {
-      return carlsonRC(y, x);
-    }
-    if (x == y) {
-      return carlsonRC(z, x);
-    }
-
-    // adapted from mpmath / elliptic.py
-    double xm = x;
-    double ym = y;
-    double zm = z;
-    double A0 = (x + y + z) / 3.0;
-    double Am = A0;
-
-    double Q = Math.pow(3.0 * tolerance, -1.0 / 6.0)
-        * Math.max(Math.max(Math.abs(A0 - x), Math.abs(A0 - y)), Math.abs(A0 - z));
-    double g = .25;
-    double pow4 = 1.0;
-
-    while (true) {
-      double xs = Math.sqrt(xm);
-      double ys = Math.sqrt(ym);
-      double zs = Math.sqrt(zm);
-      double lm = xs * ys + xs * zs + ys * zs;
-      double Am1 = (Am + lm) * g;
-      xm = (xm + lm) * g;
-      ym = (ym + lm) * g;
-      zm = (zm + lm) * g;
-      if (pow4 * Q < Math.abs(Am)) {
-        break;
-      }
-      Am = Am1;
-      pow4 *= g;
-    }
-
-    double t = pow4 / Am;
-    double X = (A0 - x) * t;
-    double Y = (A0 - y) * t;
-    double Z = -X - Y;
-    double E2 = X * Y - Z * Z;
-    double E3 = X * Y * Z;
-
-    return Math.pow(Am, -0.5)
-        * (9240.0 - 924.0 * E2 + 385.0 * E2 * E2 + 660.0 * E3 - 630.0 * E2 * E3) / 9240.0;
-  }
-
   public static double carlsonRG(double x, double y, double z) {
     return CarlsonEllipticIntegral.rG(x, y, z);
   }
@@ -265,63 +215,6 @@ public class EllipticIntegralsJS extends JS {
   public static double carlsonRJ(double x, double y, double z, double p) {
     return CarlsonEllipticIntegral.rJ(x, y, z, p);
     // return carlsonRJ(x, y, z, p, Config.SPECIAL_FUNCTIONS_TOLERANCE);
-  }
-
-  private static Complex carlsonRJ(double x, double y, double z, double p, double tolerance) {
-    // adapted from mpmath / elliptic.py
-
-    double xm = x;
-    double ym = y;
-    double zm = z;
-    double pm = p;
-
-    double Am = (x + y + z + 2 * p) / 5.0;
-    double A0 = Am;
-    double delta = (p - x) * (p - y) * (p - z);
-    double Q = Math.pow(.25 * tolerance, -1.0 / 6.0) * Math.max(Math.abs(A0 - x),
-        Math.max(Math.abs(A0 - y), Math.max(Math.abs(A0 - z), Math.abs(A0 - p))));
-    double m = 0;
-    double g = 0.25;
-    double pow4 = 1;
-    Complex S = Complex.ZERO;
-
-    while (true) {
-      double sx = Math.sqrt(xm);
-      double sy = Math.sqrt(ym);
-      double sz = Math.sqrt(zm);
-      double sp = Math.sqrt(pm);
-      double lm = sx * sy + sx * sz + sy * sz;
-      double Am1 = (Am + lm) * g;
-      xm = (xm + lm) * g;
-      ym = (ym + lm) * g;
-      zm = (zm + lm) * g;
-      pm = (pm + lm) * g;
-      double dm = (sp + sx) * (sp + sy) * (sp + sz);
-      double em = delta * Math.pow(4.0, -3.0 * m) / Math.pow(dm, 2);
-      if (pow4 * Q < Math.abs(Am)) {
-        break;
-      }
-      Complex T = Complex.valueOf(carlsonRC(1, 1 + em)).multiply(pow4 / dm);
-      S = S.add(T);
-      pow4 *= g;
-      m += 1;
-      Am = Am1;
-    }
-
-    double t = Math.pow(2, -2 * m) / Am;
-    double X = (A0 - x) * t;
-    double Y = (A0 - y) * t;
-    double Z = (A0 - z) * t;
-    double P = (-X - Y - Z) / 2.0;
-    double E2 = X * Y + X * Z + Y * Z - 3 * Math.pow(P, 2);
-    double E3 = X * Y * Z + 2 * E2 * P + 4 * Math.pow(P, 3);
-    double E4 = (2 * X * Y * Z + E2 * P + 3 * Math.pow(P, 3)) * P;
-    double E5 = X * Y * Z * Math.pow(P, 2);
-    P = 24024 - 5148 * E2 + 2457 * Math.pow(E2, 2) + 4004 * E3 - 4158 * E2 * E3 - 3276 * E4
-        + 2772 * E5;
-    double v1 = Math.pow(g, m) * Math.pow(Am, -1.5) * P / 24024.0;
-
-    return S.multiply(6.0).add(v1);
   }
 
   // elliptic integrals
