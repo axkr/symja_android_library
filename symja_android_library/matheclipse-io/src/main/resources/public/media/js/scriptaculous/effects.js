@@ -712,8 +712,7 @@ Effect.SlideUp = function(element) {
   var elementDimensions = element.getDimensions();
   return new Effect.Scale(element, window.opera ? 0 : 1,
    Object.extend({ scaleContent: false,
-    scaleX: false,
-    scaleMode: 'box',
+    scaleX: false, 
     scaleFrom: 100,
     scaleMode: {originalHeight: elementDimensions.height, originalWidth: elementDimensions.width},
     restoreAfterFinish: true,
