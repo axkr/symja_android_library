@@ -15,7 +15,7 @@ public interface LimitRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 48, 21 };
+  final public static int[] SIZES = { 52, 21 };
 
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
@@ -160,6 +160,18 @@ public interface LimitRules {
     // Limit(ArcTanh(x_),x_Symbol->-Infinity)=I*Pi/2
     ISet(Limit(ArcTanh(x_),Rule(x_Symbol,Noo)),
       Times(CC(0L,1L,1L,2L),Pi)),
+    // Limit(BesselI(n_,x_),x_Symbol->Infinity)=Infinity/;FreeQ(n,x)
+    ISet(Limit(BesselI(n_,x_),Rule(x_Symbol,oo)),
+      Condition(oo,FreeQ(n,x))),
+    // Limit(BesselJ(n_,x_),x_Symbol->Infinity)=0/;FreeQ(n,x)
+    ISet(Limit(BesselJ(n_,x_),Rule(x_Symbol,oo)),
+      Condition(C0,FreeQ(n,x))),
+    // Limit(BesselJ(n_,x_),x_Symbol->-Infinity)=0/;FreeQ(n,x)
+    ISet(Limit(BesselJ(n_,x_),Rule(x_Symbol,Noo)),
+      Condition(C0,FreeQ(n,x))),
+    // Limit(BesselY(n_,x_),x_Symbol->-Infinity)=0/;FreeQ(n,x)
+    ISet(Limit(BesselY(n_,x_),Rule(x_Symbol,Noo)),
+      Condition(C0,FreeQ(n,x))),
     // Limit(Cosh(x_),x_Symbol->Infinity)=Infinity
     ISet(Limit(Cosh(x_),Rule(x_Symbol,oo)),
       oo),

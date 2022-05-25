@@ -48,8 +48,16 @@
  Limit(ArcSinh(x_), x_Symbol->-Infinity)=-Infinity,   
  Limit(ArcTanh(x_), x_Symbol->Infinity)=-I*Pi/2,   
  Limit(ArcTanh(x_), x_Symbol->-Infinity)=I*Pi/2, 
-
  
+ Limit(BesselI(n_, x_), x_Symbol->Infinity)=Infinity
+   /; FreeQ(n,x),
+ Limit(BesselJ(n_, x_), x_Symbol->Infinity)=0
+   /; FreeQ(n,x),
+ Limit(BesselJ(n_, x_), x_Symbol->-Infinity)=0
+   /; FreeQ(n,x),
+  Limit(BesselY(n_, x_), x_Symbol->-Infinity)=0
+   /; FreeQ(n,x),
+
  Limit(Cosh(x_), x_Symbol->Infinity)=Infinity,  
  Limit(Cosh(x_), x_Symbol->-Infinity)=Infinity,
  Limit(Coth(x_), x_Symbol->Infinity)=1,  
