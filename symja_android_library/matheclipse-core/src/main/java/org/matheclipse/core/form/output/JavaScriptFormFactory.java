@@ -60,19 +60,117 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
   private static final Map<ISymbol, String> FUNCTIONS_STR_PURE_JS = new HashMap<ISymbol, String>();
 
   static {
-    FUNCTIONS_STR_MATHCELL.put(S.BetaRegularized, "betaRegularized");
+    // see https://paulmasson.github.io/math/docs/functions.html
+    FUNCTIONS_STR_MATHCELL.put(S.Abs, "abs");
+    FUNCTIONS_STR_MATHCELL.put(S.Arg, "arg");
     FUNCTIONS_STR_MATHCELL.put(S.AiryAi, "airyAi");
     FUNCTIONS_STR_MATHCELL.put(S.AiryBi, "airyBi");
+
+    FUNCTIONS_STR_MATHCELL.put(S.Beta, "beta");
+    FUNCTIONS_STR_MATHCELL.put(S.BernoulliB, "bernoulli");
+    FUNCTIONS_STR_MATHCELL.put(S.BesselJ, "besselJ");
+    FUNCTIONS_STR_MATHCELL.put(S.BesselY, "besselY");
+    FUNCTIONS_STR_MATHCELL.put(S.BesselI, "besselI");
+    FUNCTIONS_STR_MATHCELL.put(S.BesselK, "besselK");
+    FUNCTIONS_STR_MATHCELL.put(S.BesselJZero, "besselJZero ");
+    FUNCTIONS_STR_MATHCELL.put(S.BesselYZero, "besselYZero ");
+    FUNCTIONS_STR_MATHCELL.put(S.BetaRegularized, "betaRegularized");
+    FUNCTIONS_STR_MATHCELL.put(S.Binomial, "binomial");
+
+    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRC, "carlsonRC");
+    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRD, "carlsonRD");
+    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRF, "carlsonRF");
+    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRG, "carlsonRG");
+    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRJ, "carlsonRJ");
+    FUNCTIONS_STR_MATHCELL.put(S.Ceiling, "ceiling");
+    FUNCTIONS_STR_MATHCELL.put(S.ChebyshevT, "chebyshevT");
+    FUNCTIONS_STR_MATHCELL.put(S.ChebyshevU, "chebyshevU");
+    FUNCTIONS_STR_MATHCELL.put(S.Chop, "chop");
+    FUNCTIONS_STR_MATHCELL.put(S.CosIntegral, "cosIntegral");
+    FUNCTIONS_STR_MATHCELL.put(S.CoshIntegral, "coshIntegral");
+
     FUNCTIONS_STR_MATHCELL.put(S.DirichletEta, "dirichletEta");
+
+    FUNCTIONS_STR_MATHCELL.put(S.EllipticF, "ellipticF");
+    FUNCTIONS_STR_MATHCELL.put(S.EllipticK, "ellipticK");
+    FUNCTIONS_STR_MATHCELL.put(S.EllipticE, "ellipticE");
+    FUNCTIONS_STR_MATHCELL.put(S.EllipticPi, "ellipticPi");
+    FUNCTIONS_STR_MATHCELL.put(S.EllipticTheta, "jacobiTheta");
+    FUNCTIONS_STR_MATHCELL.put(S.Erf, "erf");
+    FUNCTIONS_STR_MATHCELL.put(S.Erfc, "erfc");
+    FUNCTIONS_STR_MATHCELL.put(S.Exp, "exp");
+    FUNCTIONS_STR_MATHCELL.put(S.ExpIntegralEi, "expIntegralEi");
+    FUNCTIONS_STR_MATHCELL.put(S.ExpIntegralE, "expIntegralE");
+
+    FUNCTIONS_STR_MATHCELL.put(S.Factorial, "factorial");
+    FUNCTIONS_STR_MATHCELL.put(S.Factorial2, "factorial2");
+    FUNCTIONS_STR_MATHCELL.put(S.Floor, "floor");
+    FUNCTIONS_STR_MATHCELL.put(S.FractionalPart, "fractionalPart");
+    FUNCTIONS_STR_MATHCELL.put(S.FresnelC, "fresnelC");
+    FUNCTIONS_STR_MATHCELL.put(S.FresnelS, "fresnelS");
+
+    FUNCTIONS_STR_MATHCELL.put(S.Gamma, "gamma");
+    FUNCTIONS_STR_MATHCELL.put(S.GammaRegularized, "gammaRegularized");
+    FUNCTIONS_STR_MATHCELL.put(S.Gudermannian, "gudermannian");
+
     FUNCTIONS_STR_MATHCELL.put(S.HankelH1, "hankel1");
     FUNCTIONS_STR_MATHCELL.put(S.HankelH2, "hankel2");
-    FUNCTIONS_STR_MATHCELL.put(S.GammaRegularized, "gammaRegularized");
+    FUNCTIONS_STR_MATHCELL.put(S.Haversine, "haversine");
+    FUNCTIONS_STR_MATHCELL.put(S.HermiteH, "hermite");
+    FUNCTIONS_STR_MATHCELL.put(S.HurwitzZeta, "hurwitzZeta");
+    FUNCTIONS_STR_MATHCELL.put(S.Hypergeometric0F1, "hypergeometric0F1");
+    FUNCTIONS_STR_MATHCELL.put(S.Hypergeometric1F1, "hypergeometric1F1");
+    // FUNCTIONS_STR_MATHCELL.put(S.Hypergeometric2??, "hypergeometric2F0");
+    FUNCTIONS_STR_MATHCELL.put(S.Hypergeometric2F1, "hypergeometric2F1");
+    FUNCTIONS_STR_MATHCELL.put(S.HypergeometricPFQ, "hypergeometricPFQ");
+    FUNCTIONS_STR_MATHCELL.put(S.HypergeometricU, "hypergeometricU");
+
+    FUNCTIONS_STR_MATHCELL.put(S.Im, "im");
+    FUNCTIONS_STR_MATHCELL.put(S.IntegerPart, "integerPart");
+    FUNCTIONS_STR_MATHCELL.put(S.InverseGudermannian, "inverseGudermannian");
+    FUNCTIONS_STR_MATHCELL.put(S.InverseHaversine, "inverseHaversine");
     FUNCTIONS_STR_MATHCELL.put(S.InverseWeierstrassP, "inverseWeierstrassP");
+
+    FUNCTIONS_STR_MATHCELL.put(S.JacobiAmplitude, "am");
+    FUNCTIONS_STR_MATHCELL.put(S.JacobiCN, "cn");
+    FUNCTIONS_STR_MATHCELL.put(S.JacobiDN, "dn");
+    FUNCTIONS_STR_MATHCELL.put(S.JacobiSN, "sn");
+    FUNCTIONS_STR_MATHCELL.put(S.JacobiZeta, "jacobiZeta");
+
+    FUNCTIONS_STR_MATHCELL.put(S.KleinInvariantJ, "kleinJ");
+    FUNCTIONS_STR_MATHCELL.put(S.KroneckerDelta, "kronecker");
+
+    FUNCTIONS_STR_MATHCELL.put(S.LaguerreL, "laguerre");
+    FUNCTIONS_STR_MATHCELL.put(S.LegendreP, "legendreP");
+    FUNCTIONS_STR_MATHCELL.put(S.LegendreQ, "legendreQ");
+    FUNCTIONS_STR_MATHCELL.put(S.Log, "log");
+    FUNCTIONS_STR_MATHCELL.put(S.LogGamma, "logGamma");
+    FUNCTIONS_STR_MATHCELL.put(S.LogIntegral, "logIntegral");
+
+    FUNCTIONS_STR_MATHCELL.put(S.Max, "Math.max");
+    FUNCTIONS_STR_MATHCELL.put(S.Min, "Math.min");
+
     FUNCTIONS_STR_MATHCELL.put(S.PolyGamma, "digamma");
+    // PM: Since polylog is a shortened form of the full function name, polylogarithm, the small "l"
+    // is more appropriate here:
+    FUNCTIONS_STR_MATHCELL.put(S.PolyLog, "polylog");
+    FUNCTIONS_STR_MATHCELL.put(S.ProductLog, "lambertW");
+
+    FUNCTIONS_STR_MATHCELL.put(S.Re, "re");
+    FUNCTIONS_STR_MATHCELL.put(S.Root, "root");
+    FUNCTIONS_STR_MATHCELL.put(S.Round, "round");
+
+    FUNCTIONS_STR_MATHCELL.put(S.Sinc, "sinc");
+    FUNCTIONS_STR_MATHCELL.put(S.Sign, "sign");
+    FUNCTIONS_STR_MATHCELL.put(S.SinIntegral, "sinIntegral");
+    FUNCTIONS_STR_MATHCELL.put(S.SinhIntegral, "sinhIntegral");
     FUNCTIONS_STR_MATHCELL.put(S.SphericalBesselJ, "sphericalBesselJ");
     FUNCTIONS_STR_MATHCELL.put(S.SphericalBesselY, "sphericalBesselY");
     FUNCTIONS_STR_MATHCELL.put(S.SphericalHankelH1, "sphericalHankel1");
     FUNCTIONS_STR_MATHCELL.put(S.SphericalHankelH2, "sphericalHankel2");
+    FUNCTIONS_STR_MATHCELL.put(S.StruveH, "struveH");
+    FUNCTIONS_STR_MATHCELL.put(S.StruveL, "struveL");
+    FUNCTIONS_STR_MATHCELL.put(S.Surd, "surd");
 
     FUNCTIONS_STR_MATHCELL.put(S.WeierstrassHalfPeriods, "weierstrassHalfPeriods");
     FUNCTIONS_STR_MATHCELL.put(S.WeierstrassInvariants, "weierstrassInvariants");
@@ -80,95 +178,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_MATHCELL.put(S.WeierstrassPPrime, "weierstrassPPrime");
     FUNCTIONS_STR_MATHCELL.put(S.WhittakerM, "whittakerM");
     FUNCTIONS_STR_MATHCELL.put(S.WhittakerW, "whittakerW");
+    FUNCTIONS_STR_MATHCELL.put(S.Zeta, "zeta");
 
-    FUNCTIONS_STR_MATHCELL.put(S.Abs, "abs");
-    FUNCTIONS_STR_MATHCELL.put(S.Arg, "arg");
-    FUNCTIONS_STR_MATHCELL.put(S.Chop, "chop");
-
-    FUNCTIONS_STR_MATHCELL.put(S.BesselJ, "besselJ");
-    FUNCTIONS_STR_MATHCELL.put(S.BesselY, "besselY");
-    FUNCTIONS_STR_MATHCELL.put(S.BesselI, "besselI");
-    FUNCTIONS_STR_MATHCELL.put(S.BesselK, "besselK");
-    FUNCTIONS_STR_MATHCELL.put(S.StruveH, "struveH");
-    FUNCTIONS_STR_MATHCELL.put(S.StruveL, "struveL");
-
-    FUNCTIONS_STR_MATHCELL.put(S.BesselJZero, "besselJZero ");
-    FUNCTIONS_STR_MATHCELL.put(S.BesselYZero, "besselYZero ");
-
-    // TODO see math.js - https://github.com/paulmasson/math
-    // FUNCTIONS_STR_MATHCELL.put(S.Hankel1, "hankel1");
-    // FUNCTIONS_STR_MATHCELL.put(S.Hankel2, "hankel2");
-
-    FUNCTIONS_STR_MATHCELL.put(S.AiryAi, "airyAi");
-    FUNCTIONS_STR_MATHCELL.put(S.AiryBi, "airyBi");
-
-    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRC, "carlsonRC");
-    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRD, "carlsonRD");
-    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRF, "carlsonRF");
-    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRG, "carlsonRG");
-    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRJ, "carlsonRJ");
-
-    FUNCTIONS_STR_MATHCELL.put(S.EllipticF, "ellipticF");
-    FUNCTIONS_STR_MATHCELL.put(S.EllipticK, "ellipticK");
-    FUNCTIONS_STR_MATHCELL.put(S.EllipticE, "ellipticE");
-    FUNCTIONS_STR_MATHCELL.put(S.EllipticPi, "ellipticPi");
-    FUNCTIONS_STR_MATHCELL.put(S.EllipticTheta, "jacobiTheta");
-
-    FUNCTIONS_STR_MATHCELL.put(S.JacobiAmplitude, "am");
-    FUNCTIONS_STR_MATHCELL.put(S.JacobiCN, "cn");
-    FUNCTIONS_STR_MATHCELL.put(S.JacobiDN, "dn");
-    FUNCTIONS_STR_MATHCELL.put(S.JacobiSN, "sn");
-    FUNCTIONS_STR_MATHCELL.put(S.JacobiZeta, "jacobiZeta");
-    FUNCTIONS_STR_MATHCELL.put(S.KleinInvariantJ, "kleinJ");
-    FUNCTIONS_STR_MATHCELL.put(S.Factorial, "factorial");
-    FUNCTIONS_STR_MATHCELL.put(S.Factorial2, "factorial2");
-    FUNCTIONS_STR_MATHCELL.put(S.Binomial, "binomial");
-    FUNCTIONS_STR_MATHCELL.put(S.LogGamma, "logGamma");
-    FUNCTIONS_STR_MATHCELL.put(S.Gamma, "gamma");
-    FUNCTIONS_STR_MATHCELL.put(S.Beta, "beta");
-    FUNCTIONS_STR_MATHCELL.put(S.Erf, "erf");
-    FUNCTIONS_STR_MATHCELL.put(S.Erfc, "erfc");
-    FUNCTIONS_STR_MATHCELL.put(S.FresnelC, "fresnelC");
-    FUNCTIONS_STR_MATHCELL.put(S.FresnelS, "fresnelS");
-    FUNCTIONS_STR_MATHCELL.put(S.Gudermannian, "gudermannian");
-    FUNCTIONS_STR_MATHCELL.put(S.InverseGudermannian, "inverseGudermannian");
-    FUNCTIONS_STR_MATHCELL.put(S.Haversine, "haversine");
-    FUNCTIONS_STR_MATHCELL.put(S.InverseHaversine, "inverseHaversine");
-    // PM: Since polylog is a shortened form of the full function name, polylogarithm, the small "l"
-    // is
-    // more appropriate here:
-    FUNCTIONS_STR_MATHCELL.put(S.PolyLog, "polylog");
-
-    FUNCTIONS_STR_MATHCELL.put(S.CosIntegral, "cosIntegral");
-    FUNCTIONS_STR_MATHCELL.put(S.CoshIntegral, "coshIntegral");
-    FUNCTIONS_STR_MATHCELL.put(S.LogIntegral, "logIntegral");
-    FUNCTIONS_STR_MATHCELL.put(S.SinIntegral, "sinIntegral");
-    FUNCTIONS_STR_MATHCELL.put(S.SinhIntegral, "sinhIntegral");
-
-    FUNCTIONS_STR_MATHCELL.put(S.ExpIntegralEi, "expIntegralEi");
-    FUNCTIONS_STR_MATHCELL.put(S.ExpIntegralE, "expIntegralE");
-
-    FUNCTIONS_STR_MATHCELL.put(S.Hypergeometric0F1, "hypergeometric0F1");
-    FUNCTIONS_STR_MATHCELL.put(S.Hypergeometric1F1, "hypergeometric1F1");
-    // FUNCTIONS_STR_MATHCELL.put(S.Hypergeometric2??, "hypergeometric2F0");
-    FUNCTIONS_STR_MATHCELL.put(S.Hypergeometric2F1, "hypergeometric2F1");
-    FUNCTIONS_STR_MATHCELL.put(S.HypergeometricPFQ, "hypergeometricPFQ");
-    FUNCTIONS_STR_MATHCELL.put(S.Exp, "exp");
-    FUNCTIONS_STR_MATHCELL.put(S.Im, "im");
-    FUNCTIONS_STR_MATHCELL.put(S.Log, "log");
-    FUNCTIONS_STR_MATHCELL.put(S.Re, "re");
-
-    FUNCTIONS_STR_MATHCELL.put(S.ProductLog, "lambertW");
-    FUNCTIONS_STR_MATHCELL.put(S.KroneckerDelta, "kronecker");
-
-    FUNCTIONS_STR_MATHCELL.put(S.HermiteH, "hermite");
-    FUNCTIONS_STR_MATHCELL.put(S.LaguerreL, "laguerre");
-    FUNCTIONS_STR_MATHCELL.put(S.ChebyshevT, "chebyshevT");
-    FUNCTIONS_STR_MATHCELL.put(S.ChebyshevU, "chebyshevU");
-    FUNCTIONS_STR_MATHCELL.put(S.LegendreP, "legendreP");
-    FUNCTIONS_STR_MATHCELL.put(S.LegendreQ, "legendreQ");
-
-    // FUNCTIONS_STR_MATHCELL.put(S.SpheriacelHarmonic, "sphericalHarmonic");
+    // FUNCTIONS_STR_MATHCELL.put(S.SphericalHarmonic, "sphericalHarmonic");
 
     FUNCTIONS_STR_MATHCELL.put(S.Sin, "sin");
     FUNCTIONS_STR_MATHCELL.put(S.Cos, "cos");
@@ -197,25 +209,6 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_MATHCELL.put(S.ArcCoth, "arccoth");
     FUNCTIONS_STR_MATHCELL.put(S.ArcSech, "arcsech");
     FUNCTIONS_STR_MATHCELL.put(S.ArcCsch, "arccsch");
-
-    FUNCTIONS_STR_MATHCELL.put(S.Sinc, "sinc");
-    FUNCTIONS_STR_MATHCELL.put(S.HurwitzZeta, "hurwitzZeta");
-    FUNCTIONS_STR_MATHCELL.put(S.Zeta, "zeta");
-    // FUNCTIONS_STR_MATHCELL.put(S.DirichletEta, "dirichletEta");
-    FUNCTIONS_STR_MATHCELL.put(S.BernoulliB, "bernoulli");
-
-    FUNCTIONS_STR_MATHCELL.put(S.Ceiling, "ceiling");
-    FUNCTIONS_STR_MATHCELL.put(S.Floor, "floor");
-    FUNCTIONS_STR_MATHCELL.put(S.KroneckerDelta, "kronecker");
-    FUNCTIONS_STR_MATHCELL.put(S.Round, "round");
-
-    FUNCTIONS_STR_MATHCELL.put(S.IntegerPart, "integerPart");
-    FUNCTIONS_STR_MATHCELL.put(S.FractionalPart, "fractionalPart");
-    FUNCTIONS_STR_MATHCELL.put(S.Sign, "sign");
-    FUNCTIONS_STR_MATHCELL.put(S.Max, "Math.max");
-    FUNCTIONS_STR_MATHCELL.put(S.Min, "Math.min");
-    FUNCTIONS_STR_MATHCELL.put(S.Surd, "surd");
-    FUNCTIONS_STR_MATHCELL.put(S.Root, "root");
 
     //
     // pure JavaScript mappings
