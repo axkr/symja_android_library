@@ -15,12 +15,12 @@ public class ZetaJS extends JS {
 
   private ZetaJS() {}
 
-  public static Complex summation(java.util.function.Function<Complex, Complex> f, double a,
-      double b, int iterationLimit) {
+  public static Complex summation(java.util.function.Function<Complex, Complex> f, int a, int b,
+      int iterationLimit) {
 
     Complex s = Complex.ZERO;
     int counter = 0;
-    for (double i = a; i <= b; i++) {
+    for (int i = a; i <= b; i++) {
       if (counter++ > iterationLimit && iterationLimit > 0) {
         IterationLimitExceeded.throwIt(counter, S.Sum);
       }
@@ -44,11 +44,11 @@ public class ZetaJS extends JS {
     return arg1.add(arg2).divide(2.0);
   }
 
-  public static Complex complexSummation(java.util.function.DoubleFunction<Complex> f, double a,
-      double b, int iterationLimit) {
+  public static Complex complexSummation(java.util.function.DoubleFunction<Complex> f, int a, int b,
+      int iterationLimit) {
     Complex s = Complex.ZERO;
     int counter = 0;
-    for (double i = a; i <= b; i++) {
+    for (int i = a; i <= b; i++) {
       if (counter++ > iterationLimit && iterationLimit > 0) {
         IterationLimitExceeded.throwIt(counter, S.Sum);
       }
@@ -202,9 +202,9 @@ public class ZetaJS extends JS {
     int iterationLimit = EvalEngine.get().getIterationLimit();
 
     if (a.getReal() < 0.0) {
-      double m = -Math.floor(a.getReal());
+      int m = -(int) Math.floor(a.getReal());
       return hurwitzZeta(x, a.add(m))
-          .add(summation(i -> a.add(i).pow(x.negate()), 0, m - 1.0, iterationLimit));
+          .add(summation(i -> a.add(i).pow(x.negate()), 0, m - 1, iterationLimit));
     }
 
     // Johansson arxiv.org/abs/1309.2877

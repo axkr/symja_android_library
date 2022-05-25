@@ -306,13 +306,13 @@ public class GammaJS extends JS {
     // dlmf.nist.gov/8.4.15
     double xRe = x.getReal();
     if (xRe < 0.0 && F.isNumIntValue(xRe) && F.isZero(x.getImaginary())) {
-      // x is a negative integer
-      final double n = -xRe;
+      // xRe is a negative integer
+      final int n = -(int) Math.rint(xRe);
       int iterationLimit = EvalEngine.get().getIterationLimit();
       final Complex t = y.negate().exp().multiply( //
           ZetaJS.complexSummation(
               k -> new Complex(Math.pow(-1.0, k) * factorialInt(k)).divide(y.pow(k + 1)), //
-              0.0, n - 1.0, iterationLimit));
+              0, n - 1, iterationLimit));
       // dlmf.nist.gov/8.4.4
       final double plusMinusOne = Math.pow(-1.0, n);
       return gamma(Complex.ZERO, y).subtract(t).multiply(plusMinusOne / factorialInt(n));

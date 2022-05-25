@@ -16,8 +16,11 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.FunctionExpand;
 import org.matheclipse.core.reflection.system.rules.BesselIRules;
+import org.matheclipse.core.reflection.system.rules.BesselJRules;
 import org.matheclipse.core.reflection.system.rules.BesselKRules;
 import org.matheclipse.core.reflection.system.rules.BesselYRules;
+import org.matheclipse.core.reflection.system.rules.SphericalBesselJRules;
+import org.matheclipse.core.reflection.system.rules.SphericalBesselYRules;
 
 public class BesselFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -237,7 +240,12 @@ public class BesselFunctions {
    * </code>
    * </pre>
    */
-  private static final class BesselJ extends AbstractFunctionEvaluator {
+  private static final class BesselJ extends AbstractFunctionEvaluator implements BesselJRules {
+
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
 
     /**
      * Precondition <code> n - 1/2 </code> is an integer number.
@@ -368,6 +376,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
+      super.setUp(newSymbol);
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
@@ -884,7 +893,14 @@ public class BesselFunctions {
    * </code>
    * </pre>
    */
-  private static final class SphericalBesselJ extends AbstractFunctionEvaluator {
+  private static final class SphericalBesselJ extends AbstractFunctionEvaluator
+      implements SphericalBesselJRules {
+
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
@@ -946,6 +962,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
+      super.setUp(newSymbol);
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
@@ -1040,12 +1057,21 @@ public class BesselFunctions {
    *
    * <h3>Examples</h3>
    */
-  private static final class SphericalBesselY extends AbstractFunctionEvaluator {
+  private static final class SphericalBesselY extends AbstractFunctionEvaluator
+      implements SphericalBesselYRules {
+
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-
+      if (z.isZero()) {
+        return F.CComplexInfinity;
+      }
       if (engine.isDoubleMode()) {
         try {
           double nDouble = Double.NaN;
@@ -1115,6 +1141,7 @@ public class BesselFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
+      super.setUp(newSymbol);
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }

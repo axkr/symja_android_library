@@ -387,6 +387,15 @@ public class HypergeometricJS extends JS {
       return Complex.ONE.subtract(x).pow(a.negate());
     }
 
+    if (F.isFuzzyEquals(a, Complex.ZERO, tolerance)
+        || F.isFuzzyEquals(b, Complex.ZERO, tolerance)) {
+      return Complex.ONE;
+    }
+
+    if (F.isFuzzyEquals(x.negate(), Complex.ONE, tolerance) && x.add(1.0).norm() < tolerance) {
+      return hypergeometric2F1(a, b, c, Complex.MINUS_ONE);
+    }
+
     EvalEngine engine = EvalEngine.get();
     final int recursionLimit = engine.getRecursionLimit();
     try {
@@ -583,13 +592,21 @@ public class HypergeometricJS extends JS {
       return Math.pow(1 - x, -a);
     }
 
+    if (F.isFuzzyEquals(a, 0.0, tolerance) || F.isFuzzyEquals(b, 0.0, tolerance)) {
+      return 1.0;
+    }
+
+    // if (F.isFuzzyEquals(-x, 1.0, tolerance) && Math.abs(x + 1.0) < tolerance) {
+    // return hypergeometric2F1(a, b, c, isComplex(x) ? complex(-1) : -1);
+    // }
+
     if (F.isNumIntValue(c) && c <= 0) {
       throw new ResultException(F.CComplexInfinity);
       // throw new ArgumentTypeException("hypergeometric function pole");
     }
 
     // transformation from Abramowitz & Stegun p.559
-    if (x < -1) {
+    if (x < -1.0) {
       double t1 = Gamma.gamma(c) * Gamma.gamma(b - a) / Gamma.gamma(b) / Gamma.gamma(c - a)
           * Math.pow(-x, -a) * hypergeometric2F1(a, 1 - c + a, 1 - b + a, 1 / x);
       double t2 = Gamma.gamma(c) * Gamma.gamma(a - b) / Gamma.gamma(a) / Gamma.gamma(c - b)
@@ -612,7 +629,7 @@ public class HypergeometricJS extends JS {
       }
     }
 
-    if (x > 1) {
+    if (x > 1) { 
       throw new ArgumentTypeException("unsupported real hypergeometric argument");
       // return hypergeometric2F1( new Complex(a), new Complex(b), new Complex(c), new Complex(x) );
     }

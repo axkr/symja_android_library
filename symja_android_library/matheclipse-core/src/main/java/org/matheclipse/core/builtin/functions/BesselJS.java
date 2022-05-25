@@ -70,6 +70,9 @@ public class BesselJS extends JS {
     if (n < 0.0) {
       throw new ArgumentTypeException(n + " is less than 0 (negative order)");
     }
+    if (m < 0) {
+      throw new ArgumentTypeException("Negative index " + m + " not supported in BesselJZero");
+    }
 
     // approximations from dlmf.nist.gov/10.21#vi
     double delta = Math.PI / 4.0;
@@ -163,6 +166,9 @@ public class BesselJS extends JS {
   public static double besselYZero(double n, int m) {
     if (n < 0.0) {
       throw new ArgumentTypeException(n + " < 0 (negative order)");
+    }
+    if (m < 0) {
+      throw new ArgumentTypeException("Negative index " + m + " not supported in BesselYZero");
     }
     // approximations from dlmf.nist.gov/10.21#vi
     double delta = Math.PI / 4.0;
