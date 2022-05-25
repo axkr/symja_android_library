@@ -289,6 +289,151 @@ public class TeXFormFactory {
     }
   }
 
+  /**
+   * Used for: <code>HermiteH(a,b)) ==> H_a(b)</code>, <code>LaguerreL(a,b)) ==> L_a(b)</code>
+   *
+   */
+  private static final class BinaryFunction extends AbstractConverter {
+
+    final String first;
+    final String middle;
+    final String last;
+
+    public BinaryFunction(String first, String middle, String last) {
+      super();
+      this.first = first;
+      this.middle = middle;
+      this.last = last;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() != 3) {
+        return false;
+      }
+      buf.append(first);
+      fFactory.convertInternal(buf, f.arg1(), 0);
+      buf.append(middle);
+      fFactory.convertInternal(buf, f.arg2(), 0);
+      buf.append(last);
+      return true;
+    }
+  }
+
+  private static final class TernaryFunction extends AbstractConverter {
+
+    final String first;
+    final String middle1;
+    final String middle2;
+    final String last;
+
+    public TernaryFunction(String first, String middle1, String middle2, String last) {
+      super();
+      this.first = first;
+      this.middle1 = middle1;
+      this.middle2 = middle2;
+      this.last = last;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() != 4) {
+        return false;
+      }
+      buf.append(first);
+      fFactory.convertInternal(buf, f.arg1(), 0);
+      buf.append(middle1);
+      fFactory.convertInternal(buf, f.arg2(), 0);
+      buf.append(middle2);
+      fFactory.convertInternal(buf, f.arg3(), 0);
+      buf.append(last);
+      return true;
+    }
+  }
+
+
+  private static final class QuadrupleFunction extends AbstractConverter {
+
+    final String first;
+    final String middle1;
+    final String middle2;
+    final String middle3;
+    final String last;
+
+    public QuadrupleFunction(String first, String middle1, String middle2, String middle3,
+        String last) {
+      super();
+      this.first = first;
+      this.middle1 = middle1;
+      this.middle2 = middle2;
+      this.middle3 = middle3;
+      this.last = last;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() != 5) {
+        return false;
+      }
+      buf.append(first);
+      fFactory.convertInternal(buf, f.arg1(), 0);
+      buf.append(middle1);
+      fFactory.convertInternal(buf, f.arg2(), 0);
+      buf.append(middle2);
+      fFactory.convertInternal(buf, f.arg3(), 0);
+      buf.append(middle3);
+      fFactory.convertInternal(buf, f.arg4(), 0);
+      buf.append(last);
+      return true;
+    }
+  }
+
+  private static final class BinaryTernaryFunction extends AbstractConverter {
+    final boolean takePenultimate;
+    final String first;
+    final String middle1;
+    final String middle2;
+    final String last;
+
+    public BinaryTernaryFunction(String first, String middle1, String middle2, String last,
+        boolean takePenultimate) {
+      super();
+      this.first = first;
+      this.middle1 = middle1;
+      this.middle2 = middle2;
+      this.last = last;
+      this.takePenultimate = takePenultimate;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() != 3 && f.size() != 4) {
+        return false;
+      }
+      buf.append(first);
+      fFactory.convertInternal(buf, f.arg1(), 0);
+      if (f.size() == 3) {
+        if (takePenultimate) {
+          buf.append(middle2);
+        } else {
+          buf.append(middle1);
+        }
+        fFactory.convertInternal(buf, f.arg2(), 0);
+      } else {
+        buf.append(middle1);
+        fFactory.convertInternal(buf, f.arg2(), 0);
+        buf.append(middle2);
+        fFactory.convertInternal(buf, f.arg3(), 0);
+      }
+      buf.append(last);
+      return true;
+    }
+  }
+
   private static final class Integrate extends AbstractConverter {
 
     /** {@inheritDoc} */
@@ -1268,11 +1413,41 @@ public class TeXFormFactory {
     }
   }
 
+  private static final class UnaryBinaryFunction extends AbstractConverter {
+
+    final String first;
+    final String middle;
+    final String last;
+
+    public UnaryBinaryFunction(String first, String middle, String last) {
+      super();
+      this.first = first;
+      this.middle = middle;
+      this.last = last;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() != 2 && f.size() != 3) {
+        return false;
+      }
+      buf.append(first);
+      fFactory.convertInternal(buf, f.arg1(), 0);
+      if (f.size() == 3) {
+        buf.append(middle);
+        fFactory.convertInternal(buf, f.arg2(), 0);
+      }
+      buf.append(last);
+      return true;
+    }
+  }
+
   private static final class Zeta extends AbstractConverter {
     /** {@inheritDoc} */
     @Override
     public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      fFactory.convertAST(buf, f, "zeta ");
+      fFactory.convertAST(buf, f, "\\zeta ");
       return true;
     }
   }
@@ -1957,7 +2132,25 @@ public class TeXFormFactory {
     // timesPrec =
     // ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence();
     operTab.put(S.Abs, new UnaryFunction("|", "|"));
+
+    operTab.put(S.Beta, new BinaryFunction("B(", ",", ")"));
+    operTab.put(S.BesselI, new BinaryFunction("I_", "(", ")"));
+    operTab.put(S.BesselJ, new BinaryFunction("J_", "(", ")"));
+    operTab.put(S.BesselK, new BinaryFunction("K_", "(", ")"));
+    operTab.put(S.BesselY, new BinaryFunction("Y_", "(", ")"));
+    operTab.put(S.CarlsonRC, new BinaryFunction("R_C(", ",", ")"));
+    operTab.put(S.CarlsonRD, new TernaryFunction("R_D(", ",", ",", ")"));
+    operTab.put(S.CarlsonRF, new TernaryFunction("R_F(", ",", ",", ")"));
+    operTab.put(S.CarlsonRG, new TernaryFunction("R_G(", ",", ",", ")"));
+    operTab.put(S.CarlsonRJ, new QuadrupleFunction("R_J(", ",", ",", ",", ")"));
+    operTab.put(S.ChebyshevT, new BinaryFunction("T_", "(", ")"));
+    operTab.put(S.ChebyshevU, new BinaryFunction("U_", "(", ")"));
+    operTab.put(S.CosIntegral, new UnaryFunction("\\text{Ci}(", ")"));
+    operTab.put(S.CoshIntegral, new UnaryFunction("\\text{Chi}(", ")"));
+
+    operTab.put(S.BetaRegularized, new TernaryFunction("I_", "(", ",", ")"));
     operTab.put(S.Binomial, new Binomial());
+
     operTab.put(S.Ceiling, new UnaryFunction(" \\left \\lceil ", " \\right \\rceil "));
     operTab.put(S.Conjugate, new Conjugate());
     operTab.put(S.Complex, new Complex());
@@ -1966,33 +2159,78 @@ public class TeXFormFactory {
     operTab.put(S.D, new D());
     operTab.put(S.Defer, new HoldForm());
     operTab.put(S.DirectedInfinity, new DirectedInfinity());
+
+    operTab.put(S.EllipticE, new UnaryBinaryFunction("E(", ",", ")"));
+    operTab.put(S.EllipticF, new BinaryFunction("F(", "|", ")"));
+    operTab.put(S.EllipticK, new UnaryFunction("K(", ")"));
+    operTab.put(S.EllipticPi, new BinaryTernaryFunction("\\Pi (", ";", "|", ")", true));
+    operTab.put(S.EllipticTheta, new BinaryTernaryFunction("\\vartheta _", "(", ",", ")", false));
+    operTab.put(S.Erf, new UnaryFunction("\\text{erf}(", ")"));
+    operTab.put(S.Erfc, new UnaryFunction("\\text{erfc}(", ")"));
+    operTab.put(S.Erfi, new UnaryFunction("\\text{erfi}(", ")"));
+
+    operTab.put(S.FactorialPower, new BinaryTernaryFunction("", "^{(", ",", ")}", false));
     operTab.put(S.Floor, new UnaryFunction(" \\left \\lfloor ", " \\right \\rfloor "));
     operTab.put(S.Function, new UnaryFunction("", "\\&"));
+
+    operTab.put(S.GammaRegularized, new BinaryTernaryFunction("Q(", ",", ",", ")", false));
+    operTab.put(S.Gudermannian, new UnaryFunction("\\text{gd}(", ")"));
+
+    operTab.put(S.HankelH1, new BinaryFunction("H_", "^{(1)}(", ")"));
+    operTab.put(S.HankelH2, new BinaryFunction("H_", "^{(2)}(", ")"));
     operTab.put(S.HarmonicNumber, new HarmonicNumber());
+    operTab.put(S.HermiteH, new BinaryFunction("H_", "(", ")"));
     operTab.put(S.HoldForm, new HoldForm());
     operTab.put(S.HurwitzZeta, new Zeta());
+    operTab.put(S.Hypergeometric0F1, new BinaryFunction("\\,_0F_1(;", ";", ")"));
+    operTab.put(S.Hypergeometric1F1, new TernaryFunction("\\,_1F_1(", ",", ",", ")"));
+    operTab.put(S.HypergeometricU, new TernaryFunction("U(", ",", ",", ")"));
+
     operTab.put(S.Integrate, new Integrate());
+    operTab.put(S.InverseBetaRegularized, new TernaryFunction("I_", "^{-1}(", ",", ")"));
+    operTab.put(S.InverseErf, new UnaryFunction("\\text{erf}^{-1}(", ")"));
+    operTab.put(S.InverseErfc, new UnaryFunction("\\text{erfc}^{-1}(", ")"));
+    operTab.put(S.InverseGammaRegularized, new BinaryFunction("Q^{-1}(", ",", ")"));
+    operTab.put(S.InverseGudermannian, new UnaryFunction("\\text{gd}^{-1}(", ")"));
+
+    operTab.put(S.LaguerreL, new BinaryFunction("L_", "(", ")"));
+    operTab.put(S.LegendreP, new BinaryTernaryFunction("P_", "^", "(", ")", true));
+    operTab.put(S.LegendreQ, new BinaryTernaryFunction("Q_", "^", "(", ")", true));
+
     operTab.put(S.Limit, new Limit());
     operTab.put(S.List, new List());
     // operTab.put(S.$RealMatrix, new List());
     // operTab.put(S.$RealVector, new List());
+
     operTab.put(S.MatrixForm, new MatrixForm());
     operTab.put(S.TableForm, new TableForm());
     operTab.put(S.Parenthesis, new Parenthesis());
     operTab.put(S.Part, new Part());
     operTab.put(S.Plus, new Plus());
+    operTab.put(S.Pochhammer, new BinaryFunction("(", ")_", ""));
     operTab.put(S.Power, new Power());
     operTab.put(S.Product, new Product());
+
     operTab.put(S.Rational, new Rational());
+
+    operTab.put(S.SinIntegral, new UnaryFunction("\\text{Si}(", ")"));
+    operTab.put(S.SinhIntegral, new UnaryFunction("\\text{Shi}(", ")"));
     operTab.put(S.Slot, new UnaryFunction("\\text{$\\#$", "}"));
     operTab.put(S.SlotSequence, new UnaryFunction("\\text{$\\#\\#$", "}"));
+    operTab.put(S.SphericalBesselJ, new BinaryFunction("j_", "(", ")"));
+    operTab.put(S.SphericalBesselY, new BinaryFunction("y_", "(", ")"));
     operTab.put(S.Sqrt, new UnaryFunction("\\sqrt{", "}"));
     operTab.put(S.Style, new Style());
     operTab.put(S.Subscript, new Subscript());
     operTab.put(S.Subsuperscript, new Subsuperscript());
     operTab.put(S.Sum, new Sum());
     operTab.put(S.Superscript, new Superscript());
+
     operTab.put(S.Times, new Times());
+
+    operTab.put(S.WhittakerM, new TernaryFunction("M_{", ",", "}(", ")"));
+    operTab.put(S.WhittakerW, new TernaryFunction("W_{", ",", "}(", ")"));
+
     operTab.put(S.Zeta, new Zeta());
 
     operTab.put(S.Condition, new AbstractOperator(this, Precedence.CONDITION, "\\text{/;}"));
