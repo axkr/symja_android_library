@@ -260,7 +260,7 @@ public class Symbol implements ISymbol, Serializable {
     if (fRulesData != null) {
       rules = fRulesData.definition();
     }
-    IASTAppendable result = F.ListAlloc(rules == null ? 1 : rules.size());
+    IASTAppendable result = F.ListAlloc(rules == null ? 1 : rules.size() + 1);
     if (hasAssignedSymbolValue()) {
       if (isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE)) {
         result.append(F.SetDelayed(this, assignedValue()));
@@ -799,8 +799,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr of(EvalEngine engine, IExpr... args) {
-    IAST ast = F.function(this, args);
-    return engine.evaluate(ast);
+    return engine.evaluate(F.function(this, args));
   }
 
   /** {@inheritDoc} */

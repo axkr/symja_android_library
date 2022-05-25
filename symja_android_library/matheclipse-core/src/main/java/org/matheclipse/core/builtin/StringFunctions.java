@@ -318,12 +318,8 @@ public final class StringFunctions {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
-      String str = ast.arg1().toString();
-      IASTAppendable result = F.ListAlloc(str.length());
-      for (int i = 0; i < str.length(); i++) {
-        result.append(F.$str(str.charAt(i)));
-      }
-      return result;
+      final String str = ast.arg1().toString();
+      return F.mapRange(0, str.length(), i -> F.$str(str.charAt(i)));
     }
 
     @Override
@@ -388,11 +384,7 @@ public final class StringFunctions {
           if (size <= 0) {
             return F.CEmptyList;
           }
-          IASTAppendable result = F.ListAlloc(size);
-          for (int i = from; i <= to; i++) {
-            result.append(F.$str((char) i));
-          }
-          return result;
+          return F.mapRange(from, to + 1, i -> F.$str((char) i));
         }
       } else {
         String str1 = ast.arg1().toString();
@@ -772,11 +764,8 @@ public final class StringFunctions {
         }
       }
       if (alphabet.length() > 2) {
-        IASTAppendable result = F.ListAlloc(alphabet.length());
-        for (int i = 0; i < alphabet.length(); i++) {
-          result.append(F.stringx(alphabet.charAt(i)));
-        }
-        return result;
+        final String alphabetStr = alphabet;
+        return F.mapRange(0, alphabet.length(), i -> F.stringx(alphabetStr.charAt(i)));
       }
       return F.NIL;
     }
@@ -858,16 +847,11 @@ public final class StringFunctions {
         }
 
         if (characters.length() > 1) {
-          IASTAppendable result = F.ListAlloc(characters.length());
-          for (int i = 0; i < characters.length(); i++) {
-            int indx = alphabet.indexOf(characters.charAt(i));
-            if (indx >= 0) {
-              result.append(F.ZZ(indx + 1));
-            } else {
-              result.append(F.C0);
-            }
-          }
-          return result;
+          final String alphabetStr = alphabet;
+          return F.mapRange(0, characters.length(), i -> {
+            final int indx = alphabetStr.indexOf(characters.charAt(i));
+            return indx >= 0 ? F.ZZ(indx + 1) : F.C0;
+          });
         }
         int indx = alphabet.indexOf(characters);
         if (indx >= 0) {
@@ -1807,7 +1791,8 @@ public final class StringFunctions {
       if (ast.arg1().isString()) {
         return F.ZZ(ast.arg1().toString().length());
       }
-      return F.NIL;
+      // String expected at position `1` in `2`.
+      return IOFunctions.printMessage(ast.topHead(), "string", F.list(F.C1, ast), engine);
     }
 
     @Override
@@ -1868,7 +1853,10 @@ public final class StringFunctions {
         if (arg1.isList()) {
           return ((IAST) arg1).mapThread(ast, 1);
         }
-
+        if (!arg1.isString()) {
+          // String or list of strings expected at position `1` in `2`.
+          return IOFunctions.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+        }
         IExpr arg2 = ast.arg2();
 
         Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
@@ -1878,11 +1866,18 @@ public final class StringFunctions {
           return F.NIL;
         }
         String s1 = arg1.toString();
-        java.util.regex.Matcher matcher = pattern.matcher(s1);
-        if (matcher.matches()) {
-          return S.True;
+        try {
+          java.util.regex.Matcher matcher = pattern.matcher(s1);
+          if (matcher.matches()) {
+            return S.True;
+          }
+          return S.False;
+        } catch (StackOverflowError soe) {
+          // Regex expression `1` error message: `2`.
+          IOFunctions.printMessage(ast.topHead(), "zzregex",
+              F.List(arg2, F.stringx("StackOverflowError")), engine);
+          return S.False;
         }
-        return S.False;
       }
       return F.NIL;
     }
@@ -1989,6 +1984,10 @@ public final class StringFunctions {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
           return ((IAST) arg1).mapThread(ast, 1);
+        }
+        if (!arg1.isString()) {
+          // String or list of strings expected at position `1` in `2`.
+          return IOFunctions.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
         }
 
         IExpr arg2 = ast.arg2();
@@ -2470,11 +2469,7 @@ public final class StringFunctions {
       if (result == null || str.length() == 0) {
         return F.CEmptyList;
       }
-      IASTAppendable list = F.ListAlloc(result.length);
-      for (int i = 0; i < result.length; i++) {
-        list.append(result[i]);
-      }
-      return list;
+      return F.mapRange(0, result.length, i -> F.stringx(result[i]));
     }
 
     @Override
@@ -2986,22 +2981,10 @@ public final class StringFunctions {
     }
 
     public static IAST toCharacterCode(final String unicodeInput, final Charset inputEncoding) {
-      // try {
-
       final String utf8String =
           new String(unicodeInput.getBytes(inputEncoding), StandardCharsets.UTF_8);
-      int characterCode;
       final int length = utf8String.length();
-      IASTAppendable list = F.ListAlloc(length);
-      for (int i = 0; i < length; i++) {
-        characterCode = utf8String.charAt(i);
-        list.append(characterCode);
-      }
-      return list;
-      // } catch (final UnsupportedEncodingException e) {
-      // LOGGER.error("ToCharacterCode.toCharacterCode() failed", e);
-      // }
-      // return F.NIL;
+      return F.mapRange(0, length, i -> F.ZZ(utf8String.charAt(i)));
     }
   }
 

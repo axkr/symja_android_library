@@ -423,23 +423,18 @@ public class ExprParser extends Scanner {
         IStringX str = getString();
         return parseArguments(str);
       case TT_PERCENT:
-        final IASTAppendable out = F.ast(S.Out);
         int countPercent = 1;
         getNextToken();
         if (fToken == TT_DIGIT) {
           countPercent = getJavaInt();
-          out.append(countPercent);
-          return out;
+          return F.Out(countPercent);
         }
 
         while (fToken == TT_PERCENT) {
           countPercent++;
           getNextToken();
         }
-
-        out.append(-countPercent);
-        return parseArguments(out);
-
+        return parseArguments(F.Out(-countPercent));
       case TT_SLOT:
         getNextToken();
         if (fToken == TT_DIGIT) {
@@ -449,19 +444,14 @@ public class ExprParser extends Scanner {
           } else if (slotNumber == 2) {
             return parseArguments(F.Slot2);
           }
-          final IASTAppendable slot = F.ast(S.Slot);
-          slot.append(slotNumber);
-          return parseArguments(slot);
+          return parseArguments(F.Slot(slotNumber));
         } else if (fToken == TT_IDENTIFIER) {
           String[] identifierContext = getIdentifier();
-          final IASTAppendable slot = F.ast(S.Slot);
-          slot.append(identifierContext[0]);
+          final IAST slot = F.Slot(identifierContext[0]);
           getNextToken();
           return parseArguments(slot);
-        } else if (fToken == TT_STRING) {
-          final IASTAppendable slot = F.ast(S.Slot);
-          slot.append(getString());
-          return parseArguments(slot);
+        } else if (fToken == TT_STRING) { 
+          return parseArguments(F.Slot(getString()));
         }
         return parseArguments(F.Slot1);
 

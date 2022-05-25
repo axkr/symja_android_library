@@ -36,7 +36,7 @@ public class ListLinePlot extends AbstractEvaluator {
       }
       return F.NIL;
     }
-    if ((ast.size() == 2) && ast.arg1().isList()) {
+    if ((ast.isAST1()) && ast.arg1().isList()) {
       try {
         double xMinD = Double.MAX_VALUE;
         double xMaxD = Double.MIN_VALUE;
@@ -49,10 +49,9 @@ public class ListLinePlot extends AbstractEvaluator {
 
           double[] allPoints = ast.arg1().toDoubleVector();
           if (allPoints != null && allPoints.length > 0) {
-            xMaxD = 1.0;
+            xMinD = 1.0;
             xMaxD = allPoints.length;
-            points = F.ast(S.List, allPoints.length);
-
+            points = F.ListAlloc(allPoints.length);
             for (int i = 0; i < allPoints.length; i++) {
               if (allPoints[i] > yMaxD) {
                 yMaxD = allPoints[i];
@@ -69,7 +68,7 @@ public class ListLinePlot extends AbstractEvaluator {
             double[][] allPoints = ast.arg1().toDoubleMatrix();
             if (allPoints != null && allPoints.length > 0) {
               xMaxD = allPoints.length;
-              points = F.ast(S.List, allPoints.length);
+              points = F.ListAlloc(allPoints.length);
 
               for (int i = 0; i < allPoints.length; i++) {
                 for (int j = 0; j < allPoints[i].length; j++) {

@@ -351,13 +351,13 @@ public class IntervalFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int size = 2;
+      int calculatedResultSize = 2;
       for (int i = 1; i < ast.size(); i++) {
         if (!ast.get(i).isInterval()) {
           return F.NIL;
         }
         IAST interval = (IAST) ast.get(i);
-        size += interval.argSize();
+        calculatedResultSize += interval.argSize();
         for (int j = 1; j < interval.size(); j++) {
           if (!interval.get(j).isList2()) {
             return F.NIL;
@@ -370,7 +370,7 @@ public class IntervalFunctions {
           }
         }
       }
-      IASTAppendable result = F.ast(S.Interval, size);
+      IASTAppendable result = F.ast(S.Interval, calculatedResultSize);
       for (int i = 1; i < ast.size(); i++) {
         IAST interval = (IAST) ast.get(i);
         for (int j = 1; j < interval.size(); j++) {

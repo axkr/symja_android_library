@@ -21,7 +21,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.TestReportObjectExpr;
 import org.matheclipse.core.expression.data.TestResultObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -276,15 +275,8 @@ public class UnitTestingFunctions {
 
   public static IAST readFile(EvalEngine engine, String str) {
     final List<ASTNode> node = FileFunctions.parseReader(str, engine);
-    IExpr temp;
-    int i = 0;
     AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-    IASTAppendable list = F.ListAlloc(node.size());
-    while (i < node.size()) {
-      temp = ast2Expr.convert(node.get(i++));
-      list.append(temp);
-    }
-    return list;
+    return F.mapRange(0, node.size(), i -> ast2Expr.convert(node.get(i)));
   }
 
   public static void initialize() {

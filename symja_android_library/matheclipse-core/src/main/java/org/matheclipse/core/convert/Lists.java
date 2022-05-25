@@ -108,9 +108,9 @@ public class Lists {
     if (p_symbols != null) {
       IASTAppendable ast = F.ListAlloc(p_symbols.length);
       for (int i = 0, t = p_symbols.length; i < t; i++) {
-
         ast.append(F.symbol(p_symbols[i]));
       }
+      return ast;
     }
     return F.List();
   }

@@ -33,10 +33,8 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
   protected void setOptions(final ISymbol symbol, IBuiltInSymbol[] lhsOptionSymbols,
       IExpr[] rhsValues) {
     optionSymbols = lhsOptionSymbols;
-    IASTAppendable list = F.ListAlloc(rhsValues.length);
-    for (int i = 0; i < rhsValues.length; i++) {
-      list.append(F.Rule(lhsOptionSymbols[i], rhsValues[i]));
-    }
+    IASTAppendable list =
+        F.mapRange(0, rhsValues.length, i -> F.Rule(lhsOptionSymbols[i], rhsValues[i]));
     super.setOptions(symbol, list);
   }
 

@@ -4,7 +4,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -94,8 +93,7 @@ public class Outer extends AbstractFunctionEvaluator {
       if (expr.isAST() && head.equals(expr.head())) {
         IAST list = (IAST) expr;
         int size = list.size();
-        IASTAppendable result = F.ast(head, size);
-        return result.appendArgs(size, i -> outer(astPosition, list.get(i), current));
+        return F.mapRange(head, 1, size, i -> outer(astPosition, list.get(i), current));
       }
 
       if (ast.size() > astPosition) {
@@ -131,7 +129,7 @@ public class Outer extends AbstractFunctionEvaluator {
       }
     }
     OuterAlgorithm algorithm = new OuterAlgorithm(ast, head);
-    return algorithm.outer(3, ast.arg2(), F.ast(S.List, ast.argSize()));
+    return algorithm.outer(3, ast.arg2(), F.ListAlloc(ast.argSize()));
   }
 
   @Override

@@ -342,65 +342,63 @@ public final class Combinatoric {
         }
 
         IASTAppendable result = F.ListAlloc(mainList.argSize());
-        {
-          Set<IExpr> set = new HashSet<IExpr>();
-
-          for (int j = 1; j < mainList.size(); j++) {
-            IAST list = (IAST) mainList.get(j);
-            for (int i = 1; i < list.size(); i++) {
-              IExpr arg = list.get(i);
-              if (arg.isInteger()) {
-                if (!arg.isPositive()) {
-                  if (!quiet) {
-                    // `1` contains integers that are not positive.
-                    IOFunctions.printMessage(S.Cycles, "pospoint", F.list(cycles), engine);
-                  }
-                  return F.NIL;
+        Set<IExpr> set = new HashSet<IExpr>();
+        for (int j = 1; j < mainList.size(); j++) {
+          IAST list = (IAST) mainList.get(j);
+          for (int i = 1; i < list.size(); i++) {
+            IExpr arg = list.get(i);
+            if (arg.isInteger()) {
+              if (!arg.isPositive()) {
+                if (!quiet) {
+                  // `1` contains integers that are not positive.
+                  IOFunctions.printMessage(S.Cycles, "pospoint", F.list(cycles), engine);
                 }
-                if (set.contains(arg)) {
-                  if (!quiet) {
-                    // `1` contains repeated integers.
-                    IOFunctions.printMessage(S.Cycles, "reppoint", F.list(cycles), engine);
-                  }
-                  return F.NIL;
-                }
-                set.add(arg);
-              } else {
-                if (arg.isNumber()) {
-                  if (!quiet) {
-                    // `1` is expected to contain a list of lists of integers.
-                    IOFunctions.printMessage(S.Cycles, "intpoint", F.list(cycles), engine);
-                  }
-                  return F.NIL;
-                }
-
-                // symbolic args => return unevaluated
                 return F.NIL;
               }
-            }
-
-            if (list.size() > 2) {
-              // drop empty and singleton cycles
-
-              // rotate cycle by rotateLeftPositions so that the smallest position is at index 1
-              int rotateLeftPositions = 0;
-              IInteger value = (IInteger) list.get(1);
-              for (int i = 1; i < list.size(); i++) {
-                IInteger arg = (IInteger) list.get(i);
-                if (value.isGT(arg)) {
-                  value = arg;
-                  rotateLeftPositions = i - 1;
+              if (set.contains(arg)) {
+                if (!quiet) {
+                  // `1` contains repeated integers.
+                  IOFunctions.printMessage(S.Cycles, "reppoint", F.list(cycles), engine);
                 }
+                return F.NIL;
               }
-              if (rotateLeftPositions > 0) {
-                IASTAppendable newList = F.ListAlloc(list.size());
-                result.append(list.rotateLeft(newList, rotateLeftPositions));
-              } else {
-                result.append(list);
+              set.add(arg);
+            } else {
+              if (arg.isNumber()) {
+                if (!quiet) {
+                  // `1` is expected to contain a list of lists of integers.
+                  IOFunctions.printMessage(S.Cycles, "intpoint", F.list(cycles), engine);
+                }
+                return F.NIL;
               }
+
+              // symbolic args => return unevaluated
+              return F.NIL;
+            }
+          }
+
+          if (list.size() > 2) {
+            // drop empty and singleton cycles
+
+            // rotate cycle by rotateLeftPositions so that the smallest position is at index 1
+            int rotateLeftPositions = 0;
+            IInteger value = (IInteger) list.get(1);
+            for (int i = 1; i < list.size(); i++) {
+              IInteger arg = (IInteger) list.get(i);
+              if (value.isGT(arg)) {
+                value = arg;
+                rotateLeftPositions = i - 1;
+              }
+            }
+            if (rotateLeftPositions > 0) {
+              IASTAppendable newList = F.ListAlloc(list.size());
+              result.append(list.rotateLeft(newList, rotateLeftPositions));
+            } else {
+              result.append(list);
             }
           }
         }
+
         EvalAttributes.sort(result);
         IAST resultCycles = F.Cycles(result);
         resultCycles.addEvalFlags(IAST.BUILT_IN_EVALED);
@@ -594,20 +592,17 @@ public final class Combinatoric {
       for (int i = 0; i < positions.length; i++) {
         positions[i] = i + 1;
       }
-      IASTAppendable permList = F.ListAlloc(ast1.size());
-      for (int j = 1; j < ast1.size(); j++) {
-        IExpr expr1 = ast1.get(j);
+      return F.mapList(ast1, expr1 -> {
         for (int i = 1; i < ast2.size(); i++) {
           if (positions[i - 1] > 0) {
             if (expr1.equals(ast2.get(i))) {
-              permList.append(i);
               positions[i - 1] = -1;
-              break;
+              return F.ZZ(i);
             }
           }
         }
-      }
-      return permList;
+        return F.NIL;
+      });
     }
 
     @Override
@@ -1843,11 +1838,8 @@ public final class Combinatoric {
                   F.list(ast.arg2(), F.ZZ(permutationsListLength), ast), engine);
             }
           }
-          IASTAppendable result = F.ListAlloc(permutationsListLength);
-          for (int i = 1; i <= permutationsListLength; i++) {
-            result.append(i);
-          }
-          return permutationReplace(result, cyclesList);
+          IASTAppendable range = F.mapRange(1, permutationsListLength + 1, i -> F.ZZ(i));
+          return permutationReplace(range, cyclesList);
         }
       }
       return F.NIL;

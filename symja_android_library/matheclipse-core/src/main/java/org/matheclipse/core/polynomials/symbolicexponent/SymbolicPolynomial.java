@@ -2239,20 +2239,6 @@ public class SymbolicPolynomial
    * @return the monomials of a polynomial
    */
   public IAST coefficientRules() {
-    // IASTAppendable resultList = F.ListAlloc(polyExpr.length());
-    // for (Monomial<IExpr> monomial : polyExpr) {
-    //
-    // IExpr coeff = monomial.coefficient();
-    // ExpVector exp = monomial.exponent();
-    // int len = exp.length();
-    // IASTAppendable ruleList = F.ListAlloc(len);
-    // for (int i = 0; i < len; i++) {
-    // ruleList.append(exp.getVal(len - i - 1));
-    // }
-    // resultList.append(F.Rule(ruleList, coeff));
-    // }
-    // return resultList;
-
     IASTAppendable result = F.ListAlloc(val.size());
     for (Map.Entry<ExpVectorSymbolic, IExpr> monomial : val.entrySet()) {
       IExpr coeff = monomial.getValue();

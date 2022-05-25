@@ -25,7 +25,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
@@ -306,11 +305,7 @@ public class GraphDataFunctions {
             if (k > Config.MAX_AST_SIZE) {
               ASTElementLimitExceeded.throwIt(k);
             }
-            IASTAppendable result = F.ListAlloc(k);
-            for (int i = 0; i < k; i++) {
-              result.append(randomGraph(vertices, edges));
-            }
-            return result;
+            return F.mapRange(0, k, i -> randomGraph(vertices, edges));
           }
           return randomGraph(vertices, edges);
         } catch (RuntimeException rex) {

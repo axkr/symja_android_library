@@ -744,11 +744,11 @@ public class Algebra {
       if (temp.isPresent()) {
         return temp;
       }
-      temp = cancelNIL(arg1, engine);
-      if (temp.isPresent()) {
-        return temp;
-      }
-      return arg1;
+      return cancelNIL(arg1, engine).orElse(arg1);
+      // if (temp.isPresent()) {
+      // return temp;
+      // }
+      // return arg1;
     }
 
     @Override
@@ -881,38 +881,36 @@ public class Algebra {
    * </code>
    * </pre>
    */
-  private static class Collect extends AbstractCoreFunctionEvaluator {
+  private static class Collect extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() >= 3 && ast.size() <= 4) {
-        try {
-          IExpr arg1 = ast.arg1();
-          IAST temp = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
-          if (temp.isPresent()) {
-            return temp;
-          }
-          IExpr arg3Head = null;
-          arg1 = engine.evaluate(arg1);
-          arg1 = F.expandAll(arg1, true, true);
-          final IExpr arg2 = engine.evalPattern(ast.arg2());
-          if (!arg2.isList()) {
-            if (ast.isAST3()) {
-              arg3Head = engine.evaluate(ast.arg3());
-            }
-            return collectSingleVariable(arg1, arg2, null, 1, arg3Head, engine);
-          }
-          IAST list = (IAST) arg2;
-          if (list.size() > 1) {
-            if (ast.isAST3()) {
-              arg3Head = engine.evaluate(ast.arg3());
-            }
-            return collectSingleVariable(arg1, list.arg1(), (IAST) arg2, 2, arg3Head, engine);
-          }
-          return arg1;
-        } catch (Exception e) {
-          LOGGER.debug("Collect.evaluate() failed", e);
+      try {
+        IExpr arg1 = ast.arg1();
+        IAST temp = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
+        if (temp.isPresent()) {
+          return temp;
         }
+        IExpr arg3Head = null;
+        arg1 = F.expandAll(arg1, true, true);
+        final IExpr arg2 = engine.evalPattern(ast.arg2());
+        if (!arg2.isList()) {
+          if (ast.isAST3()) {
+            arg3Head = ast.arg3();
+          }
+          return collectSingleVariableRecursive(arg1, arg2, null, 1, arg3Head, engine);
+        }
+        IAST list = (IAST) arg2;
+        if (list.size() > 1) {
+          if (ast.isAST3()) {
+            arg3Head = engine.evaluate(ast.arg3());
+          }
+          return collectSingleVariableRecursive(arg1, list.arg1(), (IAST) arg2, 2, arg3Head,
+              engine);
+        }
+        return arg1;
+      } catch (Exception e) {
+        LOGGER.debug("Collect.evaluate() failed", e);
       }
       return F.NIL;
     }
@@ -940,7 +938,7 @@ public class Algebra {
      * @param engine the evaluation engine
      * @return
      */
-    private IExpr collectSingleVariable(IExpr expr, IExpr x, final IAST listOfVariables,
+    private IExpr collectSingleVariableRecursive(IExpr expr, IExpr x, final IAST listOfVariables,
         final int listPosition, IExpr head, EvalEngine engine) {
       if (expr.isAST()) {
         Map<IExpr, IASTAppendable> map = new HashMap<IExpr, IASTAppendable>();
@@ -968,42 +966,39 @@ public class Algebra {
           // collect next pattern in sub-expressions
           IASTAppendable result = F.PlusAlloc(map.size() + 1);
           if (rest.size() > 1) {
-            result.append(
-                collectSingleVariable(rest.oneIdentity0(), listOfVariables.get(listPosition),
-                    listOfVariables, listPosition + 1, head, engine));
+            result.append(collectSingleVariableRecursive(rest.oneIdentity0(),
+                listOfVariables.get(listPosition), listOfVariables, listPosition + 1, head,
+                engine));
           }
-          for (Entry<IExpr, IASTAppendable> entry : map.entrySet()) {
-            IExpr temp = collectSingleVariable(entry.getValue().oneIdentity0(),
+          result.append(map, (key, value) -> {
+            IExpr temp = collectSingleVariableRecursive(((IASTAppendable) value).oneIdentity0(),
                 listOfVariables.get(listPosition), listOfVariables, listPosition + 1, head, engine);
-            result.append(F.Times(entry.getKey(), temp));
-          }
+            return F.Times(key, temp);
+          });
           return result;
         }
         if (head != null) {
           IASTMutable simplifyAST = F.unaryAST1(head, null);
-          IExpr coefficient;
           rest.forEach((arg, i) -> {
             simplifyAST.set(1, arg);
             rest.set(i, engine.evaluate(simplifyAST));
           });
-          for (Map.Entry<IExpr, IASTAppendable> entry : map.entrySet()) {
-            simplifyAST.set(1, entry.getValue());
-            coefficient = engine.evaluate(simplifyAST);
+          rest.append(map, (key, value) -> {
+            simplifyAST.set(1, value);
+            IExpr coefficient = engine.evaluate(simplifyAST);
             if (coefficient.isPlus()) {
-              rest.append(F.Times(entry.getKey()).appendOneIdentity((IAST) coefficient));
+              return F.Times(key).appendOneIdentity((IAST) coefficient);
             } else {
-              rest.append(entry.getKey().times(coefficient));
+              return key.times(coefficient);
             }
-          }
+          });
         } else {
-          IAST coefficient;
-          for (IExpr key : map.keySet()) {
-            coefficient = map.get(key);
+          rest.append(map, (key, value) -> {
             IASTAppendable times = F.TimesAlloc(2);
             times.append(key);
-            times.appendOneIdentity(coefficient);
-            rest.append(times);
-          }
+            times.appendOneIdentity((IASTAppendable) value);
+            return times;
+          });
         }
         return rest.oneIdentity0();
       }
@@ -1156,6 +1151,11 @@ public class Algebra {
 
     public boolean isPowerMatched(IExpr poly, IPatternMatcher matcher) {
       return poly.isPower() && poly.exponent().isNumber() && matcher.test(poly.base());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
     }
 
     @Override
@@ -1684,12 +1684,12 @@ public class Algebra {
        */
       private IExpr expandPower(final IAST plusAST, final int n) {
         if (n == 1) {
-          IExpr temp = expandPlus(plusAST);
-          if (temp.isPresent()) {
-            return temp;
-          }
-          addExpanded(plusAST);
-          return plusAST;
+          return expandPlus(plusAST).orElseGet(() -> addExpanded(plusAST));
+          // IExpr temp = expandPlus(plusAST);
+          // if (temp.isPresent()) {
+          // return temp;
+          // }
+          // return addExpanded(plusAST);
         }
         if (n == 0) {
           return F.C1;
@@ -1965,15 +1965,12 @@ public class Algebra {
       IAST precalculatedPowerASTs;
 
       public NumberPartititon(IAST plusAST, int n, IASTAppendable expandedResult) {
-
         this.expandedResult = expandedResult;
         this.n = n;
         this.m = plusAST.argSize();
         this.parts = new int[m];
         // precalculate all Power[] ASTs:
-        IASTAppendable temp = F.ListAlloc(plusAST.size());
-        temp.appendArgs(plusAST);
-        this.precalculatedPowerASTs = temp;
+        this.precalculatedPowerASTs = F.mapList(plusAST, x -> x);
       }
 
       private void addFactor(int[] j) {
@@ -2459,7 +2456,7 @@ public class Algebra {
               // Solve.solveRecursive(newList, F.CEmptyList, false, varList, engine);
               if (result.isListOfLists()) {
                 IAST listOfRulesToValuesList =
-                    listOfRulesToValuesList(result, originalVarList.arg1());
+                    listOfRulesToValuesList((IAST) result, originalVarList.arg1());
                 if (listOfRulesToValuesList.isPresent()) {
                   resultList.appendArgs(listOfRulesToValuesList);
                 }
@@ -2473,17 +2470,19 @@ public class Algebra {
       return resultList;
     }
 
-    public static IAST listOfRulesToValuesList(IExpr listOfRules, IExpr variable) {
-      IASTAppendable solveValues = F.ListAlloc(listOfRules.size());
-      ((IAST) listOfRules).map(a -> {
-        if (a.isList1() //
-            && a.first().isRuleAST() && a.first().first().equals(variable)) {
-          solveValues.append(a.first().second());
-        }
-        return F.NIL;
-      });
+    public static IAST listOfRulesToValuesList(IAST listOfRules, IExpr variable) {
+      IASTAppendable solveValues =
+          F.mapList(listOfRules, possibleList1 -> getVariableValue(possibleList1, variable));
       if (solveValues.size() > 1) {
         return solveValues;
+      }
+      return F.NIL;
+    }
+
+    private static IExpr getVariableValue(IExpr possibleList1, IExpr variable) {
+      if (possibleList1.isList1() && possibleList1.first().isRuleAST()
+          && possibleList1.first().first().equals(variable)) {
+        return possibleList1.first().second();
       }
       return F.NIL;
     }
@@ -2495,7 +2494,7 @@ public class Algebra {
      *
      * @param poly
      * @param expr
-     * @param eVar
+     * @param variable
      * @param engine
      * @return
      */
@@ -2589,10 +2588,8 @@ public class Algebra {
         }
 
         option = options.getOption(S.GaussianIntegers);
-        if (option.isPresent()) {
-          if (option.isTrue()) {
-            return factorComplex(expr, varList, S.Times, false, true, engine);
-          }
+        if (option.isTrue()) {
+          return factorComplex(expr, varList, S.Times, false, true, engine);
         }
       }
       return F.NIL; // no evaluation

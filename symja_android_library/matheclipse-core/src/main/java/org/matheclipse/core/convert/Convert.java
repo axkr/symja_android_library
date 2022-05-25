@@ -225,25 +225,13 @@ public class Convert {
       return F.NIL;
     }
     final IASTAppendable result = F.ListAlloc(rowSize);
-    IASTAppendable currOutRow;
     for (int i = 0; i < rowSize; i++) {
       FieldVector<IExpr> fieldVector = listOfVectors.get(i);
       int colSize = fieldVector.getDimension();
-      currOutRow = F.ListAlloc(colSize);
+      IASTAppendable currOutRow = F.ListAlloc(colSize);
       result.append(currOutRow);
-
       for (int j = 0; j < colSize; j++) {
-        IExpr expr = fieldVector.getEntry(j);
-        if (expr.isNumber()) {
-          currOutRow.append(expr);
-        } else {
-          // if (expr.isPlusTimesPower()) {
-          // // TODO Performance hotspot
-          // currOutRow.append(F.eval(F.Together(expr)));
-          // } else {
-          currOutRow.append(expr);
-          // }
-        }
+        currOutRow.append(fieldVector.getEntry(j));
       }
     }
     return result;
@@ -612,12 +600,7 @@ public class Convert {
     if (vector == null) {
       return F.NIL;
     }
-    IASTAppendable result = F.ListAlloc(vector.length);
-
-    for (int i = 0; i < vector.length; i++) {
-      result.append(F.complexNum(vector[i]));
-    }
-    return result;
+    return F.mapRange(0, vector.length, i -> F.complexNum(vector[i]));
   }
 
   /**
@@ -657,29 +640,11 @@ public class Convert {
     final int rowSize = matrix.getRowDimension();
     final int colSize = matrix.getColumnDimension();
 
-    final IASTAppendable result = F.ListAlloc(rowSize);
-    IASTAppendable currOutRow;
-    for (int i = 0; i < rowSize; i++) {
-      currOutRow = F.ListAlloc(colSize);
-      result.append(currOutRow);
-      for (int j = 0; j < colSize; j++) {
-        IExpr expr = matrix.getEntry(i, j);
-        if (expr.isNumber()) {
-          currOutRow.append(expr);
-        } else {
-          // if (expr.isPlusTimesPower()) {
-          // // TODO Performance hotspot
-          // currOutRow.append(F.eval(F.Together(expr)));
-          // } else {
-          currOutRow.append(expr);
-          // }
-        }
-      }
-    }
+    final IASTAppendable result =
+        F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> matrix.getEntry(i, j)));
     if (matrixFormat) {
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-      // isMatrix() must be
-      // used!
+      // isMatrix() must be used!
       result.isMatrix(true);
     }
     return result;
@@ -692,29 +657,10 @@ public class Convert {
     final int rowSize = matrix.ring.rows;
     final int colSize = matrix.ring.cols;
 
-    final IASTAppendable out = F.ListAlloc(rowSize);
-    IASTAppendable currOutRow;
-    for (int i = 0; i < rowSize; i++) {
-      currOutRow = F.ListAlloc(colSize);
-      out.append(currOutRow);
-      for (int j = 0; j < colSize; j++) {
-        IExpr expr = matrix.get(i, j);
-        if (expr.isNumber()) {
-          currOutRow.append(expr);
-        } else {
-          // if (expr.isPlusTimesPower()) {
-          // // TODO Performance hotspot
-          // currOutRow.append(F.eval(F.Together(expr)));
-          // } else {
-          currOutRow.append(expr);
-          // }
-        }
-      }
-    }
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> matrix.get(i, j)));
     if (matrixFormat) {
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-      // isMatrix() must be
-      // used!
+      // isMatrix() must be used!
       out.isMatrix(true);
     }
     return out;
@@ -738,20 +684,11 @@ public class Convert {
     final int rowSize = matrix.getRowDimension();
     final int colSize = matrix.getColumnDimension();
 
-    final IASTAppendable out = F.ListAlloc(rowSize);
-    IASTAppendable currOutRow;
-    for (int i = 0; i < rowSize; i++) {
-      currOutRow = F.ListAlloc(colSize);
-      out.append(currOutRow);
-      for (int j = 0; j < colSize; j++) {
-        final Complex expr = matrix.getEntry(i, j);
-        currOutRow.append(F.complexNum(expr));
-      }
-    }
+    final IASTAppendable out =
+        F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> F.complexNum(matrix.getEntry(i, j))));
     if (matrixFormat) {
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-      // isMatrix() must be
-      // used!
+      // isMatrix() must be used!
       out.isMatrix(true);
     }
     return out;
@@ -781,29 +718,11 @@ public class Convert {
     final int rowSize = matrix.getRowDimension();
     final int colSize = matrix.getColumnDimension();
 
-    final IASTAppendable result = F.ListAlloc(rowSize);
-    IASTAppendable currOutRow;
-    for (int i = 0; i < rowSize; i++) {
-      currOutRow = F.ListAlloc(colSize);
-      result.append(currOutRow);
-      for (int j = 0; j < colSize; j++) {
-        IExpr expr = F.num(matrix.getEntry(i, j));
-        if (expr.isNumber()) {
-          currOutRow.append(expr);
-        } else {
-          // if (expr.isPlusTimesPower()) {
-          // // TODO Performance hotspot
-          // currOutRow.append(F.eval(F.Together(expr)));
-          // } else {
-          currOutRow.append(expr);
-          // }
-        }
-      }
-    }
+    final IASTAppendable result =
+        F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> F.num(matrix.getEntry(i, j))));
     if (matrixFormat) {
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-      // isMatrix() must be
-      // used!
+      // isMatrix() must be used!
       result.isMatrix(true);
     }
     return result;
@@ -822,15 +741,14 @@ public class Convert {
         return F.C0;
       }
     }
-    IASTAppendable sum = F.PlusAlloc(coefficients.length);
-    sum.append(coefficients[0]);
-    for (int i = 1; i < coefficients.length; ++i) {
-      if (coefficients[i] != 0) {
-        sum.append(F.Times(F.num(coefficients[i]), F.Power(sym, F.ZZ(i))));
+    return F.mapRange(S.Plus, 0, coefficients.length, i -> {
+      if (i == 0) {
+        return F.num(coefficients[0]);
+      } else if (coefficients[i] != 0) {
+        return F.Times(F.num(coefficients[i]), F.Power(sym, F.ZZ(i)));
       }
-    }
-
-    return sum;
+      return F.NIL;
+    });
   }
 
   /**
@@ -895,11 +813,7 @@ public class Convert {
       return F.NIL;
     }
     final int rowSize = vector.getDimension();
-
-    final IASTAppendable out = F.ListAlloc(rowSize);
-    for (int i = 0; i < rowSize; i++) {
-      out.append(F.complexNum(vector.getEntry(i)));
-    }
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.complexNum(vector.getEntry(i)));
     out.addEvalFlags(IAST.IS_VECTOR);
     return out;
   }
@@ -926,11 +840,7 @@ public class Convert {
       return F.NIL;
     }
     final int rowSize = vector.getDimension();
-
-    final IASTAppendable out = F.ListAlloc(rowSize);
-    for (int i = 0; i < rowSize; i++) {
-      out.append(vector.getEntry(i));
-    }
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.num(vector.getEntry(i)));
     out.addEvalFlags(IAST.IS_VECTOR);
     return out;
   }
@@ -965,14 +875,9 @@ public class Convert {
     try {
       int columnLength = dd[0].length;
       int rowLength = dd.length;
-      final IASTAppendable list = F.ListAlloc(columnLength);
-      for (int i = 0; i < columnLength; i++) {
-        final IASTAppendable row = F.ListAlloc(rowLength);
-        for (int j = 0; j < rowLength; j++) {
-          row.append(dd[j][i]);
-        }
-        list.append(row);
-      }
+      final IASTAppendable list =
+          F.mapRange(0, columnLength, i -> F.mapRange(0, rowLength, j -> F.num(dd[j][i])));
+
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
       // isMatrix() must be
       // used!
@@ -994,11 +899,7 @@ public class Convert {
       return F.NIL;
     }
     final int rowSize = vector.getDimension();
-
-    final IASTAppendable out = F.ListAlloc(rowSize);
-    for (int i = 0; i < rowSize; i++) {
-      out.append(vector.getEntry(i));
-    }
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> vector.getEntry(i));
     out.addEvalFlags(IAST.IS_VECTOR);
     return out;
   }

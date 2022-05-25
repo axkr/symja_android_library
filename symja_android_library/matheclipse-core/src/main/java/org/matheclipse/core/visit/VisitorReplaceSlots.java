@@ -51,11 +51,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
   private IExpr getSlotSequence(IInteger ii) {
     int i = ii.toIntDefault();
     if (i >= 0 && i <= astSlots.size()) {
-      IASTAppendable result = F.ast(S.Sequence, astSlots.size());
-      for (int j = i; j < astSlots.size(); j++) {
-        result.append(astSlots.get(j));
-      }
-      return result;
+      return F.mapRange(S.Sequence, i, astSlots.size(), j -> astSlots.get(j));
     }
     return F.NIL;
   }

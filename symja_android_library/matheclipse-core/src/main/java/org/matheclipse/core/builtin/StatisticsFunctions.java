@@ -969,11 +969,7 @@ public class StatisticsFunctions {
           }
           res[binIndex]++;
         }
-        IASTAppendable result = F.ListAlloc(capacity + 1);
-        for (int i = 0; i < res.length; i++) {
-          result.append(res[i]);
-        }
-        return result;
+        return F.mapRange(0, res.length, i -> F.ZZ(res[i]));
       }
 
       return F.NIL;
@@ -1685,10 +1681,11 @@ public class StatisticsFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int size = ast.arg1().isVector();
       if (size >= 0) {
-        IAST param = F.list(F.list(F.C1D2, F.C0), //
-            F.list(F.C0, F.C1));
-
-        IExpr list = ast.arg1();
+        final IAST param = F.list(//
+            F.list(F.C1D2, F.C0), //
+            F.list(F.C0, F.C1) //
+        );
+        final IExpr list = ast.arg1();
         // if (engine.isDoubleMode()) {
         // RealVector doubleArray = list.toRealVector();
         // if (doubleArray != null) {
@@ -1702,15 +1699,14 @@ public class StatisticsFunctions {
         // return result;
         // }
         // }
-        IASTAppendable result = F.ListAlloc(5);
 
-        result.append(F.Min(list));
-        result.append(F.Quantile(list, F.C1D4, param));
-        result.append(F.Median(list));
-        result.append(F.Quantile(list, F.C3D4, param));
-        result.append(F.Max(list));
-
-        return result;
+        return F.List(//
+            F.Min(list), //
+            F.Quantile(list, F.C1D4, param), //
+            F.Median(list), //
+            F.Quantile(list, F.C3D4, param), //
+            F.Max(list) //
+        );
       }
       return F.NIL;
     }
@@ -6900,15 +6896,12 @@ public class StatisticsFunctions {
               }
               return new ASTRealVector(result, false);
             }
-            IASTAppendable result = F.ListAlloc(matrixDimensions[0] + 1);
-            for (int i = 1; i < matrixDimensions[1] + 1; i++) {
+            return F.mapRange(1, matrixDimensions[1] + 1, i -> {
               final int ii = i;
-              IASTAppendable list = F.ListAlloc(matrixDimensions[1]);
-              IAST variance = F.Variance(list);
-              list.appendArgs(matrixDimensions[0] + 1, j -> arg1.getPart(j, ii));
-              result.append(variance);
-            }
-            return result;
+              IASTAppendable list = F.ListAlloc(matrixDimensions[1])
+                  .appendArgs(matrixDimensions[0] + 1, j -> arg1.getPart(j, ii));
+              return F.Variance(list);
+            });
           }
 
           int dim = arg1.isVector();

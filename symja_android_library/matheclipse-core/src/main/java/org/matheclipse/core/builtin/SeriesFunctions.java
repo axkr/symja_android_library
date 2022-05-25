@@ -1701,12 +1701,11 @@ public class SeriesFunctions {
         IASTAppendable coefficientPlus = F.PlusAlloc(2);
         if (coefficientMap.size() > 0) {
           IExpr defaultValue = F.C0;
-          IASTAppendable piecewiseAST = F.ast(S.Piecewise);
           IASTAppendable rules = F.ListAlloc(2);
           IASTAppendable plus = F.PlusAlloc(coefficientMap.size());
           IAST comparator = F.GreaterEqual(n, F.C0);
           for (Map.Entry<IExpr, IExpr> entry : coefficientMap.entrySet()) {
-            IExpr exp = entry.getKey();
+            final IExpr exp = entry.getKey();
             if (exp.isZero()) {
               continue;
             }
@@ -1776,10 +1775,7 @@ public class SeriesFunctions {
             }
             rules.append(F.list(engine.evaluate(plus), F.Equal(n, F.C0)));
           }
-          piecewiseAST.append(rules);
-
-          piecewiseAST.append(defaultValue);
-          coefficientPlus.append(piecewiseAST);
+          coefficientPlus.append(F.Piecewise(rules, defaultValue));
         } else {
           if (!univariatePolynomial.isPlus()) {
             return F.NIL;

@@ -275,12 +275,8 @@ public class PolynomialFunctions {
       } catch (RuntimeException rex) {
         LOGGER.debug("CoefficientArrays.evaluate() failed", rex);
       }
-      // default mapping
-      IASTAppendable ruleList = F.ListAlloc(symbolList.size());
-      for (int j = 1; j < symbolList.size(); j++) {
-        ruleList.append(F.C0);
-      }
-      return F.list(F.Rule(ruleList, expr));
+
+      return F.list(F.Rule(F.mapRange(1, symbolList.size(), i -> F.C0), expr));
     }
 
     @Override
@@ -347,11 +343,9 @@ public class PolynomialFunctions {
         } else {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
           IExpr option = options.getOption(S.Modulus);
-          if (option.isPresent()) {
+          if (option.isInteger()) {
             try {
-              if (option.isInteger()) {
-                return coefficientRulesModulus(expr, varList, termOrder, option);
-              }
+              return coefficientRulesModulus(expr, varList, termOrder, option);
             } catch (RuntimeException rex) {
               // toInt() conversion failed
               LOGGER.debug("CoefficientRules.evaluate() failed", rex);
@@ -370,10 +364,7 @@ public class PolynomialFunctions {
         LOGGER.debug("CoefficientRules.evaluate() failed", rex);
       }
       // default mapping
-      IASTAppendable ruleList = F.ListAlloc(symbolList.size());
-      for (int j = 1; j < symbolList.size(); j++) {
-        ruleList.append(F.C0);
-      }
+      IASTAppendable ruleList = F.mapRange(1, symbolList.size(), i -> F.C0);
       return F.list(F.Rule(ruleList, expr));
     }
 
@@ -716,8 +707,7 @@ public class PolynomialFunctions {
         long n = poly.degree();
         if (n >= 2L && n <= 5L) {
           IAST result = poly.coefficientList();
-          IASTAppendable rules = F.ListAlloc(result.size());
-          rules.appendArgs(result.size(), i -> F.Rule(vars[i - 1], result.get(i)));
+          IASTAppendable rules = F.mapList(result, (arg, i) -> F.Rule(vars[i - 1], arg));
           switch ((int) n) {
             case 2:
               return QUADRATIC.replaceAll(rules);
@@ -1547,15 +1537,11 @@ public class PolynomialFunctions {
       GroebnerBasePartial<BigRational> gbp = new GroebnerBasePartial<BigRational>();
       OptimizedPolynomialList<BigRational> opl = gbp.partialGB(polyList, pvars);
       List<GenPolynomial<BigRational>> list = OrderedPolynomialList.sort(opl.list);
-      IASTAppendable resultList = F.ListAlloc(list.size());
-      for (GenPolynomial<BigRational> p : list) {
-        // convert rational to integer coefficients and add
-        // polynomial to result list
-        resultList.append(
-            jas.integerPoly2Expr((GenPolynomial<edu.jas.arith.BigInteger>) jas.factorTerms(p)[2]));
-      }
-
-      return resultList;
+      return F.mapRange(0, list.size(), i -> {
+        GenPolynomial<BigRational> p = list.get(i);
+        return jas
+            .integerPoly2Expr((GenPolynomial<edu.jas.arith.BigInteger>) jas.factorTerms(p)[2]);
+      });
     }
   }
 
@@ -1907,11 +1893,9 @@ public class PolynomialFunctions {
         } else {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
           IExpr option = options.getOption(S.Modulus);
-          if (option.isPresent()) {
+          if (option.isInteger()) {
             try {
-              if (option.isInteger()) {
-                return monomialListModulus(expr, varList, termOrder, option);
-              }
+              return monomialListModulus(expr, varList, termOrder, option);
             } catch (RuntimeException rex) {
               LOGGER.debug("MonomialList.evaluate() failed", rex);
             }

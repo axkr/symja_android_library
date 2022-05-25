@@ -113,23 +113,14 @@ public class TensorFunctions {
       public IAST recursiveCall(int dimensionIndex) {
         int dim = dimension[dimensionIndex];
         if (dimension.length == dimensionIndex + 1) {
-          IASTAppendable result = F.ListAlloc(dim);
-          for (int i = 0; i < dim; i++) {
+          return F.mapRange(0, dim, i -> {
             if (list.size() <= listPosition) {
-              result.append(padding);
-            } else {
-              result.append(list.get(listPosition++));
+              return padding;
             }
-          }
-          return result;
+            return list.get(listPosition++);
+          });
         } else {
-          // recursive call
-          IASTAppendable result = F.ListAlloc(dim);
-          for (int i = 0; i < dim; i++) {
-            IAST subList = recursiveCall(dimensionIndex + 1);
-            result.append(subList);
-          }
-          return result;
+          return F.mapRange(0, dim, i -> recursiveCall(dimensionIndex + 1));
         }
       }
     }
@@ -157,12 +148,8 @@ public class TensorFunctions {
         if (dimension == null) {
           return F.NIL;
         }
-        IExpr padding = F.C0;
-        if (ast.size() == 4) {
-          padding = ast.arg3();
-        }
-        Reshaper reshaper = new Reshaper(list, dimension, padding);
-        return reshaper.recursiveCall(0);
+        final IExpr padding = ast.isAST3() ? ast.arg3() : F.C0;
+        return new Reshaper(list, dimension, padding).recursiveCall(0);
       }
       return F.NIL;
     }
@@ -342,22 +329,11 @@ public class TensorFunctions {
     }
 
     public static IExpr listCorrelate(IAST kernel, int kernelSize, IAST tensor, int tensorSize) {
-      ISymbol fFunction = S.Plus;
-      ISymbol gFunction = S.Times;
+      ISymbol plusFunction = S.Plus;
+      ISymbol timesFunction = S.Times;
       int diff = tensorSize - kernelSize;
-      IASTAppendable resultList = F.ListAlloc(tensorSize - 1);
-      final int[] fi = new int[1];
-      for (int i = 0; i <= diff; i++) {
-        IASTAppendable plus = F.ast(fFunction, kernelSize);
-        fi[0] = i;
-        plus.appendArgs(kernelSize,
-            k -> F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + fi[0])));
-        // for (int k = 1; k < kernelSize; k++) {
-        // plus.append(F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + i)));
-        // }
-        resultList.append(plus);
-      }
-      return resultList;
+      return F.mapRange(0, diff + 1, i -> F.mapRange(plusFunction, 1, kernelSize,
+          k -> F.binaryAST2(timesFunction, kernel.get(k), tensor.get(k + i))));
     }
   }
 

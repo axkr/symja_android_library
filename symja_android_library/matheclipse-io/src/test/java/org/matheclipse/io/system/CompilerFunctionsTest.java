@@ -423,6 +423,22 @@ public class CompilerFunctionsTest extends AbstractTestCase {
     }
   }
 
+  public void testCompileDP1() {
+    if (ToggleFeature.COMPILE) {
+      // argument p is a matrix
+      // check("DP1 = Compile({{p, _Real, 2}, {m, _Integer}},\n" //
+      // + " Module({np = p, k, n = Length(p)},\n" //
+      // + " Do(np = Table(If((np[[i, k]] == 1.0*m) || (np[[k, j]] == 1.0*m), \n" //
+      // + " np[[i,j]], Min(np[[i,k]]+ np[[k,j]], np[[i,j]])\n" //
+      // + " ), {i,n},{j,n}\r\n" //
+      // + " ), {k, n});\n" //
+      // + " np\n" //
+      // + " )\n" //
+      // + " )", //
+      // "");
+    }
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {

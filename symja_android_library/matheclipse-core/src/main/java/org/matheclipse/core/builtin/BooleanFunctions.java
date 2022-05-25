@@ -1055,10 +1055,7 @@ public final class BooleanFunctions {
       public IAST booleanTable(IExpr expr, int position) {
         if (variables.size() <= position) {
           if (expr.isList()) {
-            IAST list = (IAST) expr;
-            IASTAppendable newList = F.ListAlloc(list.size());
-            list.forEach(x -> newList.append(engine.evalSymbolTrue(x)));
-            resultList.append(newList);
+            resultList.append(F.mapList((IAST) expr, x -> engine.evalSymbolTrue(x)));
           } else {
             resultList.append(engine.evalSymbolTrue(expr));
           }

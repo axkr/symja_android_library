@@ -35,11 +35,11 @@ public class ListPointPlot3D extends AbstractEvaluator {
         IAST heightValueMatrix = (IAST) ast.arg1().normal(false);
         if (dimension[0] > 3) {
           if (dimension[1] == 3) {
-            IASTAppendable pointList = F.ListAlloc(dimension[0]);
-            for (int i = 1; i < heightValueMatrix.size(); i++) {
-              IAST rowList = (IAST) heightValueMatrix.get(i);
-              pointList.append(rowList);
-            }
+            IASTAppendable pointList = F.mapList(heightValueMatrix, x -> x);
+            // for (int i = 1; i < heightValueMatrix.size(); i++) {
+            // IAST rowList = (IAST) heightValueMatrix.get(i);
+            // pointList.append(rowList);
+            // }
             IASTAppendable result = F.Graphics3D(F.Point(pointList));
             if (ast.argSize() > 1) {
               // add same options to Graphics3D

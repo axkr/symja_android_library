@@ -280,19 +280,14 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     IExpr arg = ast.get(position);
     if (arg.isList()) {
       IAST list = (IAST) arg;
-      IASTAppendable equalList = F.ListAlloc(list.size());
-      for (int i = 1; i < list.size(); i++) {
-        if (list.get(i).isEqual()) {
-          IAST equalAST = (IAST) list.get(i);
-          // equalList.add(F.Equal(F.evalExpandAll(eq.arg1()),
-          // F.evalExpandAll(eq.arg2())));
-          equalList.append(BooleanFunctions.equals(equalAST));
-        } else {
-          // `1` is not a well-formed equation.
-          return IOFunctions.printMessage(ast.topHead(), "eqf", F.list(list.get(i)), engine);
+      return F.mapList(list, t -> {
+        if (t.isEqual()) {
+          return BooleanFunctions.equals((IAST) t);
         }
-      }
-      return equalList;
+        // `1` is not a well-formed equation.
+        IOFunctions.printMessage(ast.topHead(), "eqf", F.list(t), engine);
+        return null;
+      });
     }
     if (arg.isEqual()) {
       IAST equalAST = (IAST) arg;

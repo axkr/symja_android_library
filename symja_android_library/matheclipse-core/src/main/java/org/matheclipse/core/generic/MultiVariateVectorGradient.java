@@ -51,10 +51,8 @@ public class MultiVariateVectorGradient implements MultivariateVectorFunction {
     double result[] = new double[point.length];
     final double[] stack = new double[10];
     try {
-      IASTAppendable rules = F.ListAlloc(fVariableList.size());
-      for (int i = 0; i < point.length; i++) {
-        rules.append(F.Rule(fVariableList.get(i + 1), F.num(point[i])));
-      }
+      IASTAppendable rules =
+          F.mapRange(0, point.length, i -> F.Rule(fVariableList.get(i + 1), F.num(point[i])));
       for (int i = 1; i < fGradientFunctions.size(); i++) {
         IExpr temp = F.subst(fGradientFunctions.get(i), rules);
         double d = DoubleStackEvaluator.eval(stack, 0, temp);

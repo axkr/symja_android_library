@@ -13,6 +13,7 @@ import org.hipparchus.clustering.MultiKMeansPlusPlusClusterer;
 import org.hipparchus.clustering.distance.DistanceMeasure;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.stat.StatUtils;
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -33,7 +34,7 @@ public class ClusteringFunctions {
       implements DistanceMeasure {
     private static final long serialVersionUID = -295980120043414467L;
 
-    public abstract IExpr distance(IExpr a, IExpr b);
+    public abstract IExpr distance(IExpr a, IExpr b, EvalEngine engine);
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -54,7 +55,7 @@ public class ClusteringFunctions {
     }
 
     protected IExpr vectorDistance(IExpr arg1, IExpr arg2, EvalEngine engine) {
-      if (engine.isDoubleMode() || arg1.isNumericAST() || arg2.isNumericAST()) {
+      if (engine.isDoubleMode() && arg1.isNumericAST() && arg2.isNumericAST()) {
         double[] a = arg1.toDoubleVector();
         if (a != null) {
           double[] b = arg2.toDoubleVector();
@@ -63,7 +64,7 @@ public class ClusteringFunctions {
           }
         }
       }
-      return distance(arg1, arg2);
+      return distance(arg1, arg2, engine);
     }
 
     @Override
@@ -95,11 +96,11 @@ public class ClusteringFunctions {
     @Override
     protected IExpr vectorDistance(IExpr arg1, IExpr arg2, EvalEngine engine) {
       // don't call numeric case here!
-      return distance(arg1, arg2);
+      return distance(arg1, arg2, engine);
     }
 
     @Override
-    public IExpr distance(IExpr a, IExpr b) {
+    public IExpr distance(IExpr a, IExpr b, EvalEngine engine) {
       return a.equals(b) ? F.C1 : F.C0;
     }
   }
@@ -141,7 +142,7 @@ public class ClusteringFunctions {
     }
 
     @Override
-    public IExpr distance(IExpr a, IExpr b) {
+    public IExpr distance(IExpr a, IExpr b, EvalEngine engine) {
       return F.Divide(F.Total(F.Abs(F.Subtract(a, b))), F.Total(F.Abs(F.Plus(a, b))));
     }
   }
@@ -180,8 +181,12 @@ public class ClusteringFunctions {
     }
 
     @Override
-    public IAST distance(IExpr a, IExpr b) {
-      return F.Total(F.Divide(F.Abs(F.Subtract(a, b)), F.Plus(F.Abs(a), F.Abs(b))));
+    public IExpr distance(IExpr a, IExpr b, EvalEngine engine) {
+      IExpr denominator = engine.evaluate(F.Plus(F.Abs(a), F.Abs(b)));
+      if (denominator.isList() && ((IAST) denominator).exists(x -> x.isZero())) {
+        return F.C0;
+      }
+      return F.Total(F.Divide(F.Abs(F.Subtract(a, b)), denominator));
     }
 
     @Override
@@ -222,7 +227,7 @@ public class ClusteringFunctions {
     }
 
     @Override
-    public IExpr distance(IExpr a, IExpr b) {
+    public IExpr distance(IExpr a, IExpr b, EvalEngine engine) {
       IAST vect1 = (IAST) a.normal(false);
       IAST vect2 = (IAST) b.normal(false);
       IASTAppendable maxAST = F.Max();
@@ -234,6 +239,46 @@ public class ClusteringFunctions {
       return ARGS_2_2;
     }
   }
+
+  private static final class CorrelationDistance extends CosineDistance {
+
+    private static final long serialVersionUID = -3541385908310138318L;
+
+    @Override
+    public double compute(double[] a, double[] b) throws MathIllegalArgumentException {
+      double mean1 = -StatUtils.mean(a);
+      double mean2 = -StatUtils.mean(b);
+      double u[] = new double[a.length];
+      for (int i = 0; i < a.length; i++) {
+        u[i] = a[i] + mean1;
+      }
+      double v[] = new double[b.length];
+      for (int i = 0; i < b.length; i++) {
+        v[i] = b[i] + mean2;
+      }
+      return super.compute(u, v);
+    }
+
+    @Override
+    public IExpr distance(IExpr arg1, IExpr arg2, EvalEngine engine) {
+      int v1Length = arg1.isVector();
+      int v2Length = arg2.isVector();
+      if (v1Length == v2Length && v2Length > 0) {
+        IExpr mean1 = S.Mean.of(engine, F.Unevaluated(arg1)).negate();
+        IExpr mean2 = S.Mean.of(engine, F.Unevaluated(arg2)).negate();
+        IExpr u = arg1.mapExpr(x -> x.plus(mean1));
+        IExpr v = arg2.mapExpr(x -> x.plus(mean2));
+        return super.distance(u, v, engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
 
   /**
    *
@@ -259,17 +304,29 @@ public class ClusteringFunctions {
    * 1-(a*c+b*d)/(Sqrt(Abs(a)^2+Abs(b)^2)*Sqrt(Abs(c)^2+Abs(d)^2))
    * </pre>
    */
-  private static final class CosineDistance extends AbstractDistance {
+  private static class CosineDistance extends AbstractDistance {
     private static final long serialVersionUID = -108468814401695919L;
 
     @Override
     public double compute(double[] a, double[] b) throws MathIllegalArgumentException {
-      return 1.0 - MathArrays.cosAngle(a, b);
+      double cosAngle = MathArrays.cosAngle(a, b);
+      if (Double.isNaN(cosAngle)) {
+        return 0.0;
+      }
+      return 1.0 - cosAngle;
     }
 
     @Override
-    public IExpr distance(IExpr arg1, IExpr arg2) {
-      return F.Subtract(F.C1, F.Divide(F.Dot(arg1, arg2), F.Times(F.Norm(arg1), F.Norm(arg2))));
+    public IExpr distance(IExpr arg1, IExpr arg2, EvalEngine engine) {
+      IExpr norm1 = F.Norm.of(engine, arg1);
+      if (norm1.isZero()) {
+        return F.C0;
+      }
+      IExpr norm2 = F.Norm.of(engine, arg2);
+      if (norm2.isZero()) {
+        return F.C0;
+      }
+      return F.Subtract(F.C1, F.Divide(F.Dot(arg1, arg2), F.Times(norm1, norm2)));
     }
 
     @Override
@@ -314,7 +371,7 @@ public class ClusteringFunctions {
     }
 
     @Override
-    public IExpr distance(IExpr a, IExpr b) {
+    public IExpr distance(IExpr a, IExpr b, EvalEngine engine) {
       IAST vect1 = (IAST) a.normal(false);
       IAST vect2 = (IAST) b.normal(false);
       int size = a.size();
@@ -332,7 +389,7 @@ public class ClusteringFunctions {
       DistanceMeasure measure = new EuclideanDistance();
       try {
         if (ast.arg1().isList() && ast.arg1().size() > 1) {
-          IAST listArg1 = (IAST) ast.arg1();
+          IAST list1 = (IAST) ast.arg1();
           int k = 3;
           double eps = 3.0;
           int minPts = 1;
@@ -375,10 +432,10 @@ public class ClusteringFunctions {
           }
 
           if (k > 0) {
-            final List<DoublePoint> points = new ArrayList<DoublePoint>(listArg1.argSize());
-            if (listArg1.isListOfLists()) {
-              for (int j = 1; j < listArg1.size(); j++) {
-                double[] values = listArg1.get(j).toDoubleVector();
+            final List<DoublePoint> points = new ArrayList<DoublePoint>(list1.argSize());
+            if (list1.isListOfLists()) {
+              for (int j = 1; j < list1.size(); j++) {
+                double[] values = list1.get(j).toDoubleVector();
                 if (values == null) {
                   return F.NIL;
                 }
@@ -386,7 +443,7 @@ public class ClusteringFunctions {
                 points.add(p);
               }
             } else {
-              double[] values = listArg1.toDoubleVector();
+              double[] values = list1.toDoubleVector();
               if (values == null) {
                 return F.NIL;
               }
@@ -405,33 +462,32 @@ public class ClusteringFunctions {
                   new KMeansPlusPlusClusterer<DoublePoint>(k, 100, measure);
               transformer = new MultiKMeansPlusPlusClusterer<DoublePoint>(kMeansTransformer, 10);
             }
-            // final FuzzyKMeansClusterer<DoublePoint> transformer = new
-            // FuzzyKMeansClusterer<DoublePoint>(k,
-            // 2.0);
-            final List<? extends Cluster<DoublePoint>> clusters = transformer.cluster(points);
-            IASTAppendable result = F.ListAlloc(clusters.size());
-            for (final Cluster<DoublePoint> cluster : clusters) {
-              final List<DoublePoint> clusterPoints = cluster.getPoints();
-              IASTAppendable list = F.ListAlloc(clusterPoints.size());
-              if (listArg1.isListOfLists()) {
-                for (int i = 0; i < clusterPoints.size(); i++) {
-                  double[] dVector = clusterPoints.get(i).getPoint().clone();
-                  list.append(new ASTRealVector(dVector, false));
-                }
-              } else {
-                for (int i = 0; i < clusterPoints.size(); i++) {
-                  list.append(clusterPoints.get(i).getPoint()[0]);
-                }
-              }
-              result.append(list);
-            }
-            return result;
+            return clustersToList(transformer.cluster(points), list1.isListOfLists());
           }
         }
       } catch (MathRuntimeException mrex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), mrex);
       }
       return F.NIL;
+    }
+
+    /**
+     * Convert the calculated list of clusters to a symja list.
+     * 
+     * @param clusters
+     * @param isListOfLists
+     * @return
+     */
+    private static IAST clustersToList(final List<? extends Cluster<DoublePoint>> clusters,
+        boolean isListOfLists) {
+      return F.mapRange(0, clusters.size(), j -> {
+        final List<DoublePoint> clusterPoints = clusters.get(j).getPoints();
+        if (isListOfLists) {
+          return F.mapRange(0, clusterPoints.size(),
+              i -> new ASTRealVector(clusterPoints.get(i).getPoint().clone(), false));
+        }
+        return F.mapRange(0, clusterPoints.size(), i -> F.num(clusterPoints.get(i).getPoint()[0]));
+      });
     }
 
     @Override
@@ -451,6 +507,7 @@ public class ClusteringFunctions {
       S.BrayCurtisDistance.setEvaluator(new BrayCurtisDistance());
       S.CanberraDistance.setEvaluator(new CanberraDistance());
       S.ChessboardDistance.setEvaluator(new ChessboardDistance());
+      S.CorrelationDistance.setEvaluator(new CorrelationDistance());
       S.CosineDistance.setEvaluator(new CosineDistance());
       S.EuclideanDistance.setEvaluator(new EuclideanDistance());
       S.FindClusters.setEvaluator(new FindClusters());
@@ -501,7 +558,7 @@ public class ClusteringFunctions {
     }
 
     @Override
-    public IExpr distance(IExpr a, IExpr b) {
+    public IExpr distance(IExpr a, IExpr b, EvalEngine engine) {
       IAST vect1 = (IAST) a.normal(false);
       IAST vect2 = (IAST) b.normal(false);
       int size = a.size();
@@ -545,7 +602,7 @@ public class ClusteringFunctions {
     }
 
     @Override
-    public IExpr distance(IExpr a, IExpr b) {
+    public IExpr distance(IExpr a, IExpr b, EvalEngine engine) {
       IAST vect1 = (IAST) a.normal(false);
       IAST vect2 = (IAST) b.normal(false);
       int size = a.size();

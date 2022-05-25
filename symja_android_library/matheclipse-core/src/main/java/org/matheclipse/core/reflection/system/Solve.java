@@ -399,17 +399,16 @@ public class Solve extends AbstractFunctionEvaluator {
      */
     public IAST mapOnOriginal(IAST listOfResultRules) {
       if (fOriginalExpr != null) {
-        IASTAppendable list2 = F.ListAlloc(listOfResultRules.size());
-        for (int i = 1; i < listOfResultRules.size(); i++) {
-          IExpr temp = fOriginalExpr.replaceAll((IAST) listOfResultRules.get(i));
+        return F.mapList(listOfResultRules, element -> {
+          IExpr temp = fOriginalExpr.replaceAll((IAST) element);
           if (temp.isPresent()) {
             temp = fEngine.evaluate(temp);
             if (temp.isZero()) {
-              list2.append(listOfResultRules.get(i));
+              return element;
             }
           }
-        }
-        return list2;
+          return F.NIL;
+        });
       }
       return listOfResultRules;
     }
@@ -959,10 +958,7 @@ public class Solve extends AbstractFunctionEvaluator {
     if (temp.isPresent()) {
       if (temp.isSameHeadSizeGE(S.List, 2)) {
         IAST rootsList = (IAST) temp;
-        IASTAppendable resultList = F.ListAlloc(rootsList.size());
-        for (IExpr root : rootsList) {
-          resultList.append(F.Rule(variable, root));
-        }
+        IASTAppendable resultList = F.mapList(rootsList, root -> F.Rule(variable, root));
         return QuarticSolver.sortASTArguments(resultList);
       }
     }
@@ -1104,14 +1100,8 @@ public class Solve extends AbstractFunctionEvaluator {
    * @return <code>null</code> if no assumption was created
    */
   private static IAssumptions setVariablesReals(IAST userDefinedVariables, ISymbol domain) {
-    IAssumptions assum;
     if (domain.equals(S.Reals)) {
-      IASTAppendable list = F.ListAlloc(userDefinedVariables.size());
-      for (int i = 1; i < userDefinedVariables.size(); i++) {
-        list.append(F.Element(userDefinedVariables.get(i), domain));
-      }
-      assum = Assumptions.getInstance(list);
-      return assum;
+      return Assumptions.getInstance(F.mapList(userDefinedVariables, t -> F.Element(t, domain)));
     }
     return null;
   }
@@ -1175,16 +1165,13 @@ public class Solve extends AbstractFunctionEvaluator {
     }
     if (expr.isList() && domain.equals(S.Reals)) {
       if (expr.isListOfLists()) {
-        IASTAppendable result = F.ListAlloc(expr.size());
-        IASTAppendable appendable;
-        for (int i = 1; i < expr.size(); i++) {
-          IAST listOfRules = (IAST) ((IAST) expr).get(i);
+        return F.mapList((IAST) expr, x -> {
+          final IAST listOfRules = (IAST) x;
           if (!isComplex(listOfRules)) {
-            appendable = listOfRules.copyAppendable();
-            result.append(appendable);
+            return listOfRules;
           }
-        }
-        return result;
+          return F.NIL;
+        });
       } else {
         if (!isComplex(((IAST) expr))) {
           return expr;
@@ -1316,19 +1303,15 @@ public class Solve extends AbstractFunctionEvaluator {
           IExpr subResult = solveRecursive((IASTMutable) replaced, inequationsList, numericFlag,
               variables, engine);
           if (subResult.isListOfLists()) {
-            IASTAppendable result = F.ListAlloc(subResult.size());
-            IASTAppendable appendable;
-            for (int i = 1; i < subResult.size(); i++) {
-              IAST listOfRules = (IAST) subResult.getAt(i);
-              replaced = oneVariableRule.second().replaceAll(listOfRules);
-              if (replaced.isPresent()) {
-                replaced = S.Simplify.of(engine, replaced);
-                appendable = listOfRules.copyAppendable();
-                appendable.append(F.Rule(firstVariable, replaced));
-                result.append(appendable);
+            return F.mapList((IAST) subResult, t -> {
+              final IAST listOfRules = (IAST) t;
+              IExpr replaceAllExpr = oneVariableRule.second().replaceAll(listOfRules);
+              if (replaceAllExpr.isPresent()) {
+                replaceAllExpr = S.Simplify.of(engine, replaceAllExpr);
+                return listOfRules.appendClone(F.Rule(firstVariable, replaceAllExpr));
               }
-            }
-            return result;
+              return F.NIL;
+            });
           } else if (subResult.isList()) { // important for NSolve
             replaced = oneVariableRule.second().replaceAll((IAST) subResult);
             if (replaced.isPresent()) {
@@ -1382,9 +1365,7 @@ public class Solve extends AbstractFunctionEvaluator {
         }
         if (lastRuleUsedForVariableElimination.isList()) {
           IAST list = lastRuleUsedForVariableElimination;
-          IASTAppendable result = F.ListAlloc(list.size());
-          list.forEach(x -> result.append(F.list(x)));
-          return result;
+          return F.mapList(list, x -> F.list(x));
         }
         return F.list(F.list(lastRuleUsedForVariableElimination));
       }
@@ -1478,22 +1459,21 @@ public class Solve extends AbstractFunctionEvaluator {
     }
 
     if (subSolutionList.isListOfLists()) {
-      IASTAppendable result = F.ListAlloc(subSolutionList.size());
-      for (int i = 1; i < subSolutionList.size(); i++) {
-        IASTMutable list = (IASTMutable) subSolutionList.get(i);
+      final boolean[] isNumeric = new boolean[] {false};
+      return F.mapList(subSolutionList, t -> {
+        IASTMutable list = (IASTMutable) t;
         IExpr temp = F.subst(inequationsList, list);
-        boolean[] isNumeric = new boolean[] {false};
         temp = engine.evalQuiet(temp);
         if (temp.isAST()) {
           IASTMutable[] lists = SolveUtils.filterSolveLists((IASTMutable) temp, list, isNumeric);
           if (lists[2].isPresent()) {
             if (!lists[2].isEmptyList()) {
-              result.append(lists[2]);
+              return lists[2];
             }
           }
         }
-      }
-      return result;
+        return F.NIL;
+      });
     }
 
     // TODO solve inequations here?

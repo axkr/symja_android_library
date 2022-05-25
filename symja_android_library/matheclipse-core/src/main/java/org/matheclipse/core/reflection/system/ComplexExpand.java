@@ -183,29 +183,24 @@ public class ComplexExpand extends AbstractEvaluator {
     IAssumptions oldAssumptions = engine.getAssumptions();
     try {
       IExpr arg1 = ast.arg1();
-      IAST arg2 = F.NIL;
+      final IAST arg2;
       if (ast.isAST2()) {
         arg2 = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
+      } else {
+        arg2 = F.NIL;
       }
       VariablesSet eVar = new VariablesSet(arg1);
       List<IExpr> varList = eVar.getVarList().copyTo();
-      IASTAppendable assumptionExpr = F.ListAlloc(varList.size() + 1);
-      for (int i = 0; i < varList.size(); i++) {
-        final IExpr variable = varList.get(i);
+      IASTAppendable assumptionExpr = F.mapList(varList, variable -> {
         if (arg2.isPresent()) {
-          boolean hasMatched = false;
           for (int j = 1; j < arg2.size(); j++) {
             if (S.MatchQ.ofQ(variable, arg2.get(j))) {
-              hasMatched = true;
-              break;
+              return F.NIL;
             }
           }
-          if (hasMatched) {
-            continue;
-          }
         }
-        assumptionExpr.append(F.Element(variable, S.Reals));
-      }
+        return F.Element(variable, S.Reals);
+      });
       IAssumptions assumptions;
       if (oldAssumptions == null) {
         assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);

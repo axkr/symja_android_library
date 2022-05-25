@@ -34,22 +34,20 @@ public final class RandomFunctions {
       throw new IllegalArgumentException("bound must be greater than origin");
     }
     int r = rng.nextInt();
-    if (origin < bound) {
-      // It's not case (1).
-      final int n = bound - origin;
-      final int m = n - 1;
-      if ((n & m) == 0) {
-        // It is case (2): length of range is a power of 2.
-        r = (r & m) + origin;
-      } else if (n > 0) {
-        // It is case (3): need to reject over-represented candidates.
-        for (int u = r >>> 1; u + m - (r = u % n) < 0; u = rng.nextInt() >>> 1);
-        r += origin;
-      } else {
-        // It is case (4): length of range not representable as long.
-        while (r < origin || r >= bound) {
-          r = rng.nextInt();
-        }
+    // It's not case (1).
+    final int n = bound - origin;
+    final int m = n - 1;
+    if ((n & m) == 0) {
+      // It is case (2): length of range is a power of 2.
+      r = (r & m) + origin;
+    } else if (n > 0) {
+      // It is case (3): need to reject over-represented candidates.
+      for (int u = r >>> 1; u + m - (r = u % n) < 0; u = rng.nextInt() >>> 1);
+      r += origin;
+    } else {
+      // It is case (4): length of range not representable as long.
+      while (r < origin || r >= bound) {
+        r = rng.nextInt();
       }
     }
     return r;
@@ -190,12 +188,9 @@ public final class RandomFunctions {
             }
             int n = arg2.toIntDefault();
             if (n > 0) {
-              IASTAppendable result = F.ListAlloc(n);
+
               int[] chosen = sampler.sample(n);
-              for (int i = 0; i < n; i++) {
-                result.append(items.get(chosen[i] + 1));
-              }
-              return result;
+              return F.mapRange(0, n, i -> items.get(chosen[i] + 1));
             }
           }
         }
@@ -379,11 +374,9 @@ public final class RandomFunctions {
             }
             int size = arg2.toIntDefault();
             if (size >= 0) {
-              IASTAppendable list = F.ListAlloc(size);
-              for (int i = 0; i < size; i++) {
-                list.append(tlr.nextInt((max - min) + 1) + min);
-              }
-              return list;
+              final int minimum = min;
+              final int randomBound = (max - minimum) + 1;
+              return F.mapRange(0, size, i -> F.ZZ(tlr.nextInt(randomBound) + minimum));
             }
             return F.NIL;
           }
@@ -393,12 +386,14 @@ public final class RandomFunctions {
       }
       if (ast.arg1().isInteger()) {
         // RandomInteger(100) gives an integer between 0 and 100
-        Random tlr = engine.getRandom();
+        final Random tlr = engine.getRandom();
         BigInteger upperLimit = ((IInteger) ast.arg1()).toBigNumerator();
-        boolean negative = false;
+        final boolean negative;
         if (upperLimit.compareTo(BigInteger.ZERO) < 0) {
           upperLimit = upperLimit.negate();
           negative = true;
+        } else {
+          negative = false;
         }
         if (ast.isAST2() && !ast.arg2().isEmptyList()) {
           IExpr arg2 = ast.arg2();
@@ -414,11 +409,8 @@ public final class RandomFunctions {
           }
           int size = arg2.toIntDefault();
           if (size >= 0) {
-            IASTAppendable list = F.ListAlloc(size);
-            for (int i = 0; i < size; i++) {
-              list.append(randomBigInteger(upperLimit, negative, tlr));
-            }
-            return list;
+            BigInteger limit = upperLimit;
+            return F.mapRange(0, size, i -> randomBigInteger(limit, negative, tlr));
           }
 
         } else {
@@ -461,12 +453,8 @@ public final class RandomFunctions {
           int n = ast.arg2().toIntDefault();
           if (n > 0) {
             // a list of n permutations
-            IASTAppendable list = F.ListAlloc(n);
-            for (int i = 0; i < n; i++) {
-              IExpr ordering = S.Ordering.of(engine, randomVariate);
-              list.append(F.Cycles(F.list(ordering)));
-            }
-            return list;
+            return F.mapRange(0, n, i -> F.Cycles(F.list(S.Ordering.of(engine, randomVariate))));
+
           }
         }
       }
@@ -798,7 +786,7 @@ public final class RandomFunctions {
       MathArrays.shuffle(indexList);
 
       if (n < len) {
-        IASTAppendable result = list.copyHead();
+        IASTAppendable result = list.copyHead(n);
         for (int j = 0; j < n; j++) {
           result.append(list.get(indexList[j] + 1));
         }

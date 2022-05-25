@@ -175,14 +175,8 @@ public final class ExpVectorSymbolic {
    * @return vatiable names.
    */
   public static IAST STDVARS(String prefix, int n) {
-    IASTAppendable vars = F.ListAlloc(n);
-    if (prefix == null || prefix.length() == 0) {
-      prefix = "x";
-    }
-    for (int i = 0; i < n; i++) {
-      vars.append(F.Dummy(prefix + i)); // (n-1-i);
-    }
-    return vars;
+    final String pref =  (prefix == null || prefix.length() == 0) ? "x" : prefix;
+    return F.mapRange(0, n, i -> F.Dummy(pref + i));
   }
 
   /**

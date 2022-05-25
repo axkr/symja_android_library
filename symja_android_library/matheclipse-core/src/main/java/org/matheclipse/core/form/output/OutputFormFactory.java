@@ -1017,6 +1017,7 @@ public class OutputFormFactory {
       }
       return true;
     } catch (IOException | RuntimeException | OutOfMemoryError rex) {
+      // rex.printStackTrace();
       LOGGER.debug("OutputFormFactory.convert() failed", rex);
     }
     return false;
@@ -1683,10 +1684,12 @@ public class OutputFormFactory {
       if (pow.isOne()) {
         plusArg = coefficient;
       } else {
-        IASTAppendable times = F.TimesAlloc(3);
+        IASTAppendable times;
         if (coefficient.isTimes()) {
-          times.appendArgs((IAST) coefficient);
+          IAST timesCoefficients = (IAST) coefficient;
+          times = timesCoefficients.copyAppendable(1);
         } else {
+          times = F.TimesAlloc(2);
           times.append(coefficient);
         }
         times.append(pow);

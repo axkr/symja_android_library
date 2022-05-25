@@ -934,6 +934,7 @@ public final class OutputFunctions {
    * @param engine the evaluation engine
    * @return <code>null</code> if the variable declaration isn't correct
    */
+  @Deprecated
   public static IAST[] checkIsVariableOrVariableList(IAST ast, EvalEngine engine) {
     IASTMutable[] result = new IASTMutable[2];
     IExpr arg1 = ast.arg1();
@@ -969,6 +970,7 @@ public final class OutputFunctions {
    * @param engine
    * @return <code>true</code> if the variables and types
    */
+  @Deprecated
   private static boolean checkVariable(IExpr arg, int variablesIndex, IASTMutable variables,
       IASTMutable types, EvalEngine engine) {
     IExpr sym = arg;

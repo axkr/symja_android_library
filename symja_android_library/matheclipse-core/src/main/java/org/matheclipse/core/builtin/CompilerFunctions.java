@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.CompiledFunctionExpr;
@@ -26,6 +27,7 @@ import org.matheclipse.core.form.output.JavaComplexFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
@@ -197,6 +199,44 @@ public class CompilerFunctions {
     }
 
   }
+
+  /**
+   * Contains the name, type and rank of an argument in a compiled function.
+   *
+   */
+  private static class CompiledFunctionArg {
+
+    private enum Rank {
+      SCALAR, VECTOR, MATRIX
+    }
+
+    IExpr argument;
+    IExpr type;
+    Rank rank;
+
+    public CompiledFunctionArg(IExpr argument, IExpr type, Rank rank) {
+      this.argument = argument;
+      this.type = type;
+      this.rank = rank;
+    }
+
+    /**
+     * 
+     * @param rank
+     * @return <code>null</code> if rank is undefined
+     */
+    public static Rank getRank(int rank) {
+      if (rank == 0) {
+        return Rank.SCALAR;
+      } else if (rank == 1) {
+        return Rank.VECTOR;
+      } else if (rank == 2) {
+        return Rank.MATRIX;
+      }
+      return null;
+    }
+
+  }
   static class MemoryClassLoader extends URLClassLoader {
 
     // class name to class bytes:
@@ -231,14 +271,18 @@ public class CompilerFunctions {
           // TODO implement for 3 args
           return F.NIL;
         }
-        IAST[] vars = OutputFunctions.checkIsVariableOrVariableList(ast, engine);
-        if (vars == null) {
+        CompiledFunctionArg[] args = checkIsVariableOrVariableList(ast, engine);
+        if (args == null) {
           return F.NIL;
         }
-        IAST variables = vars[0];
-        IAST types = vars[1];
-
-        String source = compilePrint(ast, variables, types, engine);
+        IASTAppendable variables = F.ListAlloc(args.length);
+        IASTAppendable types = F.ListAlloc(args.length);
+        for (int i = 0; i < args.length; i++) {
+          variables.append(args[i].argument);
+          types.append(args[i].type);
+        }
+        // IAST ranks = vars[2];
+        String source = compilePrint(ast, args, engine);
         if (source != null) {
           SimpleCompiler comp = new SimpleCompiler();
           comp.cook(source);
@@ -509,14 +553,14 @@ public class CompilerFunctions {
     VariableManager numericVariables;
     VariableManager variables;
     int topOfStack;
-    final IAST types;
+    final CompiledFunctionArg[] args;
 
-    public CompileFactory(VariableManager numericVariables, VariableManager variables, IAST types,
-        int topOfStack, int defaultNumericType) {
+    public CompileFactory(VariableManager numericVariables, VariableManager variables,
+        CompiledFunctionArg[] args, int topOfStack, int defaultNumericType) {
       this.localVariables = new HashSet<String>();
       this.numericVariables = numericVariables;
       this.variables = variables;
-      this.types = types;
+      this.args = args;
       this.topOfStack = topOfStack;
       this.defaultNumericType = defaultNumericType;
     }
@@ -640,6 +684,7 @@ public class CompilerFunctions {
     private static void tryEnd(final StringBuilder methods) {
       methods.append("} finally {top = oldTop;}\n");
     }
+
   }
 
   private static final class CompiledFunction extends AbstractCoreFunctionEvaluator {
@@ -688,14 +733,12 @@ public class CompilerFunctions {
         // TODO implement for 3 args
         return F.NIL;
       }
-      IAST[] vars = OutputFunctions.checkIsVariableOrVariableList(ast, engine);
-      if (vars == null) {
+      CompiledFunctionArg[] args = checkIsVariableOrVariableList(ast, engine);
+      if (args == null) {
         return F.NIL;
       }
-      IAST variables = vars[0];
-      IAST types = vars[1];
 
-      String source = compilePrint(ast, variables, types, engine);
+      String source = compilePrint(ast, args, engine);
       if (source != null) {
         source = indentSource(source);
         return F.stringx(source, IStringX.APPLICATION_JAVA);
@@ -744,27 +787,105 @@ public class CompilerFunctions {
   }
 
   /**
+   * Get an array with 3 elements returning the declared variables in the first entry and the
+   * corresponding types <code>Real, Integer,...</code> for the variable names in the second entry
+   * and the corresponding ranks <code>0, 1, 2,...</code> for the variable names in the third entry
+   *
+   * @param ast the original definition <code>
+   * CompilePrint({variable/types}, function)</code>
+   * @param engine the evaluation engine
+   * @return <code>null</code> if the variable declaration isn't correct
+   */
+  private static CompiledFunctionArg[] checkIsVariableOrVariableList(IAST ast, EvalEngine engine) {
+    IExpr arg1 = ast.arg1();
+    if (arg1.isList()) {
+      IAST list = (IAST) arg1;
+      CompiledFunctionArg[] result = new CompiledFunctionArg[list.argSize()];
+      for (int i = 1; i < list.size(); i++) {
+        CompiledFunctionArg arg = checkVariable(list.get(i), engine);
+        if (arg == null) {
+          // `1` is not a valid variable.
+          IOFunctions.printMessage(ast.topHead(), "ivar", F.list(list.get(i)), engine);
+          return null;
+        }
+        result[i - 1] = arg;
+      }
+      return result;
+    }
+
+    CompiledFunctionArg arg = checkVariable(arg1, engine);
+    if (arg == null) {
+      // `1` is not a valid variable.
+      IOFunctions.printMessage(ast.topHead(), "ivar", F.list(arg1), engine);
+      return null;
+    }
+    return new CompiledFunctionArg[] {arg};
+  }
+
+  /**
+   * @param arg the input argument for the current <code>variablesIndex</code>
+   * @param engine
+   * @return <code>null</code> if the variables and types
+   */
+  private static CompiledFunctionArg checkVariable(IExpr arg, EvalEngine engine) {
+    IExpr sym = arg;
+    IExpr headTest = S.Real;
+    CompiledFunctionArg.Rank rank = CompiledFunctionArg.Rank.SCALAR;
+    if (arg.isList1() || arg.isList2() || arg.isList3()) {
+      sym = arg.first();
+      if (arg.isList2() || arg.isList3()) {
+        headTest = null;
+        if (arg.second().isBlank()) {
+          Blank blank = (Blank) arg.second();
+          headTest = blank.getHeadTest();
+          if (headTest == null) {
+            return null;
+          }
+          if (headTest.equals(S.Integer) || headTest.equals(S.Complex) || headTest.equals(S.Real)) {
+            // allowed machine-sized types
+            if (arg.isList3()) {
+              int intRank = arg.getAt(3).toIntDefault();
+              if (intRank < 0 || intRank > 2) {
+                return null;
+              }
+              rank = CompiledFunctionArg.getRank(intRank);
+            }
+          } else {
+            headTest = null;
+          }
+        }
+        if (headTest == null) {
+          return null;
+        }
+
+      }
+    }
+
+    return new CompiledFunctionArg(sym, headTest, rank);
+  }
+
+  /**
    * Get the generated Java source code for <code>function</code> from call <code>
    * CompilePrint({variable/types}, function)</code>
    *
    * @param ast the definition <code>
    * CompilePrint({variable/types}, function)</code>
-   * @param variables the defined variable names
-   * @param types the corresponding types <code>Real, Integer,...</code> for the variable names
    * @param engine the evaluation engine
    * @return
    */
-  public static String compilePrint(final IAST ast, IAST variables, IAST types, EvalEngine engine) {
+  public static String compilePrint(final IAST ast, CompiledFunctionArg[] args, EvalEngine engine) {
     Map<IExpr, String> symbolicVariables = new HashMap<IExpr, String>();
     Map<IExpr, String> numericVariables = new HashMap<IExpr, String>();
-    int top = 1;
     StringBuilder variablesBuf = new StringBuilder();
     variablesBuf.append("stack  = F.ast(S.List, 100, true);\n");
     variablesBuf.append("vars = new ExprTrie();\n");
+    int top = 1;
     int defaultNumericType = 1;
-    for (int i = 1; i < variables.size(); i++) {
-      IExpr argType = types.get(i);
-      IExpr variable = variables.get(i);
+    for (int j = 0; j < args.length; j++) {
+      IExpr argType = args[j].type;
+      IExpr variable = args[j].argument;
+      CompiledFunctionArg.Rank rank = args[j].rank;
+      int i = j + 1;
       if (numericVariables.get(variable) != null) {
         // Duplicate parameter `1` found in `2`.
         IOFunctions.printMessage(ast.topHead(), "fdup", F.list(variable, ast.arg1()), engine);
@@ -772,14 +893,41 @@ public class CompilerFunctions {
       }
       if (argType.equals(S.Real)) {
         variablesBuf.append("IExpr " + variable + " = ast.get(" + i + ");\n");
-        variablesBuf.append("double " + variable + "d = engine.evalDouble(" + variable + ");\n");
+        switch (rank) {
+          case SCALAR:
+            variablesBuf
+                .append("double " + variable + "d = engine.evalDouble(" + variable + ");\n");
+            break;
+          case VECTOR:
+            variablesBuf
+                .append(
+                    "double[] " + variable + "d = engine.evalDoubleVector(" + variable + ");\n");
+            break;
+          case MATRIX:
+            variablesBuf
+                .append(
+                    "double[][] " + variable + "d = engine.evalDoubleMatrix(" + variable + ");\n");
+            break;
+        }
         symbolicVariables.put(variable, variable.toString());
         numericVariables.put(variable, "stack.get(" + top + ")");
         variablesBuf.append("stack.set(top++, F.num(" + variable + "d));\n");
         top++;
       } else if (argType.equals(S.Integer)) {
         variablesBuf.append("IExpr " + variable + " = ast.get(" + i + ");\n");
-        variablesBuf.append("int " + variable + "i = engine.evalInt(" + variable + ");\n");
+        switch (rank) {
+          case SCALAR:
+            variablesBuf.append("int " + variable + "i = engine.evalInt(" + variable + ");\n");
+            break;
+          case VECTOR:
+            variablesBuf
+                .append("int[] " + variable + "i = engine.evalIntVector(" + variable + ");\n");
+            break;
+          case MATRIX:
+            variablesBuf
+                .append("int[][] " + variable + "i = engine.evalIntMatrix(" + variable + ");\n");
+            break;
+        }
         symbolicVariables.put(variable, variable.toString());
         numericVariables.put(variable, "stack.get(" + top + ")");
         variablesBuf.append("stack.set(top++, F.ZZ(" + variable + "i));\n");
@@ -787,14 +935,39 @@ public class CompilerFunctions {
       } else if (argType.equals(S.Complex)) {
         defaultNumericType = 2;
         variablesBuf.append("IExpr " + variable + " = ast.get(" + i + ");\n");
-        variablesBuf.append("Complex " + variable + "c = engine.evalComplex(" + variable + ");\n");
+        switch (rank) {
+          case SCALAR:
+            variablesBuf.append("Complex " + variable + "c = engine.evalComplex(" + variable + ");\n");
+            break;
+          case VECTOR:
+            variablesBuf.append("Complex[] " + variable + "c = engine.evalComplexVector(" + variable + ");\n");
+            break;
+          case MATRIX:
+            variablesBuf.append(
+                "Complex[][] " + variable + "c = engine.evalComplexMatrix(" + variable + ");\n");
+            break;
+        }
         symbolicVariables.put(variable, variable.toString());
         numericVariables.put(variable, "stack.get(" + top + ")");
         variablesBuf.append("stack.set(top++, F.complexNum(" + variable + "c));\n");
         top++;
       } else if (argType.equals(S.Booleans)) {
         variablesBuf.append("IExpr " + variable + " = ast.get(" + i + ");\n");
-        variablesBuf.append("boolean " + variable + "b = engine.evalBoolean(" + variable + ");\n");
+
+        switch (rank) {
+          case SCALAR:
+            variablesBuf
+                .append("boolean " + variable + "b = engine.evalBoolean(" + variable + ");\n");
+            break;
+          case VECTOR:
+            variablesBuf.append(
+                "boolean[] " + variable + "b = engine.evalBooleanVector(" + variable + ");\n");
+            break;
+          case MATRIX:
+            variablesBuf.append(
+                "boolean[][] " + variable + "b = engine.evalBooleanMatrix(" + variable + ");\n");
+            break;
+        }
         symbolicVariables.put(variable, variable.toString());
         numericVariables.put(variable, "stack.get(" + top + ")");
         variablesBuf.append("stack.set(top++, F.bool(" + variable + "b));\n");
@@ -802,21 +975,24 @@ public class CompilerFunctions {
       }
     }
     IExpr expression = ast.arg2();
-
-    StringBuilder buf = new StringBuilder();
-    StringBuilder methods = new StringBuilder();
-
     VariableManager numericVars = new VariableManager(numericVariables);
     VariableManager symbolicVars = new VariableManager(symbolicVariables);
-    CompilerFunctions.CompileFactory cf = new CompilerFunctions.CompileFactory(numericVars,
-        symbolicVars, types, top, defaultNumericType);
-    // buf.append("\n");
-    cf.convert(buf, methods, expression, true);
-    buf.append(";\n");
+    CompileFactory cf =
+        new CompileFactory(numericVars, symbolicVars, args, top, defaultNumericType);
+
+    return generateClassSource(cf, expression, variablesBuf, args.length);
+  }
+
+  private static String generateClassSource(CompileFactory cf, IExpr expression,
+      StringBuilder variablesBuf, int argsSize) {
+    StringBuilder expressionBuf = new StringBuilder();
+    StringBuilder methodsBuf = new StringBuilder();
+    cf.convert(expressionBuf, methodsBuf, expression, true);
+    expressionBuf.append(";\n");
     String source = JAVA_SOURCE_CODE.replace("{$variables}", variablesBuf.toString());
-    source = source.replace("{$methods}", methods.toString());
-    source = source.replace("{$expression}", buf.toString());
-    source = source.replace("{$size}", Integer.toString(variables.argSize()));
+    source = source.replace("{$methods}", methodsBuf.toString());
+    source = source.replace("{$expression}", expressionBuf.toString());
+    source = source.replace("{$size}", Integer.toString(argsSize));
     return source;
   }
 

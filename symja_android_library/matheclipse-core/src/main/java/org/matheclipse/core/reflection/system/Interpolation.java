@@ -106,21 +106,20 @@ public class Interpolation extends AbstractEvaluator {
   private InterpolatingFunctionExpr hermiteInterpolate(IAST matrixAST, int[] dims,
       EvalEngine engine) {
 
-    // int rowDim = dims[0];
     int colDim = dims[1];
     FieldHermiteInterpolator<IExpr> interpolator = new FieldHermiteInterpolator<IExpr>();
 
-    IASTAppendable minMaxList = F.ListAlloc(matrixAST.size());
-    for (int i = 1; i < matrixAST.size(); i++) {
-      IAST row = (IAST) matrixAST.get(i);
+    IASTAppendable minMaxList = F.mapList(matrixAST, t -> {
+      final IAST row = (IAST) t;
       IExpr[] arr = new IExpr[colDim - 1];
       for (int j = 0; j < arr.length; j++) {
         arr[j] = row.get(j + 2);
       }
-      IExpr arg1 = row.first();
-      minMaxList.append(arg1);
+      IExpr arg1 = row.arg1();
       interpolator.addSamplePoint(arg1, arr);
-    }
+      return arg1;
+    });
+
     double min = engine.evaluate(minMaxList.apply(S.Min, 1)).evalDouble();
     double max = engine.evaluate(minMaxList.apply(S.Max, 1)).evalDouble();
     return InterpolatingFunctionExpr.newInstance(interpolator, min, max);

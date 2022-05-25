@@ -1130,8 +1130,7 @@ public class StructureFunctions {
       if (arg2.isAssociation()) {
         // `1` currently not supported in `2`.
         return IOFunctions.printMessage(ast.topHead(), "unsupported",
-            F.List(S.Association, S.MapIndexed),
-            engine);
+            F.List(S.Association, S.MapIndexed), engine);
       }
       if (arg2.isAST()) {
         return level.visitAST(((IAST) arg2), new int[0]).orElse(arg2);
@@ -1235,7 +1234,8 @@ public class StructureFunctions {
         this.level = level;
       }
 
-      private IAST mapThreadRecursive(int recursionLevel, IAST lst, IASTAppendable resultList) {
+      private IAST mapThreadRecursive(final int recursionLevel, IAST lst,
+          IASTAppendable resultList) {
         if (recursionLevel >= level) {
           return lst;
         }
@@ -1249,11 +1249,7 @@ public class StructureFunctions {
         } else {
           list = EvalAttributes.threadList(lst, S.List, S.List, size);
           IASTAppendable result = F.ListAlloc(size);
-          final int level = recursionLevel + 1;
-          list.forEach(x -> mapThreadRecursive(level, (IAST) x, result));
-          // for (int i = 1; i < list.size(); i++) {
-          // recursiveMapThread(recursionLevel + 1, (IAST) list.get(i), result);
-          // }
+          list.forEach(x -> mapThreadRecursive(recursionLevel + 1, (IAST) x, result));
           if (resultList != null) {
             resultList.append(result);
           }
@@ -1889,28 +1885,23 @@ public class StructureFunctions {
             return F.NIL;
           }
           if (ast.arg1().isASTOrAssociation()) {
-            IAST arg1 = (IAST) ast.arg1();
-            IExpr arg2 = ast.arg2();
+            final IAST arg1 = (IAST) ast.arg1();
+            final IExpr arg2 = ast.arg2();
 
             // sort a list of indices. after sorting, we reorder the leaves.
-            IASTAppendable sortAST = F.ListAlloc(arg1.size());
-            for (int i = 1; i < arg1.size(); i++) {
-              IExpr unary = F.unaryAST1(arg2, arg1.get(i));
-              unary = engine.evaluate(unary);
-              sortAST.append(F.binaryAST2(S.List, unary, F.ZZ(i)));
-            }
-
+            final IASTAppendable sortAST = F.mapRange(1, arg1.size(), i -> {
+              IExpr unary = engine.evaluate(F.unaryAST1(arg2, arg1.get(i)));
+              return F.binaryAST2(S.List, unary, F.ZZ(i));
+            });
             EvalAttributes.sort(sortAST);
 
-            IASTAppendable result = F.ast(arg1.head(), arg1.size());
-            for (int i = 1; i < arg1.size(); i++) {
-              int sortedIndex = sortAST.get(i).second().toIntDefault(-1);
+            return F.mapFunction(arg1.head(), sortAST, t -> {
+              int sortedIndex = t.second().toIntDefault(-1);
               if (sortedIndex < 0) {
-                return F.NIL;
+                return null;
               }
-              result.append(arg1.get(sortedIndex));
-            }
-            return result;
+              return arg1.get(sortedIndex);
+            });
           }
         } catch (ValidateException ve) {
           return IOFunctions.printMessage(ast.topHead(), ve, engine);
@@ -2168,18 +2159,13 @@ public class StructureFunctions {
         IExpr arg1Head = arg1AST.head();
         if (arg1Head.isAST()) {
 
-          IAST clonedList;
-          IAST arg1HeadAST = (IAST) arg1Head;
-          if (ast.isAST2() && !arg1HeadAST.head().equals(ast.arg2())) {
+          final IAST arg1HeadAST = (IAST) arg1Head;
+          final IExpr head = arg1HeadAST.head();
+          if (ast.isAST2() && !head.equals(ast.arg2())) {
             return arg1AST;
           }
-          IASTAppendable result = F.ast(arg1HeadAST.head());
-          return result.appendArgs(arg1HeadAST.size(), i -> arg1AST.apply(arg1HeadAST.get(i)));
-          // for (int i = 1; i < arg1HeadAST.size(); i++) {
-          // clonedList = arg1AST.apply(arg1HeadAST.get(i));
-          // result.append(clonedList);
-          // }
-          // return result;
+
+          return F.mapFunction(head, arg1HeadAST, t -> arg1AST.apply(t));
         }
         return arg1AST;
       }

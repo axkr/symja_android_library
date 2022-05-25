@@ -389,17 +389,13 @@ public class Integrate extends AbstractFunctionEvaluator {
       final IAST integrateFunction) {
     IAST list = (IAST) piecewiseFunction.arg1();
     if (list.size() > 1) {
-      IASTAppendable pwResult = F.ListAlloc(list.size());
-      for (int i = 1; i < list.size(); i++) {
-        IASTMutable integrate = integrateFunction.copy();
-        integrate.set(1, list.get(i).first());
-        pwResult.append(F.list(integrate, list.get(i).second()));
-      }
-      IASTMutable piecewise = piecewiseFunction.copy();
-      piecewise.set(1, pwResult);
+      IASTAppendable listOfPiecewiseIntegrateFunctions = F.mapList(list, t -> {
+        IASTMutable integrate = integrateFunction.setAtCopy(1, t.first());
+        return F.list(integrate, t.second());
+      });
+      IASTMutable piecewise = piecewiseFunction.setAtCopy(1, listOfPiecewiseIntegrateFunctions);
       if (piecewiseFunction.size() > 2) {
-        IASTMutable integrate = integrateFunction.copy();
-        integrate.set(1, piecewiseFunction.arg2());
+        IASTMutable integrate = integrateFunction.setAtCopy(1, piecewiseFunction.arg2());
         piecewise.set(2, integrate);
       }
       return piecewise;

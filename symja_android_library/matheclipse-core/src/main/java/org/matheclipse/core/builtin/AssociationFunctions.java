@@ -487,12 +487,10 @@ public class AssociationFunctions {
     private static IExpr associationThread(ISymbol symbol, IExpr arg1, IExpr arg2) {
       if (arg1.isList() && arg2.isList()) {
         if (arg1.size() == arg2.size()) {
-          IAST list1 = (IAST) arg1;
-          IAST list2 = (IAST) arg2;
-          IASTAppendable listOfRules = F.ListAlloc(arg1.size());
-          for (int i = 1; i < list1.size(); i++) {
-            listOfRules.append(F.binaryAST2(symbol, list1.get(i), list2.get(i)));
-          }
+          final IAST list1 = (IAST) arg1;
+          final IAST list2 = (IAST) arg2;
+          final IASTAppendable listOfRules =
+              F.mapRange(1, list1.size(), i -> F.binaryAST2(symbol, list1.get(i), list2.get(i)));
           return F.assoc(listOfRules);
         }
       }
@@ -1189,15 +1187,14 @@ public class AssociationFunctions {
       } else if (arg1.isList()) {
         if (arg1.isListOfRules(true)) {
           IAST listOfRules = (IAST) arg1;
-          IASTAppendable list = F.ast(S.List, listOfRules.argSize());
-          for (int i = 1; i < listOfRules.size(); i++) {
-            final IExpr rule = listOfRules.get(i);
+          IASTAppendable list = F.mapList(listOfRules, rule -> {
             if (rule.isRuleAST()) {
-              list.append(rule.second());
+              return rule.second();
             } else if (rule.isEmptyList()) {
-              list.append(rule);
+              return rule;
             }
-          }
+            return F.NIL;
+          });
           return mapHeadIfPresent(list, head);
         }
 

@@ -341,6 +341,12 @@ public class StringFunctionsTest extends AbstractTestCase {
   }
 
   public void testStringMatchQ() {
+    // message: StringMatchQ: String or list of strings expected at position 1 in
+    // StringMatchQ(1/2,y___).
+    check("StringMatchQ(1/2,y___)", //
+        "StringMatchQ(1/2,y___)");
+
+
     check("StringMatchQ(#, StartOfString ~~\"a\" ~~__) &/@ {\"apple\", \"banana\", \"artichoke\"}", //
         "{True,False,True}");
     check("StringMatchQ(\"15a94xcZ6\", (DigitCharacter | LetterCharacter)..)", //

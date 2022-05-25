@@ -790,7 +790,7 @@ public final class Programming {
         }
         return S.Null;
       }
-      fEngine.evaluate(input);
+      fEngine.evaluateNIL(input);
 
       return F.NIL;
     }
@@ -1100,7 +1100,7 @@ public final class Programming {
       int iterationCounter = 1;
 
       // For(start, test, incr, body)
-      engine.evaluate(ast.arg1()); // start
+      engine.evaluateNIL(ast.arg1()); // start
       IExpr test = ast.arg2();
       IExpr incr = ast.arg3();
       IExpr body = S.Null;
@@ -1113,7 +1113,7 @@ public final class Programming {
             return S.Null;
           }
           if (ast.size() == 5) {
-            engine.evaluate(body);
+            engine.evaluateNIL(body);
           }
         } catch (final BreakException e) {
           return S.Null;
@@ -1127,7 +1127,7 @@ public final class Programming {
         if (iterationLimit > 0 && iterationLimit <= ++iterationCounter) {
           IterationLimitExceeded.throwIt(iterationCounter, ast);
         }
-        engine.evaluate(incr);
+        engine.evaluateNIL(incr);
       }
     }
 
@@ -1722,7 +1722,7 @@ public final class Programming {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr f = ast.arg1();
       IExpr expr = ast.arg2();
-      IExpr test = ast.arg3(); 
+      IExpr test = ast.arg3();
       int m = 1;
       if (ast.argSize() >= 4) {
         if (ast.arg4().equals(S.All)) {
@@ -1758,7 +1758,7 @@ public final class Programming {
         }
         n = tmpInt;
       }
-      return nestList(expr, engine.evaluate(test), x -> F.unaryAST1(f, x), m, max, n, engine);
+      return nestWhileList(expr, engine.evaluate(test), x -> F.unaryAST1(f, x), m, max, n, engine);
     }
 
     @Override
@@ -1771,14 +1771,12 @@ public final class Programming {
      * @param expr
      * @param test
      * @param function
-     * @param m apply <code>function</code> n extra times
-     * @param max
-     * @param n
+     * @param m
+     * @param n apply <code>function</code> n extra times. If n is negative drop last n values.
      * @param engine
-     * @param resultList
      * @return
      */
-    private static IAST nestList(final IExpr expr, final IExpr test,
+    private static IAST nestWhileList(final IExpr expr, final IExpr test,
         final Function<IExpr, IExpr> function, int m, int max, int n, EvalEngine engine) {
       IExpr temp = expr;
       IExpr[] args;
@@ -1830,12 +1828,16 @@ public final class Programming {
           argsTemp = new IExpr[arrSize];
           System.arraycopy(args, 0, argsTemp, 0, arrSize - 1);
           argsTemp[arrSize - 1] = temp;
+          args = argsTemp;
         } else {
-          argsTemp = new IExpr[m];
-          System.arraycopy(args, 1, argsTemp, 0, m - 1);
-          argsTemp[m - 1] = temp;
+          if (m > 0) {
+            argsTemp = new IExpr[m];
+            System.arraycopy(args, 1, argsTemp, 0, m - 1);
+            argsTemp[m - 1] = temp;
+            args = argsTemp;
+          }
         }
-        args = argsTemp;
+
       }
       resultList.append(temp);
       if (n > 0) {
@@ -3465,9 +3467,7 @@ public final class Programming {
       long iterationCounter = 0;
       while (engine.evalTrue(test)) {
         try {
-          if (body.isPresent()) {
-            engine.evaluate(body);
-          }
+          engine.evaluateNIL(body);
           if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
             IterationLimitExceeded.throwIt(iterationCounter, ast);
           }

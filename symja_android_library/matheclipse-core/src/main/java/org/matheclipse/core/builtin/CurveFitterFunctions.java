@@ -114,9 +114,6 @@ public class CurveFitterFunctions {
         this.listOfRules = F.ListAlloc(gradientList.size());
         this.listOfRules.append(F.Rule(x, S.Null));
         listOfSymbols.forEach(arg -> this.listOfRules.append(F.Rule(arg, S.Null)));
-        // for (int i = 1; i < listOfSymbols.size(); i++) {
-        // this.listOfRules.append(F.Rule(listOfSymbols.get(i), F.Null));
-        // }
       }
 
       private void createSubstitutionRules(double t, double... parameters) {
@@ -180,22 +177,6 @@ public class CurveFitterFunctions {
       return true;
     }
 
-    /**
-     * Get a list of rules <code>{listOfSymbols[1] -> values[0], .... }</code>.
-     *
-     * @param listOfSymbols
-     * @param values
-     * @return
-     */
-    private static IExpr convertToRulesList(IAST listOfSymbols, double[] values) {
-      IASTAppendable result = F.ListAlloc(listOfSymbols.size());
-      listOfSymbols.forEach((arg, i) -> result.append(F.Rule(arg, F.num(values[i - 1]))));
-      // for (int i = 1; i < listOfSymbols.size(); i++) {
-      // result.append(F.Rule(listOfSymbols.get(i), F.num(values[i - 1])));
-      // }
-      return result;
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       return numericEval(ast, engine);
@@ -214,25 +195,39 @@ public class CurveFitterFunctions {
      * @return <code>F.NIL</code> if the list of symbols couldn't be determined
      */
     protected static IAST initialGuess(IAST listOfSymbolsOrPairs, double[] initialGuess) {
-      IASTAppendable newListOfSymbols = F.ListAlloc(listOfSymbolsOrPairs.size());
-      for (int i = 1; i < listOfSymbolsOrPairs.size(); i++) {
-        IExpr temp = listOfSymbolsOrPairs.get(i);
+      return F.mapList(listOfSymbolsOrPairs, (temp, i) -> {
         if (temp.isSymbol()) {
           initialGuess[i - 1] = 1.0;
-          newListOfSymbols.append(temp);
+          return temp;
         } else if (temp.isAST(S.List, 3) && temp.first().isSymbol()) {
           ISignedNumber signedNumber = temp.second().evalReal();
           if (signedNumber != null) {
             initialGuess[i - 1] = signedNumber.doubleValue();
           } else {
-            return F.NIL;
+            return null;
           }
-          newListOfSymbols.append(temp.first());
-        } else {
-          return F.NIL;
+          return temp.first();
         }
-      }
-      return newListOfSymbols;
+        return F.NIL;
+      });
+      // for (int i = 1; i < listOfSymbolsOrPairs.size(); i++) {
+      // IExpr temp = listOfSymbolsOrPairs.get(i);
+      // if (temp.isSymbol()) {
+      // initialGuess[i - 1] = 1.0;
+      // newListOfSymbols.append(temp);
+      // } else if (temp.isAST(S.List, 3) && temp.first().isSymbol()) {
+      // ISignedNumber signedNumber = temp.second().evalReal();
+      // if (signedNumber != null) {
+      // initialGuess[i - 1] = signedNumber.doubleValue();
+      // } else {
+      // return F.NIL;
+      // }
+      // newListOfSymbols.append(temp.first());
+      // } else {
+      // return F.NIL;
+      // }
+      // }
+      // return newListOfSymbols;
     }
 
     /**
@@ -269,7 +264,8 @@ public class CurveFitterFunctions {
               WeightedObservedPoints obs = new WeightedObservedPoints();
               if (addWeightedObservedPoints(data, obs)) {
                 double[] values = fitter.fit(obs.toList());
-                return convertToRulesList(listOfSymbols, values);
+                return F.mapList(listOfSymbols,
+                    (symbol, i) -> F.Rule(symbol, F.num(values[i - 1])));
               }
             }
           } catch (ValidateException ve) {

@@ -688,15 +688,12 @@ public class MinMaxFunctions {
 
     protected static IExpr simplexSolver(VariablesSet vars, LinearObjectiveFunction f,
         OptimizationData... optData) throws org.hipparchus.exception.MathRuntimeException {
-
       SimplexSolver solver = new SimplexSolver();
       PointValuePair solution = solver.optimize(optData);
       double[] values = solution.getPointRef();
-      IASTAppendable list = F.ListAlloc(values.length);
       List<IExpr> varList = vars.getArrayList();
-      for (int i = 0; i < values.length; i++) {
-        list.append(F.Rule(varList.get(i), F.num(values[i])));
-      }
+      IASTAppendable list =
+          F.mapRange(0, values.length, i -> F.Rule(varList.get(i), F.num(values[i])));
       IAST result = F.list(F.num(f.value(values)), list);
       return result;
     }

@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -237,6 +238,7 @@ public class AttributeFunctions {
           case ID.Listable:
             sym.clearAttributes(ISymbol.LISTABLE);
             break;
+
           case ID.OneIdentity:
             sym.clearAttributes(ISymbol.ONEIDENTITY);
             break;
@@ -291,11 +293,11 @@ public class AttributeFunctions {
         mutable.set(i, x);
       }
       final IASTAppendable result = F.ListAlloc(mutable.size());
-      mutable.forEach(x -> protect(x, result));
+      mutable.forEach(x -> appendProtected(result, x));
       return result;
     }
 
-    private static void protect(IExpr x, final IASTAppendable result) {
+    private static void appendProtected(final IASTAppendable result, IExpr x) {
       ISymbol symbol = (ISymbol) x;
       if (!symbol.isProtected()) {
         symbol.addAttributes(ISymbol.PROTECTED);
@@ -324,7 +326,7 @@ public class AttributeFunctions {
         }
 
         final IASTAppendable result = F.ListAlloc(mutable.size());
-        mutable.forEach(x -> unprotect(x, result));
+        mutable.forEach(x -> appendUnprotected(result, x));
         return result;
       }
       LOGGER.log(engine.getLogLevel(),
@@ -332,7 +334,7 @@ public class AttributeFunctions {
       return F.NIL;
     }
 
-    private static void unprotect(IExpr x, final IASTAppendable result) {
+    private static void appendUnprotected(final IASTAppendable result, IExpr x) {
       ISymbol symbol = (ISymbol) x;
       if (symbol.isProtected()) {
         symbol.clearAttributes(ISymbol.PROTECTED);
@@ -469,6 +471,9 @@ public class AttributeFunctions {
           case ID.Listable:
             sym.addAttributes(ISymbol.LISTABLE);
             break;
+          case ID.Locked:
+            sym.addAttributes(ISymbol.LOCKED);
+            break;
           case ID.OneIdentity:
             sym.addAttributes(ISymbol.ONEIDENTITY);
             break;
@@ -596,15 +601,20 @@ public class AttributeFunctions {
       result.append(S.Orderless);
     }
 
-    if ((attributes & ISymbol.PROTECTED) != ISymbol.NOATTRIBUTE) {
+    if ((attributes & ISymbol.LOCKED) == ISymbol.LOCKED) {
+      result.append(S.Locked);
       result.append(S.Protected);
+    } else {
+      if ((attributes & ISymbol.PROTECTED) != ISymbol.NOATTRIBUTE) {
+        result.append(S.Protected);
+      }
     }
 
     if ((attributes & ISymbol.SEQUENCEHOLD) == ISymbol.SEQUENCEHOLD
         && ((attributes & ISymbol.HOLDALLCOMPLETE) != ISymbol.HOLDALLCOMPLETE)) {
       result.append(S.SequenceHold);
     }
-
+    result.sortInplace(Comparators.CANONICAL_COMPARATOR);
     return result;
   }
 

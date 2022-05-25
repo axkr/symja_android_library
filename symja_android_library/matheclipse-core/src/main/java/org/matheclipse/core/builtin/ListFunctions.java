@@ -1269,10 +1269,8 @@ public final class ListFunctions {
           final OptionArgs options = OptionArgs.createOptionArgs(ast, engine);
           if (options != null) {
             IExpr option = options.getOption(S.Heads);
-            if (option.isPresent()) {
-              if (option.isTrue()) {
-                heads = true;
-              }
+            if (option.isTrue()) {
+              heads = true;
             }
             ast = ast.most();
           }
@@ -2721,6 +2719,7 @@ public final class ListFunctions {
               }
             }
             return result;
+
           }
           if (arg2.isEmptyList()) {
             return F.CEmptyList;
@@ -4148,9 +4147,8 @@ public final class ListFunctions {
       if (ast.arg1().isASTOrAssociation()) {
         final IAST arg1 = (IAST) ast.arg1();
         int allocSize = F.allocMin32(arg1.argSize() * 8);
-        IASTAppendable resultList;
         IExpr head = (argSize == 3) ? ast.arg3() : S.List;
-        resultList = F.ast(head, allocSize);
+        IASTAppendable resultList = F.ast(head, allocSize);
         final VisitorLevelSpecification level = new VisitorLevelSpecification(x -> {
           resultList.append(x);
           return F.NIL;
@@ -4455,13 +4453,8 @@ public final class ListFunctions {
             }
           }
           if (maxSize > 0) {
-            IASTAppendable result = F.ListAlloc(list.size());
             final int mSize = maxSize - 1;
-            return result.appendArgs(list.size(), i -> padLeftAtom(list.getAST(i), mSize, F.C0));
-            // for (int i = 1; i < list.size(); i++) {
-            // result.append(padLeftAtom(list.getAST(i), maxSize - 1, F.C0));
-            // }
-            // return result;
+            return F.mapRange(1, list.size(), i -> padLeftAtom(list.getAST(i), mSize, F.C0));
           }
         }
         return ast.arg1();
@@ -4689,10 +4682,8 @@ public final class ListFunctions {
             }
           }
           if (maxSize > 0) {
-            IASTAppendable result = F.ListAlloc(list.size());
-            final int mSize = maxSize;
-            return result.appendArgs(list.size(),
-                i -> padRightAtom(list.getAST(i), mSize - 1, F.C0));
+            final int mSize = maxSize - 1;
+            return F.mapRange(1, list.size(), i -> padRightAtom(list.getAST(i), mSize, F.C0));
           }
         }
         return ast.arg1();
@@ -5488,10 +5479,8 @@ public final class ListFunctions {
      * @return a list of integer numbers
      */
     public static IAST range(int startInclusive, int endExclusive) {
-      int size = endExclusive - startInclusive;
-      if (size >= 0) {
-        IASTAppendable result = F.ListAlloc(size + 1);
-        return result.appendArgs(startInclusive, endExclusive, i -> F.ZZ(i));
+      if (endExclusive > startInclusive) {
+        return F.mapRange(startInclusive, endExclusive, i -> F.ZZ(i));
       }
       return F.CEmptyList;
     }
@@ -5897,6 +5886,9 @@ public final class ListFunctions {
         Function<IExpr, IExpr> function = Functors.listRules((IAST) rules, result, engine);
         IExpr temp = function.apply(arg1);
         if (temp.isPresent()) {
+          if (temp.isList() && maxNumberOfResults < temp.argSize() && maxNumberOfResults > 0) {
+            return ((IAST) temp).copyUntil(maxNumberOfResults + 1);
+          }
           return temp;
         }
       } else {
@@ -7111,18 +7103,16 @@ public final class ListFunctions {
      */
     public IAST determineIteratorVariables(final IAST ast) {
       int size = ast.size();
-      IASTAppendable variableList = F.ListAlloc(size);
-      for (int i = 2; i < size; i++) {
-        IExpr arg = ast.get(i);
+      return F.mapRange(2, size, i -> {
+        final IExpr arg = ast.get(i);
         if (arg.isVariable()) {
-          variableList.append(arg);
-        } else {
-          if (arg.isList() && arg.size() >= 2 && arg.first().isVariable()) {
-            variableList.append(arg.first());
-          }
+          return arg;
         }
-      }
-      return variableList;
+        if (arg.isList() && arg.size() >= 2 && arg.first().isVariable()) {
+          return arg.first();
+        }
+        return F.NIL;
+      });
     }
 
     /**
@@ -7938,10 +7928,7 @@ public final class ListFunctions {
             IAST arg1 = (IAST) ast.arg1();
             Set<IExpr> set = arg1.asSet();
             if (set != null) {
-              final IASTAppendable result = F.ListAlloc(set.size());
-              for (IExpr IExpr : set) {
-                result.append(IExpr);
-              }
+              final IASTAppendable result = F.mapSet(set, x -> x);
               EvalAttributes.sort(result, Comparators.CANONICAL_COMPARATOR);
               return result;
             }

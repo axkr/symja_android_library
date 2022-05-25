@@ -119,11 +119,7 @@ public class ElementData extends AbstractFunctionEvaluator {
       }
       if (ast.arg1() instanceof IStringX) {
         if (ast.arg1().toString().equals("Properties")) {
-          IASTAppendable list = F.ListAlloc(PROPERTIES_DATA.length);
-          for (int i = 0; i < PROPERTIES_DATA.length; i++) {
-            list.append(F.$str(PROPERTIES_DATA[i]));
-          }
-          return list;
+          return F.mapRange(0, PROPERTIES_DATA.length, i -> F.$str(PROPERTIES_DATA[i]));
         }
       }
     } else {
@@ -314,25 +310,21 @@ public class ElementData extends AbstractFunctionEvaluator {
     // 37: "ElectronShellConfiguration"
     IAST[] list = ElementData1.ELEMENTS;
     for (int i = 0; i < list.length; i++) {
-      MAP_NUMBER_NAME.put(list[i].arg1(), list[i].arg3());
-      IASTAppendable subList = F.ListAlloc(list[i].size());
-      for (int j = 1; j < list[i].size(); j++) {
-        subList.append(list[i].get(j));
-      }
-      MAP_NAME_DATA.put(list[i].arg1(), subList);
-      MAP_NAME_DATA.put(list[i].arg2(), subList);
-      MAP_NAME_DATA.put(list[i].arg3(), subList);
+      final IAST iList = list[i];
+      MAP_NUMBER_NAME.put(iList.arg1(), iList.arg3());
+      IASTAppendable subList = F.mapRange(1, iList.size(), j -> iList.get(j));
+      MAP_NAME_DATA.put(iList.arg1(), subList);
+      MAP_NAME_DATA.put(iList.arg2(), subList);
+      MAP_NAME_DATA.put(iList.arg3(), subList);
     }
     list = ElementData2.ELEMENTS;
     for (int i = 0; i < list.length; i++) {
-      MAP_NUMBER_NAME.put(list[i].arg1(), list[i].arg3());
-      IASTAppendable subList = F.ListAlloc(list[i].size());
-      for (int j = 1; j < list[i].size(); j++) {
-        subList.append(list[i].get(j));
-      }
-      MAP_NAME_DATA.put(list[i].arg1(), subList);
-      MAP_NAME_DATA.put(list[i].arg2(), subList);
-      MAP_NAME_DATA.put(list[i].arg3(), subList);
+      final IAST iList = list[i];
+      MAP_NUMBER_NAME.put(iList.arg1(), iList.arg3());
+      IASTAppendable subList = F.mapRange(1, iList.size(), j -> iList.get(j));
+      MAP_NAME_DATA.put(iList.arg1(), subList);
+      MAP_NAME_DATA.put(iList.arg2(), subList);
+      MAP_NAME_DATA.put(iList.arg3(), subList);
     }
   }
 }

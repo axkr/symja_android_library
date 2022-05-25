@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -984,16 +983,14 @@ public class GraphFunctions {
           scores = getScores((Graph<IExpr, ExprEdge>) g);
         }
 
-        IASTAppendable list = F.ListAlloc(scores.size());
         Set<IExpr> vertexSet = g.vertexSet();
-        for (IExpr expr : vertexSet) {
+        return F.mapSet(vertexSet, expr -> {
           Double value = scores.get(expr);
           if (value == null) {
-            return F.NIL;
+            return null;
           }
-          list.append(value);
-        }
-        return list;
+          return F.num(value);
+        });
       } catch (RuntimeException rex) {
         LOGGER.debug("ClosenessCentrality.evaluate() failed", rex);
       }
@@ -1285,12 +1282,8 @@ public class GraphFunctions {
             // Graph is not Eulerian
             return F.CEmptyList;
           }
-          List<IExpr> iList = path.getVertexList();
-          IASTAppendable list = F.ListAlloc(iList.size());
-          for (int i = 0; i < iList.size() - 1; i++) {
-            list.append(F.DirectedEdge(iList.get(i), iList.get(i + 1)));
-          }
-          return list;
+          final List<IExpr> iList = path.getVertexList();
+          return F.mapRange(0, iList.size() - 1, i -> F.DirectedEdge(iList.get(i), iList.get(i + 1)));
         }
       } catch (RuntimeException rex) {
         LOGGER.debug("FindEulerianCycle.evaluate() failed", rex);
@@ -1353,11 +1346,7 @@ public class GraphFunctions {
             return F.CEmptyList;
           }
           List<IExpr> iList = path.getVertexList();
-          IASTAppendable list = F.ListAlloc(iList.size());
-          for (int i = 0; i < iList.size() - 1; i++) {
-            list.append(F.DirectedEdge(iList.get(i), iList.get(i + 1)));
-          }
-          return list;
+          return F.mapRange(0, iList.size() - 1, i -> F.DirectedEdge(iList.get(i), iList.get(i + 1)));
         }
       } catch (RuntimeException rex) {
         LOGGER.debug("FindHamiltonianCycle.evaluate() failed", rex);
@@ -1392,12 +1381,7 @@ public class GraphFunctions {
         if (mapping == null) {
           return F.CEmptyList;
         }
-        Map<IExpr, IExpr> forwardMapping = mapping.getForwardMapping();
-        IASTAppendable list = F.ListAlloc(forwardMapping.size());
-        for (Entry<IExpr, IExpr> entry : forwardMapping.entrySet()) {
-          list.append(F.Rule(entry.getKey(), entry.getValue()));
-        }
-        return F.list(F.assoc(list));
+        return F.list(F.assoc(F.mapMap(mapping.getForwardMapping(), (k, v) -> F.Rule(k, v))));
       } catch (RuntimeException rex) {
         LOGGER.debug("FindGraphIsomorphism.evaluate() failed", rex);
       }
@@ -2017,7 +2001,7 @@ public class GraphFunctions {
           if (counter++ >= atMostCycles) {
             break;
           }
-          IASTAppendable list = F.ListAlloc(vertexPath.size());
+          IASTAppendable list = F.ListAlloc(vertexPath.size() + 1);
           for (int j = 0; j < vertexPath.size() - 1; j++) {
             list.append(F.DirectedEdge(vertexPath.get(j), vertexPath.get(j + 1)));
           }
@@ -2108,12 +2092,7 @@ public class GraphFunctions {
   }
 
   private static IASTAppendable vertexToIExpr(Graph<IExpr, ?> g) {
-    Set<IExpr> vertexSet = g.vertexSet();
-    IASTAppendable vertexes = F.ListAlloc(vertexSet.size());
-    for (IExpr expr : vertexSet) {
-      vertexes.append(expr);
-    }
-    return vertexes;
+    return F.mapSet(g.vertexSet(), x -> x);
   }
 
   private static IASTAppendable[] edgesToIExpr(Graph<IExpr, ?> g) {
@@ -2305,7 +2284,6 @@ public class GraphFunctions {
 
   private static void vertexToVisjs(Map<IExpr, Integer> map, StringBuilder buf, Graph<IExpr, ?> g) {
     Set<IExpr> vertexSet = g.vertexSet();
-    IASTAppendable vertexes = F.ListAlloc(vertexSet.size());
     buf.append("var nodes = new vis.DataSet([\n");
     boolean first = true;
     int counter = 1;

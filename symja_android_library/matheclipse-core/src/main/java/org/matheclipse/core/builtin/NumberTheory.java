@@ -68,6 +68,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
+import org.matheclipse.core.reflection.system.FunctionExpand;
 import org.matheclipse.core.visit.VisitorExpr;
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
@@ -357,7 +358,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr e2ObjArg(IAST ast, final IExpr n, final IExpr k) {
+    public IExpr e2ObjArg(IAST ast, IExpr n, IExpr k) {
       if (n.isInteger() && k.isInteger()) {
         // use e2IntArg() method
         return F.NIL;
@@ -425,11 +426,9 @@ public final class NumberTheory {
       if (n.equals(k)) {
         return F.C1;
       }
+
       if (n.isNumber() && k.isNumber()) {
-        IExpr n1 = ((INumber) n).add(F.C1);
-        // (n,k) ==> Gamma(n+1)/(Gamma(k+1)*Gamma(n-k+1))
-        return F.Times(F.Gamma(n1), F.Power(F.Gamma(F.Plus(F.C1, k)), -1),
-            F.Power(F.Gamma(F.Plus(n1, F.Negate(k))), -1));
+        return binomialNumeric((INumber) n, (INumber) k);
       }
       IExpr difference = F.eval(F.Subtract(n, F.C1));
       if (difference.equals(k)) {
@@ -460,6 +459,7 @@ public final class NumberTheory {
         // case k*2 > n : Binomial[n, k] -> Binomial[n, n-k]
         return F.Binomial(n, F.Subtract(n, k));
       }
+
       return F.NIL;
     }
 
@@ -1914,13 +1914,8 @@ public final class NumberTheory {
       try {
         BigInteger[] bezoutCoefficients = new BigInteger[ast.argSize()];
         BigInteger gcd = extendedGCD(gcdArgs, bezoutCoefficients);
-        // convert the Bezout numbers to sublists
-        IASTAppendable subList = F.ListAlloc(bezoutCoefficients.length);
-        subList.appendArgs(0, bezoutCoefficients.length, i -> F.ZZ(bezoutCoefficients[i]));
-        // for (int i = 0; i < subBezouts.length; i++) {
-        // subList.append(F.integer(subBezouts[i]));
-        // }
-        // create the output list
+        IASTAppendable subList =
+            F.mapRange(0, bezoutCoefficients.length, i -> F.ZZ(bezoutCoefficients[i]));
         return F.list(F.ZZ(gcd), subList);
       } catch (ArithmeticException ae) {
         LOGGER.debug("ExtendedGCD.evaluate() failed", ae);
@@ -2188,7 +2183,7 @@ public final class NumberTheory {
       if (ast.isAST2()) {
         IExpr result = F.C1;
 
-        // x*(x-1)* (x-(n-1))
+        // x*(x-1)*(x-(n-1))
         if (engine.evalLess(n, F.C0)) {
           return F.NIL;
         } else if (n.isZero()) {
@@ -2220,12 +2215,17 @@ public final class NumberTheory {
             if (Double.isNaN(real)) {
               return F.NIL;
             }
+            long iterationLimit = EvalEngine.get().getIterationLimit();
+            long k = 0L;
             double dN = n.evalDouble();
             double i = real - dN + 1;
             while (real >= i) {
               result = result.multiply(x);
               x = x.dec();
               real--;
+              if (k++ > iterationLimit && iterationLimit > 0) {
+                IterationLimitExceeded.throwIt(k, S.FactorialPower);
+              }
             }
             return result;
           } else if (x.isExactNumber() && n.isRational()) {
@@ -2295,19 +2295,29 @@ public final class NumberTheory {
               }
               return result;
             } else if (engine.evalTrue(F.Greater(h, F.C0))) {
+              long iterationLimit = EvalEngine.get().getIterationLimit();
+              long k = 0L;
               double i = real - (dN - 1) * doubleH;
               while (real >= i) {
                 result = result.multiply(x);
                 x = x.minus(h);
                 real -= doubleH;
+                if (k++ > iterationLimit && iterationLimit > 0) {
+                  IterationLimitExceeded.throwIt(k, S.FactorialPower);
+                }
               }
               return result;
             } else {
+              long iterationLimit = EvalEngine.get().getIterationLimit();
+              long k = 0L;
               double i = real - (dN - 1) * doubleH;
               while (real <= i) {
                 result = result.multiply(x);
                 x = x.minus(h);
                 real -= doubleH;
+                if (k++ > iterationLimit && iterationLimit > 0) {
+                  IterationLimitExceeded.throwIt(k, S.FactorialPower);
+                }
               }
               return result;
             }
@@ -2387,7 +2397,7 @@ public final class NumberTheory {
    * 3
    * </pre>
    */
-  private static class Factorial2 extends AbstractTrigArg1 {
+  private static class Factorial2 extends AbstractEvaluator {
 
     public static IInteger factorial2(final IInteger iArg) {
       IInteger result = F.C1;
@@ -2418,7 +2428,8 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
         if (!arg1.isNegative()) {
           return factorial2((IInteger) arg1);
@@ -2448,6 +2459,12 @@ public final class NumberTheory {
       }
       if (arg1.isNegativeInfinity()) {
         return S.Indeterminate;
+      }
+      if (engine.isNumericMode() && arg1.isNumber()) {
+        IExpr temp = S.FunctionExpand.ofNIL(engine, F.Unevaluated(F.Factorial2(arg1)));
+        if (temp.isPresent()) {
+          return temp;
+        }
       }
       return F.NIL;
     }
@@ -3563,30 +3580,39 @@ public final class NumberTheory {
           k[i - 1] = (IInteger) temp;
         }
       }
-      return NumberTheory.multinomial(k);
+      IInteger multinomial = NumberTheory.multinomial(k);
+      if (multinomial == null) {
+        return F.NIL;
+      }
+      return multinomial;
     }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
+      if (ast.size() <= 2) {
         // (n) ==> 1
         return F.C1;
       }
       if (ast.isAST2()) {
         return F.Binomial(F.Plus(ast.arg1(), ast.arg2()), ast.arg2());
       }
-      int position = ast.indexOf(x -> (!x.isInteger()) || x.isNegative());
+      int position = ast.indexOf(x -> (!x.isInteger()));
       if (position < 0) {
         return multinomial(ast);
       }
-      int argSize = ast.size() - 1;
-      if (position == argSize && !ast.get(argSize).isNumber()) {
+      final int argSize = ast.argSize();
+      if (position == argSize && !ast.last().isNumber()) {
         // recurrence: Multinomial(n1, n2, n3,..., ni, k) =>
         // Multinomial(n1+n2+n3+...+ni, k) * Multinomial(n1, n2, n3,..., ni)
         IAST reducedMultinomial = ast.removeFromEnd(argSize);
         IAST reducedPlus = reducedMultinomial.apply(S.Plus);
-        return F.Times(F.Multinomial(reducedPlus, ast.get(argSize)),
-            multinomial(reducedMultinomial));
+        return F.Times(F.Multinomial(reducedPlus, ast.last()), multinomial(reducedMultinomial));
+      }
+      if (engine.isNumericMode()) {
+        position = ast.indexOf(x -> !x.isNumber());
+        if (position < 0) {
+          return FunctionExpand.multinomial(ast);
+        }
       }
       return F.NIL;
     }
@@ -4435,9 +4461,7 @@ public final class NumberTheory {
         try {
           IInteger[] roots = ((IInteger) arg1).primitiveRootList();
           if (roots != null) {
-            int size = roots.length;
-            IASTAppendable list = F.ListAlloc(size);
-            return list.appendArgs(0, size, i -> roots[i]);
+            return F.mapRange(0, roots.length, i -> roots[i]);
           }
         } catch (LimitException le) {
           throw le;
@@ -5304,6 +5328,14 @@ public final class NumberTheory {
     return F.C0;
   }
 
+
+  private static IExpr binomialNumeric(final INumber n, final INumber k) {
+    IExpr n1 = n.add(F.C1);
+    // (n,k) ==> Gamma(n+1)/(Gamma(k+1)*Gamma(n-k+1))
+    return F.Times(F.Gamma(n1), F.Power(F.Gamma(F.Plus(F.C1, k)), -1),
+        F.Power(F.Gamma(F.Plus(n1, F.Negate(k))), -1));
+  }
+
   /**
    * Compute the Bernoulli number of the first kind.
    *
@@ -5420,12 +5452,41 @@ public final class NumberTheory {
    */
   public static IInteger multinomial(final int[] k, final int n) {
     IInteger bn = AbstractIntegerSym.valueOf(n);
-    IInteger result = factorial(bn);
+    IInteger pPlus = F.C1;
+    IRational pNeg = F.C1;
+    int nNeg = 0;
     for (int i = 0; i < k.length; i++) {
       if (k[i] != 0) {
-        result = result.div(factorial(k[i]));
+        if (k[i] < 0) {
+          nNeg++;
+          int temp = -1 - k[i];
+          pNeg = pNeg.divideBy(factorial(temp));
+          if ((temp & 1) == 1) {
+            pNeg = pNeg.negate();
+          }
+        } else if (k[i] > 0) {
+          pPlus = pPlus.multiply(factorial(k[i]));
+        } else {
+          return F.C0;
+        }
       }
     }
+    if (n < 0) {
+      nNeg--;
+      if (nNeg > 0) {
+        return F.C0;
+      }
+      int kFactor = -1 - n;
+      IRational p = pPlus.multiply(pNeg).multiply(factorial(kFactor));
+      if ((kFactor & 1) == 1) {
+        p = p.negate();
+      }
+      return p.isNegative() ? p.denominator().negate() : p.denominator();
+    }
+    if (nNeg > 0) {
+      return F.C0;
+    }
+    IInteger result = factorial(bn).div(pPlus);
     return result;
   }
 
@@ -5441,12 +5502,12 @@ public final class NumberTheory {
       n = n.add(k[i]);
     }
     int ni = n.toIntDefault();
-    if (ni > 0) {
+    if (ni != Integer.MIN_VALUE) {
       int[] ki = new int[k.length];
       boolean evaled = true;
       for (int i = 0; i < k.length; i++) {
         ki[i] = k[i].toIntDefault();
-        if (ki[i] < 0) {
+        if (ki[i] == Integer.MIN_VALUE) {
           evaled = false;
           break;
         }
@@ -5455,11 +5516,12 @@ public final class NumberTheory {
         return multinomial(ki, ni);
       }
     }
-    IInteger result = factorial(n);
-    for (int i = 0; i < k.length; i++) {
-      result = result.div(factorial(k[i]));
-    }
-    return result;
+    return null;
+    // IInteger result = factorial(n);
+    // for (int i = 0; i < k.length; i++) {
+    // result = result.div(factorial(k[i]));
+    // }
+    // return result;
   }
 
   /**

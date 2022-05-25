@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -211,17 +210,11 @@ public final class ExpVectorLong {
    *
    * @param n size of names array.
    * @param prefix name prefix.
-   * @return vatiable names.
+   * @return variable names.
    */
   public static IAST STDVARS(String prefix, int n) {
-    IASTAppendable vars = F.ListAlloc(n);
-    if (prefix == null || prefix.length() == 0) {
-      prefix = "x";
-    }
-    for (int i = 0; i < n; i++) {
-      vars.append(F.Dummy(prefix + i)); // (n-1-i);
-    }
-    return vars;
+    final String pref = (prefix == null || prefix.length() == 0) ? "x" : prefix;
+    return F.mapRange(0, n, i -> F.Dummy(pref + i));
   }
 
   /**

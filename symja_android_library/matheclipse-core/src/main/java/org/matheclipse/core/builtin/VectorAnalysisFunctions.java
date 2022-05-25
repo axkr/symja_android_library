@@ -138,12 +138,10 @@ public class VectorAnalysisFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr function = ast.arg1();
       if (ast.arg2().isList() && ast.arg2().size() > 1) {
-        IAST variables = (IAST) ast.arg2();
-        IASTAppendable dList = F.ListAlloc(variables.argSize());
-        variables.forEach(x -> dList.append(engine.evaluate(F.D(function, x))));
-        return dList;
+        final IExpr function = ast.arg1();
+        final IAST variables = (IAST) ast.arg2();
+        return F.mapList(variables, x -> F.D.of(engine, function, x));
       }
 
       return F.NIL;

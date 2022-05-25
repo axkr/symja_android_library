@@ -100,10 +100,9 @@ public interface ISymbol extends IExpr {
   public static final int READPROTECTED = 0x10000;
 
   /**
-   * ISymbol attribute to indicate that a symbols evaluation should be printed to Console with
-   * System.out.println();
+   * ISymbol attribute for a locked symbol. If a symbol is once locked, you cannot reset the lock.
    */
-  // public static final int DELAYED_RULE_EVALUATION = 0x00020000;
+  public static final int LOCKED = PROTECTED | 0x20000;
 
   //
   // Flags definition starts here

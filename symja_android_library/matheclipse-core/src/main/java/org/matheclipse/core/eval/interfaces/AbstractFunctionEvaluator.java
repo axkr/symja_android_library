@@ -524,8 +524,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
         IExpr arg1 = expression.first();
         if (arg1.isMinusOne()) {
           return F.CInfinity;
-        }
-        if (arg1.isNegativeImaginaryUnit()) {
+        } else if (arg1.isNegativeImaginaryUnit()) {
           return F.DirectedInfinity(F.CI);
         }
       }

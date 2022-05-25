@@ -252,11 +252,9 @@ public class FindMinimum extends AbstractFunctionEvaluator {
 
       if ((optimum != null)) {
         final double[] point = optimum.getPointRef();
+        IASTAppendable ruleList =
+            F.mapRange(1, variableList.size(), j -> F.Rule(variableList.get(j), F.num(point[j - 1])));
         final double value = optimum.getValue();
-        IASTAppendable ruleList = F.ListAlloc(variableList.size());
-        for (int j = 1; j < variableList.size(); j++) {
-          ruleList.append(F.Rule(variableList.get(j), F.num(point[j - 1])));
-        }
         return F.list(F.num(value), ruleList);
       }
       return F.NIL;

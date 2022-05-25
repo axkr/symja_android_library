@@ -60,7 +60,6 @@ import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -1230,12 +1229,7 @@ public class ExpTrigsFunctions {
               engine.evaluate(F.Plus(F.Times(F.QQ(1, i), S.Pi), F.Times(F.CN1D2, S.Pi)));
           // (2/i)*Pi
           final IExpr angle = engine.evaluate(F.Times(F.QQ(2, i), S.Pi));
-
-          IASTAppendable result = F.ListAlloc(i);
-          for (int j = 0; j < i; j++) {
-            result.append(F.AngleVector(F.Plus(start, F.ZZ(j).times(angle))));
-          }
-          return result;
+          return F.mapRange(0, i, j -> F.AngleVector(F.Plus(start, F.ZZ(j).times(angle))));
         } else if (i == 0) {
           return F.CEmptyList;
         }

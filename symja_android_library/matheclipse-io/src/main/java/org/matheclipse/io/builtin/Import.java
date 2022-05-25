@@ -73,7 +73,7 @@ public class Import extends AbstractEvaluator {
         switch (format) {
           case BMP:
           case GIF:
-          case JPG:
+          case JPEG:
           case PNG:
             try (
                 InputStream inputStream = new ReaderInputStream(reader, Charset.defaultCharset())) {
@@ -168,7 +168,7 @@ public class Import extends AbstractEvaluator {
     String filename = file.getName();
     Extension extension = Extension.importFilename(filename);
     // Extension extension = filename.extension();
-    if (extension.equals(Extension.JPG) || extension.equals(Extension.PNG)) {
+    if (extension.equals(Extension.JPEG) || extension.equals(Extension.PNG)) {
       // if (filename.hasExtension("jpg") || filename.hasExtension("png")) {
       return ImageFormat.from(ImageIO.read(file));
     }

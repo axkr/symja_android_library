@@ -223,8 +223,7 @@ public class RootsFunctions {
       }
       IAST list = (IAST) temp;
       int size = list.size();
-      IASTAppendable result = F.ListAlloc(size);
-      return result.appendArgs(size, i -> engine.evalN(list.get(i)));
+      return F.mapRange(1, size, i -> engine.evalN(list.get(i)));
     }
 
     @Override
@@ -413,11 +412,7 @@ public class RootsFunctions {
       IExpr variable = variables.arg1();
       IAST list = roots(arg1, false, variables, engine);
       if (list.isPresent()) {
-        IASTAppendable or = F.ast(S.Or, list.size());
-        for (int i = 1; i < list.size(); i++) {
-          or.append(F.Equal(variable, list.get(i)));
-        }
-        return or;
+        return F.mapFunction(S.Or, list, t -> F.Equal(variable, t));
       }
       return F.NIL;
     }
@@ -542,16 +537,8 @@ public class RootsFunctions {
 
     double[] realValues = ed.getRealEigenvalues();
     double[] imagValues = ed.getImagEigenvalues();
-
-    IASTAppendable roots = F.ListAlloc(N);
-    return roots.appendArgs(0, N, i -> F.chopExpr(F.complexNum(realValues[i], imagValues[i]),
+    return F.mapRange(0, N, i -> F.chopExpr(F.complexNum(realValues[i], imagValues[i]),
         Config.DEFAULT_ROOTS_CHOP_DELTA));
-    // for (int i = 0; i < N; i++) {
-    // roots.append(F.chopExpr(F.complexNum(realValues[i], imagValues[i]),
-    // Config.DEFAULT_ROOTS_CHOP_DELTA));
-    // }
-    // return roots;
-
   }
 
   public static IASTMutable rootsOfExprPolynomial(final IExpr expr, IAST varList,
@@ -705,13 +692,11 @@ public class RootsFunctions {
 
       IRational fraction = F.fraction(1, n);
       IExpr f1 = F.Power(r, fraction);
-      IASTAppendable result = F.ListAlloc(n);
-      for (int k = 0; k < n; k++) {
+      return F.mapRange(0, n, k -> {
         IAST argCosSin = F.Times(fraction, F.Plus(theta, F.Times(F.ZZ(k + k), S.Pi)));
         IAST f2 = F.Plus(F.Cos(argCosSin), F.Times(F.CI, F.Sin(argCosSin)));
-        result.append(F.Times(f1, f2));
-      }
-      return result;
+        return F.Times(f1, f2);
+      });
     }
     return F.NIL;
   }
@@ -760,12 +745,12 @@ public class RootsFunctions {
           isNegative = true;
           rhsNumerator = rhsNumerator.negate();
         }
-        zNumerator = EvalEngine.get().evaluate(F.Power(rhsNumerator, F.fraction(1, varDegree)));
+        zNumerator = EvalEngine.get().evaluate(F.Power(rhsNumerator, F.QQ(1, varDegree)));
       }
       IExpr zDenominator;
       if (rhsDenominator.isTimes()) {
         IASTMutable temp =
-            ((IAST) rhsDenominator).mapThread(F.Power(F.Slot1, F.fraction(-1, varDegree)), 1);
+            ((IAST) rhsDenominator).mapThread(F.Power(F.Slot1, F.QQ(-1, varDegree)), 1);
         if (rhsDenominator.first().isNegative()) {
           isNegative = !isNegative;
           temp.set(1, rhsDenominator.first().negate());
@@ -777,36 +762,29 @@ public class RootsFunctions {
           rhsDenominator = rhsDenominator.negate();
         }
         zDenominator =
-            EvalEngine.get().evaluate(F.Power(rhsDenominator, F.fraction(-1, varDegree)));
+            EvalEngine.get().evaluate(F.Power(rhsDenominator, F.QQ(-1, varDegree)));
       }
-      IASTAppendable result = F.ListAlloc(varDegree);
-      for (int i = 0; i < varDegree; i++) {
-        if (isNegative) {
-          result.append(F.Times(F.Power(F.CN1, i + 1), F.Power(F.CN1, F.fraction(i, varDegree)),
-              zNumerator, zDenominator));
-        } else {
-          result.append(F.Times(F.Power(F.CN1, i), F.Power(F.CN1, F.fraction(i, varDegree)),
-              zNumerator, zDenominator));
-        }
-      }
-      return result;
+      final int increment = isNegative ? 1 : 0;
+      return F.mapRange(0, varDegree, i -> //
+      F.Times(F.Power(F.CN1, i + increment), F.Power(F.CN1, F.QQ(i, varDegree)), zNumerator,
+          zDenominator));
     } else {
       // even
       IExpr zNumerator;
       if (rhsNumerator.isTimes()) {
-        IExpr temp = ((IAST) rhsNumerator).mapThread(F.Power(F.Slot1, F.fraction(1, varDegree)), 1);
+        IExpr temp = ((IAST) rhsNumerator).mapThread(F.Power(F.Slot1, F.QQ(1, varDegree)), 1);
         zNumerator = EvalEngine.get().evaluate(temp);
       } else {
-        zNumerator = EvalEngine.get().evaluate(F.Power(rhsNumerator, F.fraction(1, varDegree)));
+        zNumerator = EvalEngine.get().evaluate(F.Power(rhsNumerator, F.QQ(1, varDegree)));
       }
       IExpr zDenominator;
       if (rhsDenominator.isTimes()) {
         IExpr temp =
-            ((IAST) rhsDenominator).mapThread(F.Power(F.Slot1, F.fraction(-1, varDegree)), 1);
+            ((IAST) rhsDenominator).mapThread(F.Power(F.Slot1, F.QQ(-1, varDegree)), 1);
         zDenominator = EvalEngine.get().evaluate(temp);
       } else {
         zDenominator =
-            EvalEngine.get().evaluate(F.Power(rhsDenominator, F.fraction(-1, varDegree)));
+            EvalEngine.get().evaluate(F.Power(rhsDenominator, F.QQ(-1, varDegree)));
       }
 
       IASTAppendable result = F.ListAlloc(varDegree);
