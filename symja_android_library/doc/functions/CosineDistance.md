@@ -1,10 +1,12 @@
 ## CosineDistance
+
 ```
 CosineDistance(u, v)
 ```
 > returns the cosine distance between `u` and `v`.
   
 ### Examples
+
 ```
 >> N(CosineDistance({7, 9}, {71, 89}))
 7.596457213221441E-5

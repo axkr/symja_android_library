@@ -176,6 +176,7 @@
 * [CoplanarPoints](functions/CoplanarPoints.md)
 * [CoprimeQ](functions/CoprimeQ.md)
 * [Correlation](functions/Correlation.md)
+* [CorrelationDistance](functions/CorrelationDistance.md)
 * [Cos](functions/Cos.md)
 * [Cosh](functions/Cosh.md)
 * [CoshIntegral](functions/CoshIntegral.md)
