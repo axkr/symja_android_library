@@ -5437,7 +5437,7 @@ public final class ListFunctions {
       if (ast.isAST1() && ast.arg1().isReal()) {
         int size = ast.arg1().toIntDefault();
         if (size != Integer.MIN_VALUE) {
-          return range(size);
+          return range(size + 1);
         }
         LOGGER.log(engine.getLogLevel(),
             "Range: argument {} is greater than Javas Integer.MAX_VALUE or no integer number.",
@@ -5459,28 +5459,31 @@ public final class ListFunctions {
     }
 
     /**
-     * @param size
+     * <code>Range.of(maximumExclusive)</code> gives
+     * <code>{1, 2, 3, ... ,maximumInclusive-2, maximumInclusive-1}</code>
+     * 
+     * @param maximumExclusive
      * @return {@link F#NIL} if <code>size > Integer.MAX_VALUE-3</code>
      */
-    public static IAST range(int size) {
-      if (size > Integer.MAX_VALUE - 3) {
+    public static IAST range(int maximumExclusive) {
+      if (maximumExclusive > Integer.MAX_VALUE - 3) {
         LOGGER.log(EvalEngine.get().getLogLevel(),
-            "Range: argument {} is greater than Javas Integer.MAX_VALUE-3", size);
+            "Range: argument {} is greater than Javas Integer.MAX_VALUE-3", maximumExclusive);
         return F.NIL;
       }
-      return range(1, size + 1);
+      return range(1, maximumExclusive);
     }
 
     /**
      * Range.of(2, 7) gives {2, 3, 4, 5, 6}
      *
-     * @param startInclusive
-     * @param endExclusive
+     * @param minimumInclusive
+     * @param maximumExclusive
      * @return a list of integer numbers
      */
-    public static IAST range(int startInclusive, int endExclusive) {
-      if (endExclusive > startInclusive) {
-        return F.mapRange(startInclusive, endExclusive, i -> F.ZZ(i));
+    public static IAST range(int minimumInclusive, int maximumExclusive) {
+      if (maximumExclusive > minimumInclusive) {
+        return F.mapRange(minimumInclusive, maximumExclusive, i -> F.ZZ(i));
       }
       return F.CEmptyList;
     }
