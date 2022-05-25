@@ -95,6 +95,10 @@ public class KryoUtil {
 
   private static class BuiltInSymbolSerializer extends Serializer<IExpr> {
 
+    public BuiltInSymbolSerializer() {
+      setImmutable(true);
+    }
+
     @Override
     public void write(Kryo kryo, Output output, IExpr object) {
       if (object instanceof IBuiltInSymbol) {
@@ -113,6 +117,10 @@ public class KryoUtil {
   }
 
   private static class BuiltInRubiSerializer extends Serializer<BuiltInRubi> {
+
+    public BuiltInRubiSerializer() {
+      setImmutable(true);
+    }
 
     @Override
     public void write(Kryo kryo, Output stream, BuiltInRubi object) {
@@ -184,6 +192,9 @@ public class KryoUtil {
   }
 
   private static class BuiltInDummySerializer extends Serializer<BuiltInDummy> {
+    public BuiltInDummySerializer() {
+      setImmutable(true);
+    }
 
     @Override
     public void write(Kryo kryo, Output output, BuiltInDummy object) {
@@ -316,6 +327,7 @@ public class KryoUtil {
     Input rubInput = new Input(new FileInputStream("rubi_context.bin"));
     rubiContext = (Context) kryo.readClassAndObject(rubInput);
     System.out.println(rubiContext.toString());
+    rubInput.close();
 
     IBuiltInSymbol symbol = S.Integrate;
     RulesData rulesData = symbol.getRulesData();
@@ -495,7 +507,4 @@ public class KryoUtil {
     return kryo;
   }
 
-  static public class SomeClass {
-    String value;
-  }
 }
