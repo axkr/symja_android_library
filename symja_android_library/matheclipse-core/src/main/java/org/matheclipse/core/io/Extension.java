@@ -24,7 +24,7 @@ public enum Extension {
   /** compressed version of another format, for instance csv.gz */
   GZ, //
   /** compressed, lossy image format */
-  JPG, //
+  JPEG, //
   /** JSON */
   JSON, //
   /** MATLAB m file */
@@ -72,6 +72,9 @@ public enum Extension {
         if (ucExtension.equals("ExpressionJSON")) {
           return EXPRESSIONJSON;
         }
+        if (ucExtension.equals("JPG")) {
+          return JPEG;
+        }
         return valueOf(ucExtension);
       }
     } catch (RuntimeException rex) {
@@ -96,6 +99,9 @@ public enum Extension {
       if (ucExtension.equals("DATA")) {
         return DAT;
       }
+      if (ucExtension.equals("JPG")) {
+        return JPEG;
+      }
       return valueOf(extensionString.toUpperCase());
     } catch (RuntimeException rex) {
       //
@@ -114,7 +120,14 @@ public enum Extension {
     try {
       int pos = filename.lastIndexOf('.');
       if (pos >= 1) {
-        return valueOf(filename.substring(pos + 1).toUpperCase());
+        String extensionString = filename.substring(pos + 1).toUpperCase();
+        if (extensionString.equals("TEXT")) {
+          return TXT;
+        }
+        if (extensionString.equals("JPG")) {
+          return JPEG;
+        }
+        return valueOf(extensionString);
       }
     } catch (RuntimeException rex) {
       //
@@ -137,6 +150,9 @@ public enum Extension {
     }
     if (extensionString.equals("Text")) {
       return TXT;
+    }
+    if (extensionString.equals("JPG")) {
+      return JPEG;
     }
     return STRING;
   }

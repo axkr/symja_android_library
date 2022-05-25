@@ -37,7 +37,7 @@ public class ImageFormat {
       // // gjoel found that {@link Files#lines(Path)} was unsuitable on Windows
       // return CsvFormat.parse(lines(inputStream));
       case BMP:
-      case JPG:
+      case JPEG:
       case PNG:
         return ImageFormat.from(ImageIO.read(inputStream));
       // case VECTOR:

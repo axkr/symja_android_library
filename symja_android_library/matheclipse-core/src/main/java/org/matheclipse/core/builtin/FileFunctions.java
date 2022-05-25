@@ -52,6 +52,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.io.Extension;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
@@ -82,6 +83,7 @@ public class FileFunctions {
         S.CreateFile.setEvaluator(new CreateFile());
         S.End.setEvaluator(new End());
         S.File.setEvaluator(new FileEvaluator());
+        S.FileFormat.setEvaluator(new FileFormat());
         S.FilePrint.setEvaluator(new FilePrint());
         S.Get.setEvaluator(new Get());
         S.InputStream.setEvaluator(new InputStream());
@@ -165,26 +167,20 @@ public class FileFunctions {
       if (Config.isFileSystemEnabled(engine)) {
         try {
           IExpr arg1 = ast.arg1();
-          DataInput reader = null;
+          final DataInput reader;
           if (arg1 instanceof FileExpr) {
             InputStreamExpr stream = InputStreamExpr.getFromFile((FileExpr) arg1, "String", engine);
             reader = stream.getDataInput();
           } else if (arg1 instanceof InputStreamExpr) {
             reader = ((InputStreamExpr) arg1).getDataInput();
+          } else {
+            reader = null;
           }
           if (reader != null) {
             if (ast.isAST2()) {
               IExpr typeExpr = ast.arg2();
               if (typeExpr.isList()) {
-                IAST list = (IAST) ast.arg2();
-                IASTAppendable result = F.ListAlloc(list.size());
-                for (int i = 1; i < list.size(); i++) {
-                  String typeStr = list.get(i).toString();
-                  IExpr temp = readType(reader, typeStr);
-                  result.append(temp);
-                }
-
-                return result;
+                return F.mapList((IAST) typeExpr, t -> readType(reader, t.toString()));
               }
             }
             String typeStr = ast.isAST2() ? ast.arg2().toString() : "UnsignedInteger8";
@@ -200,28 +196,33 @@ public class FileFunctions {
       return F.NIL;
     }
 
-    private IExpr readType(DataInput reader, String typeStr) throws IOException {
-      if (typeStr.equals("Byte")) {
-        typeStr = "UnsignedInteger8";
-      }
-      byte typeByte = NumericArrayExpr.toType(typeStr);
-      if (typeByte == NumericArrayExpr.UNDEFINED) {
-        if (typeStr.equals("Character8")) {
-          int uInt = Byte.toUnsignedInt(reader.readByte());
-          char ch = (char) uInt;
-          return F.stringx(ch);
+    private static IExpr readType(DataInput reader, String typeStr) {
+      try {
+        if (typeStr.equals("Byte")) {
+          typeStr = "UnsignedInteger8";
         }
-        return S.$Failed;
+        byte typeByte = NumericArrayExpr.toType(typeStr);
+        if (typeByte == NumericArrayExpr.UNDEFINED) {
+          if (typeStr.equals("Character8")) {
+            int uInt = Byte.toUnsignedInt(reader.readByte());
+            char ch = (char) uInt;
+            return F.stringx(ch);
+          }
+          return S.$Failed;
+        }
+        switch (typeByte) {
+          case NumericArrayExpr.Integer8:
+            byte sByte = reader.readByte();
+            return F.ZZ(sByte);
+          case NumericArrayExpr.UnsignedInteger8:
+            byte uByte = reader.readByte();
+            return F.ZZ(Byte.toUnsignedInt(uByte));
+        }
+      } catch (EOFException ex) {
+        return S.EndOfFile;
+      } catch (IOException e) {
       }
-      switch (typeByte) {
-        case NumericArrayExpr.Integer8:
-          byte sByte = reader.readByte();
-          return F.ZZ(sByte);
-        case NumericArrayExpr.UnsignedInteger8:
-          byte uByte = reader.readByte();
-          return F.ZZ(Byte.toUnsignedInt(uByte));
-      }
-      return F.$Failed;
+      return S.$Failed;
     }
 
     @Override
@@ -506,6 +507,29 @@ public class FileFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+  }
+
+  private static final class FileFormat extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!(ast.arg1() instanceof IStringX)) {
+        return F.NIL;
+      }
+
+      IStringX arg1 = (IStringX) ast.arg1();
+      Extension format = Extension.importFilename(arg1.toString());
+      if (format.equals(Extension.STRING)) {
+        // no format was suitable
+        return S.None;
+      }
+      return F.stringx(format.toString());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 
