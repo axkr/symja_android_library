@@ -900,13 +900,12 @@ public class LinearAlgebraTestCase extends AbstractTestCase {
     check("Orthogonalize({{2.0-3.3*I,3}, {2,7}, {4.0+I,5}}) // MatrixForm", //
         "{{1.0019+I*(-0.331784),0.624317+I*0.532447},\n" //
             + " {-0.624317+I*(-0.532447),1.0019+I*(-0.331784)},\n" //
-        + " {0.0,0.0}}");
+            + " {0.0,0.0}}");
 
     // TODO
     // check("Orthogonalize({{1, 2}, {3, 1}, {6, 9}, {7, 8}})", //
     // "{{1/Sqrt(5),2/Sqrt(5)},{2/Sqrt(5),-1/Sqrt(5)},{0,0},{0,0}}");
-    check(
-        "Together((2*Sqrt(3)+3*Sqrt(5))/(5*Sqrt(7)))", //
+    check("Together((2*Sqrt(3)+3*Sqrt(5))/(5*Sqrt(7)))", //
         "(2*Sqrt(3)+3*Sqrt(5))/(5*Sqrt(7))");
     // check("Orthogonalize({{1,2,3},{5,2,7},{3,5,1}})", //
     // "{{1/Sqrt(14),Sqrt(2/7),3/Sqrt(14)},{5/Sqrt(42),-2*Sqrt(2/21),1/Sqrt(42)},{1/Sqrt(\n"
@@ -1194,6 +1193,17 @@ public class LinearAlgebraTestCase extends AbstractTestCase {
   }
 
   public void testRowReduce() {
+    check("RowReduce(\n" //
+        + "{{1,-1,1}, {1,5,7}, {1,-7,-5}})", //
+        "{{1,0,2},\n"//
+            + " {0,1,1},\n"//
+            + " {0,0,0}}");//
+    check("RowReduce(\n" //
+        + "{{1,2,3,4},{4,5,6,7},{6,7,8,9}})", //
+        "{{1,0,-1,-2},\n" //
+            + " {0,1,2,3},\n" //
+            + " {0,0,0,0}}");
+
     check("RowReduce(\n" //
         + "{{1, a, 2}, {0, 1, 1}, {-1, 1, 1}},\n"
         + "ZeroTest -> (Quiet(Length@Solve(# == 0, Reals) > 0) &))",

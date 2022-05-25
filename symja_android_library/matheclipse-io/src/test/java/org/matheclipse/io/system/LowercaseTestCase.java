@@ -1621,7 +1621,7 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testBesselJ() {
 
     check("BesselJ(1/2,-1)", //
-        "(I*Sqrt(2)*Sin(1))/Sqrt(Pi)");
+        "I*Sqrt(2/Pi)*Sin(1)");
     check("BesselJ(-1/2,-Infinity)", //
         "0");
     checkNumeric("BesselJ(-1.9999999999999998,3.0)", //
@@ -1652,9 +1652,9 @@ public class LowercaseTestCase extends AbstractTestCase {
     check("BesselJ(-0.5, z)", //
         "(Sqrt(2)*Sin(1.5708+z))/(Sqrt(Pi)*Sqrt(z))");
     check("BesselJ(1/2, z)", //
-        "(Sqrt(2)*Sin(z))/(Sqrt(Pi)*Sqrt(z))");
+        "(Sqrt(2/Pi)*Sin(z))/Sqrt(z)");
     check("BesselJ(-1/2, z)", //
-        "(Sqrt(2)*Cos(z))/(Sqrt(Pi)*Sqrt(z))");
+        "(Sqrt(2/Pi)*Cos(z))/Sqrt(z)");
     check("BesselJ(-2.5, 1.333)", //
         "1.6236");
     check("BesselJ(-2.5, z)", //
@@ -2024,6 +2024,13 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testBinomial() {
+    check("Binomial(8.5, -4.2)", //
+        "0.0000604992");
+    check("N(Binomial(7/3, 1/5), 20)", //
+        "1.3331254244650286522");
+    check("Binomial(2. + I, 7 - 3*I)", //
+        "-75.46835+I*106.8153");
+
     check("Binomial(a,b,c)", //
         "Binomial(a,b,c)");
     check("Binomial(a)", //
@@ -3421,6 +3428,11 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCollect() {
+    check("Collect((1 + a + x)^4, x)", //
+        "1+4*a+6*a^2+4*a^3+a^4+(4+12*a+12*a^2+4*a^3)*x+(6+12*a+6*a^2)*x^2+(4+4*a)*x^3+x^4");
+    check("Collect((1 + a + x)^4, x, Factor)", //
+        "(1+a)^4+4*(1+a)^3*x+6*(1+a)^2*x^2+4*(1+a)*x^3+x^4");
+
     check("Collect(a*x*Log(x)+ b*(x*Log(x)), x*Log(x))", //
         "(a+b)*x*Log(x)");
     check("Collect(e+f*x, {})", //
@@ -4331,6 +4343,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testCanberraDistance() {
+    check("CanberraDistance({0,0},{0,0})", //
+        "0");
     check("CanberraDistance(SparseArray({11,1,19,2}),SparseArray({5,7,1,23}))", //
         "573/200");
     check("CanberraDistance( {11,1,19,2} , {5,7,1,23} )", //
@@ -4381,6 +4395,32 @@ public class LowercaseTestCase extends AbstractTestCase {
             " {0.971329,0.991149,0.995273,0.668257,0.417245,0.993953,1.0}}");
     // check("Correlation(RandomReal(1, 10^4), RandomReal(1, 10^4))", //
     // "0.000430087");
+  }
+
+  public void testCorrelationDistance() {
+    check("CorrelationDistance({2,2},{5,10})", //
+        "0");
+    check("N(CorrelationDistance({2,2},{5,10}))", //
+        "0.0");
+    check("N(CorrelationDistance({4,5},{4,5}))", //
+        "0.0");
+    check("CorrelationDistance({4,5},{4,5})", //
+        "0");
+
+    check("CorrelationDistance({1, 2, 3}, {3,5,10})", //
+        "1-7/2*1/Sqrt(13)");
+    check("N(CorrelationDistance({1, 2, 3}, {3,5,10}))", //
+        "0.0292747");
+
+    check("CorrelationDistance({a,b,c}, {x,y,z})", //
+        "1+(-2*a*x+b*x+c*x+a*y-2*b*y+c*y+a*z+b*z-2*c*z)/"//
+            + "(3*Sqrt(Abs(a+1/3*(-a-b-c))^2+Abs(b+\n"//
+            + "1/3*(-a-b-c))^2+Abs(1/3*(-a-b-c)+c)^2)*Sqrt(Abs(x+1/3*(-x-y-z))^2+Abs(y+1/3*(-x-y-z))^\n"//
+            + "2+Abs(1/3*(-x-y-z)+z)^2))");//
+    check("CorrelationDistance(N({1, 5, 2, 3, 10}, 50), N({4, 15, 20, 5, 5}, 50))", //
+        "1.2106635188398813533035274347761676650148587810028");
+    // check("CorrelationDistance(RandomReal(5, 100), RandomReal(5, 100))", //
+    // "1.0697");
   }
 
   public void testCosineDistance() {
@@ -8021,9 +8061,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
     check("FactorialPower(x,n,0)", //
         "x^n");
-     check("FactorialPower(2-I, 2)", //
-         "1-I*3");
- 
+    check("FactorialPower(2-I, 2)", //
+        "1-I*3");
+
     check("Gamma(2.0+1.0)/Gamma(2.0-0.9+1.0)", //
         "1.91116");
     check("FactorialPower(2, 0.9)", //
@@ -8127,31 +8167,6 @@ public class LowercaseTestCase extends AbstractTestCase {
     check("Factorial(Infinity)", //
         "Infinity");
 
-    check("Factorial2(-1)", //
-        "1");
-    check("Factorial2(-2)", //
-        "ComplexInfinity");
-    check("Factorial2(-3)", //
-        "-1");
-    check("Factorial2(-4)", //
-        "ComplexInfinity");
-    check("Factorial2(-5)", //
-        "1/3");
-    check("Factorial2(-6)", //
-        "ComplexInfinity");
-    check("Factorial2(-7)", //
-        "-1/15");
-    check("Factorial2(10)", //
-        "3840");
-    check("Factorial2(Infinity)", //
-        "Infinity");
-    check("Factorial(-Infinity)", //
-        "Indeterminate");
-    check("Factorial2(-Infinity)", //
-        "Indeterminate");
-    check("3!", "6");
-    check("3!!", "3");
-
     check("Factorial(-1/2)", //
         "Sqrt(Pi)");
     check("Factorial(1/2)", //
@@ -8182,19 +8197,40 @@ public class LowercaseTestCase extends AbstractTestCase {
         "Not(Factorial(a))");
   }
 
-  // public void testExpand() {
-  // check("expand(2*(x + y)^2*Sin(x))",
-  // "2*y^2*Sin(x)+4*x*y*Sin(x)+2*x^2*Sin(x)");
-  // check("expand(4*(a+b)*(c+d)*(f+g)^(-2))",
-  // "4*b*d*(g+f)^(-2)+4*a*d*(g+f)^(-2)+4*b*c*(g+f)^(-2)+4*a*c*(g+f)^(-2)");
-  // check("expand((1 + x)^10)",
-  // "x^10+10*x^9+45*x^8+120*x^7+210*x^6+252*x^5+210*x^4+120*x^3+45*x^2+10*x+1");
-  // check("expand((x + y)/z)", "y*z^(-1)+x*z^(-1)");
-  // check("expand((x^s + y^s)^4)",
-  // "y^(4*s)+4*x^s*y^(3*s)+6*x^(2*s)*y^(2*s)+4*x^(3*s)*y^s+x^(4*s)");
-  // check("expand((1 + x + y)*(2 - x)^3)",
-  // "-x^3*y+6*x^2*y-12*x*y+8*y-x^4+5*x^3-6*x^2-4*x+8");
-  // }
+  public void testFactorial2() {
+
+    check("N(Factorial2(3/13), 10)", //
+        "0.9953739588");
+    check("Factorial2(2.0 + I)", //
+        "5.15473+I*3.27618");
+
+    check("Factorial2(-1)", //
+        "1");
+    check("Factorial2(-2)", //
+        "ComplexInfinity");
+    check("Factorial2(-3)", //
+        "-1");
+    check("Factorial2(-4)", //
+        "ComplexInfinity");
+    check("Factorial2(-5)", //
+        "1/3");
+    check("Factorial2(-6)", //
+        "ComplexInfinity");
+    check("Factorial2(-7)", //
+        "-1/15");
+    check("Factorial2(10)", //
+        "3840");
+    check("Factorial2(Infinity)", //
+        "Infinity");
+    check("Factorial(-Infinity)", //
+        "Indeterminate");
+    check("Factorial2(-Infinity)", //
+        "Indeterminate");
+    check("3!", "6");
+    check("3!!", "3");
+
+  }
+
 
   public void testFactorInteger() {
     check("FactorInteger(-9223372036854775808/9223372036854775807)", //
@@ -8675,6 +8711,13 @@ public class LowercaseTestCase extends AbstractTestCase {
             + "533187938298969649928516003704476137795166849228875");
   }
 
+  public void testFileFormat() {
+    check("FileFormat(\"example/picture.jpg\")", //
+        "JPEG");
+    check("FileFormat(\"example/picture.test\")", //
+        "None");
+  }
+
   public void testFilterRules() {
     check("FilterRules({a -> 1, b -> 2, c -> 3}, {b, a})", //
         "{a->1,b->2}");
@@ -8685,6 +8728,11 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testFindClusters() {
+    // check(
+    // "FindClusters({{2, 3}, {5, 10}, {4, 5}, {2, 2}}, DistanceFunction -> CorrelationDistance)",
+    // //
+    // "{{{2.0,3.0},{4.0,5.0},{2.0,2.0}},{{5.0,10.0}},{}}");
+
     // Test data generator http://people.cs.nctu.edu.tw/~rsliang/dbscan/testdatagen.html
     // check("FindClusters({{83.08303244924173,58.83387754182331},{45.05445510940626,23.469642649637535},{14.96417921432294,69.0264096390456},{73.53189604333602,34.896145021310076},{73.28498173551634,33.96860806993209},{73.45828098873608,33.92584423092194},{73.9657889183145,35.73191006924026},{74.0074097183533,36.81735596177168},{73.41247541410848,34.27314856695011},{73.9156256353017,36.83206791547127},{74.81499205809087,37.15682749846019},{74.03144880081527,37.57399178552441},{74.51870941207744,38.674258946906775},{74.50754595105536,35.58903978415765},{74.51322752749547,36.030572259100154},{59.27900996617973,46.41091720294207},{59.73744793841615,46.20015558367595},{58.81134076672606,45.71150126331486},{58.52225539437495,47.416083617601544},{58.218626647023484,47.36228902172297},{60.27139669447206,46.606106348801404},{60.894962462363765,46.976924697402865},{62.29048673878424,47.66970563563518},{61.03857608977705,46.212924720020965}},
     // 2.0, \r\n" +
@@ -8760,12 +8808,13 @@ public class LowercaseTestCase extends AbstractTestCase {
     // "{{59.27901,46.41092},{59.73745,46.20016},{58.81134,45.7115},{58.52226,47.41608},{58.21863,47.36229},{60.2714,46.60611},{60.89496,46.97692},{61.03858,46.21292},{60.16916,45.18194},{59.90037,47.55536},{57.86036,47.31118},{58.51687,46.62289},{57.85411,45.95394},{58.24363,46.11405},{57.60692,46.94291},{58.13715,48.98596},{57.36692,47.50097},{62.29049,47.66971},{62.33004,47.83941},{56.13192,46.85089},{55.97633,47.46384},{56.23246,47.94004},{56.44578,45.16209},{56.27225,44.79908}},"
     // +
     // "{{30.18714,13.87715},{30.44945,13.49078},{30.29502,13.26489},{30.1602,11.89278},{31.34151,15.28266},{31.68602,14.75687},{29.32596,12.09785},{29.54821,13.6133},{31.01285,12.78848},{31.35611,15.08032},{31.25949,13.67433},{30.18295,14.70959},{29.55088,15.06512},{29.00416,14.08967},{29.33962,13.29096},{30.99746,14.55191},{28.5938,10.781},{32.3159,14.95262},{30.46041,15.88403},{32.56178,14.58608},{32.76139,16.23984},{30.66784,16.2697},{28.7936,10.36352},{27.58509,11.4757}}}");
-    //
+
     // check("FindClusters({{2.5, 3.1}, {5.9, 3.4}, {10, 15}, {2.2, 1.5}, {100, 7.5}})", //
     // "{{{2.5,3.1},{5.9,3.4},{2.2,1.5}},{{100.0,7.5}},{{10.0,15.0}}}");
+
     // check("FindClusters({1, 2, 3, 4, 5, 6, 7, 8, 9})", //
     // "{{1.0,2.0,3.0},{6.0,7.0,8.0,9.0},{4.0,5.0}}");
-    // // TODO order results?
+
     // check("FindClusters({1, 2, 10, 12, 3, 1, 13, 25},4)", //
     // "{{1.0,2.0,3.0,1.0},{12.0,13.0},{25.0},{10.0}}");
   }
@@ -10517,11 +10566,23 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testHarmonicNumber() {
-    // HarmonicNumber(10007,{-1,-2,3})
-    // check("HarmonicNumber(130.71)", //
-    // "5.45402");
-    // check("HarmonicNumber(0.8)", //
-    // "0.862207");
+    check("n /. FindRoot(HarmonicNumber(n) == 1.5, {n, 5})", //
+        "2.0");
+    check("HarmonicNumber(400,{-1,-2})", //
+        "{80200,21413400}");
+    check("HarmonicNumber(0.8)", "0.862207");
+    check("HarmonicNumber(130.71)", //
+        "5.45402");
+    check("HarmonicNumber(0.8,3 )", //
+        "0.940124");
+    check("HarmonicNumber(E,1.0)", //
+        "1.75002");
+    check("N(HarmonicNumber(1/17,5))", //
+        "0.253276");
+    check("N(HarmonicNumber(27,5-I))", //
+        "1.02598+I*0.0251513");
+    check("HarmonicNumber(n, -1)", //
+        "n/2+n^2/2");
 
     // Iteration limit
     check("HarmonicNumber(2147483647,2)", //
@@ -10926,6 +10987,12 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testHypergeometric2F1() {
+    // iteration limit of exceeded.
+    // https://github.com/paulmasson/math/issues/29#issuecomment-1120230707
+    check("Hypergeometric2F1(1, 0.5, 1.5, -0.9999999999999976)", //
+        "Hypergeometric2F1(0.5,1.0,1.5,-1.0)");
+
+
     check("Hypergeometric2F1(n,n,2*n+1,1)", //
         "Gamma(1+2*n)/Gamma(1+n)^2");
     check("Hypergeometric2F1(2/3,3/7,10, 1)", //
@@ -15924,6 +15991,29 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testMultinomial() {
+    // check("Multinomial(-5,3)", //
+    // "-4");
+    check("Multinomial(-11,2,3,5)", //
+        "2520");
+    check("Multinomial(-18,2,3,5,7)", //
+        "-49008960");
+    check("Multinomial(-100,2,3,5)", //
+        "39259781847205920");
+    check("Multinomial(-3,1,2,5)", //
+        "0");
+    check("Multinomial(-4,2,3,5)", //
+        "0");
+
+
+    check("Multinomial(2, .2, 5)", //
+        "34.3178");
+    check("N(Multinomial(1/3, 1/7, 1/5, 1/6))", //
+        "1.32595");
+    check("N(Multinomial(1/3, 1/11, 1/5, 1/6), 50)", //
+        "1.2787822309985889320726165068248758021178962038957");
+    check("Multinomial(1 + I, .2, 4)", //
+        "2.89406+I*9.10463");
+
     check("Multinomial(1,1,1)", //
         "6");
     check("Multinomial(1,k,1)", //
@@ -16521,6 +16611,10 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testNestWhileList() {
+    // from fuzz testing:
+    check("NestWhileList(10007,{ByteArray()},True&,-0.8)", //
+        "NestWhileList(10007,{ByteArray()},True&,-0.8)");
+
     check("NestWhileList(f,g,127,0,5)", //
         "{g}");
     check("NestWhileList(f,g(1,2,3),{Sqrt(2)/2},42,7)", //
@@ -18153,6 +18247,9 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPiecewiseExpand() {
+    check("PiecewiseExpand(KroneckerDelta(x, y,z,u,v))", //
+        "Piecewise({{1,u-v==0&&v-x==0&&x-y==0&&y-z==0}},0)");
+
     // PiecewiseExpand
     check("PiecewiseExpand(f(x) + Piecewise({{g(x),x>=0}},0) + z(x) )", //
         "Piecewise({{f(x)+g(x)+z(x),x>=0}},f(x)+z(x))");
@@ -18313,6 +18410,15 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPochhammer() {
+    check("Pochhammer(2.4, 8.5)", //
+        "2.31022*10^6");
+    check("Pochhammer(0, 1285)", //
+        "0");
+    check("N(Pochhammer(1/3, 7),50)", //
+        "505.97165066300868770004572473708276177411979881115");
+    check("Pochhammer(2.0+5.0*I, 8.0*I)", //
+        "2.13868*10^-6+I*(-0.0000142187)");
+
     // iteration limit exceeded
     check("Pochhammer(3/4,10007)", //
         "Hold(Pochhammer(3/4,10007))");
@@ -19538,6 +19644,8 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPreDecrement() {
+    check("--5", //
+        "--5");
     check("a = 2", //
         "2");
     check("--a", //
@@ -24202,85 +24310,6 @@ public class LowercaseTestCase extends AbstractTestCase {
         "1");
     check("(-0^2+1)^(-1/2)", //
         "1");
-  }
-
-  public void testTeXForm() {
-    check("TeXForm(Hold(2^3*3*5*11))", //
-        "\\text{Hold}({2}^{3}\\cdot 3\\cdot 5\\cdot 11)");
-    check("TeXForm(Hold(D(Sin(x),{x,3})))", //
-        "\\text{Hold}(\\frac{\\partial ^3 \\sin (x)}{\\partial x^3})");
-    check("TeXForm(Hold(D(Sin(x),x)))", //
-        "\\text{Hold}(\\frac{\\partial \\sin (x)}{\\partial x})");
-    check("TeXForm(Hold(Integrate(Sin(x),x)))", //
-        "\\text{Hold}(\\int  \\sin (x)\\,\\mathrm{d}x)");
-    check("TeXForm(-2.12 * x )", //
-        "\\left( -2.12\\right) \\cdot x");
-    check("TeXForm( f(#,#3)&  )", //
-        "f(\\text{$\\#$1},\\text{$\\#$3})\\&");
-    check("TeXForm( f(#,#3)*2&  )", //
-        "f(\\text{$\\#$1},\\text{$\\#$3})\\cdot 2\\&");
-    check("TeXForm(N(1.1+Pi*I,30))", //
-        "1.1 + 3.14159\\,i ");
-    check("TeXForm(N(Pi,2))", //
-        "3.1");
-    check("TeXForm(N(Pi,30))", //
-        "3.14159265358979323846264338327");
-    check("TeXForm(Infinity)", //
-        "\\infty");
-    check("TeXForm(-Infinity)", //
-        "-\\infty");
-    check("TeXForm(Hold(GoldenRatio))", //
-        "\\text{Hold}(\\phi)");
-    check("TeXForm(GoldenRatio)", //
-        "\\phi");
-    check("TeXForm(2+I*3)", //
-        "2 + 3\\,i ");
-    check("TeXForm(a+b^2)", //
-        "a+{b}^{2}");
-    check("TeXForm(Expand((x+y)^3))", //
-        "{x}^{3} + 3\\cdot {x}^{2}\\cdot y + 3\\cdot x\\cdot {y}^{2}+{y}^{3}");
-    check("TeXForm(3*a+b^2)", //
-        "3\\cdot a+{b}^{2}");
-    check("TeXForm(x/Sqrt(5))", //
-        "\\frac{x}{\\sqrt{5}}");
-    check("TeXForm(x^(1/3))", //
-        "\\sqrt[3]{x}");
-    check("TeXForm(alpha)", //
-        "\\alpha");
-    check("TeXForm({a,b,c})", //
-        "\\{a,b,c\\}");
-    check("TeXForm({{a,b},c})", //
-        "\\{\\{a,b\\},c\\}");
-    check("TeXForm({{a, b, c}, {d, e, f}})", //
-        "\\{\\{a,b,c\\},\\{d,e,f\\}\\}");
-
-    check("TeXForm(Integrate(f(x),x))", //
-        "\\int  f(x)\\,\\mathrm{d}x");
-    check("TeXForm(Limit(f(x), x ->Infinity))", //
-        "\\lim_{x\\to {\\infty} }\\,{f(x)}");
-    check("TeXForm(Sum(f(n), {n, 1, m}))", //
-        "\\sum_{n = 1}^{m} {f(n)}");
-    check("TeXForm(Product(f(n), {n, 1, m}))", //
-        "\\prod_{n = 1}^{m} {f(n)}");
-    check("TeXForm(Subscript(a,b))", //
-        "{a}_{b}");
-    check("TeXForm(Superscript(a,b))", //
-        "{a}^{b}");
-    check("TeXForm(Subscript(x,2*k+1))", //
-        "{x}_{1 + 2\\cdot k}");
-    check("TeXForm(Subsuperscript(a,b,c))", //
-        "{a}_{b}^{c}");
-    check("TeXForm(HarmonicNumber(n))", //
-        "H_n");
-    check("TeXForm(HarmonicNumber(m,n))", //
-        "H_m^{(n)}");
-    check("TeXForm(HurwitzZeta(m,n))", //
-        "zeta (m,n)");
-    check("TeXForm(Zeta(m,n))", //
-        "zeta (m,n)");
-
-    check("TeXForm(fgh(a,b))", //
-        "\\text{fgh}(a,b)");
   }
 
   public void testTextString() {
