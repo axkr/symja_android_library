@@ -1272,6 +1272,14 @@ public class EvalEngine implements Serializable {
     }
   }
 
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>boolean</code>
+   * value.
+   * 
+   * @param expr
+   * @return
+   * @throws ArgumentTypeException
+   */
   public final boolean evalBoolean(final IExpr expr) throws ArgumentTypeException {
     if (expr.equals(S.True)) {
       return true;
@@ -1303,8 +1311,17 @@ public class EvalEngine implements Serializable {
         "conversion into a machine-size boolean value is not possible!");
   }
 
+  public final boolean[] evalBooleanVector(final IExpr expr) {
+    return expr.toBooleanVector();
+  }
+
+  public final boolean[][] evalBooleanMatrix(final IExpr expr) {
+    return expr.toBooleanMatrix();
+  }
+
   /**
-   * Evaluates <code>expr</code> numerically and return the result a Java <code>double</code> value.
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>double</code>
+   * value.
    *
    * @param expr
    * @return
@@ -1312,6 +1329,14 @@ public class EvalEngine implements Serializable {
    */
   public final double evalDouble(final IExpr expr) throws ArgumentTypeException {
     return evalDouble(expr, Double.NaN);
+  }
+
+  public final double[] evalDoubleVector(final IExpr expr) {
+    return expr.toDoubleVector();
+  }
+
+  public final double[][] evalDoubleMatrix(final IExpr expr) {
+    return expr.toDoubleMatrix();
   }
 
   public final double evalDouble(final IExpr expr, double defaultValue) {
@@ -1371,8 +1396,16 @@ public class EvalEngine implements Serializable {
         "conversion into a machine-size integer value is not possible!");
   }
 
+  public final int[] evalIntVector(final IExpr expr) {
+    return expr.toIntVector();
+  }
+
+  public final int[][] evalIntMatrix(final IExpr expr) {
+    return expr.toIntMatrix();
+  }
+
   /**
-   * Evaluates <code>expr</code> numerically and return the result a Java <code>
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>
    * org.hipparchus.complex.Complex</code> value.
    *
    * @param expr
@@ -1416,6 +1449,14 @@ public class EvalEngine implements Serializable {
     }
     throw new ArgumentTypeException(
         "conversion into a machine-size Complex numeric value is not possible!");
+  }
+
+  public final Complex[] evalComplexVector(final IExpr expr) {
+    return expr.toComplexVector();
+  }
+
+  public final Complex[][] evalComplexMatrix(final IExpr expr) {
+    return expr.toComplexMatrix();
   }
 
   /**
@@ -2339,7 +2380,8 @@ public class EvalEngine implements Serializable {
   /**
    * Store the current numeric mode and evaluate the expression <code>expr</code>. After evaluation
    * reset the numeric mode to the value stored before the evaluation starts. If evaluation is not
-   * possible return the input object.
+   * possible return the input object. If <code>expr</code> equals {@link F#NIL} the method returns
+   * {@link F#NIL}
    *
    * @param expr the object which should be evaluated
    * @return the evaluated object
@@ -2397,18 +2439,21 @@ public class EvalEngine implements Serializable {
 
   /**
    * Evaluate an object and reset the numeric mode to the value before the evaluation step. If
-   * evaluation is not possible return {@link F#NIL}
+   * evaluation is not possible or <code>expr</code> equals {@link F#NIL} return {@link F#NIL}.
    *
    * @param expr the object which should be evaluated
    * @return the evaluated object or <code>F.NIL</code> if no evaluation was possible
    */
   public final IExpr evaluateNIL(final IExpr expr) {
-    boolean numericMode = fNumericMode;
-    try {
-      return evalLoop(expr);
-    } finally {
-      fNumericMode = numericMode;
+    if (expr.isPresent()) {
+      boolean numericMode = fNumericMode;
+      try {
+        return evalLoop(expr);
+      } finally {
+        fNumericMode = numericMode;
+      }
     }
+    return F.NIL;
   }
 
   /**
@@ -2761,7 +2806,7 @@ public class EvalEngine implements Serializable {
 
   /**
    * Check if the engine is in arbitrary precision mode and that <code>ApfloatNum</code> number type
-   * should be used instead of the <code>Num</code> type and the <code>ApcomplexxNum</code> number
+   * should be used instead of the <code>Num</code> type and the <code>ApcomplexNum</code> number
    * type should be used instead of the <code>ComplexNum</code> type for numeric evaluations.
    *
    * @return <code>true</code> if the required precision is greater than <code>
@@ -3169,7 +3214,7 @@ public class EvalEngine implements Serializable {
     return fRandom;
   }
 
-  public long getSeed() {
+  public synchronized long getSeed() {
     return fRandomSeed;
   }
 

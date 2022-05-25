@@ -66,11 +66,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       return F.CListC1;
     }
     Set<IInteger> set = divisorsSet();
-    final IASTAppendable resultList = F.ListAlloc(set.size() + 1);
-    for (IInteger divisor : set) {
-      resultList.append(divisor);
-    }
-    return resultList;
+    return F.mapSet(set, divisor -> divisor);
   }
 
   /**

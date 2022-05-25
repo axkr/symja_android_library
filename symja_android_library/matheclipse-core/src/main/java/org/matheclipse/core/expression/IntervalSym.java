@@ -218,17 +218,8 @@ public class IntervalSym {
   }
 
   public static IExpr max(final IAST ast) {
-    IAST interval = normalize(ast);
-    if (interval.isPresent()) {
-      IASTAppendable result = F.ast(S.Max, interval.size());
-      // EvalEngine engine = EvalEngine.get();
-      for (int i = 1; i < interval.size(); i++) {
-        IAST list = (IAST) interval.get(i);
-        result.append(list.arg2());
-      }
-      return result;
-    }
-    return F.NIL;
+    return normalize(ast).ifPresent(//
+        interval -> F.mapFunction(S.Max, (IAST) interval, list -> list.second()));
   }
 
   /**
@@ -251,16 +242,8 @@ public class IntervalSym {
   }
 
   public static IExpr min(final IAST ast) {
-    IAST interval = normalize(ast);
-    if (interval.isPresent()) {
-      IASTAppendable result = F.ast(S.Min, interval.size());
-      for (int i = 1; i < interval.size(); i++) {
-        IAST list = (IAST) interval.get(i);
-        result.append(list.arg1());
-      }
-      return result;
-    }
-    return F.NIL;
+    return normalize(ast).ifPresent(//
+        interval -> F.mapFunction(S.Min, (IAST) interval, list -> list.first()));
   }
 
   public static IExpr abs(final IAST ast) {

@@ -2037,6 +2037,9 @@ public class S {
    */
   public final static IBuiltInSymbol Correlation = F.initFinalSymbol("Correlation", ID.Correlation);
 
+  public final static IBuiltInSymbol CorrelationDistance =
+      F.initFinalSymbol("CorrelationDistance", ID.CorrelationDistance);
+
   /**
    * Cos(expr) - returns the cosine of `expr` (measured in radians). `Cos(expr)` will evaluate
    * automatically in the case `expr` is a multiple of `Pi, Pi/2, Pi/3, Pi/4` and `Pi/6`.
@@ -3340,6 +3343,8 @@ public class S {
   public final static IBuiltInSymbol Fibonacci = F.initFinalSymbol("Fibonacci", ID.Fibonacci);
 
   public final static IBuiltInSymbol File = F.initFinalSymbol("File", ID.File);
+
+  public final static IBuiltInSymbol FileFormat = F.initFinalSymbol("FileFormat", ID.FileFormat);
 
   public final static IBuiltInSymbol FileNameJoin =
       F.initFinalSymbol("FileNameJoin", ID.FileNameJoin);
@@ -5779,6 +5784,8 @@ public class S {
    */
   public final static IBuiltInSymbol LoadJavaClass =
       F.initFinalSymbol("LoadJavaClass", ID.LoadJavaClass);
+
+  public final static IBuiltInSymbol Locked = F.initFinalSymbol("Locked", ID.Locked);
 
   /**
    * Log(z) - returns the natural logarithm of `z`.

@@ -188,11 +188,7 @@ public class VariablesSet {
    */
   public static IAST addAlgebraicVariables(Set<IExpr> fVariablesSet, IExpr expr) {
     expr.accept(new AlgebraVariablesVisitor(fVariablesSet));
-    final Iterator<IExpr> iter = fVariablesSet.iterator();
-    final IASTAppendable list = F.ListAlloc(fVariablesSet.size());
-    while (iter.hasNext()) {
-      list.append(iter.next());
-    }
+    final IASTAppendable list = F.mapSet(fVariablesSet, x -> x);
     list.sortInplace(Comparators.CANONICAL_COMPARATOR);
     return list;
   }
@@ -206,11 +202,7 @@ public class VariablesSet {
    */
   public static IAST addVariables(Set<IExpr> fVariablesSet, IExpr expr) {
     expr.accept(new VariablesVisitor(fVariablesSet));
-    final Iterator<IExpr> iter = fVariablesSet.iterator();
-    final IASTAppendable list = F.ListAlloc(fVariablesSet.size());
-    while (iter.hasNext()) {
-      list.append(iter.next());
-    }
+    IASTAppendable list = F.mapSet(fVariablesSet, x -> x);
     list.sortInplace(Comparators.CANONICAL_COMPARATOR);
     return list;
   }
@@ -409,11 +401,7 @@ public class VariablesSet {
    * @return the ordered list of variables.
    */
   public IASTAppendable getVarList() {
-    final Iterator<IExpr> iter = fVariablesSet.iterator();
-    final IASTAppendable list = F.ListAlloc(fVariablesSet.size());
-    while (iter.hasNext()) {
-      list.append(iter.next());
-    }
+    IASTAppendable list = F.mapSet(fVariablesSet, x -> x);
     list.sortInplace(Comparators.CANONICAL_COMPARATOR);
     return list;
   }

@@ -82,7 +82,8 @@ public class IndexedLevel extends AbstractLevelVisitor {
       return F.NIL;
     }
     fCurrentDepth = -1;
-    return isInRange(fCurrentLevel, -1) ? fFunction.apply(element, createIndexes(indx)) : F.NIL;
+    IASTAppendable indxList = F.mapRange(0, indx.length, i -> F.ZZ(indx[i]));
+    return isInRange(fCurrentLevel, -1) ? fFunction.apply(element, indxList) : F.NIL;
   }
 
   public IExpr visitAST(IAST ast, int[] indx) {
@@ -148,10 +149,11 @@ public class IndexedLevel extends AbstractLevelVisitor {
     }
     fCurrentDepth = --minDepth[0];
     if (isInRange(fCurrentLevel, minDepth[0])) {
+      IASTAppendable indxList = F.mapRange(0, indx.length, i -> F.ZZ(indx[i]));
       if (!result[0].isPresent()) {
-        return fFunction.apply(ast, createIndexes(indx));
+        return fFunction.apply(ast, indxList);
       } else {
-        IExpr temp = fFunction.apply(result[0], createIndexes(indx));
+        IExpr temp = fFunction.apply(result[0], indxList);
         if (temp.isPresent()) {
           return temp;
         }
@@ -159,14 +161,6 @@ public class IndexedLevel extends AbstractLevelVisitor {
     }
 
     return result[0];
-  }
-
-  private IASTAppendable createIndexes(int[] indx) {
-    IASTAppendable list = F.ListAlloc(indx.length);
-    for (int i = 0; i < indx.length; i++) {
-      list.append(indx[i]);
-    }
-    return list;
   }
 
 }

@@ -690,32 +690,26 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isListOfRules()) {
-        IAST listOfRules = (IAST) ast.arg1();
-        if (ast.arg2().isList()) {
-          IAST list2 = (IAST) ast.arg2();
-          IASTAppendable result = F.ListAlloc(listOfRules.size());
-          for (int i = 1; i < listOfRules.size(); i++) {
-            IExpr listOfRulesArg = listOfRules.get(i);
-            if (listOfRulesArg.isRuleAST()) {
-              IAST rule = (IAST) listOfRulesArg;
-              for (int j = 1; j < list2.size(); j++) {
-                IExpr list2Arg = list2.get(j);
-                if (list2Arg.isRuleAST()) {
-                  if (rule.first().equals(list2Arg.first())) {
-                    result.append(rule);
-                    break;
-                  }
-                } else {
-                  if (rule.first().equals(list2Arg)) {
-                    result.append(rule);
-                    break;
-                  }
-                }
-              }
-            }
+      if (ast.arg1().isListOfRules() && ast.arg2().isList()) {
+        final IAST listOfRules = (IAST) ast.arg1();
+        IAST list2 = (IAST) ast.arg2();
+        return F.mapList(listOfRules, rule -> filterRuleKeyFromList(rule, list2));
+      }
+      return F.NIL;
+    }
+
+    private static IExpr filterRuleKeyFromList(IExpr possibleRule, IAST list) {
+      if (possibleRule.isRuleAST()) {
+        final IAST rule = (IAST) possibleRule;
+        final IExpr key = rule.first();
+        for (int j = 1; j < list.size(); j++) {
+          IExpr element = list.get(j);
+          if (element.isRuleAST()) {
+            element = element.first();
           }
-          return result;
+          if (key.equals(element)) {
+            return rule;
+          }
         }
       }
       return F.NIL;
@@ -726,6 +720,7 @@ public final class PatternMatching {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -767,6 +762,7 @@ public final class PatternMatching {
     }
   }
 
+
   private static final class HoldComplete extends AbstractCoreFunctionEvaluator {
 
     @Override
@@ -784,6 +780,7 @@ public final class PatternMatching {
       return ARGS_1_INFINITY;
     }
   }
+
 
   /**
    *
@@ -881,6 +878,7 @@ public final class PatternMatching {
     }
   }
 
+
   /** @deprecated use {@link HoldPattern} */
   @Deprecated
   private static final class Literal extends HoldPattern {
@@ -899,6 +897,7 @@ public final class PatternMatching {
       return F.NIL;
     }
   }
+
 
   /**
    *
@@ -947,6 +946,7 @@ public final class PatternMatching {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
+
 
   private static final class Information extends AbstractCoreFunctionEvaluator {
 
@@ -1020,6 +1020,7 @@ public final class PatternMatching {
     }
   }
 
+
   /** MessageName[{&lt;file name&gt;}} */
   private static final class MessageName extends AbstractFunctionEvaluator
       implements ISetEvaluator {
@@ -1084,6 +1085,7 @@ public final class PatternMatching {
     }
   }
 
+
   private static final class Nothing extends AbstractFunctionEvaluator {
 
     @Override
@@ -1091,6 +1093,7 @@ public final class PatternMatching {
       return S.Nothing;
     }
   }
+
 
   /**
    *
@@ -1179,6 +1182,7 @@ public final class PatternMatching {
     }
   }
 
+
   private static final class Options extends AbstractFunctionEvaluator implements ISetEvaluator {
 
     @Override
@@ -1225,6 +1229,7 @@ public final class PatternMatching {
     }
   }
 
+
   public static class OptionValue extends AbstractCoreFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1246,6 +1251,7 @@ public final class PatternMatching {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
+
 
   /**
    *
@@ -1300,6 +1306,7 @@ public final class PatternMatching {
     }
   }
 
+
   public static final class OptionsPattern extends AbstractCoreFunctionEvaluator {
     public static final OptionsPattern CONST = new OptionsPattern();
 
@@ -1326,6 +1333,7 @@ public final class PatternMatching {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
+
 
   public static final class Pattern extends AbstractCoreFunctionEvaluator {
     public static final Pattern CONST = new Pattern();
@@ -1398,6 +1406,7 @@ public final class PatternMatching {
     }
   }
 
+
   private static final class PatternTest extends AbstractCoreFunctionEvaluator {
 
     @Override
@@ -1419,6 +1428,7 @@ public final class PatternMatching {
     }
 
   }
+
 
   private static final class ReleaseHold extends AbstractCoreFunctionEvaluator {
 
@@ -1462,6 +1472,7 @@ public final class PatternMatching {
       return ARGS_1_1;
     }
   }
+
 
   public static class Repeated extends AbstractCoreFunctionEvaluator {
     public static final Repeated CONST = new Repeated();
@@ -1544,6 +1555,7 @@ public final class PatternMatching {
     }
   }
 
+
   public static final class RepeatedNull extends Repeated {
     public static final RepeatedNull CONST = new RepeatedNull();
 
@@ -1564,6 +1576,7 @@ public final class PatternMatching {
       return F.NIL;
     }
   }
+
 
   /**
    *
@@ -1630,6 +1643,7 @@ public final class PatternMatching {
     }
   }
 
+
   /**
    *
    *
@@ -1675,6 +1689,7 @@ public final class PatternMatching {
     }
   }
 
+
   private static final class Sequence extends AbstractFunctionEvaluator {
 
     @Override
@@ -1687,6 +1702,7 @@ public final class PatternMatching {
       return F.NIL;
     }
   }
+
 
   /**
    *
@@ -1857,6 +1873,7 @@ public final class PatternMatching {
     }
   }
 
+
   /**
    *
    *
@@ -1977,6 +1994,7 @@ public final class PatternMatching {
     }
   }
 
+
   private static final class SetSystemOptions extends AbstractFunctionEvaluator {
 
     @Override
@@ -1996,6 +2014,7 @@ public final class PatternMatching {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   private static final class SystemOptions extends AbstractFunctionEvaluator {
 
@@ -2023,6 +2042,7 @@ public final class PatternMatching {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+
   }
 
   private static IExpr setDownRule(IExpr leftHandSide, int flags, IExpr rightHandSide,

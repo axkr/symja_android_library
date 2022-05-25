@@ -13,9 +13,12 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -108,6 +111,7 @@ import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.generic.Functors;
+import org.matheclipse.core.generic.ObjIntFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1873,13 +1877,10 @@ public class F extends S {
   }
 
   /**
-   * Create an association from a list of rules.
-   *
-   * <p>
-   * See: <a href=
-   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Association.md">Association</a>
-   *
-   * @param listOfRules
+   * Create an association data structure <code>&lt;| x0-&gt;y0, x1-&gt;y1, ... |&gt;</code> from a
+   * list of rules <code>{x0-&gt;y0, x1-&gt;y1, ... }</code>.
+   * 
+   * @param listOfRules a list of rules <code>{x0-&gt;y0, x1-&gt;y1, ... }</code>
    * @return
    */
   public static IAssociation assoc(final IAST listOfRules) {
@@ -1940,7 +1941,6 @@ public class F extends S {
     int[] dimension = new int[] {n, m};
     SparseArrayExpr sparseMatrix = SparseArrayExpr.newArrayRules(F.CEmptyList, dimension, 0, C0);
     for (int i = 0; i < n; i++) {
-      IASTAppendable row = ListAlloc(m);
       for (int j = 0; j < m; j++) {
         IExpr value = binaryFunction.apply(i, j);
         if (!value.isZero()) {
@@ -5625,6 +5625,8 @@ public class F extends S {
     return ast(List, initialCapacity);
   }
 
+
+
   /**
    * Create a new <code>List</code> with the capacity <code>collection.size()</code> and append the
    * elements of the collection.
@@ -6016,6 +6018,276 @@ public class F extends S {
 
   public static IAST Manipulate(final IExpr a0, final IExpr a1) {
     return new AST2(Manipulate, a0, a1);
+  }
+
+  public static IASTAppendable mapFunction(final IExpr head, final IAST ast) {
+    IASTAppendable result = F.ast(head, ast.size());
+    result.appendArgs(ast);
+    return result;
+  }
+
+  /**
+   * Iterates over the <code>asts</code> elements and calls the function. Append the functions
+   * result expression at the end of the result list, if the function results is not equal
+   * {@link F#NIL}. If the function results is <code>null</code> stop iterating and return
+   * <code>false</code>.
+   * 
+   * @param head the head of the result ast
+   * @param ast
+   * @param function
+   * @return {@link F#NIL} if the function returns <code>null</code>
+   */
+  public static <T extends IExpr> IASTAppendable mapFunction(final IExpr head, final IAST ast,
+      Function<T, IExpr> function) {
+    IASTAppendable result = F.ast(head, ast.size());
+    if (result.append(ast, function)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  public static <T extends IExpr> IASTAppendable mapFunction(final IExpr head, final IAST ast,
+      Function<T, IExpr> function, Predicate<T> predicate) {
+    IASTAppendable result = F.ast(head, ast.size());
+    if (result.append(ast, function, predicate)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * 
+   * @param head the head of the result ast
+   * @param ast
+   * @param start start of the range (inclusive) of elements which should be mapped
+   * @param end end of the range (exclusive) of elements which should be mapped
+   * @param function
+   * @return
+   */
+  public static <T extends IExpr> IASTAppendable mapFunction(final IExpr head, final IAST ast,
+      int start, int end, Function<T, IExpr> function) {
+    IASTAppendable result = F.ast(head, end - start);
+    if (result.append(ast, start, end, function)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * 
+   * @param head the head of the result ast
+   * @param ast
+   * @param start start of the range (inclusive) of elements which should be mapped
+   * @param end end of the range (exclusive) of elements which should be mapped
+   * @param function
+   * @param predicate
+   * @return
+   */
+  public static <T extends IExpr> IASTAppendable mapFunction(final IExpr head, final IAST ast,
+      int start, int end, Function<T, IExpr> function, Predicate<T> predicate) {
+    IASTAppendable result = F.ast(head, end - start);
+    if (result.append(ast, start, end, function, predicate)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Iterates over the lists elements and calls the function. Append the functions result expression
+   * at the end of the result list, if the function results is not equal {@link F#NIL}. If the
+   * function results is <code>null</code> stop iterating and return <code>false</code>.
+   * 
+   * @param ast
+   * @param function
+   * @return {@link F#NIL} if the function returns <code>null</code>
+   */
+  public static IASTAppendable mapFunction(final IExpr head, final IAST ast,
+      ObjIntFunction<IExpr, IExpr> function) {
+    IASTAppendable result = F.ast(head, ast.size());
+    if (result.append(ast, function)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Iterates over the lists elements and calls the function. Append the functions result expression
+   * at the end of the result list, if the function results is not equal {@link F#NIL}. If the
+   * function results is <code>null</code> stop iterating and return <code>false</code>.
+   * 
+   * @param list
+   * @param function
+   * @return {@link F#NIL} if the function returns <code>null</code>
+   */
+  public static <T> IASTAppendable mapFunction(final IExpr head, final List<T> list,
+      Function<T, IExpr> function) {
+    IASTAppendable result = F.ast(head, list.size());
+    if (result.append(list, function)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  public static <T> IASTAppendable mapFunction(final IExpr head, final List<T> list,
+      Function<T, IExpr> function, Predicate<T> predicate) {
+    IASTAppendable result = F.ast(head, list.size());
+    if (result.append(list, function, predicate)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Iterates over the lists elements and calls the function. Append the functions result expression
+   * at the end of the result list, if the function results is not equal {@link F#NIL}. If the
+   * function results is <code>null</code> stop iterating and return <code>false</code>.
+   * 
+   * @param ast
+   * @param function
+   * @return {@link F#NIL} if the function returns <code>null</code>
+   */
+  public static <T extends IExpr> IASTAppendable mapList(final IAST ast,
+      Function<T, IExpr> function) {
+    IASTAppendable result = F.ast(S.List, ast.size());
+    if (result.append(ast, function)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  public static <T extends IExpr> IASTAppendable mapList(final IAST ast,
+      Function<T, IExpr> function, Predicate<T> predicate) {
+    IASTAppendable result = F.ast(S.List, ast.size());
+    if (result.append(ast, function, predicate)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Iterates over the lists elements and calls the function. Append the functions result expression
+   * at the end of the result list, if the function results is not equal {@link F#NIL}. If the
+   * function results is <code>null</code> stop iterating and return <code>false</code>.
+   * 
+   * @param ast
+   * @param function
+   * @return {@link F#NIL} if the function returns <code>null</code>
+   */
+  public static IASTAppendable mapList(final IAST ast, ObjIntFunction<IExpr, IExpr> function) {
+    IASTAppendable result = F.ast(S.List, ast.size());
+    if (result.append(ast, function)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Iterates over the lists elements and calls the function. Append the functions result expression
+   * at the end of the result list, if the function results is not equal {@link F#NIL}. If the
+   * function results is <code>null</code> stop iterating and return <code>false</code>.
+   * 
+   * @param list
+   * @param function
+   * @return {@link F#NIL} if the function returns <code>null</code>
+   */
+  public static <T extends IExpr> IASTAppendable mapList(final List<T> list,
+      Function<T, IExpr> function) {
+    IASTAppendable result = F.ast(S.List, list.size());
+    if (result.append(list, function)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  public static IASTAppendable mapList(final List<IExpr> list, Function<IExpr, IExpr> function,
+      Predicate<IExpr> predicate) {
+    IASTAppendable result = F.ast(S.List, list.size());
+    if (result.append(list, function, predicate)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Iterates over the set elements and calls the function. Append the functions result expression
+   * at the end of the result list, if the function results is not equal {@link F#NIL}. If the
+   * function results is <code>null</code> stop iterating and return <code>false</code>.
+   * 
+   * @param exprSet
+   * @param function
+   * @return {@link F#NIL} if the function returns <code>null</code>
+   */
+  public static IASTAppendable mapSet(final Set<? extends IExpr> exprSet,
+      Function<IExpr, IExpr> function) {
+    IASTAppendable result = F.ast(S.List, exprSet.size());
+    if (result.append(exprSet, function)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Iterates over the maps (key, value) pairs and calls the function. Append the functions result
+   * expression at the end of the result list, if the function results is not equal {@link F#NIL}.
+   * If the function results is <code>null</code> stop iterating and return <code>false</code>.
+   * 
+   * @param map
+   * @param biFunction
+   * @return {@link F#NIL} if the biFunction returns <code>null</code>
+   */
+  public static IASTAppendable mapMap(final Map<? extends IExpr, ? extends IExpr> map,
+      BiFunction<IExpr, IExpr, IExpr> biFunction) {
+    IASTAppendable result = F.ast(S.List, map.size());
+    if (result.append(map, biFunction)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Create an integer range between <code>iMin</code> (inclusive) and <code>iMax</code> (exclusive)
+   * and call the function with the elements of the created range. Append the result of the
+   * <code>function</code> to the returned result list.If it's equal {@link F#NIL} then don't
+   * appending an entry. If it's equal <code>null</code> then return {@link F#NIL} for this method.
+   * 
+   * @param iMin minimum range limit (inclusive)
+   * @param iMax maximum range limit (exclusive)
+   * @param function function those <code>apply(x)</code> method will be called with each number in
+   *        the range. If the <code>apply</code> method returns <code>null</code> then return
+   *        {@link F#NIL}.
+   * @return
+   */
+  public static <T extends IExpr> IASTAppendable mapRange(final int iMin, final int iMax,
+      IntFunction<T> function) {
+    IASTAppendable result = F.ListAlloc(iMax - iMin);
+    if (result.append(iMin, iMax, function)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Create an integer range between <code>iMin</code> (inclusive) and <code>iMax</code> (exclusive)
+   * and call the function with the elements of the created range. Append the result of the
+   * <code>function</code> to the returned result <code>ast</code>. If it's equal {@link F#NIL} then
+   * don't appending an entry. If it's equal <code>null</code> then return {@link F#NIL} for this
+   * method.
+   * 
+   * @param head the new head of the result <code>ast</code>
+   * @param iMin minimum range limit (inclusive)
+   * @param iMax maximum range limit (exclusive)
+   * @param function those <code>apply(x)</code> method will be called with each number in the
+   *        range. If the <code>apply</code> method returns <code>null</code> then return
+   *        {@link F#NIL}.
+   * @return
+   */
+  public static <T extends IExpr> IASTAppendable mapRange(final IExpr head, final int iMin,
+      final int iMax, IntFunction<T> function) {
+    IASTAppendable result = ast(head, iMax - iMin);
+    if (result.append(iMin, iMax, function)) {
+      return result;
+    }
+    return F.NIL;
   }
 
   public static IAST Map(final IExpr f) {
@@ -6665,6 +6937,10 @@ public class F extends S {
 
   public static IAST Out(final IExpr a0) {
     return new AST1(Out, a0);
+  }
+
+  public static IAST Out(final int n) {
+    return new AST1(Out, F.ZZ(n));
   }
 
   public static IAST Overflow() {
@@ -7329,6 +7605,31 @@ public class F extends S {
     return new AST2(Rationalize, a0, a1);
   }
 
+  /**
+   * Performs a reduction on the elements of this function range, using the provided identity value
+   * and an associative accumulation function, and returns the reduced value. This is equivalent to:
+   * 
+   * <pre>
+   * IExpr result = identity;
+   * for (int i = startInclusive; i < endExclusive; i++) {
+   *   IExpr element = ast.getRule(i);
+   *   result = accumulator.apply(result, element);
+   * }
+   * return result;
+   * </pre>
+   * 
+   * @param ast
+   * @param startInclusive the first index to cover, inclusive
+   * @param endExclusive index immediately past the last index to cover
+   * @param identity the identity value for the accumulating function
+   * @param accumulator an associative, non-interfering, stateless function for combining two values
+   * @return
+   */
+  public static IExpr reduce(final IAST ast, int startInclusive, int endExclusive, IExpr identity,
+      BinaryOperator<IExpr> accumulator) {
+    return ast.stream(startInclusive, endExclusive).reduce(identity, accumulator);
+  }
+
   public static IExpr Re(final IExpr a0) {
     if (a0 != null && a0.isNumber()) {
       return ((INumber) a0).re();
@@ -7928,6 +8229,10 @@ public class F extends S {
     return new AST1(Slot, ZZ(i));
   }
 
+  public static IAST Slot(final String str) {
+    return new AST1(Slot, stringx(str));
+  }
+
   public static IAST SlotSequence(final int i) {
     return new AST1(SlotSequence, ZZ(i));
   }
@@ -8349,6 +8654,11 @@ public class F extends S {
    */
   public static IAST Table(final IExpr expr, final IExpr iterationSpecification) {
     return new AST2(Table, expr, iterationSpecification);
+  }
+
+  public static IAST Table(final IExpr expr, final IExpr iterationSpecification1,
+      final IExpr iterationSpecification2) {
+    return new AST3(Table, expr, iterationSpecification1, iterationSpecification2);
   }
 
   public static IASTMutable TagSet(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -9142,17 +9452,9 @@ public class F extends S {
     if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
       ASTElementLimitExceeded.throwIt(((long) n) * ((long) m));
     }
-    IASTAppendable matrix = ListAlloc(n);
-    for (int i = 0; i < n; i++) {
-      IASTAppendable row = ListAlloc(m);
-      for (int j = 0; j < m; j++) {
-        row.append(biFunction.apply(i, j));
-      }
-      matrix.append(row);
-    }
+    IASTAppendable matrix = mapRange(0, n, i -> mapRange(0, m, j -> biFunction.apply(i, j)));
     // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-    // isMatrix() must be
-    // used!
+    // isMatrix() must be used!
     matrix.isMatrix(true);
     return matrix;
   }
@@ -9165,12 +9467,9 @@ public class F extends S {
    * @return
    */
   public static IAST vector(IntFunction<? extends IExpr> iFunction, int n) {
-    IASTAppendable matrix = ListAlloc(n);
-    for (int i = 0; i < n; i++) {
-      matrix.append(iFunction.apply(i));
-    }
-    matrix.addEvalFlags(IAST.IS_VECTOR);
-    return matrix;
+    IASTAppendable vector = mapRange(0, n, i -> iFunction.apply(i));
+    vector.addEvalFlags(IAST.IS_VECTOR);
+    return vector;
   }
 
   public static IAST Vectors(final IExpr a0, final IExpr a1) {

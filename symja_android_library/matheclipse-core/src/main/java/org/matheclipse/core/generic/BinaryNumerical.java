@@ -1,6 +1,6 @@
 package org.matheclipse.core.generic;
 
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.DoubleStackEvaluator;
 import org.matheclipse.core.eval.EvalEngine;
@@ -17,7 +17,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * @see org.matheclipse.core.reflection.system.Plot3D
  */
-public class BinaryNumerical implements BiFunction<IExpr, IExpr, IExpr> {
+public class BinaryNumerical implements BinaryOperator<IExpr> {
   final IExpr fun;
 
   final ISymbol variable1;

@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval.util;
 
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -33,15 +32,13 @@ public class IndexTableGenerator {
 
   public IExpr table() {
     if (fIndex < fIndexArray.length) {
-      final int iter = fIndexArray[fIndex];
+      final int n = fIndexArray[fIndex];
       final int index = fIndex++;
       try {
-        final IASTAppendable result = F.ast(fHead, iter);
-        for (int i = 0; i < iter; i++) {
+        return F.mapRange(fHead, 0, n, i -> {
           fCurrentIndex[index] = i;
-          result.append(table());
-        }
-        return result;
+          return table();
+        });
       } finally {
         --fIndex;
       }

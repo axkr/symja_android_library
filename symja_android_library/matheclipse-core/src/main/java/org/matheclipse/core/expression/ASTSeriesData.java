@@ -107,11 +107,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (capacity <= 0) {
       capacity = 4;
     }
-    IASTAppendable list = F.ListAlloc(capacity);
-    for (int i = nMin; i < nMax; i++) {
-      list.append(coefficient(i));
-    }
-    return list;
+    return F.mapRange(nMin, nMax, i -> coefficient(i));
   }
 
   @Override
@@ -359,10 +355,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   public IAST toSeriesData() {
     // list of coefficients
-    IASTAppendable coefficientList = F.ListAlloc(16);
-    for (int i = nMin; i < nMax; i++) {
-      coefficientList.append(coefficient(i));
-    }
+    IASTAppendable coefficientList = F.mapRange(nMin, nMax, i -> coefficient(i));
     IAST seriesData =
         F.SeriesData(x, x0, coefficientList, F.ZZ(nMin), F.ZZ(truncate), F.ZZ(denominator));
     return seriesData;
@@ -1190,16 +1183,15 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       if (n - start >= series.truncate) {
         continue;
       }
-      IASTAppendable sum = F.PlusAlloc(end - start);
-      // if (n < 0) {
-      // for (int i = minSize; i <= -n; i++) {
-      // sum.append(this.coeff(i).times(b.coeff(n - i)));
+      final int iMax = n;
+      IASTAppendable sum =
+          F.mapRange(S.Plus, minSize, iMax + 1,
+              i -> this.coefficient(i).times(b.coefficient(iMax - i)));
+
+      // for (int i = minSize; i <= n; i++) {
+      // sum.append(this.coefficient(i).times(b.coefficient(n - i)));
       // }
-      // } else {
-      for (int i = minSize; i <= n; i++) {
-        sum.append(this.coefficient(i).times(b.coefficient(n - i)));
-      }
-      // }
+
       IExpr value = F.eval(sum);
       if (value.isZero()) {
         continue;

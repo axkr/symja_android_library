@@ -73,10 +73,7 @@ public class DoubleToMMA {
         if (hashSize >= HASH_STR.length()) {
           hashSize = HASH_STR.length();
         }
-        format = new DecimalFormat( //
-            "#." + //
-                HASH_STR.substring(0, -exp + significantFigures - 2),
-            usSymbols);
+        format = new DecimalFormat("#." + HASH_STR.substring(0, hashSize), usSymbols);
       }
       String test = format.format(value);
       start = test.indexOf('E');

@@ -826,7 +826,6 @@ public final class Validate {
       IExpr subtract = EvalEngine.get().evaluate(F.Subtract(equal.arg1(), equal.arg2()));
       if (subtract.isList()) {
         IAST list = (IAST) subtract;
-        IASTAppendable result = F.ListAlloc(list.size());
         for (int i = 1; i < list.size(); i++) {
           IExpr arg = list.get(i);
           termsEqualZeroList.append(F.Equal(arg.isTimes() ? arg : F.evalExpandAll(arg), F.C0));

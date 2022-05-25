@@ -1163,12 +1163,7 @@ public class WL {
    * @return
    */
   public static IASTMutable toList(byte[] bArray) {
-    IASTAppendable list = F.ListAlloc(bArray.length);
-    for (int i = 0; i < bArray.length; i++) {
-      int value = 0x000000FF & bArray[i];
-      list.append(value);
-    }
-    return list;
+    return F.mapRange(0, bArray.length, i -> F.ZZ(0x000000FF & bArray[i]));
   }
 
   /** Serialize <code>length</code> into varint bytes and return them as a byte array. */

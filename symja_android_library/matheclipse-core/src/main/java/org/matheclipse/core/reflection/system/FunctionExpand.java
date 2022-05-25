@@ -32,6 +32,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -263,8 +264,20 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
     } else if ((ast.isCos() || ast.isSin()) && ast.first().isTimes2()) {
       IAST times = (IAST) ast.first();
       return cosSinTrivial(times, ast);
+    } else if (ast.isAST(S.Multinomial, 1, Integer.MAX_VALUE - 1)) {
+      return multinomial(ast);
     }
     return F.NIL;
+  }
+
+  public static IExpr multinomial(IAST multinomialFunction) {
+    int size = multinomialFunction.size();
+    int n = size - 1;
+    IASTAppendable numerator = F.PlusAlloc(n + 1);
+    numerator.append(F.C1);
+    numerator.appendArgs(multinomialFunction);
+    IASTAppendable denominator = F.mapFunction(S.Times, multinomialFunction, x -> F.Gamma(F.Plus(1, x)));
+    return F.Divide(F.Gamma(numerator), denominator);
   }
 
   /**

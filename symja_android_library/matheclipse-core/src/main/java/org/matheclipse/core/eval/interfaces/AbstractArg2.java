@@ -139,10 +139,7 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
           result = e2DblArg(((ISignedNumber) o0).numValue(), (Num) o1);
         }
       }
-      if (result.isPresent()) {
-        return result;
-      }
-      return e2ObjArg(ast, o0, o1);
+      return result.orElseGet(() -> e2ObjArg(ast, o0, o1));
     } catch (LimitException le) {
       throw le;
     } catch (RuntimeException rex) {

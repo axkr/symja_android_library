@@ -170,7 +170,7 @@ public abstract class HMArrayList extends AbstractAST
   public boolean append(IExpr object) {
     hashValue = 0;
     if (lastIndex == array.length) {
-      growAtEnd(1);
+      growAtEnd(2);
     }
     array[lastIndex++] = object;
     return true;
@@ -428,12 +428,6 @@ public abstract class HMArrayList extends AbstractAST
       break;
     }
     return this;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IASTAppendable appendArgs(int end, IntFunction<IExpr> function) {
-    return appendArgs(1, end, function);
   }
 
   /**

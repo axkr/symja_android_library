@@ -2,17 +2,22 @@ package org.matheclipse.core.interfaces;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.ObjIntFunction;
 
 /**
  * Appendable (I)nterface for the (A)bstract (S)yntax (T)ree of a given function.
@@ -120,7 +125,7 @@ public interface IASTAppendable extends IASTMutable {
   }
 
   /**
-   * Adds the specified expression at the end of this {@code List}.
+   * Adds the specified expression at the end of {@code this}.
    *
    * @param expr the object to add.
    * @return always true.
@@ -129,6 +134,35 @@ public interface IASTAppendable extends IASTMutable {
    * @throws IllegalArgumentException if the object cannot be added to this {@code List}.
    */
   public boolean append(IExpr expr);
+
+  /**
+   * Adds the specified expression at the end of {@code this}, if it is present.
+   * 
+   * @param expr the object to add.
+   * @throws UnsupportedOperationException if adding to this {@code List} is not supported.
+   * @throws ClassCastException if the class of the object is inappropriate for this {@code List}.
+   * @throws IllegalArgumentException if the object cannot be added to this {@code List}.
+   */
+  default void appendIfPresent(IExpr expr) {
+    if (expr.isPresent()) {
+      append(expr);
+    }
+  }
+
+  /**
+   * Adds the specified expression at the end of {@code this}. If it is not present, add the
+   * defaultValue.
+   * 
+   * @param expr
+   * @param defaultValue
+   */
+  default void appendIfPresent(IExpr expr, IExpr defaultValue) {
+    if (expr.isPresent()) {
+      append(expr);
+    } else {
+      append(defaultValue);
+    }
+  }
 
   /**
    * Adds the specified long value at the end of this {@code List}.
@@ -141,6 +175,176 @@ public interface IASTAppendable extends IASTMutable {
    */
   default boolean append(long value) {
     return append(F.ZZ(value));
+  }
+
+  /**
+   * Iterates over the lists elements and calls the function. Append the functions result expression
+   * at the end of <code>this</code>, if the function results is not equal {@link F#NIL}. If the
+   * function results is <code>null</code> stop iterating and return <code>false</code>.
+   * 
+   * @param list
+   * @param function function those <code>apply(x)</code> method will be called with each element of
+   *        the list.
+   */
+  default <T extends IExpr> boolean append(final IAST list, Function<T, IExpr> function) {
+    for (int i = 1; i < list.size(); i++) {
+      T arg = (T)list.getRule(i);
+      IExpr temp = function.apply(arg);
+      if (temp == null) {
+        return false;
+      }
+      appendIfPresent(temp);
+    }
+    return true;
+  }
+
+  default <T extends IExpr> boolean append(final IAST list, int start, int end,
+      Function<T, IExpr> function) {
+    for (int i = start; i < end; i++) {
+      T arg = (T) list.getRule(i);
+      IExpr temp = function.apply(arg);
+      if (temp == null) {
+        return false;
+      }
+      appendIfPresent(temp);
+    }
+    return true;
+  }
+
+  default <T extends IExpr> boolean append(final IAST list, Function<T, IExpr> function,
+      Predicate<T> predicate) {
+    for (int i = 1; i < list.size(); i++) {
+      T arg = (T) list.getRule(i);
+      if (predicate.test(arg)) {
+        IExpr temp = function.apply(arg);
+        if (temp == null) {
+          return false;
+        }
+        appendIfPresent(temp);
+      }
+    }
+    return true;
+  }
+
+  default <T extends IExpr> boolean append(final IAST list, int start, int end,
+      Function<T, IExpr> function, Predicate<T> predicate) {
+    for (int i = start; i < end; i++) {
+      T arg = (T) list.getRule(i);
+      if (predicate.test(arg)) {
+        IExpr temp = function.apply(arg);
+        if (temp == null) {
+          return false;
+        }
+        appendIfPresent(temp);
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Iterates over the lists elements and calls the function. Append the functions result expression
+   * at the end of <code>this</code>, if the function results is not equal {@link F#NIL}. If the
+   * function results is <code>null</code> stop iterating and return <code>false</code>.
+   * 
+   * @param list
+   * @param function
+   */
+  default boolean append(final IAST list, ObjIntFunction<IExpr, IExpr> function) {
+    for (int i = 1; i < list.size(); i++) {
+      IExpr temp = function.apply(list.getRule(i), i);
+      if (temp == null) {
+        return false;
+      }
+      appendIfPresent(temp);
+    }
+    return true;
+  }
+
+  /**
+   * Iterates over the lists elements and calls the function. Append the functions result expression
+   * at the end of <code>this</code>, if the function results is not equal {@link F#NIL}.
+   * 
+   * @param list
+   * @param function
+   */
+  default <T> boolean append(final List<T> list, Function<T, IExpr> function) {
+    for (int i = 0; i < list.size(); i++) {
+      IExpr temp = function.apply(list.get(i));
+      if (temp == null) {
+        return false;
+      }
+      appendIfPresent(temp);
+    }
+    return true;
+  }
+
+  default <T> boolean append(final List<T> list, Function<T, IExpr> function,
+      Predicate<T> predicate) {
+
+    for (int i = 0; i < list.size(); i++) {
+      T arg = list.get(i);
+      if (predicate.test(arg)) {
+        IExpr temp = function.apply(arg);
+        if (temp == null) {
+          return false;
+        }
+        appendIfPresent(temp);
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Iterates over the elements of the <code>exprSet</code> and calls the function. Append the
+   * functions result expression at the end of <code>this</code>, if the function results is not
+   * equal {@link F#NIL}.
+   * 
+   * @param exprSet
+   * @param function
+   */
+  default boolean append(final Set<? extends IExpr> exprSet, Function<IExpr, IExpr> function) {
+    final Iterator<? extends IExpr> iter = exprSet.iterator();
+    while (iter.hasNext()) {
+      IExpr temp = function.apply(iter.next());
+      if (temp == null) {
+        return false;
+      }
+      appendIfPresent(temp);
+    }
+    return true;
+  }
+
+  /**
+   * Iterates over the maps entries and calls the binary function with the key value pair of the
+   * entry. Append the functions result expression at the end of <code>this</code>, if the function
+   * results unequals {@link F#NIL}.
+   * 
+   * @param map
+   * @param biFunction binary function those <code>apply(key,value)</code> method will be called
+   *        with the key, value arguments of the maps entries
+   */
+  default boolean append(final Map<? extends IExpr, ? extends IExpr> map,
+      BiFunction<IExpr, IExpr, IExpr> biFunction) {
+    for (Entry<? extends IExpr, ? extends IExpr> entry : map.entrySet()) {
+      IExpr temp = biFunction.apply(entry.getKey(), entry.getValue());
+      if (temp == null) {
+        return false;
+      }
+      appendIfPresent(temp);
+    }
+    return true;
+  }
+
+  default <T extends IExpr> boolean append(final int start, final int end,
+      IntFunction<T> function) {
+    for (int i = start; i < end; i++) {
+      T temp = function.apply(i);
+      if (temp == null) {
+        return false;
+      }
+      appendIfPresent(temp);
+    }
+    return true;
   }
 
   /**
@@ -316,25 +520,31 @@ public interface IASTAppendable extends IASTMutable {
   public boolean appendArgs(IAST ast, int untilPosition);
 
   /**
-   * Appends all elements generated by the given function from index <code>start</code> inclusive to
-   * <code>end</code> exclusive.
+   * Appends all elements generated by the given {@link IntFunction#apply(int)} method from index
+   * <code>start</code> inclusive to <code>end</code> exclusive. If the result of the
+   * {@link IntFunction#apply(int)} method is equal {@link F#NIL} then stop appending further
+   * entries.
    *
    * @param start start index (inclusive)
    * @param end end index (exclusive)
-   * @param function function which generates the elements which should be appended
+   * @param function function those {@link IntFunction#apply(int)} method will be called with each
+   *        number in the range. If the {@link IntFunction#apply(int)} method returns {@link F#NIL}
+   *        then stop appending further entries
    * @return <tt>this</tt>
    */
   public IASTAppendable appendArgs(int start, int end, IntFunction<IExpr> function);
 
   /**
    * Appends all elements generated by the given function from index <code>1</code> inclusive to
-   * <code>end</code> exclusive.
+   * <code>end</code> exclusive. Calls method <code>appendArgs(1, end, function)</code>.
    *
-   * @param end end index (exclusive)
+   * @param end the end limit index (exclusive)
    * @param function function which generates the elements which should be appended
    * @return <tt>this</tt>
    */
-  public IASTAppendable appendArgs(int end, IntFunction<IExpr> function);
+  default IASTAppendable appendArgs(int end, IntFunction<IExpr> function) {
+    return appendArgs(1, end, function);
+  }
 
   /**
    * Append an <code>subAST</code> with attribute <code>OneIdentity</code> for example Plus[] or

@@ -51,6 +51,7 @@ import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.generic.ObjIntFunction;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
@@ -203,6 +204,25 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     @Override
     public void append(int location, IExpr object) {
       ArgumentTypeException.throwNIL();
+    }
+
+    @Override
+    public <T extends IExpr> boolean append(IAST list, Function<T, IExpr> function) {
+      ArgumentTypeException.throwNIL();
+      return false;
+    }
+
+    @Override
+    public boolean append(IAST list, ObjIntFunction<IExpr, IExpr> function) {
+      ArgumentTypeException.throwNIL();
+      return false;
+    }
+
+    @Override
+    public boolean append(Map<? extends IExpr, ? extends IExpr> map,
+        BiFunction<IExpr, IExpr, IExpr> biFunction) {
+      ArgumentTypeException.throwNIL();
+      return false;
     }
 
     @Override
@@ -1373,9 +1393,6 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public IAST apply(final IExpr head, final int start, final int end) {
     final IASTAppendable ast = F.ast(head, end - start);
     ast.appendArgs(start, end, i -> get(i));
-    // for (int i = start; i < end; i++) {
-    // ast.append(get(i));
-    // }
     return ast;
   }
 
@@ -1927,11 +1944,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     final ISymbol symbol = topHead();
-    IExpr temp = engine.evalAttributes(symbol, this);
-    if (temp.isPresent()) {
-      return temp;
-    }
-    return engine.evalRules(symbol, this);
+    return engine.evalAttributes(symbol, this).orElseGet(() -> engine.evalRules(symbol, this));
   }
 
   /** {@inheritDoc} */
@@ -3233,9 +3246,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (id >= 0) {
       for (int i = 0; i < ids.length; i++) {
         if (id == ids[i]) {
-           return true;
-         }
-      } 
+          return true;
+        }
+      }
     }
     return false;
   }
@@ -4719,16 +4732,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f) {
     final int rowSize = size();
-    int columnSize = dim[1];
-    IASTAppendable result = F.ListAlloc(columnSize++);
-    for (int j = 1; j < columnSize; j++) {
-      IASTAppendable row = F.ListAlloc(rowSize);
-      for (int i = 1; i < rowSize; i++) {
-        row.append(getPart(i, j));
-      }
-      result.append(f.apply(row));
-    }
-    return result;
+    int columnSize = dim[1] + 1;
+    return F.mapRange(1, columnSize, j -> {
+      IASTAppendable row = F.mapRange(1, rowSize, i -> getPart(i, j));
+      return f.apply(row);
+    });
   }
 
   /** {@inheritDoc} */
@@ -4878,7 +4886,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (head().equals(operator)) {
       IASTAppendable result = F.ast(action, 3);
       final int size = size();
-      int newSize = size / 2;
+      int newSize = (size + 1) / 2;
       if (newSize <= 4) {
         newSize = 5;
       } else {
@@ -5282,6 +5290,45 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   }
 
   @Override
+  public boolean[] toBooleanVector() {
+    boolean[] result = new boolean[argSize()];
+    for (int i = 1; i < size(); i++) {
+      IExpr temp = get(i);
+      if (temp.isTrue()) {
+        result[i - 1] = true;
+      } else if (temp.isFalse()) {
+        result[i - 1] = false;
+      } else {
+        return null;
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public boolean[][] toBooleanMatrix() {
+    int[] dim = isMatrix();
+    if (dim == null) {
+      return null;
+    }
+    boolean[][] result = new boolean[dim[0]][dim[1]];
+    for (int i = 1; i <= dim[0]; i++) {
+      IAST row = (IAST) get(i);
+      for (int j = 1; j <= dim[1]; j++) {
+        IExpr temp = row.get(j);
+        if (temp.isTrue()) {
+          result[i - 1][j - 1] = true;
+        } else if (temp.isFalse()) {
+          result[i - 1][j - 1] = false;
+        } else {
+          return null;
+        }
+      }
+    }
+    return result;
+  }
+
+  @Override
   public byte[][] toByteMatrix() {
     int[] dim = isMatrix();
     if (dim == null) {
@@ -5403,6 +5450,27 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         result[i - 1] = get(i).evalComplex();
       }
       return result;
+    } catch (ArgumentTypeException ex) {
+
+    }
+    return null;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Complex[][] toComplexMatrix() {
+    try {
+      int[] dims = isMatrix(false);
+      if (dims != null) {
+        Complex[][] result = new Complex[dims[0]][dims[1]];
+        for (int i = 0; i < dims[0]; i++) {
+          IAST subList = (IAST) get(i + 1);
+          for (int j = 0; j < dims[1]; j++) {
+            result[i][j] = subList.get(j + 1).evalComplex();
+          }
+        }
+        return result;
+      }
     } catch (ArgumentTypeException ex) {
 
     }

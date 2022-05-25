@@ -170,14 +170,10 @@ public class Functors {
    * @return
    */
   public static Function<IExpr, IExpr> rules(String[] strRules) {
-    IASTAppendable astRules = F.ListAlloc(strRules.length);
     final EvalEngine engine = EvalEngine.get();
     ExprParser parser = new ExprParser(engine);
-    for (String str : strRules) {
-      IExpr expr = parser.parse(str);
-      expr = engine.evaluate(expr);
-      astRules.append(expr);
-    }
+    IASTAppendable astRules =
+        F.mapRange(0, strRules.length, i -> engine.evaluate(parser.parse(strRules[i])));
     return rules(astRules, engine);
   }
 

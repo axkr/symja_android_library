@@ -108,8 +108,7 @@ public class Object2Expr {
     if (obj instanceof Object[]) {
       final Object[] array = (Object[]) obj;
       int length = array.length;
-      final IASTAppendable list = F.ListAlloc(length);
-      return list.appendArgs(0, length, i -> convert(array[i], parseString, javaObject));
+      return F.mapRange(0, length, i -> convert(array[i], parseString, javaObject));
     }
     if (obj instanceof boolean[]) {
       final boolean[] array = (boolean[]) obj;

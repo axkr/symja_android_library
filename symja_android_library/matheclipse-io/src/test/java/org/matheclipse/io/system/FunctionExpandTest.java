@@ -11,6 +11,10 @@ public class FunctionExpandTest extends AbstractTestCase {
   }
 
   public void testFunctionExpand() {
+    check("FunctionExpand(Factorial2(n))", //
+        "2^(n/2+1/4*(1-Cos(n*Pi)))*Pi^(1/4*(-1+Cos(n*Pi)))*Gamma(1+n/2)");
+    check("FunctionExpand(Pochhammer(a, n))", //
+        "Gamma(a+n)/Gamma(a)");
     check("FunctionExpand(Gamma(x)/Gamma(x-1))", //
         "-1+x");
     check("FunctionExpand(Gamma(x-2)/Gamma(x-11))", //
@@ -223,6 +227,18 @@ public class FunctionExpandTest extends AbstractTestCase {
         "Gamma(1+a)/Gamma(1+a-b)");
     check("FunctionExpand(FactorialPower(a,b,-1))", //
         "(a^b*Gamma(1-a))/((-a)^b*Gamma(1-a-b))");
+  }
+
+  public void testFunctionExpandBinomial() {
+    check("FunctionExpand(Binomial(a,b))", //
+        "Gamma(1+a)/(Gamma(1+a-b)*Gamma(1+b))");
+  }
+
+  public void testFunctionExpandMultinomial() {
+    check("FunctionExpand(Multinomial(a,b))", //
+        "Gamma(1+a+b)/(Gamma(1+a)*Gamma(1+b))");
+    check("FunctionExpand(Multinomial(a,b,c,d,e))", //
+        "Gamma(1+a+b+c+d+e)/(Gamma(1+a)*Gamma(1+b)*Gamma(1+c)*Gamma(1+d)*Gamma(1+e))");
   }
 
   /** The JUnit setup method */

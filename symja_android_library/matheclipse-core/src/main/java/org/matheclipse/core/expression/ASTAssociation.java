@@ -197,11 +197,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   @Override
   public IASTAppendable copyAST() {
-    IASTAppendable result = F.ast(S.Association, size());
-    for (int i = 1; i < size(); i++) {
-      result.append(getValue(i));
-    }
-    return result;
+    return F.mapRange(S.Association, 1, size(), i -> getValue(i));
   }
 
   /** {@inheritDoc} */
@@ -669,11 +665,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
       }
       return list;
     } else {
-      IASTAppendable list = F.ListAlloc(size());
-      for (int i = 1; i < size(); i++) {
-        list.append(getValue(i));
-      }
-      return list;
+      return F.mapRange(1, size(), i -> getValue(i));
     }
   }
 
@@ -696,7 +688,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
     for (int i = 1; i < rrbTree.size(); i++) {
       arr[i - 1] = rrbTree.get(i);
     }
-    return F.ast(arr, symbol);
+    return F.function(symbol, arr);
   }
 
   /**

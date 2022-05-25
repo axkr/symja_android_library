@@ -2090,7 +2090,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return totalAppendable(result);
   }
 
-  private void total(Trie<int[], IExpr> trie, int[] dimension, int position, int[] index,
+  private void totalRecursive(Trie<int[], IExpr> trie, int[] dimension, int position, int[] index,
       IASTAppendable result) {
     if (dimension.length - 1 == position) {
       int size = dimension[position];
@@ -2108,7 +2108,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     int size1 = dimension[position];
     for (int i = 1; i <= size1; i++) {
       index[position] = i;
-      total(trie, dimension, position + 1, index, result);
+      totalRecursive(trie, dimension, position + 1, index, result);
     }
   }
 
@@ -2117,7 +2117,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     for (int i = 0; i < index.length; i++) {
       index[i] = 1;
     }
-    total(fData, fDimension, 0, index, result);
+    totalRecursive(fData, fDimension, 0, index, result);
     return result;
   }
 

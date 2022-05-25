@@ -1707,23 +1707,29 @@ public class PredicateQ {
    */
   private static IExpr.COMPARE_TERNARY isPossibeZero(IAST function, IAST variables,
       EvalEngine engine) {
-    IASTAppendable listOfRules = F.ListAlloc(variables.size());
-    ThreadLocalRandom tlr = ThreadLocalRandom.current();
-    for (int i = 1; i < variables.size(); i++) {
-      double re = tlr.nextDouble(-100, 100);
-      double im = tlr.nextDouble(-100, 100);
-      listOfRules.append(F.Rule(variables.get(i), F.complexNum(re, im)));
-    }
+    final ThreadLocalRandom tlr = ThreadLocalRandom.current();
+    IASTAppendable listOfRules = F.mapList(variables, t -> randomRuleComplex100(t, tlr));
     IExpr temp = function.replaceAll(listOfRules);
     return isPossibleZeroApproximate(temp, engine);
   }
 
+  /**
+   * Create a rule <code>variable -> complex-number</code> with real and imaginary part randomly
+   * between -100.0 and 100.0
+   * 
+   * @param variable
+   * @param tlr
+   * @return
+   */
+  private static IExpr randomRuleComplex100(IExpr variable, ThreadLocalRandom tlr) {
+    double re = tlr.nextDouble(-100, 100);
+    double im = tlr.nextDouble(-100, 100);
+    return F.Rule(variable, F.complexNum(re, im));
+  }
+
   private static IExpr.COMPARE_TERNARY isPossibeZeroFixedValues(INumber number, IAST function,
       IAST variables, EvalEngine engine) {
-    IASTAppendable listOfRules = F.ListAlloc(variables.size());
-    for (int i = 1; i < variables.size(); i++) {
-      listOfRules.append(F.Rule(variables.get(i), number));
-    }
+    IASTAppendable listOfRules = F.mapList(variables, t -> F.Rule(t, number));
     IExpr temp = function.replaceAll(listOfRules);
     return isPossibleZeroExact(temp, engine);
   }

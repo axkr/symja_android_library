@@ -1,7 +1,7 @@
 package org.matheclipse.core.generic;
 
 import java.util.function.DoubleFunction;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
@@ -21,7 +21,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /** Unary numerical function for functions like Plot */
 public class UnaryNumerical
-    implements Function<IExpr, IExpr>, UnivariateDifferentiableFunction, DoubleFunction<IExpr> {
+    implements UnaryOperator<IExpr>, UnivariateDifferentiableFunction, DoubleFunction<IExpr> {
   final IExpr fFunction;
   final ISymbol fVariable;
   final EvalEngine fEngine;

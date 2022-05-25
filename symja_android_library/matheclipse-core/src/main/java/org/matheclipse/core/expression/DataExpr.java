@@ -37,19 +37,19 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
   /** {@inheritDoc} */
   @Override
   public boolean accept(IVisitorBoolean visitor) {
-    return false;
+    return visitor.visit(this);
   }
 
   /** {@inheritDoc} */
   @Override
   public int accept(IVisitorInt visitor) {
-    return 0;
+    return visitor.visit(this);
   }
 
   /** {@inheritDoc} */
   @Override
   public long accept(IVisitorLong visitor) {
-    return 0L;
+    return visitor.visit(this);
   }
 
   @Override

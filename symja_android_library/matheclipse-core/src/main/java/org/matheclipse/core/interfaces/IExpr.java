@@ -4880,6 +4880,14 @@ public interface IExpr
     return times(that);
   }
 
+  default boolean[] toBooleanVector() {
+    return null;
+  }
+
+  default boolean[][] toBooleanMatrix() {
+    return null;
+  }
+
   /**
    * Convert this object into a <code>byte[][]</code> matrix.
    *
@@ -4897,6 +4905,10 @@ public interface IExpr
    *         vector
    */
   default Complex[] toComplexVector() {
+    return null;
+  }
+
+  default Complex[][] toComplexMatrix() {
     return null;
   }
 

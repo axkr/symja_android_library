@@ -1172,35 +1172,36 @@ public class IOFunctions {
     if (name.length() == 0) {
       return F.CEmptyList;
     }
-    boolean exact = true;
+    final boolean exact;
     if (name.charAt(name.length() - 1) == '*') {
       name = name.substring(0, name.length() - 1);
       if (name.length() == 0) {
         return getAllNames();
       }
       exact = false;
+    } else {
+      exact = true;
     }
     SuggestTree suggestTree = AST2Expr.getSuggestTree();
     // name = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
     name = name.toLowerCase();
-    Node n = suggestTree.getAutocompleteSuggestions(name);
-    if (n != null) {
-      IASTAppendable list = F.ListAlloc(n.listLength());
-      for (int i = 0; i < n.listLength(); i++) {
-        String identifierStr = n.getSuggestion(i).getTerm();
+    final String autocompleteStr = name;
+    Node suggestions = suggestTree.getAutocompleteSuggestions(autocompleteStr);
+    if (suggestions != null) {
+      return F.mapRange(0, suggestions.listLength(), i -> {
+        String identifierStr = suggestions.getSuggestion(i).getTerm();
         String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(identifierStr);
         if (str != null) {
           identifierStr = str;
         }
         if (exact) {
-          if (name.equals(identifierStr.toLowerCase())) {
-            list.append(F.$s(identifierStr));
+          if (autocompleteStr.equals(identifierStr.toLowerCase())) {
+            return F.$s(identifierStr);
           }
-        } else {
-          list.append(F.$s(identifierStr));
+          return F.NIL;
         }
-      }
-      return list;
+        return F.$s(identifierStr);
+      });
     }
     return F.CEmptyList;
   }
@@ -1222,9 +1223,7 @@ public class IOFunctions {
   }
 
   public static IAST getAllNames() {
-    int size = AST2Expr.FUNCTION_STRINGS.length;
-    IASTAppendable list = F.ListAlloc(size);
-    return list.appendArgs(0, size, i -> F.$s(AST2Expr.FUNCTION_STRINGS[i]));
+    return F.mapRange(0, AST2Expr.FUNCTION_STRINGS.length, i -> F.$s(AST2Expr.FUNCTION_STRINGS[i]));
   }
 
   private IOFunctions() {}

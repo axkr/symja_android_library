@@ -636,11 +636,6 @@ public class ASTRRBTree extends AbstractAST
   }
 
   @Override
-  public IASTAppendable appendArgs(int end, IntFunction<IExpr> function) {
-    return appendArgs(1, end, function);
-  }
-
-  @Override
   public IAST appendOneIdentity(IAST value) {
     if (value.isAST1()) {
       append(value.arg1());

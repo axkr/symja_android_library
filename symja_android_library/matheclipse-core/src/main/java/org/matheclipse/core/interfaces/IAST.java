@@ -869,18 +869,18 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param end
    * @param action
    */
-  default void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
+  default void forEach(int start, int end, ObjIntConsumer<? super IExpr> consumer) {
     for (int i = start; i < end; i++) {
-      action.accept(get(i), i);
+      consumer.accept(get(i), i);
     }
   }
 
-  default void forEach(int end, ObjIntConsumer<? super IExpr> action) {
-    forEach(1, end, action);
+  default void forEach(int end, ObjIntConsumer<? super IExpr> consumer) {
+    forEach(1, end, consumer);
   }
 
-  default void forEach(ObjIntConsumer<? super IExpr> action) {
-    forEach(1, size(), action);
+  default void forEach(ObjIntConsumer<? super IExpr> consumer) {
+    forEach(1, size(), consumer);
   }
 
   /**

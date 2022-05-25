@@ -58,7 +58,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
    * @return
    */
   protected boolean matchSinglePartition(int[][] result, StackMatcher stackMatcher) {
-    IASTAppendable partitionElement;
+
     int lastStackSize = stackMatcher.size();
     boolean matched = true;
     IExpr[] patternValues = fPatternMap.copyPattern();
@@ -74,14 +74,11 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
             return false;
           }
         } else {
-          ISymbol head = fSymbol;
-          if (lhsPatternExpr.isPatternSequence(false)) {
-            head = S.Sequence;
-          }
-          partitionElement = F.ast(head, n);
-          for (int i = 0; i < n; i++) {
-            partitionElement.append(array[result[j][i]]);
-          }
+          final ISymbol head = (lhsPatternExpr.isPatternSequence(false)) ? S.Sequence : fSymbol;
+          final int row = j;
+          IASTAppendable partitionElement = F.mapRange(head, 0, n, i -> {
+            return array[result[row][i]];
+          });
           if (!stackMatcher.push(lhsPatternExpr, partitionElement)) {
             matched = false;
             return false;

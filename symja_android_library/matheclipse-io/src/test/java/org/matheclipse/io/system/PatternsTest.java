@@ -7,16 +7,13 @@ import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.S.a;
 import static org.matheclipse.core.expression.S.f;
 import static org.matheclipse.core.expression.S.x;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 
-/**
- * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based
- * integrator</a>.
- */
 public class PatternsTest extends AbstractTestCase {
   public PatternsTest(String name) {
     super(name);
@@ -643,6 +640,11 @@ public class PatternsTest extends AbstractTestCase {
   }
 
   public void testReplaceList() {
+    check("ReplaceList(a+b+c+d+e+f,(x_+y_+z_) :> {{x},{y},{z}}, 3)", //
+        "{{{a},{b},{c+d+e+f}},"//
+            + "{{a},{c},{b+d+e+f}},"//
+            + "{{a},{d},{b+c+e+f}}}");
+
     check("ReplaceList({b*x, a*b*x*z, x}, {a_*x_,a_.*x_^y_.*z_, x_ } -> {a,x,y,z})", //
         "{{b,x,1,a*z}}");
 
@@ -1078,4 +1080,25 @@ public class PatternsTest extends AbstractTestCase {
     // check("", "");
     // check("", "");
   }
+
+  public void testExpandedEExpressionPattern() {
+    if (Config.EXPENSIVE_JUNIT_TESTS) {
+      check("f(c_*x_+y_,x_):= {c,x,y}", //
+          "");
+      check("expanded=ExpandAll((a+b+2*c+x+y+3*z)^24);", //
+          "");
+      // best time 29.28 s
+      check("res=f(expanded,x);Length(res[[3]])", //
+          "118754");
+    }
+  }
+
+  @Override
+  protected void setUp() {
+    super.setUp();
+    if (Config.EXPENSIVE_JUNIT_TESTS) {
+      Config.MAX_AST_SIZE = Integer.MAX_VALUE;
+    }
+  }
+
 }
