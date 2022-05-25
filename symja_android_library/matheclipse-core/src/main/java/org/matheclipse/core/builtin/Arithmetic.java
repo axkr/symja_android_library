@@ -1397,6 +1397,9 @@ public final class Arithmetic {
             // `1` is not a variable with a value, so its value cannot be changed.
             return IOFunctions.printMessage(ast.topHead(), "rvalue", F.list(sym), engine);
           }
+        } else {
+          // `1` is not a variable with a value, so its value cannot be changed.
+          return IOFunctions.printMessage(ast.topHead(), "rvalue", F.list(arg1), engine);
         }
       } catch (ValidateException ve) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
@@ -2113,51 +2116,13 @@ public final class Arithmetic {
     }
 
     private static IExpr harmonic(IExpr arg1, final IAST ast, EvalEngine engine) {
-      // if (engine.isDoubleMode()) {
-      // try {
-      // double a = Double.NaN;
-      // try {
-      // a = arg1.evalDouble();
-      // } catch (ValidateException ve) {
-      // }
-      // if (Double.isNaN(a) || a < 0) {
-      // org.hipparchus.complex.Complex ac = arg1.evalComplex();
-      // } else {
-      // // approximate
-      // double aSqr = a * a;
-      // if (a > 100.0) {
-      // return F.num(Math.log(a) + ConstantDefinitions.EULER_GAMMA + 0.5 / a - 1.0 / (12.0 *
-      // aSqr));
-      // } else {
-      // // denominators https://oeis.org/A006953
-      // double aQuad = aSqr * aSqr;
-      // return F.num(//
-      // Math.log(a) //
-      // + ConstantDefinitions.EULER_GAMMA //
-      // + 0.5 / a //
-      // - 1.0 / (12.0 * aSqr) //
-      // + 1.0 / (120.0 * aQuad) //
-      // - 1.0 / (252.0 * aQuad * aSqr)); //
-      // // + 1.0 / (240.0 * aQuad*aQuad)//
-      // // - 1.0 / (132.0 * aQuad*aQuad*aSqr) //
-      // // + 1.0 / (32760.0 * aQuad*aQuad*aQuad));
-      // }
-      // }
-      //
-      // } catch (ValidateException ve) {
-      // LOGGER.debug("HarmonicNumber.harmonic() failed", ve);
-      // } catch (RuntimeException rex) {
-      // // LOGGER.error("HarmonicNumber.harmonic() failed", rex);
-      // return engine.printMessage(ast.topHead(), rex);
-      // }
-      // }
-      if (engine.isDoubleMode()) {
+      if (arg1.isNumber()) {
         if (arg1.isMathematicalIntegerNegative()) {
           return F.CComplexInfinity;
         }
-        org.hipparchus.complex.Complex cn = arg1.evalComplex();
-        cn = cn.add(1.0);
-        return F.Plus(S.EulerGamma, F.PolyGamma(F.C0, F.complexNum(cn)));
+        if (engine.isNumericMode()) {
+          return F.Plus(S.EulerGamma, F.PolyGamma(F.C0, F.Plus(F.C1, arg1)));
+        }
       }
       if (arg1.isInteger()) {
         if (arg1.isNegative()) {
@@ -2247,6 +2212,9 @@ public final class Arithmetic {
           return F.sum(i -> Power(i, arg2Negate), 1, n);
           // IASTAppendable result = F.PlusAlloc(n);
           // return result.appendArgs(n + 1, i -> Power(F.ZZ(i), arg2Negate));
+        }
+        if (engine.isNumericMode() && arg1.isNumber() && arg2.isNumber()) {
+          return F.Plus(F.Negate(F.HurwitzZeta(arg2, F.Plus(F.C1, arg1))), F.Zeta(arg2));
         }
         return F.NIL;
       }
@@ -3326,7 +3294,7 @@ public final class Arithmetic {
    * 6652800
    * </pre>
    */
-  private static final class Pochhammer extends AbstractArg2 { // implements PochhammerRules {
+  private static final class Pochhammer extends AbstractArg2 {
 
     @Override
     public IExpr e2ObjArg(IAST ast, final IExpr a, final IExpr n) {
@@ -3552,7 +3520,7 @@ public final class Arithmetic {
         }
 
         if (exponent.isDirectedInfinity()) {
-          IExpr temp = evalDirectedInfinityArg2(base, (IAST) exponent);
+          IExpr temp = evalDirectedInfinityArg2(base, (IAST) exponent, engine);
           if (temp.isPresent()) {
             return temp;
           }
@@ -4369,7 +4337,8 @@ public final class Arithmetic {
      * @param directedInfinity
      * @return {@link F#NIL} if evaluation is not possible
      */
-    private static IExpr evalDirectedInfinityArg2(final IExpr base, final IAST directedInfinity) {
+    private static IExpr evalDirectedInfinityArg2(final IExpr base, final IAST directedInfinity,
+        EvalEngine engine) {
       if (directedInfinity.isComplexInfinity()) {
         return S.Indeterminate;
       }
@@ -4438,7 +4407,7 @@ public final class Arithmetic {
           return temp;
         }
       } else {
-        IExpr a1 = F.evaln(base);
+        IExpr a1 = engine.evalN(base);
         if (a1.isNumber()) {
           IExpr temp = e2NumberDirectedInfinity((INumber) a1, directedInfinity);
           if (temp.isPresent()) {
@@ -5335,13 +5304,17 @@ public final class Arithmetic {
   }
 
   /**
-   * Gets the signum value of a complex number
-   *
-   * @return 0 for <code>this == 0</code>;<br/>
-   *         +1 for
-   *         <code>real(this) &gt; 0 || ( real(this) == 0 &amp;&amp; imaginary(this) &gt; 0 )</code>
-   *         ;<br/>
-   *         -1 for <code>real(this) &lt; 0 || ( real(this) == 0 &amp;&amp; imaginary(this) &lt; 0 )
+   * Gets the signum value of a complex number <code>cc</code>.
+   * 
+   * <p>
+   * Returns:
+   * </p>
+   * 
+   * <pre>
+   *  0 for cc == 0; 
+   * +1 for Re(cc) &gt; 0 || ( Re(cc) == 0 &amp;&amp; Im(cc) &gt; 0 );
+   * -1 for Re(cc) &lt; 0 || ( Re(cc) == 0 &amp;&amp; Im(cc) &lt; 0 );
+   * </pre>
    */
   private static final class SignCmp extends AbstractEvaluator {
 
@@ -6663,17 +6636,15 @@ public final class Arithmetic {
       }
 
       if (arg1.equals(base2)) {
-        if (exponent2.isNumber() && !arg1.isRational()) {
+        if (exponent2.isNumber() && !arg1.isRational() || //
+            !exponent2.isNumber()) {
           // avoid reevaluation of a root of a rational number (example: 2*Sqrt(2) )
-          return F.Power(arg1, exponent2.inc());
-        } else if (!exponent2.isNumber()) {
           return F.Power(arg1, exponent2.inc());
         }
       } else if (arg1.negate().equals(base2) && base2.isPositive()) {
-        if (exponent2.isNumber() && !arg1.isRational()) {
+        if ((exponent2.isNumber() && !arg1.isRational()) || //
+            !exponent2.isNumber()) {
           // avoid reevaluation of a root of a rational number (example: -2*Sqrt(2) )
-          return F.Negate(F.Power(base2, exponent2.inc()));
-        } else if (!exponent2.isNumber()) {
           return F.Negate(F.Power(base2, exponent2.inc()));
         }
       } else if (arg1.isFraction() && base2.isFraction() && base2.isPositive()) {
@@ -6729,16 +6700,6 @@ public final class Arithmetic {
       }
       return F.NIL;
     }
-
-    // private IExpr timesInterval(final IExpr o0, final IExpr o1) {
-    // return F.Interval(F.List(
-    // F.Min(o0.lower().times(o1.lower()), o0.lower().times(o1.upper()),
-    // o0.upper().times(o1.lower()),
-    // o0.upper().times(o1.upper())),
-    // F.Max(o0.lower().times(o1.lower()), o0.lower().times(o1.upper()),
-    // o0.upper().times(o1.lower()),
-    // o0.upper().times(o1.upper()))));
-    // }
 
   }
 
@@ -6950,12 +6911,10 @@ public final class Arithmetic {
         int[] piecewiseDimension = piecewise.isPiecewise();
         if (piecewiseDimension[0] > 0 && piecewiseDimension[1] == 2) {
           IAST piecewiseList = (IAST) piecewise.arg1();
-          IExpr rest = function.removeAtCopy(piecewisePosition).oneIdentity1();
-          IASTAppendable result = F.ListAlloc(piecewiseList.size());
-          for (int i = 1; i < piecewiseList.size(); i++) {
-            IAST subList = (IAST) piecewiseList.get(i);
-            result.append(F.list(F.Plus(rest, subList.arg1()), subList.arg2()));
-          }
+          IExpr rest = function.removeAtCopy(piecewisePosition).oneIdentity0();
+          IASTAppendable result = F.mapList(piecewiseList, subList -> {
+            return F.list(F.Plus(rest, subList.first()), subList.second());
+          });
           if (piecewise.argSize() == 2) {
             return F.Piecewise(result, S.Plus.of(engine, rest, piecewise.arg2()));
           }
@@ -6972,11 +6931,9 @@ public final class Arithmetic {
         if (piecewiseDimension[0] > 0 && piecewiseDimension[1] == 2) {
           IAST piecewiseList = (IAST) piecewise.arg1();
           IExpr rest = function.removeAtCopy(piecewisePosition).oneIdentity1();
-          IASTAppendable result = F.ListAlloc(piecewiseList.size());
-          for (int i = 1; i < piecewiseList.size(); i++) {
-            IAST subList = (IAST) piecewiseList.get(i);
-            result.append(F.list(F.Times(rest, subList.arg1()), subList.arg2()));
-          }
+          IASTAppendable result = F.mapList(piecewiseList, subList -> {
+            return F.list(F.Times(rest, subList.first()), subList.second());
+          });
           if (piecewise.argSize() == 2) {
             return F.Piecewise(result, S.Times.of(engine, rest, piecewise.arg2()));
           }
@@ -7055,10 +7012,10 @@ public final class Arithmetic {
     if (function.isAST(S.UnitStep) && function.size() > 1) {
       // Piecewise[{{1, x >= 0 && y >= 0 && z >= 0}}, 0]
       final int size = function.size();
-      IASTAppendable andAST = F.ast(S.And, size);
-      for (int i = 1; i < size; i++) {
-        andAST.append(F.GreaterEqual(function.get(i), F.C0));
-      }
+      IASTAppendable andAST = F.mapFunction(S.And, function, t -> F.GreaterEqual(t, F.C0));
+      // for (int i = 1; i < size; i++) {
+      // andAST.append(F.GreaterEqual(function.get(i), F.C0));
+      // }
       return F.Piecewise(F.list(F.list(F.C1, andAST)), F.C0);
     }
 
@@ -7067,21 +7024,20 @@ public final class Arithmetic {
         if (function.size() == 2) {
           return F.Piecewise(F.list(F.list(F.C1, F.Equal(function.arg1(), F.C0))), F.C0);
         }
-        IASTAppendable andAST = F.ast(S.And, function.argSize());
-        function.forEach(x -> andAST.append(F.Equal(x, F.C0)));
+        IASTAppendable andAST = F.mapFunction(S.And, function, t -> F.Equal(t, F.C0));
+        // function.forEach(x -> andAST.append(F.Equal(x, F.C0)));
         return F.Piecewise(F.list(F.list(F.C1, andAST)), F.C0);
       }
       if (function.isAST(S.KroneckerDelta)) {
         if (function.size() == 2) {
           return F.Piecewise(F.list(F.list(F.C1, F.Equal(function.arg1(), F.C0))), F.C0);
         }
-        IASTAppendable andAST = F.ast(S.And, function.argSize() - 1);
-        IExpr last = function.arg1();
-        for (int i = 2; i < function.size(); i++) {
-          final IExpr arg = function.get(i);
-          andAST.append(F.Equal(F.Subtract(last, arg), F.C0));
-          last = arg;
-        }
+        IExpr[] last = new IExpr[] {function.arg1()};
+        IASTAppendable andAST = F.mapFunction(S.And, function, 2, function.size(), t -> {
+          final IExpr subtrahend = last[0];
+          last[0] = t;
+          return F.Equal(F.Subtract(subtrahend, t), F.C0);
+        });
         return F.Piecewise(F.list(F.list(F.C1, andAST)), F.C0);
       }
     }
