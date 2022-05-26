@@ -767,4 +767,18 @@ class ParserTestCase {
     ASTNode obj = p.parse(" 2 *(* a test *) 4");
     assertEquals("Times(2, 4)", obj.toString());
   }
+
+  @Test
+  void testParser81() {
+    Parser p = new Parser();
+    ASTNode obj = p.parse("x|->(x^3)");
+    assertEquals("Function(x, Power(x, 3))", obj.toString());
+  }
+
+  @Test
+  void testParser82() {
+    Parser p = new Parser();
+    ASTNode obj = p.parse("x \\[Function] (x^3)");
+    assertEquals("Function(x, Power(x, 3))", obj.toString());
+  }
 }

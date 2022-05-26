@@ -9978,6 +9978,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
   public void testFunction() {
     EvalEngine.resetModuleCounter4JUnit();
+    // check("(p + #) & /. p -> q", //
+    // "q+#1&");
+    // check("fufufu=Function({x},Function({y},Function({z},x+y+z)))", //
+    // "Function({x},Function({y},Function({z},x+y+z)))");
+
     check("g = (#1 + #2) &[3,4]", //
         "7");
 
@@ -10045,6 +10050,11 @@ public class LowercaseTestCase extends AbstractTestCase {
     check("Array(x |-> 1+x^2, 10)", //
         "{2,5,10,17,26,37,50,65,82,101}");
     check("(x |-> {#1, x}) /@ #2 &[n0, {n1, n2, n3, n4, n5}]", //
+        "{{n0,n1},{n0,n2},{n0,n3},{n0,n4},{n0,n5}}");
+
+    check("Array(x \\[Function] 1+x^2, 10)", //
+        "{2,5,10,17,26,37,50,65,82,101}");
+    check("(x \\[Function] {#1, x}) /@ #2 &[n0, {n1, n2, n3, n4, n5}]", //
         "{{n0,n1},{n0,n2},{n0,n3},{n0,n4},{n0,n5}}");
   }
 

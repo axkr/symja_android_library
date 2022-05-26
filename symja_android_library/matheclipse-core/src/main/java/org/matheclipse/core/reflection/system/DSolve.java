@@ -263,21 +263,22 @@ public class DSolve extends AbstractFunctionEvaluator {
   /**
    * Solve linear ODE.
    *
-   * @param p coefficient of degree 1
-   * @param q coefficient of degree 0
+   * @param coefficient1 coefficient of degree 1
+   * @param coefficient0 coefficient of degree 0
    * @param xVar variable
    * @param engine the evaluation engine
    * @return <code>F.NIL</code> if the evaluation was not possible
    */
-  private IExpr linearODE(IExpr p, IExpr q, IExpr xVar, IExpr C_1, EvalEngine engine) {
+  private IExpr linearODE(IExpr coefficient1, IExpr coefficient0, IExpr xVar, IExpr C_1,
+      EvalEngine engine) {
     // integrate p
-    IExpr pInt = engine.evaluate(F.Exp(F.Integrate(p, xVar)));
+    IExpr pInt = engine.evaluate(F.Exp(F.Integrate(coefficient1, xVar)));
 
-    if (q.isZero()) {
+    if (coefficient0.isZero()) {
       return engine.evaluate(F.Divide(C_1, pInt));
     } else {
-      IExpr qInt =
-          engine.evaluate(F.Plus(C_1, F.Expand(F.Integrate(F.Times(F.CN1, q, pInt), xVar))));
+      IExpr qInt = engine
+          .evaluate(F.Plus(C_1, F.Expand(F.Integrate(F.Times(F.CN1, coefficient0, pInt), xVar))));
       return engine.evaluate(F.Expand(F.Divide(qInt, pInt)));
     }
   }
