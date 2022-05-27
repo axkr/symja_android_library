@@ -149,6 +149,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 
     FUNCTIONS_STR_MATHCELL.put(S.Max, "Math.max");
     FUNCTIONS_STR_MATHCELL.put(S.Min, "Math.min");
+    FUNCTIONS_STR_MATHCELL.put(S.Multinomial, "multinomial");
 
     FUNCTIONS_STR_MATHCELL.put(S.PolyGamma, "digamma");
     // PM: Since polylog is a shortened form of the full function name, polylogarithm, the small "l"
