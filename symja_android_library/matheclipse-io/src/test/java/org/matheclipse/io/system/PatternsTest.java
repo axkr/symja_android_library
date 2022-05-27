@@ -1081,7 +1081,7 @@ public class PatternsTest extends AbstractTestCase {
     // check("", "");
   }
 
-  public void testExpandedEExpressionPattern() {
+  public void testExpandedExpressionPattern() {
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       check("f(c_*x_+y_,x_):= {c,x,y}", //
           "");
@@ -1091,6 +1091,13 @@ public class PatternsTest extends AbstractTestCase {
       check("res=f(expanded,x);Length(res[[3]])", //
           "118754");
     }
+  }
+
+  public void testPowerPattern() {
+    check("foo(1/x_) := {x}", //
+        "");
+    check("foo(1/a)", //
+        "{a}");
   }
 
   @Override
