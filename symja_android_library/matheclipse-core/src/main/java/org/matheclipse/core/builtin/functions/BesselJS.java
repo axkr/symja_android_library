@@ -67,9 +67,9 @@ public class BesselJS extends JS {
    * @return
    */
   public static double besselJZero(double n, int m) {
-    if (n < 0.0) {
-      throw new ArgumentTypeException(n + " is less than 0 (negative order)");
-    }
+    // if (n < 0.0) {
+    // throw new ArgumentTypeException(n + " is less than 0 (negative order)");
+    // }
     if (m < 0) {
       throw new ArgumentTypeException("Negative index " + m + " not supported in BesselJZero");
     }
@@ -77,13 +77,18 @@ public class BesselJS extends JS {
     // approximations from dlmf.nist.gov/10.21#vi
     double delta = Math.PI / 4.0;
 
-    double a = (m + n / 2.0 - 0.25) * Math.PI;
+    double a = (m + Math.abs(n) / 2.0 - 0.25) * Math.PI;
     double e = a - (4.0 * (n * n) - 1.0) / (8.0 * a);
+
+    if (n < 0.0) {
+      e += (n % 1) * Math.PI;
+    }
+
     BisectionSolver solver = new BisectionSolver();
     ISymbol x = F.Dummy("x");
     UnivariateDifferentiableFunction f =
         new UnaryNumerical(F.BesselJ(F.num(n), x), x, EvalEngine.get(), true);
-    return solver.solve(100, f, e - delta, e + delta);
+    return solver.solve(100, f, m == 1 ? 1e-10 : e - delta, e + delta);
   }
 
   public static Complex besselY(double n, double x) {
@@ -164,9 +169,9 @@ public class BesselJS extends JS {
    * @return
    */
   public static double besselYZero(double n, int m) {
-    if (n < 0.0) {
-      throw new ArgumentTypeException(n + " < 0 (negative order)");
-    }
+    // if (n < 0.0) {
+    // throw new ArgumentTypeException(n + " < 0 (negative order)");
+    // }
     if (m < 0) {
       throw new ArgumentTypeException("Negative index " + m + " not supported in BesselYZero");
     }
@@ -185,13 +190,23 @@ public class BesselJS extends JS {
     // UnivariateDifferentiableFunction f = new UnaryNumerical(function, x, EvalEngine.get(), true);
     // return solver.solve(200, f, e - delta, e + delta);
     // } else {
-    double a = (m + n / 2.0 - 0.75) * Math.PI;
+    double a = (m + Math.abs(n) / 2.0 - 0.75) * Math.PI;
     double e = a - (4.0 * (n * n) - 1.0) / (8.0 * a);
+    double fractionalPartN = n % 1;
+
+    if (n < 0.0) {
+      if (fractionalPartN > -0.5) {
+        e += fractionalPartN * Math.PI;
+      } else {
+        e += (1.0 + fractionalPartN) * Math.PI;
+      }
+    }
+
     BisectionSolver solver = new BisectionSolver();
     ISymbol x = F.Dummy("x");
     UnivariateDifferentiableFunction f =
         new UnaryNumerical(F.BesselY(F.num(n), x), x, EvalEngine.get(), true);
-    return solver.solve(100, f, e - delta, e + delta);
+    return solver.solve(100, f, (m == 1 && fractionalPartN > -.5) ? 1e-10 : e - delta, e + delta);
     // }
   }
 

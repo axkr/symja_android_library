@@ -56,7 +56,7 @@ public class BesselFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && z.isNumber()) {
         if (!z.isComplexNumeric()) {
           try {
             return F.complexNum(BesselJS.airyAi(z.evalDouble()));
@@ -95,7 +95,7 @@ public class BesselFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && z.isNumber()) {
         if (!z.isComplexNumeric()) {
           try {
             return F.complexNum(BesselJS.airyAiPrime(z.evalDouble()));
@@ -135,7 +135,7 @@ public class BesselFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && z.isNumber()) {
 
         if (!z.isComplexNumeric()) {
           try {
@@ -173,7 +173,7 @@ public class BesselFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && z.isNumber()) {
         if (!z.isComplexNumeric()) {
           try {
             return F.complexNum(BesselJS.airyBiPrime(z.evalDouble()));
@@ -343,7 +343,7 @@ public class BesselFunctions {
         }
       }
 
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
@@ -418,13 +418,13 @@ public class BesselFunctions {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
       final int k = z.toIntDefault();
-      if (n.isReal()) {
+      if (engine.isDoubleMode() && n.isNumber()) {
         if (k > 0 && engine.isDoubleMode()) {
           try {
             // numeric mode evaluation
-
-            return F.num(BesselJS.besselJZero(n.evalDouble(), k));
-
+            if (n.isReal()) {
+              return F.num(BesselJS.besselJZero(n.evalDouble(), k));
+            }
           } catch (MathRuntimeException e) {
             // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a
             // root
@@ -511,7 +511,7 @@ public class BesselFunctions {
           (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI))) {
         return F.C0;
       }
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
@@ -607,7 +607,7 @@ public class BesselFunctions {
           (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI))) {
         return F.C0;
       }
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
@@ -704,7 +704,7 @@ public class BesselFunctions {
           (z.isInfinity() || z.isNegativeInfinity())) {
         return F.C0;
       }
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
@@ -750,7 +750,7 @@ public class BesselFunctions {
       IExpr z = ast.arg2();
       final int k = z.toIntDefault();
 
-      if (k > 0 && engine.isDoubleMode()) {
+      if (k > 0 && engine.isDoubleMode() && n.isNumber()) {
         try {
           // numeric mode evaluation
           if (n.isReal()) {
@@ -782,7 +782,7 @@ public class BesselFunctions {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
 
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
@@ -824,7 +824,7 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
@@ -905,7 +905,7 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
@@ -972,7 +972,7 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      if (engine.isNumericMode()) {
+      if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
         try {
           Complex nc = n.evalComplex();
           Complex zc = z.evalComplex();
@@ -1004,7 +1004,7 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      if (engine.isNumericMode()) {
+      if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
         try {
           Complex nc = n.evalComplex();
           Complex zc = z.evalComplex();
@@ -1072,7 +1072,7 @@ public class BesselFunctions {
       if (z.isZero()) {
         return F.CComplexInfinity;
       }
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
@@ -1115,7 +1115,7 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      if (engine.isNumericMode()) {
+      if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
         try {
           Complex nc = n.evalComplex();
           Complex zc = z.evalComplex();

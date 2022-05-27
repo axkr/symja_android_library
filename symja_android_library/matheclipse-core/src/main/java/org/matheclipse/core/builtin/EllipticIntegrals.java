@@ -472,7 +472,7 @@ public class EllipticIntegrals {
           return F.EllipticE(m);
         }
 
-        if (engine.isDoubleMode()) {
+        if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
           try {
             double zDouble = Double.NaN;
             double mDouble = Double.NaN;
@@ -627,7 +627,7 @@ public class EllipticIntegrals {
         }
       }
 
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {
           double zDouble = Double.NaN;
           double mDouble = Double.NaN;
@@ -736,7 +736,7 @@ public class EllipticIntegrals {
         return F.Times(F.C8, F.Power(S.Pi, F.QQ(3L, 2L)), F.Power(F.Gamma(F.CN1D4), -2));
       }
 
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && m.isNumber()) {
         try {
           double mDouble = Double.NaN;
           try {
@@ -823,7 +823,7 @@ public class EllipticIntegrals {
         IExpr z = ast.arg2();
         IExpr m = ast.arg3();
 
-        if (engine.isDoubleMode()) {
+        if (engine.isDoubleMode() && z.isNumber() && n.isNumber() && m.isNumber()) {
           try {
             double nDouble = Double.NaN;
             double zDouble = Double.NaN;
@@ -965,21 +965,23 @@ public class EllipticIntegrals {
               return F.C0;
             }
           }
-          if (x.isReal() && m.isReal()) {
-            try {
-              return F
-                  .complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalDouble(), m.evalDouble()));
-            } catch (RuntimeException rex) {
-              LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-            }
-          } else if (x.isInexactNumber() && m.isInexactNumber()) {
-            try {
-              return F
-                  .complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalComplex(), m.evalComplex()));
-            } catch (ValidateException ve) {
-              return IOFunctions.printMessage(ast.topHead(), ve, engine);
-            } catch (RuntimeException rex) {
-              LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          if (engine.isDoubleMode() && x.isNumber() && m.isNumber()) {
+            if (x.isReal() && m.isReal()) {
+              try {
+                return F
+                    .complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalDouble(), m.evalDouble()));
+              } catch (RuntimeException rex) {
+                LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+              }
+            } else if (x.isInexactNumber() && m.isInexactNumber()) {
+              try {
+                return F.complexNum(
+                    EllipticFunctionsJS.jacobiTheta(a, x.evalComplex(), m.evalComplex()));
+              } catch (ValidateException ve) {
+                return IOFunctions.printMessage(ast.topHead(), ve, engine);
+              } catch (RuntimeException rex) {
+                LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+              }
             }
           }
         }
@@ -998,18 +1000,20 @@ public class EllipticIntegrals {
               return F.C1;
           }
         }
-        if (m.isReal()) {
-          try {
-            return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, 0.0, m.evalDouble()));
-          } catch (RuntimeException rex) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          }
-        } else if (m.isInexactNumber()) {
-          try {
-            return F.complexNum(EllipticFunctionsJS.jacobiTheta(a,
-                org.hipparchus.complex.Complex.ZERO, m.evalComplex()));
-          } catch (RuntimeException rex) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        if (engine.isDoubleMode() && m.isNumber()) {
+          if (m.isReal()) {
+            try {
+              return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, 0.0, m.evalDouble()));
+            } catch (RuntimeException rex) {
+              LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            }
+          } else if (m.isInexactNumber()) {
+            try {
+              return F.complexNum(EllipticFunctionsJS.jacobiTheta(a,
+                  org.hipparchus.complex.Complex.ZERO, m.evalComplex()));
+            } catch (RuntimeException rex) {
+              LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            }
           }
         }
       }
@@ -1081,23 +1085,26 @@ public class EllipticIntegrals {
       if (m.isInfinity() || m.isNegativeInfinity()) {
         return F.C0;
       }
-      try {
-        // double zDouble = Double.NaN;
-        // double mDouble = Double.NaN;
-        // try {
-        // zDouble = z.evalDouble();
-        // mDouble = m.evalDouble();
-        // } catch (ValidateException ve) {
-        // }
-        // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-        return F.complexNum(EllipticFunctionsJS.inverseJacobiCD(z.evalComplex(), m.evalComplex()));
-        // } else {
-        // return F.num(EllipticFunctionsJS.inverseJacobiCD(zDouble, mDouble));
-        // }
-      } catch (ValidateException ve) {
-        LOGGER.debug("InverseJacobiCD.evaluate() failed", ve);
-      } catch (RuntimeException rex) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+        try {
+          // double zDouble = Double.NaN;
+          // double mDouble = Double.NaN;
+          // try {
+          // zDouble = z.evalDouble();
+          // mDouble = m.evalDouble();
+          // } catch (ValidateException ve) {
+          // }
+          // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+          return F
+              .complexNum(EllipticFunctionsJS.inverseJacobiCD(z.evalComplex(), m.evalComplex()));
+          // } else {
+          // return F.num(EllipticFunctionsJS.inverseJacobiCD(zDouble, mDouble));
+          // }
+        } catch (ValidateException ve) {
+          LOGGER.debug("InverseJacobiCD.evaluate() failed", ve);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        }
       }
       return F.NIL;
     }
@@ -1138,23 +1145,26 @@ public class EllipticIntegrals {
       if (m.isInfinity() || m.isNegativeInfinity()) {
         return F.C0;
       }
-      try {
-        // double zDouble = Double.NaN;
-        // double mDouble = Double.NaN;
-        // try {
-        // zDouble = z.evalDouble();
-        // mDouble = m.evalDouble();
-        // } catch (ValidateException ve) {
-        // }
-        // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-        return F.complexNum(EllipticFunctionsJS.inverseJacobiCN(z.evalComplex(), m.evalComplex()));
-        // } else {
-        // return F.num(EllipticFunctionsJS.inverseJacobiCN(zDouble, mDouble));
-        // }
-      } catch (ValidateException ve) {
-        LOGGER.debug("InverseJacobiCN.evaluate() failed", ve);
-      } catch (RuntimeException rex) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+        try {
+          // double zDouble = Double.NaN;
+          // double mDouble = Double.NaN;
+          // try {
+          // zDouble = z.evalDouble();
+          // mDouble = m.evalDouble();
+          // } catch (ValidateException ve) {
+          // }
+          // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+          return F
+              .complexNum(EllipticFunctionsJS.inverseJacobiCN(z.evalComplex(), m.evalComplex()));
+          // } else {
+          // return F.num(EllipticFunctionsJS.inverseJacobiCN(zDouble, mDouble));
+          // }
+        } catch (ValidateException ve) {
+          LOGGER.debug("InverseJacobiCN.evaluate() failed", ve);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        }
       }
       return F.NIL;
     }
@@ -1186,23 +1196,26 @@ public class EllipticIntegrals {
       if (m.isInfinity() || m.isNegativeInfinity()) {
         return F.C0;
       }
-      try {
-        // double zDouble = Double.NaN;
-        // double mDouble = Double.NaN;
-        // try {
-        // zDouble = z.evalDouble();
-        // mDouble = m.evalDouble();
-        // } catch (ValidateException ve) {
-        // }
-        // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-        return F.complexNum(EllipticFunctionsJS.inverseJacobiDN(z.evalComplex(), m.evalComplex()));
-        // } else {
-        // return F.num(EllipticFunctionsJS.inverseJacobiDN(zDouble, mDouble));
-        // }
-      } catch (ValidateException ve) {
-        LOGGER.debug("InverseJacobiDN.evaluate() failed", ve);
-      } catch (RuntimeException rex) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+        try {
+          // double zDouble = Double.NaN;
+          // double mDouble = Double.NaN;
+          // try {
+          // zDouble = z.evalDouble();
+          // mDouble = m.evalDouble();
+          // } catch (ValidateException ve) {
+          // }
+          // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+          return F
+              .complexNum(EllipticFunctionsJS.inverseJacobiDN(z.evalComplex(), m.evalComplex()));
+          // } else {
+          // return F.num(EllipticFunctionsJS.inverseJacobiDN(zDouble, mDouble));
+          // }
+        } catch (ValidateException ve) {
+          LOGGER.debug("InverseJacobiDN.evaluate() failed", ve);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        }
       }
       return F.NIL;
     }
@@ -1248,7 +1261,7 @@ public class EllipticIntegrals {
       if (negExpr.isPresent()) {
         return F.Negate(F.InverseJacobiSC(negExpr, m));
       }
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {
           // double zDouble = Double.NaN;
           // double mDouble = Double.NaN;
@@ -1303,7 +1316,7 @@ public class EllipticIntegrals {
       if (negExpr.isPresent()) {
         return F.Negate(F.InverseJacobiSD(negExpr, m));
       }
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {
           // double zDouble = Double.NaN;
           // double mDouble = Double.NaN;
@@ -1364,7 +1377,7 @@ public class EllipticIntegrals {
       if (negExpr.isPresent()) {
         return F.Negate(F.InverseJacobiSN(negExpr, m));
       }
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {
           // double zDouble = Double.NaN;
           // double mDouble = Double.NaN;
@@ -1440,7 +1453,7 @@ public class EllipticIntegrals {
       if (F.EllipticK(m).equals(z)) {
         return F.CPiHalf;
       }
-      if (z.isInexactNumber() && m.isInexactNumber()) {
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {
           if (z.isReal() && m.isReal()) {
             return F
@@ -1512,23 +1525,25 @@ public class EllipticIntegrals {
       if (m.isOne() || z.isZero()) {
         return F.C1;
       }
-      try {
-        double zDouble = Double.NaN;
-        double mDouble = Double.NaN;
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {
-          zDouble = z.evalDouble();
-          mDouble = m.evalDouble();
+          double zDouble = Double.NaN;
+          double mDouble = Double.NaN;
+          try {
+            zDouble = z.evalDouble();
+            mDouble = m.evalDouble();
+          } catch (ValidateException ve) {
+          }
+          if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+            return F.complexNum(EllipticFunctionsJS.jacobiCD(z.evalComplex(), m.evalComplex()));
+          } else {
+            return F.num(EllipticFunctionsJS.jacobiCD(zDouble, mDouble));
+          }
         } catch (ValidateException ve) {
+          LOGGER.debug("JacobiCD.evaluate() failed", ve);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
-        if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F.complexNum(EllipticFunctionsJS.jacobiCD(z.evalComplex(), m.evalComplex()));
-        } else {
-          return F.num(EllipticFunctionsJS.jacobiCD(zDouble, mDouble));
-        }
-      } catch (ValidateException ve) {
-        LOGGER.debug("JacobiCD.evaluate() failed", ve);
-      } catch (RuntimeException rex) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -1588,23 +1603,25 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C1;
       }
-      try {
-        double zDouble = Double.NaN;
-        double mDouble = Double.NaN;
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {
-          zDouble = z.evalDouble();
-          mDouble = m.evalDouble();
+          double zDouble = Double.NaN;
+          double mDouble = Double.NaN;
+          try {
+            zDouble = z.evalDouble();
+            mDouble = m.evalDouble();
+          } catch (ValidateException ve) {
+          }
+          if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+            return F.complexNum(EllipticFunctionsJS.jacobiCN(z.evalComplex(), m.evalComplex()));
+          } else {
+            return F.num(EllipticFunctionsJS.jacobiCN(zDouble, mDouble));
+          }
         } catch (ValidateException ve) {
+          LOGGER.debug("JacobiCN.evaluate() failed", ve);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
-        if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F.complexNum(EllipticFunctionsJS.jacobiCN(z.evalComplex(), m.evalComplex()));
-        } else {
-          return F.num(EllipticFunctionsJS.jacobiCN(zDouble, mDouble));
-        }
-      } catch (ValidateException ve) {
-        LOGGER.debug("JacobiCN.evaluate() failed", ve);
-      } catch (RuntimeException rex) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -1664,23 +1681,25 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C1;
       }
-      try {
-        double zDouble = Double.NaN;
-        double mDouble = Double.NaN;
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {
-          zDouble = z.evalDouble();
-          mDouble = m.evalDouble();
+          double zDouble = Double.NaN;
+          double mDouble = Double.NaN;
+          try {
+            zDouble = z.evalDouble();
+            mDouble = m.evalDouble();
+          } catch (ValidateException ve) {
+          }
+          if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+            return F.complexNum(EllipticFunctionsJS.jacobiDN(z.evalComplex(), m.evalComplex()));
+          } else {
+            return F.num(EllipticFunctionsJS.jacobiDN(zDouble, mDouble));
+          }
         } catch (ValidateException ve) {
+          LOGGER.debug("JacobiDN.evaluate() failed", ve);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
-        if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F.complexNum(EllipticFunctionsJS.jacobiDN(z.evalComplex(), m.evalComplex()));
-        } else {
-          return F.num(EllipticFunctionsJS.jacobiDN(zDouble, mDouble));
-        }
-      } catch (ValidateException ve) {
-        LOGGER.debug("JacobiDN.evaluate() failed", ve);
-      } catch (RuntimeException rex) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
     }
@@ -1744,7 +1763,7 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C0;
       }
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {
           double zDouble = Double.NaN;
           double mDouble = Double.NaN;
@@ -1822,7 +1841,7 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C0;
       }
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {
           double zDouble = Double.NaN;
           double mDouble = Double.NaN;
@@ -1900,7 +1919,7 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C0;
       }
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {
           double zDouble = Double.NaN;
           double mDouble = Double.NaN;
@@ -2001,7 +2020,7 @@ public class EllipticIntegrals {
           return F.C1;
         }
       }
-      if (engine.isDoubleMode()) {
+      if (engine.isDoubleMode() && t.isNumber()) {
         try {
           double tDouble = Double.NaN;
           try {
@@ -2046,6 +2065,7 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg1();
         IExpr g2 = list.arg1();
         IExpr g3 = list.arg2();
+        // numric mode isn't set here
         if (g2.isInexactNumber() && g3.isInexactNumber()) {
           try {
             org.hipparchus.complex.Complex[] invariants =
@@ -2079,6 +2099,7 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg1();
         IExpr g2 = list.arg1();
         IExpr g3 = list.arg2();
+        // numric mode isn't set here
         if (g2.isInexactNumber() && g3.isInexactNumber()) {
           try {
             org.hipparchus.complex.Complex[] invariants =
@@ -2125,6 +2146,7 @@ public class EllipticIntegrals {
           // 1 + (3/2) Cot(Sqrt(3/2)*u)^2
           return F.Plus(F.C1, F.Times(F.C3D2, F.Sqr(F.Cot(F.Times(F.Sqrt(F.C3D2), u)))));
         }
+        // numric mode isn't set here
         if (u.isInexactNumber() && g2.isInexactNumber() && g3.isInexactNumber()) {
           try {
             return F.complexNum(EllipticFunctionsJS.weierstrassP(u.evalComplex(), g2.evalComplex(),
@@ -2169,6 +2191,7 @@ public class EllipticIntegrals {
           return F.Times(F.CN3, F.Sqrt(F.C3D2), F.Cot(F.Times(F.Sqrt(F.C3D2), u)),
               F.Sqr(F.Csc(F.Times(F.Sqrt(F.C3D2), u))));
         }
+        // numric mode isn't set here
         if (u.isInexactNumber() && g2.isInexactNumber() && g3.isInexactNumber()) {
           try {
             return F.complexNum(EllipticFunctionsJS.weierstrassPPrime(u.evalComplex(),
