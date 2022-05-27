@@ -555,7 +555,12 @@ public final class NumberTheory {
     public IExpr evaluateArg1(final IExpr n, EvalEngine engine) {
       if (n.isInteger()) {
         return catalanNumber((IInteger) n);
+      } else if (n.isFraction()) {
+        if (((IFraction) n).denominator().equals(F.C2)) {
+          return functionExpand(n);
+        }
       }
+
       return F.NIL;
     }
 
