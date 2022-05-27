@@ -1688,15 +1688,20 @@ public class LowercaseTestCase extends AbstractTestCase {
     checkNumeric("BesselJZero(1.3, 3)", //
         "10.613804865461777");
     checkNumeric("BesselJZero(0.0,1)", //
-        "2.4048258314347084");
+        "2.40482574742287");
     checkNumeric("BesselJZero(0.0,2)", //
         "5.520078275367197");
     checkNumeric("BesselJZero(1.0,5)", //
         "16.470629879496084");
     checkNumeric("BesselJZero(0, {1, 2, 3}) // N", //
-        "{2.4048258314347084,5.520078275367197,8.653728211806023}");
+        "{2.40482574742287,5.520078275367197,8.653728211806023}");
     checkNumeric("BesselJZero(1, 1)/Pi // N", //
-        "1.2196698060629994");
+        "1.2196699158873041");
+    
+    checkNumeric("Table(BesselJZero(x,1), {x,-2,2,0.25})", //
+        "{5.135622577930041,2.1289421678489058,2.798386190124959,3.344182261558605,3.831706047556035,1.0585081866354087,"
+            + "1.5707962332014729,2.0062997294967664,2.40482574742287,2.780887354614605,3.141592934490064,3.4910086115943137,"
+            + "3.831706047556035,4.165426146647427,4.493409286481732,4.8165741446154735,5.135622577930041}");
   }
 
   public void testBesselK() {
@@ -1774,12 +1779,19 @@ public class LowercaseTestCase extends AbstractTestCase {
   public void testBesselYZero() {
     // https://github.com/paulmasson/math/issues/11
     checkNumeric("BesselYZero(0.0,1)", //
-        "0.8935770823333244");
+        "0.8935771552464262");
 
     checkNumeric("BesselYZero(1.3, 3)", //
         "9.031260842335175");
     checkNumeric("BesselYZero(0.0,2)", //
         "3.957678435648244");
+
+    checkNumeric("Table(BesselYZero(x,1), {x,-2,2,0.25})", //
+        "{3.3842419063910434,3.971831811344723,4.493409218807862,1.597155616577941,2.197141057759451,"//
+            + "2.6938504302755852,3.141592279082765,0.5089486250933928,0.8935771552464262,1.241662317881476,"//
+            + "1.5707962332014729,1.888077462109278,2.197141057759451,2.500121683376498,2.79838644140362,"//
+            + "3.0928694051018533,3.3842419063910434}");
+
   }
 
   public void testBeta() {
@@ -2681,6 +2693,16 @@ public class LowercaseTestCase extends AbstractTestCase {
         "5");
     check("CatalanNumber(10)", //
         "16796");
+
+    check("CatalanNumber(-5/2)", //
+        "ComplexInfinity");
+
+    check("CatalanNumber(5/2)", //
+        "1024/105*1/Pi");
+    check("CatalanNumber(41/2)", //
+        "2417851639229258349412352/60755857577415*1/Pi");
+    check("CatalanNumber(1.2 + I)", //
+        "0.730729+I*0.569846");
   }
 
   public void testCatenate() {
