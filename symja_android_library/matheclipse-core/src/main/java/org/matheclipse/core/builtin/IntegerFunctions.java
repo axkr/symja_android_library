@@ -84,15 +84,22 @@ public class IntegerFunctions {
         n = n.subtract(mod).div(base);
       }
     }
-    int padSizeZeros = padLeftZeros - list.argSize();
-    if (padSizeZeros < 0) {
-      padSizeZeros = 0;
+
+    if (padLeftZeros < list.argSize() && padLeftZeros > 0) {
+      IASTAppendable result = F.ListAlloc(list.argSize()  );
+      result = list.reverse(result);
+      return result.copyFrom(list.size() - padLeftZeros);
+    } else {
+      int padSizeZeros = padLeftZeros - list.argSize(); 
+      if (padSizeZeros < 0) {
+        padSizeZeros = 0;
+      }
+      IASTAppendable result = F.ListAlloc(list.argSize() + padSizeZeros);
+      for (int i = 0; i < padSizeZeros; i++) {
+        result.append(F.C0);
+      }
+      return list.reverse(result);
     }
-    IASTAppendable result = F.ListAlloc(list.argSize() + padSizeZeros);
-    for (int i = 0; i < padSizeZeros; i++) {
-      result.append(F.C0);
-    }
-    return list.reverse(result);
   }
 
   /**
