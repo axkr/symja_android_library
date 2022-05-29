@@ -5306,6 +5306,22 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   }
 
   @Override
+  public boolean[] toBooleValueVector() {
+    boolean[] result = new boolean[argSize()];
+    for (int i = 1; i < size(); i++) {
+      IExpr temp = get(i);
+      if (temp.equals(F.C1)) {
+        result[i - 1] = true;
+      } else if (temp.equals(F.C0)) {
+        result[i - 1] = false;
+      } else {
+        return null;
+      }
+    }
+    return result;
+  }
+
+  @Override
   public boolean[][] toBooleanMatrix() {
     int[] dim = isMatrix();
     if (dim == null) {

@@ -254,6 +254,8 @@ public interface IExpr
 
   public static final int IMAGEID = DATAID + 22;
 
+  public static final int BDDEXPRID = DATAID + 23;
+
   public static IExpr convertToExpr(COMPARE_TERNARY temp) {
     if (temp == COMPARE_TERNARY.TRUE) {
       return S.True;
@@ -4880,7 +4882,23 @@ public interface IExpr
     return times(that);
   }
 
+  /**
+   * Convert this {@link IAST} to a boolean vector. The elements of this {@link IAST} can be True
+   * and False.
+   * 
+   * @return
+   */
   default boolean[] toBooleanVector() {
+    return null;
+  }
+
+  /**
+   * Convert this {@link IAST} to a boolean vector. The elements of this {@link IAST} can be 1 (for
+   * <code>true</code>) and 0 (for <code>false</code>).
+   * 
+   * @return
+   */
+  default boolean[] toBooleValueVector() {
     return null;
   }
 

@@ -1152,6 +1152,12 @@ public class S {
   public final static IBuiltInSymbol BooleanConvert =
       F.initFinalSymbol("BooleanConvert", ID.BooleanConvert);
 
+  public final static IBuiltInSymbol BooleanFunction =
+      F.initFinalSymbol("BooleanFunction", ID.BooleanFunction);
+
+  public final static IBuiltInSymbol BooleanMaxterms =
+      F.initFinalSymbol("BooleanMaxterms", ID.BooleanMaxterms);
+
   /**
    * BooleanMinimize(expr) - minimizes a boolean function with the [Quine McCluskey
    * algorithm](https://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm)
@@ -1162,6 +1168,9 @@ public class S {
    */
   public final static IBuiltInSymbol BooleanMinimize =
       F.initFinalSymbol("BooleanMinimize", ID.BooleanMinimize);
+
+  public final static IBuiltInSymbol BooleanMinterms =
+      F.initFinalSymbol("BooleanMinterms", ID.BooleanMinterms);
 
   /**
    * BooleanQ(expr) - returns `True` if `expr` is either `True` or `False`.

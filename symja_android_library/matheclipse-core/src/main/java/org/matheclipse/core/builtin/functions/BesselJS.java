@@ -135,6 +135,12 @@ public class BesselJS extends JS {
   }
 
   public static Complex besselY(Complex n, Complex x) {
+    if (x.isZero()) {
+      double fractionalPart = n.getReal() % 1;
+      if (F.isEqual(fractionalPart, -0.5) && F.isZero(n.getImaginary())) {
+        return Complex.ZERO;
+      }
+    }
     // for averaging over integer orders until write code for limit
     if (n.isMathematicalInteger()) {
       EvalEngine engine = EvalEngine.get();
