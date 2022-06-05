@@ -26,10 +26,10 @@ False
 >> BooleanConvert(f, "DNF") 
 (!#1&&#3)||(!#2&&#3)&
 
->> BooleanConvert(BooleanFunction({{True, True} -> True}, {x,y})) 
+>> BooleanConvert(BooleanFunction({{False, False} -> False,{False, True} -> False,{True, False} -> False,{True, True} -> True})) 
 x&&y
 
->> BooleanConvert(BooleanFunction({{False, True} -> True,{True, False} -> True,{True, True} -> True}, {x,y})) 
+>> BooleanConvert(BooleanFunction({{False, False} -> False,{False, True} -> True,{True, False} -> True,{True, True} -> True}, {x,y})) 
 x||y
         
 ```
