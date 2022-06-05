@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +18,11 @@ import org.logicng.formulas.FormulaFactory;
 import org.logicng.formulas.FormulaTransformation;
 import org.logicng.formulas.Literal;
 import org.logicng.formulas.Variable;
+import org.logicng.knowledgecompilation.bdds.BDD;
 import org.logicng.solvers.MiniSat;
 import org.logicng.solvers.SATSolver;
 import org.logicng.transformations.cnf.BDDCNFTransformation;
+import org.logicng.transformations.cnf.CNFFactorization;
 import org.logicng.transformations.dnf.DNFFactorization;
 import org.logicng.transformations.simplification.AdvancedSimplifier;
 import org.logicng.transformations.simplification.DefaultRatingFunction;
@@ -28,6 +31,7 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
@@ -40,6 +44,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.BDDExpr;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -98,7 +103,10 @@ public final class BooleanFunctions {
       S.AnyTrue.setEvaluator(new AnyTrue());
       S.Boole.setEvaluator(new Boole());
       S.BooleanConvert.setEvaluator(new BooleanConvert());
+      S.BooleanFunction.setEvaluator(new BooleanFunction());
+      S.BooleanMaxterms.setEvaluator(new BooleanMaxterms());
       S.BooleanMinimize.setEvaluator(new BooleanMinimize());
+      S.BooleanMinterms.setEvaluator(new BooleanMinterms());
       S.BooleanTable.setEvaluator(new BooleanTable());
       S.BooleanVariables.setEvaluator(new BooleanVariables());
       S.Equal.setEvaluator(CONST_EQUAL);
@@ -138,6 +146,7 @@ public final class BooleanFunctions {
       S.Unequal.setEvaluator(new Unequal());
       S.UnequalTo.setEvaluator(new CompareOperator(S.UnequalTo, S.Unequal));
       S.UnsameQ.setEvaluator(new UnsameQ());
+      S.Xnor.setEvaluator(new Xnor());
       S.Xor.setEvaluator(new Xor());
     }
   }
@@ -171,6 +180,20 @@ public final class BooleanFunctions {
 
     public LogicFormula(FormulaFactory factory) {
       this.factory = factory;
+    }
+
+    public LogicFormula(List<Variable> variables) {
+      this(new FormulaFactory());
+      for (int i = 0; i < variables.size(); i++) {
+        addVariableToMap(variables.get(i));
+      }
+    }
+
+    public LogicFormula(Variable[] variables) {
+      this(new FormulaFactory());
+      for (int i = 0; i < variables.length; i++) {
+        addVariableToMap(variables[i]);
+      }
     }
 
     public Variable[] ast2Variable(final IAST listOfSymbols) {
@@ -253,6 +276,18 @@ public final class BooleanFunctions {
       String str = IOFunctions.getMessage("argillegal",
           F.list(F.stringx(formula.toString()), F.stringx("LogicFormula")), EvalEngine.get());
       throw new ArgumentTypeException(str);
+    }
+
+    public IExpr factorSimplifyCNF(final Formula formula) {
+      final AdvancedSimplifier simplifier = new AdvancedSimplifier(new DefaultRatingFunction());
+      final Formula simplified = formula.transform(simplifier);
+      return booleanFunction2Expr(new CNFFactorization().apply(simplified, false));
+    }
+
+    public IExpr factorSimplifyDNF(final Formula formula) {
+      final AdvancedSimplifier simplifier = new AdvancedSimplifier(new DefaultRatingFunction());
+      final Formula simplified = formula.transform(simplifier);
+      return booleanFunction2Expr(new DNFFactorization().apply(simplified, false));
     }
 
     private IExpr mapToSymbol(Variable v) {
@@ -357,6 +392,18 @@ public final class BooleanFunctions {
                 return expr2BooleanFunction(dnf, substituteExpressions);
               }
               break;
+            case ID.Xnor:
+              if (ast.isSameHeadSizeGE(S.Xnor, 3)) {
+                IAST dnf = xorToDNF(ast);
+                if (dnf.isOr()) {
+                  return factory.not(convertOr(dnf, substituteExpressions));
+                }
+                if (dnf.isAnd()) {
+                  return factory.not(convertAnd(dnf, substituteExpressions));
+                }
+                return factory.not(expr2BooleanFunction(dnf, substituteExpressions));
+              }
+              break;
             case ID.Implies:
               if (ast.isAST(S.Implies, 3)) {
                 return factory.implication(expr2BooleanFunction(ast.arg1(), substituteExpressions),
@@ -369,6 +416,8 @@ public final class BooleanFunctions {
                 return factory.not(expr2BooleanFunction(expr, substituteExpressions));
               }
               break;
+            case ID.Slot:
+              return addSymbolOrSlotToMap(ast);
           }
         }
       } else if (logicExpr instanceof ISymbol) {
@@ -384,14 +433,7 @@ public final class BooleanFunctions {
           String message = IOFunctions.getMessage("ivar", F.list(symbol), EvalEngine.get());
           throw new ArgumentTypeException(message);
         }
-        Variable v = symbol2variableMap.get(symbol);
-        if (v == null) {
-          final Variable value = factory.variable(symbol.getSymbolName());
-          symbol2variableMap.put(symbol, value);
-          variable2symbolMap.put(value, symbol);
-          return value;
-        }
-        return v;
+        return addSymbolOrSlotToMap(symbol);
       }
       if (substituteExpressions) {
         Variable v = symbol2variableMap.get(logicExpr);
@@ -409,19 +451,52 @@ public final class BooleanFunctions {
       throw new ArgumentTypeException(str);
     }
 
+    private IExpr addVariableToMap(Variable variable) {
+      IExpr v = variable2symbolMap.get(variable);
+      if (v == null) {
+        v = variableToExpr(variable);
+        symbol2variableMap.put(v, variable);
+        variable2symbolMap.put(variable, v);
+      }
+      return v;
+    }
+
+    public static IExpr variableToExpr(Variable variable) {
+      String name = variable.name();
+      final IExpr v;
+      if (name.charAt(0) == '#') {
+        int slotNumber = 1;
+        if (name.length() > 1) {
+          String slotString = name.substring(1);
+          slotNumber = Integer.parseInt(slotString);
+        }
+        v = F.Slot(slotNumber);
+      } else {
+        v = F.symbol(name);
+      }
+      return v;
+    }
+
+    private Formula addSymbolOrSlotToMap(IExpr symbolOrSlot) {
+      Variable v = symbol2variableMap.get(symbolOrSlot);
+      if (v == null) {
+        final Variable value = factory.variable(symbolOrSlot.toString());
+        symbol2variableMap.put(symbolOrSlot, value);
+        variable2symbolMap.put(value, symbolOrSlot);
+        return value;
+      }
+      return v;
+    }
+
     private Formula convertOr(final IAST ast, boolean substituteExpressions) {
       final Formula[] result = new Formula[ast.argSize()];
-      ast.forEach((x, i) -> {
-        result[i - 1] = expr2BooleanFunction(x, substituteExpressions);
-      });
+      ast.forEach((x, i) -> result[i - 1] = expr2BooleanFunction(x, substituteExpressions));
       return factory.or(result);
     }
 
     private Formula convertAnd(final IAST ast, boolean substituteExpressions) {
       final Formula[] result = new Formula[ast.argSize()];
-      ast.forEach((x, i) -> {
-        result[i - 1] = expr2BooleanFunction(x, substituteExpressions);
-      });
+      ast.forEach((x, i) -> result[i - 1] = expr2BooleanFunction(x, substituteExpressions));
       return factory.and(result);
     }
 
@@ -951,6 +1026,227 @@ public final class BooleanFunctions {
     }
   }
 
+  private static class BooleanFunction extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // final IAST result = ast ;
+      // if (ast.head() != S.BooleanFunction && ast.size() > 1) {
+      // IASTAppendable variablesList = F.ListAlloc(ast.argSize());
+      // for (int i = 1; i < ast.size(); i++) {
+      // IExpr expr = engine.evaluate(ast.get(i));
+      // if (expr.isTrue()) {
+      // variablesList.append(S.True);
+      // } else if (expr.isFalse()) {
+      // variablesList.append(S.False);
+      // } else {
+      // return F.NIL;
+      // // return S.BooleanConvert.of(engine, F.Unevaluated(ast));
+      // }
+      // }
+      // IExpr head = engine.evaluate(ast.head());
+      // result = variablesList.setAtCopy(0, head);
+      // } else {
+      // IExpr head = engine.evaluate(ast.head());
+      // result = ast.setAtCopy(0, head);
+      // }
+      if (ast.head() instanceof BDDExpr && ast.size() > 1) {
+        BDDExpr bddExpr = (BDDExpr) ast.head();
+        BDD bdd = bddExpr.toData();
+        List<Variable> variableOrder = bdd.getVariableOrder();
+        if (ast.argSize() <= variableOrder.size()) {
+          FormulaFactory factory = bdd.underlyingKernel().factory();
+          List<Literal> literals = new ArrayList<Literal>(variableOrder.size());
+          for (int i = 0; i < ast.argSize(); i++) {
+            Variable variable = variableOrder.get(i);
+            final String name = variable.name();
+            IExpr expr = ast.get(i + 1);
+            if (expr.isTrue()) {
+              literals.add(factory.literal(name, true));
+            } else if (expr.isFalse()) {
+              literals.add(factory.literal(name, false));
+            } else {
+              return F.NIL;
+              // return S.BooleanConvert.of(engine, F.Unevaluated(ast));
+            }
+          }
+          BDD restrictedBDD = bdd.restrict(literals);
+          // System.out.println(restrictedBDD.toString());
+          // System.out.println(restrictedBDD.isContradiction());
+          // System.out.println(restrictedBDD.isTautology());
+          if (restrictedBDD.isContradiction()) {
+            return S.False;
+          }
+          if (restrictedBDD.isTautology()) {
+            return S.True;
+          }
+          return BDDExpr.newInstance(restrictedBDD, bddExpr.isPureBooleanFunction());
+        }
+        return F.NIL;
+      }
+      if (ast.head() == S.BooleanFunction && (ast.isAST1() || ast.isAST2())) {
+        if (ast.arg1().isListOfRules(false)) {
+          IAST listOfRule = (IAST) ast.arg1();
+          IAST rule = (IAST) listOfRule.arg1();
+          if (rule.arg1().isList()) {
+            boolean isPureBooleanFuntion = false;
+            IAST lhsRule = (IAST) rule.arg1();
+            final int argSize = lhsRule.argSize();
+            Variable[] variables = new Variable[argSize];
+            FormulaFactory factory = new FormulaFactory();
+            // if (ast.isAST2()) {
+            // if (ast.arg2().isList() && ast.arg2().argSize() == argSize) {
+            // IAST variableList = (IAST) ast.arg2();
+            // for (int i = 1; i < argSize + 1; i++) {
+            // variables[i - 1] = factory.variable(variableList.get(i).toString());
+            // }
+            // } else {
+            // return F.NIL;
+            // }
+            // } else {
+            isPureBooleanFuntion = true;
+            for (int i = 1; i < argSize + 1; i++) {
+              variables[i - 1] = factory.variable("#" + i);
+            }
+            // }
+            Formula[] orFormula = new Formula[listOfRule.argSize()];
+            for (int i = 1; i < listOfRule.size(); i++) {
+              rule = (IAST) listOfRule.get(i);
+              lhsRule = (IAST) rule.arg1();
+              IExpr rhsRule = rule.arg2();
+              if (rhsRule.isFalse()) {
+                orFormula[i - 1] = factory.falsum();
+                continue;
+              } else if (rhsRule.isTrue()) {
+                Formula[] andFormula = new Formula[argSize];
+                for (int j = 0; j < argSize; j++) {
+                  IExpr booleValue = lhsRule.get(j + 1);
+                  if (booleValue.isTrue()) {
+                    andFormula[j] = variables[j];
+                  } else if (booleValue.isFalse()) {
+                    andFormula[j] = factory.not(variables[j]);
+                  } else {
+                    return F.NIL;
+                  }
+                }
+                orFormula[i - 1] = factory.and(andFormula);
+              } else {
+                return F.NIL;
+              }
+            }
+            BDDExpr bddResult =
+                BDDExpr.newInstance(factory.or(orFormula).bdd(), isPureBooleanFuntion);
+            if (ast.isAST2()) {
+              if (ast.arg2().isList() && ast.arg2().argSize() == argSize) {
+                IAST variableList = (IAST) ast.arg2();
+                return booleanConvert(variableList.apply(bddResult), false,
+                    variableList.apply(bddResult), engine);
+              }
+              return F.NIL;
+            }
+            return isPureBooleanFuntion ? F.Function(bddResult) : bddResult;
+          }
+          return F.NIL;
+        }
+        if (ast.arg1().isInteger()) {
+          IInteger k = (IInteger) ast.arg1();
+          if (!k.isNegative()) {
+            if (ast.arg2().isList()) {
+              IAST listOfVariables = (IAST) ast.arg2();
+              int n = ast.arg2().argSize();
+              if (n > 0 && n <= 64) {
+                Formula booleanOrFormula = null;
+                Variable[] variables = new Variable[n];
+                FormulaFactory factory = new FormulaFactory();
+                for (int i = 1; i < listOfVariables.size(); i++) {
+                  IExpr variable = listOfVariables.get(i);
+                  variables[i - 1] = factory.variable(variable.toString());
+                }
+                booleanOrFormula = booleanFormula(engine, k, variables, factory);
+                if (booleanOrFormula == null) {
+                  return F.NIL;
+                }
+                LogicFormula lf = new LogicFormula(variables);
+                return lf.factorSimplifyDNF(booleanOrFormula);
+              }
+            } else {
+              int n = ast.arg2().toIntDefault();
+              if (n > 0 && n <= 64) {
+                Formula booleanOrFormula = null;
+                Variable[] variables = new Variable[n];
+                FormulaFactory factory = new FormulaFactory();
+                for (int i = 0; i < n; i++) {
+                  variables[i] = factory.variable("#" + (i + 1));
+                }
+                booleanOrFormula = booleanFormula(engine, k, variables, factory);
+                if (booleanOrFormula == null) {
+                  return F.NIL;
+                }
+                return BDDExpr.newInstance(booleanOrFormula.bdd(), true);
+              }
+            }
+          }
+        }
+      }
+
+      return F.NIL;
+    }
+
+    private Formula booleanFormula(EvalEngine engine, IInteger k, Variable[] variables,
+        FormulaFactory factory) {
+      // generate bit set IntegerDigits(k, 2, 2^n);
+      final int n = variables.length;
+      BitSet bs = IntegerFunctions.integerToBitSet(k);
+      List<Formula> orFormula = new ArrayList<Formula>();
+      for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) {
+        Formula[] andFormula = new Formula[n];
+        int shiftCounter = i;
+        for (int j = n - 1; j >= 0; j--) {
+          if ((shiftCounter & 1) == 1) {
+            andFormula[j] = variables[j];
+          } else {
+            andFormula[j] = factory.not(variables[j]);
+          }
+          shiftCounter >>>= 1;
+        }
+        orFormula.add(factory.and(andFormula));
+      }
+      return factory.or(orFormula);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      // newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+  }
+
+  private static class BooleanMaxterms extends BooleanMinterms {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IBuiltInSymbol symbol = S.Or;
+      if (ast.arg1().isListOfLists() && ast.arg1().argSize() == 1) {
+        IExpr booleVector = ast.arg1().first();
+        return minMaxterms(symbol, ast.arg2(), booleVector);
+      }
+      int k = ast.arg1().toIntDefault();
+      if (k > 0) {
+        int n = ast.arg2().toIntDefault();
+        if (n > 0) {
+          // IExpr intDigits = S.IntegerDigits.of(engine, F.ZZ(k), F.ZZ(n), F.C2);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
   /**
    *
    *
@@ -1014,6 +1310,60 @@ public final class BooleanFunctions {
     }
   }
 
+  private static class BooleanMinterms extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IBuiltInSymbol symbol = S.And;
+      if (ast.arg1().isListOfLists() && ast.arg1().argSize() == 1) {
+        IExpr booleVector = ast.arg1().first();
+        return minMaxterms(symbol, ast.arg2(), booleVector);
+      }
+      int k = ast.arg1().toIntDefault();
+      if (k > 0) {
+        int n = ast.arg2().toIntDefault();
+        if (n > 0) {
+          // IExpr intDigits = S.IntegerDigits.of(engine, F.ZZ(k), F.ZZ(n), F.C2);
+        }
+      }
+      return F.NIL;
+    }
+
+    protected IExpr minMaxterms(IBuiltInSymbol termSymbol, final IExpr arg2, IExpr booleVector) {
+      int v1 = booleVector.isVector();
+      if (v1 > 0) {
+        boolean[] booleanVector = booleVector.toBooleanVector();
+        if (booleanVector == null) {
+          booleanVector = booleVector.toBooleValueVector();
+        }
+        if (booleanVector != null) {
+          IASTAppendable andAST = F.ast(termSymbol, booleanVector.length);
+          int v2 = arg2.isVector();
+          if (v2 == v1) {
+            IAST variables = (IAST) arg2;
+            for (int i = 0; i < booleanVector.length; i++) {
+              if (booleanVector[i] == true) {
+                andAST.append(variables.get(i + 1));
+              } else {
+                andAST.append(F.Not(variables.get(i + 1)));
+              }
+            }
+            return andAST;
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
   /**
    *
    *
@@ -1041,47 +1391,106 @@ public final class BooleanFunctions {
    */
   private static class BooleanTable extends AbstractFunctionEvaluator {
 
-    private static class BooleanTableParameter {
+    private static class BooleanTableFormula {
       public IAST variables;
       public IASTAppendable resultList;
       public EvalEngine engine;
 
-      public BooleanTableParameter(IAST variables, EvalEngine engine) {
+      public BooleanTableFormula(IAST variables, EvalEngine engine) {
         this.variables = variables;
         this.resultList = F.ListAlloc(variables.size());
         this.engine = engine;
       }
 
-      public IAST booleanTable(IExpr expr, int position) {
+      public final IExpr evalSymbolTrue(IExpr expr) {
+        if (expr instanceof BDDExpr) {
+          expr = variables.setAtCopy(0, expr);
+        }
+        IExpr result = engine.evaluate(expr);
+        return result;
+      }
+
+
+      public IAST booleanTableRecursive(IExpr expr, int position) {
         if (variables.size() <= position) {
+          // stop recursion
           if (expr.isList()) {
-            resultList.append(F.mapList((IAST) expr, x -> engine.evalSymbolTrue(x)));
+            resultList.append(F.mapList((IAST) expr, x -> evalSymbolTrue(x)));
           } else {
-            resultList.append(engine.evalSymbolTrue(expr));
+            resultList.append(evalSymbolTrue(expr));
           }
           return resultList;
         }
         IExpr sym = variables.get(position);
-        if (sym.isSymbol()) {
-          if (sym.isBuiltInSymbol() || !sym.isVariable()) {
-            // Cannot assign to raw object `1`.
-            throw new ArgumentTypeException(
-                IOFunctions.getMessage("setraw", F.list(sym), EvalEngine.get()));
+        if (sym.isBuiltInSymbol() || !sym.isVariable()) {
+          // Cannot assign to raw object `1`.
+          throw new ArgumentTypeException(
+              IOFunctions.getMessage("setraw", F.list(sym), EvalEngine.get()));
+        }
+        ISymbol symbol = (ISymbol) sym;
+        IExpr value = symbol.assignedValue();
+        try {
+          symbol.assignValue(S.True, false);
+          booleanTableRecursive(expr, position + 1);
+        } finally {
+          symbol.assignValue(value, false);
+        }
+        try {
+          symbol.assignValue(S.False, false);
+          booleanTableRecursive(expr, position + 1);
+        } finally {
+          symbol.assignValue(value, false);
+        }
+
+        return resultList;
+      }
+    }
+
+    private static class BooleanTableBDD {
+      public IASTAppendable slotValues;
+      public IASTAppendable resultList;
+      public EvalEngine engine;
+
+      public BooleanTableBDD(int numberOfSlots, EvalEngine engine) {
+        this.resultList = F.ListAlloc(numberOfSlots);
+        this.slotValues = F.ListAlloc(numberOfSlots);
+        for (int i = 0; i < numberOfSlots; i++) {
+          this.slotValues.append(S.True);
+        }
+        this.engine = engine;
+      }
+
+      public final IExpr evalSlotTrue(IExpr expr) {
+        if (expr instanceof BDDExpr) {
+          expr = slotValues.setAtCopy(0, expr);
+        }
+        IExpr result = engine.evaluate(expr);
+        return result;
+      }
+
+      public IAST booleanTableBDDRecursive(BDDExpr expr, int position) {
+        if (slotValues.size() <= position) {
+          // stop recursion
+          if (expr.isList()) {
+            resultList.append(F.mapList((IAST) expr, x -> evalSlotTrue(x)));
+          } else {
+            resultList.append(evalSlotTrue(expr));
           }
-          ISymbol symbol = (ISymbol) sym;
-          IExpr value = symbol.assignedValue();
-          try {
-            symbol.assignValue(S.True, false);
-            booleanTable(expr, position + 1);
-          } finally {
-            symbol.assignValue(value, false);
-          }
-          try {
-            symbol.assignValue(S.False, false);
-            booleanTable(expr, position + 1);
-          } finally {
-            symbol.assignValue(value, false);
-          }
+          return resultList;
+        }
+        int slotNumber = position;
+        IExpr value = slotValues.get(slotNumber);
+        try {
+          slotValues.set(slotNumber, S.True);
+          booleanTableBDDRecursive(expr, position + 1);
+        } finally {
+          slotValues.set(slotNumber, value);
+        }
+        try {
+          slotValues.set(slotNumber, S.False);
+          booleanTableBDDRecursive(expr, position + 1);
+        } finally {
+          slotValues.set(slotNumber, value);
         }
         return resultList;
       }
@@ -1089,16 +1498,28 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
-      IAST variables;
+      if (ast.arg1() instanceof BDDExpr) {
+        BDDExpr bddExpr = (BDDExpr) ast.arg1();
+        final int n;
+        if (ast.isAST2()) {
+          IAST variables = ast.arg2().orNewList();
+          n = variables.argSize();
+        } else {
+          BDD bdd = bddExpr.toData();
+          List<Variable> variableOrder = bdd.getVariableOrder();
+          n = variableOrder.size();
+        }
+        BooleanTableBDD btp = new BooleanTableBDD(n, engine);
+        return btp.booleanTableBDDRecursive(bddExpr, 1);
+      }
+      final IAST variables;
       if (ast.isAST2()) {
         variables = ast.arg2().orNewList();
       } else {
         variables = BooleanVariables.booleanVariables(ast.arg1());
       }
-
-      BooleanTableParameter btp = new BooleanTableParameter(variables, engine);
-      return btp.booleanTable(ast.arg1(), 1);
+      BooleanTableFormula btp = new BooleanTableFormula(variables, engine);
+      return btp.booleanTableRecursive(ast.arg1(), 1);
     }
 
     @Override
@@ -1128,12 +1549,36 @@ public final class BooleanFunctions {
    * {p,q,r}
    * </pre>
    */
-  private static class BooleanVariables extends AbstractFunctionEvaluator {
+  private static class BooleanVariables extends AbstractCoreFunctionEvaluator {
 
     /** */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return booleanVariables(ast.arg1());
+      IExpr arg1 = ast.arg1();
+      IExpr result = booleanVariables(arg1);
+      if (result.isEmptyList()) {
+        arg1 = engine.evaluate(arg1);
+        if (arg1.isPureFunction() && arg1.size() > 1) {
+          // find highest slot number in boolean valued expression
+          try {
+            IExpr booleanValuedExpression = arg1.first();
+            int highestSlotNumber = VariablesSet.highestSlotNumber(booleanValuedExpression);
+            if (highestSlotNumber > 0) {
+              return F.ZZ(highestSlotNumber);
+            }
+          } catch (NoEvalException nee) {
+
+          }
+          // `1` is not a boolean-valued pure function.
+          return IOFunctions.printMessage(S.BooleanVariables, "bfun", F.List(ast), engine);
+        }
+        if (arg1 instanceof BDDExpr) {
+          // for boolean functions return number of arguments
+          return F.ZZ(((BDDExpr) arg1).toData().getVariableOrder().size());
+        }
+        result = booleanVariables(arg1);
+      }
+      return result;
     }
 
     @Override
@@ -1149,7 +1594,7 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      // newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
 
@@ -4250,6 +4695,32 @@ public final class BooleanFunctions {
     }
   }
 
+  private static class Xnor extends Xor implements IBooleanFormula {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isEmpty()) {
+        return S.True;
+      }
+      IExpr result = ast.arg1();
+      if (ast.size() == 2) {
+        return F.Not(result);
+      }
+      IExpr temp = super.evaluate(ast.setAtCopy(0, S.Xor), engine);
+      if (temp.isPresent()) {
+        if (temp.isAST() && temp.head() == S.Xor) {
+          return ((IAST) temp).setAtCopy(0, S.Xnor);
+        }
+        return F.Not(temp);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.ORDERLESS);
+    }
+  }
   /**
    *
    *
@@ -4604,13 +5075,86 @@ public final class BooleanFunctions {
   }
 
   private static IExpr booleanConvert(final IAST ast, EvalEngine engine) throws ValidateException {
+    IExpr arg1 = ast.arg1();
+    boolean isFunction = false;
+    if (arg1.isAST(S.Function, 2)) {
+      arg1 = arg1.first();
+      isFunction = true;
+    }
+    if (arg1 instanceof BDDExpr || arg1.head() instanceof BDDExpr) {
+      return booleanConvertExpr(arg1, isFunction, arg1, ast, engine);
+    } else {
+      IExpr head = engine.evaluate(arg1.head());
+      if (head instanceof BDDExpr) {
+        return booleanConvertExpr(head, isFunction, arg1, ast, engine);
+      }
+    }
+    if (ast.isAST2() && ast.arg2().isString()) {
+      IStringX arg2 = (IStringX) ast.arg2();
+      String method = arg2.toString();
+      if (method.equals("BFF") || method.equals("BooleanFunction")) {
+        LogicFormula lf = new LogicFormula();
+        Formula formula = lf.expr2BooleanFunction(arg1, false);
+        BDDExpr bddExpr = BDDExpr.newInstance(formula.bdd(), isFunction);
+        return isFunction ? F.Function(bddExpr) : bddExpr;
+      }
+    }
     FormulaTransformation transformation = transformation(ast, engine);
     if (transformation != null) {
       LogicFormula lf = new LogicFormula();
-      Formula formula = lf.expr2BooleanFunction(ast.arg1(), false).transform(transformation);
+      Formula formula = lf.expr2BooleanFunction(arg1, false).transform(transformation);
       // CNFSubsumption s = new CNFSubsumption();
       // formula=s.apply(formula, false);
       return lf.booleanFunction2Expr(formula);
+    }
+    return F.NIL;
+  }
+
+  private static IExpr booleanConvertExpr(IExpr head, boolean isFunction, IExpr arg1,
+      final IAST booleanConvertAST, EvalEngine engine) {
+    IExpr temp = booleanConvert(head, isFunction, booleanConvertAST, engine);
+    if (temp.isPresent()) {
+      if (arg1.size() > 0) {
+        return ((IAST) arg1).setAtCopy(0, temp);
+      }
+      return temp;
+    }
+    return F.NIL;
+  }
+
+  private static IExpr booleanConvert(IExpr arg1, boolean isFunction, final IAST ast,
+      EvalEngine engine) {
+    FormulaTransformation transformation = transformation(ast, engine);
+    if (transformation != null) {
+      final BDDExpr bddExpr;
+      if (arg1 instanceof BDDExpr) {
+        bddExpr = (BDDExpr) arg1;
+      } else {
+        bddExpr = (BDDExpr) arg1.head();
+      }
+      final BDD data = bddExpr.toData();
+      List<Variable> variableOrder = data.getVariableOrder();
+      LogicFormula lf = new LogicFormula(variableOrder);
+      Formula formula = null;
+      if (transformation instanceof BDDCNFTransformation) {
+        formula = data.cnf();
+      } else if (transformation instanceof DNFFactorization) {
+        formula = data.dnf();
+      }
+      if (formula != null) {
+        IExpr result;
+        if (transformation instanceof BDDCNFTransformation) {
+          result = lf.factorSimplifyCNF(formula);
+        } else if (transformation instanceof DNFFactorization) {
+          result = lf.factorSimplifyDNF(formula);
+        } else {
+          result = lf.booleanFunction2Expr(formula);
+        }
+        if (arg1 instanceof BDDExpr) {
+          return bddExpr.isPureBooleanFunction() || isFunction ? F.Function(result) : result;
+        }
+        return ((IAST) arg1).setAtCopy(0, F.Function(result));
+      }
     }
     return F.NIL;
   }
