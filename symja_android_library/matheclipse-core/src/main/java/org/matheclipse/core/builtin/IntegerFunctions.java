@@ -1,12 +1,7 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.Ceiling;
-import static org.matheclipse.core.expression.F.Floor;
-import static org.matheclipse.core.expression.F.FractionalPart;
-import static org.matheclipse.core.expression.F.IntegerPart;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Round;
 import java.math.BigInteger;
+import java.util.BitSet;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -78,19 +73,33 @@ public class IntegerFunctions {
     if (n.isZero()) {
       list.append(F.C0);
     } else {
-      while (n.isPositive()) {
-        IInteger mod = n.mod(base);
-        list.append(mod);
-        n = n.subtract(mod).div(base);
+      if (base.equals(F.C2)) {
+        BitSet bs = integerToBitSet(n);
+        int last = 0;
+        for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) {
+          if (i > 0) {
+            for (int j = last; j < i; j++) {
+              list.append(F.C0);
+            }
+          }
+          last = i + 1;
+          list.append(F.C1);
+        }
+      } else {
+        while (n.isPositive()) {
+          IInteger mod = n.mod(base);
+          list.append(mod);
+          n = n.subtract(mod).div(base);
+        }
       }
     }
 
     if (padLeftZeros < list.argSize() && padLeftZeros > 0) {
-      IASTAppendable result = F.ListAlloc(list.argSize()  );
+      IASTAppendable result = F.ListAlloc(list.argSize());
       result = list.reverse(result);
       return result.copyFrom(list.size() - padLeftZeros);
     } else {
-      int padSizeZeros = padLeftZeros - list.argSize(); 
+      int padSizeZeros = padLeftZeros - list.argSize();
       if (padSizeZeros < 0) {
         padSizeZeros = 0;
       }
@@ -100,6 +109,34 @@ public class IntegerFunctions {
       }
       return list.reverse(result);
     }
+  }
+
+  public static BitSet integerToBitSet(int n) {
+    BigInteger bn = BigInteger.valueOf(n);
+    BitSet bs = fromByteArray(bn.toByteArray());
+    return bs;
+  }
+
+  public static BitSet integerToBitSet(IInteger n) {
+    BigInteger bn = n.toBigNumerator();
+    BitSet bs = fromByteArray(bn.toByteArray());
+    return bs;
+  }
+
+  /**
+   * Convert a {@link BigInteger#toByteArray()} byte array to a {@link BitSet}.
+   * 
+   * @param bytes a {@link BigInteger#toByteArray()} byte array
+   * @return
+   */
+  private static BitSet fromByteArray(byte[] bytes) {
+    BitSet bits = new BitSet();
+    for (int i = 0; i < bytes.length * 8; i++) {
+      if ((bytes[bytes.length - i / 8 - 1] & (1 << (i % 8))) > 0) {
+        bits.set(i);
+      }
+    }
+    return bits;
   }
 
   /**
@@ -291,7 +328,7 @@ public class IntegerFunctions {
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
-        return Negate(Floor(negExpr));
+        return F.Negate(F.Floor(negExpr));
       }
       if (arg1.isInterval()) {
         return IntervalSym.mapSymbol(S.Ceiling, (IAST) arg1);
@@ -660,7 +697,7 @@ public class IntegerFunctions {
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
-        return Negate(Ceiling(negExpr));
+        return F.Negate(F.Ceiling(negExpr));
       }
       if (arg1.isInterval()) {
         return IntervalSym.mapSymbol(S.Floor, (IAST) arg1);
@@ -724,7 +761,7 @@ public class IntegerFunctions {
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
-        return Negate(FractionalPart(negExpr));
+        return F.Negate(F.FractionalPart(negExpr));
       }
       // if (arg1.isPlus() && arg1.first().isInteger()) {
       // }
@@ -987,7 +1024,7 @@ public class IntegerFunctions {
         }
         IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
         if (negExpr.isPresent()) {
-          return Negate(IntegerPart(negExpr));
+          return F.Negate(F.IntegerPart(negExpr));
         }
         if (arg1.isInterval()) {
           return IntervalSym.mapSymbol(S.IntegerPart, (IAST) arg1);
@@ -1688,7 +1725,7 @@ public class IntegerFunctions {
         }
         IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
         if (negExpr.isPresent()) {
-          return Negate(Round(negExpr));
+          return F.Negate(F.Round(negExpr));
         }
         if (arg1.isInterval()) {
           return IntervalSym.mapSymbol(S.Round, (IAST) arg1);

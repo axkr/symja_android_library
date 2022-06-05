@@ -9,6 +9,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.jgrapht.Graph;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.data.BDDExpr;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.data.CompiledFunctionExpr;
 import org.matheclipse.core.expression.data.DateObjectExpr;
@@ -324,10 +325,10 @@ public class KryoUtil {
     kryo.writeClassAndObject(rubiOutput, rubiContext);
     rubiOutput.close();
 
-    Input rubInput = new Input(new FileInputStream("rubi_context.bin"));
-    rubiContext = (Context) kryo.readClassAndObject(rubInput);
+    Input rubiInput = new Input(new FileInputStream("rubi_context.bin"));
+    rubiContext = (Context) kryo.readClassAndObject(rubiInput);
     System.out.println(rubiContext.toString());
-    rubInput.close();
+    rubiInput.close();
 
     IBuiltInSymbol symbol = S.Integrate;
     RulesData rulesData = symbol.getRulesData();
@@ -500,6 +501,7 @@ public class KryoUtil {
     kryo.register(TestReportObjectExpr.class);
     kryo.register(TestResultObjectExpr.class);
     kryo.register(TimeObjectExpr.class);
+    kryo.register(BDDExpr.class);
 
     kryo.register(BuiltInSymbol.class, new BuiltInSymbolSerializer());
     kryo.register(BuiltInRubi.class, new BuiltInRubiSerializer());

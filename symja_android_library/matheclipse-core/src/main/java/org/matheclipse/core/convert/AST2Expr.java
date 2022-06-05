@@ -294,7 +294,7 @@ public class AST2Expr {
       "VerificationTest", "VertexQ", "Volume", "WeberE", "WeibullDistribution",
       "WeierstrassHalfPeriods", "WeierstrassInvariants", "WeierstrassP", "WeierstrassPPrime",
       "WeightedAdjacencyMatrix", "WeightedData", "WeightedGraphQ", "WheelGraph", "Which", "While",
-      "With", "WhittakerM", "WhittakerW", "Write", "WriteString", "WordBoundary", "Xor",
+      "With", "WhittakerM", "WhittakerW", "Write", "WriteString", "WordBoundary", "Xnor", "Xor",
       "YuleDissimilarity", "ZeroSymmetric", "Zeta", "ZTransform"};
 
   public static Map<String, Integer> RUBI_STATISTICS_MAP;

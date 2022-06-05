@@ -1511,10 +1511,22 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         }
         return compareToASTIncreasing(this, (IAST) rhsExpr);
       }
-      if (lhsOrdinal >= ID.Plus && lhsOrdinal <= ID.Times && size() > 1) {
+      if (lhsOrdinal >= ID.Not && lhsOrdinal <= ID.Times && size() > 1) {
         IAST rhs = (IAST) rhsExpr;
 
         switch (lhsOrdinal) {
+          case ID.Not:
+            if (size() == 2) {
+              IExpr arg1 = arg1();
+              if (rhsExpr.isSlot() && arg1.isSlot()) {
+                int ct = arg1.compareTo(rhsExpr);
+                if (ct != 0) {
+                  return ct;
+                }
+                return 1;
+              }
+            }
+            break;
           case ID.Plus:
             if (rhsOrdinal == ID.Plus) {
               if (rhs.size() >= 1) {
@@ -1552,6 +1564,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
               return compareToASTIncreasingArg1(this, rhsExpr, F.C1);
             }
             break;
+          case ID.Slot:
+            if (size() == 2 && rhsExpr.isNot() && rhsExpr.first().isSlot()) {
+              int ct = this.compareTo(rhsExpr.first());
+              if (ct != 0) {
+                return ct;
+              }
+              return -1;
+            }
+            break;
           case ID.Times:
             if (rhsOrdinal == ID.Times && rhs.size() >= 1) {
               // O-3
@@ -1568,10 +1589,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     if (lhsOrdinal >= ID.Not && lhsOrdinal <= ID.Times && size() > 1) {
+
       switch (lhsOrdinal) {
         case ID.Not:
-          if (rhsExpr.isSymbol() && arg1().isSymbol() && size() == 2) {
-            return -1 * rhsExpr.compareTo(this);
+          if (size() == 2) {
+            IExpr arg1 = arg1();
+            if ((rhsExpr.isSymbol() && arg1.isSymbol())) {
+              int ct = arg1.compareTo(rhsExpr);
+              if (ct != 0) {
+                return ct;
+              }
+              return 1;
+            }
           }
           break;
         case ID.Plus:
@@ -4188,6 +4217,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public final boolean isSlot() {
     return isSameHead(S.Slot, 2) && (arg1().isInteger() || arg1().isString());
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final IInteger intSlot() {
+    if (isSameHead(S.Slot, 2) && arg1().isInteger()) {
+      return ((IInteger) arg1());
+    }
+    return F.CN1;
   }
 
   /** {@inheritDoc} */

@@ -102,6 +102,8 @@ public class PatternsTest extends AbstractTestCase {
   }
 
   public void testOptional() {
+    check("ReplaceList({a,b,c},{a_:5,b__}->{{a},{b}})", //
+        "{{{a},{b,c}},{{5},{a,b,c}}}");
 
     check("g(b_.?IntegerQ) :={b}", //
         "");

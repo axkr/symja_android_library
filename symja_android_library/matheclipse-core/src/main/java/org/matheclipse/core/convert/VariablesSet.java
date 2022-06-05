@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -108,6 +109,45 @@ public class VariablesSet {
       }
       return false;
     }
+  }
+
+  static class BooleanVariablesPureFunctionVisitor extends AbstractVisitorBoolean {
+    int highestSlotNumber;
+
+    public BooleanVariablesPureFunctionVisitor() {
+      highestSlotNumber = -1;
+    }
+
+    public int highestSlotNumber() {
+      return highestSlotNumber;
+    }
+
+    @Override
+    public boolean visit(IAST ast) {
+      int slot = ast.intSlot().toInt();
+      if (slot > 0) {
+        if (slot > highestSlotNumber) {
+          highestSlotNumber = slot;
+        }
+        return true;
+      }
+      ISymbol[] logicEquationHeads =
+          {S.And, S.Or, S.Not, S.Xor, S.Nand, S.Nor, S.Implies, S.Equivalent, S.Equal, S.Unequal};
+      for (int i = 0; i < logicEquationHeads.length; i++) {
+        if (ast.isAST(logicEquationHeads[i])) {
+          ast.forEach(x -> x.accept(this));
+          break;
+        }
+      }
+
+      return false;
+    }
+
+    @Override
+    public boolean visit(ISymbol symbol) throws NoEvalException {
+      throw NoEvalException.CONST;
+    }
+
   }
 
   /**
@@ -298,6 +338,13 @@ public class VariablesSet {
    */
   public void addBooleanVarList(final IExpr expression) {
     expression.accept(new BooleanVariablesVisitor(fVariablesSet));
+  }
+
+  public static int highestSlotNumber(final IExpr pureFunctionLogicalExpr) {
+    BooleanVariablesPureFunctionVisitor slotVisitor =
+        new BooleanVariablesPureFunctionVisitor();
+    pureFunctionLogicalExpr.accept(slotVisitor);
+    return slotVisitor.highestSlotNumber();
   }
 
   /**

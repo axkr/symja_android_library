@@ -867,7 +867,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * 
    * @param start
    * @param end
-   * @param action
+   * @param consumer
    */
   default void forEach(int start, int end, ObjIntConsumer<? super IExpr> consumer) {
     for (int i = start; i < end; i++) {

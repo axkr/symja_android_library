@@ -494,6 +494,7 @@ public class IOFunctions {
       "Arguments `1` and `2` of `3` should be either non-negative integers or one-character strings.", //
       "arg2", "Cannot divide sides of an equation or inequality by 0.", //
       "base", "Requested base `1` in `2` should be between 2 and `3`.", //
+      "bfun", "`1` is not a boolean-valued pure function.", //
       "boxfmt", "`1` is not a box formatting type.", //
       "cfn", "Numerical error encountered, proceeding with uncompiled evaluation.", //
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //

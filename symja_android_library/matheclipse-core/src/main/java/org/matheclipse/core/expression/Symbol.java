@@ -428,12 +428,12 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   /** {@inheritDoc} */
-  @Override
-  public IExpr evaluateHead(IAST ast, EvalEngine engine) {
-    IExpr result = evaluate(engine);
-    // set the new evaluated header !
-    return result.isPresent() ? ast.apply(result) : F.NIL;
-  }
+//  @Override
+//  public IExpr evaluateHead(IAST ast, EvalEngine engine) {
+//    IExpr result = evaluate(engine);
+//    // set the new evaluated header !
+//    return result.isPresent() ? ast.apply(result) : F.NIL;
+//  }
 
   /** {@inheritDoc} */
   @Override
