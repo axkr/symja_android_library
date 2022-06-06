@@ -172,25 +172,28 @@ public class BooleanTests extends AbstractTestCase {
   }
 
   public void testBooleanFunction001() {
-    check("f=BooleanFunction(42,3);", //
-        "");
-    check("f(True,False,True)", //
-        "True");
-    check("f(True,False,False)", //
-        "False");
-    check("BooleanConvert(f, \"DNF\")", //
-        "(!#1&&#3)||(!#2&&#3)&");
-    check("BooleanConvert(BooleanFunction({{True, True} -> True}, {x,y}))", //
-        "x&&y");
-    check(
-        "BooleanConvert(BooleanFunction({{False, True} -> True,{True, False} -> True,{True, True} -> True}, {x,y}))", //
-        "x||y");
-
+     check("f=BooleanFunction(42,3);", //
+     "");
+     // message BooleanFunction: BooleanFunction(Index: 17 Number of variables: 3) called with 2
+     // arguments; 3 arguments are expected.
+     check("f(True,False)", //
+         "BooleanFunction(Index: 6 Number of variables: 3)");
+     check("BooleanConvert(f(True,False,x), \"DNF\")", //
+     "x");
+     check("f(True,False,False)", //
+     "False");
+     check("BooleanConvert(f, \"DNF\")", //
+     "(!#1&&#3)||(!#2&&#3)&");
+     check("BooleanConvert(BooleanFunction({{True, True} -> True}, {x,y}))", //
+     "x&&y");
+     check(
+         "BooleanConvert(BooleanFunction({{False, True} -> True,{True, False} -> True,{True, True} ->True}, {x,y}))", // "
+         "x||y");
 
     check("f=BooleanConvert(Xor(x,y,z), \"BFF\")", //
         "BooleanFunction(Index: 24 Number of variables: 3)");
-    check("g=BooleanTable(f, {x, y})", //
-        "{BooleanFunction(Index: 6 Number of variables: 3),BooleanFunction(Index: 7 Number of variables: 3),BooleanFunction(Index: 7 Number of variables: 3),BooleanFunction(Index: 6 Number of variables: 3)}");
+    check("g=BooleanTable(f, {x, y});", //
+        "");
     check("BooleanConvert(g)", //
         "{z,!z,!z,z}");
 

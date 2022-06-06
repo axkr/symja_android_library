@@ -1054,7 +1054,12 @@ public final class BooleanFunctions {
         BDDExpr bddExpr = (BDDExpr) ast.head();
         BDD bdd = bddExpr.toData();
         List<Variable> variableOrder = bdd.getVariableOrder();
-        if (ast.argSize() <= variableOrder.size()) {
+        // if (ast.argSize() != 0 && ast.argSize() != variableOrder.size()) {
+        // // `1` called with `2` arguments; `3` arguments are expected.
+        // return IOFunctions.printMessage(S.BooleanFunction, "argrx",
+        // F.List(bddExpr, F.ZZ(ast.argSize()), F.ZZ(variableOrder.size())), engine);
+        // }
+        if (ast.argSize() != 0 && ast.argSize() <= variableOrder.size()) {
           FormulaFactory factory = bdd.underlyingKernel().factory();
           List<Literal> literals = new ArrayList<Literal>(variableOrder.size());
           for (int i = 0; i < ast.argSize(); i++) {
@@ -1067,13 +1072,9 @@ public final class BooleanFunctions {
               literals.add(factory.literal(name, false));
             } else {
               return F.NIL;
-              // return S.BooleanConvert.of(engine, F.Unevaluated(ast));
             }
           }
           BDD restrictedBDD = bdd.restrict(literals);
-          // System.out.println(restrictedBDD.toString());
-          // System.out.println(restrictedBDD.isContradiction());
-          // System.out.println(restrictedBDD.isTautology());
           if (restrictedBDD.isContradiction()) {
             return S.False;
           }
@@ -1092,7 +1093,7 @@ public final class BooleanFunctions {
             boolean isPureBooleanFuntion = false;
             IAST lhsRule = (IAST) rule.arg1();
             final int argSize = lhsRule.argSize();
-            
+
             FormulaFactory factory = new FormulaFactory();
             isPureBooleanFuntion = true;
             Variable[] variables = new Variable[argSize];
