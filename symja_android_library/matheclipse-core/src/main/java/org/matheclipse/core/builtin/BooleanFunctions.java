@@ -1030,6 +1030,11 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.head() == S.BooleanFunction && (ast.argSize() < 1 || ast.argSize() > 4)) {
+        // `1` called with `2` arguments; between `3` and `4` arguments are expected.
+        return IOFunctions.printMessage(S.BooleanFunction, "argb",
+            F.List(S.BooleanFunction, F.ZZ(ast.argSize()), F.C1, F.C4), engine);
+      }
       // final IAST result = ast ;
       // if (ast.head() != S.BooleanFunction && ast.size() > 1) {
       // IASTAppendable variablesList = F.ListAlloc(ast.argSize());
@@ -1086,8 +1091,9 @@ public final class BooleanFunctions {
         return F.NIL;
       }
       if (ast.head() == S.BooleanFunction && (ast.isAST1() || ast.isAST2())) {
-        if (ast.arg1().isListOfRules(false)) {
-          IAST listOfRule = (IAST) ast.arg1();
+        IExpr arg1 = ast.arg1();
+        if (arg1.isListOfRules(false) && arg1.argSize() > 0) {
+          IAST listOfRule = (IAST) arg1;
           IAST rule = (IAST) listOfRule.arg1();
           if (rule.arg1().isList()) {
             boolean isPureBooleanFuntion = false;
@@ -1139,11 +1145,12 @@ public final class BooleanFunctions {
           }
           return F.NIL;
         }
-        if (ast.arg1().isInteger()) {
-          IInteger k = (IInteger) ast.arg1();
+        if (arg1.isInteger() && ast.isAST2()) {
+          IExpr arg2 = ast.arg2();
+          IInteger k = (IInteger) arg1;
           if (!k.isNegative()) {
-            if (ast.arg2().isList()) {
-              IAST listOfVariables = (IAST) ast.arg2();
+            if (arg2.isList()) {
+              IAST listOfVariables = (IAST) arg2;
               int n = ast.arg2().argSize();
               if (n > 0 && n <= 64) {
                 Formula booleanOrFormula = null;
@@ -1161,7 +1168,7 @@ public final class BooleanFunctions {
                 return lf.factorSimplifyDNF(booleanOrFormula);
               }
             } else {
-              int n = ast.arg2().toIntDefault();
+              int n = arg2.toIntDefault();
               if (n > 0 && n <= 64) {
                 Formula booleanOrFormula = null;
                 Variable[] variables = new Variable[n];
@@ -1418,22 +1425,25 @@ public final class BooleanFunctions {
           throw new ArgumentTypeException(
               IOFunctions.getMessage("setraw", F.list(sym), EvalEngine.get()));
         }
-        ISymbol symbol = (ISymbol) sym;
-        IExpr value = symbol.assignedValue();
-        try {
-          symbol.assignValue(S.True, false);
-          booleanTableRecursive(expr, position + 1);
-        } finally {
-          symbol.assignValue(value, false);
-        }
-        try {
-          symbol.assignValue(S.False, false);
-          booleanTableRecursive(expr, position + 1);
-        } finally {
-          symbol.assignValue(value, false);
-        }
+        if (sym.isSymbol()) {
+          ISymbol symbol = (ISymbol) sym;
+          IExpr value = symbol.assignedValue();
+          try {
+            symbol.assignValue(S.True, false);
+            booleanTableRecursive(expr, position + 1);
+          } finally {
+            symbol.assignValue(value, false);
+          }
+          try {
+            symbol.assignValue(S.False, false);
+            booleanTableRecursive(expr, position + 1);
+          } finally {
+            symbol.assignValue(value, false);
+          }
 
-        return resultList;
+          return resultList;
+        }
+        return F.NIL;
       }
     }
 
