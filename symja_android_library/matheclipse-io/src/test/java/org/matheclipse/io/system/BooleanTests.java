@@ -188,9 +188,9 @@ public class BooleanTests extends AbstractTestCase {
 
 
     check("f=BooleanConvert(Xor(x,y,z), \"BFF\")", //
-        "BDD{24}");
+        "BooleanFunction(Index: 24 Number of variables: 3)");
     check("g=BooleanTable(f, {x, y})", //
-        "{BDD{6},BDD{7},BDD{7},BDD{6}}");
+        "{BooleanFunction(Index: 6 Number of variables: 3),BooleanFunction(Index: 7 Number of variables: 3),BooleanFunction(Index: 7 Number of variables: 3),BooleanFunction(Index: 6 Number of variables: 3)}");
     check("BooleanConvert(g)", //
         "{z,!z,!z,z}");
 
@@ -200,23 +200,23 @@ public class BooleanTests extends AbstractTestCase {
         "{{True,True},{False,False},{False,False},{True,True},{False,False},{True,True},{True,True},{False,False}}");
 
     check("f=BooleanFunction(12,2)", //
-        "BDD{2}");
+        "BooleanFunction(Index: 2 Number of variables: 2)");
     check("BooleanConvert(f)", //
         "#1&");
 
     check(
         "f=BooleanFunction({{False, False} -> True, {False, True} -> False, {True, False} -> True, {True, True} -> True} )", //
-        "BDD{9}&");
+        "BooleanFunction(Index: 9 Number of variables: 2)&");
     check("BooleanConvert(f,\"CNF\")", //
         "#1||!#2&");
 
     check("f=BooleanConvert(!#1&&!#2 &, \"BFF\")", // BoolenFunctionForm
-        "BDD{6}&");
+        "BooleanFunction(Index: 6 Number of variables: 2)&");
     check("BooleanConvert(f)", //
         "!#1&&!#2&");
 
     check("f=BooleanConvert(Xor(x,y,z), \"BFF\")", //
-        "BDD{24}");
+        "BooleanFunction(Index: 24 Number of variables: 3)");
     check("f(True,True,False)", //
         "False");
     check("f(False,True,False)", //
@@ -230,7 +230,7 @@ public class BooleanTests extends AbstractTestCase {
 
   public void testBooleanFunction002() {
     check("f = BooleanFunction(30, 3)", //
-        "BDD{23}");
+        "BooleanFunction(Index: 23 Number of variables: 3)");
     check("f(True, False, True)", //
         "False");
     check("BooleanConvert(f(x, y, z), \"DNF\")", //
@@ -243,14 +243,14 @@ public class BooleanTests extends AbstractTestCase {
         "x||!y");
 
     check("f=BooleanConvert(Xor(x,y,z), \"BFF\")", //
-        "BDD{24}");
+        "BooleanFunction(Index: 24 Number of variables: 3)");
     check("BooleanConvert(f)", //
         "(x&&y&&z)||(x&&!y&&!z)||(!x&&y&&!z)||(!x&&!y&&z)");
     check("BooleanTable({f, Xor(x, y, z)}, {x, y, z})", //
         "{{True,True},{False,False},{False,False},{True,True},{False,False},{True,True},{True,True},{False,False}}");
 
     check("f=BooleanFunction(11,2)", //
-        "BDD{9}");
+        "BooleanFunction(Index: 9 Number of variables: 2)");
     check("f(False,False)", //
         "True");
     check("f(False,True)", //

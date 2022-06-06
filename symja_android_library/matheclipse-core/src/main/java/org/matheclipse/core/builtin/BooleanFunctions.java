@@ -1092,23 +1092,13 @@ public final class BooleanFunctions {
             boolean isPureBooleanFuntion = false;
             IAST lhsRule = (IAST) rule.arg1();
             final int argSize = lhsRule.argSize();
-            Variable[] variables = new Variable[argSize];
+            
             FormulaFactory factory = new FormulaFactory();
-            // if (ast.isAST2()) {
-            // if (ast.arg2().isList() && ast.arg2().argSize() == argSize) {
-            // IAST variableList = (IAST) ast.arg2();
-            // for (int i = 1; i < argSize + 1; i++) {
-            // variables[i - 1] = factory.variable(variableList.get(i).toString());
-            // }
-            // } else {
-            // return F.NIL;
-            // }
-            // } else {
             isPureBooleanFuntion = true;
+            Variable[] variables = new Variable[argSize];
             for (int i = 1; i < argSize + 1; i++) {
               variables[i - 1] = factory.variable("#" + i);
             }
-            // }
             Formula[] orFormula = new Formula[listOfRule.argSize()];
             for (int i = 1; i < listOfRule.size(); i++) {
               rule = (IAST) listOfRule.get(i);
@@ -5095,7 +5085,7 @@ public final class BooleanFunctions {
       if (method.equals("BFF") || method.equals("BooleanFunction")) {
         LogicFormula lf = new LogicFormula();
         Formula formula = lf.expr2BooleanFunction(arg1, false);
-        BDDExpr bddExpr = BDDExpr.newInstance(formula.bdd(), isFunction);
+        BDDExpr bddExpr = BDDExpr.newInstance(formula.bdd(), false);
         return isFunction ? F.Function(bddExpr) : bddExpr;
       }
     }

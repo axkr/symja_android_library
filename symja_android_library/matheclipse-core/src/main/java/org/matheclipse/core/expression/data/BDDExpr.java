@@ -4,6 +4,8 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.List;
+import org.logicng.formulas.Variable;
 import org.logicng.knowledgecompilation.bdds.BDD;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.DataExpr;
@@ -74,9 +76,17 @@ public class BDDExpr extends DataExpr<BDD> implements Externalizable {
     return isPureFunction;
   }
 
+
   @Override
   public String toString() {
-    return fData.toString();
+    if (fData instanceof BDD) {
+      BDD bdd = fData;
+      List<Variable> variableOrder = fData.getVariableOrder();
+      return "BooleanFunction(Index: " + fData.index() + " Number of variables: "
+          + variableOrder.size() + ")";
+    }
+
+    return fHead + "[" + fData.toString() + "]";
   }
 
   @Override
