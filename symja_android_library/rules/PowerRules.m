@@ -7,8 +7,7 @@
  E^(I*Infinity)=Indeterminate,
  E^(-I*Infinity)=Indeterminate,
  E^(ComplexInfinity)=Indeterminate,
- E^Log(x_):=x,
- E^(a_*Log(x_)):=x^a /; FreeQ(a,x),
+ E^Log(x_):=x, 
  Overflow()^(-1) := Underflow(),
  Underflow()^(-1) := Overflow()
 }

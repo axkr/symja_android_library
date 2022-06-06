@@ -4127,29 +4127,71 @@ public final class Arithmetic {
         }
       }
 
-      if (base.isE() && (exponent.isPlusTimesPower())) {
-        IExpr expandedFunction = F.evalExpand(exponent);
-        if (expandedFunction.isPlus()) {
-          return powerEPlus((IAST) expandedFunction);
-        }
+      if (exponent.isPlusTimesPower()) {
+        if (base.isE()) {
+          if (exponent.isLog()) {
+            return exponent.first();
+          }
+          IExpr expandedFunction = F.evalExpand(exponent);
+          if (expandedFunction.isPlus()) {
+            return powerEPlus((IAST) expandedFunction);
+          }
 
-        if (expandedFunction.isTimes()) {
-          IAST times = (IAST) expandedFunction;
-          IExpr i = Times.of(times, F.CNI, F.Power(S.Pi, F.CN1));
-          if (i.isRational()) {
-            IRational rat = (IRational) i;
-            if (rat.isGT(F.C1) || rat.isLE(F.CN1)) {
-              IInteger t = rat.trunc();
-              t = t.add(t.irem(F.C2));
-              // exp(I*(i - t)*Pi)
-              return S.Exp.of(F.Times(F.CI, S.Pi, F.Subtract(i, t)));
-            } else {
-              IRational t1 = rat.multiply(F.C6).normalize();
-              IRational t2 = rat.multiply(F.C4).normalize();
-              if (t1.isInteger() || t2.isInteger()) {
-                // Cos(- I*times) + I*Sin(- I*times)
-                return S.Plus.of(F.Cos(F.Times(F.CNI, times)),
-                    F.Times(F.CI, F.Sin(F.Times(F.CNI, times))));
+          if (expandedFunction.isTimes()) {
+            IAST times = (IAST) expandedFunction;
+
+            int index = times.indexOf(x -> x.isLog());
+            if (index > 0) {
+              // E^(rest_*Log(x_)):=x^rest /; FreeQ(rest,x)
+              IAST log = (IAST) times.get(index);
+              IExpr logArg1 = log.first();
+              IAST rest = times.removeAtCopy(index);
+              if (rest.isFree(logArg1)) {
+                return F.Power(logArg1, rest);
+              }
+            }
+            IExpr i = Times.of(times, F.CNI, F.Power(S.Pi, F.CN1));
+            if (i.isRational()) {
+              IRational rat = (IRational) i;
+              if (rat.isGT(F.C1) || rat.isLE(F.CN1)) {
+                IInteger t = rat.trunc();
+                t = t.add(t.irem(F.C2));
+                // exp(I*(i - t)*Pi)
+                return S.Exp.of(F.Times(F.CI, S.Pi, F.Subtract(i, t)));
+              } else {
+                IRational t1 = rat.multiply(F.C6).normalize();
+                IRational t2 = rat.multiply(F.C4).normalize();
+                if (t1.isInteger() || t2.isInteger()) {
+                  // Cos(- I*times) + I*Sin(- I*times)
+                  return S.Plus.of(F.Cos(F.Times(F.CNI, times)),
+                      F.Times(F.CI, F.Sin(F.Times(F.CNI, times))));
+                }
+              }
+            }
+          }
+        } else {
+          if (exponent.isPower()) {
+            IAST logBase = F.Log(base);
+            IAST pow = (IAST) ast.exponent();
+            if (pow.base().equals(logBase) && pow.exponent().isInteger()) {
+              // x ^ (Log(x) ^ intExponent) ==> E ^ (Log(x) ^ (intExponent+1))
+              IInteger intExponent = (IInteger) pow.exponent();
+              if (!intExponent.isZero()) {
+                return F.Power(S.E, F.Power(logBase, intExponent.inc()));
+              }
+            }
+          } else if (exponent.isTimes()) {
+            IAST logBase = F.Log(base);
+            IAST times = (IAST) ast.exponent();
+            int index = times
+                .indexOf(x -> x.isPower() && x.first().equals(logBase) && x.exponent().isInteger());
+            if (index > 0) {
+              // x ^ (rest_ * Log(x) ^ intExponent) ==> E ^ (rest * Log(x) ^ (intExponent+1))
+              IAST pow = (IAST) times.get(index);
+              IInteger intExponent = (IInteger) pow.exponent();
+              if (!intExponent.isZero()) {
+                IASTMutable copy = times.setAtCopy(index, F.Power(logBase, intExponent.inc()));
+                return F.Power(S.E, copy);
               }
             }
           }

@@ -18424,6 +18424,18 @@ public class LowercaseTestCase extends AbstractTestCase {
   }
 
   public void testPower() {
+    check("a^(1/Log(a)^4)", //
+        "E^(1/Log(a)^3)");
+    check("a^(Log(a)^7)", //
+        "E^Log(a)^8");
+    check("a^(3*b/Log(a)^3)", //
+        "E^((3*b)/Log(a)^2)");
+    check("a^(b/Log(a))", //
+        "E^b");
+    check("a^(1/Log(a))", //
+        "E");
+
+
     check("1/Overflow()", //
         "Underflow()");
     check("1/Underflow()", //
@@ -18861,7 +18873,7 @@ public class LowercaseTestCase extends AbstractTestCase {
     check("Sqrt(x^2)", //
         "Sqrt(x^2)");
 
-    check("E^(Log(x))", //
+    check("E^Log(x)", //
         "x");
     check("E^(y+Log(x))", //
         "E^y*x");
