@@ -824,16 +824,7 @@ public final class Validate {
     if (eq.isEqual()) {
       IAST equal = (IAST) eq;
       IExpr subtract = EvalEngine.get().evaluate(F.Subtract(equal.arg1(), equal.arg2()));
-      if (subtract.isList()) {
-        IAST list = (IAST) subtract;
-        for (int i = 1; i < list.size(); i++) {
-          IExpr arg = list.get(i);
-          termsEqualZeroList.append(F.Equal(arg.isTimes() ? arg : F.evalExpandAll(arg), F.C0));
-        }
-        return;
-      }
-      termsEqualZeroList
-          .append(F.Equal(subtract.isTimes() ? subtract : F.evalExpandAll(subtract), F.C0));
+      subtractListRecursive(subtract, termsEqualZeroList);
       return;
     }
     if (eq.isAST2()) {
@@ -856,6 +847,23 @@ public final class Validate {
     // not an equation or inequation
     throw new ArgumentTypeException(
         "binary equation or inequation expression expected instead of " + eq.toString());
+  }
+
+  private static void subtractListRecursive(IExpr subtract, IASTAppendable termsEqualZeroList) {
+    if (subtract.isList()) {
+      IAST list = (IAST) subtract;
+      for (int i = 1; i < list.size(); i++) {
+        IExpr arg = list.get(i);
+        if (arg.isList()) {
+          subtractListRecursive(arg, termsEqualZeroList);
+          continue;
+        }
+        termsEqualZeroList.append(F.Equal(arg.isTimes() ? arg : F.evalExpandAll(arg), F.C0));
+      }
+      return;
+    }
+    termsEqualZeroList
+        .append(F.Equal(subtract.isTimes() ? subtract : F.evalExpandAll(subtract), F.C0));
   }
 
   /**
