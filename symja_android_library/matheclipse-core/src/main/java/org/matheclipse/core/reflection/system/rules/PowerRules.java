@@ -15,7 +15,7 @@ public interface PowerRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 5, 6 };
+  final public static int[] SIZES = { 5, 5 };
 
   final public static IAST RULES = List(
     IInit(Power, SIZES),
@@ -43,9 +43,6 @@ public interface PowerRules {
     // E^ComplexInfinity=Indeterminate
     ISet(Exp(CComplexInfinity),
       Indeterminate),
-    // E^Log(x_):=x
-    ISetDelayed(Exp(Log(x_)),
-      x),
     // 1/Overflow():=Underflow()
     ISetDelayed(Power(Overflow(),CN1),
       Underflow()),

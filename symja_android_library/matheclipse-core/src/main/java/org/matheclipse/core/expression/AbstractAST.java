@@ -1644,6 +1644,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
+  public IASTAppendable copyFrom(int startPosition, int endPosition) {
+    AST result = new AST(endPosition - startPosition + 1, false);
+    result.append(head());
+    result.appendAll(this, startPosition, endPosition);
+    return result;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public IASTAppendable copyHead() {
     return AST.newInstance(head());
   }

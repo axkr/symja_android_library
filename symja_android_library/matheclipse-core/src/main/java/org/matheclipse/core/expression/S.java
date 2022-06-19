@@ -2016,6 +2016,9 @@ public class S {
   public final static IBuiltInSymbol ConvexHullMesh =
       F.initFinalSymbol("ConvexHullMesh", ID.ConvexHullMesh);
 
+  public final static IBuiltInSymbol CoordinateBoundingBox =
+      F.initFinalSymbol("CoordinateBoundingBox", ID.CoordinateBoundingBox);
+
   /**
    * CoplanarPoints({{x1,y1,z1},{x2,y2,z2},{x3,y3,z3},{a,b,c},...}) - returns true if the point
    * `{a,b,c]` is on the plane defined by the first three points `{x1,y1,z1},{x2,y2,z2},{x3,y3,z3}`.
@@ -8499,6 +8502,8 @@ public class S {
    */
   public final static IBuiltInSymbol SatisfiableQ =
       F.initFinalSymbol("SatisfiableQ", ID.SatisfiableQ);
+
+  public final static IBuiltInSymbol Scale = F.initFinalSymbol("Scale", ID.Scale);
 
   public final static IBuiltInSymbol Scaled = F.initFinalSymbol("Scaled", ID.Scaled);
 

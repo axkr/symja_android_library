@@ -359,17 +359,17 @@ public class AST extends HMArrayList implements Externalizable {
       case 1:
         return this;
       case 2:
-        return F.headAST0(head());
+        return new AST0(head());
       case 3:
-        return F.unaryAST1(head(), arg2());
-      // case 4:
-      // return F.binaryAST2(head(), arg2(), arg3());
-      // case 5:
-      // return F.ternaryAST3(head(), arg2(), arg3(), arg4());
+        return new AST1(head(), arg2());
+      case 4:
+        return new AST2(head(), arg2(), arg3());
+      case 5:
+        return new AST3(head(), arg2(), arg3(), arg4());
       default:
-        if (isOrderlessAST()) {
-          return super.rest();
-        }
+        // if (isOrderlessAST()) {
+        // return super.rest();
+        // }
         // return new ASTProxy(this, 2);
         return super.rest();
     }

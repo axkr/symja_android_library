@@ -522,7 +522,7 @@ public class FractionSym extends AbstractFractionSym {
         return this;
       if (oint == -1)
         return this.negate();
-      long newnum = (long) fNumerator * oint;
+      long newnum = (long) fNumerator * (long)oint;
       return valueOf(newnum, fDenominator);
     }
 
@@ -561,8 +561,8 @@ public class FractionSym extends AbstractFractionSym {
     }
 
     FractionSym fs = (FractionSym) other;
-    long newnum = (long) fNumerator * fs.fNumerator;
-    long newdenom = (long) fDenominator * fs.fDenominator;
+    long newnum = (long) fNumerator * (long) fs.fNumerator;
+    long newdenom = (long) fDenominator * (long) fs.fDenominator;
     return valueOf(newnum, newdenom);
   }
 

@@ -1,10 +1,10 @@
-package org.matheclipse.io.system;
+package org.matheclipse.core.system;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
 /** Tests forSolve and Roots functions */
-public class SolveTest extends AbstractTestCase {
+public class SolveTest extends ExprEvaluatorTestCase {
 
   public SolveTest(String name) {
     super(name);
@@ -1348,6 +1348,28 @@ public class SolveTest extends AbstractTestCase {
     check("Solve(Cos(x) + Tan(3*x) + Cos(5*x) ==0,x)", //
         "Solve(Cos(x)+Cos(5*x)+Tan(3*x)==0,x)");
   }
+
+  public void testSolveIssue535() {
+    check("Solve({{-1+x+2*y}==0,{3+x+4*y}==0},{x,y})", //
+        "{{x->5,y->-2}}");
+    check("Solve({{1,2},{1,4}}.{{x},{y}}=={{1},{-3}},{x,y})", //
+        "{{x->5,y->-2}}");
+  }
+
+  public void testSolveIssue538() {
+    // TODO issue 538
+    // check("Solve(-3+x^(1/3)+x^2==0,x)", //
+    // "");
+    check("Solve(-3+x+x^6==0,x)", //
+        "{{x->-1.27391},{x->-0.567906+I*(-1.10869)},{x->-0.567906+I*1.10869},{x->0.648981+I*(-0.971557)},{x->0.648981+I*0.971557},{x->1.11176}}");
+
+  }
+
+  public void testSolveIssue539() {
+    check("Solve(Conjugate(x)==5-I*20,x)", //
+        "{{x->5+I*20}}");
+  }
+
 
   public void testSystem805() {
     check("Solve({x^2==4,x+20==10},x)", "{}");

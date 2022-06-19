@@ -73,6 +73,7 @@ import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -1613,100 +1614,120 @@ public class EvalEngine implements Serializable {
       // check before going one recursion deeper
       throw TimeoutException.TIMED_OUT;
     }
+
+    if (fTraceMode) {
+      return evalLoopTraceMode(expr);
+    } else {
+      IExpr result = expr;
+      try {
+        fRecursionCounter++;
+        stackPush(expr);
+        long iterationCounter = 0;
+        while (true) {
+          if (result.isUnevaluated()) {
+            return result.first();
+          }
+          final IExpr temp = result.evaluate(this);
+          if (temp.isPresent()) {
+            if (fStopRequested || Thread.currentThread().isInterrupted()) {
+              throw TimeoutException.TIMED_OUT;
+            }
+            if (LOGGER.isDebugEnabled() && temp.equals(result)) {
+              // Endless iteration detected in `1` in evaluation loop.
+              IOFunctions.printMessage(result.topHead(), "itendless", F.list(temp), this);
+              IterationLimitExceeded.throwIt(fIterationLimit, result);
+            }
+            if (fOnOffMode) {
+              printOnOffTrace(result, temp);
+            }
+
+            result = temp;
+            if (++iterationCounter >= fIterationLimit && fIterationLimit >= 0) {
+              IterationLimitExceeded.throwIt(iterationCounter, result);
+            }
+
+            continue;
+          }
+          return iterationCounter == 0 ? F.NIL : result;
+        }
+      } catch (UnsupportedOperationException uoe) {
+        if (Config.FUZZ_TESTING) {
+          throw new NullPointerException();
+        }
+        LOGGER.log(getLogLevel(), "Evaluation aborted: {}", result);
+        throw AbortException.ABORTED;
+      } finally {
+        stackPop();
+        if (fTraceMode) {
+          fTraceStack.tearDown(fRecursionCounter, true);
+        }
+        fRecursionCounter--;
+        if (fStopRequested) {
+          throw TimeoutException.TIMED_OUT;
+        }
+      }
+    }
+
+
+  }
+
+  /**
+   * 
+   * Evaluate an object in <a href=
+   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Trace.md">trace
+   * mode</a>, if evaluation is not possible return <code>F.NIL</code>.
+   *
+   * @param expr the expression which should be evaluated
+   * @return the evaluated expression or <code>F.NIL</code> if evaluation isn't possible
+   * @see #evalWithoutNumericReset(IExpr)
+   * @see #evaluateNIL(IExpr)
+   */
+  private IExpr evalLoopTraceMode(final IExpr expr) {
     IExpr result = expr;
     try {
       fRecursionCounter++;
       stackPush(expr);
-      if (fTraceMode) {
-        if (result.isUnevaluated()) {
-          return result.first();
-        }
-        fTraceStack.setUp(expr, fRecursionCounter);
-        IExpr temp = result.evaluate(this);
-        if (temp.isPresent()) {
-          if (fStopRequested || Thread.currentThread().isInterrupted()) {
-            throw TimeoutException.TIMED_OUT;
-          }
 
-          fTraceStack.add(expr, temp, fRecursionCounter, 0L, EVALUATION_LOOP);
-          result = temp;
-          long iterationCounter = 1;
-          while (true) {
-            if (result.isUnevaluated()) {
-              return result.first();
-            }
-            temp = result.evaluate(this);
-            if (temp.isPresent()) {
-              if (fStopRequested || Thread.currentThread().isInterrupted()) {
-                throw TimeoutException.TIMED_OUT;
-              }
-              if (LOGGER.isDebugEnabled()) {
-                if (temp.equals(result)) {
-                  // Endless iteration detected in `1` in evaluation loop.
-                  IOFunctions.printMessage(result.topHead(), "itendless", F.list(temp), this);
-                  IterationLimitExceeded.throwIt(fIterationLimit, result);
-                }
-              }
-              fTraceStack.add(result, temp, fRecursionCounter, iterationCounter, EVALUATION_LOOP);
-              result = temp;
-              if (fIterationLimit >= 0 && fIterationLimit <= ++iterationCounter) {
-                IterationLimitExceeded.throwIt(iterationCounter, result);
-              }
-            } else {
-              return result;
-            }
-          }
+      if (result.isUnevaluated()) {
+        return result.first();
+      }
+      fTraceStack.setUp(expr, fRecursionCounter);
+      IExpr temp = result.evaluate(this);
+      if (temp.isPresent()) {
+        if (fStopRequested || Thread.currentThread().isInterrupted()) {
+          throw TimeoutException.TIMED_OUT;
         }
-      } else {
-        if (result.isUnevaluated()) {
-          return result.first();
-        }
-        IExpr temp = result.evaluate(this);
-        if (temp.isPresent()) {
-          if (fStopRequested || Thread.currentThread().isInterrupted()) {
-            throw TimeoutException.TIMED_OUT;
-          }
-          if (fOnOffMode) {
-            printOnOffTrace(expr, temp);
-          }
-          // if (temp.topHead().getContext().equals(Context.RUBI)) {
-          // printOnOffTrace(expr, temp);
-          // }
 
-          result = temp;
-          long iterationCounter = 1;
-          while (true) {
-            if (result.isUnevaluated()) {
-              return result.first();
-            }
-            temp = result.evaluate(this);
-            if (temp.isPresent()) {
-              if (fStopRequested || Thread.currentThread().isInterrupted()) {
-                throw TimeoutException.TIMED_OUT;
-              }
-              if (LOGGER.isDebugEnabled()) {
-                if (temp.equals(result)) {
-                  // Endless iteration detected in `1` in evaluation loop.
-                  IOFunctions.printMessage(result.topHead(), "itendless", F.list(temp), this);
-                  IterationLimitExceeded.throwIt(fIterationLimit, result);
-                }
-              }
-              if (fOnOffMode) {
-                printOnOffTrace(result, temp);
-              }
-
-              if (fIterationLimit >= 0 && fIterationLimit <= ++iterationCounter) {
-                IterationLimitExceeded.throwIt(iterationCounter, temp);
-              }
-              result = temp;
-            } else {
-              return result;
-            }
+        fTraceStack.add(expr, temp, fRecursionCounter, 0L, EVALUATION_LOOP);
+        result = temp;
+        long iterationCounter = 1;
+        while (true) {
+          if (result.isUnevaluated()) {
+            return result.first();
           }
+          temp = result.evaluate(this);
+          if (temp.isPresent()) {
+            if (fStopRequested || Thread.currentThread().isInterrupted()) {
+              throw TimeoutException.TIMED_OUT;
+            }
+            if (LOGGER.isDebugEnabled()) {
+              if (temp.equals(result)) {
+                // Endless iteration detected in `1` in evaluation loop.
+                IOFunctions.printMessage(result.topHead(), "itendless", F.list(temp), this);
+                IterationLimitExceeded.throwIt(fIterationLimit, result);
+              }
+            }
+            fTraceStack.add(result, temp, fRecursionCounter, iterationCounter, EVALUATION_LOOP);
+
+            result = temp;
+            if (++iterationCounter >= fIterationLimit && fIterationLimit >= 0) {
+              IterationLimitExceeded.throwIt(iterationCounter, result);
+            }
+            continue;
+          }
+          return result;
         }
       }
-
-      return F.NIL;
     } catch (UnsupportedOperationException uoe) {
       if (Config.FUZZ_TESTING) {
         throw new NullPointerException();
@@ -1723,6 +1744,7 @@ public class EvalEngine implements Serializable {
         throw TimeoutException.TIMED_OUT;
       }
     }
+    return F.NIL;
   }
 
   /**
@@ -2946,7 +2968,7 @@ public class EvalEngine implements Serializable {
    * @return
    * @throws org.matheclipse.parser.client.SyntaxError if a parsing error occurs
    */
-  public final IExpr parse(String expression) {
+  public final IExpr parse(String expression) throws SyntaxError {
     return parse(expression, ParserConfig.EXPLICIT_TIMES_OPERATOR);
   }
 

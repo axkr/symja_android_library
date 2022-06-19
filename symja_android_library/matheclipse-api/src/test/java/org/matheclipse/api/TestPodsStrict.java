@@ -27,7 +27,6 @@ public class TestPodsStrict {
     Config.UNPROTECT_ALLOWED = false;
     Config.USE_MANIPULATE_JS = true;
     Config.JAS_NO_THREADS = false;
-    // Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
     Config.MATHML_TRIG_LOWERCASE = false;
     Config.MAX_AST_SIZE = 10000;
     Config.MAX_OUTPUT_SIZE = 10000;

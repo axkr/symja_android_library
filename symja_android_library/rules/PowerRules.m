@@ -6,8 +6,7 @@
  E^(x_+Pi*c_Complex):=Module({r=Re(c),j=Im(c)},If(EvenQ(j),E^x,-E^x) /; r==0 && IntegerQ(j)),
  E^(I*Infinity)=Indeterminate,
  E^(-I*Infinity)=Indeterminate,
- E^(ComplexInfinity)=Indeterminate,
- E^Log(x_):=x, 
+ E^(ComplexInfinity)=Indeterminate, 
  Overflow()^(-1) := Underflow(),
  Underflow()^(-1) := Overflow()
 }

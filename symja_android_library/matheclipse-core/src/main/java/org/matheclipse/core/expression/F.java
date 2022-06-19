@@ -984,6 +984,7 @@ public class F extends S {
     UNARY_INVERSE_FUNCTIONS.put(Log, Exp);
     UNARY_INVERSE_FUNCTIONS.put(Identity, Identity);
 
+    UNARY_INVERSE_FUNCTIONS.put(Conjugate, Conjugate);
     UNARY_INVERSE_FUNCTIONS.put(Erf, InverseErf);
     UNARY_INVERSE_FUNCTIONS.put(Erfc, InverseErfc);
 

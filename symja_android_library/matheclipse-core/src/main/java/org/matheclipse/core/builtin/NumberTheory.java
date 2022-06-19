@@ -27,6 +27,7 @@ import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
@@ -1080,67 +1081,98 @@ public final class NumberTheory {
 
       if (arg1.isRational()) {
         IRational rat = (IRational) arg1;
-
-        IASTAppendable continuedFractionList;
-        if (rat.denominator().isOne()) {
-          continuedFractionList = F.ListAlloc(1);
-          continuedFractionList.append(rat.numerator());
-        } else if (rat.numerator().isOne()) {
-          continuedFractionList = F.ListAlloc(2);
-          continuedFractionList.append(F.C0);
-          continuedFractionList.append(rat.denominator());
-        } else {
-          IFraction temp = F.fraction(rat.numerator(), rat.denominator());
-          IInteger quotient;
-          IInteger remainder;
-          continuedFractionList = F.ListAlloc(10);
-          while (temp.denominator().compareInt(1) > 0 && (0 < maxIterations--)) {
-            quotient = temp.numerator().div(temp.denominator());
-            remainder = temp.numerator().mod(temp.denominator());
-            continuedFractionList.append(quotient);
-            temp = F.fraction(temp.denominator(), remainder);
-            if (temp.denominator().isOne()) {
-              continuedFractionList.append(temp.numerator());
-            }
-          }
+        BigInteger numerator = rat.toBigNumerator();
+        BigInteger denominator = rat.toBigDenominator();
+        boolean isNegative = numerator.compareTo(BigInteger.ZERO) < 0;
+        if (isNegative) {
+          numerator = numerator.negate();
         }
-        return continuedFractionList;
+        return rationalToContinuedFraction(numerator, denominator, isNegative, maxIterations,
+            false);
       }
 
       return F.NIL;
     }
 
     private static IAST realToContinuedFraction(INum value, int iterationLimit, EvalEngine engine) {
-      final double doubleValue = value.getRealPart();
+      double doubleValue = value.getRealPart();
       if (value.isNumIntValue()) {
         return F.list(F.ZZ((int) Math.rint(doubleValue)));
       }
-      // int ip = (int) doubleValue;
-      IASTAppendable continuedFractionList =
-          F.ListAlloc(iterationLimit > 0 && iterationLimit < 1000 ? iterationLimit + 10 : 100);
-      int aNow = (int) doubleValue;
-      double tNow = doubleValue - aNow;
-      double tNext;
-      int aNext;
-      continuedFractionList.append(aNow);
-      for (int i = 0; i < iterationLimit - 1; i++) {
-        if (i >= 99) {
-          LOGGER.log(engine.getLogLevel(),
-              "ContinuedFraction: calculations of double number values require a iteration limit less equal 100.");
-          return F.NIL;
-        }
-        double rec = 1.0 / tNow;
-        aNext = (int) rec;
-        if (aNext == Integer.MAX_VALUE) {
-          break;
-        }
-        tNext = rec - aNext;
+      boolean isNegative = doubleValue < 0;
+      if (isNegative) {
+        doubleValue = Math.abs(doubleValue);
+      }
+      BigFraction bigFraction = new BigFraction(doubleValue);
+      return rationalToContinuedFraction(bigFraction.getNumerator(), bigFraction.getDenominator(),
+          isNegative, iterationLimit, true);
+    }
 
-        continuedFractionList.append(aNext);
-        tNow = tNext;
+    private static IAST rationalToContinuedFraction(BigInteger numerator, BigInteger denominator,
+        boolean isNegative, int iterationLimit, boolean checkNumericZero) {
+      IASTAppendable continuedFractionList;
+      if (denominator.equals(BigInteger.ONE)) {
+        continuedFractionList = F.ListAlloc(1);
+        continuedFractionList.append(isNegative ? F.ZZ(numerator.negate()) : F.ZZ(numerator));
+      } else if (numerator.equals(BigInteger.ONE)) {
+        continuedFractionList = F.ListAlloc(2);
+        continuedFractionList.append(F.C0);
+        continuedFractionList.append(isNegative ? F.ZZ(denominator.negate()) : F.ZZ(denominator));
+      } else {
+        continuedFractionList = F.ListAlloc(10);
+        while (denominator.compareTo(BigInteger.ONE) > 0 && (0 < iterationLimit--)) {
+          BigInteger[] divideAndRemainder = numerator.divideAndRemainder(denominator);
+          continuedFractionList.append(
+              isNegative ? F.ZZ(divideAndRemainder[0].negate()) : F.ZZ(divideAndRemainder[0]));
+          numerator = denominator;
+          denominator = divideAndRemainder[1];
+          if (denominator.equals(BigInteger.ONE)) {
+            continuedFractionList.append(isNegative ? F.ZZ(numerator.negate()) : F.ZZ(numerator));
+          }
+          if (checkNumericZero && F.isZero(denominator.doubleValue() / numerator.doubleValue(),
+              Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+            break;
+          }
+        }
       }
       return continuedFractionList;
     }
+
+    // private static IAST realToContinuedFraction(INum value, int iterationLimit,
+    // EvalEngine engine) {
+    // final double doubleValue = value.getRealPart();
+    // if (value.isNumIntValue()) {
+    // return F.list(F.ZZ((int) Math.rint(doubleValue)));
+    // }
+    // BigFraction bigFraction = new BigFraction(doubleValue);
+    // System.out.println(bigFraction.toString());
+    // // int ip = (int) doubleValue;
+    // IASTAppendable continuedFractionList =
+    // F.ListAlloc(iterationLimit > 0 && iterationLimit < 1000 ? iterationLimit + 10 : 100);
+    // int aNow = (int) doubleValue;
+    // double tNow = doubleValue - aNow;
+    // double tNext;
+    // int aNext;
+    // continuedFractionList.append(aNow);
+    // for (int i = 0; i < iterationLimit - 1; i++) {
+    // if (i >= 99) {
+    // LOGGER.log(engine.getLogLevel(),
+    // "ContinuedFraction: calculations of double number values require a iteration limit less equal
+    // 100.");
+    // return F.NIL;
+    // }
+    // double rec = 1.0 / tNow;
+    // aNext = (int) rec;
+    // if (aNext == Integer.MAX_VALUE) {
+    // break;
+    // }
+    // tNext = rec - aNext;
+    //
+    // continuedFractionList.append(aNext);
+    // tNow = tNext;
+    // }
+    // return continuedFractionList;
+    // }
 
     @Override
     public int[] expectedArgSize(IAST ast) {

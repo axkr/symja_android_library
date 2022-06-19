@@ -187,8 +187,8 @@ public class ExprEvaluatorTests {
         F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), //
         F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1), F.C0), //
         F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0), F.C0), //
-        F.List(F.num("-3.1415", 30), F.num("2.987", 30), F.num( "-1", 30 ),
-            F.num("0.0", 30), F.num("1", 30)), //
+        F.List(F.num("-3.1415", 30), F.num("2.987", 30), F.num("-1", 30), F.num("0.0", 30),
+            F.num("1", 30)), //
         F.List(F.CN1, F.CN2, F.C3), //
         F.List(F.CN1D2, F.CN2, F.C3), //
         F.List(F.x, F.CN2, F.C3), //

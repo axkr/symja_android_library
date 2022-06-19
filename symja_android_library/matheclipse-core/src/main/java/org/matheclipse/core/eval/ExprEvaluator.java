@@ -11,8 +11,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;
+import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -347,8 +349,16 @@ public class ExprEvaluator {
     // F.join();
     try {
       return evalTryCatch(expr, engineRef);
+    } catch (final AbortException e) {
+      return S.$Aborted;
+    } catch (final FailedException e) {
+      return S.$Failed;
+    } catch (final SyntaxError e) { // catches parser errors
+      LOGGER.debug("syntax error", e);
+      return F.stringx(e.getMessage());
     } catch (SymjaMathException sma) {
       LOGGER.debug("ExprEvaluator.evalTopLevel() failed", sma);
+      IOFunctions.printMessage(expr.topHead(), sma, engineRef[0]);
       return expr;
     } finally {
       // Quit may set a new engine

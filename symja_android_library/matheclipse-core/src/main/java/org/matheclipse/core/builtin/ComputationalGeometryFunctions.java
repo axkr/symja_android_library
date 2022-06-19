@@ -18,6 +18,7 @@ public class ComputationalGeometryFunctions {
     private static void init() {
       S.ConvexHullMesh.setEvaluator(new ConvexHullMesh());
       S.CollinearPoints.setEvaluator(new CollinearPoints());
+      S.CoordinateBoundingBox.setEvaluator(new CoordinateBoundingBox());
       S.CoplanarPoints.setEvaluator(new CoplanarPoints());
     }
   }
@@ -26,7 +27,11 @@ public class ComputationalGeometryFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
+      if (ast.arg1().isListOfLists()) {
+        IAST listOfPoints = (IAST) ast.arg1();
+        if (listOfPoints.argSize() > 2) {
+
+        }
       }
       return F.NIL;
     }
@@ -34,6 +39,76 @@ public class ComputationalGeometryFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+  }
+
+  private static class CoordinateBoundingBox extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isListOfLists()) {
+        IAST listOfPoints = (IAST) ast.arg1();
+        if (listOfPoints.argSize() > 0) {
+          IAST points0 = (IAST) listOfPoints.arg1();
+          if (points0.argSize() > 0) {
+            IASTAppendable minList = F.ListAlloc(points0.size());
+            IASTAppendable maxList = F.ListAlloc(points0.size());
+            for (int i = 1; i < points0.size(); i++) {
+              minList.append(F.ast(S.Min, points0.argSize()));
+              maxList.append(F.ast(S.Max, points0.argSize()));
+            }
+            IAST result = F.List(minList, maxList);
+            for (int j = 1; j < points0.size(); j++) {
+              IASTAppendable minAppendable = (IASTAppendable) minList.get(j);
+              IASTAppendable maxAppendable = (IASTAppendable) maxList.get(j);
+              for (int i = 1; i < listOfPoints.size(); i++) {
+                IAST points = listOfPoints.getAST(i);
+                if (points.argSize() != points0.argSize()) {
+                  return F.NIL;
+                }
+                minAppendable.append(points.get(j));
+                maxAppendable.append(points.get(j));
+              }
+            }
+
+            // evaluate the Min and Max calculations inside referenced lists
+            minList.forEach((x, i) -> minList.set(i, engine.evaluate(x)));
+            maxList.forEach((x, i) -> maxList.set(i, engine.evaluate(x)));
+
+            IExpr pad = F.C0;
+            if (ast.isAST2()) {
+              // pad the result
+              pad = ast.arg2();
+            }
+            if (pad.isZero()) {
+              return result;
+            }
+            if (pad.isAST(S.Scaled, 2)) {
+              IExpr scaled = pad.first();
+              for (int i = 1; i < minList.size(); i++) {
+                IExpr minPart = minList.get(i);
+                IExpr maxPart = maxList.get(i);
+                minList.set(i, F.Plus(minPart, F.Times(scaled, F.Subtract(minPart, maxPart))));
+                maxList.set(i, F.Plus(maxPart, F.Times(scaled, F.Subtract(maxPart, minPart))));
+              }
+            } else {
+              for (int i = 1; i < minList.size(); i++) {
+                IExpr minPart = minList.get(i);
+                IExpr maxPart = maxList.get(i);
+                minList.set(i, F.Subtract(minPart, pad));
+                maxList.set(i, F.Plus(maxPart, pad));
+              }
+            }
+            return result;
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 

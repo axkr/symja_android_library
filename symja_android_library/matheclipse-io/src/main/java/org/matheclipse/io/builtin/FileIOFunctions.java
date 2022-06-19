@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -35,7 +35,7 @@ public class FileIOFunctions {
     }
   }
 
-  private static final class FileNames extends AbstractCoreFunctionEvaluator {
+  private static final class FileNames extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
@@ -53,7 +53,7 @@ public class FileIOFunctions {
           return F.CEmptyList;
         }
         if (ast.size() == 2) {
-          IExpr arg1 = engine.evaluate(ast.arg1());
+          IExpr arg1 = ast.arg1();
           if (arg1.isList()) {
             return ((IAST) arg1).mapThread(ast, 1);
           }
@@ -99,10 +99,6 @@ public class FileIOFunctions {
       return ARGS_0_3;
     }
 
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
-    }
   }
 
   public static void initialize() {

@@ -9,8 +9,8 @@ ListCorrelate(kernel-list, tensor-list)
 ### Examples
 
 ```
->> ListCorrelate({x, y}, {a, b, c, d, e, f}) 
-{a*x+b*y,b*x+c*y,c*x+d*y,d*x+e*y,e*x+f*y}
+>> ListCorrelate({{u, v}, {w, x}}, {{a,b,c,p}, {d,e,f,q}, {g, h, i,r}})
+{{a*u+b*v+d*w+e*x,b*u+c*v+e*w+f*x,c*u+p*v+f*w+q*x},{d*u+e*v+g*w+h*x,e*u+f*v+h*w+i*x,f*u+q*v+i*w+r*x}}
 ```
 
 ### Github

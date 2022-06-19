@@ -4127,16 +4127,17 @@ public final class Arithmetic {
         }
       }
 
-      if (exponent.isPlusTimesPower()) {
-        if (base.isE()) {
-          if (exponent.isLog()) {
-            return exponent.first();
-          }
+      if (base.isE()) {
+        // E^exponent_
+        if (exponent.isLog()) {
+          // E^Log(x_) := x
+          return exponent.first();
+        }
+        if (exponent.isPlusTimesPower()) {
           IExpr expandedFunction = F.evalExpand(exponent);
           if (expandedFunction.isPlus()) {
             return powerEPlus((IAST) expandedFunction);
           }
-
           if (expandedFunction.isTimes()) {
             IAST times = (IAST) expandedFunction;
 
@@ -4169,30 +4170,30 @@ public final class Arithmetic {
               }
             }
           }
-        } else {
-          if (exponent.isPower()) {
-            IAST logBase = F.Log(base);
-            IAST pow = (IAST) ast.exponent();
-            if (pow.base().equals(logBase) && pow.exponent().isInteger()) {
-              // x ^ (Log(x) ^ intExponent) ==> E ^ (Log(x) ^ (intExponent+1))
-              IInteger intExponent = (IInteger) pow.exponent();
-              if (!intExponent.isZero()) {
-                return F.Power(S.E, F.Power(logBase, intExponent.inc()));
-              }
+        }
+      } else {
+        if (exponent.isPower()) {
+          IAST logBase = F.Log(base);
+          IAST pow = (IAST) ast.exponent();
+          if (pow.base().equals(logBase) && pow.exponent().isInteger()) {
+            // x ^ (Log(x) ^ intExponent) ==> E ^ (Log(x) ^ (intExponent+1))
+            IInteger intExponent = (IInteger) pow.exponent();
+            if (!intExponent.isZero()) {
+              return F.Power(S.E, F.Power(logBase, intExponent.inc()));
             }
-          } else if (exponent.isTimes()) {
-            IAST logBase = F.Log(base);
-            IAST times = (IAST) ast.exponent();
-            int index = times
-                .indexOf(x -> x.isPower() && x.first().equals(logBase) && x.exponent().isInteger());
-            if (index > 0) {
-              // x ^ (rest_ * Log(x) ^ intExponent) ==> E ^ (rest * Log(x) ^ (intExponent+1))
-              IAST pow = (IAST) times.get(index);
-              IInteger intExponent = (IInteger) pow.exponent();
-              if (!intExponent.isZero()) {
-                IASTMutable copy = times.setAtCopy(index, F.Power(logBase, intExponent.inc()));
-                return F.Power(S.E, copy);
-              }
+          }
+        } else if (exponent.isTimes()) {
+          IAST logBase = F.Log(base);
+          IAST times = (IAST) ast.exponent();
+          int index = times
+              .indexOf(x -> x.isPower() && x.first().equals(logBase) && x.exponent().isInteger());
+          if (index > 0) {
+            // x ^ (rest_ * Log(x) ^ intExponent) ==> E ^ (rest * Log(x) ^ (intExponent+1))
+            IAST pow = (IAST) times.get(index);
+            IInteger intExponent = (IInteger) pow.exponent();
+            if (!intExponent.isZero()) {
+              IASTMutable copy = times.setAtCopy(index, F.Power(logBase, intExponent.inc()));
+              return F.Power(S.E, copy);
             }
           }
         }

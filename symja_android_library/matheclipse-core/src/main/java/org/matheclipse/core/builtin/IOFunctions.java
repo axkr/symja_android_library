@@ -16,7 +16,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -36,6 +35,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.trie.SuggestTree;
 import org.matheclipse.parser.trie.SuggestTree.Node;
 import com.mitchellbosecke.pebble.PebbleEngine;
@@ -784,7 +784,7 @@ public class IOFunctions {
    * @param engine
    * @return
    */
-  public static IExpr printMessage(ISymbol symbol, final ValidateException ve, EvalEngine engine) {
+  public static IExpr printMessage(ISymbol symbol, final MathException ve, EvalEngine engine) {
     if (Config.SHOW_STACKTRACE) {
       ve.printStackTrace();
     }

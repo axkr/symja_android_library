@@ -127,12 +127,19 @@
 			<artifactId>kryo</artifactId>
 		</dependency>
 
-		<!-- logging dependencies -->
-
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 		</dependency>
+		
+		<!-- test dependencies -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-logging</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+ 
 
 	</dependencies>
 </project>
