@@ -25,7 +25,6 @@ import org.matheclipse.core.expression.data.JavaObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.ParserConfig;
 
 public class JavaFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -38,7 +37,6 @@ public class JavaFunctions {
 
     private static void init() {
       if (!Config.FUZZY_PARSER) {
-        if (!ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
           S.AddToClassPath.setEvaluator(new AddToClassPath());
           S.InstanceOf.setEvaluator(new InstanceOf());
           S.JavaNew.setEvaluator(new JavaNew());
@@ -46,7 +44,6 @@ public class JavaFunctions {
           S.JavaObjectQ.setEvaluator(new JavaObjectQ());
           S.LoadJavaClass.setEvaluator(new LoadJavaClass());
           S.SameObjectQ.setEvaluator(new SameObjectQ());
-        }
       }
     }
   }
@@ -57,9 +54,9 @@ public class JavaFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (Config.URL_CLASS_LOADER == null) {
-          Config.URL_CLASS_LOADER = (URLClassLoader) ClassLoader.getSystemClassLoader();
+          Config.URL_CLASS_LOADER = ClassLoader.getSystemClassLoader();
         }
-        URLClassLoader child = Config.URL_CLASS_LOADER;
+        ClassLoader child = Config.URL_CLASS_LOADER;
         for (int i = 1; i < ast.size(); i++) {
           IExpr arg = ast.get(i);
           if (arg.isString()) {
@@ -129,7 +126,7 @@ public class JavaFunctions {
       if (arg2.isString()) {
         try {
           if (Config.URL_CLASS_LOADER == null) {
-            Config.URL_CLASS_LOADER = (URLClassLoader) ClassLoader.getSystemClassLoader();
+            Config.URL_CLASS_LOADER = ClassLoader.getSystemClassLoader();
           }
           arg2 = JavaClassExpr.newInstance(arg2.toString(), Config.URL_CLASS_LOADER);
         } catch (ClassNotFoundException cnfex) {
@@ -205,7 +202,7 @@ public class JavaFunctions {
         if (arg1.isString()) {
           try {
             if (Config.URL_CLASS_LOADER == null) {
-              Config.URL_CLASS_LOADER = (URLClassLoader) ClassLoader.getSystemClassLoader();
+              Config.URL_CLASS_LOADER = ClassLoader.getSystemClassLoader();
             }
             arg1 = JavaClassExpr.newInstance(arg1.toString(), Config.URL_CLASS_LOADER);
           } catch (ClassNotFoundException cnfex) {
@@ -444,7 +441,7 @@ public class JavaFunctions {
           try {
             String className = arg1.toString();
             if (Config.URL_CLASS_LOADER == null) {
-              Config.URL_CLASS_LOADER = (URLClassLoader) ClassLoader.getSystemClassLoader();
+              Config.URL_CLASS_LOADER = ClassLoader.getSystemClassLoader();
             }
             JavaClassExpr jClazz = JavaClassExpr.newInstance(className, Config.URL_CLASS_LOADER);
             Class<?> clazz = jClazz.toData();
