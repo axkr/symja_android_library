@@ -433,6 +433,11 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public boolean isZero(double tolerance) {
+    return F.isZero(fApfloat.doubleValue(), tolerance);
+  }
+
+  @Override
   public IInteger roundExpr() {
     Apfloat f = ApfloatMath.round(fApfloat, 1, RoundingMode.HALF_EVEN);
     return F.ZZ(ApfloatMath.floor(f).toBigInteger());

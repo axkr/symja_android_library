@@ -672,6 +672,12 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public boolean isZero(double tolerance) {
+    return F.isZero(fComplex.getReal(), tolerance) && //
+        F.isZero(fComplex.getImaginary(), tolerance);
+  }
+
+  @Override
   public long leafCountSimplify() {
     return 5;
   }

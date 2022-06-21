@@ -184,6 +184,12 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public boolean isZero(double tolerance) {
+    return F.isZero(fApcomplex.real().doubleValue(), tolerance) && //
+        F.isZero(fApcomplex.imag().doubleValue(), tolerance);
+  }
+
+  @Override
   public int hierarchy() {
     return DOUBLECOMPLEXID;
   }

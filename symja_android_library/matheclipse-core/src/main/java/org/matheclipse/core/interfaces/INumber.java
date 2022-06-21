@@ -160,6 +160,17 @@ public interface INumber extends IExpr {
     return true;
   }
 
+  /**
+   * Test if this number equals <code>0</code> in symbolic or numeric mode. In numeric mode check if
+   * the number is close to <code>0</code> according to the given <code>tolerance</code>.
+   * 
+   * @param tolerance
+   * @return
+   */
+  default boolean isZero(double tolerance) {
+    return isZero();
+  }
+
   @Override
   default boolean isNumericFunction(boolean allowList) {
     return true;

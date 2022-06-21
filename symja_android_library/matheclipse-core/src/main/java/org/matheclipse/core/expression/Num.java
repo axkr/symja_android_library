@@ -560,6 +560,11 @@ public class Num implements INum {
   }
 
   @Override
+  public boolean isZero(double tolerance) {
+    return F.isZero(fDouble, tolerance);
+  }
+
+  @Override
   public long leafCountSimplify() {
     return 2;
   }
