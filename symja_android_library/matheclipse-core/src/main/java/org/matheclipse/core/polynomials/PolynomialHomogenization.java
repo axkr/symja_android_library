@@ -398,7 +398,7 @@ public class PolynomialHomogenization {
   }
 
   /**
-   * Backward substitution - transforming the expression back by replacing the introduce
+   * Backward substitution - transforming the expression back by replacing the introduced
    * &quot;substitution variables&quot;.
    *
    * @param expression
@@ -420,6 +420,26 @@ public class PolynomialHomogenization {
       return F.NIL;
     });
     return engine.evaluate(temp);
+  }
+
+  /**
+   * Backward substitution - transforming the symbol back by reading the denominator LCM and
+   * returning <code>factor ^ denominatorLCM</code>
+   * 
+   * @param symbol this symbol must be replaced by another symbol and associated denominator LCM
+   * @param resultValue
+   * @return
+   */
+  public IExpr replaceDenominatorBackwardLCM(final ISymbol symbol, IExpr resultValue) {
+    IExpr t = substitutedVariables.get(symbol);
+    if (t != null && t.isSymbol()) {
+      IInteger denominatorLCM = getLCM(symbol);
+      if (denominatorLCM.isOne()) {
+        return resultValue;
+      }
+      return F.Power(resultValue, denominatorLCM);
+    }
+    return F.NIL;
   }
 
   /**

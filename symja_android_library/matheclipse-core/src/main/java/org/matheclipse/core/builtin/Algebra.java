@@ -2418,20 +2418,20 @@ public class Algebra {
       List<IExpr> arrayList = new ArrayList<IExpr>(1);
       arrayList.add(variable);
       arrayList.addAll(varSet);
-      // System.out.println(subsPolynomial.toString());
-      // System.out.println(substitutions.substitutedVariables());
-      // if (substitutions.size() == 0) {
-      // IExpr factorization = factorComplex(expr, arrayList, S.Times, gaussianIntegers, engine);
-      // return solveEquationRecursive(factorization, originalVarList, substitutions, varSet,
-      // engine);
-      // }
-      // if (subsPolynomial.isAST()) {
-      // System.out.println(subsPolynomial);
       IExpr factorization =
           factorComplex(subsPolynomial, arrayList, S.Times, gaussianIntegers, engine);
+      if (!factorization.isPresent() || factorization.size() == 2) {
+        VariablesSet newVariables = new VariablesSet(subsPolynomial);
+        if (newVariables.size() == 1) {
+          IAST resultList = RootsFunctions.findRoots(subsPolynomial, newVariables.getVarList());
+          if (resultList.size() > 0) {
+            return solveEquationList(resultList, originalVarList, substitutions, varSet, engine);
+          }
+        }
+        return F.NIL;
+      }
       return solveEquationRecursive(factorization, originalVarList, substitutions, varSet, engine);
-      // }
-      // return expr;
+
     }
 
     private static IAST solveEquationRecursive(IExpr factorization, IASTAppendable originalVarList,
@@ -2451,9 +2451,7 @@ public class Algebra {
                   F.Equal(F.Subtract(substitutions.replaceBackward(varList.arg1()), subList.get(j)),
                       F.C0),
                   originalVarList.arg1());
-              // System.out.println(solveFunction);
               IExpr result = engine.evaluate(solveFunction);
-              // Solve.solveRecursive(newList, F.CEmptyList, false, varList, engine);
               if (result.isListOfLists()) {
                 IAST listOfRulesToValuesList =
                     listOfRulesToValuesList((IAST) result, originalVarList.arg1());
@@ -2465,9 +2463,31 @@ public class Algebra {
 
           }
         }
-        // System.out.println(list);
       }
       return resultList;
+    }
+
+    private static IAST solveEquationList(IExpr factorization, IASTAppendable originalVarList,
+        PolynomialHomogenization substitutions, Set<ISymbol> varSet, EvalEngine engine) {
+      if (factorization.isList() && factorization.size() > 1 && varSet.size() == 1) {
+        IASTAppendable resultList = F.NIL;
+        IAST varList = F.ListAlloc(varSet);
+        IAST listOfRules = (IAST) factorization;
+
+        for (int i = 1; i < listOfRules.size(); i++) {
+          IExpr factor = listOfRules.get(i);
+          IExpr replaceBackward =
+              substitutions.replaceDenominatorBackwardLCM((ISymbol) varList.arg1(), factor);
+          if (replaceBackward.isPresent()) {
+            if (!resultList.isPresent()) {
+              resultList = F.ListAlloc(listOfRules.argSize());
+            }
+            resultList.append(replaceBackward);
+          }
+        }
+        return resultList;
+      }
+      return F.NIL;
     }
 
     public static IAST listOfRulesToValuesList(IAST listOfRules, IExpr variable) {
@@ -2558,7 +2578,9 @@ public class Algebra {
         eVar.addAll(varSet);
         IExpr factorization =
             factorComplex(subsPolynomial, eVar.getArrayList(), S.Times, gaussianIntegers, engine);
-        return substitutions.replaceBackward(factorization);
+        if (factorization.isPresent()) {
+          return substitutions.replaceBackward(factorization);
+        }
       }
       return expr;
     }
@@ -4881,7 +4903,7 @@ public class Algebra {
       } else {
         JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
         GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numeric2Rational);
-        return factorRational(polyRat, jas, head);
+        return factorRational(polyRat, jas, head, expr);
       }
     } catch (RuntimeException rex) {
       LOGGER.debug("Algebra.factorComplex() failed", rex);
@@ -4965,7 +4987,7 @@ public class Algebra {
   }
 
   public static IAST factorRational(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas,
-      ISymbol head) {
+      ISymbol head, IExpr original) {
     Object[] objects = jas.factorTerms(polyRat);
     GenPolynomial<edu.jas.arith.BigInteger> poly =
         (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
@@ -4973,6 +4995,9 @@ public class Algebra {
         FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
     SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
     map = factorAbstract.factors(poly);
+    // if (map.size() == 1 && original != null) {
+    // return F.unaryAST1(head, original);
+    // }
     IASTAppendable result = F.ast(head, map.size() + 1);
     java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
     java.math.BigInteger lcm = (java.math.BigInteger) objects[1];

@@ -512,14 +512,13 @@ public class RootsFunctions {
 
   /**
    * Given a set of polynomial coefficients, compute the roots of the polynomial. Depending on the
-   * polynomial being considered the roots may contain complex number. When complex numbers are
+   * polynomial being considered the roots may contain complex numbers. When complex numbers are
    * present they will come in pairs of complex conjugates.
    *
    * @param coefficients coefficients of the polynomial.
    * @return the roots of the polynomial
-   * @throws RuntimeException
    */
-  private static IAST findRoots(double... coefficients) {
+  protected static IAST findRoots(double... coefficients) {
     int N = coefficients.length - 1;
 
     // Construct the companion matrix
@@ -539,6 +538,23 @@ public class RootsFunctions {
     double[] imagValues = ed.getImagEigenvalues();
     return F.mapRange(0, N, i -> F.chopExpr(F.complexNum(realValues[i], imagValues[i]),
         Config.DEFAULT_ROOTS_CHOP_DELTA));
+  }
+
+  /**
+   * Compute a set of polynomial coefficients and the roots for the polynomial coefficients.
+   * Depending on the polynomial being considered the roots may contain complex numbers. When
+   * complex numbers are present they will come in pairs of complex conjugates.
+   * 
+   * @param polynomialExpr
+   * @param variables
+   * @return
+   */
+  public static IAST findRoots(IExpr polynomialExpr, final IAST variables) {
+    double[] coefficients = coefficients(polynomialExpr, (ISymbol) variables.arg1());
+    if (coefficients == null) {
+      return F.NIL;
+    }
+    return findRoots(coefficients);
   }
 
   public static IASTMutable rootsOfExprPolynomial(final IExpr expr, IAST varList,
@@ -869,15 +885,13 @@ public class RootsFunctions {
   public static IAST rootsOfVariable(final IExpr expr, final IExpr denominator,
       final IAST variables, boolean numericSolutions, EvalEngine engine) {
     IASTMutable result = F.NIL;
-    // ASTRange r = new ASTRange(variables, 1);
-    // List<IExpr> varList = r;
     List<IExpr> varList = variables.copyTo();
     try {
-      IExpr temp;
       IAST list = rootsOfQuadraticExprPolynomial(expr, variables);
       if (list.isPresent()) {
         return list;
       }
+
       JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
       GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numericSolutions);
       // if (polyRat.degree(0) <= 2) {
@@ -887,9 +901,13 @@ public class RootsFunctions {
       }
       // }
       IASTAppendable newResult = F.ListAlloc(8);
-      IAST factorRational = Algebra.factorRational(polyRat, jas, S.List);
+      IAST factorRational = Algebra.factorRational(polyRat, jas, S.List, null);
+      if (!factorRational.isPresent()) {
+        factorRational = F.Times(expr);
+      }
       for (int i = 1; i < factorRational.size(); i++) {
-        temp = F.evalExpand(factorRational.get(i));
+        IExpr factor = factorRational.get(i);
+        IExpr temp = F.evalExpand(factor);
         IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1());
         if (quarticResultList.isPresent()) {
           for (int j = 1; j < quarticResultList.size(); j++) {
@@ -902,7 +920,10 @@ public class RootsFunctions {
           }
         } else {
           polyRat = jas.expr2JAS(temp, numericSolutions);
-          IAST factorComplex = Algebra.factorRational(polyRat, jas, S.List);
+          IAST factorComplex = Algebra.factorRational(polyRat, jas, S.List, null);
+          if (!factorComplex.isPresent()) {
+            factorComplex = F.Times(expr);
+          }
           for (int k = 1; k < factorComplex.size(); k++) {
             temp = F.evalExpand(factorComplex.get(k));
             quarticResultList = QuarticSolver.solve(temp, variables.arg1());
@@ -916,13 +937,7 @@ public class RootsFunctions {
                 }
               }
             } else {
-              double[] coefficients = coefficients(temp, (ISymbol) variables.arg1());
-              if (coefficients == null) {
-                return F.NIL;
-              }
-              IAST resultList = findRoots(coefficients);
-              // IAST resultList = RootIntervals.croots(temp,
-              // true);
+              IAST resultList = findRoots(temp, variables);
               if (resultList.size() > 0) {
                 newResult.appendArgs(resultList);
               }

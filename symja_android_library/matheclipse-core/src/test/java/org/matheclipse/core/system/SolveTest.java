@@ -219,6 +219,11 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-Sqrt(2)},{x->Sqrt(2)}}");
   }
 
+  public void testSolve003() {
+    check("Solve( 2/x==3/4 ,x)", //
+        "{{x->8/3}}");
+  }
+
   public void testSolveX3_89001() {
     check("Solve(x^3-89==0, x)", //
         "{{x->-(-89)^(1/3)},{x->89^(1/3)},{x->(-1)^(2/3)*89^(1/3)}}");
@@ -1358,8 +1363,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   public void testSolveIssue538() {
     // TODO issue 538
-    // check("Solve(-3+x^(1/3)+x^2==0,x)", //
-    // "");
+    check("Solve(-3+x^(1/3)+x^2==0,x)", //
+        "{{x->-1.56443+I*(-0.310515)},{x->-1.56443+I*0.310515},{x->1.37413}}");
     check("Solve(-3+x+x^6==0,x)", //
         "{{x->-1.27391},{x->-0.567906+I*(-1.10869)},{x->-0.567906+I*1.10869},{x->0.648981+I*(-0.971557)},{x->0.648981+I*0.971557},{x->1.11176}}");
 

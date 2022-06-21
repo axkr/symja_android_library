@@ -39,6 +39,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.QuarticSolver;
@@ -945,9 +946,10 @@ public class Solve extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  private static IAST rootsOfUnivariatePolynomial(IExpr numerator, IExpr denominator,
-      IExpr variable, EvalEngine engine) {
+  public static IAST rootsOfUnivariatePolynomial(IExpr numerator, IExpr denominator, IExpr variable,
+      EvalEngine engine) {
     IExpr temp = F.NIL;
+
     if (numerator.isNumericMode() && denominator.isOne()) {
       temp = RootsFunctions.roots(numerator, F.list(variable), engine);
     }
@@ -1438,11 +1440,11 @@ public class Solve extends AbstractFunctionEvaluator {
           IAST subSolutionList =
               LinearAlgebra.rowReduced2RulesList(augmentedMatrix, variables, resultList, engine);
           return solveInequations((IASTMutable) subSolutionList, inequationsList,
-              maximumNumberOfResults, engine);
+              engine);
         }
         return F.NIL;
       }
-      return solveInequations(resultList, inequationsList, maximumNumberOfResults, engine);
+      return solveInequations(resultList, inequationsList, engine);
       // return sortASTArguments(resultList);
     } catch (NoSolution e) {
       if (e.getType() == NoSolution.WRONG_SOLUTION) {
@@ -1453,7 +1455,7 @@ public class Solve extends AbstractFunctionEvaluator {
   }
 
   protected static IASTMutable solveInequations(IASTMutable subSolutionList, IAST inequationsList,
-      int maximumNumberOfResults, EvalEngine engine) {
+      EvalEngine engine) {
     if (inequationsList.isEmpty()) {
       return QuarticSolver.sortASTArguments(subSolutionList);
     }
@@ -1515,7 +1517,10 @@ public class Solve extends AbstractFunctionEvaluator {
               IExpr temp = Algebra.Factor.evaluateSolve(termEQZero, engine);
               if (temp.isList()) {
                 IAST listOfValues = (IAST) temp;
-                listOfValues.forEach(x -> subSolutionSet.add(F.List(F.Rule(variable, x))));
+                IASTAppendable listOfLists = F.ListAlloc(listOfValues.argSize());
+                listOfValues.forEach(x -> listOfLists.append(F.List(F.Rule(variable, x))));
+                solveInequations(listOfLists, inequationsList, engine)
+                    .forEach(x -> subSolutionSet.add(x));
                 continue;
               }
             }
@@ -1541,13 +1546,20 @@ public class Solve extends AbstractFunctionEvaluator {
             IExpr termEQZero = termsEqualZeroList.get(i);
             IExpr replaceAll = termEQZero.replaceAll((IAST) expr);
             if (replaceAll.isNumericFunction()) {
-              if (!engine.evalTrue(F.PossibleZeroQ(replaceAll))) {
-                removedPositions[untilPosition++] = j;
-                break;
+              IExpr possibleZero = engine.evaluate(replaceAll);
+              if (possibleZero.isNumber()) {
+                if (!((INumber) possibleZero).isZero(Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+                  removedPositions[untilPosition++] = j;
+                  break;
+                }
+              } else {
+                if (!engine.evalTrue(F.PossibleZeroQ(replaceAll))) {
+                  removedPositions[untilPosition++] = j;
+                  break;
+                }
               }
             }
           }
-          // }
         }
         if (untilPosition > 0) {
           return result.removePositionsAtCopy(removedPositions, untilPosition);
