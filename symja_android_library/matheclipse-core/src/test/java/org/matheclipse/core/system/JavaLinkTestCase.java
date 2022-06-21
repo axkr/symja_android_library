@@ -88,30 +88,27 @@ public class JavaLinkTestCase extends ExprEvaluatorTestCase {
   @Override
   protected void setUp() {
     try {
-      synchronized (fScriptManager) {
-        ToggleFeature.COMPILE = true;
-        ToggleFeature.COMPILE_PRINT = true;
-        Config.SHORTEN_STRING_LENGTH = 80;
-        Config.MAX_AST_SIZE = 20000;
-        Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-        Config.MAX_BIT_LENGTH = 200000;
-        Config.MAX_POLYNOMIAL_DEGREE = 100;
-        Config.FILESYSTEM_ENABLED = true;
-        // if you need MMA syntax set relaxedSyntax = false;
-        boolean relaxedSyntax = true;
-        ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = relaxedSyntax;
-        F.await();
+      ToggleFeature.COMPILE = true;
+      ToggleFeature.COMPILE_PRINT = true;
+      Config.SHORTEN_STRING_LENGTH = 80;
+      Config.MAX_AST_SIZE = 20000;
+      Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+      Config.MAX_BIT_LENGTH = 200000;
+      Config.MAX_POLYNOMIAL_DEGREE = 100;
+      Config.FILESYSTEM_ENABLED = true;
+      // if you need MMA syntax set relaxedSyntax = false;
+      boolean relaxedSyntax = true;
+      ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = relaxedSyntax;
+      F.await();
 
-        EvalEngine engine = new EvalEngine(relaxedSyntax);
-        EvalEngine.set(engine);
-        engine.init();
-        engine.setRecursionLimit(512);
-        engine.setIterationLimit(500);
-        engine.setOutListDisabled(false, (short) 10);
+      EvalEngine engine = new EvalEngine(relaxedSyntax);
+      EvalEngine.set(engine);
+      engine.init();
+      engine.setRecursionLimit(512);
+      engine.setIterationLimit(500);
+      engine.setOutListDisabled(false, (short) 10);
 
-        evaluator = new ExprEvaluator(engine, false, (short) 100);
-        evaluatorN = new ExprEvaluator(engine, false, (short) 100);
-      }
+      evaluator = new ExprEvaluator(engine, false, (short) 100);
     } catch (Exception e) {
       e.printStackTrace();
     }

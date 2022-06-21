@@ -7265,7 +7265,8 @@ public class F extends S {
   }
 
   /**
-   * Define a power expression <code>base ^ exponent</code>.
+   * Define <code>base</code> to the power of <code>exponent</code>. Symja operator form:
+   * <code>base ^ exponent</code>.
    *
    * <p>
    * See: <a href=

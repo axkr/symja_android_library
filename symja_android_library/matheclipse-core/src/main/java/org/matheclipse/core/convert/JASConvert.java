@@ -369,7 +369,7 @@ public class JASConvert<C extends RingElem<C>> {
         }
         return fPolyFactory.univariate(((ISymbol) exprPoly).getSymbolName(), 1L);
       } catch (IllegalArgumentException iae) {
-        // fall through
+        // java.lang.IllegalArgumentException: variable 'XXX' not defined in polynomial ring
       }
     } else if (exprPoly instanceof IInteger) {
       return fPolyFactory.fromInteger(
