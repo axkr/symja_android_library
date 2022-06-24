@@ -421,19 +421,8 @@ public class Symbol implements ISymbol, Serializable {
     if (hasAssignedSymbolValue()) {
       return assignedValue();
     }
-    // if (hasLocalVariableStack()) {
-    // return ExprUtil.ofNullable(get());
-    // }
     return evalDownRule(engine, this);
   }
-
-  /** {@inheritDoc} */
-//  @Override
-//  public IExpr evaluateHead(IAST ast, EvalEngine engine) {
-//    IExpr result = evaluate(engine);
-//    // set the new evaluated header !
-//    return result.isPresent() ? ast.apply(result) : F.NIL;
-//  }
 
   /** {@inheritDoc} */
   @Override
@@ -454,13 +443,6 @@ public class Symbol implements ISymbol, Serializable {
     } catch (Exception e1) {
       return fSymbolName;
     }
-    // if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-    // String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
-    // if (str != null) {
-    // return str;
-    // }
-    // }
-    // return fSymbolName;
   }
 
   /** {@inheritDoc} */
@@ -620,9 +602,9 @@ public class Symbol implements ISymbol, Serializable {
       if ('a' <= ch && ch <= 'z') {
         return fSymbolName;
       }
-      if ((Config.RUBI_CONVERT_SYMBOLS && 'A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E')
-          || ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') || ('P' == ch || ch == 'Q')) {
-        return new StringBuilder(fSymbolName).append("Symbol");
+      if (('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E') || ('P' == ch || ch == 'Q')) {
+        // generalized because of Rubi converter (Config.RUBI_CONVERT_SYMBOLS==true)
+        return fSymbolName + "Symbol";
       }
     }
     if (Config.RUBI_CONVERT_SYMBOLS) {
@@ -630,7 +612,7 @@ public class Symbol implements ISymbol, Serializable {
           && Character.isLowerCase(fSymbolName.charAt(1))) {
         char ch = fSymbolName.charAt(1);
         if ('a' <= ch && ch <= 'z') {
-          return new StringBuilder("p").append(ch);
+          return "p" + ch;
         }
       } else if (fSymbolName.equals("Int")) {
         return "Integrate";
@@ -645,7 +627,7 @@ public class Symbol implements ISymbol, Serializable {
         return alias;
       }
     }
-    return new StringBuilder("$s(\"").append(fSymbolName).append("\")");
+    return "$s(\"" + fSymbolName + "\")";
   }
 
   /** {@inheritDoc} */
