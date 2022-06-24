@@ -1179,6 +1179,14 @@ public class SeriesFunctions {
           return temp;
         }
       } else if (function.isTimes()) {
+        IExpr[] numeratorDenominatorParts = Algebra.fractionalParts(function, false);
+        if (numeratorDenominatorParts != null) {
+          ASTSeriesData sd =
+              Algebra.polynomialTaylorSeries(numeratorDenominatorParts, x, x0, n, denominator);
+          if (sd != null) {
+            return sd;
+          }
+        }
         ASTSeriesData temp = timesSeriesData((IAST) function, x, x0, n, engine);
         if (temp != null) {
           return temp;

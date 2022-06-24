@@ -48,6 +48,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
@@ -83,6 +84,10 @@ import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
 import edu.jas.poly.TermOrderByName;
+import edu.jas.ps.PolynomialTaylorFunction;
+import edu.jas.ps.TaylorFunction;
+import edu.jas.ps.UnivPowerSeries;
+import edu.jas.ps.UnivPowerSeriesRing;
 import edu.jas.structure.RingElem;
 import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorComplex;
@@ -5421,6 +5426,51 @@ public class Algebra {
       LOGGER.debug("Algebra.partialFractionDecompositionRational() failed", e);
     }
     return F.NIL;
+  }
+
+  public static ASTSeriesData polynomialTaylorSeries(IExpr[] parts, IExpr x, IExpr x0, int n,
+      int expDenominator) {
+    try {
+      IExpr exprNumerator = F.evalExpandAll(parts[0]);
+      IExpr exprDenominator = F.evalExpandAll(parts[1]);
+
+      String[] varListStr = new String[1];
+      varListStr[0] = x.toString();
+      // IAST varList = F.List(x);
+      JASConvert<BigRational> jas = new JASConvert<BigRational>(x, BigRational.ZERO);
+      GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
+      GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
+
+      final UnivPowerSeries<BigRational> ps;
+      BigRational cfac = BigRational.ONE;
+      UnivPowerSeriesRing<BigRational> fac = new UnivPowerSeriesRing<BigRational>(cfac);
+      TaylorFunction<BigRational> FN = new PolynomialTaylorFunction<BigRational>(numerator);
+      if (exprNumerator.isOne()) {
+        TaylorFunction<BigRational> FD = new PolynomialTaylorFunction<BigRational>(denominator);
+        UnivPowerSeries<BigRational> psD = fac.seriesOfTaylor(FD, BigRational.ZERO);
+        ps = psD.inverse();
+      } else {
+        if (exprDenominator.isOne()) {
+          ps = fac.seriesOfTaylor(FN, BigRational.ZERO);
+        } else {
+          TaylorFunction<BigRational> FD = new PolynomialTaylorFunction<BigRational>(denominator);
+          UnivPowerSeries<BigRational> psN = fac.seriesOfTaylor(FN, BigRational.ZERO);
+          UnivPowerSeries<BigRational> psD = fac.seriesOfTaylor(FD, BigRational.ZERO);
+          ps = psN.divide(psD);
+        }
+      }
+      ASTSeriesData seriesData = new ASTSeriesData(x, x0, 0, n + expDenominator, expDenominator);
+      // reversed order seems to be a bit faster
+      for (int i = n; i >= 0; i--) {
+        BigRational coefficient = ps.coefficient(i);
+        seriesData.setCoeff(i, F.fraction(coefficient.numerator(), coefficient.denominator()));
+      }
+      return seriesData;
+    } catch (RuntimeException e) {
+      // JAS may throw JASConversionException and RuntimeExceptions
+      LOGGER.debug("Algebra.polynomialTaylorSeries() failed", e);
+    }
+    return null;
   }
 
   /**

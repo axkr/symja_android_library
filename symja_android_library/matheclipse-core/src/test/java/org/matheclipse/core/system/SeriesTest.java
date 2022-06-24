@@ -2,11 +2,8 @@ package org.matheclipse.core.system;
 
 import org.matheclipse.core.basic.ToggleFeature;
 
-/**
- * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based
- * integrator</a>.
- */
 public class SeriesTest extends ExprEvaluatorTestCase {
+
   public SeriesTest(String name) {
     super(name);
   }
@@ -105,7 +102,10 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   public void testSeriesTaylor() {
-    check("Series[1/(1-x),{x,0,2}]", //
+    // issue #545
+    check("Series(((x^3 + 72*x^2 + 600*x + 720)/(12*x^2 + 240*x+720)),{x,0,6})", //
+        "1+x/2-x^2/12+x^3/48-x^4/180+13/8640*x^5-53/129600*x^6+O(x)^7");
+    check("Series(1/(1-x),{x,0,2})", //
         "1+x+x^2+O(x)^3");
   }
 

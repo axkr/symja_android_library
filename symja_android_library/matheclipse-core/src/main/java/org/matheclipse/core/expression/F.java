@@ -3327,14 +3327,15 @@ public class F extends S {
   }
 
   /**
-   * The division <code>arg1 / arg2</code> will be represented by <code>arg1 * arg2^(-1)</code>.
+   * The division <code>numerator / denominator</code> will be represented by
+   * <code>numerator * denominator^(-1)</code>.
    *
-   * @param arg1 numerator
-   * @param arg2 denominator
+   * @param numerator numerator
+   * @param denominator denominator
    * @return
    */
-  public static IAST Divide(final IExpr arg1, final IExpr arg2) {
-    return new B2.Times(arg1, new B2.Power(arg2, CN1));
+  public static IAST Divide(final IExpr numerator, final IExpr denominator) {
+    return new B2.Times(numerator, new B2.Power(denominator, CN1));
   }
 
   public static IASTMutable DivideSides(final IExpr equationOrInequality) {
@@ -7220,8 +7221,8 @@ public class F extends S {
     return new AST2(PolyLog, a0, a1);
   }
 
-  public static IAST PolynomialGCD(final IExpr a0, final IExpr a1) {
-    return new AST2(PolynomialGCD, a0, a1);
+  public static IAST PolynomialGCD(final IExpr poly1, final IExpr poly2) {
+    return new AST2(PolynomialGCD, poly1, poly2);
   }
 
   /**
@@ -7240,16 +7241,17 @@ public class F extends S {
     return new B2.PolynomialQ(expr, variable);
   }
 
-  public static IAST PolynomialQuotient(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(PolynomialQuotient, a0, a1, a2);
+  public static IAST PolynomialQuotient(final IExpr poly1, final IExpr poly2, final IExpr x) {
+    return new AST3(PolynomialQuotient, poly1, poly2, x);
   }
 
-  public static IAST PolynomialQuotientRemainder(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(PolynomialQuotientRemainder, a0, a1, a2);
+  public static IAST PolynomialQuotientRemainder(final IExpr poly1, final IExpr poly2,
+      final IExpr x) {
+    return new AST3(PolynomialQuotientRemainder, poly1, poly2, x);
   }
 
-  public static IAST PolynomialRemainder(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(PolynomialRemainder, a0, a1, a2);
+  public static IAST PolynomialRemainder(final IExpr poly1, final IExpr poly2, final IExpr x) {
+    return new AST3(PolynomialRemainder, poly1, poly2, x);
   }
 
   public static IAST Position(final IExpr a0, final IExpr a1) {
