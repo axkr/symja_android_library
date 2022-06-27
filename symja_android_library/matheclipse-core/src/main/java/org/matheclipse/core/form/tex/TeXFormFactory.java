@@ -1235,27 +1235,33 @@ public class TeXFormFactory {
         final int caller) {
       IExpr[] parts = Algebra.fractionalPartsTimesPower(f, false, true, false, false, false, false);
       if (parts == null) {
-        convertTimesOperator(buf, f, precedence, caller);
+        convertTimesOperator(buf, f, precedence, false, caller);
         return true;
       }
       final IExpr numerator = parts[0];
       final IExpr denominator = parts[1];
       if (!denominator.isOne()) {
+        boolean arg1Negate = false;
         if (caller == PLUS_CALL) {
+          if (numerator.isTimes() && numerator.first().isReal() && numerator.first().isNegative()) {
+            buf.append('-');
+            arg1Negate = true;
+          } else {
           buf.append('+');
+          }
         }
         precedenceOpen(buf, precedence);
         buf.append("\\frac{");
         // insert numerator in buffer:
         if (numerator.isTimes()) {
-          convertTimesOperator(buf, (IAST) numerator, fPrecedence, NO_SPECIAL_CALL);
+          convertTimesOperator(buf, (IAST) numerator, fPrecedence, arg1Negate, NO_SPECIAL_CALL);
         } else {
           fFactory.convertInternal(buf, numerator, 0);
         }
         buf.append("}{");
         // insert denominator in buffer:
         if (denominator.isTimes()) {
-          convertTimesOperator(buf, (IAST) denominator, fPrecedence, NO_SPECIAL_CALL);
+          convertTimesOperator(buf, (IAST) denominator, fPrecedence, false, NO_SPECIAL_CALL);
         } else {
           fFactory.convertInternal(buf, denominator, 0);
         }
@@ -1263,7 +1269,7 @@ public class TeXFormFactory {
         precedenceClose(buf, precedence);
       } else {
         if (numerator.isTimes()) {
-          convertTimesOperator(buf, (IAST) numerator, fPrecedence, NO_SPECIAL_CALL);
+          convertTimesOperator(buf, (IAST) numerator, fPrecedence, false, NO_SPECIAL_CALL);
         } else {
           fFactory.convertInternal(buf, numerator, precedence);
         }
@@ -1272,13 +1278,26 @@ public class TeXFormFactory {
       return true;
     }
 
+    /**
+     * Converts a given <code>Times[...]</code> function into the corresponding TeX output.
+     * 
+     * @param buf
+     * @param timesAST
+     * @param precedence
+     * @param arg1Negate negate first argument, because negative sign is already printed
+     * @param caller
+     * @return
+     */
     private boolean convertTimesOperator(final StringBuilder buf, final IAST timesAST,
-        final int precedence, final int caller) {
+        final int precedence, boolean arg1Negate, final int caller) {
       int size = timesAST.size();
       IExpr arg1 = F.NIL;
       String timesOperator = "\\,";
       if (size > 1) {
         arg1 = timesAST.arg1();
+        if (arg1Negate) {
+          arg1 = arg1.negate();
+        }
         if (arg1.isMinusOne()) {
           if (size == 2) {
             precedenceOpen(buf, precedence);

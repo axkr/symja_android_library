@@ -318,6 +318,11 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "\\text{fgh}(a,b)");
   }
 
+  public void testTeXFormNegativeFraction() {
+    check("TeXForm(a/2+Tan(x)/4-Tan(x)^2/3+12)", //
+        "12+\\frac{a}{2}+\\frac{\\tan (x)}{4}-\\frac{{\\tan (x)}^{2}}{3}");
+  }
+
   public void testWeierstrassHalfPeriods() {
     check("TeXForm(WeierstrassHalfPeriods(a))", //
         "\\text{WeierstrassHalfPeriods}(a)");

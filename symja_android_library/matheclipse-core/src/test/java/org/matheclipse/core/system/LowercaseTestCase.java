@@ -13845,7 +13845,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ListConvolve({x, y}, {a, b, c, d, e, f})", //
         "{b*x+a*y,c*x+b*y,d*x+c*y,e*x+d*y,f*x+e*y}");
   }
-
+  
   public void testListCorrelate() {
     check("ListCorrelate({x, y}, {a, b, c, d, e, f})", //
         "{a*x+b*y,b*x+c*y,c*x+d*y,d*x+e*y,e*x+f*y}");
@@ -14574,6 +14574,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testMathMLForm() {
+    check("MathMLForm(a/2+Tan(x)/4-Tan(x)^2/3+12)", //
+        "<?xml version=\"1.0\"?>\n"
+            + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
+            + "<math mode=\"display\">\n"
+            + "<mrow><mn>12</mn><mo>-</mo><mfrac><mrow><msup><mrow><mi>tan</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mn>2</mn></msup></mrow><mn>3</mn></mfrac><mo>+</mo><mfrac><mrow><mi>tan</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mn>4</mn></mfrac><mo>+</mo><mfrac><mi>a</mi><mn>2</mn></mfrac></mrow></math>");
     check("MathMLForm( Surd(a,-3)  )", //
         "<?xml version=\"1.0\"?>\n"
             + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"

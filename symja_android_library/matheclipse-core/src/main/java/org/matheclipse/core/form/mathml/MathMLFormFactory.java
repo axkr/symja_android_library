@@ -935,7 +935,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
 
     /**
-     * Try to split a given <code>Times[...]</code> function into nominator and denominator and add
+     * Try to split a given <code>Times[...]</code> function into numerator and denominator and add
      * the corresponding MathML output
      *
      * @param buf StringBuilder for MathML output
@@ -947,27 +947,33 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
         final boolean caller) {
       IExpr[] parts = Algebra.fractionalPartsTimesPower(f, false, true, false, false, false, false);
       if (parts == null) {
-        convertTimesOperator(buf, f, precedence, caller);
+        convertTimesOperator(buf, f, precedence, false, caller);
         return true;
       }
       final IExpr numerator = parts[0];
       final IExpr denominator = parts[1];
       precedenceOpen(buf, precedence);
       if (!denominator.isOne()) {
+        boolean arg1Negate = false;
         // found a fraction expression
         if (caller == MathMLFormFactory.PLUS_CALL) {
-          fFactory.tag(buf, "mo", "+");
+          if (numerator.isTimes() && numerator.first().isReal() && numerator.first().isNegative()) {
+            fFactory.tag(buf, "mo", "-");
+            arg1Negate = true;
+          } else {
+            fFactory.tag(buf, "mo", "+");
+          }
         }
         fFactory.tagStart(buf, "mfrac");
         // insert numerator in buffer:
         if (numerator.isTimes()) {
-          convertTimesOperator(buf, (IAST) numerator, Integer.MIN_VALUE,
+          convertTimesOperator(buf, (IAST) numerator, Integer.MIN_VALUE, arg1Negate,
               MathMLFormFactory.NO_PLUS_CALL);
         } else {
           fFactory.convertInternal(buf, numerator, Integer.MIN_VALUE, false);
         }
         if (denominator.isTimes()) {
-          convertTimesOperator(buf, (IAST) denominator, Integer.MIN_VALUE,
+          convertTimesOperator(buf, (IAST) denominator, Integer.MIN_VALUE, false,
               MathMLFormFactory.NO_PLUS_CALL);
         } else {
           fFactory.convertInternal(buf, denominator, Integer.MIN_VALUE, false);
@@ -976,9 +982,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       } else {
         // if (numerator.size() <= 2) {
         if (numerator.isTimes()) {
-          convertTimesOperator(buf, (IAST) numerator, precedence, caller);
+          convertTimesOperator(buf, (IAST) numerator, precedence, false, caller);
         } else {
-          convertTimesOperator(buf, f, precedence, caller);
+          convertTimesOperator(buf, f, precedence, false, caller);
         }
       }
       precedenceClose(buf, precedence);
@@ -991,15 +997,19 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
      * @param buf
      * @param timesAST
      * @param precedence
+     * @param arg1Negate negate first argument, because negative sign is already printed
      * @param caller
      * @return
      */
     private boolean convertTimesOperator(final StringBuilder buf, final IAST timesAST,
-        final int precedence, final boolean caller) {
+        final int precedence, final boolean arg1Negate, final boolean caller) {
       int size = timesAST.size();
       boolean noPrecedenceOpenCall = false;
       if (size > 1) {
         IExpr arg1 = timesAST.arg1();
+        if (arg1Negate) {
+          arg1 = arg1.negate();
+        }
         if (arg1.isMinusOne()) {
           if (size == 2) {
             fFactory.tagStart(buf, fFirstTag);
