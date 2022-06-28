@@ -37,13 +37,13 @@ public class JavaFunctions {
 
     private static void init() {
       if (!Config.FUZZY_PARSER) {
-          S.AddToClassPath.setEvaluator(new AddToClassPath());
-          S.InstanceOf.setEvaluator(new InstanceOf());
-          S.JavaNew.setEvaluator(new JavaNew());
-          S.JavaObject.setEvaluator(new JavaObject());
-          S.JavaObjectQ.setEvaluator(new JavaObjectQ());
-          S.LoadJavaClass.setEvaluator(new LoadJavaClass());
-          S.SameObjectQ.setEvaluator(new SameObjectQ());
+        S.AddToClassPath.setEvaluator(new AddToClassPath());
+        S.InstanceOf.setEvaluator(new InstanceOf());
+        S.JavaNew.setEvaluator(new JavaNew());
+        S.JavaObject.setEvaluator(new JavaObject());
+        S.JavaObjectQ.setEvaluator(new JavaObjectQ());
+        S.LoadJavaClass.setEvaluator(new LoadJavaClass());
+        S.SameObjectQ.setEvaluator(new SameObjectQ());
       }
     }
   }
@@ -130,7 +130,9 @@ public class JavaFunctions {
           }
           arg2 = JavaClassExpr.newInstance(arg2.toString(), Config.URL_CLASS_LOADER);
         } catch (ClassNotFoundException cnfex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), cnfex);
+          // `1`
+          IOFunctions.printMessage(ast.topHead(), "error",
+              F.List(F.stringx("ClassNotFoundException: \"" + arg2 + "\"")), engine);
           return F.False;
         }
       }

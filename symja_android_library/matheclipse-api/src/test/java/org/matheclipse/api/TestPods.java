@@ -1360,7 +1360,7 @@ public class TestPods {
             + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
             + "        \"plaintext\" : \"-1/(2*E^(I*x))-E^(I*x)/2\",\n"
             + "        \"sinput\" : \"TrigToExp(-Cos(x))\",\n"
-            + "        \"latex\" : \"\\\\frac{-1}{2\\\\cdot {e}^{i \\\\cdot x}}+\\\\frac{ - {e}^{i \\\\cdot x}}{2}\"\n"
+            + "        \"latex\" : \"\\\\frac{-1}{2\\\\cdot {e}^{i \\\\cdot x}}-\\\\frac{{e}^{i \\\\cdot x}}{2}\"\n"
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
@@ -1782,7 +1782,7 @@ public class TestPods {
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"4*x+2*x^2-x^3/3\",\n"
             + "        \"sinput\" : \"Integrate(4 + 4*x - x^2,x)\",\n"
-            + "        \"latex\" : \"4\\\\cdot x + 2\\\\cdot {x}^{2}+\\\\frac{ - {x}^{3}}{3}\"\n"
+            + "        \"latex\" : \"4\\\\cdot x + 2\\\\cdot {x}^{2}-\\\\frac{{x}^{3}}{3}\"\n"
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
