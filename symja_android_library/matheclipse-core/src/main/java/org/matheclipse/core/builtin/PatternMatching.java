@@ -1442,13 +1442,14 @@ public final class PatternMatching {
     }
 
     private static IExpr releaseHold(IExpr expr) {
-      IASTMutable result = F.NIL;
+
       if (expr.isAST()) {
         if (expr.isAST(S.Hold, 2) || expr.isAST(S.HoldForm, 2) || expr.isAST(S.HoldComplete, 2)
             || expr.isAST(S.HoldPattern, 2)) {
           return expr.first();
         }
 
+        IASTMutable result = F.NIL;
         IAST list = (IAST) expr;
         for (int i = 1; i < list.size(); i++) {
           IExpr arg = list.get(i);
@@ -1456,15 +1457,17 @@ public final class PatternMatching {
             IExpr temp = arg.replaceAll(ReleaseHold::releaseHold);
             if (temp.isPresent()) {
               if (!result.isPresent()) {
-                result = list.setAtCopy(i, arg.first());
+                result = list.setAtCopy(i, temp);
               } else {
-                result.set(i, arg.first());
+                result.set(i, temp);
               }
             }
           }
         }
+        return result;
+
       }
-      return result;
+      return F.NIL;
     }
 
     @Override
