@@ -13844,11 +13844,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testListConvolve() {
     check("ListConvolve({x, y}, {a, b, c, d, e, f})", //
         "{b*x+a*y,c*x+b*y,d*x+c*y,e*x+d*y,f*x+e*y}");
+
+    check("Reverse({{u, v}, {w, x}})", //
+        "{{w,x},{u,v}}");
+
+    check("ListConvolve({{u, v}, {w, x}}, {{a,b,c,p}, {d,e,f,q}, {g, h, i,r}})", //
+        "{{e*u+d*v+b*w+a*x,f*u+e*v+c*w+b*x,q*u+f*v+p*w+c*x},{h*u+g*v+e*w+d*x,i*u+h*v+f*w+e*x,r*u+i*v+q*w+f*x}}");
   }
-  
+
   public void testListCorrelate() {
     check("ListCorrelate({x, y}, {a, b, c, d, e, f})", //
         "{a*x+b*y,b*x+c*y,c*x+d*y,d*x+e*y,e*x+f*y}");
+
+    check("ListCorrelate({{u, v}, {w, x}}, {{a,b,c,p}, {d,e,f,q}, {g, h, i,r}})", //
+        "{{a*u+b*v+d*w+e*x,b*u+c*v+e*w+f*x,c*u+p*v+f*w+q*x}," //
+            + "{d*u+e*v+g*w+h*x,e*u+f*v+h*w+i*x,f*u+q*v+i*w+r*x}}");
+
+    check("ListCorrelate({{1, 0, 1}, {0, -4, 0}, {1, 0, 1}}, Array(Subscript(a, #) &, {4, 4}))", //
+        "{{2*Subscript(a,1)-4*Subscript(a,2)+2*Subscript(a,3),2*Subscript(a,1)-4*Subscript(a,\n"//
+            + "2)+2*Subscript(a,3)},{2*Subscript(a,2)-4*Subscript(a,3)+2*Subscript(a,4),2*Subscript(a,\n"//
+            + "2)-4*Subscript(a,3)+2*Subscript(a,4)}}");
+
+    check("ListCorrelate({{1, 1}, {1, 1}}, {{a, b, c}, {d, e, f}, {g, h, i}})", //
+        "{{a+b+d+e,b+c+e+f},{d+e+g+h,e+f+h+i}}");
+
+    check("ListCorrelate(N(Differences(Range(10)^2)), N(1/Range(20)))", //
+        "{20.82897,16.07103,13.44037,11.65061,10.3224,9.28594,8.44948,7.75767,7.17457,6.67562,6.24334,5.86489}");
   }
 
   public void testListQ() {
@@ -20515,6 +20536,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{3,5,7,_^2}");
     check("ReleaseHold(f(Hold(1 + g(Hold(2 + 3)))))", //
         "f(1+g(Hold(2+3)))");
+    check("ReleaseHold(f(1 + g(Hold(2 + 3))))", //
+        "f(1+g(5))");
   }
 
   public void testRepeated() {
@@ -22658,6 +22681,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // should be a positive machine-sized integer.
     check("Subdivide(a,b,-1)", //
         "Subdivide(a,b,-1)");
+
+    check("N@Subdivide(-5, 5, 6)", //
+        "{-5.0,-3.33333,-1.66667,0.0,1.66667,3.33333,5.0}");
 
     // TODO result should be {{x,y,z},{a/2+x/2,a/2+y/2,a/2+z/2},a}
     check("Subdivide({x,y,z}, a, 2)", //

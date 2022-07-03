@@ -261,16 +261,46 @@ public class TensorFunctions {
         if (ast.arg1().isAST() && ast.arg2().isAST()) {
           IAST kernel = (IAST) ast.arg1();
           IAST tensor = (IAST) ast.arg2();
-
-          int kernelSize = kernel.size();
-          int tensorSize = tensor.size();
-          if (kernelSize <= tensorSize) {
-            return ListCorrelate.listCorrelate(ListFunctions.reverse(kernel), kernelSize, tensor,
-                tensorSize);
+          IntList kernelDims = LinearAlgebra.dimensions(kernel);
+          IntList tensorDims = LinearAlgebra.dimensions(tensor);
+          if (kernelDims.size() > 0 && kernelDims.size() == tensorDims.size()) {
+            int kernelSize = kernel.size();
+            int tensorSize = tensor.size();
+            if (kernelSize <= tensorSize) {
+              IAST reversed = nestedReverseRecursive(kernel, kernelDims, 0);
+              IASTAppendable resultList = F.ListAlloc();
+              return ListCorrelate.listCorrelate(reversed, tensor, S.Plus, S.Times);
+            }
           }
         }
+
       }
       return F.NIL;
+    }
+
+    /**
+     * Reverse <code>kernel</code> on all &quot;nested&quot; levels.
+     * 
+     * @param kernel
+     * @param rootKernelDimensions the dimension of the root-kernel
+     * @param dimensionLevel the current level of the <code>rootKernelDimensions</code>
+     * @return
+     */
+    private static IAST nestedReverseRecursive(IAST kernel, IntList rootKernelDimensions,
+        int dimensionLevel) {
+      if (dimensionLevel == rootKernelDimensions.size() - 1) {
+        // stop recursion
+        return ListFunctions.reverse(kernel);
+      }
+      final int levelSize = rootKernelDimensions.getInt(dimensionLevel);
+      IASTAppendable reversedList = F.ListAlloc(levelSize);
+      for (int i = levelSize; i >= 1; i--) {
+        IAST reversed =
+            nestedReverseRecursive((IAST) kernel.get(i), rootKernelDimensions, dimensionLevel + 1);
+        // append in reversed order
+        reversedList.append(reversed);
+      }
+      return reversedList;
     }
 
     @Override
@@ -313,11 +343,60 @@ public class TensorFunctions {
         if (ast.arg1().isAST() && ast.arg2().isAST()) {
           IAST kernel = (IAST) ast.arg1();
           IAST tensor = (IAST) ast.arg2();
-          int kernelSize = kernel.size();
-          int tensorSize = tensor.size();
-          if (kernelSize <= tensorSize) {
-            return listCorrelate(kernel, kernelSize, tensor, tensorSize);
+          IntList kernelDims = LinearAlgebra.dimensions(kernel);
+          IntList tensorDims = LinearAlgebra.dimensions(tensor);
+          if (kernelDims.size() > 0 && kernelDims.size() == tensorDims.size()) {
+
+            return listCorrelate(kernel, tensor, S.Plus, S.Times);
           }
+        }
+
+      }
+      return F.NIL;
+    }
+
+    public static IExpr listCorrelate(IAST kernel, IAST tensor, final ISymbol plusFunction,
+        final ISymbol timesFunction) {
+      int kernelSize = kernel.size();
+      int tensorSize = tensor.size();
+      if (kernelSize <= tensorSize) {
+        IASTAppendable result = F.ListAlloc();
+        IntList kernelDims = LinearAlgebra.dimensions(kernel);
+        IntList tensorDims = LinearAlgebra.dimensions(tensor);
+        final int size = kernelDims.size();
+        if (size == 1) {
+          int diff1 = tensorDims.getInt(0) - kernelDims.getInt(0) + 1;
+          for (int i = 0; i < diff1; i++) {
+            IASTAppendable subList = F.ast(plusFunction, kernelDims.size());
+            for (int j = 1; j < kernelSize; j++) {
+              subList.append(F.binaryAST2(timesFunction, kernel.get(j), tensor.get(i + j)));
+            }
+            result.append(subList);
+          }
+          return result;
+        } else if (size == 2) {
+          int diff1 = tensorDims.getInt(0) - kernelDims.getInt(0) + 1;
+          int diff2 = tensorDims.getInt(1) - kernelDims.getInt(1) + 1;
+          for (int k = 1; k <= diff1; k++) {
+            IASTAppendable list = F.ListAlloc(kernelDims.size());
+
+            for (int i = 1; i <= diff2; i++) {
+              IASTAppendable subList = F.ast(plusFunction, kernelDims.size());
+
+              for (int j = 1; j <= kernelDims.getInt(0); j++) {
+                IAST subKernelRow = (IAST) kernel.get(j);
+                IAST subTensorRow = (IAST) tensor.get(k + j - 1);
+                for (int j2 = 1; j2 <= kernelDims.getInt(1); j2++) {
+                  IExpr kernelElem = subKernelRow.get(j2);
+                  IExpr tensorElem = subTensorRow.get(j2 + i - 1);
+                  subList.append(F.binaryAST2(timesFunction, kernelElem, tensorElem));
+                }
+              }
+              list.append(subList);
+            }
+            result.append(list);
+          }
+          return result;
         }
       }
       return F.NIL;
@@ -328,13 +407,6 @@ public class TensorFunctions {
       return ARGS_2_2;
     }
 
-    public static IExpr listCorrelate(IAST kernel, int kernelSize, IAST tensor, int tensorSize) {
-      ISymbol plusFunction = S.Plus;
-      ISymbol timesFunction = S.Times;
-      int diff = tensorSize - kernelSize;
-      return F.mapRange(0, diff + 1, i -> F.mapRange(plusFunction, 1, kernelSize,
-          k -> F.binaryAST2(timesFunction, kernel.get(k), tensor.get(k + i))));
-    }
   }
 
   /**
