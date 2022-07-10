@@ -2434,16 +2434,23 @@ public final class ListFunctions {
       // }
       final IExpr arg1 = ast.arg1();
       try {
+        final ISequence[] sequ = Sequence.createSequences(ast, 2, "drop", engine);
+        if (sequ == null) {
+          return F.NIL;
+        }
         if (arg1.isASTOrAssociation()) {
-          final ISequence[] sequ = Sequence.createSequences(ast, 2, "drop", engine);
-          if (sequ == null) {
-            return F.NIL;
-          } else {
-            final IAST list = (IAST) arg1;
-            final IASTAppendable resultList = list.copyAppendable();
-            drop(resultList, 0, sequ);
-            return resultList;
-          }
+          final IAST list = (IAST) arg1;
+          final IASTAppendable resultList = list.copyAppendable();
+          drop(resultList, 0, sequ);
+          return resultList;
+        } else if (arg1.isSparseArray()) {
+          // TODO return sparse array instead of lists
+          final IASTAppendable resultList = ((ISparseArray) arg1).normal(false).copyAppendable();
+          drop(resultList, 0, sequ);
+          return resultList;
+        } else {
+          // Nonatomic expression expected at position `1` in `2`.
+          return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
         }
       } catch (ValidateException ve) {
         return IOFunctions.printMessage(ast.topHead(), ve, engine);
@@ -2467,14 +2474,14 @@ public final class ListFunctions {
      * Drop (remove) the list elements according to the <code>sequenceSpecifications</code> for the
      * list indexes.
      *
-     * @param list
+     * @param resultList
      * @param level recursion level
      * @param sequenceSpecifications one or more ISequence specifications
      * @return
      */
-    private static IAST drop(final IASTAppendable list, final int level,
+    private static IAST drop(final IASTAppendable resultList, final int level,
         final ISequence[] sequenceSpecifications) {
-      sequenceSpecifications[level].setListSize(list.size());
+      sequenceSpecifications[level].setListSize(resultList.size());
       final int newLevel = level + 1;
       int j = sequenceSpecifications[level].getStart();
       int end = sequenceSpecifications[level].getEnd();
@@ -2484,45 +2491,45 @@ public final class ListFunctions {
         if (j < end || end <= 0) {
           throw new ArgumentTypeException(
               "cannot drop positions " + sequenceSpecifications[level].getStartOffset()
-                  + " through " + sequenceSpecifications[level].getEndOffset() + " in " + list);
+                  + " through " + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
         }
         for (int i = j; i >= end; i += step) {
-          if (j >= list.size()) {
+          if (j >= resultList.size()) {
             throw new ArgumentTypeException(
                 "cannot drop positions " + sequenceSpecifications[level].getStartOffset()
-                    + " through " + sequenceSpecifications[level].getEndOffset() + " in " + list);
+                    + " through " + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
           }
-          list.remove(j);
+          resultList.remove(j);
           j += step;
         }
       } else {
         if (j == 0) {
           throw new ArgumentTypeException(
               "cannot drop positions " + sequenceSpecifications[level].getStartOffset()
-                  + " through " + sequenceSpecifications[level].getEndOffset() + " in " + list);
+                  + " through " + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
         }
         for (int i = j; i < end; i += step) {
-          if (j >= list.size()) {
+          if (j >= resultList.size()) {
             throw new ArgumentTypeException(
                 "cannot drop positions " + sequenceSpecifications[level].getStartOffset()
-                    + " through " + sequenceSpecifications[level].getEndOffset() + " in " + list);
+                    + " through " + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
           }
-          list.remove(j);
+          resultList.remove(j);
           j += step - 1;
         }
       }
-      for (int j2 = 1; j2 < list.size(); j2++) {
+      for (int j2 = 1; j2 < resultList.size(); j2++) {
         if (sequenceSpecifications.length > newLevel) {
-          if (list.get(j2).isAST()) {
-            final IASTAppendable tempList = ((IAST) list.get(j2)).copyAppendable();
-            list.set(j2, drop(tempList, newLevel, sequenceSpecifications));
+          if (resultList.get(j2).isAST()) {
+            final IASTAppendable tempList = ((IAST) resultList.get(j2)).copyAppendable();
+            resultList.set(j2, drop(tempList, newLevel, sequenceSpecifications));
           } else {
             throw new ArgumentTypeException(
-                "Cannot execute drop for argument: " + list.get(j2).toString());
+                "Cannot execute drop for argument: " + resultList.get(j2).toString());
           }
         }
       }
-      return list;
+      return resultList;
     }
   }
 
@@ -7371,6 +7378,7 @@ public final class ListFunctions {
       // if (!evaledAST.isPresent()) {
       // evaledAST = ast;
       // }
+
       try {
         final ISequence[] sequ = Sequence.createSequences(ast, 2, "take", engine);
         if (sequ == null) {
@@ -7384,11 +7392,11 @@ public final class ListFunctions {
           return take(arg1, 0, sequ);
         } else if (ast.arg1().isSparseArray()) {
           // TODO return sparse array instead of lists
-          final IAST arg1 = (IAST) ast.arg1().normal(false);
-          return take(arg1, 0, sequ);
+          final IAST normal = ((ISparseArray) ast.arg1()).normal(false);
+          return take(normal, 0, sequ);
         } else {
-          LOGGER.log(engine.getLogLevel(), "Take: Nonatomic expression expected at position 1");
-          return F.NIL;
+          // Nonatomic expression expected at position `1` in `2`.
+          return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
         }
       } catch (final ValidateException ve) {
         return IOFunctions.printMessage(ast.topHead(), ve, engine);

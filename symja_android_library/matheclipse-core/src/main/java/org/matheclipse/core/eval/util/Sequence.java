@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
 /** Represent Sequences in Take[] or Drop[] functions. */
@@ -35,10 +36,19 @@ public class Sequence extends ListSizeSequence {
     Sequence sequ = null;
     int j = 0;
     for (int i = offset; i < ast.size(); i++) {
-      if (ast.get(i).isList()) {
-        sequ = new Sequence((IAST) ast.get(i));
-      } else if (ast.get(i) instanceof IInteger) {
-        IInteger integerValue = (IInteger) ast.get(i);
+      IExpr element = ast.get(i);
+      if (element.isList()) {
+        if (element.argSize() < 1 || element.argSize() > 3) {
+          // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
+          // `1`.
+          IOFunctions.printMessage(ast.topHead(), "seqs", F.list(ast.arg2(), F.ZZ(i)), engine);
+          return null;
+        }
+        sequ = new Sequence((IAST) element);
+        sequArray[j++] = sequ;
+        continue;
+      } else if (element instanceof IInteger) {
+        IInteger integerValue = (IInteger) element;
         int num = integerValue.toIntDefault();
         if (num < 0) {
           if (num == Integer.MIN_VALUE) {
@@ -49,51 +59,76 @@ public class Sequence extends ListSizeSequence {
             return null;
           }
           sequ = new Sequence(num, Integer.MAX_VALUE);
+          sequArray[j++] = sequ;
+          continue;
         } else {
           sequ = new Sequence(1, num);
+          sequArray[j++] = sequ;
+          continue;
         }
-      } else if (ast.get(i).equals(S.All)) {
+      } else if (element.equals(S.All)) {
         sequ = new Sequence(1, Integer.MAX_VALUE);
-      } else if (ast.get(i).equals(S.None)) {
+        sequArray[j++] = sequ;
+        continue;
+      } else if (element.equals(S.None)) {
         sequ = new Sequence(1, 0);
+        sequArray[j++] = sequ;
+        continue;
       }
-      sequArray[j++] = sequ;
+      // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
+      // `1`.
+      IOFunctions.printMessage(ast.topHead(), "seqs", F.list(ast.arg2(), F.ZZ(i)), engine);
+      return null;
     }
     return sequArray;
   }
 
   private static int getASTFrom(final IAST lst) {
-    if ((lst.size() > 1) && !(lst.arg1().isReal())) {
-      throw new ArgumentTypeException(
-          "real number expected at position 1 instead of " + lst.arg1().toString());
-    }
-    if (lst.size() > 1) {
-      return lst.arg1().toIntDefault();
+    if (lst.size() > 1 && (lst.arg1().isReal())) {
+      int sequ1 = lst.arg1().toIntDefault();
+      if (sequ1 == Integer.MIN_VALUE) {
+        // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
+        // `1`.
+        throw new ArgumentTypeException("seqs", F.list(lst, F.C1));
+      }
+      return sequ1;
     }
     return 0;
   }
 
   private static int getASTTo(final IAST lst) {
     if ((lst.isAST1()) && (lst.arg1().isReal())) {
-      return lst.arg1().toIntDefault();
+      int sequ1 = lst.arg1().toIntDefault();
+      if (sequ1 == Integer.MIN_VALUE) {
+        // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
+        // `1`.
+        throw new ArgumentTypeException("seqs", F.list(lst, F.C1));
+      }
+      return sequ1;
     }
-    if ((lst.size() > 2) && !(lst.arg2() instanceof IInteger)) {
-      throw new ArgumentTypeException(
-          "integer number expected at position 2 instead of " + lst.arg2().toString());
+    if ((lst.size() > 2) && lst.arg2().isReal()) {
+      int sequ2 = lst.arg2().toIntDefault();
+      if (sequ2 == Integer.MIN_VALUE) {
+        // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
+        // `1`.
+        throw new ArgumentTypeException("seqs", F.list(lst, F.C2));
+      }
+      return sequ2;
     }
-    if (lst.size() > 2) {
-      return lst.arg2().toIntDefault();
-    }
-    return Integer.MIN_VALUE;
+    // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
+    // `1`.
+    throw new ArgumentTypeException("seqs", F.list(lst, F.C2));
   }
 
   private static int getASTStep(final IAST lst) {
-    if ((lst.size() > 3) && !(lst.arg1().isReal())) {
-      throw new ArgumentTypeException(
-          "real number expected at position 1 instead of " + lst.arg1().toString());
-    }
-    if (lst.size() > 3) {
-      return lst.arg3().toIntDefault();
+    if ((lst.size() > 3) && lst.arg3().isReal()) {
+      int sequ3 = lst.arg3().toIntDefault();
+      if (sequ3 == Integer.MIN_VALUE) {
+        // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
+        // `1`.
+        throw new ArgumentTypeException("seqs", F.list(lst, F.C3));
+      }
+      return sequ3;
     }
     return 1;
   }
