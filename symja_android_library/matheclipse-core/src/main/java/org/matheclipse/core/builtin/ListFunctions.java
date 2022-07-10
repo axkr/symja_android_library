@@ -7372,17 +7372,20 @@ public final class ListFunctions {
       // evaledAST = ast;
       // }
       try {
+        final ISequence[] sequ = Sequence.createSequences(ast, 2, "take", engine);
+        if (sequ == null) {
+          return F.NIL;
+        }
         if (ast.arg1().isASTOrAssociation()) {
-          final ISequence[] sequ = Sequence.createSequences(ast, 2, "take", engine);
-          if (sequ == null) {
-            return F.NIL;
-          } else {
-            final IAST arg1 = (IAST) ast.arg1();
-            if (arg1.isAssociation()) {
-              return take((IAssociation) arg1, 0, sequ);
-            }
-            return take(arg1, 0, sequ);
+          final IAST arg1 = (IAST) ast.arg1();
+          if (arg1.isAssociation()) {
+            return take((IAssociation) arg1, 0, sequ);
           }
+          return take(arg1, 0, sequ);
+        } else if (ast.arg1().isSparseArray()) {
+          // TODO return sparse array instead of lists
+          final IAST arg1 = (IAST) ast.arg1().normal(false);
+          return take(arg1, 0, sequ);
         } else {
           LOGGER.log(engine.getLogLevel(), "Take: Nonatomic expression expected at position 1");
           return F.NIL;
