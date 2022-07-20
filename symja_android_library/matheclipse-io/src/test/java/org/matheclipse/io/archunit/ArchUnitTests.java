@@ -36,9 +36,10 @@ public class ArchUnitTests {
   @ArchTest
   public static final ArchRule expression_access =
       classes().that().resideInAPackage("org.matheclipse.core.expression..")
-          .and(new DescribedPredicate<JavaClass>("") {
+          .and(new DescribedPredicate<JavaClass>("") { 
+
             @Override
-            public boolean apply(JavaClass arg0) {
+            public boolean test(JavaClass arg0) {
               return arg0.getSimpleName().equals("AST") || arg0.getSimpleName().equals("ExprField")
                   || arg0.getSimpleName().equals("ExprID");
             }
@@ -85,7 +86,8 @@ public class ArchUnitTests {
   public static final ArchRule LogicNG = classes().that() //
       .resideInAPackage("org.logicng..") //
       .should().onlyBeAccessed().byAnyPackage("org.logicng..", //
-          "..core.builtin..");
+          "..core.builtin..", //
+          "..core.expression.data..");
 
   // JGraphT library
   // TODO reduce package dependencies
