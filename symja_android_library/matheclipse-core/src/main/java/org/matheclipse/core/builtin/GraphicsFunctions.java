@@ -1269,7 +1269,25 @@ public class GraphicsFunctions {
 
           graphics3DBuffer.append("drawGraphics3d(document.getElementById('graphics3d'),\n");
           graphics3DBuffer.append("{");
-          graphics3DBuffer.append("\naxes: {},");
+          graphics3DBuffer.append("\naxes: {");
+          graphics3DBuffer.append("\nhasaxes: true, ticks: [");
+          graphics3DBuffer.append("\n[ // x ticks");
+          graphics3DBuffer.append("\n[0, 0.5, 1], // big ticks");
+          graphics3DBuffer.append("\n[0.05, 0.1, 0.15, 0.25, 0.3, 0.35, 0.45, 0.55, 0.65, 0.7, 0.75, 0.85, 0.9, 0.95], // small ticks");
+          graphics3DBuffer.append("\n['0', '0.5', '1'] // big ticks labels");
+          graphics3DBuffer.append("\n],");
+          graphics3DBuffer.append("\n[ // y ticks");
+          graphics3DBuffer.append("\n[0, 0.5, 1], // big ticks");
+          graphics3DBuffer.append("\n[0.05, 0.1, 0.15, 0.25, 0.3, 0.35, 0.45, 0.55, 0.65, 0.7, 0.75, 0.85, 0.9, 0.95], // small ticks");
+          graphics3DBuffer.append("\n['0', '0.5', '1'] // big ticks labels");
+          graphics3DBuffer.append("\n],");
+          graphics3DBuffer.append("\n[ // z ticks");
+          graphics3DBuffer.append("\n[0, 0.5, 1], // big ticks");
+          graphics3DBuffer.append("\n[0.05, 0.1, 0.15, 0.25, 0.3, 0.35, 0.45, 0.55, 0.65, 0.7, 0.75, 0.85, 0.9, 0.95], // small ticks");
+          graphics3DBuffer.append("\n['0', '0.5', '1'] // big ticks labels");
+          graphics3DBuffer.append("\n['0', '0.5', '1'] // big ticks labels");
+          graphics3DBuffer.append("\n]");
+          graphics3DBuffer.append("\n] },");
           graphics3DBuffer.append("\nelements: [");
           graphics3DBuffer.append(jsonPrimitives.toString());
           graphics3DBuffer.append("],");

@@ -47,7 +47,7 @@ public class JSBuilder {
           + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Graphics3D</title>\n" + "</head>\n"
           + "\n" + "<body>\n"
           // 1 - libraries
-          + "`1`\n" + "<div id=\"graphics3d\"></div>\n" + "\n" + "<script type=\"module\"> \n"
+          + "`1`\n" + "<div id=\"graphics3d\" style=\"position: relative;\"></div>\n" + "\n" + "<script type=\"module\"> \n"
           // 2 - JavaScript string
           + "`2`\n" + "</script>\n"
           // 3 - JSFiddle string
