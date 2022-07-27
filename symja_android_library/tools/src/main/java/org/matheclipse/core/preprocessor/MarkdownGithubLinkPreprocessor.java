@@ -13,7 +13,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.CharSink;
 import com.google.common.io.Files;
 
-/** Add a github link to the implementation of a Symja function. */
+/** Add a github link to the Markdown documentation file of a Symja function. */
 public class MarkdownGithubLinkPreprocessor {
 
   public MarkdownGithubLinkPreprocessor() {}
