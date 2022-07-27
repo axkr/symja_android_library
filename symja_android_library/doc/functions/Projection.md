@@ -20,6 +20,12 @@ See
 ```
 >> Projection({5, I, 7}, {1, 1, 1})
 {4+I*1/3,4+I*1/3,4+I*1/3}
+
+>> {u, v} = RandomReal(1, {2, 6})
+
+>> Abs(VectorAngle(Projection(u, v), v)) < (0.0 + 10^-7)
+True
+     
 ```
 
 ### Github

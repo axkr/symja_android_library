@@ -7,15 +7,17 @@ Mod(x, m)
 > returns `x` modulo `m`.
  
 See
-* [Wikipedia - Modulo_operation](https://en.wikipedia.org/wiki/Modulo_operation)
+* [Wikipedia - Modulo operation](https://en.wikipedia.org/wiki/Modulo_operation)
 
 ### Examples
 
 ```
 >> Mod(14, 6)
 2
+
 >> Mod(-3, 4)
 1
+
 >> Mod(-3, -4)
 -3
 ```
