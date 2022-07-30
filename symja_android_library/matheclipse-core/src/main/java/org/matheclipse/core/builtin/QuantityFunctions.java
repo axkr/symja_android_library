@@ -48,6 +48,7 @@ public class QuantityFunctions {
       S.TimeObject.setEvaluator(new TimeObject());
       S.Quantity.setEvaluator(new Quantity());
       S.QuantityMagnitude.setEvaluator(new QuantityMagnitude());
+      S.QuantityUnit.setEvaluator(new QuantityUnit());
       S.UnitConvert.setEvaluator(new UnitConvert());
 
       // integers
@@ -340,8 +341,8 @@ public class QuantityFunctions {
           }
         } else if (ast.size() == 3) {
           IExpr arg1 = engine.evaluate(ast.arg1());
-          IExpr arg2 = engine.evaluate(ast.arg2());
           if (arg1.isQuantity()) {
+            IExpr arg2 = engine.evaluate(ast.arg2());
             org.matheclipse.core.tensor.qty.QuantityMagnitude quantityMagnitude =
                 org.matheclipse.core.tensor.qty.QuantityMagnitude.SI();
             IUnit unit = IUnit.of(arg2.toString());
@@ -361,6 +362,24 @@ public class QuantityFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+  }
+
+  private static final class QuantityUnit extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1() instanceof IQuantity) {
+        IQuantity quantity = (IQuantity) ast.arg1();
+        IUnit unit = org.matheclipse.core.tensor.qty.QuantityUnit.of(quantity);
+        return F.stringx(unit.toString());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 
