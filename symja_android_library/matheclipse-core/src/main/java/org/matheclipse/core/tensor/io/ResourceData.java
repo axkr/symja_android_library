@@ -2,6 +2,7 @@ package org.matheclipse.core.tensor.io;
 
 import java.io.InputStream;
 import java.util.Properties;
+import org.matheclipse.core.interfaces.IAST;
 
 /**
  * access to resource data in jar files, for instance, the content included in the tensor library.
@@ -23,7 +24,21 @@ import java.util.Properties;
  */
 public enum ResourceData {
   ;
-
+  /**
+   * Example use: Interpolation interpolation =
+   * LinearInterpolation.of(ResourceData.of("/colorscheme/classic.csv"));
+   * 
+   * @param string as path to resource
+   * @return imported tensor
+   * @throws Exception if resource could not be loaded
+   */
+  public static IAST of(String string) {
+    try (InputStream inputStream = ResourceData.class.getResourceAsStream(string)) {
+      return ImportHelper.of(new Filename(string), inputStream);
+    } catch (Exception exception) {
+      throw new RuntimeException(exception);
+    }
+  }
   /**
    * @param string as path to resource
    * @return imported properties, or null if resource could not be loaded
