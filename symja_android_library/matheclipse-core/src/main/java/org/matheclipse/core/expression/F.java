@@ -25,6 +25,8 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -555,6 +557,25 @@ public class F extends S {
 
   /** Constant fraction &quot;-1/4&quot; */
   public static final IFraction CN1D4 = AbstractFractionSym.valueOf(-1, 4);
+
+  /** Constant fraction &quot;1/5&quot; */
+  public static final IFraction C1D5 = AbstractFractionSym.valueOf(1, 5);
+
+  /** Constant fraction &quot;-1/5&quot; */
+  public static final IFraction CN1D5 = AbstractFractionSym.valueOf(-1, 5);
+
+  /** Constant fraction &quot;1/6&quot; */
+  public static final IFraction C1D6 = AbstractFractionSym.valueOf(1, 6);
+
+  /** Constant fraction &quot;-1/6&quot; */
+  public static final IFraction CN1D6 = AbstractFractionSym.valueOf(-1, 6);
+
+
+  /** Constant fraction &quot;2/3&quot; */
+  public static final IFraction C2D3 = AbstractFractionSym.valueOf(2, 3);
+
+  /** Constant fraction &quot;-2/3&quot; */
+  public static final IFraction CN2D3 = AbstractFractionSym.valueOf(-2, 3);
 
   /** Constant double &quot;-1.0&quot; */
   public static final Num CND1 = new Num(-1.0);
@@ -1389,7 +1410,7 @@ public class F extends S {
    *
    * @param object
    * @param evaluate if <code>true</code> evaluate the parsed string
-   * @return the <code>object</code> converted to a {@link IExpr}}
+   * @return the <code>object</code> converted to an {@link IExpr}}
    */
   public static IExpr symjify(final Object object, boolean evaluate) {
     IExpr temp = Object2Expr.convert(object, true, false);
@@ -2385,8 +2406,16 @@ public class F extends S {
     return quaternary(BetaRegularized, a0, a1, a2, a3);
   }
 
+  public static IAST BinomialDistribution(final IExpr a0, final IExpr a1) {
+    return new AST2(BinomialDistribution, a0, a1);
+  }
+
   public static IAST Break() {
     return new AST0(Break);
+  }
+
+  public static IAST BrownianBridgeProcess(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(BrownianBridgeProcess, a0, a1, a2);
   }
 
   public static IAST C(final int index) {
@@ -2607,6 +2636,14 @@ public class F extends S {
 
   public static IAST ClearAttributes(final IExpr a0, final IExpr a1) {
     return new AST2(ClearAttributes, a0, a1);
+  }
+
+  public static IAST Clip(final IExpr a0) {
+    return new AST1(Clip, a0);
+  }
+
+  public static IAST Clip(final IExpr a0, final IExpr a1) {
+    return new AST2(Clip, a0, a1);
   }
 
   public static IAST Coefficient(final IExpr a0, final IExpr a1) {
@@ -3757,6 +3794,10 @@ public class F extends S {
     return new B2.Power(E, z);
   }
 
+  public static IAST Exp(final int z) {
+    return new B2.Power(E, F.ZZ(z));
+  }
+
   public static IAST ExpToTrig(final IExpr a0) {
     return new AST1(ExpToTrig, a0);
   }
@@ -4385,8 +4426,20 @@ public class F extends S {
     return new AST1(HeavisideTheta, a0);
   }
 
+  public static IExpr heaviside(final IExpr a0, final IExpr defaultValue, EvalEngine engine) {
+    IExpr arg = engine.evaluate(a0);
+    if (arg.isZero()) {
+      return defaultValue;
+    }
+    return engine.evaluate(new AST1(HeavisideTheta, arg));
+  }
+
   public static IAST HermitianMatrixQ(final IExpr a0) {
     return new AST1(HermitianMatrixQ, a0);
+  }
+
+  public static IAST HilbertMatrix(final IExpr a0) {
+    return new AST1(HilbertMatrix, a0);
   }
 
   public static IAST Histogram(final IExpr a) {
@@ -5665,6 +5718,26 @@ public class F extends S {
     return ast(a, List);
   }
 
+  /**
+   * Constructs a list that holds the expressions of the input stream.
+   * 
+   * <p>
+   * for instance,
+   * <ul>
+   * <li>if the stream consists of {@link ISignedNumber}s, the return value represents a vector,
+   * <li>if the stream consists of vectors, the return value represents a matrix.
+   * <li>if the stream consists of matrices, the return value represents a tensor with rank 3.
+   * <li>etc.
+   * </ul>
+   * 
+   * @param stream of expressions to form the first level of the return value
+   * @return list that holds the expressions of the input stream
+   */
+  public static IASTAppendable ListAlloc(Stream<? extends IExpr> stream) {
+    return ListAlloc(stream.map(IExpr.class::cast).collect(Collectors.toList()));
+  }
+
+
   public static IAST TemplateSlot(final IExpr a0) {
     return new AST1(TemplateSlot, a0);
   }
@@ -5928,6 +6001,16 @@ public class F extends S {
   }
 
   /**
+   * Returns the natural logarithm of <code>z</code>.
+   * 
+   * @param z
+   * @return
+   */
+  public static IAST Log(final int z) {
+    return new B1.Log(F.ZZ(z));
+  }
+
+  /**
    * Returns the logarithm of <code>z</code> for the <code>base</code>.
    *
    * <p>
@@ -5935,11 +6018,34 @@ public class F extends S {
    * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Log.md">Log</a>
    *
    * @param z
+   * @param base
    * @return
    */
   public static IAST Log(final IExpr z, final IExpr base) {
 
     return new AST2(Log, z, base);
+  }
+
+  /**
+   * Returns the logarithm of <code>z</code> for the <code>base</code>.
+   * 
+   * @param z
+   * @param base
+   * @return
+   */
+  public static IAST Log(final IExpr z, final int base) {
+    return new AST2(Log, z, F.ZZ(base));
+  }
+
+  /**
+   * Returns the logarithm of <code>z</code> for the <code>base</code>.
+   * 
+   * @param z
+   * @param base
+   * @return
+   */
+  public static IAST Log(final int z, final int base) {
+    return new AST2(Log, F.ZZ(z), F.ZZ(base));
   }
 
   /**
@@ -7203,6 +7309,10 @@ public class F extends S {
 
   public static IAST Point(final IAST list) {
     return new B1.Point(list);
+  }
+
+  public static IAST PoissonDistribution(final IExpr a0) {
+    return new AST1(PoissonDistribution, a0);
   }
 
   public static IAST PolyGamma(final IExpr a0) {
@@ -8494,7 +8604,7 @@ public class F extends S {
    *         the substituted expression.
    */
   public static IExpr subs(final IExpr expr, final IExpr x, final IExpr y) {
-    return expr.replaceAll(Rule(x, y)).orElse(expr);
+    return expr.subs(x, y);
   }
 
   /**

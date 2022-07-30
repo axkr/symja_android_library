@@ -923,6 +923,8 @@ public class S {
   public final static IBuiltInSymbol BernoulliDistribution =
       F.initFinalSymbol("BernoulliDistribution", ID.BernoulliDistribution);
 
+  public final static IBuiltInSymbol BernoulliProcess =
+      F.initFinalSymbol("BernoulliProcess", ID.BernoulliProcess);
   /**
    * BernsteinBasis(n, v, expr) - computes the Bernstein basis for the expression `expr`.
    * 
@@ -1079,6 +1081,9 @@ public class S {
    */
   public final static IBuiltInSymbol BinomialDistribution =
       F.initFinalSymbol("BinomialDistribution", ID.BinomialDistribution);
+
+  public final static IBuiltInSymbol BinomialProcess =
+      F.initFinalSymbol("BinomialProcess", ID.BinomialProcess);
 
   public final static IBuiltInSymbol BioSequence = F.initFinalSymbol("BioSequence", ID.BioSequence);
 
@@ -1248,6 +1253,9 @@ public class S {
   public final static IBuiltInSymbol Break = F.initFinalSymbol("Break", ID.Break);
 
   public final static IBuiltInSymbol Brown = F.initFinalSymbol("Brown", ID.Brown);
+
+  public final static IBuiltInSymbol BrownianBridgeProcess =
+      F.initFinalSymbol("BrownianBridgeProcess", ID.BrownianBridgeProcess);
 
   public final static IBuiltInSymbol Button = F.initFinalSymbol("Button", ID.Button);
 
@@ -1874,6 +1882,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Composition = F.initFinalSymbol("Composition", ID.Composition);
+
+
+  public final static IBuiltInSymbol CompositeQ = F.initFinalSymbol("CompositeQ", ID.CompositeQ);
 
   /**
    * CompoundExpression(expr1, expr2, ...) - evaluates its arguments in turn, returning the last
@@ -3315,6 +3326,9 @@ public class S {
    */
   public final static IBuiltInSymbol FactorTerms = F.initFinalSymbol("FactorTerms", ID.FactorTerms);
 
+  public final static IBuiltInSymbol FactorTermsList =
+      F.initFinalSymbol("FactorTermsList", ID.FactorTermsList);
+
   /**
    * Factorial(n) - returns the factorial number of the integer `n`
    * 
@@ -4073,6 +4087,13 @@ public class S {
 
   public final static IBuiltInSymbol GraphData = F.initFinalSymbol("GraphData", ID.GraphData);
 
+
+  public final static IBuiltInSymbol GraphComplement =
+      F.initFinalSymbol("GraphComplement", ID.GraphComplement);
+
+  public final static IBuiltInSymbol GraphDifference =
+      F.initFinalSymbol("GraphDifference", ID.GraphDifference);
+
   /**
    * GraphDiameter(graph) - return the diameter of the `graph`.
    * 
@@ -4082,6 +4103,12 @@ public class S {
    */
   public final static IBuiltInSymbol GraphDiameter =
       F.initFinalSymbol("GraphDiameter", ID.GraphDiameter);
+
+  public final static IBuiltInSymbol GraphDisjointUnion =
+      F.initFinalSymbol("GraphDisjointUnion", ID.GraphDisjointUnion);
+
+  public final static IBuiltInSymbol GraphIntersection =
+      F.initFinalSymbol("GraphIntersection", ID.GraphIntersection);
 
   /**
    * GraphPeriphery(graph) - compute the `graph` periphery. The periphery of a `graph` is the set of
@@ -4629,6 +4656,8 @@ public class S {
    */
   public final static IBuiltInSymbol Indeterminate =
       F.initFinalSymbol("Indeterminate", ID.Indeterminate);
+
+  public final static IBuiltInSymbol IndexGraph = F.initFinalSymbol("IndexGraph", ID.IndexGraph);
 
   public final static IBuiltInSymbol Inequality = F.initFinalSymbol("Inequality", ID.Inequality);
 
@@ -6321,6 +6350,8 @@ public class S {
    */
   public final static IBuiltInSymbol Mod = F.initFinalSymbol("Mod", ID.Mod);
 
+  public final static IBuiltInSymbol ModularInverse =
+      F.initFinalSymbol("ModularInverse", ID.ModularInverse);
   /**
    * Module({list_of_local_variables}, expr ) - evaluates `expr` for the `list_of_local_variables`
    * by renaming local variables.
@@ -7065,6 +7096,9 @@ public class S {
 
   public final static IBuiltInSymbol Package = F.initFinalSymbol("Package", ID.Package);
 
+  public final static IBuiltInSymbol PadeApproximant =
+      F.initFinalSymbol("PadeApproximant", ID.PadeApproximant);
+
   /**
    * PadLeft(list, n) - pads `list` to length `n` by adding `0` on the left.
    * 
@@ -7418,6 +7452,9 @@ public class S {
    */
   public final static IBuiltInSymbol PoissonDistribution =
       F.initFinalSymbol("PoissonDistribution", ID.PoissonDistribution);
+
+  public final static IBuiltInSymbol PoissonProcess =
+      F.initFinalSymbol("PoissonProcess", ID.PoissonProcess);
 
   /**
    * PolarPlot(function, {t, tMin, tMax}) - generate a JavaScript control for the polar plot
@@ -7843,6 +7880,9 @@ public class S {
       F.initFinalSymbol("QuantityMagnitude", ID.QuantityMagnitude);
 
   public final static IBuiltInSymbol QuantityQ = F.initFinalSymbol("QuantityQ", ID.QuantityQ);
+
+  public final static IBuiltInSymbol QuantityUnit =
+      F.initFinalSymbol("QuantityUnit", ID.QuantityUnit);
 
   public final static IBuiltInSymbol QuarticSolve =
       F.initFinalSymbol("QuarticSolve", ID.QuarticSolve);

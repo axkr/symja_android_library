@@ -1,9 +1,16 @@
 package org.matheclipse.core.convert;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.Array2DRowFieldMatrix;
@@ -30,6 +37,8 @@ import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.parser.client.Parser;
+import org.matheclipse.parser.client.ast.ASTNode;
 import edu.jas.vector.GenMatrix;
 import edu.jas.vector.GenMatrixRing;
 
@@ -657,7 +666,8 @@ public class Convert {
     final int rowSize = matrix.ring.rows;
     final int colSize = matrix.ring.cols;
 
-    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> matrix.get(i, j)));
+    final IASTAppendable out =
+        F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> matrix.get(i, j)));
     if (matrixFormat) {
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
       // isMatrix() must be used!
@@ -684,8 +694,8 @@ public class Convert {
     final int rowSize = matrix.getRowDimension();
     final int colSize = matrix.getColumnDimension();
 
-    final IASTAppendable out =
-        F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> F.complexNum(matrix.getEntry(i, j))));
+    final IASTAppendable out = F.mapRange(0, rowSize,
+        i -> F.mapRange(0, colSize, j -> F.complexNum(matrix.getEntry(i, j))));
     if (matrixFormat) {
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
       // isMatrix() must be used!
@@ -732,10 +742,10 @@ public class Convert {
    * Converts an array of coefficients into the (polynomial) expression representation.
    *
    * @param coefficients the coefficients of the polynomial function
-   * @param sym the name of the polynomial functions variable
+   * @param variable the name of the polynomial functions variable
    * @return
    */
-  public static IExpr polynomialFunction2Expr(double[] coefficients, ISymbol sym) {
+  public static IExpr polynomialFunction2Expr(double[] coefficients, IExpr variable) {
     if (coefficients[0] == 0.0) {
       if (coefficients.length == 1) {
         return F.C0;
@@ -745,7 +755,7 @@ public class Convert {
       if (i == 0) {
         return F.num(coefficients[0]);
       } else if (coefficients[i] != 0) {
-        return F.Times(F.num(coefficients[i]), F.Power(sym, F.ZZ(i)));
+        return F.Times(F.num(coefficients[i]), F.Power(variable, F.ZZ(i)));
       }
       return F.NIL;
     });
@@ -923,7 +933,7 @@ public class Convert {
   private Convert() {}
 
   /**
-   * Convert the <code>expr</code> into a list of IStringX.
+   * Convert/copy the <code>expr</code> into a list of IStringX.
    *
    * @param expr the <code>expr</code> which has to be a IStringX or list of IStringX
    * @return a list of String or <code>null</code> otherwise
@@ -948,6 +958,27 @@ public class Convert {
       }
     }
     return null;
+  }
+
+  /**
+   * Convert/copy the <code>expr</code> into a list of type T.
+   *
+   * @param expr the <code>expr</code> which has to be a T or list of T
+   * @return a list of T or <code>null</code> otherwise
+   */
+  public static <T> List<T> toList(IExpr expr, Function<IExpr, T> function) {
+    if (expr.isList()) {
+      List<T> result = new ArrayList<T>(expr.size() - 1);
+      IAST list = (IAST) expr;
+      for (int i = 1; i < list.size(); i++) {
+        result.add(function.apply(list.get(i)));
+      }
+      return result;
+    }
+    List<T> result = new ArrayList<T>(1);
+    T element = function.apply(expr);
+    result.add(element);
+    return result;
   }
 
   public static int[] checkNonEmptySquareMatrix(ISymbol symbol, IExpr arg1) {
@@ -1008,5 +1039,30 @@ public class Convert {
 
   public static String toHex(RGBColor c) {
     return "#" + Integer.toHexString(c.getRGB()).substring(2);
+  }
+
+  public static IAST fromCSV(String fileName) throws IOException {
+    InputStreamReader reader = new FileReader(fileName);
+    return Convert.fromCSV(reader);
+  }
+
+  public static IAST fromCSV(Reader reader) throws IOException {
+    EvalEngine engine = EvalEngine.get();
+    AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
+    final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
+
+    CSVFormat csvFormat = CSVFormat.RFC4180.withDelimiter(',');
+    Iterable<CSVRecord> records = csvFormat.parse(reader);
+    IASTAppendable rowList = F.ListAlloc(256);
+    for (CSVRecord record : records) {
+      IASTAppendable columnList = F.ListAlloc(record.size());
+      for (String string : record) {
+        final ASTNode node = parser.parse(string);
+        IExpr temp = ast2Expr.convert(node);
+        columnList.append(temp);
+      }
+      rowList.append(columnList);
+    }
+    return rowList;
   }
 }

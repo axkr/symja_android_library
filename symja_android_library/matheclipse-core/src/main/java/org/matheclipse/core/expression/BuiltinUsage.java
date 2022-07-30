@@ -48,6 +48,7 @@ public class BuiltinUsage {
     USAGE[ID.BaseForm] = "print with all numbers given in a base";
     USAGE[ID.BaseDecode] = "decode a base64 string";
     USAGE[ID.BaseEncode] = "encode an element as a base64 string";
+    USAGE[ID.Beta] = "Euler's Beta function";
     USAGE[ID.Boole] = "translate 'True' to 1, and 'False' to 0";
     USAGE[ID.BooleanQ] = "test whether the expression evaluates to a boolean constant";
     USAGE[ID.Binomial] = "binomial coefficients";
@@ -97,6 +98,10 @@ public class BuiltinUsage {
     USAGE[ID.Definition] = "give values of a symbol in a form that can be stored in a package";
 
     USAGE[ID.EditDistance] = "Edit distance";
+    USAGE[ID.EllipticE] = "elliptic integral of the second kind E(ϕ|m)";
+    USAGE[ID.EllipticF] = "elliptic integral F(ϕ|m)";
+    USAGE[ID.EllipticK] = "elliptic integral of the first kind K(m)";
+    USAGE[ID.EllipticPi] = "elliptic integral of the third kind P(n|m)";
     USAGE[ID.EndOfLine] = "a string pattern matching EOL";
     USAGE[ID.Equal] = "numerical equality";
     USAGE[ID.Equivalent] = "logic equivalence";
@@ -108,6 +113,8 @@ public class BuiltinUsage {
     USAGE[ID.ExportString] = "export elements to a string";
     USAGE[ID.Extract] = "extract elements that appear at a list of positions";
 
+    USAGE[ID.Factorial] = "factorial";
+    USAGE[ID.Factorial2] = "semi-factorial";
     // USAGE[ID.Failure] = "a failure at the level of the interpreter";
     USAGE[ID.False] = "boolean constant for False";
     USAGE[ID.FileFormat] = "determine the file format of a file";
@@ -124,6 +131,8 @@ public class BuiltinUsage {
     USAGE[ID.For] = "a 'For' loop";
     USAGE[ID.FromCharacterCode] = "convert from a list of character codes to a string";
     USAGE[ID.FullForm] = "get the underlying M-Expression representation";
+
+    USAGE[ID.Gamma] = "complete and incomplete gamma functions";
     USAGE[ID.Gather] = "gather sublists of identical elements";
     USAGE[ID.GatherBy] = "gather based on values of a function applied to elements";
     USAGE[ID.GCD] = "greatest common divisor";
@@ -147,7 +156,7 @@ public class BuiltinUsage {
     USAGE[ID.Import] = "import elements from a file";
     USAGE[ID.ImportString] = "import elements from a string";
     USAGE[ID.InverseHaversine] = "inverse haversine function";
-    USAGE[ID.I] = "represents the imaginary number 'sqrt[-1]'";
+    USAGE[ID.I] = "represents the imaginary number 'Sqrt(-1)'";
     USAGE[ID.If] = "test if a condition is true, false, or of unknown truth value";
     USAGE[ID.Im] = "returns the imaginary component of the complex number $z$";
     USAGE[ID.Implies] = "logic implication";
@@ -183,6 +192,7 @@ public class BuiltinUsage {
     USAGE[ID.ListQ] = "test if an expression is a list";
     USAGE[ID.Locked] = "keep all attributes locked (settable but not clearable)";
     USAGE[ID.Log] = "natural logarithm function";
+    USAGE[ID.LogGamma] = "logarithm of the gamma function";
     USAGE[ID.Log2] = "base-2 logarithm function";
     USAGE[ID.Log10] = "base-10 logarithm function";
     USAGE[ID.LogisticSigmoid] = "logistic function";
@@ -193,7 +203,7 @@ public class BuiltinUsage {
     USAGE[ID.MathMLForm] = "format expression as MathML commands";
     USAGE[ID.MatrixForm] = "format as a matrix";
     USAGE[ID.Max] = "The smallest argument or the largest element of a list";
-    USAGE[ID.Mean] = "returns the statistical mean of $list$";
+    USAGE[ID.Mean] = "returns the statistical mean of a list";
     USAGE[ID.Median] = "central value of a dataset";
     USAGE[ID.MemberQ] = "test whether an element is a member of a list";
     USAGE[ID.Message] = "display a message";
@@ -201,6 +211,7 @@ public class BuiltinUsage {
     USAGE[ID.Min] = "The largest argument or the largest element of a list";
     USAGE[ID.Missing] = "default value if a key is not found";
     USAGE[ID.Mod] = "the remainder in an integer division";
+    USAGE[ID.ModularInverse] = "returns the modular inverse k^(-1) MOD n";
     USAGE[ID.Most] = "remove the last element";
     USAGE[ID.Multinomial] = "multinomial coefficients";
     USAGE[ID.Names] = "find a list of symbols with names matching a pattern";
@@ -218,6 +229,7 @@ public class BuiltinUsage {
         "attribute that indicates that just the first  argument must be evaluated in numerical evaluations";
     USAGE[ID.Nor] = "negation of logic (inclusive) disjunction";
     USAGE[ID.Normal] = "convert objects to normal expressions";
+    USAGE[ID.Normalize] = "normalizes a vector";
     USAGE[ID.Not] = "logic negation";
     USAGE[ID.NotListQ] = "test if an expression is not a list";
     USAGE[ID.NumberQ] = "test whether an expression is a number";
@@ -243,6 +255,8 @@ public class BuiltinUsage {
     USAGE[ID.Permutations] = "form permutations of a list";
     USAGE[ID.Pick] = "pick out elements according to a boolean mask";
     USAGE[ID.Piecewise] = "an arbitrary piecewise function";
+    USAGE[ID.Pochhammer] = "Pochhammer's symbols";
+    USAGE[ID.PolyGamma] = "polygamma function";
     USAGE[ID.PossibleZeroQ] =
         "returns 'True' if basic symbolic and numerical methods suggest that expr has value zero, and 'False' otherwise";
     USAGE[ID.Position] = "positions of matching elements";
@@ -255,6 +269,7 @@ public class BuiltinUsage {
     USAGE[ID.PrimeQ] = "test whether elements are prime numbers";
     USAGE[ID.Print] = "print strings and formatted text";
     USAGE[ID.Product] = "discrete product";
+    USAGE[ID.Projection] = "find the projection of one vector on another";
     USAGE[ID.Protect] = "protect a symbol against redefinitions";
     USAGE[ID.Protected] = "attribute of protected symbols";
 
@@ -314,6 +329,7 @@ public class BuiltinUsage {
     USAGE[ID.SplitBy] = "split based on values of a function applied to elements";
     USAGE[ID.StandardDeviation] = "standard deviation of a dataset";
     USAGE[ID.StandardForm] = "default output format";
+    USAGE[ID.StieltjesGamma] = "Stieltjes' function";
     USAGE[ID.String] = "head for strings";
     USAGE[ID.StringCases] = "occurrences of string patterns in a string";
     USAGE[ID.StringContainsQ] = "test whether a pattern matches with a substring";
