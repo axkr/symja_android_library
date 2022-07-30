@@ -26,6 +26,11 @@ public class JavaLinkTestCase extends ExprEvaluatorTestCase {
   public void testInstanceOf001() {
     check("loc= JavaNew[\"java.util.Locale\",\"US\"]", //
         "JavaObject[class java.util.Locale]");
+
+    // message InstanceOf: ClassNotFoundException: "".
+    check("InstanceOf[loc, \"\"]", //
+        "False");
+
     check("InstanceOf[loc, \"java.util.Locale\"]", //
         "True");
     check("InstanceOf[loc, \"java.io.Serializable\"]", //
@@ -86,6 +91,7 @@ public class JavaLinkTestCase extends ExprEvaluatorTestCase {
   /** The JUnit setup method */
   @Override
   protected void setUp() {
+    super.setUp();
     try {
       ToggleFeature.COMPILE = true;
       ToggleFeature.COMPILE_PRINT = true;

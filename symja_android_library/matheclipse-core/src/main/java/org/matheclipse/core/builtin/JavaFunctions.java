@@ -81,8 +81,6 @@ public class JavaFunctions {
   }
 
   /**
-   *
-   *
    * <pre>
    * <code>InstanceOf[java-object, &quot;class-name&quot;]
    * </code>
@@ -124,11 +122,18 @@ public class JavaFunctions {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg2.isString()) {
+        String str = arg2.toString().trim();
+        if (str.length() == 0) {
+          // `1`
+          IOFunctions.printMessage(ast.topHead(), "error",
+              F.List(F.stringx("ClassNotFoundException: \"" + str + "\"")), engine);
+          return F.False;
+        }
         try {
           if (Config.URL_CLASS_LOADER == null) {
             Config.URL_CLASS_LOADER = ClassLoader.getSystemClassLoader();
           }
-          arg2 = JavaClassExpr.newInstance(arg2.toString(), Config.URL_CLASS_LOADER);
+          arg2 = JavaClassExpr.newInstance(str, Config.URL_CLASS_LOADER);
         } catch (ClassNotFoundException cnfex) {
           // `1`
           IOFunctions.printMessage(ast.topHead(), "error",
