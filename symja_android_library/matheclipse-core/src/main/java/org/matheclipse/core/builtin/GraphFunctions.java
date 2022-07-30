@@ -36,6 +36,7 @@ import org.jgrapht.alg.shortestpath.GraphMeasurer;
 import org.jgrapht.alg.spanning.BoruvkaMinimumSpanningTree;
 import org.jgrapht.alg.tour.HeldKarpTSP;
 import org.jgrapht.alg.vertexcover.GreedyVCImpl;
+import org.jgrapht.generate.ComplementGraphGenerator;
 import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
@@ -52,6 +53,7 @@ import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.ExprWeightedEdge;
 import org.matheclipse.core.expression.data.GeoPositionExpr;
 import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.expression.data.IExprEdge;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -61,6 +63,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.trie.Trie;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 
 /** Functions for graph theory algorithms. */
 public class GraphFunctions {
@@ -76,12 +80,6 @@ public class GraphFunctions {
 
       S.BetweennessCentrality.setEvaluator(new BetweennessCentrality());
       S.ClosenessCentrality.setEvaluator(new ClosenessCentrality());
-      S.Graph.setEvaluator(new GraphCTor());
-      S.GraphCenter.setEvaluator(new GraphCenter());
-      S.GraphDiameter.setEvaluator(new GraphDiameter());
-      S.GraphPeriphery.setEvaluator(new GraphPeriphery());
-      S.GraphRadius.setEvaluator(new GraphRadius());
-      S.GraphUnion.setEvaluator(new GraphUnion());
       S.AdjacencyMatrix.setEvaluator(new AdjacencyMatrix());
       S.EdgeList.setEvaluator(new EdgeList());
       S.EdgeQ.setEvaluator(new EdgeQ());
@@ -91,12 +89,24 @@ public class GraphFunctions {
       S.FindEulerianCycle.setEvaluator(new FindEulerianCycle());
       S.FindHamiltonianCycle.setEvaluator(new FindHamiltonianCycle());
       S.FindGraphIsomorphism.setEvaluator(new FindGraphIsomorphism());
+      S.FindIndependentVertexSet.setEvaluator(new FindIndependentVertexSet());
       S.FindVertexCover.setEvaluator(new FindVertexCover());
       S.FindShortestPath.setEvaluator(new FindShortestPath());
       S.FindShortestTour.setEvaluator(new FindShortestTour());
       S.FindSpanningTree.setEvaluator(new FindSpanningTree());
+      S.Graph.setEvaluator(new GraphCTor());
+      S.GraphCenter.setEvaluator(new GraphCenter());
+      S.GraphComplement.setEvaluator(new GraphComplement());
+      S.GraphDifference.setEvaluator(new GraphDifference());
+      S.GraphDiameter.setEvaluator(new GraphDiameter());
+      S.GraphDisjointUnion.setEvaluator(new GraphDisjointUnion());
+      S.GraphIntersection.setEvaluator(new GraphIntersection());
       S.GraphQ.setEvaluator(new GraphQ());
+      S.GraphPeriphery.setEvaluator(new GraphPeriphery());
+      S.GraphRadius.setEvaluator(new GraphRadius());
+      S.GraphUnion.setEvaluator(new GraphUnion());
       S.HamiltonianGraphQ.setEvaluator(new HamiltonianGraphQ());
+      S.IndexGraph.setEvaluator(new IndexGraph());
       S.IsomorphicGraphQ.setEvaluator(new IsomorphicGraphQ());
       S.LineGraph.setEvaluator(new LineGraph());
       S.PlanarGraphQ.setEvaluator(new PlanarGraphQ());
@@ -107,6 +117,262 @@ public class GraphFunctions {
       S.WeightedGraphQ.setEvaluator(new WeightedGraphQ());
     }
   }
+
+  private static class GraphIntersection extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        GraphExpr<?> gex1 = createGraph(ast.arg1());
+        if (gex1 == null) {
+          return F.NIL;
+        }
+        Graph<IExpr, ? extends IExprEdge> resultGraph = (Graph<IExpr, ? extends IExprEdge>) gex1.toData();
+        GraphType t = resultGraph.getType();
+        if (t == null) {
+          return F.NIL;
+        }
+        resultGraph = applyFunctionArg1(resultGraph);
+        for (int i = 2; i < ast.size(); i++) {
+          GraphExpr<?> gexArg = createGraph(ast.get(i));
+          if (gexArg == null) {
+            return F.NIL;
+          }
+          Graph<IExpr, ? extends IExprEdge> graphArg = (Graph<IExpr, ? extends IExprEdge>) gexArg.toData();
+          Graph<IExpr, ? extends IExprEdge> newGraph;
+          if (t.isDirected()) {
+            newGraph = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+          } else {
+            newGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+          }
+
+          setOperation(resultGraph, graphArg, newGraph);
+          resultGraph = newGraph;
+        }
+        return GraphExpr.newInstance(resultGraph);
+
+      } catch (RuntimeException rex) {
+        LOGGER.debug("GraphCenter.evaluate() failed", rex);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Prepare the first element of multiple graph arguments for a set operation.
+     * 
+     * @param graph
+     * @return
+     * @see GraphDisjointUnion#applyFunctionArg1(Graph)
+     */
+    protected Graph<IExpr, ? extends IExprEdge> applyFunctionArg1(
+        Graph<IExpr, ? extends IExprEdge> graph) {
+      return graph;
+    }
+
+    /**
+     * The default Set operation is <code>intersection</code>. This method must be overridden in
+     * inherited classes.
+     * 
+     * @param graph1
+     * @param graph2
+     * @param resultGraph
+     * @return
+     */
+    protected void setOperation(Graph<IExpr, ? extends IExprEdge> graph1,
+        Graph<IExpr, ? extends IExprEdge> graph2, Graph<IExpr, ? extends IExprEdge> resultGraph) {
+      for (IExpr v : Sets.intersection(graph1.vertexSet(), graph2.vertexSet())) {
+        resultGraph.addVertex(v);
+      }
+      SetView<? extends IExprEdge> graphSet = Sets.intersection(graph1.edgeSet(), graph2.edgeSet());
+      for (IExprEdge e : graphSet) {
+        IExpr v1 = e.lhs();
+        IExpr v2 = e.rhs();
+        if (resultGraph.containsVertex(v1) && resultGraph.containsVertex(v2)) {
+          resultGraph.addEdge(v1, v2);
+        }
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
+    }
+  }
+
+
+  private static class GraphComplement extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        GraphExpr<?> gex1 = createGraph(ast.arg1());
+        if (gex1 == null) {
+          return F.NIL;
+        }
+        Graph<IExpr, ExprEdge> graph = (Graph<IExpr, ExprEdge>) gex1.toData();
+
+        ComplementGraphGenerator<IExpr, ExprEdge> complementGraphGenerator =
+            new ComplementGraphGenerator<IExpr, ExprEdge>(graph);
+        Graph<IExpr, ExprEdge> resultGraph;
+        GraphType t = graph.getType();
+        if (t != null) {
+          if (t.isDirected()) {
+            resultGraph = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+          } else {
+            resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+          }
+          complementGraphGenerator.generateGraph(resultGraph);
+          return GraphExpr.newInstance(resultGraph);
+        }
+
+
+      } catch (RuntimeException rex) {
+        LOGGER.debug("GraphCenter.evaluate() failed", rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+  }
+
+  private static class GraphDifference extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        GraphExpr<?> gex1 = createGraph(ast.arg1());
+        if (gex1 == null) {
+          return F.NIL;
+        }
+        GraphExpr<?> gex2 = createGraph(ast.arg2());
+        if (gex2 == null) {
+          return F.NIL;
+        }
+        Graph<IExpr, ExprEdge> g1 = (Graph<IExpr, ExprEdge>) gex1.toData();
+        Graph<IExpr, ExprEdge> g2 = (Graph<IExpr, ExprEdge>) gex2.toData();
+
+        Graph<IExpr, ExprEdge> resultGraph;
+        GraphType t = g1.getType();
+        if (t != null) {
+          if (t.isDirected()) {
+            resultGraph = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+          } else {
+            resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+          }
+          return setOperation(g1, g2, resultGraph);
+        }
+
+      } catch (RuntimeException rex) {
+        LOGGER.debug("GraphCenter.evaluate() failed", rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    protected IExpr setOperation(Graph<IExpr, ? extends IExprEdge> graph1,
+        Graph<IExpr, ? extends IExprEdge> graph2, Graph<IExpr, ExprEdge> resultGraph) {
+      for (IExpr v : Sets.union(graph1.vertexSet(), graph2.vertexSet())) {
+        resultGraph.addVertex(v);
+      }
+      SetView<? extends IExprEdge> graphSet = Sets.difference(graph1.edgeSet(), graph2.edgeSet());
+      for (IExprEdge e : graphSet) {
+        IExpr v1 = e.lhs();
+        IExpr v2 = e.rhs();
+        if (resultGraph.containsVertex(v1) && resultGraph.containsVertex(v2)) {
+          resultGraph.addEdge(v1, v2);
+        }
+      }
+      return GraphExpr.newInstance(resultGraph);
+    }
+
+  }
+
+
+  private static class IndexGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        GraphExpr<?> gex1 = createGraph(ast.arg1());
+        if (gex1 == null) {
+          return F.NIL;
+        }
+        Graph<IExpr, ?> graph = gex1.toData();
+
+        int newIndex = 1;
+        if (ast.isAST2()) {
+          if (!ast.arg2().isInteger()) {
+            return F.NIL;
+          }
+          int intIndex = ast.arg2().toIntDefault();
+          if (intIndex == Integer.MAX_VALUE) {
+            return F.NIL;
+          }
+          newIndex = intIndex;
+        }
+        Graph<IExpr, ?> resultGraph = indexGraph(graph, newIndex);
+        if (resultGraph != null) {
+          return GraphExpr.newInstance(resultGraph);
+        }
+
+      } catch (RuntimeException rex) {
+        LOGGER.debug("GraphCenter.evaluate() failed", rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+
+  private static class GraphDisjointUnion extends GraphUnion {
+    @Override
+    protected Graph<IExpr, ? extends IExprEdge> applyFunctionArg1(
+        Graph<IExpr, ? extends IExprEdge> graph) {
+      return indexGraph(graph, 1);
+    }
+
+    @Override
+    protected void setOperation(Graph<IExpr, ? extends IExprEdge> graph1,
+        Graph<IExpr, ? extends IExprEdge> graph2, Graph<IExpr, ? extends IExprEdge> resultGraph) {
+      Graph<IExpr, ? extends IExprEdge> g2 = indexGraph(graph2, graph1.vertexSet().size() + 1);
+      super.setOperation(graph1, g2, resultGraph);
+    }
+
+  }
+
+
+  private static class GraphUnion extends GraphIntersection {
+
+    @Override
+    protected void setOperation(Graph<IExpr, ? extends IExprEdge> graph1,
+        Graph<IExpr, ? extends IExprEdge> graph2, Graph<IExpr, ? extends IExprEdge> resultGraph) {
+      for (IExpr v : Sets.union(graph1.vertexSet(), graph2.vertexSet())) {
+        resultGraph.addVertex(v);
+      }
+      SetView<? extends IExprEdge> graphSet = Sets.union(graph1.edgeSet(), graph2.edgeSet());
+      for (IExprEdge e : graphSet) {
+        IExpr v1 = e.lhs();
+        IExpr v2 = e.rhs();
+        if (resultGraph.containsVertex(v1) && resultGraph.containsVertex(v2)) {
+          resultGraph.addEdge(v1, v2);
+        }
+      }
+    }
+
+  }
+
 
   /**
    *
@@ -223,6 +489,7 @@ public class GraphFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -273,6 +540,7 @@ public class GraphFunctions {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -330,6 +598,7 @@ public class GraphFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -382,6 +651,7 @@ public class GraphFunctions {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -440,6 +710,7 @@ public class GraphFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -493,37 +764,6 @@ public class GraphFunctions {
     }
   }
 
-  private static class GraphUnion extends AbstractEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // try {
-      // GraphExpr<ExprEdge> gex1 = createGraph(ast.arg1());
-      // if (gex1 == null) {
-      // return F.NIL;
-      // }
-      // Graph<IExpr, ExprEdge> g1 = gex1.toData();
-      // GraphExpr<ExprEdge> gex2 = createGraph(ast.arg2());
-      // if (gex2 == null) {
-      // return F.NIL;
-      // }
-      // Graph<IExpr, ExprEdge> g2 = gex2.toData();
-      // if (g1 == g2) {
-      // return gex1;
-      // }
-      // AsGraphUnion<IExpr, ExprEdge> gu = new AsGraphUnion<IExpr, ExprEdge>(g1, g2);
-      // return GraphExpr.newInstance(gu);
-      // } catch (RuntimeException rex) {
-      // LOGGER.debug("GraphUnion.evaluate() failed", rex);
-      // }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_INFINITY;
-    }
-  }
 
   /**
    *
@@ -677,6 +917,7 @@ public class GraphFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -749,6 +990,7 @@ public class GraphFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -811,6 +1053,7 @@ public class GraphFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -865,6 +1108,7 @@ public class GraphFunctions {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -925,6 +1169,7 @@ public class GraphFunctions {
     }
   }
 
+
   private static class EdgeRules extends AbstractEvaluator {
 
     @Override
@@ -949,6 +1194,7 @@ public class GraphFunctions {
       return ARGS_1_1;
     }
   }
+
 
   private static class ClosenessCentrality extends AbstractEvaluator {
 
@@ -1003,6 +1249,7 @@ public class GraphFunctions {
     }
   }
 
+
   private static class BetweennessCentrality extends ClosenessCentrality {
 
     @Override
@@ -1014,6 +1261,7 @@ public class GraphFunctions {
       return scores;
     }
   }
+
 
   /**
    *
@@ -1070,6 +1318,7 @@ public class GraphFunctions {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -1134,6 +1383,7 @@ public class GraphFunctions {
     }
   }
 
+
   private static class IsomorphicGraphQ extends AbstractEvaluator {
 
     @Override
@@ -1162,6 +1412,7 @@ public class GraphFunctions {
       return ARGS_2_2;
     }
   }
+
 
   private static class FindCycle extends AbstractEvaluator {
 
@@ -1283,7 +1534,8 @@ public class GraphFunctions {
             return F.CEmptyList;
           }
           final List<IExpr> iList = path.getVertexList();
-          return F.mapRange(0, iList.size() - 1, i -> F.DirectedEdge(iList.get(i), iList.get(i + 1)));
+          return F.mapRange(0, iList.size() - 1,
+              i -> F.DirectedEdge(iList.get(i), iList.get(i + 1)));
         }
       } catch (RuntimeException rex) {
         LOGGER.debug("FindEulerianCycle.evaluate() failed", rex);
@@ -1346,7 +1598,8 @@ public class GraphFunctions {
             return F.CEmptyList;
           }
           List<IExpr> iList = path.getVertexList();
-          return F.mapRange(0, iList.size() - 1, i -> F.DirectedEdge(iList.get(i), iList.get(i + 1)));
+          return F.mapRange(0, iList.size() - 1,
+              i -> F.DirectedEdge(iList.get(i), iList.get(i + 1)));
         }
       } catch (RuntimeException rex) {
         LOGGER.debug("FindHamiltonianCycle.evaluate() failed", rex);
@@ -1391,6 +1644,46 @@ public class GraphFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+  }
+
+
+  private static class FindIndependentVertexSet extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // try {
+      // GraphExpr<?> gex = createGraph(ast.arg1());
+      // if (gex == null) {
+      // return F.NIL;
+      // }
+      // Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>)gex.toData();
+      // // VertexCoverAlgorithm<IExpr> greedy = new GreedyVCImpl<>(g);
+      // // VertexCoverAlgorithm.VertexCover<IExpr> cover = greedy.getVertexCover();
+      // // if (cover == null) {
+      // // return F.List();
+      // // }
+      // // IASTAppendable resultList = F.ListAlloc(10);
+      // // cover.forEach(x -> resultList.append(x));
+      // // return resultList;
+      //
+      // ChordalGraphIndependentSetFinder<IExpr, ExprEdge> cgisf =
+      // new ChordalGraphIndependentSetFinder<>(g);
+      // IndependentSet<IExpr> independentSet = cgisf.getIndependentSet();
+      // IASTAppendable resultList = F.ListAlloc(independentSet.size());
+      // for (IExpr expr : independentSet) {
+      // resultList.append(expr);
+      // }
+      // return resultList;
+      // } catch (RuntimeException rex) {
+      // LOGGER.debug("FindIndependentVertexSet.evaluate() failed", rex);
+      // }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 
@@ -1689,13 +1982,6 @@ public class GraphFunctions {
           }
           Graph<IExpr, ?> g = gex.toData();
           return vertexToIExpr(g);
-          // Set<IExpr> vertexSet = g.vertexSet();
-          // int size = vertexSet.size();
-          // IASTAppendable result = F.ListAlloc(size);
-          // for (IExpr expr : vertexSet) {
-          // result.append(expr);
-          // }
-          // return result;
         }
       } catch (RuntimeException rex) {
         LOGGER.debug("VertexList.evaluate() failed", rex);
@@ -2063,6 +2349,35 @@ public class GraphFunctions {
     return null;
   }
 
+  private static Graph<IExpr, ? extends IExprEdge> indexGraph(Graph<IExpr, ?> graph, int newIndex) {
+    Graph<IExpr, ? extends IExprEdge> resultGraph;
+    GraphType t = graph.getType();
+    if (t != null) {
+      if (t.isDirected()) {
+        resultGraph = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+      } else {
+        resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+      }
+
+      HashMap<IExpr, IExpr> hashMap = new HashMap<IExpr, IExpr>();
+      for (IExpr v : graph.vertexSet()) {
+        IInteger indexExpr = F.ZZ(newIndex++);
+        hashMap.put(v, indexExpr);
+        resultGraph.addVertex(indexExpr);
+      }
+      Set<? extends IExprEdge> edgeSet = (Set<? extends IExprEdge>) graph.edgeSet();
+      for (IExprEdge e : edgeSet) {
+        IExpr v1 = e.lhs();
+        IExpr v2 = e.rhs();
+        IExpr lhs = hashMap.get(v1);
+        IExpr rhs = hashMap.get(v2);
+        resultGraph.addEdge(lhs, rhs);
+      }
+      return resultGraph;
+    }
+    return null;
+  }
+
   public static void initialize() {
     Initializer.init();
   }
@@ -2072,33 +2387,32 @@ public class GraphFunctions {
   /**
    * Convert a graph into an IExpr object.
    *
-   * @param g
+   * @param graph
    * @return
    */
-  public static IExpr graphToIExpr(AbstractBaseGraph<IExpr, ExprEdge> g) {
-    IASTAppendable vertexes = vertexToIExpr(g);
-    IASTAppendable[] edgeData = edgesToIExpr(g);
+  public static IExpr graphToIExpr(AbstractBaseGraph<IExpr, ExprEdge> graph) {
+    IASTAppendable vertexes = vertexToIExpr(graph);
+    IASTAppendable[] edgeData = edgesToIExpr(graph);
     if (!edgeData[1].isPresent()) {
       return F.Graph(vertexes, edgeData[0]);
     }
     return F.Graph(vertexes, edgeData[0], F.list(F.Rule(S.EdgeWeight, edgeData[1])));
   }
 
-  public static IExpr weightedGraphToIExpr(AbstractBaseGraph<IExpr, ExprWeightedEdge> g) {
-    IASTAppendable vertexes = vertexToIExpr(g);
-    IASTAppendable[] res = weightedEdgesToIExpr(g);
-    IExpr graph = F.Graph(vertexes, res[0], F.list(F.Rule(S.EdgeWeight, res[1])));
-    return graph;
+  public static IExpr weightedGraphToIExpr(AbstractBaseGraph<IExpr, ExprWeightedEdge> graph) {
+    IASTAppendable vertexes = vertexToIExpr(graph);
+    IASTAppendable[] res = weightedEdgesToIExpr(graph);
+    return F.Graph(vertexes, res[0], F.list(F.Rule(S.EdgeWeight, res[1])));
   }
 
-  private static IASTAppendable vertexToIExpr(Graph<IExpr, ?> g) {
-    return F.mapSet(g.vertexSet(), x -> x);
+  private static IASTAppendable vertexToIExpr(Graph<IExpr, ?> graph) {
+    return F.mapSet(graph.vertexSet(), x -> x);
   }
 
-  private static IASTAppendable[] edgesToIExpr(Graph<IExpr, ?> g) {
-    Set<Object> edgeSet = (Set<Object>) g.edgeSet();
+  private static IASTAppendable[] edgesToIExpr(Graph<IExpr, ?> graph) {
+    Set<Object> edgeSet = (Set<Object>) graph.edgeSet();
     IASTAppendable edges = F.ListAlloc(edgeSet.size());
-    GraphType type = g.getType();
+    GraphType type = graph.getType();
     IASTAppendable weights = F.NIL;
     if (type.isWeighted()) {
       weights = F.ListAlloc(edgeSet.size());
@@ -2129,11 +2443,11 @@ public class GraphFunctions {
     }
   }
 
-  private static IASTAppendable[] edgesToRules(Graph<IExpr, ?> g) {
-    Set<Object> edgeSet = (Set<Object>) g.edgeSet();
+  private static IASTAppendable[] edgesToRules(Graph<IExpr, ?> graph) {
+    Set<Object> edgeSet = (Set<Object>) graph.edgeSet();
     IASTAppendable edges = F.ListAlloc(edgeSet.size());
     IASTAppendable weights = null;
-    GraphType type = g.getType();
+    GraphType type = graph.getType();
 
     for (Object edge : edgeSet) {
       if (edge instanceof ExprWeightedEdge) {
@@ -2179,8 +2493,8 @@ public class GraphFunctions {
     return new IASTAppendable[] {edges, weights};
   }
 
-  public static IExpr graphToAdjacencyMatrix(Graph<IExpr, ExprEdge> g) {
-    Set<IExpr> vertexSet = g.vertexSet();
+  public static IExpr graphToAdjacencyMatrix(Graph<IExpr, ExprEdge> graph) {
+    Set<IExpr> vertexSet = graph.vertexSet();
     int size = vertexSet.size();
     Map<IExpr, Integer> map = new HashMap<IExpr, Integer>();
     int indx = 1;
@@ -2189,13 +2503,13 @@ public class GraphFunctions {
     }
 
     final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
-    for (ExprEdge edge : g.edgeSet()) {
+    for (ExprEdge edge : graph.edgeSet()) {
       IExpr lhs = edge.lhs();
       IExpr rhs = edge.rhs();
       int from = map.get(lhs);
       int to = map.get(rhs);
       trie.put(new int[] {from, to}, F.C1);
-      if (g.containsEdge(rhs, lhs)) {
+      if (graph.containsEdge(rhs, lhs)) {
         trie.put(new int[] {to, from}, F.C1);
       }
     }

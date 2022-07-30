@@ -308,7 +308,11 @@ public class GraphDataFunctions {
             return F.mapRange(0, k, i -> randomGraph(vertices, edges));
           }
           return randomGraph(vertices, edges);
+        } catch (IllegalArgumentException iae) {
+          // `1` called with invalid parameters.
+          return IOFunctions.printMessage(ast.topHead(), "args", F.List(ast), engine);
         } catch (RuntimeException rex) {
+          // rex.printStackTrace();
           LOGGER.debug("RandomGraph.evaluate() failed", rex);
         }
       }
@@ -319,7 +323,9 @@ public class GraphDataFunctions {
       GnmRandomGraphGenerator<IExpr, ExprEdge> gen =
           new GnmRandomGraphGenerator<IExpr, ExprEdge>(vertices, edges);
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
-          .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+          .undirected() //
+          .allowingMultipleEdges(false) //
+          .allowingSelfLoops(false) //
           .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
           .buildGraph();
       gen.generateGraph(target);

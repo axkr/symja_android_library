@@ -125,7 +125,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
     check("FindCycle(WheelGraph(4))", //
         "{{2<->4,1<->4,1<->2}}");
   }
-  
+
   public void testFindEulerianCycle() {
     check("FindEulerianCycle(Graph({1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1}))", //
         "{4->1,1->2,2->3,3->4}");
@@ -155,6 +155,13 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{1->2,2->3,3->4,4->1}");
     check("FindHamiltonianCycle({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
         "{}");
+  }
+
+  public void testFindIndependentVertexSet() {
+    // TODO
+    check(
+        "FindIndependentVertexSet(Graph({1<->2, 1<->3, 2<-> 4, 4<->5, 5<->3, 4<->6, 5<->6, 4<->7, 5<->7} ))", //
+        "FindIndependentVertexSet(Graph({1,2,3,4,5,6,7},{1<->2,1<->3,2<->4,4<->5,5<->3,4<->6,5<->6,4<->7,5<->7}))");
   }
 
   public void testFindVertexCover() {
@@ -244,6 +251,11 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
             + " {0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0}}");
   }
 
+  public void testIndexGraph() {
+    check("IndexGraph({1 -> 3, 2 -> 1, 3 -> 6, 4 -> 6, 1 -> 5, 5 -> 4,  6 -> 1}, 10)", //
+        "Graph({10,11,12,13,14,15},{10->11,12->10,11->13,14->13,10->15,15->14,13->10})");
+  }
+
   public void testIsomorphicGraphQ() {
     check(
         "IsomorphicGraphQ(Graph({1,2,3,4},{1<->2,1<->4,2<->3,3<->4}), Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4}))", //
@@ -331,6 +343,54 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "2");
   }
 
+  public void testGraphComplement() {
+    check("GraphComplement({1 -> 2, 1 -> 6, 2 -> 3, 3 -> 4, 4 -> 5, 5 -> 6})", //
+        "Graph({1,2,6,3,4,5},{1->3,1->4,1->5,2->1,2->6,2->4,2->5,6->1,6->2,6->3,6->4,6->5,3->1,3->2,3->6,3->5,4->1,4->2,4->6,4->3,\n"
+            + "5->1,5->2,5->3,5->4})");
+  }
+  public void testGraphDifference() {
+    check(
+        "GraphDifference({1 -> 2, 2 -> 3, 3 -> 1, 4 -> 3, 2 -> 4}, {1 -> 2, 3 -> 2, 4 -> 3, 4 -> 1, 5->2})", //
+        "Graph({1,2,3,4,5},{2->3,3->1,2->4})");
+    check(
+        "GraphDifference({1 -> 2, 2 -> 3, 3 -> 1, 4 -> 3, 2 -> 4, 2->5}, {1 -> 2, 3 -> 2, 4 -> 3, 4 -> 1, 5->2})", //
+        "Graph({1,2,3,4,5},{2->3,3->1,2->4,2->5})");
+    check(
+        "GraphDifference({1 -> 2, 2 -> 3, 3 -> 1, 4 -> 3, 2 -> 4, 2->5}, {1 -> 2, 3 -> 2, 4 -> 3, 4 -> 1, 5->2, 2->5})", //
+        "Graph({1,2,3,4,5},{2->3,3->1,2->4})");
+    // TODO
+    // check(
+    // "GraphDifference({1 -> 2, 2 -> 3, 3 -> 1, 4 -> 3, 2 -> 4, 2->5}, {1 -> 2, 3 -> 2, 4 -> 3, 4
+    // -> 1, 2<->5})", //
+    // "Graph({1,2,3,4,5},{2->3,3->1,2->4})");
+  }
+
+
+  public void testGraphDisjointUnion() {
+    check(
+        "GraphDisjointUnion(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}), Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 ->  2, 4 -> 1, 6->2}))", //
+        "Graph({1,2,3,4,5,6,7,8,9},{1->2,2->3,1->3,4->2,5->6,6->7,5->7,8->6,8->5,9->6})");
+
+  }
+
+  public void testGraphIntersection() {
+    check(
+        "GraphIntersection({1 -> 2, 2 -> 3, 3 -> 1, 4 -> 3, 2 -> 4}, {1 -> 2, 2 -> 3, 4 -> 3, 4 -> 1})", //
+        "Graph({1,2,3,4},{1->2,2->3,4->3})");
+
+    check(
+        "GraphIntersection({1 -> 2, 3 -> 2, 3 -> 1, 4 -> 3, 2 -> 4}, {1 -> 2, 2 -> 3, 4 -> 3, 4 -> 1})", //
+        "Graph({1,2,3,4},{1->2,4->3})");
+    check("GraphIntersection({1 -> 2, 3 -> 2, 3 -> 1, 4 -> 3, 2 -> 4}, {  2 -> 3, 4 -> 3, 4 -> 1})", //
+        "Graph({1,2,3,4},{4->3})");
+    check(
+        "g=Graph({1,2,3,4,5,6,7,8}, {1<->2,1<->4,1<->5,2<->3,2<->6,3<->4,3<->7,4<->8,5<->6,6<->7,7<->8,8<->5});", //
+        "");
+    check("IsomorphicGraphQ(g, GraphIntersection(g, g))", //
+        "True");
+
+  }
+
   public void testGraphRadius() {
     check(
         "GraphRadius(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
@@ -346,12 +406,12 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "1");
   }
 
-  // public void testGraphUnion() {
-  // check(
-  // "GraphUnion(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}), Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 ->
-  // 2, 4 -> 1}) )", //
-  // "{3}");
-  // }
+  public void testGraphUnion() {
+   check(
+       "GraphUnion(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}), Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 ->  2, 4 -> 1, 6->2}))", //
+       "Graph({1,2,3,4,6},{1->2,2->3,1->3,4->2,4->1,6->2})");
+
+  }
 
   public void testGraphPeriphery() {
     check(
@@ -439,7 +499,8 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
   public void testRandomGraph() {
     // random result:
-
+    // check("RandomGraph({5,10})", //
+    // "Graph({1,2,3,4,5},{5<->3,4<->2,5<->1,2<->3,5<->4,2<->5,2<->1,3<->4,3<->1,1<->4})");
     // check(
     // "AdjacencyMatrix /@ RandomGraph({7,4}, 3) // Normal", //
     // "{\n" //
