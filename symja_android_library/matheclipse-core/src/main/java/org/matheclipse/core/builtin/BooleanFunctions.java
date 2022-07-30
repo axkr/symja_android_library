@@ -169,6 +169,15 @@ public final class BooleanFunctions {
       return map;
     }
 
+    public static Object2IntMap<String> name2Position(List<Variable> vars) {
+      Object2IntMap<String> map = new Object2IntArrayMap<String>();
+      map.defaultReturnValue(-1);
+      for (int i = 0; i < vars.size(); i++) {
+        map.put(vars.get(i).name(), i);
+      }
+      return map;
+    }
+
     final FormulaFactory factory;
 
     Map<IExpr, Variable> symbol2variableMap = new HashMap<IExpr, Variable>();
@@ -246,7 +255,7 @@ public final class BooleanFunctions {
         for (Formula f : a) {
           result[i++] = booleanFunction2Expr(f);
         }
-        Arrays.sort(result, Comparators.CANONICAL_COMPARATOR);
+        Arrays.sort(result, Comparators.LEXICAL_COMPARATOR);
         return F.And(result);
       } else if (formula instanceof org.logicng.formulas.Or) {
         org.logicng.formulas.Or a = (org.logicng.formulas.Or) formula;
@@ -255,7 +264,7 @@ public final class BooleanFunctions {
         for (Formula f : a) {
           result[i++] = booleanFunction2Expr(f);
         }
-        Arrays.sort(result, Comparators.CANONICAL_COMPARATOR);
+        Arrays.sort(result, Comparators.LEXICAL_COMPARATOR);
         return F.Or(result);
       } else if (formula instanceof org.logicng.formulas.Not) {
         org.logicng.formulas.Not a = (org.logicng.formulas.Not) formula;
@@ -434,6 +443,8 @@ public final class BooleanFunctions {
           throw new ArgumentTypeException(message);
         }
         return addSymbolOrSlotToMap(symbol);
+        // } else if (logicExpr instanceof BDDExpr) {
+        // return ((BDDExpr) logicExpr).toData().dnf();
       }
       if (substituteExpressions) {
         Variable v = symbol2variableMap.get(logicExpr);
@@ -1245,6 +1256,7 @@ public final class BooleanFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
   /**
    *
    *
@@ -1279,7 +1291,7 @@ public final class BooleanFunctions {
         FormulaFactory factory = new FormulaFactory();
         LogicFormula lf = new LogicFormula(factory);
         Formula formula = lf.expr2BooleanFunction(ast.arg1(), true);
-        final AdvancedSimplifier simplifier = new AdvancedSimplifier(new DefaultRatingFunction());
+        final AdvancedSimplifier simplifier = new AdvancedSimplifier();
         FormulaTransformation transformation = transformation(ast, engine);
         if (transformation == null) {
           return F.NIL;
@@ -1461,22 +1473,14 @@ public final class BooleanFunctions {
         this.engine = engine;
       }
 
-      public final IExpr evalSlotTrue(IExpr expr) {
-        if (expr instanceof BDDExpr) {
-          expr = slotValues.setAtCopy(0, expr);
-        }
-        IExpr result = engine.evaluate(expr);
-        return result;
+      private final IExpr evalSlotTrue(BDDExpr expr) {
+        return engine.evaluate(slotValues.setAtCopy(0, expr));
       }
 
       public IAST booleanTableBDDRecursive(BDDExpr expr, int position) {
         if (slotValues.size() <= position) {
           // stop recursion
-          if (expr.isList()) {
-            resultList.append(F.mapList((IAST) expr, x -> evalSlotTrue(x)));
-          } else {
-            resultList.append(evalSlotTrue(expr));
-          }
+          resultList.append(evalSlotTrue(expr));
           return resultList;
         }
         int slotNumber = position;
@@ -4184,7 +4188,7 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IAST userDefinedVariables;
+      IAST userDefinedVariables = F.NIL;
       IExpr arg1 = ast.arg1();
 
       VariablesSet vSet = new VariablesSet(arg1);
@@ -4192,39 +4196,39 @@ public final class BooleanFunctions {
       // currently only SAT is available
       String method = "SAT";
       int maxChoices = 1;
-      if (ast.size() > 2) {
-        if (ast.arg2().equals(S.All)) {
-          maxChoices = Integer.MAX_VALUE;
-          userDefinedVariables = variablesInFormula;
-        } else {
-          userDefinedVariables = ast.arg2().orNewList();
-        }
-        IExpr complement = S.Complement.of(engine, userDefinedVariables, variablesInFormula);
-        if (complement.size() > 1 && complement.isList()) {
-          IASTAppendable or = F.Or();
-          or.append(arg1);
-          arg1 = or;
-          or.appendArgs((IAST) complement);
-        }
-
-        if (ast.size() > 3) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-          // "BDD" (binary decision diagram), "SAT", "TREE" ?
-          IExpr optionMethod = options.getOption(S.Method);
-          if (optionMethod.isString()) {
-            method = optionMethod.toString();
-          }
-        }
-
+      int argSize = ast.argSize();
+      if (argSize > 1) {
         IExpr argN = ast.last();
         if (!argN.isRule()) {
           if (argN.equals(S.All)) {
             maxChoices = Integer.MAX_VALUE;
+            argSize--;
           } else if (argN.isNumber()) {
-            maxChoices = Validate.checkPositiveIntType(ast, ast.argSize());
+            maxChoices = Validate.checkPositiveIntType(ast, argSize);
+            argSize--;
           }
         }
-      } else {
+        if (argSize > 1) {
+          userDefinedVariables = ast.arg2().orNewList();
+          IExpr complement = S.Complement.of(engine, userDefinedVariables, variablesInFormula);
+          if (complement.size() > 1 && complement.isList()) {
+            IASTAppendable or = F.Or();
+            or.append(arg1);
+            arg1 = or;
+            or.appendArgs((IAST) complement);
+          }
+
+          if (argSize > 2) {
+            final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+            // "BDD" (binary decision diagram), "SAT", "TREE" ?
+            IExpr optionMethod = options.getOption(S.Method);
+            if (optionMethod.isString()) {
+              method = optionMethod.toString();
+            }
+          }
+        }
+      }
+      if (!userDefinedVariables.isPresent()) {
         userDefinedVariables = variablesInFormula;
       }
       return satisfiabilityInstances(arg1, userDefinedVariables, maxChoices);
@@ -5003,11 +5007,22 @@ public final class BooleanFunctions {
    */
   public static IAST satisfiabilityInstances(IExpr booleanExpression, IAST variables,
       int maxChoices) {
+    List<Assignment> assignments;
     LogicFormula lf = new LogicFormula();
-    Variable[] vars = lf.ast2Variable(variables);
-    List<Assignment> assignments =
-        logicNGSatisfiabilityInstances(booleanExpression, vars, lf, maxChoices);
-    Object2IntMap<String> map = LogicFormula.name2Position(vars);
+    Object2IntMap<String> map;
+    if (booleanExpression instanceof BDDExpr) {
+      BDD bdd = ((BDDExpr) booleanExpression).toData();
+      List<Variable> vars = bdd.getVariableOrder();
+      final SATSolver miniSat = MiniSat.miniSat(lf.getFactory());
+      miniSat.add(bdd.dnf());
+      assignments = miniSat.enumerateAllModels(vars);
+      map = LogicFormula.name2Position(vars);
+    } else {
+      Variable[] vars = lf.ast2Variable(variables);
+      assignments =
+          logicNGSatisfiabilityInstances(booleanExpression, vars, lf, maxChoices);
+      map = LogicFormula.name2Position(vars);
+    }
     IASTAppendable list = F.ListAlloc(assignments.size());
     for (int i = 0; i < assignments.size(); i++) {
       if (i >= maxChoices) {
@@ -5083,11 +5098,11 @@ public final class BooleanFunctions {
       isFunction = true;
     }
     if (arg1 instanceof BDDExpr || arg1.head() instanceof BDDExpr) {
-      return booleanConvertExpr(arg1, isFunction, arg1, ast, engine);
+      return booleanConvertBDDExpr((BDDExpr) arg1, isFunction, arg1, ast, engine);
     } else {
       IExpr head = engine.evaluate(arg1.head());
       if (head instanceof BDDExpr) {
-        return booleanConvertExpr(head, isFunction, arg1, ast, engine);
+        return booleanConvertBDDExpr((BDDExpr) head, isFunction, arg1, ast, engine);
       }
     }
     if (ast.isAST2() && ast.arg2().isString()) {
@@ -5111,7 +5126,7 @@ public final class BooleanFunctions {
     return F.NIL;
   }
 
-  private static IExpr booleanConvertExpr(IExpr head, boolean isFunction, IExpr arg1,
+  private static IExpr booleanConvertBDDExpr(BDDExpr head, boolean isFunction, IExpr arg1,
       final IAST booleanConvertAST, EvalEngine engine) {
     IExpr temp = booleanConvert(head, isFunction, booleanConvertAST, engine);
     if (temp.isPresent()) {
