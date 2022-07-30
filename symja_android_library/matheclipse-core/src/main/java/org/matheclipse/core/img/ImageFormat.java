@@ -4,13 +4,13 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
-import java.util.List;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class ImageFormat {
 
@@ -72,15 +72,19 @@ public class ImageFormat {
    * @param matrix
    * @param imageType
    * @return <code>null</code> if conversion wasn't possible
+   * @throws UnsupportedOperationException
    */
   public static BufferedImage toIntFormat(IAST matrix, int imageType) {
-    List<Integer> dims = LinearAlgebra.dimensions(matrix);
-    int width = dims.get(1);
-    int height = dims.get(0);
-    if (dims.size() == 2) {
+    IntArrayList dimensions = LinearAlgebra.dimensions(matrix);
+    int width = dimensions.getInt(1);
+    int height = dimensions.getInt(0);
+    if (dimensions.size() == 2) {
       return toTYPE_BYTE_GRAY(matrix, width, height);
     }
-    return toTYPE_INT(matrix, width, height, imageType);
+    if (dimensions.size() == 3) {
+      return toINT(matrix, width, height, imageType);
+    }
+    throw new UnsupportedOperationException();
   }
 
   /**
@@ -134,6 +138,39 @@ public class ImageFormat {
         int red = (int) (255.0 * doubleMatrix[i][0]);
         int green = (int) (255.0 * doubleMatrix[i][1]);
         int blue = (int) (255.0 * doubleMatrix[i][2]);
+        color = new RGBColor(red, green, blue);
+        rgbArray[indx++] = color.getRGB();
+      }
+      bufferedImage.setRGB(0, 0, width, height, rgbArray, 0, width);
+      return bufferedImage;
+    }
+    return null;
+  }
+
+  /**
+   * 
+   * @param tensor
+   * @param width
+   * @param height
+   * @param imageType
+   * @return <code>null</code> if conversion wasn't possible
+   */
+  private static BufferedImage toINT(IAST tensor, int width, int height, int imageType) {
+    // fast extraction of color information to buffered image
+    BufferedImage bufferedImage = new BufferedImage(width, height, imageType);
+
+    int indx = 0;
+
+    IExpr flattenedArray = S.Flatten.of(tensor, F.C1);
+    if (flattenedArray.isList()) {
+      int[] rgbArray = new int[width * height];
+      RGBColor color;
+      double[][] doubleMatrix = flattenedArray.toDoubleMatrix();
+
+      for (int i = 0; i < doubleMatrix.length; i++) {
+        int red = (int) (doubleMatrix[i][0]);
+        int green = (int) (doubleMatrix[i][1]);
+        int blue = (int) (doubleMatrix[i][2]);
         color = new RGBColor(red, green, blue);
         rgbArray[indx++] = color.getRGB();
       }

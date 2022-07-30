@@ -1,5 +1,6 @@
 package org.matheclipse.core.img;
 
+import java.awt.Color;
 import java.util.stream.IntStream;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.expression.F;
@@ -25,7 +26,18 @@ public enum ColorFormat {
   static {
     IntStream.range(0, 256).forEach(index -> LOOKUP[index] = F.ZZ(index));
   }
-  // ---
+
+  /**
+   * @param color
+   * @return vector with {@link Scalar} entries as {R, G, B, A}
+   */
+  public static IAST toVector(Color color) {
+    return F.List( //
+        LOOKUP[color.getRed()], //
+        LOOKUP[color.getGreen()], //
+        LOOKUP[color.getBlue()], //
+        LOOKUP[color.getAlpha()]);
+  }
 
   /**
    * @param color
@@ -54,7 +66,7 @@ public enum ColorFormat {
    */
   public static RGBColor toColor(IAST vector) {
     if (vector.size() != 5) {
-      throw new IllegalArgumentException("ColorFormat#toColor() exppects 4 arguments");
+      throw new IllegalArgumentException("ColorFormat#toColor() expects 4 arguments");
     }
 
     return new RGBColor( //
@@ -62,6 +74,13 @@ public enum ColorFormat {
         ((IInteger) vector.arg2()).toInt(), //
         ((IInteger) vector.arg3()).toInt(), //
         ((IInteger) vector.arg4()).toInt());
+  }
+
+  public static RGBColor toColor(IExpr expr) {
+    if (expr.size() != 5) {
+      throw new IllegalArgumentException("ColorFormat#toColor() expects 4 arguments");
+    }
+    return toColor((IAST) expr);
   }
 
   /**
