@@ -10,6 +10,30 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class WindowFunctions {
 
+  public static final WindowFunction BARTLETT =
+      new WindowFunction(WindowFunctions::bartlettWindow, "BartlettWindow");
+  public static final WindowFunction BLACKMAN_HARRIS =
+      new WindowFunction(WindowFunctions::blackmanHarrisWindow, "BlackmanHarrisWindow");
+  public static final WindowFunction BLACKMAN_NUTTAL =
+      new WindowFunction(WindowFunctions::blackmanNuttallWindow, "BlackmanNuttallWindow");
+  public static final WindowFunction BLACKMAN =
+      new WindowFunction(WindowFunctions::blackmanWindow, "BlackmanWindow");
+  public static final WindowFunction DIRICHLET =
+      new WindowFunction(WindowFunctions::dirichletWindow, "DirichletWindow");
+  public static final WindowFunction FLAT_TOP =
+      new WindowFunction(WindowFunctions::flatTopWindow, "FlatTopWindow");
+  public static final WindowFunction GAUSSIAN =
+      new WindowFunction(WindowFunctions::gaussianWindow, "GaussianWindow");
+  public static final WindowFunction HAMMING =
+      new WindowFunction(WindowFunctions::hammingWindow, "HammingWindow");
+  public static final WindowFunction HANN =
+      new WindowFunction(WindowFunctions::hannWindow, "HannWindow");
+  public static final WindowFunction NUTTALL =
+      new WindowFunction(WindowFunctions::nuttallWindow, "NuttallWindow");
+  public static final WindowFunction PARZEN =
+      new WindowFunction(WindowFunctions::parzenWindow, "ParzenWindow");
+  public static final WindowFunction TUKEY =
+      new WindowFunction(WindowFunctions::tukeyWindow, "TukeyWindow");
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -17,28 +41,40 @@ public class WindowFunctions {
   private static class Initializer {
 
     private static void init() {
-      S.BartlettWindow.setEvaluator(new WindowFunction(WindowFunctions::bartlettWindow));
-      S.BlackmanHarrisWindow
-          .setEvaluator(new WindowFunction(WindowFunctions::blackmanHarrisWindow));
-      S.BlackmanNuttallWindow
-          .setEvaluator(new WindowFunction(WindowFunctions::blackmanNuttallWindow));
-      S.BlackmanWindow.setEvaluator(new WindowFunction(WindowFunctions::blackmanWindow));
-      S.DirichletWindow.setEvaluator(new WindowFunction(WindowFunctions::dirichletWindow));
-      S.FlatTopWindow.setEvaluator(new WindowFunction(WindowFunctions::flatTopWindow));
-      S.GaussianWindow.setEvaluator(new WindowFunction(WindowFunctions::gaussianWindow));
-      S.HammingWindow.setEvaluator(new WindowFunction(WindowFunctions::hammingWindow));
-      S.HannWindow.setEvaluator(new WindowFunction(WindowFunctions::hannWindow));
-      S.NuttallWindow.setEvaluator(new WindowFunction(WindowFunctions::nuttallWindow));
-      S.ParzenWindow.setEvaluator(new WindowFunction(WindowFunctions::parzenWindow));
-      S.TukeyWindow.setEvaluator(new WindowFunction(WindowFunctions::tukeyWindow));
+      S.BartlettWindow.setEvaluator(BARTLETT);
+      S.BlackmanHarrisWindow.setEvaluator(BLACKMAN_HARRIS);
+      S.BlackmanNuttallWindow.setEvaluator(BLACKMAN_NUTTAL);
+      S.BlackmanWindow.setEvaluator(BLACKMAN);
+      S.DirichletWindow.setEvaluator(DIRICHLET);
+      S.FlatTopWindow.setEvaluator(FLAT_TOP);
+      S.GaussianWindow.setEvaluator(GAUSSIAN);
+      S.HammingWindow.setEvaluator(HAMMING);
+      S.HannWindow.setEvaluator(HANN);
+      S.NuttallWindow.setEvaluator(NUTTALL);
+      S.ParzenWindow.setEvaluator(PARZEN);
+      S.TukeyWindow.setEvaluator(TUKEY);
     }
   }
 
-  private static class WindowFunction extends AbstractTrigArg1 {
+  public static class WindowFunction extends AbstractTrigArg1 {
     private final Function<IExpr, IExpr> function;
+    private final String name;
 
-    public WindowFunction(Function<IExpr, IExpr> f) {
+    public IExpr apply(IExpr t) {
+      return function.apply(t);
+    }
+
+    public Function<IExpr, IExpr> get() {
+      return function;
+    }
+
+    public String name() {
+      return name;
+    }
+
+    public WindowFunction(Function<IExpr, IExpr> f, String name) {
       this.function = f;
+      this.name = name;
     }
 
     @Override

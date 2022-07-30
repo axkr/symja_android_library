@@ -56,10 +56,18 @@ public class BesselFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
+      if (z.isZero()) {
+        // 1/(3^(2/3)*Gamma(2/3))
+        return F.Divide(F.Power(F.C3, F.CN2D3), F.Gamma(F.C2D3));
+      }
       if (engine.isDoubleMode() && z.isNumber()) {
         if (!z.isComplexNumeric()) {
           try {
-            return F.complexNum(BesselJS.airyAi(z.evalDouble()));
+            Complex airyAi = BesselJS.airyAi(z.evalDouble());
+            if (F.isZero(airyAi.getImaginary())) {
+              return F.num(airyAi.getReal());
+            }
+            return F.complexNum(airyAi);
           } catch (NegativeArraySizeException nae) {
             LOGGER.log(engine.getLogLevel(), "AiryAi: {} caused NegativeArraySizeException", ast,
                 nae);
@@ -95,10 +103,18 @@ public class BesselFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
+      if (z.isZero()) {
+        // -(1/(3^(1/3)*Gamma(1/3)))
+        return F.Times(F.CN1, F.Power(F.C3, F.CN1D3), F.Power(F.Gamma(F.C1D3), F.CN1));
+      }
       if (engine.isDoubleMode() && z.isNumber()) {
         if (!z.isComplexNumeric()) {
           try {
-            return F.complexNum(BesselJS.airyAiPrime(z.evalDouble()));
+            Complex airyAiPrime = BesselJS.airyAiPrime(z.evalDouble());
+            if (F.isZero(airyAiPrime.getImaginary())) {
+              return F.num(airyAiPrime.getReal());
+            }
+            return F.complexNum(airyAiPrime);
           } catch (NegativeArraySizeException nae) {
             LOGGER.log(engine.getLogLevel(), "AiryAiPrime: {} caused NegativeArraySizeException",
                 ast);
@@ -135,11 +151,19 @@ public class BesselFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
+      if (z.isZero()) {
+        // 1/(3^(1/6)*Gamma(2/3))
+        return F.Divide(F.Power(F.C3, F.CN1D6), F.Gamma(F.C2D3));
+      }
       if (engine.isDoubleMode() && z.isNumber()) {
 
         if (!z.isComplexNumeric()) {
           try {
-            return F.complexNum(BesselJS.airyBi(z.evalDouble()));
+            Complex airyBi = BesselJS.airyBi(z.evalDouble());
+            if (F.isZero(airyBi.getImaginary())) {
+              return F.num(airyBi.getReal());
+            }
+            return F.complexNum(airyBi);
           } catch (NegativeArraySizeException nae) {
             LOGGER.log(engine.getLogLevel(), "AiryBi: {} caused NegativeArraySizeException", ast);
             return F.NIL;
@@ -173,10 +197,18 @@ public class BesselFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
+      if (z.isZero()) {
+        // 3^(1/6)/Gamma(1/3)
+        return F.Divide(F.Power(F.C3, F.C1D6), F.Gamma(F.C1D3));
+      }
       if (engine.isDoubleMode() && z.isNumber()) {
         if (!z.isComplexNumeric()) {
           try {
-            return F.complexNum(BesselJS.airyBiPrime(z.evalDouble()));
+            Complex airyBiPrime = BesselJS.airyBiPrime(z.evalDouble());
+            if (F.isZero(airyBiPrime.getImaginary())) {
+              return F.num(airyBiPrime.getReal());
+            }
+            return F.complexNum(airyBiPrime);
           } catch (NegativeArraySizeException nae) {
             LOGGER.log(engine.getLogLevel(), "AiryBiPrime: {} caused NegativeArraySizeException",
                 ast, nae);
@@ -796,7 +828,11 @@ public class BesselFunctions {
             Complex zc = z.evalComplex();
             return F.complexNum(BesselJS.hankelH1(nc, zc));
           } else {
-            return F.complexNum(BesselJS.hankelH1(nDouble, zDouble));
+            Complex hankelH1 = BesselJS.hankelH1(nDouble, zDouble);
+            if (F.isZero(hankelH1.getImaginary())) {
+              return F.num(hankelH1.getReal());
+            }
+            return F.complexNum(hankelH1);
           }
 
         } catch (ValidateException ve) {
@@ -838,7 +874,11 @@ public class BesselFunctions {
             Complex zc = z.evalComplex();
             return F.complexNum(BesselJS.hankelH2(nc, zc));
           } else {
-            return F.complexNum(BesselJS.hankelH2(nDouble, zDouble));
+            Complex hankelH2 = BesselJS.hankelH2(nDouble, zDouble);
+            if (F.isZero(hankelH2.getImaginary())) {
+              return F.num(hankelH2.getReal());
+            }
+            return F.complexNum(hankelH2);
           }
 
         } catch (ValidateException ve) {

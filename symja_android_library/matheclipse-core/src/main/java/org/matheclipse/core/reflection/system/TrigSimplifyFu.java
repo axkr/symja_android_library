@@ -27,36 +27,77 @@ import org.matheclipse.core.patternmatching.Matcher;
 import com.google.common.base.Suppliers;
 
 public class TrigSimplifyFu extends AbstractFunctionEvaluator {
-
-  private static Supplier<Matcher> TR01_MATCHER;
-  private static Supplier<Matcher> TR05_MATCHER;
-  private static Supplier<Matcher> TR07_MATCHER;
+  private static Supplier<Matcher> TR0_MATCHER;
+  private static Supplier<Matcher> TR1_MATCHER;
+  private static Supplier<Matcher> TR2_MATCHER;
+  private static Supplier<Matcher> TR2I_MATCHER;
+  private static Supplier<Matcher> TR3_MATCHER;
+  private static Supplier<Matcher> TR4_MATCHER;
+  private static Supplier<Matcher> TR5_MATCHER;
+  private static Supplier<Matcher> TR7_MATCHER;
+  private static Supplier<Matcher> TR8_MATCHER;
+  private static Supplier<Matcher> TR12_MATCHER;
+  private static Supplier<Matcher> TR13_MATCHER;
+  private static Supplier<Matcher> TR14_MATCHER;
 
   private static class Initializer {
+    private static Matcher initTR0() {
+      Matcher tr3 = new Matcher();
 
-    private static Matcher initTR01() {
-      Matcher tr01 = new Matcher();
 
-      tr01.caseOf(Sec(z_), //
+      return tr3;
+    }
+
+    private static Matcher initTR1() {
+      Matcher tr1 = new Matcher();
+
+      tr1.caseOf(Sec(z_), //
           // [$ 1/Cos(z)
           // $]
           F.Power(F.Cos(z), F.CN1)); // $$);
-      tr01.caseOf(Csc(z_), //
+      tr1.caseOf(Csc(z_), //
           // [$ 1/Sin(z)
           // $]
           F.Power(F.Sin(z), F.CN1)); // $$);
-      tr01.caseOf(Cot(z_), //
+
+      return tr1;
+    }
+
+    private static Matcher initTR2() {
+      Matcher tr2 = new Matcher();
+
+      tr2.caseOf(Cot(z_), //
           // [$ Cos(z)/Sin(z)
           // $]
           F.Times(F.Cos(z), F.Power(F.Sin(z), F.CN1))); // $$);
-      tr01.caseOf(Tan(z_), //
+      tr2.caseOf(Tan(z_), //
           // [$ Sin(z)/Cos(z)
           // $]
           F.Times(F.Power(F.Cos(z), F.CN1), F.Sin(z))); // $$);
-      return tr01;
+      return tr2;
     }
 
-    private static Matcher initTR05() {
+    private static Matcher initTR2i() {
+      Matcher tr2i = new Matcher();
+
+      return tr2i;
+    }
+
+    private static Matcher initTR3() {
+      Matcher tr3 = new Matcher();
+
+
+      return tr3;
+    }
+
+    private static Matcher initTR4() {
+      Matcher tr4 = new Matcher();
+
+
+      return tr4;
+    }
+
+    private static Matcher initTR5() {
       // Replacement of sin(x)^2 with 1 - cos(x)^2.
       Matcher tr05 = new Matcher();
 
@@ -68,7 +109,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       return tr05;
     }
 
-    private static Matcher initTR07() {
+    private static Matcher initTR7() {
       // Lowering the degree of cos(x)^2.
       Matcher tr07 = new Matcher();
 
@@ -77,6 +118,12 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
           // $]
           F.Times(F.C1D2, F.Plus(F.C1, F.Cos(F.Times(F.C2, z))))); // $$);
       return tr07;
+    }
+
+    private static Matcher initTR8() {
+      Matcher tr8 = new Matcher();
+
+      return tr8;
     }
 
     private static Matcher initTR11() {
@@ -89,20 +136,49 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
           F.Times(F.C1D2, F.Plus(F.C1, F.Cos(F.Times(F.C2, z))))); // $$);
       return tr07;
     }
+
+    private static Matcher initTR12() {
+      Matcher tr12 = new Matcher();
+
+
+      return tr12;
+    }
+
+    private static Matcher initTR13() {
+      Matcher tr13 = new Matcher();
+
+
+      return tr13;
+    }
+
+    private static Matcher initTR14() {
+      Matcher tr14 = new Matcher();
+
+
+      return tr14;
+    }
   }
 
   public TrigSimplifyFu() {}
 
-  private static Matcher tr01_matcher() {
-    return TR01_MATCHER.get();
+  private static Matcher tr1_matcher() {
+    return TR1_MATCHER.get();
   }
 
-  private static Matcher tr05_matcher() {
-    return TR05_MATCHER.get();
+  private static Matcher tr2_matcher() {
+    return TR2_MATCHER.get();
   }
 
-  private static Matcher tr07_matcher() {
-    return TR07_MATCHER.get();
+  private static Matcher tr2i_matcher() {
+    return TR2I_MATCHER.get();
+  }
+
+  private static Matcher tr5_matcher() {
+    return TR5_MATCHER.get();
+  }
+
+  private static Matcher tr7_matcher() {
+    return TR7_MATCHER.get();
   }
 
   @Override
@@ -178,17 +254,20 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
    * @return {@link F#NIL} if no match was found
    */
   public static IExpr callMatcher(final IAST ast, IExpr arg1, EvalEngine engine) {
+    // https://github.com/sympy/sympy/blob/dfef951e777dba36ad75162c8dc9402b228d11ed/sympy/simplify/fu.py#L1639
     boolean oldDisabledHashRules = engine.isDisabledTrigRules();
     try {
       engine.setDisabledTrigRules(true);
+      long leafCountSimplify = ast.leafCountSimplify();
 
-      IExpr temp = tr01_matcher().replaceAll(arg1, null).orElse(arg1);
+      // RL1 = (TR4, TR3, TR4, TR12, TR4, TR13, TR4, TR0);
+      IExpr temp = tr1_matcher().replaceAll(arg1, null).orElse(arg1);
       temp = engine.evaluate(temp);
       System.out.println(temp.toString());
-      temp = tr05_matcher().replaceAll(arg1, null).orElse(temp);
+      temp = tr5_matcher().replaceAll(arg1, null).orElse(temp);
       temp = engine.evaluate(temp);
       System.out.println(temp.toString());
-      temp = tr07_matcher().replaceAll(arg1, null).orElse(temp);
+      temp = tr7_matcher().replaceAll(arg1, null).orElse(temp);
       temp = engine.evaluate(temp);
       System.out.println(temp.toString());
       temp = temp.replaceAll(TrigSimplifyFu::tr10).orElse(temp);
@@ -212,8 +291,17 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
     // Initializer.init();
-    TR01_MATCHER = Suppliers.memoize(Initializer::initTR01);
-    TR05_MATCHER = Suppliers.memoize(Initializer::initTR05);
-    TR07_MATCHER = Suppliers.memoize(Initializer::initTR07);
+    TR0_MATCHER = Suppliers.memoize(Initializer::initTR0);
+    TR1_MATCHER = Suppliers.memoize(Initializer::initTR1);
+    TR2_MATCHER = Suppliers.memoize(Initializer::initTR2);
+    TR2I_MATCHER = Suppliers.memoize(Initializer::initTR2i);
+    TR3_MATCHER = Suppliers.memoize(Initializer::initTR3);
+    TR4_MATCHER = Suppliers.memoize(Initializer::initTR4);
+    TR5_MATCHER = Suppliers.memoize(Initializer::initTR5);
+    TR7_MATCHER = Suppliers.memoize(Initializer::initTR7);
+    TR8_MATCHER = Suppliers.memoize(Initializer::initTR8);
+    TR12_MATCHER = Suppliers.memoize(Initializer::initTR12);
+    TR13_MATCHER = Suppliers.memoize(Initializer::initTR13);
+    TR14_MATCHER = Suppliers.memoize(Initializer::initTR14);
   }
 }

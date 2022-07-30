@@ -9,8 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import javax.imageio.ImageIO;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +19,7 @@ import org.jgrapht.nio.dot.DOTImporter;
 import org.jgrapht.nio.graphml.GraphMLImporter;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.ExpressionJSONConvert;
 import org.matheclipse.core.convert.JSONConvert;
 import org.matheclipse.core.eval.EvalEngine;
@@ -32,7 +31,6 @@ import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
@@ -95,22 +93,7 @@ public class Import extends AbstractEvaluator {
             break;
           case TABLE:
             reader = new FileReader(fileName);
-            AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-            final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-
-            CSVFormat csvFormat = CSVFormat.RFC4180.withDelimiter(' ');
-            Iterable<CSVRecord> records = csvFormat.parse(reader);
-            IASTAppendable rowList = F.ListAlloc(256);
-            for (CSVRecord record : records) {
-              IASTAppendable columnList = F.ListAlloc(record.size());
-              for (String string : record) {
-                final ASTNode node = parser.parse(string);
-                IExpr temp = ast2Expr.convert(node);
-                columnList.append(temp);
-              }
-              rowList.append(columnList);
-            }
-            return rowList;
+            return Convert.fromCSV(reader);
           case STRING:
             return ofString(file, engine);
           case TXT:
@@ -137,6 +120,26 @@ public class Import extends AbstractEvaluator {
     }
     return F.NIL;
   }
+
+  // public static IExpr fromCSV(FileReader reader) throws IOException {
+  // EvalEngine engine = EvalEngine.get();
+  // AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
+  // final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
+  //
+  // CSVFormat csvFormat = CSVFormat.RFC4180.withDelimiter(' ');
+  // Iterable<CSVRecord> records = csvFormat.parse(reader);
+  // IASTAppendable rowList = F.ListAlloc(256);
+  // for (CSVRecord record : records) {
+  // IASTAppendable columnList = F.ListAlloc(record.size());
+  // for (String string : record) {
+  // final ASTNode node = parser.parse(string);
+  // IExpr temp = ast2Expr.convert(node);
+  // columnList.append(temp);
+  // }
+  // rowList.append(columnList);
+  // }
+  // return rowList;
+  // }
 
   private static IExpr expressionJSONImport(String fileName)
       throws MalformedURLException, IOException {

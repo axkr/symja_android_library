@@ -1,9 +1,11 @@
 package org.matheclipse.core.builtin;
 
 import java.util.Base64;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
@@ -42,13 +44,21 @@ public class WXFFunctions {
     }
   }
 
-  private static class ByteArray extends AbstractCoreFunctionEvaluator {
+  private static class ByteArray extends AbstractFunctionEvaluator {
+    public static boolean isBase64(String s) {
+      String pattern =
+          "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$";
+      Pattern r = Pattern.compile(pattern);
+      Matcher m = r.matcher(s);
+
+      return m.find();
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         // try {
-        IExpr arg1 = engine.evaluate(ast.arg1());
+        IExpr arg1 = ast.arg1();
         if (arg1.isList()) {
           if (arg1.isEmptyList()) {
             return F.CEmptyList;
@@ -57,13 +67,18 @@ public class WXFFunctions {
           if (bArray == null) {
             // The argument at position `1` in `2` should be a vector of unsigned byte values or a
             // Base64 encoded string.
-            throw new ArgumentTypeStopException("lend", F.list(F.C1, ast));
+            return IOFunctions.printMessage(ast.topHead(), "lend", F.List(F.C1, ast), engine);
           }
           return ByteArrayExpr.newInstance(bArray);
         } else if (arg1.isString()) {
           String str = arg1.toString();
           if (str.isEmpty()) {
             return F.CEmptyList;
+          }
+          if (!isBase64(str)) {
+            // The argument at position `1` in `2` should be a vector of unsigned byte values or a
+            // Base64 encoded string.
+            return IOFunctions.printMessage(ast.topHead(), "lend", F.List(F.C1, ast), engine);
           }
           try {
             byte[] bArray = Base64.getDecoder().decode(str);
@@ -74,7 +89,7 @@ public class WXFFunctions {
         }
         // The argument at position `1` in `2` should be a vector of unsigned byte values or a
         // Base64 encoded string.
-        throw new ArgumentTypeStopException("lend", F.list(F.C1, ast));
+        return IOFunctions.printMessage(ast.topHead(), "lend", F.List(F.C1, ast), engine);
       }
       return F.NIL;
     }

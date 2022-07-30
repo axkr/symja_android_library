@@ -861,6 +861,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
     private TrieNode<S, T> current;
     private int depth;
     private int[] indices = new int[32];
+    private boolean usedAsIterable = false;
 
     public AbstractIterator(TrieNode<S, T> root) {
       this.root = root;
@@ -878,7 +879,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
         previous = null;
         current = root;
       }
-
+      usedAsIterable = false;
       return this;
     }
 
@@ -950,6 +951,10 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
 
     @Override
     public Iterator<K> iterator() {
+      if (usedAsIterable) {
+        throw new IllegalStateException();
+      }
+      usedAsIterable = true;
       return this;
     }
   }

@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -62,13 +63,20 @@ public class Export extends AbstractEvaluator {
       IExpr arg2 = ast.arg2();
 
       if (format.equals(Extension.GIF) || format.equals(Extension.PNG)) {
-        int[] dimensions = arg1.isMatrix();
-        if (dimensions != null && dimensions.length >= 2 && arg2.isAST()) {
+        // if (arg1 instanceof ImageExpr) {
+        //
+        // }
+        // int[] dimensions = arg1.isMatrix();
+        // if (dimensions != null && dimensions.length >= 2 && arg2.isAST()) {
+        try {
           if (exportImage(filename, (IAST) arg2, format)) {
             return arg1;
           }
+        } catch (RuntimeException rex) {
+          rex.printStackTrace();
         }
-        return F.NIL;
+        // }
+        // return F.NIL;
       }
 
       try (FileWriter writer = new FileWriter(filename)) {
@@ -128,17 +136,21 @@ public class Export extends AbstractEvaluator {
 
   public static boolean exportImage(String filename, IAST matrix, Extension format) {
     try (OutputStream outputStream = new FileOutputStream(filename)) {
-      exportImage(outputStream, matrix, format);
-      return true;
+      return exportImage(outputStream, matrix, format);
     } catch (IOException e) {
       // e.printStackTrace();
     }
     return false;
   }
 
-  public static void exportImage(OutputStream outputStream, IAST matrix, Extension format)
+  public static boolean exportImage(OutputStream outputStream, IAST matrix, Extension format)
       throws IOException {
-    ImageIO.write(ImageFormat.toIntARGB(matrix), format.name(), outputStream);
+    BufferedImage intARGB = ImageFormat.toIntARGB(matrix);
+    if (intARGB != null) {
+      ImageIO.write(intARGB, format.name(), outputStream);
+      return true;
+    }
+    return false;
   }
 
   private static final Function<IExpr, String> nameProvider = v -> String.valueOf(v);
