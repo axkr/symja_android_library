@@ -553,6 +553,23 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "1/x-x/6+x^3/120+O(x)^4");
   }
 
+  public void testPadeApproximant() {
+    // TODO https://github.com/kredel/java-algebra-system/issues/29
+    check("PadeApproximant(((x^3 + 72*x^2 + 600*x + 720)/(12*x^2 + 240*x+720)),{x,0,{3,1}})", //
+        "(15/4+23/8*x+3/16*x^2-x^3/192)/(15/4+x)");
+    check("PadeApproximant( x^3 + 72*x^2 + 600*x + 720 , {x, 0, {3,1}})", //
+        "720+600*x+72*x^2+x^3");
+    check("PadeApproximant(x, {x, 0, {3,1}})", //
+        "x");
+    check("PadeApproximant(x^3, {x, 0, {3,1}})", //
+        "x^3");
+    check("PadeApproximant(x*y^2, {x, 0, {3,1}})", //
+        "x*y^2");
+    // TODO
+    check("PadeApproximant(Sin(x), {x, 0, {3,1}})", //
+        "PadeApproximant(Sin(x),{x,0,{3,1}})");
+  }
+
   public void testPolyGammaSeries() {
     check("Series(PolyGamma[x], {x, 1, 4})", //
         "-EulerGamma+1/6*Pi^2*(-1+x)+1/2*PolyGamma(2,1)*(1-x)^2+1/90*Pi^4*(-1+x)^3+1/24*PolyGamma(\n"
