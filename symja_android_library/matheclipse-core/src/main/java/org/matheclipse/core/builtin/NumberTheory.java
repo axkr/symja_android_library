@@ -3501,6 +3501,49 @@ public final class NumberTheory {
     }
   }
 
+  private static class ModularInverse extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isInteger() && arg2.isInteger()) {
+        if (arg2.isZero()) {
+          // Nonzero integer expected at position `1` in `2`.
+          return IOFunctions.printMessage(S.ModularInverse, "intnz", F.List(F.C2, ast), engine);
+        }
+        java.math.BigInteger k = ((IInteger) arg1).toBigNumerator();
+        java.math.BigInteger n = ((IInteger) arg2).toBigNumerator();
+        try {
+          if (arg2.isNegative()) {
+            return F.ZZ(k.negate().modInverse(n.negate()).negate());
+          }
+          return F.ZZ(k.modInverse(n));
+        } catch (ArithmeticException aex) {
+          // `1` is not invertible modulo `2`.
+          return IOFunctions.printMessage(S.ModularInverse, "ninv", F.List(arg1, arg2),
+              engine);
+        }
+      }
+      // TODO add gaussian integers
+      // The `1` arguments to `2` must be ordinary integers.
+      return IOFunctions.printMessage(S.ModularInverse, "minv", F.List(F.C2, S.ModularInverse),
+          engine);
+    }
+
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+
+    }
+  }
+
+
   /**
    *
    *
@@ -5179,6 +5222,7 @@ public final class NumberTheory {
       S.MangoldtLambda.setEvaluator(new MangoldtLambda());
       S.MersennePrimeExponent.setEvaluator(new MersennePrimeExponent());
       S.MersennePrimeExponentQ.setEvaluator(new MersennePrimeExponentQ());
+      S.ModularInverse.setEvaluator(new ModularInverse());
       S.MoebiusMu.setEvaluator(new MoebiusMu());
       S.Multinomial.setEvaluator(new Multinomial());
       S.MultiplicativeOrder.setEvaluator(new MultiplicativeOrder());
