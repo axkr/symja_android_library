@@ -282,11 +282,11 @@ public class ExprEvaluatorTests {
           IASTMutable mutant = ((IAST) temp).copy();
           try {
             ISymbol sym = mutant.topHead();
-            if (sym == S.PolynomialGCD || sym == S.TestReport || sym == S.VerificationTest
-                || sym == S.On || sym == S.Off || sym == S.Compile || sym == S.CompiledFunction
-                || sym == S.FactorialPower || sym == S.Pause || sym == S.OptimizeExpression
-                || sym == S.Share || sym == S.Set || sym == S.SetDelayed || sym == S.UpSet
-                || sym == S.UpSetDelayed) {
+            if (sym == S.InstanceOf || sym == S.PolynomialGCD || sym == S.TestReport
+                || sym == S.VerificationTest || sym == S.On || sym == S.Off || sym == S.Compile
+                || sym == S.CompiledFunction || sym == S.FactorialPower || sym == S.Pause
+                || sym == S.OptimizeExpression || sym == S.Share || sym == S.Set
+                || sym == S.SetDelayed || sym == S.UpSet || sym == S.UpSetDelayed) {
               continue;
             }
             int randomIndex = random.nextInt(1, mutant.size());

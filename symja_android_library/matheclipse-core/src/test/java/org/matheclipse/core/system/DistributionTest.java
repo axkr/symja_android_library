@@ -12,6 +12,35 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{Piecewise({{1,x>3/4}},0),Piecewise({{1,x>1/2}},0),Piecewise({{1,x>1/4}},0)}");
   }
 
+  public void testBernoulliProcess() {
+    check("BernoulliProcess(p)[t]", //
+        "BernoulliDistribution(p)");
+  }
+
+  public void testBinomialProcess() {
+    check("BinomialProcess(p)[t]", //
+        "BinomialDistribution(t,p)");
+  }
+
+  public void testBrownianBridgeProcess() {
+    check("BrownianBridgeProcess( )", //
+        "BrownianBridgeProcess(1,{0,0},{1,0})");
+    check("BrownianBridgeProcess( )[t]", //
+        "NormalDistribution(0,Sqrt((1-t)*t))");
+
+    check("BrownianBridgeProcess({t1, a}, {t2, b})", //
+        "BrownianBridgeProcess(1,{t1,a},{t2,b})");
+    check("BrownianBridgeProcess({t1, a}, {t2, b,c})", //
+        "BrownianBridgeProcess(1,{{t1,a},0},{{t2,b,c},0})");
+
+    check("BrownianBridgeProcess({t1, a}, {t2, b})[t]", //
+        "NormalDistribution((b*(t-t1))/(-t1+t2)+(a*(-t+t2))/(-t1+t2),Sqrt(((t-t1)*(-t+t2))/(-t1+t2)))");
+    check("BrownianBridgeProcess(s, {t1, a}, {t2, b})[t]", //
+        "NormalDistribution((b*(t-t1))/(-t1+t2)+(a*(-t+t2))/(-t1+t2),s*Sqrt(((t-t1)*(-t+t2))/(-t1+t2)))");
+    check("Mean(BrownianBridgeProcess(s, {t1, a}, {t2, b})[t])", //
+        "(b*(t-t1))/(-t1+t2)+(a*(-t+t2))/(-t1+t2)");
+  }
+
   public void testChiSquareDistribution() {
     check("StandardDeviation(ChiSquareDistribution(v))", //
         "Sqrt(2)*Sqrt(v)");
@@ -103,6 +132,11 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   public void testNormalDistribution() {
+    // message: NormalDistribution: Parameter 0 at position 2 in NormalDistribution(m,0) is expected
+    // to be positive.
+    check("PDF(NormalDistribution(m,0), x)", //
+        "PDF(NormalDistribution(m,0),x)");
+
 
     check("CentralMoment(NormalDistribution(a, b),n)", //
         "Piecewise({{b^n*(-1+n)!!,Mod(n,2)==0&&n>=0}},0)");
@@ -110,8 +144,6 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "b^2");
     check("CentralMoment(NormalDistribution(a, b),3)", //
         "0");
-    check("PDF(NormalDistribution(m,0), x)", //
-        "PDF(NormalDistribution(m,0),x)");
     check("Mean(NormalDistribution( ) )", //
         "0");
     check("Mean(NormalDistribution(m, s))", //
@@ -222,6 +254,11 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "m");
     check("Variance(PoissonDistribution(m))", //
         "m");
+  }
+
+  public void testPoissonProcess() {
+    check("PoissonProcess(m)[t]", //
+        "PoissonDistribution(m*t)");
   }
 
   public void testQuantileSparseArray() {

@@ -1,7 +1,6 @@
-package org.matheclipse.io.system;
+package org.matheclipse.core.system;
 
 import java.io.StringWriter;
-import javax.script.ScriptEngine;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalEngine;
@@ -12,41 +11,11 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.ParserConfig;
 
 /** Tests system.reflection classes */
-public class MainTestCase extends AbstractTestCase {
+public class MainTestCase extends ExprEvaluatorTestCase {
 
   public MainTestCase(String name) {
     super(name);
     Config.SERVER_MODE = true;
-  }
-
-  @Override
-  public void check(String evalString, String expectedResult) {
-    check(fScriptEngine, evalString, expectedResult, -1);
-  }
-
-  @Override
-  public void check(ScriptEngine scriptEngine, String evalString, String expectedResult,
-      int resultLength) {
-    try {
-      if (evalString.length() == 0 && expectedResult.length() == 0) {
-        return;
-      }
-      // scriptEngine.put("STEPWISE",Boolean.TRUE);
-      scriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
-      scriptEngine.put("ENABLE_HISTORY", Boolean.TRUE);
-
-      String evaledResult = (String) scriptEngine.eval(evalString);
-
-      assertEquals(expectedResult, evaledResult);
-    } catch (Exception e) {
-      e.printStackTrace();
-      assertEquals(e.getMessage(), "");
-    }
-  }
-
-  @Override
-  public void check(IAST ast, String strResult) {
-    check(EvalEngine.get(), true, ast, strResult);
   }
 
   @Override

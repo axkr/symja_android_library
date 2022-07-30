@@ -203,7 +203,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testAiryAi() {
-
+    checkNumeric("AiryAi(0.0)", //
+        "0.3550280538878173");
     checkNumeric("AiryAi(1.8)", //
         "0.047036216866720354");
     checkNumeric("AiryAi(2.0)", //
@@ -217,7 +218,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3.420837642476398+I*(-2.3906525197729778)");
     // TODO
     checkNumeric("Table(AiryAi(x+I*y), {x,-2,2,0.5}, {y,-2 ,2,0.5})", //
-        "{{3.420837642476398+I*(-2.3906525197729778),1.3358308195078992+I*(-1.4955254358273535),0.5563045393712205+I*(-0.7898014381884247),0.29003094106262817+I*(-0.33030787622402324),0.22740742820165644,0.29003094106262817+I*0.33030787622402324,0.5563045393712205+I*0.7898014381884247,1.3358308195078992+I*1.4955254358273535,3.420837642476398+I*2.3906525197729778},{3.0974417214009486+I*0.2760069240067268,1.6305043526218614+I*(-0.28887974732022426),0.8849522834389962+I*(-0.289325773863921),0.5556884983908243+I*(-0.15402139368458412),0.46425657774883017,0.5556884983908243+I*0.15402139368458412,0.8849522834389962+I*0.289325773863921,1.6305043526218614+I*0.28887974732022426,3.0974417214009486+I*(-0.2760069240067268)},{1.695064089797195+I*1.4241845593464972,1.2102764053596884+I*0.4733886603615599,0.8221174265552088+I*0.11996634266441787,0.6038101468249651+I*0.017017293062533655,0.5355608832923607,0.6038101468249651+I*(-0.017017293062533655),0.8221174265552088+I*(-0.11996634266441787),1.2102764053596884+I*(-0.4733886603615599),1.695064089797195+I*(-1.4241845593464972)},{0.49718792123517636+I*1.3932056575075724,0.6389761019208275+I*0.6893216583745313,0.5790199658388284+I*0.30849245538668596,0.5046538983356635+I*0.11433718873991877,0.47572809161054197,0.5046538983356635+I*(-0.11433718873991877),0.5790199658388284+I*(-0.30849245538668596),0.6389761019208275+I*(-0.6893216583745313),0.49718792123517636+I*(-1.3932056575075724)},{-0.10961462643274916+I*0.9115836001138657,0.22372785110975596+I*0.5781126623006668,0.33149330543214034+I*0.3174498589684514,0.3536492233751043+I*0.13680205422852423,0.3550280538878172,0.3536492233751043+I*(-0.13680205422852423),0.33149330543214034+I*(-0.3174498589684514),0.22372785110975596+I*(-0.5781126623006668),-0.10961462643274916+I*(-0.9115836001138657)},{-0.2662615297128148+I*0.45548648549286874,0.01609950852844483+I*0.37265933735946644,0.15711844650001877+I*0.24103981384014264,0.21618634477812565+I*0.11483063987765402,0.23169360648083592,0.21618634477812565+I*(-0.11483063987765402),0.15711844650001877+I*(-0.24103981384014264),0.01609950852844483+I*(-0.37265933735946644),-0.2662615297128148+I*(-0.45548648549286874)},{-0.21938625498158043+I*0.17538591140806628,-0.049801022417832984+I*0.19961798336628478,0.06045830837178796+I*0.1518895658771749,0.11791053318999047+I*0.07897644336958276,0.1352924163128748,0.11791053318999047+I*(-0.07897644336958276),0.06045830837178796+I*(-0.1518895658771749),-0.049801022417832984+I*(-0.19961798336628478),-0.21938625498158043+I*(-0.17538591140806628)},{-0.13091794569479007+I*0.04635854758683057,-0.05043059157431828+I*0.09163920284743034,0.01704892005471593+I*0.08326920467823386,0.05821728389745073+I*0.047087796003794216,0.0717494970081451,0.05821728389745073+I*(-0.047087796003794216),0.01704892005471593+I*(-0.08326920467823386),-0.05043059157431828+I*(-0.09163920284743034),-0.13091794569479007+I*(-0.04635854758683057)},{-0.06395922827400705+I*0.0021206787026740634,-0.03319654670076513+I*0.03642688062763144,0.0016977668572343027+I*0.04071801705307477,0.026285105310871013+I*0.025043695308787604,0.03492413042325535,0.026285105310871013+I*(-0.025043695308787604),0.0016977668572343027+I*(-0.04071801705307477),-0.03319654670076513+I*(-0.03642688062763144),-0.06395922827400705+I*(-0.0021206787026740634)}}");
+        "{{3.420837642476398+I*(-2.3906525197729778),1.3358308195078992+I*(-1.4955254358273535),0.5563045393712205+I*(-0.7898014381884247),0.29003094106262817+I*(-0.33030787622402324),0.22740742820165644,0.29003094106262817+I*0.33030787622402324,0.5563045393712205+I*0.7898014381884247,1.3358308195078992+I*1.4955254358273535,3.420837642476398+I*2.3906525197729778},{3.0974417214009486+I*0.2760069240067268,1.6305043526218614+I*(-0.28887974732022426),0.8849522834389962+I*(-0.289325773863921),0.5556884983908243+I*(-0.15402139368458412),0.46425657774883017,0.5556884983908243+I*0.15402139368458412,0.8849522834389962+I*0.289325773863921,1.6305043526218614+I*0.28887974732022426,3.0974417214009486+I*(-0.2760069240067268)},{1.695064089797195+I*1.4241845593464972,1.2102764053596884+I*0.4733886603615599,0.8221174265552088+I*0.11996634266441787,0.6038101468249651+I*0.017017293062533655,0.5355608832923607,0.6038101468249651+I*(-0.017017293062533655),0.8221174265552088+I*(-0.11996634266441787),1.2102764053596884+I*(-0.4733886603615599),1.695064089797195+I*(-1.4241845593464972)},{0.49718792123517636+I*1.3932056575075724,0.6389761019208275+I*0.6893216583745313,0.5790199658388284+I*0.30849245538668596,0.5046538983356635+I*0.11433718873991877,0.47572809161054197,0.5046538983356635+I*(-0.11433718873991877),0.5790199658388284+I*(-0.30849245538668596),0.6389761019208275+I*(-0.6893216583745313),0.49718792123517636+I*(-1.3932056575075724)},{-0.10961462643274916+I*0.9115836001138657,0.22372785110975596+I*0.5781126623006668,0.33149330543214034+I*0.3174498589684514,0.3536492233751043+I*0.13680205422852423,0.3550280538878173,0.3536492233751043+I*(-0.13680205422852423),0.33149330543214034+I*(-0.3174498589684514),0.22372785110975596+I*(-0.5781126623006668),-0.10961462643274916+I*(-0.9115836001138657)},{-0.2662615297128148+I*0.45548648549286874,0.01609950852844483+I*0.37265933735946644,0.15711844650001877+I*0.24103981384014264,0.21618634477812565+I*0.11483063987765402,0.23169360648083592,0.21618634477812565+I*(-0.11483063987765402),0.15711844650001877+I*(-0.24103981384014264),0.01609950852844483+I*(-0.37265933735946644),-0.2662615297128148+I*(-0.45548648549286874)},{-0.21938625498158043+I*0.17538591140806628,-0.049801022417832984+I*0.19961798336628478,0.06045830837178796+I*0.1518895658771749,0.11791053318999047+I*0.07897644336958276,0.1352924163128748,0.11791053318999047+I*(-0.07897644336958276),0.06045830837178796+I*(-0.1518895658771749),-0.049801022417832984+I*(-0.19961798336628478),-0.21938625498158043+I*(-0.17538591140806628)},{-0.13091794569479007+I*0.04635854758683057,-0.05043059157431828+I*0.09163920284743034,0.01704892005471593+I*0.08326920467823386,0.05821728389745073+I*0.047087796003794216,0.0717494970081451,0.05821728389745073+I*(-0.047087796003794216),0.01704892005471593+I*(-0.08326920467823386),-0.05043059157431828+I*(-0.09163920284743034),-0.13091794569479007+I*(-0.04635854758683057)},{-0.06395922827400705+I*0.0021206787026740634,-0.03319654670076513+I*0.03642688062763144,0.0016977668572343027+I*0.04071801705307477,0.026285105310871013+I*0.025043695308787604,0.03492413042325535,0.026285105310871013+I*(-0.025043695308787604),0.0016977668572343027+I*(-0.04071801705307477),-0.03319654670076513+I*(-0.03642688062763144),-0.06395922827400705+I*(-0.0021206787026740634)}}");
   }
 
   public void testAiryAiPrime() {
@@ -2119,12 +2120,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testByteArray() {
+    // message ByteArray: The argument at position 1 in ByteArray(asy) should be a vector of
+    // unsigned byte values or a Base64 encoded string.
+    check("ba=ByteArray(\"asy\")", //
+        "ByteArray(asy)");
+
     check("ByteArray({})", //
         "{}");
     check("ba=ByteArray(\"AQIDBAUGBwg=\")", //
         "ByteArray[8 Bytes]");
     check("Normal(ba)", //
         "{1,2,3,4,5,6,7,8}");
+
   }
 
   public void testCancel() {
@@ -2785,6 +2792,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testClip() {
+    check("Clip(7.5,{-7.0,7.0})", //
+        "7.0");
     check("Table(Clip(n,{-2,2}),{n,{-E,-1/17,1/7,2/3,5/2,Pi}})", //
         "{-2,-1/17,1/7,2/3,2,2}");
     check("Table(Clip(n,{-1/2,1/2}),{n,{-Infinity,-E,-1/17,1/7,2/3,5/2,Pi,Infinity}})", //
@@ -2793,7 +2802,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{-1,1,1,{1},1}");
     check("Clip(Infinity)", //
         "1");
-
+    check("Clip(0)", //
+        "0");
     check("Clip({1,2,{7},a})", //
         "Clip({1,2,{7},a})");
     check("Clip(Tan(E),{-1/2,1/2})", //
@@ -2824,6 +2834,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1");
     check("Clip(Tan(-2*E))", //
         "1");
+    check("Clip({-2, 0, 2})", //
+        "{-1,0,1}");
+
   }
 
   public void testCoefficient() {
@@ -3400,6 +3413,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(g(h(x,y,z)))");
   }
 
+  public void testCompositeQ() {
+    check("CompositeQ({0,-1,-2,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14})", //
+        "{False,False,False,True,False,True,False,True,True,True,False,True,False,True}");
+    check("Select(Range(100), CompositeQ)", //
+        "{4,6,8,9,10,12,14,15,16,18,20,21,22,24,25,26,27,28,30,32,33,34,35,36,38,39,40,42,\n" //
+            + "44,45,46,48,49,50,51,52,54,55,56,57,58,60,62,63,64,65,66,68,69,70,72,74,75,76,77,\n" //
+            + "78,80,81,82,84,85,86,87,88,90,91,92,93,94,95,96,98,99,100}"); //
+
+    check("CompositeQ(Range(20))", //
+        "{False,False,False,True,False,True,False,True,True,True,False,True,False,True,True,True,False,True,False,True}");
+    check("CompositeQ(10^300+1)", //
+        "True");
+  }
+
   public void testCompoundExpression() {
     check("1; 2; 3;", //
         "");
@@ -3945,6 +3972,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,3/2,5/3,8/5}");
     check("Convergents({a,b,c,d})", //
         "{a,(1+a*b)/b,(a+c+a*b*c)/(1+b*c),(1+a*b+a*d+c*d+a*b*c*d)/(b+d+b*c*d)}");
+  }
+
+  public void testConvexHullMesh() {
+    check(
+        "ConvexHullMesh({{0.0, 0.0, 0.0}, {1.0, 0.5, 0.0}, {2.0, 0.0, 0.0}, "
+            + "{0.5, 0.5, 0.5}, {0.0, 0.0, 2.0}, {0.1, 0.2, 0.3}, {0.0, 2.0, 0.0}})", //
+        "{{0.0,0.0,0.0},{2.0,0.0,0.0},{0.0,0.0,2.0},{0.0,2.0,0.0}}");
+
+    check("ConvexHullMesh({{0., 0.}, {1., 0.}, {0.5, 0.1}, {4.5,1.1}, {2., 3.}})", //
+        "{{0.0,0.0},{1.0,0.0},{4.5,1.1},{2.0,3.0}}");
   }
 
   public void testCoprimeQ() {
@@ -5951,6 +5988,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testDrop() {
+    // message Drop: Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position
+    // 2 in x.
+    check("Drop({1,2,3}, {3, x})", //
+        "Drop({1,2,3},{3,x})");
+
+    check("Drop(SparseArray(Range(1000)), {3, -4})", //
+        "{1,2,998,999,1000}");
     check("Drop({a,b,c,d},1317624576693539401)", //
         "Drop({a,b,c,d},1317624576693539401)");
     check("Drop(<|1 -> a, 2 -> b, 3 -> c, 4 -> d|>, {2, -1})", //
@@ -6336,6 +6380,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testEllipticF() {
+    check("EllipticF(0.3,0.8)", //
+        "0.303652");
+
     // https://github.com/paulmasson/math/issues/13
     check("EllipticF(-1.5708,1.5708)", //
         "-1.58877+I*1.39865");
@@ -6383,6 +6430,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testEllipticPi() {
+    check("EllipticPi(0.4, 0.6)", //
+        "2.59092");
     check("EllipticPi(0,-1,1.5708)", //
         "-1.58877+I*0.451013");
     // github #172
@@ -8244,6 +8293,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x^2-y^2");
     check("factorterms(3 + 6*x + 3*x^2)", //
         "3*(1+2*x+x^2)");
+  }
+
+  public void testFactorTermsList() {
+    // FactorTermsList: {g(x,y)} is not a polynomial.
+    check("FactorTermsList({g(x,y)})", //
+        "FactorTermsList({g(x,y)})");
+    check("FactorTermsList(g(x,y))", //
+        "{1,g(x,y)}");
+    check("FactorTermsList(100*Log(2))", //
+        "{100,Log(2)}");
+    check("FactorTermsList(I*Log(2))", //
+        "{I,Log(2)}");
+    check("FactorTermsList(x^2 - y^2 )", //
+        "{1,x^2-y^2}");
+    check("FactorTermsList(3 + 6*x + 3*x^2)", //
+        "{3,1+2*x+x^2}");
+    check("FactorTermsList(5*x^2 - 5)", //
+        "{5,-1+x^2}");
+    check("FactorTermsList(-136+40*Sqrt(17))", //
+        "{8,-17+5*Sqrt(17)}");
+    check("FactorTermsList(3+3/4*x^3+12/17*x^2)", //
+        "{3/68,68+16*x^2+17*x^3}");
+
   }
 
   public void testFibonacci() {
@@ -12837,6 +12909,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testKurtosis() {
+    // message Kurtosis: The argument {x} should have at least 2 arguments.
+    check("Kurtosis({x})", //
+        "Kurtosis({x})");
+    check("Kurtosis({0,0})", //
+        "Indeterminate");
     check("Kurtosis({1.1, 1.2, 1.4, 2.1, 2.4})", //
         "1.42098");
   }
@@ -15200,6 +15277,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Indeterminate");
   }
 
+
+  public void testModularInverse() {
+    // message ModularInverse: 3 is not invertible modulo 9.
+    check("ModularInverse(3, 9)", //
+        "ModularInverse(3,9)");
+
+    check("ModularInverse(2, 3)", //
+        "2");
+    check("ModularInverse(-3, 5)", //
+        "3");
+    check("ModularInverse(3, 11)", //
+        "4");
+    check("ModularInverse(-3, 11)", //
+        "7");
+    check("ModularInverse(3, -11)", //
+        "-7");
+    check("ModularInverse(-3, -5)", //
+        "-2");
+    check("ModularInverse(3, -1)", //
+        "0");
+    // Config.MAX_BIT_LENGTH = Integer.MAX_VALUE;
+    // check("ModularInverse(10^100000, NextPrime(1000))", //
+    // "942");
+
+  }
+
   public void testModule() {
     EvalEngine.resetModuleCounter4JUnit();
     // check("num=Sin(3*I);Module({v=N(num)},If(PossibleZeroQ(Re(v)),Im(v)>0,Re(v)>0))",
@@ -15475,6 +15578,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testN() {
+    check("N(1/7,2)", //
+        "0.14");
+    check("N(1/7, 3)", //
+        "0.143");
     check("N(8 + 1*^28, 40) // InputForm", //
         "1.0000000000000000000000000008`40*^28");
     check("N(8 + 1*^28, 40)", //
@@ -16836,6 +16943,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testOrderedQ() {
+    check("OrderedQ({{1,2,3}, {1,4}})", //
+        "False");
     check("OrderedQ(<|2 -> c, 7 -> b, 3 -> a|>)", //
         "False");
     check("OrderedQ(<|2 -> c, 7 -> b, 3 -> a|>, Greater)", //
@@ -19657,145 +19766,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "17/10");
   }
 
-  public void testQuantity() {
-    check("Quantity(\"StandardAccelerationOfGravity\")", //
-        "1[StandardAccelerationOfGravity]");
-    check("1+(3+Quantity(1.2,\"m\"))", //
-        "4+1.2[m]");
-    // check(
-    // "Quantity(8, \"Meters\")*(1+y_)", //
-    // "8[Meters]*(1+y_)");
-
-    // TODO return unevaluated and print "compat" message that types are incompatible
-    check("Quantity(0, \"kg\") + Quantity(0, \"A\") + Quantity(0, \"m\")", //
-        "0[A]+0[kg]+0[m]");
-
-    check("N(Quantity(2/3,\"m\"))", //
-        "0.666667[m]");
-
-    check("1/Quantity(0,\"s\")^I", //
-        "1/0[s]^I");
-    check("Quantity(50, \"s\") + Quantity(1, \"min\")", //
-        "110[s]");
-    check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
-        "110[s]");
-    check("Quantity(1, \"min\") + Quantity(120, \"min\")", //
-        "121[min]");
-    check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
-        "110[s]");
-    check("Quantity(50, \"s\") + Quantity(1, \"min\") ", //
-        "110[s]");
-
-    check("Quantity(50, \"min\") + Quantity(1, \"s\")", //
-        "3001[s]");
-
-    check("Table(i, {i, Quantity(5, \"s\"), Quantity(1, \"m\"), Quantity(4, \"s\")})", //
-        "Table(i,{i,Quantity(5,s),Quantity(1,m),Quantity(4,s)})");
-    check("Table(i, {i, Quantity(5, \"s\"), Quantity(1, \"min\"), Quantity(4, \"s\")})", //
-        "{5[s],9[s],13[s],17[s],21[s],25[s],29[s],33[s],37[s],41[s],45[s],49[s],53[s],57[s]}");
-    check("Table(i, {i, Quantity(50, \"s\"), Quantity(1, \"min\") })", //
-        "{50[s],51[s],52[s],53[s],54[s],55[s],56[s],57[s],58[s],59[s],60[s]}");
-    check("Table(i, {i, Quantity(10, \"s\") })", //
-        "{1[s],2[s],3[s],4[s],5[s],6[s],7[s],8[s],9[s],10[s]}");
-    check("Quantity(1, \"min\")<=Quantity(60, \"s\")", //
-        "True");
-
-    check("Quantity(1, \"min\")>Quantity(50, \"s\")", //
-        "True");
-    check("Quantity(1, \"min\")>Quantity(60, \"s\")", //
-        "False");
-    check("Quantity(1, \"min\")>=Quantity(60, \"s\")", //
-        "True");
-    check("Quantity(60, \"s\")<=Quantity(1, \"min\")", //
-        "True");
-    check("Quantity(60, \"s\")<=Quantity(2, \"min\")", //
-        "True");
-
-    check("Quantity(1, \"min\")<Quantity(50, \"s\")", //
-        "False");
-    check("Quantity(1, \"min\")<Quantity(60, \"s\")", //
-        "False");
-    check("Quantity(1, \"min\")<=Quantity(60, \"s\")", //
-        "True");
-
-    // leave unevaluated because of different unit types
-    check("Quantity(1,\"s\")==Quantity(1,\"m\")", //
-        "1[s]==1[m]");
-
-    check("Quantity(60, \"s\")==Quantity(1, \"min\")", //
-        "True");
-    check("Quantity(1, \"min\")==Quantity(60, \"s\")", //
-        "True");
-
-    check("Quantity(60, \"s\")!=Quantity(1, \"min\")", //
-        "False");
-    check("Quantity(1, \"min\")!=Quantity(60, \"s\")", //
-        "False");
-
-    check("Quantity(42, \"s\")!=Quantity(1, \"min\")", //
-        "True");
-    check("Quantity(42, \"min\")!=Quantity(60, \"s\")", //
-        "True");
-
-    // github #139
-    check("-2+Quantity(1, \"ft\")", //
-        "-2+1[ft]");
-    check("Quantity(9.8, \"m\")/Quantity(1, \"s\")", //
-        "9.8[m*s^-1]");
-    check("Quantity(9.8, \"m\")/Quantity(0, \"s\")", //
-        "ComplexInfinity[m*s^-1]");
-    check("Quantity(0, \"s\")^(-1)", //
-        "ComplexInfinity[s^-1]");
-    check("2*Quantity(1, \"ft\")", //
-        "2[ft]");
-    check("0+Quantity(1, \"ft\")", //
-        "1[ft]");
-
-    check("0*Quantity(1, \"ft\")", //
-        "0[ft]");
-
-    check("Quantity(\"m\")", //
-        "1[m]");
-    check("Quantity(3.25, \"m *rad\")", //
-        "3.25[m*rad]");
-    check("Quantity(3, \"Hz^(-2)*N*m^(-1)\")", //
-        "3[Hz^-2*N*m^-1]");
-    check("0+Quantity(3, \"m\")", //
-        "3[m]");
-    check("0*Quantity(3, \"m\")", //
-        "0[m]");
-    check("1*Quantity(3, \"m\")", //
-        "3[m]");
-    check("Quantity(3, \"m\")", //
-        "3[m]");
-    check("Quantity(3, \"Meters\")", //
-        "3[Meters]");
-  }
-
-  public void testQuantityQ() {
-    check("QuantityQ(Quantity(2, x))", //
-        "False");
-    check("QuantityQ(Quantity(3, \"m\"))", //
-        "True");
-    check("QuantityQ(Quantity(3, \"Meters\"))", //
-        "True");
-  }
-
-  public void testQuantityMagnitude() {
-    check("QuantityMagnitude(Quantity(2000000000000/8896443230521, \"lbf\"), \"N\")", //
-        "1");
-    check("QuantityMagnitude(Quantity(1290320000/8896443230521, \"psi\"), \"Pa\")", //
-        "1");
-    check("QuantityMagnitude(Quantity(6.241509125883258*10^9, \"GeV\"), \"J\")", //
-        "1.0");
-    check("QuantityMagnitude(Quantity(360, \"deg\"), \"rad\")", //
-        "2*Pi");
-    check("QuantityMagnitude(Quantity(3.4, \"m\"))", //
-        "3.4");
-    check("QuantityMagnitude(Quantity(3.4, \"km\"), \"m\")", //
-        "3400.0");
-  }
-
   public void testQuartiles() {
     // method 1 from Wikipedia
     check("Quartiles({6, 7, 15, 36, 39, 40, 41, 42, 43, 47, 49}, {{0, 0}, {1, 0}}) // N", //
@@ -22245,6 +22215,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
   public void testSort() {
+    check("Sort({f(1,2,3), f(1,4)})", //
+        "{f(1,4),f(1,2,3)}");
     check("Sort(<|a -> 4, b -> 1, c -> 3, e :> 2, d -> 2|>)", //
         "<|b->1,e:>2,d->2,c->3,a->4|>");
     check("Sort(<|a -> 4, b -> 1, c -> 3, d :> 2, e -> 2|>, Greater)", //
@@ -23129,6 +23101,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTake() {
+    check("Take(SparseArray(Range(1000)), {100, 105})", //
+        "{100,101,102,103,104,105}");
     check("Take(<|1 -> a, 2 -> b, 3 -> c|>, {2})", //
         "<|2->b|>");
     check("Take(<|1 -> a, 2 -> b, 3 -> c, 4 -> d|>, {2, -1})", //
@@ -23201,8 +23175,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testTakeLargestBy() {
     // print message
+    check("TakeLargestBy({2.0383668,3.96078,4.5547},Abs, 4)", //
+        "TakeLargestBy({2.03837,3.96078,4.5547},Abs,4)");
     check("TakeLargestBy({1, 3, 5, None, Indeterminate, Missing(),a,b}, Abs, 2)", //
         "TakeLargestBy({1,3,5,None,Indeterminate,Missing(),a,b},Abs,2)");
+
+
+    check("TakeLargestBy({2.0383668,3.96078,4.5547},Abs, 3)", //
+        "{4.5547,3.96078,2.03837}");
     check("TakeLargestBy(Prime(Range(10)),Mod(#,7)&, 3)", //
         "{13,5,19}");
     check("TakeLargestBy(Prime(Range(10)),Mod(#,7)&, 3)", //
