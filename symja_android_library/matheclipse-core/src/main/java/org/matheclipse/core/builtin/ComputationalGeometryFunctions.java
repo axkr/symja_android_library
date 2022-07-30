@@ -1,5 +1,10 @@
 package org.matheclipse.core.builtin;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Stack;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -7,6 +12,9 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.tensor.opt.qh3.ConvexHull3D;
+import org.matheclipse.core.tensor.opt.qh3.Vector3d;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class ComputationalGeometryFunctions {
   /**
@@ -24,16 +32,134 @@ public class ComputationalGeometryFunctions {
   }
 
   private static class ConvexHullMesh extends AbstractEvaluator {
+    /**
+     * Three points are a counter-clockwise turn if ccw > 0, clockwise if ccw < 0, and co-linear if
+     * ccw = 0 because ccw is a determinant that gives twice the signed area of the triangle formed
+     * by p1, p2 and p3. (from Wikipedia)
+     * 
+     * @param p1
+     * @param p2
+     * @param p3
+     * @return Det2D[p2 - p1, p3 - p1]
+     */
+    private static IExpr ccw(IAST p1, IAST p2, IAST p3) {
+      IAST v1 = (IAST) F.eval(F.Subtract(p2, p1));
+      IAST v2 = (IAST) F.eval(F.Subtract(p3, p1));
+      // see LinearAlgebra.determinant2x2();
+      return F.eval(v1.get(1).times(v2.get(2)).subtract(v1.get(2).times(v2.get(1))));
+    }
+
+    private static final Comparator<IAST> MINY_MINX = new Comparator<IAST>() {
+      @Override
+      public int compare(IAST p1, IAST p2) {
+        int cmp = p1.arg2().compareTo(p2.arg2());
+        return cmp != 0 ? cmp : p1.arg1().compareTo(p2.arg1());
+      }
+    };
+
+    /**
+     * The Java API recommends to use ArrayDeque instead of Stack. However, in the implementation of
+     * GrahamScan, we can't conveniently exchange Stack and ArrayDeque because ArrayDeque#stream()
+     * reverses the order. GrahamScan is used in several applications. No performance issues were
+     * reported so far.
+     */
+    public static IAST grahamScann2D(IAST ast, EvalEngine engine) {
+      if (ast.isEmpty()) {
+        return F.CEmptyList;
+      }
+      // list is permuted during computation of convex hull
+      List<IAST> list = Convert.toList(ast, x -> (IAST) x);
+      // VectorQ.requireLength(list.get(0), 2);
+      final IAST point0 = Collections.min(list, MINY_MINX);
+      Collections.sort(list, new Comparator<>() {
+        @Override
+        public int compare(IAST p1, IAST p2) {
+          IAST d10 = (IAST) F.eval(F.Subtract(p1, point0));
+          IAST d20 = (IAST) F.eval(F.Subtract(p2, point0));
+          double atan1 = d10.arg1().isZero() ? 0.0 : F.ArcTan(d10.arg1(), d10.arg2()).evalDouble();
+          double atan2 = d20.arg1().isZero() ? 0.0 : F.ArcTan(d20.arg1(), d20.arg2()).evalDouble();
+          int cmp = F.isEqual(atan1, atan2) ? 0 : atan1 < atan2 ? -1 : 1;
+          return cmp != 0 ? cmp : MINY_MINX.compare(p1, p2);
+        }
+      });
+      // ArrayDeque::stream is reverse of Stack::stream
+      Stack<IAST> stack = new Stack<>();
+      stack.push(point0);
+      int k1 = 1;
+      IAST point1 = F.NIL; // find point1 different from point0
+      for (IAST point : list.subList(k1, list.size())) {
+        if (!point0.equals(point)) { // should Chop.08 be used for consistency with chop below ?
+          point1 = point;
+          break;
+        }
+        ++k1;
+      }
+      if (!point1.isPresent()) {
+        return F.List(point0);
+      }
+      ++k1;
+      // find point not co-linear with point0 and point1
+      for (IAST point : list.subList(k1, list.size())) {
+        if (ccw(point0, point1, point).isZero()) {
+          ++k1;
+        } else {
+          break;
+        }
+      }
+      stack.push(list.get(k1 - 1));
+      for (IAST point : list.subList(k1, list.size())) {
+        IAST top = stack.pop();
+        while (!stack.isEmpty()) {
+          IExpr ccw = ccw(stack.peek(), top, point);
+          if (ccw.isPositive()) {
+            break;
+          }
+          top = stack.pop();
+        }
+        stack.push(top);
+        stack.push(point);
+      }
+      return F.ListAlloc(stack.stream());
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isListOfLists()) {
         IAST listOfPoints = (IAST) ast.arg1();
-        if (listOfPoints.argSize() > 2) {
-
+        IntArrayList dimensions = LinearAlgebra.dimensions(listOfPoints);
+        try {
+          if (dimensions.size() == 2 && dimensions.getInt(1) == 2) {
+            if (dimensions.getInt(0) <= 2) {
+              // `1` should be a list of `2` or more affinely independent points.
+              return IOFunctions.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C3),
+                  engine);
+            }
+            return grahamScann2D(listOfPoints, engine);
+          } else if (dimensions.size() == 2 && dimensions.getInt(1) == 3) {
+            if (dimensions.getInt(0) <= 3) {
+              // `1` should be a list of `2` or more affinely independent points.
+              return IOFunctions.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C4),
+                  engine);
+            }
+            return quickHull3D(listOfPoints);
+          }
+        } catch (IllegalArgumentException iae) {
+          //
         }
       }
       return F.NIL;
+    }
+
+    private static IExpr quickHull3D(IAST listOfPoints) {
+      ConvexHull3D hull = new ConvexHull3D();
+      hull.build(listOfPoints);
+      Vector3d[] vertices = hull.getVertices();
+      IASTAppendable resultList = F.ListAlloc(vertices.length);
+      for (int i = 0; i < vertices.length; i++) {
+        Vector3d pnt = vertices[i];
+        resultList.append(pnt.toTensor());
+      }
+      return resultList;
     }
 
     @Override
@@ -41,6 +167,7 @@ public class ComputationalGeometryFunctions {
       return ARGS_1_1;
     }
   }
+
 
   private static class CoordinateBoundingBox extends AbstractEvaluator {
 
@@ -111,6 +238,7 @@ public class ComputationalGeometryFunctions {
       return ARGS_1_2;
     }
   }
+
 
   /**
    *
@@ -246,6 +374,7 @@ public class ComputationalGeometryFunctions {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -419,6 +548,7 @@ public class ComputationalGeometryFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+
   }
 
   public static void initialize() {

@@ -361,42 +361,44 @@ public class TensorFunctions {
       int tensorSize = tensor.size();
       if (kernelSize <= tensorSize) {
         IASTAppendable result = F.ListAlloc();
-        IntList kernelDims = LinearAlgebra.dimensions(kernel);
-        IntList tensorDims = LinearAlgebra.dimensions(tensor);
-        final int size = kernelDims.size();
-        if (size == 1) {
-          int diff1 = tensorDims.getInt(0) - kernelDims.getInt(0) + 1;
-          for (int i = 0; i < diff1; i++) {
-            IASTAppendable subList = F.ast(plusFunction, kernelDims.size());
-            for (int j = 1; j < kernelSize; j++) {
-              subList.append(F.binaryAST2(timesFunction, kernel.get(j), tensor.get(i + j)));
-            }
-            result.append(subList);
-          }
-          return result;
-        } else if (size == 2) {
-          int diff1 = tensorDims.getInt(0) - kernelDims.getInt(0) + 1;
-          int diff2 = tensorDims.getInt(1) - kernelDims.getInt(1) + 1;
-          for (int k = 1; k <= diff1; k++) {
-            IASTAppendable list = F.ListAlloc(kernelDims.size());
-
-            for (int i = 1; i <= diff2; i++) {
-              IASTAppendable subList = F.ast(plusFunction, kernelDims.size());
-
-              for (int j = 1; j <= kernelDims.getInt(0); j++) {
-                IAST subKernelRow = (IAST) kernel.get(j);
-                IAST subTensorRow = (IAST) tensor.get(k + j - 1);
-                for (int j2 = 1; j2 <= kernelDims.getInt(1); j2++) {
-                  IExpr kernelElem = subKernelRow.get(j2);
-                  IExpr tensorElem = subTensorRow.get(j2 + i - 1);
-                  subList.append(F.binaryAST2(timesFunction, kernelElem, tensorElem));
-                }
+        IntList kernelDimension = LinearAlgebra.dimensions(kernel);
+        IntList tensorDimension = LinearAlgebra.dimensions(tensor);
+        final int kernelDimensionSize = kernelDimension.size();
+        if (kernelDimensionSize <= tensorDimension.size()) {
+          if (kernelDimensionSize == 1) {
+            int diff1 = tensorDimension.getInt(0) - kernelDimension.getInt(0) + 1;
+            for (int i = 0; i < diff1; i++) {
+              IASTAppendable subList = F.ast(plusFunction, kernelDimension.size());
+              for (int j = 1; j < kernelSize; j++) {
+                subList.append(F.binaryAST2(timesFunction, kernel.get(j), tensor.get(i + j)));
               }
-              list.append(subList);
+              result.append(subList);
             }
-            result.append(list);
+            return result;
+          } else if (kernelDimensionSize == 2) {
+            int diff1 = tensorDimension.getInt(0) - kernelDimension.getInt(0) + 1;
+            int diff2 = tensorDimension.getInt(1) - kernelDimension.getInt(1) + 1;
+            for (int k = 1; k <= diff1; k++) {
+              IASTAppendable list = F.ListAlloc(kernelDimension.size());
+
+              for (int i = 1; i <= diff2; i++) {
+                IASTAppendable subList = F.ast(plusFunction, kernelDimension.size());
+
+                for (int j = 1; j <= kernelDimension.getInt(0); j++) {
+                  IAST subKernelRow = (IAST) kernel.get(j);
+                  IAST subTensorRow = (IAST) tensor.get(k + j - 1);
+                  for (int j2 = 1; j2 <= kernelDimension.getInt(1); j2++) {
+                    IExpr kernelElem = subKernelRow.get(j2);
+                    IExpr tensorElem = subTensorRow.get(j2 + i - 1);
+                    subList.append(F.binaryAST2(timesFunction, kernelElem, tensorElem));
+                  }
+                }
+                list.append(subList);
+              }
+              result.append(list);
+            }
+            return result;
           }
-          return result;
         }
       }
       return F.NIL;
