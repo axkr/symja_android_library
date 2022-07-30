@@ -78,6 +78,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.Assumptions;
@@ -806,9 +807,27 @@ public final class Arithmetic {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr x = ast.first();
+      if (x.isSparseArray()) {
+        x = x.normal(false);
+      }
+      if (x.isList()) {
+        IAST list = (IAST) x;
+        IAST result = list.map(a -> {
+          IASTMutable copy = ast.copy();
+          copy.set(1, a);
+          IExpr temp = evaluate(copy, engine);
+          if (temp.isPresent()) {
+            return temp;
+          }
+          ArgumentTypeStopException.throwNIL();
+          return F.NIL;
+        });
+        return result;
+      }
+
       if (ast.size() == 2) {
         try {
-          return clip(x);
+          return clipX(x);
         } catch (ArgumentTypeStopException atsex) {
           return F.NIL;
         }
@@ -860,23 +879,7 @@ public final class Arithmetic {
       return ARGS_1_3;
     }
 
-    private IExpr clip(IExpr x) {
-      if (x.isSparseArray()) {
-        x = x.normal(false);
-      }
-      if (x.isList()) {
-        IAST list = (IAST) x;
-        IAST result = list.map(a -> {
-          IExpr temp = clip(a);
-          if (temp.isPresent()) {
-            return temp;
-          }
-          ArgumentTypeStopException.throwNIL();
-          return F.NIL;
-        });
-        return result;
-      }
-
+    private static IExpr clipX(IExpr x) {
       if (x.isReal()) {
         ISignedNumber real = (ISignedNumber) x;
         if (real.isGT(F.C1)) {
@@ -906,61 +909,7 @@ public final class Arithmetic {
       return F.NIL;
     }
 
-    /**
-     * gives <code>vMin</code> for <code>x<min</code> and <code>vMax</code> for <code>x>max</code>.
-     *
-     * @param x the expression value
-     * @param min minimum value
-     * @param max maximum value
-     * @param vMin value for x less than minimum
-     * @param vMax value for x greater than minimum
-     * @return x if x is in the range min to max. Return vMin if x is less than min.Return vMax if x
-     *         is greater than max.
-     */
-    private IExpr clip(IExpr x, ISignedNumber min, ISignedNumber max, IExpr vMin, IExpr vMax) {
-      if (x.isSparseArray()) {
-        x = x.normal(false);
-      }
-      if (x.isList()) {
-        IAST list = (IAST) x;
-        IAST result = list.map(a -> {
-          IExpr temp = clip(a, min, max, vMin, vMax);
-          if (temp.isPresent()) {
-            return temp;
-          }
-          ArgumentTypeStopException.throwNIL();
-          return F.NIL;
-        });
-        return result;
-      }
-      if (x.isReal()) {
-        ISignedNumber real = (ISignedNumber) x;
-        if (real.isGT(max)) {
-          return vMax;
-        }
-        if (real.isLT(min)) {
-          return vMin;
-        }
-        return x;
-      }
-      ISignedNumber real = x.evalReal();
-      if (real != null) {
-        if (real.isGT(max)) {
-          return vMax;
-        }
-        if (real.isLT(min)) {
-          return vMin;
-        }
-        return x;
-      }
-      if (x.isInfinity() && S.Greater.ofQ(x, max)) {
-        return vMax;
-      }
-      if (x.isNegativeInfinity() && S.Less.ofQ(x, min)) {
-        return vMin;
-      }
-      return F.NIL;
-    }
+
 
     @Override
     public void setUp(final ISymbol newSymbol) {
@@ -1807,7 +1756,7 @@ public final class Arithmetic {
       if (Double.isNaN(gamma)) {
         if (d1 > 0.0) {
           // Overflow occurred in computation.
-          IOFunctions.printMessage(y, "ovfl", F.CEmptyList, EvalEngine.get());
+          IOFunctions.printMessage(S.Gamma, "ovfl", F.CEmptyList, EvalEngine.get());
           return F.Overflow();
         }
         return e1DblComArg(F.complexNum(d1));
@@ -3051,7 +3000,7 @@ public final class Arithmetic {
    * 30
    * </pre>
    */
-  public static class Plus extends AbstractArgMultiple implements INumeric {
+  public static class Plus extends AbstractArgMultiple implements IRewrite, INumeric {
 
     private static HashedOrderlessMatcherPlus PLUS_ORDERLESS_MATCHER;
 
@@ -3263,6 +3212,84 @@ public final class Arithmetic {
 
       return plusMatcher;
     }
+
+    // @Override
+    // public IExpr evalAsLeadingTerm(IAST ast, ISymbol x, IExpr logx, int cdir) {
+    // //
+    // https://github.com/sympy/sympy/blob/ab414d124bb9899eb9d677e95498c7a021c9bc29/sympy/core/add.py#L996
+    // IExpr old=ast;
+    //// o = self.getO()
+    //// if o is None:
+    //// o = Order(0)
+    //// old = self.removeO()
+    ////
+    //// if old.has(Piecewise):
+    //// old = piecewise_fold(old)
+    //
+    //// # This expansion is the last part of expand_log. expand_log also calls
+    //// # expand_mul with factor=True, which would be more expensive
+    //// if (any(isinstance(a, log) for a in self.args)) {
+    //// logflags = dict(deep=True, log=True, mul=False, power_exp=False,
+    //// power_base=False, multinomial=False, basic=False, force=False,
+    //// factor=False)
+    //// old = old.expand(**logflags)
+    //// }
+    //// expr = expand_mul(old);
+    // IExpr expr=old;
+    // if (! expr.isPlus()) {
+    // return expr.asLeadingTerm(x, logx , cdir );
+    // }
+    // IExpr infinite = [t for t in expr.args if t.is_infinite]
+    //
+    // _logx = logx.orElseGet( ()-> F.Dummy("logx"));
+    // leading_terms = [t.asLeadingTerm(x, logx=_logx, cdir=cdir) for t in expr.args]
+    //
+    //// min, new_expr = Order(0), 0
+    // IExpr new_expr =F.C0;
+    // try{
+    // for (term in leading_terms) {
+    // order = Order(term, x);
+    // if (not min or order not in min) {
+    // min = order;
+    // new_expr = term;
+    // } else if (min in order) {
+    // new_expr += term;
+    // }
+    // }
+    // }catch(ArgumentTypeError ate) {
+    // return expr;
+    // }
+    // if (!log.isPresent()) {
+    // new_expr = new_expr.subs(_logx, log(x));
+    // }
+    // boolean is_zero = new_expr.isZero();
+    // if (!is_zero ) {
+    // new_expr = new_expr.trigsimp().cancel();
+    // is_zero = new_expr.isZero();
+    // }
+    // if (is_zero ) {
+    //// # simple leading term analysis gave us cancelled terms but we have to send
+    //// # back a term, so compute the leading term (via series)
+    // try {
+    // n0 = min.getn();
+    // } catch (NotImplementedError nie) {
+    // n0 = 1;
+    // }
+    // IExpr res = Order(1);
+    // int incr = 1;
+    // while (res.is_Order) {
+    // res = old._eval_nseries(x, n=n0+incr, logx , cdir ).cancel().trigsimp();
+    // //powsimp().trigsimp();
+    // incr *= 2;
+    // }
+    // return res.as_leading_term(x, logx=logx, cdir=cdir);
+    //
+    // }else if(new_expr.isNaN()){
+    // return old.func._from_args(infinite) + o;
+    // }
+    // return new_expr;
+    // }
+
   }
 
   /**
@@ -6933,6 +6960,76 @@ public final class Arithmetic {
       return times1;
     }
 
+    return F.NIL;
+  }
+
+  /**
+   * Gives <code>min</code> for <code>x&lt;min</code> and <code>max</code> for
+   * <code>x&gt;max</code>.
+   * 
+   * @param x
+   * @param min
+   * @param max
+   * @return
+   */
+  public static IExpr clip(IExpr x, ISignedNumber min, ISignedNumber max) {
+    return clip(x, min, max, min, max);
+  }
+
+  /**
+   * Gives <code>vMin</code> for <code>x&lt;min</code> and <code>vMax</code> for
+   * <code>x&gt;max</code>.
+   *
+   * @param x the expression value
+   * @param min minimum value
+   * @param max maximum value
+   * @param vMin value for x less than minimum
+   * @param vMax value for x greater than minimum
+   * @return x if x is in the range min to max. Return vMin if x is less than min.Return vMax if x
+   *         is greater than max.
+   */
+  public static IExpr clip(IExpr x, ISignedNumber min, ISignedNumber max, IExpr vMin, IExpr vMax) {
+    if (x.isSparseArray()) {
+      x = x.normal(false);
+    }
+    if (x.isList()) {
+      IAST list = (IAST) x;
+      IAST result = list.map(a -> {
+        IExpr temp = clip(a, min, max, vMin, vMax);
+        if (temp.isPresent()) {
+          return temp;
+        }
+        ArgumentTypeStopException.throwNIL();
+        return F.NIL;
+      });
+      return result;
+    }
+    if (x.isReal()) {
+      ISignedNumber real = (ISignedNumber) x;
+      if (real.isGT(max)) {
+        return vMax;
+      }
+      if (real.isLT(min)) {
+        return vMin;
+      }
+      return x;
+    }
+    ISignedNumber real = x.evalReal();
+    if (real != null) {
+      if (real.isGT(max)) {
+        return vMax;
+      }
+      if (real.isLT(min)) {
+        return vMin;
+      }
+      return x;
+    }
+    if (x.isInfinity() && S.Greater.ofQ(x, max)) {
+      return vMax;
+    }
+    if (x.isNegativeInfinity() && S.Less.ofQ(x, min)) {
+      return vMin;
+    }
     return F.NIL;
   }
 
