@@ -1,7 +1,7 @@
 package org.matheclipse.core.system;
 
+import org.hipparchus.util.RosenNumberPartitionIterator;
 import org.matheclipse.core.combinatoric.MultisetPartitionsIterator;
-import org.matheclipse.core.combinatoric.RosenNumberPartitionIterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor;

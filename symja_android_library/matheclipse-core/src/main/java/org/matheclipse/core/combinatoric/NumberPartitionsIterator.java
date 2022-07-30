@@ -1,5 +1,7 @@
 package org.matheclipse.core.combinatoric;
 
+import org.hipparchus.util.RosenNumberPartitionIterator;
+
 /**
  * Partition a set and visit all steps of the algorithm with an <code>IStepVisitor</code>
  *

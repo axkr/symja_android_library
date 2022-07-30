@@ -25,6 +25,7 @@ import org.matheclipse.core.eval.util.SetSpecification;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.frobenius.FrobeniusSolver;
+import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -399,7 +400,7 @@ public final class Combinatoric {
           }
         }
 
-        EvalAttributes.sort(result);
+        EvalAttributes.sort(result, Comparators.LEXICAL_COMPARATOR);
         IAST resultCycles = F.Cycles(result);
         resultCycles.addEvalFlags(IAST.BUILT_IN_EVALED);
         return resultCycles;

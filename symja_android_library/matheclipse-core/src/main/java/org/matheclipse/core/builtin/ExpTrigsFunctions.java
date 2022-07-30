@@ -44,6 +44,8 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
+import org.matheclipse.core.eval.exception.sympy.PoleError;
+import org.matheclipse.core.eval.exception.sympy.ValueError;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -933,6 +935,30 @@ public class ExpTrigsFunctions {
       return
       // [$ Log(arg1 + Sqrt(1 + arg1^2)) $]
       F.Log(F.Plus(arg1, F.Sqrt(F.Plus(F.C1, F.Sqr(arg1))))); // $$;
+    }
+
+    @Override
+    public IExpr evalAsLeadingTerm(IAST ast, ISymbol x, IExpr logx, int cdir) {
+      IExpr arg = ast.arg1();
+      EvalEngine engine = EvalEngine.get();
+      IExpr x0 = engine.evaluate(arg.subs(x, F.C0)).cancel();
+      if (x0.isZero()) {
+        return arg.asLeadingTerm(x);
+      }
+      // Handling branch points (-I*oo, -I) U (I, I*oo)
+      if (x0.isImaginaryUnit() || x0.isNegativeImaginaryUnit() || x0.isComplexInfinity()) {
+        return engine.evaluate(rewriteLog(arg, engine)).evalAsLeadingTerm(x, logx, cdir);
+      }
+      if (cdir != 0) {
+        // cdir = arg.dir(x, cdir)
+      }
+      if (cdir > 0 && x0.re().isZero() && S.Less.ofQ(engine, x0.im(), F.CN1)) {
+        return F.Subtract(F.ArcSinh(x0).negate(), F.Times(F.CI, S.Pi));
+      }
+      if (cdir < 0 && x0.re().isZero() && S.Greater.ofQ(engine, x0.im(), F.C1)) {
+        return F.Plus(F.ArcSinh(x0).negate(), F.Times(F.CI, S.Pi));
+      }
+      return F.ArcSinh(x0);
     }
   }
 
@@ -2249,7 +2275,7 @@ public class ExpTrigsFunctions {
   }
 
   /** See <a href="http://en.wikipedia.org/wiki/Logarithm">Wikipedia - Logarithm</a> */
-  private static final class Log extends AbstractArg12 implements INumeric, LogRules {
+  private static final class Log extends AbstractArg12 implements INumeric, IRewrite, LogRules {
 
     @Override
     public IAST getRuleAST() {
@@ -2396,6 +2422,76 @@ public class ExpTrigsFunctions {
         return F.C0;
       }
       return F.NIL;
+    }
+
+    @Override
+    public IExpr evalAsLeadingTerm(IAST ast, ISymbol x, IExpr logx, int cdir) {
+      // Symja Log(b,z) instead of sympy log(z,b) convention is used
+      // https://github.com/sympy/sympy/blob/master/sympy/functions/elementary/exponential.py#L1077
+      final IExpr arg0;
+      if (ast.isAST2()) {
+        arg0 = ast.arg2().together();
+      } else {
+        arg0 = ast.arg1().together();
+      }
+
+      // STEP 1
+      ISymbol t = F.Dummy("t");
+      if (cdir == 0) {
+        cdir = 1;
+      }
+      IExpr z = arg0.subs(x, t.times(F.ZZ(cdir)));
+
+      EvalEngine engine = EvalEngine.get();
+      // STEP 2
+      IExpr c = F.C1;
+      IExpr e = F.C0;
+      try {
+        IAST leadTerm = z.leadterm(t, logx , cdir );
+        c=leadTerm.arg1(); 
+        e=leadTerm.arg2();
+      } catch (ValueError ve) {
+        IExpr arg = arg0.asLeadingTerm(x, logx , cdir );
+        return F.Log(arg);
+      }
+      if (c.has(t)) {
+        if (!e.isZero()) {
+          throw new PoleError("Cannot expand " + this + " around 0");
+        }
+        c = c.subs(x, t.divide(F.ZZ(cdir)));
+        return F.Log(c);
+      }
+
+      // STEP3
+      if (c.isOne() && e.isZero()) {
+        return S.Subtract.of(engine, arg0, F.C1).asLeadingTerm(x, logx, 0);
+      }
+      // STEP 4
+      // res = log(c) - e*log(cdir)
+      // logx = log(x) if logx is None else logx
+      // res += e*logx
+      if (!logx.isPresent()) {
+        logx = F.Log(x);
+      }
+      IExpr res = F.Plus(F.Subtract(F.Log(c), F.Times(e, F.Log(cdir))), F.Times(e, logx));
+
+      // STEP 5
+      if (c.isNegative() && !z.im().isZero()) {
+        int i = 0;
+        while (i < 5) {
+          // term in enumerate(z.lseries(t)):
+          // if not term.is_real or i == 5:
+          // break
+          i++;
+        }
+        if (i < 5) {
+          // coeff, _ = term.as_coeff_exponent(t)
+          // res += -2*I*S.Pi*Heaviside(-im(coeff), 0)
+          IExpr coeff = F.C1;// , _ = term.as_coeff_exponent(t)
+          res = F.Times(F.CN2, F.CI, S.Pi, F.heaviside(coeff.im().negate(), F.C0, engine));
+        }
+      }
+      return res;
     }
   }
 

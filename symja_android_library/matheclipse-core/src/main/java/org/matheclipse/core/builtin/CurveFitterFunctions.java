@@ -23,7 +23,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
-import org.matheclipse.core.interfaces.ISymbol;
 
 public class CurveFitterFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -107,7 +106,7 @@ public class CurveFitterFunctions {
       IASTAppendable listOfRules;
 
       public FindFitParametricFunction(final IExpr function, final IAST gradientList,
-          final IAST listOfSymbols, final ISymbol x, final EvalEngine engine) {
+          final IAST listOfSymbols, final IExpr x, final EvalEngine engine) {
         this.function = function;
         this.engine = engine;
         this.gradientList = gradientList;
@@ -246,11 +245,11 @@ public class CurveFitterFunctions {
 
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList() && ast.arg3().isList() && ast.arg4().isSymbol()) {
+      if (ast.arg1().isList() && ast.arg3().isList() && ast.arg4().isVariable()) {
         IAST data = (IAST) ast.arg1();
         IExpr function = ast.arg2();
         IAST listOfSymbols = (IAST) ast.arg3();
-        ISymbol x = (ISymbol) ast.arg4();
+        IExpr x = ast.arg4();
 
         double[] initialGuess = new double[listOfSymbols.size() - 1];
         listOfSymbols = initialGuess(listOfSymbols, initialGuess);
@@ -312,7 +311,7 @@ public class CurveFitterFunctions {
 
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList() && ast.arg2().isReal() && ast.arg3().isSymbol()) {
+      if (ast.arg1().isList() && ast.arg2().isReal() && ast.arg3().isVariable()) {
         int polynomialDegree = ast.arg2().toIntDefault();
         if (polynomialDegree > 0) {
           if (Config.MAX_AST_SIZE < polynomialDegree) {
@@ -323,8 +322,7 @@ public class CurveFitterFunctions {
           WeightedObservedPoints obs = new WeightedObservedPoints();
           if (addWeightedObservedPoints(data, obs)) {
             try {
-              return Convert.polynomialFunction2Expr(fitter.fit(obs.toList()),
-                  (ISymbol) ast.arg3());
+              return Convert.polynomialFunction2Expr(fitter.fit(obs.toList()), ast.arg3());
             } catch (RuntimeException rex) {
               LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             }

@@ -1,5 +1,6 @@
 package org.matheclipse.core.combinatoric;
 
+import org.hipparchus.util.RosenNumberPartitionIterator;
 import org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor;
 
 /**
