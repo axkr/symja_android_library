@@ -119,6 +119,7 @@ public class Algebra {
       S.FactorSquareFree.setEvaluator(new FactorSquareFree());
       S.FactorSquareFreeList.setEvaluator(new FactorSquareFreeList());
       S.FactorTerms.setEvaluator(new FactorTerms());
+      S.FactorTermsList.setEvaluator(new FactorTermsList());
       S.Numerator.setEvaluator(new Numerator());
 
       S.PolynomialExtendedGCD.setEvaluator(new PolynomialExtendedGCD());
@@ -2901,6 +2902,82 @@ public class Algebra {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  static class FactorTermsList extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isFree(S.List)) {
+        // `1` is not a polynomial.
+        return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg1), engine);
+      }
+      VariablesSet eVar = null;
+      IAST variableList = F.NIL;
+      if (ast.isAST2()) {
+        // TODO evaluate for givn variables
+        return F.NIL;
+
+        // if (ast.arg2().isSymbol()) {
+        // ISymbol variable = (ISymbol) ast.arg2();
+        // variableList = F.list(variable);
+        // } else if (ast.arg2().isList()) {
+        // variableList = (IAST) ast.arg2();
+        // } else {
+        // return F.NIL;
+        // }
+      } else {
+        IExpr expr = F.evalExpandAll(arg1, engine);
+        if (expr.isPlus()) {
+          IRational gcd = factorTermsGCD((IAST) expr, engine);
+          if (gcd != null) {
+            return engine.evaluate(F.List(gcd, F.Expand(F.Times(gcd.inverse(), expr))));
+          }
+        }
+        eVar = new VariablesSet(arg1);
+        if (!eVar.isSize(1)) {
+          // FactorTerms only possible for univariate polynomials
+          if (eVar.isSize(0)) {
+            if (arg1.isTimes() && arg1.first().isNumber()) {
+              return engine.evaluate(F.List(arg1.first(), arg1.rest()));
+            }
+          }
+          return F.List(F.C1, arg1);
+        }
+        variableList = eVar.getVarList();
+      }
+      if (!variableList.isPresent() || variableList.size() != 2) {
+        // FactorTerms only possible for univariate polynomials
+        return F.NIL;
+      }
+      List<IExpr> varList = variableList.copyTo();
+      IExpr expr = F.evalExpandAll(arg1, engine);
+      try {
+        JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+        GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
+        Object[] objects = jas.factorTerms(poly);
+        java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+        java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+        if (lcm.equals(java.math.BigInteger.ZERO)) {
+          // no changes
+          return expr;
+        }
+        GenPolynomial<edu.jas.arith.BigInteger> iPoly =
+            (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+        return F.List(F.fraction(gcd, lcm), jas.integerPoly2Expr(iPoly));
+      } catch (JASConversionException e1) {
+      }
+      return F.List(F.C1, arg1);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
   /**
    *
    *
@@ -5034,6 +5111,14 @@ public class Algebra {
    */
   /* package private */ static IExpr factorTermsPlus(IAST plusAST, EvalEngine engine) {
 
+    IRational gcd1 = factorTermsGCD(plusAST, engine);
+    if (gcd1 == null) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Times(gcd1, F.Expand(F.Times(gcd1.inverse(), plusAST))));
+  }
+
+  private static IRational factorTermsGCD(IAST plusAST, EvalEngine engine) {
     IRational gcd1 = null;
     if (plusAST.arg1().isRational()) {
       gcd1 = (IRational) plusAST.arg1();
@@ -5041,7 +5126,7 @@ public class Algebra {
       gcd1 = (IRational) plusAST.arg1().first();
     }
     if (gcd1 == null) {
-      return F.NIL;
+      return null;
     }
     for (int i = 2; i < plusAST.size(); i++) {
       IRational gcd2 = null;
@@ -5051,19 +5136,19 @@ public class Algebra {
         gcd2 = (IRational) plusAST.get(i).first();
       }
       if (gcd2 == null) {
-        return F.NIL;
+        return null;
       }
       final IExpr gcd12 = engine.evaluate(F.GCD(gcd1, gcd2));
       if (gcd12.isRational() && !gcd12.isOne()) {
         gcd1 = (IRational) gcd12;
       } else {
-        return F.NIL;
+        return null;
       }
     }
     if (gcd1.isMinusOne()) {
-      return F.NIL;
+      return null;
     }
-    return engine.evaluate(F.Times(gcd1, F.Expand(F.Times(gcd1.inverse(), plusAST))));
+    return gcd1;
   }
 
   /**
@@ -5434,31 +5519,7 @@ public class Algebra {
       IExpr exprNumerator = F.evalExpandAll(parts[0]);
       IExpr exprDenominator = F.evalExpandAll(parts[1]);
 
-      String[] varListStr = new String[1];
-      varListStr[0] = x.toString();
-      // IAST varList = F.List(x);
-      JASConvert<BigRational> jas = new JASConvert<BigRational>(x, BigRational.ZERO);
-      GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
-      GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
-
-      final UnivPowerSeries<BigRational> ps;
-      BigRational cfac = BigRational.ONE;
-      UnivPowerSeriesRing<BigRational> fac = new UnivPowerSeriesRing<BigRational>(cfac);
-      TaylorFunction<BigRational> FN = new PolynomialTaylorFunction<BigRational>(numerator);
-      if (exprNumerator.isOne()) {
-        TaylorFunction<BigRational> FD = new PolynomialTaylorFunction<BigRational>(denominator);
-        UnivPowerSeries<BigRational> psD = fac.seriesOfTaylor(FD, BigRational.ZERO);
-        ps = psD.inverse();
-      } else {
-        if (exprDenominator.isOne()) {
-          ps = fac.seriesOfTaylor(FN, BigRational.ZERO);
-        } else {
-          TaylorFunction<BigRational> FD = new PolynomialTaylorFunction<BigRational>(denominator);
-          UnivPowerSeries<BigRational> psN = fac.seriesOfTaylor(FN, BigRational.ZERO);
-          UnivPowerSeries<BigRational> psD = fac.seriesOfTaylor(FD, BigRational.ZERO);
-          ps = psN.divide(psD);
-        }
-      }
+      final UnivPowerSeries<BigRational> ps = quotientPS(exprNumerator, exprDenominator, x);
       ASTSeriesData seriesData = new ASTSeriesData(x, x0, 0, n + expDenominator, expDenominator);
       // reversed order seems to be a bit faster
       for (int i = n; i >= 0; i--) {
@@ -5471,6 +5532,37 @@ public class Algebra {
       LOGGER.debug("Algebra.polynomialTaylorSeries() failed", e);
     }
     return null;
+  }
+
+  public static UnivPowerSeries<BigRational> quotientPS(IExpr exprNumerator, IExpr exprDenominator,
+      IExpr x) {
+    String[] varListStr = new String[1];
+    varListStr[0] = x.toString();
+    // IAST varList = F.List(x);
+    JASConvert<BigRational> jas = new JASConvert<BigRational>(x, BigRational.ZERO);
+    GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
+
+    final UnivPowerSeries<BigRational> ps;
+    BigRational cfac = BigRational.ONE;
+    UnivPowerSeriesRing<BigRational> fac = new UnivPowerSeriesRing<BigRational>(cfac);
+    TaylorFunction<BigRational> FN = new PolynomialTaylorFunction<BigRational>(numerator);
+    if (exprNumerator.isOne()) {
+      GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
+      TaylorFunction<BigRational> FD = new PolynomialTaylorFunction<BigRational>(denominator);
+      UnivPowerSeries<BigRational> psD = fac.seriesOfTaylor(FD, BigRational.ZERO);
+      ps = psD.inverse();
+    } else {
+      if (exprDenominator.isOne()) {
+        ps = fac.seriesOfTaylor(FN, BigRational.ZERO);
+      } else {
+        GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
+        TaylorFunction<BigRational> FD = new PolynomialTaylorFunction<BigRational>(denominator);
+        UnivPowerSeries<BigRational> psN = fac.seriesOfTaylor(FN, BigRational.ZERO);
+        UnivPowerSeries<BigRational> psD = fac.seriesOfTaylor(FD, BigRational.ZERO);
+        ps = psN.divide(psD);
+      }
+    }
+    return ps;
   }
 
   /**
