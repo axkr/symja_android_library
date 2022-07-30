@@ -1,14 +1,18 @@
 package org.matheclipse.core.builtin;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.convert.JASConvert;
+import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -26,8 +30,20 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.reflection.system.rules.LimitRules;
 import org.matheclipse.core.reflection.system.rules.SeriesCoefficientRules;
+import com.google.common.collect.Lists;
+import edu.jas.arith.BigRational;
+import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.GenPolynomialRing;
+import edu.jas.ps.PolynomialTaylorFunction;
+import edu.jas.ps.TaylorFunction;
+import edu.jas.ps.UnivPowerSeriesRing;
+import edu.jas.ufd.PolyUfdUtil;
+import edu.jas.ufd.Quotient;
+import edu.jas.ufd.QuotientRing;
+import edu.jas.ufd.QuotientTaylorFunction;
 
 public class SeriesFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -45,6 +61,7 @@ public class SeriesFunctions {
         S.ComposeSeries.setEvaluator(new ComposeSeries());
         S.InverseSeries.setEvaluator(new InverseSeries());
         S.Normal.setEvaluator(new Normal());
+        S.PadeApproximant.setEvaluator(new PadeApproximant());
         S.Series.setEvaluator(new Series());
         S.SeriesCoefficient.setEvaluator(new SeriesCoefficient());
         S.SeriesData.setEvaluator(new SeriesData());
@@ -1013,6 +1030,127 @@ public class SeriesFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+  }
+
+
+  private static final class PadeApproximant extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg2().isList3()) {
+        IExpr function = ast.arg1();
+        IAST list = (IAST) ast.arg2();
+        IExpr x = list.arg1();
+        IExpr x0 = list.arg2();
+
+        if (list.arg3().isList2()) {
+          try {
+            IAST order = (IAST) list.arg3();
+            final int m = order.arg1().toIntDefault();
+            if (m == Integer.MIN_VALUE) {
+              return F.NIL;
+            }
+            final int n = order.arg2().toIntDefault();
+            if (m == Integer.MIN_VALUE) {
+              return F.NIL;
+            }
+            if (function.isTimes()) {
+              IExpr[] numeratorDenominatorParts = Algebra.fractionalParts(function, false);
+              if (numeratorDenominatorParts != null) {
+                return quotientTaylorFunction(numeratorDenominatorParts, x, x0, m, n);
+              }
+            }
+
+            return taylorFunction(function, x, x0, m, n);
+          } catch (JASConversionException jce) {
+            // could not use JAS library here
+          }
+        }
+
+      }
+      return F.NIL;
+    }
+
+    /**
+     * 
+     * @param numeratorDenominatorParts
+     * @param x
+     * @param x0
+     * @param m
+     * @param n
+     * @return
+     * @deprecated contains bug
+     */
+    @Deprecated
+    private static IAST quotientTaylorFunctionExpr(IExpr[] numeratorDenominatorParts, IExpr x,
+        IExpr x0, final int m, final int n) {
+      List<IExpr> varList = Lists.newArrayList(x);
+      IASTAppendable list = F.ListAlloc(varList);
+      JASIExpr jas = new JASIExpr(varList, true);
+      ExprPolynomialRing ring = new ExprPolynomialRing(list);
+      ExprPolynomial num = ring.create(numeratorDenominatorParts[0]);
+      ExprPolynomial den = ring.create(numeratorDenominatorParts[1]);
+      GenPolynomial<IExpr> numerator = jas.expr2IExprJAS(num);
+      GenPolynomial<IExpr> denominator = jas.expr2IExprJAS(den);
+      UnivPowerSeriesRing<IExpr> fac = new UnivPowerSeriesRing<IExpr>(ExprRingFactory.CONST);
+      GenPolynomialRing<IExpr> pr = fac.polyRing();
+      QuotientRing<IExpr> qr = new QuotientRing<IExpr>(pr);
+      Quotient<IExpr> p = new Quotient<IExpr>(qr, numerator, denominator);
+      TaylorFunction<IExpr> TF = new QuotientTaylorFunction<IExpr>(p);
+      Quotient<IExpr> approximantOfPade = PolyUfdUtil.<IExpr>approximantOfPade(fac, TF, x0, m, n);
+      IExpr numeratorExpr = jas.exprPoly2Expr(approximantOfPade.num);
+      IExpr denominatorExpr = jas.exprPoly2Expr(approximantOfPade.den);
+      return org.matheclipse.core.expression.F.Divide(numeratorExpr, denominatorExpr);
+    }
+
+    private static IExpr quotientTaylorFunction(IExpr[] numeratorDenominatorParts, IExpr x,
+        IExpr x0, final int m, final int n) {
+
+      UnivPowerSeriesRing<BigRational> fac = new UnivPowerSeriesRing<BigRational>(BigRational.ZERO);
+      JASConvert<BigRational> jas = new JASConvert<BigRational>(x, BigRational.ZERO);
+      BigRational bf = null;
+      if (x0.isRational()) {
+        bf = ((IRational) x0).toBigRational();
+      }
+      if (bf == null) {
+        return F.NIL;
+      }
+      String[] varListStr = new String[1];
+      varListStr[0] = x.toString();
+      GenPolynomial<BigRational> numerator = jas.expr2JAS(numeratorDenominatorParts[0], false);
+      GenPolynomial<BigRational> denominator = jas.expr2JAS(numeratorDenominatorParts[1], false);
+
+      GenPolynomialRing<BigRational> pr = fac.polyRing();
+      QuotientRing<BigRational> qr = new QuotientRing<BigRational>(pr);
+      Quotient<BigRational> p = new Quotient<BigRational>(qr, numerator, denominator);
+      TaylorFunction<BigRational> TF = new QuotientTaylorFunction<BigRational>(p);
+      Quotient<BigRational> approximantOfPade =
+          PolyUfdUtil.<BigRational>approximantOfPade(fac, TF, bf, m, n);
+      IAST numeratorExpr = jas.rationalPoly2Expr(approximantOfPade.num, false);
+      IAST denominatorExpr = jas.rationalPoly2Expr(approximantOfPade.den, false);
+      return org.matheclipse.core.expression.F.Divide(numeratorExpr, denominatorExpr);
+    }
+
+
+    private static IAST taylorFunction(IExpr function, IExpr x, IExpr bf, int m, int n) {
+      List<IExpr> varList = Lists.newArrayList(x);
+      IASTAppendable list = F.ListAlloc(varList);
+      JASIExpr jas = new JASIExpr(varList, true);
+      ExprPolynomialRing ring = new ExprPolynomialRing(list);
+      ExprPolynomial poly = ring.create(function);
+      GenPolynomial<IExpr> numerator = jas.expr2IExprJAS(poly);
+      TaylorFunction<IExpr> TF = new PolynomialTaylorFunction<IExpr>(numerator);
+      UnivPowerSeriesRing<IExpr> fac = new UnivPowerSeriesRing<IExpr>(ExprRingFactory.CONST);
+      Quotient<IExpr> approximantOfPade = PolyUfdUtil.<IExpr>approximantOfPade(fac, TF, bf, m, n);
+      IExpr numeratorExpr = jas.exprPoly2Expr(approximantOfPade.num);
+      IExpr denominatorExpr = jas.exprPoly2Expr(approximantOfPade.den);
+      return org.matheclipse.core.expression.F.Divide(numeratorExpr, denominatorExpr);
+    }
+
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
   }
 
