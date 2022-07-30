@@ -14,6 +14,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
@@ -781,7 +782,14 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr of(EvalEngine engine, IExpr... args) {
-    return engine.evaluate(F.function(this, args));
+    return engine.evaluate(F.ast(args, this));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr of(EvalEngine engine, Object... args) {
+    IExpr[] convertedArgs = Object2Expr.convertArray(args, false, false);
+    return engine.evaluate(F.ast(convertedArgs, this));
   }
 
   /** {@inheritDoc} */

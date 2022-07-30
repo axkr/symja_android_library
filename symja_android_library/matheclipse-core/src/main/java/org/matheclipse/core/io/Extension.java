@@ -156,4 +156,13 @@ public enum Extension {
     }
     return STRING;
   }
+
+  /**
+   * @param string
+   * @return
+   * @throws IllegalArgumentException if given string does not match any known file types
+   */
+  public static Extension of(String string) {
+    return valueOf(string.toUpperCase());
+  }
 }

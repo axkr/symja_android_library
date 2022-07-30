@@ -31,6 +31,9 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.sympy.ValueError;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -1089,6 +1092,10 @@ public interface IExpr
    * @return
    */
   default boolean has(IExpr pattern) {
+    return has(pattern, true);
+  }
+
+  default boolean hasFree(IExpr pattern) {
     return has(pattern, true);
   }
 
@@ -4819,6 +4826,18 @@ public interface IExpr
     return F.Sqrt(this);
   }
 
+  /**
+   * The subs method replaces all instances of <code>x</code> in an expression with an
+   * <code>y</code>expression.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
+  default IExpr subs(IExpr x, IExpr y) {
+    return replaceAll(F.Rule(x, y)).orElse(this);
+  }
+
   @Override
   default IExpr subtract(double arg0) {
     return subtract(F.num(arg0));
@@ -5091,6 +5110,14 @@ public interface IExpr
     return defaultValue;
   }
 
+  default Number toNumber() {
+    return toNumber(Double.NaN);
+  }
+
+  default Number toNumber(Number defaultValue) {
+    return evalDouble();
+  }
+
   /**
    * Return the <code>Mathematica()</code> form of this expression
    *
@@ -5230,4 +5257,216 @@ public interface IExpr
       final Collection<IExpr> variableCollector) {
     return this;
   }
+
+  public static IASTAppendable join(IExpr head, IAST... lists) {
+    final IASTAppendable result = F.ast(head, lists.length);
+    for (int i = 0; i < lists.length; i++) {
+      result.appendArgs(lists[i]);
+    }
+    return result;
+  }
+
+  default IExpr zero() {
+    return F.C0;
+  }
+
+  default IExpr one() {
+    return F.C1;
+  }
+
+  default IExpr asLeadingTerm(ISymbol x) {
+    return asLeadingTerm(x, F.NIL, 0);
+  }
+
+  default IExpr asLeadingTerm(ISymbol x, int cdir) {
+    return asLeadingTerm(x, F.NIL, cdir);
+  }
+
+  default IExpr asLeadingTerm(ISymbol x, IExpr logx, int cdir) {
+    return asLeadingTerm(new ISymbol[] {x}, logx, cdir);
+  }
+
+  default IExpr asLeadingTerm(ISymbol[] symbols, IExpr logx, int cdir) {
+    if (symbols.length > 1) {
+      IExpr c = this;
+      for (ISymbol x : symbols) {
+        c = c.asLeadingTerm(new ISymbol[] {x}, logx, cdir);
+      }
+      return c;
+    } else if (symbols.length == 0) {
+      return this;
+    }
+    ISymbol x = symbols[0];
+    if (isFree(x)) {
+      return this;
+    }
+    return evalAsLeadingTerm(x, logx, cdir);
+  }
+
+  default IExpr evalAsLeadingTerm(ISymbol x, IExpr logx, int cdir) {
+    if (isAST() && head() instanceof IBuiltInSymbol) {
+      IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
+      if (evaluator instanceof IRewrite) {
+        IExpr obj = ((IRewrite) evaluator).evalAsLeadingTerm((IAST) this, x, logx, cdir);
+        if (obj.isPresent()) {
+          return obj;
+        }
+      }
+    }
+
+    return F.NIL;
+  }
+
+  default IAST asBaseExp() {
+    // a -> b ^ e
+    return F.List(this, F.C1);
+  }
+
+  default IAST asCoeffAdd() {
+    if (isPlus()) {
+      IAST asCoeffAdd = first().asCoeffAdd();
+      IExpr coeff = asCoeffAdd.arg1();
+      if (!coeff.isZero()) {
+        IAST notrat = (IAST) asCoeffAdd.arg2();
+        IASTMutable list2 = ((IAST) this).removeAtCopy(1);
+        return F.List(coeff, join(S.List, notrat, list2));
+      }
+      return F.List(F.C0, ((IAST) this).setAtCopy(0, S.List));
+    }
+    return F.List(F.C0, F.List(this));
+  }
+
+  default IAST asCoeffAdd(ISymbol x) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2076
+
+    if (!has(x)) {
+      return F.List(this, F.CEmptyList);
+    }
+    if (isPlus()) {
+      IAST plusAST = (IAST) this;
+      IASTAppendable[] filter = plusAST.filter(arg -> arg.has(x));
+      IASTAppendable l1 = filter[0];
+      IASTAppendable l2 = filter[1];
+      l1.set(0, S.List);
+      return F.List(l2.oneIdentity0(), l1);
+    }
+    return F.List(F.C0, F.List(this));
+  }
+
+  default IAST asCoeffMul() {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
+    return asCoeffMul(true);
+  }
+
+  default IAST asCoeffMul(boolean rational) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
+    if (isTimes()) {
+      IExpr arg1 = first();
+      if (arg1.isNumber()) {
+        if (!rational || arg1.isInteger() || arg1.isFraction()) {
+          return F.List(arg1, ((IAST) this).rest().setAtCopy(0, S.List));
+        }
+        if (arg1.isNegativeResult()) {
+          IASTAppendable list2 = ((IAST) this).copyAppendable();
+          list2.set(0, S.List);
+          IExpr a1Negate = arg1.negate();
+          if (a1Negate.isOne()) {
+            list2.set(1, a1Negate);
+          } else {
+            list2.remove(1);
+          }
+          return F.List(F.CN1, list2);
+        }
+      }
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(this);
+      if (negExpr.isPresent()) {
+        if (negExpr.isTimes()) {
+          return F.List(F.CN1, ((IAST) negExpr).setAtCopy(0, S.List));
+        }
+        return F.List(F.CN1, F.List(negExpr));
+      }
+      return F.List(F.C1, ((IAST) this).setAtCopy(0, S.List));
+    }
+    return F.List(F.C1, F.List(this));
+  }
+
+  default IAST asCoeffMul(ISymbol x) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
+
+    if (!has(x)) {
+      return F.List(this, F.CEmptyList);
+    }
+    if (isTimes()) {
+      int index = indexOf(x);
+      if (index > 0) {
+        return F.List(((IAST) this).removeAtClone(index).oneIdentity1(), F.List(x));
+      }
+    }
+    return F.List(F.C1, F.List(this));
+  }
+
+  default IAST asCoeffExponent(ISymbol x) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L3479
+    // ``c*x**e -> c,e`` where x can be any symbolic expression.
+    EvalEngine engine = EvalEngine.get();
+    IExpr s = F.Collect.of(engine, this, x);
+    IAST coeffMul = s.asCoeffMul(x);
+    IExpr c = coeffMul.arg1();
+    IExpr p = coeffMul.arg2();
+    if (p.isAST1()) {
+      IAST baseExp = p.first().asBaseExp();
+      IExpr b = baseExp.arg1();
+      IExpr e = baseExp.arg2();
+      if (b.equals(x)) {
+        return F.List(s, e);
+      }
+    }
+    return F.List(s, F.C0);
+  }
+
+  /**
+   * Returns the leading term a*x**b as a tuple (a, b).
+   * 
+   * @return
+   */
+  default IAST leadterm(ISymbol x, IExpr logx, int cdir) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L3491
+
+    IExpr l = asLeadingTerm(x, logx, cdir);
+    ISymbol d = F.Dummy("logx");
+    if (l.has(F.Log(x))) {
+      l = l.subs(F.Log(x), d);
+    }
+    IAST coeffExp = l.asCoeffExponent(x);
+    IExpr c = coeffExp.arg1();
+    IExpr e = coeffExp.arg2();
+    if (!c.isFree(x)) {
+      throw new ValueError(
+          "cannot compute leadterm(%s, %s). The coefficient should have been free of %s");
+    }
+    c = c.subs(d, F.Log(x));
+    return F.List(c, e);
+  }
+
+  default IExpr cancel() {
+    if (isPlusTimesPower()) {
+      return F.eval(F.Cancel(this));
+    }
+    return this;
+  }
+
+  default IExpr together() {
+    if (isPlusTimesPower()) {
+      return F.eval(F.Together(this));
+    }
+    return this;
+  }
+
+  default IExpr trigsimp() {
+    if (isAST()) {
+      return F.eval(F.TrigSimplifyFu(this));
+    }
+    return this;
+  }
+
 }

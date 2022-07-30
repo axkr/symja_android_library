@@ -191,11 +191,18 @@ public interface IRational extends ISignedNumber, IBigNumber {
   public BigInteger toBigDenominator();
 
   /**
-   * Returns this number as <code>BigFraction</code> number.
+   * Returns this number as {@link edu.jas.arith.BigRational} number.
    *
    * @return <code>this</code> number s big fraction.
    */
   public BigFraction toBigFraction();
+
+  /**
+   * Returns this number as {@link edu.jas.arith.BigRational} number.
+   *
+   * @return <code>this</code> number s big fraction.
+   */
+  public edu.jas.arith.BigRational toBigRational();
 
   /**
    * Returns the numerator of this fraction.

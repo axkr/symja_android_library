@@ -5,8 +5,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.IdentityHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -27,6 +30,40 @@ import com.google.common.util.concurrent.AtomicDouble;
 
 /** Converts objects into an IExpr expression */
 public class Object2Expr {
+
+  public static IdentityHashMap<Class<? extends Object>, Function<Object, IExpr>> CAST_MAP =
+      new IdentityHashMap<Class<? extends Object>, Function<Object, IExpr>>(64);
+
+  static {
+    // don't insert interfaces here; only real classes are allowed
+    CAST_MAP.put(Integer.class, n -> F.ZZ(((Integer) n).longValue()));
+    CAST_MAP.put(Double.class, n -> F.num(((Double) n)));
+    CAST_MAP.put(Long.class, n -> F.ZZ(((Long) n)));
+    CAST_MAP.put(BigInteger.class, n -> F.ZZ((BigInteger) n));
+    CAST_MAP.put(BigDecimal.class, n -> F.num(new Apfloat((BigDecimal) n)));
+    CAST_MAP.put(Apfloat.class, n -> F.num((Apfloat) n));
+    CAST_MAP.put(Apcomplex.class, n -> F.complexNum((Apcomplex) n));
+    CAST_MAP.put(Float.class, n -> F.num(((Float) n).doubleValue()));
+    CAST_MAP.put(AtomicDouble.class, n -> F.num(((AtomicDouble) n).doubleValue()));
+    CAST_MAP.put(AtomicInteger.class, n -> F.ZZ(((AtomicInteger) n).longValue()));
+    CAST_MAP.put(AtomicDouble.class, n -> F.num(((AtomicDouble) n).doubleValue()));
+    CAST_MAP.put(AtomicLong.class, n -> F.ZZ(((AtomicLong) n).longValue()));
+    CAST_MAP.put(Boolean.class, b -> ((Boolean) b) ? S.True : S.False);
+    CAST_MAP.put(org.hipparchus.fraction.Fraction.class, f -> {
+      org.hipparchus.fraction.Fraction frac = (org.hipparchus.fraction.Fraction) f;
+      return F.fraction(frac.getNumerator(), frac.getDenominator());
+    });
+    CAST_MAP.put(org.hipparchus.fraction.BigFraction.class, f -> {
+      org.hipparchus.fraction.BigFraction frac = (org.hipparchus.fraction.BigFraction) f;
+      return F.fraction(frac.getNumerator(), frac.getDenominator());
+    });
+    CAST_MAP.put(org.hipparchus.complex.Complex.class, c -> {
+      org.hipparchus.complex.Complex cmp = (org.hipparchus.complex.Complex) c;
+      return F.complexNum(cmp.getReal(), cmp.getImaginary());
+    });
+    CAST_MAP.put(LocalDateTime.class, ldt -> DateObjectExpr.newInstance((LocalDateTime) ldt));
+    CAST_MAP.put(LocalTime.class, lt -> TimeObjectExpr.newInstance((LocalTime) lt));
+  }
 
   /**
    * Converts the following Java objects into an IExpr expression
@@ -57,8 +94,44 @@ public class Object2Expr {
    *
    * @param parseString if <code>true</code> and <code>obj instanceof String</code> parse the string
    *        as a Symja expression
-   * @param javaObject if <code>true</code> return a wrapper instanceof {@link JavaObjectExpr} if no
-   *        other conversion was found
+   * @param javaObject if <code>true</code> return a wrapper instance of {@link JavaObjectExpr} if
+   *        no other conversion was found
+   */
+  public static IExpr convert(Object obj) {
+    return convert(obj, false, false);
+  }
+
+  /**
+   * Converts the following Java objects into an IExpr expression
+   *
+   * <pre>
+   * Java Object       -&gt; Symja object
+   * -------------------------------------
+   * null object          {@link S#Null} symbol
+   * IExpr                {@link IExpr} type
+   * Boolean              {@link S#True} or {@link S#False} symbol
+   * BigInteger           {@link IInteger} value
+   * BigDecimal           {@link INum} with {@link Apfloat#Apfloat(java.math.BigDecimal)} value
+   * Double               {@link INum}  with doubleValue() value
+   * Float                {@link INum}  with doubleValue() value
+   * Integer              {@link IInteger} with intValue() value
+   * Long                 {@link IInteger} with longValue() value
+   * Number               {@link INum} with doubleValue() value
+   * java.util.Collection list of elements
+   *                      1..nth element of the list give the elements of the List()
+   * Object[]             a list of converted objects
+   * int[]                a list of {@link IInteger} integer values
+   * double[]             a vector ASTRealVector of <code>double</code> values
+   * double[][]           a matrix ASTRealMatrix of <code>double</code> values
+   * Complex[]            a list of {@link IComplexNum} values
+   * boolean[]            a list of {@link S#True} or {@link S#False} symbols
+   *
+   * </pre>
+   *
+   * @param parseString if <code>true</code> and <code>obj instanceof String</code> parse the string
+   *        as a Symja expression
+   * @param javaObject if <code>true</code> return a wrapper instance of {@link JavaObjectExpr} if
+   *        no other conversion was found
    */
   public static IExpr convert(Object obj, boolean parseString, boolean javaObject) {
     if (obj == null) {
@@ -66,6 +139,10 @@ public class Object2Expr {
     }
     if (obj instanceof IExpr) {
       return (IExpr) obj;
+    }
+    Function<Object, IExpr> function = CAST_MAP.get(obj.getClass());
+    if (function != null) {
+      return function.apply(obj);
     }
     if (obj instanceof String) {
       if (parseString) {
@@ -75,22 +152,12 @@ public class Object2Expr {
         return F.stringx((String) obj);
       }
     }
-    if (obj instanceof Boolean) {
-      return ((Boolean) obj) ? S.True : S.False;
-    }
     if (obj instanceof Number) {
-      if (obj instanceof org.hipparchus.fraction.Fraction) {
-        org.hipparchus.fraction.Fraction frac = (org.hipparchus.fraction.Fraction) obj;
-        return F.fraction(frac.getNumerator(), frac.getDenominator());
-      }
-      return convert((Number) obj);
+      return F.num(((Number) obj).doubleValue());
     }
     if (obj instanceof java.util.Collection) {
-      return convertList((java.util.Collection<?>) obj, parseString, javaObject);
-    }
-    if (obj instanceof org.hipparchus.complex.Complex) {
-      org.hipparchus.complex.Complex cmp = (org.hipparchus.complex.Complex) obj;
-      return F.complexNum(cmp.getReal(), cmp.getImaginary());
+      java.util.Collection<?> collection = (java.util.Collection<?>) obj;
+      return convertList(collection, parseString, javaObject);
     }
     if (obj instanceof int[]) {
       return F.ast(S.List, (int[]) obj);
@@ -118,16 +185,30 @@ public class Object2Expr {
       }
       return list;
     }
-    if (obj instanceof LocalDateTime) {
-      return DateObjectExpr.newInstance((LocalDateTime) obj);
-    }
-    if (obj instanceof LocalTime) {
-      return TimeObjectExpr.newInstance((LocalTime) obj);
+    if (obj instanceof long[]) {
+      final long[] array = (long[]) obj;
+      final IASTAppendable list = F.ListAlloc(array.length);
+      for (int i = 0; i < array.length; i++) {
+        list.append(F.ZZ(array[i]));
+      }
+      return list;
     }
     if (javaObject) {
       return JavaObjectExpr.newInstance(obj);
     }
     return F.$str(obj.toString());
+  }
+
+  public static IExpr[] convertArray(Object[] array) {
+    return convertArray(array, false, false);
+  }
+
+  public static IExpr[] convertArray(Object[] array, boolean parseString, boolean javaObject) {
+    IExpr[] result = new IExpr[array.length];
+    for (int i = 0; i < array.length; i++) {
+      result[i] = convert(array[i], parseString, javaObject);
+    }
+    return result;
   }
 
   /**
@@ -160,53 +241,53 @@ public class Object2Expr {
    *
    * </pre>
    */
-  private static IExpr convert(Number n) {
-    if (n instanceof Integer) {
-      return F.ZZ(((Integer) n).longValue());
-    }
-    if (n instanceof Double) {
-      return F.num(((Double) n));
-    }
-    if (n instanceof Long) {
-      return F.ZZ(((Long) n));
-    }
-    if (n instanceof BigInteger) {
-      return F.ZZ((BigInteger) n);
-    }
-    if (n instanceof BigDecimal) {
-      return F.num(new Apfloat((BigDecimal) n));
-    }
-    if (n instanceof Float) {
-      return F.num(((Float) n).doubleValue());
-    }
-    if (n instanceof AtomicDouble) {
-      return F.num(((AtomicDouble) n).doubleValue());
-    }
-    if (n instanceof AtomicInteger) {
-      return F.ZZ(((AtomicInteger) n).longValue());
-    }
-    if (n instanceof AtomicLong) {
-      return F.ZZ(((AtomicLong) n).longValue());
-    }
-    return F.num(n.doubleValue());
-  }
+  // private static IExpr convert(Number n) {
+  // if (n instanceof Integer) {
+  // return F.ZZ(((Integer) n).longValue());
+  // }
+  // if (n instanceof Double) {
+  // return F.num(((Double) n));
+  // }
+  // if (n instanceof Long) {
+  // return F.ZZ(((Long) n));
+  // }
+  // if (n instanceof BigInteger) {
+  // return F.ZZ((BigInteger) n);
+  // }
+  // if (n instanceof BigDecimal) {
+  // return F.num(new Apfloat((BigDecimal) n));
+  // }
+  // if (n instanceof Float) {
+  // return F.num(((Float) n).doubleValue());
+  // }
+  // if (n instanceof AtomicDouble) {
+  // return F.num(((AtomicDouble) n).doubleValue());
+  // }
+  // if (n instanceof AtomicInteger) {
+  // return F.ZZ(((AtomicInteger) n).longValue());
+  // }
+  // if (n instanceof AtomicLong) {
+  // return F.ZZ(((AtomicLong) n).longValue());
+  // }
+  // return F.num(n.doubleValue());
+  // }
 
   /**
-   * @param lst
+   * @param collection
    * @param parseString if <code>true</code> and <code>obj instanceof String</code> parse the string
    *        as a Symja expression
    * @param javaObject if <code>true</code> return a wrapper instanceof {@link JavaObjectExpr} if no
    *        other conversion was found
    * @return
    */
-  public static IExpr convertList(java.util.Collection<?> lst, boolean parseString,
+  public static IExpr convertList(java.util.Collection<?> collection, boolean parseString,
       boolean javaObject) {
-    if (lst.size() == 0) {
+    final int size = collection.size();
+    if (size == 0) {
       return List();
     } else {
-      int size = lst.size();
       IASTAppendable list = F.ast(S.List, size);
-      for (Object element : lst) {
+      for (Object element : collection) {
         list.append(convert(element, parseString, javaObject));
       }
       return list;

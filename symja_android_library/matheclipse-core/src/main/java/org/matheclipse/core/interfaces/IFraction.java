@@ -81,11 +81,7 @@ public interface IFraction extends IRational {
   @Override
   public BigInteger toBigDenominator();
 
-  /**
-   * Return the <code>org.apache.commons.math3.fraction.BigFraction</code> representation.
-   *
-   * @return
-   */
+  /** {@inheritDoc} */
   @Override
   public BigFraction toBigFraction();
 

@@ -939,4 +939,14 @@ public class ApcomplexNum implements IComplexNum {
     return valueOf(ApfloatNum.toRadians(fApcomplex.real(), h),
         ApfloatNum.toRadians(fApcomplex.imag(), h));
   }
+
+  @Override
+  public IComplexNum zero() {
+    return ZERO;
+  }
+
+  @Override
+  public IComplexNum one() {
+    return ONE;
+  }
 }

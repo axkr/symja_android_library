@@ -113,6 +113,14 @@ public class Num implements INum {
   }
 
   @Override
+  public ISignedNumber add(final ISignedNumber val) {
+    if (val instanceof INum) {
+      return multiply((INum) val);
+    }
+    return val.add(this);
+  }
+
+  @Override
   public INum add(final INum val) {
     if (val instanceof ApfloatNum) {
       Apfloat arg2 = ((ApfloatNum) val).apfloatValue();
@@ -583,6 +591,14 @@ public class Num implements INum {
   }
 
   @Override
+  public ISignedNumber multiply(final ISignedNumber val) {
+    if (val instanceof INum) {
+      return multiply((INum) val);
+    }
+    return val.multiply(this);
+  }
+
+  @Override
   public INum multiply(final INum val) {
     if (val instanceof ApfloatNum) {
       return F
@@ -855,5 +871,15 @@ public class Num implements INum {
   public IExpr toRadians() {
     // degrees * (Pi / 180)
     return valueOf(fDouble * Math.PI / 180.0);
+  }
+
+  @Override
+  public INum zero() {
+    return F.CD0;
+  }
+
+  @Override
+  public INum one() {
+    return F.CD1;
   }
 }

@@ -46,6 +46,10 @@ public interface ISignedNumber extends INumber {
    */
   public ISignedNumber divideBy(ISignedNumber that);
 
+  public ISignedNumber add(ISignedNumber parm1);
+
+  public ISignedNumber multiply(ISignedNumber parm1);
+
   /**
    * Returns the value of the specified number as a {@code double}, which may involve rounding.
    *
@@ -334,5 +338,15 @@ public interface ISignedNumber extends INumber {
       return F.list(this.negate(), S.Pi);
     }
     return F.list(this, F.C0);
+  }
+
+  @Override
+  default ISignedNumber zero() {
+    return F.C0;
+  }
+
+  @Override
+  default ISignedNumber one() {
+    return F.C1;
   }
 }

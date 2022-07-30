@@ -925,4 +925,14 @@ public class ApfloatNum implements INum {
   static Apfloat toRadians(Apfloat degrees, FixedPrecisionApfloatHelper h) {
     return h.divide(h.multiply(degrees, h.pi()), new Apfloat(180));
   }
+
+  @Override
+  public ApfloatNum zero() {
+    return valueOf(Apfloat.ZERO);
+  }
+
+  @Override
+  public ApfloatNum one() {
+    return valueOf(Apfloat.ONE);
+  }
 }

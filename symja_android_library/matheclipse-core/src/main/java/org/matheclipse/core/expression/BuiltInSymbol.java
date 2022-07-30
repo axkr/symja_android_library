@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.function.DoubleFunction;
 import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractPredicateEvaluator;
@@ -144,7 +145,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public String definitionToString() {
-    // dummy call to ensure, that the associated rules are loaded:
+    // call to ensure, that the associated rules are loaded:
     getEvaluator();
     return super.definitionToString();
   }
@@ -352,6 +353,20 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     }
 
     return super.of(engine, args);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr of(EvalEngine engine, Object... args) {
+    IExpr[] convertedArgs = Object2Expr.convertArray(args, false, false);
+    if (fEvaluator instanceof ICoreFunctionEvaluator) {
+      // evaluate a core function (without no rule definitions)
+      final ICoreFunctionEvaluator coreFunction = (ICoreFunctionEvaluator) getEvaluator();
+      IAST ast = F.ast(convertedArgs, this);
+      return coreFunction.evaluate(ast, engine);
+    }
+
+    return super.of(engine, convertedArgs);
   }
 
   /** {@inheritDoc} */

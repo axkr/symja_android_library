@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
+import edu.jas.arith.BigRational;
 
 /**
  * IInteger implementation which uses an internal <code>int</code> value
@@ -83,6 +84,14 @@ public class IntegerSym extends AbstractIntegerSym {
       return this;
     }
     return valueOf((long) fIntValue + is.fIntValue);
+  }
+
+  @Override
+  public ISignedNumber add(ISignedNumber that) {
+    if (that instanceof IRational) {
+      return add((IRational) that);
+    }
+    return Num.valueOf((fIntValue) + that.doubleValue());
   }
 
   @Override
@@ -289,6 +298,11 @@ public class IntegerSym extends AbstractIntegerSym {
   @Override
   public BigFraction toBigFraction() {
     return new BigFraction(fIntValue);
+  }
+
+  @Override
+  public BigRational toBigRational() {
+    return new BigRational(fIntValue);
   }
 
   /** {@inheritDoc} */
@@ -618,6 +632,14 @@ public class IntegerSym extends AbstractIntegerSym {
         }
         return valueOf((long) fIntValue * value);
     }
+  }
+
+  @Override
+  public ISignedNumber multiply(ISignedNumber that) {
+    if (that instanceof IRational) {
+      return multiply((IRational) that);
+    }
+    return Num.valueOf((fIntValue) * that.doubleValue());
   }
 
   @Override

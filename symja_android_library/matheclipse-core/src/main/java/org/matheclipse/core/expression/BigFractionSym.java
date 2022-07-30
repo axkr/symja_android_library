@@ -14,6 +14,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
+import edu.jas.arith.BigRational;
 
 /**
  * IFraction implementation which uses methods of the Apache {@link BigFraction} methods.
@@ -374,6 +375,12 @@ public class BigFractionSym extends AbstractFractionSym {
   @Override
   public BigFraction toBigFraction() {
     return fFraction;
+  }
+
+  @Override
+  public BigRational toBigRational() {
+    return new BigRational(new edu.jas.arith.BigInteger(toBigNumerator()),
+        new edu.jas.arith.BigInteger(toBigDenominator()));
   }
 
   @Override

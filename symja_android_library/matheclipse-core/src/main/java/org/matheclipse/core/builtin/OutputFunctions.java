@@ -1006,7 +1006,7 @@ public final class OutputFunctions {
     Initializer.init();
   }
 
-  public static boolean markdownTable(StringBuilder result, IExpr expr,
+  private static boolean markdownTable(StringBuilder result, IExpr expr,
       java.util.function.Function<IExpr, String> function, boolean fillUpWithSPACE) {
     int[] dim = expr.isMatrix();
     if (dim != null && dim[0] > 0 && dim[1] > 0) {

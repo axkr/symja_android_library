@@ -20,6 +20,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
 import com.google.common.math.BigIntegerMath;
+import edu.jas.arith.BigRational;
 
 /**
  * IInteger implementation which delegates most of the methods to the {@link BigInteger} methods.
@@ -116,6 +117,14 @@ public class BigIntegerSym extends AbstractIntegerSym {
   @Override
   public IInteger add(final IInteger that) {
     return valueOf(fBigIntValue.add(that.toBigNumerator()));
+  }
+
+  @Override
+  public ISignedNumber add(ISignedNumber that) {
+    if (that instanceof IRational) {
+      return add((IRational) that);
+    }
+    return Num.valueOf(doubleValue() * that.doubleValue());
   }
 
   @Override
@@ -318,6 +327,11 @@ public class BigIntegerSym extends AbstractIntegerSym {
   @Override
   public BigFraction toBigFraction() {
     return new BigFraction(fBigIntValue);
+  }
+
+  @Override
+  public BigRational toBigRational() {
+    return new BigRational(new edu.jas.arith.BigInteger(fBigIntValue));
   }
 
   /** {@inheritDoc} */
@@ -594,6 +608,14 @@ public class BigIntegerSym extends AbstractIntegerSym {
       default:
     }
     return valueOf(fBigIntValue.multiply(BigInteger.valueOf(value)));
+  }
+
+  @Override
+  public ISignedNumber multiply(ISignedNumber that) {
+    if (that instanceof IRational) {
+      return multiply((IRational) that);
+    }
+    return Num.valueOf(doubleValue() * that.doubleValue());
   }
 
   @Override

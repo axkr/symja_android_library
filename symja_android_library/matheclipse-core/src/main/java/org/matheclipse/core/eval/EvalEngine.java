@@ -1344,6 +1344,9 @@ public class EvalEngine implements Serializable {
     if (expr.isReal()) {
       return ((ISignedNumber) expr).doubleValue();
     }
+    if (expr.isQuantity()) {
+      return expr.evalReal().doubleValue();
+    }
     boolean quietMode = fQuietMode;
     try {
       fQuietMode = true;
@@ -1968,11 +1971,7 @@ public class EvalEngine implements Serializable {
       boolean noEvaluation, int level) {
     IExpr expr = evalSetAttributesRecursive(argI, noEvaluation, true, level + 1);
     if (expr != argI && expr.isPresent()) {
-      if (resultList.isPresent()) {
-        resultList.set(i, expr);
-      } else {
-        resultList = ast.setAtCopy(i, expr);
-      }
+      resultList = resultList.setIf(ast, i, expr);
     } else {
       expr = argI;
     }
@@ -1980,17 +1979,9 @@ public class EvalEngine implements Serializable {
       if (((IAST) expr).size() == 2) {
         IExpr arg1 = ((IAST) expr).arg1();
         if (expr.isSqrt()) {
-          if (resultList.isPresent()) {
-            resultList.set(i, S.Power.of(this, arg1, F.C1D2));
-          } else {
-            resultList = ast.setAtCopy(i, S.Power.of(this, arg1, F.C1D2));
-          }
+          resultList = resultList.setIf(ast, i, S.Power.of(this, arg1, F.C1D2));
         } else if (expr.isAST(S.Exp, 2)) {
-          if (resultList.isPresent()) {
-            resultList.set(i, S.Power.of(this, S.E, arg1));
-          } else {
-            resultList = ast.setAtCopy(i, S.Power.of(this, S.E, arg1));
-          }
+          resultList = resultList.setIf(ast, i, S.Power.of(this, S.E, arg1));
         }
       }
     }
@@ -2088,14 +2079,7 @@ public class EvalEngine implements Serializable {
               resultList =
                   evalSetAttributeArg(ast, i, (IAST) expr, resultList, noEvaluation, level);
             } else if (!(expr instanceof IPatternObject) && !noEvaluation) {
-              IExpr temp = expr.evaluate(this);
-              if (temp.isPresent()) {
-                if (resultList.isPresent()) {
-                  resultList.set(i, temp);
-                } else {
-                  resultList = ast.setAtCopy(i, temp);
-                }
-              }
+              resultList = resultList.setIfPresent(ast, i, expr.evaluate(this));
             }
           }
         }

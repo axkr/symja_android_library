@@ -254,4 +254,64 @@ public interface INumber extends IExpr {
   default Complex evalComplex() throws ArgumentTypeException {
     return new Complex(reDoubleValue(), imDoubleValue());
   }
+
+  @Override
+  default IAST asCoeffAdd() {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/numbers.py#L816
+    if (isInteger() || isFraction()) {
+      return F.List(this, F.CEmptyList);
+    }
+    return F.List(F.C0, F.List(this));
+  }
+
+  @Override
+  default IAST asCoeffMul(boolean rational) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/numbers.py#L816
+    if (isInteger() || isFraction() || !rational) {
+      return F.List(this, F.CEmptyList);
+    } else if (isNegative()) {
+      return F.List(F.CN1, F.List(this.negate()));
+    }
+    return F.List(F.C1, F.List(this));
+
+  }
+
+  /**
+   * Additive neutral element of this number.
+   * 
+   * <p>
+   * For any number s, the scalar s.zero() shall satisfy the equation
+   * 
+   * <pre>
+   * s.add(zero()) equals s
+   * </pre>
+   * 
+   * <p>
+   * zero() is provided for the implementation of generic functions and algorithms.
+   * 
+   * @return additive neutral element of field of this scalar
+   */
+  default INumber zero() {
+    return F.C0;
+  }
+
+  /**
+   * Multiplicative neutral element of this number
+   * 
+   * <p>
+   * For any number s, the scalar s.one() shall satisfy the equation
+   * 
+   * <pre>
+   * s.multiply(one()) equals s
+   * </pre>
+   * 
+   * <p>
+   * one() is provided for the implementation of generic functions and algorithms.
+   * 
+   * @return multiplicative neutral element of this scalar
+   */
+  default INumber one() {
+    return F.C1;
+  }
+
 }

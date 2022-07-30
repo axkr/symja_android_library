@@ -15,6 +15,11 @@ public interface INum extends ISignedNumber {
 
   public double getRealPart();
 
+  @Override
+  default ISignedNumber add(ISignedNumber val) {
+    return add(F.num(val.reDoubleValue()));
+  }
+
   public INum add(INum val);
 
   @Override
@@ -24,7 +29,9 @@ public interface INum extends ISignedNumber {
 
   public INum multiply(INum val);
 
-  default INum multiply(IRational val) {
+
+  @Override
+  default ISignedNumber multiply(ISignedNumber val) {
     return multiply(F.num(val.reDoubleValue()));
   }
 

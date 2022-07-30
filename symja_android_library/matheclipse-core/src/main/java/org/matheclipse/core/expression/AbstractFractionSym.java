@@ -345,6 +345,26 @@ public abstract class AbstractFractionSym implements IFraction {
     return visitor.visit(this);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public IRational add(IRational that) {
+    if (that instanceof IFraction) {
+      return add((IFraction) that);
+    }
+    if (that instanceof IntegerSym) {
+      return add(AbstractFractionSym.valueOf(((IntegerSym) that).fIntValue));
+    }
+    return add(AbstractFractionSym.valueOf(((BigIntegerSym) that).fBigIntValue));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public ISignedNumber add(ISignedNumber that) {
+    if (that instanceof IRational) {
+      return add((IRational) that);
+    }
+    return Num.valueOf(doubleValue() + that.doubleValue());
+  }
   /**
    * Returns <code>this+(fac1*fac2)</code>.
    *
@@ -626,6 +646,27 @@ public abstract class AbstractFractionSym implements IFraction {
     BigInteger newnum = toBigNumerator().multiply(other.toBigNumerator());
     BigInteger newdenom = toBigDenominator().multiply(other.toBigDenominator());
     return valueOf(newnum, newdenom);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IRational multiply(IRational that) {
+    if (that instanceof IFraction) {
+      return mul((IFraction) that);
+    }
+    if (that instanceof IntegerSym) {
+      return mul(AbstractFractionSym.valueOf(((IntegerSym) that).fIntValue));
+    }
+    return mul(AbstractFractionSym.valueOf(((BigIntegerSym) that).fBigIntValue));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public ISignedNumber multiply(ISignedNumber that) {
+    if (that instanceof IRational) {
+      return multiply((IRational) that);
+    }
+    return Num.valueOf(doubleValue() * that.doubleValue());
   }
 
   @Override

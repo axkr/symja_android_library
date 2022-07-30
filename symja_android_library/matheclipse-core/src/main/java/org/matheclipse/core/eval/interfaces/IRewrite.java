@@ -5,6 +5,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public interface IRewrite {
   default IExpr rewrite(IAST ast, EvalEngine engine, int functionID) {
@@ -37,4 +38,13 @@ public interface IRewrite {
   default IExpr rewriteLog(IExpr arg1, IExpr arg2, EvalEngine engine) {
     return F.NIL;
   }
+
+  // default IExpr asLeadingTerm(IAST ast, ISymbol symbol, int cdir) {
+  // return asLeadingTerm(ast, symbol, F.NIL, cdir);
+  // }
+
+  default IExpr evalAsLeadingTerm(IAST ast, ISymbol symbol, IExpr logx, int cdir) {
+    return F.NIL;
+  }
+
 }

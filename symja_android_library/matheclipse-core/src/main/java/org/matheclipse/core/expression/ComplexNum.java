@@ -1006,4 +1006,14 @@ public class ComplexNum implements IComplexNum {
     // degrees * (Pi / 180)
     return valueOf(fComplex.toRadians());
   }
+
+  @Override
+  public IComplexNum zero() {
+    return ZERO;
+  }
+
+  @Override
+  public IComplexNum one() {
+    return ONE;
+  }
 }

@@ -2,6 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import java.util.Comparator;
 import java.util.function.IntFunction;
+import org.matheclipse.core.expression.F;
 
 /**
  * (I)nterface for the (A)bstract (S)yntax (T)ree of a given function.
@@ -61,6 +62,40 @@ public interface IASTMutable extends IAST {
    */
   default IExpr setValue(final int location, final IExpr value) {
     return set(location, value);
+  }
+
+  /**
+   * Set the value at the position in this {@link IAST}. If <code>this</code> equals {@link F#NIL}
+   * make a copy of <code>ast</code> and set the value in the copy of <code>ast</code> at the
+   * position.
+   * 
+   * @param ast this object should be copied if <code>this</code> equals {@link F#NIL}
+   * @param position the position where to set the value
+   * @param value an expression unequal {@link F#NIL}
+   * @return if <code>this</code> equals {@link F#NIL} return a copy of <code>ast</code> where the
+   *         value is set.
+   */
+  public default IASTMutable setIf(IAST ast, int position, IExpr value) {
+    set(position, value);
+    return this;
+  }
+
+  /**
+   * Set the value at the position in this {@link IAST}. If <code>this</code> equals {@link F#NIL}
+   * make a copy of <code>ast</code> and set the value in the copy of <code>ast</code> at the
+   * position. If value equals {@link F#NIL} return this object unchanged.
+   * 
+   * @param ast this object should be copied if <code>this</code> equals {@link F#NIL}
+   * @param position the position where to set the value
+   * @param value if {@link F#NIL} return this unchanged
+   * @return if <code>this</code> equals {@link F#NIL} return a copy of <code>ast</code> where the
+   *         value is set.
+   */
+  public default IASTMutable setIfPresent(IAST ast, int position, IExpr value) {
+    if (value.isPresent()) {
+      set(position, value);
+    }
+    return this;
   }
 
   public IExpr setPart(IExpr value, final int... positions);

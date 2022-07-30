@@ -666,7 +666,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param predicate the predicate which filters each element in the range
    * @return the resulting ASTs in the 0-th and 1-st element of the array
    */
-  public IAST[] filter(Predicate<? super IExpr> predicate);
+  public IASTAppendable[] filter(Predicate<? super IExpr> predicate);
 
   /**
    * Select all elements by applying the <code>function</code> to each argument in this <code>AST
@@ -1289,6 +1289,29 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   default IAST mapAt(final IASTAppendable replacement, int position) {
     return mapThread(replacement, position);
   }
+
+  /**
+   * Maps the leafs (relative to <code>testHead</code>) of this IAST with the unary functor. If the
+   * function returns <code>F.NIL</code> the original leaf of the result list is used.
+   * 
+   * @param testHead if the levels head equals testHead apply mapLeaf on this list element
+   * @param function the startOffset from there the <code>functor</code> should be used.
+   * @return
+   */
+  default IAST mapLeaf(IExpr testHead, final Function<IExpr, IExpr> function) {
+    return mapLeaf(testHead, function, 1);
+  }
+
+  /**
+   * Maps the leafs (relative to <code>testHead</code>) of this IAST with the unary functor. If the
+   * function returns <code>F.NIL</code> the original leaf of the result list is used.
+   * 
+   * @param testHead if the levels head equals testHead apply mapLeaf on this list element
+   * @param function functor a unary function
+   * @param startOffset the startOffset from there the <code>functor</code> should be used.
+   * @return
+   */
+  public IAST mapLeaf(IExpr testHead, final Function<IExpr, IExpr> function, final int startOffset);
 
   /**
    * Append the mapped ranges elements directly to the given <code>list</code>

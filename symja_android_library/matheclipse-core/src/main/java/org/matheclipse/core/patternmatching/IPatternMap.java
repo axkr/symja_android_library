@@ -1856,15 +1856,16 @@ public interface IPatternMap {
 
     IASTMutable result = F.NIL;
     for (int i = 1; i < lhsPatternExpr.size(); i++) {
-      IExpr temp = lhsPatternExpr.get(i).accept(visitor);
-      if (temp.isPresent()) {
-        if (!result.isPresent()) {
-          result = lhsPatternExpr.setAtCopy(i, temp);
-          // result.setEvalFlags(lhsPatternExpr.getEvalFlags());
-        } else {
-          result.set(i, temp);
-        }
-      }
+      // IExpr temp = lhsPatternExpr.get(i).accept(visitor);
+      result = result.setIfPresent(lhsPatternExpr, i, lhsPatternExpr.get(i).accept(visitor));
+      // if (temp.isPresent()) {
+      // if (!result.isPresent()) {
+      // result = lhsPatternExpr.setAtCopy(i, temp);
+      // // result.setEvalFlags(lhsPatternExpr.getEvalFlags());
+      // } else {
+      // result.set(i, temp);
+      // }
+      // }
     }
 
     if (result.isPresent()) {

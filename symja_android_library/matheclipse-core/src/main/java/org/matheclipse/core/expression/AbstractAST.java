@@ -966,6 +966,21 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return F.NIL;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public IASTMutable setIf(IAST ast, int position, IExpr value) {
+      return ast.setAtCopy(position, value);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IASTMutable setIfPresent(IAST ast, int position, IExpr value) {
+      if (value.isPresent()) {
+        return ast.setAtCopy(position, value);
+      }
+      return F.NIL;
+    }
+
     @Override
     public int size() {
       return 0;
@@ -1235,21 +1250,19 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return cp;
     }
 
-    final int minimumSize = (lhsAST.size() > rhsAST.size()) ? rhsAST.size() : lhsAST.size();
-    for (int i = 1; i < minimumSize; i++) {
-      cp = lhsAST.get(i).compareTo(rhsAST.get(i));
-      if (cp != 0) {
-        return cp;
+    final int lhsSize = lhsAST.size();
+    final int rhsSize = rhsAST.size();
+    if (lhsSize == rhsSize) {
+      for (int i = 1; i < lhsSize; i++) {
+        cp = lhsAST.get(i).compareTo(rhsAST.get(i));
+        if (cp != 0) {
+          return cp;
+        }
       }
+      return 0;
     }
 
-    if (lhsAST.size() > rhsAST.size()) {
-      return 1;
-    }
-    if (lhsAST.size() < rhsAST.size()) {
-      return -1;
-    }
-    return 0;
+    return lhsSize > rhsSize ? 1 : -1;
   }
 
   private static int compareToASTIncreasingArg1(final IAST lhsAST, final IExpr arg1,
@@ -2107,7 +2120,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public IAST[] filter(Predicate<? super IExpr> predicate) {
+  public IASTAppendable[] filter(Predicate<? super IExpr> predicate) {
     IASTAppendable[] result = new IASTAppendable[2];
     result[0] = copyHead();
     result[1] = copyHead();
@@ -4693,6 +4706,52 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (result.isPresent()) {
       while (i < size) {
         temp = function.apply(get(i));
+        if (temp.isPresent()) {
+          result.set(i, temp);
+        }
+        i++;
+      }
+    }
+    return result.orElse(this);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IAST mapLeaf(IExpr testHead, final Function<IExpr, IExpr> function,
+      final int startOffset) {
+    IExpr temp = F.NIL;
+    IASTMutable result = F.NIL;
+    int i = startOffset;
+    int size = size();
+
+    while (i < size) {
+      IExpr arg = get(i);
+      if (arg.isAST(testHead)) {
+        temp = ((IAST) arg).mapLeaf(testHead, function, startOffset);
+        if (temp.isPresent()) {
+          break;
+        }
+      } else {
+        temp = function.apply(arg);
+        if (temp.isPresent()) {
+          break;
+        }
+      }
+      i++;
+    }
+    if (temp.isPresent()) {
+      // something was evaluated - return a new IAST:
+      result = copyAppendable();
+      result.set(i++, temp);
+    }
+    if (result.isPresent()) {
+      while (i < size) {
+        IExpr arg = get(i);
+        if (arg.isAST(testHead)) {
+          temp = ((IAST) arg).mapLeaf(testHead, function, startOffset);
+        } else {
+          temp = function.apply(arg);
+        }
         if (temp.isPresent()) {
           result.set(i, temp);
         }

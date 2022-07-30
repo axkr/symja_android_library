@@ -15,6 +15,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
@@ -818,8 +819,14 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr of(EvalEngine engine, IExpr... args) {
-    IAST ast = F.ast(args, this);
-    return engine.evaluate(ast);
+    return engine.evaluate(F.ast(args, this));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr of(EvalEngine engine, Object... args) {
+    IExpr[] convertedArgs = Object2Expr.convertArray(args, false, false);
+    return engine.evaluate(F.ast(convertedArgs, this));
   }
 
   /** {@inheritDoc} */

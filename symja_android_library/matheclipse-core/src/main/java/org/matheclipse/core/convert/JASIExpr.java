@@ -174,7 +174,7 @@ public class JASIExpr {
   }
 
   public GenPolynomial<IExpr> expr2IExprJAS(final ExprPolynomial exprPoly) {
-    GenPolynomial<IExpr> result = new GenPolynomial<IExpr>(fPolyFactory); // fPolyFactory.getZERO();
+    GenPolynomial<IExpr> result = new GenPolynomial<IExpr>(fPolyFactory);
     SortedMap<org.matheclipse.core.polynomials.longexponent.ExpVectorLong, IExpr> monoms =
         exprPoly.getMap();
     for (Entry<ExpVectorLong, IExpr> entry : monoms.entrySet()) {

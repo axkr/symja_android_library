@@ -546,6 +546,17 @@ public interface ISymbol extends IExpr {
   public IExpr of(EvalEngine engine, IExpr... args);
 
   /**
+   * Evaluate this symbol for the arguments converted to {@link IExpr} function
+   * <code>symbol(expr1, expr2, .... ,exprN)</code>.
+   * 
+   * @param engine the current evaluation engine
+   * @param args the arguments for which this function symbol should be evaluated
+   * @return the evaluated expression; if no evaluation was possible return the created input
+   *         expression
+   */
+  public IExpr of(EvalEngine engine, Object... args);
+
+  /**
    * Evaluate this symbol for the arguments as function <code>
    * symbol(arg, part1, part2, .... , partN)</code>.
    *
@@ -849,4 +860,9 @@ public interface ISymbol extends IExpr {
    * @return <code>false</code> if the symbol contains no rule definion.
    */
   public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException;
+
+  @Override
+  default IExpr evalAsLeadingTerm(ISymbol x, IExpr logx, int cdir) {
+    return x;
+  }
 }

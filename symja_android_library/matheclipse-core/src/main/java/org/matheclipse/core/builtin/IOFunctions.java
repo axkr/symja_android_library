@@ -480,6 +480,7 @@ public class IOFunctions {
    * printed for that shortcut.
    */
   private static final String[] MESSAGES = { //
+      "affind", "`1` should be a list of `2` or more affinely independent points.", //
       "argillegal", "Illegal arguments: \"`1`\" in `2`", //
       "argb", "`1` called with `2` arguments; between `3` and `4` arguments are expected.", //
       "argct", "`1` called with `2` arguments.", //
@@ -488,6 +489,7 @@ public class IOFunctions {
       "argr", "`1` called with 1 argument; `2` arguments are expected.", //
       "argrx", "`1` called with `2` arguments; `3` arguments are expected.", //
       "argx", "`1` called with `2` arguments; 1 argument is expected.", //
+      "args", "`1` called with invalid parameters.", //
       "argt", "`1` called with `2` arguments; `3` or `4` arguments are expected.", //
       "argtu", "`1` called with 1 argument; `2` or `3` arguments are expected.", //
       "argtype",
@@ -536,7 +538,8 @@ public class IOFunctions {
       "infy", "Infinite expression `1` encountered.", //
       "innf", "Non-negative integer or Infinity expected at position `1` in `2`.", //
       "ins", "Cannot insert at position `1` in `2`.", //
-      "int", "Integer expected at position `2` in `1`.", //
+      "insuff", "Cannot take `1` elements from a list of length `2` ", "int",
+      "Integer expected at position `2` in `1`.", //
       "intjava", "Java int value greater equal `1` expected instead of `2`.", //
       "intlevel", "Level specification value greater equal `1` expected instead of `2`.", //
       "intnn", "Non-negative integer expected.", //
@@ -560,11 +563,13 @@ public class IOFunctions {
       "itlim", "Iteration limit of `1` exceeded.", //
       "itlimpartial", "Iteration limit of `1` exceeded. Returning partial results.", //
       "itendless", "Endless iteration detected in `1` in evaluation loop.", //
+      "intnz", "Nonzero integer expected at position `1` in `2`.", //
       "itraw", "Raw object `1` cannot be used as an iterator.", //
       "ivar", "`1` is not a valid variable.", //
       "ldata", "`1` is not a valid dataset or a list of datasets.", //
       "lend",
       "The argument at position `1` in `2` should be a vector of unsigned byte values or a Base64 encoded string.", //
+      "length", "The vectors `1` and `2` have different lengths.", //
       "level", "Level specification `1` is not of the form n, {n}, or {m, n}.", //
       "levelpad",
       "The padding specification `1` involves `2` levels, the list `3` has only `4` level.", //
@@ -586,6 +591,7 @@ public class IOFunctions {
       "Local variable specification `1` contains `2` which is not a symbol or an assignment to a symbol.", //
       "matrix", "Argument `1` at position `2` is not a non-empty rectangular matrix.", //
       "matsq", "Argument `1` at position `2` is not a non-empty square matrix.", //
+      "minv", "The `1` arguments to `2` must be ordinary integers.", // or gaussian
       "mseqs",
       "Sequence specification or a list of sequence specifications expected at position `1` in `2`.", //
       "nalph", "The alphabet `1` is not known or not available.", //
@@ -597,6 +603,7 @@ public class IOFunctions {
       "nliter", "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
       "nil", "unexpected NIL expression encountered.", //
       "ninv", "`1` is not invertible modulo `2`.", //
+      "nmtx", "The first two levels of `1` cannot be transposed.", //
       "nocatch", "Uncaught `1` returned to top level.", //
       "nofirst", "`1` has zero length and no first element.", //
       "nofwd", "No enclosing For, While or Do found for `1`.", //
@@ -681,10 +688,12 @@ public class IOFunctions {
       "rubiendless", "Endless iteration detected in `1` for Rubi pattern-matching rules.", //
       "sdmint",
       "The number of subdivisions given in position `1` of `2` should be a positive machine-sized integer.", //
-      "seqs", "Sequence specification expected, but got `1`.", //
+      "seqs",
+      "Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in `1`.", //
       "setp", "Part assignment to `1` could not be made", //
       "setraw", "Cannot assign to raw object `1`.", //
       "setps", "`1` in the part assignment is not a symbol.", //
+      "shlen", "The argument `1` should have at least `2` arguments.", //
       "sing", "Matrix `1` is singular.", //
       "sing1", "The matrix `1` is singular; a factorization will not be saved.", //
       "span", "`1` is not a valid Span specification.", //
