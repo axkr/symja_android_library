@@ -15,7 +15,7 @@ public interface LimitRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 52, 21 };
+  final public static int[] SIZES = { 67, 23 };
 
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
@@ -160,18 +160,69 @@ public interface LimitRules {
     // Limit(ArcTanh(x_),x_Symbol->-Infinity)=I*Pi/2
     ISet(Limit(ArcTanh(x_),Rule(x_Symbol,Noo)),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // Limit(BesselI(n_,x_),x_Symbol->Infinity)=Infinity/;FreeQ(n,x)
-    ISet(Limit(BesselI(n_,x_),Rule(x_Symbol,oo)),
-      Condition(oo,FreeQ(n,x))),
+    // Limit(AiryAi(x_),x_Symbol->Infinity)=0
+    ISet(Limit(AiryAi(x_),Rule(x_Symbol,oo)),
+      C0),
+    // Limit(AiryAi(x_),x_Symbol->-Infinity)=0
+    ISet(Limit(AiryAi(x_),Rule(x_Symbol,Noo)),
+      C0),
+    // Limit(AiryAiPrime(x_),x_Symbol->Infinity)=0
+    ISet(Limit(AiryAiPrime(x_),Rule(x_Symbol,oo)),
+      C0),
+    // Limit(AiryBi(x_),x_Symbol->Infinity)=Infinity
+    ISet(Limit(AiryBi(x_),Rule(x_Symbol,oo)),
+      oo),
+    // Limit(AiryBi(x_),x_Symbol->-Infinity)=0
+    ISet(Limit(AiryBi(x_),Rule(x_Symbol,Noo)),
+      C0),
+    // Limit(AiryBiPrime(x_),x_Symbol->Infinity)=Infinity
+    ISet(Limit(AiryBiPrime(x_),Rule(x_Symbol,oo)),
+      oo),
+    // Limit(AiryBiPrime(x_),x_Symbol->-Infinity)=0
+    ISet(Limit(AiryBiPrime(x_),Rule(x_Symbol,Noo)),
+      C0),
     // Limit(BesselJ(n_,x_),x_Symbol->Infinity)=0/;FreeQ(n,x)
     ISet(Limit(BesselJ(n_,x_),Rule(x_Symbol,oo)),
       Condition(C0,FreeQ(n,x))),
     // Limit(BesselJ(n_,x_),x_Symbol->-Infinity)=0/;FreeQ(n,x)
     ISet(Limit(BesselJ(n_,x_),Rule(x_Symbol,Noo)),
       Condition(C0,FreeQ(n,x))),
+    // Limit(BesselI(n_,x_),x_Symbol->Infinity)=Infinity/;FreeQ(n,x)
+    ISet(Limit(BesselI(n_,x_),Rule(x_Symbol,oo)),
+      Condition(oo,FreeQ(n,x))),
+    // Limit(BesselY(n_,x_),x_Symbol->Infinity)=0/;FreeQ(n,x)
+    ISet(Limit(BesselY(n_,x_),Rule(x_Symbol,oo)),
+      Condition(C0,FreeQ(n,x))),
     // Limit(BesselY(n_,x_),x_Symbol->-Infinity)=0/;FreeQ(n,x)
     ISet(Limit(BesselY(n_,x_),Rule(x_Symbol,Noo)),
       Condition(C0,FreeQ(n,x))),
+    // Limit(BesselK(n_,x_),x_Symbol->Infinity)=0/;FreeQ(n,x)
+    ISet(Limit(BesselK(n_,x_),Rule(x_Symbol,oo)),
+      Condition(C0,FreeQ(n,x))),
+    // Limit(SphericalBesselJ(n_,x_),x_Symbol->Infinity)=0/;FreeQ(n,x)
+    ISet(Limit(SphericalBesselJ(n_,x_),Rule(x_Symbol,oo)),
+      Condition(C0,FreeQ(n,x))),
+    // Limit(SphericalBesselJ(n_,x_),x_Symbol->-Infinity)=0/;FreeQ(n,x)
+    ISet(Limit(SphericalBesselJ(n_,x_),Rule(x_Symbol,Noo)),
+      Condition(C0,FreeQ(n,x))),
+    // Limit(SphericalBesselY(n_,x_),x_Symbol->Infinity)=0/;FreeQ(n,x)
+    ISet(Limit(SphericalBesselY(n_,x_),Rule(x_Symbol,oo)),
+      Condition(C0,FreeQ(n,x))),
+    // Limit(SphericalBesselY(n_,x_),x_Symbol->-Infinity)=0/;FreeQ(n,x)
+    ISet(Limit(SphericalBesselY(n_,x_),Rule(x_Symbol,Noo)),
+      Condition(C0,FreeQ(n,x))),
+    // Limit(SphericalHankelH1(n_,x_),x_Symbol->Infinity)=0/;FreeQ(n,x)
+    ISet(Limit(SphericalHankelH1(n_,x_),Rule(x_Symbol,oo)),
+      Condition(C0,FreeQ(n,x))),
+    // Limit(SphericalHankelH2(n_,x_),x_Symbol->Infinity)=0/;FreeQ(n,x)
+    ISet(Limit(SphericalHankelH2(n_,x_),Rule(x_Symbol,oo)),
+      Condition(C0,FreeQ(n,x))),
+    // Limit(StruveH(n_,x_),x_Symbol->Infinity):=ConditionalExpression(Infinity,1<n<5/2)/;FreeQ(n,x)
+    ISetDelayed(Limit(StruveH(n_,x_),Rule(x_Symbol,oo)),
+      Condition(ConditionalExpression(oo,Less(C1,n,QQ(5L,2L))),FreeQ(n,x))),
+    // Limit(StruveH(n_,x_),x_Symbol->-Infinity):=ConditionalExpression(0,n∈Integers&&n<1/2)/;FreeQ(n,x)
+    ISetDelayed(Limit(StruveH(n_,x_),Rule(x_Symbol,Noo)),
+      Condition(ConditionalExpression(C0,And(Element(n,Integers),Less(n,C1D2))),FreeQ(n,x))),
     // Limit(Cosh(x_),x_Symbol->Infinity)=Infinity
     ISet(Limit(Cosh(x_),Rule(x_Symbol,oo)),
       oo),

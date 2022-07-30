@@ -106,9 +106,9 @@ public interface DerivativeRules {
     // Derivative(1)[FresnelS]:=Sin(1/2*Pi*#1^2)&
     ISetDelayed($(Derivative(C1),FresnelS),
       Function(Sin(Times(C1D2,Pi,Sqr(Slot1))))),
-    // Derivative(1)[Gamma]:=Gamma(#1)*PolyGamma(#1)&
+    // Derivative(1)[Gamma]:=Gamma(#1)*PolyGamma(0,#1)&
     ISetDelayed($(Derivative(C1),Gamma),
-      Function(Times(Gamma(Slot1),PolyGamma(Slot1)))),
+      Function(Times(Gamma(Slot1),PolyGamma(C0,Slot1)))),
     // Derivative(1)[Gudermannian]:=Sech(#1)&
     ISetDelayed($(Derivative(C1),Gudermannian),
       Function(Sech(Slot1))),

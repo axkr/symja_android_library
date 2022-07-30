@@ -49,15 +49,47 @@
  Limit(ArcTanh(x_), x_Symbol->Infinity)=-I*Pi/2,   
  Limit(ArcTanh(x_), x_Symbol->-Infinity)=I*Pi/2, 
  
- Limit(BesselI(n_, x_), x_Symbol->Infinity)=Infinity
-   /; FreeQ(n,x),
+ Limit(AiryAi(x_), x_Symbol->Infinity)=0,
+ Limit(AiryAi(x_), x_Symbol->-Infinity)=0,
+ Limit(AiryAiPrime(x_), x_Symbol->Infinity)=0,
+ Limit(AiryBi(x_), x_Symbol->Infinity)=Infinity,
+ Limit(AiryBi(x_), x_Symbol->-Infinity)=0,
+ Limit(AiryBiPrime(x_), x_Symbol->Infinity)=Infinity,
+ Limit(AiryBiPrime(x_), x_Symbol->-Infinity)=0,
+ 
+
  Limit(BesselJ(n_, x_), x_Symbol->Infinity)=0
    /; FreeQ(n,x),
  Limit(BesselJ(n_, x_), x_Symbol->-Infinity)=0
    /; FreeQ(n,x),
-  Limit(BesselY(n_, x_), x_Symbol->-Infinity)=0
+ Limit(BesselI(n_, x_), x_Symbol->Infinity)=Infinity
    /; FreeQ(n,x),
-
+ Limit(BesselY(n_, x_), x_Symbol->Infinity)=0
+   /; FreeQ(n,x),
+ Limit(BesselY(n_, x_), x_Symbol->-Infinity)=0
+   /; FreeQ(n,x),
+ Limit(BesselK(n_, x_), x_Symbol->Infinity)=0
+   /; FreeQ(n,x),
+   
+ Limit(SphericalBesselJ(n_, x_), x_Symbol->Infinity)=0
+   /; FreeQ(n,x),
+ Limit(SphericalBesselJ(n_, x_), x_Symbol->-Infinity)=0
+   /; FreeQ(n,x),
+ Limit(SphericalBesselY(n_, x_), x_Symbol->Infinity)=0
+   /; FreeQ(n,x),
+ Limit(SphericalBesselY(n_, x_), x_Symbol->-Infinity)=0
+   /; FreeQ(n,x),
+ Limit(SphericalHankelH1(n_, x_), x_Symbol->Infinity)=0
+   /; FreeQ(n,x),
+ Limit(SphericalHankelH2(n_, x_), x_Symbol->Infinity)=0
+   /; FreeQ(n,x),
+   
+ Limit(StruveH(n_, x_), x_Symbol->Infinity):=ConditionalExpression(Infinity, 1<n<5/2)
+   /; FreeQ(n,x),
+ Limit(StruveH(n_, x_), x_Symbol->-Infinity):=ConditionalExpression(0,Element(n,Integers) && n<1/2)
+   /; FreeQ(n,x),
+   
+   
  Limit(Cosh(x_), x_Symbol->Infinity)=Infinity,  
  Limit(Cosh(x_), x_Symbol->-Infinity)=Infinity,
  Limit(Coth(x_), x_Symbol->Infinity)=1,  
