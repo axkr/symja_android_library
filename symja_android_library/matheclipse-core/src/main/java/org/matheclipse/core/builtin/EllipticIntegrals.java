@@ -639,7 +639,11 @@ public class EllipticIntegrals {
           if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
             Complex zc = z.evalComplex();
             Complex mc = m.evalComplex();
-            return F.complexNum(EllipticIntegralsJS.ellipticF(zc, mc));
+            Complex ellipticF = EllipticIntegralsJS.ellipticF(zc, mc);
+            if (F.isZero(ellipticF.getImaginary())) {
+              return F.num(ellipticF.getReal());
+            }
+            return F.complexNum(ellipticF);
           } else {
             return F.complexNum(EllipticIntegralsJS.ellipticF(zDouble, mDouble));
           }
@@ -838,7 +842,11 @@ public class EllipticIntegrals {
               Complex nc = n.evalComplex();
               Complex zc = z.evalComplex();
               Complex mc = m.evalComplex();
-              return F.complexNum(EllipticIntegralsJS.ellipticPi(nc, zc, mc));
+              Complex ellipticPi = EllipticIntegralsJS.ellipticPi(nc, zc, mc);
+              if (F.isZero(ellipticPi.getImaginary())) {
+                return F.num(ellipticPi.getReal());
+              }
+              return F.complexNum(ellipticPi);
             } else {
               return F.complexNum(EllipticIntegralsJS.ellipticPi(nDouble, zDouble, mDouble));
             }
