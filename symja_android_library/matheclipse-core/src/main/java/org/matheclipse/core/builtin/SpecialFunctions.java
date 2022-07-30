@@ -1741,11 +1741,14 @@ public class SpecialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (ast.isAST1()) {
+      IExpr n = ast.arg1();
+      if ((n.isNumber() && !n.isInteger()) || n.isNegativeResult()) {
+        // Non-negative machine-sized integer expected at position `2` in `1`.
+        return IOFunctions.printMessage(S.StieltjesGamma, "intnm", F.List(ast, F.C1), engine);
+      }
+      if (ast.isAST2()) {
+        IExpr a = ast.arg2();
 
-      } else {
-        IExpr arg2 = ast.arg2();
       }
       return F.NIL;
     }
