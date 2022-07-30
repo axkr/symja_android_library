@@ -1456,11 +1456,7 @@ public final class PatternMatching {
           if (arg.isAST()) {
             IExpr temp = arg.replaceAll(ReleaseHold::releaseHold);
             if (temp.isPresent()) {
-              if (!result.isPresent()) {
-                result = list.setAtCopy(i, temp);
-              } else {
-                result.set(i, temp);
-              }
+              result = result.setIfPresent(list, i, temp);
             }
           }
         }

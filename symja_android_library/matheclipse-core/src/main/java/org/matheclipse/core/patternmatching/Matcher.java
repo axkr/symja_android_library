@@ -58,9 +58,6 @@ public class Matcher implements Function<IExpr, IExpr> {
         if (temp.isPresent()) {
           // something was evaluated - return a new IAST:
           result = list.copyAppendable();
-          for (int j = 1; j < i; j++) {
-            result.set(j, list.get(j));
-          }
           result.set(i++, temp);
           break;
         }
@@ -71,8 +68,8 @@ public class Matcher implements Function<IExpr, IExpr> {
           temp = list.get(i).accept(this);
           if (temp.isPresent()) {
             result.set(i, temp);
-          } else {
-            result.set(i, list.get(i));
+            // } else {
+            // result.set(i, list.get(i));
           }
           i++;
         }

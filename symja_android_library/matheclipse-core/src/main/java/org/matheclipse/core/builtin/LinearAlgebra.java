@@ -4017,33 +4017,43 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int dim1 = ast.arg1().isVector();
-      int dim2 = ast.arg2().isVector();
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      int dim1 = arg1.isVector();
+      int dim2 = arg2.isVector();
 
       if (ast.size() == 4) {
         IExpr head = ast.arg3();
-        if (dim1 >= 0 && dim1 == dim2) {
+        if (dim1 >= 0) {
+          if (dim1 != dim2) {
+            // The vectors `1` and `2` have different lengths.
+            return IOFunctions.printMessage(ast.topHead(), "length", F.List(arg1, arg2), engine);
+          }
           if (dim1 == 0) {
             return F.CEmptyList;
           }
           if (head.equals(S.Dot)) {
-            FieldVector<IExpr> u = Convert.list2Vector(ast.arg1());
-            FieldVector<IExpr> v = Convert.list2Vector(ast.arg2());
+            FieldVector<IExpr> u = Convert.list2Vector(arg1);
+            FieldVector<IExpr> v = Convert.list2Vector(arg2);
             if (u != null && v != null) {
               return Convert.vector2List(u.projection(v));
             }
           }
         }
-        IExpr u = ast.arg1();
-        IExpr v = ast.arg2();
+        IExpr u = arg1;
+        IExpr v = arg2;
         return v.times(dotProduct(head, u, v, engine).divide(dotProduct(head, v, v, engine)));
       }
-      if (dim1 >= 0 && dim1 == dim2) {
+      if (dim1 >= 0) {
+        if (dim1 != dim2) {
+          // The vectors `1` and `2` have different lengths.
+          return IOFunctions.printMessage(ast.topHead(), "length", F.List(arg1, arg2), engine);
+        }
         if (dim1 == 0) {
           return F.CEmptyList;
         }
-        FieldVector<IExpr> u = Convert.list2Vector(ast.arg1());
-        FieldVector<IExpr> v = Convert.list2Vector(ast.arg2());
+        FieldVector<IExpr> u = Convert.list2Vector(arg1);
+        FieldVector<IExpr> v = Convert.list2Vector(arg2);
         FieldVector<IExpr> vConjugate = v.copy();
         for (int i = 0; i < dim2; i++) {
           vConjugate.setEntry(i, vConjugate.getEntry(i).conjugate());
@@ -4894,7 +4904,32 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 3) {
+      if (ast.isAST1()) {
+        final int[] dim = ast.arg1().isMatrix();
+        if (dim != null) {
+          // TODO improve for sparse arrays
+          // final IAST originalMatrix = (IAST) ast.arg1().normal(false);
+          final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
+          if (matrix != null) {
+            final FieldMatrix<IExpr> transposed = matrix.transpose();
+            IExpr transposedMatrix = Convert.matrix2Expr(transposed).mapExpr(x -> transform(x));
+            // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set
+            // directly.
+            // isMatrix()
+            // must be used!
+            transposedMatrix.isMatrix(true);
+            return transposedMatrix;
+            // return transpose(originalMatrix, dim[0], dim[1]);
+          }
+          if (dim[1] == 0) {
+            return F.CEmptyList;
+          }
+        } else if (ast.arg1().isListOfLists()) {
+          // Error messages inherits to ConjugateTranspose
+          // The first two levels of `1` cannot be transposed.
+          return IOFunctions.printMessage(ast.topHead(), "nmtx", F.List(ast), engine);
+        }
+      } else if (ast.isAST2()) {
         if (ast.arg1().isList() && ast.arg2().isList()) {
           IAST tensor = (IAST) ast.arg1();
           IntArrayList dims = dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
@@ -4903,26 +4938,6 @@ public final class LinearAlgebra {
             return F.NIL;
           }
           return new TransposePermute(tensor, dims, permutation).transposeRecursive();
-        }
-        return F.NIL;
-      }
-      final int[] dim = ast.arg1().isMatrix();
-      if (dim != null) {
-        // TODO improve for sparse arrays
-        // final IAST originalMatrix = (IAST) ast.arg1().normal(false);
-        final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
-        if (matrix != null) {
-          final FieldMatrix<IExpr> transposed = matrix.transpose();
-          IExpr transposedMatrix = Convert.matrix2Expr(transposed).mapExpr(x -> transform(x));
-          // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-          // isMatrix()
-          // must be used!
-          transposedMatrix.isMatrix(true);
-          return transposedMatrix;
-          // return transpose(originalMatrix, dim[0], dim[1]);
-        }
-        if (dim[1] == 0) {
-          return F.CEmptyList;
         }
       }
       return F.NIL;
@@ -5198,6 +5213,10 @@ public final class LinearAlgebra {
       int dim1 = arg1.isVector();
       int dim2 = arg2.isVector();
       if (dim1 > (-1) && dim2 > (-1)) {
+        if (dim1 != dim2) {
+          // The vectors `1` and `2` have different lengths.
+          return IOFunctions.printMessage(ast.topHead(), "length", F.List(arg1, arg2), engine);
+        }
         return ArcCos(Divide(Dot(arg1, F.Conjugate(arg2)), Times(Norm(arg1), Norm(arg2))));
       }
       return F.NIL;
@@ -5304,7 +5323,7 @@ public final class LinearAlgebra {
     // 2x2 matrix
     IExpr[] row1 = matrix.getRow(0);
     IExpr[] row2 = matrix.getRow(1);
-    return F.evalExpand(row1[0].times(row2[1]).subtract((row1[1].times(row2[0]))));
+    return F.evalExpand(row1[0].times(row2[1]).subtract(row1[1].times(row2[0])));
   }
 
   /**

@@ -2489,30 +2489,30 @@ public final class ListFunctions {
       if (step < 0) {
         end--;
         if (j < end || end <= 0) {
-          throw new ArgumentTypeException(
-              "cannot drop positions " + sequenceSpecifications[level].getStartOffset()
-                  + " through " + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
+          throw new ArgumentTypeException("cannot drop positions "
+              + sequenceSpecifications[level].getStartOffset() + " through "
+              + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
         }
         for (int i = j; i >= end; i += step) {
           if (j >= resultList.size()) {
-            throw new ArgumentTypeException(
-                "cannot drop positions " + sequenceSpecifications[level].getStartOffset()
-                    + " through " + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
+            throw new ArgumentTypeException("cannot drop positions "
+                + sequenceSpecifications[level].getStartOffset() + " through "
+                + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
           }
           resultList.remove(j);
           j += step;
         }
       } else {
         if (j == 0) {
-          throw new ArgumentTypeException(
-              "cannot drop positions " + sequenceSpecifications[level].getStartOffset()
-                  + " through " + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
+          throw new ArgumentTypeException("cannot drop positions "
+              + sequenceSpecifications[level].getStartOffset() + " through "
+              + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
         }
         for (int i = j; i < end; i += step) {
           if (j >= resultList.size()) {
-            throw new ArgumentTypeException(
-                "cannot drop positions " + sequenceSpecifications[level].getStartOffset()
-                    + " through " + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
+            throw new ArgumentTypeException("cannot drop positions "
+                + sequenceSpecifications[level].getStartOffset() + " through "
+                + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
           }
           resultList.remove(j);
           j += step - 1;
@@ -7572,7 +7572,11 @@ public final class ListFunctions {
             IAST cleanedList = cleanList((IAST) ast.arg1());
             try {
               int n = ast.arg2().toIntDefault();
-              if (n > 0 && n <= cleanedList.size()) {
+              if (n > 0) {
+                if (n > cleanedList.argSize()) {
+                  return IOFunctions.printMessage(ast.topHead(), "insuff",
+                      F.List(n, cleanedList.argSize()), engine);
+                }
                 LargestIndexComparator comparator = new LargestIndexComparator(cleanedList, engine);
                 Integer[] indexes = comparator.createIndexArray();
                 Arrays.sort(indexes, comparator);
@@ -7618,7 +7622,12 @@ public final class ListFunctions {
           if (ast.arg1().isASTOrAssociation()) {
             IAST cleanedList = cleanList((IAST) ast.arg1());
             int n = ast.arg3().toIntDefault();
-            if (n > 0 && n <= cleanedList.size()) {
+            if (n > 0) {
+              if (n > cleanedList.argSize()) {
+                return IOFunctions.printMessage(ast.topHead(), "insuff",
+                    F.List(n, cleanedList.argSize()),
+                    engine);
+              }
               IAST list = cleanedList.mapThreadEvaled(engine, F.unary(ast.arg2(), F.Slot1), 1);
               try {
                 LargestIndexComparator comparator = new LargestIndexComparator(list, engine);
@@ -7663,7 +7672,11 @@ public final class ListFunctions {
             IAST cleanedList = cleanList((IAST) ast.arg1());
             try {
               int n = ast.arg2().toIntDefault();
-              if (n > 0 && n <= cleanedList.size()) {
+              if (n > 0) {
+                if (n > cleanedList.argSize()) {
+                  return IOFunctions.printMessage(ast.topHead(), "insuff",
+                      F.List(n, cleanedList.argSize()), engine);
+                }
                 SmallestIndexComparator comparator =
                     new SmallestIndexComparator(cleanedList, engine);
                 Integer[] indexes = comparator.createIndexArray();
@@ -7710,7 +7723,11 @@ public final class ListFunctions {
           if (ast.arg1().isASTOrAssociation()) {
             IAST cleanedList = cleanList((IAST) ast.arg1());
             int n = ast.arg3().toIntDefault();
-            if (n > 0 && n <= cleanedList.size()) {
+            if (n > 0) {
+              if (n > cleanedList.argSize()) {
+                return IOFunctions.printMessage(ast.topHead(), "insuff",
+                    F.List(n, cleanedList.argSize()), engine);
+              }
               IAST list = cleanedList.mapThreadEvaled(engine, F.unary(ast.arg2(), F.Slot1), 1);
               try {
                 SmallestIndexComparator comparator = new SmallestIndexComparator(list, engine);
