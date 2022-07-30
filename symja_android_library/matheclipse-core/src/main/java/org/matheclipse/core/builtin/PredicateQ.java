@@ -54,6 +54,7 @@ public class PredicateQ {
       S.AtomQ.setPredicateQ(x -> x.isAtom());
       S.BooleanQ.setPredicateQ(x -> x.isTrue() || x.isFalse());
       S.ByteArrayQ.setPredicateQ(WXFFunctions::isByteArray);
+      S.CompositeQ.setEvaluator(new CompositeQ());
       S.DiagonalMatrixQ.setEvaluator(new DiagonalMatrixQ());
       S.DigitQ.setEvaluator(new DigitQ());
       S.EvenQ.setEvaluator(new EvenQ());
@@ -307,6 +308,30 @@ public class PredicateQ {
     }
   }
 
+  private static final class CompositeQ extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final IExpr arg1 = ast.arg1();
+      if (!arg1.isInteger()) {
+        return S.False;
+      }
+      IInteger p = (IInteger) arg1;
+      if (p.isNegative()) {
+        p = p.negate();
+      }
+      if (p.isLT(F.C4)) {
+        return S.False;
+      }
+      return p.isProbablePrime() ? S.False : S.True;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+
+  }
 
   private static class DiagonalMatrixQ extends AbstractFunctionEvaluator {
 
