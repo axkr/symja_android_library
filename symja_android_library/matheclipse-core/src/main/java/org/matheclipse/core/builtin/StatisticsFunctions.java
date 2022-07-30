@@ -75,9 +75,12 @@ public class StatisticsFunctions {
       S.CDF.setEvaluator(new CDF());
       S.PDF.setEvaluator(new PDF());
       S.BernoulliDistribution.setEvaluator(new BernoulliDistribution());
+      S.BernoulliProcess.setEvaluator(new BernoulliProcess());
       S.BetaDistribution.setEvaluator(new BetaDistribution());
       S.BinCounts.setEvaluator(new BinCounts());
       S.BinomialDistribution.setEvaluator(new BinomialDistribution());
+      S.BinomialProcess.setEvaluator(new BinomialProcess());
+      S.BrownianBridgeProcess.setEvaluator(new BrownianBridgeProcess());
       S.CentralMoment.setEvaluator(new CentralMoment());
       S.ChiSquareDistribution.setEvaluator(new ChiSquareDistribution());
       S.Correlation.setEvaluator(new Correlation());
@@ -109,6 +112,7 @@ public class StatisticsFunctions {
       S.NormalDistribution.setEvaluator(new NormalDistribution());
       S.ParetoDistribution.setEvaluator(new ParetoDistribution());
       S.PoissonDistribution.setEvaluator(new PoissonDistribution());
+      S.PoissonProcess.setEvaluator(new PoissonProcess());
       S.Probability.setEvaluator(new Probability());
       S.Quantile.setEvaluator(new Quantile());
       S.Quartiles.setEvaluator(new Quartiles());
@@ -460,8 +464,8 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // 1 or 2 arguments
-      if (ast.size() == 2 || ast.size() == 3) {
+      if (ast.isAST1() || ast.isAST2()) {
+        // check because of pure function form ?
         try {
           if (ast.arg1().isAST()) {
             IAST dist = (IAST) ast.arg1();
@@ -489,6 +493,11 @@ public class StatisticsFunctions {
       }
 
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 
@@ -681,6 +690,25 @@ public class StatisticsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static final class BernoulliProcess extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.head().isAST() && ast.isAST1()) {
+        // operator form
+        IAST headAST = (IAST) ast.head();
+        if (headAST.isAST1()) {
+          return F.BernoulliDistribution(headAST.arg1());
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
   }
 
   private static final class BetaDistribution extends AbstractEvaluator
@@ -1181,6 +1209,82 @@ public class StatisticsFunctions {
       }
       return F.NIL;
     }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  private static final class BinomialProcess extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.head().isAST() && ast.isAST1()) {
+        // operator form
+        IAST headAST = (IAST) ast.head();
+        if (headAST.isAST1()) {
+          return F.BinomialDistribution(ast.arg1(), headAST.arg1());
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+  }
+
+  private static final class BrownianBridgeProcess extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.head() == S.BrownianBridgeProcess) {
+        if (ast.isAST2()) {
+          if (ast.arg1().isList2() && ast.arg2().isList2()) {
+            return F.BrownianBridgeProcess(F.C1, ast.arg1(), ast.arg2());
+          }
+          return F.BrownianBridgeProcess(F.C1, F.List(ast.arg1(), F.C0), F.List(ast.arg2(), F.C0));
+        } else if (ast.isAST0()) {
+          return F.BrownianBridgeProcess(F.C1, F.List(F.C0, F.C0), F.List(F.C1, F.C0));
+        }
+        return F.NIL;
+      }
+      if (ast.head().isAST() && ast.isAST1()) {
+        IExpr t = ast.arg1();
+        // operator form
+        IAST headAST = (IAST) ast.head();
+        if (headAST.isAST3() && headAST.arg2().isList2() && headAST.arg3().isList2()) {
+          IExpr s = headAST.arg1();
+          IAST list1 = (IAST) headAST.arg2();
+          IExpr t1 = list1.arg1();
+          IExpr a = list1.arg2();
+          IAST list2 = (IAST) headAST.arg3();
+          IExpr t2 = list2.arg1();
+          IExpr b = list2.arg2();
+          return brownianBridgeProcess(s, t1, a, t2, b, t);
+        }
+      }
+      return F.NIL;
+    }
+
+
+    private IExpr brownianBridgeProcess(IExpr s, IExpr t1, IExpr a, IExpr t2, IExpr b, IExpr t) {
+      IExpr function =
+          // [$ NormalDistribution((b*(t - t1))/(-t1 + t2) + (a*(-t + t2))/(-t1 + t2),
+          // s*Sqrt(((t - t1)*(-t + t2))/(-t1 + t2))) $]
+          F.NormalDistribution(
+              F.Plus(F.Times(b, F.Subtract(t, t1), F.Power(F.Plus(F.Negate(t1), t2), F.CN1)),
+                  F.Times(a, F.Plus(F.Negate(t), t2), F.Power(F.Plus(F.Negate(t1), t2), F.CN1))),
+              F.Times(s, F.Sqrt(F.Times(F.Subtract(t, t1), F.Plus(F.Negate(t), t2),
+                  F.Power(F.Plus(F.Negate(t1), t2), F.CN1))))); // $$;
+      return function;
+    }
+
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
   }
 
   /**
@@ -3961,7 +4065,15 @@ public class StatisticsFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        return F.Divide(F.CentralMoment(list, F.C4), F.Power(F.CentralMoment(list, F.C2), F.C2));
+        if (list.argSize() < 2) {
+          // The argument `1` should have at least `2` arguments.
+          return IOFunctions.printMessage(ast.topHead(), "shlen", F.List(list, F.C2), engine);
+        }
+        IExpr centralMoment = engine.evaluate(F.CentralMoment(list, F.C2));
+        if (centralMoment.isPossibleZero(true)) {
+          return S.Indeterminate;
+        }
+        return F.Divide(F.CentralMoment(list, F.C4), F.Power(centralMoment, F.C2));
       }
       return F.NIL;
     }
@@ -5191,9 +5303,8 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // 1 or 2 arguments
-
-      if (ast.size() == 2 || ast.size() == 3) {
+      if (ast.isAST1() || ast.isAST2()) {
+        // check because of pure function form ?
         try {
           if (ast.arg1().isAST()) {
             IAST dist = (IAST) ast.arg1();
@@ -5223,6 +5334,11 @@ public class StatisticsFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 
@@ -5722,6 +5838,27 @@ public class StatisticsFunctions {
       }
       return F.NIL;
     }
+  }
+
+  private static final class PoissonProcess extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.head().isAST() && ast.isAST1()) {
+        IExpr t = ast.arg1();
+        // operator form
+        IAST headAST = (IAST) ast.head();
+        if (headAST.isAST1()) {
+          IExpr m = headAST.arg1();
+          return F.PoissonDistribution(F.Times(t, m));
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
   }
 
   /**
