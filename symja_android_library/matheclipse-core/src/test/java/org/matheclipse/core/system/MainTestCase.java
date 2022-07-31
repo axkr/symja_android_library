@@ -2284,29 +2284,52 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSystem247() {
-    check("Round(1.1)", "1");
-    check("Round(1.5)", "2");
-    check("Round(2.5)", "2");
-    check("Round(2.6)", "3");
-    check("Round(3.5)", "4");
-    check("Round(7/3.0)", "2");
-    check("Round(-7/3.0)", "-2");
-    check("Round(-42)", "-42");
-    check("Round(42)", "42");
-    check("Round(3/2)", "2");
-    check("Round(5/2)", "2");
-    check("Round(7/2)", "4");
-    check("Round(9/2)", "4");
-    check("Round(6/2)", "3");
-    check("Round(-3/2)", "-2");
-    check("Round(-5/2)", "-2");
-    check("Round(-7/2)", "-4");
-    check("Round(-9/2)", "-4");
-    check("Round(-6/2)", "-3");
-    check("Round(7/3)", "2");
-    check("Round(-7/3)", "-2");
-    check("Round(Pi)", "3");
-    check("Round(42+x+y)", "42+Round(x+y)");
+    check("Round(1.1)", //
+        "1");
+    check("Round(1.5)", //
+        "2");
+    check("Round(2.5)", //
+        "2");
+    check("Round(2.6)", //
+        "3");
+    check("Round(3.5)", //
+        "4");
+    check("Round(7/3.0)", //
+        "2");
+    check("Round(-7/3.0)", //
+        "-2");
+    check("Round(-42)", //
+        "-42");
+    check("Round(42)", //
+        "42");
+    check("Round(3/2)", //
+        "2");
+    check("Round(5/2)", //
+        "2");
+    check("Round(7/2)", //
+        "4");
+    check("Round(9/2)", //
+        "4");
+    check("Round(6/2)", //
+        "3");
+    check("Round(-3/2)", //
+        "-2");
+    check("Round(-5/2)", //
+        "-2");
+    check("Round(-7/2)", //
+        "-4");
+    check("Round(-9/2)", //
+        "-4");
+    check("Round(-6/2)", //
+        "-3");
+    check("Round(7/3)", //
+        "2");
+    check("Round(-7/3)", //
+        "-2");
+    check("Round(Pi)", //
+        "3");
+    check("Round(42+x+y)", //
+        "Round(42+x+y)");
   }
 
   public void testSystem248() {

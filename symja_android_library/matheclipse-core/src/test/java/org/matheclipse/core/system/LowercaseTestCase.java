@@ -20993,6 +20993,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testRound() {
+    check("Round(10+x)", //
+        "Round(10+x)");
+    check("Round(-10+x)", //
+        "-Round(10-x)");
+    check("Round(10+x,Pi)", //
+        "Round(10+x,Pi)");
+    check("Round(Infinity, x)", //
+        "Round(Infinity,x)");
+    check("Round(Infinity, Pi)", //
+        "Infinity");
+    check("Round(-Infinity, Pi)", //
+        "-Infinity");
+    check("Round(1+2*I, 2*I)", //
+        "I*2");
+    check("Round(10, Pi)", //
+        "3*Pi");
+
     check("Round(5.37 - 1.3*I)", //
         "5-I");
     check("Round(DirectedInfinity(0))", //

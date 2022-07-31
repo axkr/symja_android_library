@@ -28,7 +28,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
@@ -1619,16 +1618,6 @@ public class IntegerFunctions {
    */
   private static class Round extends AbstractCoreFunctionEvaluator implements INumeric {
 
-    private static final class RoundPlusFunction implements Function<IExpr, IExpr> {
-      @Override
-      public IExpr apply(IExpr expr) {
-        if (expr.isIntegerResult()) {
-          return expr;
-        }
-        return F.NIL;
-      }
-    }
-
     @Override
     public double evalReal(final double[] stack, final int top, final int size) {
       if (size != 1) {
@@ -1648,92 +1637,110 @@ public class IntegerFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr res = F.NIL;
       try {
-        IExpr arg1 = ast.arg1();
-        IExpr temp = engine.evaluateNIL(arg1);
+        IExpr expr = ast.arg1();
+        IExpr temp = engine.evaluateNIL(expr);
         if (temp.isPresent()) {
-          arg1 = temp;
+          expr = temp;
           res = ast.setAtCopy(1, temp);
         }
 
-        if (arg1.isList()) {
-          return ((IAST) arg1).mapThread(ast.setAtCopy(1, F.Slot1), 1);
+        if (expr.isList()) {
+          return ((IAST) expr).mapThread(ast.setAtCopy(1, F.Slot1), 1);
         }
         if (ast.isAST2()) {
-          // Round(z, a)
-
-          IExpr arg2 = ast.arg2();
-          temp = engine.evaluateNIL(arg2);
+          // Round(expr, k)
+          IExpr k = ast.arg2();
+          temp = engine.evaluateNIL(k);
           if (temp.isPresent()) {
-            arg2 = temp;
+            k = temp;
             if (!res.isPresent()) {
               res = ast.setAtCopy(2, temp);
             } else {
               ((IASTMutable) res).set(2, temp);
             }
           }
-          ISignedNumber multiple = arg2.evalReal();
-          if (multiple != null) {
-            if (multiple.isZero()) {
-              return S.Indeterminate;
-            }
-            ISignedNumber signedNumber = arg1.evalReal();
-            if (signedNumber != null) {
-              return signedNumber.roundClosest(multiple);
-            }
-            if (arg1.isComplexNumeric()) {
-              IComplexNum cmp = (IComplexNum) arg1;
-              ISignedNumber re = cmp.re().roundClosest(multiple);
-              ISignedNumber im = cmp.im().roundClosest(multiple);
-              return F.Complex(re, im);
-            }
-            if (arg1.isComplex()) {
-              IComplex cmp = (IComplex) arg1;
-              ISignedNumber re = cmp.re().roundClosest(multiple);
-              ISignedNumber im = cmp.im().roundClosest(multiple);
-              return F.Complex(re, im);
-            }
-            if (arg1.isInfinity() || arg1.isNegativeInfinity()) {
-              return arg1;
-            }
+
+          temp = round(engine, expr, k);
+          if (temp.isPresent()) {
+            res = temp;
+          }
+        } else {
+          // Round(expr)
+          if (expr.isIntegerResult()) {
+            return expr;
+          }
+          INumber number = expr.evalNumber();
+          if (number != null) {
+            return number.roundExpr();
+          }
+          if (expr.isDirectedInfinity() && expr.argSize() == 1) {
+            return expr;
+          }
+          if (expr.isComplexInfinity()) {
+            return expr;
           }
 
-          return res;
-        }
-
-        if (arg1.isIntegerResult()) {
-          return arg1;
-        }
-        INumber number = arg1.evalNumber();
-        if (number != null) {
-          return number.roundExpr();
-        }
-        if (arg1.isDirectedInfinity() && arg1.argSize() == 1) {
-          return arg1;
-        }
-        if (arg1.isComplexInfinity()) {
-          return arg1;
-        }
-
-        if (arg1.isPlus()) {
-          IASTAppendable[] result = ((IAST) arg1).filterNIL(new RoundPlusFunction());
-          if (result[0].size() > 1) {
-            if (result[1].size() > 1) {
-              result[0].append(F.Round(result[1]));
-            }
-            return result[0];
+          // if (expr.isPlus()) {
+          // not used in WMA
+          // IASTAppendable[] result = ((IAST) expr).filter(x -> x.isIntegerResult());
+          // if (result[0].size() > 1) {
+          // if (result[1].size() > 1) {
+          // result[0].append(F.Round(result[1]));
+          // }
+          // return result[0];
+          // }
+          // }
+          IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
+          if (negExpr.isPresent()) {
+            return F.Negate(F.Round(negExpr));
           }
-        }
-        IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-        if (negExpr.isPresent()) {
-          return F.Negate(F.Round(negExpr));
-        }
-        if (arg1.isInterval()) {
-          return IntervalSym.mapSymbol(S.Round, (IAST) arg1);
+          if (expr.isInterval()) {
+            return IntervalSym.mapSymbol(S.Round, (IAST) expr);
+          }
         }
       } catch (ArithmeticException ae) {
         // ISignedNumber#round() may throw ArithmeticException
       }
       return res;
+    }
+
+    private IExpr round(EvalEngine engine, IExpr expr, IExpr k) {
+      IExpr n = S.Divide.ofNIL(engine, expr, k);
+      if (n.isPresent()) {
+        if (n.isRealResult() || n.isComplex() || n.isComplexNumeric()) {
+          n = S.Round.of(engine, n);
+          return F.Times(n, k);
+        }
+        if (n.isComplexInfinity()) {
+          return S.Indeterminate;
+        }
+      }
+      // ISignedNumber multiple = k.evalReal();
+      // if (multiple != null) {
+      // if (multiple.isZero()) {
+      // return S.Indeterminate;
+      // }
+      // ISignedNumber signedNumber = expr.evalReal();
+      // if (signedNumber != null) {
+      // return signedNumber.roundClosest(multiple);
+      // }
+      // if (expr.isComplexNumeric()) {
+      // IComplexNum cmp = (IComplexNum) expr;
+      // ISignedNumber re = cmp.re().roundClosest(multiple);
+      // ISignedNumber im = cmp.im().roundClosest(multiple);
+      // return F.Complex(re, im);
+      // }
+      // if (expr.isComplex()) {
+      // IComplex cmp = (IComplex) expr;
+      // ISignedNumber re = cmp.re().roundClosest(multiple);
+      // ISignedNumber im = cmp.im().roundClosest(multiple);
+      // return F.Complex(re, im);
+      // }
+      // if (expr.isInfinity() || expr.isNegativeInfinity()) {
+      // return expr;
+      // }
+      // }
+      return F.NIL;
     }
 
     @Override
