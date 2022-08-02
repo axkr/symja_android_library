@@ -245,7 +245,7 @@ public class GetTestSingleRunJUnit extends TestCase {
         fOutputFactory.toString(result));
 
     result = fEvaluator.eval("CoordinateRanges[Spherical]");
-    assertEquals("{0<=Rr&&Rr<Infinity,0<=Ttheta<=Pi,-Pi<Pphi&&Pphi<=Pi}", //
+    assertEquals("{0<=Rr<Infinity,0<=Ttheta<=Pi,-Pi<Pphi<=Pi}", //
         //
         fOutputFactory.toString(result));
 

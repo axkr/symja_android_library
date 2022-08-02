@@ -634,6 +634,16 @@ public final class Arithmetic {
                     imPart);
           }
         }
+      } else if (arg1.isInterval()) {
+        IAST interval = (IAST) arg1;
+        if (interval.isAST1()) {
+          IAST list = (IAST) interval.arg1();
+          IExpr lhs = engine.evaluate(F.Arg(list.arg1()));
+          IExpr rhs = engine.evaluate(F.Arg(list.arg2()));
+          if (lhs.equals(rhs)) {
+            return F.Interval(F.List(lhs, rhs));
+          }
+        }
       }
       if (arg1.isNumericFunction(true)) {
         IExpr temp = engine.evalN(arg1);
