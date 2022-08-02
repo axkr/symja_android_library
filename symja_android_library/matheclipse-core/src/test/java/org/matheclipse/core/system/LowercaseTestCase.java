@@ -940,12 +940,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testArg() {
+    check("Arg(Interval({1, 3}))", //
+        "Interval({0,0})");
+
+    check("Arg(Interval({-7/3, -1/3}))", //
+        "Interval({Pi,Pi})");
+
     // https://github.com/Hipparchus-Math/hipparchus/issues/185
     // System.out.println(new Complex(0.0, 0.0).getArgument());
     // System.out.println(new Complex(-0.0, 0.0).getArgument());
     // System.out.println(new Complex(-0.0, -0.0).getArgument());
     // System.out.println(new Complex(0.0, -0.0).getArgument());
     System.out.println(ApcomplexNum.valueOf(-0.0).complexArg());
+    check("Arg(I-Sqrt(3))", //
+        "5/6*Pi");
     check("Arg(I-Sqrt(3))", //
         "5/6*Pi");
 
@@ -8569,6 +8577,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // }
 
   public void testFindRoot() {
+    // multivariate cases
+    check("FindRoot({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{{x1, 0.0},{x2, 1.0}})", //
+        "{x1->0.197594,x2->0.425514}");
+    check(
+        "FindRoot({Exp(-Exp(-(x1+x2)))-x2*(1+x1^2), x1*Cos(x2)+x2*Sin(x1)-0.5},{{x1, 0.0},{x2, 0.0}})", //
+        "{x1->0.353247,x2->0.606082}");
+
+    check("FindRoot({Exp(x - 2) == y, y^2 == x}, {{x, 1}, {y, 1}})", //
+        "{x->0.019026,y->0.137935}");
+    check("FindRoot({y == E^x, x + y == 2}, {{x, 1}, {y, 1}})", //
+        "{x->0.442854,y->1.55715}");
+    check("FindRoot({Sin(x + y), Cos(x - y), x^2 + y^2 - z}, {{x, 1}, {y, 0}, {z, 0}})", //
+        "{x->0.785398,y->-0.785398,z->1.2337}");
+
+    // univariate cases
     check("FindRoot(sin(x)==x^2, {x, -6.6, 3.99999999})", //
         "{x->-1.84448*10^-19}");
     check("v1:=  E^x - 3*x ;v2:={x, 2};", //
@@ -10109,6 +10132,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testGrad() {
+    // create Jacobian matrix
+    check("Grad({f(x, y),g(x,y)}, {x, y})", //
+        "{{Derivative(1,0)[f][x,y],Derivative(0,1)[f][x,y]},{Derivative(1,0)[g][x,y],Derivative(\n" //
+            + "0,1)[g][x,y]}}");
+    check("Grad({f(x, y, z), g(x, y, z), h(x, y, z)}, {x, y, z})", //
+        "{{Derivative(1,0,0)[f][x,y,z],Derivative(0,1,0)[f][x,y,z],Derivative(0,0,1)[f][x,y,z]},{Derivative(\n" //
+            + "1,0,0)[g][x,y,z],Derivative(0,1,0)[g][x,y,z],Derivative(0,0,1)[g][x,y,z]},{Derivative(\n" //
+            + "1,0,0)[h][x,y,z],Derivative(0,1,0)[h][x,y,z],Derivative(0,0,1)[h][x,y,z]}}");
+
+    check("Grad({2*x1+x2-Exp(-x1), -x1+2*x2-Exp(-x2)},{x1,x2})", //
+        "{{2+E^(-x1),1},{-1,2+E^(-x2)}}");
+    check("Grad({Exp(-Exp(-(x1+x2)))-x2*(1+x1^2), x1*Cos(x2)+x2*Sin(x1)-0.5},{x1,x2})", //
+        "{{E^(-1/E^(x1+x2)-x1-x2)-2*x1*x2,-1+E^(-1/E^(x1+x2)-x1-x2)-x1^2},{x2*Cos(x1)+Cos(x2),Sin(x1)-x1*Sin(x2)}}");
+
     // gradient
     check("Grad(f(x, y), {x, y})", //
         "{Derivative(1,0)[f][x,y],Derivative(0,1)[f][x,y]}");
@@ -10118,6 +10155,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // wikipedia
     check("Grad(2*x+3*y^2-Sin(z), {x, y, z})", //
         "{2,6*y,-Cos(z)}");
+
+    check("gr=Grad(x*y*z, {x, y, z})", //
+        "{y*z,x*z,x*y}");
+    check("Grad(gr, {x, y, z})", //
+        "{{0,z,y},{z,0,x},{y,x,0}}");
   }
 
 
@@ -21009,7 +21051,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "I*2");
     check("Round(10, Pi)", //
         "3*Pi");
-
+    check("Round(-10, Pi)", //
+        "-3*Pi");
+    check("Round(12, Pi)", //
+        "4*Pi");
+    check("Round(-12, Pi)", //
+        "-4*Pi");
     check("Round(5.37 - 1.3*I)", //
         "5-I");
     check("Round(DirectedInfinity(0))", //

@@ -8594,8 +8594,8 @@ public class F extends S {
   }
 
   /**
-   * Substitute all (sub-) expressions <code>x</code> with <code>y</code>. If no substitution
-   * matches, the method returns the given <code>expr</code>.
+   * Substitute all (sub-) expressions <code>x</code> in <code>expr</code> with <code>y</code>. If
+   * no substitution matches, the method returns the given <code>expr</code>.
    *
    * @param expr the complete expresssion
    * @param x the subexpression which should be replaced
@@ -8605,6 +8605,18 @@ public class F extends S {
    */
   public static IExpr subs(final IExpr expr, final IExpr x, final IExpr y) {
     return expr.subs(x, y);
+  }
+
+  /**
+   * Substitute all (sub-) expressions contained as keys in <code>map</code> in <code>expr</code>
+   * with the corresponding value in <code>map</code>. If no substitution matches, the method
+   * returns the given <code>expr</code>.
+   * 
+   * @param expr
+   * @return
+   */
+  public static IExpr subsList(final IExpr expr, final Map<? extends IExpr, ? extends IExpr> map) {
+    return expr.replaceAll(map).orElse(expr);
   }
 
   /**

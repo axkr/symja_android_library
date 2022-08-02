@@ -1410,14 +1410,25 @@ public interface IAST extends IExpr, Iterable<IExpr> {
       int positionInReplacement);
 
   /**
-   * Maps the elements of this IAST on the first level of arguments with the unary <code>function)
-   * </code>. <br>
+   * Maps the elements of this IAST on the first level of arguments with the unary
+   * <code>function</code>.
    *
-   * @param function an IAST there the argument at the given position is replaced by the currently
-   *        mapped argument of this IAST.
+   * @param function a unary function which maps each argument
    * @return
    */
   public IASTMutable mapThread(Function<IExpr, IExpr> function);
+
+  /**
+   * Maps the elements of <code>this</code> IAST and of <code>that</code> IAST on the first level of
+   * arguments with the binary <code>function</code>. The size of the result is the minimum size of
+   * <code>this</code> and <code>that</code>.
+   * 
+   * @param that
+   * @param function a unary function which maps each argument of <code>this</code> IAST and
+   *        <code>that</code>
+   * @return the size of the result is the minimum size of <code>this</code> and <code>that</code>.
+   */
+  public IASTMutable mapThread(IAST that, BiFunction<IExpr, IExpr, IExpr> function);
 
   /**
    * Maps the elements of this IAST with the unary functor <code>

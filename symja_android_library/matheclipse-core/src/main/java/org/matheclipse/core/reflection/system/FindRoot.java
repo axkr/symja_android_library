@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,6 +19,7 @@ import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -28,74 +31,82 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- *
- *
  * <pre>
- * FindRoot(f, {x, xmin, xmax})
+ * <code>FindRoot(f, {x, xmin, xmax})
+ * </code>
  * </pre>
- *
- * <blockquote>
- *
+ * 
  * <p>
  * searches for a numerical root of <code>f</code> for the variable <code>x</code>, in the range
  * <code>xmin</code> to <code>xmax</code>.
- *
- * </blockquote>
- *
+ * </p>
+ * 
  * <pre>
- * FindRoot(f, {x, xmin, xmax}, MaxIterations-&gt;maxiter)
+ * <code>FindRoot(f, {x, xmin, xmax}, MaxIterations-&gt;maxiter)
+ * </code>
  * </pre>
- *
- * <blockquote>
- *
+ * 
  * <p>
- * searches for a numerical root of <code>f</code> for the variable <code>x</code>, with <code>
- * maxiter</code> iterations. The default maximum iteraton is <code>100</code>.
- *
- * </blockquote>
- *
+ * searches for a numerical root of <code>f</code> for the variable <code>x</code>, with
+ * <code>maxiter</code> iterations. The default maximum iteraton is <code>100</code>.
+ * </p>
+ * 
  * <pre>
- * FindRoot(f, {x, xmin, xmax}, Method-&gt;method_name)
+ * <code>FindRoot(f, {x, xmin, xmax}, Method-&gt;method_name)
+ * </code>
  * </pre>
- *
- * <blockquote>
- *
+ * 
  * <p>
  * searches for a numerical root of <code>f</code> for the variable <code>x</code>, with one of the
- * following method names:
- *
- * </blockquote>
- *
- * <h4>Brent</h4>
- *
+ * method names listed below.
+ * </p>
+ * 
+ * <pre>
+ * <code>FindRoot({f(x1,x2,...), g(x1,x2,...), ...}, {{x1, initialValue1}, {x2, initialValue2}, ...})
+ * </code>
+ * </pre>
+ * 
  * <p>
- * Implements the Brent algorithm for finding zeros of real univariate functions (<code>
- * BracketingNthOrderBrentSolver</code>). The function should be continuous but not necessarily
- * smooth. The solve method returns a zero <code>x</code> of the function <code>f</code> in the
- * given interval <code>[xmin, xmax]</code>.
- *
+ * searches a multivariate root with Newton's iteration method for a differentiable, multivariate,
+ * vector-valued function.
+ * </p>
+ * 
+ * <p>
+ * See
+ * </p>
+ * <ul>
+ * <li><a href="https://en.wikipedia.org/wiki/Root-finding_algorithm">Wikipedia - Root-finding
+ * algorithm</a></li>
+ * <li><a href="https://en.wikipedia.org/wiki/Newton%27s_method#k_variables,_k_functions">Wikipedia
+ * - Newton's method - k_variables, _k_functions</a></li>
+ * </ul>
+ * <h4>Brent</h4>
+ * <p>
+ * Implements the Brent algorithm for finding zeros of real univariate functions
+ * (<code>BracketingNthOrderBrentSolver</code>). The function should be continuous but not
+ * necessarily smooth. The solve method returns a zero <code>x</code> of the function <code>f</code>
+ * in the given interval <code>[xmin, xmax]</code>.
+ * </p>
  * <p>
  * This is the default method, if no <code>method_name</code> is given.
- *
+ * </p>
  * <h4>Newton</h4>
- *
  * <p>
  * Implements Newton's method for finding zeros of real univariate functions. The function should be
  * continuous but not necessarily smooth.
- *
+ * </p>
  * <h4>Bisection</h4>
- *
  * <p>
  * Implements the bisection algorithm for finding zeros of univariate real functions. The function
  * should be continuous but not necessarily smooth.
- *
+ * </p>
  * <h4>Muller</h4>
- *
  * <p>
  * Implements the Muller's Method for root finding of real univariate functions. For reference, see
  * Elementary Numerical Analysis, ISBN 0070124477, chapter 3. Muller's method applies to both real
@@ -104,27 +115,25 @@ import org.matheclipse.core.interfaces.ISymbol;
  * find ways to avoid that. Bracketing condition is one way to go: by requiring bracketing in every
  * iteration, the newly computed approximation is guaranteed to be real. Normally Muller's method
  * converges quadratically in the vicinity of a zero, however it may be very slow in regions far
- * away from zeros. For example, <code>FindRoot(Exp(x)-1 == 0,{x,-50,100}, Method-&gt;Muller)
- * </code>. In such case we use bisection as a safety backup if it performs very poorly. The
- * formulas here use divided differences directly.
- *
+ * away from zeros. For example,
+ * <code>FindRoot(Exp(x)-1 == 0,{x,-50,100}, Method-&gt;Muller)</code>. In such case we use
+ * bisection as a safety backup if it performs very poorly. The formulas here use divided
+ * differences directly.
+ * </p>
  * <h4>Ridders</h4>
- *
  * <p>
  * Implements the Ridders' Method for root finding of real univariate functions. For reference, see
  * C. Ridders, A new algorithm for computing a single root of a real continuous function, IEEE
  * Transactions on Circuits and Systems, 26 (1979), 979 - 980. The function should be continuous but
  * not necessarily smooth.
- *
+ * </p>
  * <h4>Secant</h4>
- *
  * <p>
  * Implements the Secant method for root-finding (approximating a zero of a univariate real
  * function). The solution that is maintained is not bracketed, and as such convergence is not
  * guaranteed.
- *
+ * </p>
  * <h4>RegulaFalsi</h4>
- *
  * <p>
  * Implements the Regula Falsi or False position method for root-finding (approximating a zero of a
  * univariate real function). It is a modified Secant method. The Regula Falsi method is included
@@ -140,9 +149,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * a ConvergenceException exception being thrown. In other words, the algorithm theoretically
  * guarantees convergence, but the implementation does not. The Regula Falsi method assumes that the
  * function is continuous, but not necessarily smooth.
- *
+ * </p>
  * <h4>Illinois</h4>
- *
  * <p>
  * Implements the Illinois method for root-finding (approximating a zero of a univariate real
  * function). It is a modified Regula Falsi method. Like the Regula Falsi method, convergence is
@@ -151,9 +159,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * method should not suffer from the same implementation issues as the Regula Falsi method, which
  * may fail to convergence in certain cases. The Illinois method assumes that the function is
  * continuous, but not necessarily smooth.
- *
+ * </p>
  * <h4>Pegasus</h4>
- *
  * <p>
  * Implements the Pegasus method for root-finding (approximating a zero of a univariate real
  * function). It is a modified Regula Falsi method. Like the Regula Falsi method, convergence is
@@ -161,22 +168,36 @@ import org.matheclipse.core.interfaces.ISymbol;
  * faster than the original Regula Falsi method. The Pegasus method should converge faster than the
  * Illinois method, another Regula Falsi-based method. The Pegasus method assumes that the function
  * is continuous, but not necessarily smooth.
- *
+ * </p>
  * <h3>Examples</h3>
- *
+ * 
  * <pre>
- * &gt;&gt; FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method-&gt;Bisection)
+ * <code>&gt;&gt; FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method-&gt;Bisection)
  * {x-&gt;3.434189647436142}
- *
+ * 
  * &gt;&gt; FindRoot(Sin(x), {x, -0.5, 0.5})
- * {x-&gt;0.0}
+ * {x-&gt;0.0} 
+ * </code>
  * </pre>
- *
+ * <p>
+ * Using Newton's method for finding the root of a differentiable, multivariate, vector-valued
+ * function.
+ * </p>
+ * 
+ * <pre>
+ * <code>&gt;&gt; FindRoot({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{{x1, 0.0},{x2, 1.0}})
+ * {x1-&gt;0.197594,x2-&gt;0.425514}
+ * 
+ * &gt;&gt; FindRoot({Exp(-Exp(-(x1+x2)))-x2*(1+x1^2), x1*Cos(x2)+x2*Sin(x1)-0.5},{x1,x2})
+ * {x1-&gt;0.353247,x2-&gt;0.606082}
+ * </code>
+ * </pre>
+ * 
  * <h3>Related terms</h3>
- *
  * <p>
  * <a href="Factor.md">Factor</a>, <a href="Eliminate.md">Eliminate</a>,
  * <a href="NRoots.md">NRoots</a>, <a href="Solve.md">Solve</a>
+ * </p>
  */
 public class FindRoot extends AbstractFunctionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -326,11 +347,17 @@ public class FindRoot extends AbstractFunctionEvaluator {
       }
     }
 
+    IExpr arg1 = ast.arg1();
     IExpr arg2 = ast.arg2();
     if (!arg2.isList()) {
       arg2 = engine.evaluate(arg2);
     }
-    if (arg2.isList()) {
+    int l1 = arg1.isVector();
+    int l2 = arg2.argSize();
+    if (l1 > 0 && l1 == l2 && arg1.isList() && arg2.isList()) {
+      return multivariateFindRoot((IAST) arg1, (IAST) arg2, Config.SPECIAL_FUNCTIONS_TOLERANCE, 200,
+          engine);
+    } else if (arg2.isList()) {
       IAST list = (IAST) arg2;
       if (list.size() >= 3 && list.arg1().isSymbol()) {
         ISignedNumber min = list.arg2().evalReal();
@@ -357,6 +384,113 @@ public class FindRoot extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Call Newton's method for finding the root of a differentiable, multivariate, vector-valued
+   * function.
+   * 
+   * @param listOfEquations a list of equations
+   * @param matrixOfVarValuePairs a matrix of variables and their initial values
+   * @param tolerance the tolerance where the the iteration should stop
+   * @param iterationLimit maximum iterations
+   * @param engine
+   * @return
+   */
+  private static IExpr multivariateFindRoot(IAST listOfEquations, IAST matrixOfVarValuePairs,
+      double tolerance, int iterationLimit, EvalEngine engine) {
+    // convert parameters from FindRoot to be suitable for Newtons method
+    IASTAppendable vectorValuedFunction = F.ListAlloc(matrixOfVarValuePairs.argSize());
+    IASTAppendable vectorOfVariables = F.ListAlloc(matrixOfVarValuePairs.argSize());
+    IASTAppendable initialGuess = F.ListAlloc(matrixOfVarValuePairs.argSize());
+    for (int i = 1; i < matrixOfVarValuePairs.size(); i++) {
+      IExpr element = matrixOfVarValuePairs.get(i);
+      if (element.isList2()) {
+        vectorOfVariables.append(element.first());
+        initialGuess.append(engine.evalDouble(element.second()));
+      } else {
+        return F.NIL;
+      }
+      IExpr equation = listOfEquations.get(i);
+      if (equation.isEqual()) {
+        vectorValuedFunction
+            .append(engine.evaluate(F.Subtract(equation.first(), equation.second())));
+      } else {
+        // assume equation == 0
+        vectorValuedFunction.append(equation);
+      }
+    }
+
+    return multivariateNewton(vectorValuedFunction, vectorOfVariables, initialGuess, tolerance,
+        iterationLimit, engine);
+  }
+
+  /**
+   * Newton's method for finding the root of a differentiable, multivariate, vector-valued function.
+   * <p>
+   * See:
+   * <a href="https://en.wikipedia.org/wiki/Newton%27s_method#k_variables,_k_functions">Wikipedia -
+   * Newton's method - k_variables, _k_functions</a>
+   * 
+   * @param vectorValuedFunction
+   * @param vectorOfVariables
+   * @param initialGuessVector
+   * @param tolerance
+   * @param iterationLimit maximum iterations
+   * @param engine
+   * @return
+   */
+  private static IExpr multivariateNewton(IAST vectorValuedFunction, IAST vectorOfVariables,
+      IAST initialGuessVector, double tolerance,
+      int iterationLimit, EvalEngine engine) {
+
+    IExpr jacobianMatrix = S.Grad.ofNIL(engine, vectorValuedFunction, vectorOfVariables);
+    if (jacobianMatrix.isMatrix(false) != null) {
+      final int argSize = vectorOfVariables.argSize();
+      IAST xNext = F.constantArray(F.CD0, argSize);
+      IAST xCurr = initialGuessVector.copy();
+      for (int k = 0; k < iterationLimit; k++) {
+        Map<IExpr, IExpr> map = createSubsMap(vectorOfVariables, xCurr);
+        IExpr fValue = engine.evalN(F.Negate(F.subsList(vectorValuedFunction, map)));
+        IExpr jValue = engine.evalN(F.subsList(jacobianMatrix, map));
+        if (fValue.argSize() == argSize && jValue.argSize() == argSize) {
+          IExpr y = S.LinearSolve.ofNIL(engine, jValue, fValue);
+          if (y.argSize() != argSize) {
+            return F.NIL;
+          }
+          IExpr temp = engine.evaluate(F.Plus(xCurr, y));
+          if (temp.argSize() != argSize) {
+            return F.NIL;
+          }
+          xNext = (IAST) temp;
+          double norm = engine.evalDouble(F.Norm(y));
+          if (norm < tolerance) {
+            break;
+          }
+          xCurr = xNext;
+        } else {
+          return F.NIL;
+        }
+      }
+      // convert result vector to list of rules
+      return vectorOfVariables.mapThread(xNext, (x, y) -> F.Rule(x, y));
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Create the substitution map.
+   * 
+   * @param variables
+   * @param xCurr
+   * @return
+   */
+  private static Map<IExpr, IExpr> createSubsMap(IAST variables, IAST xCurr) {
+    Map<IExpr, IExpr> map = new HashMap<IExpr, IExpr>();
+    for (int i = 1; i < variables.size(); i++) {
+      map.put(variables.get(i), xCurr.get(i));
+    }
+    return map;
   }
 
   @Override

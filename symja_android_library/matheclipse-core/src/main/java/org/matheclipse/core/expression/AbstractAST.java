@@ -4885,6 +4885,23 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
+  public final IASTMutable mapThread(IAST that, BiFunction<IExpr, IExpr, IExpr> function) {
+    int size = size();
+    if (that.size() < size()) {
+      size = that.size();
+    }
+    if (size > 0) {
+      IASTAppendable result = copyHead(size - 1);
+      for (int i = 1; i < size; i++) {
+        result.append(function.apply(get(i), that.get(i)));
+      }
+      return result;
+    }
+    return copyHead();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public IASTAppendable mapThreadEvaled(EvalEngine engine, IASTAppendable appendAST,
       final IAST replacement, int position) {
     final Function<IExpr, IExpr> function =

@@ -16,10 +16,17 @@ FindRoot(f, {x, xmin, xmax}, MaxIterations->maxiter)
 FindRoot(f, {x, xmin, xmax}, Method->method_name)
 ```
 
-> searches for a numerical root of `f` for the variable `x`, with one of the following method names:
+> searches for a numerical root of `f` for the variable `x`, with one of the method names listed below.
+
+```
+FindRoot({f(x1,x2,...), g(x1,x2,...), ...}, {{x1, initialValue1}, {x2, initialValue2}, ...})
+```
+
+> searches a multivariate root with Newton's iteration method for a differentiable, multivariate, vector-valued function.
 
 See
 * [Wikipedia - Root-finding algorithm](https://en.wikipedia.org/wiki/Root-finding_algorithm)
+* [Wikipedia - Newton's method - k_variables, _k_functions](https://en.wikipedia.org/wiki/Newton%27s_method#k_variables,_k_functions)
 
 #### Brent
 
@@ -95,6 +102,16 @@ The Pegasus method assumes that the function is continuous, but not necessarily 
 
 >> FindRoot(Sin(x), {x, -0.5, 0.5})
 {x->0.0} 
+```
+
+Using Newton's method for finding the root of a differentiable, multivariate, vector-valued function.
+
+```
+>> FindRoot({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{{x1, 0.0},{x2, 1.0}})
+{x1->0.197594,x2->0.425514}
+
+>> FindRoot({Exp(-Exp(-(x1+x2)))-x2*(1+x1^2), x1*Cos(x2)+x2*Sin(x1)-0.5},{x1,x2})
+{x1->0.353247,x2->0.606082}
 ```
 
 ### Related terms 
