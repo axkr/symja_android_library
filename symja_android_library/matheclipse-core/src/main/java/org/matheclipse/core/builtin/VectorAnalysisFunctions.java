@@ -7,6 +7,8 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISparseArray;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class VectorAnalysisFunctions {
   /**
@@ -134,13 +136,77 @@ public class VectorAnalysisFunctions {
     }
   }
 
+  /**
+   * <pre>
+   * <code>Grad(function, list-of-variables)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * gives the gradient of the function.
+   * </p>
+   * 
+   * <pre>
+   * <code>Grad({f1, f2,...},  {v1, v2,...)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * returns the Jacobian matrix for the vector of functions.
+   * </p>
+   * 
+   * <p>
+   * See:
+   * </p>
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Gradient">Wikipedia - Gradient</a></li>
+   * </ul>
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; Grad(2*x+3*y^2-Sin(z), {x, y, z})
+   * {2,6*y,-Cos(z)}
+   * </code>
+   * </pre>
+   * <p>
+   * Create a Jacobian matrix:
+   * </p>
+   * 
+   * <pre>
+   * <code>&gt;&gt; Grad({f(x, y),g(x,y)}, {x, y})
+   * {{Derivative(1,0)[f][x,y],Derivative(0,1)[f][x,y]},{Derivative(1,0)[g][x,y],Derivative(0,1)[g][x,y]}}
+   * </code>
+   * </pre>
+   */
   private static final class Grad extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg2().isList() && ast.arg2().size() > 1) {
-        final IExpr function = ast.arg1();
+        final IExpr arg1 = ast.arg1();
         final IAST variables = (IAST) ast.arg2();
+
+        final IExpr function;
+        if (arg1.isSparseArray()) {
+          int[] dimension = ((ISparseArray) arg1).getDimension();
+          if (dimension.length == 1) {
+            function = arg1.normal(false);
+          } else {
+            function = arg1;
+          }
+        } else {
+          function = arg1;
+        }
+
+        if (function.isList()) {
+          IntArrayList dimensions = LinearAlgebra.dimensions((IAST) function, S.List);
+          if (dimensions.size() == 1 && dimensions.getInt(0) == variables.argSize()) {
+
+            // create jacobian matrix
+            return F.Outer.of(engine, S.D, function, variables);
+          }
+          return F.NIL;
+        }
         return F.mapList(variables, x -> F.D.of(engine, function, x));
       }
 
