@@ -20,10 +20,6 @@
  */
 package de.lab4inf.math.extrema;
 
-import de.lab4inf.math.Function;
-import de.lab4inf.math.differentiation.Gradient;
-import de.lab4inf.math.differentiation.Hessian;
-
 import static de.lab4inf.math.lapack.LinearAlgebra.add;
 import static de.lab4inf.math.lapack.LinearAlgebra.copy;
 import static de.lab4inf.math.lapack.LinearAlgebra.identity;
@@ -32,6 +28,9 @@ import static de.lab4inf.math.lapack.LinearAlgebra.sub;
 import static de.lab4inf.math.util.Accuracy.hasConverged;
 import static de.lab4inf.math.util.Accuracy.round;
 import static java.lang.String.format;
+import de.lab4inf.math.Function;
+import de.lab4inf.math.differentiation.Gradient;
+import de.lab4inf.math.differentiation.Hessian;
 
 /**
  * Optimizer using the Marquardt minimisation.
@@ -105,7 +104,7 @@ public class MarquardtOptimizer extends GenericOptimizer {
       }
       fo = f;
       if (DEBUG) {
-        logger.info(format("%15s %3d %s f:%.2g lambda:%.5f", iteration, display(x), f, lamda));
+        logger.info(format("%15s %s f:%.2g lambda:%.5f", iteration, display(x), f, lamda));
       }
       informIterationIsFinished(iteration, x);
     } while (!hasConverged(x, xo, getPrecision(), ++iteration, getMaxIterations()));

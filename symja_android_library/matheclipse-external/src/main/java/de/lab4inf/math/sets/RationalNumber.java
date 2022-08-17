@@ -20,18 +20,17 @@
  */
 package de.lab4inf.math.sets;
 
+import static de.lab4inf.math.Constants.L4MLOGGER;
+import static java.lang.Math.floor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-
 import de.lab4inf.math.L4MLogger;
 import de.lab4inf.math.Operand;
+import de.lab4inf.math.Orderable;
 import de.lab4inf.math.Rational;
 import de.lab4inf.math.util.Accuracy;
 import de.lab4inf.math.util.Randomizer;
-
-import static de.lab4inf.math.Constants.L4MLOGGER;
-import static java.lang.Math.floor;
 
 /**
  * Approximation of the real numbers by a rational number r=a/b. The rational numbers can have
@@ -883,13 +882,17 @@ public class RationalNumber extends Number implements Rational {
    */
   @Override
   @Operand(symbol = "<")
-  public int compareTo(final Rational x) {
-    BigInteger a, b;
+  public int compareTo(final Orderable o1) {
+    if (o1 instanceof Rational) {
+      Rational x = (Rational) o1;
+      BigInteger a, b;
 
-    a = numerator.multiply(x.divider());
-    b = x.numerator().multiply(divider);
+      a = numerator.multiply(x.divider());
+      b = x.numerator().multiply(divider);
 
-    return a.compareTo(b);
+      return a.compareTo(b);
+    }
+    return Rational.super.compareTo(o1);
   }
 
   /*

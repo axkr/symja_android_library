@@ -21,15 +21,14 @@
 
 package de.lab4inf.math.sets;
 
+import static de.lab4inf.math.util.Accuracy.QEPS;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-
 import de.lab4inf.math.Operand;
+import de.lab4inf.math.Orderable;
 import de.lab4inf.math.Real;
 import de.lab4inf.math.util.Randomizer;
-
-import static de.lab4inf.math.util.Accuracy.QEPS;
 
 /**
  * An immutable double wrapped as a mathematical field.
@@ -317,9 +316,12 @@ public class RealNumber extends Number implements Real {
    */
   @Override
   @Operand(symbol = "<")
-  public int compareTo(final Real that) {
-    // return value.compareTo(((RealNumber)that).value)<0;
-    return value.compareTo(((RealNumber) that).value);
+  public int compareTo(final Orderable o1) {
+    if (o1 instanceof Real) {
+      Real that = (Real) o1;
+      return value.compareTo(((RealNumber) that).value);
+    }
+    return Real.super.compareTo(o1);
   }
 
   /**

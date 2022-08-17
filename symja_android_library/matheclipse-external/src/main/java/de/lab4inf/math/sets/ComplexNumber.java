@@ -1,33 +1,30 @@
 /*
  * Project: Lab4Math
  *
- * Copyright (c) 2008-2009,  Prof. Dr. Nikolaus Wulff
- * University of Applied Sciences, Muenster, Germany
- * Lab for Computer sciences (Lab4Inf).
+ * Copyright (c) 2008-2009, Prof. Dr. Nikolaus Wulff University of Applied Sciences, Muenster,
+ * Germany Lab for Computer sciences (Lab4Inf).
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 package de.lab4inf.math.sets;
 
-import de.lab4inf.math.Complex;
-import de.lab4inf.math.L4MObject;
-import de.lab4inf.math.Operand;
-import de.lab4inf.math.util.Randomizer;
-
 import static de.lab4inf.math.util.Accuracy.isSimilar;
 import static java.lang.Math.PI;
 import static java.lang.Math.atan2;
+import de.lab4inf.math.Complex;
+import de.lab4inf.math.L4MObject;
+import de.lab4inf.math.Operand;
+import de.lab4inf.math.Orderable;
+import de.lab4inf.math.util.Randomizer;
 
 /**
  * Implementation of a complex number. Some of the methods are suitable for Groovy operator
@@ -384,8 +381,10 @@ public final class ComplexNumber extends L4MObject implements Complex /* , Seria
           buf.append(String.format(fmt, x));
         }
         if (y > 0) {
-          if (x != 0) buf.append("+j");
-          else buf.append("j");
+          if (x != 0)
+            buf.append("+j");
+          else
+            buf.append("j");
           buf.append(String.format(fmt, y));
         } else if (y < 0) {
           buf.append("-j");
@@ -590,9 +589,8 @@ public final class ComplexNumber extends L4MObject implements Complex /* , Seria
     if (abs2 == 0) {
       throw new IllegalArgumentException(DIVIDE_BY_ZERO);
     }
-    final ComplexNumber ret =
-        new ComplexNumber(
-            (x * v.real() + y * v.imag()) / abs2, (-x * v.imag() + y * v.real()) / abs2);
+    final ComplexNumber ret = new ComplexNumber((x * v.real() + y * v.imag()) / abs2,
+        (-x * v.imag() + y * v.real()) / abs2);
     return ret;
   }
 
@@ -608,8 +606,10 @@ public final class ComplexNumber extends L4MObject implements Complex /* , Seria
       if (x != 0) {
         rad = atan2(y, x);
       } else {
-        if (y > 0) rad = PI / 2;
-        else rad = -PI / 2;
+        if (y > 0)
+          rad = PI / 2;
+        else
+          rad = -PI / 2;
       }
     // if (rad<0) {
     // rad += 2*PI;
@@ -726,24 +726,28 @@ public final class ComplexNumber extends L4MObject implements Complex /* , Seria
    * @see java.lang.Comparable#compareTo(java.lang.Object)
    */
   @Override
-  public int compareTo(final Complex o) {
-    int ret = 0;
-    double a = abs2();
-    double b = o.abs2();
-    if (a < b) {
-      ret = -1;
-    } else if (a > b) {
-      ret = 1;
-    } else {
-      a = rad();
-      b = o.rad();
+  public int compareTo(final Orderable o1) {
+    if (o1 instanceof Complex) {
+      Complex o = (Complex) o1;
+      int ret = 0;
+      double a = abs2();
+      double b = o.abs2();
       if (a < b) {
         ret = -1;
       } else if (a > b) {
         ret = 1;
+      } else {
+        a = rad();
+        b = o.rad();
+        if (a < b) {
+          ret = -1;
+        } else if (a > b) {
+          ret = 1;
+        }
       }
+      return ret;
     }
-    return ret;
+    return Complex.super.compareTo(o1);
   }
 
   /*

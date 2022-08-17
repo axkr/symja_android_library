@@ -29,7 +29,18 @@ package de.lab4inf.math;
  * @version $Id: Orderable.java,v 1.3 2014/11/16 21:47:23 nwulff Exp $
  * @since 20.06.2013
  */
-public interface Orderable<T> extends Comparable<T> {
+public interface Orderable<T> extends Comparable<Orderable> {
+
+  @Override
+  default int compareTo(final Orderable o1) {
+    if (o1.gt(this)) {
+      return 1;
+    } else if (o1.lt(this)) {
+      return -1;
+    }
+    return 0;
+  }
+
   /**
    * Compare this to that
    *

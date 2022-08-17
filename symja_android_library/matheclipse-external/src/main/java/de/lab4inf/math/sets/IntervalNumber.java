@@ -1,39 +1,37 @@
 /*
  * Project: Lab4Math
  *
- * Copyright (c) 2006-2011,  Prof. Dr. Nikolaus Wulff
- * University of Applied Sciences, Muenster, Germany
- * Lab for computer sciences (Lab4Inf).
+ * Copyright (c) 2006-2011, Prof. Dr. Nikolaus Wulff University of Applied Sciences, Muenster,
+ * Germany Lab for computer sciences (Lab4Inf).
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 
 package de.lab4inf.math.sets;
 
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.POSITIVE_INFINITY;
 import de.lab4inf.math.Field;
 import de.lab4inf.math.Interval;
 import de.lab4inf.math.Operand;
+import de.lab4inf.math.Orderable;
 import de.lab4inf.math.util.Accuracy;
 import de.lab4inf.math.util.Randomizer;
-
-import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.lang.Double.POSITIVE_INFINITY;
 
 /**
  * An interval number is a pair [l,r] which models the left and right of an interval as set.
  *
- * <p>The division implementation is based on
+ * <p>
+ * The division implementation is based on
  *
  * <pre>
  * T. Hickey, Q. Ju and M.H. van Emden:
@@ -491,7 +489,7 @@ public class IntervalNumber extends Number implements Interval, Field<Interval> 
     // test it the new format is valid
     // otherwise an exception will raised...
     try {
-      toString();
+      String temp = toString();
     } catch (final Exception e) {
       fmt = oldFmt;
       throw new IllegalArgumentException("invalid format " + s);
@@ -505,14 +503,18 @@ public class IntervalNumber extends Number implements Interval, Field<Interval> 
    */
   @Override
   @Operand(symbol = "<")
-  public int compareTo(final Interval o) {
-    int res = 0;
-    if (right() < o.left()) {
-      res = -1;
-    } else if (o.right() < left()) {
-      res = 1;
+  public int compareTo(final Orderable o1) {
+    if (o1 instanceof IntervalNumber) {
+      IntervalNumber o = (IntervalNumber) o1;
+      int res = 0;
+      if (right() < o.left()) {
+        res = -1;
+      } else if (o.right() < left()) {
+        res = 1;
+      }
+      return res;
     }
-    return res;
+    return Interval.super.compareTo(o1);
   }
 
   /*
@@ -869,7 +871,8 @@ public class IntervalNumber extends Number implements Interval, Field<Interval> 
    */
   @Override
   public Interval intersection(final Interval that) {
-    if (isNull() || that.isNull() || r < that.left() || that.right() < l) return NULL;
+    if (isNull() || that.isNull() || r < that.left() || that.right() < l)
+      return NULL;
     final double al = Math.max(l, that.left());
     final double ar = Math.min(r, that.right());
     return new IntervalNumber(al, ar);
