@@ -1,9 +1,9 @@
 package tech.tablesaw.plotly.components;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Preconditions;
 
 public class Annotation extends Component {
 
@@ -248,8 +248,8 @@ public class Annotation extends Component {
       context.put("bgcolor", bgcolor);
     if (borderpad != DEFAULT_BORDERPAD)
       context.put("borderpad", borderpad);
-    if (borderwidth != borderwidth)
-      context.put("borderwidth", bordercolor);
+    if (borderwidth != DEFAULT_BORDERWIDTH)
+      context.put("borderwidth", borderwidth);
     if (showarrow != DEFAULT_SHOWARROW)
       context.put("showarrow", showarrow);
     if (arrowcolor != null)
