@@ -545,7 +545,11 @@ public class MMAConsole {
     fOutputFactory.reset(false);
     fOutputFactory.setSignificantFigures(fEvaluator.getEvalEngine().getSignificantFigures() + 1);
     if (fOutputFactory.convert(strBuffer, result)) {
-      return strBuffer.toString();
+      String resultString = strBuffer.toString();
+      if (resultString.indexOf('\n', 1) > 0 && resultString.charAt(0) != '\n') {
+        return "\n" + resultString;
+      }
+      return resultString;
     }
     return "ERROR-IN-OUTPUTFORM";
   }
