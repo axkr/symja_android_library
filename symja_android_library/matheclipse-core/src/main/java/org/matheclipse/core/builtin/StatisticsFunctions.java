@@ -5954,14 +5954,19 @@ public class StatisticsFunctions {
               int dim2 = q.isVector();
               if (dim2 >= 0 && q.isList()) {
                 final IAST vector = ((IAST) q);
+                if (vector.exists(x -> x.isReal() && !((ISignedNumber) x).isRange(F.C0, F.C1))) {
+                  // The Quantile specification `1` should be a number or a list of numbers between
+                  // `2` and `3`.
+                  return IOFunctions.printMessage(ast.topHead(), "nquan", F.list(q, F.C0, F.C1),
+                      engine);
+                }
                 return vector.mapThread(ast, 2);
-                // if (vector.forAll(x -> x.isReal())) {
-                // return vector.map(scalar -> of(s, length, (ISignedNumber) scalar), 1);
-                // }
               } else {
                 if (q.isReal()) {
                   ISignedNumber qi = (ISignedNumber) q;
                   if (!qi.isRange(F.C0, F.C1)) {
+                    // The Quantile specification `1` should be a number or a list of numbers
+                    // between `2` and `3`.
                     return IOFunctions.printMessage(ast.topHead(), "nquan", F.list(qi, F.C0, F.C1),
                         engine);
                   }
@@ -6269,9 +6274,8 @@ public class StatisticsFunctions {
     }
 
     private static IExpr rescale(IExpr x, IExpr min, IExpr max, EvalEngine engine) {
-      IExpr sum = engine.evaluate(F.Subtract(max, min));
-      return engine
-          .evaluate(F.Plus(F.Times(F.CN1, F.Power(sum, -1), min), F.Times(F.Power(sum, -1), x)));
+      IExpr inverseDifference = engine.evaluate(F.Power(F.Subtract(max, min), -1));
+      return engine.evaluate(F.Plus(F.Times(F.CN1, inverseDifference, min), F.Times(inverseDifference, x)));
     }
 
     @Override

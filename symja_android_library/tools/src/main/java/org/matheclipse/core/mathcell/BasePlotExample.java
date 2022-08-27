@@ -50,7 +50,7 @@ public abstract class BasePlotExample {
       if (result instanceof ImageExpr) {
         ImageExpr imageExpr = (ImageExpr) result;
         // https://stackoverflow.com/a/22891895/24819
-        BufferedImage bImage = imageExpr.toData();
+        BufferedImage bImage = imageExpr.getBufferedImage();
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
           ImageIO.write(bImage, "png", b64);

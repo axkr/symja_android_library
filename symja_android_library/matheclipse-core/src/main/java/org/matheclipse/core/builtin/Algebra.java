@@ -3625,7 +3625,7 @@ public class Algebra {
           variablesList = F.list(arg2);
         }
         IAST subst = substituteVariablesInPolynomial(arg1, variablesList, "§PolynomialQ");
-        IExpr result = F.bool(subst.arg1().isPolynomial((IAST) subst.arg2()));
+        IExpr result = F.booleSymbol(subst.arg1().isPolynomial((IAST) subst.arg2()));
         engine.putCache(ast, result);
         return result;
       }
