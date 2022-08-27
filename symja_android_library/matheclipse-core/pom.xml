@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.matheclipse</groupId>
 		<artifactId>matheclipse</artifactId>
-		<version>2.1.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>matheclipse-core</artifactId>
@@ -65,7 +65,7 @@
 			<groupId>org.hipparchus</groupId>
 			<artifactId>hipparchus-ode</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.hipparchus</groupId>
 			<artifactId>hipparchus-optim</artifactId>
@@ -121,17 +121,27 @@
 			<groupId>org.organicdesign</groupId>
 			<artifactId>Paguro</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.esotericsoftware</groupId>
 			<artifactId>kryo</artifactId>
 		</dependency>
 
 		<dependency>
+			<groupId>org.jfree</groupId>
+			<artifactId>jfreechart</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.freva</groupId>
+			<artifactId>ascii-table</artifactId> 
+		</dependency>
+
+		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 		</dependency>
-		
+
 		<!-- test dependencies -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -139,7 +149,7 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
- 
+
 
 	</dependencies>
 </project>
