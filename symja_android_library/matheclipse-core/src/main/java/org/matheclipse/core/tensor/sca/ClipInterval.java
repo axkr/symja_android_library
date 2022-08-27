@@ -1,3 +1,4 @@
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.sca;
 
 import org.matheclipse.core.eval.EvalEngine;
@@ -6,17 +7,19 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 /**
- * clip to an interval of non-zero width
+ * Clip to an interval of non-zero width
  * 
  * @implSpec This class is immutable and thread-safe.
  */
+
 /* package */ class ClipInterval implements Clip {
-  private final ISignedNumber min;
-  private final ISignedNumber max;
-  private final ISignedNumber width;
+
+  private final IExpr min;
+  private final IExpr max;
+  private final IExpr width;
   private final EvalEngine engine;
 
-  public ClipInterval(ISignedNumber min, ISignedNumber max, ISignedNumber width) {
+  public ClipInterval(IExpr min, IExpr max, IExpr width) {
     this.min = min;
     this.max = max;
     this.width = width;
@@ -42,12 +45,12 @@ import org.matheclipse.core.interfaces.ISignedNumber;
   }
 
   @Override // from Clip
-  public final boolean isInside(ISignedNumber scalar) {
+  public final boolean isInside(IExpr scalar) {
     return apply(scalar).equals(scalar);
   }
 
   @Override // from Clip
-  public final boolean isOutside(ISignedNumber scalar) {
+  public final boolean isOutside(IExpr scalar) {
     return !isInside(scalar);
   }
 
@@ -56,26 +59,27 @@ import org.matheclipse.core.interfaces.ISignedNumber;
     if (isInside(scalar)) {
       return scalar;
     }
-    return null;
+    throw new IllegalArgumentException(
+        "ClipInterval: scalar " + scalar + " not inside ClipInterval(" + min + "," + max + ")");
   }
 
   @Override // from Clip
-  public IExpr rescale(ISignedNumber scalar) {
+  public IExpr rescale(IExpr scalar) {
     return apply(scalar).subtract(min).divide(width);
   }
 
   @Override // from Clip
-  public final ISignedNumber min() {
+  public final IExpr min() {
     return min;
   }
 
   @Override // from Clip
-  public final ISignedNumber max() {
+  public final IExpr max() {
     return max;
   }
 
   @Override // from Clip
-  public final ISignedNumber width() {
+  public final IExpr width() {
     return width;
   }
 

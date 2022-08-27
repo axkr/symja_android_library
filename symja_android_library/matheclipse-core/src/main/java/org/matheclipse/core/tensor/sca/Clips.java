@@ -1,9 +1,11 @@
-// code by jph
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.sca;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.tensor.qty.QuantityUnit;
 
 /**
  * factory for the creation of {@link Clip}
@@ -11,8 +13,8 @@ import org.matheclipse.core.interfaces.ISignedNumber;
  * Remark: A {@link Clip} represents a non-empty, closed interval of the form [min, max]. The values
  * min and max can be real numbers, or instances of {@link Quantity} with identical {@link Unit}.
  */
-public enum Clips {
-  ;
+public class Clips {
+
   /**
    * clips in the interval [min, ..., max]
    * 
@@ -22,7 +24,7 @@ public enum Clips {
    * @throws Exception if min is greater than max
    * @throws Exception if min and max give different {@link QuantityUnit}
    */
-  public static Clip interval(ISignedNumber min, ISignedNumber max) {
+  public static Clip interval(IExpr min, IExpr max) {
     // Scalars.compare(min, max); // assert that min and max have identical units
     return create(min, max);
   }
@@ -37,7 +39,6 @@ public enum Clips {
     return create(F.num(min.doubleValue()), F.num(max.doubleValue()));
   }
 
-  // ---
   /**
    * clips in the interval [0, ..., max]
    * 
@@ -103,8 +104,8 @@ public enum Clips {
    */
   public static Clip intersection(Clip clip1, Clip clip2) {
     return create( //
-        (ISignedNumber) S.Max.of(clip1.min(), clip2.min()), //
-        (ISignedNumber) S.Min.of(clip1.max(), clip2.max()));
+        S.Max.of(clip1.min(), clip2.min()), //
+        S.Min.of(clip1.max(), clip2.max()));
   }
 
   /**
@@ -115,16 +116,15 @@ public enum Clips {
    */
   public static Clip cover(Clip clip1, Clip clip2) {
     return create( //
-        (ISignedNumber) S.Min.of(clip1.min(), clip2.min()), //
-        (ISignedNumber) S.Max.of(clip1.max(), clip2.max()));
+        S.Min.of(clip1.min(), clip2.min()), //
+        S.Max.of(clip1.max(), clip2.max()));
   }
 
-  // ---
-  // helper function
-  private static Clip create(ISignedNumber min, ISignedNumber max) {
-    ISignedNumber width = max.subtractFrom(min);
-    if (min.equals(max))
+  private static Clip create(IExpr min, IExpr max) {
+    IExpr width = max.subtract(min);
+    if (min.equals(max)) {
       return new ClipPoint(min, width);
+    }
     if (width.isPositive()) {
       return new ClipInterval(min, max, width);
     }

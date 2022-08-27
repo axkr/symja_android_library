@@ -56,10 +56,11 @@ public class WindowFunctions {
     }
   }
 
-  public static class WindowFunction extends AbstractTrigArg1 {
+  public static class WindowFunction extends AbstractTrigArg1 implements Function<IExpr, IExpr> {
     private final Function<IExpr, IExpr> function;
     private final String name;
 
+    @Override
     public IExpr apply(IExpr t) {
       return function.apply(t);
     }

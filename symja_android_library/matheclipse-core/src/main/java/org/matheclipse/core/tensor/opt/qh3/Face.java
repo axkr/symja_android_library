@@ -1,4 +1,6 @@
-/*
+// code adapted from https://github.com/datahaki/tensor
+
+/**
  * Copyright John E. Lloyd, 2003. All rights reserved. Permission to use, copy, and modify, without
  * fee, is granted for non-commercial and research purposes, provided that this copyright notice
  * appears in all copies.
@@ -232,11 +234,12 @@ class Face {
     return null;
   }
 
-  /** Computes the distance from a point p to the plane of
-   * this face.
+  /**
+   * Computes the distance from a point p to the plane of this face.
    *
    * @param p the point
-   * @return distance from the point to the plane */
+   * @return distance from the point to the plane
+   */
   public IExpr distanceToPlane(Vector3d p) {
     return F.eval(F.Subtract(F.Dot(normal.toTensor(), p.toTensor()), planeOffset));
     // return normal.x * p.x + normal.y * p.y + normal.z * p.z - planeOffset;
@@ -328,9 +331,8 @@ class Face {
     do {
       HalfEdge hedgeOpp = hedge.getOpposite();
       if (hedgeOpp == null) {
-        throw new ArgumentTypeException(
-            "face " + getVertexString() + ": " + "unreflected half edge "
-            + hedge.getVertexString());
+        throw new ArgumentTypeException("face " + getVertexString() + ": "
+            + "unreflected half edge " + hedge.getVertexString());
         // throw Throw.of("face " + getVertexString() + ": " + "unreflected half edge "
         // + hedge.getVertexString());
       } else if (hedgeOpp.getOpposite() != hedge) {
@@ -342,9 +344,8 @@ class Face {
         // + " has opposite " + hedgeOpp.getOpposite().getVertexString());
       }
       if (hedgeOpp.head() != hedge.tail() || hedge.head() != hedgeOpp.tail()) {
-        throw new ArgumentTypeException(
-            "face " + getVertexString() + ": " + "half edge " + hedge.getVertexString()
-            + " reflected by " + hedgeOpp.getVertexString());
+        throw new ArgumentTypeException("face " + getVertexString() + ": " + "half edge "
+            + hedge.getVertexString() + " reflected by " + hedgeOpp.getVertexString());
         // throw Throw.of("face " + getVertexString() + ": " + "half edge " +
         // hedge.getVertexString()
         // + " reflected by " + hedgeOpp.getVertexString());

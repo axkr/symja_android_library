@@ -1,3 +1,4 @@
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.qty;
 
 import java.util.Objects;
@@ -6,6 +7,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class UnitConvert {
+
   /** @return instance of UnitConvert that uses the built-in SI convention */
   public static UnitConvert SI() {
     return BuiltIn.unitConvert;

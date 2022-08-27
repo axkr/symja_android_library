@@ -1,4 +1,4 @@
-// code by jph
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.opt.nd;
 
 import java.io.Serializable;
@@ -9,22 +9,16 @@ import java.util.stream.Stream;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.tensor.sca.Clip;
 import org.matheclipse.core.tensor.sca.Clips;
 
 /**
  * n-dimensional axis aligned bounding box
  * 
- * <p>
- * inspired by <a href=
- * "https://reference.wolfram.com/language/ref/CoordinateBoundingBox.html">CoordinateBoundingBox</a>
- * 
- * @see CoordinateBounds
- * 
- * @implSpec This class is immutable and thread-safe.
  */
 public class CoordinateBoundingBox implements Serializable {
+
   /**
    * @param stream of clip instances
    * @return
@@ -79,7 +73,7 @@ public class CoordinateBoundingBox implements Serializable {
   public boolean isInside(IAST vector) {
     IASTAppendable result = F.ListAlloc(vector.argSize());
     vector.forEach((x, i) -> result.append(getClip(i).apply(x)));
-    return vector.forAll((x, i) -> getClip(i - 1).isInside((ISignedNumber) x));
+    return vector.forAll((x, i) -> getClip(i - 1).isInside(x));
   }
 
   /**
@@ -122,11 +116,11 @@ public class CoordinateBoundingBox implements Serializable {
    * @param index
    * @return median of bounds in dimension of given index
    */
-  public ISignedNumber median(int index) {
+  public IExpr median(int index) {
     return median(getClip(index));
   }
 
-  private static ISignedNumber median(Clip clip) {
+  private static IExpr median(Clip clip) {
     return clip.min().add(clip.width().multiply(F.C1D2));
   }
 

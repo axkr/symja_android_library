@@ -1,4 +1,4 @@
-// code by jph
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.nrm;
 
 import java.util.stream.Stream;
@@ -12,8 +12,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * 
  * @see AbsSquared
  */
-public enum Vector2NormSquared {
-  ;
+public class Vector2NormSquared {
+
   /**
    * @param vector
    * @return squared Euclidean norm of given vector, i.e. || v1 || ^ 2

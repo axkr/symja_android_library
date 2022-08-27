@@ -1,3 +1,5 @@
+// code adapted from https://github.com/datahaki/tensor
+
 /**
  * Copyright John E. Lloyd, 2004. All rights reserved. Permission to use, copy, modify and
  * redistribute is granted, provided that this copyright notice is retained and the author is given
@@ -494,8 +496,7 @@ public class ConvexHull3D {
       xprod.cross(u01, diff02);
       IExpr lenSqr = xprod.normSquared();
       // lenSqr > maxSqr
-      if (F.eval(F.Sqrt(maxSqr)).lessThan(lenSqr).isTrue()
-          && pointBuffer[i] != vtx[0] // paranoid
+      if (F.eval(F.Sqrt(maxSqr)).lessThan(lenSqr).isTrue() && pointBuffer[i] != vtx[0] // paranoid
           && pointBuffer[i] != vtx[1]) {
         // if (Scalars.lessThan(maxSqr, lenSqr) && pointBuffer[i] != vtx[0] && // paranoid
         // pointBuffer[i] != vtx[1]) {
@@ -864,8 +865,7 @@ public class ConvexHull3D {
           if (ntolerance.lessThan((dist1 = oppFaceDistance(hedge))).isTrue()) {
             // if (Scalars.lessThan(ntolerance, (dist1 = oppFaceDistance(hedge)))) {
             merge = true;
-          } else if (ntolerance.lessThan(oppFaceDistance(hedge.opposite))
-              .isTrue()) {
+          } else if (ntolerance.lessThan(oppFaceDistance(hedge.opposite)).isTrue()) {
             // } else if (Scalars.lessThan(ntolerance, oppFaceDistance(hedge.opposite))) {
             convex = false;
           }

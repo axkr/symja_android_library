@@ -1,4 +1,4 @@
-// code by jph
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.nrm;
 
 import org.matheclipse.core.expression.F;
@@ -16,8 +16,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * <p>
  * Hypot is inspired by {@link Math#hypot(double, double)}
  */
-public enum Hypot {
-  ;
+public class Hypot {
+
   /**
    * @param a
    * @param b

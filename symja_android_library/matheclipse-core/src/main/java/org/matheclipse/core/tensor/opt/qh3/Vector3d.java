@@ -1,3 +1,5 @@
+// code adapted from https://github.com/datahaki/tensor
+
 /**
  * Copyright John E. Lloyd, 2004. All rights reserved. Permission to use, copy, modify and
  * redistribute is granted, provided that this copyright notice is retained and the author is given

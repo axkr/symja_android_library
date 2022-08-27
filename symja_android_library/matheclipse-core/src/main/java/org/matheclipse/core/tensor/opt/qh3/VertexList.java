@@ -1,3 +1,4 @@
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.opt.qh3;
 
 /** Maintains a double-linked list of vertices for use by QuickHull3D */
@@ -64,8 +65,9 @@ class VertexList {
     }
   }
 
-  /** Inserts a vertex into this list before another
-   * specificed vertex. */
+  /**
+   * Inserts a vertex into this list before another specificed vertex.
+   */
   public void insertBefore(Vertex vtx, Vertex next) {
     vtx.prev = next.prev;
     if (next.prev == null) {

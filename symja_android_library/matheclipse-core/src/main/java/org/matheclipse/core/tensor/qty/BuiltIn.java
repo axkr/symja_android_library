@@ -1,3 +1,4 @@
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.qty;
 
 import org.matheclipse.core.tensor.io.ResourceData;

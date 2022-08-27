@@ -1,3 +1,4 @@
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.qty;
 
 import java.util.Collections;
@@ -12,8 +13,11 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.parser.client.math.MathException;
 
-/** reference implementation of {@link UnitSystem} with emphasis on simplicity */
+/**
+ * Reference implementation of {@link UnitSystem} with emphasis on simplicity
+ */
 public class SimpleUnitSystem implements UnitSystem {
+
   /**
    * given properties map a unit expression to a {@link IQuantity}
    *

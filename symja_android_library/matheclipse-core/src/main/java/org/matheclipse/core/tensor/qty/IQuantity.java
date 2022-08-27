@@ -1,3 +1,4 @@
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.qty;
 
 import org.matheclipse.core.expression.F;
@@ -33,6 +34,7 @@ import com.univocity.parsers.csv.CsvFormat;
  *
  * whereas <code>a.add(b)</code> throws an Exception.
  */
+@SuppressWarnings("ComparableType")
 public interface IQuantity extends IExpr, Comparable<IExpr> {
   static final char UNIT_OPENING_BRACKET = '[';
   static final char UNIT_CLOSING_BRACKET = ']';

@@ -76,25 +76,9 @@ public class ListPlot extends AbstractEvaluator {
 
     IExpr arg1 = ast.arg1();
     if (arg1.isVector() > 0) {
-      IASTAppendable points = F.NIL;
-      double[] allPoints = arg1.toDoubleVector();
-      if (allPoints != null && allPoints.length > 0) {
-        double xMinD = Double.MAX_VALUE;
-        double xMaxD = Double.MIN_VALUE;
-        double yMinD = Double.MAX_VALUE;
-        double yMaxD = Double.MIN_VALUE;
-        xMaxD = 1.0;
-        xMaxD = allPoints.length;
-        points = F.ast(S.List, allPoints.length);
-
-        for (int i = 0; i < allPoints.length; i++) {
-          if (allPoints[i] > yMaxD) {
-            yMaxD = allPoints[i];
-          } else if (allPoints[i] < yMinD) {
-            yMinD = allPoints[i];
-          }
-          points.append(F.list(F.num(i), F.num(allPoints[i])));
-        }
+      double[] rowPoints = arg1.toDoubleVectorIgnore();
+      if (rowPoints != null && rowPoints.length > 0) {
+        IASTAppendable points = createPointsArray(rowPoints);
         return new IASTAppendable[] {points};
       }
     } else {
@@ -113,9 +97,43 @@ public class ListPlot extends AbstractEvaluator {
           IASTAppendable points = listPlotMatrix(arg1);
           return new IASTAppendable[] {points};
         }
+        if (arg1.isListOfLists()) {
+          IASTAppendable[] result = new IASTAppendable[list.argSize()];
+          for (int i = 1; i < list.size(); i++) {
+            double[] rowPoints = list.get(i).toDoubleVectorIgnore();
+            if (rowPoints != null && rowPoints.length > 0) {
+              IASTAppendable points = createPointsArray(rowPoints);
+              result[i - 1] = points;
+            } else {
+              result[i - 1] = F.NIL;
+            }
+          }
+          return result;
+        }
       }
     }
     return null;
+  }
+
+  private static IASTAppendable createPointsArray(double[] allPoints) {
+    IASTAppendable points = F.NIL;
+    double xMinD = Double.MAX_VALUE;
+    double xMaxD = Double.MIN_VALUE;
+    double yMinD = Double.MAX_VALUE;
+    double yMaxD = Double.MIN_VALUE;
+    xMaxD = 1.0;
+    xMaxD = allPoints.length;
+    points = F.ast(S.List, allPoints.length);
+
+    for (int i = 0; i < allPoints.length; i++) {
+      if (allPoints[i] > yMaxD) {
+        yMaxD = allPoints[i];
+      } else if (allPoints[i] < yMinD) {
+        yMinD = allPoints[i];
+      }
+      points.append(F.list(F.num(i + 1), F.num(allPoints[i])));
+    }
+    return points;
   }
 
   private static IASTAppendable listPlotMatrix(IExpr arg1) {

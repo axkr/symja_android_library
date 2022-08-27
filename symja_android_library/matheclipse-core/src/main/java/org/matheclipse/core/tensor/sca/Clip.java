@@ -1,4 +1,4 @@
-// code by jph
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.sca;
 
 import java.util.Objects;
@@ -30,26 +30,35 @@ import org.matheclipse.core.interfaces.ISignedNumber;
  * {@link #equals(Object)}. {@link Clip} does not implement {@link #toString()}.
  */
 public interface Clip extends Function<IExpr, IExpr> {
-  /** @param tensor
-   * @return tensor with all entries of given tensor applied to clip function */
+
+  /**
+   * @param tensor
+   * @return tensor with all entries of given tensor applied to clip function
+   */
   IAST of(IAST tensor);
 
-  /** @param scalar
-   * @return true if given scalar is invariant under this clip, i.e. the evaluation
-   * of the condition min <= scalar <= max. */
-  boolean isInside(ISignedNumber scalar);
+  /**
+   * @param scalar
+   * @return true if given scalar is invariant under this clip, i.e. the evaluation of the condition
+   *         min <= scalar <= max.
+   */
+  boolean isInside(IExpr scalar);
 
-  /** Remark: Functionality inspired by {@link Objects#requireNonNull(Object)}
+  /**
+   * Remark: Functionality inspired by {@link Objects#requireNonNull(Object)}
    * 
    * @param scalar
    * @return scalar that is guaranteed to be invariant under this clip
-   * @throws Exception if given scalar is not invariant under this clip */
+   * @throws Exception if given scalar is not invariant under this clip
+   */
   ISignedNumber requireInside(ISignedNumber scalar);
 
-  /** @param scalar
-   * @return true if given scalar is not invariant under this clip, i.e. the evaluation
-   * of the condition scalar < min or max < scalar. */
-  boolean isOutside(ISignedNumber scalar);
+  /**
+   * @param scalar
+   * @return true if given scalar is not invariant under this clip, i.e. the evaluation of the
+   *         condition scalar < min or max < scalar.
+   */
+  boolean isOutside(IExpr scalar);
 
   /**
    * If max - min > 0, the given scalar is clipped to the [min max] interval, then min is subtracted
@@ -64,20 +73,20 @@ public interface Clip extends Function<IExpr, IExpr> {
    *         interval width is zero, the return value is zero. If the given scalar is outside the
    *         clip interval, the return value is either 0, or 1.
    */
-  IExpr rescale(ISignedNumber scalar);
+  IExpr rescale(IExpr scalar);
 
   /** @return lower bound of clip interval */
-  ISignedNumber min();
+  IExpr min();
 
   /** @return upper bound of clip interval */
-  ISignedNumber max();
+  IExpr max();
 
   /** @return difference between upper and lower bound of clip interval */
-  ISignedNumber width();
+  IExpr width();
 
-  @Override // from Object
+  @Override
   int hashCode();
 
-  @Override // from Object
+  @Override
   boolean equals(Object object);
 }

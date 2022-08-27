@@ -1,19 +1,23 @@
-// code by jph
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.nrm;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
-/** Euclidean norm
+/**
+ * Euclidean norm
  * 
- * ||{a, b, c}||_2 = Sqrt[a^2 + b^2 + c^2] */
-public enum Vector2Norm {
-  ;
+ * ||{a, b, c}||_2 = Sqrt[a^2 + b^2 + c^2]
+ */
+public class Vector2Norm {
+
   // public static final UnaryOperator<IExpr> NORMALIZE = S.Normalize.with(Vector2Norm::of);
 
-  /** @param vector
-   * @return 2-norm of given vector */
+  /**
+   * @param vector
+   * @return 2-norm of given vector
+   */
   public static IExpr of(IAST vector) {
     try {
       // Hypot prevents the incorrect evaluation: Norm_2[ {1e-300, 1e-300} ] == 0

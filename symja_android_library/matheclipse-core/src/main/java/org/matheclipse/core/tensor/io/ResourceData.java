@@ -1,3 +1,4 @@
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.io;
 
 import java.io.InputStream;
@@ -5,7 +6,7 @@ import java.util.Properties;
 import org.matheclipse.core.interfaces.IAST;
 
 /**
- * access to resource data in jar files, for instance, the content included in the tensor library.
+ * Access to resource data in jar files, for instance, the content included in the tensor library.
  *
  * <p>
  * Tensor resources provided by the tensor library include
@@ -22,8 +23,8 @@ import org.matheclipse.core.interfaces.IAST;
  * /unit/si.properties
  * </pre>
  */
-public enum ResourceData {
-  ;
+public class ResourceData {
+
   /**
    * Example use: Interpolation interpolation =
    * LinearInterpolation.of(ResourceData.of("/colorscheme/classic.csv"));
@@ -39,6 +40,7 @@ public enum ResourceData {
       throw new RuntimeException(exception);
     }
   }
+
   /**
    * @param string as path to resource
    * @return imported properties, or null if resource could not be loaded

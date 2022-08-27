@@ -1,4 +1,4 @@
-// code by jph
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor;
 
 import org.apache.logging.log4j.LogManager;

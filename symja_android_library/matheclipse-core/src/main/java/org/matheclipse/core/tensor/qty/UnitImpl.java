@@ -1,3 +1,4 @@
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.qty;
 
 import java.io.Serializable;
@@ -12,6 +13,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 /* package */ class UnitImpl implements IUnit, Serializable {
+
   private static final long serialVersionUID = 2551378967100742904L;
 
   private final NavigableMap<String, IExpr> navigableMap;

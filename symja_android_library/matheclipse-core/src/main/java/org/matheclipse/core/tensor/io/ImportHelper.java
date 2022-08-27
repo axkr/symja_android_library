@@ -1,3 +1,4 @@
+// code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.io;
 
 import java.io.BufferedReader;
@@ -7,13 +8,17 @@ import java.io.InputStreamReader;
 import java.util.Properties;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
+import javax.imageio.ImageIO;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.io.Extension;
+import org.matheclipse.core.tensor.img.ImageFormat;
 
-/** functionality used in {@link Import} and {@link ResourceData} */
-/* package */ enum ImportHelper {
-  ;
+/**
+ * Functionality used in {@link Import} and {@link ResourceData}
+ */
+/* package */ class ImportHelper {
+
   /**
    * @param filename
    * @param inputStream
@@ -33,6 +38,9 @@ import org.matheclipse.core.io.Extension;
     if (extension == Extension.CSV) {
       return Convert.fromCSV(new InputStreamReader(inputStream));
     }
+    if (extension == Extension.PNG) {
+      return ImageFormat.from(ImageIO.read(inputStream));
+    }
     throw new UnsupportedOperationException(extension.name());
     // return switch (extension) {
     // case Extension.MATHEMATICA:S.Get.of(inputStream);
@@ -43,6 +51,7 @@ import org.matheclipse.core.io.Extension;
     // default -> throw new UnsupportedOperationException(extension.name());
     // };
   }
+
   /**
    * @param inputStream
    * @return lines in given inputStream as stream of strings
