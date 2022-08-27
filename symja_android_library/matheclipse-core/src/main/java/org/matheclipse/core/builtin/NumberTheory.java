@@ -2945,6 +2945,80 @@ public final class NumberTheory {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  private static class Hyperfactorial extends AbstractEvaluator {
+
+    private static IExpr hyperfactorial(int n) {
+      if (n >= 0) {
+        BigInteger result = BigInteger.ONE;
+        for (int k = 2; k <= n; k++) {
+          result = result.multiply(BigInteger.valueOf(k).pow(k));
+        }
+        return F.ZZ(result);
+      }
+      return F.NIL;
+    }
+
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isInteger()) {
+        int n = ((IInteger) arg1).toIntDefault(0);
+        if (-8 <= n && n <= 7) {
+          // long integer results
+          switch (n) {
+            case 0:
+              return F.C1;
+            case 1:
+              return F.C1;
+            case 2:
+              return F.C4;
+            case 3:
+              return F.ZZ(108);
+            case 4:
+              return F.ZZ(27648);
+            case 5:
+              return F.ZZ(86400000);
+            case 6:
+              return F.ZZ(4031078400000L);
+            case 7:
+              return F.ZZ(3319766398771200000L);
+            case -1:
+              return F.C1;
+            case -2:
+              return F.CN1;
+            case -3:
+              return F.CN4;
+            case -4:
+              return F.ZZ(108);
+            case -5:
+              return F.ZZ(27648);
+            case -6:
+              return F.ZZ(-86400000);
+            case -7:
+              return F.ZZ(-4031078400000L);
+            case -8:
+              return F.ZZ(3319766398771200000L);
+          }
+        }
+
+        if (n > 0) {
+          return hyperfactorial(n);
+        }
+      }
+      if (arg1.isRationalValue(F.CN1D2)) {
+        return F.Divide(F.Power(S.Glaisher, F.C3D2), //
+            F.Times(F.Power(F.C2, F.QQ(1, 24)), F.Exp(F.QQ(1, 8))));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
+  }
+
   /**
    *
    *
@@ -3488,7 +3562,7 @@ public final class NumberTheory {
         if (n < Integer.MAX_VALUE) {
           // 2^n - 1
           BigInteger b2nm1 = BigInteger.ONE.shiftLeft((int) n).subtract(BigInteger.ONE);
-          return F.bool(b2nm1.isProbablePrime(32));
+          return F.booleSymbol(b2nm1.isProbablePrime(32));
         }
       } catch (ArithmeticException ae) {
       }
@@ -3521,8 +3595,7 @@ public final class NumberTheory {
           return F.ZZ(k.modInverse(n));
         } catch (ArithmeticException aex) {
           // `1` is not invertible modulo `2`.
-          return IOFunctions.printMessage(S.ModularInverse, "ninv", F.List(arg1, arg2),
-              engine);
+          return IOFunctions.printMessage(S.ModularInverse, "ninv", F.List(arg1, arg2), engine);
         }
       }
       // TODO add gaussian integers
@@ -4219,7 +4292,7 @@ public final class NumberTheory {
         for (int i = 1; i < size; i++) {
           sum = sum.add((IInteger) list.get(i));
         }
-        return F.bool(sum.equals(n));
+        return F.booleSymbol(sum.equals(n));
       }
       return S.False;
     }
@@ -4459,7 +4532,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
-        return F.bool(Primality.isPrimePower(((IInteger) arg1).toBigNumerator()));
+        return F.booleSymbol(Primality.isPrimePower(((IInteger) arg1).toBigNumerator()));
       }
       return S.False;
     }
@@ -4563,7 +4636,7 @@ public final class NumberTheory {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST result = quadraticIrrational(ast.arg1());
-      return F.bool(result.isPresent());
+      return F.booleSymbol(result.isPresent());
     }
 
     @Override
@@ -4742,7 +4815,7 @@ public final class NumberTheory {
           return S.False;
         }
         if (arg1.isInteger()) {
-          return F.bool(Primality.isSquareFree(((IInteger) arg1).toBigNumerator()));
+          return F.booleSymbol(Primality.isSquareFree(((IInteger) arg1).toBigNumerator()));
         }
         if (arg1.isAtom()) {
           return S.False;
@@ -4758,9 +4831,9 @@ public final class NumberTheory {
         List<IExpr> varList = eVar.getVarList().copyTo();
 
         if (ast.isAST2()) {
-          return F.bool(isSquarefreeWithOption(ast, expr, varList, engine));
+          return F.booleSymbol(isSquarefreeWithOption(ast, expr, varList, engine));
         }
-        return F.bool(isSquarefree(expr, varList));
+        return F.booleSymbol(isSquarefree(expr, varList));
       } catch (RuntimeException e) {
         // JAS may throw RuntimeExceptions
         LOGGER.debug("SquareFreeQ.evaluate() failed", e);
@@ -5152,28 +5225,69 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // TODO implement 2. arg
-      IExpr arg1 = ast.arg1();
-      if (arg1.isNumber()) {
-        return arg1.isZero() ? F.C0 : F.C1;
+      IExpr x = ast.arg1();
+      if (ast.isAST2()) {
+        IExpr dx = ast.arg2();
+        if (dx.isNegativeResult()) {
+          // The threshold `1` should be positive.
+          return IOFunctions.printMessage(ast.topHead(), "post", F.List(dx), engine);
+        }
+        return unitize(x, dx, engine);
       }
-      if (S.PossibleZeroQ.ofQ(engine, arg1)) {
+      return unitize(x, engine);
+    }
+
+    private IExpr unitize(IExpr x, EvalEngine engine) {
+      if (x.isNumber()) {
+        return x.isZero() ? F.C0 : F.C1;
+      }
+      if (S.PossibleZeroQ.ofQ(engine, x)) {
         return F.C0;
       }
-      IExpr temp = arg1.evalNumber();
-      if (temp == null) {
-        temp = arg1;
+      if (x.isNegativeResult() || x.isPositiveResult()) {
+        return F.C1;
       }
-      if (temp.isNumber()) {
-        return temp.isZero() ? F.C0 : F.C1;
+      IExpr temp = x.evalNumber();
+      if (temp != null) {
+        if (temp.isNegative()) {
+          return F.C1;
+        }
+        if (S.PossibleZeroQ.ofQ(engine, temp)) {
+          return F.C1;
+        }
+        return F.C0;
       }
+      return F.NIL;
+    }
 
+    private IExpr unitize(IExpr x, IExpr dx, EvalEngine engine) {
+      // Piecewise({{1, dx-Abs(x)<= 0}}, 0)
+      IExpr temp = engine.evaluate(F.Subtract(dx, F.Abs(x)));
+      if (temp.isNegativeResult()) {
+        return F.C1;
+      }
+      if (temp.isPositiveResult()) {
+        return F.C0;
+      }
+      if (S.PossibleZeroQ.ofQ(engine, temp)) {
+        return F.C1;
+      }
+      temp = temp.evalNumber();
+      if (temp != null) {
+        if (temp.isNegative()) {
+          return F.C1;
+        }
+        if (S.PossibleZeroQ.ofQ(engine, temp)) {
+          return F.C1;
+        }
+        return F.C0;
+      }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
     @Override
@@ -5214,6 +5328,7 @@ public final class NumberTheory {
       S.Fibonacci.setEvaluator(new Fibonacci());
       S.FrobeniusNumber.setEvaluator(new FrobeniusNumber());
       S.FromContinuedFraction.setEvaluator(new FromContinuedFraction());
+      S.Hyperfactorial.setEvaluator(new Hyperfactorial());
       S.JacobiSymbol.setEvaluator(new JacobiSymbol());
       S.KroneckerDelta.setEvaluator(new KroneckerDelta());
       S.LinearRecurrence.setEvaluator(new LinearRecurrence());
