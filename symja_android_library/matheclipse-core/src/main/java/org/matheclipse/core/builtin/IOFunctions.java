@@ -503,6 +503,8 @@ public class IOFunctions {
       "color", "`1` is not a valid color or gray-level specification.", //
       "compat", "`1` and `2` are incompatible units", //
       "cxt", "`1` is not a valid context name.", //
+      "depth",
+      "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
       "divz", "The argument `1` should be nonzero.", //
       "digit", "Digit at position `1` in `2` is too large to be used in base `3`.", //
       "dmval",
@@ -511,6 +513,8 @@ public class IOFunctions {
       "Dot contraction of `1` and `2` is invalid because dimensions `3` and `4` are incompatible.",
       "dotsh", "Tensors `1` and `2` have incompatible shapes.", //
       "drop", "Cannot drop positions `1` through `2` in `3`.", //
+      "dstlms",
+      "The requested number of elements `1` is greater than the number of distinct elements `2`. Only `2` elements will be returned.", //
       "dvar",
       "Multiple derivative specifier `1` does not have the form {variable, n} where n is a symbolic expression or a non-negative integer.", //
       "empt", "Argument `1` should be a non-empty list.", //
@@ -558,6 +562,7 @@ public class IOFunctions {
       "invidx2", "Index `1` should be a machine sized integer between `2` and `3`.", //
       "invrl", "The argument `1` is not a valid Association or a list of rules.", //
       "iopnf", "Value of option `1` should be a non-negative integer or Infinity.", //
+      "ipnf", "Positive integer or Infinity expected at position `1` in `2`.", //
       "iterb", "Iterator does not have appropriate bounds.", //
       "itform", "Argument `1` at position `2` does not have the correct form for an iterator.", //
       "itlim", "Iteration limit of `1` exceeded.", //
@@ -620,8 +625,9 @@ public class IOFunctions {
       "normal", "Nonatomic expression expected at position `1` in `2`.", //
       "nostr", "`1` is not a string.", //
       "notent", "`2` is not a known entity, class, or tag for `1`.", //
-      "nquan", "The Quantile specification `1` should be a number between `2` and `3`.", "nvld",
-      "The expression `1` is not a valid interval.", //
+      "nquan",
+      "The Quantile specification `1` should be a number or a list of numbers between `2` and `3`.",
+      "nvld", "The expression `1` is not a valid interval.", //
       "notunicode",
       "A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
       "noprime", "There are no primes in the specified interval.", //
@@ -638,6 +644,7 @@ public class IOFunctions {
       "opttf", "Value of option `1`->`2` should be True or False.", //
       "optx", "Unknown option `1` in `2`.", //
       "ovfl", "Overflow occurred in computation.", //
+      "ovls", "Value of option `1` must be True, False or All.", //
       "padlevel",
       "The padding specification `1` involves `2` levels; the list `3` has only `4` level.", //
       "pairs", "The first argument `1` of `2` is not a list of pairs.", //
@@ -665,6 +672,7 @@ public class IOFunctions {
       "pospoint", "`1` contains integers that are not positive.", //
       "posprm", "Parameter `1` at position `2` in `3` is expected to be positive.", //
       "posr", "The left hand side of `2` in `1` doesn't match an int-array of depth `3`.", //
+      "post", "The threshold `1` should be positive.", //
       "preal", "The parameter `1` should be real-valued.", //
       "precsm", "Requested precision `1` is smaller than `2`.", //
       "precgt", "Requested precision `1` is greater than `2`.", //
@@ -679,7 +687,7 @@ public class IOFunctions {
       "rectt", "Rectangular array expected at position `1` in `2`.", //
       "reppoint", "`1` contains repeated integers.", //
       "reps",
-      "(`1`) is neither a list of replacement nor a valid dispatch table and cannot be used for replacing.", //
+      "(`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be used for replacing.", //
       "root", "Unable to determine the appropriate root for the periodic continued fraction.", //
       "rrlim", "Exiting after `1` scanned `2` times.", //
       "rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
@@ -945,12 +953,12 @@ public class IOFunctions {
    * middle in the expression if necessary.
    *
    * @param expr
-   * @param maximuLength the maximum length of the result string.
+   * @param maximumLength the maximum length of the result string.
    * @return
    */
-  public static String shorten(IExpr expr, int maximuLength) {
+  public static String shorten(IExpr expr, int maximumLength) {
     String str = expr.toString();
-    return shorten(str, maximuLength);
+    return shorten(str, maximumLength);
   }
 
   /**
@@ -959,13 +967,13 @@ public class IOFunctions {
    * middle of the expression if necessary.
    *
    * @param str
-   * @param maximuLength
+   * @param maximumLength
    * @return
    */
-  public static String shorten(String str, int maximuLength) {
-    if (str.length() > maximuLength) {
-      StringBuilder buf = new StringBuilder(maximuLength);
-      int halfLength = (maximuLength / 2) - 14;
+  public static String shorten(String str, int maximumLength) {
+    if (str.length() > maximumLength) {
+      StringBuilder buf = new StringBuilder(maximumLength);
+      int halfLength = (maximumLength / 2) - 14;
       buf.append(str.substring(0, halfLength));
       buf.append("<<SHORT>>");
       buf.append(str.substring(str.length() - halfLength));

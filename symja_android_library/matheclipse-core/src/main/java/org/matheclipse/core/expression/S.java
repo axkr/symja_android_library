@@ -664,6 +664,9 @@ public class S {
    */
   public final static IBuiltInSymbol ArrayDepth = F.initFinalSymbol("ArrayDepth", ID.ArrayDepth);
 
+  public final static IBuiltInSymbol ArrayFlatten =
+      F.initFinalSymbol("ArrayFlatten", ID.ArrayFlatten);
+
   /**
    * ArrayPad(list, n) - adds `n` times `0` on the left and right of the `list`.
    * 
@@ -672,6 +675,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol ArrayPad = F.initFinalSymbol("ArrayPad", ID.ArrayPad);
+
+  public final static IBuiltInSymbol ArrayPlot = F.initFinalSymbol("ArrayPlot", ID.ArrayPlot);
 
   /**
    * ArrayQ(expr) - tests whether expr is a full array.
@@ -2029,6 +2034,10 @@ public class S {
 
   public final static IBuiltInSymbol CoordinateBoundingBox =
       F.initFinalSymbol("CoordinateBoundingBox", ID.CoordinateBoundingBox);
+
+
+  public final static IBuiltInSymbol CoordinateBounds =
+      F.initFinalSymbol("CoordinateBounds", ID.CoordinateBounds);
 
   /**
    * CoplanarPoints({{x1,y1,z1},{x2,y2,z2},{x3,y3,z3},{a,b,c},...}) - returns true if the point
@@ -4300,6 +4309,9 @@ public class S {
 
   public final static IBuiltInSymbol Heads = F.initFinalSymbol("Heads", ID.Heads);
 
+  public final static IBuiltInSymbol HessenbergDecomposition =
+      F.initFinalSymbol("HessenbergDecomposition", ID.HessenbergDecomposition);
+
   /**
    * HeavisideTheta(expr1, expr2, ... exprN) - returns `1` if all `expr1, expr2, ... exprN` are
    * positive and `0` if one of the `expr1, expr2, ... exprN` is negative. `HeavisideTheta(0)`
@@ -4468,6 +4480,9 @@ public class S {
 
   public final static IBuiltInSymbol HypercubeGraph =
       F.initFinalSymbol("HypercubeGraph", ID.HypercubeGraph);
+
+  public final static IBuiltInSymbol Hyperfactorial =
+      F.initFinalSymbol("Hyperfactorial", ID.Hyperfactorial);
 
   /**
    * Hypergeometric0F1(b, z) - return the `Hypergeometric0F1` function
@@ -5740,6 +5755,9 @@ public class S {
   public final static IBuiltInSymbol ListCorrelate =
       F.initFinalSymbol("ListCorrelate", ID.ListCorrelate);
 
+  public final static IBuiltInSymbol ListDensityPlot =
+      F.initFinalSymbol("ListDensityPlot", ID.ListDensityPlot);
+
   /**
    * ListLinePlot( { list-of-points } ) - generate a JavaScript list line plot control for the
    * `list-of-points`.
@@ -5761,6 +5779,12 @@ public class S {
    */
   public final static IBuiltInSymbol ListLinePlot3D =
       F.initFinalSymbol("ListLinePlot3D", ID.ListLinePlot3D);
+
+  public final static IBuiltInSymbol ListLogLogPlot =
+      F.initFinalSymbol("ListLogLogPlot", ID.ListLogLogPlot);
+
+  public final static IBuiltInSymbol ListLogPlot = F.initFinalSymbol("ListLogPlot", ID.ListLogPlot);
+
 
   /**
    * ListPlot( { list-of-points } ) - generate a JavaScript list plot control for the
@@ -5931,6 +5955,9 @@ public class S {
    */
   public final static IBuiltInSymbol LowerTriangularize =
       F.initFinalSymbol("LowerTriangularize", ID.LowerTriangularize);
+
+  public final static IBuiltInSymbol LowerTriangularMatrixQ =
+      F.initFinalSymbol("LowerTriangularMatrixQ", ID.LowerTriangularMatrixQ);
 
   /**
    * LucasL(n) - gives the `n`th Lucas number.
@@ -7071,6 +7098,8 @@ public class S {
 
   public final static IBuiltInSymbol Overflow = F.initFinalSymbol("Overflow", ID.Overflow);
 
+  public final static IBuiltInSymbol Overlaps = F.initFinalSymbol("Overlaps", ID.Overlaps);
+
   public final static IBuiltInSymbol Overscript = F.initFinalSymbol("Overscript", ID.Overscript);
 
   public final static IBuiltInSymbol OverscriptBox =
@@ -7185,6 +7214,10 @@ public class S {
 
   public final static IBuiltInSymbol ParzenWindow =
       F.initFinalSymbol("ParzenWindow", ID.ParzenWindow);
+
+  public final static IBuiltInSymbol PathGraph = F.initFinalSymbol("PathGraph", ID.PathGraph);
+
+  public final static IBuiltInSymbol PathGraphQ = F.initFinalSymbol("PathGraphQ", ID.PathGraphQ);
 
   public final static IBuiltInSymbol Pattern = F.initFinalSymbol("Pattern", ID.Pattern);
 
@@ -8559,6 +8592,9 @@ public class S {
    */
   public final static IBuiltInSymbol Scan = F.initFinalSymbol("Scan", ID.Scan);
 
+  public final static IBuiltInSymbol SchurDecomposition =
+      F.initFinalSymbol("SchurDecomposition", ID.SchurDecomposition);
+
   /**
    * Sec(z) - returns the secant of `z`.
    * 
@@ -8632,8 +8668,17 @@ public class S {
    */
   public final static IBuiltInSymbol Sequence = F.initFinalSymbol("Sequence", ID.Sequence);
 
+  public final static IBuiltInSymbol SequenceCases =
+      F.initFinalSymbol("SequenceCases", ID.SequenceCases);
+
   public final static IBuiltInSymbol SequenceHold =
       F.initFinalSymbol("SequenceHold", ID.SequenceHold);
+
+  public final static IBuiltInSymbol SequenceSplit =
+      F.initFinalSymbol("SequenceSplit", ID.SequenceSplit);
+
+  public final static IBuiltInSymbol SequenceReplace =
+      F.initFinalSymbol("SequenceReplace", ID.SequenceReplace);
 
   /**
    * Series(expr, {x, x0, n}) - create a power series of `expr` up to order `(x- x0)^n` at the point
@@ -10343,6 +10388,10 @@ public class S {
   public final static IBuiltInSymbol UpperTriangularize =
       F.initFinalSymbol("UpperTriangularize", ID.UpperTriangularize);
 
+
+  public final static IBuiltInSymbol UpperTriangularMatrixQ =
+      F.initFinalSymbol("UpperTriangularMatrixQ", ID.UpperTriangularMatrixQ);
+
   public final static IBuiltInSymbol UseTypeChecking =
       F.initFinalSymbol("UseTypeChecking", ID.UseTypeChecking);
 
@@ -10478,6 +10527,9 @@ public class S {
   public final static IBuiltInSymbol ViewPoint = F.initFinalSymbol("ViewPoint", ID.ViewPoint);
 
   public final static IBuiltInSymbol Volume = F.initFinalSymbol("Volume", ID.Volume);
+
+  public final static IBuiltInSymbol WeaklyConnectedGraphQ =
+      F.initFinalSymbol("WeaklyConnectedGraphQ", ID.WeaklyConnectedGraphQ);
 
   public final static IBuiltInSymbol WeberE = F.initFinalSymbol("WeberE", ID.WeberE);
 
