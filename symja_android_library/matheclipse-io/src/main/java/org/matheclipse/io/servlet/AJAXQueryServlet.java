@@ -1,16 +1,11 @@
 package org.matheclipse.io.servlet;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -243,17 +238,30 @@ public class AJAXQueryServlet extends HttpServlet {
             }
           } else if (outExpr instanceof ImageExpr) {
             ImageExpr imageExpr = (ImageExpr) outExpr;
-            BufferedImage bImage = imageExpr.toData();
-            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
-              ImageIO.write(bImage, "png", b64);
-              String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
-              String[] argsToRender = new String[3];
-              argsToRender[0] = outputStream.toString();
-              html = IOFunctions.templateRender(html, argsToRender);
-              html = StringEscapeUtils.escapeHtml4(html);
-              return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+            // BufferedImage bImage = imageExpr.getBufferedImage();
+            byte[] data = imageExpr.toData();
+            if (data != null) {
+                String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
+                String[] argsToRender = new String[3];
+                argsToRender[0] = imageExpr.toBase64EncodedString();
+                html = IOFunctions.templateRender(html, argsToRender);
+                html = StringEscapeUtils.escapeHtml4(html);
+                return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
+                    + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+                // } else {
+                // try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                // final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
+                // ImageIO.write(bImage, "png", b64);
+                // String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
+                // String[] argsToRender = new String[3];
+                // argsToRender[0] = outputStream.toString();
+                // System.out.println(argsToRender[0]);
+                // html = IOFunctions.templateRender(html, argsToRender);
+                // html = StringEscapeUtils.escapeHtml4(html);
+                // return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
+                // + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"
+                // ></iframe>");
+                // }
             }
           } else if (outExpr instanceof ASTDataset) {
             String javaScriptStr = ((ASTDataset) outExpr).datasetToJSForm();
