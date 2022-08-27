@@ -10,11 +10,11 @@ import java.util.stream.IntStream;
 import javax.imageio.ImageIO;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.img.ColorFormat;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.io.Extension;
+import org.matheclipse.core.tensor.img.ColorFormat;
 import it.unimi.dsi.fastutil.ints.IntList;
 
 /**
