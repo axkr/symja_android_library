@@ -27,6 +27,7 @@ public class ComputationalGeometryFunctions {
       S.ConvexHullMesh.setEvaluator(new ConvexHullMesh());
       S.CollinearPoints.setEvaluator(new CollinearPoints());
       S.CoordinateBoundingBox.setEvaluator(new CoordinateBoundingBox());
+      S.CoordinateBounds.setEvaluator(new CoordinateBounds());
       S.CoplanarPoints.setEvaluator(new CoplanarPoints());
     }
   }
@@ -239,6 +240,44 @@ public class ComputationalGeometryFunctions {
     }
   }
 
+  private static class CoordinateBounds extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isListOfLists()) {
+        IAST listOfPoints = (IAST) arg1;
+        if (listOfPoints.argSize() > 0) {
+          IExpr temp = S.Transpose.ofNIL(engine, F.CoordinateBoundingBox(listOfPoints));
+          if (temp.isList()) {
+            if (ast.isAST2()) {
+              IAST list = (IAST) temp;
+              IExpr pad = ast.arg2();
+              if (pad.isNumber()) {
+                IASTAppendable result = F.ListAlloc(list.argSize());
+                for (int i = 1; i < list.size(); i++) {
+                  IExpr expr = list.get(i);
+                  if (expr.isList2()) {
+                    result.append(F.List(expr.first().subtract(pad), expr.second().plus(pad)));
+                  } else {
+                    return F.NIL;
+                  }
+                }
+                return result;
+              }
+            }
+            return temp;
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
 
   /**
    *
