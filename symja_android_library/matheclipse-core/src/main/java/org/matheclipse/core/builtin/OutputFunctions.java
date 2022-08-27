@@ -14,7 +14,6 @@ import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.linear.FieldMatrix;
-import org.hipparchus.linear.FieldVector;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -45,6 +44,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
 import com.baeldung.algorithms.romannumerals.RomanArabicConverter;
+import com.github.freva.asciitable.AsciiTable;
 import com.ibm.icu.text.NumberFormat;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
@@ -687,33 +687,67 @@ public final class OutputFunctions {
         final EvalEngine engine) {
       if (argSize >= 1) {
         IExpr tableHeadings = option[0];
-        IExpr arg1 = ast.arg1();
-        StringBuilder tableForm = new StringBuilder();
-        if (plaintextTable(tableForm, arg1, " ", x -> x.toString(), true)) {
-          return F.stringx(tableForm.toString(), IStringX.TEXT_PLAIN);
-        }
+        IExpr arg1 = ast.arg1().normal(false);
+
         if (arg1.isList()) {
           IAST list = (IAST) arg1;
-          StringBuilder sb = new StringBuilder();
+          String[][] tableData = new String[list.argSize()][];
           for (int i = 1; i < list.size(); i++) {
-            sb.append(list.get(i).toString());
-            sb.append("\n");
-          }
-          return F.stringx(sb.toString(), IStringX.TEXT_PLAIN);
-        }
-        int dim = arg1.isVector();
-        if (dim >= 0) {
-          FieldVector<IExpr> vector = Convert.list2Vector(arg1);
-          if (vector != null) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < dim; i++) {
-              sb.append(vector.getEntry(i).toString());
-              sb.append("\n");
+            IExpr element = list.get(i);
+            if (element.isList()) {
+              IAST subList = (IAST) element;
+              tableData[i - 1] = new String[subList.argSize()];
+              for (int j = 1; j < subList.size(); j++) {
+                IExpr subElement = subList.get(j);
+                tableData[i - 1][j - 1] = subElement.toString();
+              }
+            } else {
+              tableData[i - 1] = new String[1];
+              tableData[i - 1][0] = element.toString();;
             }
-            return F.stringx(sb.toString(), IStringX.TEXT_PLAIN);
           }
-        }
-        return F.stringx(arg1.toString(), IStringX.TEXT_PLAIN);
+
+          Character[] borderStyle = AsciiTable.NO_BORDERS;
+          String[] headers = {};
+          String[] footers = {};
+          return F.stringx(AsciiTable.getTable(borderStyle, headers, footers, tableData),
+              IStringX.TEXT_PLAIN);
+        } 
+        String[][] tableData = new String[1][1];
+        tableData[0][0] = arg1.toString();
+        Character[] borderStyle = AsciiTable.NO_BORDERS;
+        String[] headers = {};
+        String[] footers = {};
+        return F.stringx(AsciiTable.getTable(borderStyle, headers, footers, tableData),
+            IStringX.TEXT_PLAIN);
+        
+
+        // StringBuilder tableForm = new StringBuilder();
+        // if (plaintextTable(tableForm, arg1, " ", x -> x.toString(), true)) {
+        // return F.stringx(tableForm.toString(), IStringX.TEXT_PLAIN);
+        // }
+        // if (arg1.isList()) {
+        // IAST list = (IAST) arg1;
+        // StringBuilder sb = new StringBuilder();
+        // for (int i = 1; i < list.size(); i++) {
+        // sb.append(list.get(i).toString());
+        // sb.append("\n");
+        // }
+        // return F.stringx(sb.toString(), IStringX.TEXT_PLAIN);
+        // }
+        // int dim = arg1.isVector();
+        // if (dim >= 0) {
+        // FieldVector<IExpr> vector = Convert.list2Vector(arg1);
+        // if (vector != null) {
+        // StringBuilder sb = new StringBuilder();
+        // for (int i = 0; i < dim; i++) {
+        // sb.append(vector.getEntry(i).toString());
+        // sb.append("\n");
+        // }
+        // return F.stringx(sb.toString(), IStringX.TEXT_PLAIN);
+        // }
+        // }
+        // return F.stringx(arg1.toString(), IStringX.TEXT_PLAIN);
       }
       return F.NIL;
     }
@@ -1068,6 +1102,17 @@ public final class OutputFunctions {
     return false;
   }
 
+
+  /**
+   * @param result
+   * @param expr
+   * @param delimiter
+   * @param function
+   * @param fillUpWithSPACE
+   * @return
+   * @deprecated use freva/ascii-table now - https://github.com/freva/ascii-table
+   */
+  @Deprecated
   public static boolean plaintextTable(StringBuilder result, IExpr expr, String delimiter,
       java.util.function.Function<IExpr, String> function, boolean fillUpWithSPACE) {
     int[] dim = expr.isMatrix();
