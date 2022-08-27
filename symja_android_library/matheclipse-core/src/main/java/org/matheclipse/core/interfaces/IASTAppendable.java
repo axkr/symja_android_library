@@ -396,7 +396,7 @@ public interface IASTAppendable extends IASTMutable {
    * @throws IllegalArgumentException if the object cannot be added to this {@code List}.
    */
   default boolean append(boolean value) {
-    return append(F.bool(value));
+    return append(F.booleSymbol(value));
   }
 
   /**

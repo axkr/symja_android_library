@@ -107,7 +107,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
     public void filterResult(IASTAppendable result) {
       for (int i = 0; i < fUsedIndex.length; i++) {
-        result.set(fUsedIndex[i], null);
+        result.set(fUsedIndex[i], (IExpr) null);
       }
       int indx = 1;
       while (indx < result.size()) {

@@ -56,6 +56,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
    * - Section NUmeric Arrays</a>
    */
   public static final byte Integer8 = (byte) (0x00);
+
   /**
    * See <a href=
    * "https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription

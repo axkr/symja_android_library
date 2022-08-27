@@ -797,17 +797,30 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   public boolean forAll(Predicate<? super IExpr> predicate, int startOffset);
 
   /**
-   * Check all atomic (non IAST objects) leave element by applying the <code>predicate</code> to
-   * each leave argument in this <code>AST</code> and sub-<code>AST</code>s and return <code>true
-   * </code> if all of the leave elements starting from index <code>startOffset</code> satisfy the
+   * Check all atomic (non IAST objects) leaf elements by applying the <code>predicate</code> to
+   * each leaf argument in this <code>AST</code> and sub-<code>AST</code>s and return <code>true
+   * </code> if all of the leaf elements starting from index <code>startOffset</code> satisfy the
    * predicate.
    *
    * @param predicate the predicate which filters each argument in this <code>AST</code>
-   * @param startOffset start offset from which the leave elements have to be tested
+   * @param startOffset start offset from which the leaf elements have to be tested
    * @return the <code>true</code> if the predicate is true for all elements or <code>false</code>
    *         otherwise
    */
   public boolean forAllLeaves(Predicate<? super IExpr> predicate, int startOffset);
+
+  /**
+   * Check all {@link IAST} recursively, which don't have <code>head</code> as head element and
+   * apply the <code>predicate</code> to each leaf argument in this {@link IAST} and
+   * sub-<code>AST</code>s and return <code>true</code> if all of the leaf elements starting from
+   * index <code>startOffset</code> satisfy the predicate.
+   * 
+   * @param head
+   * @param predicate the predicate which filters each argument in this <code>AST</code>
+   * @param startOffset start offset from which the leaf elements have to be tested
+   * @return
+   */
+  public boolean forAllLeaves(IExpr head, Predicate<? super IExpr> predicate, int startOffset);
 
   /**
    * Iterate over all <code>value-elements</code> from index <code>1</code> to <code>size()-1</code>
@@ -1225,7 +1238,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param function a unary function
    * @return
    */
-  public IAST map(final Function<IExpr, IExpr> function);
+  public IAST map(final Function<IExpr, ? extends IExpr> function);
 
   /**
    * Maps the elements of this IAST with the unary <code>functor</code>. If the <code>functor</code>
@@ -1242,7 +1255,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @param startOffset the startOffset from there the <code>functor</code> should be used.
    * @return
    */
-  public IAST map(final Function<IExpr, IExpr> functor, final int startOffset);
+  public IAST map(final Function<IExpr, ? extends IExpr> functor, final int startOffset);
 
   /**
    * Maps the elements of this IAST with the elements of the <code>secondAST</code>.
@@ -1796,6 +1809,16 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @return an array of the elements from this {@code List}.
    */
   public IExpr[] toArray();
+
+
+  default IExpr[] toArray(int startIndex) {
+    IExpr[] result = new IExpr[size() - startIndex];
+    int j = 0;
+    for (int i = startIndex; i < size(); i++) {
+      result[j++] = get(i);
+    }
+    return result;
+  }
 
   /**
    * Returns the header. If the header itself is an ISymbol it will return the symbol object. If the

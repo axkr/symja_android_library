@@ -33,6 +33,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -954,6 +955,28 @@ public class Convert {
       List<String> result = new ArrayList<String>(1);
       if (expr instanceof IStringX) {
         result.add(expr.toString());
+        return result;
+      }
+    }
+    return null;
+  }
+
+  public static List<Integer> toIntegerList(IExpr expr) {
+    if (expr.isList()) {
+      List<Integer> result = new ArrayList<Integer>(expr.size() - 1);
+      IAST listOfIntegers = (IAST) expr;
+      for (int i = 1; i < listOfIntegers.size(); i++) {
+        if (listOfIntegers.get(i) instanceof IInteger) {
+          result.add(((IInteger) listOfIntegers.get(i)).toInt());
+          continue;
+        }
+        return null;
+      }
+      return result;
+    } else {
+      List<Integer> result = new ArrayList<Integer>(1);
+      if (expr instanceof IInteger) {
+        result.add(((IInteger) expr).toInt());
         return result;
       }
     }

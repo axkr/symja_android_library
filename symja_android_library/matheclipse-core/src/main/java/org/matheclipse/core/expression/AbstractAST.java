@@ -2241,6 +2241,24 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return true;
   }
 
+  @Override
+  public boolean forAllLeaves(IExpr head, Predicate<? super IExpr> predicate, int startOffset) {
+    final int size = size();
+    if (!head().equals(head)) {
+      return predicate.test(this);
+    }
+    for (int i = startOffset; i < size; i++) {
+      if (get(i).isAST()) {
+        if (!((IAST) get(i)).forAllLeaves(head, predicate, startOffset)) {
+          return false;
+        }
+      } else if (!predicate.test(get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /** {@inheritDoc} */
   @Override
   public void forEach(Consumer<? super IExpr> action) {
@@ -3292,7 +3310,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   }
 
   @Override
-  public boolean isFunctionID(int[] ids) {
+  public boolean isFunctionID(int... ids) {
     int id = headID();
     if (id >= 0) {
       for (int i = 0; i < ids.length; i++) {
@@ -4091,9 +4109,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return true;
     }
     IExpr head = head();
-    if (size() == 2 && S.Cos.equals(head) && S.Sin.equals(head)) {
-      // TODO add more functions
-      return arg1().isRealResult();
+    if (size() == 2 && head.isBuiltInSymbol()) {
+      if (isFunctionID(ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Sec, ID.Sech, ID.Sin,
+          ID.Sinh, ID.Tan, ID.Tanh, ID.Erf, ID.Erfc, ID.Erfi, ID.ExpIntegralEi, ID.Gamma,
+          ID.Identity)) {
+        return arg1().isRealResult();
+      }
+      if (isFunctionID(ID.Re, ID.Im, ID.Abs, ID.Arg, ID.RealSign)) {
+        return true;
+      }
     }
     ISignedNumber e = evalReal();
     if (e != null) {
@@ -4682,13 +4706,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public IAST map(final Function<IExpr, IExpr> function) {
+  public IAST map(final Function<IExpr, ? extends IExpr> function) {
     return map(function, 1);
   }
 
   /** {@inheritDoc} */
   @Override
-  public IAST map(final Function<IExpr, IExpr> function, final int startOffset) {
+  public IAST map(final Function<IExpr, ? extends IExpr> function, final int startOffset) {
     IExpr temp;
     IASTMutable result = F.NIL;
     int i = startOffset;
@@ -5222,11 +5246,14 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /**
    * Append the elements in reversed order to the given <code>list</code>
    *
-   * @param resultList
+   * @param resultList if {@link F.NIL} create a new {@link IASTAppendable} list inside the method
    * @return
    */
   @Override
   public IASTAppendable reverse(IASTAppendable resultList) {
+    if (!resultList.isPresent()) {
+      resultList = F.ListAlloc(argSize());
+    }
     for (int i = argSize(); i >= 1; i--) {
       resultList.append(get(i));
     }

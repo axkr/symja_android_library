@@ -26,6 +26,7 @@ import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import org.apache.commons.lang3.StringUtils;
@@ -83,6 +84,7 @@ import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.builtin.RandomFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
+import org.matheclipse.core.builtin.SequenceFunctions;
 import org.matheclipse.core.builtin.SeriesFunctions;
 import org.matheclipse.core.builtin.SidesFunctions;
 import org.matheclipse.core.builtin.SimplifyFunctions;
@@ -923,6 +925,7 @@ public class F extends S {
       LinearAlgebra.initialize();
       TensorFunctions.initialize();
       ListFunctions.initialize();
+      SequenceFunctions.initialize();
       Combinatoric.initialize();
       IntegerFunctions.initialize();
       BesselFunctions.initialize();
@@ -1946,6 +1949,18 @@ public class F extends S {
   }
 
   /**
+   * Create a sparse array from the dense list representation (for example dense vectors and
+   * matrices)
+   * 
+   * @param denseList
+   * @param defaultValue default value for positions not specified in the dense list representation.
+   * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created
+   */
+  public static ISparseArray sparseArray(final IAST denseList, IExpr defaultValue) {
+    return SparseArrayExpr.newDenseList(denseList, defaultValue);
+  }
+
+  /**
    * Generate a <code>n x m</code> sparse matrix. The indices start in Java convention with
    * <code>0</code>.
    *
@@ -2308,13 +2323,36 @@ public class F extends S {
   }
 
   /**
-   * Gives symbols "True" or "False" (type ISymbol) depending on the boolean value.
+   * Returns symbol "True" or "False" (type ISymbol) depending on the boolean value.
+   *
+   * @param value
+   * @return
+   * @deprecated use {@link #booleSymbol(boolean)} instead
+   */
+  @Deprecated
+  public static ISymbol bool(final boolean value) {
+    return booleSymbol(value);
+  }
+
+  /**
+   * Returns symbol "True" or "False" (type ISymbol) depending on the boolean value.
    *
    * @param value
    * @return
    */
-  public static ISymbol bool(final boolean value) {
+  public static ISymbol booleSymbol(final boolean value) {
     return value ? True : False;
+  }
+
+  /**
+   * Returns integers 1 or 0 (type ISymbol) depending on the boolean value <code>true</code> or
+   * <code>false</code>.
+   *
+   * @param value
+   * @return
+   */
+  public static IInteger booleInteger(final boolean value) {
+    return value ? F.C1 : F.C0;
   }
 
   public static IAST Boole(final IExpr a) {
@@ -3032,6 +3070,14 @@ public class F extends S {
 
   public static IAST ContinuedFraction(final IExpr a0) {
     return new AST1(ContinuedFraction, a0);
+  }
+
+  public static IAST CoordinateBoundingBox(final IExpr a0) {
+    return new AST1(CoordinateBoundingBox, a0);
+  }
+
+  public static IAST CoordinateBounds(final IExpr a0) {
+    return new AST1(CoordinateBounds, a0);
   }
 
   public static IAST CoplanarPoints(final IExpr a0) {
@@ -4466,6 +4512,10 @@ public class F extends S {
     return new AST2(HurwitzZeta, a0, a1);
   }
 
+  public static IAST Hyperfactorial(final IExpr a0) {
+    return new AST1(Hyperfactorial, a0);
+  }
+
   public static IAST Hypergeometric0F1(final IExpr a0, final IExpr a1) {
     return new AST2(Hypergeometric0F1, a0, a1);
   }
@@ -5735,6 +5785,10 @@ public class F extends S {
    */
   public static IASTAppendable ListAlloc(Stream<? extends IExpr> stream) {
     return ListAlloc(stream.map(IExpr.class::cast).collect(Collectors.toList()));
+  }
+
+  public static IASTAppendable ListAlloc(IntStream stream) {
+    return ListAlloc(stream.mapToObj(i -> F.ZZ(i)));
   }
 
 
@@ -8013,7 +8067,7 @@ public class F extends S {
     return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
       @Override
       public IExpr evaluate(IAST ast, EvalEngine engine) {
-        return bool(function.test(ast.arg1(), ast.arg2()));
+        return booleSymbol(function.test(ast.arg1(), ast.arg2()));
       }
     });
   }
@@ -8022,7 +8076,7 @@ public class F extends S {
     return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
       @Override
       public IExpr evaluate(IAST ast, EvalEngine engine) {
-        return bool(function.test(ast.arg1()));
+        return booleSymbol(function.test(ast.arg1()));
       }
     });
   }
@@ -8583,6 +8637,96 @@ public class F extends S {
 
   public static IAST Subdivide(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(Subdivide, a0, a1, a2);
+  }
+
+  /**
+   * Create a list <code>{0, 1/n,2/n,3/n,...,n}</code>.
+   * 
+   * @param n the number of the &quot;elements of the result list&quot; minus 1
+   * @return a list <code>{0, 1/n,2/n,3/n,...,n}</code>
+   */
+  public static IAST subdivide(int n) {
+    IASTAppendable result = F.ListAlloc(n);
+    for (int i = 0; i < n + 1; i++) {
+      result.append(F.QQ(i, n));
+    }
+    return result;
+  }
+
+  /**
+   * Create a list by dividing the range <code>0</code> to <code>xMax</code> into <code>n</code>
+   * parts.
+   * 
+   * @param xMax end of range (inclusive)
+   * @param n the number of the &quot;elements of the result list&quot; minus 1
+   * @return
+   */
+  public static IAST subdivide(int xMax, int n) {
+    IASTAppendable result = F.ListAlloc(n);
+    IRational part = F.QQ(xMax, n);
+    for (int i = 0; i < n + 1; i++) {
+      IRational element = part.multiply(i);
+      result.append(element);
+    }
+    return result;
+  }
+
+  /**
+   * Create a list by dividing the range <code>xMin</code> to <code>xMax</code> into <code>n</code>
+   * parts.
+   * 
+   * @param xMin start of range (inclusive)
+   * @param xMax end of range (inclusive)
+   * @param n the number of the &quot;elements of the result list&quot; minus 1
+   * @return
+   */
+  public static IAST subdivide(int xMin, int xMax, int n) {
+    IASTAppendable result = F.ListAlloc(n);
+    int diff = xMax - xMin;
+    IRational part = F.QQ(diff, n);
+    IInteger xMinInt = F.ZZ(xMin);
+    for (int i = 0; i < n + 1; i++) {
+      IRational element = part.multiply(i).add(xMinInt);
+      result.append(element);
+    }
+    return result;
+  }
+
+  /**
+   * Create a list by dividing the range <code>0</code> to <code>xMax</code> into <code>n</code>
+   * parts.
+   * 
+   * @param xMax end of range (inclusive)
+   * @param n the number of the &quot;elements of the result list&quot; minus 1
+   * @return
+   */
+  public static ASTRealVector subdivide(double xMax, int n) {
+    double[] vector = new double[n + 1];
+
+    double part = xMax / n;
+    for (int i = 0; i < n + 1; i++) {
+      vector[i] = part * i;
+    }
+    return new ASTRealVector(vector, false);
+  }
+
+  /**
+   * Create a list by dividing the range <code>xMin</code> to <code>xMax</code> into <code>n</code>
+   * parts.
+   * 
+   * @param xMin start of range (inclusive)
+   * @param xMax end of range (inclusive)
+   * @param n the number of the &quot;elements of the result list&quot; minus 1
+   * @return
+   */
+  public static ASTRealVector subdivide(double xMin, double xMax, int n) {
+    double[] vector = new double[n + 1];
+    double diff = xMax - xMin;
+    double part = diff / n;
+    for (int i = 0; i < n + 1; i++) {
+      vector[i] = part * i + xMin;
+    }
+    return new ASTRealVector(vector, false);
   }
 
   public static IAST Subfactorial(final IExpr a0) {
@@ -9684,7 +9828,7 @@ public class F extends S {
         }
       } else if (expr instanceof ImageExpr) {
         ImageExpr imageExpr = (ImageExpr) expr;
-        BufferedImage bImage = imageExpr.toData();
+        BufferedImage bImage = imageExpr.getBufferedImage();
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
           ImageIO.write(bImage, "png", b64);

@@ -1385,9 +1385,9 @@ public class StructureFunctions {
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, ast.arg1(), 1, engine);
       if (arg1AST.isPresent()) {
         if (ast.isAST2()) {
-          return F.bool(test(arg1AST, ast.arg2(), engine));
+          return F.booleSymbol(test(arg1AST, ast.arg2(), engine));
         }
-        return F.bool(test(arg1AST));
+        return F.booleSymbol(test(arg1AST));
       }
       return F.NIL;
     }

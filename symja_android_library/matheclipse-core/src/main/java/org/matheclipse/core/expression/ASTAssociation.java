@@ -599,7 +599,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   /** {@inheritDoc} */
   @Override
-  public IAST map(final Function<IExpr, IExpr> function, final int startOffset) {
+  public IAST map(final Function<IExpr, ? extends IExpr> function, final int startOffset) {
     IExpr temp;
     ASTAssociation result = null;
     int i = startOffset;

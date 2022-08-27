@@ -41,9 +41,9 @@ public abstract class AbstractPredicateEvaluator extends AbstractFunctionEvaluat
     }
     if (ast.size() == 3) {
       OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-      return F.bool(evalArg1Boole(arg1, engine, options));
+      return F.booleSymbol(evalArg1Boole(arg1, engine, options));
     }
-    return F.bool(evalArg1Boole(arg1, engine));
+    return F.booleSymbol(evalArg1Boole(arg1, engine));
     // }
     // Validate.checkSize(ast, 2);
     // return F.NIL;

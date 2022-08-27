@@ -2202,7 +2202,7 @@ public interface IExpr
    * @return
    * @see #isPureFunction()
    */
-  default boolean isFunctionID(int[] ids) {
+  default boolean isFunctionID(int... ids) {
     return false;
   }
 

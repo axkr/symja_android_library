@@ -133,20 +133,20 @@ public class SymjaBot {
   }
 
   private static void sendBufferedImage(ImageExpr imageExpr, Mono<MessageChannel> mChannel) {
-    BufferedImage bufferedImage = imageExpr.toData();
-    try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-      ImageIO.write(bufferedImage, "png", outputStream);
-      InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-      EmbedCreateSpec embed = EmbedCreateSpec.builder().image("attachment://file-name.png").build();
-      mChannel //
-          .ofType(GuildMessageChannel.class)
-          .flatMap(ch -> ch.createMessage(MessageCreateSpec.builder() //
-              .addFile("file-name.png", inputStream).addEmbed(embed).build()))
-          .block();
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+    // BufferedImage bufferedImage = imageExpr.getBufferedImage();
+    // try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+    // ImageIO.write(bufferedImage, "png", outputStream);
+    InputStream inputStream = new ByteArrayInputStream(imageExpr.toData());
+    EmbedCreateSpec embed = EmbedCreateSpec.builder().image("attachment://file-name.png").build();
+    mChannel //
+        .ofType(GuildMessageChannel.class)
+        .flatMap(ch -> ch.createMessage(MessageCreateSpec.builder() //
+            .addFile("file-name.png", inputStream).addEmbed(embed).build()))
+        .block();
+    // } CATCH (IOEXCEPTION E) {
+    // // TODO AUTO-GENERATED CATCH BLOCK
+    // E.PRINTSTACKTRACE();
+    // }
   }
 
   private static boolean filterMessage(Message message) {

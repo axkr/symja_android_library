@@ -125,6 +125,7 @@ public class BuiltinUsage {
     USAGE[ID.FixedPoint] = "nest until a fixed point is reached returning the last expression";
     USAGE[ID.FixedPointList] = "nest until a fixed point is reached return a list";
     USAGE[ID.Flat] = "attribute for functions that must be flattened";
+    USAGE[ID.Flatten] = "flatten out any sequence of levels in a nested list";
     USAGE[ID.Fold] = "iterative application of a binary operation over elements of a list";
     USAGE[ID.FoldList] =
         "list of the results of applying a binary operation interatively over elements of a list";
@@ -171,12 +172,16 @@ public class BuiltinUsage {
     USAGE[ID.Interrupt] = "interrupt evaluation and return '$Aborted'";
     USAGE[ID.Intersection] = "enumerate common elements";
     USAGE[ID.IntersectingQ] = "test whether two lists have common elements";
+
     USAGE[ID.JaccardDissimilarity] = "Jaccard dissimilarity";
     USAGE[ID.JavaForm] = "translate expressions as Java source code";
     USAGE[ID.Join] = "join lists together at any level";
+
     USAGE[ID.Key] = "indicate a key within a part specification";
     USAGE[ID.Keys] = "list association keys";
+    USAGE[ID.KroneckerProduct] = "Kronecker product";
     USAGE[ID.Kurtosis] = "kurtosis coefficient";
+
     USAGE[ID.Last] = "last element of a list or expression";
     USAGE[ID.LCM] = "least common multiple";
     USAGE[ID.LeafCount] = "the total number of atomic subexpressions";
@@ -199,6 +204,7 @@ public class BuiltinUsage {
     USAGE[ID.Lookup] =
         "perform lookup of a value by key, returning a specified default if it is not found";
     USAGE[ID.LowerCaseQ] = "test wether all the characters are lower-case letters";
+
     USAGE[ID.MatchingDissimilarity] = "simple matching dissimilarity";
     USAGE[ID.MathMLForm] = "format expression as MathML commands";
     USAGE[ID.MatrixForm] = "format as a matrix";
@@ -214,6 +220,7 @@ public class BuiltinUsage {
     USAGE[ID.ModularInverse] = "returns the modular inverse k^(-1) MOD n";
     USAGE[ID.Most] = "remove the last element";
     USAGE[ID.Multinomial] = "multinomial coefficients";
+
     USAGE[ID.Names] = "find a list of symbols with names matching a pattern";
     USAGE[ID.Nand] = "negation of logic conjunction";
     USAGE[ID.Nearest] = "the nearest element from a list";
@@ -252,6 +259,7 @@ public class BuiltinUsage {
     USAGE[ID.PadRight] = "pad out by the right a ragged array to make a matrix";
     USAGE[ID.Part] = "get/set any part of an expression";
     USAGE[ID.Partition] = "partition a list into sublists of a given length";
+    USAGE[ID.PauliMatrix] = "Pauli spin matrix";
     USAGE[ID.Permutations] = "form permutations of a list";
     USAGE[ID.Pick] = "pick out elements according to a boolean mask";
     USAGE[ID.Piecewise] = "an arbitrary piecewise function";
@@ -309,6 +317,7 @@ public class BuiltinUsage {
     USAGE[ID.RotateLeft] = "cyclically rotate lists to the left, at any depth";
     USAGE[ID.RotateRight] = "cyclically rotate lists to the right, at any depth";
     USAGE[ID.RussellRaoDissimilarity] = "Russell-Rao dissimilarity";
+
     USAGE[ID.SameQ] = "literal symbolic identity";
     USAGE[ID.Sec] = "secant function";
     USAGE[ID.Sech] = "hyperbolic secant function";
@@ -361,6 +370,7 @@ public class BuiltinUsage {
     USAGE[ID.SymbolName] = "give the name of a symbol as a string";
     // USAGE[ID.SymjaForml] = "translate expressions to Symja";
     // USAGE[ID.Syntax] = "syntax messages";
+
     USAGE[ID.Table] = "make a table of values of an expression";
     USAGE[ID.TableForm] = "format as a table";
     USAGE[ID.Take] = "pick a range of elements";
@@ -371,6 +381,7 @@ public class BuiltinUsage {
     USAGE[ID.Tally] = "tally all distinct elements in a list";
     USAGE[ID.Tan] = "tangent function";
     USAGE[ID.Tanh] = "hyperbolic tangent function";
+    USAGE[ID.TensorProduct] = "tensor product";
     USAGE[ID.TeXForm] = "formatted expression as TeX commands";
     USAGE[ID.Throw] = "throw an expression to be caught by a surrounding 'Catch'";
     USAGE[ID.ToCharacterCode] = "convert a string to a list of character codes";
@@ -383,7 +394,9 @@ public class BuiltinUsage {
     USAGE[ID.True] = "boolean constant for True";
     USAGE[ID.TrueQ] = "returns 'true' if and only if $expr$ is 'true'";
     USAGE[ID.Tuples] = "form n-tuples from a list";
+
     USAGE[ID.UpperCaseQ] = "test wether all the characters are upper-case letters";
+    USAGE[ID.Undefined] = "undefined value";
     USAGE[ID.Unequal] = "numerical inequality";
     USAGE[ID.Unevaluated] =
         "temporarily leaves $expr$ in an unevaluated form when it appears as a function argument";
@@ -392,16 +405,20 @@ public class BuiltinUsage {
     USAGE[ID.Unprotect] = "remove protection against redefinitions";
     USAGE[ID.UnsameQ] = "not literal symbolic identity";
     USAGE[ID.UpTo] = "a certain number of elements, or as many as are available";
+
     USAGE[ID.ValueQ] = "test whether a symbol can be considered to have a value";
     USAGE[ID.Values] = "list association values";
     USAGE[ID.Variance] = "variance of a dataset";
+
     USAGE[ID.Which] = "test which of a sequence of conditions are true";
     USAGE[ID.While] = "evaluate an expression while a criterion is true";
     USAGE[ID.Whitespace] = "sequence of whitespace characters";
     USAGE[ID.WhitespaceCharacter] = "space, newline, tab, or other whitespace character";
     USAGE[ID.WordBoundary] = "boundary between word characters and others";
     USAGE[ID.WordCharacter] = "letter or digit";
+
     USAGE[ID.Xor] = "logic (exclusive) disjunction";
+
     USAGE[ID.YuleDissimilarity] = "Yule dissimilarity";
   }
 

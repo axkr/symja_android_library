@@ -905,7 +905,7 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isString()) {
-        return F.bool(test(ast.arg1()));
+        return F.booleSymbol(test(ast.arg1()));
       }
       return F.NIL;
     }
@@ -951,7 +951,7 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = Validate.checkStringType(ast, 1, engine);
       if (arg1.isPresent()) {
-        return F.bool(test(arg1));
+        return F.booleSymbol(test(arg1));
       }
       return F.NIL;
     }
@@ -1094,7 +1094,7 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = Validate.checkStringType(ast, 1, engine);
       if (arg1.isPresent()) {
-        return F.bool(test(arg1));
+        return F.booleSymbol(test(arg1));
       }
       return F.NIL;
     }
@@ -3364,7 +3364,7 @@ public final class StringFunctions {
       IExpr arg1 = engine.evaluate(ast.arg1());
       IExpr temp = Validate.checkStringType(ast, 1, engine);
       if (temp.isPresent()) {
-        return F.bool(test(arg1));
+        return F.booleSymbol(test(arg1));
       }
       return F.NIL;
     }

@@ -142,7 +142,7 @@ public class JavaFunctions {
         }
       }
       if (arg1 instanceof JavaObjectExpr && arg2 instanceof JavaClassExpr) {
-        return F.bool(((JavaClassExpr) arg2).toData().isInstance(((JavaObjectExpr) arg1).toData()));
+        return F.booleSymbol(((JavaClassExpr) arg2).toData().isInstance(((JavaObjectExpr) arg1).toData()));
       }
       return F.False;
     }
@@ -382,7 +382,7 @@ public class JavaFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return F.bool(ast.arg1() instanceof JavaObjectExpr);
+      return F.booleSymbol(ast.arg1() instanceof JavaObjectExpr);
     }
 
     @Override
@@ -537,7 +537,7 @@ public class JavaFunctions {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg1 instanceof JavaObjectExpr && arg2 instanceof JavaObjectExpr) {
-        return F.bool(((JavaObjectExpr) arg1).toData() == ((JavaObjectExpr) arg2).toData());
+        return F.booleSymbol(((JavaObjectExpr) arg1).toData() == ((JavaObjectExpr) arg2).toData());
       }
       return F.False;
     }

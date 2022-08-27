@@ -3432,7 +3432,7 @@ public final class BooleanFunctions {
       }
       ISignedNumber signedNumber = arg1.evalReal();
       if (signedNumber != null) {
-        return F.bool(signedNumber.isNegative());
+        return F.booleSymbol(signedNumber.isNegative());
       }
       if (arg1.isNegativeInfinity()) {
         return S.True;
@@ -3594,7 +3594,7 @@ public final class BooleanFunctions {
       }
       ISignedNumber signedNumber = arg1.evalReal();
       if (signedNumber != null) {
-        return F.bool(!signedNumber.isNegative());
+        return F.booleSymbol(!signedNumber.isNegative());
       }
       if (arg1.isNegativeInfinity()) {
         return S.False;
@@ -3651,7 +3651,7 @@ public final class BooleanFunctions {
       }
       ISignedNumber signedNumber = arg1.evalReal();
       if (signedNumber != null) {
-        return F.bool(signedNumber.isNegative() || signedNumber.isZero());
+        return F.booleSymbol(signedNumber.isNegative() || signedNumber.isZero());
       }
       return F.NIL;
     }
@@ -3987,7 +3987,7 @@ public final class BooleanFunctions {
       }
       ISignedNumber signedNumber = arg1.evalReal();
       if (signedNumber != null) {
-        return F.bool(signedNumber.isPositive());
+        return F.booleSymbol(signedNumber.isPositive());
       }
       if (arg1.isNegativeInfinity()) {
         return S.False;
@@ -4519,7 +4519,7 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return F.bool(ast.equalsAt(1, S.True));
+      return F.booleSymbol(ast.equalsAt(1, S.True));
     }
 
     @Override
@@ -4884,7 +4884,7 @@ public final class BooleanFunctions {
         q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
       }
       if (q1.unit().equals(q2.unit())) {
-        return F.bool(q1.value().equals(q2.value()));
+        return F.booleSymbol(q1.value().equals(q2.value()));
       }
     } catch (RuntimeException rex) {
       //
@@ -4909,7 +4909,7 @@ public final class BooleanFunctions {
         q2 = (IQuantity) unitConvert.to(q1.unit()).apply(q2);
       }
       if (q1.unit().equals(q2.unit())) {
-        return F.bool(!q1.value().equals(q2.value()));
+        return F.booleSymbol(!q1.value().equals(q2.value()));
       }
     } catch (RuntimeException rex) {
       //

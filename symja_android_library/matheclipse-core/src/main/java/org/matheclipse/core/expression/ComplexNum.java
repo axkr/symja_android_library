@@ -117,6 +117,16 @@ public class ComplexNum implements IComplexNum {
     return newInstance(c);
   }
 
+  /**
+   * Create complex number on unit circle with given argument <code>arg</code>.
+   * 
+   * @param arg angle
+   * @return Exp[I * angle], i.e. complex number on unit circle with given argument
+   */
+  public static ComplexNum unitOf(final double arg) {
+    return newInstance(new Complex(Math.cos(arg), Math.sin(arg)));
+  }
+
   public static ComplexNum valueOf(final double real) {
     if (real == 0.0d || real == -0.0d) {
       return ZERO;
