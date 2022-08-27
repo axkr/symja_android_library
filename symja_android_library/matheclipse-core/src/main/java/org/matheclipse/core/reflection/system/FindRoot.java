@@ -22,6 +22,7 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Assumptions;
@@ -355,7 +356,8 @@ public class FindRoot extends AbstractFunctionEvaluator {
     int l1 = arg1.isVector();
     int l2 = arg2.argSize();
     if (l1 > 0 && l1 == l2 && arg1.isList() && arg2.isList()) {
-      return multivariateFindRoot((IAST) arg1, (IAST) arg2, Config.SPECIAL_FUNCTIONS_TOLERANCE, 200,
+      return multivariateFindRoot((IAST) arg1, (IAST) arg2, Config.SPECIAL_FUNCTIONS_TOLERANCE,
+          maxIterations,
           engine);
     } else if (arg2.isList()) {
       IAST list = (IAST) arg2;
@@ -393,12 +395,12 @@ public class FindRoot extends AbstractFunctionEvaluator {
    * @param listOfEquations a list of equations
    * @param matrixOfVarValuePairs a matrix of variables and their initial values
    * @param tolerance the tolerance where the the iteration should stop
-   * @param iterationLimit maximum iterations
+   * @param maxIterations maximum iterations
    * @param engine
    * @return
    */
   private static IExpr multivariateFindRoot(IAST listOfEquations, IAST matrixOfVarValuePairs,
-      double tolerance, int iterationLimit, EvalEngine engine) {
+      double tolerance, int maxIterations, EvalEngine engine) {
     // convert parameters from FindRoot to be suitable for Newtons method
     IASTAppendable vectorValuedFunction = F.ListAlloc(matrixOfVarValuePairs.argSize());
     IASTAppendable vectorOfVariables = F.ListAlloc(matrixOfVarValuePairs.argSize());
@@ -422,7 +424,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
     }
 
     return multivariateNewton(vectorValuedFunction, vectorOfVariables, initialGuess, tolerance,
-        iterationLimit, engine);
+        maxIterations, engine);
   }
 
   /**
@@ -436,20 +438,20 @@ public class FindRoot extends AbstractFunctionEvaluator {
    * @param vectorOfVariables
    * @param initialGuessVector
    * @param tolerance
-   * @param iterationLimit maximum iterations
+   * @param maxIterations maximum iterations
    * @param engine
    * @return
    */
   private static IExpr multivariateNewton(IAST vectorValuedFunction, IAST vectorOfVariables,
       IAST initialGuessVector, double tolerance,
-      int iterationLimit, EvalEngine engine) {
+      int maxIterations, EvalEngine engine) {
 
     IExpr jacobianMatrix = S.Grad.ofNIL(engine, vectorValuedFunction, vectorOfVariables);
     if (jacobianMatrix.isMatrix(false) != null) {
       final int argSize = vectorOfVariables.argSize();
       IAST xNext = F.constantArray(F.CD0, argSize);
       IAST xCurr = initialGuessVector.copy();
-      for (int k = 0; k < iterationLimit; k++) {
+      for (int k = 0; k < maxIterations; k++) {
         Map<IExpr, IExpr> map = createSubsMap(vectorOfVariables, xCurr);
         IExpr fValue = engine.evalN(F.Negate(F.subsList(vectorValuedFunction, map)));
         IExpr jValue = engine.evalN(F.subsList(jacobianMatrix, map));
@@ -465,15 +467,15 @@ public class FindRoot extends AbstractFunctionEvaluator {
           xNext = (IAST) temp;
           double norm = engine.evalDouble(F.Norm(y));
           if (norm < tolerance) {
-            break;
+            // convert result vector to list of rules
+            return vectorOfVariables.mapThread(xNext, (a, b) -> F.Rule(a, b));
           }
           xCurr = xNext;
         } else {
           return F.NIL;
         }
       }
-      // convert result vector to list of rules
-      return vectorOfVariables.mapThread(xNext, (x, y) -> F.Rule(x, y));
+      IterationLimitExceeded.throwIt(maxIterations, S.FindRoot);
     }
     return F.NIL;
   }
