@@ -1267,6 +1267,7 @@ public final class Arithmetic {
     }
   }
 
+
   private static class CubeRoot extends AbstractFunctionEvaluator {
 
     @Override
@@ -1294,6 +1295,7 @@ public final class Arithmetic {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
+
 
   /**
    *
@@ -1395,6 +1397,7 @@ public final class Arithmetic {
     }
   }
 
+
   private static class Differences extends AbstractFunctionEvaluator {
 
     @Override
@@ -1437,6 +1440,7 @@ public final class Arithmetic {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   /**
    *
@@ -1568,6 +1572,7 @@ public final class Arithmetic {
     }
   }
 
+
   private static final class DirectedInfinity extends AbstractCoreFunctionEvaluator {
 
     @Override
@@ -1688,6 +1693,7 @@ public final class Arithmetic {
       newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
     }
   }
+
 
   /**
    *
@@ -2026,6 +2032,7 @@ public final class Arithmetic {
     }
   }
 
+
   /**
    *
    *
@@ -2220,6 +2227,7 @@ public final class Arithmetic {
     }
   }
 
+
   /**
    *
    *
@@ -2363,6 +2371,7 @@ public final class Arithmetic {
     }
   }
 
+
   /**
    *
    *
@@ -2410,6 +2419,7 @@ public final class Arithmetic {
       return S.Increment;
     }
   }
+
 
   /**
    *
@@ -2471,6 +2481,7 @@ public final class Arithmetic {
     }
   }
 
+
   private static final class MantissaExponent extends AbstractCoreFunctionEvaluator {
 
     @Override
@@ -2497,6 +2508,7 @@ public final class Arithmetic {
       return ARGS_1_2;
     }
   }
+
 
   /**
    *
@@ -2554,6 +2566,7 @@ public final class Arithmetic {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -2686,6 +2699,7 @@ public final class Arithmetic {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   /**
    *
@@ -2868,6 +2882,7 @@ public final class Arithmetic {
     }
   }
 
+
   private static final class PiecewiseExpand extends AbstractFunctionEvaluator {
     static class PiecewiseExpandVisitor extends VisitorExpr {
       // private final EvalEngine engine;
@@ -2930,6 +2945,7 @@ public final class Arithmetic {
       return ARGS_1_3;
     }
   }
+
 
   /**
    *
@@ -3302,6 +3318,7 @@ public final class Arithmetic {
 
   }
 
+
   /**
    *
    *
@@ -3425,6 +3442,7 @@ public final class Arithmetic {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
+
 
   /**
    *
@@ -4767,6 +4785,7 @@ public final class Arithmetic {
     }
   }
 
+
   private static final class Precision extends AbstractCoreFunctionEvaluator {
 
     @Override
@@ -4787,6 +4806,7 @@ public final class Arithmetic {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -4836,6 +4856,7 @@ public final class Arithmetic {
     }
   }
 
+
   /**
    *
    *
@@ -4878,6 +4899,7 @@ public final class Arithmetic {
       return S.PreIncrement;
     }
   }
+
 
   /**
    *
@@ -5118,6 +5140,7 @@ public final class Arithmetic {
     }
   }
 
+
   private static final class RealAbs extends AbstractEvaluator {
     private static final class AbsNumericFunction implements DoubleFunction<IExpr> {
       final ISymbol symbol;
@@ -5188,6 +5211,7 @@ public final class Arithmetic {
     }
   }
 
+
   private static final class RealSign extends AbstractEvaluator {
 
     @Override
@@ -5224,6 +5248,8 @@ public final class Arithmetic {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
+
+
   /**
    *
    *
@@ -5383,6 +5409,7 @@ public final class Arithmetic {
     }
   }
 
+
   /**
    * Gets the signum value of a complex number <code>cc</code>.
    * 
@@ -5419,6 +5446,7 @@ public final class Arithmetic {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
+
 
   /**
    *
@@ -5485,6 +5513,7 @@ public final class Arithmetic {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
+
 
   /**
    *
@@ -5657,6 +5686,7 @@ public final class Arithmetic {
     }
   }
 
+
   /**
    *
    *
@@ -5701,6 +5731,7 @@ public final class Arithmetic {
       return S.Subtract;
     }
   }
+
 
   /**
    *
@@ -5752,6 +5783,7 @@ public final class Arithmetic {
       newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
+
 
   /**
    *
@@ -6783,6 +6815,7 @@ public final class Arithmetic {
 
   }
 
+
   /**
    *
    *
@@ -6826,6 +6859,7 @@ public final class Arithmetic {
     protected ISymbol getArithmeticSymbol() {
       return S.Times;
     }
+
   }
 
   /**
@@ -7109,6 +7143,9 @@ public final class Arithmetic {
       if (function.isAST(S.Boole)) {
         return F.Piecewise(F.list(F.list(F.C1, x)), F.C0);
       }
+      if (function.isAST(S.Unitize)) {
+        return F.Piecewise(F.list(F.list(F.C1, F.Unequal(x, F.C0))), F.C0);
+      }
     }
     if (function.isAST(S.BernsteinBasis, 4)) {
       IExpr d = function.arg1();
@@ -7159,13 +7196,15 @@ public final class Arithmetic {
       IExpr x = function.arg1();
       return F.Piecewise(F.list(F.list(x, F.GreaterEqual(x, F.C0))), F.C0);
     }
+    if (function.isAST(S.Unitize, 3)) {
+      IExpr x = function.arg1();
+      IExpr dx = function.arg2();
+      return F.Piecewise(F.list(F.list(F.C1, F.LessEqual(F.Subtract(dx, F.Abs(x)), F.C0))), F.C0);
+    }
     if (function.isAST(S.UnitStep) && function.size() > 1) {
-      // Piecewise[{{1, x >= 0 && y >= 0 && z >= 0}}, 0]
+      // Piecewise({{1, x >= 0 && y >= 0 && z >= 0}}, 0)
       final int size = function.size();
       IASTAppendable andAST = F.mapFunction(S.And, function, t -> F.GreaterEqual(t, F.C0));
-      // for (int i = 1; i < size; i++) {
-      // andAST.append(F.GreaterEqual(function.get(i), F.C0));
-      // }
       return F.Piecewise(F.list(F.list(F.C1, andAST)), F.C0);
     }
 
@@ -7175,7 +7214,6 @@ public final class Arithmetic {
           return F.Piecewise(F.list(F.list(F.C1, F.Equal(function.arg1(), F.C0))), F.C0);
         }
         IASTAppendable andAST = F.mapFunction(S.And, function, t -> F.Equal(t, F.C0));
-        // function.forEach(x -> andAST.append(F.Equal(x, F.C0)));
         return F.Piecewise(F.list(F.list(F.C1, andAST)), F.C0);
       }
       if (function.isAST(S.KroneckerDelta)) {
