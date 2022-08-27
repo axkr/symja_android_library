@@ -15,7 +15,7 @@ public interface ArcTanRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 23, 1 };
+  final public static int[] SIZES = { 24, 1 };
 
   final public static IAST RULES = List(
     IInit(ArcTan, SIZES),
@@ -94,6 +94,9 @@ public interface ArcTanRules {
     // ArcTan(-I*Infinity)=(-1)*1/2*Pi
     ISet(ArcTan(DirectedInfinity(CNI)),
       CNPiHalf),
+    // ArcTan(ComplexInfinity)=Indeterminate
+    ISet(ArcTan(CComplexInfinity),
+      Indeterminate),
     // ArcTan(x_?RealNumberQ,y_?RealNumberQ):=If(x==0,If(y==0,Indeterminate,If(y>0,Pi/2,(-1)*1/2*Pi)),If(x>0,ArcTan(y/x),If(y>=0,ArcTan(y/x)+Pi,-Pi+ArcTan(y/x))))
     ISetDelayed(ArcTan(PatternTest(x_,RealNumberQ),PatternTest(y_,RealNumberQ)),
       If(Equal(x,C0),If(Equal(y,C0),Indeterminate,If(Greater(y,C0),CPiHalf,Times(CN1,C1D2,Pi))),If(Greater(x,C0),ArcTan(Times(Power(x,CN1),y)),If(GreaterEqual(y,C0),Plus(ArcTan(Times(Power(x,CN1),y)),Pi),Plus(CNPi,ArcTan(Times(Power(x,CN1),y))))))),

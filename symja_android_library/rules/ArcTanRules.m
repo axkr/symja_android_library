@@ -18,6 +18,7 @@
  ArcTan(Sqrt(5+2*Sqrt(5)))=2/5*Pi,
  
  ArcTan(I)=I*Infinity,
+
  
  ArcTan(Undefined, y_):=Undefined,
  ArcTan(x_, Undefined):=Undefined,
@@ -26,6 +27,7 @@
  ArcTan(-Infinity)=-Pi/2,
  ArcTan(I*Infinity)=Pi/2,
  ArcTan(-I*Infinity)=-Pi/2,
+ ArcTan(ComplexInfinity)=Indeterminate,
  ArcTan(x_?RealNumberQ, y_?RealNumberQ) :=  
    If(x == 0, If(y == 0, Indeterminate, If(y > 0, Pi/2, -Pi/2)), If(x > 0,
         ArcTan(y/x), If(y >= 0, ArcTan(y/x) + Pi, ArcTan(y/x) - Pi))),
