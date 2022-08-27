@@ -28,13 +28,13 @@ import org.matheclipse.core.interfaces.ISignedNumber;
    * @return
    * @see ListPlot
    */
-  public static XYSeriesCollection<String> xySeriesCollection(VisualSet visualSet) {
-    XYSeriesCollection<String> xySeriesCollection = new XYSeriesCollection<>();
+  public static XYSeriesCollection xySeriesCollection(VisualSet visualSet) {
+    XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
     UnaryOperator<IExpr> toRealsX = visualSet.getAxisX().toReals();
     UnaryOperator<IExpr> toRealsY = visualSet.getAxisY().toReals();
     for (VisualRow visualRow : visualSet.visualRows()) {
       String labelString = visualRow.getLabelString();
-      XYSeries<String> xySeries = new XYSeries<>(labelString.isEmpty() //
+      XYSeries xySeries = new XYSeries(labelString.isEmpty() //
           ? Integer.toString(xySeriesCollection.getSeriesCount())
           : labelString, //
           visualRow.getAutoSort());
@@ -60,11 +60,11 @@ import org.matheclipse.core.interfaces.ISignedNumber;
    * @param naming for instance ISignedNumber::toString
    * @return
    */
-  public static CategoryDataset<ComparableLabel, String> defaultCategoryDataset(VisualSet visualSet,
+  public static CategoryDataset defaultCategoryDataset(VisualSet visualSet,
       Function<IExpr, String> naming) {
     // TODO BRIDGE may result in "unordered" domain depending on ordering of rows
-    DefaultCategoryDataset<ComparableLabel, String> defaultCategoryDataset =
-        new DefaultCategoryDataset<>();
+    DefaultCategoryDataset defaultCategoryDataset =
+        new DefaultCategoryDataset();
     UnaryOperator<IExpr> toRealsY = visualSet.getAxisY().toReals();
     for (VisualRow visualRow : visualSet.visualRows()) {
       IAST points = visualRow.points();

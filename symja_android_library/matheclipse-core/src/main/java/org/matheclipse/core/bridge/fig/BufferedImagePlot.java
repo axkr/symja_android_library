@@ -23,8 +23,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeMap;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.api.RectangleEdge;
-import org.jfree.chart.api.RectangleInsets;
+import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.axis.AxisCollection;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.AxisSpace;
@@ -32,8 +31,6 @@ import org.jfree.chart.axis.AxisState;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.event.PlotChangeEvent;
-import org.jfree.chart.internal.Args;
-import org.jfree.chart.legend.LegendItemCollection;
 import org.jfree.chart.plot.CrosshairState;
 import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.Pannable;
@@ -46,6 +43,9 @@ import org.jfree.chart.plot.ValueAxisPlot;
 import org.jfree.chart.plot.Zoomable;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.ui.RectangleEdge;
+import org.jfree.chart.ui.RectangleInsets;
+import org.jfree.chart.util.Args;
 import org.jfree.chart.util.ShadowGenerator;
 import org.jfree.data.Range;
 import org.jfree.data.general.DatasetChangeEvent;
@@ -1394,13 +1394,13 @@ public class BufferedImagePlot extends Plot implements ValueAxisPlot, Pannable, 
     AxisState domainAxisState = axisStateMap.get(getDomainAxis());
     if (domainAxisState == null) {
       if (parentState != null) {
-        domainAxisState = parentState.getSharedAxisStates().get(getDomainAxis());
+        domainAxisState = (AxisState) parentState.getSharedAxisStates().get(getDomainAxis());
       }
     }
     AxisState rangeAxisState = axisStateMap.get(getRangeAxis());
     if (rangeAxisState == null) {
       if (parentState != null) {
-        rangeAxisState = parentState.getSharedAxisStates().get(getRangeAxis());
+        rangeAxisState = (AxisState) parentState.getSharedAxisStates().get(getRangeAxis());
       }
     }
     Graphics2D savedG2 = g2;
