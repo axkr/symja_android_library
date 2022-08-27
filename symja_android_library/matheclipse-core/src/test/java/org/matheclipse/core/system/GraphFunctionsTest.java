@@ -67,6 +67,15 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
             + " {1,0,1,1},\n" + " {1,1,0,1},\n" + " {1,1,1,0}}");
   }
 
+  public void testConnectedGraphQ() {
+    check("ConnectedGraphQ(Graph({1,2,3,4},{1->2, 2->3, 3->4, 2->4}))", //
+        "True");
+    check("ConnectedGraphQ(Graph({1,2,3,4},{1<->2, 2<->3, 3<->4}))", //
+        "True");
+    check("ConnectedGraphQ(Graph({1,2,3,4},{1<->2, 3<->4}))", //
+        "False");
+  }
+
   public void testCycleGraph() {
     check("CycleGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,0,1},\n" //
@@ -439,6 +448,23 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "False");
     check("GraphQ( Graph({1->2, 2->3, 3->1}, EdgeWeight->{5.061,2.282,5.086}) )", //
         "True");
+  }
+
+  public void testPathGraphQ() {
+    // TODO multi-graph should return false
+    // check("PathGraphQ(Graph({1,2,3},{1->2, 2->3, 2->3}))", //
+    // "False");
+    check("PathGraphQ(Graph({1,2,3,4},{1->2, 2->3, 3->4}))", //
+        "True");
+    check("PathGraphQ(Graph({1,2,3,4},{1<->2, 2<->3, 3<->4}))", //
+        "True");
+    check("PathGraphQ(Graph({1,2,3,4},{1<->2, 3<->4}))", //
+        "False");
+  }
+
+  public void testPathGraph() {
+    check("PathGraph(Range(10))", //
+        "Graph({1,2,3,4,5,6,7,8,9,10},{1<->2,2<->3,3<->4,4<->5,5<->6,6<->7,7<->8,8<->9,9<->10})");
   }
 
   public void testPetersenGraph() {

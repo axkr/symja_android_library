@@ -13,6 +13,7 @@ import org.gavaghan.geodesy.GlobalPosition;
 import org.hipparchus.util.MathArrays;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
+import org.jgrapht.GraphTests;
 import org.jgrapht.GraphType;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.cycle.DirectedSimpleCycles;
@@ -81,6 +82,7 @@ public class GraphFunctions {
       S.BetweennessCentrality.setEvaluator(new BetweennessCentrality());
       S.ClosenessCentrality.setEvaluator(new ClosenessCentrality());
       S.AdjacencyMatrix.setEvaluator(new AdjacencyMatrix());
+      S.ConnectedGraphQ.setEvaluator(new ConnectedGraphQ());
       S.EdgeList.setEvaluator(new EdgeList());
       S.EdgeQ.setEvaluator(new EdgeQ());
       S.EdgeRules.setEvaluator(new EdgeRules());
@@ -109,10 +111,12 @@ public class GraphFunctions {
       S.IndexGraph.setEvaluator(new IndexGraph());
       S.IsomorphicGraphQ.setEvaluator(new IsomorphicGraphQ());
       S.LineGraph.setEvaluator(new LineGraph());
+      S.PathGraphQ.setEvaluator(new PathGraphQ());
       S.PlanarGraphQ.setEvaluator(new PlanarGraphQ());
       S.VertexEccentricity.setEvaluator(new VertexEccentricity());
       S.VertexList.setEvaluator(new VertexList());
       S.VertexQ.setEvaluator(new VertexQ());
+      S.WeaklyConnectedGraphQ.setEvaluator(new WeaklyConnectedGraphQ());
       S.WeightedAdjacencyMatrix.setEvaluator(new WeightedAdjacencyMatrix());
       S.WeightedGraphQ.setEvaluator(new WeightedGraphQ());
     }
@@ -127,7 +131,8 @@ public class GraphFunctions {
         if (gex1 == null) {
           return F.NIL;
         }
-        Graph<IExpr, ? extends IExprEdge> resultGraph = (Graph<IExpr, ? extends IExprEdge>) gex1.toData();
+        Graph<IExpr, ? extends IExprEdge> resultGraph =
+            (Graph<IExpr, ? extends IExprEdge>) gex1.toData();
         GraphType t = resultGraph.getType();
         if (t == null) {
           return F.NIL;
@@ -138,7 +143,8 @@ public class GraphFunctions {
           if (gexArg == null) {
             return F.NIL;
           }
-          Graph<IExpr, ? extends IExprEdge> graphArg = (Graph<IExpr, ? extends IExprEdge>) gexArg.toData();
+          Graph<IExpr, ? extends IExprEdge> graphArg =
+              (Graph<IExpr, ? extends IExprEdge>) gexArg.toData();
           Graph<IExpr, ? extends IExprEdge> newGraph;
           if (t.isDirected()) {
             newGraph = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
@@ -1154,7 +1160,7 @@ public class GraphFunctions {
           GraphExpr<?> gex = createGraph(ast.arg1());
           if (gex != null) {
             Graph<IExpr, ?> g = gex.toData();
-            return F.bool(g.containsEdge(edge.first(), edge.second()));
+            return F.booleSymbol(g.containsEdge(edge.first(), edge.second()));
           }
         }
       } catch (RuntimeException rex) {
@@ -1249,6 +1255,31 @@ public class GraphFunctions {
     }
   }
 
+  private static class ConnectedGraphQ extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        if (ast.isAST1()) {
+          GraphExpr<?> gex = createGraph(ast.arg1());
+          if (gex == null) {
+            return F.NIL;
+          }
+          Graph<IExpr, ? extends IExprEdge> graph =
+              (Graph<IExpr, ? extends IExprEdge>) gex.toData();
+          return GraphTests.isConnected(graph) ? S.True : S.False;
+        }
+      } catch (RuntimeException rex) {
+        LOGGER.debug("PathGraphQ.evaluate() failed", rex);
+      }
+      return S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
 
   private static class BetweennessCentrality extends ClosenessCentrality {
 
@@ -1400,7 +1431,7 @@ public class GraphFunctions {
         AHUUnrootedTreeIsomorphismInspector<IExpr, ExprEdge> isomorphism =
             new AHUUnrootedTreeIsomorphismInspector<>((Graph<IExpr, ExprEdge>) gex1.toData(),
                 (Graph<IExpr, ExprEdge>) gex2.toData());
-        return F.bool(isomorphism.isomorphismExists());
+        return F.booleSymbol(isomorphism.isomorphismExists());
       } catch (RuntimeException rex) {
         LOGGER.debug("IsomorphicGraphQ.evaluate() failed", rex);
       }
@@ -1839,6 +1870,55 @@ public class GraphFunctions {
     }
   }
 
+  private static class PathGraphQ extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        if (ast.isAST1()) {
+          GraphExpr<?> gex = createGraph(ast.arg1());
+          if (gex == null) {
+            return F.NIL;
+          }
+
+          Graph<IExpr, ? extends IExprEdge> graph =
+              (Graph<IExpr, ? extends IExprEdge>) gex.toData();
+          GraphType t = graph.getType();
+          if (t == null) {
+            return F.NIL;
+          }
+          if (t.isDirected()) {
+            for (IExpr v : graph.vertexSet()) {
+              if (graph.inDegreeOf(v) != 0 && graph.inDegreeOf(v) != 1) {
+                return S.False;
+              }
+              if (graph.outDegreeOf(v) != 0 && graph.outDegreeOf(v) != 1) {
+                return S.False;
+              }
+              if (graph.inDegreeOf(v) == 0 && graph.outDegreeOf(v) == 0) {
+                return S.False;
+              }
+            }
+          } else {
+            for (IExpr v : graph.vertexSet()) {
+              if (graph.degreeOf(v) != 1 && graph.degreeOf(v) != 2) {
+                return S.False;
+              }
+            }
+          }
+          return GraphTests.isConnected(graph) ? S.True : S.False;
+        }
+      } catch (RuntimeException rex) {
+        LOGGER.debug("PathGraphQ.evaluate() failed", rex);
+      }
+      return S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
 
   private static class PlanarGraphQ extends AbstractEvaluator {
 
@@ -1855,12 +1935,12 @@ public class GraphFunctions {
             Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>) gex.toData();
             PlanarityTestingAlgorithm<IExpr, ExprWeightedEdge> inspector =
                 new BoyerMyrvoldPlanarityInspector<IExpr, ExprWeightedEdge>(g);
-            return F.bool(inspector.isPlanar());
+            return F.booleSymbol(inspector.isPlanar());
           } else {
             Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
             PlanarityTestingAlgorithm<IExpr, ExprEdge> inspector =
                 new BoyerMyrvoldPlanarityInspector<IExpr, ExprEdge>(g);
-            return F.bool(inspector.isPlanar());
+            return F.booleSymbol(inspector.isPlanar());
           }
         }
       } catch (RuntimeException rex) {
@@ -2038,7 +2118,7 @@ public class GraphFunctions {
           GraphExpr<?> gex = createGraph(ast.arg1());
           if (gex != null) {
             Graph<IExpr, ?> g = gex.toData();
-            return F.bool(g.containsVertex(ast.arg2()));
+            return F.booleSymbol(g.containsVertex(ast.arg2()));
           }
         }
       } catch (RuntimeException rex) {
@@ -2053,6 +2133,31 @@ public class GraphFunctions {
     }
   }
 
+  private static class WeaklyConnectedGraphQ extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        if (ast.isAST1()) {
+          GraphExpr<?> gex = createGraph(ast.arg1());
+          if (gex == null) {
+            return F.NIL;
+          }
+          Graph<IExpr, ? extends IExprEdge> graph =
+              (Graph<IExpr, ? extends IExprEdge>) gex.toData();
+          return GraphTests.isWeaklyConnected(graph) ? S.True : S.False;
+        }
+      } catch (RuntimeException rex) {
+        LOGGER.debug("PathGraphQ.evaluate() failed", rex);
+      }
+      return S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
 
   private static class WeightedAdjacencyMatrix extends AbstractEvaluator {
 

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import static org.matheclipse.core.expression.S.ArrayPlot;
 import static org.matheclipse.core.expression.S.Beep;
 import static org.matheclipse.core.expression.S.ComplexExpand;
 import static org.matheclipse.core.expression.S.D;
@@ -32,8 +33,11 @@ import static org.matheclipse.core.expression.S.InverseLaplaceTransform;
 import static org.matheclipse.core.expression.S.InverseZTransform;
 import static org.matheclipse.core.expression.S.LaplaceTransform;
 import static org.matheclipse.core.expression.S.LinearProgramming;
+import static org.matheclipse.core.expression.S.ListDensityPlot;
 import static org.matheclipse.core.expression.S.ListLinePlot;
 import static org.matheclipse.core.expression.S.ListLinePlot3D;
+import static org.matheclipse.core.expression.S.ListLogLogPlot;
+import static org.matheclipse.core.expression.S.ListLogPlot;
 import static org.matheclipse.core.expression.S.ListPlot;
 import static org.matheclipse.core.expression.S.ListPlot3D;
 import static org.matheclipse.core.expression.S.ListPointPlot3D;
@@ -65,6 +69,7 @@ import static org.matheclipse.core.expression.S.TrigSimplifyFu;
 import static org.matheclipse.core.expression.S.TrigToExp;
 import static org.matheclipse.core.expression.S.ZTransform;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.expression.S;
 
 public final class FunctionDefinitions {
 
@@ -75,6 +80,7 @@ public final class FunctionDefinitions {
   private static class Initializer {
 
     private static void init() {
+      ArrayPlot.setEvaluator(new org.matheclipse.core.reflection.system.ArrayPlot());
       Beep.setEvaluator(new org.matheclipse.core.reflection.system.Beep());
       ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
       D.setEvaluator(new org.matheclipse.core.reflection.system.D());
@@ -95,6 +101,7 @@ public final class FunctionDefinitions {
       FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
       HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());
       Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
+      S.ImageCrop.setEvaluator(new org.matheclipse.core.reflection.system.ImageCrop());
       ImportString.setEvaluator(new org.matheclipse.core.reflection.system.ImportString());
       In.setEvaluator(new org.matheclipse.core.reflection.system.In());
       InterpolatingFunction
@@ -111,9 +118,12 @@ public final class FunctionDefinitions {
       LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
       LinearProgramming
           .setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
+      ListDensityPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListDensityPlot());
       ListLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot());
       ListLinePlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot3D());
       ListPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot());
+      ListLogPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLogPlot());
+      ListLogLogPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLogLogPlot());
       ListPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot3D());
       ListPointPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPointPlot3D());
       MatrixD.setEvaluator(new org.matheclipse.core.reflection.system.MatrixD());

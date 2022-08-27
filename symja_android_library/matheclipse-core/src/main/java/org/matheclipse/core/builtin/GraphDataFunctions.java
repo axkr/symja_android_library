@@ -15,6 +15,7 @@ import org.jgrapht.generate.HyperCubeGraphGenerator;
 import org.jgrapht.generate.RingGraphGenerator;
 import org.jgrapht.generate.StarGraphGenerator;
 import org.jgrapht.generate.WheelGraphGenerator;
+import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -24,6 +25,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.expression.data.IExprEdge;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -54,6 +56,7 @@ public class GraphDataFunctions {
       S.CompleteGraph.setEvaluator(new CompleteGraph());
       S.CycleGraph.setEvaluator(new CycleGraph());
       S.HypercubeGraph.setEvaluator(new HypercubeGraph());
+      S.PathGraph.setEvaluator(new PathGraph());
       S.PetersenGraph.setEvaluator(new PetersenGraph());
       S.RandomGraph.setEvaluator(new RandomGraph());
       S.StarGraph.setEvaluator(new StarGraph());
@@ -207,6 +210,37 @@ public class GraphDataFunctions {
         return GraphExpr.newInstance(target);
       } catch (RuntimeException rex) {
         LOGGER.debug("HypercubeGraph.evaluate() failed", rex);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class PathGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+
+      if (ast.isAST1() && ast.arg1().isList()) {
+        IAST list = (IAST) ast.arg1();
+        Graph<IExpr, ? extends IExprEdge> resultGraph =
+            new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+        if (list.argSize() > 1) {
+          for (int i = 1; i < list.size(); i++) {
+            resultGraph.addVertex(list.get(i));
+          }
+
+          for (int i = 2; i < list.size(); i++) {
+            resultGraph.addVertex(list.get(i));
+            resultGraph.addEdge(list.get(i - 1), list.get(i));
+          }
+          return GraphExpr.newInstance(resultGraph);
+        }
       }
       return F.NIL;
     }
