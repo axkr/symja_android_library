@@ -110,7 +110,7 @@ Using Newton's method for finding the root of a differentiable, multivariate, ve
 >> FindRoot({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{{x1, 0.0},{x2, 1.0}})
 {x1->0.197594,x2->0.425514}
 
->> FindRoot({Exp(-Exp(-(x1+x2)))-x2*(1+x1^2), x1*Cos(x2)+x2*Sin(x1)-0.5},{x1,x2})
+>> FindRoot({Exp(-Exp(-(x1+x2)))-x2*(1+x1^2), x1*Cos(x2)+x2*Sin(x1)-0.5},{{x1, 0.0},{x2, 0.0}}) 
 {x1->0.353247,x2->0.606082}
 ```
 

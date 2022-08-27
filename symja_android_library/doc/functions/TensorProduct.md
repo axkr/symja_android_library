@@ -5,7 +5,10 @@ TensorProduct(t1, t2, ...)
 ```
 
 > product of the tensors `t1, t2, ...`.
-	 
+
+
+See  
+* [Wikipedia - Tensor product](https://en.wikipedia.org/wiki/Tensor_product)
 
 ### Examples
 
