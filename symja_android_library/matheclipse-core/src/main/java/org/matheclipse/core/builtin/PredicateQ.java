@@ -64,6 +64,7 @@ public class PredicateQ {
       S.InexactNumberQ.setPredicateQ(x -> x.isInexactNumber());
       S.IntegerQ.setPredicateQ(x -> x.isInteger());
       S.ListQ.setPredicateQ(x -> x.isList());
+      S.LowerTriangularMatrixQ.setEvaluator(new LowerTriangularMatrixQ());
       S.MachineNumberQ.setPredicateQ(x -> x.isMachineNumber());
       S.MatchQ.setEvaluator(new MatchQ());
       S.MatrixQ.setEvaluator(new MatrixQ());
@@ -84,6 +85,8 @@ public class PredicateQ {
       S.SymbolQ.setPredicateQ(x -> x.isSymbol());
       S.SymmetricMatrixQ.setEvaluator(new SymmetricMatrixQ());
       S.SyntaxQ.setEvaluator(new SyntaxQ());
+      S.UnitaryMatrixQ.setEvaluator(new UnitaryMatrixQ());
+      S.UpperTriangularMatrixQ.setEvaluator(new UpperTriangularMatrixQ());
       S.ValueQ.setEvaluator(new ValueQ());
       S.VectorQ.setEvaluator(new VectorQ());
     }
@@ -527,7 +530,7 @@ public class PredicateQ {
       if (ast.size() == 3) {
         final IExpr arg1 = engine.evaluate(ast.arg1());
         final IExpr arg2 = engine.evalPattern(ast.arg2());
-        return F.bool(arg1.isFree(arg2, true));
+        return F.booleSymbol(arg1.isFree(arg2, true));
       }
       return F.NIL;
     }
@@ -578,6 +581,54 @@ public class PredicateQ {
     }
   }
 
+  private static class LowerTriangularMatrixQ extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final IExpr arg1 = ast.arg1();
+      int[] dims = arg1.isMatrix();
+      if (dims == null) {
+        // no square matrix
+        return S.False;
+      }
+
+      int diagonal = 0;
+      if (ast.isAST2()) {
+        int k = ast.arg2().toIntDefault();
+        if (k == Integer.MIN_VALUE) {
+          return F.NIL;
+        }
+        diagonal = k;
+      }
+      IAST matrix = (IAST) arg1.normal(false);
+      for (int i = 1; i <= dims[0]; i++) {
+        IAST row = matrix.getAST(i);
+        for (int j = 1; j <= dims[1]; j++) {
+          IExpr element = row.get(j);
+          if (!test(element, i, j, diagonal)) {
+            return S.False;
+          }
+        }
+      }
+      return S.True;
+    }
+
+    protected boolean test(IExpr element, int row, int column, int diagonal) {
+      if (row + diagonal < column && !element.isZero()) {
+        return false;
+      }
+      return true;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
   /**
    *
    *
@@ -623,7 +674,7 @@ public class PredicateQ {
           return S.True;
         }
         if (arg1Evaled.isAST()) {
-          return F.bool(matcher.test(arg1, engine));
+          return F.booleSymbol(matcher.test(arg1, engine));
         }
         // if (!arg2.isCondition()) {
         // try {
@@ -788,14 +839,14 @@ public class PredicateQ {
         if (arg1.isAST()) {
           final IExpr arg2 = engine.evaluate(ast.arg2());
           if (size == 3) {
-            return F.bool(arg1.isMember(arg2, heads, null));
+            return F.booleSymbol(arg1.isMember(arg2, heads, null));
           }
 
           Predicate<IExpr> predicate = Predicates.toMemberQ(arg2);
           IVisitorBoolean level =
               new VisitorBooleanLevelSpecification(predicate, ast.arg3(), heads, engine);
 
-          return F.bool(arg1.accept(level));
+          return F.booleSymbol(arg1.accept(level));
         }
 
         return S.False;
@@ -820,7 +871,7 @@ public class PredicateQ {
       }
 
       if (arg1.isString()) {
-        return F.bool(F.hasSymbol(arg1.toString(), engine));
+        return F.booleSymbol(F.hasSymbol(arg1.toString(), engine));
       }
       return S.False;
     }
@@ -1215,7 +1266,7 @@ public class PredicateQ {
         if (arg1.isComplex() || arg1.isComplexNumeric()) {
           return S.False;
         }
-        return F.bool(arg1.isReal());
+        return F.booleSymbol(arg1.isReal());
       }
 
       // CAUTION: the following can not be used because Rubi uses another definition
@@ -1393,6 +1444,78 @@ public class PredicateQ {
     }
   }
 
+  private static class UnitaryMatrixQ extends AbstractFunctionEvaluator implements IPredicate {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final IExpr arg1 = engine.evaluate(ast.arg1());
+      int[] dims = arg1.isMatrix();
+      if (dims == null) {
+        // no square matrix
+        return S.False;
+      }
+
+      int p = dims[0];
+      int q = dims[1];
+      final IAST matrix = (IAST) arg1;
+      if (dims[0] >= dims[1]) {
+        IExpr id = engine.evaluate(F.Simplify(F.Dot(F.ConjugateTranspose(matrix), matrix)));
+        dims = id.isMatrix();
+        if (dims != null && dims[0] == q && dims[1] == q) {
+          return identityMatrixQ(dims, id);
+        }
+      } else {
+        if (dims[0] <= dims[1]) {
+          IExpr id = engine.evaluate(F.Dot(matrix, F.ConjugateTranspose(matrix)));
+          dims = id.isMatrix();
+          if (dims != null && dims[0] == p && dims[1] == p) {
+            return identityMatrixQ(dims, id);
+          }
+        }
+      }
+      return S.False;
+    }
+
+    private static IExpr identityMatrixQ(int[] dims, IExpr id) {
+      IAST identityMatrix = (IAST) id;
+      for (int i = 1; i <= dims[0]; i++) {
+        IAST row = (IAST) identityMatrix.get(i);
+        for (int j = 1; j <= dims[1]; j++) {
+          IExpr expr = row.get(j);
+          if (i == j) {
+            IExpr temp = expr.minus(F.C1);
+            if (temp.isPossibleZero(true)) {
+              continue;
+            }
+          } else {
+            if (expr.isPossibleZero(true)) {
+              continue;
+            }
+          }
+          return S.False;
+        }
+      }
+      return S.True;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class UpperTriangularMatrixQ extends LowerTriangularMatrixQ {
+
+    @Override
+    protected boolean test(IExpr element, int row, int column, int diagonal) {
+      if (row + diagonal > column && !element.isZero()) {
+        return false;
+      }
+      return true;
+    }
+
+  }
+
   /**
    *
    *
@@ -1431,7 +1554,7 @@ public class PredicateQ {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // don't eval first argument
-      return F.bool(ast.arg1().isValue());
+      return F.booleSymbol(ast.arg1().isValue());
     }
 
     @Override
