@@ -1485,7 +1485,7 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isRealVector()) {
+      if (arg1.isRealVector() && ast.isAST1()) {
         double[] values = arg1.toDoubleVector();
         if (values == null) {
           return F.NIL;
@@ -1493,7 +1493,6 @@ public final class ListFunctions {
         // The mode of a set of data is implemented as Commonest(data).
         return new ASTRealVector(StatUtils.mode(values), false);
       }
-      // IAST list = Validate.checkListType(ast, 1, engine);
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
         int n = -1;
@@ -1536,6 +1535,13 @@ public final class ListFunctions {
               } else {
                 break;
               }
+            }
+            if (counter < n) {
+              // print warning (not an error)
+              // The requested number of elements `1` is greater than the number of distinct
+              // elements `2` only `2` elements will be returned.
+              IOFunctions.printMessage(ast.topHead(), "dstlms", F.List(F.ZZ(n), F.ZZ(counter)),
+                  engine);
             }
             return result;
           }
@@ -5883,7 +5889,8 @@ public final class ListFunctions {
           if (element.isRuleAST()) {
             IAST rule = (IAST) element;
             Function<IExpr, IExpr> function = Functors.listRules(rule, result, engine);
-            function.apply(arg1);
+            // https://errorprone.info/bugpattern/ReturnValueIgnored
+            IExpr temp = function.apply(arg1);
           } else {
             throw new ArgumentTypeException(
                 "rule expressions (x->y) expected instead of " + element.toString());
@@ -6869,7 +6876,7 @@ public final class ListFunctions {
           // machine-sized integer.
           return IOFunctions.printMessage(S.Subdivide, "sdmint", F.list(F.C1, ast), engine);
         }
-        return Range.range(0, n + 1).map(x -> x.divide(arg1), 1);
+        return F.subdivide(n);
       }
       IExpr arg2 = ast.arg2();
       if (ast.isAST2()) {
@@ -6879,7 +6886,7 @@ public final class ListFunctions {
           // machine-sized integer.
           return IOFunctions.printMessage(S.Subdivide, "sdmint", F.list(F.C2, ast), engine);
         }
-        IAST factorList = Range.range(0, n + 1).map(x -> x.divide(arg2), 1);
+        IAST factorList = subdivide(arg2, n);
         return factorList.map(x -> arg1.times(x), 1);
       }
 
@@ -6895,8 +6902,12 @@ public final class ListFunctions {
         // machine-sized integer.
         return IOFunctions.printMessage(S.Subdivide, "sdmint", F.list(F.C3, ast), engine);
       }
-      IAST factorList = Range.range(0, n + 1).map(x -> x.divide(arg3), 1);
+      IAST factorList = subdivide(arg3, n);
       return factorList.map(x -> arg1.plus(arg2.times(x).subtract(arg1.times(x))), 1);
+    }
+
+    public static IAST subdivide(IExpr arg1, int n) {
+      return Range.range(0, n + 1).map(x -> x.divide(arg1), 1);
     }
 
     @Override
@@ -7625,8 +7636,7 @@ public final class ListFunctions {
             if (n > 0) {
               if (n > cleanedList.argSize()) {
                 return IOFunctions.printMessage(ast.topHead(), "insuff",
-                    F.List(n, cleanedList.argSize()),
-                    engine);
+                    F.List(n, cleanedList.argSize()), engine);
               }
               IAST list = cleanedList.mapThreadEvaled(engine, F.unary(ast.arg2(), F.Slot1), 1);
               try {
