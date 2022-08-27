@@ -15,7 +15,7 @@ public interface DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 109 };
+  final public static int[] SIZES = { 0, 111 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -94,6 +94,9 @@ public interface DerivativeRules {
     // Derivative(1)[Factorial]:=Gamma(1+#1)*PolyGamma(0,1+#1)&
     ISetDelayed($(Derivative(C1),Factorial),
       Function(Times(Gamma(Plus(C1,Slot1)),PolyGamma(C0,Plus(C1,Slot1))))),
+    // Derivative(1)[Factorial2]:=1/2*#1!!*(Log(2)+PolyGamma(0,1+#1/2)+1/2*Pi*Log(2/Pi)*Sin(Pi*#1))&
+    ISetDelayed($(Derivative(C1),Factorial2),
+      Function(Times(C1D2,Factorial2(Slot1),Plus(Log(C2),PolyGamma(C0,Plus(C1,Times(C1D2,Slot1))),Times(C1D2,Pi,Log(Times(C2,Power(Pi,CN1))),Sin(Times(Pi,Slot1))))))),
     // Derivative(1)[Floor]:=Piecewise({{0,#1>Floor(#1)}},Indeterminate)&
     ISetDelayed($(Derivative(C1),Floor),
       Function(Piecewise(list(list(C0,Greater(Slot1,Floor(Slot1)))),Indeterminate))),
@@ -121,6 +124,9 @@ public interface DerivativeRules {
     // Derivative(1)[HeavisideTheta]:=DiracDelta(#1)&
     ISetDelayed($(Derivative(C1),HeavisideTheta),
       Function(DiracDelta(Slot1))),
+    // Derivative(1)[Hyperfactorial]:=Hyperfactorial(#1)*(#1+1/2*(1-Log(2*Pi))+LogGamma(1+#1))&
+    ISetDelayed($(Derivative(C1),Hyperfactorial),
+      Function(Times(Hyperfactorial(Slot1),Plus(Slot1,Times(C1D2,Subtract(C1,Log(C2Pi))),LogGamma(Plus(C1,Slot1)))))),
     // Derivative(1)[Identity]:=1&
     ISetDelayed($(Derivative(C1),Identity),
       Function(C1)),
