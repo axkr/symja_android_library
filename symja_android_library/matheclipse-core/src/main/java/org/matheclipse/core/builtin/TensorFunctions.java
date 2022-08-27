@@ -35,6 +35,7 @@ public class TensorFunctions {
       S.ArrayReshape.setEvaluator(new ArrayReshape());
       S.Ordering.setEvaluator(new Ordering());
       S.HodgeDual.setEvaluator(new HodgeDual());
+      S.KroneckerProduct.setEvaluator(new KroneckerProduct());
       S.LeviCivitaTensor.setEvaluator(new LeviCivitaTensor());
       S.ListConvolve.setEvaluator(new ListConvolve());
       S.ListCorrelate.setEvaluator(new ListCorrelate());
@@ -188,6 +189,67 @@ public class TensorFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+  }
+
+  private static class KroneckerProduct extends TensorProduct {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int argSize = ast.argSize();
+      // expectedArgSize() is >= 2
+      if (ast.arg1().isList() && ast.arg2().isList()) {
+        IAST tensor1 = (IAST) ast.arg1();
+        IntList dim1 = LinearAlgebra.dimensions(tensor1, S.List);
+        if (dim1.size() > 0) {
+          for (int i = 2; i < ast.size(); i++) {
+            IAST tensor2 = (IAST) ast.get(i);
+            IntList dim2 = LinearAlgebra.dimensions(tensor2, S.List);
+            if (dim1.size() == dim2.size()) {
+              IExpr temp = tensorProduct(tensor1, tensor2, dim1.size(), engine);
+              if (temp.isList()) {
+                int r = 2;
+                if (dim2.size() > r) {
+                  r = dim2.size();
+                }
+                tensor1 = (IAST) S.ArrayFlatten.of(engine, temp, F.ZZ(r));
+                if (tensor1.isList()) {
+                  dim1 = LinearAlgebra.dimensions(tensor1, S.List);
+                  if (dim1.size() > 0) {
+                    if (i < argSize) {
+                      if (ast.get(i + 1).isList()) {
+                        continue;
+                      }
+                    } else {
+                      return tensor1;
+                    }
+                  }
+                }
+                IASTAppendable result = F.ast(S.KroneckerProduct);
+                result.append(temp);
+                result.appendAll(ast, i + 1, ast.size());
+                return result;
+              }
+            }
+            if (i == 2) {
+              return F.NIL;
+            }
+
+            IASTAppendable result = F.ast(S.KroneckerProduct);
+            result.append(tensor1);
+            result.appendAll(ast, i, ast.size());
+            return result;
+          }
+          return tensor1;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
+    }
+
   }
 
   private static class LeviCivitaTensor extends AbstractEvaluator {
@@ -877,7 +939,7 @@ public class TensorFunctions {
      * @param engine
      * @return
      */
-    private static IExpr tensorProduct(final IAST tensor1, final IAST tensor2, int tensor1Depth,
+    protected static IExpr tensorProduct(final IAST tensor1, final IAST tensor2, int tensor1Depth,
         EvalEngine engine) {
       return engine
           .evaluate(F.Map(F.Function(F.Times(F.Slot1, tensor2)), tensor1, F.List(tensor1Depth)));
