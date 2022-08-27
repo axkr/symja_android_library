@@ -686,12 +686,13 @@ public final class OutputFunctions {
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
       if (argSize >= 1) {
-        IExpr tableHeadings = option[0];
+        // IExpr tableHeadings = option[0];
         IExpr arg1 = ast.arg1().normal(false);
 
+        final String[][] tableData;
         if (arg1.isList()) {
           IAST list = (IAST) arg1;
-          String[][] tableData = new String[list.argSize()][];
+          tableData = new String[list.argSize()][];
           for (int i = 1; i < list.size(); i++) {
             IExpr element = list.get(i);
             if (element.isList()) {
@@ -707,20 +708,22 @@ public final class OutputFunctions {
             }
           }
 
-          Character[] borderStyle = AsciiTable.NO_BORDERS;
-          String[] headers = {};
-          String[] footers = {};
-          return F.stringx(AsciiTable.getTable(borderStyle, headers, footers, tableData),
-              IStringX.TEXT_PLAIN);
-        } 
-        String[][] tableData = new String[1][1];
-        tableData[0][0] = arg1.toString();
-        Character[] borderStyle = AsciiTable.NO_BORDERS;
+        } else {
+          tableData = new String[1][1];
+          tableData[0][0] = arg1.toString();
+        }
+
         String[] headers = {};
         String[] footers = {};
-        return F.stringx(AsciiTable.getTable(borderStyle, headers, footers, tableData),
-            IStringX.TEXT_PLAIN);
-        
+        String asciiTable = AsciiTable.builder()//
+            .lineSeparator("\n")//
+            .border(AsciiTable.NO_BORDERS) //
+            .header(headers) //
+            .footer(footers) //
+            .data(tableData)//
+            .asString();
+        return F.stringx(asciiTable, IStringX.TEXT_PLAIN);
+
 
         // StringBuilder tableForm = new StringBuilder();
         // if (plaintextTable(tableForm, arg1, " ", x -> x.toString(), true)) {

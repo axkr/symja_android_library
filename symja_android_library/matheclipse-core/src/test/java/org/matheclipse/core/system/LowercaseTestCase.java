@@ -20097,7 +20097,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("RandomReal()", //
         "0.441958");
 
-    String expected = String.join(System.lineSeparator(), //
+    String expected = String.join("\n", //
         "  1.53368   2.64244  0.603094  1.93993  0.757192   2.52053    3.6458    4.3667  0.0264575  1.62091   3.42147 ", //
         "  1.95564    3.8064  0.156164  2.52057   1.43282   3.08827   2.00007   2.09918   0.794163  1.28679   3.92551 ", //
         "  1.85792   1.60386  0.440516  3.06543   4.53076  0.156222   3.41509   2.07223    1.42567  1.66608   2.34519 ", //
@@ -23245,7 +23245,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "TableForm({{a, b}, {c, d}, {e, f}}, TableHeadings -> {None, {\"c1\", \"c2\"}})", //
     // "");
 
-    String expected = String.join(System.lineSeparator(), //
+    String expected = String.join("\n", //
         " 1             ", //
         " 1  2          ", //
         " 1  2  3       ", //
@@ -23253,7 +23253,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         " 1  2  3  4  5 ");
     check("TableForm({{1},{1,2},{1,2,3},{1,2,3,4},{1,2,3,4,5}})", //
         expected);
-    expected = String.join(System.lineSeparator(), //
+    expected = String.join("\n", //
         " 1             ", //
         " 1  2          ", //
         " a             ", //
@@ -23264,32 +23264,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         " 1  2  3  4  5 ");
     check("TableForm({{1},{1,2},a,b,c,{1,2,3},{1,2,3,4},{1,2,3,4,5}})", //
         expected);
-    expected = String.join(System.lineSeparator(), //
+    expected = String.join("\n", //
         " a ", //
         " b ", //
         " 3 ");
     check("TableForm({a,b,3})", //
         expected);
-    expected = String.join(System.lineSeparator(), //
+    expected = String.join("\n", //
         " a ");
     check("TableForm(a)", //
         expected);
-    expected = String.join(System.lineSeparator(), //
+    expected = String.join("\n", //
         " a(1) ", //
         " a(2) ");
     check("TableForm(SparseArray(Array(a, {2})))", //
         expected);
-    expected = String.join(System.lineSeparator(), //
+    expected = String.join("\n", //
         " a(1,1)  a(1,2) ", //
         " a(2,1)  a(2,2) ");
     check("TableForm(SparseArray(Array(a, {2,2})))", //
         expected);
-    expected = String.join(System.lineSeparator(), //
+    expected = String.join("\n", //
         " a(1) ", //
         " a(2) ");
     check("TableForm(Array(a, {2}))", //
         expected);
-    expected = String.join(System.lineSeparator(), //
+    expected = String.join("\n", //
         " a(1,1)  a(1,2) ", //
         " a(2,1)  a(2,2) ");
     check("TableForm(Array(a, {2,2}))", //
@@ -24130,7 +24130,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testToString() {
     check("ToString(Sqrt(1-1/x^2))", //
         "Sqrt(1 - 1/x^2)");
-    String expected = String.join(System.lineSeparator(), //
+    String expected = String.join("\n", //
         "       -1+Sin(x)^2 == -Cos(x)^2 ", //
         "     1+Sin(x)^2 == 1 + Sin(x)^2 ", //
         "       -1+Cos(x)^2 == -Sin(x)^2 ", //
@@ -24161,7 +24161,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "{-1,+1}) //" //
             + "Flatten // TableForm ", //
         expected);
-    expected = String.join(System.lineSeparator(), //
+    expected = String.join("\n", //
         "   -1-f(x)-Sin(x)^2+y+z == -1 + y + z - f(x) - Sin(x)^2 ", //
         "         1-f(x)-Sin(x)^2+y+z == y + z + Cos(x)^2 - f(x) ", //
         "   -1-f(x)-Cos(x)^2+y+z == -1 + y + z - Cos(x)^2 - f(x) ", //
@@ -24193,7 +24193,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "Flatten // TableForm ", //
         expected);
 
-    expected = String.join(System.lineSeparator(), //
+    expected = String.join("\n", //
         "                                  Sinh(ArcSinh(x)) == x ", //
         "           Sinh(ArcCosh(x)) == Sqrt(-1 + x)*Sqrt(1 + x) ", //
         "                    Sinh(ArcTanh(x)) == x/Sqrt(1 - x^2) ", //
@@ -24237,7 +24237,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "Flatten // TableForm ", //
         expected);
 
-    expected = String.join(System.lineSeparator(), //
+    expected = String.join("\n", //
         "                     Sin(ArcSin(x)) == x ", //
         "         Sin(ArcCos(x)) == Sqrt(1 - x^2) ", //
         "       Sin(ArcTan(x)) == x/Sqrt(1 + x^2) ", //
@@ -24478,7 +24478,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("TrigToExp(Cos(Sin(x)))", //
         "1/(2*E^(I*((I*1/2)/E^(I*x)-I*1/2*E^(I*x))))+" + //
             "E^(I*((I*1/2)/E^(I*x)-I*1/2*E^(I*x)))/\n" + "2");
-    String expected = String.join(System.lineSeparator(), //
+    String expected = String.join("\n", //
         "                ArcSinh(x)==Log(x+Sqrt(1+x^2)) ", //
         "       ArcCosh(x)==Log(x+Sqrt(-1+x)*Sqrt(1+x)) ", //
         "            ArcTanh(x)==-Log(1-x)/2+Log(1+x)/2 ", //
@@ -24489,7 +24489,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "{ArcSinh(x), ArcCosh(x), ArcTanh(x)," //
         + "ArcCoth(x), ArcSech(x), ArcCsch(x)}) // TableForm", //
         expected);
-    expected = String.join(System.lineSeparator(), //
+    expected = String.join("\n", //
         "           ArcSin(x)==-I*Log(I*x+Sqrt(1-x^2)) ", //
         "       ArcCos(x)==Pi/2+I*Log(I*x+Sqrt(1-x^2)) ", //
         " ArcTan(x)==I*1/2*Log(1-I*x)-I*1/2*Log(1+I*x) ", //

@@ -386,7 +386,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
     check("BooleanTable(BooleanFunction(30, 3))", //
         "{False,False,False,True,True,True,True,False}");
 
-    String expected = String.join(System.lineSeparator(), //
+    String expected = String.join("\n", //
         "  True   True   True   True ", //
         "  True   True  False   True ", //
         "  True  False   True   True ", //
