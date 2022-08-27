@@ -15,7 +15,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 139 };
+  final public static int[] SIZES = { 0, 141 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -100,6 +100,9 @@ public interface DRules {
     // D(f_!,x_?NotListQ):=D(f,x)*Gamma(1+f)*PolyGamma(0,1+f)
     ISetDelayed(D(Factorial(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Gamma(Plus(C1,f)),PolyGamma(C0,Plus(C1,f)))),
+    // D(f_!!,x_?NotListQ):=D(f,x)*1/2*f!!*(Log(2)+PolyGamma(0,1+f/2)+1/2*Pi*Log(2/Pi)*Sin(Pi*f))
+    ISetDelayed(D(Factorial2(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),C1D2,Factorial2(f),Plus(Log(C2),PolyGamma(C0,Plus(C1,Times(C1D2,f))),Times(C1D2,Pi,Log(Times(C2,Power(Pi,CN1))),Sin(Times(Pi,f)))))),
     // D(Floor(f_),x_?NotListQ):=D(f,x)*Piecewise({{0,f>Floor(f)}},Indeterminate)
     ISetDelayed(D(Floor(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),Piecewise(list(list(C0,Greater(f,Floor(f)))),Indeterminate))),
@@ -130,6 +133,9 @@ public interface DRules {
     // D(HeavisideTheta(f_),x_?NotListQ):=D(f,x)*DiracDelta(f)
     ISetDelayed(D(HeavisideTheta(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),DiracDelta(f))),
+    // D(Hyperfactorial(f_),x_?NotListQ):=D(f,x)*Hyperfactorial(f)*(f+1/2*(1-Log(2*Pi))+LogGamma(1+f))
+    ISetDelayed(D(Hyperfactorial(f_),PatternTest(x_,NotListQ)),
+      Times(D(f,x),Hyperfactorial(f),Plus(f,Times(C1D2,Subtract(C1,Log(C2Pi))),LogGamma(Plus(C1,f))))),
     // D(IntegerPart(f_),x_?NotListQ):=0
     ISetDelayed(D(IntegerPart(f_),PatternTest(x_,NotListQ)),
       C0),
