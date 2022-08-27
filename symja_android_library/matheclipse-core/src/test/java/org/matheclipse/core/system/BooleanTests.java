@@ -386,15 +386,17 @@ public class BooleanTests extends ExprEvaluatorTestCase {
     check("BooleanTable(BooleanFunction(30, 3))", //
         "{False,False,False,True,True,True,True,False}");
 
+    String expected = String.join(System.lineSeparator(), //
+        "  True   True   True   True ", //
+        "  True   True  False   True ", //
+        "  True  False   True   True ", //
+        "  True  False  False  False ", //
+        " False   True   True   True ", //
+        " False   True  False  False ", //
+        " False  False   True   True ", //
+        " False  False  False  False ");
     check("BooleanTable({a,b,c,(a&&b)||c},{a,b,c}) // TableForm", //
-        "True  True  True  True \n" + //
-            "True  True  False True \n" + //
-            "True  False True  True \n" + //
-            "True  False False False\n" + //
-            "False True  True  True \n" + //
-            "False True  False False\n" + //
-            "False False True  True \n" + //
-            "False False False False");
+        expected);
     check("BooleanTable(Xor(p, q, r))", //
         "{True,False,False,True,False,True,True,False}");
     check("BooleanTable(Xor(p, q, r), {p, q, r})", //
@@ -406,11 +408,13 @@ public class BooleanTests extends ExprEvaluatorTestCase {
     check("BooleanTable(And(a, b, c), {a, b, c})", //
         "{True,False,False,False,False,False,False,False}");
 
+    expected = String.join(System.lineSeparator(), //
+        "  True   True  False   True ", //
+        " False   True   True  False ", //
+        " False   True   True  False ", //
+        " False  False  False   True ");
     check("BooleanTable({And(a, b), Or(a, b), Xor(a, b), Xnor(a, b)}, {a, b}) // TableForm", //
-        "True  True  False True \n"//
-            + "False True  True  False\n"//
-            + "False True  True  False\n"//
-            + "False False False True ");
+        expected);
 
   }
 

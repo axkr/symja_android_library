@@ -10,6 +10,11 @@ public class SolveTest extends ExprEvaluatorTestCase {
     super(name);
   }
 
+  public void testSinX() {
+    check("Solve(Sin(x)==b,x)", //
+        "{{x->ArcSin(b)}}");
+  }
+
   public void testEliminate() {
     check("Eliminate({(a*x + b)/(c*x + d)==y},x)", //
         "True");
@@ -1470,6 +1475,22 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->2*Sqrt(2),z->3*Sqrt(2)},{x->2,y->-2,z->-3*Sqrt(\n"
             + "2)},{x->2,y->-2,z->3*Sqrt(2)},{x->2,y->2,z->-3*Sqrt(2)},{x->2,y->2,z->3*Sqrt(2)}}");
   }
+
+
+  // public void testSolveFindRoot() {
+  // // multivariate FindRoot cases
+  // check("Solve({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{x1,x2})", //
+  // "{x1->0.197594,x2->0.425514}");
+  // check(
+  // "Solve({Exp(-Exp(-(x1+x2)))-x2*(1+x1^2), x1*Cos(x2)+x2*Sin(x1)-0.5},{x1,x2})", //
+  // "{x1->0.353247,x2->0.606082}");
+  // check("Solve({Exp(x - 2) == y, y^2 == x}, {x,y})", //
+  // "{x->0.019026,y->0.137935}");
+  // check("Solve({y == E^x, x + y == 2}, {x,y})", //
+  // "{x->0.442854,y->1.55715}");
+  // check("Solve({Sin(x + y), Cos(x - y), x^2 + y^2 - z}, {x,y,z})", //
+  // "{x->0.785398,y->-0.785398,z->1.2337}");
+  // }
 
   /** The JUnit setup method */
   @Override

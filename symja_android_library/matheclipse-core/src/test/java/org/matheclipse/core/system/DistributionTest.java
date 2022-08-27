@@ -261,6 +261,16 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "PoissonDistribution(m*t)");
   }
 
+  public void testQuantile() {
+    // message Quantile: The Quantile specification {1/4,2} should be a number or a list of numbers
+    // between 0 and 1.
+    check("Quantile({1, 2, 3, 4, 5, 6, 7}, {1/4, 2})", //
+        "Quantile({1,2,3,4,5,6,7},{1/4,2})");
+
+    check("Quantile({1, 2, 3, 4, 5, 6, 7}, {1/4, 3/4})", //
+        "{2,6}");
+  }
+
   public void testQuantileSparseArray() {
     check("sp = SparseArray({{i_, i_} :> i, {i_, j_} /; j == i + 1 :> i - 1}, {100, 10})", //
         "SparseArray(Number of elements: 18 Dimensions: {100,10} Default value: 0)");

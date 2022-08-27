@@ -1,6 +1,6 @@
 package org.matheclipse.core.system;
 
-/** Tests forSolve and Roots functions */
+/** Tests for FindInstance function */
 public class FindInstanceTest extends ExprEvaluatorTestCase {
 
   public FindInstanceTest(String name) {
