@@ -46,11 +46,13 @@ import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldQRDecomposition;
 import org.hipparchus.linear.FieldVector;
+import org.hipparchus.linear.HessenbergTransformer;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.linear.RiccatiEquationSolver;
 import org.hipparchus.linear.RiccatiEquationSolverImpl;
+import org.hipparchus.linear.SchurTransformer;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -95,6 +97,7 @@ public final class LinearAlgebra {
 
     private static void init() {
       S.ArrayDepth.setEvaluator(new ArrayDepth());
+      S.ArrayFlatten.setEvaluator(new ArrayFlatten());
       S.CharacteristicPolynomial.setEvaluator(new CharacteristicPolynomial());
       S.CholeskyDecomposition.setEvaluator(new CholeskyDecomposition());
       S.ConjugateTranspose.setEvaluator(new ConjugateTranspose());
@@ -110,6 +113,7 @@ public final class LinearAlgebra {
       S.Eigenvectors.setEvaluator(new Eigenvectors());
       S.FourierMatrix.setEvaluator(new FourierMatrix());
       S.FromPolarCoordinates.setEvaluator(new FromPolarCoordinates());
+      S.HessenbergDecomposition.setEvaluator(new HessenbergDecomposition());
       S.HilbertMatrix.setEvaluator(new HilbertMatrix());
       S.IdentityMatrix.setEvaluator(new IdentityMatrix());
       S.Inner.setEvaluator(new Inner());
@@ -138,6 +142,7 @@ public final class LinearAlgebra {
       S.QRDecomposition.setEvaluator(new QRDecomposition());
       S.RiccatiSolve.setEvaluator(new RiccatiSolve());
       S.RowReduce.setEvaluator(new RowReduce());
+      S.SchurDecomposition.setEvaluator(new SchurDecomposition());
       S.SingularValueDecomposition.setEvaluator(new SingularValueDecomposition());
       S.SingularValueList.setEvaluator(new SingularValueList());
       S.ToeplitzMatrix.setEvaluator(new ToeplitzMatrix());
@@ -738,6 +743,151 @@ public final class LinearAlgebra {
     }
   }
 
+  private static final class ArrayFlatten extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      int rank = 2;
+      if (ast.isAST2()) {
+        int r = ast.arg2().toIntDefault();
+        if (r <= 0) {
+          // Non-negative machine-sized integer expected at position `2` in `1`.
+          return IOFunctions.printMessage(S.ArrayFlatten, "intnm", ast, engine);
+        }
+        rank = r;
+      }
+      if (rank != 2) {
+        // Function `1` not implemented
+        return IOFunctions.printMessage(S.ArrayFlatten, "zznotimpl",
+            F.List(F.stringx("(rank != 2)")), engine);
+      }
+      boolean sparseArray = false;
+      if (!arg1.isFree(x -> x.isSparseArray(), false)) {
+        arg1 = arg1.normal(false);
+        sparseArray = true;
+      }
+      if (arg1.isListOfLists() && arg1.argSize() > 0) {
+        IAST list = (IAST) arg1;
+        int rowSize = list.argSize();
+        int columnSize = list.arg1().argSize();
+        if (columnSize <= 0) {
+          return F.NIL;
+        } else {
+          IntArrayList dimensions = LinearAlgebra.dimensions(list);
+          if (dimensions.size() < rank) {
+            // The array depth of the expression at position `1` of `2` must be at least equal
+            // to the specified rank `3`.
+            return IOFunctions.printMessage(S.ArrayFlatten, "depth", F.List(F.C1, list, F.ZZ(rank)),
+                engine);
+          }
+          int[] rowDimensions = new int[rowSize];
+          int[] columnDimensions = new int[columnSize];
+          if (resultDimensions(list, rank, rowDimensions, columnDimensions, engine)) {
+            IASTAppendable resultMatrix = F.ListAlloc();
+            for (int i = 1; i < list.size(); i++) {
+              IAST subList = (IAST) list.get(i);
+              for (int l = 0; l < rowDimensions[i - 1]; l++) {
+                IASTAppendable resultRow = F.ListAlloc();
+                for (int j = 1; j < subList.size(); j++) {
+                  IExpr element = subList.get(j);
+                  boolean isScalar = true;
+                  if (element.isList()) {
+                    IntArrayList elementDimension = LinearAlgebra.dimensions((IAST) element);
+                    if (elementDimension.size() >= rank) {
+                      isScalar = false;
+                    }
+                  }
+                  if (isScalar) {
+                    for (int k = 0; k < columnDimensions[j - 1]; k++) {
+                      resultRow.append(element);
+                    }
+                  } else {
+                    IAST matrix = (IAST) element;
+                    for (int k = 0; k < columnDimensions[j - 1]; k++) {
+                      resultRow.append(matrix.getPart(l + 1, k + 1));
+                    }
+                  }
+
+                }
+                resultMatrix.append(resultRow);
+              }
+            }
+            if (sparseArray) {
+              return F.sparseArray(resultMatrix, F.C0);
+            }
+            return resultMatrix;
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Calculate the results dimensions for every <code>rowDimensions</code> and
+     * <code>columnDimensions</code> entry.
+     * 
+     * @param list
+     * @param rank
+     * @param rowDimensions <code>1</code> if only scalars are in the i'th row; otherwise the row
+     *        dimension, which must be the same for all non-scalars in this row
+     * @param columnDimensions <code>1</code> if only scalars are in the i'th column; otherwise the
+     *        column dimension, which must be the same for all non-scalars in this column
+     * @param engine
+     * @return <code>false</code> if the input is not appropriate to be transformed with
+     *         <code>ArrayFlatten</code>
+     */
+    private boolean resultDimensions(IAST list, int rank, int[] rowDimensions,
+        int[] columnDimensions, EvalEngine engine) {
+      int columnSize = list.arg1().argSize();
+      for (int i = 1; i < list.size(); i++) {
+        IAST subList = (IAST) list.get(i);
+        if (subList.argSize() != columnSize) {
+          return false;
+        }
+        for (int j = 1; j < subList.size(); j++) {
+          IExpr element = subList.get(j);
+          if (element.isList()) {
+            IntArrayList dimensions = LinearAlgebra.dimensions((IAST) element);
+            if (dimensions.size() < rank) {
+              // The array depth of the expression at position `1` of `2` must be at least equal
+              // to the specified rank `3`.
+              IOFunctions.printMessage(S.ArrayFlatten, "depth", F.List(F.C1, list, F.ZZ(rank)),
+                  engine);
+              return false;
+            }
+            if (rowDimensions[i - 1] != 0 && rowDimensions[i - 1] != dimensions.getInt(0)) {
+              return false;
+            }
+            rowDimensions[i - 1] = dimensions.getInt(0);
+            if (columnDimensions[j - 1] != 0 && columnDimensions[j - 1] != dimensions.getInt(1)) {
+              return false;
+            }
+            columnDimensions[j - 1] = dimensions.getInt(1);
+          }
+        }
+      }
+      for (int i = 0; i < rowDimensions.length; i++) {
+        if (rowDimensions[i] == 0) {
+          rowDimensions[i] = 1;
+        }
+      }
+      for (int i = 0; i < columnDimensions.length; i++) {
+        if (columnDimensions[i] == 0) {
+          columnDimensions[i] = 1;
+        }
+      }
+      return true;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
   /**
    *
    *
@@ -2098,6 +2248,48 @@ public final class LinearAlgebra {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  private static class HessenbergDecomposition extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      RealMatrix matrix;
+      boolean togetherMode = engine.isTogetherMode();
+      try {
+        engine.setTogetherMode(true);
+        int[] dim = ast.arg1().isMatrix();
+        if (dim != null && dim[0] > 0 && dim[1] > 0) {
+          if (dim[0] != dim[1]) {
+            // Argument `1` at position `2` is not a non-empty square matrix.
+            return IOFunctions.printMessage(ast.topHead(), "matsq", F.CEmptyList, engine);
+          }
+          matrix = ast.arg1().toRealMatrix();
+          if (matrix != null) {
+            HessenbergTransformer hessenbergTransformer = new HessenbergTransformer(matrix);
+            final RealMatrix pMatrix = hessenbergTransformer.getP();
+            final RealMatrix tMatrix = hessenbergTransformer.getH();
+            IASTAppendable m1 = Convert.matrix2List(pMatrix);
+            if (m1.isPresent()) {
+              IASTAppendable m2 = Convert.matrix2List(tMatrix);
+              if (m2.isPresent()) {
+                return F.list(m1, m2);
+              }
+            }
+          }
+        }
+      } catch (IndexOutOfBoundsException | ClassCastException e) {
+        LOGGER.debug("SchurDecomposition.evaluate() failed", e);
+      } finally {
+        engine.setTogetherMode(togetherMode);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
   /**
    *
    *
@@ -2768,7 +2960,7 @@ public final class LinearAlgebra {
         return F.NIL;
       }
 
-      final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1(), true);
+      final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1(), false);
       if (matrix != null) {
         Predicate<IExpr> zeroChecker = AbstractMatrix1Expr.optionZeroTest(ast, 2, engine);
         FieldDecompositionSolver<IExpr> solver =
@@ -4436,6 +4628,48 @@ public final class LinearAlgebra {
     }
   }
 
+  private static class SchurDecomposition extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      RealMatrix matrix;
+      boolean togetherMode = engine.isTogetherMode();
+      try {
+        engine.setTogetherMode(true);
+        int[] dim = ast.arg1().isMatrix();
+        if (dim != null && dim[0] > 0 && dim[1] > 0) {
+          if (dim[0] != dim[1]) {
+            // Argument `1` at position `2` is not a non-empty square matrix.
+            return IOFunctions.printMessage(ast.topHead(), "matsq", F.CEmptyList, engine);
+          }
+          matrix = ast.arg1().toRealMatrix();
+          if (matrix != null) {
+            SchurTransformer schurTransformer = new SchurTransformer(matrix);
+            final RealMatrix pMatrix = schurTransformer.getP();
+            final RealMatrix tMatrix = schurTransformer.getT();
+            IASTAppendable m1 = Convert.matrix2List(pMatrix);
+            if (m1.isPresent()) {
+              IASTAppendable m2 = Convert.matrix2List(tMatrix);
+              if (m2.isPresent()) {
+                return F.list(m1, m2);
+              }
+            }
+          }
+        }
+      } catch (IndexOutOfBoundsException | ClassCastException e) {
+        LOGGER.debug("SchurDecomposition.evaluate() failed", e);
+      } finally {
+        engine.setTogetherMode(togetherMode);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
 
   /**
    *

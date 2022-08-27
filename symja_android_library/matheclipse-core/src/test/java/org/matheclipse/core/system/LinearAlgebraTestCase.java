@@ -120,6 +120,14 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{0,0},{4,2}}");
   }
 
+  public void testCoordinateBounds() {
+    check("CoordinateBounds({{0, 1}, {1, 2}, {2, 1}, {3, 2}, {4, 0}})", //
+        "{{0,4},\n"//
+            + " {0,2}}");
+    check("CoordinateBounds({{0, 1}, {1, 2}, {2, 1}, {3, 2}, {4, 0}},2)", //
+        "{{-2,6},{-2,4}}");
+  }
+
   public void testCoplanarPoints() {
     check("CoplanarPoints( {{3,2,-5}, {-1,4,-3}, {-3,8,-5}, {-3,2,1}} )", //
         "True");
@@ -517,6 +525,30 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  public void testHessenbergDecomposition() {
+    check("m = ({\n" //
+        + "    {1.0, 2.9, 3.8, 4.7},\n" //
+        + "    {5.6, 6.5, 7.4, 8.3},\n" //
+        + "    {9.2, 10.1, 11.0, 12.9},\n" //
+        + "    {13.8, 14.7, 15.6, 16.5}\n" //
+        + "   });", //
+        "");
+
+    check("{p, h} = HessenbergDecomposition(m)", //
+        "{\n" //
+            + "{{1.0,0.0,0.0,0.0},\n" //
+            + " {0.0,-0.319901,-0.662596,-0.677222},\n" //
+            + " {0.0,-0.525551,-0.470638,0.708728},\n" //
+            + " {0.0,-0.788327,0.582638,-0.197671}},\n" //
+            + "{{1.0,-6.62994,-0.971553,-0.199829},\n" //
+            + " {-17.50543,34.5077,9.12041,2.79619},\n" //
+            + " {0.0,2.22233,-0.34559,0.0200774},\n" //
+            + " {0.0,0.0,0.391391,-0.162112}}}");
+
+    check("UpperTriangularMatrixQ(h, -1)", //
+        "True");
+  }
+
   public void testHilbertMatrix() {
     check("Inverse(HilbertMatrix(3))", //
         "{{9,-36,30},\n" + " {-36,192,-180},\n" + " {30,-180,180}}");
@@ -696,6 +728,20 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
     check("LowerTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}})", //
         "{{a,0,0,0},\n" + " {d,e,0,0},\n" + " {h,i,j,0},\n" + " {l,m,n,o}}");
+  }
+
+  public void testLowerTriangularMatrixQ() {
+    check("m={{0, 0, 0}, {1, 2, 0}, {2, 3, 0}}", //
+        "{{0,0,0},{1,2,0},{2,3,0}}");
+    check("LowerTriangularMatrixQ(m,-1)", //
+        "False");
+    check("LowerTriangularMatrixQ(m)", //
+        "True");
+
+    check("s = SparseArray({{1, 1} -> 2, {2, 1} -> 1, {3, 2} -> 5}, {3, 3});", //
+        "");
+    check("LowerTriangularMatrixQ(s)", //
+        "True");
   }
 
   public void testMatrices() {
@@ -1346,6 +1392,35 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + " {0,1,2,0,7/3,-4/3},\n" + " {0,0,0,1,-2,1}}");
   }
 
+  public void testSchurDecomposition() {
+    check("m={{2.7, 4.8, 8.1}, {-.6, 0, 0}, {.1, 0, .3}};", //
+        "");
+    check("{q,t}=SchurDecomposition(m)", //
+        "{\n" //
+            + "{{-0.892714,0.449224,0.0354887},\n" //
+            + " {0.439993,0.85194,0.283909},\n" //
+            + " {-0.0973047,-0.269065,0.958194}},\n" //
+            + "{{1.21716,-2.90287,-8.26847},\n" //
+            + " {0.00010145,1.18284,4.04539},\n" //
+            + " {0.0,-8.89583*10^-24,0.6}}}");
+    check("m - q.t.ConjugateTranspose(q) // Chop", //
+        "{{0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}}");
+
+    check(
+        "m = {{1.81066, 0.31066, 1.5}, {-0.53033, 2.03033, 0.43934}, {-0.96967, -0.53033, 2.56066}};", //
+        "");
+    check("{q,t}=SchurDecomposition(m)", //
+        "{\n" //
+            + "{{0.408028,-0.897605,0.166789},\n" //
+            + " {-0.323352,-0.312928,-0.89304},\n" //
+            + " {-0.85379,-0.310453,0.417926}},\n" //
+            + "{{2.19946,-1.00329,-0.35864},\n" //
+            + " {1.71543,1.9817,-0.476196},\n" //
+            + " {0.0,-3.59747*10^-17,2.22049}}}");
+    check("m - q.t.ConjugateTranspose(q) // Chop", //
+        "{{0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}}");
+  }
+
   public void testSingularValueDecomposition() {
     check("SingularValueDecomposition({{1.5, 2.0}, {2.5, 3.0}})", //
         "{{{0.538954,0.842335},\n" + " {0.842335,-0.538954}},{{4.63555,0.0},\n"
@@ -1553,6 +1628,31 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             " {3,6}}");
   }
 
+  public void testUnitaryMatrixQ() {
+
+    check("m0 =  {{0, I}, {I, 0}};", //
+        "");
+    check("UnitaryMatrixQ(m0)", //
+        "True");
+
+    check("m1 = 1/Sqrt(5)*{{1, 2}, {-2, 1}};", //
+        "");
+    check("UnitaryMatrixQ(m1)", //
+        "True");
+
+    check("m2 = ({\n" //
+        + " {1, 0, 0},\n" //
+        + " {0, Cosh(Im(a))/Sqrt(Cosh(2*Im(a))), \n" //
+        + " I*Sinh(Im(a))/Sqrt(Cosh(2*Im(a)))},\n" //
+        + " {0 , I*Sinh(Im(a))/Sqrt(Cosh(2*Im(a))), \n" //
+        + " Cosh(Im(a))/Sqrt(Cosh(2*Im(a)))}\n" //
+        + " });", //
+        "");
+
+    check("UnitaryMatrixQ(m2)", //
+        "True");
+  }
+
   public void testUnitVector() {
     // message: UnitVector: Positive machine-sized integer expected at position 2 in
     // UnitVector(4,0).
@@ -1586,6 +1686,36 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{a,b,c,d},\n" + " {0,e,f,g},\n" + " {0,0,j,k}}");
     check("UpperTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}})", //
         "{{a,b,c,d},\n" + " {0,e,f,g},\n" + " {0,0,j,k},\n" + " {0,0,0,o}}");
+  }
+
+  public void testUpperTriangularMatrixQ() {
+    check("m={{a,b,c},{0,e,f},{0,0,g}}", //
+        "{{a,b,c},{0,e,f},{0,0,g}}");
+
+    check("UpperTriangularMatrixQ(m,-5)", //
+        "True");
+    check("UpperTriangularMatrixQ(m,-2)", //
+        "True");
+    check("UpperTriangularMatrixQ(m,-1)", //
+        "True");
+    check("UpperTriangularMatrixQ(m)", //
+        "True");
+    check("UpperTriangularMatrixQ(m,1)", //
+        "False");
+    check("UpperTriangularMatrixQ(m,5)", //
+        "False");
+
+    check("m={{0, 0, 0}, {1, 2, 0}, {2, 3, 0}}", //
+        "{{0,0,0},{1,2,0},{2,3,0}}");
+    check("UpperTriangularMatrixQ(m,-1)", //
+        "False");
+    check("UpperTriangularMatrixQ(m)", //
+        "False");
+
+    check("s = SparseArray({{1, 1} -> 2, {2, 1} -> 1, {3, 2} -> 5}, {3, 3});", //
+        "");
+    check("UpperTriangularMatrixQ(s)", //
+        "False");
   }
 
   public void testVectorAngle() {
