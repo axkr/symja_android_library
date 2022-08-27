@@ -132,6 +132,7 @@ public class DoubleBlockSieve implements Sieve {
 	}
 	
 	@Override
+	@SuppressWarnings("IdentityBinaryExpression")
 	public List<Integer> sieve() {
 		if (ANALYZE) timer.capture();
 

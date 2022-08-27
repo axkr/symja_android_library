@@ -140,6 +140,7 @@ public class SingleBlockHybridSieve implements Sieve {
 	}
 
 	@Override
+	@SuppressWarnings("IdentityBinaryExpression")
 	public List<Integer> sieve() {
 		if (ANALYZE) timer.capture();
 		this.initializeSieveArray(sieveArraySize);

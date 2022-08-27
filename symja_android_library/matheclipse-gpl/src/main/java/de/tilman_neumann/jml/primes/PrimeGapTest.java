@@ -107,7 +107,8 @@ public class PrimeGapTest implements SieveCallback {
 		}
 		lastPrime = prime;
 	}
-	
+
+    @SuppressWarnings("UnicodeInCode")
 	private void checkResult(StackElement elem, int i) {
 		long p_i = elem.prime;
 		long p_im1 = elem.lastPrime;

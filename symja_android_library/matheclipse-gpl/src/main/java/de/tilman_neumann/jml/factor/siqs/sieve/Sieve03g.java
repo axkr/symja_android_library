@@ -133,6 +133,7 @@ public class Sieve03g implements Sieve {
 	}
 
 	@Override
+	@SuppressWarnings("IdentityBinaryExpression")
 	public List<Integer> sieve() {
 		if (ANALYZE) timer.capture();
 		this.initializeSieveArray(sieveArraySize);
