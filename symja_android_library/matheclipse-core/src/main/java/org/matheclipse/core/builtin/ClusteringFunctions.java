@@ -259,19 +259,77 @@ public class ClusteringFunctions {
       return super.compute(u, v);
     }
 
+
     @Override
     public IExpr distance(IExpr arg1, IExpr arg2, EvalEngine engine) {
+      IExpr normV1 = F.Norm.of(engine, arg1);
+      if (normV1.isZero()) {
+        return F.C0;
+      }
+      IExpr normV2 = F.Norm.of(engine, arg2);
+      if (normV2.isZero()) {
+        return F.C0;
+      }
       int v1Length = arg1.isVector();
       int v2Length = arg2.isVector();
       if (v1Length == v2Length && v2Length > 0) {
-        IExpr mean1 = S.Mean.of(engine, F.Unevaluated(arg1)).negate();
-        IExpr mean2 = S.Mean.of(engine, F.Unevaluated(arg2)).negate();
-        IExpr u = arg1.mapExpr(x -> x.plus(mean1));
-        IExpr v = arg2.mapExpr(x -> x.plus(mean2));
-        return super.distance(u, v, engine);
+        if (v1Length == 10) {
+          return F.NIL;
+        }
+        if (v1Length == 1) {
+          return F.C0;
+        }
+        IAST v1 = (IAST) arg1;
+        IAST v2 = (IAST) arg2;
+
+        IASTAppendable factorV1 = F.PlusAlloc(v1Length);
+        IASTAppendable factorV2 = F.PlusAlloc(v1Length);
+        for (int i = 1; i < v1.size(); i++) {
+          IExpr v1Arg = v1.get(i);
+          IExpr v2Arg = v2.get(i);
+          factorV1.append(v1Arg);
+          factorV2.append(v2Arg);
+        }
+        IExpr timesV1 = S.Times.of(engine, F.QQ(-1, v1Length), factorV1);
+        IExpr timesV2 = S.Times.of(engine, F.QQ(-1, v1Length), factorV2);
+
+        IASTAppendable plusNumerator = F.PlusAlloc(v1Length);
+        IASTAppendable plusV1 = F.PlusAlloc(v1Length);
+        IASTAppendable plusV2 = F.PlusAlloc(v1Length);
+        for (int i = 1; i < v1.size(); i++) {
+          IExpr v1Arg = v1.get(i);
+          IExpr v2Arg = v2.get(i);
+          IAST p1 = F.Plus(v1Arg, timesV1);
+          IAST p2 = F.Plus(v2Arg, timesV2);
+          plusNumerator
+              .append(F.Times(p1, F.Conjugate(p2)));
+          plusV1.append(F.Sqr(F.Abs(p1)));
+          plusV2.append(F.Sqr(F.Abs(p2)));
+
+          factorV1.append(v1Arg);
+          factorV1.append(v2Arg);
+        }
+        IExpr denominator = engine.evaluate(F.Sqrt(F.Times(plusV1, plusV2)));
+        if (denominator.isZero()) {
+          return F.C0;
+        }
+        return F.Subtract(F.C1, F.Divide(plusNumerator, denominator));
       }
       return F.NIL;
     }
+    // @Override
+    // public IExpr distance(IExpr arg1, IExpr arg2, EvalEngine engine) {
+    // int v1Length = arg1.isVector();
+    // int v2Length = arg2.isVector();
+    // if (v1Length == v2Length && v2Length > 0) {
+    // IExpr mean1 = S.Mean.of(engine, F.Unevaluated(arg1)).negate();
+    // IExpr mean2 = S.Mean.of(engine, F.Unevaluated(arg2)).negate();
+    // IExpr u = arg1.mapExpr(x -> x.plus(mean1));
+    // IExpr v = arg2.mapExpr(x -> x.plus(mean2));
+    // return super.distance(u, v, engine);
+    // }
+    // return F.NIL;
+    // }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -326,7 +384,7 @@ public class ClusteringFunctions {
       if (norm2.isZero()) {
         return F.C0;
       }
-      return F.Subtract(F.C1, F.Divide(F.Dot(arg1, arg2), F.Times(norm1, norm2)));
+      return F.Subtract(F.C1, F.Divide(F.Dot(arg1, F.Conjugate(arg2)), F.Times(norm1, norm2)));
     }
 
     @Override
