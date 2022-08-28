@@ -4623,6 +4623,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testCurl() {
+    check("Curl({y, -x}, {x, y})", //
+        "-2");
+
+    check("Curl({y, -x, 2 z}, {x, y, z})", //
+        "{0,0,-2}");
     check("Curl(SparseArray({{1}->y,{2}->-x,{3}->-z},Automatic,0),{x,y,z})", //
         "{0,0,-2}");
     check("Curl({f(x, y, z), g(x, y, z), h(x, y, z)}, {x, y, z})", //

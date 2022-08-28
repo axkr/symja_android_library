@@ -60,24 +60,30 @@ public class VectorAnalysisFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isVector() >= 3) {
-        if (ast.arg2().isVector() == 3) {
-          IAST variables = (IAST) ast.arg2().normal(false);
-          IAST vector = (IAST) ast.arg1().normal(false);
-          IASTAppendable curlVector = F.ListAlloc(vector.size());
-          curlVector.append(F.Subtract(F.D(vector.arg3(), variables.arg2()),
-              F.D(vector.arg2(), variables.arg3())));
-          curlVector.append(F.Subtract(F.D(vector.arg1(), variables.arg3()),
-              F.D(vector.arg3(), variables.arg1())));
-          curlVector.append(F.Subtract(F.D(vector.arg2(), variables.arg1()),
-              F.D(vector.arg1(), variables.arg2())));
-          for (int i = 4; i < vector.size(); i++) {
-            curlVector.append(vector.get(i));
-          }
+      int dim1 = ast.arg1().isVector();
+      int dim2 = ast.arg2().isVector();
+      if (dim1 >= 2 && dim1 <= 3 && dim1 == dim2) {
+        IAST v = (IAST) ast.arg2().normal(false);
+        IAST f = (IAST) ast.arg1().normal(false);
+        if (dim1 == 2 && dim2 == 2) {
+          // D(f2, v1) - D(f1, v2)
+          return F.Subtract(F.D(f.arg2(), v.arg1()),
+              F.D(f.arg1(), v.arg2()));
+        }
+        if (dim1 == 3 && dim2 == 3) {
+          // {D(f3, v3) - D(f2, v3),
+          // D(f1, v3) - D(f3, v1),
+          // D(f2, v1) - D(f1, v2)}
+          IASTAppendable curlVector = F.ListAlloc(f.size());
+          curlVector.append(F.Subtract(F.D(f.arg3(), v.arg2()),
+              F.D(f.arg2(), v.arg3())));
+          curlVector.append(F.Subtract(F.D(f.arg1(), v.arg3()),
+              F.D(f.arg3(), v.arg1())));
+          curlVector.append(F.Subtract(F.D(f.arg2(), v.arg1()),
+              F.D(f.arg1(), v.arg2())));
           return curlVector;
         }
       }
-
       return F.NIL;
     }
 
@@ -86,6 +92,7 @@ public class VectorAnalysisFunctions {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -135,6 +142,7 @@ public class VectorAnalysisFunctions {
       return ARGS_2_2;
     }
   }
+
 
   /**
    * <pre>
@@ -219,6 +227,7 @@ public class VectorAnalysisFunctions {
     }
   }
 
+
   private static final class RotationMatrix extends AbstractFunctionEvaluator {
 
     @Override
@@ -243,7 +252,8 @@ public class VectorAnalysisFunctions {
             // [$ {{(x^3*Conjugate(x)^3)/Abs(x)^6,0,0},{0,Cos(theta),-((x^2*Conjugate(x)*
             // Sin(theta))/Abs(x)^3)},{0,(x*Conjugate(x)^2*Sin(theta))/Abs(x)^3,(x^3*Conjugate(x)^3*
             // Cos(theta))/Abs(x)^6}} $]
-            F.list(F.list(F.Times(F.Power(x, F.C3), F.Power(F.Abs(x), F.CN6),
+            F.list(
+                F.list(F.Times(F.Power(x, F.C3), F.Power(F.Abs(x), F.CN6),
                     F.Power(F.Conjugate(x), F.C3)), F.C0, F.C0),
                 F.list(F.C0, F.Cos(theta),
                     F.Times(F.CN1, F.Sqr(x), F.Power(F.Abs(x), F.CN3), F.Conjugate(x),
@@ -258,7 +268,8 @@ public class VectorAnalysisFunctions {
             // [$
             // {{Cos(theta),0,(y^2*Conjugate(y)*Sin(theta))/Abs(y)^3},{0,(y^3*Conjugate(y)^3)/Abs(y)^6,0},{-((y*Conjugate(y)^2*Sin(theta))/Abs(y)^3),0,(y^3*Conjugate(y)^3*Cos(theta))/Abs(y)^6}}
             // $]
-            F.list(F.list(F.Cos(theta), F.C0,
+            F.list(
+                F.list(F.Cos(theta), F.C0,
                     F.Times(F.Sqr(y), F.Power(F.Abs(y), F.CN3), F.Conjugate(y), F.Sin(theta))),
                 F.list(F.C0,
                     F.Times(F.Power(y, F.C3), F.Power(F.Abs(y), F.CN6),
@@ -287,6 +298,7 @@ public class VectorAnalysisFunctions {
       }
       return F.NIL;
     }
+
   }
 
   public static void initialize() {
