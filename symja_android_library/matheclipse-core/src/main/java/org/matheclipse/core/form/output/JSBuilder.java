@@ -160,7 +160,7 @@ public class JSBuilder {
 
   private static final String[] JS_CDN_MATHCELL =
       {"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js",
-          "https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.3/build/mathcell.js",
+          "https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.10.0/build/mathcell.js",
           "https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML"};
 
   /** CSS libraries */

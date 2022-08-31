@@ -174,7 +174,7 @@ public class Pods {
           + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>MathCell</title>\n" + "</head>\n"
           + "\n" + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + "\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.8/build/math.js\"></script>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.3/build/mathcell.js\"></script>\n"
+          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.10.0/build/mathcell.js\"></script>\n"
           + "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
           + "\n"
           + "<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
