@@ -30,7 +30,15 @@ import org.organicdesign.fp.collections.RrbTree.MutRrbt;
 import org.organicdesign.fp.collections.UnmodListIterator;
 
 /**
- * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>no argument</b>.
+ * <p>
+ * Immutable (A)bstract (S)yntax (T)ree of a given function implemented as an RRB Tree. The
+ * implmentation is based on the paper, "RRB-Trees: Efficient Immutable Vectors" by Phil Bagwell and
+ * Tiark Rompf, with the following differences:
+ * <ul>
+ * <li>the Relaxed nodes can be sized between n/3 and 2n/3 (Bagwell/Rompf specify n and n-1)
+ * <li>the Join operation sticks the shorter tree unaltered into the larger tree (except for
+ * verysmall trees which just get concatenated).
+ * </ul>
  *
  * <p>
  * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic

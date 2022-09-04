@@ -529,6 +529,7 @@ public class IOFunctions {
       "fpct", "To many parameters in `1` to be filled from `2`.", //
       "fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //
       "heads", "Heads `1` and `2` are expected to be the same.", //
+      "herm", "The matrix `1` is not hermitian or real and symmetric.", //
       "idim", "`1` and `2` must have the same length.", //
       "ifun", "Inverse functions are being used. Values may be lost for multivalued inverses.", //
       "ilsmn",
@@ -588,6 +589,7 @@ public class IOFunctions {
       "locked", "Symbol `1` is locked.", //
       "lowlen", "Required length `1` is smaller than maximum `2` of support of `3`.", //
       "lslc", "Coefficient matrix and target vector or matrix do not have the same dimensions.", //
+      "lstpat", "List or pattern matching a list expected at position `1` in `2`.", //
       "lvlist", "Local variable specification `1` is not a List.", //
       "lvws", "Variable `1` in local variable specification `2` requires assigning a value", //
       "lvset",

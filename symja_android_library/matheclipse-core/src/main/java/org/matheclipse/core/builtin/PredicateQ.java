@@ -1457,7 +1457,7 @@ public class PredicateQ {
 
       int p = dims[0];
       int q = dims[1];
-      final IAST matrix = (IAST) arg1;
+      final IAST matrix = (IAST) arg1.normal(false);
       if (dims[0] >= dims[1]) {
         IExpr id = engine.evaluate(F.Simplify(F.Dot(F.ConjugateTranspose(matrix), matrix)));
         dims = id.isMatrix();

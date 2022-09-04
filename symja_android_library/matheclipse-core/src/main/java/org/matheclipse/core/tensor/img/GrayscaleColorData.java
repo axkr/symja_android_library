@@ -24,6 +24,9 @@ public class GrayscaleColorData implements ColorDataGradient {
   @Override // from ScalarTensorFunction
   public IAST apply(IExpr scalar) {
     double value = scalar.evalDouble();
+    if (value > 1.0 || value < 0.0) {
+      return Transparent.rgba();
+    }
     return Double.isFinite(value) //
         ? tensors[toInt(value)].copy()
         : Transparent.rgba();

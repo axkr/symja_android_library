@@ -1349,7 +1349,7 @@ public final class BooleanFunctions {
         if (booleanVector != null) {
           IASTAppendable andAST = F.ast(termSymbol, booleanVector.length);
           int v2 = arg2.isVector();
-          if (v2 == v1) {
+          if (v2 == v1 && arg2.isList()) {
             IAST variables = (IAST) arg2;
             for (int i = 0; i < booleanVector.length; i++) {
               if (booleanVector[i] == true) {

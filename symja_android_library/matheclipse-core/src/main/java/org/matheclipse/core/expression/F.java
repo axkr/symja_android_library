@@ -4899,8 +4899,8 @@ public class F extends S {
    *
    * @param head the header symbol of the result
    * @param function the function which should be applied on each iterator value
-   * @param from
-   * @param to
+   * @param from from this position (included)
+   * @param to to this position (included)
    * @param step
    * @return
    */
@@ -4951,7 +4951,8 @@ public class F extends S {
       final int to, final int step) {
     IASTAppendable result = ast(head, to - from + 1);
     for (int i = from; i <= to; i += step) {
-      result.append(function.apply(i));
+      result.append(EvalEngine.get().evaluate(function.apply(i)));
+      // result.append(function.apply(i));
     }
     return result;
   }
@@ -8883,6 +8884,13 @@ public class F extends S {
     return intIterator(Plus, function, iMin, iMax, 1);
   }
 
+  /**
+   * 
+   * @param function
+   * @param iMin from this position (included)
+   * @param iMax to this position (included)
+   * @return
+   */
   public static IAST intSum(final IntFunction<IExpr> function, final int iMin, final int iMax) {
     return intIterator(Plus, function, iMin, iMax, 1);
   }
@@ -8891,8 +8899,8 @@ public class F extends S {
    * Evaluate the sum from <code>iMin</code> to <code>iMax</code> and step <code>iStep</code>.
    *
    * @param function
-   * @param iMin
-   * @param iMax
+   * @param iMin from this position (included)
+   * @param iMax to this position (included)
    * @param iStep
    * @return
    */

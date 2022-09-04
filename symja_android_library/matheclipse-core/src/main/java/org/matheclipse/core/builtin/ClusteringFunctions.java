@@ -279,8 +279,8 @@ public class ClusteringFunctions {
         if (v1Length == 1) {
           return F.C0;
         }
-        IAST v1 = (IAST) arg1;
-        IAST v2 = (IAST) arg2;
+        IAST v1 = (IAST) arg1.normal(false);
+        IAST v2 = (IAST) arg2.normal(false);
 
         IASTAppendable factorV1 = F.PlusAlloc(v1Length);
         IASTAppendable factorV2 = F.PlusAlloc(v1Length);

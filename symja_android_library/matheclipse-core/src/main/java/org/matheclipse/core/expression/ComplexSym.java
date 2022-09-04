@@ -328,15 +328,21 @@ public class ComplexSym implements IComplex {
   @Override
   public IExpr evaluate(EvalEngine engine) {
     if (engine.isNumericMode()) {
-      if (isImaginaryUnit()) {
-        return F.CDI;
-      } else if (isNegativeImaginaryUnit()) {
-        return F.CDNI;
+      if (engine.isArbitraryMode()) {
+        return numericNumber();
+      }
+      if (fReal.isZero()) {
+        // if possible use predefined constants for imaginary unit
+        if (isImaginaryUnit()) {
+          return F.CDI;
+        } else if (isNegativeImaginaryUnit()) {
+          return F.CDNI;
+        }
       }
       return numericNumber();
     }
-    final INumber cTemp = normalize();
-    return (cTemp == this) ? F.NIL : cTemp;
+    final INumber cTemp = normalizeNull(fReal, fImaginary);
+    return (cTemp == null) ? F.NIL : cTemp;
   }
 
   /** {@inheritDoc} */
@@ -612,6 +618,19 @@ public class ComplexSym implements IComplex {
 
   @Override
   public INumber normalize() {
+    INumber normalized = normalizeNull(fReal, fImaginary);
+    return (normalized == null) ? this : normalized;
+  }
+
+  /**
+   * Return the normalized form of this number (i.e. if the imaginary part equals zero, return the
+   * real part as a fractional or integer number).
+   * 
+   * @param fReal
+   * @param fImaginary
+   * @return <code>null</code> if no new number was evaluated
+   */
+  private static INumber normalizeNull(IRational fReal, IRational fImaginary) {
     if (fImaginary.isZero()) {
       if (fReal instanceof IFraction) {
         if (fReal.denominator().isOne()) {
@@ -623,24 +642,29 @@ public class ComplexSym implements IComplex {
       }
       return fReal;
     }
-    boolean evaled = false;
-    IRational newRe = fReal;
-    IRational newIm = fImaginary;
     if (fReal instanceof IFraction) {
       if (fReal.denominator().isOne()) {
-        newRe = fReal.numerator();
-        evaled = true;
+        IRational newRe = fReal.numerator();
+        if (fImaginary instanceof IFraction && fImaginary.denominator().isOne()) {
+          IRational newIm = fImaginary.numerator();
+          return valueOf(newRe, newIm);
+        }
+        return valueOf(newRe, fImaginary);
       }
       if (fReal.numerator().isZero()) {
-        newRe = F.C0;
-        evaled = true;
+        IRational newRe = F.C0;
+        if (fImaginary instanceof IFraction && fImaginary.denominator().isOne()) {
+          IRational newIm = fImaginary.numerator();
+          return valueOf(newRe, newIm);
+        }
+        return valueOf(newRe, fImaginary);
       }
     }
     if (fImaginary instanceof IFraction && fImaginary.denominator().isOne()) {
-      newIm = fImaginary.numerator();
-      evaled = true;
+      IRational newIm = fImaginary.numerator();
+      return valueOf(fReal, newIm);
     }
-    return evaled ? valueOf(newRe, newIm) : this;
+    return null;
   }
 
   @Override

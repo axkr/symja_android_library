@@ -99,6 +99,111 @@ public class ExprEvaluatorTests {
     OutputFormFactory fInputFactory = OutputFormFactory.get(true, false, 5, 7);
     fInputFactory.setInputForm(true);
     AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
+    IAST seedList = createSeedList();
+    ThreadLocalRandom random = ThreadLocalRandom.current();
+    SlowComputationThread thread = null;
+    for (int j = 1; j < 10000; j++) {
+      int i = 0;
+      while (i < node.size()) {
+        temp = ast2Expr.convert(node.get(i++));
+        if (temp.isAST() && temp.size() > 1) {
+          int seedIndex = random.nextInt(1, seedList.size());
+          IExpr seed = seedList.get(seedIndex);
+          String mutantStr = "initial";
+          IASTMutable mutant = ((IAST) temp).copy();
+          try {
+            ISymbol sym = mutant.topHead();
+            if (sym == S.InstanceOf || sym == S.PolynomialGCD || sym == S.TestReport
+                || sym == S.VerificationTest || sym == S.On || sym == S.Off || sym == S.Compile
+                || sym == S.CompiledFunction || sym == S.FactorialPower || sym == S.Pause
+                || sym == S.OptimizeExpression || sym == S.Share || sym == S.Set
+                || sym == S.SetDelayed || sym == S.UpSet || sym == S.UpSetDelayed) {
+              continue;
+            }
+            int randomIndex = random.nextInt(1, mutant.size());
+            if (mutant.isAssociation()) {
+              mutant.set(randomIndex, F.Rule(F.ZZ(randomIndex), seed));
+            } else {
+              mutant.set(randomIndex, seed);
+            }
+            for (int k = 0; k < 1; k++) {
+              seedIndex = random.nextInt(1, seedList.size());
+              seed = seedList.get(seedIndex);
+              randomIndex = random.nextInt(1, mutant.size());
+              if (mutant.isAssociation()) {
+                mutant.set(randomIndex, F.Rule(F.ZZ(randomIndex), seed));
+              } else {
+                mutant.set(randomIndex, seed);
+              }
+            }
+
+            engine.init();
+            engine.setQuietMode(quietMode);
+            engine.setRecursionLimit(256);
+            engine.setIterationLimit(1000);
+            // mutantStr = fInputFactory.toString(mutant);
+
+            // System.out.println(">> " + mutantStr);
+            // if (counter++ > 80) {
+            // System.out.println("");
+            // counter = 0;
+            // System.out.flush();
+            // System.err.flush();
+            // }
+
+            thread = new SlowComputationThread(">> " + mutant.toString(), engine);
+            thread.start();
+            engine.evaluate(mutant);
+
+          } catch (FlowControlException mex) {
+            if (!quietMode) {
+              System.err.println(mutant.toString());
+              mex.printStackTrace();
+              System.err.println();
+            }
+          } catch (SyntaxError se) {
+
+            System.err.println(mutant.toString());
+            se.printStackTrace();
+            System.err.println();
+
+            // fail();
+          } catch (ValidateException ve) {
+            System.err.println(mutant.toString());
+            ve.printStackTrace();
+            System.err.println();
+            // fail();
+          } catch (MathException mex) {
+            System.err.println(mutant.toString());
+            mex.printStackTrace();
+            System.err.println();
+            fail();
+          } catch (RuntimeException rex) {
+            System.err.println(mutant.toString());
+            rex.printStackTrace();
+            fail();
+          } catch (Error rex) {
+            System.err.println(mutant.toString());
+            if (rex instanceof StackOverflowError) {
+              System.err.println("java.lang.StackOverflowError");
+              rex.printStackTrace();
+              fail();
+            } else {
+              System.err.println(mutantStr);
+              rex.printStackTrace();
+              fail();
+            }
+          } finally {
+            thread.terminate();
+            thread.interrupt();
+          }
+        }
+      }
+    }
+    // return result;
+  }
+
+  private static IAST createSeedList() {
     byte[] bArray = new byte[0];
     ByteArrayExpr ba = ByteArrayExpr.newInstance(bArray);
     byte[] b0Array = new byte[] {0};
@@ -269,107 +374,7 @@ public class ExprEvaluatorTests {
         F.OptionValue(F.b), //
         F.OptionValue(F.x), //
         F.OptionValue(F.y));
-    ThreadLocalRandom random = ThreadLocalRandom.current();
-    SlowComputationThread thread = null;
-    for (int j = 1; j < 10000; j++) {
-      int i = 0;
-      while (i < node.size()) {
-        temp = ast2Expr.convert(node.get(i++));
-        if (temp.isAST() && temp.size() > 1) {
-          int seedIndex = random.nextInt(1, seedList.size());
-          IExpr seed = seedList.get(seedIndex);
-          String mutantStr = "initial";
-          IASTMutable mutant = ((IAST) temp).copy();
-          try {
-            ISymbol sym = mutant.topHead();
-            if (sym == S.InstanceOf || sym == S.PolynomialGCD || sym == S.TestReport
-                || sym == S.VerificationTest || sym == S.On || sym == S.Off || sym == S.Compile
-                || sym == S.CompiledFunction || sym == S.FactorialPower || sym == S.Pause
-                || sym == S.OptimizeExpression || sym == S.Share || sym == S.Set
-                || sym == S.SetDelayed || sym == S.UpSet || sym == S.UpSetDelayed) {
-              continue;
-            }
-            int randomIndex = random.nextInt(1, mutant.size());
-            if (mutant.isAssociation()) {
-              mutant.set(randomIndex, F.Rule(F.ZZ(randomIndex), seed));
-            } else {
-              mutant.set(randomIndex, seed);
-            }
-            for (int k = 0; k < 1; k++) {
-              seedIndex = random.nextInt(1, seedList.size());
-              seed = seedList.get(seedIndex);
-              randomIndex = random.nextInt(1, mutant.size());
-              if (mutant.isAssociation()) {
-                mutant.set(randomIndex, F.Rule(F.ZZ(randomIndex), seed));
-              } else {
-                mutant.set(randomIndex, seed);
-              }
-            }
-
-            engine.init();
-            engine.setQuietMode(quietMode);
-            engine.setRecursionLimit(256);
-            engine.setIterationLimit(1000);
-            // mutantStr = fInputFactory.toString(mutant);
-
-            // System.out.println(">> " + mutantStr);
-            // if (counter++ > 80) {
-            // System.out.println("");
-            // counter = 0;
-            // System.out.flush();
-            // System.err.flush();
-            // }
-
-            thread = new SlowComputationThread(">> " + mutant.toString(), engine);
-            thread.start();
-            engine.evaluate(mutant);
-
-          } catch (FlowControlException mex) {
-            if (!quietMode) {
-              System.err.println(mutant.toString());
-              mex.printStackTrace();
-              System.err.println();
-            }
-          } catch (SyntaxError se) {
-
-            System.err.println(mutant.toString());
-            se.printStackTrace();
-            System.err.println();
-
-            // fail();
-          } catch (ValidateException ve) {
-            System.err.println(mutant.toString());
-            ve.printStackTrace();
-            System.err.println();
-            // fail();
-          } catch (MathException mex) {
-            System.err.println(mutant.toString());
-            mex.printStackTrace();
-            System.err.println();
-            fail();
-          } catch (RuntimeException rex) {
-            System.err.println(mutant.toString());
-            rex.printStackTrace();
-            fail();
-          } catch (Error rex) {
-            System.err.println(mutant.toString());
-            if (rex instanceof StackOverflowError) {
-              System.err.println("java.lang.StackOverflowError");
-              rex.printStackTrace();
-              fail();
-            } else {
-              System.err.println(mutantStr);
-              rex.printStackTrace();
-              fail();
-            }
-          } finally {
-            thread.terminate();
-            thread.interrupt();
-          }
-        }
-      }
-    }
-    // return result;
+    return seedList;
   }
 
   static {
@@ -389,7 +394,19 @@ public class ExprEvaluatorTests {
   }
 
   public static void main(String[] args) {
+    IBuiltInSymbol symbol = S.SequenceCases;
+    IEvaluator evaluator = symbol.getEvaluator();
+    if (evaluator instanceof IFunctionEvaluator) {
+      ThreadLocalRandom random = ThreadLocalRandom.current();
+      IAST seedList = createSeedList();
+      int[] counter = new int[] {0};
+
+      generateASTs(symbol, 2, 3, seedList, random, counter, (IFunctionEvaluator) evaluator,
+          EvalEngine.get(), false, false);
+    }
+
     builtinFunctionFuzz();
+
     // smartFuzz();
     // nonBuiltinFunctionFuzz();
   }

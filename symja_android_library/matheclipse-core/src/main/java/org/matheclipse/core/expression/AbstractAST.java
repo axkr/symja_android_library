@@ -1890,8 +1890,47 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public IExpr evaluate(EvalEngine engine) {
     LOGGER.debug("Evaluate {}", this);
     final IExpr head = head();
-    final int argSize = argSize();
-    if (head instanceof ISymbol) {
+    if (head instanceof IBuiltInSymbol) {
+      final IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+      if (evaluator instanceof ICoreFunctionEvaluator) {
+        try {
+          ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) evaluator;
+          EvalEngine.OptionsResult opres = engine.checkBuiltinArguments(this, functionEvaluator);
+          if (opres == null) {
+            return F.NIL;
+          }
+          IAST ast = opres.result;
+          IBuiltInSymbol header = ((IBuiltInSymbol) head);
+          if ((header.getAttributes() & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
+            IExpr temp;
+            if ((temp = F.flattenSequence(this)).isPresent()) {
+              return temp;
+            }
+          }
+          if (isBooleanFunction()) {
+            IExpr temp = extractConditionalExpression(false);
+            if (temp.isPresent()) {
+              return temp;
+            }
+          }
+
+          IExpr evaluateTemp = evalEvaluate(engine);
+          if (evaluateTemp.isPresent()) {
+            return evaluateTemp;
+          }
+          return functionEvaluator.evaluate(ast, engine);
+        } catch (ValidateException ve) {
+          return IOFunctions.printMessage(topHead(), ve, engine);
+        } catch (FlowControlException e) {
+          throw e;
+        } catch (SymjaMathException ve) {
+          LOGGER.log(engine.getLogLevel(), topHead(), ve);
+          return F.NIL;
+        }
+      }
+    } else if (head.isAssociation() && argSize() == 1) {
+      return ((IAssociation) head).getValue(arg1());
+    } else if (head instanceof ISymbol) {
       ISymbol headSymbol = (ISymbol) head;
       Class<?> clazz = headSymbol.getContext().getJavaClass();
       if (clazz != null) {
@@ -1949,49 +1988,6 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         }
       }
 
-      if (head instanceof IBuiltInSymbol) {
-        final IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-        if (evaluator instanceof ICoreFunctionEvaluator) {
-          try {
-            ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) evaluator;
-            EvalEngine.OptionsResult opres = engine.checkBuiltinArguments(this, functionEvaluator);
-            if (opres == null) {
-              return F.NIL;
-            }
-            IAST ast = opres.result;
-            IBuiltInSymbol header = ((IBuiltInSymbol) head);
-            if ((header.getAttributes() & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
-              IExpr temp;
-              if ((temp = F.flattenSequence(this)).isPresent()) {
-                return temp;
-              }
-            }
-            if (isBooleanFunction()) {
-              IExpr temp = extractConditionalExpression(false);
-              if (temp.isPresent()) {
-                return temp;
-              }
-            }
-
-            IExpr evaluateTemp = evalEvaluate(engine);
-            if (evaluateTemp.isPresent()) {
-              return evaluateTemp;
-            }
-            return functionEvaluator.evaluate(ast, engine);
-          } catch (ValidateException ve) {
-            return IOFunctions.printMessage(topHead(), ve, engine);
-          } catch (FlowControlException e) {
-            throw e;
-          } catch (SymjaMathException ve) {
-            LOGGER.log(engine.getLogLevel(), topHead(), ve);
-            return F.NIL;
-          }
-        }
-      }
-    }
-
-    if (head.isAssociation() && argSize == 1) {
-      return ((IAssociation) head).getValue(arg1());
     }
 
     final ISymbol symbol = topHead();

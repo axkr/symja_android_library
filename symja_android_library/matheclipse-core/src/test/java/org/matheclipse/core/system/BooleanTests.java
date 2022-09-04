@@ -408,11 +408,11 @@ public class BooleanTests extends ExprEvaluatorTestCase {
     check("BooleanTable(And(a, b, c), {a, b, c})", //
         "{True,False,False,False,False,False,False,False}");
 
-    expected = String.join(System.lineSeparator(), //
+    expected = String.join("\n", //
         "  True   True  False   True ", //
         " False   True   True  False ", //
         " False   True   True  False ", //
-        " False  False  False   True ");
+         " False  False  False   True ");
     check("BooleanTable({And(a, b), Or(a, b), Xor(a, b), Xnor(a, b)}, {a, b}) // TableForm", //
         expected);
 
