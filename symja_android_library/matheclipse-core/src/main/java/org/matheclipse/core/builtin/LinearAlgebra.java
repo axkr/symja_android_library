@@ -969,12 +969,114 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
-        RealMatrix matrix = ast.arg1().toRealMatrix();
-        if (matrix != null) {
-          final org.hipparchus.linear.CholeskyDecomposition dcomposition =
-              new org.hipparchus.linear.CholeskyDecomposition(matrix);
-          // Returns the transpose of the matrix L of the decomposition.
-          return new ASTRealMatrix(dcomposition.getLT(), false);
+        IExpr arg1 = ast.arg1();
+        int[] dimension = arg1.isMatrix(false);
+        if (dimension != null) {
+          if (dimension[0] == dimension[1]) {
+            if (dimension[0] == 2 || dimension[0] == 3) {
+              arg1 = arg1.normal(false);
+            }
+            if (arg1.isList()) {
+              IAST matrix = (IAST) arg1;
+              if (dimension[0] == 2) {
+                IExpr a11 = matrix.getPart(1, 1);
+                IExpr a12 = matrix.getPart(1, 2);
+                IExpr a21 = matrix.getPart(2, 1);
+                IExpr a22 = matrix.getPart(2, 2);
+                if (a12.equals(a21.conjugate())) {
+                  // {{Sqrt(a11), a12/Sqrt(a11)}, {0, Sqrt(a22 -
+                  // (a12*Conjugate(a12/Sqrt(a11)))/Sqrt(a11))}}
+                  IAST choleskyDecomposition = F.List(//
+                      F.List(F.Sqrt(a11), //
+                          F.Divide(a12, F.Sqrt(a11))), //
+                      F.List(F.C0, //
+                          F.Sqrt(F.Subtract(a22, F.Times(a12,
+                              F.Conjugate(F.Divide(a12, F.Sqrt(a11))), F.Power(a11, F.CN1D2)))))//
+                  );
+                  choleskyDecomposition.setEvalFlags(IAST.IS_MATRIX);
+                  return choleskyDecomposition;
+                }
+              } else if (dimension[0] == 3) {
+                IExpr a11 = matrix.getPart(1, 1);
+                IExpr a12 = matrix.getPart(1, 2);
+                IExpr a13 = matrix.getPart(1, 3);
+                IExpr a21 = matrix.getPart(2, 1);
+                IExpr a22 = matrix.getPart(2, 2);
+                IExpr a23 = matrix.getPart(2, 3);
+                IExpr a31 = matrix.getPart(3, 1);
+                IExpr a32 = matrix.getPart(3, 2);
+                IExpr a33 = matrix.getPart(3, 3);
+                if (a12.equals(a21.conjugate())//
+                    && a13.equals(a31.conjugate())//
+                    && a23.equals(a32.conjugate())) {
+                  IAST choleskyDecomposition =
+                      // [$ {{Sqrt(a11), a12/Sqrt(a11), a13/Sqrt(a11)},
+                      // {0, Sqrt(a22 - (a12*Conjugate(a12/Sqrt(a11)))/Sqrt(a11)),
+                      // (a23 - (a13*Conjugate(a12/Sqrt(a11)))/Sqrt(a11))/
+                      // Sqrt(a22 - (a12*Conjugate(a12/Sqrt(a11)))/Sqrt(a11))},
+                      // {0, 0, Sqrt(a33 - (a13*Conjugate(a13/Sqrt(a11)))/Sqrt(a11) -
+                      // ((a23 - (a13*Conjugate(a12/Sqrt(a11)))/Sqrt(a11))*
+                      // (-((a12*Conjugate(a13/Sqrt(a11)))/Sqrt(a11)) + Conjugate(a23))*
+                      // Conjugate(1/Sqrt(a22 - (a12*Conjugate(a12/Sqrt(a11)))/Sqrt(a11))))/
+                      // Sqrt(a22 - (a12*Conjugate(a12/Sqrt(a11)))/Sqrt(a11)))}} $]
+                      F.list(
+                          F.list(F.Sqrt(a11), F.Times(F.Power(a11, F.CN1D2), a12), F
+                              .Times(F.Power(a11, F.CN1D2), a13)),
+                          F.list(F.C0,
+                              F.Sqrt(
+                                  F.Plus(a22,
+                                      F.Times(F.CN1, F.Power(a11, F.CN1D2), a12,
+                                          F.Conjugate(F.Times(F.Power(a11, F.CN1D2), a12))))),
+                              F.Times(
+                                  F.Plus(
+                                      a23, F
+                                          .Times(F.CN1, F.Power(a11, F.CN1D2), a13,
+                                              F.Conjugate(F.Times(F.Power(a11, F.CN1D2), a12)))),
+                                  F.Power(
+                                      F.Plus(a22,
+                                          F.Times(F.CN1, F.Power(a11, F.CN1D2), a12,
+                                              F.Conjugate(F.Times(F.Power(a11, F.CN1D2), a12)))),
+                                      F.CN1D2))),
+                          F.list(F.C0, F.C0,
+                              F.Sqrt(F.Plus(a33,
+                                  F.Times(F.CN1, F.Power(a11, F.CN1D2), a13,
+                                      F.Conjugate(F.Times(F.Power(a11, F.CN1D2), a13))),
+                                  F.Times(
+                                      F.CN1, F
+                                          .Plus(a23,
+                                              F.Times(F.CN1, F.Power(a11, F.CN1D2), a13,
+                                                  F.Conjugate(
+                                                      F.Times(F.Power(a11, F.CN1D2), a12)))),
+                                      F.Power(
+                                          F.Plus(a22,
+                                              F.Times(F.CN1, F.Power(a11, F.CN1D2), a12,
+                                                  F.Conjugate(
+                                                      F.Times(F.Power(a11, F.CN1D2), a12)))),
+                                          F.CN1D2),
+                                      F.Plus(F.Times(F.CN1, F.Power(a11, F.CN1D2), a12, F
+                                          .Conjugate(F.Times(F.Power(a11, F.CN1D2), a13))), F
+                                              .Conjugate(a23)),
+                                      F.Conjugate(F.Power(
+                                          F.Plus(a22,
+                                              F.Times(F.CN1, F.Power(a11, F.CN1D2), a12,
+                                                  F.Conjugate(
+                                                      F.Times(F.Power(a11, F.CN1D2), a12)))),
+                                          F.CN1D2))))))); // $$;
+                  choleskyDecomposition.setEvalFlags(IAST.IS_MATRIX);
+                  return choleskyDecomposition;
+                }
+              }
+            }
+            RealMatrix matrix = arg1.toRealMatrix();
+            if (matrix != null) {
+              final org.hipparchus.linear.CholeskyDecomposition dcomposition =
+                  new org.hipparchus.linear.CholeskyDecomposition(matrix);
+              // Returns the transpose of the matrix L of the decomposition.
+              return new ASTRealMatrix(dcomposition.getLT(), false);
+            }
+          }
+          // The matrix `1` is not hermitian or real and symmetric.
+          return IOFunctions.printMessage(ast.topHead(), "herm", F.List(arg1), engine);
         }
       } catch (final ValidateException ve) {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
@@ -2256,13 +2358,14 @@ public final class LinearAlgebra {
       boolean togetherMode = engine.isTogetherMode();
       try {
         engine.setTogetherMode(true);
-        int[] dim = ast.arg1().isMatrix();
+        final IExpr arg1 = ast.arg1();
+        int[] dim = arg1.isMatrix();
         if (dim != null && dim[0] > 0 && dim[1] > 0) {
           if (dim[0] != dim[1]) {
             // Argument `1` at position `2` is not a non-empty square matrix.
             return IOFunctions.printMessage(ast.topHead(), "matsq", F.CEmptyList, engine);
           }
-          matrix = ast.arg1().toRealMatrix();
+          matrix = arg1.toRealMatrix();
           if (matrix != null) {
             HessenbergTransformer hessenbergTransformer = new HessenbergTransformer(matrix);
             final RealMatrix pMatrix = hessenbergTransformer.getP();
@@ -4636,13 +4739,14 @@ public final class LinearAlgebra {
       boolean togetherMode = engine.isTogetherMode();
       try {
         engine.setTogetherMode(true);
-        int[] dim = ast.arg1().isMatrix();
+        final IExpr arg1 = ast.arg1();
+        int[] dim = arg1.isMatrix();
         if (dim != null && dim[0] > 0 && dim[1] > 0) {
           if (dim[0] != dim[1]) {
             // Argument `1` at position `2` is not a non-empty square matrix.
             return IOFunctions.printMessage(ast.topHead(), "matsq", F.CEmptyList, engine);
           }
-          matrix = ast.arg1().toRealMatrix();
+          matrix = arg1.toRealMatrix();
           if (matrix != null) {
             SchurTransformer schurTransformer = new SchurTransformer(matrix);
             final RealMatrix pMatrix = schurTransformer.getP();

@@ -38,12 +38,26 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testCholeskyDecomposition() {
+    // message: CholeskyDecomposition: The matrix {{2,1}, {3,a}} is not hermitian or real and
+    // symmetric.
+    check("CholeskyDecomposition({{2,1},{3,a}})", //
+        "CholeskyDecomposition({{2,1},{3,a}})");
+    check("CholeskyDecomposition({{2,1},{1,3}})", //
+        "{{Sqrt(2),1/Sqrt(2)},\n" //
+            + " {0,Sqrt(5/2)}}");
     check("matG=CholeskyDecomposition({{11.0,3.0},{3.0, 5.0}})", //
         "{{3.31662,0.904534},\n" + //
             " {0.0,2.04495}}");
     check("Transpose(matG).matG", //
         "{{11.0,3.0},\n" + //
             " {3.0,5.0}}");
+    check("CholeskyDecomposition({{0.5, 0.3, 0.4}, {0.3, 1.1, -0.2}, {0.4, -0.2, 0.7}})", //
+        "{{0.707107,0.424264,0.565685},\n" //
+            + " {0.0,0.959166,-0.458732},\n" //
+            + " {0.0,0.0,0.411783}}");
+    check("CholeskyDecomposition({{2, I}, {-I, 3}})", //
+        "{{Sqrt(2),I/Sqrt(2)},\n" //
+            + " {0,Sqrt(5/2)}}");
   }
 
   public void testCirclePoints() {
