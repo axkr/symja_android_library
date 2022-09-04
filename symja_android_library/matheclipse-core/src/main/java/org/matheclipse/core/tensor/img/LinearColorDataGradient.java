@@ -44,19 +44,22 @@ public class LinearColorDataGradient implements ColorDataGradient {
   // ---
   private final IAST tensor;
   private final Interpolation interpolation;
-  private final IExpr scale;
+  private final double scale;
 
   /* package */ LinearColorDataGradient(IAST tensor) {
     this.tensor = tensor;
     interpolation = LinearInterpolation.of(this.tensor);
-    scale = F.num(tensor.argSize() - 1);
+    scale = tensor.argSize() - 1.0;
   }
 
   @Override // from ColorDataGradient
   public IExpr apply(IExpr scalar) {
-    IExpr value = scalar.multiply(scale); // throws Exception for GaussScalar
-    return Double.isFinite(value.evalDouble()) //
-        ? interpolation.at(value)
+    double value = scalar.multiply(scale).evalDouble();
+    // if (value > 1.0 || value < 0.0) {
+    // return Transparent.rgba();
+    // }
+    return Double.isFinite(value) //
+        ? interpolation.at(F.num(value))
         : Transparent.rgba();
   }
 

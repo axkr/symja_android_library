@@ -10,6 +10,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -38,7 +39,9 @@ public class ListPlot extends AbstractEvaluator {
       }
       return F.NIL;
     }
-    if ((ast.size() == 2) && ast.arg1().isList()) {
+
+    IExpr arg1 = ast.arg1().normal(false);
+    if (arg1.isList()) {
       try {
         final IASTAppendable graphics = Graphics();
         Dimensions2D dim = new Dimensions2D();
@@ -68,12 +71,16 @@ public class ListPlot extends AbstractEvaluator {
         LOGGER.debug("ListPlot.evaluate() failed", rex);
       }
     }
+
     return F.NIL;
   }
 
+  @Override
+  public int[] expectedArgSize(IAST ast) {
+    return IFunctionEvaluator.ARGS_1_INFINITY;
+  }
+
   public static IASTAppendable[] pointsOfListPlot(final IAST ast) {
-
-
     IExpr arg1 = ast.arg1();
     if (arg1.isVector() > 0) {
       double[] rowPoints = arg1.toDoubleVectorIgnore();
@@ -84,33 +91,38 @@ public class ListPlot extends AbstractEvaluator {
     } else {
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
-        IntArrayList dimensions = LinearAlgebra.dimensions(list);
-        if (dimensions.size() == 3 && dimensions.getInt(2) == 2) {
-          IASTAppendable[] result = new IASTAppendable[list.argSize()];
-          for (int i = 1; i < list.size(); i++) {
-            result[i - 1] = listPlotMatrix(list.get(i));
-          }
-          return result;
-        }
-        if (dimensions.size() == 2 && dimensions.getInt(1) == 2) {
-          // matrix n X 2
-          IASTAppendable points = listPlotMatrix(arg1);
-          return new IASTAppendable[] {points};
-        }
-        if (arg1.isListOfLists()) {
-          IASTAppendable[] result = new IASTAppendable[list.argSize()];
-          for (int i = 1; i < list.size(); i++) {
-            double[] rowPoints = list.get(i).toDoubleVectorIgnore();
-            if (rowPoints != null && rowPoints.length > 0) {
-              IASTAppendable points = createPointsArray(rowPoints);
-              result[i - 1] = points;
-            } else {
-              result[i - 1] = F.NIL;
-            }
-          }
-          return result;
+        return pointsOfMatrix(list);
+      }
+    }
+    return null;
+  }
+
+  public static IASTAppendable[] pointsOfMatrix(IAST tensor) {
+    IntArrayList dimensions = LinearAlgebra.dimensions(tensor);
+    if (dimensions.size() == 3 && dimensions.getInt(2) == 2) {
+      IASTAppendable[] result = new IASTAppendable[tensor.argSize()];
+      for (int i = 1; i < tensor.size(); i++) {
+        result[i - 1] = listPlotMatrix(tensor.get(i));
+      }
+      return result;
+    }
+    if (dimensions.size() == 2 && dimensions.getInt(1) == 2) {
+      // matrix n X 2
+      IASTAppendable points = listPlotMatrix(tensor);
+      return new IASTAppendable[] {points};
+    }
+    if (tensor.isListOfLists()) {
+      IASTAppendable[] result = new IASTAppendable[tensor.argSize()];
+      for (int i = 1; i < tensor.size(); i++) {
+        double[] rowPoints = tensor.get(i).toDoubleVectorIgnore();
+        if (rowPoints != null && rowPoints.length > 0) {
+          IASTAppendable points = createPointsArray(rowPoints);
+          result[i - 1] = points;
+        } else {
+          result[i - 1] = F.NIL;
         }
       }
+      return result;
     }
     return null;
   }
@@ -137,12 +149,16 @@ public class ListPlot extends AbstractEvaluator {
   }
 
   private static IASTAppendable listPlotMatrix(IExpr arg1) {
+    double[][] allPoints = arg1.toDoubleMatrix();
+    return listPlotMatrix(allPoints);
+  }
+
+  public static IASTAppendable listPlotMatrix(double[][] allPoints) {
     double xMinD = Double.MAX_VALUE;
     double xMaxD = Double.MIN_VALUE;
     double yMinD = Double.MAX_VALUE;
     double yMaxD = Double.MIN_VALUE;
     IASTAppendable points = F.NIL;
-    double[][] allPoints = arg1.toDoubleMatrix();
     if (allPoints != null && allPoints.length > 0) {
       xMaxD = allPoints.length;
       points = F.ListAlloc(allPoints.length);

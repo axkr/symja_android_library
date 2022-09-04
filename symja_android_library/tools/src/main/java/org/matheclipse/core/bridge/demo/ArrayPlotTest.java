@@ -16,6 +16,12 @@ import org.matheclipse.core.tensor.img.ImageFormat;
 
 class ArrayPlotTest {
   public static void main(String[] args) throws IOException {
+    // data < 0.0 or > 1.0 should be set transparent
+    // IAST raw = F.List(//
+    // F.List(1, 0, 0, 0.3), //
+    // F.List(1, 1, 3.3, 0.3), //
+    // F.List(1, -2.1, 1, 0.7));
+
     IAST raw = F.List(//
         F.List(1, 0, 0, 0.3), //
         F.List(1, 1, 0, 0.3), //

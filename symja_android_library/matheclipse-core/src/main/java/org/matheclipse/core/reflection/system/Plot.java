@@ -48,7 +48,7 @@ public class Plot extends AbstractEvaluator {
     if ((ast.size() >= 3) && (ast.size() <= 4) && ast.arg2().isList()) {
       try {
         final IAST rangeList = (IAST) ast.arg2();
-        if (rangeList.isAST3()) {
+        if (rangeList.isList3()) {
           if (!rangeList.arg1().isSymbol()) {
             // `1` is not a valid variable.
             return IOFunctions.printMessage(S.Plot, "ivar", F.list(rangeList.arg1()), engine);
@@ -82,30 +82,23 @@ public class Plot extends AbstractEvaluator {
           IASTAppendable line = Line();
           IExpr temp;
           Dimensions2D dim = new Dimensions2D();
-          if (ast.arg1().isList()) {
-            final IAST list = (IAST) ast.arg1();
-            int size = list.size();
-            final IASTAppendable primitives = F.ListAlloc(size);
-            for (int i = 1; i < size; i++) {
-              temp = plotLine(xMinD, xMaxd, yMinD, yMaxD, list.get(i), x, dim, engine);
+          final IAST list = ast.arg1().isList() ? (IAST) ast.arg1() : F.List(ast.arg1());
 
-              if (temp.isPresent()) {
-                line.append(temp);
-                primitives.append(line);
-              }
-              if (i < size - 1) {
-                line = Line();
-              }
-            }
-            graphics.append(primitives);
+          int size = list.size();
+          final IASTAppendable primitives = F.ListAlloc(size - 1);
+          for (int i = 1; i < size; i++) {
+            temp = plotLine(xMinD, xMaxd, yMinD, yMaxD, list.get(i), x, dim, engine);
 
-          } else {
-            temp = plotLine(xMinD, xMaxd, yMinD, yMaxD, ast.arg1(), x, dim, engine);
             if (temp.isPresent()) {
               line.append(temp);
-              graphics.append(line);
+              primitives.append(line);
+            }
+            if (i < size - 1) {
+              line = Line();
             }
           }
+          graphics.append(primitives);
+
           IAST plotRange;
           if (dim.isValidRange()) {
             plotRange =

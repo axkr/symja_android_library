@@ -15,6 +15,7 @@ import org.matheclipse.core.tensor.qty.QuantityUnit;
 public class VisualSet extends VisualBase {
   private final List<VisualRow> visualRows = new ArrayList<>();
   private final ColorDataIndexed colorDataIndexed;
+  private int colorDataIndex;
 
   public VisualSet(ColorDataIndexed colorDataIndexed) {
     this.colorDataIndexed = Objects.requireNonNull(colorDataIndexed);
@@ -47,6 +48,30 @@ public class VisualSet extends VisualBase {
     return visualRow;
   }
 
+  public VisualRow add(IAST points, int colorDataIndex) {
+    return add(points, colorDataIndex, false, "");
+  }
+
+  protected VisualRow add(IAST points, int colorDataIndex, boolean first, String label) {
+    if (!points.isEmpty()) {
+      if (!getAxisX().hasUnit()) {
+        getAxisX().setUnit(QuantityUnit.of(points.getPart(1, 1)));
+      }
+      if (!getAxisY().hasUnit()) {
+        getAxisY().setUnit(QuantityUnit.of(points.getPart(1, 2)));
+      }
+    }
+    final int index = visualRows.size();
+    // points.stream().forEach(row -> VectorQ.requireLength(row, 2));
+    VisualRow visualRow = new VisualRow(points, index);
+    visualRow.setColor(colorDataIndexed.getColor(colorDataIndex));
+    if (first) {
+      // visualRow.setLabel(label);
+    }
+    visualRows.add(visualRow);
+    return visualRow;
+  }
+
   /**
    * @param domain {x1, x2, ..., xn}
    * @param values {y1, y2, ..., yn}
@@ -68,5 +93,9 @@ public class VisualSet extends VisualBase {
     return visualRows.stream() //
         .map(VisualRow::getLabelString) //
         .anyMatch(string -> !string.isEmpty());
+  }
+
+  public int getColorDataIndex() {
+    return colorDataIndex++;
   }
 }

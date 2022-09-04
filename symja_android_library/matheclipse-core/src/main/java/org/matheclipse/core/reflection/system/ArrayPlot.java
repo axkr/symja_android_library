@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import org.hipparchus.linear.RealMatrix;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.matheclipse.core.bridge.fig.BufferedImagePlot;
@@ -9,6 +10,7 @@ import org.matheclipse.core.bridge.fig.VisualImage;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ImageExpr;
@@ -29,9 +31,12 @@ public class ArrayPlot extends AbstractEvaluator {
       if (arg1.isSparseArray()) {
         arg1 = arg1.normal(false);
       }
-      BufferedImage buffer = arrayPlot((IAST) arg1);
-      if (buffer != null) {
-        return new ImageExpr(buffer, null);
+      RealMatrix realMatrix = ((IAST) arg1).toRealMatrix();
+      if (realMatrix != null) {
+        BufferedImage buffer = arrayPlot(new ASTRealMatrix(realMatrix, false));
+        if (buffer != null) {
+          return new ImageExpr(buffer, null);
+        }
       }
     }
     return F.NIL;

@@ -13,6 +13,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.matheclipse.core.bridge.fig.Axis.Type;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -25,7 +26,8 @@ public class ListPlot extends AbstractEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    if ((ast.size() == 2) && ast.arg1().isList()) {
+    IExpr arg1 = ast.arg1().normal(false);
+    if (ast.arg1().isList()) {
       VisualSet visualSet = new VisualSet();
       if (listPlot(ast, visualSet)) {
         BufferedImage buffer = jFreeChartImage(visualSet);
@@ -35,6 +37,11 @@ public class ListPlot extends AbstractEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  @Override
+  public int[] expectedArgSize(IAST ast) {
+    return IFunctionEvaluator.ARGS_1_INFINITY;
   }
 
   /**
