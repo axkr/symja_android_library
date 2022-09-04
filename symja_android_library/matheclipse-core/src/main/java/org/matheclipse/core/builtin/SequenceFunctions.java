@@ -37,17 +37,11 @@ public class SequenceFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
 
       try {
-        boolean headsOption = false;
         IExpr overlapsOption = S.False;
+        int lastPosition = ast.argSize();
         final OptionArgs options = OptionArgs.createOptionArgs(ast, engine);
         if (options != null) {
-          IExpr option = options.getOption(S.Heads);
-          if (option.isTrue()) {
-            headsOption = true;
-          }
-          ast = ast.most();
-
-          option = options.getOption(S.Overlaps);
+          IExpr option = options.getOption(S.Overlaps);
           if (option.isPresent()) {
             if (option == S.All) {
               overlapsOption = S.All;
@@ -61,11 +55,16 @@ public class SequenceFunctions {
                   F.List(F.Rule(S.Overlaps, option)), engine);
             }
           }
+          ast = ast.most();
+          if (ast.argSize() < 2) {
+            // List or pattern matching a list expected at position `1` in `2`.
+            return IOFunctions.printMessage(ast.topHead(), "lstpat", F.List(F.C2, ast), engine);
+          }
         }
         final IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
           final IExpr arg2 = engine.evalPattern(ast.arg2());
-          return sequenceCases((IAST) arg1, arg2, overlapsOption, headsOption, engine);
+          return sequenceCases((IAST) arg1, arg2, overlapsOption, engine);
         }
         // List expected at position `1` in `2`.
         return IOFunctions.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
@@ -80,20 +79,18 @@ public class SequenceFunctions {
     }
 
     public static IAST sequenceCases(final IAST ast, final IExpr pattern, IExpr overlapsOption,
-        boolean headsOption, EvalEngine engine) {
+        EvalEngine engine) {
       IASTAppendable resultAST = F.ListAlloc();
       if (pattern.isRuleAST()) {
-        return sequenceCasesWithReplacement(ast, (IAST) pattern, overlapsOption, headsOption,
-            resultAST, engine);
+        return sequenceCasesWithReplacement(ast, (IAST) pattern, overlapsOption, resultAST, engine);
       }
-      return sequenceCasesWithoutReplacement(ast, pattern, overlapsOption, headsOption, resultAST,
-          engine);
+      return sequenceCasesWithoutReplacement(ast, pattern, overlapsOption, resultAST, engine);
     }
 
     private static IAST sequenceCasesWithoutReplacement(final IAST ast, final IExpr pattern,
-        IExpr overlapsOption, boolean headsOption, IASTAppendable resultAST, EvalEngine engine) {
+        IExpr overlapsOption, IASTAppendable resultAST, EvalEngine engine) {
       final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
-      int i = headsOption ? 0 : 1;
+      int i = 1;
       while (i < ast.size()) {
         if (overlapsOption == S.All) {
           IASTAppendable allResults = F.ListAlloc();
@@ -114,6 +111,9 @@ public class SequenceFunctions {
           for (int j = i + 1; j <= ast.size(); j++) {
             IExpr subResult = F.NIL;
             for (int k = j; k <= ast.size(); k++) {
+              if (i >= k) {
+                break;
+              }
               // TODO optimize by classifying pattern matchers
               // use greedy search because of possible pattern sequences
               IASTAppendable subSequence = ast.copyFrom(i, k);
@@ -141,9 +141,9 @@ public class SequenceFunctions {
     }
 
     private static IAST sequenceCasesWithReplacement(final IAST ast, final IAST patternRule,
-        IExpr overlapsOption, boolean headsOption, IASTAppendable resultAST, EvalEngine engine) {
+        IExpr overlapsOption, IASTAppendable resultAST, EvalEngine engine) {
       Function<IExpr, IExpr> function = Functors.rules(patternRule, engine);
-      int i = headsOption ? 0 : 1;
+      int i = 1;
       while (i < ast.size()) {
         if (overlapsOption == S.All) {
           IASTAppendable allResults = F.ListAlloc();
@@ -165,6 +165,9 @@ public class SequenceFunctions {
           for (int j = i + 1; j <= ast.size(); j++) {
             IExpr subResult = F.NIL;
             for (int k = j; k <= ast.size(); k++) {
+              if (i >= k) {
+                break;
+              }
               // TODO optimize by classifying pattern matchers
               // use greedy search because of possible pattern sequences
               IASTAppendable subSequence = ast.copyFrom(i, k);
@@ -196,7 +199,7 @@ public class SequenceFunctions {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
       setOptions(newSymbol, //
-          F.list(F.Rule(S.Heads, S.False), F.Rule(S.Overlaps, S.False)));
+          F.list(F.Rule(S.Overlaps, S.False)));
     }
   }
 
@@ -236,8 +239,8 @@ public class SequenceFunctions {
       return ARGS_2_3_1;
     }
 
-    private static IAST sequenceReplace(final IAST list, final IAST listOfRules, int maxReplacements,
-        IASTAppendable resultAST, EvalEngine engine) {
+    private static IAST sequenceReplace(final IAST list, final IAST listOfRules,
+        int maxReplacements, IASTAppendable resultAST, EvalEngine engine) {
       if (maxReplacements <= 0) {
         return F.List(list);
       }
@@ -261,6 +264,9 @@ public class SequenceFunctions {
 
           boolean matched = false;
           for (int k = j; k <= list.size(); k++) {
+            if (i >= k) {
+              break;
+            }
             IASTAppendable subSequence = list.copyFrom(i, k);
             for (int l = 0; l < functions.length; l++) {
               IExpr temp = ((Function<IExpr, IExpr>) functions[l]).apply(subSequence);
@@ -368,6 +374,9 @@ public class SequenceFunctions {
 
           boolean matched = false;
           for (int k = j; k <= list.size(); k++) {
+            if (i >= k) {
+              break;
+            }
             // greedy search
             IASTAppendable subSequence = list.copyFrom(i, k);
             for (int l = 0; l < matchers.length; l++) {

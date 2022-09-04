@@ -10,6 +10,8 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSequenceCases() {
+    check("SequenceCases({a, b, x, x, a, c}, Overlaps->True)", //
+        "SequenceCases({a,b,x,x,a,c},Overlaps->True)");
     check("SequenceCases({a, b, x, x, a, c}, {a, _})", //
         "{{a,b},{a,c}}");
 
@@ -35,15 +37,20 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSequenceCasesWithReplacement() {
-    check("SequenceCases({a, b, x, x, a, c}, {a, x_} :> f(x))", //
-        "{f(b),f(c)}");
     // TODO
     // check("SequenceCases({a, b, b, a, b, b, b}, {p : Repeated(b)} :> Length({p}))", //
-    // "{2,3}");
+    // "");
+
+
+    check("SequenceCases({a, b, x, x, a, c}, {a, x_} :> f(x))", //
+        "{f(b),f(c)}");
+
 
   }
 
   public void testSequenceSplit() {
+    check("SequenceSplit({1,1,1,1},y__)", //
+        "{}");
 
     check("SequenceSplit({x, x, a, b, y, a, c, z}, {a, _})", //
         "{{x,x},{y},{z}}");
