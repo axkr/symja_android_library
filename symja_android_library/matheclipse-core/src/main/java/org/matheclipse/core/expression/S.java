@@ -4889,6 +4889,9 @@ public class S {
   public final static IBuiltInSymbol Interpolation =
       F.initFinalSymbol("Interpolation", ID.Interpolation);
 
+  public final static IBuiltInSymbol InterpolationOrder =
+      F.initFinalSymbol("InterpolationOrder", ID.InterpolationOrder);
+
   /**
    * InterquartileRange(list) - returns the interquartile range (IQR), which is between upper and
    * lower quartiles, IQR = Q3 − Q1.
