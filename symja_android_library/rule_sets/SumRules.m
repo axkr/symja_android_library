@@ -48,6 +48,12 @@ Sum(Ceiling(Log(i_)/Log(a_)), {i_Symbol,1,n_Symbol}):=
   ( Floor(Log(a,n))*a^(Floor(Log(a,n))+1)-(Floor(Log(a,n))+1)*a^Floor(Log(a,n))+1 ) * (a-1)^(-1) + (n-a^Floor(Log(a,n)))*Ceiling(Log(a,n))
   /; FreeQ(a,i)&&FreeQ(n,i),
 
+  (*
+  
+Sum(1/(i_^2 + i_*x_), {i_Symbol,1,Infinity}) := (EulerGamma + PolyGamma(0, 1 + x))/x
+  /;  FreeQ(x,i), 
+  
+  *)
 Sum(1/Binomial(2*i_,i_), {i_Symbol,1,Infinity}) :=  (2*Pi*Sqrt(3)+9)/27,
 Sum(1/i_*1/Binomial(2*i_,i_), {i_Symbol,1,Infinity}) :=  (Pi*Sqrt(3))/9,
 Sum(1/i_^2*1/Binomial(2*i_,i_), {i_Symbol,1,Infinity}) :=  Zeta(2)/3, 

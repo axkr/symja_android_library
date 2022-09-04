@@ -241,6 +241,15 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "Gamma(1+a+b+c+d+e)/(Gamma(1+a)*Gamma(1+b)*Gamma(1+c)*Gamma(1+d)*Gamma(1+e))");
   }
 
+  public void testFunctionExpandPolyGamma() {
+    check("FunctionExpand(PolyGamma(0,1/2))", //
+        "-2-EulerGamma+Sum(1/(k/2+k^2),{k,1,Infinity})/2");
+    check("FunctionExpand(PolyGamma(0,1/3))", //
+        "-3-EulerGamma+Sum(1/(k/3+k^2),{k,1,Infinity})/3");
+    check("FunctionExpand(PolyGamma(0,1/5))", //
+        "-5-EulerGamma+Sum(1/(k/5+k^2),{k,1,Infinity})/5");
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {

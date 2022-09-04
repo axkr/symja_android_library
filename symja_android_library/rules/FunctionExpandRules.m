@@ -90,6 +90,7 @@
  
  LogGamma(x_) := Log(Gamma(x)) 
   /; x>0,
+ PolyGamma(0, z_?NumberQ) := -(1/z) - EulerGamma + z*Sum(1/(k^2 + k*z), {k, 1, Infinity}),
  PolyGamma(n_Integer, 1/2) := (-1)^(n + 1)*n!*(2^(n + 1) - 1)*Zeta(n+1)  
   /; n>0,
   

@@ -46,6 +46,7 @@ import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -1424,7 +1425,55 @@ public class SpecialFunctions {
     }
   }
 
-  private static class PolyGamma extends AbstractFunctionEvaluator implements PolyGammaRules {
+  private static class PolyGamma extends AbstractFunctionEvaluator
+      implements PolyGammaRules, IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr arg1 = ast.arg1();
+        IExpr z = ast.arg2();
+        if (arg1.isMathematicalIntegerNonNegative()) {
+          int n = arg1.toIntDefault();
+          if (n != Integer.MIN_VALUE) {
+            if (n == 0 && z.isRational()) {
+              // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/functions/special/gamma_functions.py#L790
+
+              // IRational zr = (IRational) z;
+              // IInteger p = zr.numerator();
+              // IInteger denominator = zr.denominator();
+              // int q = denominator.toIntDefault();
+              // if (q != Integer.MIN_VALUE) {
+              // // Reference:
+              // // Values of the polygamma functions at rational arguments, J. Choi, 2007
+              // IExpr kSum = F.intSum(//
+              // k -> F.Times( //
+              // F.Cos(F.Times(zr.multiply(2 * k), S.Pi)), F.Log(F.Times(//
+              // 2, //
+              // F.Sin(F.Times(F.QQ(k, q), S.Pi)))))//
+              // , 1, q - 1);
+              // // -S.EulerGamma - pi * cot(p * pi / q) / 2 - log(q)
+              // IExpr part1 = engine.evaluate(F.Plus(S.EulerGamma.negate(),
+              // F.Times(F.CN1D2, S.Pi, F.Cot(F.Times(zr, S.Pi)), F.Log(q).negate()), kSum));
+              // if (z.isPositive()) {
+              // int nn = zr.floor().toInt();
+              // IRational z0 = zr.subtract(F.ZZ(nn));
+              // IExpr part2 = F.intSum(k -> F.C1.divideBy(z0.add(F.ZZ(k))), 0, nn - 1);
+              // return F.Plus(part1, part2);
+              // } else if (z.isNegative()) {
+              // int nn = F.C1.subtract((IRational) z).floor().toInt();
+              // IRational z0 = zr.add(F.ZZ(nn));
+              // IExpr part2 = F.intSum(k -> F.C1.divideBy(z0.subtract(F.ZZ(k + 1))), 0, nn - 1);
+              // return F.Subtract(part1, part2);
+              // }
+              // }
+            }
+          }
+        }
+
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
