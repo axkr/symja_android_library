@@ -1,6 +1,5 @@
  { 
- Abs( Undefined )=Undefined,
- Abs( ArcTan(ComplexInfinity) )=Pi/2,
+ Abs( Undefined )=Undefined, 
  Abs( E )=E,
  Abs( Pi )=Pi,
  

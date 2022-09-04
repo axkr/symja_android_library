@@ -5144,7 +5144,7 @@ public interface IExpr
   }
 
   /**
-   * Convert this object into a RealMatrix.
+   * Convert this object into a RealMatrix. Sparse arrays and list matrices will be converted.
    *
    * @return <code>null</code> if this object can not be converted into a RealMatrix
    */

@@ -2507,6 +2507,11 @@ public final class NumberTheory {
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
@@ -2952,6 +2957,9 @@ public final class NumberTheory {
         BigInteger result = BigInteger.ONE;
         for (int k = 2; k <= n; k++) {
           result = result.multiply(BigInteger.valueOf(k).pow(k));
+          if (result.bitLength() > Config.MAX_AST_SIZE * 8) {
+            IterationLimitExceeded.throwIt(result.bitLength(), F.Hyperfactorial(F.ZZ(n)));
+          }
         }
         return F.ZZ(result);
       }
@@ -3011,6 +3019,11 @@ public final class NumberTheory {
             F.Times(F.Power(F.C2, F.QQ(1, 24)), F.Exp(F.QQ(1, 8))));
       }
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
 
     @Override

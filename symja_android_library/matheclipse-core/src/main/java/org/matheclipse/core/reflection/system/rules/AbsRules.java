@@ -15,16 +15,13 @@ public interface AbsRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 4, 1 };
+  final public static int[] SIZES = { 3, 1 };
 
   final public static IAST RULES = List(
     IInit(Abs, SIZES),
     // Abs(Undefined)=Undefined
     ISet(Abs(Undefined),
       Undefined),
-    // Abs(ArcTan(ComplexInfinity))=Pi/2
-    ISet(Abs(ArcTan(CComplexInfinity)),
-      CPiHalf),
     // Abs(E)=E
     ISet(Abs(E),
       E),

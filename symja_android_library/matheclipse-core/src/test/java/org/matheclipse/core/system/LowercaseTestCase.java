@@ -64,6 +64,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testAbs() {
+    check("Abs(Indeterminate)", //
+        "Indeterminate");
     // Integer.MIN_VALUE
     check("Abs(-2147483648)", //
         "2147483648");
@@ -15811,7 +15813,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\"Xor\"}");
 
     check("Names(\"Int*\" )", //
-        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalIntersection,IntervalMemberQ,IntervalUnion}");
+        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalIntersection,IntervalMemberQ,IntervalUnion}");
     check("Names(\"Integer*\" )", //
         "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers}");
     check("Names(\"IntegerPart\" )", //
@@ -20603,6 +20605,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testReap() {
+
+    // Sow with no sourrounding Reap
+    // prints the numbers on console
+    check("Do(Sow(i);Print(i), {i, 4})", //
+        "");
+
     check(
         "depthFirstPreorder(expr_) := Module(\n" + "  {stack = {expr, {}}, el = expr},\n"
             + "  Reap(\n" + "    While(stack =!= {},\n" + "      {el, stack} = stack;\n"

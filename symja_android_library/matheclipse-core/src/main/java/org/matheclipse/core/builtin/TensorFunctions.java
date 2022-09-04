@@ -211,7 +211,7 @@ public class TensorFunctions {
                 if (dim2.size() > r) {
                   r = dim2.size();
                 }
-                tensor1 = (IAST) S.ArrayFlatten.of(engine, temp, F.ZZ(r));
+                tensor1 = (IAST) S.ArrayFlatten.of(engine, temp, F.ZZ(r)).normal(false);
                 if (tensor1.isList()) {
                   dim1 = LinearAlgebra.dimensions(tensor1, S.List);
                   if (dim1.size() > 0) {
