@@ -15651,6 +15651,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testMultinomial() {
+    check("Multinomial(1,2,3,ByteArray({1}))", //
+        "60*Binomial(6+ByteArray[1 Bytes],ByteArray[1 Bytes])");
+    check("Multinomial(2147483647,10007,-1,ByteArray({}))", //
+        "{}");
     // check("Multinomial(-5,3)", //
     // "-4");
     check("Multinomial(-11,2,3,5)", //
