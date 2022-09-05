@@ -1460,10 +1460,10 @@ public class SpecialFunctions {
                 IRational zr = (IRational) z;
                 IInteger numerator = zr.numerator();
                 int p = numerator.toIntDefault();
-                if (p != Integer.MIN_VALUE) {
+                if (p > 0) {
                   IInteger denominator = zr.denominator();
                   int q = denominator.toIntDefault();
-                  if (q != Integer.MIN_VALUE && p < q) {
+                  if (q > 0 && p < q) {
                     // https://functions.wolfram.com/GammaBetaErf/PolyGamma/03/01/0015/
 
                     // Sum(Cos((2 Pi p k)/q)*(Log(Sin[(Pi k)/q))
