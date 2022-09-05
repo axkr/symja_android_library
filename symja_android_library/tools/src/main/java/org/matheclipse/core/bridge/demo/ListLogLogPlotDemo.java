@@ -13,14 +13,16 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.reflection.ListLogLogPlot;
+import org.matheclipse.core.reflection.system.ListLogLogPlot;
 import org.matheclipse.core.tensor.ext.HomeDirectory;
 
 public class ListLogLogPlotDemo {
 
   public static JFreeChart create() {
     IAST domain = (IAST) S.Range.of(EvalEngine.get(), 1, 21);
-    S.ListLogLogPlot.of(EvalEngine.get(), S.Power.of(EvalEngine.get(), domain, 3));
+    // S.ListLogLogPlot.of(EvalEngine.get(), S.Power.of(EvalEngine.get(), domain, 3));
+    // IAST list = F.List(F.ZZ(2147483647), F.ZZ(2147483647));
+    // IExpr res = S.ListLogLogPlot.of(EvalEngine.get(), list);
     VisualSet visualSet = new VisualSet();
     visualSet.setPlotLabel(ListLogLogPlot.class.getSimpleName());
     visualSet.add(domain, domain.map(x -> x.pow(3)));

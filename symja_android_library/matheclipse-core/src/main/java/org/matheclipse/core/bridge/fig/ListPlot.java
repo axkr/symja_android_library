@@ -94,8 +94,6 @@ public class ListPlot extends AbstractEvaluator {
   }
 
   /**
-   * Mathematica's default is to draw data points as separate dots, i.e. "Joined->False".
-   * 
    * Tested with up to 10 million points - a little slow but possible.
    * 
    * @param visualSet

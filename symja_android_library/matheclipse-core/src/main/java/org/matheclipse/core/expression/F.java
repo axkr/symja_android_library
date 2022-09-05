@@ -7378,6 +7378,10 @@ public class F extends S {
     return new AST2(PolyGamma, a0, a1);
   }
 
+  public static IAST PolyGamma(final int n, final IExpr z) {
+    return new AST2(PolyGamma, F.ZZ(n), z);
+  }
+
   public static IAST Polygon(final IExpr a0) {
     return new AST1(Polygon, a0);
   }
@@ -8837,6 +8841,17 @@ public class F extends S {
    */
   public static IAST Subtract(final IExpr x, final IExpr y) {
     return new B2.Plus(x, new B2.Times(CN1, y));
+  }
+
+  /**
+   * Return <code>x + (-1)*y</code>
+   *
+   * @param x
+   * @param y
+   * @return
+   */
+  public static IAST Subtract(final IExpr x, final int y) {
+    return new B2.Plus(x, F.ZZ(-y));
   }
 
   public static IASTMutable SubtractSides(final IExpr equationOrInequality) {

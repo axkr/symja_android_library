@@ -12,7 +12,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.reflection.ListLogPlot;
+import org.matheclipse.core.reflection.system.ListLogPlot;
 import org.matheclipse.core.tensor.ext.HomeDirectory;
 
 public class ListLogPlotDemo {
