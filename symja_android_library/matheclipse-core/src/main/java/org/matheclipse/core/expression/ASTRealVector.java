@@ -303,8 +303,7 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
 
   @Override
   public IExpr get(int location) {
-    double val = vector.getEntry(location - 1);
-    return F.num(val);
+    return (location == 0) ? head() : F.num(vector.getEntry(location - 1));
   }
 
   @Override

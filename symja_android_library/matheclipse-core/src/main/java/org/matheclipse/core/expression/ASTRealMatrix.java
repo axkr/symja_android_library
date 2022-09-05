@@ -310,7 +310,7 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
 
   @Override
   public IExpr get(int location) {
-    return new ASTRealVector(matrix.getRowVector(location - 1), false);
+    return (location == 0) ? head() : new ASTRealVector(matrix.getRowVector(location - 1), false);
   }
 
   @Override
