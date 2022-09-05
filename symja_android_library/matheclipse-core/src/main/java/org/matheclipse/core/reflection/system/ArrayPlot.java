@@ -16,7 +16,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.tensor.img.GrayscaleColorData;
+import org.matheclipse.core.tensor.img.ColorDataGradients;
 import org.matheclipse.core.tensor.img.ImageFormat;
 
 public class ArrayPlot extends AbstractEvaluator {
@@ -44,7 +44,7 @@ public class ArrayPlot extends AbstractEvaluator {
 
   public static BufferedImage arrayPlot(final IAST matrix) {
     BufferedImage bufferedImage =
-        ImageFormat.toIntARGB(matrix.mapLeaf(S.List, GrayscaleColorData.GRAYSCALE_DEFAULT));
+        ImageFormat.toIntARGB(matrix.mapLeaf(S.List, ColorDataGradients.GRAYSCALE));
     VisualImage visualImage = new VisualImage(bufferedImage);
     JFreeChart jFreeChart = arrayPlot(visualImage);
     jFreeChart.setBackgroundPaint(Color.WHITE);

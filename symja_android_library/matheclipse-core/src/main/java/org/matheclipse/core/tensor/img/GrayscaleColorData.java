@@ -9,8 +9,8 @@ public class GrayscaleColorData implements ColorDataGradient {
 
   public static final ColorDataGradient DEFAULT = new GrayscaleColorData(255);
 
-  public final static ColorDataGradient GRAYSCALE_DEFAULT =
-      LinearColorDataGradient.of(F.List(F.List(255, 255, 255, 255), F.List(0, 0, 0, 255)));
+  // public final static ColorDataGradient GRAYSCALE_DEFAULT =
+  // LinearColorDataGradient.of(F.List(F.List(255, 255, 255, 255), F.List(0, 0, 0, 255)));
   // ---
 
   private final IAST[] tensors = new IAST[256];

@@ -22,6 +22,8 @@ class ArrayPlotTest {
     // F.List(1, 1, 3.3, 0.3), //
     // F.List(1, -2.1, 1, 0.7));
 
+    // IAST raw = F.List(//
+    // F.List(-1.0));
     IAST raw = F.List(//
         F.List(1, 0, 0, 0.3), //
         F.List(1, 1, 0, 0.3), //
@@ -29,6 +31,10 @@ class ArrayPlotTest {
     // IAST raw = (IAST) S.RandomReal.of(EvalEngine.get(), F.C1, F.List(10, 20));
     // IAST raw = (IAST) S.RandomVariate.of(EvalEngine.get(),
     // F.UniformDistribution(F.List(F.C0, F.C1)), F.List(2, 70000));
+
+    // testing scripting call:
+    // ArrayPlot.arrayPlot(raw);
+
     BufferedImage bufferedImage =
         ImageFormat.toIntARGB(raw.mapLeaf(S.List, ColorDataGradients.GRAYSCALE));
     VisualImage visualImage = new VisualImage(bufferedImage);
