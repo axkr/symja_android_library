@@ -1051,7 +1051,7 @@ public class SeriesFunctions {
               return F.NIL;
             }
             final int n = order.arg2().toIntDefault();
-            if (m == Integer.MIN_VALUE) {
+            if (n == Integer.MIN_VALUE) {
               return F.NIL;
             }
             if (function.isTimes()) {
