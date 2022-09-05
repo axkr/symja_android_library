@@ -3421,6 +3421,10 @@ public class F extends S {
     return new B2.Times(numerator, new B2.Power(denominator, CN1));
   }
 
+  public static IAST Divide(final int numerator, final IExpr denominator) {
+    return new B2.Times(F.ZZ(numerator), new B2.Power(denominator, CN1));
+  }
+
   public static IASTMutable DivideSides(final IExpr equationOrInequality) {
     return new AST1(DivideSides, equationOrInequality);
   }
@@ -8900,6 +8904,7 @@ public class F extends S {
   }
 
   /**
+   * Calculate <code>Sum(function(k), {k, iMin, iMax})</code>
    * 
    * @param function
    * @param iMin from this position (included)

@@ -242,12 +242,15 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
   }
 
   public void testFunctionExpandPolyGamma() {
+    check("FunctionExpand(PolyGamma(-z))", //
+        "1/z+Pi*Cot(Pi*z)+PolyGamma(0,z)");
     check("FunctionExpand(PolyGamma(0,1/2))", //
-        "-2-EulerGamma+Sum(1/(k/2+k^2),{k,1,Infinity})/2");
+        "-EulerGamma-Log(4)");
     check("FunctionExpand(PolyGamma(0,1/3))", //
-        "-3-EulerGamma+Sum(1/(k/3+k^2),{k,1,Infinity})/3");
+        "-EulerGamma-Pi/(2*Sqrt(3))-Log(6)-Log(Sqrt(3)/2)");
     check("FunctionExpand(PolyGamma(0,1/5))", //
-        "-5-EulerGamma+Sum(1/(k/5+k^2),{k,1,Infinity})/5");
+        "-EulerGamma-1/2*Sqrt(1+2/Sqrt(5))*Pi-Log(10)+1/2*(-1+Sqrt(5))*Log(Sqrt(1/2*(5-Sqrt(\n" //
+            + "5)))/2)+1/2*(-1-Sqrt(5))*Log(Sqrt(1/2*(5+Sqrt(5)))/2)");
   }
 
   /** The JUnit setup method */

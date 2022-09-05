@@ -62,6 +62,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.HurwitzLerchPhiRules;
@@ -1454,36 +1455,37 @@ public class SpecialFunctions {
             // }
             // }
 
-            if (n == 0 && z.isRational()) {
+            if (n == 0) {
+              if (z.isRational()) {
+                IRational zr = (IRational) z;
+                IInteger numerator = zr.numerator();
+                int p = numerator.toIntDefault();
+                if (p != Integer.MIN_VALUE) {
+                  IInteger denominator = zr.denominator();
+                  int q = denominator.toIntDefault();
+                  if (q != Integer.MIN_VALUE && p < q) {
+                    // https://functions.wolfram.com/GammaBetaErf/PolyGamma/03/01/0015/
 
-              // IRational zr = (IRational) z;
-              // IInteger p = zr.numerator();
-              // IInteger denominator = zr.denominator();
-              // int q = denominator.toIntDefault();
-              // if (q != Integer.MIN_VALUE) {
-              // // Reference:
-              // // Values of the polygamma functions at rational arguments, J. Choi, 2007
-              // IExpr kSum = F.intSum(//
-              // k -> F.Times( //
-              // F.Cos(F.Times(zr.multiply(2 * k), S.Pi)), F.Log(F.Times(//
-              // 2, //
-              // F.Sin(F.Times(F.QQ(k, q), S.Pi)))))//
-              // , 1, q - 1);
-              // // -S.EulerGamma - pi * cot(p * pi / q) / 2 - log(q)
-              // IExpr part1 = engine.evaluate(F.Plus(S.EulerGamma.negate(),
-              // F.Times(F.CN1D2, S.Pi, F.Cot(F.Times(zr, S.Pi)), F.Log(q).negate()), kSum));
-              // if (z.isPositive()) {
-              // int nn = zr.floor().toInt();
-              // IRational z0 = zr.subtract(F.ZZ(nn));
-              // IExpr part2 = F.intSum(k -> F.C1.divideBy(z0.add(F.ZZ(k))), 0, nn - 1);
-              // return F.Plus(part1, part2);
-              // } else if (z.isNegative()) {
-              // int nn = F.C1.subtract((IRational) z).floor().toInt();
-              // IRational z0 = zr.add(F.ZZ(nn));
-              // IExpr part2 = F.intSum(k -> F.C1.divideBy(z0.subtract(F.ZZ(k + 1))), 0, nn - 1);
-              // return F.Subtract(part1, part2);
-              // }
-              // }
+                    // Sum(Cos((2 Pi p k)/q)*(Log(Sin[(Pi k)/q))
+                    IExpr kSum = F.intSum(//
+                        k -> F.Times(F.C2, //
+                            F.Cos(F.Times(zr.multiply(2 * k), S.Pi)),
+                            F.Log(F.Sin(F.Times(F.QQ(k, q), S.Pi))))//
+                        , 1, (q - 1) / 2);
+                    // -S.EulerGamma - pi * cot(p * pi / q) / 2 - log(2*q)
+                    return engine.evaluate(F.Plus(S.EulerGamma.negate(),
+                        F.Times(F.CN1D2, S.Pi, F.Cot(F.Times(zr, S.Pi))), F.Log(2 * q).negate(),
+                        kSum));
+                  }
+                }
+              }
+
+              IExpr zNegated = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+              if (zNegated.isPresent()) {
+                // https://functions.wolfram.com/GammaBetaErf/PolyGamma/17/02/01/0001/
+                return F.Plus(F.PolyGamma(0, zNegated), F.Divide(1, zNegated),
+                    F.Times(S.Pi, F.Cot(F.Times(S.Pi, zNegated))));
+              }
             }
           }
         }
