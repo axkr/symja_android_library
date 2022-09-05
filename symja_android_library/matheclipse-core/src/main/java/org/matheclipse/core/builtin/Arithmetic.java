@@ -77,6 +77,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
@@ -119,6 +120,7 @@ import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherTimes;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesLog;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimes;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimesPower;
+import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.reflection.system.rules.AbsRules;
 import org.matheclipse.core.reflection.system.rules.ConjugateRules;
 import org.matheclipse.core.reflection.system.rules.GammaRules;
@@ -3562,7 +3564,82 @@ public final class Arithmetic {
    * a^b
    * </pre>
    */
-  public static class Power extends AbstractFunctionEvaluator implements INumeric, PowerRules {
+  public static class Power extends AbstractFunctionEvaluator
+      implements INumeric, IFunctionExpand, PowerRules {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isSqrt() && ast.base().isAST(S.Plus, 3)) {
+        IAST plus = (IAST) ast.base();
+        final IExpr arg1 = plus.arg1();
+        final IExpr arg2 = plus.arg2();
+        if (arg1.isRational()) {
+          return sqrtDenest((IRational) arg1, arg2);
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Denests <code>Sqrt()</code> in an expression that contain other square roots if possible,
+     * otherwise returns <code>F.NIL</code>.
+     *
+     * <pre>
+     * Example: sqrt(5 + 2*Sqrt(6))
+     *
+     *   >> sqrtDenest(5, 2*Sqrt(6))
+     *   sqrt(2) + sqrt(3)
+     * </pre>
+     *
+     * <p>
+     * See:
+     * <a href="// https://en.wikipedia.org/wiki/Nested_radical#Two_nested_square_roots">Wikipedia -
+     * Nested radical - Two nested square roots</a> Github #166. References for possible
+     * improvements of this method:
+     *
+     * <pre>
+     *
+     * .. [1] http://researcher.watson.ibm.com/researcher/files/us-fagin/symb85.pdf
+     * .. [2] D. J. Jeffrey and A. D. Rich, 'Symplifying Square Roots of Square Roots
+     *        by Denesting' (available at http://www.cybertester.com/data/denest.pdf)
+     * </pre>
+     *
+     * @param arg1
+     * @param arg2
+     * @return <code>F.NIL</code> if no change could be applied
+     */
+    public static IExpr sqrtDenest(IRational arg1, IExpr arg2) {
+      if (arg1.isNegative()) {
+        return sqrtDenest(arg1.negate(), //
+            arg2.negate()).mapExpr(x -> F.Times(F.CI, x));
+      } else {
+        final EvalEngine engine = EvalEngine.get();
+        boolean arg2IsNegative = false;
+        IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
+        if (negExpr.isPresent()) {
+          arg2 = negExpr;
+          arg2IsNegative = true;
+        }
+        // (arg2/2) ^ 2
+        IExpr squared = engine.evaluate(F.Sqr(F.Divide(arg2, F.C2)));
+        if (squared.isRealResult()) {
+          IAST list = QuarticSolver.quadraticSolve(F.C1, arg1.negate(), squared);
+          if (list.isAST2()) {
+            IExpr a = engine.evaluate(list.arg1());
+            if (a.isRational()) {
+              IExpr b = engine.evaluate(list.arg2());
+              if (b.isRational()) {
+                if (arg2IsNegative) {
+                  return F.Plus(F.Sqrt(a), F.Negate(F.Sqrt(b)));
+                }
+                return F.Plus(F.Sqrt(a), F.Sqrt(b));
+              }
+            }
+          }
+        }
+      }
+      return F.NIL;
+    }
 
     public static IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent,
         EvalEngine engine) {

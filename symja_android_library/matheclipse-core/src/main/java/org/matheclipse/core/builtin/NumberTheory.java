@@ -47,6 +47,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.AbstractFractionSym;
@@ -69,7 +70,6 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
-import org.matheclipse.core.reflection.system.FunctionExpand;
 import org.matheclipse.core.visit.VisitorExpr;
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
@@ -3726,7 +3726,21 @@ public final class NumberTheory {
    * 10
    * </pre>
    */
-  private static class Multinomial extends AbstractFunctionEvaluator {
+  private static class Multinomial extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST(S.Multinomial, 1, Integer.MAX_VALUE - 1)) {
+        int size = ast.size();
+        int n = size - 1;
+        IASTAppendable numerator = F.PlusAlloc(n + 1);
+        numerator.append(F.C1);
+        numerator.appendArgs(ast);
+        IASTAppendable denominator = F.mapFunction(S.Times, ast, x -> F.Gamma(F.Plus(1, x)));
+        return F.Divide(F.Gamma(numerator), denominator);
+      }
+      return F.NIL;
+    }
 
     /**
      * @param ast
@@ -3740,10 +3754,10 @@ public final class NumberTheory {
         if (value != Integer.MIN_VALUE) {
           k[i - 1] = F.ZZ(value);
         } else {
-          if (!temp.isInteger()) {
-            return F.NIL;
+          if (temp.isInteger()) {
+            k[i - 1] = (IInteger) temp;
           }
-          k[i - 1] = (IInteger) temp;
+          return F.NIL;
         }
       }
       IInteger multinomial = NumberTheory.multinomial(k);
@@ -3772,12 +3786,16 @@ public final class NumberTheory {
         // Multinomial(n1+n2+n3+...+ni, k) * Multinomial(n1, n2, n3,..., ni)
         IAST reducedMultinomial = ast.removeFromEnd(argSize);
         IAST reducedPlus = reducedMultinomial.apply(S.Plus);
-        return F.Times(F.Multinomial(reducedPlus, ast.last()), multinomial(reducedMultinomial));
+        IExpr multinomial = multinomial(reducedMultinomial);
+        if (!multinomial.isPresent()) {
+          return F.Times(F.Multinomial(reducedPlus, ast.last()));
+        }
+        return F.Times(F.Multinomial(reducedPlus, ast.last()), multinomial);
       }
       if (engine.isNumericMode()) {
         position = ast.indexOf(x -> !x.isNumber());
         if (position < 0) {
-          return FunctionExpand.multinomial(ast);
+          return functionExpand(ast, engine);
         }
       }
       return F.NIL;
@@ -3785,7 +3803,7 @@ public final class NumberTheory {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return null;
+      return ARGS_0_INFINITY;
     }
 
     @Override

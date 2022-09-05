@@ -1436,8 +1436,25 @@ public class SpecialFunctions {
         if (arg1.isMathematicalIntegerNonNegative()) {
           int n = arg1.toIntDefault();
           if (n != Integer.MIN_VALUE) {
+            // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/functions/special/gamma_functions.py#L790
+
+            // if (z.isPlus()) {
+            // IExpr coeffExpr = z.first();
+            // if (coeffExpr.isInteger()) {
+            // int coeff = coeffExpr.toIntDefault();
+            // int e = -(n + 1);
+            // IExpr tail;
+            // if (coeff > 0) {
+            // tail = F.intSum(i -> F.Power(F.Subtract(z, i), e), 1, coeff + 1);
+            // } else {
+            // tail = F.Negate(F.intSum(i -> F.Power(F.Plus(i, z), e), 0, -coeff));
+            // }
+            // return F.Plus(F.PolyGamma(n, F.Subtract(z, coeffExpr)),
+            // F.Times(F.Power(F.CN1, n), F.Factorial(n), tail));
+            // }
+            // }
+
             if (n == 0 && z.isRational()) {
-              // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/functions/special/gamma_functions.py#L790
 
               // IRational zr = (IRational) z;
               // IInteger p = zr.numerator();
