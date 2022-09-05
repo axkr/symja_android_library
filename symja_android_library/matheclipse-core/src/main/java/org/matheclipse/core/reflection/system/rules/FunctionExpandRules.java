@@ -125,9 +125,9 @@ public interface FunctionExpandRules {
     // Gudermannian(z_):=Piecewise({{1/2*(Pi-4*ArcCot(E^z)),Re(z)>0||(Re(z)==0&&Im(z)>=0)}},1/2*(-Pi+4*ArcTan(E^z)))
     SetDelayed(Gudermannian(z_),
       Piecewise(list(list(Times(C1D2,Plus(Pi,Times(CN4,ArcCot(Exp(z))))),Or(Greater(Re(z),C0),And(Equal(Re(z),C0),GreaterEqual(Im(z),C0))))),Times(C1D2,Plus(CNPi,Times(C4,ArcTan(Exp(z))))))),
-    // HarmonicNumber(n_):=EulerGamma+PolyGamma(0,1+n)
+    // HarmonicNumber(n_):=EulerGamma+FunctionExpand(PolyGamma(0,1+n))
     SetDelayed(HarmonicNumber(n_),
-      Plus(EulerGamma,PolyGamma(C0,Plus(C1,n)))),
+      Plus(EulerGamma,FunctionExpand(PolyGamma(C0,Plus(C1,n))))),
     // HarmonicNumber(z_,n_):=-HurwitzZeta(n,1+z)+Zeta(n)
     SetDelayed(HarmonicNumber(z_,n_),
       Plus(Negate(HurwitzZeta(n,Plus(C1,z))),Zeta(n))),
@@ -191,9 +191,6 @@ public interface FunctionExpandRules {
     // LogGamma(x_):=Log(Gamma(x))/;x>0
     SetDelayed(LogGamma(x_),
       Condition(Log(Gamma(x)),Greater(x,C0))),
-    // PolyGamma(0,z_?NumberQ):=-EulerGamma-1/z+z*Sum(1/(k^2+k*z),{k,1,Infinity})
-    SetDelayed(PolyGamma(C0,PatternTest(z_,NumberQ)),
-      Plus(Negate(EulerGamma),Negate(Power(z,CN1)),Times(z,Sum(Power(Plus(Sqr(k),Times(k,z)),CN1),list(k,C1,oo))))),
     // PolyGamma(n_Integer,1/2):=(-1)^(n+1)*n!*(-1+2^(n+1))*Zeta(n+1)/;n>0
     SetDelayed(PolyGamma($p(n, Integer),C1D2),
       Condition(Times(Power(CN1,Plus(n,C1)),Factorial(n),Plus(CN1,Power(C2,Plus(n,C1))),Zeta(Plus(n,C1))),Greater(n,C0))),

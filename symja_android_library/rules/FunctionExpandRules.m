@@ -56,7 +56,7 @@
  
  Gudermannian(z_) := Piecewise({{(1/2)*(Pi - 4*ArcCot(E^z)), Re(z)>0||(Re(z)==0&&Im(z)>=0 )}}, (1/2)*(-Pi + 4*ArcTan(E^z))), 
  
- HarmonicNumber(n_) := EulerGamma + PolyGamma(0, 1 + n),
+ HarmonicNumber(n_) := EulerGamma + FunctionExpand(PolyGamma(0, 1 + n)),
  HarmonicNumber(z_, n_) := -HurwitzZeta(n, 1 + z) + Zeta(n),
  Haversine(z_) := (1/2)*(1-Cos(z)),
  HurwitzZeta(n_Integer, a_) := ((-1)^n/(n - 1)!)*PolyGamma(n - 1, a)
@@ -90,7 +90,7 @@
  
  LogGamma(x_) := Log(Gamma(x)) 
   /; x>0,
- PolyGamma(0, z_?NumberQ) := -(1/z) - EulerGamma + z*Sum(1/(k^2 + k*z), {k, 1, Infinity}),
+
  PolyGamma(n_Integer, 1/2) := (-1)^(n + 1)*n!*(2^(n + 1) - 1)*Zeta(n+1)  
   /; n>0,
   

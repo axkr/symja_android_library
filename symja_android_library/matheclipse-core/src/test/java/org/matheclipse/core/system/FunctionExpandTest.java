@@ -229,6 +229,10 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "(a^b*Gamma(1-a))/((-a)^b*Gamma(1-a-b))");
   }
 
+  public void testFunctionExpandHarmonicNumber() {
+    check("FunctionExpand(HarmonicNumber(1/3-1))", //
+        "-Pi/(2*Sqrt(3))+Log(2)-Log(3)/2-Log(6)");
+  }
   public void testFunctionExpandBinomial() {
     check("FunctionExpand(Binomial(a,b))", //
         "Gamma(1+a)/(Gamma(1+a-b)*Gamma(1+b))");

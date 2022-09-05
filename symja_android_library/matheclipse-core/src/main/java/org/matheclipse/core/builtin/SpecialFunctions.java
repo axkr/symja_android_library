@@ -1466,16 +1466,15 @@ public class SpecialFunctions {
                   if (q > 0 && p < q) {
                     // https://functions.wolfram.com/GammaBetaErf/PolyGamma/03/01/0015/
 
-                    // Sum(Cos((2 Pi p k)/q)*(Log(Sin[(Pi k)/q))
+                    // Sum(2*Cos((2*Pi*p*k)/q)*(Log(Sin((Pi*k)/q), {k, 1, Floor((q-1)/2)})
                     IExpr kSum = F.intSum(//
                         k -> F.Times(F.C2, //
                             F.Cos(F.Times(zr.multiply(2 * k), S.Pi)),
                             F.Log(F.Sin(F.Times(F.QQ(k, q), S.Pi))))//
                         , 1, (q - 1) / 2);
-                    // -S.EulerGamma - pi * cot(p * pi / q) / 2 - log(2*q)
-                    return engine.evaluate(F.Plus(S.EulerGamma.negate(),
-                        F.Times(F.CN1D2, S.Pi, F.Cot(F.Times(zr, S.Pi))), F.Log(2 * q).negate(),
-                        kSum));
+                    return engine
+                        .evaluate(F.Plus(kSum, F.Times(F.CN1D2, S.Pi, F.Cot(F.Times(zr, S.Pi))),
+                            F.Negate(F.Log(2 * q)), F.Negate(S.EulerGamma)));
                   }
                 }
               }
