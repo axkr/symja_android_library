@@ -10,6 +10,8 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSequenceCases() {
+    check("SequenceCases({0,0,0,101},y__->True)", //
+        "{True}");
     check("SequenceCases({a, b, x, x, a, c}, Overlaps->True)", //
         "SequenceCases({a,b,x,x,a,c},Overlaps->True)");
     check("SequenceCases({a, b, x, x, a, c}, {a, _})", //

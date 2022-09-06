@@ -164,6 +164,7 @@ public class SequenceFunctions {
         } else {
           for (int j = i + 1; j <= ast.size(); j++) {
             IExpr subResult = F.NIL;
+            IExpr result = F.NIL;
             for (int k = j; k <= ast.size(); k++) {
               if (i >= k) {
                 break;
@@ -173,15 +174,19 @@ public class SequenceFunctions {
               IASTAppendable subSequence = ast.copyFrom(i, k);
               IExpr temp = function.apply(subSequence);
               if (temp.isPresent()) {
-                subResult = temp;
+                subResult = subSequence;
+                result = temp;
               } else {
                 break;
               }
             }
             if (subResult.isPresent()) {
-              resultAST.append(subResult);
+              resultAST.append(result);
               if (overlapsOption.isFalse()) {
                 i += subResult.argSize() - 1;
+                if (i <= 0) {
+                  return F.NIL;
+                }
                 break;
               }
               if (overlapsOption.isTrue()) {
