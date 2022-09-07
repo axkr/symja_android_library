@@ -1635,7 +1635,7 @@ public class IntegerFunctions {
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr res = F.NIL;
+      IASTMutable res = F.NIL;
       try {
         IExpr expr = ast.arg1();
         IExpr temp = engine.evaluateNIL(expr);
@@ -1661,7 +1661,7 @@ public class IntegerFunctions {
             if (!res.isPresent()) {
               res = ast.setAtCopy(2, temp);
             } else {
-              ((IASTMutable) res).set(2, temp);
+              res.set(2, temp);
             }
           } else {
             if (k.isNumericFunction()) {
@@ -1678,7 +1678,7 @@ public class IntegerFunctions {
 
           temp = round(engine, expr, k);
           if (temp.isPresent()) {
-            res = temp;
+            return temp;
           }
         } else {
           // Round(expr)

@@ -363,7 +363,8 @@ public class TensorFunctions {
       IASTAppendable reversedList = F.ListAlloc(levelSize);
       for (int i = levelSize; i >= 1; i--) {
         IAST reversed =
-            nestedReverseRecursive((IAST) kernel.get(i), rootKernelDimensions, dimensionLevel + 1);
+            nestedReverseRecursive((IAST) kernel.get(i).normal(false), rootKernelDimensions,
+                dimensionLevel + 1);
         // append in reversed order
         reversedList.append(reversed);
       }
