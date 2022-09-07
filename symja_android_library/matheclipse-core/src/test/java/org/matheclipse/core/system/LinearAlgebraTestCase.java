@@ -283,6 +283,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testDimensions() {
+    check("Dimensions({{{1,0},{0,1}},{0,0}})", //
+        "{2,2}");
     check("Options(Dimensions)", //
         "{AllowedHeads->Automatic}");
     check("s = SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4});", //
@@ -316,17 +318,20 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testDot() {
-    check("#1.#123 // FullForm", //
-        "Dot(Slot(1), Slot(123))");
     // github #121 - print error
 
     // message Dot: Nonrectangular tensor encountered
     check("Dot({{0,2},{-8,2}},{{{0},0},{0,3}})", //
-        "{{0,2},\n" + " {-8,2}}.{{{0},0},{0,3}}");
+        "{{0,2},\n" //
+            + " {-8,2}}.{{{0},0},{0,3}}");
 
     // message Dot: Tensors {{}} and {{}} have incompatible shapes.
     check("{{}}.{{}}", //
         "{{}}.\n" + "{{}}");
+
+
+    check("#1.#123 // FullForm", //
+        "Dot(Slot(1), Slot(123))");
 
     // only 1 arg
     check("Dot({a,b,c})", //
@@ -1581,6 +1586,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // check(
     // "Tr(Array(a, {4, 3, 2}), f, 2)", //
     // "");
+
+
+    check("Tr({{{1,0},{0,1}},{0,0}})", //
+        "{1,0}");
     check("Tr(Array(a,{4,3,2}))", //
         "a(1,1,1)+a(2,2,2)");
     check("Tr(Array(a,{4,7,3}),f)", //

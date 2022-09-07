@@ -198,48 +198,53 @@ public class TensorFunctions {
       int argSize = ast.argSize();
       // expectedArgSize() is >= 2
       if (ast.arg1().isList() && ast.arg2().isList()) {
-        IAST tensor1 = (IAST) ast.arg1();
-        IntList dim1 = LinearAlgebra.dimensions(tensor1, S.List);
-        if (dim1.size() > 0) {
-          for (int i = 2; i < ast.size(); i++) {
-            IAST tensor2 = (IAST) ast.get(i);
-            IntList dim2 = LinearAlgebra.dimensions(tensor2, S.List);
-            if (dim1.size() == dim2.size()) {
-              IExpr temp = tensorProduct(tensor1, tensor2, dim1.size(), engine);
-              if (temp.isList()) {
-                int r = 2;
-                if (dim2.size() > r) {
-                  r = dim2.size();
-                }
-                tensor1 = (IAST) S.ArrayFlatten.of(engine, temp, F.ZZ(r)).normal(false);
-                if (tensor1.isList()) {
-                  dim1 = LinearAlgebra.dimensions(tensor1, S.List);
-                  if (dim1.size() > 0) {
-                    if (i < argSize) {
-                      if (ast.get(i + 1).isList()) {
-                        continue;
+        try {
+          IAST tensor1 = (IAST) ast.arg1();
+          IntList dim1 = LinearAlgebra.dimensions(tensor1, S.List, Integer.MAX_VALUE, true);
+          if (dim1.size() > 0) {
+            for (int i = 2; i < ast.size(); i++) {
+              IAST tensor2 = (IAST) ast.get(i);
+              IntList dim2 = LinearAlgebra.dimensions(tensor2, S.List, Integer.MAX_VALUE, true);
+              if (dim1.size() == dim2.size()) {
+                IExpr temp = tensorProduct(tensor1, tensor2, dim1.size(), engine);
+                if (temp.isList()) {
+                  int r = 2;
+                  if (dim2.size() > r) {
+                    r = dim2.size();
+                  }
+                  tensor1 = (IAST) S.ArrayFlatten.of(engine, temp, F.ZZ(r)).normal(false);
+                  if (tensor1.isList()) {
+                    dim1 = LinearAlgebra.dimensions(tensor1, S.List);
+                    if (dim1.size() > 0) {
+                      if (i < argSize) {
+                        if (ast.get(i + 1).isList()) {
+                          continue;
+                        }
+                      } else {
+                        return tensor1;
                       }
-                    } else {
-                      return tensor1;
                     }
                   }
+                  IASTAppendable result = F.ast(S.KroneckerProduct);
+                  result.append(temp);
+                  result.appendAll(ast, i + 1, ast.size());
+                  return result;
                 }
-                IASTAppendable result = F.ast(S.KroneckerProduct);
-                result.append(temp);
-                result.appendAll(ast, i + 1, ast.size());
-                return result;
               }
-            }
-            if (i == 2) {
-              return F.NIL;
-            }
+              if (i == 2) {
+                return F.NIL;
+              }
 
-            IASTAppendable result = F.ast(S.KroneckerProduct);
-            result.append(tensor1);
-            result.appendAll(ast, i, ast.size());
-            return result;
+              IASTAppendable result = F.ast(S.KroneckerProduct);
+              result.append(tensor1);
+              result.appendAll(ast, i, ast.size());
+              return result;
+            }
+            return tensor1;
           }
-          return tensor1;
+        } catch (IllegalArgumentException iae) {
+          // print message: Nonrectangular tensor encountered
+          return IOFunctions.printMessage(ast.topHead(), "rect", F.list(ast), engine);
         }
       }
       return F.NIL;

@@ -118,7 +118,7 @@ public class ListPlot extends AbstractEvaluator {
     return false;
   }
 
-  protected BufferedImage jFreeChartImage(VisualSet visualSet) {
+  public BufferedImage jFreeChartImage(VisualSet visualSet) {
     JFreeChart jFreeChart = listPlot(visualSet, false);
     jFreeChart.setBackgroundPaint(Color.WHITE);
     return jFreeChart.createBufferedImage(600, 480);

@@ -796,7 +796,7 @@ public class IOFunctions {
   }
 
   /**
-   * Print the Symja <code>ValidateException</code> into the default error log.
+   * Print the Symja <code>MathException</code> into the default error log.
    * 
    * @param symbol
    * @param ve
@@ -904,6 +904,20 @@ public class IOFunctions {
         LOGGER.error("IOFunctions.printMessage() failed", e);
       }
     }
+    return F.NIL;
+  }
+
+  public static IAST printRuntimeException(ISymbol symbol, RuntimeException exception,
+      EvalEngine engine) {
+    try {
+      String message = exception.getMessage();
+      Writer writer = new StringWriter();
+      writer.append(message);
+      LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, writer);
+    } catch (IOException e) {
+      LOGGER.error("IOFunctions.printMessage() failed", e);
+    }
+
     return F.NIL;
   }
 

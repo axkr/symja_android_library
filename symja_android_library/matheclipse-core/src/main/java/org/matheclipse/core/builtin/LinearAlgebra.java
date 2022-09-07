@@ -784,39 +784,44 @@ public final class LinearAlgebra {
           int[] rowDimensions = new int[rowSize];
           int[] columnDimensions = new int[columnSize];
           if (resultDimensions(list, rank, rowDimensions, columnDimensions, engine)) {
-            IASTAppendable resultMatrix = F.ListAlloc();
-            for (int i = 1; i < list.size(); i++) {
-              IAST subList = (IAST) list.get(i);
-              for (int l = 0; l < rowDimensions[i - 1]; l++) {
-                IASTAppendable resultRow = F.ListAlloc();
-                for (int j = 1; j < subList.size(); j++) {
-                  IExpr element = subList.get(j);
-                  boolean isScalar = true;
-                  if (element.isList()) {
-                    IntArrayList elementDimension = LinearAlgebra.dimensions((IAST) element);
-                    if (elementDimension.size() >= rank) {
-                      isScalar = false;
+            try {
+              IASTAppendable resultMatrix = F.ListAlloc();
+              for (int i = 1; i < list.size(); i++) {
+                IAST subList = (IAST) list.get(i);
+                for (int l = 0; l < rowDimensions[i - 1]; l++) {
+                  IASTAppendable resultRow = F.ListAlloc();
+                  for (int j = 1; j < subList.size(); j++) {
+                    IExpr element = subList.get(j);
+                    boolean isScalar = true;
+                    if (element.isList()) {
+                      IntArrayList elementDimension = LinearAlgebra.dimensions((IAST) element);
+                      if (elementDimension.size() >= rank) {
+                        isScalar = false;
+                      }
                     }
-                  }
-                  if (isScalar) {
-                    for (int k = 0; k < columnDimensions[j - 1]; k++) {
-                      resultRow.append(element);
+                    if (isScalar) {
+                      for (int k = 0; k < columnDimensions[j - 1]; k++) {
+                        resultRow.append(element);
+                      }
+                    } else {
+                      IAST matrix = (IAST) element;
+                      for (int k = 0; k < columnDimensions[j - 1]; k++) {
+                        resultRow.append(matrix.getPart(l + 1, k + 1));
+                      }
                     }
-                  } else {
-                    IAST matrix = (IAST) element;
-                    for (int k = 0; k < columnDimensions[j - 1]; k++) {
-                      resultRow.append(matrix.getPart(l + 1, k + 1));
-                    }
-                  }
 
+                  }
+                  resultMatrix.append(resultRow);
                 }
-                resultMatrix.append(resultRow);
               }
+              if (sparseArray) {
+                return F.sparseArray(resultMatrix, F.C0);
+              }
+              return resultMatrix;
+            } catch (IndexOutOfBoundsException ioob) {
+              // getPart can throw java.lang.IndexOutOfBoundsException:
+              return F.NIL;
             }
-            if (sparseArray) {
-              return F.sparseArray(resultMatrix, F.C0);
-            }
-            return resultMatrix;
           }
         }
       }
@@ -5089,7 +5094,7 @@ public final class LinearAlgebra {
       }
 
       try {
-        final IntList dimensions = dimensions(arg1, S.List, Integer.MAX_VALUE, true);
+        final IntList dimensions = dimensions(arg1, S.List, Integer.MAX_VALUE, false);
         final int dimsSize = dimensions.size();
         if (dimsSize == 0) {
           return F.NIL;
@@ -5713,7 +5718,8 @@ public final class LinearAlgebra {
    * @return a list of size <code>0</code> if no dimensions are found
    */
   public static IntArrayList dimensions(IAST ast) {
-    return dimensionsRecursive(ast, ast.head(), Integer.MAX_VALUE, false, new IntArrayList());
+    DimensionsData dimensionsData = new DimensionsData(ast, ast.head(), Integer.MAX_VALUE, false);
+    return dimensionsData.getDimensions();
   }
 
   /**
@@ -5742,7 +5748,8 @@ public final class LinearAlgebra {
    * @return a list of size <code>0</code> if no dimensions are found
    */
   public static IntArrayList dimensions(IAST ast, IExpr header, int maxLevel) {
-    return dimensionsRecursive(ast, header, maxLevel, false, new IntArrayList());
+    DimensionsData dimensionsData = new DimensionsData(ast, header, maxLevel, false);
+    return dimensionsData.getDimensions();
   }
 
   /**
@@ -5760,8 +5767,9 @@ public final class LinearAlgebra {
   public static IntArrayList dimensions(IExpr expr, IExpr header, int maxLevel,
       boolean throwIllegalArgumentException) {
     if (expr.isAST()) {
-      return dimensionsRecursive((IAST) expr, header, maxLevel, throwIllegalArgumentException,
-          new IntArrayList());
+      DimensionsData dimensionsData =
+          new DimensionsData((IAST) expr, header, maxLevel, throwIllegalArgumentException);
+      return dimensionsData.getDimensions();
     }
     if (expr.isSparseArray()) {
       int[] dims = ((ISparseArray) expr).getDimension();
@@ -5786,87 +5794,111 @@ public final class LinearAlgebra {
     return new IntArrayList();
   }
 
-  /**
-   * Determine the <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
-   * recursively.
-   * 
-   * @param ast
-   * @param header the header, which all sub-expressions of the detected dimension must contain
-   * @param maxLevel the maximum level (depth) of analyzing for the dimension
-   * @param throwIllegalArgumentException
-   * @param dims
-   * @return a list of size <code>0</code> if no dimensions are found
-   * @throws IllegalArgumentException
-   */
-  private static IntArrayList dimensionsRecursive(IAST ast, IExpr header, int maxLevel,
-      boolean throwIllegalArgumentException, IntArrayList dims) throws IllegalArgumentException {
+  private final static class DimensionsData {
+    boolean isNonRectangular = false;
+    final EvalEngine engine;
+    final IntArrayList dimensions;
 
-    int size = ast.size();
-    if (header.equals(ast.head())) {
-      dims.add(size - 1);
-      if (size > 1) {
+    /**
+     * Determine the <a href=
+     * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
+     * recursively.
+     * 
+     * @param ast
+     * @param header
+     * @param maxLevel
+     * @param throwIllegalArgumentException
+     */
+    public DimensionsData(IAST ast, IExpr header, int maxLevel,
+        boolean throwIllegalArgumentException) {
+      this.engine = EvalEngine.get();
+      this.dimensions = dimensionsRecursive(ast, header, maxLevel, throwIllegalArgumentException);
+    }
 
-        if (ast.arg1().isAST()) {
-          IAST arg1AST = (IAST) ast.arg1();
-          int arg1Size = arg1AST.size();
-          if (header.equals(S.List)) {
-            if (!arg1AST.isSparseArray() && !header.equals(arg1AST.head())) {
-              return checkRectangularDimensions(ast, header, throwIllegalArgumentException, dims);
+    /**
+     * Determine the <a href=
+     * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
+     * recursively.
+     * 
+     * @param ast
+     * @param header the header, which all sub-expressions of the detected dimension must contain
+     * @param maxLevel the maximum level (depth) of analyzing for the dimension
+     * @param throwIllegalArgumentException
+     * @return a list of the dimensions or a list of size <code>0</code> if no dimensions are found
+     * @throws IllegalArgumentException
+     */
+    private IntArrayList dimensionsRecursive(IAST ast, IExpr header, int maxLevel,
+        boolean throwIllegalArgumentException) throws IllegalArgumentException {
+      final int size = ast.size();
+      if (header.equals(ast.head())) {
+        IntArrayList subDim = null;
+        IntArrayList sub = new IntArrayList();
+        for (int i = 1; i < size; i++) {
+          IExpr element = ast.get(i);
+          if (element.isAST() && maxLevel > 0) {
+            sub = dimensionsRecursive((IAST) element, header, maxLevel - 1,
+                throwIllegalArgumentException);
+          } else {
+            if (element.isSparseArray()) {
+              sub = new IntArrayList(((ISparseArray) element).getDimension());
+            } else if (element.isNumericArray()) {
+              sub = new IntArrayList(((INumericArray) element).getDimension());
+            } else {
+              sub = new IntArrayList();
             }
-          } else if (!header.equals(arg1AST.head())) {
-            return checkRectangularDimensions(ast, header, throwIllegalArgumentException, dims);
           }
-          if (maxLevel > 0) {
-            for (int i = 2; i < size; i++) {
-              IExpr arg = ast.get(i);
-              if (header.equals(S.List)) {
-                if (!arg.isSparseArray() && !header.equals(arg.head())) {
-                  return checkRectangularDimensions(ast, header, throwIllegalArgumentException,
-                      dims);
-                }
-              } else if (!header.equals(arg.head())) {
-                return checkRectangularDimensions(ast, header, throwIllegalArgumentException, dims);
-              }
-              if (arg.isAST() || arg.isSparseArray()) {
-                if (arg1Size == arg.size()) {
-                  continue;
+          if (subDim == null) {
+            subDim = sub;
+          } else {
+            if (!subDim.equals(sub)) {
+              if (subDim.size() != sub.size()) {
+                isNonRectangular = true;
+                if (throwIllegalArgumentException) {
+                  throw new IllegalArgumentException();
+                } else {
+                  // print message: Nonrectangular tensor encountered
+                  IOFunctions.printMessage(ast.topHead(), "rect", F.CEmptyList, engine);
                 }
               }
-              return checkRectangularDimensions(ast, header, throwIllegalArgumentException, dims);
+              int minSize = subDim.size() > sub.size() ? sub.size() : subDim.size();
+              int j = 0;
+              while (j < minSize) {
+                if (subDim.getInt(j) != sub.getInt(j)) {
+                  isNonRectangular = true;
+                  if (throwIllegalArgumentException) {
+                    throw new IllegalArgumentException();
+                  } else {
+                    // print message: Nonrectangular tensor encountered
+                    IOFunctions.printMessage(ast.topHead(), "rect", F.list(ast), engine);
+                  }
+                  break;
+                }
+                j++;
+              }
+              sub = new IntArrayList();
+              for (int k = 0; k < j; k++) {
+                sub.add(subDim.getInt(k));
+              }
+              subDim = sub;
             }
-            return dimensionsRecursive(arg1AST, header, maxLevel - 1, throwIllegalArgumentException,
-                dims);
           }
         }
-        return checkRectangularDimensions(ast, header, throwIllegalArgumentException, dims);
-      }
-    }
-    return dims;
-  }
-
-  /**
-   * If <code>throwIllegalArgumentException</code> is <code>true</code> the arguments of <code>ast
-   * </code> are tested if they contain a list, sparse array or numeric array.
-   *
-   * @param ast
-   * @param throwIllegalArgumentException
-   * @param dims
-   * @return
-   */
-  private static IntArrayList checkRectangularDimensions(IAST ast, IExpr header,
-      boolean throwIllegalArgumentException, IntArrayList dims) throws IllegalArgumentException {
-    if (throwIllegalArgumentException) {
-      for (int i = 1; i < ast.size(); i++) {
-        IExpr arg = ast.get(i);
-        if (arg.isSparseArray() && arg.isList() || arg.isNumericArray()) {
-          throw new IllegalArgumentException();
-        } else if (header.equals(arg.head())) {
-          throw new IllegalArgumentException();
+        if (subDim == null) {
+          subDim = new IntArrayList();
         }
+        subDim.add(0, size - 1);
+        return subDim;
       }
+      return new IntArrayList();
     }
-    return dims;
+
+    public boolean isNonRectangular() {
+      return isNonRectangular;
+    }
+
+    public IntArrayList getDimensions() {
+      return dimensions;
+    }
   }
 
   public static void initialize() {

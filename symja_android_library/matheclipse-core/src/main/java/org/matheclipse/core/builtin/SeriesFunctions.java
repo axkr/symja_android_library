@@ -1062,6 +1062,8 @@ public class SeriesFunctions {
             }
 
             return taylorFunction(function, x, x0, m, n);
+          } catch (ArithmeticException aex) {
+            IOFunctions.printRuntimeException(S.PadeApproximant, aex, engine);
           } catch (JASConversionException jce) {
             // could not use JAS library here
           }

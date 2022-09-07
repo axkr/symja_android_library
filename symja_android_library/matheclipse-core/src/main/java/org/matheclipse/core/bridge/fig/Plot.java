@@ -318,7 +318,7 @@ public class Plot extends ListPlot {
   }
 
   @Override
-  protected BufferedImage jFreeChartImage(VisualSet visualSet) {
+  public BufferedImage jFreeChartImage(VisualSet visualSet) {
     JFreeChart jFreeChart = listPlot(visualSet, true);
     jFreeChart.setBackgroundPaint(Color.WHITE);
     return jFreeChart.createBufferedImage(600, 480);

@@ -12,7 +12,7 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
 
   public void testArrayDepth() {
     check("ArrayDepth({{1, 2}, SparseArray({3, 4}), NumericArray({5, 6}, \"Integer32\")})", //
-        "1");
+        "2");
     check("ArrayDepth({{1, 2}, SparseArray({3, 4})  })", //
         "2");
   }

@@ -554,6 +554,10 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   public void testPadeApproximant() {
+    // message PadeApproximant: lbcf not invertible {{-1,-2,3}}
+    check("PadeApproximant({{-1,-2,3}},{0,0,{0,0}})", //
+        "PadeApproximant({{-1,-2,3}},{0,0,{0,0}})");
+
     // TODO https://github.com/kredel/java-algebra-system/issues/29
     check("PadeApproximant(((x^3 + 72*x^2 + 600*x + 720)/(12*x^2 + 240*x+720)),{x,0,{3,1}})", //
         "(15/4+23/8*x+3/16*x^2-x^3/192)/(15/4+x)");
