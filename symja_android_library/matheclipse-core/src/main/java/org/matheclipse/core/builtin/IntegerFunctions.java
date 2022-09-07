@@ -1652,11 +1652,27 @@ public class IntegerFunctions {
           IExpr k = ast.arg2();
           temp = engine.evaluateNIL(k);
           if (temp.isPresent()) {
+            if (temp.isNumericFunction() && (expr.isInfinity() || expr.isNegativeInfinity()
+                || (expr.isDirectedInfinity() && expr.argSize() == 1)
+                || expr.isComplexInfinity())) {
+              return expr;
+            }
             k = temp;
             if (!res.isPresent()) {
               res = ast.setAtCopy(2, temp);
             } else {
               ((IASTMutable) res).set(2, temp);
+            }
+          } else {
+            if (k.isNumericFunction()) {
+              if (expr.isInfinity() || expr.isNegativeInfinity()
+                  || (expr.isDirectedInfinity() && expr.argSize() == 1)
+                  || expr.isComplexInfinity()) {
+                return expr;
+              }
+            } else {
+              // Internal precision limit `1` reached while evaluating `2`.
+              return IOFunctions.printMessage(S.Round, "meprec", F.List(F.CEmptyString, k), engine);
             }
           }
 
@@ -1673,10 +1689,8 @@ public class IntegerFunctions {
           if (number != null) {
             return number.roundExpr();
           }
-          if (expr.isDirectedInfinity() && expr.argSize() == 1) {
-            return expr;
-          }
-          if (expr.isComplexInfinity()) {
+          if (expr.isInfinity() || expr.isNegativeInfinity() || expr.isDirectedInfinity()
+              || expr.isComplexInfinity()) {
             return expr;
           }
 
@@ -1698,7 +1712,9 @@ public class IntegerFunctions {
             return IntervalSym.mapSymbol(S.Round, (IAST) expr);
           }
         }
-      } catch (ArithmeticException ae) {
+      } catch (
+
+      ArithmeticException ae) {
         // ISignedNumber#round() may throw ArithmeticException
       }
       return res;
@@ -1709,7 +1725,11 @@ public class IntegerFunctions {
       if (n.isPresent()) {
         if (n.isRealResult() || n.isComplex() || n.isComplexNumeric()) {
           n = S.Round.of(engine, n);
-          return F.Times(n, k);
+          if (n.isPresent()) {
+            return F.Times(n, k);
+          }
+          // Internal precision limit `1` reached while evaluating `2`.
+          return IOFunctions.printMessage(S.Round, "meprec", F.List(F.CEmptyString, k), engine);
         }
         if (n.isComplexInfinity()) {
           return S.Indeterminate;
@@ -1754,6 +1774,7 @@ public class IntegerFunctions {
       super.setUp(newSymbol);
     }
   }
+
 
   /**
    *
