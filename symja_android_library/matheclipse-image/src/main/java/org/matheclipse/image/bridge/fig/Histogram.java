@@ -1,5 +1,5 @@
 // code adapted from https://github.com/datahaki/bridge
-package org.matheclipse.core.bridge.fig;
+package org.matheclipse.image.bridge.fig;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -10,10 +10,10 @@ import org.matheclipse.core.bridge.lang.Unicode;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.image.expression.data.ImageExpr;
 
 public class Histogram extends AbstractEvaluator {
 

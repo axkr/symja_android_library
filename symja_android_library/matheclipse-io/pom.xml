@@ -26,7 +26,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>matheclipse-core</artifactId>
+			<artifactId>matheclipse-image</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

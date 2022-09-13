@@ -14,8 +14,6 @@ import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.bridge.fig.Histogram;
-import org.matheclipse.core.bridge.fig.ListPlot;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.EvalEngine;
@@ -25,11 +23,14 @@ import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
+import org.matheclipse.image.bridge.fig.Histogram;
+import org.matheclipse.image.bridge.fig.ListPlot;
+import org.matheclipse.image.bridge.fig.Plot;
+import org.matheclipse.image.expression.data.ImageExpr;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
@@ -120,6 +121,7 @@ public class SymjaBot {
     // S.ListLogPlot.setEvaluator(new ListLogPlot());
     // S.ListLogLogPlot.setEvaluator(new ListLogLogPlot());
     S.Histogram.setEvaluator(new Histogram());
+    S.Plot.setEvaluator(new Plot());
   }
 
   private static void createMessage(final Message message) {

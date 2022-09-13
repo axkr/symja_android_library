@@ -5,14 +5,14 @@ import java.io.File;
 import java.io.IOException;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
-import org.matheclipse.core.bridge.fig.VisualImage;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.reflection.system.ArrayPlot;
 import org.matheclipse.core.tensor.ext.HomeDirectory;
 import org.matheclipse.core.tensor.img.ColorDataGradients;
 import org.matheclipse.core.tensor.img.ImageFormat;
+import org.matheclipse.image.bridge.fig.VisualImage;
+import org.matheclipse.image.builtin.ArrayPlot;
 
 class ArrayPlotTest {
   public static void main(String[] args) throws IOException {

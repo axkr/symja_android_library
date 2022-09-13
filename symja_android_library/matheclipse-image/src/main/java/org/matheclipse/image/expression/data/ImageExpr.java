@@ -1,4 +1,4 @@
-package org.matheclipse.core.expression.data;
+package org.matheclipse.image.expression.data;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -9,11 +9,13 @@ import java.lang.ref.SoftReference;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import javax.imageio.ImageIO;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.io.Extension;
@@ -156,5 +158,21 @@ final public class ImageExpr extends DataExpr<byte[]> {
       }
     }
     return null;
+  }
+
+  @Override
+
+  public String toHTML() {
+    BufferedImage bImage = getBufferedImage();
+    try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
+      ImageIO.write(bImage, "png", b64);
+      String html = JSBuilder.IMAGE_TEMPLATE;
+      String[] argsToRender = new String[3];
+      argsToRender[0] = outputStream.toString();
+      return IOFunctions.templateRender(html, argsToRender);
+    } catch (IOException ioex) {
+      return "IOException";
+    }
   }
 }

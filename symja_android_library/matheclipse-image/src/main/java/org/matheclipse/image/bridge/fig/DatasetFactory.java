@@ -1,5 +1,5 @@
 // code adapted from https://github.com/datahaki/bridge
-package org.matheclipse.core.bridge.fig;
+package org.matheclipse.image.bridge.fig;
 
 import java.util.function.Function;
 import java.util.function.UnaryOperator;

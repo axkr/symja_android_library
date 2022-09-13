@@ -1,5 +1,5 @@
 // code adapted from https://github.com/datahaki/bridge
-package org.matheclipse.core.bridge.fig;
+package org.matheclipse.image.bridge.fig;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -88,4 +88,5 @@ public class VisualRow implements Serializable {
   /* package */ ComparableLabel getLabel() {
     return comparableLabel;
   }
+
 }

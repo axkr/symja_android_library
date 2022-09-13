@@ -1,10 +1,9 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.image.builtin;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import org.hipparchus.linear.RealMatrix;
 import org.jfree.chart.JFreeChart;
-import org.matheclipse.core.bridge.fig.VisualImage;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -12,12 +11,13 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.tensor.img.ColorDataGradients;
 import org.matheclipse.core.tensor.img.ImageFormat;
 import org.matheclipse.core.tensor.itp.BSplineInterpolation;
+import org.matheclipse.image.bridge.fig.VisualImage;
+import org.matheclipse.image.expression.data.ImageExpr;
 
 public class ListDensityPlot extends ArrayPlot {
 

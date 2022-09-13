@@ -1,4 +1,4 @@
-package org.matheclipse.core.system;
+package org.matheclipse.io.system;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -9,7 +9,7 @@ import org.matheclipse.core.tensor.api.TensorUnaryOperator;
 import org.matheclipse.core.tensor.img.ColorDataGradients;
 import org.matheclipse.core.tensor.img.ImageCrop;
 
-public class ImageTest extends ExprEvaluatorTestCase {
+public class ImageTest extends AbstractTestCase {
 
   public ImageTest(String name) {
     super(name);

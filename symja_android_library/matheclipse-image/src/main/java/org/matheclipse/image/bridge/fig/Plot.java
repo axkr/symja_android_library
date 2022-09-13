@@ -1,5 +1,5 @@
 // code adapted from https://github.com/datahaki/bridge
-package org.matheclipse.core.bridge.fig;
+package org.matheclipse.image.bridge.fig;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -13,19 +13,19 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.matheclipse.core.bridge.fig.Axis.Type;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.image.bridge.fig.Axis.Type;
+import org.matheclipse.image.expression.data.ImageExpr;
 
 public class Plot extends ListPlot {
 

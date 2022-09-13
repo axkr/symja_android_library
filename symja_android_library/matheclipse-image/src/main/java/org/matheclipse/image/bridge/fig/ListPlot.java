@@ -1,24 +1,26 @@
 // code adapted from https://github.com/datahaki/bridge
-package org.matheclipse.core.bridge.fig;
+package org.matheclipse.image.bridge.fig;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.matheclipse.core.bridge.fig.Axis.Type;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.image.bridge.fig.Axis.Type;
+import org.matheclipse.image.expression.data.ImageExpr;
 
 public class ListPlot extends AbstractEvaluator {
 
@@ -86,7 +88,30 @@ public class ListPlot extends AbstractEvaluator {
     }
     if (visualSet.getAxisY().getType().equals(Type.LOGARITHMIC)) {
       LogAxis logAxis = new LogAxis(visualSet.getAxisY().getAxisLabel());
-      xyPlot.setRangeAxis(logAxis);
+      // https://stackoverflow.com/a/70648615/24819
+      // logAxis.setBase(10);
+      // logAxis.setNumberFormatOverride(NumberFormat.getNumberInstance());
+      // logAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+      try {
+        xyPlot.setRangeAxis(logAxis);
+      } catch (IllegalArgumentException iae) {
+        iae.printStackTrace();
+        double maxY = Double.MIN_VALUE;
+        double minY = 0.0;
+        List<XYSeries> series = xySeriesCollection.getSeries();
+        for (int i = 0; i < series.size(); i++) {
+          XYSeries xySeries = series.get(i);
+          double tempMaxY = xySeries.getMaxY();
+          if (maxY <tempMaxY) {
+            maxY = tempMaxY;
+          }
+          double tempMinY = xySeries.getMinY();
+          if (minY > tempMinY) {
+            minY = tempMinY;
+          }
+        }
+        logAxis.setRange(minY, maxY);
+      }
     }
     StaticHelper.setRange(visualSet.getAxisX(), xyPlot.getDomainAxis());
     StaticHelper.setRange(visualSet.getAxisY(), xyPlot.getRangeAxis());

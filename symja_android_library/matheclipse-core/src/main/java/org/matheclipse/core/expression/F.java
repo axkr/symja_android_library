@@ -1,15 +1,11 @@
 package org.matheclipse.core.expression;
 
 import java.awt.Desktop;
-import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.math.BigInteger;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -28,7 +24,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import javax.imageio.ImageIO;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -58,6 +53,7 @@ import org.matheclipse.core.builtin.EllipticIntegrals;
 import org.matheclipse.core.builtin.EntityFunctions;
 import org.matheclipse.core.builtin.ExpTrigsFunctions;
 import org.matheclipse.core.builtin.FileFunctions;
+import org.matheclipse.core.builtin.FilterFunctions;
 import org.matheclipse.core.builtin.FinancialFunctions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
 import org.matheclipse.core.builtin.GeodesyFunctions;
@@ -66,7 +62,6 @@ import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.builtin.HypergeometricFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.builtin.ImageFunctions;
 import org.matheclipse.core.builtin.IntegerFunctions;
 import org.matheclipse.core.builtin.IntervalFunctions;
 import org.matheclipse.core.builtin.JavaFunctions;
@@ -110,7 +105,6 @@ import org.matheclipse.core.eval.util.BiIntFunction;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.data.GraphExpr;
-import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.JSBuilder;
@@ -954,7 +948,7 @@ public class F extends S {
       AssociationFunctions.initialize();
       GeodesyFunctions.initialize();
       ManipulateFunction.initialize();
-      ImageFunctions.initialize();
+      FilterFunctions.initialize();
       EntityFunctions.initialize();
       ClusteringFunctions.initialize();
       SourceCodeFunctions.initialize();
@@ -9854,16 +9848,10 @@ public class F extends S {
           html = StringUtils.replace(html, "`2`", "var options = {};");
           return openHTMLOnDesktop(html);
         }
-      } else if (expr instanceof ImageExpr) {
-        ImageExpr imageExpr = (ImageExpr) expr;
-        BufferedImage bImage = imageExpr.getBufferedImage();
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
-          ImageIO.write(bImage, "png", b64);
-          String html = JSBuilder.IMAGE_TEMPLATE;
-          String[] argsToRender = new String[3];
-          argsToRender[0] = outputStream.toString();
-          html = IOFunctions.templateRender(html, argsToRender);
+      } else if (expr instanceof DataExpr) {
+        DataExpr imageExpr = (DataExpr) expr;
+        String html = ((DataExpr) expr).toHTML();
+        if (html != null) {
           return openHTMLOnDesktop(html);
         }
       } else if (expr.isAST(JSFormData, 3)) {

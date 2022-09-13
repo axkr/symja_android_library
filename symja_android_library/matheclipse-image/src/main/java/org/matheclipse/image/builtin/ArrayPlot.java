@@ -1,23 +1,23 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.image.builtin;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import org.hipparchus.linear.RealMatrix;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.matheclipse.core.bridge.fig.BufferedImagePlot;
-import org.matheclipse.core.bridge.fig.VisualImage;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.tensor.img.ColorDataGradients;
 import org.matheclipse.core.tensor.img.ImageFormat;
+import org.matheclipse.image.bridge.fig.BufferedImagePlot;
+import org.matheclipse.image.bridge.fig.VisualImage;
+import org.matheclipse.image.expression.data.ImageExpr;
 
 public class ArrayPlot extends AbstractEvaluator {
 

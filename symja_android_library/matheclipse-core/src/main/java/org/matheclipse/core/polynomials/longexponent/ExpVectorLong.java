@@ -17,7 +17,7 @@ public final class ExpVectorLong {
   /** The data structure is an array of longs. */
   /* package */ final long[] val;
 
-  int hash;
+  transient protected int hash = -1;
 
   /**
    * Constructor for ExpVectorLong.
@@ -151,7 +151,7 @@ public final class ExpVectorLong {
   protected long setVal(int i, long e) {
     long x = val[i];
     val[i] = e;
-    hash = 0; // beware of race condition
+    hash = -1; // beware of race condition
     return x;
   }
 
@@ -548,13 +548,13 @@ public final class ExpVectorLong {
    */
   @Override
   public int hashCode() {
-    if (hash == 0) {
-      for (int i = 0; i < length(); i++) {
-        hash = hash << 4 + getVal(i);
+    if (hash < 0) {
+      int h = 0;
+      final int len = length();
+      for (int i = 0; i < len; i++) {
+        hash = (hash << 3) + (int) getVal(i);
       }
-      if (hash == 0) {
-        hash = 1;
-      }
+      hash = h;
     }
     return hash;
   }

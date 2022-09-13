@@ -128,11 +128,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.jfree</groupId>
-			<artifactId>jfreechart</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>com.github.freva</groupId>
 			<artifactId>ascii-table</artifactId> 
 		</dependency>

@@ -1,5 +1,5 @@
 // code adapted from https://github.com/datahaki/bridge
-package org.matheclipse.core.bridge.fig;
+package org.matheclipse.image.bridge.fig;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +16,8 @@ public class VisualSet extends VisualBase {
   private final List<VisualRow> visualRows = new ArrayList<>();
   private final ColorDataIndexed colorDataIndexed;
   private int colorDataIndex;
+  private double yRangeMin = Double.MAX_VALUE;
+  private double yRangeMax = Double.MIN_VALUE;
 
   public VisualSet(ColorDataIndexed colorDataIndexed) {
     this.colorDataIndexed = Objects.requireNonNull(colorDataIndexed);
@@ -52,7 +54,7 @@ public class VisualSet extends VisualBase {
     return add(points, colorDataIndex, false, "");
   }
 
-  protected VisualRow add(IAST points, int colorDataIndex, boolean first, String label) {
+  public VisualRow add(IAST points, int colorDataIndex, boolean first, String label) {
     if (!points.isEmpty()) {
       if (!getAxisX().hasUnit()) {
         getAxisX().setUnit(QuantityUnit.of(points.getPart(1, 1)));

@@ -4,15 +4,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class ImageFunctions {
+public class FilterFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
 
   /**
@@ -22,36 +20,10 @@ public class ImageFunctions {
   private static class Initializer {
 
     private static void init() {
-      S.Image.setEvaluator(new Image());
       S.MaxFilter.setEvaluator(new MaxFilter());
       S.MeanFilter.setEvaluator(new MeanFilter());
       S.MedianFilter.setEvaluator(new MedianFilter());
       S.MinFilter.setEvaluator(new MinFilter());
-    }
-  }
-
-  private static class Image extends AbstractEvaluator {
-
-    public Image() {}
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAST()) {
-        try {
-          ImageExpr imageExpr = ImageExpr.toImageExpr((IAST) ast.arg1());
-          if (imageExpr != null) {
-            return imageExpr;
-          }
-        } catch (RuntimeException rex) {
-          rex.printStackTrace();
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return IFunctionEvaluator.ARGS_1_2;
     }
   }
 
@@ -120,5 +92,5 @@ public class ImageFunctions {
     Initializer.init();
   }
 
-  private ImageFunctions() {}
+  private FilterFunctions() {}
 }

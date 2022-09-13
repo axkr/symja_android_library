@@ -5,8 +5,6 @@ import java.io.IOException;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.bridge.fig.ListPlot;
-import org.matheclipse.core.bridge.fig.VisualSet;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -14,6 +12,8 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.tensor.ext.HomeDirectory;
+import org.matheclipse.image.bridge.fig.ListPlot;
+import org.matheclipse.image.bridge.fig.VisualSet;
 
 public class HistogramDistributionDemo {
 

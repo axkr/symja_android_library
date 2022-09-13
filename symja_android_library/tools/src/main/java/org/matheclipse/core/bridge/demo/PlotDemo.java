@@ -4,13 +4,13 @@ import java.awt.Color;
 import java.io.IOException;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
-import org.matheclipse.core.bridge.fig.Plot;
-import org.matheclipse.core.bridge.fig.VisualSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.tensor.ext.HomeDirectory;
+import org.matheclipse.image.bridge.fig.Plot;
+import org.matheclipse.image.bridge.fig.VisualSet;
 
 public class PlotDemo {
 

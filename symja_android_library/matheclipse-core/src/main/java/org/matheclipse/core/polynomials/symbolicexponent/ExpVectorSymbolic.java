@@ -175,7 +175,7 @@ public final class ExpVectorSymbolic {
    * @return vatiable names.
    */
   public static IAST STDVARS(String prefix, int n) {
-    final String pref =  (prefix == null || prefix.length() == 0) ? "x" : prefix;
+    final String pref = (prefix == null || prefix.length() == 0) ? "x" : prefix;
     return F.mapRange(0, n, i -> F.Dummy(pref + i));
   }
 
@@ -509,13 +509,13 @@ public final class ExpVectorSymbolic {
    */
   @Override
   public int hashCode() {
-    if (hash == 0) {
-      for (int i = 0; i < length(); i++) {
-        hash = hash << 4 + getVal(i).hashCode();
+    if (hash < 0) {
+      int h = 0;
+      final int len = length();
+      for (int i = 0; i < len; i++) {
+        hash = (hash << 3) + getVal(i).hashCode();
       }
-      if (hash == 0) {
-        hash = 1;
-      }
+      hash = h;
     }
     return hash;
   }

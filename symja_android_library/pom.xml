@@ -50,6 +50,7 @@
 		<module>matheclipse-parser</module>
 		<module>matheclipse-core</module>
 		<module>matheclipse-gpl</module>
+		<module>matheclipse-image</module>
 		<module>matheclipse-api</module>
 		<module>matheclipse-io</module>
 		<module>matheclipse-discord</module>

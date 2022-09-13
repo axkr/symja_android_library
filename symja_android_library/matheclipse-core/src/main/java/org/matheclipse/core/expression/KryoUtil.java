@@ -20,7 +20,6 @@ import org.matheclipse.core.expression.data.FileExpr;
 import org.matheclipse.core.expression.data.FittedModelExpr;
 import org.matheclipse.core.expression.data.GeoPositionExpr;
 import org.matheclipse.core.expression.data.GraphExpr;
-import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.expression.data.InputStreamExpr;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.expression.data.JavaClassExpr;
@@ -476,7 +475,7 @@ public class KryoUtil {
     kryo.register(B3.Plus.class);
     kryo.register(B3.Times.class);
 
-    // data expr
+    // data expressions
     kryo.register(ByteArrayExpr.class);
     kryo.register(CompiledFunctionExpr.class);
     kryo.register(DateObjectExpr.class);
@@ -489,7 +488,7 @@ public class KryoUtil {
     kryo.register(Graph.class);
     kryo.register(GraphExpr.class);
     kryo.register(BufferedImage.class);
-    kryo.register(ImageExpr.class);
+    // kryo.register(ImageExpr.class);
     kryo.register(InputStreamExpr.class);
     kryo.register(InterpolatingFunctionExpr.class);
     kryo.register(JavaClassExpr.class);

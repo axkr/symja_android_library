@@ -1,28 +1,27 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.image.builtin;
 
 import java.awt.image.BufferedImage;
 import org.jfree.chart.JFreeChart;
-import org.matheclipse.core.bridge.fig.Axis;
-import org.matheclipse.core.bridge.fig.ListPlot;
-import org.matheclipse.core.bridge.fig.VisualSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.data.ImageExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.image.bridge.fig.Axis;
+import org.matheclipse.image.bridge.fig.ListPlot;
+import org.matheclipse.image.bridge.fig.VisualSet;
+import org.matheclipse.image.expression.data.ImageExpr;
 
-public class ListLogLogPlot extends ListPlot {
+public class ListLogPlot extends ListPlot {
 
-  public ListLogLogPlot() {}
+  public ListLogPlot() {}
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if ((ast.size() == 2) && ast.arg1().isList()) {
       VisualSet visualSet = new VisualSet();
-      visualSet.getAxisX().setType(Axis.Type.LOGARITHMIC);
       visualSet.getAxisY().setType(Axis.Type.LOGARITHMIC);
-      if (listPlot(ast, visualSet)) {
+      if (listPlot(ast,visualSet)) {
         BufferedImage buffer = jFreeChartImage(visualSet);
         if (buffer != null) {
           return new ImageExpr(buffer, null);
@@ -32,8 +31,7 @@ public class ListLogLogPlot extends ListPlot {
     return F.NIL;
   }
 
-  public static JFreeChart listLogLogPlot(VisualSet visualSet, boolean joined) {
-    visualSet.getAxisX().setType(Axis.Type.LOGARITHMIC);
+  public static JFreeChart listLogPlot(VisualSet visualSet, boolean joined) {
     visualSet.getAxisY().setType(Axis.Type.LOGARITHMIC);
     return listPlot(visualSet, joined);
   }
@@ -46,15 +44,14 @@ public class ListLogLogPlot extends ListPlot {
   // /** @param visualSet
   // * @param joined
   // * @return */
-  // public static JFreeChart of(VisualSet visualSet, boolean joined) {
-  // visualSet.getAxisX().setType(Axis.Type.LOGARITHMIC);
+  // public static JFreeChart listLogPlot(VisualSet visualSet, boolean joined) {
   // visualSet.getAxisY().setType(Axis.Type.LOGARITHMIC);
   // return ListPlot.listPlot(visualSet, joined);
   // }
   //
   // /** @param visualSet
   // * @return */
-  // public static JFreeChart of(VisualSet visualSet) {
-  // return of(visualSet, false);
+  // public static JFreeChart listLogPlot(VisualSet visualSet) {
+  // return listLogPlot(visualSet, false);
   // }
 }

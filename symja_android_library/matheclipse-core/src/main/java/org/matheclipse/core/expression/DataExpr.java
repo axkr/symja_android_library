@@ -127,4 +127,8 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
   public String toString() {
     return fHead + "[" + fData.toString() + "]";
   }
+
+  public String toHTML() {
+    return fHead + "[" + fData.toString() + "]";
+  }
 }
