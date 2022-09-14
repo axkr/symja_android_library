@@ -1,16 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.Cos;
-import static org.matheclipse.core.expression.F.Cot;
-import static org.matheclipse.core.expression.F.Csc;
 import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Sec;
 import static org.matheclipse.core.expression.F.Sin;
-import static org.matheclipse.core.expression.F.Tan;
-import static org.matheclipse.core.expression.F.z_;
-import static org.matheclipse.core.expression.S.n;
-import static org.matheclipse.core.expression.S.z;
-import java.util.function.Supplier;
+import java.util.function.Function;
+import org.matheclipse.core.builtin.SimplifyFunctions;
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -23,163 +17,74 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.Matcher;
-import com.google.common.base.Suppliers;
 
 public class TrigSimplifyFu extends AbstractFunctionEvaluator {
-  private static Supplier<Matcher> TR0_MATCHER;
-  private static Supplier<Matcher> TR1_MATCHER;
-  private static Supplier<Matcher> TR2_MATCHER;
-  private static Supplier<Matcher> TR2I_MATCHER;
-  private static Supplier<Matcher> TR3_MATCHER;
-  private static Supplier<Matcher> TR4_MATCHER;
-  private static Supplier<Matcher> TR5_MATCHER;
-  private static Supplier<Matcher> TR7_MATCHER;
-  private static Supplier<Matcher> TR8_MATCHER;
-  private static Supplier<Matcher> TR12_MATCHER;
-  private static Supplier<Matcher> TR13_MATCHER;
-  private static Supplier<Matcher> TR14_MATCHER;
 
-  private static class Initializer {
-    private static Matcher initTR0() {
-      Matcher tr3 = new Matcher();
+  private static class Chain implements Function<IExpr, IExpr> {
+    Function<IExpr, IExpr>[] alternative1;
+    Function<IExpr, IExpr>[] alternative2;
+    Function<IExpr, Long> complexityFunction;
+    EvalEngine engine;
 
-
-      return tr3;
+    public Chain(Function<IExpr, IExpr>[] alternative1, Function<IExpr, IExpr>[] alternative2,
+        Function<IExpr, Long> complexityFunction, EvalEngine engine) {
+      this.engine = engine;
+      this.complexityFunction = complexityFunction;
+      this.alternative1 = alternative1;
+      this.alternative2 = alternative2;
     }
 
-    private static Matcher initTR1() {
-      Matcher tr1 = new Matcher();
-
-      tr1.caseOf(Sec(z_), //
-          // [$ 1/Cos(z)
-          // $]
-          F.Power(F.Cos(z), F.CN1)); // $$);
-      tr1.caseOf(Csc(z_), //
-          // [$ 1/Sin(z)
-          // $]
-          F.Power(F.Sin(z), F.CN1)); // $$);
-
-      return tr1;
+    public Chain(Function<IExpr, IExpr> alternative1, Function<IExpr, IExpr>[] alternative2,
+        Function<IExpr, Long> complexityFunction, EvalEngine engine) {
+      this.engine = engine;
+      this.complexityFunction = complexityFunction;
+      Function<IExpr, IExpr>[] f1 = new Function[1];
+      f1[0] = alternative1;
+      this.alternative1 = f1;
+      this.alternative2 = alternative2;;
     }
 
-    private static Matcher initTR2() {
-      Matcher tr2 = new Matcher();
-
-      tr2.caseOf(Cot(z_), //
-          // [$ Cos(z)/Sin(z)
-          // $]
-          F.Times(F.Cos(z), F.Power(F.Sin(z), F.CN1))); // $$);
-      tr2.caseOf(Tan(z_), //
-          // [$ Sin(z)/Cos(z)
-          // $]
-          F.Times(F.Power(F.Cos(z), F.CN1), F.Sin(z))); // $$);
-      return tr2;
+    public Chain(Function<IExpr, IExpr>[] alternative1, Function<IExpr, IExpr> alternative2,
+        Function<IExpr, Long> complexityFunction, EvalEngine engine) {
+      this.engine = engine;
+      this.complexityFunction = complexityFunction;
+      this.alternative1 = alternative1;
+      Function<IExpr, IExpr>[] f2 = new Function[1];
+      f2[0] = alternative2;
+      this.alternative2 = f2;
     }
 
-    private static Matcher initTR2i() {
-      Matcher tr2i = new Matcher();
+    @Override
+    public IExpr apply(IExpr expr) {
+      SimplifyFunctions.SimplifiedResult result1 =
+          new SimplifyFunctions.SimplifiedResult(F.NIL, complexityFunction.apply(expr));
 
-      return tr2i;
-    }
+      for (int i = 0; i < alternative1.length; i++) {
+        IExpr temp = expr.replaceAll(alternative1[i]);
+        if (temp.isPresent()) {
+          temp = engine.evaluate(F.evalExpandAll(temp));
+          if (result1.checkLess(temp, complexityFunction.apply(temp))) {
+          }
+        }
+      }
+      if (result1.getResult().isPresent()) {
+        expr = result1.getResult();
+      }
+      for (int i = 0; i < alternative2.length; i++) {
+        IExpr temp = expr.replaceAll(alternative2[i]);
+        if (temp.isPresent()) {
+          temp = engine.evaluate(temp);
+          result1.checkLess(temp, complexityFunction.apply(temp));
+        }
+      }
 
-    private static Matcher initTR3() {
-      Matcher tr3 = new Matcher();
+      return result1.getResult();
 
-
-      return tr3;
-    }
-
-    private static Matcher initTR4() {
-      Matcher tr4 = new Matcher();
-
-
-      return tr4;
-    }
-
-    private static Matcher initTR5() {
-      // Replacement of sin(x)^2 with 1 - cos(x)^2.
-      Matcher tr05 = new Matcher();
-
-      tr05.caseOf(Power(Sin(z_), F.n_Integer), //
-          // [$ (1-Cos(z)^2) ^ (n/2) /; EvenQ(n) && n>0
-          // $]
-          F.Condition(F.Power(F.Subtract(F.C1, F.Sqr(F.Cos(z))), F.Times(F.C1D2, n)),
-              F.And(F.EvenQ(n), F.Greater(n, F.C0)))); // $$);
-      return tr05;
-    }
-
-    private static Matcher initTR7() {
-      // Lowering the degree of cos(x)^2.
-      Matcher tr07 = new Matcher();
-
-      tr07.caseOf(Power(Cos(z_), F.C2), //
-          // [$ (1+Cos(2*z))/2
-          // $]
-          F.Times(F.C1D2, F.Plus(F.C1, F.Cos(F.Times(F.C2, z))))); // $$);
-      return tr07;
-    }
-
-    private static Matcher initTR8() {
-      Matcher tr8 = new Matcher();
-
-      return tr8;
-    }
-
-    private static Matcher initTR11() {
-      // Lowering the degree of cos(x)^2.
-      Matcher tr07 = new Matcher();
-
-      tr07.caseOf(Power(Cos(z_), F.C2), //
-          // [$ (1+Cos(2*z))/2
-          // $]
-          F.Times(F.C1D2, F.Plus(F.C1, F.Cos(F.Times(F.C2, z))))); // $$);
-      return tr07;
-    }
-
-    private static Matcher initTR12() {
-      Matcher tr12 = new Matcher();
-
-
-      return tr12;
-    }
-
-    private static Matcher initTR13() {
-      Matcher tr13 = new Matcher();
-
-
-      return tr13;
-    }
-
-    private static Matcher initTR14() {
-      Matcher tr14 = new Matcher();
-
-
-      return tr14;
     }
   }
 
   public TrigSimplifyFu() {}
 
-  private static Matcher tr1_matcher() {
-    return TR1_MATCHER.get();
-  }
-
-  private static Matcher tr2_matcher() {
-    return TR2_MATCHER.get();
-  }
-
-  private static Matcher tr2i_matcher() {
-    return TR2I_MATCHER.get();
-  }
-
-  private static Matcher tr5_matcher() {
-    return TR5_MATCHER.get();
-  }
-
-  private static Matcher tr7_matcher() {
-    return TR7_MATCHER.get();
-  }
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -190,13 +95,14 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     }
 
     IExpr assumptionExpr = F.NIL;
+    IExpr complexityFunctionHead = F.NIL;
     if (ast.size() > 2) {
-      IExpr arg2 = ast.arg2();
-      if (!arg2.isRule()) {
-        assumptionExpr = arg2;
+      OptionArgs options = null;
+      if (ast.size() > 2) {
+        options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
+        complexityFunctionHead = options.getOptionAutomatic(S.ComplexityFunction);
       }
-      final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-      assumptionExpr = options.getOption(S.Assumptions).orElse(assumptionExpr);
+      assumptionExpr = OptionArgs.determineAssumptions(ast, 2, options);
     }
     if (assumptionExpr.isPresent()) {
       if (assumptionExpr.isAST()) {
@@ -211,14 +117,120 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
         if (assumptions != null) {
           try {
             engine.setAssumptions(assumptions);
-            return callMatcher(ast, arg1, engine);
+            return simplifyFu(arg1, complexityFunctionHead, engine);
           } finally {
             engine.setAssumptions(oldAssumptions);
           }
         }
       }
     }
-    return callMatcher(ast, arg1, engine);
+
+    return simplifyFu(arg1, complexityFunctionHead, engine);
+  }
+
+  final static Function<IExpr, IExpr> TR0 = TrigSimplifyFu::tr0;
+  final static Function<IExpr, IExpr> TR5 = TrigSimplifyFu::tr5;
+  final static Function<IExpr, IExpr> TR6 = TrigSimplifyFu::tr6;
+  final static Function<IExpr, IExpr> TR10 = TrigSimplifyFu::tr10;
+  final static Function<IExpr, IExpr> TR11 = TrigSimplifyFu::tr11;
+
+  private IExpr simplifyFu(IExpr expr, IExpr complexityFunctionHead, EvalEngine engine) {
+    Function<IExpr, Long> complexityFunction =
+        SimplifyFunctions.createComplexityFunction(complexityFunctionHead, engine);
+
+    // CTR1 = [(TR5, TR0), (TR6, TR0), identity]
+    Function<IExpr, IExpr>[] CTR1 = new Function[2];
+    CTR1[0] = TR5.andThen(TR0);
+    CTR1[1] = TR6.andThen(TR0);
+
+    // CTR2 = (TR11, [(TR5, TR0), (TR6, TR0), TR0])
+    Function<IExpr, IExpr>[] CTR2 = new Function[1];
+    CTR2[0] = new Chain(TR11, CTR1, complexityFunction, engine);
+
+    Function<IExpr, IExpr> RL2 = new Chain(CTR1, CTR2, complexityFunction, engine);
+    IExpr temp = RL2.apply(expr);
+    return temp.orElse(expr);
+  }
+
+  private static IExpr tr0(IExpr expr) {
+    if (expr.isAST()) {
+      return EvalEngine.get().evaluate(F.Expand(F.Factor(expr)));
+    }
+    return F.NIL;
+  }
+
+  /**
+   * <p>
+   * Replacement of sin^2 with 1 - cos(x)^2.
+   * 
+   * Examples:
+   * 
+   * <pre>
+   * >> TR5(sin(x)^2)
+   * 1 - cos(x)^2
+   * >> TR5(sin(x)^-2)  # unchanged
+   * sin(x)^(-2)
+   * >> TR5(sin(x)^4)
+   * (1 - cos(x)^2)^^ 2
+   * </pre>
+   * 
+   * 
+   * @param expr
+   * @return
+   */
+  private static IExpr tr5(IExpr expr) {
+    if (expr.isPresent()) {
+      if (expr.isPower() && expr.first().isSin() && expr.second().isInteger()) {
+        IAST sinExpr = (IAST) expr.base();
+        IInteger exponent = (IInteger) expr.exponent();
+        if (exponent.isPositive() && exponent.isEven()) {
+          IInteger div2 = exponent.div(F.C2);
+          if (div2.isOne()) {
+            return EvalEngine.get().evaluate(F.Subtract(F.C1, F.Sqr(F.Cos(sinExpr.arg1()))));
+          }
+          return EvalEngine.get()
+              .evaluate(F.Power(F.Subtract(F.C1, F.Sqr(F.Cos(sinExpr.arg1()))), div2));
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * <p>
+   * Replacement of cos^2 with 1 - sin(x)^2.
+   * 
+   * Examples:
+   * 
+   * <pre>
+   * >> TR6(cos(x)^2)
+   * 1 - sin(x)^2
+   * >> TR&(cos(x)^-2)  # unchanged
+   * cos(x)^(-2)
+   * >> TR6(cos(x)^4)
+   * (1 - sin(x)^2)^^ 2
+   * </pre>
+   * 
+   * 
+   * @param expr
+   * @return
+   */
+  private static IExpr tr6(IExpr expr) {
+    if (expr.isPresent()) {
+      if (expr.isPower() && expr.first().isCos() && expr.second().isInteger()) {
+        IAST cosExpr = (IAST) expr.base();
+        IInteger exponent = (IInteger) expr.exponent();
+        if (exponent.isPositive() && exponent.isEven()) {
+          IInteger div2 = exponent.div(F.C2);
+          if (div2.isOne()) {
+            return EvalEngine.get().evaluate(F.Subtract(F.C1, F.Sqr(F.Sin(cosExpr.arg1()))));
+          }
+          return EvalEngine.get()
+              .evaluate(F.Power(F.Subtract(F.C1, F.Sqr(F.Sin(cosExpr.arg1()))), div2));
+        }
+      }
+    }
+    return F.NIL;
   }
 
   private static IExpr tr10(IExpr expr) {
@@ -234,54 +246,23 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       IInteger times1 = (IInteger) expr.first().first();
       if (times1.isEven()) {
         if (expr.isSin()) {
-          IExpr times1Half = times1.divide(2);
+          IExpr times1Half = times1.div(2);
           IExpr rest = expr.first().rest();
-          return F.Times(F.C2, Sin(F.Times(times1Half, rest)), Cos(F.Times(times1Half, rest)));
+          return EvalEngine.get().evaluate(
+              F.Times(F.C2, Sin(F.Times(times1Half, rest)), Cos(F.Times(times1Half, rest))));
         }
         if (expr.isCos()) {
-          IExpr times1Half = times1.divide(2);
+          IExpr times1Half = times1.div(2);
           IExpr rest = expr.first().rest();
-          return F.Subtract(F.C1, F.Times(F.C2, Power(Sin(F.Times(times1Half, rest)), F.C2)));
+          return EvalEngine.get().evaluate(
+              F.Subtract(F.C1, F.Times(F.C2, Power(Sin(F.Times(times1Half, rest)), F.C2))));
         }
       }
     }
     return F.NIL;
   }
 
-  /**
-   * @param ast
-   * @param arg1
-   * @return {@link F#NIL} if no match was found
-   */
-  public static IExpr callMatcher(final IAST ast, IExpr arg1, EvalEngine engine) {
-    // https://github.com/sympy/sympy/blob/dfef951e777dba36ad75162c8dc9402b228d11ed/sympy/simplify/fu.py#L1639
-    boolean oldDisabledHashRules = engine.isDisabledTrigRules();
-    try {
-      engine.setDisabledTrigRules(true);
-      long leafCountSimplify = ast.leafCountSimplify();
 
-      // RL1 = (TR4, TR3, TR4, TR12, TR4, TR13, TR4, TR0);
-      IExpr temp = tr1_matcher().replaceAll(arg1, null).orElse(arg1);
-      temp = engine.evaluate(temp);
-      System.out.println(temp.toString());
-      temp = tr5_matcher().replaceAll(arg1, null).orElse(temp);
-      temp = engine.evaluate(temp);
-      System.out.println(temp.toString());
-      temp = tr7_matcher().replaceAll(arg1, null).orElse(temp);
-      temp = engine.evaluate(temp);
-      System.out.println(temp.toString());
-      temp = temp.replaceAll(TrigSimplifyFu::tr10).orElse(temp);
-      temp = engine.evaluate(temp);
-      System.out.println(temp.toString());
-      temp = temp.replaceAll(TrigSimplifyFu::tr11).orElse(temp);
-      temp = engine.evaluate(temp);
-      System.out.println(temp.toString());
-      return temp;
-
-    } finally {
-      engine.setDisabledTrigRules(oldDisabledHashRules);
-    }
-  }
 
   @Override
   public int[] expectedArgSize(IAST ast) {
@@ -290,18 +271,8 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    // Initializer.init();
-    TR0_MATCHER = Suppliers.memoize(Initializer::initTR0);
-    TR1_MATCHER = Suppliers.memoize(Initializer::initTR1);
-    TR2_MATCHER = Suppliers.memoize(Initializer::initTR2);
-    TR2I_MATCHER = Suppliers.memoize(Initializer::initTR2i);
-    TR3_MATCHER = Suppliers.memoize(Initializer::initTR3);
-    TR4_MATCHER = Suppliers.memoize(Initializer::initTR4);
-    TR5_MATCHER = Suppliers.memoize(Initializer::initTR5);
-    TR7_MATCHER = Suppliers.memoize(Initializer::initTR7);
-    TR8_MATCHER = Suppliers.memoize(Initializer::initTR8);
-    TR12_MATCHER = Suppliers.memoize(Initializer::initTR12);
-    TR13_MATCHER = Suppliers.memoize(Initializer::initTR13);
-    TR14_MATCHER = Suppliers.memoize(Initializer::initTR14);
+    setOptions(newSymbol, //
+        F.list(F.Rule(S.Assumptions, S.$Assumptions), //
+            F.Rule(S.ComplexityFunction, S.Automatic)));
   }
 }

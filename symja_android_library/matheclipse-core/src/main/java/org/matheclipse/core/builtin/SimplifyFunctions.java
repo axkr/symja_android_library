@@ -36,6 +36,40 @@ import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorExpr;
 
 public class SimplifyFunctions {
+
+  public static class SimplifiedResult {
+    IExpr result;
+
+    long minCounter;
+
+    public SimplifiedResult(IExpr result, long minCounter) {
+      this.result = result;
+      this.minCounter = minCounter;
+    }
+
+    public boolean checkLessEqual(IExpr expr, long counter) {
+      if (counter <= this.minCounter) {
+        this.minCounter = counter;
+        this.result = expr;
+        return true;
+      }
+      return false;
+    }
+
+    public boolean checkLess(IExpr expr, long counter) {
+      if (counter < this.minCounter) {
+        this.minCounter = counter;
+        this.result = expr;
+        return true;
+      }
+      return false;
+    }
+
+    public IExpr getResult() {
+      return result;
+    }
+  }
+
   private static final Logger LOGGER = LogManager.getLogger();
 
   /**
@@ -151,34 +185,6 @@ public class SimplifyFunctions {
           null, true));
     }
 
-    private static class SimplifiedResult {
-      IExpr result;
-      long minCounter;
-
-      public SimplifiedResult(IExpr result, long minCounter) {
-        this.result = result;
-        this.minCounter = minCounter;
-      }
-
-      public boolean checkLessEqual(IExpr expr, long counter) {
-        if (counter <= this.minCounter) {
-          this.minCounter = counter;
-          this.result = expr;
-          return true;
-        }
-        return false;
-      }
-
-      public boolean checkLess(IExpr expr, long counter) {
-        if (counter < this.minCounter) {
-          this.minCounter = counter;
-          this.result = expr;
-          return true;
-        }
-        return false;
-      }
-    }
-
     private static class IsBasicExpressionVisitor extends AbstractVisitorBoolean {
       public IsBasicExpressionVisitor() {
         super();
@@ -228,6 +234,8 @@ public class SimplifyFunctions {
       }
     }
 
+
+
     private static class SimplifyVisitor extends VisitorExpr {
       final IsBasicExpressionVisitor isBasicAST = new IsBasicExpressionVisitor();
       /**
@@ -242,8 +250,8 @@ public class SimplifyFunctions {
       /** The current evlaution engine */
       final EvalEngine fEngine;
 
-      public SimplifyVisitor(Function<IExpr, Long> complexityFunction, EvalEngine engine,
-          boolean fullSimplify) {
+      public SimplifyVisitor(Function<IExpr, Long> complexityFunction, boolean fullSimplify,
+          EvalEngine engine) {
         super();
         fEngine = engine;
         fComplexityFunction = complexityFunction;
@@ -1316,7 +1324,7 @@ public class SimplifyFunctions {
         long minCounter, IExpr result, EvalEngine engine, boolean fullSimplify) {
       long count;
       IExpr temp;
-      temp = arg1.accept(new SimplifyVisitor(complexityFunction, engine, fullSimplify));
+      temp = arg1.accept(new SimplifyVisitor(complexityFunction, fullSimplify, engine));
       while (temp.isPresent()) {
         count = complexityFunction.apply(temp);
         if (count == minCounter) {
@@ -1325,7 +1333,7 @@ public class SimplifyFunctions {
         if (count < minCounter) {
           minCounter = count;
           result = temp;
-          temp = result.accept(new SimplifyVisitor(complexityFunction, engine, fullSimplify));
+          temp = result.accept(new SimplifyVisitor(complexityFunction, fullSimplify, engine));
         } else {
           return result;
         }
@@ -1337,28 +1345,6 @@ public class SimplifyFunctions {
       return false;
     }
 
-    /**
-     * Creata the complexity function which determines the &quot;more simplified&quot; expression.
-     *
-     * @param complexityFunctionHead
-     * @param engine
-     * @return
-     */
-    private static Function<IExpr, Long> createComplexityFunction(IExpr complexityFunctionHead,
-        EvalEngine engine) {
-      Function<IExpr, Long> complexityFunction = x -> x.leafCountSimplify();
-      if (complexityFunctionHead.isPresent()) {
-        final IExpr head = complexityFunctionHead;
-        complexityFunction = x -> {
-          IExpr temp = engine.evaluate(F.unaryAST1(head, x));
-          if (temp.isInteger() && !temp.isNegative()) {
-            return ((IInteger) temp).toLong();
-          }
-          return Long.MAX_VALUE;
-        };
-      }
-      return complexityFunction;
-    }
   }
 
   /**
@@ -1420,6 +1406,29 @@ public class SimplifyFunctions {
     public boolean isFullSimplifyMode() {
       return true;
     }
+  }
+
+  /**
+   * Creata the complexity function which determines the &quot;more simplified&quot; expression.
+   *
+   * @param complexityFunctionHead
+   * @param engine
+   * @return
+   */
+  public static Function<IExpr, Long> createComplexityFunction(IExpr complexityFunctionHead,
+      EvalEngine engine) {
+    Function<IExpr, Long> complexityFunction = x -> x.leafCountSimplify();
+    if (complexityFunctionHead.isPresent()) {
+      final IExpr head = complexityFunctionHead;
+      complexityFunction = x -> {
+        IExpr temp = engine.evaluate(F.unaryAST1(head, x));
+        if (temp.isInteger() && !temp.isNegative()) {
+          return ((IInteger) temp).toLong();
+        }
+        return Long.MAX_VALUE;
+      };
+    }
+    return complexityFunction;
   }
 
   public static void initialize() {
