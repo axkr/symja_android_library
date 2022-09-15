@@ -1159,11 +1159,18 @@ public class TensorFunctions {
       if (dim > 0) {
         IAST v = (IAST) ast.arg1().normal(false);
         int len = dim + 1;
-        // TransformationFunction(IdentityMatrix(Length(v) + 1) + (Join(ConstantArray(0, Length(v)),
-        // {#})& /@ Join(v, {0})))
-        return F.TransformationFunction(F.Plus(F.IdentityMatrix(F.ZZ(len)),
-            F.Map(F.Function(F.Join(F.ConstantArray(F.C0, F.ZZ(dim)), F.list(F.Slot1))),
-                F.Join(v, F.list(F.C0)))));
+
+        IAST matrix = F.matrix((i, j) -> {
+          if (i == j) {
+            return F.C1;
+          }
+          if (j == dim && i < len) {
+            return v.get(i + 1);
+          }
+          return F.C0;
+        }, len, len);
+
+        return F.TransformationFunction(matrix);
       }
       return F.NIL;
     }

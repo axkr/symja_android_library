@@ -214,6 +214,18 @@ public class TensorTest extends ExprEvaluatorTestCase {
 
 
   public void testRotationTransform() {
+    check("RotationTransform(Pi).TranslationTransform({1, -1})", //
+        "TransformationFunction(\n" //
+            + "{{-1,0,-1},\n" //
+            + " {0,-1,1},\n" //
+            + " {0,0,1}})"); //
+
+    check("TranslationTransform({1, -1}).RotationTransform(Pi)", //
+        "TransformationFunction(\n" //
+            + "{{-1,0,1},\n" //
+            + " {0,-1,-1},\n" //
+            + " {0,0,1}})"); //
+
     check("RotationTransform(alpha)", //
         "TransformationFunction({{Cos(alpha),-Sin(alpha),0},{Sin(alpha),Cos(alpha),0},{0,\n" //
             + "0,1}})");
@@ -244,8 +256,19 @@ public class TensorTest extends ExprEvaluatorTestCase {
   }
 
   public void testTranslationTransform() {
+    check("TranslationTransform({a,b,c,d})", //
+        "TransformationFunction(\n" //
+            + "{{1,0,0,0,a},\n" //
+            + " {0,1,0,0,b},\n" //
+            + " {0,0,1,0,c},\n" //
+            + " {0,0,0,1,d},\n" //
+            + " {0,0,0,0,1}})");
+
     check("TranslationTransform({1, 2})", //
-        "TransformationFunction({{1,0,1},{0,1,2},{0,0,1}})");
+        "TransformationFunction(\n" //
+            + "{{1,0,1},\n" //
+            + " {0,1,2},\n" //
+            + " {0,0,1}})"); //
   }
 
   /** The JUnit setup method */
