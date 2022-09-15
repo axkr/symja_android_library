@@ -316,9 +316,11 @@ public class BuiltinUsage {
     USAGE[ID.RogersTanimotoDissimilarity] = "Rogers-Tanimoto dissimilarity";
     USAGE[ID.RotateLeft] = "cyclically rotate lists to the left, at any depth";
     USAGE[ID.RotateRight] = "cyclically rotate lists to the right, at any depth";
+    USAGE[ID.RotationTransform] = "symbolic representation of a rotation in 3D";
     USAGE[ID.RussellRaoDissimilarity] = "Russell-Rao dissimilarity";
 
     USAGE[ID.SameQ] = "literal symbolic identity";
+    USAGE[ID.ScalingTransform] =  "symbolic representation of a scale transformation";
     USAGE[ID.Sec] = "secant function";
     USAGE[ID.Sech] = "hyperbolic secant function";
     USAGE[ID.Select] = "pick elements according to a criterion";
@@ -326,6 +328,7 @@ public class BuiltinUsage {
     USAGE[ID.SequenceHold] =
         "attribute that prevents 'Sequence' objects from being spliced into a function's arguments.";
     USAGE[ID.SetAttributes] = "set attributes for a symbol";
+    USAGE[ID.ShearingTransform] = "symbolic representation of a shearing transformation";
     USAGE[ID.Sign] = "return -1, 0, or 1 depending on whether $x$ is negative, zero, or positive";
     USAGE[ID.Sin] = "sine function";
     USAGE[ID.Sinh] = "hyperbolic sine function";
@@ -390,6 +393,8 @@ public class BuiltinUsage {
     USAGE[ID.ToString] = "format an expression and produce a string";
     USAGE[ID.ToUpperCase] = "turn all the letters into upper case";
     USAGE[ID.Total] = "adds all values in $list$...";
+    USAGE[ID.TransformationFunction] = "general symbolic representation of transformation";
+    USAGE[ID.TranslationTransform] = "symbolic representation of translation";
     USAGE[ID.Transliterate] = "transliterate an UTF string in different alphabets to ASCII";
     USAGE[ID.True] = "boolean constant for True";
     USAGE[ID.TrueQ] = "returns 'true' if and only if $expr$ is 'true'";

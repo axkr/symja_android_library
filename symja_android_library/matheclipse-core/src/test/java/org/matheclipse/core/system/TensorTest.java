@@ -120,7 +120,7 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "");
     check("KroneckerProduct(am,bm)", //
         "{{5,6,10,12},{7,8,14,16},{9,10,18,20},{15,18,20,24},{21,24,28,32},{27,30,36,40}}");
-    
+
     // TODO improve FlattenArray / message ArrayFlatten: Function (rank != 2) not implemented.
     check("am = {{{1, 2}, {3, 4}}}; bm = {{{5, 6}, {7, 8}, {9, 10}}};", //
         "");
@@ -209,6 +209,43 @@ public class TensorTest extends ExprEvaluatorTestCase {
             + "0,0,0}},{{24,30,12,27},{15,18,21,12},{6,9,6,27}},{{72,90,36,81},{45,54,63,36},{\n"
             + "18,27,18,81}},{{72,90,36,81},{45,54,63,36},{18,27,18,81}},{{64,80,32,72},{40,48,\n"
             + "56,32},{16,24,16,72}}}}");
+  }
+
+
+
+  public void testRotationTransform() {
+    check("RotationTransform(alpha)", //
+        "TransformationFunction({{Cos(alpha),-Sin(alpha),0},{Sin(alpha),Cos(alpha),0},{0,\n" //
+            + "0,1}})");
+  }
+
+  public void testScalingTransform() {
+    check("ScalingTransform({a, b, c})", //
+        "TransformationFunction(\n" //
+            + "{{a,0,0,0},\n" //
+            + " {0,b,0,0},\n" //
+            + " {0,0,c,0},\n" //
+            + " {0,0,0,1}})");
+
+    check("ScalingTransform(s,{1,1})", //
+        "TransformationFunction({{1/2*(1+s),1/2*(-1+s),0},{1/2*(-1+s),1/2*(1+s),0},{0,0,1}})");
+  }
+
+  public void testShearingTransform() {
+    check("ShearingTransform(\\[Theta], {1, 0}, {0, 1})", //
+        "TransformationFunction({{1,Tan(θ),0},{0,1,0},{0,0,1}})");
+  }
+
+  public void testTransformationFunction() {
+    check("r = RotationTransform(\\[Theta]);", //
+        "");
+    check("r({x, y})", //
+        "{x*Cos(θ)-y*Sin(θ),y*Cos(θ)+x*Sin(θ)}");
+  }
+
+  public void testTranslationTransform() {
+    check("TranslationTransform({1, 2})", //
+        "TransformationFunction({{1,0,1},{0,1,2},{0,0,1}})");
   }
 
   /** The JUnit setup method */

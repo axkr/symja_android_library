@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -43,6 +44,12 @@ public class TensorFunctions {
       S.TensorProduct.setEvaluator(new TensorProduct());
       S.TensorRank.setEvaluator(new TensorRank());
       S.TensorSymmetry.setEvaluator(new TensorSymmetry());
+
+      S.ScalingTransform.setEvaluator(new ScalingTransform());
+      S.RotationTransform.setEvaluator(new RotationTransform());
+      S.ShearingTransform.setEvaluator(new ShearingTransform());
+      S.TransformationFunction.setEvaluator(new TransformationFunction());
+      S.TranslationTransform.setEvaluator(new TranslationTransform());
     }
   }
 
@@ -362,9 +369,8 @@ public class TensorFunctions {
       final int levelSize = rootKernelDimensions.getInt(dimensionLevel);
       IASTAppendable reversedList = F.ListAlloc(levelSize);
       for (int i = levelSize; i >= 1; i--) {
-        IAST reversed =
-            nestedReverseRecursive((IAST) kernel.get(i).normal(false), rootKernelDimensions,
-                dimensionLevel + 1);
+        IAST reversed = nestedReverseRecursive((IAST) kernel.get(i).normal(false),
+            rootKernelDimensions, dimensionLevel + 1);
         // append in reversed order
         reversedList.append(reversed);
       }
@@ -1016,6 +1022,155 @@ public class TensorFunctions {
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
           F.list(F.Rule(S.Assumptions, S.$Assumptions)));
+    }
+  }
+
+  private static class RotationTransform extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      IExpr phi = ast.arg1();
+      if (ast.isAST2()) {
+        IExpr p = ast.arg1();
+        // TranslationTransform(p) . RotationTransform(phi) . TranslationTransform(-p)
+        return F.Dot(F.TranslationTransform(p), F.RotationTransform(phi),
+            F.TranslationTransform(F.Negate(p)));
+      }
+      // TransformationFunction({{Cos(phi), -Sin(phi), 0}, {Sin(phi), Cos(phi), 0}, {0, 0, 1}})
+      return F.TransformationFunction(F.list(F.list(F.Cos(phi), F.Negate(F.Sin(phi)), F.C0),
+          F.list(F.Sin(phi), F.Cos(phi), F.C0), F.list(F.C0, F.C0, F.C1)));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  private static class ScalingTransform extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      IExpr s = ast.arg1();
+      if (ast.isAST2()) {
+        IExpr p = ast.arg2();
+        if (p.isList2()) {
+          IExpr p1 = p.first();
+          IExpr p2 = p.second();
+          // TransformationFunction({{(Abs(p1)^2 + Abs(p2)^2 - p1*Conjugate(p1) +
+          // p1*s*Conjugate(p1))/(Abs(p1)^2 + Abs(p2)^2), (p1*(-1 + s)*Conjugate(p2))/
+          // (Abs(p1)^2 + Abs(p2)^2), 0}, {(p2*(-1 + s)*Conjugate(p1))/(Abs(p1)^2 + Abs(p2)^2),
+          // (Abs(p1)^2 + Abs(p2)^2 - p2*Conjugate(p2) +
+          // p2*s*Conjugate(p2))/(Abs(p1)^2 + Abs(p2)^2), 0}, {0, 0, 1}})
+          IExpr magnitude = engine.evaluate(F.Plus(F.Sqr(F.Abs(p1)), F.Sqr(F.Abs(p2))));
+          if (magnitude.isZero()) {
+            // Direction vector `1` has zero magnitude.
+            return IOFunctions.printMessage(S.ScalingTransform, "idir", F.List(p), engine);
+          }
+          return F.TransformationFunction(F.list(
+              F.list(
+                  F.Times(F.Power(magnitude, F.CN1),
+                      F.Plus(magnitude, F.Times(F.CN1, p1, F.Conjugate(p1)),
+                          F.Times(p1, F.s, F.Conjugate(p1)))),
+                  F.Times(p1, F.Plus(F.CN1, F.s), F.Power(magnitude, F.CN1), F.Conjugate(p2)),
+                  F.C0),
+              F.list(F.Times(p2, F.Plus(F.CN1, F.s), F.Power(magnitude, F.CN1), F.Conjugate(p1)),
+                  F.Times(F.Power(magnitude, F.CN1), F.Plus(magnitude,
+                      F.Times(F.CN1, p2, F.Conjugate(p2)), F.Times(p2, F.s, F.Conjugate(p2)))),
+                  F.C0),
+              F.list(F.C0, F.C0, F.C1)));
+        }
+        return F.NIL;
+      }
+      int dim = s.isVector();
+      if (dim > 0) {
+        // TransformationFunction(DiagonalMatrix(Join(s, {1})))
+        return F.TransformationFunction(F.DiagonalMatrix(F.Join(s, F.list(F.C1))));
+      }
+      return F.NIL;
+
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+  private static class ShearingTransform extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      IExpr phi = ast.arg1();
+      IExpr u = ast.arg2();
+      IExpr v = ast.arg3();
+      if (ast.size() == 5) {
+        IExpr p = ast.arg4();
+        // TranslationTransform(p) . ShearingTransform(phi, u, v) . TranslationTransform(-p)
+        return F.Dot(F.TranslationTransform(p), F.ShearingTransform(phi, u, v),
+            F.TranslationTransform(F.Negate(p)));
+      }
+      if (u.equals(F.List(F.C1, F.C0)) && v.equals(F.List(F.C0, F.C1))) {
+        // TransformationFunction({{1, Tan(phi), 0}, {0, 1, 0}, {0, 0, 1}})
+        return F.TransformationFunction(F.list(F.list(F.C1, F.Tan(phi), F.C0),
+            F.list(F.C0, F.C1, F.C0), F.list(F.C0, F.C0, F.C1)));
+      }
+      if (u.equals(F.List(F.C0, F.C1)) && v.equals(F.List(F.C1, F.C0))) {
+        // TransformationFunction({{1, 0, 0}, {Tan(phi), 1, 0}, {0, 0, 1}})
+        return F.TransformationFunction(F.list(F.list(F.C1, F.C0, F.C0),
+            F.list(F.Tan(phi), F.C1, F.C0), F.list(F.C0, F.C0, F.C1)));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_4;
+    }
+  }
+
+  private static class TransformationFunction extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.head().isAST(S.TransformationFunction, 2)) {
+        IAST operator = (IAST) ast.head();
+        IExpr m = operator.arg1();
+        int dim = ast.arg1().isVector();
+        if (dim > 0) {
+          IAST v = (IAST) ast.arg1().normal(false);
+          // Take(m . Join(v, {1}), Length(v))
+          return F.Take(F.Dot(m, F.Join(v, F.list(F.C1))), F.ZZ(dim));
+        }
+      }
+      return F.NIL;
+    }
+
+  }
+
+  private static class TranslationTransform extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int dim = ast.arg1().isVector();
+
+      if (dim > 0) {
+        IAST v = (IAST) ast.arg1().normal(false);
+        int len = dim + 1;
+        // TransformationFunction(IdentityMatrix(Length(v) + 1) + (Join(ConstantArray(0, Length(v)),
+        // {#})& /@ Join(v, {0})))
+        return F.TransformationFunction(F.Plus(F.IdentityMatrix(F.ZZ(len)),
+            F.Map(F.Function(F.Join(F.ConstantArray(F.C0, F.ZZ(dim)), F.list(F.Slot1))),
+                F.Join(v, F.list(F.C0)))));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 

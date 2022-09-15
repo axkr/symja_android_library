@@ -4547,6 +4547,14 @@ public class F extends S {
     return new AST1(Identity, a0);
   }
 
+  public static IAST IdentityMatrix(final IExpr a0) {
+    return new AST1(IdentityMatrix, a0);
+  }
+
+  public static IAST IdentityMatrix(final int dim) {
+    return new AST1(IdentityMatrix, F.ZZ(dim));
+  }
+
   /**
    * Returns <code>trueExpr</code> if <code>condition</code> evaluates to {@link S#True}.
    *
@@ -8134,6 +8142,10 @@ public class F extends S {
     return new AST1(Round, x);
   }
 
+  public static IAST RotationTransform(final IExpr x) {
+    return new AST1(RotationTransform, x);
+  }
+
   public static IAST RowBox(final IAST list) {
     return new AST1(RowBox, list);
   }
@@ -8239,6 +8251,10 @@ public class F extends S {
 
   public static IAST SameQ(final IExpr a0, final double d) {
     return new AST2(SameQ, a0, num(d));
+  }
+
+  public static IAST ScalingTransform(final IExpr z) {
+    return new AST1(ScalingTransform, z);
   }
 
   public static IAST Scan(final IExpr a0, final IExpr a1) {
@@ -9329,6 +9345,14 @@ public class F extends S {
     return new AST1(Trace, a0);
   }
 
+  public static IAST TransformationFunction(final IExpr a0) {
+    return new AST1(TransformationFunction, a0);
+  }
+
+  public static IAST TranslationTransform(final IExpr a0) {
+    return new AST1(TranslationTransform, a0);
+  }
+
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Transpose.md">Transpose</a>
@@ -9801,6 +9825,10 @@ public class F extends S {
       // ---
     }
     return stringx(string);
+  }
+
+  public static IAST ShearingTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(ShearingTransform, a0, a1, a2);
   }
 
   /**

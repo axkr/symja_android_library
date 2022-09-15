@@ -102,7 +102,7 @@ public class FunctionIDGenerator {
           if (eval != null && eval != BuiltInSymbol.DUMMY_EVALUATOR) {
             Class<? extends IEvaluator> clazz = eval.getClass();
             if (!clazz.isAnonymousClass() && !clazz.isSynthetic() && //
-                !clazz.isInterface() && !clazz.isPrimitive()) { //
+                !clazz.isInterface() && !clazz.isPrimitive()) {
               String fileName = buildFileNameL(clazz);
               File sourceLocation = new File(fileName);
               int lineCounter = lineNumberOfClass(sourceLocation, list.get(i));
@@ -172,7 +172,7 @@ public class FunctionIDGenerator {
       }
       f.close();
     } catch (Exception e) {
-      e.printStackTrace();
+      // e.printStackTrace();
     }
     return 0;
   }

@@ -1718,6 +1718,13 @@ public final class LinearAlgebra {
       boolean togetherMode = engine.isTogetherMode();
       engine.setTogetherMode(true);
       try {
+        if (arg1.isAST(S.TransformationFunction, 2) && arg2.isAST(S.TransformationFunction, 2)) {
+          // Dot(TransformationFunction(a_), TransformationFunction(b_)) := TransformationFunction(
+          // a.b )
+          IExpr a = arg1.first();
+          IExpr b = arg2.first();
+          return F.TransformationFunction(F.Dot(a, b));
+        }
         IExpr temp = numericalDot(arg1, arg2);
         if (temp.isPresent()) {
           return temp;
