@@ -18,6 +18,11 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * See: <a href=
+ * "https://github.com/sympy/sympy/blob/master/sympy/simplify/fu.py">sympy/simplify/fu.py</a>
+ *
+ */
 public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
   private static class Chain implements Function<IExpr, IExpr> {
@@ -134,8 +139,17 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   final static Function<IExpr, IExpr> TR10 = TrigSimplifyFu::tr10;
   final static Function<IExpr, IExpr> TR11 = TrigSimplifyFu::tr11;
 
+  /**
+   * See: <a href=
+   * "https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/simplify/fu.py#L1569">sympy/simplify/fu.py#L1569</a>
+   * 
+   * @param expr
+   * @param complexityFunctionHead
+   * @param engine
+   * @return
+   */
   private IExpr simplifyFu(IExpr expr, IExpr complexityFunctionHead, EvalEngine engine) {
-    Function<IExpr, Long> complexityFunction =
+    Function<IExpr, Long> measure =
         SimplifyFunctions.createComplexityFunction(complexityFunctionHead, engine);
 
     // CTR1 = [(TR5, TR0), (TR6, TR0), identity]
@@ -145,17 +159,87 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
     // CTR2 = (TR11, [(TR5, TR0), (TR6, TR0), TR0])
     Function<IExpr, IExpr>[] CTR2 = new Function[1];
-    CTR2[0] = new Chain(TR11, CTR1, complexityFunction, engine);
+    CTR2[0] = new Chain(TR11, CTR1, measure, engine);
 
-    Function<IExpr, IExpr> RL2 = new Chain(CTR1, CTR2, complexityFunction, engine);
-    IExpr temp = RL2.apply(expr);
-    return temp.orElse(expr);
+    Function<IExpr, IExpr> RL1 = new Chain(CTR1, CTR2, measure, engine);
+    Function<IExpr, IExpr> RL2 = new Chain(CTR1, CTR2, measure, engine);
+
+
+    IExpr rv = tr1(expr).orElse(expr);
+    if (rv.has(x -> x.isTan() || x.isAST(S.Cot, 2), true)) {
+      IExpr rv1 = RL1.apply(rv);
+      if (measure.apply(rv1) < measure.apply(rv)) {
+        rv = rv1;
+      }
+      if (rv.has(x -> x.isTan() || x.isAST(S.Cot, 2), true)) {
+        rv = tr2(rv).orElse(rv);
+      }
+    }
+
+    if (rv.has(x -> x.isSin() || x.isCos(), true)) {
+      IExpr rv1 = RL2.apply(rv);
+      IExpr rv2 = tr8(trMorrie(rv1));
+
+      if (measure.apply(rv1) < measure.apply(rv)) {
+        rv = rv1;
+      }
+      if (measure.apply(rv2) < measure.apply(rv)) {
+        rv = rv2;
+      }
+    }
+
+    if (!rv.isPresent()) {
+      rv = expr;
+    }
+    IExpr rv3 = tr2i(rv).orElse(expr);
+    if (measure.apply(rv3) < measure.apply(rv)) {
+      rv = rv3;
+    }
+    return rv.orElse(expr);
+
   }
 
   private static IExpr tr0(IExpr expr) {
     if (expr.isAST()) {
       return EvalEngine.get().evaluate(F.Expand(F.Factor(expr)));
     }
+    return F.NIL;
+  }
+
+  private static IExpr tr1(IExpr expr) {
+    if (expr.isAST(S.Sec, 2)) {
+      IExpr arg1 = expr.first();
+      return F.Divide(1, F.Cos(arg1));
+    }
+    if (expr.isAST(S.Csc, 2)) {
+      IExpr arg1 = expr.first();
+      return F.Divide(1, F.Sin(arg1));
+    }
+    return F.NIL;
+  }
+
+  private static IExpr tr2(IExpr expr) {
+
+    if (expr.isTan()) {
+      IExpr arg1 = expr.first();
+      return F.Divide(F.Sin(arg1), F.Cos(arg1));
+    }
+    if (expr.isAST(S.Cot, 2)) {
+      IExpr arg1 = expr.first();
+      return F.Divide(F.Cos(arg1), F.Sin(arg1));
+    }
+    return F.NIL;
+  }
+
+  /**
+   * TODO implement method
+   * 
+   * @param expr
+   * @return
+   * @deprecated
+   */
+  @Deprecated
+  private static IExpr tr2i(IExpr expr) {
     return F.NIL;
   }
 
@@ -233,6 +317,18 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * TODO implement method
+   * 
+   * @param expr
+   * @return
+   * @deprecated
+   */
+  @Deprecated
+  private static IExpr tr8(IExpr expr) {
+    return F.NIL;
+  }
+
   private static IExpr tr10(IExpr expr) {
     if ((expr.isSin() || expr.isCos())) {
       return EvalEngine.get().evaluate(F.TrigExpand(expr));
@@ -262,7 +358,17 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-
+  /**
+   * TODO implement method
+   * 
+   * @param expr
+   * @return
+   * @deprecated
+   */
+  @Deprecated
+  private static IExpr trMorrie(IExpr expr) {
+    return F.NIL;
+  }
 
   @Override
   public int[] expectedArgSize(IAST ast) {

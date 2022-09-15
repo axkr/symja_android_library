@@ -1112,6 +1112,14 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return null;
     }
 
+    /**
+     * @return <code>Long.MAX_VALUE</code>
+     */
+    @Override
+    public long leafCountSimplify() {
+      return Long.MAX_VALUE;
+    }
+
     @Override
     public IASTMutable normal(boolean nilIfUnevaluated) {
       ArgumentTypeException.throwNIL();
