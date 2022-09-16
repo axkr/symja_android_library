@@ -371,8 +371,7 @@ public final class LinearAlgebra {
 
       current.row = a.row;
       for (int i = current.row; i < (numRows - first_row); i++) {
-        current.row = i;
-        if (!isZero(rowReducedMatrix.getEntry(current.row, current.col))) {
+        if (!isZero(rowReducedMatrix.getEntry(i, current.col))) {
           pivot.row = i;
           break;
         }

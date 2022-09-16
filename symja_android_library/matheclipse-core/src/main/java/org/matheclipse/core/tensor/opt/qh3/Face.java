@@ -56,8 +56,7 @@ class Face {
 
   public void computeNormal(Vector3d normal, IExpr minArea) {
     computeNormal(normal);
-    if ((area.lessThan(minArea).equals(COMPARE_TERNARY.TRUE))) { // area < minArea
-      // if (Scalars.lessThan(area, minArea)) { // area < minArea
+    if ((area.lessThan(minArea).isTrue())) { // area < minArea
       // make the normal more robust by removing
       // components parallel to the longest edge
       HalfEdge hedgeMax = null;
@@ -363,8 +362,7 @@ class Face {
         // + oppFace.getVertexString() + " not on hull");
       }
       IExpr d = S.Abs.of(distanceToPlane(hedge.head().pnt));
-      if (maxd.lessThan(d).equals(COMPARE_TERNARY.TRUE)) {// d > maxd
-        // if (Scalars.lessThan(maxd, d)) { // d > maxd
+      if (maxd.lessThan(d).isTrue()) {// d > maxd
         maxd = d;
       }
       numv++;
