@@ -233,6 +233,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(HarmonicNumber(1/3-1))", //
         "-Pi/(2*Sqrt(3))+Log(2)-Log(3)/2-Log(6)");
   }
+
   public void testFunctionExpandBinomial() {
     check("FunctionExpand(Binomial(a,b))", //
         "Gamma(1+a)/(Gamma(1+a-b)*Gamma(1+b))");
@@ -255,6 +256,16 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(PolyGamma(0,1/5))", //
         "-EulerGamma-1/2*Sqrt(1+2/Sqrt(5))*Pi-Log(10)+1/2*(-1+Sqrt(5))*Log(Sqrt(1/2*(5-Sqrt(\n" //
             + "5)))/2)+1/2*(-1-Sqrt(5))*Log(Sqrt(1/2*(5+Sqrt(5)))/2)");
+  }
+
+  public void testFunctionExpandSphericalHankelH1() {
+    check("FunctionExpand(SphericalHankelH1(a,b))", //
+        "(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)");
+  }
+
+  public void testFunctionExpandSphericalHankelH2() {
+    check("FunctionExpand(SphericalHankelH2(a,b))", //
+        "(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(-I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)");
   }
 
   /** The JUnit setup method */

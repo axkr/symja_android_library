@@ -461,13 +461,21 @@ public class BesselJS extends JS {
   }
 
   public static Complex sphericalHankel1(double n, double x) {
-    return add(sphericalBesselJ(n, x), mul(Complex.I, sphericalBesselY(n, x)));
-    // return sphericalBesselJ(n, x).add(Complex.I.multiply(sphericalBesselY(n, x)));
+    return mul(Math.sqrt(Math.PI / 2.0) / Math.sqrt(x), hankelH1(n + 0.5, x));
+    // return add(sphericalBesselJ(n, x), mul(Complex.I, sphericalBesselY(n, x)));
+  }
+
+  public static Complex sphericalHankel1(Complex n, Complex x) {
+    return mul(div(Math.sqrt(Math.PI / 2.0), sqrt(x)), hankelH1(add(n, 0.5), x));
   }
 
   public static Complex sphericalHankel2(double n, double x) {
-    return sub(sphericalBesselJ(n, x), mul(Complex.I, sphericalBesselY(n, x)));
-    // return sphericalBesselJ(n, x).add(Complex.I.multiply(sphericalBesselY(n, x).negate()));
+    return mul(Math.sqrt(Math.PI / 2.0) / Math.sqrt(x), hankelH2(n + 0.5, x));
+    // return sub(sphericalBesselJ(n, x), mul(Complex.I, sphericalBesselY(n, x)));
+  }
+
+  public static Complex sphericalHankel2(Complex n, Complex x) {
+    return mul(div(Math.sqrt(Math.PI / 2.0), sqrt(x)), hankelH2(add(n, 0.5), x));
   }
 
   public static double struveH(double n, double x) {

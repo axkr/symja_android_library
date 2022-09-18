@@ -224,12 +224,6 @@ public interface FunctionExpandRules {
     // SphericalBesselY(a_,b_):=(Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)
     SetDelayed(SphericalBesselY(a_,b_),
       Times(Power(b,CN1D2),Sqrt(CPiHalf),BesselY(Times(C1D2,Plus(C1,Times(C2,a))),b))),
-    // SphericalHankelH1(a_,b_):=(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)
-    SetDelayed(SphericalHankelH1(a_,b_),
-      Plus(Times(Power(b,CN1D2),Sqrt(CPiHalf),BesselJ(Times(C1D2,Plus(C1,Times(C2,a))),b)),Times(CI,Power(b,CN1D2),Sqrt(CPiHalf),BesselY(Times(C1D2,Plus(C1,Times(C2,a))),b)))),
-    // SphericalHankelH2(a_,b_):=(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(-I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)
-    SetDelayed(SphericalHankelH2(a_,b_),
-      Plus(Times(Power(b,CN1D2),Sqrt(CPiHalf),BesselJ(Times(C1D2,Plus(C1,Times(C2,a))),b)),Times(CNI,Power(b,CN1D2),Sqrt(CPiHalf),BesselY(Times(C1D2,Plus(C1,Times(C2,a))),b)))),
     // SphericalHarmonicY(a_,1,t_,p_):=(-a*(1+a)*Sqrt(1+2*a)*E^(I*p)*Sqrt(1-Cos(t))*Sqrt(1+Cos(t))*Sqrt(Gamma(a))*Hypergeometric2F1(1-a,2+a,2,Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(1-Cos(t)^2)*Sqrt(Gamma(2+a)))
     SetDelayed(SphericalHarmonicY(a_,C1,t_,p_),
       Times(CN1,a,Plus(C1,a),Sqrt(Plus(C1,Times(C2,a))),Exp(Times(CI,p)),Sqrt(Subtract(C1,Cos(t))),Sqrt(Plus(C1,Cos(t))),Sqrt(Gamma(a)),Power(Times(C4,Sqrt(Pi),Sqrt(Subtract(C1,Sqr(Cos(t)))),Sqrt(Gamma(Plus(C2,a)))),CN1),Hypergeometric2F1(Subtract(C1,a),Plus(C2,a),C2,Sqr(Sin(Times(C1D2,t)))),Sin(t))),

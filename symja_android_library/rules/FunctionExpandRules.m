@@ -115,9 +115,6 @@
  SphericalBesselJ(a_,b_) := (Sqrt(Pi/2)*BesselJ((1/2)*(1 + 2*a), b))/Sqrt(b),
  SphericalBesselY(a_,b_) := (Sqrt(Pi/2)*BesselY((1/2)*(1 + 2*a), b))/Sqrt(b),
  
- SphericalHankelH1(a_,b_) := (Sqrt(Pi/2)*BesselJ((1/2)*(1 + 2*a), b))/Sqrt(b) + (I*Sqrt(Pi/2)*BesselY((1/2)*(1 + 2*a), b))/Sqrt(b), 
- SphericalHankelH2(a_,b_) := (Sqrt(Pi/2)*BesselJ((1/2)*(1 + 2*a), b))/Sqrt(b) - (I*Sqrt(Pi/2)*BesselY((1/2)*(1 + 2*a), b))/Sqrt(b),
-
  SphericalHarmonicY(a_,1,t_,p_) := -((a*(1 + a)*Sqrt(1 + 2*a)*E^(I*p)*Sqrt(1 - Cos(t))*Sqrt(1 + Cos(t))*Sqrt(Gamma(a))*Hypergeometric2F1(1 - a, 2 + a, 2, Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(1 - Cos(t)^2)*Sqrt(Gamma(2 + a)))),
  SphericalHarmonicY(a_,b_,t_,p_) := (Sqrt(1 + 2*a)*E^(I*b*p)*(1 + Cos(t))^(b/2)*Sqrt(Gamma(1 + a - b))*Hypergeometric2F1(-a, 1 + a, 1 - b, Sin(t/2)^2)*Sin(t)^b)/((1 - Cos(t))^(b/2)*(1 - Cos(t)^2)^(b/2)*(2*Sqrt(Pi)*Gamma(1 - b)*Sqrt(Gamma(1 + a + b)))),
  

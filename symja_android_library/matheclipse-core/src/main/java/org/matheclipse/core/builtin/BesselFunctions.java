@@ -1,5 +1,16 @@
 package org.matheclipse.core.builtin;
 
+import static org.matheclipse.core.expression.F.BesselY;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.CI;
+import static org.matheclipse.core.expression.F.CN1D2;
+import static org.matheclipse.core.expression.F.CPiHalf;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Sqrt;
+import static org.matheclipse.core.expression.F.Times;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
@@ -8,6 +19,7 @@ import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -1007,17 +1019,34 @@ public class BesselFunctions {
     }
   }
 
-  private static final class SphericalHankelH1 extends AbstractFunctionEvaluator {
+  private static final class SphericalHankelH1 extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr a = ast.arg1();
+        IExpr b = ast.arg2();
+        // SphericalHankelH1(a_,b_):=(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)
+        return F.Plus(
+            F.Times(F.Power(b, F.CN1D2), F.Sqrt(F.CPiHalf),
+                F.BesselJ(F.Times(C1D2, F.Plus(F.C1, F.Times(C2, a))), b)),
+            Times(CI, Power(b, CN1D2), Sqrt(CPiHalf),
+                BesselY(Times(C1D2, Plus(C1, Times(C2, a))), b)));
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
       if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
         try {
-          Complex nc = n.evalComplex();
-          Complex zc = z.evalComplex();
-          return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
-
+          // Complex nc = n.evalComplex();
+          // Complex zc = z.evalComplex();
+          // return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
+          return functionExpand(ast, engine);
         } catch (ValidateException ve) {
           return IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
@@ -1039,16 +1068,35 @@ public class BesselFunctions {
     }
   }
 
-  private static final class SphericalHankelH2 extends AbstractFunctionEvaluator {
+  private static final class SphericalHankelH2 extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr a = ast.arg1();
+        IExpr b = ast.arg2();
+        // SphericalHankelH2(a_,b_):=(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(-I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)
+
+        return F.Plus(
+            F.Times(Power(b, CN1D2), F.Sqrt(CPiHalf),
+                F.BesselJ(F.Times(F.C1D2, F.Plus(F.C1, F.Times(F.C2, a))), b)),
+            F.Times(F.CNI, F.Power(b, F.CN1D2), F.Sqrt(F.CPiHalf),
+                F.BesselY(F.Times(F.C1D2, F.Plus(F.C1, F.Times(C2, a))), b)));
+
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
       if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
         try {
-          Complex nc = n.evalComplex();
-          Complex zc = z.evalComplex();
-          return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
+          // Complex nc = n.evalComplex();
+          // Complex zc = z.evalComplex();
+          // return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
+          return functionExpand(ast, engine);
         } catch (ValidateException ve) {
           ve.printStackTrace();
           return IOFunctions.printMessage(ast.topHead(), ve, engine);
