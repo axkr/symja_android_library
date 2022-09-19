@@ -1,10 +1,12 @@
 package org.matheclipse.core.expression.data;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.graph.SimpleGraph;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.S;
@@ -81,5 +83,17 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
     }
 
     return fHead + "[" + fData.toString() + "]";
+  }
+
+  @Override
+  public String toHTML() {
+    String javaScriptStr = GraphFunctions.graphToJSForm(this);
+    if (javaScriptStr != null) {
+      String html = Config.VISJS_PAGE;
+      html = StringUtils.replace(html, "`1`", javaScriptStr);
+      html = StringUtils.replace(html, "`2`", "var options = {};");
+      return html;
+    }
+    return null;
   }
 }

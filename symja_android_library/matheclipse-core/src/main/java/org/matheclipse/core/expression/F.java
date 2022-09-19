@@ -104,7 +104,6 @@ import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.BiIntFunction;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
-import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.JSBuilder;
@@ -9868,16 +9867,7 @@ public class F extends S {
             LOGGER.debug("JSBuilder.buildGraphics3D() failed", ex);
           }
         }
-      } else if (expr instanceof GraphExpr) {
-        String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) expr);
-        if (javaScriptStr != null) {
-          String html = Config.VISJS_PAGE;
-          html = StringUtils.replace(html, "`1`", javaScriptStr);
-          html = StringUtils.replace(html, "`2`", "var options = {};");
-          return openHTMLOnDesktop(html);
-        }
       } else if (expr instanceof DataExpr) {
-        DataExpr imageExpr = (DataExpr) expr;
         String html = ((DataExpr) expr).toHTML();
         if (html != null) {
           return openHTMLOnDesktop(html);

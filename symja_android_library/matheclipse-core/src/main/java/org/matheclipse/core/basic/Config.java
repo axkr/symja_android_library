@@ -494,7 +494,7 @@ public class Config {
           "<head>\n" + //
           "<meta charset=\"utf-8\">\n" + //
           "<head>\n" + //
-          "  <title>VIS-Network</title>\n" + //
+          "  <title>Graph network</title>\n" + //
           "\n" + //
           "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
           + //
@@ -507,9 +507,6 @@ public class Config {
           "  </style>\n" + //
           "</head>\n" + //
           "<body>\n" + //
-          "\n" + //
-          "<h1>VIS-Network</h1>\n" + //
-          "\n" + //
           "<div id=\"vis\"></div>\n" + //
           "\n" + //
           "<script type=\"text/javascript\">\n" + //
