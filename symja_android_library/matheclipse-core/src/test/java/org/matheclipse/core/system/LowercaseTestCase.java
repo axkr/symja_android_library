@@ -10291,6 +10291,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHarmonicNumber() {
+
+    check("N(HarmonicNumber(1/17, 5), 50)", //
+        "0.25327615206118707521034626118754228313433140885935");
+
     check("n /. FindRoot(HarmonicNumber(n) == 1.5, {n, 5})", //
         "2.0");
     check("HarmonicNumber(400,{-1,-2})", //
@@ -18149,6 +18153,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testPolyGamma() {
+    check("N(PolyGamma(22/10), 50)", //
+        "0.54429343674114503778612537088338122850774505912665");
+    check("PolyGamma(2.20000000000000000000000)", //
+        "0.544293436741145037786125");
+
+
+
     // http://fungrim.org/entry/ea2482/
     check("PolyGamma(2147483647,3.141592653589793)", //
         "PolyGamma(2.14748*10^9,3.14159)");

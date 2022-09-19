@@ -51,6 +51,7 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
@@ -2066,6 +2067,27 @@ public final class Arithmetic {
    * </pre>
    */
   private static final class HarmonicNumber extends AbstractEvaluator {
+
+    public IExpr e1ApfloatArg(Apfloat arg1) {
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      try {
+        return F.num(h.digamma(arg1.add(Apfloat.ONE)).add(ApfloatMath.euler(arg1.precision())));
+      } catch (Exception ce) {
+        //
+      }
+      return F.NIL;
+    }
+
+    public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
+      try {
+        return F
+            .complexNum(h.digamma(arg1.add(Apfloat.ONE)).add(ApfloatMath.euler(arg1.precision())));
+      } catch (Exception ce) {
+        //
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {

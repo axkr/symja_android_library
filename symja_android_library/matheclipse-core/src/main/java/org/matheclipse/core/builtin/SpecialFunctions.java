@@ -804,6 +804,27 @@ public class SpecialFunctions {
   }
 
   private static final class HurwitzZeta extends AbstractFunctionEvaluator {
+
+    public IExpr e2ApfloatArg(ApfloatNum a1, ApfloatNum a2) {
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      try {
+        return F.num(h.zeta(a1.apfloatValue(), a2.apfloatValue()));
+      } catch (Exception ce) {
+        //
+      }
+      return F.NIL;
+    }
+
+    public IExpr e2ApcomplexArg(ApcomplexNum a1, ApcomplexNum a2) {
+      FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
+      try {
+        return F.complexNum(h.zeta(a1.apcomplexValue(), a2.apcomplexValue()));
+      } catch (Exception ce) {
+        //
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr s = ast.arg1();
@@ -882,6 +903,14 @@ public class SpecialFunctions {
           return te.getValue();
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        }
+      }
+      if (engine.isArbitraryMode()) {
+        if (s instanceof INumber && a instanceof ApfloatNum) {
+          return e2ApfloatArg(((ApfloatNum) s), ((ApfloatNum) a));
+        }
+        if (s instanceof ApcomplexNum && a instanceof ApcomplexNum) {
+          return e2ApcomplexArg((ApcomplexNum) s, (ApcomplexNum) a);
         }
       }
       return NIL;
@@ -1430,6 +1459,26 @@ public class SpecialFunctions {
   private static class PolyGamma extends AbstractFunctionEvaluator
       implements PolyGammaRules, IFunctionExpand {
 
+    public IExpr e1ApfloatArg(Apfloat arg1) {
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      try {
+        return F.num(h.digamma(arg1));
+      } catch (Exception ce) {
+        //
+      }
+      return F.NIL;
+    }
+
+    public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
+      try {
+        return F.complexNum(h.digamma(arg1));
+      } catch (Exception ce) {
+        //
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
@@ -1520,7 +1569,6 @@ public class SpecialFunctions {
             return F.CComplexInfinity;
           }
         }
-
         if (engine.isDoubleMode()) {
           try {
             int n = arg1.toIntDefault();
@@ -1548,6 +1596,14 @@ public class SpecialFunctions {
             return te.getValue();
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          }
+        }
+        if (arg1.isZero() && engine.isArbitraryMode()) {
+          if (arg2 instanceof ApfloatNum) {
+            return e1ApfloatArg(((ApfloatNum) arg2).apfloatValue());
+          }
+          if (arg2 instanceof ApcomplexNum) {
+            return e1ApcomplexArg(((ApcomplexNum) arg2).apcomplexValue());
           }
         }
       }
