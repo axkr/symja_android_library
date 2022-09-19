@@ -2491,6 +2491,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testCatalan() {
     checkNumeric("N(Catalan)", //
         "0.915965594177219");
+    check("N(Catalan,50)", //
+        "0.91596559417721901505460351493238411077414937428167");
   }
 
   public void testCatalanNumber() {
@@ -9986,6 +9988,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{0,1/3,2/3},{1,4/3,5/3},{2,7/3,8/3},{3}}");
   }
 
+  public void testGlaisher() {
+    check("Glaisher // N", //
+        "1.28243");
+    check("N(Glaisher,50)", //
+        "1.282427129100622636875342568869791727767688927325");
+  }
+
   public void testGatherBy() {
     check("GatherBy({{1, 2}, {2, 1}, {3, 5}, {5, 1}, {2, 2, 2}}, {})", //
         "{{{1,2}},{{2,1}},{{3,5}},{{5,1}},{{2,2,2}}}");
@@ -10571,6 +10580,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // TODO
     check("HurwitzZeta(7,5.0)", //
         "0.0000184949");
+
     check("HurwitzZeta(2147483647,3.141592653589793)", //
         "HurwitzZeta(2.14748*10^9,3.14159)");
     check("HurwitzZeta(1.5708,1317624576693539401)", //
@@ -12893,6 +12903,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,b,x,y,z}");
     check("Join({{a, b}, {x, y}}, {{1, 2}, {3, 4}})", //
         "{{a,b},{x,y},{1,2},{3,4}}");
+  }
+
+  public void testKhinchin() {
+    check("Khinchin // N", //
+        "2.68545");
+    check("N(Khinchin,50)", //
+        "2.6854520010653064453097148354817956938203822939944");
   }
 
   public void testKleinInvariantJ() {
@@ -20542,9 +20559,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("xval = Solve(RealAbs(x) == 2, x)", //
         "{{x->-2},{x->2}}");
-    // message: Catalan currently not supported in "Apfloat" `
     check("N(RealAbs(Pi - Catalan), 50)", //
-        "RealAbs(3.1415926535897932384626433832795028841971693993751-Catalan)");
+        "2.2256270594125742234080398683471187734230200250934");
 
     check("RealAbs(Indeterminate)", //
         "Indeterminate");
@@ -25267,6 +25283,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testZeta() {
+    check("N(Zeta(5/4),50)", //
+        "4.5951118258429433806853780396946256522810297806045");
+    check("N(Zeta(3,2),50)", //
+        "0.20205690315959428539973816151144999076498629234004");
+
     check("D(Zeta(s, x), x)", //
         "-s*Zeta(1+s,x)");
     check("Zeta(-3.0)", //

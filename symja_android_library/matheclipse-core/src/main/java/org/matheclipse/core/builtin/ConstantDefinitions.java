@@ -651,9 +651,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
-      // `1` currently not supported in `2`.
-      return IOFunctions.printMessage(S.Catalan, "unsupported",
-          F.list(S.Catalan, F.$str("Apfloat")), engine);
+      return F.num(engine.apfloatHelper().catalan());
     }
 
     @Override
@@ -893,9 +891,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
-      // `1` currently not supported in `2`.
-      return IOFunctions.printMessage(S.Glaisher, "unsupported",
-          F.list(S.Glaisher, F.$str("Apfloat")), engine);
+      return F.num(engine.apfloatHelper().glaisher());
     }
 
     @Override
@@ -1187,9 +1183,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
-      // `1` currently not supported in `2`.
-      return IOFunctions.printMessage(S.Khinchin, "unsupported",
-          F.list(S.Khinchin, F.$str("Apfloat")), engine);
+      return F.num(engine.apfloatHelper().khinchin());
     }
   }
 

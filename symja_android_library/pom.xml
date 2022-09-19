@@ -93,6 +93,17 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>maven-snapshots</id>
+			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
 	</repositories>
 
 	<properties>
@@ -240,7 +251,7 @@
 			<dependency>
 				<groupId>org.apfloat</groupId>
 				<artifactId>apfloat</artifactId>
-				<version>1.10.1</version>
+				<version>1.11.0-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
@@ -370,7 +381,7 @@
 				<version>5.3.0</version>
 			</dependency>
 
-			<dependency> 
+			<dependency>
 				<groupId>org.jfree</groupId>
 				<artifactId>jfreechart</artifactId>
 				<version>1.5.3</version>

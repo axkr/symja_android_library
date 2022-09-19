@@ -29,6 +29,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
@@ -1995,9 +1996,49 @@ public class SpecialFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      // TODO org.apfloat.ZetaHelper.zeta( );
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      try {
+        return F.num(h.zeta(arg1));
+      } catch (Exception ce) {
+        //
+      }
       return F.NIL;
     }
+
+    @Override
+    public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
+      try {
+        return F.complexNum(h.zeta(arg1));
+      } catch (Exception ce) {
+        //
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr e2ApfloatArg(ApfloatNum a1, ApfloatNum a2) {
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      try {
+        return F.num(h.zeta(a1.apfloatValue(), a2.apfloatValue()));
+      } catch (Exception ce) {
+        //
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr e2ApcomplexArg(ApcomplexNum a1, ApcomplexNum a2) {
+      FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
+      try {
+        return F.complexNum(h.zeta(a1.apcomplexValue(), a2.apcomplexValue()));
+      } catch (Exception ce) {
+        //
+      }
+      return F.NIL;
+    }
+
+
 
     @Override
     public IExpr e1DblArg(INum num) {
