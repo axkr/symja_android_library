@@ -188,7 +188,7 @@ public interface IASTAppendable extends IASTMutable {
    */
   default <T extends IExpr> boolean append(final IAST list, Function<T, IExpr> function) {
     for (int i = 1; i < list.size(); i++) {
-      T arg = (T)list.getRule(i);
+      T arg = (T) list.getRule(i);
       IExpr temp = function.apply(arg);
       if (temp == null) {
         return false;
@@ -598,6 +598,15 @@ public interface IASTAppendable extends IASTMutable {
    * @throws IndexOutOfBoundsException if {@code location < 0 || >= size()}
    */
   public IExpr remove(int location);
+
+  default boolean remove(IExpr expr) {
+    int indexOf = indexOf(expr);
+    if (indexOf >= 0) {
+      remove(indexOf);
+      return true;
+    }
+    return false;
+  }
 
   /**
    * Removes the objects in the specified range from the start to the end, but not including the end

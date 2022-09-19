@@ -37,6 +37,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
+import org.matheclipse.core.eval.util.DefaultDict;
 import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.eval.util.LevelSpec;
@@ -3327,25 +3328,23 @@ public final class ListFunctions {
       int size = ast.size();
       if (ast.arg1().isAST()) {
         IAST arg1AST = (IAST) ast.arg1();
-        java.util.Map<IExpr, IASTAppendable> map;
+        final DefaultDict<IASTAppendable> defaultdict;
         if (size > 2) {
           IExpr arg2 = ast.arg2();
-          map = new TreeMap<IExpr, IASTAppendable>(Comparators.binaryPredicateComparator(arg2));
+          defaultdict = new DefaultDict<IASTAppendable>(
+              new TreeMap<IExpr, IExpr>(Comparators.binaryPredicateComparator(arg2)),
+              () -> F.ListAlloc());
         } else {
-          map = new TreeMap<IExpr, IASTAppendable>();
+          defaultdict = new DefaultDict<IASTAppendable>(new TreeMap<IExpr, IExpr>(), () -> F.ListAlloc());
         }
         IASTAppendable result = F.ListAlloc(arg1AST.size());
         for (int i = 1; i < arg1AST.size(); i++) {
           IExpr arg = arg1AST.get(i);
-          IASTAppendable subResult = map.get(arg);
-          if (subResult == null) {
-            IASTAppendable subList = F.ListAlloc();
-            subList.append(arg);
-            map.put(arg, subList);
-            result.append(subList);
-          } else {
-            subResult.append(arg);
+          IASTAppendable subResult = defaultdict.get(arg);
+          if (subResult.isEmpty()) {
+            result.append(subResult);
           }
+          subResult.append(arg);
         }
         return result;
       }
@@ -3438,20 +3437,17 @@ public final class ListFunctions {
         return F.Map(F.Function(F.GatherBy(F.Slot1, f)), F.GatherBy(list1, r),
             F.list(F.ZZ(r.argSize())));
       }
-      java.util.Map<IExpr, IASTAppendable> map = new TreeMap<IExpr, IASTAppendable>();
+      DefaultDict<IASTAppendable> defaultdict =
+          new DefaultDict<IASTAppendable>(new TreeMap<IExpr, IExpr>(), () -> F.ListAlloc());
       IASTAppendable result = F.ListAlloc(F.allocMin8(list1.size()));
       for (int i = 1; i < list1.size(); i++) {
         IExpr list1Element = list1.get(i);
         IExpr temp = engine.evaluate(F.unaryAST1(arg2, list1Element));
-        IASTAppendable subResult = map.get(temp);
-        if (subResult == null) {
-          IASTAppendable subList = F.ListAlloc(F.allocMin8(list1.size()));
-          subList.append(list1Element);
-          map.put(temp, subList);
-          result.append(subList);
-        } else {
-          subResult.append(list1Element);
+        IASTAppendable subResult = defaultdict.get(temp);
+        if (subResult.isEmpty()) {
+          result.append(subResult);
         }
+        subResult.append(list1Element);
       }
       return result;
     }

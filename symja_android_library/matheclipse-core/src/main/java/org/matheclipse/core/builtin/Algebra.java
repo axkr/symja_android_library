@@ -47,6 +47,7 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.DefaultDict;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
@@ -947,7 +948,7 @@ public class Algebra {
     private IExpr collectSingleVariableRecursive(IExpr expr, IExpr x, final IAST listOfVariables,
         final int listPosition, IExpr head, EvalEngine engine) {
       if (expr.isAST()) {
-        Map<IExpr, IASTAppendable> map = new HashMap<IExpr, IASTAppendable>();
+        DefaultDict<IASTAppendable> defaultdict = new DefaultDict<IASTAppendable>(() -> F.PlusAlloc(8));
         IAST poly = (IAST) expr;
         IASTAppendable rest = F.PlusAlloc(poly.size());
 
@@ -960,23 +961,23 @@ public class Algebra {
           newLHS.append(blankNullRest);
           final IPatternMatcher matcher = engine.evalPatternMatcher(newLHS);
 
-          collectTimesToMap(x, poly, matcher, map, rest, blankNullRest);
+          collectTimesToMap(x, poly, matcher, defaultdict, rest, blankNullRest);
 
         } else {
           final IPatternMatcher matcher = engine.evalPatternMatcher(x);
 
-          collectToMap(x, poly, matcher, map, rest);
+          collectToMap(x, poly, matcher, defaultdict, rest);
         }
 
         if (listOfVariables != null && listPosition < listOfVariables.size()) {
           // collect next pattern in sub-expressions
-          IASTAppendable result = F.PlusAlloc(map.size() + 1);
+          IASTAppendable result = F.PlusAlloc(defaultdict.size() + 1);
           if (rest.size() > 1) {
             result.append(collectSingleVariableRecursive(rest.oneIdentity0(),
                 listOfVariables.get(listPosition), listOfVariables, listPosition + 1, head,
                 engine));
           }
-          result.append(map, (key, value) -> {
+          result.append(defaultdict.getMap(), (key, value) -> {
             IExpr temp = collectSingleVariableRecursive(((IASTAppendable) value).oneIdentity0(),
                 listOfVariables.get(listPosition), listOfVariables, listPosition + 1, head, engine);
             return F.Times(key, temp);
@@ -989,7 +990,7 @@ public class Algebra {
             simplifyAST.set(1, arg);
             rest.set(i, engine.evaluate(simplifyAST));
           });
-          rest.append(map, (key, value) -> {
+          rest.append(defaultdict.getMap(), (key, value) -> {
             simplifyAST.set(1, value);
             IExpr coefficient = engine.evaluate(simplifyAST);
             if (coefficient.isPlus()) {
@@ -999,7 +1000,7 @@ public class Algebra {
             }
           });
         } else {
-          rest.append(map, (key, value) -> {
+          rest.append(defaultdict.getMap(), (key, value) -> {
             IASTAppendable times = F.TimesAlloc(2);
             times.append(key);
             times.appendOneIdentity((IASTAppendable) value);
@@ -1012,22 +1013,22 @@ public class Algebra {
     }
 
     public void collectTimesToMap(final IExpr key, IExpr expr, IPatternMatcher matcher,
-        Map<IExpr, IASTAppendable> map, IASTAppendable rest, IPatternSequence blankNullRest) {
+        DefaultDict<IASTAppendable> defaultdict, IASTAppendable rest, IPatternSequence blankNullRest) {
       if (expr.isFree(matcher, false)) {
         rest.append(expr);
         return;
       } else if (matcher.test(expr)) {
-        addPowerFactor(expr, getRest(matcher, blankNullRest, F.C1), map);
+        addPowerFactor(expr, getRest(matcher, blankNullRest, F.C1), defaultdict);
         return;
       } else if (blankNullRest == null && isPowerMatched(expr, matcher)) {
-        addPowerFactor(expr, F.C1, map);
+        addPowerFactor(expr, F.C1, defaultdict);
         return;
       } else if (expr.isPlus()) {
         IAST plusAST = (IAST) expr;
         IASTAppendable clone = plusAST.copyAppendable();
         int i = 1;
         while (i < clone.size()) {
-          if (collectTimesToMapPlus(key, clone.get(i), matcher, map, blankNullRest)) {
+          if (collectTimesToMapPlus(key, clone.get(i), matcher, defaultdict, blankNullRest)) {
             clone.remove(i);
           } else {
             i++;
@@ -1043,7 +1044,7 @@ public class Algebra {
           if (matcher.test(x) || isPowerMatched(x, matcher)) {
             IASTAppendable clone = timesAST.copyAppendable();
             clone.remove(i);
-            addOneIdentityPowerFactor(x, clone, map);
+            addOneIdentityPowerFactor(x, clone, defaultdict);
             return true;
           }
           return false;
@@ -1057,33 +1058,33 @@ public class Algebra {
     }
 
     public boolean collectTimesToMapPlus(final IExpr key, IExpr expr, IPatternMatcher matcher,
-        Map<IExpr, IASTAppendable> map, IPatternSequence blankNullRest) {
+        DefaultDict<IASTAppendable> defaultdict, IPatternSequence blankNullRest) {
       if (expr.isFree(matcher, false)) {
         return false;
       } else if (matcher.test(expr)) {
-        addPowerFactor(key, getRest(matcher, blankNullRest, F.C0), map);
+        addPowerFactor(key, getRest(matcher, blankNullRest, F.C0), defaultdict);
         return true;
       }
       return false;
     }
 
     public void collectToMap(final IExpr key, IExpr expr, IPatternMatcher matcher,
-        Map<IExpr, IASTAppendable> map, IASTAppendable rest) {
+        DefaultDict<IASTAppendable> defaultdict, IASTAppendable rest) {
       if (expr.isFree(matcher, false)) {
         rest.append(expr);
         return;
       } else if (matcher.test(expr)) {
-        addPowerFactor(expr, F.C1, map);
+        addPowerFactor(expr, F.C1, defaultdict);
         return;
       } else if (isPowerMatched(expr, matcher)) {
-        addPowerFactor(expr, F.C1, map);
+        addPowerFactor(expr, F.C1, defaultdict);
         return;
       } else if (expr.isPlus()) {
         IAST plusAST = (IAST) expr;
         IASTAppendable clone = plusAST.copyAppendable();
         int i = 1;
         while (i < clone.size()) {
-          if (collectToMapPlus(key, clone.get(i), matcher, map)) {
+          if (collectToMapPlus(key, clone.get(i), matcher, defaultdict)) {
             clone.remove(i);
           } else {
             i++;
@@ -1099,7 +1100,7 @@ public class Algebra {
           if (matcher.test(x) || isPowerMatched(x, matcher)) {
             IASTAppendable clone = timesAST.copyAppendable();
             clone.remove(i);
-            addOneIdentityPowerFactor(x, clone, map);
+            addOneIdentityPowerFactor(x, clone, defaultdict);
             return true;
           }
           return false;
@@ -1113,21 +1114,21 @@ public class Algebra {
     }
 
     public boolean collectToMapPlus(final IExpr key, IExpr expr, IPatternMatcher matcher,
-        Map<IExpr, IASTAppendable> map) {
+        DefaultDict<IASTAppendable> defaultdict) {
       if (expr.isFree(matcher, false)) {
         return false;
       } else if (matcher.test(expr)) {
-        addPowerFactor(expr, F.C1, map);
+        addPowerFactor(expr, F.C1, defaultdict);
         return true;
       } else if (isPowerMatched(expr, matcher)) {
-        addPowerFactor(expr, F.C1, map);
+        addPowerFactor(expr, F.C1, defaultdict);
         return true;
       } else if (expr.isTimes()) {
         IAST timesAST = (IAST) expr;
         return timesAST.exists((x, i) -> {
           if (matcher.test(x) || isPowerMatched(x, matcher)) {
             IAST clone = timesAST.splice(i);
-            addOneIdentityPowerFactor(x, clone, map);
+            addOneIdentityPowerFactor(x, clone, defaultdict);
             return true;
           }
           return false;
@@ -1137,21 +1138,13 @@ public class Algebra {
       return false;
     }
 
-    public void addOneIdentityPowerFactor(IExpr key, IAST subAST, Map<IExpr, IASTAppendable> map) {
-      IASTAppendable resultList = map.get(key);
-      if (resultList == null) {
-        resultList = F.PlusAlloc(8);
-        map.put(key, resultList);
-      }
+    public void addOneIdentityPowerFactor(IExpr key, IAST subAST, DefaultDict<IASTAppendable> defaultdict) {
+      IASTAppendable resultList = defaultdict.get(key);
       resultList.appendOneIdentity(subAST);
     }
 
-    public void addPowerFactor(IExpr key, IExpr value, Map<IExpr, IASTAppendable> map) {
-      IASTAppendable resultList = map.get(key);
-      if (resultList == null) {
-        resultList = F.PlusAlloc(8);
-        map.put(key, resultList);
-      }
+    public void addPowerFactor(IExpr key, IExpr value, DefaultDict<IASTAppendable> defaultdict) {
+      IASTAppendable resultList = defaultdict.get(key);
       resultList.append(value);
     }
 

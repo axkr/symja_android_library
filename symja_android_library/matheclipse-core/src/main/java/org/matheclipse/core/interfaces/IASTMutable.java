@@ -3,6 +3,7 @@ package org.matheclipse.core.interfaces;
 import java.util.Comparator;
 import java.util.function.IntFunction;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.Comparators;
 
 /**
  * (I)nterface for the (A)bstract (S)yntax (T)ree of a given function.
@@ -139,6 +140,21 @@ public interface IASTMutable extends IAST {
   default IASTMutable setArgs(int end, IntFunction<IExpr> function) {
     return setArgs(1, end, function);
   }
+
+  /**
+   * Sort <code>this</code> in place using function {@link Comparators#CANONICAL_COMPARATOR}.
+   * <b>Example:</b> suppose the Symbol f has the attribute ISymbol.ORDERLESS <code>
+   * f(z,d,a,b) ==> f(a,b,d,z)</code>
+   *
+   * <p>
+   * <b>Warning</b> only call this method in certain steps of the evaluation chain (for example for
+   * evaluating attribute {@link ISymbol#ORDERLESS})
+   * 
+   */
+  default void sortInplace() {
+    sortInplace(Comparators.CANONICAL_COMPARATOR);
+  }
+
 
   /**
    * Sort <code>this</code> in place using function <code>comparator#compare(a, b)</code>.
