@@ -5,6 +5,7 @@ import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.solvers.BisectionSolver;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -330,19 +331,94 @@ public class BesselJS extends JS {
   }
 
   public static Complex hankelH1(double n, double x) {
-    return besselJ(n, x).add(Complex.I.multiply(besselY(n, x)));
+    // not duplicate special case
+    if (F.isNumIntValue(n)) {
+      return add(besselJ(n, x), mul(Complex.I, besselY(n, x)));
+    }
+
+    // one less call to besselJ
+    var s = sub(mul(besselJ(n, x), exp(mul(n, new Complex(0, -Math.PI)))), besselJ(-n, x));
+    return div(mul(Complex.I, s), Math.sin(n * Math.PI));
   }
 
   public static Complex hankelH1(Complex n, Complex x) {
-    return besselJ(n, x).add(Complex.I.multiply(besselY(n, x)));
+    
+    int useAsymptotic = 11;
+
+    // dlmf.nist.gov/10.17
+    if ( x.getImaginary() > 0 && x.norm() > useAsymptotic ) {
+
+      Complex w = add(-Math.PI / 4.0, x, mul(n, -Math.PI / 2.0));
+
+      Complex s = Complex.ONE;
+      Complex plusI = Complex.I;
+      Complex p = Complex.ONE;
+      int i = 1;
+
+      while ( Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE //
+          || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE ) {
+        p = mul(1.0 / (i * 8.0), p, plusI, sub(mul(4.0, n, n), Math.pow(2 * i - 1, 2)), inv(x));
+        s = add( s, p );
+        i++;
+      }
+
+      return mul(div(Math.sqrt(2.0 / Math.PI), sqrt(x)), exp(mul(plusI, w)), s);
+
+    }
+    
+    // not duplicate special case
+    if (n.isMathematicalInteger()) {
+      return add(besselJ(n, x), mul(Complex.I, besselY(n, x)));
+    }
+
+    // one less call to besselJ
+    Complex s =
+        sub(mul(besselJ(n, x), exp(mul(n, new Complex(0, -Math.PI)))), besselJ(n.negate(), x));
+    return div(mul(Complex.I, s), mul(n, Math.PI).sin());
   }
 
   public static Complex hankelH2(double n, double x) {
-    return besselJ(n, x).subtract(Complex.I.multiply(besselY(n, x)));
+    // not duplicate special case
+    if (F.isNumIntValue(n)) {
+      return sub(besselJ(n, x), mul(Complex.I, besselY(n, x)));
+    }
+    // one less call to besselJ
+    Complex s = sub(mul(besselJ(n, x), exp(mul(n, new Complex(0, Math.PI)))), besselJ(-n, x));
+    return div(mul(Complex.MINUS_I, s), Math.sin(n * Math.PI));
   }
 
   public static Complex hankelH2(Complex n, Complex x) {
-    return besselJ(n, x).subtract(Complex.I.multiply(besselY(n, x)));
+
+    int useAsymptotic = 11;
+
+    // dlmf.nist.gov/10.17
+    if (x.getImaginary() < 0 && x.norm() > useAsymptotic) {
+
+      Complex w = add(-Math.PI / 4.0, x, mul(n, -Math.PI / 2.0));
+
+      Complex s = Complex.ONE;
+      Complex minusI = Complex.MINUS_I;
+      Complex p = Complex.ONE;
+      int i = 1;
+
+      while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE //
+          || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+        p = mul(1.0 / (i * 8.0), p, minusI, sub(mul(4.0, n, n), Math.pow(2 * i - 1, 2)), inv(x));
+        s = add(s, p);
+        i++;
+      }
+
+      return mul(div(Math.sqrt(2.0 / Math.PI), sqrt(x)), exp(mul(minusI, w)), s);
+
+    }
+
+    // not duplicate special case
+    if (n.isMathematicalInteger()) {
+      return sub(besselJ(n, x), mul(Complex.I, besselY(n, x)));
+    }
+    // one less call to besselJ
+    Complex s = sub(mul(besselJ(n, x), exp(mul(n, new Complex(0, Math.PI)))), besselJ(neg(n), x));
+    return div(mul(Complex.MINUS_I, s), mul(n, Math.PI).sin());
   }
 
   public static Complex airyAi(double x) {
