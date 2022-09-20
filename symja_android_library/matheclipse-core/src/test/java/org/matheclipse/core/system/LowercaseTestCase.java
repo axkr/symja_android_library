@@ -2064,6 +2064,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testBinomial() {
+    check("N(Binomial(7/3, 1/5), 20)", //
+        "1.3331254244650286522");
+    check("Binomial(8.2211111111115000000, 4) ", //
+        "80.344138315176948065");
+
     check("Binomial(8.5, -4.2)", //
         "0.0000604992");
     check("N(Binomial(7/3, 1/5), 20)", //

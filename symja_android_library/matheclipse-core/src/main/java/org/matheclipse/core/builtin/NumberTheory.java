@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
@@ -52,6 +53,8 @@ import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FractionSym;
 import org.matheclipse.core.expression.S;
@@ -352,6 +355,28 @@ public final class NumberTheory {
    * </pre>
    */
   private static class Binomial extends AbstractArg2 {
+
+    @Override
+    public IExpr e2ApfloatArg(ApfloatNum a1, ApfloatNum a2) {
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      try {
+        return F.num(h.binomial(a1.apfloatValue(), a2.apfloatValue()));
+      } catch (Exception ce) {
+        //
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr e2ApcomplexArg(ApcomplexNum a1, ApcomplexNum a2) {
+      FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
+      try {
+        return F.complexNum(h.binomial(a1.apcomplexValue(), a2.apcomplexValue()));
+      } catch (Exception ce) {
+        //
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr e2IntArg(final IInteger n, final IInteger k) {

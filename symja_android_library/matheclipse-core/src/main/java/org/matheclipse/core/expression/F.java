@@ -3418,6 +3418,10 @@ public class F extends S {
     return new B2.Times(F.ZZ(numerator), new B2.Power(denominator, CN1));
   }
 
+  public static IAST Divide(final IExpr numerator, final int denominator) {
+    return new B2.Times(numerator, F.QQ(1, denominator));
+  }
+
   public static IASTMutable DivideSides(final IExpr equationOrInequality) {
     return new AST1(DivideSides, equationOrInequality);
   }
