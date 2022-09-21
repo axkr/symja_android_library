@@ -33,6 +33,7 @@ import org.jgrapht.GraphType;
 import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.graph.DefaultGraphType.Builder;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.JavaFunctions;
@@ -50,6 +51,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
+import org.matheclipse.core.expression.sympy.DefaultDict;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.ObjIntFunction;
 import org.matheclipse.core.generic.ObjIntPredicate;
@@ -1421,6 +1423,40 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public IExpr getUnevaluated(int position) {
     IExpr arg = get(position);
     return arg.isUnevaluated() ? arg.first() : arg;
+  }
+
+  @Override
+  public IExpr[] asNumerDenom() {
+    if (this.isPlusTimesPower()) {
+      return Algebra.getNumeratorDenominator(this, EvalEngine.get());
+    }
+    return IASTMutable.super.asNumerDenom();
+  }
+
+  @Override
+  public DefaultDict<IExpr> asPowersDict() {
+    if (isPower()) {
+      DefaultDict<IExpr> dict = new DefaultDict<IExpr>(() -> F.C0);
+      dict.put(base(), exponent());
+      return dict;
+    } else if (isTimes()) {
+      DefaultDict<IExpr> dict = new DefaultDict<IExpr>(() -> F.C0);
+      for (int i = 1; i < size(); i++) {
+        IExpr a = get(i);
+        if (a.isPower()) {
+          IExpr base = a.base();
+          IExpr exponents = dict.get(base);
+          exponents = exponents.plus(a.exponent());
+          dict.put(base, exponents);
+        } else {
+          IExpr exponents = dict.get(a);
+          exponents = exponents.plus(F.C1);
+          dict.put(a, exponents);
+        }
+      }
+      return dict;
+    }
+    return IASTMutable.super.asPowersDict();
   }
 
   @Override

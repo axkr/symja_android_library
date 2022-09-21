@@ -43,6 +43,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.BDDExpr;
+import org.matheclipse.core.expression.sympy.DefaultDict;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -682,7 +683,6 @@ public interface IExpr
       return negate();
     }
 
-    EvalEngine engine = EvalEngine.get();
     IExpr inverse = that.inverse();
     if (this.isOne()) {
       return inverse;
@@ -694,6 +694,7 @@ public interface IExpr
     // IExpr plusAST = ((IAST) this).mapThread(F.binaryAST2(S.Times, F.Slot1, inverse), 1);
     // return engine.evaluate(plusAST);
     // }
+    EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || inverse.isPlusTimesPower())) {
       if (this.isNumber() && inverse.isPlus()) {
         return engine.evaluate(F.Expand(F.Times(this, inverse)));
@@ -5353,11 +5354,24 @@ public interface IExpr
     return F.List(F.C0, F.List(this));
   }
 
+  /**
+   * Return the list <code>{c, args}</code> where this is written as a <code>Times(...)</code>
+   * <code>m</code>.
+   * 
+   * @return
+   */
   default IAST asCoeffMul() {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
     return asCoeffMul(true);
   }
 
+  /**
+   * Return the list <code>{c, args}</code> where this is written as a <code>Times(...)</code>
+   * <code>m</code>.
+   * 
+   * @param rational
+   * @return
+   */
   default IAST asCoeffMul(boolean rational) {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
     if (isTimes()) {
@@ -5422,6 +5436,21 @@ public interface IExpr
       }
     }
     return F.List(s, F.C0);
+  }
+
+  /**
+   * Expression <code>a/b -> [a, b]</code>
+   * 
+   * @return
+   */
+  default public IExpr[] asNumerDenom() {
+    return new IExpr[] {this, F.C1};
+  }
+
+  default public DefaultDict<IExpr> asPowersDict() {
+    DefaultDict<IExpr> dict = new DefaultDict<IExpr>(() -> F.C0);
+    dict.put(this, F.C1);
+    return dict;
   }
 
   /**

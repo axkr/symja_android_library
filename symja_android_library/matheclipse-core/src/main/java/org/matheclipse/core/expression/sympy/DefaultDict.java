@@ -1,4 +1,4 @@
-package org.matheclipse.core.eval.util;
+package org.matheclipse.core.expression.sympy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +19,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * @param <T>
  */
 public class DefaultDict<T extends IExpr> {
+
   final Supplier<IExpr> defaultFactory;
   final Map<IExpr, IExpr> map;
 
@@ -86,6 +87,15 @@ public class DefaultDict<T extends IExpr> {
     return map.put(key, value);
   }
 
+  /**
+   * Removes the mapping for a key from this map if it is present (optional operation). More
+   * formally, if this map contains a mapping from key {@code k} to value {@code v} such that
+   * {@code Objects.equals(key, k)}, that mapping is removed. (The map can contain at most one such
+   * mapping.)
+   *
+   * @param key
+   * @return the previous value associated with key, or null if there was no mapping for key.
+   */
   public IExpr remove(IExpr key) {
     return map.remove(key);
   }
@@ -140,4 +150,8 @@ public class DefaultDict<T extends IExpr> {
     return map.remove(key, value);
   }
 
+  @Override
+  public String toString() {
+    return map.toString();
+  }
 }

@@ -207,12 +207,11 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   private static IFraction convergeFraction(double value, int maxIterations, double lhs) {
-    return rationalize(value,
-        v -> {
-          Pair<BigFraction, Boolean> convergent = BigFraction.convergent(v, maxIterations,
-              (p, q) -> FastMath.abs(p * q - v * q * q) <= lhs);
-          return convergent.getSecond().booleanValue() ? convergent.getFirst() : null;
-        });
+    return rationalize(value, v -> {
+      Pair<BigFraction, Boolean> convergent = BigFraction.convergent(v, maxIterations,
+          (p, q) -> FastMath.abs(p * q - v * q * q) <= lhs);
+      return convergent.getSecond().booleanValue() ? convergent.getFirst() : null;
+    });
   }
 
   private static IFraction rationalize(double value, DoubleFunction<BigFraction> f) {
@@ -365,6 +364,7 @@ public abstract class AbstractFractionSym implements IFraction {
     }
     return Num.valueOf(doubleValue() + that.doubleValue());
   }
+
   /**
    * Returns <code>this+(fac1*fac2)</code>.
    *
@@ -400,6 +400,11 @@ public abstract class AbstractFractionSym implements IFraction {
     Apfloat n = new Apfloat(toBigNumerator(), precision);
     Apfloat d = new Apfloat(toBigDenominator(), precision);
     return n.divide(d);
+  }
+
+  @Override
+  public IExpr[] asNumerDenom() {
+    return new IExpr[] {numerator(), denominator()};
   }
 
   @Override
