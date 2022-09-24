@@ -2223,6 +2223,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testCancel() {
+    // check("Factor(y*(2*3*x+Pi*x))", //
+    // "(6+Pi)*x*y");
+    check("Cancel((x*Log(2))/(2*3*x+Pi*x))", //
+        "Log(2)/(6+Pi)");
+    check("Cancel((x*Log(2))/(2*3*x^2+Pi*x^5))", //
+        "Log(2)/(x*(6+Pi*x^3))");
+    check("Cancel((x^4*Log(2))/(2*3*x^2+Pi*x^5))", //
+        "(x^2*Log(2))/(6+Pi*x^3)");
+    check("Cancel((x^7*Log(2))/(2*3*x+Pi*x))", //
+        "(x^6*Log(2))/(6+Pi)");
     check("Cancel((c*d+d^2*x)^2/d^3 )", //
         "(c+d*x)^2/d");
     check("Cancel((c*d+d^2*x)^2/d^2 )", //
@@ -9665,7 +9675,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "PolynomialQuotientRemainder((d-2*d*Sqrt(-e/d)*x-e*x^2),(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2),x)", //
         "{1/(2*d*Sqrt(-e/d)),0}");
 
-    // check("FullSimplify((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
+    // check("FullSimplify((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / "
+    //
     // + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) +
     // (2*(d*Sqrt(-(e/d)) + e*x))/(d +
     // e*x^2)))", //

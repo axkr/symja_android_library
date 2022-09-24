@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -44,6 +43,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.BDDExpr;
 import org.matheclipse.core.expression.sympy.DefaultDict;
+import org.matheclipse.core.expression.sympy.Iterables;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -182,7 +182,8 @@ public interface IExpr
         Prefix prefix, boolean noSymbolPrefix) {
       this.symbolsAsFactoryMethod = symbolsAsFactoryMethod;
       this.useOperators = useOperators;
-      this.prefix = Objects.requireNonNull(prefix, "Method prefix must not be null");
+      this.prefix = prefix;
+      // this.prefix = Objects.requireNonNull(prefix, "Method prefix must not be null");
       this.noSymbolPrefix = noSymbolPrefix;
     }
   }
@@ -5320,6 +5321,27 @@ public interface IExpr
 
   default IAST asBaseExp() {
     // a -> b ^ e
+    if (isPower()) {
+      return F.List(base(), exponent());
+    }
+    if (isTimes()) {
+      IExpr e1 = F.NIL;
+      IAST args = (IAST) this;
+      IASTAppendable bases = F.TimesAlloc(args.argSize());
+      for (int i = 1; i < args.size(); i++) {
+        IExpr m = args.get(i);
+        IAST list = m.asBaseExp();
+        IExpr b = list.first();
+        IExpr e = list.second();
+        if (!e1.isPresent()) {
+          e1 = e;
+        } else if (!e.equals(e1)) {
+          return F.List(this, F.C1);
+        }
+        bases.append(b);
+      }
+      return F.List(bases, e1);
+    }
     return F.List(this, F.C1);
   }
 
@@ -5377,7 +5399,7 @@ public interface IExpr
     if (isTimes()) {
       IExpr arg1 = first();
       if (arg1.isNumber()) {
-        if (!rational || arg1.isInteger() || arg1.isFraction()) {
+        if (!rational || arg1.isRational()) {
           return F.List(arg1, ((IAST) this).rest().setAtCopy(0, S.List));
         }
         if (arg1.isNegativeResult()) {
@@ -5404,16 +5426,47 @@ public interface IExpr
     return F.List(F.C1, F.List(this));
   }
 
-  default IAST asCoeffMul(ISymbol x) {
+  default IAST asCoeffMul(ISymbol deps, boolean rational) {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
-
-    if (!has(x)) {
-      return F.List(this, F.CEmptyList);
-    }
     if (isTimes()) {
-      int index = indexOf(x);
-      if (index > 0) {
-        return F.List(((IAST) this).removeAtClone(index).oneIdentity1(), F.List(x));
+      if (deps != null) {
+        // l1, l2 = sift(self.args, lambda x: x.has(*deps), binary=True)
+        // return self._new_rawargs(*l2), tuple(l1)
+        IAST temp = Iterables.siftBinary((IAST) this, x -> x.has(deps));
+        IASTAppendable l1 = (IASTAppendable) temp.first();
+        IASTAppendable l2 = (IASTAppendable) temp.second();
+        return F.List(l2.oneIdentity0(), l1);
+      }
+
+      IExpr arg1 = first();
+      if (arg1.isNumber()) {
+        if (!rational || arg1.isRational()) {
+          return F.List(arg1, ((IAST) this).rest().setAtCopy(0, S.List));
+        }
+        if (arg1.isNegativeResult()) {
+          IASTAppendable list2 = ((IAST) this).copyAppendable();
+          list2.set(0, S.List);
+          IExpr a1Negate = arg1.negate();
+          if (a1Negate.isOne()) {
+            list2.set(1, a1Negate);
+          } else {
+            list2.remove(1);
+          }
+          return F.List(F.CN1, list2);
+        }
+      }
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(this);
+      if (negExpr.isPresent()) {
+        if (negExpr.isTimes()) {
+          return F.List(F.CN1, ((IAST) negExpr).setAtCopy(0, S.List));
+        }
+        return F.List(F.CN1, F.List(negExpr));
+      }
+      return F.List(F.C1, ((IAST) this).setAtCopy(0, S.List));
+    }
+    if (deps != null) {
+      if (!has(deps)) {
+        return F.List(this, F.List());
       }
     }
     return F.List(F.C1, F.List(this));
@@ -5423,8 +5476,9 @@ public interface IExpr
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L3479
     // ``c*x**e -> c,e`` where x can be any symbolic expression.
     EvalEngine engine = EvalEngine.get();
-    IExpr s = F.Collect.of(engine, this, x);
-    IAST coeffMul = s.asCoeffMul(x);
+    IExpr s = F.Cancel.of(engine, this);
+    s = F.Collect.of(engine, s, x);
+    IAST coeffMul = s.asCoeffMul(x, false);
     IExpr c = coeffMul.arg1();
     IExpr p = coeffMul.arg2();
     if (p.isAST1()) {
@@ -5432,7 +5486,7 @@ public interface IExpr
       IExpr b = baseExp.arg1();
       IExpr e = baseExp.arg2();
       if (b.equals(x)) {
-        return F.List(s, e);
+        return F.List(c, e);
       }
     }
     return F.List(s, F.C0);
@@ -5454,11 +5508,11 @@ public interface IExpr
   }
 
   /**
-   * Returns the leading term a*x**b as a tuple (a, b).
+   * Returns the leading term <code>a*x**b</code> as a tuple (a, b).
    * 
    * @return
    */
-  default IAST leadterm(ISymbol x, IExpr logx, int cdir) {
+  default IAST leadTerm(ISymbol x, IExpr logx, int cdir) {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L3491
 
     IExpr l = asLeadingTerm(x, logx, cdir);

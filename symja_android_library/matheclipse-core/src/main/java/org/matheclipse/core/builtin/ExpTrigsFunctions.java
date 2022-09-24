@@ -62,6 +62,7 @@ import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -2447,11 +2448,11 @@ public class ExpTrigsFunctions {
       IExpr c = F.C1;
       IExpr e = F.C0;
       try {
-        IAST leadTerm = z.leadterm(t, logx , cdir );
-        c=leadTerm.arg1(); 
-        e=leadTerm.arg2();
+        IAST leadTerm = z.leadTerm(t, logx, cdir);
+        c = leadTerm.arg1();
+        e = leadTerm.arg2();
       } catch (ValueError ve) {
-        IExpr arg = arg0.asLeadingTerm(x, logx , cdir );
+        IExpr arg = arg0.asLeadingTerm(x, logx, cdir);
         return F.Log(arg);
       }
       if (c.has(t)) {
@@ -2464,16 +2465,18 @@ public class ExpTrigsFunctions {
 
       // STEP3
       if (c.isOne() && e.isZero()) {
-        return S.Subtract.of(engine, arg0, F.C1).asLeadingTerm(x, logx, 0);
+        return arg0.subtract(F.C1).asLeadingTerm(x, logx, 0);
       }
       // STEP 4
       // res = log(c) - e*log(cdir)
+      IASTAppendable res = F.Plus(F.Subtract(F.Log(c), F.Times(e, F.Log(cdir))));
+
       // logx = log(x) if logx is None else logx
-      // res += e*logx
       if (!logx.isPresent()) {
         logx = F.Log(x);
       }
-      IExpr res = F.Plus(F.Subtract(F.Log(c), F.Times(e, F.Log(cdir))), F.Times(e, logx));
+      // res += e*logx
+      res.append(F.Times(e, logx));
 
       // STEP 5
       if (c.isNegative() && !z.im().isZero()) {
@@ -2488,7 +2491,7 @@ public class ExpTrigsFunctions {
           // coeff, _ = term.as_coeff_exponent(t)
           // res += -2*I*S.Pi*Heaviside(-im(coeff), 0)
           IExpr coeff = F.C1;// , _ = term.as_coeff_exponent(t)
-          res = F.Times(F.CN2, F.CI, S.Pi, F.heaviside(coeff.im().negate(), F.C0, engine));
+          res.append(F.Times(F.CN2, F.CI, S.Pi, F.heaviside(coeff.im().negate(), F.C0, engine)));
         }
       }
       return res;

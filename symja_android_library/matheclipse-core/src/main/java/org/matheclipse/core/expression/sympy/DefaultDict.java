@@ -2,8 +2,10 @@ package org.matheclipse.core.expression.sympy;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -62,6 +64,27 @@ public class DefaultDict<T extends IExpr> {
 
   public boolean containsValue(IExpr value) {
     return map.containsValue(value);
+  }
+
+  /**
+   * <code>biFunction.apply(entry.getKey(), entry.getValue())</code> will be called for every entry
+   * of this dictionary. If it returns {@link F#NIL}, the result won't be appended to
+   * <code>appendableList</code>. Otherwise the result will be appended to
+   * <code>appendableList</code>.
+   * 
+   * @param appendableList
+   * @param biFunction
+   * @return <code>appendableList</code>
+   */
+  public IASTAppendable forEach(IASTAppendable appendableList,
+      BiFunction<IExpr, IExpr, IExpr> biFunction) {
+    for (Map.Entry<IExpr, IExpr> entry : entrySet()) {
+      IExpr bf = biFunction.apply(entry.getKey(), entry.getValue());
+      if (bf.isPresent()) {
+        appendableList.append(bf);
+      }
+    }
+    return appendableList;
   }
 
   /**
@@ -153,5 +176,10 @@ public class DefaultDict<T extends IExpr> {
   @Override
   public String toString() {
     return map.toString();
+  }
+
+
+  public Set<Entry<IExpr, IExpr>> entrySet() {
+    return map.entrySet();
   }
 }

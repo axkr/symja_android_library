@@ -921,6 +921,29 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   }
 
   /**
+   * Every <code>entry</code> of this {@link IAST} is assumed to be a list of at least 2 elements.
+   * <code>biFunction.apply(entry.first(), entry.second())</code> will be called for every entry of
+   * this {@link IAST}. If it returns {@link F#NIL}, the result won't be appended to
+   * <code>appendableList</code>. Otherwise the result will be appended to
+   * <code>appendableList</code>.
+   * 
+   * @param appendableList
+   * @param biFunction
+   * @return
+   */
+  default IASTAppendable forEach(IASTAppendable appendableList,
+      BiFunction<IExpr, IExpr, IExpr> biFunction) {
+    for (int i = 1; i < size(); i++) {
+      IAST entry = (IAST) get(i);
+      IExpr bf = biFunction.apply(entry.first(), entry.second());
+      if (bf.isPresent()) {
+        appendableList.append(bf);
+      }
+    }
+    return appendableList;
+  }
+
+  /**
    * Returns the element at the specified location in this {@code IAST}.
    *
    * @param location the index of the element to return.

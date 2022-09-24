@@ -714,7 +714,7 @@ public class Solve extends AbstractFunctionEvaluator {
     }
 
     public void splitNumeratorDenominator(IAST ast) {
-      IExpr[] result = Algebra.getNumeratorDenominator(ast, fEngine);
+      IExpr[] result = Algebra.getNumeratorDenominator(ast, fEngine, true);
       this.fNumerator = result[0];
       this.fDenominator = result[1];
       this.fExpr = result[2];
