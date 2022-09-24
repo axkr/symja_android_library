@@ -636,17 +636,110 @@ public class Algebra {
      * @return {@link F#NIL} is no evaluation was possible
      * @throws JASConversionException
      */
-    public static IExpr togetherPowerTimes(IExpr powerTimesAST) throws JASConversionException {
+    public static IExpr cancelFractionalParts(IExpr powerTimesAST) throws JASConversionException {
       IExpr[] parts = fractionalParts(powerTimesAST, false);
-      if (parts != null && parts[0].isPlus() && parts[1].isPlus()) {
-        IAST numParts = ((IAST) parts[0]).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
-        IAST denParts = ((IAST) parts[1]).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
-        if (denParts.isPresent() && !denParts.arg1().isOne()) {
-          IExpr[] result = cancelGCD(numParts.arg1(), denParts.arg1());
-          if (result != null) {
-            return F.Times(result[0], result[1], numParts.arg2(),
-                F.Power(F.Times(result[2], denParts.arg2()), F.CN1));
+      IExpr cancelResult = F.NIL;
+      if (parts != null) {
+        if (parts[0].isPlus() || parts[0].isTimes() || parts[1].isPlus() || parts[1].isTimes()) {
+          IAST temp = cancelCommonFactors(parts[0], parts[1]);
+          if (temp.isPresent()) {
+            parts[0] = temp.first();
+            parts[1] = temp.second();
+            cancelResult = F.Divide(temp.first(), temp.second());
           }
+        }
+
+        if (parts[0].isPlus() && parts[1].isPlus()) {
+          IAST numParts = ((IAST) parts[0]).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
+          IAST denParts = ((IAST) parts[1]).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
+          if (denParts.isPresent() && !denParts.arg1().isOne()) {
+            IExpr[] result = cancelGCD(numParts.arg1(), denParts.arg1());
+            if (result != null) {
+              return F.Times(result[0], result[1], numParts.arg2(),
+                  F.Power(F.Times(result[2], denParts.arg2()), F.CN1));
+            }
+          }
+        }
+      }
+      return cancelResult;
+    }
+
+    private static IAST cancelCommonFactors(IExpr part0, IExpr part1) {
+      IExpr p0 = part0;
+      if (part0.isPlus() || part0.isTimes()) {
+        if (VariablesSet.isUnivariate(part0)) {
+          // univariate - see https://github.com/kredel/java-algebra-system/issues/31
+          p0 = S.Factor.of(part0);
+        }
+      }
+      IExpr p1 = part1;
+      if (part1.isPlus() || part1.isTimes()) {
+        if (VariablesSet.isUnivariate(part1)) {
+          // univariate - see https://github.com/kredel/java-algebra-system/issues/31
+          p1 = S.Factor.of(part1);
+        }
+      }
+      if (p0.isTimes() || p1.isTimes()) {
+        final IAST p0Times = p0.isTimes() ? (IAST) p0 : F.Times(p0);
+        final IAST p1Times = p1.isTimes() ? (IAST) p1 : F.Times(p1);
+        IASTAppendable t0 = p0Times.copyAppendable();
+        IASTAppendable t1 = p1Times.copyAppendable();
+        int i = 1;
+        boolean evaled = false;
+        termChanged: while (i < t0.size()) {
+          IExpr t0Arg = t0.get(i);
+          int j = 1;
+          while (j < t1.size()) {
+            IExpr t1Arg = t1.get(j);
+            if (t0Arg.equals(t1Arg)) {
+              t0.remove(i);
+              t1.remove(j);
+              evaled = true;
+              break termChanged;
+            } else if (t0Arg.isPower() || t1Arg.isPower()) {
+              final IExpr t0Base;
+              final IExpr t0Exponent;
+              if (!t0Arg.isPower()) {
+                t0Base = t0Arg;
+                t0Exponent = F.C1;
+              } else {
+                t0Base = t0Arg.base();
+                t0Exponent = t0Arg.exponent();
+              }
+              final IExpr t1Base;
+              final IExpr t1Exponent;
+              if (!t1Arg.isPower()) {
+                t1Base = t1Arg;
+                t1Exponent = F.C1;
+              } else {
+                t1Base = t1Arg.base();
+                t1Exponent = t1Arg.exponent();
+              }
+
+              if (t0Base.equals(t1Base) && t0Exponent.isReal() && t1Exponent.isReal()) {
+                ISignedNumber exp0 = (ISignedNumber) t0Exponent;
+                ISignedNumber exp1 = (ISignedNumber) t1Exponent;
+                final ISignedNumber subtracted;
+                if (exp0.isGE(exp1)) {
+                  subtracted = exp0.subtractFrom(exp1);
+                  t0.set(i, F.Power(t0Base, subtracted));
+                  t1.remove(j);
+                  i++;
+                } else {
+                  subtracted = exp1.subtractFrom(exp0);
+                  t0.remove(i);
+                  t1.set(j, F.Power(t1Base, subtracted));
+                }
+                evaled = true;
+                break termChanged;
+              }
+            }
+            j++;
+          }
+          i++;
+        }
+        if (evaled) {
+          return F.List(t0.oneIdentity1(), t1.oneIdentity1());
         }
       }
       return F.NIL;
@@ -809,7 +902,7 @@ public class Algebra {
     private IExpr cancelNIL(IExpr arg1, EvalEngine engine) {
       try {
         if (arg1.isTimes() || arg1.isPower()) {
-          IExpr result = togetherPowerTimes(arg1);
+          IExpr result = cancelFractionalParts(arg1);
           if (result.isPresent()) {
             return result;
           }
@@ -948,7 +1041,8 @@ public class Algebra {
     private IExpr collectSingleVariableRecursive(IExpr expr, IExpr x, final IAST listOfVariables,
         final int listPosition, IExpr head, EvalEngine engine) {
       if (expr.isAST()) {
-        DefaultDict<IASTAppendable> defaultdict = new DefaultDict<IASTAppendable>(() -> F.PlusAlloc(8));
+        DefaultDict<IASTAppendable> defaultdict =
+            new DefaultDict<IASTAppendable>(() -> F.PlusAlloc(8));
         IAST poly = (IAST) expr;
         IASTAppendable rest = F.PlusAlloc(poly.size());
 
@@ -1013,7 +1107,8 @@ public class Algebra {
     }
 
     public void collectTimesToMap(final IExpr key, IExpr expr, IPatternMatcher matcher,
-        DefaultDict<IASTAppendable> defaultdict, IASTAppendable rest, IPatternSequence blankNullRest) {
+        DefaultDict<IASTAppendable> defaultdict, IASTAppendable rest,
+        IPatternSequence blankNullRest) {
       if (expr.isFree(matcher, false)) {
         rest.append(expr);
         return;
@@ -1138,7 +1233,8 @@ public class Algebra {
       return false;
     }
 
-    public void addOneIdentityPowerFactor(IExpr key, IAST subAST, DefaultDict<IASTAppendable> defaultdict) {
+    public void addOneIdentityPowerFactor(IExpr key, IAST subAST,
+        DefaultDict<IASTAppendable> defaultdict) {
       IASTAppendable resultList = defaultdict.get(key);
       resultList.appendOneIdentity(subAST);
     }
@@ -2191,7 +2287,7 @@ public class Algebra {
       if (ast.isAST1() && !ast.arg1().isTimes() && !ast.arg1().isPower()) {
         expr = S.Together.of(engine, expr);
         if (expr.isAST()) {
-          IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine);
+          IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine, true);
           if (!parts[1].isOne()) {
             try {
               IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], eVar, false, engine);
@@ -2355,7 +2451,7 @@ public class Algebra {
         IExpr variable = eVar.getArrayList().get(0);
         expr = S.Together.of(engine, expr);
         if (expr.isAST()) {
-          IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine);
+          IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine, true);
           try {
             IExpr numerator = factorExprSolve(F.Factor(parts[0]), parts[0], variable, engine);
             if (numerator.isList() && !parts[1].isOne()) {
@@ -4537,11 +4633,11 @@ public class Algebra {
           if (result.isPresent()) {
             IExpr temp = engine.evaluate(result);
             if (temp.isTimes() || temp.isPower()) {
-              return Cancel.togetherPowerTimes(temp).orElse(temp);
+              return Cancel.cancelFractionalParts(temp).orElse(temp);
             }
             return temp;
           }
-          return Cancel.togetherPowerTimes(ast);
+          return Cancel.cancelFractionalParts(ast);
         } catch (JASConversionException jce) {
           LOGGER.debug("Together.togetherPlusTimesPower() failed", jce);
         }
@@ -5149,18 +5245,31 @@ public class Algebra {
    * </code> and <code>Denominator[]</code> functions
    *
    * @param ast
+   * @param together TODO
    * @return an array with the numerator, denominator and the evaluated <code>Together[expr]</code>.
    */
-  public static IExpr[] getNumeratorDenominator(IAST ast, EvalEngine engine) {
-    IExpr[] result = new IExpr[3];
-    result[2] = together(ast, engine);
+  public static IExpr[] getNumeratorDenominator(IAST ast, EvalEngine engine, boolean together) {
+    if (together) {
+      IExpr[] result = new IExpr[3];
+      result[2] = together(ast, engine);
+      // split expr into numerator and denominator
+      result[1] = engine.evaluate(F.Denominator(result[2]));
+      if (!result[1].isOne()) {
+        // search roots for the numerator expression
+        result[0] = engine.evaluate(F.Numerator(result[2]));
+      } else {
+        result[0] = ast; // result[2];
+      }
+      return result;
+    }
+
+    IExpr[] result = new IExpr[2];
     // split expr into numerator and denominator
-    result[1] = engine.evaluate(F.Denominator(result[2]));
+    result[1] = engine.evaluate(F.Denominator(ast));
     if (!result[1].isOne()) {
-      // search roots for the numerator expression
-      result[0] = engine.evaluate(F.Numerator(result[2]));
+      result[0] = engine.evaluate(F.Numerator(ast));
     } else {
-      result[0] = ast; // result[2];
+      result[0] = ast;
     }
     return result;
   }

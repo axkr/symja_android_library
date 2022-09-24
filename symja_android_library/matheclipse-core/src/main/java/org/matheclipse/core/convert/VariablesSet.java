@@ -341,8 +341,7 @@ public class VariablesSet {
   }
 
   public static int highestSlotNumber(final IExpr pureFunctionLogicalExpr) {
-    BooleanVariablesPureFunctionVisitor slotVisitor =
-        new BooleanVariablesPureFunctionVisitor();
+    BooleanVariablesPureFunctionVisitor slotVisitor = new BooleanVariablesPureFunctionVisitor();
     pureFunctionLogicalExpr.accept(slotVisitor);
     return slotVisitor.highestSlotNumber();
   }
@@ -482,6 +481,38 @@ public class VariablesSet {
    */
   public boolean isSize(final int numberOfVars) {
     return fVariablesSet.size() == numberOfVars;
+  }
+
+  /**
+   * Test if the expression contains only one variable.
+   * 
+   * @param expr
+   * @return
+   */
+  public static boolean isUnivariate(IExpr expr) {
+    return isMultivariate(expr, 1);
+  }
+
+  /**
+   * Test if the expression contains up to two variables.
+   * 
+   * @param expr
+   * @return
+   */
+  public static boolean isBivariate(IExpr expr) {
+    return isMultivariate(expr, 2);
+  }
+
+  /**
+   * Test if the expression contains up to <code>numberOfVars</code> variables.
+   * 
+   * @param expr
+   * @param numberOfVars
+   * @return
+   */
+  public static boolean isMultivariate(IExpr expr, int numberOfVars) {
+    VariablesSet variablesSet = new VariablesSet(expr);
+    return variablesSet.size() <= numberOfVars;
   }
 
   /**
