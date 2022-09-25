@@ -16,7 +16,6 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.tensor.nrm.Vector2NormSquared;
 
 /**
@@ -64,8 +63,7 @@ class Face {
       HalfEdge hedge = he0;
       do {
         IExpr lenSqr = hedge.lengthSquared();
-        if ((lenSqrMax.lessThan(lenSqr).equals(COMPARE_TERNARY.TRUE))) {// lenSqr > lenSqrMax
-          // if (Scalars.lessThan(lenSqrMax, lenSqr)) { // lenSqr > lenSqrMax
+        if ((lenSqrMax.lessThan(lenSqr).isTrue())) {// lenSqr > lenSqrMax
           hedgeMax = hedge;
           lenSqrMax = lenSqr;
         }
