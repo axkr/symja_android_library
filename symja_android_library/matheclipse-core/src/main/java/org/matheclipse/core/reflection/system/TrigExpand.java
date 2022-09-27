@@ -10,6 +10,7 @@ import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 import java.util.function.Function;
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -45,9 +46,10 @@ import org.matheclipse.core.visit.VisitorPlusTimesPowerReplaceAll;
  */
 public class TrigExpand extends AbstractEvaluator {
 
-  private static final Function<IExpr, IExpr> function = new TrigExpandFunction();
-  private static final VisitorPlusTimesPowerReplaceAll visitor =
-      new VisitorPlusTimesPowerReplaceAll(function);
+  public static final Function<IExpr, IExpr> TRIG_EXPAND_FUNCTION = new TrigExpandFunction();
+
+  private static final VisitorPlusTimesPowerReplaceAll TRIG_EXPAND_VISITOR =
+      new VisitorPlusTimesPowerReplaceAll(TRIG_EXPAND_FUNCTION);
 
   private static final class TrigExpandFunction implements Function<IExpr, IExpr> {
     @Override
@@ -55,12 +57,25 @@ public class TrigExpand extends AbstractEvaluator {
       if (ast.isAST1()) {
         IExpr first = ast.first();
         if (first.isPlus()) {
-          return expandPlus((IAST) ast, (IAST) first);
+          IExpr temp = expandPlus((IAST) ast, (IAST) first);
+          if (temp.isPresent()) {
+            if (temp.isPlus()) {
+              temp = ((IAST) temp).map(S.Plus, x -> distributeTimes(x));
+            }
+            return temp;
+          }
         } else if (first.isTimes()) {
           return expandTimes((IAST) ast, (IAST) first);
         }
       }
       return F.NIL;
+    }
+
+    private static IExpr distributeTimes(IExpr expr) {
+      if (expr.isTimes()) {
+        return Algebra.distributeTimes((IAST) expr);
+      }
+      return expr;
     }
 
     /**
@@ -360,11 +375,14 @@ public class TrigExpand extends AbstractEvaluator {
       return temp;
     }
 
-    temp = ast.arg1();
-    IExpr result;
+    IExpr result = evalExpandAll(ast.arg1(), engine);
+    temp = result.accept(TRIG_EXPAND_VISITOR);
+    if (!temp.isPresent()) {
+      return ast.arg1();
+    }
     do {
       result = evalExpandAll(temp, engine);
-      temp = result.accept(visitor);
+      temp = result.accept(TRIG_EXPAND_VISITOR);
     } while (temp.isPresent());
     return result;
   }

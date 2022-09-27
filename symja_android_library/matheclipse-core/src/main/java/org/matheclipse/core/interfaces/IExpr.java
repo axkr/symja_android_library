@@ -1,7 +1,5 @@
 package org.matheclipse.core.interfaces;
 
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.Sqrt;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -4792,7 +4790,7 @@ public interface IExpr
   @Override
   default IExpr sqrt() {
     if (isPower()) {
-      return F.Power(base(), F.Times(C1D2, exponent()));
+      return F.Power(base(), F.Times(F.C1D2, exponent()));
     } else {
       // if (isAST(S.Plus, 3)) {
       // IAST plus = (IAST) this;
@@ -4816,13 +4814,13 @@ public interface IExpr
           if (arg.isPower()) {
             timesRest.append( //
                 F.Power(arg.base(), //
-                    F.Times(C1D2, arg.exponent())) //
+                    F.Times(F.C1D2, arg.exponent())) //
             );
           } else {
             timesSqrt.append(arg);
           }
         }
-        return F.Times(timesRest, Sqrt(timesSqrt));
+        return F.Times(timesRest, F.Sqrt(timesSqrt));
       }
     }
     return F.Sqrt(this);
@@ -4845,6 +4843,9 @@ public interface IExpr
     return subtract(F.num(arg0));
   }
 
+  /**
+   * Evaluate <code>F.Subtract(this,that)</code>
+   */
   @Override
   default IExpr subtract(IExpr that) {
     if (that.isZero()) {

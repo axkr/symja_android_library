@@ -25,7 +25,7 @@ public class InverseFourier extends AbstractFunctionEvaluator {
         if (n == 0 || 0 != (n & (n - 1))) {
           return IOFunctions.printMessage(S.InverseFourier, "vpow2", F.list(expr), engine);
         }
-        IAST result = fourier((IAST) expr, -1);
+        IExpr result = fourier((IAST) expr, -1);
         if (result.isPresent()) {
           return result;
         }
@@ -44,7 +44,7 @@ public class InverseFourier extends AbstractFunctionEvaluator {
    * @param b is +1 for forward, and -1 for inverse transform
    * @return discrete Fourier transform of given vector
    */
-  private static IAST fourier(IAST vector, int b) {
+  private static IExpr fourier(IAST vector, int b) {
     final int n = vector.argSize();
     Complex[] array = Convert.list2Complex(vector);
     if (array == null) {

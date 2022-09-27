@@ -1451,18 +1451,7 @@ public class Algebra {
       }
 
       if (arg1.isAST() && ast.argSize() > 0) {
-        IAST list = (IAST) arg1;
-        IASTAppendable resultCollector;
-        final int resultSize = ast.argSize() > 127 ? ast.argSize() : 127;
-        if (ast.size() >= 5) {
-          resultCollector = F.ast(ast.arg4(), resultSize);
-        } else {
-          resultCollector = F.ast(head, resultSize);
-        }
-        DistributeAlgorithm algorithm = new DistributeAlgorithm(resultCollector, head, list);
-        if (algorithm.distribute(ast)) {
-          return resultCollector;
-        }
+        return distribute(ast, head);
       }
       return arg1;
     }
@@ -4929,6 +4918,45 @@ public class Algebra {
       LOGGER.debug("Algebra.cancelGCD() failed", e);
     }
     return null;
+  }
+
+  /**
+   * Call the distribute algorithm for a <code>Times(...)</code> {@link IAST}, which contains
+   * <code>Plus(...)</code> terms. If <code>expr.isTimes() == false</code> return <code>expr</code>
+   * 
+   * @param expr should have the structure <code>Times(a,b,...)</code> with at least 2 arguments;
+   *        otherwise the <code>expr</code> will be returned
+   * @return
+   */
+  public static IExpr distributeTimes(final IExpr expr) {
+    if (expr.isTimes()) {
+      return distribute(F.Distribute(expr), S.Plus);
+    }
+    return expr;
+  }
+
+  /**
+   * Call the distribute algorithm <code>F.Distribute(expr, head)</code>
+   * 
+   * @param ast
+   * @param head
+   * @return
+   */
+  public static IExpr distribute(final IAST ast, IExpr head) {
+    IAST list = (IAST) ast.arg1();
+    IASTAppendable resultCollector;
+    final int resultSize = list.argSize() > 127 ? list.argSize() : 127;
+    if (ast.size() >= 5) {
+      resultCollector = F.ast(ast.arg4(), resultSize);
+    } else {
+      resultCollector = F.ast(head, resultSize);
+    }
+    Distribute.DistributeAlgorithm algorithm =
+        new Distribute.DistributeAlgorithm(resultCollector, head, list);
+    if (algorithm.distribute(ast)) {
+      return resultCollector;
+    }
+    return list;
   }
 
   /**

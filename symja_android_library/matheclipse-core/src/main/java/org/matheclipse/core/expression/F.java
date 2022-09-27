@@ -3404,21 +3404,61 @@ public class F extends S {
 
   /**
    * The division <code>numerator / denominator</code> will be represented by
-   * <code>numerator * denominator^(-1)</code>.
+   * <code>numerator * denominator^(-1)</code>. If <code>numerator.isOne()==true</code> return
+   * <code>denominator^(-1)</code>. If <code>denominator.isOne()==true</code> return
+   * <code>numerator</code>.
    *
    * @param numerator numerator
    * @param denominator denominator
    * @return
    */
-  public static IAST Divide(final IExpr numerator, final IExpr denominator) {
+  public static IExpr Divide(final IExpr numerator, final IExpr denominator) {
+    if (numerator.isOne()) {
+      return new B2.Power(denominator, CN1);
+    }
+    if (denominator.isOne()) {
+      return numerator;
+    }
     return new B2.Times(numerator, new B2.Power(denominator, CN1));
   }
 
-  public static IAST Divide(final int numerator, final IExpr denominator) {
+  /**
+   * The division <code>numerator / denominator</code> will be represented by
+   * <code>numerator * denominator^(-1)</code>. If <code>numerator.isOne()==true</code> return
+   * <code>denominator^(-1)</code>. If <code>denominator.isOne()==true</code> return
+   * <code>numerator</code>.
+   * 
+   * @param numerator
+   * @param denominator
+   * @return
+   */
+  public static IExpr Divide(final int numerator, final IExpr denominator) {
+    if (numerator == 1) {
+      return new B2.Power(denominator, CN1);
+    }
+    if (denominator.isOne()) {
+      return F.ZZ(numerator);
+    }
     return new B2.Times(F.ZZ(numerator), new B2.Power(denominator, CN1));
   }
 
-  public static IAST Divide(final IExpr numerator, final int denominator) {
+  /**
+   * The division <code>numerator / denominator</code> will be represented by
+   * <code>numerator * denominator^(-1)</code>. If <code>numerator.isOne()==true</code> return
+   * <code>denominator^(-1)</code>. If <code>denominator.isOne()==true</code> return
+   * <code>numerator</code>.
+   * 
+   * @param numerator
+   * @param denominator
+   * @return
+   */
+  public static IExpr Divide(final IExpr numerator, final int denominator) {
+    if (numerator.isOne()) {
+      return F.QQ(1, denominator);
+    }
+    if (denominator == 1) {
+      return numerator;
+    }
     return new B2.Times(numerator, F.QQ(1, denominator));
   }
 

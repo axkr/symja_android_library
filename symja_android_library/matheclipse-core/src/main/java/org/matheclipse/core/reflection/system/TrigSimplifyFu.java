@@ -14,13 +14,16 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.sympy.DefaultDict;
 import org.matheclipse.core.expression.sympy.ExprTools;
 import org.matheclipse.core.expression.sympy.Operations;
+import org.matheclipse.core.expression.sympy.Traversal;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -214,20 +217,33 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  private static IExpr tr1(IExpr expr) {
+  public static IExpr tr1(IExpr expr) {
+    return Traversal.bottomUp(expr, x -> tr1Step(x));
+  }
+
+  private static IExpr tr1Step(IExpr expr) {
     if (expr.isAST(S.Sec, 2)) {
       IExpr arg1 = expr.first();
-      return F.Divide(1, F.Cos(arg1));
+      return F.Power(F.Cos(arg1), F.CN1);
     }
     if (expr.isAST(S.Csc, 2)) {
       IExpr arg1 = expr.first();
-      return F.Divide(1, F.Sin(arg1));
+      return F.Power(F.Sin(arg1), F.CN1);
     }
     return F.NIL;
   }
 
-  private static IExpr tr2(IExpr expr) {
+  public static IExpr tr2(IExpr expr) {
+    return Traversal.bottomUp(expr, x -> tr2Step(x));
+  }
 
+  /**
+   * Replace tan and cot with sin/cos and cos/sin.
+   * 
+   * @param expr
+   * @return
+   */
+  private static IExpr tr2Step(IExpr expr) {
     if (expr.isTan()) {
       IExpr arg1 = expr.first();
       return F.Divide(F.Sin(arg1), F.Cos(arg1));
@@ -242,10 +258,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   private static boolean ok(IExpr k, IExpr e, boolean half) {
     return (e.isInteger() || k.isPositive())//
         && (k.isCos() || k.isSin())
-        || (  half
-             && k.isPlus()
-             && (k.argSize() >= 2)
-            && ((IAST) k).indexOf(x -> x.isCos()) > 0);
+        || (half && k.isPlus() && (k.argSize() >= 2) && ((IAST) k).indexOf(x -> x.isCos()) > 0);
   }
 
   public static void factorize(DefaultDict<IExpr> d, IASTAppendable ddone, boolean half) {
@@ -279,6 +292,10 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     }
   }
 
+  public static IExpr tr2i(IExpr expr, boolean half) {
+    return Traversal.bottomUp(expr, x -> tr2iStep(x, half));
+  }
+
   /**
    * <p>
    * Converts ratios involving sin and cos as follows:
@@ -291,7 +308,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
    * @param expr
    * @return
    */
-  public static IExpr tr2i(IExpr expr, boolean half) {
+  private static IExpr tr2iStep(IExpr expr, boolean half) {
     if (expr.isTimes()) {
       IExpr[] asNumerDenom = expr.asNumerDenom();
       IExpr numer = asNumerDenom[0];
@@ -382,6 +399,54 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  public static IExpr tr3(IExpr expr) {
+    return Traversal.bottomUp(expr, TrigSimplifyFu::tr3Step);
+  }
+
+  private static boolean tr3IsPositive(IExpr arg) {
+    return !AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg).isPresent();
+  }
+
+  private static IExpr tr3Step(IExpr expr) {
+    if (expr.isAST1()) {
+      IExpr arg1 = expr.first();
+      int headID = expr.headID();
+      if (headID >= 0) {
+        IBuiltInSymbol newHead = null;
+        switch (headID) {
+          case ID.Cos:
+            newHead = S.Sin;
+            break;
+          case ID.Sin:
+            newHead = S.Cos;
+            break;
+          case ID.Cot:
+            newHead = S.Cot;
+            break;
+          case ID.Tan:
+            newHead = S.Tan;
+            break;
+          case ID.Csc:
+            newHead = S.Sec;
+            break;
+          case ID.Sec:
+            newHead = S.Csc;
+            break;
+        }
+        if (newHead != null) {
+          if (tr3IsPositive(arg1.subtract(F.Times(F.C1D4, S.Pi)))
+              || tr3IsPositive(F.Times(F.C1D2, S.Pi).subtract(arg1))) {
+            return F.unaryAST1(newHead, F.Times(F.C1D2, S.Pi).subtract(arg1));
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  public static IExpr tr5(IExpr expr) {
+    return Traversal.bottomUp(expr, TrigSimplifyFu::tr5Step);
+  }
 
   /**
    * <p>
@@ -402,7 +467,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
    * @param expr
    * @return
    */
-  private static IExpr tr5(IExpr expr) {
+  private static IExpr tr5Step(IExpr expr) {
     if (expr.isPresent()) {
       if (expr.isPower() && expr.first().isSin() && expr.second().isInteger()) {
         IAST sinExpr = (IAST) expr.base();
@@ -418,6 +483,10 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  public static IExpr tr6(IExpr expr) {
+    return Traversal.bottomUp(expr, TrigSimplifyFu::tr6Step);
   }
 
   /**
@@ -439,22 +508,37 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
    * @param expr
    * @return
    */
-  private static IExpr tr6(IExpr expr) {
-    if (expr.isPresent()) {
-      if (expr.isPower() && expr.first().isCos() && expr.second().isInteger()) {
-        IAST cosExpr = (IAST) expr.base();
-        IInteger exponent = (IInteger) expr.exponent();
-        if (exponent.isPositive() && exponent.isEven()) {
-          IInteger div2 = exponent.div(F.C2);
-          if (div2.isOne()) {
-            return EvalEngine.get().evaluate(F.Subtract(F.C1, F.Sqr(F.Sin(cosExpr.arg1()))));
-          }
-          return EvalEngine.get()
-              .evaluate(F.Power(F.Subtract(F.C1, F.Sqr(F.Sin(cosExpr.arg1()))), div2));
+  private static IExpr tr6Step(IExpr expr) {
+    if (expr.isPower() && expr.first().isCos() && expr.second().isInteger()) {
+      IAST cosExpr = (IAST) expr.base();
+      IInteger exponent = (IInteger) expr.exponent();
+      if (exponent.isPositive() && exponent.isEven()) {
+        IInteger div2 = exponent.div(F.C2);
+        if (div2.isOne()) {
+          return EvalEngine.get().evaluate(F.Subtract(F.C1, F.Sqr(F.Sin(cosExpr.arg1()))));
         }
+        return EvalEngine.get()
+            .evaluate(F.Power(F.Subtract(F.C1, F.Sqr(F.Sin(cosExpr.arg1()))), div2));
       }
     }
     return F.NIL;
+  }
+
+
+  public static IExpr tr7(IExpr expr) {
+    return Traversal.bottomUp(expr, TrigSimplifyFu::tr7Step);
+  }
+
+  private static IExpr tr7Step(IExpr expr) {
+    if (expr.isPower() && expr.base().isCos() && expr.exponent() == F.C2) {
+      // 1 + cos(2*rv.base.args[0]))/2
+      return F.Plus(F.C1D2, F.Times(F.C1D2, F.Cos(F.Times(2, expr.base().first()))));
+    }
+    return F.NIL;
+  }
+
+  public static IExpr tr8(IExpr expr, boolean first) {
+    return Traversal.bottomUp(expr, x -> tr8Step(x, first));
   }
 
   /**
@@ -463,7 +547,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
    * @param first TODO
    * @return
    */
-  public static IExpr tr8(IExpr expr, boolean first) {
+  private static IExpr tr8Step(IExpr expr, boolean first) {
     if (expr.isTimes() || (expr.isPower() && (expr.base().isSin() || expr.base().isCos())
         && (expr.exponent().isInteger() || expr.base().isPositive()))) {
 
@@ -488,7 +572,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
           }
           return rv;
         }
-        return expr;
+        return F.NIL;
       }
 
       DefaultDict<IASTAppendable> args = new DefaultDict<IASTAppendable>();
@@ -543,19 +627,37 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       }
 
       IExpr evalExpandAll = F.evalExpandAll(argsResult);
-      return tr8(evalExpandAll, true).orElse(evalExpandAll);
+      return tr8Step(evalExpandAll, true).orElse(evalExpandAll);
     }
     return F.NIL;
   }
 
-  private static IExpr tr10(IExpr expr) {
+  public static IExpr tr10(IExpr expr) {
+    return Traversal.bottomUp(expr, x -> tr10Step(x));
+  }
+
+  private static IExpr tr10Step(IExpr expr) {
     if ((expr.isSin() || expr.isCos())) {
-      return EvalEngine.get().evaluate(F.TrigExpand(expr));
+      IExpr temp = TrigExpand.TRIG_EXPAND_FUNCTION.apply(expr);
+      if (temp.isPresent()) {
+        IExpr result = temp;
+        do {
+          temp = Traversal.bottomUpNIL(result, x -> tr10Step(x));
+          if (temp.isPresent()) {
+            result = temp;
+          }
+        } while (temp.isPresent());
+        return result;
+      }
     }
     return F.NIL;
   }
 
-  private static IExpr tr11(IExpr expr) {
+  public static IExpr tr11(IExpr expr) {
+    return Traversal.bottomUp(expr, x -> tr11Step(x));
+  }
+
+  private static IExpr tr11SingleStep(IExpr expr) {
     if ((expr.isSin() || expr.isCos()) && expr.first().isTimes()
         && expr.first().first().isInteger()) {
       IInteger times1 = (IInteger) expr.first().first();
@@ -572,6 +674,23 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
           return EvalEngine.get().evaluate(
               F.Subtract(F.C1, F.Times(F.C2, Power(Sin(F.Times(times1Half, rest)), F.C2))));
         }
+      }
+    }
+    return F.NIL;
+  }
+
+  private static IExpr tr11Step(IExpr expr) {
+    if ((expr.isSin() || expr.isCos())) {
+      IExpr temp = tr11SingleStep(expr);
+      if (temp.isPresent()) {
+        IExpr result = temp;
+        do {
+          temp = Traversal.bottomUpNIL(result, x -> tr11Step(x));
+          if (temp.isPresent()) {
+            result = temp;
+          }
+        } while (temp.isPresent());
+        return result;
       }
     }
     return F.NIL;
@@ -631,7 +750,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
         }
         if (k > 1) {
           // sin(2**k*ci*a)/2**k/sin(ci*a)
-          IAST newarg = F.Divide(F.Sin(F.Times(F.Power(F.C2, k), ci, a)),
+          IExpr newarg = F.Divide(F.Sin(F.Times(F.Power(F.C2, k), ci, a)),
               F.Times(F.Power(F.C2, k), F.Sin(F.Times(ci, a))));
           IExpr take = F.NIL;
           IASTAppendable ccs = F.ListAlloc();

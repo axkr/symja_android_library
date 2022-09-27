@@ -1084,7 +1084,7 @@ public class SeriesFunctions {
      * @deprecated contains bug
      */
     @Deprecated
-    private static IAST quotientTaylorFunctionExpr(IExpr[] numeratorDenominatorParts, IExpr x,
+    private static IExpr quotientTaylorFunctionExpr(IExpr[] numeratorDenominatorParts, IExpr x,
         IExpr x0, final int m, final int n) {
       List<IExpr> varList = Lists.newArrayList(x);
       IASTAppendable list = F.ListAlloc(varList);
@@ -1134,7 +1134,7 @@ public class SeriesFunctions {
     }
 
 
-    private static IAST taylorFunction(IExpr function, IExpr x, IExpr bf, int m, int n) {
+    private static IExpr taylorFunction(IExpr function, IExpr x, IExpr bf, int m, int n) {
       List<IExpr> varList = Lists.newArrayList(x);
       IASTAppendable list = F.ListAlloc(varList);
       JASIExpr jas = new JASIExpr(varList, true);

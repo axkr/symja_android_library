@@ -439,7 +439,7 @@ public final class NumberTheory {
         if (ki.compareInt(6) < 0 && ki.compareInt(1) > 0 && !n.isNumber()) {
           int kInt = ki.intValue();
           IASTAppendable result = F.TimesAlloc(kInt);
-          IAST temp;
+          IExpr temp;
           IExpr nTemp = n;
           for (int i = 1; i <= kInt; i++) {
             temp = F.Divide(nTemp, F.ZZ(i));

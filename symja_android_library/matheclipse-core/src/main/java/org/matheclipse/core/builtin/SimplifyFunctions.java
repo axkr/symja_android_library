@@ -410,7 +410,7 @@ public class SimplifyFunctions {
               IExpr denominator = parts[1];
               // common factors in numerator, denominator may be canceled here, so check if we have
               // a new minimal expression
-              IAST divide = F.Divide(parts[0], parts[1]);
+              IExpr divide = F.Divide(parts[0], parts[1]);
               simplifiedResult.checkLess(divide);
 
               if (!numerator.isOne() && //
