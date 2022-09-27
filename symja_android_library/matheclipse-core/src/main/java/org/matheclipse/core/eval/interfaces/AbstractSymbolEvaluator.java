@@ -15,7 +15,7 @@ public abstract class AbstractSymbolEvaluator implements ISymbolEvaluator {
 
   @Override
   public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
-    return evaluate(symbol, null);
+    return evaluate(symbol, engine);
   }
 
   @Override

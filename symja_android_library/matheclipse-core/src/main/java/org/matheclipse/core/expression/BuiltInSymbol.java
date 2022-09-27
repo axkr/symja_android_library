@@ -184,27 +184,17 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    // final IEvaluator module = getEvaluator();
     if (fEvaluator instanceof ISymbolEvaluator) {
-      if (engine.isNumericMode()) {
-        if (engine.isArbitraryMode()) {
-          return ((ISymbolEvaluator) fEvaluator).apfloatEval(this, engine);
-        } else {
-          return ((ISymbolEvaluator) fEvaluator).numericEval(this, engine);
-        }
+      if (engine.isArbitraryMode()) {
+        return ((ISymbolEvaluator) fEvaluator).apfloatEval(this, engine);
+      } else if (engine.isNumericMode()) {
+        return ((ISymbolEvaluator) fEvaluator).numericEval(this, engine);
       }
       return ((ISymbolEvaluator) fEvaluator).evaluate(this, engine);
     }
     if (hasAssignedSymbolValue()) {
       return assignedValue();
     }
-    // if (hasLocalVariableStack()) {
-    // return ExprUtil.ofNullable(get());
-    // }
-    // IExpr result;
-    // if ((result = evalDownRule(engine, this)).isPresent()) {
-    // return result;
-    // }
     return F.NIL;
   }
 

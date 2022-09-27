@@ -130,7 +130,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
 
   /**
    * Is set, if the built-in function associated with this object was evaluated and no further
-   * evaluation is needed.
+   * evaluation is needed for the built-in evaluation function.
    */
   public static final int BUILT_IN_EVALED = 0x00040000;
 

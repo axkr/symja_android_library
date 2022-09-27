@@ -956,16 +956,17 @@ public class EvalEngine implements Serializable {
     }
 
     if (symbol.isBuiltInSymbol()) {
+      if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED) && isSymbolicMode(attributes)) {
+        return F.NIL;
+      }
       final IEvaluator evaluator = ((IBuiltInSymbol) symbol).getEvaluator();
       if (evaluator instanceof IFunctionEvaluator) {
-        if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED) && isSymbolicMode(attributes)) {
-          return F.NIL;
-        }
         // evaluate a built-in function.
         final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) evaluator;
 
         OptionsResult opres = checkBuiltinArguments(ast, functionEvaluator);
         if (opres == null) {
+          ast.addEvalFlags(IAST.BUILT_IN_EVALED);
           return F.NIL;
         }
         ast = opres.result;
@@ -999,6 +1000,8 @@ public class EvalEngine implements Serializable {
         // if (isSymbolicMode(attributes) && !isTogetherMode()) {
         // ast.addEvalFlags(IAST.BUILT_IN_EVALED);
         // }
+      } else {
+        ast.addEvalFlags(IAST.BUILT_IN_EVALED);
       }
     }
     return F.NIL;
