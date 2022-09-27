@@ -39,14 +39,16 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
   }
 
   public void testTrigSimplifyTR2i() {
-    // IExpr tr2i = TrigSimplifyFu.tr2i(F.Divide(F.Sin(F.x), F.Cos(F.x)), false);
-    // assertEquals(tr2i.toString(), //
-    // "NIL");
-
-    IExpr tr2i = TrigSimplifyFu
-        .tr2i(F.Divide(F.Power(F.Sin(F.x), F.C2), F.Power(F.Plus(F.Cos(F.x), F.C1), F.C2)), false);
+    IExpr tr2i = TrigSimplifyFu.tr2i(F.Divide(F.Sin(F.x), F.Cos(F.x)), false);
+    tr2i = F.eval(tr2i);
     assertEquals(tr2i.toString(), //
-        "NIL");
+        "{Tan(x)}");
+
+    tr2i = TrigSimplifyFu
+        .tr2i(F.Divide(F.Power(F.Sin(F.x), F.C2), F.Power(F.Plus(F.Cos(F.x), F.C1), F.C2)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        "{Tan(x/2)^2}");
   }
 
   public void testTrigSimplifyTR8() {

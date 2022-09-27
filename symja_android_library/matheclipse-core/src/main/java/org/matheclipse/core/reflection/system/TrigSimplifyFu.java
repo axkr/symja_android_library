@@ -241,9 +241,11 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
   private static boolean ok(IExpr k, IExpr e, boolean half) {
     return (e.isInteger() || k.isPositive())//
-        && (k.isCos() || k.isSin());
-    // TODO
-    // || (half && k.isPlus()&&k.argSize()>=2&&));
+        && (k.isCos() || k.isSin())
+        || (  half
+             && k.isPlus()
+             && (k.argSize() >= 2)
+            && ((IAST) k).indexOf(x -> x.isCos()) > 0);
   }
 
   public static void factorize(DefaultDict<IExpr> d, IASTAppendable ddone, boolean half) {
@@ -304,7 +306,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
             ndone.append(F.List(k, nDict.remove(k)));
           }
         }
-        if (!nDict.isEmpty()) {
+        if (nDict.isEmpty()) {
           return F.NIL;
         }
 
@@ -315,7 +317,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
             ddone.append(F.List(k, dDict.remove(k)));
           }
         }
-        if (!dDict.isEmpty()) {
+        if (dDict.isEmpty()) {
           return F.NIL;
         }
 
@@ -328,30 +330,30 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
             IExpr a = F.Cos(k.first());
             if (dDict.containsKey(a) && dDict.get(a).equals(nDict.get(k))) {
               t.append(F.Power(F.Tan(k.first()), nDict.get(k)));
-              nDict.put(k, S.None);
-              dDict.put(a, S.None);
+              nDict.put(k, F.NIL);
+              dDict.put(a, F.NIL);
             } else if (half) {
               IExpr a1 = a.plus(F.C1);
               if (dDict.containsKey(a1) && dDict.get(a1).equals(nDict.get(k))) {
                 t.append(F.Power(F.Tan(k.first().divide(F.C2)), nDict.get(k)));
-                nDict.put(k, S.None);
-                dDict.put(a1, S.None);
+                nDict.put(k, F.NIL);
+                dDict.put(a1, F.NIL);
               }
             }
           } else if (k.isCos()) {
             IExpr a = F.Sin(k.first());
             if (dDict.containsKey(a) && dDict.get(a).equals(nDict.get(k))) {
               t.append(F.Power(F.Tan(k.first()), nDict.get(k).negate()));
-              nDict.put(k, S.None);
-              dDict.put(a, S.None);
+              nDict.put(k, F.NIL);
+              dDict.put(a, F.NIL);
             }
           } else if (half && k.isPlus() && k.first().isOne() && k.second().isCos()) {
             IExpr a = F.Sin(k.second().first());
             if (dDict.containsKey(a) && dDict.get(a).equals(nDict.get(k))
                 && (dDict.get(a).isInteger() || a.isPositive())) {
               t.append(F.Power(F.Tan(a.first().divide(F.C2)), nDict.get(k).negate()));
-              nDict.put(k, S.None);
-              dDict.put(a, S.None);
+              nDict.put(k, F.NIL);
+              dDict.put(a, F.NIL);
             }
           }
         }
@@ -361,14 +363,19 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
           IAST testt;
           IASTAppendable mul1 = F.TimesAlloc(nDict.size() + 1);
           mul1.append(t);
-          mul1 = nDict.forEach(mul1, (b, e) -> (!e.isZero()) ? F.Power(b, e) : F.NIL);
+          mul1 =
+              nDict.forEach(mul1, (b, e) -> (e.isPresent() && !e.isZero()) ? F.Power(b, e) : F.NIL);
           IASTAppendable mul2 = F.TimesAlloc(dDict.size());
-          mul2 = dDict.forEach(mul2, (b, e) -> (!e.isZero()) ? F.Power(b, e) : F.NIL);
+          mul2 =
+              dDict.forEach(mul2, (b, e) -> (e.isPresent() && !e.isZero()) ? F.Power(b, e) : F.NIL);
           IASTAppendable mul3 = F.TimesAlloc(ndone.argSize());
-          mul3 = ndone.forEach(mul3, (b, e) -> (!e.isZero()) ? F.Power(b, e) : F.NIL);
+          mul3 =
+              ndone.forEach(mul3, (b, e) -> (e.isPresent() && !e.isZero()) ? F.Power(b, e) : F.NIL);
           IASTAppendable mul4 = F.TimesAlloc(ddone.argSize());
-          mul4 = ddone.forEach(mul4, (b, e) -> (!e.isZero()) ? F.Power(b, e) : F.NIL);
-          return F.Times(F.Divide(mul1, mul2), F.Divide(mul3, mul4));
+          mul4 =
+              ddone.forEach(mul4, (b, e) -> (e.isPresent() && !e.isZero()) ? F.Power(b, e) : F.NIL);
+          return F.Times(F.Divide(mul1.oneIdentity1(), mul2.oneIdentity1()),
+              F.Divide(mul3.oneIdentity1(), mul4.oneIdentity1()));
         }
       }
     }

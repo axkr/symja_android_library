@@ -1299,7 +1299,10 @@ public class Algebra {
         trig = options.isTrue(S.Trig);
       }
 
-      IExpr expr = ast.arg1();
+      return fractionalPartsRational(ast.arg1(), trig);
+    }
+
+    public static IExpr fractionalPartsRational(final IExpr expr, boolean trig) {
       if (expr.isRational()) {
         return ((IRational) expr).denominator();
       }
@@ -2372,6 +2375,7 @@ public class Algebra {
       if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
         return expr;
       }
+
       // use TermOrderByName.INVLEX here!
       // See https://github.com/kredel/java-algebra-system/issues/8
       Object[] objects = null;
@@ -2392,7 +2396,7 @@ public class Algebra {
 
       if (objects != null) {
 
-        SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
+        SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map = null;
         try {
           GenPolynomial<edu.jas.arith.BigInteger> poly =
               (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
@@ -2403,6 +2407,9 @@ public class Algebra {
             }
           }
 
+          // TimeStatus.setActive();
+          // TimeStatus.restart();
+          // TimeStatus.setLimit(20000);
           FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
               FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
           if (factorSquareFree) {
@@ -2410,37 +2417,41 @@ public class Algebra {
           } else {
             map = factorAbstract.factors(poly);
           }
+          // } catch (TimeExceededException texex) {
+          // LOGGER.debug("Factor.factor() time limit exceeded", texex);
         } catch (RuntimeException rex) {
           LOGGER.debug("Factor.factor() failed", rex);
           return expr;
         }
-        IASTAppendable result = F.TimesAlloc(map.size() + 1);
-        java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
-        java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-        IRational f = F.C1;
-        if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
-          f = F.fraction(gcd, lcm).normalize();
-        }
-        for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map
-            .entrySet()) {
-          if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
-            continue;
+        if (map != null) {
+          IASTAppendable result = F.TimesAlloc(map.size() + 1);
+          java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+          java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+          IRational f = F.C1;
+          if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
+            f = F.fraction(gcd, lcm).normalize();
           }
-          IExpr base = jas.integerPoly2Expr(entry.getKey());
-          if (entry.getValue() == 1L) {
-            if (f.isMinusOne() && base.isPlus()) {
-              base = ((IAST) base).map(x -> x.negate(), 1);
-              f = F.C1;
+          for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map
+              .entrySet()) {
+            if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
+              continue;
             }
-            result.append(base);
-          } else {
-            result.append(F.Power(base, F.ZZ(entry.getValue())));
+            IExpr base = jas.integerPoly2Expr(entry.getKey());
+            if (entry.getValue() == 1L) {
+              if (f.isMinusOne() && base.isPlus()) {
+                base = ((IAST) base).map(x -> x.negate(), 1);
+                f = F.C1;
+              }
+              result.append(base);
+            } else {
+              result.append(F.Power(base, F.ZZ(entry.getValue())));
+            }
           }
+          if (!f.isOne()) {
+            result.append(f);
+          }
+          return engine.evaluate(result);
         }
-        if (!f.isOne()) {
-          result.append(f);
-        }
-        return engine.evaluate(result);
       }
       return F.NIL;
     }
@@ -4654,7 +4665,7 @@ public class Algebra {
             result = ast.copy();
           }
           if (ast.arg2().isNegative() && temp.isTimes()) {
-            IExpr[] fractionalParts = fractionalPartsRational(temp);
+            IExpr[] fractionalParts = fractionalPartsRational(temp, false);
             if (fractionalParts != null) {
               result.set(1, F.Divide(fractionalParts[1], fractionalParts[0]));
               result.set(2, ast.arg2().negate());
@@ -5669,12 +5680,13 @@ public class Algebra {
 
   /**
    * Split the expression into numerator and denominator parts, by separating positive and negative
-   * powers.
+   * powers. Or split a number by numerator and denominator part.
    *
    * @param arg
+   * @param trig TODO
    * @return the numerator and denominator expression
    */
-  public static IExpr[] fractionalPartsRational(final IExpr arg) {
+  public static IExpr[] fractionalPartsRational(final IExpr arg, boolean trig) {
     if (arg.isFraction()) {
       IFraction fr = (IFraction) arg;
       IExpr[] parts = new IExpr[2];
@@ -5693,7 +5705,7 @@ public class Algebra {
       }
       return null;
     }
-    return fractionalParts(arg, false);
+    return fractionalParts(arg, trig);
   }
 
   public static IExpr together(IAST ast, EvalEngine engine) {
