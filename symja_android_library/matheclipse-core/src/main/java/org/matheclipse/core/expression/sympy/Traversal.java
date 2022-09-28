@@ -3,7 +3,7 @@ package org.matheclipse.core.expression.sympy;
 import java.util.function.Function;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class Traversal {
@@ -71,12 +71,12 @@ public class Traversal {
       IAST ast = (IAST) expr;
       final int size = ast.size();
       if (size > 1) {
-        IASTAppendable result = F.NIL;
+        IASTMutable result = F.NIL;
         for (int i = 1; i < size; i++) {
           IExpr arg = bottomUpNIL(ast.get(i), function, atoms, nonbasic);
           if (arg.isPresent()) {
             if (!result.isPresent()) {
-              result = ast.copyAppendable();
+              result = ast.copy();
             }
             result.set(i, arg);
           }
