@@ -21,10 +21,24 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("TrigSimplifyFu(1/2 - Cos(2*x)/2)", //
         "Sin(x)^2");
 
-    // check("TrigSimplifyFu(Sin(a)*(Cos(b) - Sin(b)) + Cos(a)*(Sin(b) + Cos(b)))", //
-    // "Sqrt(2)*Sin(a + b + Pi/4)");
+    // CTR3 - Simpy gets other result:
+    check("TrigSimplifyFu(Sin(a)*(Cos(b) - Sin(b)) + Cos(a)*(Sin(b) + Cos(b)))", //
+        "Cos(a+b)+Sin(a+b)");
 
+    // CTR4 TODO
+    check("TrigSimplifyFu(Sqrt(3)*Cos(x)/2 + Sin(x)/2)", //
+        "1/2*Sqrt(3)*Cos(x)+Sin(x)/2");
 
+    // Example 1 - Simpy gets other result:
+    check("TrigSimplifyFu(1-Sin(2*x)^2/4-Sin(y)^2-Cos(x)^4)", //
+        "Sin(x)^2-Sin(y)^2");
+
+    // Example 2 - TODO
+    check("TrigSimplifyFu(Cos(4*Pi/9))", //
+        "Cos(4/9*Pi)");
+
+    check("TrigSimplifyFu(Cos(Pi/9)*Cos(2*Pi/9)*Cos(3*Pi/9)*Cos(4*Pi/9))", //
+        "1/16");
   }
 
   public void testTrigSimplifyTRmorrie() {
@@ -94,17 +108,17 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
   }
 
   public void testTrigSimplifyTR8() {
-    IExpr tr8 = TrigSimplifyFu.tr8(F.Times(F.Cos(F.C2), F.Cos(F.C3)), true);
+    IExpr tr8 = TrigSimplifyFu.tr8Step(F.Times(F.Cos(F.C2), F.Cos(F.C3)), true);
     assertEquals(tr8.toString(), //
-        "Cos(1)/2+Cos(5)/2");
+        "1/2*(Cos(1)+Cos(5))");
 
-    tr8 = TrigSimplifyFu.tr8(F.Times(F.Cos(F.C2), F.Sin(F.C3)), true);
+    tr8 = TrigSimplifyFu.tr8Step(F.Times(F.Cos(F.C2), F.Sin(F.C3)), true);
     assertEquals(tr8.toString(), //
-        "Sin(1)/2+Sin(5)/2");
+        "1/2*(Sin(1)+Sin(5))");
 
-    tr8 = TrigSimplifyFu.tr8(F.Times(F.Sin(F.C2), F.Sin(F.C3)), true);
+    tr8 = TrigSimplifyFu.tr8Step(F.Times(F.Sin(F.C2), F.Sin(F.C3)), true);
     assertEquals(tr8.toString(), //
-        "Cos(1)/2-Cos(5)/2");
+        "1/2*(Cos(1)-Cos(5))");
   }
 
   public void testTrigSimplifyTR10() {

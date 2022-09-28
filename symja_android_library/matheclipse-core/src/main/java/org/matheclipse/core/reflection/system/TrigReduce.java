@@ -123,19 +123,25 @@ public class TrigReduce extends AbstractEvaluator {
       return temp;
     }
 
-    TrigReduceVisitor trigReduceVisitor = new TrigReduceVisitor(engine);
-    temp = ast.arg1();
-    IExpr result = temp;
-    while (temp.isPresent()) {
-      result = temp;
-      if (temp.isPlus() || temp.isTimes() || temp.isPower()) {
-        result = F.evalExpand(temp);
-      }
+    return trigReduce(ast.arg1(), engine);
+  }
 
-      temp = result.accept(trigReduceVisitor);
-      if (temp.isPresent()) {
+  public static IExpr trigReduce(IExpr temp, EvalEngine engine) {
+    IExpr result = temp;
+    if (result.isAST()) {
+      TrigReduceVisitor trigReduceVisitor = new TrigReduceVisitor(engine);
+      while (temp.isPresent()) {
         result = temp;
+        if (temp.isPlus() || temp.isTimes() || temp.isPower()) {
+          result = F.evalExpand(temp);
+        }
+
+        temp = result.accept(trigReduceVisitor);
+        if (temp.isPresent()) {
+          result = temp;
+        }
       }
+      return engine.evaluate(result);
     }
     return result;
   }

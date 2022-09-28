@@ -149,6 +149,73 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   final static Function<IExpr, IExpr> TR10 = TrigSimplifyFu::tr10;
   final static Function<IExpr, IExpr> TR11 = TrigSimplifyFu::tr11;
 
+  private static IExpr ctr1(IExpr rv, Function<IExpr, Long> measure) {
+    // [(TR5, TR0), (TR6, TR0), identity]
+    IExpr rv1 = tr0(tr5(rv));
+    IExpr rv2 = tr0(tr6(rv));
+    if (measure.apply(rv1) < measure.apply(rv)) {
+      rv = rv1;
+    }
+    if (measure.apply(rv2) < measure.apply(rv)) {
+      rv = rv2;
+    }
+    return rv;
+  }
+
+  private static IExpr ctr2(IExpr rv, Function<IExpr, Long> measure) {
+    IExpr tr11 = tr11(rv);
+    IExpr rv0 = tr0(tr11);
+    IExpr rv1 = F.eval(ctr1(tr11, measure));
+    if (measure.apply(rv0) < measure.apply(tr11)) {
+      tr11 = rv0;
+    }
+    if (measure.apply(rv1) < measure.apply(tr11)) {
+      tr11 = rv1;
+    }
+    return tr11;
+  }
+
+  private static IExpr ctr3(IExpr rv, Function<IExpr, Long> measure) {
+    // TODO
+    IExpr rv1 = tr0(tr8(trMorrie(rv)));
+    IExpr rv2 = tr0(tr10i(tr8(trMorrie(rv))));
+    if (measure.apply(rv1) < measure.apply(rv)) {
+      rv = rv1;
+    }
+    if (measure.apply(rv2) < measure.apply(rv)) {
+      rv = rv2;
+    }
+    return rv;
+  }
+
+  private static IExpr ctr4(IExpr rv, Function<IExpr, Long> measure) {
+    IExpr tr4 = tr10i(tr4(rv));
+    if (measure.apply(tr4) < measure.apply(rv)) {
+      rv = tr4;
+    }
+    return rv;
+  }
+
+  private static IExpr rl1(IExpr rv) {
+    return tr0(tr4(tr13(tr4(tr12(tr4(tr3(tr4(rv))))))));
+  }
+
+  private static IExpr rl2(IExpr rv, Function<IExpr, Long> measure) {
+    IExpr rl21 = tr11(tr3(tr4(tr10(tr3(tr4(rv))))));
+    IExpr rl22 = tr4(tr11(tr7(tr5(rv))));
+    IExpr rl23 = ctr4(tr9(tr9(tr4(ctr2(tr9(ctr1(ctr3(rv, measure), measure)), measure)))), measure);
+    if (measure.apply(rl22) < measure.apply(rv)) {
+      rv = rl22;
+    }
+    if (measure.apply(rl21) < measure.apply(rv)) {
+      rv = rl21;
+    }
+    if (measure.apply(rl23) < measure.apply(rv)) {
+      rv = rl23;
+    }
+    return rv;
+  }
+
   /**
    * See: <a href=
    * "https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/simplify/fu.py#L1569">sympy/simplify/fu.py#L1569</a>
@@ -159,38 +226,31 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
    * @return
    */
   private IExpr simplifyFu(IExpr expr, IExpr complexityFunctionHead, EvalEngine engine) {
+    if (!expr.isAST()) {
+      return expr;
+    }
+    IAST was = (IAST) expr;
     Function<IExpr, Long> measure =
         SimplifyFunctions.createComplexityFunction(complexityFunctionHead, engine);
 
-    // CTR1 = [(TR5, TR0), (TR6, TR0), identity]
-    Function<IExpr, IExpr>[] CTR1 = new Function[2];
-    CTR1[0] = TR5.andThen(TR0);
-    CTR1[1] = TR6.andThen(TR0);
-
-    // CTR2 = (TR11, [(TR5, TR0), (TR6, TR0), TR0])
-    Function<IExpr, IExpr>[] CTR2 = new Function[1];
-    CTR2[0] = new Chain(TR11, CTR1, measure, engine);
-
-    Function<IExpr, IExpr> RL1 = new Chain(CTR1, CTR2, measure, engine);
-    Function<IExpr, IExpr> RL2 = new Chain(CTR1, CTR2, measure, engine);
-
-
-    IExpr rv = tr1(expr).orElse(expr);
+    IExpr rv = tr1(was);
     if (rv.has(x -> x.isTan() || x.isAST(S.Cot, 2), true)) {
-      IExpr rv1 = RL1.apply(rv);
+      IExpr rv1 = rl1(rv);
       if (measure.apply(rv1) < measure.apply(rv)) {
         rv = rv1;
       }
       if (rv.has(x -> x.isTan() || x.isAST(S.Cot, 2), true)) {
-        rv = tr2(rv).orElse(rv);
+        rv = tr2(rv);
       }
     }
 
     if (rv.has(x -> x.isSin() || x.isCos(), true)) {
-      IExpr rv1 = RL2.apply(rv).orElse(rv);
+      IExpr rv1 = rl2(rv, measure);
       IExpr trMorrie = trMorrie(rv1);
-      IExpr rv2 = tr8(trMorrie, true).orElse(trMorrie);
-
+      IExpr rv2 = tr8(trMorrie, true);
+      if (measure.apply(was) < measure.apply(rv)) {
+        rv = was;
+      }
       if (measure.apply(rv1) < measure.apply(rv)) {
         rv = rv1;
       }
@@ -199,22 +259,25 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       }
     }
 
-    if (!rv.isPresent()) {
-      rv = expr;
-    }
-    IExpr rv3 = tr2i(rv, false).orElse(expr);
+    IExpr rv3 = tr2i(rv, false);
     if (measure.apply(rv3) < measure.apply(rv)) {
       rv = rv3;
     }
-    return rv.orElse(expr);
+    return rv;
 
   }
 
+  /**
+   * Evaluate the expression. if th expression is an IAST factor and then expand the expression.
+   * 
+   * @param expr
+   * @return
+   */
   private static IExpr tr0(IExpr expr) {
     if (expr.isAST()) {
-      return EvalEngine.get().evaluate(F.Expand(F.Factor(expr)));
+      return F.eval(F.Expand(F.Factor(expr)));
     }
-    return F.NIL;
+    return F.eval(expr);
   }
 
   public static IExpr tr1(IExpr expr) {
@@ -444,6 +507,11 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  private static IExpr tr4(IExpr expr) {
+    // special values at 0, pi/6, pi/4, pi/3, pi/2 already handled
+    return expr;
+  }
+
   public static IExpr tr5(IExpr expr) {
     return Traversal.bottomUp(expr, TrigSimplifyFu::tr5Step);
   }
@@ -537,6 +605,10 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  public static IExpr tr8(IExpr expr) {
+    return Traversal.bottomUp(expr, x -> tr8Step(x, true));
+  }
+
   public static IExpr tr8(IExpr expr, boolean first) {
     return Traversal.bottomUp(expr, x -> tr8Step(x, first));
   }
@@ -547,16 +619,17 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
    * @param first TODO
    * @return
    */
-  private static IExpr tr8Step(IExpr expr, boolean first) {
+  public static IExpr tr8Step(IExpr expr, boolean first) {
     if (expr.isTimes() || (expr.isPower() && (expr.base().isSin() || expr.base().isCos())
         && (expr.exponent().isInteger() || expr.base().isPositive()))) {
 
       if (first) {
+        EvalEngine engine = EvalEngine.get();
         IExpr[] numerDenom = expr.asNumerDenom();
         IExpr n = numerDenom[0];
         IExpr d = numerDenom[1];
-        IExpr newn = tr8(n, false).orElse(n);
-        IExpr newd = tr8(d, false).orElse(d);
+        IExpr newn = tr8(TrigReduce.trigReduce(n, engine), false);
+        IExpr newd = tr8(TrigReduce.trigReduce(d, engine), false);
         if (!newn.equals(n) || !newd.equals(d)) {
           if (d.isOne()) {
             return newn;
@@ -594,8 +667,8 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       }
       IASTAppendable c = args.get(S.Cos);
       IASTAppendable s = args.get(S.Sin);
-      if (c.argSize() == 0 && s.argSize() == 0) {
-        return expr;
+      if (!(c.argSize() > 1 || s.argSize() > 1)) {
+        return F.NIL;
       }
       IASTAppendable argsResult = F.TimesAlloc(8);
       argsResult.appendArgs(args.get(S.None));
@@ -627,9 +700,14 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       }
 
       IExpr evalExpandAll = F.evalExpandAll(argsResult);
-      return tr8Step(evalExpandAll, true).orElse(evalExpandAll);
+      return tr8(evalExpandAll, true);
     }
     return F.NIL;
+  }
+
+  private static IExpr tr9(IExpr expr) {
+    // TODO
+    return expr;
   }
 
   public static IExpr tr10(IExpr expr) {
@@ -651,6 +729,11 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  public static IExpr tr10i(IExpr expr) {
+    // TODO
+    return expr;
   }
 
   public static IExpr tr11(IExpr expr) {
@@ -696,6 +779,16 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  public static IExpr tr12(IExpr expr) {
+    // TODO
+    return expr;
+  }
+
+  public static IExpr tr13(IExpr expr) {
+    // TODO
+    return expr;
+  }
+
   /**
    * 
    * 
@@ -704,7 +797,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
    */
   public static IExpr trMorrie(IExpr rv) {
     if (!rv.isTimes()) {
-      return F.NIL;
+      return rv;
     }
     IAST times = (IAST) rv;
     IASTAppendable other = F.ListAlloc(times.size());

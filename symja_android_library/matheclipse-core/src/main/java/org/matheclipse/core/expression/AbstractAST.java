@@ -1428,8 +1428,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public IExpr[] asNumerDenom() {
     if (this.isPlusTimesPower()) {
-      return Algebra.fractionalPartsRational(this, true);
-      // return Algebra.getNumeratorDenominator(this, EvalEngine.get(), false);
+      IExpr[] parts = Algebra.fractionalPartsRational(this, true);
+      if (parts != null) {
+        return parts;
+      }
     }
     return IASTMutable.super.asNumerDenom();
   }
