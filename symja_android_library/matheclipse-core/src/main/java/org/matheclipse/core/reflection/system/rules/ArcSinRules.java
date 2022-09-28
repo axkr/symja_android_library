@@ -48,10 +48,10 @@ public interface ArcSinRules {
       Times(QQ(1L,5L),Pi)),
     // ArcSin(1/Sqrt(2))=Pi/4
     ISet(ArcSin(C1DSqrt2),
-      Times(C1D4,Pi)),
+      CPiQuarter),
     // ArcSin(Sqrt(3)/2)=Pi/3
     ISet(ArcSin(Times(C1D2,CSqrt3)),
-      Times(C1D3,Pi)),
+      CPiThird),
     // ArcSin(Sqrt(2+Sqrt(2))/2)=3/8*Pi
     ISet(ArcSin(Times(C1D2,Sqrt(Plus(C2,CSqrt2)))),
       Times(QQ(3L,8L),Pi)),

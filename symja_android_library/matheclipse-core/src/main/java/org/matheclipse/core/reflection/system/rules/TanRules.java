@@ -41,13 +41,13 @@ public interface TanRules {
     ISet(Tan(Times(QQ(1L,5L),Pi)),
       Sqrt(Plus(C5,Times(CN2,CSqrt5)))),
     // Tan(Pi/4)=1
-    ISet(Tan(Times(C1D4,Pi)),
+    ISet(Tan(CPiQuarter),
       C1),
     // Tan(3/10*Pi)=Sqrt(1+2/Sqrt(5))
     ISet(Tan(Times(QQ(3L,10L),Pi)),
       Sqrt(Plus(C1,Times(C2,C1DSqrt5)))),
     // Tan(Pi/3)=Sqrt(3)
-    ISet(Tan(Times(C1D3,Pi)),
+    ISet(Tan(CPiThird),
       CSqrt3),
     // Tan(3/8*Pi)=1+Sqrt(2)
     ISet(Tan(Times(QQ(3L,8L),Pi)),

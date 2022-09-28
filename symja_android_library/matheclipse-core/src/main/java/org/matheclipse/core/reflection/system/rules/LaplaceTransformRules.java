@@ -27,7 +27,7 @@ public interface LaplaceTransformRules {
       Condition(Times(Power(CN1,n),D(LaplaceTransform(a,t,s),list(s,n))),And(FreeQ(list(n,s),t),Greater(n,C0)))),
     // LaplaceTransform(Sqrt(t_),t_,s_):=Sqrt(Pi)/(2*s^(3/2))/;FreeQ(s,t)
     ISetDelayed(LaplaceTransform(Sqrt(t_),t_,s_),
-      Condition(Times(Sqrt(Pi),Power(Times(C2,Power(s,QQ(3L,2L))),CN1)),FreeQ(s,t))),
+      Condition(Times(CSqrtPi,Power(Times(C2,Power(s,QQ(3L,2L))),CN1)),FreeQ(s,t))),
     // LaplaceTransform(Sin(t_),t_,s_):=1/(s^2+1)/;FreeQ(s,t)
     ISetDelayed(LaplaceTransform(Sin(t_),t_,s_),
       Condition(Power(Plus(Sqr(s),C1),CN1),FreeQ(s,t))),

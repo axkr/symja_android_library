@@ -966,7 +966,7 @@ public class EvalEngine implements Serializable {
 
         OptionsResult opres = checkBuiltinArguments(ast, functionEvaluator);
         if (opres == null) {
-          ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+          ast.functionEvaled();
           return F.NIL;
         }
         ast = opres.result;
@@ -997,11 +997,13 @@ public class EvalEngine implements Serializable {
         }
         // cannot generally set the result as evaluated in built-in function. Especially problems in
         // `togetherMode`
-        // if (isSymbolicMode(attributes) && !isTogetherMode()) {
-        // ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+        // if (((attributes & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION)//
+        // && ast.argSize() == 1 //
+        // && ast.isNumericFunction()) {
+        // ast.functionEvaled();
         // }
       } else {
-        ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+        ast.functionEvaled();
       }
     }
     return F.NIL;

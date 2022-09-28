@@ -170,6 +170,16 @@ public interface IAST extends IExpr, Iterable<IExpr> {
   public IAST addEvalFlags(int i);
 
   /**
+   * Set {@link IAST#BUILT_IN_EVALED} flag.
+   * 
+   * @return
+   */
+  default IAST functionEvaled() {
+    addEvalFlags(IAST.BUILT_IN_EVALED);
+    return this;
+  }
+
+  /**
    * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
    * copied) and add the <code>expr</code> at the given <code>position</code>.
    *

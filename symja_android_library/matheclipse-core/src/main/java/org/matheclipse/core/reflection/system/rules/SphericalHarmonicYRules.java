@@ -21,16 +21,16 @@ public interface SphericalHarmonicYRules {
     IInit(SphericalHarmonicY, SIZES),
     // SphericalHarmonicY(0,0,t_,p_):=1/(2*Sqrt(Pi))
     ISetDelayed(SphericalHarmonicY(C0,C0,t_,p_),
-      Power(Times(C2,Sqrt(Pi)),CN1)),
+      Power(Times(C2,CSqrtPi),CN1)),
     // SphericalHarmonicY(1,1,t_,p_):=-1/2*E^(I*p)*Sqrt(3/(2*Pi))*Sin(t)
     ISetDelayed(SphericalHarmonicY(C1,C1,t_,p_),
       Times(CN1D2,Exp(Times(CI,p)),Sqrt(Times(C3,Power(C2Pi,CN1))),Sin(t))),
     // SphericalHarmonicY(n_,0,0,p_):=Sqrt(1+2*n)/(2*Sqrt(Pi))
     ISetDelayed(SphericalHarmonicY(n_,C0,C0,p_),
-      Times(Sqrt(Plus(C1,Times(C2,n))),Power(Times(C2,Sqrt(Pi)),CN1))),
+      Times(Sqrt(Plus(C1,Times(C2,n))),Power(Times(C2,CSqrtPi),CN1))),
     // SphericalHarmonicY(n_Integer,0,t_,p_):=(Sqrt(1+2*n)*LegendreP(n,Cos(t)))/(2*Sqrt(Pi))
     ISetDelayed(SphericalHarmonicY($p(n, Integer),C0,t_,p_),
-      Times(Sqrt(Plus(C1,Times(C2,n))),Power(Times(C2,Sqrt(Pi)),CN1),LegendreP(n,Cos(t)))),
+      Times(Sqrt(Plus(C1,Times(C2,n))),Power(Times(C2,CSqrtPi),CN1),LegendreP(n,Cos(t)))),
     // SphericalHarmonicY(n_Integer,m_Integer,t_,p_):=0/;n>=0&&m>n
     ISetDelayed(SphericalHarmonicY($p(n, Integer),$p(m, Integer),t_,p_),
       Condition(C0,And(GreaterEqual(n,C0),Greater(m,n)))),

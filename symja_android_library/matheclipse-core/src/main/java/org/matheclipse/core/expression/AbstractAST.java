@@ -2702,6 +2702,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
             return new StringBuilder(prefix).append("CSqrt10");
           }
         }
+        if (base().isPi()) {
+          return new StringBuilder(prefix).append("CSqrtPi");
+        }
         return new StringBuilder(prefix).append("Sqrt(")
             .append(arg1().internalJavaString(properties, depth + 1, variables)).append(")");
       }
@@ -2761,16 +2764,26 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     if (isAST(S.Times, 3)) {
-      if (equals(F.CNPi)) {
-        return new StringBuilder(prefix).append("CNPi");
-      } else if (equals(F.CN2Pi)) {
-        return new StringBuilder(prefix).append("CN2Pi");
-      } else if (equals(F.C2Pi)) {
-        return new StringBuilder(prefix).append("C2Pi");
-      } else if (equals(F.CNPiHalf)) {
-        return new StringBuilder(prefix).append("CNPiHalf");
-      } else if (equals(F.CPiHalf)) {
-        return new StringBuilder(prefix).append("CPiHalf");
+      if (arg2().equals(S.Pi)) {
+        if (equals(F.CNPi)) {
+          return new StringBuilder(prefix).append("CNPi");
+        } else if (equals(F.CN2Pi)) {
+          return new StringBuilder(prefix).append("CN2Pi");
+        } else if (equals(F.C2Pi)) {
+          return new StringBuilder(prefix).append("C2Pi");
+        } else if (equals(F.CNPiHalf)) {
+          return new StringBuilder(prefix).append("CNPiHalf");
+        } else if (equals(F.CPiHalf)) {
+          return new StringBuilder(prefix).append("CPiHalf");
+        } else if (equals(F.CNPiThird)) {
+          return new StringBuilder(prefix).append("CNPiThird");
+        } else if (equals(F.CPiThird)) {
+          return new StringBuilder(prefix).append("CPiThird");
+        } else if (equals(F.CNPiQuarter)) {
+          return new StringBuilder(prefix).append("CNPiQuarter");
+        } else if (equals(F.CPiQuarter)) {
+          return new StringBuilder(prefix).append("CPiQuarter");
+        }
       }
       if (arg1().isMinusOne() && !arg2().isTimes()) {
         if (arg2().isNumber()) {

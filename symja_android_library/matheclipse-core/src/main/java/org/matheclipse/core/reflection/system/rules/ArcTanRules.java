@@ -48,16 +48,16 @@ public interface ArcTanRules {
       Times(QQ(1L,5L),Pi)),
     // ArcTan(1)=Pi/4
     ISet(ArcTan(C1),
-      Times(C1D4,Pi)),
+      CPiQuarter),
     // ArcTan(1,1)=Pi/4
     ISet(ArcTan(C1,C1),
-      Times(C1D4,Pi)),
+      CPiQuarter),
     // ArcTan(-1,-1)=-3/4*Pi
     ISet(ArcTan(CN1,CN1),
       Times(QQ(-3L,4L),Pi)),
     // ArcTan(Sqrt(3))=Pi/3
     ISet(ArcTan(CSqrt3),
-      Times(C1D3,Pi)),
+      CPiThird),
     // ArcTan(1+Sqrt(2))=3/8*Pi
     ISet(ArcTan(Plus(C1,CSqrt2)),
       Times(QQ(3L,8L),Pi)),

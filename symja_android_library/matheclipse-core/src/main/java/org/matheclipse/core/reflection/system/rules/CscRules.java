@@ -41,13 +41,13 @@ public interface CscRules {
     ISet(Csc(Times(QQ(1L,5L),Pi)),
       Sqrt(Plus(C2,Times(C2,C1DSqrt5)))),
     // Csc(Pi/4)=Sqrt(2)
-    ISet(Csc(Times(C1D4,Pi)),
+    ISet(Csc(CPiQuarter),
       CSqrt2),
     // Csc(3/10*Pi)=-1+Sqrt(5)
     ISet(Csc(Times(QQ(3L,10L),Pi)),
       Plus(CN1,CSqrt5)),
     // Csc(Pi/3)=2/Sqrt(3)
-    ISet(Csc(Times(C1D3,Pi)),
+    ISet(Csc(CPiThird),
       Times(C2,C1DSqrt3)),
     // Csc(2/5*Pi)=Sqrt(2-2/Sqrt(5))
     ISet(Csc(Times(QQ(2L,5L),Pi)),

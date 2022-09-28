@@ -27,13 +27,13 @@ public interface ArcCosRules {
       CPiHalf),
     // ArcCos(1/2)=Pi/3
     ISet(ArcCos(C1D2),
-      Times(C1D3,Pi)),
+      CPiThird),
     // ArcCos(-1/2)=2/3*Pi
     ISet(ArcCos(CN1D2),
       Times(QQ(2L,3L),Pi)),
     // ArcCos(1/Sqrt(2))=Pi/4
     ISet(ArcCos(C1DSqrt2),
-      Times(C1D4,Pi)),
+      CPiQuarter),
     // ArcCos(-1/Sqrt(2))=3/4*Pi
     ISet(ArcCos(Negate(C1DSqrt2)),
       Times(QQ(3L,4L),Pi)),

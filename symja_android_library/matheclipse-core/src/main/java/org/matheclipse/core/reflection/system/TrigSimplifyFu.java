@@ -497,9 +497,9 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
             break;
         }
         if (newHead != null) {
-          if (tr3IsPositive(arg1.subtract(F.Times(F.C1D4, S.Pi)))
-              || tr3IsPositive(F.Times(F.C1D2, S.Pi).subtract(arg1))) {
-            return F.unaryAST1(newHead, F.Times(F.C1D2, S.Pi).subtract(arg1));
+          if (tr3IsPositive(arg1.subtract(F.CPiQuarter))
+              || tr3IsPositive(F.CPiHalf.subtract(arg1))) {
+            return F.unaryAST1(newHead, F.CPiHalf.subtract(arg1));
           }
         }
       }

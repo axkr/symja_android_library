@@ -41,13 +41,13 @@ public interface SecRules {
     ISet(Sec(Times(QQ(1L,5L),Pi)),
       Plus(CN1,CSqrt5)),
     // Sec(Pi/4)=Sqrt(2)
-    ISet(Sec(Times(C1D4,Pi)),
+    ISet(Sec(CPiQuarter),
       CSqrt2),
     // Sec(3/10*Pi)=Sqrt(2+2/Sqrt(5))
     ISet(Sec(Times(QQ(3L,10L),Pi)),
       Sqrt(Plus(C2,Times(C2,C1DSqrt5)))),
     // Sec(Pi/3)=2
-    ISet(Sec(Times(C1D3,Pi)),
+    ISet(Sec(CPiThird),
       C2),
     // Sec(2/5*Pi)=1+Sqrt(5)
     ISet(Sec(Times(QQ(2L,5L),Pi)),

@@ -41,13 +41,13 @@ public interface CosRules {
     ISet(Cos(Times(QQ(1L,5L),Pi)),
       Times(C1D4,Plus(C1,CSqrt5))),
     // Cos(Pi/4)=1/Sqrt(2)
-    ISet(Cos(Times(C1D4,Pi)),
+    ISet(Cos(CPiQuarter),
       C1DSqrt2),
     // Cos(3/10*Pi)=Sqrt(1/2*(5-Sqrt(5)))/2
     ISet(Cos(Times(QQ(3L,10L),Pi)),
       Times(C1D2,Sqrt(Times(C1D2,Subtract(C5,CSqrt5))))),
     // Cos(Pi/3)=1/2
-    ISet(Cos(Times(C1D3,Pi)),
+    ISet(Cos(CPiThird),
       C1D2),
     // Cos(3/8*Pi)=Sqrt(2-Sqrt(2))/2
     ISet(Cos(Times(QQ(3L,8L),Pi)),

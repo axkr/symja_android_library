@@ -52,7 +52,7 @@ public interface FunctionExpandRules {
       Times(Plus(Negate(Beta(y,a,b)),Beta(z,a,b)),Power(Times(Gamma(a),Gamma(b)),CN1),Gamma(Plus(a,b)))),
     // CatalanNumber(n_):=(2^(2*n)*Gamma(1/2+n))/(Sqrt(Pi)*Gamma(2+n))
     SetDelayed(CatalanNumber(n_),
-      Times(Power(C2,Times(C2,n)),Gamma(Plus(C1D2,n)),Power(Times(Sqrt(Pi),Gamma(Plus(C2,n))),CN1))),
+      Times(Power(C2,Times(C2,n)),Gamma(Plus(C1D2,n)),Power(Times(CSqrtPi,Gamma(Plus(C2,n))),CN1))),
     // ChebyshevT(n_,x_):=Cos(n*ArcCos(x))
     SetDelayed(ChebyshevT(n_,x_),
       Cos(Times(n,ArcCos(x)))),
@@ -109,13 +109,13 @@ public interface FunctionExpandRules {
       Plus(Power(Times(Exp(z),z),CN1),ExpIntegralEi(Negate(z)),Times(C1D2,Subtract(Log(Negate(Power(z,CN1))),Log(Negate(z)))),Log(z))),
     // Gamma(-1/2,z_):=2/(E^z*Sqrt(z))-2*Sqrt(Pi)*(1-Erf(Sqrt(z)))
     SetDelayed(Gamma(CN1D2,z_),
-      Plus(Times(C2,Power(Times(Exp(z),Sqrt(z)),CN1)),Times(CN2,Sqrt(Pi),Subtract(C1,Erf(Sqrt(z)))))),
+      Plus(Times(C2,Power(Times(Exp(z),Sqrt(z)),CN1)),Times(CN2,CSqrtPi,Subtract(C1,Erf(Sqrt(z)))))),
     // Gamma(0,z_):=-ExpIntegralEi(-z)+1/2*(-Log(-1/z)+Log(-z))-Log(z)
     SetDelayed(Gamma(C0,z_),
       Plus(Negate(ExpIntegralEi(Negate(z))),Times(C1D2,Plus(Negate(Log(Negate(Power(z,CN1)))),Log(Negate(z)))),Negate(Log(z)))),
     // Gamma(1/2,z_):=Sqrt(Pi)*(1-Erf(Sqrt(z)))
     SetDelayed(Gamma(C1D2,z_),
-      Times(Sqrt(Pi),Subtract(C1,Erf(Sqrt(z))))),
+      Times(CSqrtPi,Subtract(C1,Erf(Sqrt(z))))),
     // GammaRegularized(a_,z_):=Gamma(a,z)/Gamma(a)
     SetDelayed(GammaRegularized(a_,z_),
       Times(Power(Gamma(a),CN1),Gamma(a,z))),
@@ -154,7 +154,7 @@ public interface FunctionExpandRules {
       Condition(Times(Power(Subtract(C1,z),Plus(Negate(a),n)),Sum(Times(Power(z,k),Power(Times(Pochhammer(Plus(b,n),k),Factorial(k)),CN1),Pochhammer(n,k),Pochhammer(Plus(Negate(a),b,n),k)),list(k,C0,Negate(n)))),Less(n,C0))),
     // InverseGudermannian(z_):=Log(Tan(Pi/4+z/2))
     SetDelayed(InverseGudermannian(z_),
-      Log(Tan(Plus(Times(C1D4,Pi),Times(C1D2,z))))),
+      Log(Tan(Plus(CPiQuarter,Times(C1D2,z))))),
     // InverseHaversine(z_):=2*ArcSin(Sqrt(z))
     SetDelayed(InverseHaversine(z_),
       Times(C2,ArcSin(Sqrt(z)))),
@@ -226,10 +226,10 @@ public interface FunctionExpandRules {
       Times(Power(b,CN1D2),Sqrt(CPiHalf),BesselY(Times(C1D2,Plus(C1,Times(C2,a))),b))),
     // SphericalHarmonicY(a_,1,t_,p_):=(-a*(1+a)*Sqrt(1+2*a)*E^(I*p)*Sqrt(1-Cos(t))*Sqrt(1+Cos(t))*Sqrt(Gamma(a))*Hypergeometric2F1(1-a,2+a,2,Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(1-Cos(t)^2)*Sqrt(Gamma(2+a)))
     SetDelayed(SphericalHarmonicY(a_,C1,t_,p_),
-      Times(CN1,a,Plus(C1,a),Sqrt(Plus(C1,Times(C2,a))),Exp(Times(CI,p)),Sqrt(Subtract(C1,Cos(t))),Sqrt(Plus(C1,Cos(t))),Sqrt(Gamma(a)),Power(Times(C4,Sqrt(Pi),Sqrt(Subtract(C1,Sqr(Cos(t)))),Sqrt(Gamma(Plus(C2,a)))),CN1),Hypergeometric2F1(Subtract(C1,a),Plus(C2,a),C2,Sqr(Sin(Times(C1D2,t)))),Sin(t))),
+      Times(CN1,a,Plus(C1,a),Sqrt(Plus(C1,Times(C2,a))),Exp(Times(CI,p)),Sqrt(Subtract(C1,Cos(t))),Sqrt(Plus(C1,Cos(t))),Sqrt(Gamma(a)),Power(Times(C4,CSqrtPi,Sqrt(Subtract(C1,Sqr(Cos(t)))),Sqrt(Gamma(Plus(C2,a)))),CN1),Hypergeometric2F1(Subtract(C1,a),Plus(C2,a),C2,Sqr(Sin(Times(C1D2,t)))),Sin(t))),
     // SphericalHarmonicY(a_,b_,t_,p_):=(Sqrt(1+2*a)*E^(I*b*p)*(1+Cos(t))^(b/2)*Sqrt(Gamma(1+a-b))*Hypergeometric2F1(-a,1+a,1-b,Sin(t/2)^2)*Sin(t)^b)/((1-Cos(t))^(b/2)*(1-Cos(t)^2)^(b/2)*2*Sqrt(Pi)*Gamma(1-b)*Sqrt(Gamma(1+a+b)))
     SetDelayed(SphericalHarmonicY(a_,b_,t_,p_),
-      Times(Sqrt(Plus(C1,Times(C2,a))),Exp(Times(CI,b,p)),Power(Plus(C1,Cos(t)),Times(C1D2,b)),Sqrt(Gamma(Plus(C1,a,Negate(b)))),Power(Times(Power(Subtract(C1,Cos(t)),Times(C1D2,b)),Power(Subtract(C1,Sqr(Cos(t))),Times(C1D2,b)),C2,Sqrt(Pi),Gamma(Subtract(C1,b)),Sqrt(Gamma(Plus(C1,a,b)))),CN1),Hypergeometric2F1(Negate(a),Plus(C1,a),Subtract(C1,b),Sqr(Sin(Times(C1D2,t)))),Power(Sin(t),b))),
+      Times(Sqrt(Plus(C1,Times(C2,a))),Exp(Times(CI,b,p)),Power(Plus(C1,Cos(t)),Times(C1D2,b)),Sqrt(Gamma(Plus(C1,a,Negate(b)))),Power(Times(Power(Subtract(C1,Cos(t)),Times(C1D2,b)),Power(Subtract(C1,Sqr(Cos(t))),Times(C1D2,b)),C2,CSqrtPi,Gamma(Subtract(C1,b)),Sqrt(Gamma(Plus(C1,a,b)))),CN1),Hypergeometric2F1(Negate(a),Plus(C1,a),Subtract(C1,b),Sqr(Sin(Times(C1D2,t)))),Power(Sin(t),b))),
     // WeberE(a_,b_):=(2*b*Cos(1/2*a*Pi)^2*HypergeometricPFQ({1},{3/2-a/2,3/2+a/2},(-1)*1/4*b^2))/((-1+a)*(1+a)*Pi)+(2*HypergeometricPFQ({1},{1-a/2,1+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi)^2)/(a*Pi)
     SetDelayed(WeberE(a_,b_),
       Plus(Times(C2,b,Power(Times(Plus(CN1,a),Plus(C1,a),Pi),CN1),Sqr(Cos(Times(C1D2,a,Pi))),HypergeometricPFQ(list(C1),list(Plus(QQ(3L,2L),Times(CN1D2,a)),Plus(QQ(3L,2L),Times(C1D2,a))),Times(CN1,C1D4,Sqr(b)))),Times(C2,Power(Times(a,Pi),CN1),HypergeometricPFQ(list(C1),list(Plus(C1,Times(CN1D2,a)),Plus(C1,Times(C1D2,a))),Times(CN1,C1D4,Sqr(b))),Sqr(Sin(Times(C1D2,a,Pi)))))),

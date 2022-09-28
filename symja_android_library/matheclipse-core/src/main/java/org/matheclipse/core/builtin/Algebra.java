@@ -4175,7 +4175,7 @@ public class Algebra {
             // Log[x_ ^ y_] :> y * Log(x)
             IAST logResult = Times(arg1.exponent(), powerExpand(Log(arg1.base()), assumptions));
             if (assumptions) {
-              IAST floorResult = Floor(Divide(Subtract(Pi, Im(logResult)), Times(C2, Pi)));
+              IAST floorResult = Floor(Divide(Subtract(Pi, Im(logResult)),F.C2Pi));
               IAST timesResult = Times(C2, I, Pi, floorResult);
               return Plus(logResult, timesResult);
             }
@@ -4232,7 +4232,7 @@ public class Algebra {
               IASTAppendable plusResult = F.PlusAlloc(timesAST.size() + 1);
               plusResult.append(C1D2);
               plusResult.appendArgs(timesAST.size(),
-                  i -> Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
+                  i -> Negate(Divide(Arg(timesAST.get(i)), F.C2Pi)));
               IAST expResult = Power(E, Times(C2, I, Pi, x2, Floor(plusResult)));
               if (!(timesResult instanceof IASTAppendable)) {
                 timesResult = timesResult.copyAppendable();
@@ -4259,7 +4259,7 @@ public class Algebra {
         IAST powerResult = Power(base, Times(exponent, z));
         if (assumptions) {
           IAST floorResult =
-              Floor(Divide(Subtract(Pi, Im(Times(exponent, Log(base)))), Times(C2, Pi)));
+              Floor(Divide(Subtract(Pi, Im(Times(exponent, Log(base)))), F.C2Pi));
           IAST expResult = Power(E, Times(C2, I, Pi, z, floorResult));
           IAST timesResult = Times(powerResult, expResult);
           return timesResult;

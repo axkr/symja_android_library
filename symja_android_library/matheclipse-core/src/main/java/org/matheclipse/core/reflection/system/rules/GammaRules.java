@@ -24,22 +24,22 @@ public interface GammaRules {
       Undefined),
     // Gamma(-5/2)=(-1)*1/15*8*Sqrt(Pi)
     ISet(Gamma(QQ(-5L,2L)),
-      Times(QQ(-8L,15L),Sqrt(Pi))),
+      Times(QQ(-8L,15L),CSqrtPi)),
     // Gamma(-3/2)=1/3*4*Sqrt(Pi)
     ISet(Gamma(QQ(-3L,2L)),
-      Times(QQ(4L,3L),Sqrt(Pi))),
+      Times(QQ(4L,3L),CSqrtPi)),
     // Gamma(-1/2)=-2*Sqrt(Pi)
     ISet(Gamma(CN1D2),
-      Times(CN2,Sqrt(Pi))),
+      Times(CN2,CSqrtPi)),
     // Gamma(1/2)=Sqrt(Pi)
     ISet(Gamma(C1D2),
-      Sqrt(Pi)),
+      CSqrtPi),
     // Gamma(3/2)=Sqrt(Pi)/2
     ISet(Gamma(QQ(3L,2L)),
-      Times(C1D2,Sqrt(Pi))),
+      Times(C1D2,CSqrtPi)),
     // Gamma(5/2)=1/4*3*Sqrt(Pi)
     ISet(Gamma(QQ(5L,2L)),
-      Times(QQ(3L,4L),Sqrt(Pi))),
+      Times(QQ(3L,4L),CSqrtPi)),
     // Gamma(Infinity)=Infinity
     ISet(Gamma(oo),
       oo),
@@ -69,10 +69,10 @@ public interface GammaRules {
       C0),
     // Gamma(1/2,z_?NumericQ):=Sqrt(Pi)*Erfc(Sqrt(z))
     ISetDelayed(Gamma(C1D2,PatternTest(z_,NumericQ)),
-      Times(Sqrt(Pi),Erfc(Sqrt(z)))),
+      Times(CSqrtPi,Erfc(Sqrt(z)))),
     // Gamma(-1/2,z_?NumericQ):=2/(E^z*Sqrt(z))-2*Sqrt(Pi)*Erfc(Sqrt(z))
     ISetDelayed(Gamma(CN1D2,PatternTest(z_,NumericQ)),
-      Plus(Times(C2,Power(Times(Exp(z),Sqrt(z)),CN1)),Times(CN2,Sqrt(Pi),Erfc(Sqrt(z))))),
+      Plus(Times(C2,Power(Times(Exp(z),Sqrt(z)),CN1)),Times(CN2,CSqrtPi,Erfc(Sqrt(z))))),
     // Gamma(1,z_):=E^(-z)
     ISetDelayed(Gamma(C1,z_),
       Exp(Negate(z))),

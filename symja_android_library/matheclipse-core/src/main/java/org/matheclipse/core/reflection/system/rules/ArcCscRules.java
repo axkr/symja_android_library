@@ -48,7 +48,7 @@ public interface ArcCscRules {
       Times(QQ(-3L,8L),Pi)),
     // ArcCsc(2/Sqrt(3))=Pi/3
     ISet(ArcCsc(Times(C2,C1DSqrt3)),
-      Times(C1D3,Pi)),
+      CPiThird),
     // ArcCsc(-1+Sqrt(5))=3/10*Pi
     ISet(ArcCsc(Plus(CN1,CSqrt5)),
       Times(QQ(3L,10L),Pi)),
@@ -57,7 +57,7 @@ public interface ArcCscRules {
       Times(QQ(-3L,10L),Pi)),
     // ArcCsc(Sqrt(2))=Pi/4
     ISet(ArcCsc(CSqrt2),
-      Times(C1D4,Pi)),
+      CPiQuarter),
     // ArcCsc(Sqrt(2+2/Sqrt(5)))=Pi/5
     ISet(ArcCsc(Sqrt(Plus(C2,Times(C2,C1DSqrt5)))),
       Times(QQ(1L,5L),Pi)),

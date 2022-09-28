@@ -41,13 +41,13 @@ public interface SinRules {
     ISet(Sin(Times(QQ(1L,5L),Pi)),
       Times(C1D2,Sqrt(Times(C1D2,Subtract(C5,CSqrt5))))),
     // Sin(Pi/4)=Sqrt(2)/2
-    ISet(Sin(Times(C1D4,Pi)),
+    ISet(Sin(CPiQuarter),
       C1DSqrt2),
     // Sin(3/10*Pi)=1/4*(Sqrt(5)+1)
     ISet(Sin(Times(QQ(3L,10L),Pi)),
       Times(C1D4,Plus(C1,CSqrt5))),
     // Sin(Pi/3)=Sqrt(3)/2
-    ISet(Sin(Times(C1D3,Pi)),
+    ISet(Sin(CPiThird),
       Times(C1D2,CSqrt3)),
     // Sin(3/8*Pi)=Sqrt(2+Sqrt(2))/2
     ISet(Sin(Times(QQ(3L,8L),Pi)),

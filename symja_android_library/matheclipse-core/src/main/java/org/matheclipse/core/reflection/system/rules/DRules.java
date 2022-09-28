@@ -141,10 +141,10 @@ public interface DRules {
       C0),
     // D(InverseErf(f_),x_?NotListQ):=D(f,x)*1/2*Sqrt(Pi)*E^InverseErf(f)^2
     ISetDelayed(D(InverseErf(f_),PatternTest(x_,NotListQ)),
-      Times(D(f,x),C1D2,Sqrt(Pi),Exp(Sqr(InverseErf(f))))),
+      Times(D(f,x),C1D2,CSqrtPi,Exp(Sqr(InverseErf(f))))),
     // D(InverseErfc(f_),x_?NotListQ):=D(f,x)*(-1/2)*E^InverseErfc(f)^2*Sqrt(Pi)
     ISetDelayed(D(InverseErfc(f_),PatternTest(x_,NotListQ)),
-      Times(D(f,x),CN1D2,Exp(Sqr(InverseErfc(f))),Sqrt(Pi))),
+      Times(D(f,x),CN1D2,Exp(Sqr(InverseErfc(f))),CSqrtPi)),
     // D(InverseHaversine(f_),x_?NotListQ):=D(f,x)/Sqrt((1-f)*f)
     ISetDelayed(D(InverseHaversine(f_),PatternTest(x_,NotListQ)),
       Times(Power(Times(Subtract(C1,f),f),CN1D2),D(f,x))),
@@ -441,9 +441,9 @@ public interface DRules {
       Plus(Times(JacobiDN(f,g),D(f,x)),Times(Power(Times(C2,Plus(CN1,g),g),CN1),D(g,x),Plus(Times(Plus(EllipticE(JacobiAmplitude(f,g),g),Times(f,Plus(CN1,g))),JacobiDN(f,g)),Times(CN1,g,JacobiCN(f,g),JacobiSN(f,g)))))),
     // D(StruveH(f_,g_),x_?NotListQ):=1/2*(g^f/(2^f*Sqrt(Pi)*Gamma(3/2+f))+StruveH(-1+f,g)-StruveH(1+f,g))*D(g,x)+D(f,x)*Derivative(1,0)[StruveH][f,g]
     ISetDelayed(D(StruveH(f_,g_),PatternTest(x_,NotListQ)),
-      Plus(Times(C1D2,Plus(Times(Power(g,f),Power(Times(Power(C2,f),Sqrt(Pi),Gamma(Plus(QQ(3L,2L),f))),CN1)),StruveH(Plus(CN1,f),g),Negate(StruveH(Plus(C1,f),g))),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),StruveH),f,g)))),
+      Plus(Times(C1D2,Plus(Times(Power(g,f),Power(Times(Power(C2,f),CSqrtPi,Gamma(Plus(QQ(3L,2L),f))),CN1)),StruveH(Plus(CN1,f),g),Negate(StruveH(Plus(C1,f),g))),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),StruveH),f,g)))),
     // D(StruveL(f_,g_),x_?NotListQ):=1/2*(g^f/(2^f*Sqrt(Pi)*Gamma(3/2+f))+StruveL(-1+f,g)+StruveL(1+f,g))*D(g,x)+D(f,x)*Derivative(1,0)[StruveL][f,g]
     ISetDelayed(D(StruveL(f_,g_),PatternTest(x_,NotListQ)),
-      Plus(Times(C1D2,Plus(Times(Power(g,f),Power(Times(Power(C2,f),Sqrt(Pi),Gamma(Plus(QQ(3L,2L),f))),CN1)),StruveL(Plus(CN1,f),g),StruveL(Plus(C1,f),g)),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),StruveL),f,g))))
+      Plus(Times(C1D2,Plus(Times(Power(g,f),Power(Times(Power(C2,f),CSqrtPi,Gamma(Plus(QQ(3L,2L),f))),CN1)),StruveL(Plus(CN1,f),g),StruveL(Plus(C1,f),g)),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),StruveL),f,g))))
   );
 }

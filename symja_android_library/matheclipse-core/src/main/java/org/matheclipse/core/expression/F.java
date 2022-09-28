@@ -685,6 +685,21 @@ public class F extends S {
   /** Represents <code>Pi/2</code> as Symja expression <code>Times(C1D2, Pi)</code> */
   public static final IAST CPiHalf;
 
+  /** Represents <code>-Pi/3</code> as Symja expression <code>Times(CN1D3, Pi)</code> */
+  public static final IAST CNPiThird;
+
+  /** Represents <code>Pi/3</code> as Symja expression <code>Times(C1D3, Pi)</code> */
+  public static final IAST CPiThird;
+
+  /** Represents <code>-Pi/4</code> as Symja expression <code>Times(CN1D4, Pi)</code> */
+  public static final IAST CNPiQuarter;
+
+  /** Represents <code>Pi/4</code> as Symja expression <code>Times(C1D4, Pi)</code> */
+  public static final IAST CPiQuarter;
+
+  /** Represents <code>Sqrt(Pi)</code> */
+  public static final IAST CSqrtPi;
+
   /** Represents <code>Sqrt(2)</code> */
   public static final IAST CSqrt2;
 
@@ -802,55 +817,61 @@ public class F extends S {
       List.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
 
       CEmptySequence = headAST0(Sequence);
-      CEmptyList = headAST0(List);
+      CEmptyList = headAST0(List).functionEvaled();
       CEmptyString = $str("");
-      CMissingNotFound = Missing("NotFound");
-      CListC0 = new B1.List(C0);
-      CListC1 = new B1.List(C1);
-      CListC2 = new B1.List(C2);
-      CListCN1 = new B1.List(CN1);
+      CMissingNotFound = Missing("NotFound").functionEvaled();
+      CListC0 = new B1.List(C0).functionEvaled();
+      CListC1 = new B1.List(C1).functionEvaled();
+      CListC2 = new B1.List(C2).functionEvaled();
+      CListCN1 = new B1.List(CN1).functionEvaled();
 
-      CListC1C1 = new B2.List(C1, C1);
-      CListC1C2 = new B2.List(C1, C2);
-      CListC2C1 = new B2.List(C2, C1);
-      CListC2C2 = new B2.List(C2, C2);
+      CListC1C1 = new B2.List(C1, C1).functionEvaled();
+      CListC1C2 = new B2.List(C1, C2).functionEvaled();
+      CListC2C1 = new B2.List(C2, C1).functionEvaled();
+      CListC2C2 = new B2.List(C2, C2).functionEvaled();
 
       CReturnFalse = new B1.Return(False);
       CReturnTrue = new B1.Return(True);
       CThrowFalse = new B1.Throw(False);
       CThrowTrue = new B1.Throw(True);
 
-      CInfinity = unaryAST1(DirectedInfinity, C1);
+      CInfinity = unaryAST1(DirectedInfinity, C1).functionEvaled();
       oo = CInfinity;
-      CNInfinity = unaryAST1(DirectedInfinity, CN1);
+      CNInfinity = unaryAST1(DirectedInfinity, CN1).functionEvaled();
       Noo = CNInfinity;
-      CIInfinity = unaryAST1(DirectedInfinity, CI);
-      CNIInfinity = unaryAST1(DirectedInfinity, CNI);
-      CComplexInfinity = headAST0(DirectedInfinity);
+      CIInfinity = unaryAST1(DirectedInfinity, CI).functionEvaled();
+      CNIInfinity = unaryAST1(DirectedInfinity, CNI).functionEvaled();
+      CComplexInfinity = headAST0(DirectedInfinity).functionEvaled();
 
-      CNPi = new B2.Times(CN1, Pi);
-      CN2Pi = new B2.Times(CN2, Pi);
-      C2Pi = new B2.Times(C2, Pi);
-      CNPiHalf = new B2.Times(CN1D2, Pi);
-      CPiHalf = new B2.Times(C1D2, Pi);
+      CNPi = new B2.Times(CN1, Pi).functionEvaled();
+      CN2Pi = new B2.Times(CN2, Pi).functionEvaled();
+      C2Pi = new B2.Times(C2, Pi).functionEvaled();
+      CNPiHalf = new B2.Times(CN1D2, Pi).functionEvaled();
+      CPiHalf = new B2.Times(C1D2, Pi).functionEvaled();
+      CNPiThird = new B2.Times(CN1D3, Pi).functionEvaled();
+      CPiThird = new B2.Times(C1D3, Pi).functionEvaled();
+      CNPiQuarter = new B2.Times(CN1D4, Pi).functionEvaled();
+      CPiQuarter = new B2.Times(C1D4, Pi).functionEvaled();
 
-      CSqrt2 = new B2.Power(C2, C1D2);
-      CSqrt3 = new B2.Power(C3, C1D2);
-      CSqrt5 = new B2.Power(C5, C1D2);
-      CSqrt6 = new B2.Power(C6, C1D2);
-      CSqrt7 = new B2.Power(C7, C1D2);
-      CSqrt10 = new B2.Power(C10, C1D2);
+      CSqrtPi = new B2.Power(Pi, C1D2).functionEvaled();
 
-      C1DSqrt2 = new B2.Power(C2, CN1D2);
-      C1DSqrt3 = new B2.Power(C3, CN1D2);
-      C1DSqrt5 = new B2.Power(C5, CN1D2);
-      C1DSqrt6 = new B2.Power(C6, CN1D2);
-      C1DSqrt7 = new B2.Power(C7, CN1D2);
-      C1DSqrt10 = new B2.Power(C10, CN1D2);
+      CSqrt2 = new B2.Power(C2, C1D2).functionEvaled();
+      CSqrt3 = new B2.Power(C3, C1D2).functionEvaled();
+      CSqrt5 = new B2.Power(C5, C1D2).functionEvaled();
+      CSqrt6 = new B2.Power(C6, C1D2).functionEvaled();
+      CSqrt7 = new B2.Power(C7, C1D2).functionEvaled();
+      CSqrt10 = new B2.Power(C10, C1D2).functionEvaled();
 
-      Slot1 = unaryAST1(Slot, C1);
-      Slot2 = unaryAST1(Slot, C2);
-      Slot3 = unaryAST1(Slot, C3);
+      C1DSqrt2 = new B2.Power(C2, CN1D2).functionEvaled();
+      C1DSqrt3 = new B2.Power(C3, CN1D2).functionEvaled();
+      C1DSqrt5 = new B2.Power(C5, CN1D2).functionEvaled();
+      C1DSqrt6 = new B2.Power(C6, CN1D2).functionEvaled();
+      C1DSqrt7 = new B2.Power(C7, CN1D2).functionEvaled();
+      C1DSqrt10 = new B2.Power(C10, CN1D2).functionEvaled();
+
+      Slot1 = unaryAST1(Slot, C1).functionEvaled();
+      Slot2 = unaryAST1(Slot, C2).functionEvaled();
+      Slot3 = unaryAST1(Slot, C3).functionEvaled();
 
       COMMON_IDS = new IExpr[] {CN1, CN2, CN3, CN4, CN5, CN6, CN7, CN8, CN9, CN10, C0, C1, C2, C3,
           C4, C5, C6, C7, C8, C9, C10, CI, CNI, C1D2, CN1D2, C1D3, CN1D3, C1D4, CN1D4, CD0, CD1,

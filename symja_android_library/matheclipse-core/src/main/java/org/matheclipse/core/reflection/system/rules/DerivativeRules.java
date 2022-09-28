@@ -135,10 +135,10 @@ public interface DerivativeRules {
       Function(C0)),
     // Derivative(1)[InverseErf]:=1/2*Sqrt(Pi)*E^InverseErf(x)^2&
     ISetDelayed($(Derivative(C1),InverseErf),
-      Function(Times(C1D2,Sqrt(Pi),Exp(Sqr(InverseErf(x)))))),
+      Function(Times(C1D2,CSqrtPi,Exp(Sqr(InverseErf(x)))))),
     // Derivative(1)[InverseErfc]:=-1/2*E^InverseErfc(#1)^2*Sqrt(Pi)&
     ISetDelayed($(Derivative(C1),InverseErfc),
-      Function(Times(CN1D2,Exp(Sqr(InverseErfc(Slot1))),Sqrt(Pi)))),
+      Function(Times(CN1D2,Exp(Sqr(InverseErfc(Slot1))),CSqrtPi))),
     // Derivative(1)[InverseHaversine]:=1/Sqrt((1-#1)*#1)&
     ISetDelayed($(Derivative(C1),InverseHaversine),
       Function(Power(Times(Subtract(C1,Slot1),Slot1),CN1D2))),
@@ -360,9 +360,9 @@ public interface DerivativeRules {
       Function(Times(CI,Slot2,SphericalHarmonicY(Slot1,Slot2,Slot(C3),Slot(C4))))),
     // Derivative(0,1)[StruveH]:=1/2*(-StruveH(#1+1,#2)+StruveH(-1+#1,#2)+(#2/2)^#1/(Sqrt(Pi)*Gamma(#1+3/2)))&
     ISetDelayed($(Derivative(C0,C1),StruveH),
-      Function(Times(C1D2,Plus(Negate(StruveH(Plus(Slot1,C1),Slot2)),StruveH(Plus(CN1,Slot1),Slot2),Times(Power(Times(Sqrt(Pi),Gamma(Plus(Slot1,QQ(3L,2L)))),CN1),Power(Times(C1D2,Slot2),Slot1)))))),
+      Function(Times(C1D2,Plus(Negate(StruveH(Plus(Slot1,C1),Slot2)),StruveH(Plus(CN1,Slot1),Slot2),Times(Power(Times(CSqrtPi,Gamma(Plus(Slot1,QQ(3L,2L)))),CN1),Power(Times(C1D2,Slot2),Slot1)))))),
     // Derivative(0,1)[StruveL]:=1/2*(StruveL(-1+#1,#2)+StruveL(#1+1,#2)+(#2/2)^#1/(Sqrt(Pi)*Gamma(#1+3/2)))&
     ISetDelayed($(Derivative(C0,C1),StruveL),
-      Function(Times(C1D2,Plus(StruveL(Plus(CN1,Slot1),Slot2),StruveL(Plus(Slot1,C1),Slot2),Times(Power(Times(Sqrt(Pi),Gamma(Plus(Slot1,QQ(3L,2L)))),CN1),Power(Times(C1D2,Slot2),Slot1))))))
+      Function(Times(C1D2,Plus(StruveL(Plus(CN1,Slot1),Slot2),StruveL(Plus(Slot1,C1),Slot2),Times(Power(Times(CSqrtPi,Gamma(Plus(Slot1,QQ(3L,2L)))),CN1),Power(Times(C1D2,Slot2),Slot1))))))
   );
 }

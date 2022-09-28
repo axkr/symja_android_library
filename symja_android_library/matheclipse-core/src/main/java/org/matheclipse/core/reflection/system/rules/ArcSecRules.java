@@ -63,7 +63,7 @@ public interface ArcSecRules {
       Times(QQ(4L,5L),Pi)),
     // ArcSec(Sqrt(2))=Pi/4
     ISet(ArcSec(CSqrt2),
-      Times(C1D4,Pi)),
+      CPiQuarter),
     // ArcSec(-Sqrt(2))=3/4*Pi
     ISet(ArcSec(Negate(CSqrt2)),
       Times(QQ(3L,4L),Pi)),
@@ -75,7 +75,7 @@ public interface ArcSecRules {
       Times(QQ(7L,10L),Pi)),
     // ArcSec(2)=Pi/3
     ISet(ArcSec(C2),
-      Times(C1D3,Pi)),
+      CPiThird),
     // ArcSec(-2)=2/3*Pi
     ISet(ArcSec(CN2),
       Times(QQ(2L,3L),Pi)),

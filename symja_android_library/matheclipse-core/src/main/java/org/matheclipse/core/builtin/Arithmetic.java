@@ -27,7 +27,6 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.QQ;
 import static org.matheclipse.core.expression.F.Re;
 import static org.matheclipse.core.expression.F.Sin;
-import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.num;
@@ -35,7 +34,6 @@ import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y_;
 import static org.matheclipse.core.expression.S.Conjugate;
 import static org.matheclipse.core.expression.S.E;
-import static org.matheclipse.core.expression.S.Pi;
 import static org.matheclipse.core.expression.S.Power;
 import static org.matheclipse.core.expression.S.Times;
 import static org.matheclipse.core.expression.S.x;
@@ -594,7 +592,7 @@ public final class Arithmetic {
         } else if (arg1.isComplexInfinity()) {
           // Indeterminate expression `1` encountered.
           IOFunctions.printMessage(ast.topHead(), "indet", F.list(ast), engine);
-          return F.Interval(F.list(S.Pi.negate(), S.Pi));
+          return F.Interval(F.list(F.CNPi, S.Pi));
         }
 
       } else if (arg1.isTimes() && arg1.first().isRealResult()) {
@@ -1918,11 +1916,11 @@ public final class Arithmetic {
           IInteger n = frac.numerator();
           if (arg1.isNegative()) {
             n = n.negate();
-            return Times(Power(CN1, Times(C1D2, Plus(C1, n))), Power(C2, n), Sqrt(Pi),
+            return Times(Power(CN1, Times(C1D2, Plus(C1, n))), Power(C2, n), F.CSqrtPi,
                 Power(Factorial(n), -1), Factorial(Times(C1D2, Plus(CN1, n))));
           } else {
             // Sqrt(Pi) * (n-2)!! / 2^((n-1)/2)
-            return Times(Sqrt(Pi), Factorial2(n.subtract(C2)),
+            return Times(F.CSqrtPi, Factorial2(n.subtract(C2)),
                 Power(C2, Times(C1D2, Subtract(C1, n))));
           }
         }
@@ -2150,7 +2148,7 @@ public final class Arithmetic {
             if (arg2.isPositive() && ((IInteger) arg2).isEven()) {
               // Module({v=s/2},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!))
               IExpr v = Times(C1D2, arg2);
-              return Times(Power(Times(C2, Pi), Times(C2, v)), Power(CN1, Plus(v, C1)),
+              return Times(Power(F.C2Pi, Times(C2, v)), Power(CN1, Plus(v, C1)),
                   BernoulliB(Times(C2, v)), Power(Times(C2, Factorial(Times(C2, v))), CN1));
             }
             return F.NIL;
@@ -3245,12 +3243,12 @@ public final class Arithmetic {
           F.CPiHalf);
       // "Positive[x]&&(y==1/x)");
       plusMatcher.defineHashRule(ArcTan(x_), ArcTan(y_), //
-          Times(C1D2, Pi), //
+          F.CPiHalf, //
           And(Positive(x), Equal(y, Power(x, CN1))));
 
       // ArcTan(1/2) + ArcTan(1/3) = Pi/4
       plusMatcher.defineHashRule(F.ArcTan(F.C1D3), F.ArcTan(F.C1D2), //
-          Times(F.C1D4, Pi));
+          F.CPiQuarter);
       // ArcTan(1/3) + ArcTan(1/7) = ArcTan(1/2)
       plusMatcher.defineHashRule(F.ArcTan(F.C1D3), F.ArcTan(F.QQ(1L, 7L)), //
           F.ArcTan(F.C1D2));

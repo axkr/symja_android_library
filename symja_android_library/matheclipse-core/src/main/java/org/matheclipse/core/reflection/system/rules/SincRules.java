@@ -27,12 +27,12 @@ public interface SincRules {
       C1),
     // Sinc(Pi/6)=Pi/3
     ISet(Sinc(Times(QQ(1L,6L),Pi)),
-      Times(C1D3,Pi)),
+      CPiThird),
     // Sinc(Pi/4)=2/Pi*Sqrt(2)
-    ISet(Sinc(Times(C1D4,Pi)),
+    ISet(Sinc(CPiQuarter),
       Times(C2,CSqrt2,Power(Pi,CN1))),
     // Sinc(Pi/3)=3/(2*Pi)*Sqrt(3)
-    ISet(Sinc(Times(C1D3,Pi)),
+    ISet(Sinc(CPiThird),
       Times(QQ(3L,2L),CSqrt3,Power(Pi,CN1))),
     // Sinc(Pi/2)=2/Pi
     ISet(Sinc(CPiHalf),

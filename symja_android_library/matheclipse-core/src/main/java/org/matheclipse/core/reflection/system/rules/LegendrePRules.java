@@ -24,7 +24,7 @@ public interface LegendrePRules {
       C1),
     // LegendreP(x_?NumericQ,0):=Sqrt(Pi)/(Gamma(1/2*(1-x))*Gamma(1+x/2))
     ISetDelayed(LegendreP(PatternTest(x_,NumericQ),C0),
-      Times(Sqrt(Pi),Power(Times(Gamma(Times(C1D2,Subtract(C1,x))),Gamma(Plus(C1,Times(C1D2,x)))),CN1))),
+      Times(CSqrtPi,Power(Times(Gamma(Times(C1D2,Subtract(C1,x))),Gamma(Plus(C1,Times(C1D2,x)))),CN1))),
     // LegendreP(x_?IntegerQ,-1):=(-1)^x
     ISetDelayed(LegendreP(PatternTest(x_,IntegerQ),CN1),
       Power(CN1,x)),

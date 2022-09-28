@@ -39,10 +39,10 @@ public interface ArcCotRules {
       Times(QQ(-3L,8L),Pi)),
     // ArcCot(1/Sqrt(3))=Pi/3
     ISet(ArcCot(C1DSqrt3),
-      Times(C1D3,Pi)),
+      CPiThird),
     // ArcCot(1)=Pi/4
     ISet(ArcCot(C1),
-      Times(C1D4,Pi)),
+      CPiQuarter),
     // ArcCot(Sqrt(1+2/Sqrt(5)))=Pi/5
     ISet(ArcCot(Sqrt(Plus(C1,Times(C2,C1DSqrt5)))),
       Times(QQ(1L,5L),Pi)),

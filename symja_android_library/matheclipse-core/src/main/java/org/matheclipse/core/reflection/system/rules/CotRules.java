@@ -41,13 +41,13 @@ public interface CotRules {
     ISet(Cot(Times(QQ(1L,5L),Pi)),
       Sqrt(Plus(C1,Times(C2,C1DSqrt5)))),
     // Cot(Pi/4)=1
-    ISet(Cot(Times(C1D4,Pi)),
+    ISet(Cot(CPiQuarter),
       C1),
     // Cot(3/10*Pi)=Sqrt(5-2*Sqrt(5))
     ISet(Cot(Times(QQ(3L,10L),Pi)),
       Sqrt(Plus(C5,Times(CN2,CSqrt5)))),
     // Cot(Pi/3)=1/Sqrt(3)
-    ISet(Cot(Times(C1D3,Pi)),
+    ISet(Cot(CPiThird),
       C1DSqrt3),
     // Cot(3/8*Pi)=-1+Sqrt(2)
     ISet(Cot(Times(QQ(3L,8L),Pi)),
