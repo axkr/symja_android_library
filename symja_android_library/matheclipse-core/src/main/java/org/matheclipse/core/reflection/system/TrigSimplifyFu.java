@@ -442,7 +442,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
           IExpr rv = F.Times();
           IAST testt;
           IASTAppendable mul1 = F.TimesAlloc(nDict.size() + 1);
-          mul1.append(t);
+          mul1.appendArgs(t);
           mul1 =
               nDict.forEach(mul1, (b, e) -> (e.isPresent() && !e.isZero()) ? F.Power(b, e) : F.NIL);
           IASTAppendable mul2 = F.TimesAlloc(dDict.size());
