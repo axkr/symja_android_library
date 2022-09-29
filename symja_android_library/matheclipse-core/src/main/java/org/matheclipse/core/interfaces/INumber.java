@@ -265,6 +265,17 @@ public interface INumber extends IExpr {
   }
 
   @Override
+  default IAST asCoeffmul(ISymbol deps, boolean rational) {
+    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L828
+    if (!rational || isRational()) {
+      return F.List(this, F.CEmptyList);
+    } else if (isNegative()) {
+      return F.List(F.CN1, F.List(negate()));
+    }
+    return F.List(F.C1, F.List(this));
+  }
+
+  @Override
   default IAST asCoeffMul(boolean rational) {
     // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L828
     if (rational && !isRational()) {

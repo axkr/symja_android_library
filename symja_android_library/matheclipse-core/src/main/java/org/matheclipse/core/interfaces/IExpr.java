@@ -5386,6 +5386,70 @@ public interface IExpr
     return F.List(F.C0, F.List(this));
   }
 
+  default IAST asCoeffmul() {
+    return asCoeffmul(null, true);
+  }
+
+  default IAST asCoeffmul(ISymbol deps) {
+    return asCoeffmul(deps, true);
+  }
+
+  default IAST asCoeffmul(boolean rational) {
+    return asCoeffmul(null, rational);
+  }
+
+  /**
+   * Return the list <code>{c, args}</code> where this is written as a <code>Times(...)</code>
+   * <code>m</code>.
+   * 
+   * @param rational
+   * @return
+   */
+  default IAST asCoeffmul(ISymbol deps, boolean rational) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
+    if (isTimes()) {
+      if (deps != null) {
+        // l1, l2 = sift(self.args, lambda x: x.has(*deps), binary=True)
+        // return self._new_rawargs(*l2), tuple(l1)
+        IAST temp = Iterables.siftBinary((IAST) this, x -> x.has(deps));
+        IASTAppendable l1 = (IASTAppendable) temp.first();
+        IASTAppendable l2 = (IASTAppendable) temp.second();
+        return F.List(l2.oneIdentity0(), l1);
+      }
+      IExpr arg1 = first();
+      if (arg1.isNumber()) {
+        if (!rational || arg1.isRational()) {
+          return F.List(arg1, ((IAST) this).rest().setAtCopy(0, S.List));
+        }
+        if (arg1.isNegativeResult()) {
+          IASTAppendable list2 = ((IAST) this).copyAppendable();
+          list2.set(0, S.List);
+          IExpr a1Negate = arg1.negate();
+          if (a1Negate.isOne()) {
+            list2.set(1, a1Negate);
+          } else {
+            list2.remove(1);
+          }
+          return F.List(F.CN1, list2);
+        }
+      }
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(this);
+      if (negExpr.isPresent()) {
+        if (negExpr.isTimes()) {
+          return F.List(F.CN1, ((IAST) negExpr).setAtCopy(0, S.List));
+        }
+        return F.List(F.CN1, F.List(negExpr));
+      }
+      return F.List(F.C1, ((IAST) this).setAtCopy(0, S.List));
+    }
+    if (deps != null) {
+      if (!has(deps)) {
+        return F.List(this, F.List());
+      }
+    }
+    return F.List(F.C1, F.List(this));
+  }
+
   /**
    * Return the list <code>{c, args}</code> where this is written as a <code>Times(...)</code>
    * <code>m</code>.
@@ -5433,52 +5497,6 @@ public interface IExpr
       return F.List(F.C1, ((IAST) this).setAtCopy(0, S.List));
     }
     return F.List(F.C1, this);
-  }
-
-  default IAST asCoeffmul(ISymbol deps, boolean rational) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
-    if (isTimes()) {
-      if (deps != null) {
-        // l1, l2 = sift(self.args, lambda x: x.has(*deps), binary=True)
-        // return self._new_rawargs(*l2), tuple(l1)
-        IAST temp = Iterables.siftBinary((IAST) this, x -> x.has(deps));
-        IASTAppendable l1 = (IASTAppendable) temp.first();
-        IASTAppendable l2 = (IASTAppendable) temp.second();
-        return F.List(l2.oneIdentity0(), l1);
-      }
-
-      IExpr arg1 = first();
-      if (arg1.isNumber()) {
-        if (!rational || arg1.isRational()) {
-          return F.List(arg1, ((IAST) this).rest().setAtCopy(0, S.List));
-        }
-        if (arg1.isNegativeResult()) {
-          IASTAppendable list2 = ((IAST) this).copyAppendable();
-          list2.set(0, S.List);
-          IExpr a1Negate = arg1.negate();
-          if (a1Negate.isOne()) {
-            list2.set(1, a1Negate);
-          } else {
-            list2.remove(1);
-          }
-          return F.List(F.CN1, list2);
-        }
-      }
-      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(this);
-      if (negExpr.isPresent()) {
-        if (negExpr.isTimes()) {
-          return F.List(F.CN1, ((IAST) negExpr).setAtCopy(0, S.List));
-        }
-        return F.List(F.CN1, F.List(negExpr));
-      }
-      return F.List(F.C1, ((IAST) this).setAtCopy(0, S.List));
-    }
-    if (deps != null) {
-      if (!has(deps)) {
-        return F.List(this, F.List());
-      }
-    }
-    return F.List(F.C1, F.List(this));
   }
 
   default IAST asCoeffExponent(ISymbol x) {

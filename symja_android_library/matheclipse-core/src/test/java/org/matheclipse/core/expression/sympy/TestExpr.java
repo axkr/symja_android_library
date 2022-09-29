@@ -42,27 +42,26 @@ public class TestExpr {
   @Test
   public void test_as_coeff_mul() {
     // https://github.com/sympy/sympy/blob/d01454493251159beaa925c32eaa9909f2f5f299/sympy/core/tests/test_expr.py#L1246
-    // ISymbol x = F.x;
-    // ISymbol y = F.y;
-    // assertEquals(F.C2.asCoeffmul(null, true).toString(), "{2,{}}");
-    // assertEquals(F.num(3.0).asCoeffmul(null, true).toString(), "{1,{3.0}}");
-    // assertEquals(F.num(-3.0).asCoeffmul(null, true).toString(), "{-1,{3.0}}");
-    // assertEquals(F.num(-3.0).asCoeffmul(null, false).toString(), "{-3.0,{}}");
-    // assertEquals(x.asCoeffmul(null, true).toString(), "{1,{x}}");
-    // assertEquals(x.negate().asCoeffmul(null, true).toString(), "{-1,{x}}");
-    // assertEquals(F.C2.times(x).asCoeffmul(null, true).toString(), "{2,{x}}");
-    // assertEquals(x.times(y).asCoeffmul(y, false).toString(), "{x,{y}}");
-    // assertEquals(F.C3.plus(x).asCoeffmul(null, true).toString(), "{1,{3+x}}");
-    // assertEquals(F.C3.plus(x).asCoeffmul(y, false).toString(), "{3+x,{}}");
-    //
-    // IAST e1 = F.Exp(F.Plus(x, y));
-    // assertEquals(e1.asCoeffmul(y, false).toString(), "{1,{E^(x+y)}}");
-    // IAST e2 = F.Power(F.C2, F.Plus(x, y));
-    // assertEquals(e2.asCoeffmul(y, false).toString(), "{1,{2^(x+y)}}");
-    // assertEquals(F.num(1.1).multiply(x).asCoeffmul(null, false).toString(), "{1.1,{x}}");
-    // assertEquals(F.num(1.1).multiply(x).asCoeffmul(null, true).toString(), "{1,{1.1,x}}");
-    // assertEquals(F.CNInfinity.multiply(x).asCoeffmul(null, true).toString(),
-    // "{-1,{x,Infinity}}");
+    ISymbol x = F.x;
+    ISymbol y = F.y;
+    assertEquals(F.C2.asCoeffmul(null, true).toString(), "{2,{}}");
+    assertEquals(F.num(3.0).asCoeffmul(null, true).toString(), "{1,{3.0}}");
+    assertEquals(F.num(-3.0).asCoeffmul(null, true).toString(), "{-1,{3.0}}");
+    assertEquals(F.num(-3.0).asCoeffmul(null, false).toString(), "{-3.0,{}}");
+    assertEquals(x.asCoeffmul().toString(), "{1,{x}}");
+    assertEquals(x.negate().asCoeffmul().toString(), "{-1,{x}}");
+    assertEquals(F.C2.times(x).asCoeffmul().toString(), "{2,{x}}");
+    assertEquals(x.times(y).asCoeffmul(y).toString(), "{x,{y}}");
+    assertEquals(F.C3.plus(x).asCoeffmul().toString(), "{1,{3+x}}");
+    assertEquals(F.C3.plus(x).asCoeffmul(y).toString(), "{3+x,{}}");
+
+    IAST e1 = F.Exp(F.Plus(x, y));
+    assertEquals(e1.asCoeffmul(y, false).toString(), "{1,{E^(x+y)}}");
+    IAST e2 = F.Power(F.C2, F.Plus(x, y));
+    assertEquals(e2.asCoeffmul(y, false).toString(), "{1,{2^(x+y)}}");
+    assertEquals(F.num(1.1).multiply(x).asCoeffmul(null, false).toString(), "{1.1,{x}}");
+    assertEquals(F.num(1.1).multiply(x).asCoeffmul(null, true).toString(), "{1,{1.1,x}}");
+    assertEquals(F.CNInfinity.multiply(x).asCoeffmul(null, true).toString(), "{-1,{x,Infinity}}");
 
     // assert S(2).as_coeff_mul() == (2, ())
     // assert S(3.0).as_coeff_mul() == (1, (S(3.0),))
