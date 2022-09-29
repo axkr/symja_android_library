@@ -4,6 +4,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.TrigSimplifyFu;
 
@@ -19,6 +20,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
    * "https://github.com/sympy/sympy/blob/master/sympy/simplify/tests/test_fu.py">sympy/simplify/tests/test_fu.py</a>
    */
   public void testTrigSimplifyFu() {
+
     // CTR1 example
     check("TrigSimplifyFu(Sin(x)^4 - Cos(y)^2 + Sin(y)^2 + 2*Cos(x)^2)", //
         "2+Cos(x)^4-2*Cos(y)^2");
@@ -98,10 +100,10 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("TrigSimplifyFu(tan(1)*tan(2))", //
         "Tan(1)*Tan(2)");
 
-    // TODO Mul(*[cos(2**i) for i in range(10)])
+    // Mul(*[cos(2**i) for i in range(10)])
     check("TrigSimplifyFu(Product(Cos(2^i),{i,0,9}))", //
         // sympy sin(1024)/(1024*sin(1))
-        "Cos(1)*Cos(2)*Cos(4)*Cos(8)*Cos(16)*Cos(32)*Cos(64)*Cos(128)*Cos(256)*Cos(512)");
+        "1/1024*Csc(1)*Sin(1024)");
 
     // # sympy issue #18059:
     // cos(x) + sqrt(sin(x)**2)
@@ -116,6 +118,16 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
   }
 
   public void testTrigSimplifyTRmorrie() {
+    // ERROR TODO
+    // # issue #20430
+    // eq = cos(x/2)*sin(x/2)*cos(x)**3
+    // assert TRmorrie(eq) == sin(2*x)*cos(x)**2/4
+    IExpr trMorrie1 = TrigSimplifyFu.trMorrie(F.Times(F.Cos(F.Times(F.C1D2, F.x)),
+        F.Sin(F.Times(F.C1D2, F.x)), F.Power(F.Cos(F.x), F.C3)));
+    assertEquals(trMorrie1.toString(), //
+        "Cos(x/2)*Cos(x)^3*Sin(x/2)");
+
+
     IExpr trMorrie = TrigSimplifyFu.trMorrie(F.Times(F.Cos(F.x), F.Cos(F.Times(F.C2, F.x))));
     assertEquals(trMorrie.toString(), //
         "1/4*Csc(x)*Sin(4*x)");
@@ -124,6 +136,66 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         F.Cos(F.Times(F.C4, F.x)), F.Cos(F.Times(F.C6, F.x))));
     assertEquals(trMorrie.toString(), //
         "1/8*Cos(6*x)*Csc(x)*Sin(8*x)");
+
+    // 7 + Mul(*[cos(i) for i in range(10)])
+    IASTAppendable times = F.TimesAlloc(11);
+    times.append(F.C7);
+    for (int i = 0; i < 10; i++) {
+      times.append(F.Cos(F.ZZ(i)));
+    }
+    trMorrie = TrigSimplifyFu.trMorrie(times);
+    assertEquals(trMorrie.toString(), //
+        "7/64*Cos(5)*Cos(7)*Cos(9)*Csc(1)*Csc(3)*Sin(12)*Sin(16)");
+
+    // Mul(*[cos(2**i) for i in range(10)])
+    times = F.TimesAlloc(10);
+    for (int i = 0; i < 10; i++) {
+      times.append(F.Cos(F.C2.pow(i)));
+    }
+    trMorrie = TrigSimplifyFu.trMorrie(times);
+    assertEquals(trMorrie.toString(), //
+        // sympy sin(1024)/(1024*sin(1))
+        "1/1024*Csc(1)*Sin(1024)");
+
+    trMorrie = TrigSimplifyFu.trMorrie(F.x);
+    assertEquals(trMorrie.toString(), //
+        "x");
+
+    trMorrie = TrigSimplifyFu.trMorrie(F.Times(2, F.x));
+    assertEquals(trMorrie.toString(), //
+        "2*x");
+
+    // cos(pi/7)*cos(pi*Rational(2, 7))*cos(pi*Rational(4, 7))
+    trMorrie = TrigSimplifyFu.tr8(TrigSimplifyFu.trMorrie(F.Times(F.Cos(F.Times(F.QQ(1, 7), S.Pi)),
+        F.Cos(F.Times(F.QQ(2, 7), S.Pi)), F.Cos(F.Times(F.QQ(4, 7), S.Pi)))));
+    assertEquals(trMorrie.toString(), //
+        "-1/8");
+
+    // ERROR TODO
+    // e = Mul(*[cos(2**i*pi/17) for i in range(1, 17)])
+    // assert TR8(TR3(TRmorrie(e))) == Rational(1, 65536)
+    times = F.TimesAlloc(17);
+    for (int i = 0; i < 17; i++) {
+      times.append(F.Cos(F.C2.pow(i).divide(F.ZZ(17)).multiply(S.Pi)));
+    }
+    trMorrie = TrigSimplifyFu.tr8(TrigSimplifyFu.tr3(TrigSimplifyFu.trMorrie(times)));
+    assertEquals(trMorrie.toString(), //
+        "Sin(15/34*Pi)/65536");
+
+    // # issue 17063
+    // eq = cos(x)/cos(x/2)
+    trMorrie = TrigSimplifyFu.trMorrie(F.Divide(F.Cos(F.x), F.Cos(F.Times(F.C1D2, F.x))));
+    assertEquals(trMorrie.toString(), //
+        "Cos(x)/Cos(x/2)");
+
+    // ERROR TODO
+    // # issue #20430
+    // eq = cos(x/2)*sin(x/2)*cos(x)**3
+    // assert TRmorrie(eq) == sin(2*x)*cos(x)**2/4
+    trMorrie = TrigSimplifyFu.trMorrie(F.Times(F.Cos(F.Times(F.C1D2, F.x)),
+        F.Sin(F.Times(F.C1D2, F.x)), F.Power(F.Cos(F.x), F.C3)));
+    assertEquals(trMorrie.toString(), //
+        "Cos(x/2)*Cos(x)^3*Sin(x/2)");
 
   }
 
@@ -174,6 +246,40 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     tr3 = F.eval(tr3);
     assertEquals(tr3.toString(), //
         "-Cos(x)");
+  }
+
+  public void testTrigSimplifyTR5() {
+    IExpr tr5 = TrigSimplifyFu.tr5(F.Power(F.Sin(F.x), F.C2));
+    // tr5 = F.eval(tr5);
+    assertEquals(tr5.toString(), //
+        "1-Cos(x)^2");
+
+    tr5 = TrigSimplifyFu.tr5(F.Power(F.Sin(F.x), F.CN2));
+    // tr5 = F.eval(tr5);
+    assertEquals(tr5.toString(), //
+        "1/Sin(x)^2");
+
+    tr5 = TrigSimplifyFu.tr5(F.Power(F.Sin(F.x), F.C4));
+    // tr5 = F.eval(tr5);
+    assertEquals(tr5.toString(), //
+        "(1-Cos(x)^2)^2");
+  }
+
+  public void testTrigSimplifyTR6() {
+    IExpr tr6 = TrigSimplifyFu.tr6(F.Power(F.Cos(F.x), F.C2));
+    // tr6 = F.eval(tr6);
+    assertEquals(tr6.toString(), //
+        "1-Sin(x)^2");
+
+    tr6 = TrigSimplifyFu.tr6(F.Power(F.Cos(F.x), F.CN2));
+    // tr6 = F.eval(tr6);
+    assertEquals(tr6.toString(), //
+        "1/Cos(x)^2");
+
+    tr6 = TrigSimplifyFu.tr6(F.Power(F.Cos(F.x), F.C4));
+    // tr6 = F.eval(tr6);
+    assertEquals(tr6.toString(), //
+        "(1-Sin(x)^2)^2");
   }
 
   public void testTrigSimplifyTR7() {

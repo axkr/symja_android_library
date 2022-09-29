@@ -5324,7 +5324,15 @@ public interface IExpr
   default IAST asBaseExp() {
     // a -> b ^ e
     if (isPower()) {
-      return F.List(base(), exponent());
+      IExpr b = base();
+      IExpr e = exponent();
+      if (b.isFraction() && b.isPositive()) {
+        IFraction frac = (IFraction) b;
+        if (frac.isLT(F.C1)) {
+          return F.List(frac.inverse(), e.negate());
+        }
+      }
+      return F.List(b, e);
     }
     if (isTimes()) {
       IExpr e1 = F.NIL;
@@ -5386,7 +5394,7 @@ public interface IExpr
    */
   default IAST asCoeffMul() {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
-    return asCoeffMul(true);
+    return asCoeffMul(false);
   }
 
   /**
@@ -5402,33 +5410,32 @@ public interface IExpr
       IExpr arg1 = first();
       if (arg1.isNumber()) {
         if (!rational || arg1.isRational()) {
-          return F.List(arg1, ((IAST) this).rest().setAtCopy(0, S.List));
+          return F.List(arg1, ((IAST) this).rest().oneIdentity1());
         }
         if (arg1.isNegativeResult()) {
           IASTAppendable list2 = ((IAST) this).copyAppendable();
-          list2.set(0, S.List);
           IExpr a1Negate = arg1.negate();
           if (a1Negate.isOne()) {
-            list2.set(1, a1Negate);
-          } else {
             list2.remove(1);
+          } else {
+            list2.set(1, a1Negate);
           }
-          return F.List(F.CN1, list2);
+          return F.List(F.CN1, list2.oneIdentity1());
         }
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(this);
       if (negExpr.isPresent()) {
         if (negExpr.isTimes()) {
-          return F.List(F.CN1, ((IAST) negExpr).setAtCopy(0, S.List));
+          return F.List(F.CN1, ((IAST) negExpr).oneIdentity1());
         }
-        return F.List(F.CN1, F.List(negExpr));
+        return F.List(F.CN1, negExpr);
       }
       return F.List(F.C1, ((IAST) this).setAtCopy(0, S.List));
     }
-    return F.List(F.C1, F.List(this));
+    return F.List(F.C1, this);
   }
 
-  default IAST asCoeffMul(ISymbol deps, boolean rational) {
+  default IAST asCoeffmul(ISymbol deps, boolean rational) {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
     if (isTimes()) {
       if (deps != null) {
@@ -5480,7 +5487,7 @@ public interface IExpr
     EvalEngine engine = EvalEngine.get();
     IExpr s = F.Cancel.of(engine, this);
     s = F.Collect.of(engine, s, x);
-    IAST coeffMul = s.asCoeffMul(x, false);
+    IAST coeffMul = s.asCoeffmul(x, false);
     IExpr c = coeffMul.arg1();
     IExpr p = coeffMul.arg2();
     if (p.isAST1()) {

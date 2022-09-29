@@ -402,10 +402,17 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
         IAST d = (IAST) denom;
         DefaultDict<IExpr> nDict = n.asPowersDict();
         IASTAppendable ndone = F.ListAlloc();
+
+        IASTAppendable toBeRemoved = F.ListAlloc(nDict.size());
         for (IExpr k : nDict.keySet()) {
-          if (!ok(k, nDict.get(k), half)) {
-            ndone.append(F.List(k, nDict.remove(k)));
+          IExpr value = nDict.get(k);
+          if (!ok(k, value, half)) {
+            toBeRemoved.append(value);
+            ndone.append(F.List(k, value));
           }
+        }
+        for (int i = 1; i < toBeRemoved.size(); i++) {
+          nDict.remove(toBeRemoved.get(i));
         }
         if (nDict.isEmpty()) {
           return F.NIL;
@@ -413,10 +420,16 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
         DefaultDict<IExpr> dDict = d.asPowersDict();
         IASTAppendable ddone = F.ListAlloc();
+        toBeRemoved = F.ListAlloc(dDict.size());
         for (IExpr k : dDict.keySet()) {
-          if (!ok(k, dDict.get(k), half)) {
-            ddone.append(F.List(k, dDict.remove(k)));
+          IExpr value = dDict.get(k);
+          if (!ok(k, value, half)) {
+            toBeRemoved.append(value);
+            ddone.append(F.List(k, value));
           }
+        }
+        for (int i = 1; i < toBeRemoved.size(); i++) {
+          dDict.remove(toBeRemoved.get(i));
         }
         if (dDict.isEmpty()) {
           return F.NIL;
@@ -874,39 +887,40 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  public static IExpr trMorrie(IExpr rv) {
+    return Traversal.bottomUp(rv, x -> trMorrieStep(x, true));
+  }
+
   /**
    * 
    * 
    * @param expr
    * @return
    */
-  public static IExpr trMorrie(IExpr rv) {
+  public static IExpr trMorrieStep(IExpr rv, boolean first) {
     if (!rv.isTimes()) {
       return rv;
     }
+    if (first) {
+      IExpr[] numerDenom = rv.asNumerDenom();
+      return F.Divide(trMorrieStep(numerDenom[0], false), trMorrieStep(numerDenom[1], false));
+    }
+
     IAST times = (IAST) rv;
     IASTAppendable other = F.ListAlloc(times.size());
     Map<IExpr, IExpr> coss = new HashMap<IExpr, IExpr>();
     DefaultDict<IASTAppendable> args = new DefaultDict<IASTAppendable>();
     for (int i = 1; i < times.size(); i++) {
       IExpr c = times.get(i);
-      IExpr b = c;
-      IExpr e = F.C1;
-      if (c.isPower()) {
-        b = c.base();
-        e = c.exponent();
-      }
+      IAST asBaseExp = c.asBaseExp();
+      IExpr b = asBaseExp.arg1();
+      IExpr e = asBaseExp.arg2();
       if (b.isCos() && e.isInteger()) {
-        IExpr a = b.first();
-        if (a.isTimes() && a.first().isInteger()) {
-          IExpr co = a.first();
-          a = a.rest().oneIdentity1();
-          args.get(a).append(co);
-          coss.put(b, e);
-        } else {
-          args.get(a).append(F.C1);
-          coss.put(b, F.C1);
-        }
+        IAST asCoeffMul = b.first().asCoeffMul(first);
+        IExpr co = asCoeffMul.arg1();
+        IExpr a = asCoeffMul.arg2();
+        args.get(a).append(co);
+        coss.put(b, e);
       } else {
         other.append(c);
       }
@@ -918,7 +932,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       c.sortInplace();
       while (!c.isEmpty()) {
         int k = 0;
-        IExpr cc = c.get(1);
+        IExpr cc = c.arg1();
         IExpr ci = cc;
         for (int i = 1; i < c.size(); i++) {
           if (cc.equals(c.get(i))) {
@@ -934,13 +948,14 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
           IASTAppendable ccs = F.ListAlloc();
           for (int i = 0; i < k; i++) {
             cc = cc.divide(F.C2);
-            IExpr key = F.Cos(F.Times(a, cc));
+            IExpr key = F.Cos(a.times(cc));
             ccs.append(cc);
             take = min(coss.get(key), take.isPresent() ? take : coss.get(key));
           }
+          // update exponent counts
           for (int i = 0; i < k; i++) {
             cc = ccs.pop();
-            IExpr key = F.Cos(F.eval(F.Times(a, cc)));
+            IExpr key = F.Cos(a.times(cc));
             coss.put(key, coss.get(key).minus(take));
             if (coss.get(key).isZero()) {
               c.remove(cc);
@@ -949,7 +964,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
           result.append(F.Power(newarg, take));
         } else {
           IExpr pop0 = c.remove(1);
-          IExpr b = F.Cos(F.Times(pop0, a));
+          IExpr b = F.Cos(pop0.times(a));
           other.append(F.Power(b, coss.get(b)));
         }
       }

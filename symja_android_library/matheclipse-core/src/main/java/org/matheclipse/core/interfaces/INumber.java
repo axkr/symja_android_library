@@ -266,14 +266,14 @@ public interface INumber extends IExpr {
 
   @Override
   default IAST asCoeffMul(boolean rational) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/numbers.py#L816
-    if (isInteger() || isFraction() || !rational) {
-      return F.List(this, F.CEmptyList);
-    } else if (isNegative()) {
-      return F.List(F.CN1, F.List(this.negate()));
+    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L828
+    if (rational && !isRational()) {
+      return F.List(F.C1, this);
     }
-    return F.List(F.C1, F.List(this));
-
+    if (isZero()) {
+      return F.List(F.C1, this);
+    }
+    return F.List(this, F.C1);
   }
 
   /**
@@ -291,6 +291,7 @@ public interface INumber extends IExpr {
    * 
    * @return additive neutral element of field of this scalar
    */
+  @Override
   default INumber zero() {
     return F.C0;
   }
@@ -310,6 +311,7 @@ public interface INumber extends IExpr {
    * 
    * @return multiplicative neutral element of this scalar
    */
+  @Override
   default INumber one() {
     return F.C1;
   }

@@ -38,29 +38,31 @@ public class TestExpr {
     // assert e.as_coeff_add(y) == (0, (e,))
   }
 
+
   @Test
   public void test_as_coeff_mul() {
     // https://github.com/sympy/sympy/blob/d01454493251159beaa925c32eaa9909f2f5f299/sympy/core/tests/test_expr.py#L1246
-    ISymbol x = F.x;
-    ISymbol y = F.y;
-    assertEquals(F.C2.asCoeffMul().toString(), "{2,{}}");
-    assertEquals(F.num(3.0).asCoeffMul().toString(), "{1,{3.0}}");
-    assertEquals(F.num(-3.0).asCoeffMul().toString(), "{-1,{3.0}}");
-    assertEquals(F.num(-3.0).asCoeffMul(false).toString(), "{-3.0,{}}");
-    assertEquals(x.asCoeffMul().toString(), "{1,{x}}");
-    assertEquals(x.negate().asCoeffMul().toString(), "{-1,{x}}");
-    assertEquals(F.C2.times(x).asCoeffMul().toString(), "{2,{x}}");
-    assertEquals(x.times(y).asCoeffMul(y, false).toString(), "{x,{y}}");
-    assertEquals(F.C3.plus(x).asCoeffMul().toString(), "{1,{3+x}}");
-    assertEquals(F.C3.plus(x).asCoeffMul(y, false).toString(), "{3+x,{}}");
-
-    IAST e1 = F.Exp(F.Plus(x, y));
-    assertEquals(e1.asCoeffMul(y, false).toString(), "{1,{E^(x+y)}}");
-    IAST e2 = F.Power(F.C2, F.Plus(x, y));
-    assertEquals(e2.asCoeffMul(y, false).toString(), "{1,{2^(x+y)}}");
-    assertEquals(F.num(1.1).multiply(x).asCoeffMul(false).toString(), "{1.1,{x}}");
-    assertEquals(F.num(1.1).multiply(x).asCoeffMul().toString(), "{1,{1.1,x}}");
-    assertEquals(F.CNInfinity.multiply(x).asCoeffMul(true).toString(), "{-1,{x,Infinity}}");
+    // ISymbol x = F.x;
+    // ISymbol y = F.y;
+    // assertEquals(F.C2.asCoeffmul(null, true).toString(), "{2,{}}");
+    // assertEquals(F.num(3.0).asCoeffmul(null, true).toString(), "{1,{3.0}}");
+    // assertEquals(F.num(-3.0).asCoeffmul(null, true).toString(), "{-1,{3.0}}");
+    // assertEquals(F.num(-3.0).asCoeffmul(null, false).toString(), "{-3.0,{}}");
+    // assertEquals(x.asCoeffmul(null, true).toString(), "{1,{x}}");
+    // assertEquals(x.negate().asCoeffmul(null, true).toString(), "{-1,{x}}");
+    // assertEquals(F.C2.times(x).asCoeffmul(null, true).toString(), "{2,{x}}");
+    // assertEquals(x.times(y).asCoeffmul(y, false).toString(), "{x,{y}}");
+    // assertEquals(F.C3.plus(x).asCoeffmul(null, true).toString(), "{1,{3+x}}");
+    // assertEquals(F.C3.plus(x).asCoeffmul(y, false).toString(), "{3+x,{}}");
+    //
+    // IAST e1 = F.Exp(F.Plus(x, y));
+    // assertEquals(e1.asCoeffmul(y, false).toString(), "{1,{E^(x+y)}}");
+    // IAST e2 = F.Power(F.C2, F.Plus(x, y));
+    // assertEquals(e2.asCoeffmul(y, false).toString(), "{1,{2^(x+y)}}");
+    // assertEquals(F.num(1.1).multiply(x).asCoeffmul(null, false).toString(), "{1.1,{x}}");
+    // assertEquals(F.num(1.1).multiply(x).asCoeffmul(null, true).toString(), "{1,{1.1,x}}");
+    // assertEquals(F.CNInfinity.multiply(x).asCoeffmul(null, true).toString(),
+    // "{-1,{x,Infinity}}");
 
     // assert S(2).as_coeff_mul() == (2, ())
     // assert S(3.0).as_coeff_mul() == (1, (S(3.0),))
@@ -83,19 +85,40 @@ public class TestExpr {
   }
 
   @Test
+  public void test_as_coeff_Mul() {
+    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/tests/test_expr.py#L1658
+    ISymbol x = F.x;
+    ISymbol y = F.y;
+    assertEquals(F.C3.asCoeffMul().toString(), "{3,1}");
+    assertEquals(F.C3D4.asCoeffMul().toString(), "{3/4,1}");
+    assertEquals(F.num(5.0).asCoeffMul().toString(), "{5.0,1}");
+
+    assertEquals(F.Times(F.C3, x).asCoeffMul().toString(), "{3,x}");
+    assertEquals(F.Times(F.C3D4, x).asCoeffMul().toString(), "{3/4,x}");
+    assertEquals(F.Times(F.num(5.0), x).asCoeffMul().toString(), "{5.0,x}");
+
+    assertEquals(F.Times(F.C3, x, y).asCoeffMul().toString(), "{3,x*y}");
+    assertEquals(F.Times(F.C3D4, x, y).asCoeffMul().toString(), "{3/4,x*y}");
+    assertEquals(F.Times(F.num(5.0), x, y).asCoeffMul().toString(), "{5.0,x*y}");
+
+    assertEquals(x.asCoeffMul().toString(), "{1,x}");
+    assertEquals(F.Times(x, y).asCoeffMul().toString(), "{1,{x,y}}");
+    assertEquals(F.Times(F.CNInfinity, x).asCoeffMul().toString(), "{-1,x*Infinity}");
+  }
+
+  @Test
   public void test_as_coeff_exponent() {
     // https://github.com/sympy/sympy/blob/7158ec42de7d8b02ad8809fdbb87daa0da4ca121/sympy/core/tests/test_expr.py#L1268
     ISymbol x = F.x;
     ISymbol y = F.y;
     assertEquals(F.Times(F.C3, F.Power(x, F.C4)).asCoeffExponent(x).toString(), //
-     "{3,4}");
+        "{3,4}");
     assertEquals(F.Times(F.C1, F.Power(x, F.C0)).asCoeffExponent(x).toString(), //
-     "{1,0}");
+        "{1,0}");
     assertEquals(F.Times(F.C0, F.Power(x, F.C0)).asCoeffExponent(x).toString(), //
-     "{0,0}");
+        "{0,0}");
     assertEquals(
-        F.Divide(F.Times(x, F.Log(F.C2)),
-            F.Plus(F.Times(F.C2, x, F.C3), F.Times(S.Pi, x)))
+        F.Divide(F.Times(x, F.Log(F.C2)), F.Plus(F.Times(F.C2, x, F.C3), F.Times(S.Pi, x)))
             .asCoeffExponent(x).toString(), //
         "{Log(2)/(6+Pi),0}");
   }
