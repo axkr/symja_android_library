@@ -609,6 +609,15 @@ public interface IASTAppendable extends IASTMutable {
   }
 
   /**
+   * Remove the last argument. Similar to Sympy <code>pop()</code> function.
+   * 
+   * @return <code>remove(argSize())</code>
+   */
+  default IExpr pop() {
+    return remove(argSize());
+  }
+
+  /**
    * Removes the objects in the specified range from the start to the end, but not including the end
    * index.
    *

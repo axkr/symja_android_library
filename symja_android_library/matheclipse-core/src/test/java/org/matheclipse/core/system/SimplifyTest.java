@@ -14,7 +14,10 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
   }
 
 
-
+  /**
+   * See: <a href=
+   * "https://github.com/sympy/sympy/blob/master/sympy/simplify/tests/test_fu.py">sympy/simplify/tests/test_fu.py</a>
+   */
   public void testTrigSimplifyFu() {
     // CTR1 example
     check("TrigSimplifyFu(Sin(x)^4 - Cos(y)^2 + Sin(y)^2 + 2*Cos(x)^2)", //
@@ -232,6 +235,57 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     tr11 = F.eval(tr11);
     assertEquals(tr11.toString(), //
         "4*Cos(x)*Sin(x)*(1-2*Sin(x)^2)");
+  }
+
+  public void testTrigSimplifyTR12() {
+    // tan(x + y)
+    IExpr tr12 = TrigSimplifyFu.tr12(F.Tan(F.Plus(F.x, F.y)));
+    assertEquals(tr12.toString(), //
+        "(Tan(x)+Tan(y))/(1-Tan(x)*Tan(y))");
+    // tan(x + y + z)
+    tr12 = TrigSimplifyFu.tr12(F.Tan(F.Plus(F.x, F.y, F.z)));
+    // sympy
+    // (tan(z) + (tan(x) + tan(y))/(-tan(x)*tan(y) + 1))/(1 - (tan(x) +
+    // tan(y))*tan(z)/(-tan(x)*tan(y) + 1))
+    assertEquals(tr12.toString(), //
+        "(Tan(x)+(Tan(y)+Tan(z))/(1-Tan(y)*Tan(z)))/(1-(Tan(x)*(Tan(y)+Tan(z)))/(1-Tan(y)*Tan(z)))");
+
+    // tan(x * y)
+    tr12 = TrigSimplifyFu.tr12(F.Tan(F.Times(F.x, F.y)));
+    assertEquals(tr12.toString(), //
+        "Tan(x*y)");
+
+  }
+
+  public void testTrigSimplifyTR13() {
+    // tan(2)*tan(3)
+    IExpr tr13 = TrigSimplifyFu.tr13(F.Times(F.Tan(F.C2), F.Tan(F.C3)));
+    // sympy -tan(2)/tan(5) - tan(3)/tan(5) + 1
+    assertEquals(tr13.toString(), //
+        "1-(Tan(2)/Tan(2+3)+Tan(3)/Tan(2+3))");
+    tr13 = F.eval(tr13);
+    assertEquals(tr13.toString(), //
+        "1-Cot(5)*Tan(2)-Cot(5)*Tan(3)");
+
+
+    // cot(2)*cot(3)
+    tr13 = TrigSimplifyFu.tr13(F.Times(F.Cot(F.C2), F.Cot(F.C3)));
+    // sympy 1 + cot(3)*cot(5) + cot(2)*cot(5)
+    assertEquals(tr13.toString(), //
+        "1+Cot(2)*Cot(2+3)+Cot(3)*Cot(2+3)");
+    tr13 = F.eval(tr13);
+    assertEquals(tr13.toString(), //
+        "1+Cot(2)*Cot(5)+Cot(3)*Cot(5)");
+
+
+    // tan(1)*tan(2)*tan(3)
+    tr13 = TrigSimplifyFu.tr13(F.Times(F.Tan(F.C1), F.Tan(F.C2), F.Tan(F.C3)));
+    // sympy (-tan(2)/tan(5) - tan(3)/tan(5) + 1)*tan(1)
+    assertEquals(tr13.toString(), //
+        "(1-(Tan(2)/Tan(2+3)+Tan(3)/Tan(2+3)))*Tan(1)");
+    tr13 = F.eval(tr13);
+    assertEquals(tr13.toString(), //
+        "Tan(1)*(1-Cot(5)*Tan(2)-Cot(5)*Tan(3))");
   }
 
   /** The JUnit setup method */

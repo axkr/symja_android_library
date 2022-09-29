@@ -230,8 +230,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       return expr;
     }
     IAST was = (IAST) expr;
-    Function<IExpr, Long> measure =
-        SimplifyFunctions.createComplexityFunction(complexityFunctionHead, engine);
+    Function<IExpr, Long> measure = createComplexityFunction(complexityFunctionHead, engine);
 
     IExpr rv = tr1(was);
     if (rv.has(x -> x.isTan() || x.isAST(S.Cot, 2), true)) {
@@ -265,6 +264,28 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     }
     return rv;
 
+  }
+
+  public static Function<IExpr, Long> createComplexityFunction(IExpr complexityFunctionHead,
+      EvalEngine engine) {
+    Function<IExpr, Long> complexityFunction = x -> {
+      if (x.isIndeterminate() || x.isComplexInfinity()) {
+        // Tan(Pi/2) and similar expressions in some sub-steps, create non-wanted results
+        return Long.MAX_VALUE;
+      }
+      return x.leafCountSimplify();
+    };
+    if (complexityFunctionHead.isPresent()) {
+      final IExpr head = complexityFunctionHead;
+      complexityFunction = x -> {
+        IExpr temp = engine.evaluate(F.unaryAST1(head, x));
+        if (temp.isInteger() && !temp.isNegative()) {
+          return ((IInteger) temp).toLong();
+        }
+        return Long.MAX_VALUE;
+      };
+    }
+    return complexityFunction;
   }
 
   /**
@@ -675,28 +696,26 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
       int n = Math.min(c.argSize(), s.argSize());
       for (int i = 0; i < n; i++) {
-        IExpr a1 = s.remove(1);
-        IExpr a2 = c.remove(1);
+        IExpr a1 = s.pop();
+        IExpr a2 = c.pop();
         argsResult.append(F.Divide(F.Plus(F.Sin(F.Plus(a1, a2)), F.Sin(F.Subtract(a1, a2))), 2));
       }
       while (c.argSize() > 1) {
-        IExpr a1 = c.remove(1);
-        IExpr a2 = c.remove(1);
+        IExpr a1 = c.pop();
+        IExpr a2 = c.pop();
         argsResult.append(F.Divide(F.Plus(F.Cos(F.Plus(a1, a2)), F.Cos(F.Subtract(a1, a2))), 2));
       }
       if (c.argSize() > 0) {
-        IExpr a1 = c.remove(1);
-        argsResult.append(F.Cos(a1));
+        argsResult.append(F.Cos(c.pop()));
       }
       while (s.argSize() > 1) {
-        IExpr a1 = s.remove(1);
-        IExpr a2 = s.remove(1);
+        IExpr a1 = s.pop();
+        IExpr a2 = s.pop();
         argsResult
             .append(F.Divide(F.Subtract(F.Cos(F.Subtract(a1, a2)), F.Cos(F.Plus(a1, a2))), 2));
       }
       if (s.argSize() > 0) {
-        IExpr a1 = s.remove(1);
-        argsResult.append(F.Sin(a1));
+        argsResult.append(F.Sin(s.pop()));
       }
 
       IExpr evalExpandAll = F.evalExpandAll(argsResult);
@@ -780,13 +799,79 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   }
 
   public static IExpr tr12(IExpr expr) {
-    // TODO
-    return expr;
+    return Traversal.bottomUp(expr, x -> tr12Step(x));
+  }
+
+
+  private static IExpr tr12Step(IExpr rv) {
+    if (rv.isTan()) {
+      IExpr arg = rv.first();
+      if (arg.isPlus()) {
+        IAST plus = (IAST) arg;
+        IExpr a = plus.arg1();
+        IExpr b = plus.rest().oneIdentity0();
+        final IExpr tb;
+        if (b.isPlus()) {
+          tb = tr12Step(F.Tan(b));
+        } else {
+          tb = F.Tan(b);
+        }
+        // (tan(a) + tb)/(1 - tan(a)*tb)
+        IExpr temp = F.Divide(F.Plus(F.Tan(a), tb), //
+            F.Subtract(F.C1, F.Times(F.Tan(a), tb)));
+        return temp;
+      }
+    }
+    return F.NIL;
   }
 
   public static IExpr tr13(IExpr expr) {
-    // TODO
-    return expr;
+    return Traversal.bottomUp(expr, x -> tr13Step(x));
+  }
+
+  private static IExpr tr13Step(IExpr rv) {
+    if (rv.isTimes()) {
+      IAST times = (IAST) rv;
+      DefaultDict<IASTAppendable> args = new DefaultDict<IASTAppendable>();
+      args.put(S.None, F.TimesAlloc(times.argSize()));
+      for (int i = 1; i < times.size(); i++) {
+        IExpr a = times.get(i);
+        if (a.isTan() || a.isAST(S.Cot, 2)) {
+          args.get(a.head()).append(a.first());
+        } else {
+          args.get(S.None).append(a);
+        }
+      }
+      IASTAppendable t = args.get(S.Tan);
+      IASTAppendable c = args.get(S.Cot);
+      if (t.argSize() < 2 && c.argSize() < 2) {
+        return F.NIL;
+      }
+      IASTAppendable timesResult = args.get(S.None);
+      while (t.argSize() > 1) {
+        IExpr t1 = t.pop();
+        IExpr t2 = t.pop();
+        // 1 - (tan(t1)/tan(t1 + t2) + tan(t2)/tan(t1 + t2))
+        IExpr t1Pt2 = F.Tan(F.Plus(t1, t2));
+        timesResult.append(
+            F.Subtract(F.C1, F.Plus(F.Divide(F.Tan(t1), t1Pt2), F.Divide(F.Tan(t2), t1Pt2))));
+      }
+      if (t.argSize() > 0) {
+        timesResult.append(F.Tan(t.pop()));
+      }
+      while (c.argSize() > 1) {
+        IExpr t1 = c.pop();
+        IExpr t2 = c.pop();
+        // 1 + cot(t1)*cot(t1 + t2) + cot(t2)*cot(t1 + t2)
+        IExpr t1Pt2 = F.Cot(F.Plus(t1, t2));
+        timesResult.append(F.Plus(F.C1, F.Times(F.Cot(t1), t1Pt2), F.Times(F.Cot(t2), t1Pt2)));
+      }
+      if (c.argSize() > 0) {
+        timesResult.append(F.Cot(c.pop()));
+      }
+      return timesResult.oneIdentity0();
+    }
+    return F.NIL;
   }
 
   /**
@@ -854,7 +939,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
             take = min(coss.get(key), take.isPresent() ? take : coss.get(key));
           }
           for (int i = 0; i < k; i++) {
-            cc = ccs.remove(1);
+            cc = ccs.pop();
             IExpr key = F.Cos(F.eval(F.Times(a, cc)));
             coss.put(key, coss.get(key).minus(take));
             if (coss.get(key).isZero()) {

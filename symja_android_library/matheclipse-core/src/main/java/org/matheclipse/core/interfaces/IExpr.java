@@ -3878,7 +3878,8 @@ public interface IExpr
   /**
    * Count the number of leaves of this expression; for integer numbers in exact integer, fractional
    * and complex numbers count the digits of the integers. This function is used in <code>Simplify
-   * </code> as the default &quot;complexity function&quot;.
+   * </code> as the default &quot;complexity function&quot;. <b>Note:</b>: {@link S#Indeterminate}
+   * returns value <code>Long.MAX_VALUE</code>
    *
    * @return
    */
