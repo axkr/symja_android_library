@@ -3,6 +3,7 @@ package org.matheclipse.core.interfaces;
 import java.math.BigInteger;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Pair;
 
 /** interface for "fractional" numbers */
 public interface IFraction extends IRational {
@@ -95,8 +96,8 @@ public interface IFraction extends IRational {
   public BigInteger toBigNumerator();
 
   @Override
-  default IAST asCoeffMul(boolean rational) {
+  default Pair asCoeffMul(boolean rational) {
     // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L2034
-    return F.List(this, F.C1);
+    return F.pair(this, F.C1);
   }
 }

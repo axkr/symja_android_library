@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.Pair;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.sympy.DefaultDict;
 import org.matheclipse.core.expression.sympy.ExprTools;
@@ -394,9 +395,9 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
    */
   private static IExpr tr2iStep(IExpr expr, boolean half) {
     if (expr.isTimes()) {
-      IExpr[] asNumerDenom = expr.asNumerDenom();
-      IExpr numer = asNumerDenom[0];
-      IExpr denom = asNumerDenom[1];
+      Pair asNumerDenom = expr.asNumerDenom();
+      IExpr numer = asNumerDenom.first();
+      IExpr denom = asNumerDenom.second();
       if (numer.isAST() && denom.isAST()) {
         IAST n = (IAST) numer;
         IAST d = (IAST) denom;
@@ -659,9 +660,9 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
       if (first) {
         EvalEngine engine = EvalEngine.get();
-        IExpr[] numerDenom = expr.asNumerDenom();
-        IExpr n = numerDenom[0];
-        IExpr d = numerDenom[1];
+        Pair numerDenom = expr.asNumerDenom();
+        IExpr n = numerDenom.first();
+        IExpr d = numerDenom.second();
         IExpr newn = tr8(TrigReduce.trigReduce(n, engine), false);
         IExpr newd = tr8(TrigReduce.trigReduce(d, engine), false);
         if (!newn.equals(n) || !newd.equals(d)) {
@@ -671,7 +672,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
           IExpr rv = ExprTools.gcdTerms(F.Divide(newn, newd));
           if (rv.isTimes() && rv.first().isRational() && rv.argSize() == 2
               && rv.second().isPlus()) {
-            IAST asCoeffMul = rv.asCoeffMul();
+            Pair asCoeffMul = rv.asCoeffMul();
             IASTAppendable result = F.TimesAlloc(3);
             result.append(asCoeffMul.first());
             result.appendArgs((IAST) asCoeffMul.second());
@@ -902,8 +903,9 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       return rv;
     }
     if (first) {
-      IExpr[] numerDenom = rv.asNumerDenom();
-      return F.Divide(trMorrieStep(numerDenom[0], false), trMorrieStep(numerDenom[1], false));
+      Pair numerDenom = rv.asNumerDenom();
+      return F.Divide(trMorrieStep(numerDenom.first(), false),
+          trMorrieStep(numerDenom.second(), false));
     }
 
     IAST times = (IAST) rv;
@@ -912,13 +914,13 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     DefaultDict<IASTAppendable> args = new DefaultDict<IASTAppendable>();
     for (int i = 1; i < times.size(); i++) {
       IExpr c = times.get(i);
-      IAST asBaseExp = c.asBaseExp();
-      IExpr b = asBaseExp.arg1();
-      IExpr e = asBaseExp.arg2();
+      Pair asBaseExp = c.asBaseExp();
+      IExpr b = asBaseExp.first();
+      IExpr e = asBaseExp.second();
       if (b.isCos() && e.isInteger()) {
-        IAST asCoeffMul = b.first().asCoeffMul(first);
-        IExpr co = asCoeffMul.arg1();
-        IExpr a = asCoeffMul.arg2();
+        Pair asCoeffMul = b.first().asCoeffMul(first);
+        IExpr co = asCoeffMul.first();
+        IExpr a = asCoeffMul.second();
         args.get(a).append(co);
         coss.put(b, e);
       } else {

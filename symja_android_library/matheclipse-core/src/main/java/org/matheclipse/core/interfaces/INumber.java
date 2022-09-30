@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Pair;
 
 /** Implemented by all number interfaces */
 public interface INumber extends IExpr {
@@ -256,35 +257,35 @@ public interface INumber extends IExpr {
   }
 
   @Override
-  default IAST asCoeffAdd() {
+  default Pair asCoeffAdd() {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/numbers.py#L816
     if (isInteger() || isFraction()) {
-      return F.List(this, F.CEmptyList);
+      return F.pair(this, F.CEmptyList);
     }
-    return F.List(F.C0, F.List(this));
+    return F.pair(F.C0, F.List(this));
   }
 
   @Override
-  default IAST asCoeffmul(ISymbol deps, boolean rational) {
+  default Pair asCoeffmul(ISymbol deps, boolean rational) {
     // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L828
     if (!rational || isRational()) {
-      return F.List(this, F.CEmptyList);
+      return F.pair(this, F.CEmptyList);
     } else if (isNegative()) {
-      return F.List(F.CN1, F.List(negate()));
+      return F.pair(F.CN1, F.List(negate()));
     }
-    return F.List(F.C1, F.List(this));
+    return F.pair(F.C1, F.List(this));
   }
 
   @Override
-  default IAST asCoeffMul(boolean rational) {
+  default Pair asCoeffMul(boolean rational) {
     // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L828
     if (rational && !isRational()) {
-      return F.List(F.C1, this);
+      return F.pair(F.C1, this);
     }
     if (isZero()) {
-      return F.List(F.C1, this);
+      return F.pair(F.C1, this);
     }
-    return F.List(this, F.C1);
+    return F.pair(this, F.C1);
   }
 
   /**

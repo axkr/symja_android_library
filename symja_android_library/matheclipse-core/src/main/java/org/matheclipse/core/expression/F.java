@@ -6027,6 +6027,17 @@ public class F extends S {
   }
 
   /**
+   * Return a pair of values as a <code>List()</code>
+   *
+   * @param x1
+   * @param x2
+   * @return
+   */
+  public static Pair pair(final IExpr x1, final IExpr x2) {
+    return new Pair(x1, x2);
+  }
+
+  /**
    * Return a triple of values as a <code>List()</code>
    *
    * @param x1

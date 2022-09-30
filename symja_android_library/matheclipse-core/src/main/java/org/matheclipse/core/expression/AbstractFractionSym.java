@@ -14,7 +14,6 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Pair;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -208,7 +207,8 @@ public abstract class AbstractFractionSym implements IFraction {
 
   private static IFraction convergeFraction(double value, int maxIterations, double lhs) {
     return rationalize(value, v -> {
-      Pair<BigFraction, Boolean> convergent = BigFraction.convergent(v, maxIterations,
+      org.hipparchus.util.Pair<BigFraction, Boolean> convergent = BigFraction.convergent(v,
+          maxIterations,
           (p, q) -> FastMath.abs(p * q - v * q * q) <= lhs);
       return convergent.getSecond().booleanValue() ? convergent.getFirst() : null;
     });
@@ -403,8 +403,8 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
-  public IExpr[] asNumerDenom() {
-    return new IExpr[] {numerator(), denominator()};
+  public Pair asNumerDenom() {
+    return F.pair(numerator(), denominator());
   }
 
   @Override

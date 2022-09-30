@@ -38,6 +38,7 @@ import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.Pair;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.BDDExpr;
 import org.matheclipse.core.expression.sympy.DefaultDict;
@@ -5321,7 +5322,7 @@ public interface IExpr
     return F.NIL;
   }
 
-  default IAST asBaseExp() {
+  default Pair asBaseExp() {
     // a -> b ^ e
     if (isPower()) {
       IExpr b = base();
@@ -5329,10 +5330,10 @@ public interface IExpr
       if (b.isFraction() && b.isPositive()) {
         IFraction frac = (IFraction) b;
         if (frac.isLT(F.C1)) {
-          return F.List(frac.inverse(), e.negate());
+          return F.pair(frac.inverse(), e.negate());
         }
       }
-      return F.List(b, e);
+      return F.pair(b, e);
     }
     if (isTimes()) {
       IExpr e1 = F.NIL;
@@ -5340,40 +5341,40 @@ public interface IExpr
       IASTAppendable bases = F.TimesAlloc(args.argSize());
       for (int i = 1; i < args.size(); i++) {
         IExpr m = args.get(i);
-        IAST list = m.asBaseExp();
+        Pair list = m.asBaseExp();
         IExpr b = list.first();
         IExpr e = list.second();
         if (!e1.isPresent()) {
           e1 = e;
         } else if (!e.equals(e1)) {
-          return F.List(this, F.C1);
+          return F.pair(this, F.C1);
         }
         bases.append(b);
       }
-      return F.List(bases, e1);
+      return F.pair(bases, e1);
     }
-    return F.List(this, F.C1);
+    return F.pair(this, F.C1);
   }
 
-  default IAST asCoeffAdd() {
+  default Pair asCoeffAdd() {
     if (isPlus()) {
-      IAST asCoeffAdd = first().asCoeffAdd();
-      IExpr coeff = asCoeffAdd.arg1();
+      Pair asCoeffAdd = first().asCoeffAdd();
+      IExpr coeff = asCoeffAdd.first();
       if (!coeff.isZero()) {
         IAST notrat = (IAST) asCoeffAdd.arg2();
         IASTMutable list2 = ((IAST) this).removeAtCopy(1);
-        return F.List(coeff, join(S.List, notrat, list2));
+        return F.pair(coeff, join(S.List, notrat, list2));
       }
-      return F.List(F.C0, ((IAST) this).setAtCopy(0, S.List));
+      return F.pair(F.C0, ((IAST) this).setAtCopy(0, S.List));
     }
-    return F.List(F.C0, F.List(this));
+    return F.pair(F.C0, F.List(this));
   }
 
-  default IAST asCoeffAdd(ISymbol x) {
+  default Pair asCoeffAdd(ISymbol x) {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2076
 
     if (!has(x)) {
-      return F.List(this, F.CEmptyList);
+      return F.pair(this, F.CEmptyList);
     }
     if (isPlus()) {
       IAST plusAST = (IAST) this;
@@ -5381,20 +5382,20 @@ public interface IExpr
       IASTAppendable l1 = filter[0];
       IASTAppendable l2 = filter[1];
       l1.set(0, S.List);
-      return F.List(l2.oneIdentity0(), l1);
+      return F.pair(l2.oneIdentity0(), l1);
     }
-    return F.List(F.C0, F.List(this));
+    return F.pair(F.C0, F.List(this));
   }
 
-  default IAST asCoeffmul() {
+  default Pair asCoeffmul() {
     return asCoeffmul(null, true);
   }
 
-  default IAST asCoeffmul(ISymbol deps) {
+  default Pair asCoeffmul(ISymbol deps) {
     return asCoeffmul(deps, true);
   }
 
-  default IAST asCoeffmul(boolean rational) {
+  default Pair asCoeffmul(boolean rational) {
     return asCoeffmul(null, rational);
   }
 
@@ -5405,7 +5406,7 @@ public interface IExpr
    * @param rational
    * @return
    */
-  default IAST asCoeffmul(ISymbol deps, boolean rational) {
+  default Pair asCoeffmul(ISymbol deps, boolean rational) {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
     if (isTimes()) {
       if (deps != null) {
@@ -5414,12 +5415,12 @@ public interface IExpr
         IAST temp = Iterables.siftBinary((IAST) this, x -> x.has(deps));
         IASTAppendable l1 = (IASTAppendable) temp.first();
         IASTAppendable l2 = (IASTAppendable) temp.second();
-        return F.List(l2.oneIdentity0(), l1);
+        return F.pair(l2.oneIdentity0(), l1);
       }
       IExpr arg1 = first();
       if (arg1.isNumber()) {
         if (!rational || arg1.isRational()) {
-          return F.List(arg1, ((IAST) this).rest().setAtCopy(0, S.List));
+          return F.pair(arg1, ((IAST) this).rest().setAtCopy(0, S.List));
         }
         if (arg1.isNegativeResult()) {
           IASTAppendable list2 = ((IAST) this).copyAppendable();
@@ -5430,24 +5431,24 @@ public interface IExpr
           } else {
             list2.remove(1);
           }
-          return F.List(F.CN1, list2);
+          return F.pair(F.CN1, list2);
         }
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(this);
       if (negExpr.isPresent()) {
         if (negExpr.isTimes()) {
-          return F.List(F.CN1, ((IAST) negExpr).setAtCopy(0, S.List));
+          return F.pair(F.CN1, ((IAST) negExpr).setAtCopy(0, S.List));
         }
-        return F.List(F.CN1, F.List(negExpr));
+        return F.pair(F.CN1, F.List(negExpr));
       }
-      return F.List(F.C1, ((IAST) this).setAtCopy(0, S.List));
+      return F.pair(F.C1, ((IAST) this).setAtCopy(0, S.List));
     }
     if (deps != null) {
       if (!has(deps)) {
-        return F.List(this, F.List());
+        return F.pair(this, F.List());
       }
     }
-    return F.List(F.C1, F.List(this));
+    return F.pair(F.C1, F.List(this));
   }
 
   /**
@@ -5456,7 +5457,7 @@ public interface IExpr
    * 
    * @return
    */
-  default IAST asCoeffMul() {
+  default Pair asCoeffMul() {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
     return asCoeffMul(false);
   }
@@ -5468,13 +5469,13 @@ public interface IExpr
    * @param rational
    * @return
    */
-  default IAST asCoeffMul(boolean rational) {
+  default Pair asCoeffMul(boolean rational) {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
     if (isTimes()) {
       IExpr arg1 = first();
       if (arg1.isNumber()) {
         if (!rational || arg1.isRational()) {
-          return F.List(arg1, ((IAST) this).rest().oneIdentity1());
+          return F.pair(arg1, ((IAST) this).rest().oneIdentity1());
         }
         if (arg1.isNegativeResult()) {
           IASTAppendable list2 = ((IAST) this).copyAppendable();
@@ -5484,39 +5485,39 @@ public interface IExpr
           } else {
             list2.set(1, a1Negate);
           }
-          return F.List(F.CN1, list2.oneIdentity1());
+          return F.pair(F.CN1, list2.oneIdentity1());
         }
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(this);
       if (negExpr.isPresent()) {
         if (negExpr.isTimes()) {
-          return F.List(F.CN1, ((IAST) negExpr).oneIdentity1());
+          return F.pair(F.CN1, ((IAST) negExpr).oneIdentity1());
         }
-        return F.List(F.CN1, negExpr);
+        return F.pair(F.CN1, negExpr);
       }
-      return F.List(F.C1, ((IAST) this).setAtCopy(0, S.List));
+      return F.pair(F.C1, ((IAST) this).setAtCopy(0, S.List));
     }
-    return F.List(F.C1, this);
+    return F.pair(F.C1, this);
   }
 
-  default IAST asCoeffExponent(ISymbol x) {
+  default Pair asCoeffExponent(ISymbol x) {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L3479
     // ``c*x**e -> c,e`` where x can be any symbolic expression.
     EvalEngine engine = EvalEngine.get();
     IExpr s = F.Cancel.of(engine, this);
     s = F.Collect.of(engine, s, x);
-    IAST coeffMul = s.asCoeffmul(x, false);
-    IExpr c = coeffMul.arg1();
-    IExpr p = coeffMul.arg2();
+    Pair coeffMul = s.asCoeffmul(x, false);
+    IExpr c = coeffMul.first();
+    IExpr p = coeffMul.second();
     if (p.isAST1()) {
-      IAST baseExp = p.first().asBaseExp();
-      IExpr b = baseExp.arg1();
-      IExpr e = baseExp.arg2();
+      Pair baseExp = p.first().asBaseExp();
+      IExpr b = baseExp.first();
+      IExpr e = baseExp.second();
       if (b.equals(x)) {
-        return F.List(c, e);
+        return F.pair(c, e);
       }
     }
-    return F.List(s, F.C0);
+    return F.pair(s, F.C0);
   }
 
   /**
@@ -5524,8 +5525,8 @@ public interface IExpr
    * 
    * @return
    */
-  default public IExpr[] asNumerDenom() {
-    return new IExpr[] {this, F.C1};
+  default public Pair asNumerDenom() {
+    return F.pair(this, F.C1);
   }
 
   default public DefaultDict<IExpr> asPowersDict() {
