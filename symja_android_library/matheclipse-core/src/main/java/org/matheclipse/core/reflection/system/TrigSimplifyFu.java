@@ -30,9 +30,14 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * See: <a href=
+ * See:
+ * <ul>
+ * <li><a href=
  * "https://github.com/sympy/sympy/blob/master/sympy/simplify/fu.py">sympy/simplify/fu.py</a>
- *
+ * <li><a href= "https://www.sciencedirect.com/science/article/pii/S0895717706001609">Automated and
+ * readable simplification of trigonometric expressions (Hongguang Fu, XiuqinZhong, Zhenbing
+ * Zeng)</a>
+ * </ul>
  */
 public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
