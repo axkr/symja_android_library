@@ -13993,6 +13993,25 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testLinearRecurrence() {
+    check("LinearRecurrence({0, 1, 1}, {1, 1, 1}, 0)", //
+        "LinearRecurrence({0,1,1},{1,1,1},0)");
+    check("LinearRecurrence({0, 1, 1}, {1, 1, 1}, 1)", //
+        "{1}");
+    check("LinearRecurrence({0, 1, 1}, {1, 1, 1}, 2)", //
+        "{1,1}");
+    check("LinearRecurrence({0, 1, 1}, {1, 1, 1}, 3)", //
+        "{1,1,1}");
+    check("LinearRecurrence({0, 1, 1}, {1, 1, 1}, 10)", //
+        "{1,1,1,2,2,3,4,5,7,9}");
+
+    check("$IterationLimit=20000;LinearRecurrence({3, 2, 1, 4}, {1, -36, 9, 80}, 499) // Last", //
+        "4392405770581123238293018208945275262282481636368897269404822983707775767943275\\\n" //
+            + "2397074324032453155999783186143730463033184880119799313454266330175795103523924\\\n" //
+            + "8744360339410536645316069379253837818025841264555121500544037499343216200306170\\\n" //
+            + "3398323176113333063330229192911709396080150894");
+
+    check("$IterationLimit=500", //
+        "500");
     // message Maximum AST dimension 20511 exceeded
     check("LinearRecurrence({x,-3,-1/2},{{1,0},{0,1},0},101)", //
         "LinearRecurrence({x,-3,-1/2},{{1,0},{0,1},0},101)");

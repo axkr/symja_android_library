@@ -3192,15 +3192,27 @@ public final class NumberTheory {
       if (arg1.isList() && arg2.isList()) {
         IAST list1 = (IAST) arg1;
         IAST list2 = (IAST) arg2;
-        if (arg3.isReal() && arg3.isPositive()) {
+        if (arg3.isInteger()) {
           int n = arg3.toIntDefault(-1);
+          if (n <= 0) {
+            // Positive integer expected at position `2` in `1`.
+            return IOFunctions.printMessage(S.LinearRecurrence, "intp", F.List(ast, F.C3), engine);
+          }
           return linearRecurrence(list1, list2, n, ast, engine);
         }
         if (arg3.isList() && arg3.size() == 2 && arg3.first().isReal()) {
-          int n = arg3.first().toIntDefault(-1);
-          IAST result = linearRecurrence(list1, list2, n, ast, engine);
-          if (result.isPresent()) {
-            return result.get(n);
+          int n = arg3.first().toIntDefault();
+          if (n != Integer.MIN_VALUE) {
+            if (n < 0) {
+              // Positive integer expected at position `2` in `1`.
+              return IOFunctions.printMessage(S.LinearRecurrence, "intp",
+                  F.List(arg3, F.C1),
+                  engine);
+            }
+            IAST result = linearRecurrence(list1, list2, n, ast, engine);
+            if (result.isPresent()) {
+              return result.get(n);
+            }
           }
         }
       }
@@ -3241,7 +3253,7 @@ public final class NumberTheory {
             isNumber = false;
           }
           result.append(x);
-          if (counter++ == n) {
+          if (++counter == n) {
             return result;
           }
         }
