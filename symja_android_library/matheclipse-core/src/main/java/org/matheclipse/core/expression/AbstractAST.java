@@ -1428,7 +1428,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public Pair asNumerDenom() {
     if (this.isPlusTimesPower()) {
-      IExpr[] parts = Algebra.fractionalPartsRational(this, true);
+      IExpr[] parts = Algebra.fractionalPartsRational(this, true, true);
       if (parts != null) {
         return F.pair(parts[0], parts[1]);
       }

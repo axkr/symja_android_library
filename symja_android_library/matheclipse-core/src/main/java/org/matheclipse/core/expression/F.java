@@ -3434,13 +3434,26 @@ public class F extends S {
    * @return
    */
   public static IExpr Divide(final IExpr numerator, final IExpr denominator) {
-    if (numerator.isOne()) {
-      return new B2.Power(denominator, CN1);
+    if (denominator.isZero()) {
+      // Indeterminate expression `1` encountered.
+      IOFunctions.printMessage(S.Power, "indet",
+          F.list(F.Times(numerator, F.Power(denominator, F.CN1))), EvalEngine.get());
+      return S.Indeterminate;
     }
     if (denominator.isOne()) {
       return numerator;
     }
-    return new B2.Times(numerator, new B2.Power(denominator, CN1));
+    IExpr arg2 = denominator.isNumber() ? denominator.inverse() : new B2.Power(denominator, CN1);
+    if (numerator.isOne()) {
+      return arg2;
+    }
+    if (numerator.isNumber() && arg2.isNumber()) {
+      return numerator.times(arg2);
+    }
+    if (arg2.isLEOrdered(numerator)) {
+      return new B2.Times(arg2, numerator);
+    }
+    return new B2.Times(numerator, arg2);
   }
 
   /**
@@ -3454,13 +3467,27 @@ public class F extends S {
    * @return
    */
   public static IExpr Divide(final int numerator, final IExpr denominator) {
+    if (denominator.isZero()) {
+      // Indeterminate expression `1` encountered.
+      IOFunctions.printMessage(S.Power, "indet",
+          F.list(F.Times(F.ZZ(numerator), F.Power(denominator, F.CN1))), EvalEngine.get());
+      return S.Indeterminate;
+    }
+    IExpr arg2 = denominator.isNumber() ? denominator.inverse() : new B2.Power(denominator, CN1);
     if (numerator == 1) {
-      return new B2.Power(denominator, CN1);
+      return arg2;
     }
     if (denominator.isOne()) {
       return F.ZZ(numerator);
     }
-    return new B2.Times(F.ZZ(numerator), new B2.Power(denominator, CN1));
+    IExpr arg1 = F.ZZ(numerator);
+    if (arg2.isNumber()) {
+      return arg1.times(arg2);
+    }
+    if (arg2.isLEOrdered(arg1)) {
+      return new B2.Times(arg2, arg1);
+    }
+    return new B2.Times(arg1, arg2);
   }
 
   /**
@@ -3474,13 +3501,26 @@ public class F extends S {
    * @return
    */
   public static IExpr Divide(final IExpr numerator, final int denominator) {
+    if (denominator == 0) {
+      // Indeterminate expression `1` encountered.
+      IOFunctions.printMessage(S.Power, "indet", F.list(F.Times(numerator, F.Power(F.C0, F.CN1))),
+          EvalEngine.get());
+      return S.Indeterminate;
+    }
+    IFraction arg2 = F.QQ(1, denominator);
     if (numerator.isOne()) {
-      return F.QQ(1, denominator);
+      return arg2;
     }
     if (denominator == 1) {
       return numerator;
     }
-    return new B2.Times(numerator, F.QQ(1, denominator));
+    if (numerator.isNumber()) {
+      return numerator.times(arg2);
+    }
+    if (arg2.isLEOrdered(numerator)) {
+      return new B2.Times(arg2, numerator);
+    }
+    return new B2.Times(numerator, arg2);
   }
 
   public static IASTMutable DivideSides(final IExpr equationOrInequality) {

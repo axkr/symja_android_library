@@ -108,11 +108,11 @@ public class BigFractionSym extends AbstractFractionSym {
       return this;
     }
     if (parm1 instanceof IFraction) {
-      return add((IFraction) parm1);
+      return add((IFraction) parm1).normalize();
     }
     IInteger p1 = (IInteger) parm1;
     BigInteger newnum = toBigNumerator().add(toBigDenominator().multiply(p1.toBigNumerator()));
-    return valueOf(newnum, toBigDenominator());
+    return valueOf(newnum, toBigDenominator()).normalize();
   }
 
   @Override
@@ -530,11 +530,11 @@ public class BigFractionSym extends AbstractFractionSym {
       return this.negate();
     }
     if (parm1 instanceof IFraction) {
-      return mul((IFraction) parm1);
+      return mul((IFraction) parm1).normalize();
     }
     IInteger p1 = (IInteger) parm1;
     BigInteger newnum = toBigNumerator().multiply(p1.toBigNumerator());
-    return valueOf(newnum, toBigDenominator());
+    return valueOf(newnum, toBigDenominator()).normalize();
   }
 
   @Override
@@ -549,7 +549,7 @@ public class BigFractionSym extends AbstractFractionSym {
       return this.negate();
     }
     BigInteger newnum = toBigNumerator().multiply(BigInteger.valueOf(n));
-    return valueOf(newnum, toBigDenominator());
+    return valueOf(newnum, toBigDenominator()).normalize();
   }
 
   /**

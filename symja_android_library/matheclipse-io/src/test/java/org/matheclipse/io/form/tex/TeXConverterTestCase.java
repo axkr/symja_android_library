@@ -73,7 +73,7 @@ public class TeXConverterTestCase extends TestCase {
 
   public void testTeX008() {
     check("1 + 2 - 3 \\times 4 \\div 5", //
-        "1+2-(3*4)/5");
+        "1+2-4/5*3");
   }
 
   public void testTeX009() {

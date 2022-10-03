@@ -346,7 +346,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   }
 
   private static boolean ok(IExpr k, IExpr e, boolean half) {
-    return (e.isInteger() || k.isPositive())//
+    return (e.isIntegerResult() || k.isPositive())//
         && (k.isCos() || k.isSin())
         || (half && k.isPlus() && (k.argSize() >= 2) && ((IAST) k).indexOf(x -> x.isCos()) > 0);
   }
@@ -413,7 +413,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
         for (IExpr k : nDict.keySet()) {
           IExpr value = nDict.get(k);
           if (!ok(k, value, half)) {
-            toBeRemoved.append(value);
+            toBeRemoved.append(k);
             ndone.append(F.List(k, value));
           }
         }
@@ -430,7 +430,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
         for (IExpr k : dDict.keySet()) {
           IExpr value = dDict.get(k);
           if (!ok(k, value, half)) {
-            toBeRemoved.append(value);
+            toBeRemoved.append(k);
             ddone.append(F.List(k, value));
           }
         }
@@ -470,7 +470,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
           } else if (half && k.isPlus() && k.first().isOne() && k.second().isCos()) {
             IExpr a = F.Sin(k.second().first());
             if (dDict.containsKey(a) && dDict.get(a).equals(nDict.get(k))
-                && (dDict.get(a).isInteger() || a.isPositive())) {
+                && (dDict.get(a).isIntegerResult() || a.isPositive())) {
               t.append(F.Power(F.Tan(a.first().divide(F.C2)), nDict.get(k).negate()));
               nDict.put(k, F.NIL);
               dDict.put(a, F.NIL);
@@ -524,10 +524,10 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
             newHead = S.Cos;
             break;
           case ID.Cot:
-            newHead = S.Cot;
+            newHead = S.Tan;
             break;
           case ID.Tan:
-            newHead = S.Tan;
+            newHead = S.Cot;
             break;
           case ID.Csc:
             newHead = S.Sec;
@@ -904,13 +904,15 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
    * @return
    */
   public static IExpr trMorrieStep(IExpr rv, boolean first) {
+    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/simplify/fu.py#L1104
     if (!rv.isTimes()) {
-      return rv;
+      return F.NIL;
     }
     if (first) {
       Pair numerDenom = rv.asNumerDenom();
-      return F.Divide(trMorrieStep(numerDenom.first(), false),
-          trMorrieStep(numerDenom.second(), false));
+      IExpr numer = trMorrieStep(numerDenom.first(), false).orElse(numerDenom.first());
+      IExpr denom = trMorrieStep(numerDenom.second(), false).orElse(numerDenom.second());
+      return F.Divide(numer, denom);
     }
 
     IAST times = (IAST) rv;
@@ -968,11 +970,12 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
               c.remove(cc);
             }
           }
-          result.append(F.Power(newarg, take));
+          result.append(take.isOne() ? newarg : F.Power(newarg, take));
         } else {
           IExpr pop0 = c.remove(1);
           IExpr b = F.Cos(pop0.times(a));
-          other.append(F.Power(b, coss.get(b)));
+          IExpr exponent = coss.get(b);
+          other.append(exponent.isOne() ? b : F.Power(b, exponent));
         }
       }
     }
@@ -992,8 +995,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       joinedTimes.appendArgs(listOfCos);
       return F.eval(joinedTimes);
     }
-    return rv;
-
+    return F.NIL;
   }
 
   private static IExpr min(IExpr a, IExpr b) {

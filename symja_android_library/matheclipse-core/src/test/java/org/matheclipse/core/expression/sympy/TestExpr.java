@@ -85,6 +85,9 @@ public class TestExpr {
 
   @Test
   public void test_as_coeff_Mul() {
+    // non sympy test
+    assertEquals(F.Times(F.C1D3, S.Pi).asCoeffMul().toString(), "{1/3,Pi}");
+
     // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/tests/test_expr.py#L1658
     ISymbol x = F.x;
     ISymbol y = F.y;

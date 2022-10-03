@@ -1712,9 +1712,7 @@ public class IntegerFunctions {
             return IntervalSym.mapSymbol(S.Round, (IAST) expr);
           }
         }
-      } catch (
-
-      ArithmeticException ae) {
+      } catch (ArithmeticException ae) {
         // ISignedNumber#round() may throw ArithmeticException
       }
       return res;
@@ -1731,35 +1729,10 @@ public class IntegerFunctions {
           // Internal precision limit `1` reached while evaluating `2`.
           return IOFunctions.printMessage(S.Round, "meprec", F.List(F.CEmptyString, k), engine);
         }
-        if (n.isComplexInfinity()) {
+        if (n.isComplexInfinity() || n.isIndeterminate()) {
           return S.Indeterminate;
         }
       }
-      // ISignedNumber multiple = k.evalReal();
-      // if (multiple != null) {
-      // if (multiple.isZero()) {
-      // return S.Indeterminate;
-      // }
-      // ISignedNumber signedNumber = expr.evalReal();
-      // if (signedNumber != null) {
-      // return signedNumber.roundClosest(multiple);
-      // }
-      // if (expr.isComplexNumeric()) {
-      // IComplexNum cmp = (IComplexNum) expr;
-      // ISignedNumber re = cmp.re().roundClosest(multiple);
-      // ISignedNumber im = cmp.im().roundClosest(multiple);
-      // return F.Complex(re, im);
-      // }
-      // if (expr.isComplex()) {
-      // IComplex cmp = (IComplex) expr;
-      // ISignedNumber re = cmp.re().roundClosest(multiple);
-      // ISignedNumber im = cmp.im().roundClosest(multiple);
-      // return F.Complex(re, im);
-      // }
-      // if (expr.isInfinity() || expr.isNegativeInfinity()) {
-      // return expr;
-      // }
-      // }
       return F.NIL;
     }
 

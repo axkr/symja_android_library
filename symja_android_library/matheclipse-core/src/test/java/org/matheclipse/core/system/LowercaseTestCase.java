@@ -21187,6 +21187,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testRound() {
+    check("Round(-1.235512, 0)", //
+        "Indeterminate");
+
     // message Round: Internal precision limit reached while evaluating
     // 1/E^(9223372036854775808/11).
     check("Round(3/2,1/E^(9223372036854775808/11))", //

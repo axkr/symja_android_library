@@ -2,10 +2,13 @@ package org.matheclipse.core.system;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.Assumptions;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.TrigSimplifyFu;
 
 public class SimplifyTest extends ExprEvaluatorTestCase {
@@ -28,7 +31,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("TrigSimplifyFu(1/2 - Cos(2*x)/2)", //
         "Sin(x)^2");
 
-    // CTR3 - Simpy gets other result:
+    // CTR3 - Sympy gets other result:
     check("TrigSimplifyFu(Sin(a)*(Cos(b) - Sin(b)) + Cos(a)*(Sin(b) + Cos(b)))", //
         "Cos(a+b)+Sin(a+b)");
 
@@ -36,7 +39,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("TrigSimplifyFu(Sqrt(3)*Cos(x)/2 + Sin(x)/2)", //
         "1/2*Sqrt(3)*Cos(x)+Sin(x)/2");
 
-    // Example 1 - Simpy gets other result:
+    // Example 1 - Sympy gets other result:
     check("TrigSimplifyFu(1-Sin(2*x)^2/4-Sin(y)^2-Cos(x)^4)", //
         "Sin(x)^2-Sin(y)^2");
 
@@ -89,12 +92,11 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         // sympy Rational(1, 16)
         "-Cos(Pi/9)*Cos(4/9*Pi)");
 
-    // // ERROR - TODO tan(pi*Rational(7, 18)) + tan(pi*Rational(5, 18)) -
-    // sqrt(3)*tan(pi*Rational(5,
-    // // 18))*tan(pi*Rational(7, 18))
-    // check("TrigSimplifyFu(Tan(Pi*7/18) + tan(Pi*5/18) - sqrt(3)*tan(Pi*5/18)*tan(Pi*7/18))", //
-    // // sympy -sqrt(3)
-    // "");
+    // tan(pi*Rational(7, 18)) + tan(pi*Rational(5, 18)) -
+    // sqrt(3)*tan(pi*Rational(5, 18))*tan(pi*Rational(7, 18))
+    check("TrigSimplifyFu(Tan(7/18*Pi) + Tan(5/18*Pi) - Sqrt(3)*Tan(5/18*Pi)*Tan(7/18*Pi))", //
+        // sympy -sqrt(3)
+        "-Sqrt(3)");
 
     // tan(1)*tan(2)
     check("TrigSimplifyFu(tan(1)*tan(2))", //
@@ -118,16 +120,6 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
   }
 
   public void testTrigSimplifyTRmorrie() {
-    // ERROR TODO
-    // # issue #20430
-    // eq = cos(x/2)*sin(x/2)*cos(x)**3
-    // assert TRmorrie(eq) == sin(2*x)*cos(x)**2/4
-    // IExpr trMorrie1 = TrigSimplifyFu.trMorrie(F.Times(F.Cos(F.Times(F.C1D2, F.x)),
-    // F.Sin(F.Times(F.C1D2, F.x)), F.Power(F.Cos(F.x), F.C3)));
-    // assertEquals(trMorrie1.toString(), //
-    // "");
-
-
     IExpr trMorrie = TrigSimplifyFu.trMorrie(F.Times(F.Cos(F.x), F.Cos(F.Times(F.C2, F.x))));
     assertEquals(trMorrie.toString(), //
         "1/4*Csc(x)*Sin(4*x)");
@@ -152,7 +144,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     for (int i = 0; i < 10; i++) {
       times.append(F.Cos(F.C2.pow(i)));
     }
-    trMorrie = TrigSimplifyFu.trMorrie(times);
+      trMorrie = TrigSimplifyFu.trMorrie(times);
     assertEquals(trMorrie.toString(), //
         // sympy sin(1024)/(1024*sin(1))
         "1/1024*Csc(1)*Sin(1024)");
@@ -171,16 +163,16 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     assertEquals(trMorrie.toString(), //
         "-1/8");
 
-    // ERROR TODO
     // e = Mul(*[cos(2**i*pi/17) for i in range(1, 17)])
     // assert TR8(TR3(TRmorrie(e))) == Rational(1, 65536)
-    times = F.TimesAlloc(17);
-    for (int i = 0; i < 17; i++) {
+    times = F.TimesAlloc(16);
+    for (int i = 1; i < 17; i++) {
       times.append(F.Cos(F.C2.pow(i).divide(F.ZZ(17)).multiply(S.Pi)));
     }
     trMorrie = TrigSimplifyFu.tr8(TrigSimplifyFu.tr3(TrigSimplifyFu.trMorrie(times)));
     assertEquals(trMorrie.toString(), //
-        "Sin(15/34*Pi)/65536");
+        // sympy Rational(1, 65536)
+        "1/65536");
 
     // # issue 17063
     // eq = cos(x)/cos(x/2)
@@ -188,14 +180,15 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     assertEquals(trMorrie.toString(), //
         "Cos(x)/Cos(x/2)");
 
-    // ERROR TODO
+    // TODO ?
     // # issue #20430
     // eq = cos(x/2)*sin(x/2)*cos(x)**3
     // assert TRmorrie(eq) == sin(2*x)*cos(x)**2/4
     trMorrie = TrigSimplifyFu.trMorrie(F.Times(F.Cos(F.Times(F.C1D2, F.x)),
         F.Sin(F.Times(F.C1D2, F.x)), F.Power(F.Cos(F.x), F.C3)));
     assertEquals(trMorrie.toString(), //
-        "Cos(x/2)*Cos(x)^3*Sin(x/2)");
+        // sympy sin(2*x)*cos(x)**2/4
+        "1/64*Csc(x/2)^2*Sec(x/2)^2*Sin(2*x)^3");
 
   }
 
@@ -224,16 +217,203 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
   }
 
   public void testTrigSimplifyTR2i() {
-    IExpr tr2i = TrigSimplifyFu.tr2i(F.Divide(F.Sin(F.x), F.Cos(F.x)), false);
-    tr2i = F.eval(tr2i);
-    assertEquals(tr2i.toString(), //
-        "Tan(x)");
-
-    tr2i = TrigSimplifyFu
+    IExpr tr2i = TrigSimplifyFu
         .tr2i(F.Divide(F.Power(F.Sin(F.x), F.C2), F.Power(F.Plus(F.Cos(F.x), F.C1), F.C2)), true);
     tr2i = F.eval(tr2i);
     assertEquals(tr2i.toString(), //
         "Tan(x/2)^2");
+
+
+    // sin(x)/cos(x)
+    tr2i = TrigSimplifyFu.tr2i(F.Divide(F.Sin(F.x), F.Cos(F.x)), false);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        "Tan(x)");
+
+    // sin(x)*sin(y)/cos(x)
+    tr2i = TrigSimplifyFu.tr2i(F.Divide(F.Times(F.Sin(F.x), F.Sin(F.y)), F.Cos(F.x)), false);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        "Sin(y)*Tan(x)");
+
+    // 1/(sin(x)/cos(x))
+    tr2i = TrigSimplifyFu.tr2i(F.Power(F.Divide(F.Sin(F.x), F.Cos(F.x)), F.CN1), false);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy 1/tan(x)
+        "Cot(x)");
+
+    // 1/(sin(x)*sin(y)/cos(x))
+    tr2i = TrigSimplifyFu
+        .tr2i(F.Power(F.Divide(F.Times(F.Sin(F.x), F.Sin(F.y)), F.Cos(F.x)), F.CN1), false);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy sin(x)/(cos(x) + 1)/2
+        "Cot(x)*Csc(y)");
+
+
+    // sin(x)/2/(cos(x) + 1), half=True
+    tr2i = TrigSimplifyFu
+        .tr2i(F.Times(F.C1D2, F.Sin(F.x), F.Power(F.Plus(F.C1, F.Cos(F.x)), F.CN1)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        "Tan(x/2)/2");
+
+    // sin(1)/(cos(1) + 1), half=True
+    tr2i =
+        TrigSimplifyFu.tr2i(F.Times(F.Sin(F.C1), F.Power(F.Plus(F.C1, F.Cos(F.C1)), F.CN1)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        "Tan(1/2)");
+
+    // sin(2)/(cos(2) + 1), half=True
+    tr2i =
+        TrigSimplifyFu.tr2i(F.Times(F.Sin(F.C2), F.Power(F.Plus(F.C1, F.Cos(F.C2)), F.CN1)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        "Tan(1)");
+
+
+    // sin(2)/(cos(2) + 1), half=True
+    tr2i =
+        TrigSimplifyFu.tr2i(F.Times(F.Sin(F.C4), F.Power(F.Plus(F.C1, F.Cos(F.C4)), F.CN1)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        "Tan(2)");
+
+    // sin(5)/(cos(5) + 1), half=True
+    tr2i =
+        TrigSimplifyFu.tr2i(F.Times(F.Sin(F.C5), F.Power(F.Plus(F.C1, F.Cos(F.C5)), F.CN1)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        "Tan(5/2)");
+
+    // (cos(1) + 1)/sin(1), half=True
+    tr2i =
+        TrigSimplifyFu.tr2i(F.Times(F.Plus(F.C1, F.Cos(F.C1)), F.Power(F.Sin(F.C1), F.CN1)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy 1/tan(S.Half)
+        "Cot(1/2)");
+
+    // (cos(2) + 1)/sin(2), half=True
+    tr2i =
+        TrigSimplifyFu.tr2i(F.Times(F.Plus(F.C1, F.Cos(F.C2)), F.Power(F.Sin(F.C2), F.CN1)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy 1/tan(1)
+        "Cot(1)");
+
+    // (cos(4) + 1)/sin(4), half=True
+    tr2i =
+        TrigSimplifyFu.tr2i(F.Times(F.Plus(F.C1, F.Cos(F.C4)), F.Power(F.Sin(F.C4), F.CN1)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy 1/tan(1)
+        "Cot(2)");
+
+    // (cos(5) + 1)/sin(5), half=True
+    tr2i =
+        TrigSimplifyFu.tr2i(F.Times(F.Plus(F.C1, F.Cos(F.C5)), F.Power(F.Sin(F.C5), F.CN1)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy 1/tan(5*S.Half)
+        "Cot(5/2)");
+
+    // (cos(1) + 1)**(-a)*sin(1)**a, half=True
+    tr2i = TrigSimplifyFu.tr2i(F.Times(//
+        F.Power(F.Plus(F.C1, F.Cos(F.C1)), F.Negate(F.a)), //
+        F.Power(F.Sin(F.C1), F.a)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        "Tan(1/2)^a");
+
+    // (cos(2) + 1)**(-a)*sin(2)**a, half=True
+    tr2i = TrigSimplifyFu.tr2i(F.Times(//
+        F.Power(F.Plus(F.C1, F.Cos(F.C2)), F.Negate(F.a)), //
+        F.Power(F.Sin(F.C2), F.a)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        "Tan(1)^a");
+
+    // (cos(4) + 1)**(-a)*sin(4)**a, half=True
+    tr2i = TrigSimplifyFu.tr2i(F.Times(//
+        F.Power(F.Plus(F.C1, F.Cos(F.C4)), F.Negate(F.a)), //
+        F.Power(F.Sin(F.C4), F.a)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy (cos(4) + 1)**(-a)*sin(4)**a
+        "Sin(4)^a/(1+Cos(4))^a");
+
+    // (cos(5) + 1)**(-a)*sin(5)**a, half=True
+    tr2i = TrigSimplifyFu.tr2i(F.Times(//
+        F.Power(F.Plus(F.C1, F.Cos(F.C5)), F.Negate(F.a)), //
+        F.Power(F.Sin(F.C5), F.a)), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy (cos(5) + 1)**(-a)*sin(5)**a
+        "Sin(5)^a/(1+Cos(5))^a");
+
+    // (cos(1) + 1)**a*sin(1)**(-a), half=True
+    tr2i = TrigSimplifyFu.tr2i(F.Times(//
+        F.Power(F.Plus(F.C1, F.Cos(F.C1)), F.a), //
+        F.Power(F.Sin(F.C1), F.Negate(F.a))), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy tan(S.Half)**(-a)
+        "Tan(1/2)^(-a)");
+
+    // (cos(2) + 1)**a*sin(2)**(-a), half=True
+    tr2i = TrigSimplifyFu.tr2i(F.Times(//
+        F.Power(F.Plus(F.C1, F.Cos(F.C2)), F.a), //
+        F.Power(F.Sin(F.C2), F.Negate(F.a))), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy tan(1)**(-a)
+        "Tan(1)^(-a)");
+
+    // (cos(4) + 1)**a*sin(4)**(-a), half=True
+    tr2i = TrigSimplifyFu.tr2i(F.Times(//
+        F.Power(F.Plus(F.C1, F.Cos(F.C4)), F.a), //
+        F.Power(F.Sin(F.C4), F.Negate(F.a))), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy (cos(4) + 1)**a*sin(4)**(-a)
+        "(1+Cos(4))^a/Sin(4)^a");
+
+    // (cos(5) + 1)**a*sin(5)**(-a), half=True
+    tr2i = TrigSimplifyFu.tr2i(F.Times(//
+        F.Power(F.Plus(F.C1, F.Cos(F.C5)), F.a), //
+        F.Power(F.Sin(F.C5), F.Negate(F.a))), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy (cos(5) + 1)**a*sin(5)**(-a)
+        "(1+Cos(5))^a/Sin(5)^a");
+
+
+    ISymbol i = F.Dummy("i");
+    // i = symbols('i', integer=True)
+    IAssumptions assumptions = Assumptions.getInstance(F.Element(i, S.Integers));
+    EvalEngine.get().setAssumptions(assumptions);
+
+    // ((cos(5) + 1)**i*sin(5)**(-i)), half=True
+    tr2i = TrigSimplifyFu.tr2i(F.Times(//
+        F.Power(F.Plus(F.C1, F.Cos(F.C5)), i), //
+        F.Power(F.Sin(F.C5), F.Negate(i))), true);
+
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy tan(5*S.Half)**(-i)
+        "Tan(5/2)^(-i)");
+
+    // 1/((cos(5) + 1)**i*sin(5)**(-i)), half=True
+    tr2i = TrigSimplifyFu.tr2i(F.Power(F.Times(//
+        F.Power(F.Plus(F.C1, F.Cos(F.C5)), i), //
+        F.Power(F.Sin(F.C5), F.Negate(i))), F.CN1), true);
+    tr2i = F.eval(tr2i);
+    assertEquals(tr2i.toString(), //
+        // sympy tan(5*S.Half)**i
+        "Tan(5/2)^i");
   }
 
   public void testTrigSimplifyTR3() {

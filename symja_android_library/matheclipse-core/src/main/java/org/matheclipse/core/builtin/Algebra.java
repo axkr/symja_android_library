@@ -4175,7 +4175,7 @@ public class Algebra {
             // Log[x_ ^ y_] :> y * Log(x)
             IAST logResult = Times(arg1.exponent(), powerExpand(Log(arg1.base()), assumptions));
             if (assumptions) {
-              IAST floorResult = Floor(Divide(Subtract(Pi, Im(logResult)),F.C2Pi));
+              IAST floorResult = Floor(Divide(Subtract(Pi, Im(logResult)), F.C2Pi));
               IAST timesResult = Times(C2, I, Pi, floorResult);
               return Plus(logResult, timesResult);
             }
@@ -4258,8 +4258,7 @@ public class Algebra {
         IExpr exponent = x1.exponent();
         IAST powerResult = Power(base, Times(exponent, z));
         if (assumptions) {
-          IAST floorResult =
-              Floor(Divide(Subtract(Pi, Im(Times(exponent, Log(base)))), F.C2Pi));
+          IAST floorResult = Floor(Divide(Subtract(Pi, Im(Times(exponent, Log(base)))), F.C2Pi));
           IAST expResult = Power(E, Times(C2, I, Pi, z, floorResult));
           IAST timesResult = Times(powerResult, expResult);
           return timesResult;
@@ -4654,7 +4653,7 @@ public class Algebra {
             result = ast.copy();
           }
           if (ast.arg2().isNegative() && temp.isTimes()) {
-            IExpr[] fractionalParts = fractionalPartsRational(temp, false);
+            IExpr[] fractionalParts = fractionalPartsRational(temp, false, true);
             if (fractionalParts != null) {
               result.set(1, F.Divide(fractionalParts[1], fractionalParts[0]));
               result.set(2, ast.arg2().negate());
@@ -5422,7 +5421,7 @@ public class Algebra {
         result[0] = numerator.oneIdentity1();
         result[1] = denominator.oneIdentity1();
       }
-      if (negateNumerDenom && result[0].isNegative() && result[1].isPlus()
+      if (negateNumerDenom && result[0].isNumber() && result[0].isNegative() && result[1].isPlus()
           && ((IAST) result[1]).isAST2()) {
         // negate numerator and denominator:
         result[0] = result[0].negate();
@@ -5447,7 +5446,7 @@ public class Algebra {
 
   /**
    * Split the expression into numerator and denominator parts, by separating positive and negative
-   * powers.
+   * powers and afterwards evaluate the numerator and denominator separately.
    *
    * @param arg
    * @param trig determine the denominator by splitting up functions like <code>
@@ -5456,11 +5455,26 @@ public class Algebra {
    *         found.
    */
   public static IExpr[] fractionalParts(final IExpr arg, boolean trig) {
+    return fractionalParts(arg, trig, true);
+  }
+
+  /**
+   * Split the expression into numerator and denominator parts, by separating positive and negative
+   * powers.
+   *
+   * @param arg
+   * @param trig determine the denominator by splitting up functions like <code>
+   *     Tan[],Cot[], Csc[],...</code>
+   * @param evalParts evaluate the numerator and denominator separately
+   * @return the numerator and denominator expression or <code>null</code> if no denominator was
+   *         found.
+   */
+  public static IExpr[] fractionalParts(final IExpr arg, boolean trig, boolean evalParts) {
     IExpr[] parts = null;
     if (arg.isAST()) {
       IAST ast = (IAST) arg;
       if (arg.isTimes()) {
-        parts = fractionalPartsTimesPower(ast, false, true, trig, true, true, true);
+        parts = fractionalPartsTimesPower(ast, false, true, trig, evalParts, true, true);
       } else if (arg.isPower()) {
         parts = Apart.fractionalPartsPower(ast, trig, true);
       } else {
@@ -5711,10 +5725,12 @@ public class Algebra {
    * powers. Or split a number by numerator and denominator part.
    *
    * @param arg
-   * @param trig TODO
+   * @param trig determine the denominator by splitting up functions like <code>
+   *     Tan[],Cot[], Csc[],...</code>
+   * @param evalParts evaluate the numerator and denominator separately
    * @return the numerator and denominator expression
    */
-  public static IExpr[] fractionalPartsRational(final IExpr arg, boolean trig) {
+  public static IExpr[] fractionalPartsRational(final IExpr arg, boolean trig, boolean evalParts) {
     if (arg.isFraction()) {
       IFraction fr = (IFraction) arg;
       IExpr[] parts = new IExpr[2];
@@ -5733,7 +5749,7 @@ public class Algebra {
       }
       return null;
     }
-    return fractionalParts(arg, trig);
+    return fractionalParts(arg, trig, evalParts);
   }
 
   public static IExpr together(IAST ast, EvalEngine engine) {
