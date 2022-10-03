@@ -515,6 +515,32 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
   }
 
+  public void testTrigSimplifyTR9() {
+    IExpr tr9 = TrigSimplifyFu.tr9(F.a);
+     assertEquals(tr9.toString(), //
+     "a");
+
+     // TODO cos(1) + cos(2)
+     // tr9 = TrigSimplifyFu.tr9(F.Plus(F.Cos(F.C1), F.Cos(F.C2)));
+     // assertEquals(tr9.toString(), //
+     // // 2*cos(a)*cos(b)
+     // "Cos(1)+Cos(2)");
+
+    // assert TR9(a) == a
+    // assert TR9(cos(1) + cos(2)) == 2*cos(a)*cos(b)
+    // assert TR9(cos(1) - cos(2)) == 2*sin(a)*sin(b)
+    // assert TR9(sin(1) - sin(2)) == -2*sin(a)*cos(b)
+    // assert TR9(sin(1) + sin(2)) == 2*sin(b)*cos(a)
+    // assert TR9(cos(1) + 2*sin(1) + 2*sin(2)) == cos(1) + 4*sin(b)*cos(a)
+    // assert TR9(cos(4) + cos(2) + 2*cos(1)*cos(3)) == 4*cos(1)*cos(3)
+    // assert TR9((cos(4) + cos(2))/cos(3)/2 + cos(3)) == 2*cos(1)*cos(2)
+    // assert TR9(cos(3) + cos(4) + cos(5) + cos(6)) == \
+    // 4*cos(S.Half)*cos(1)*cos(Rational(9, 2))
+    // assert TR9(cos(3) + cos(3)*cos(2)) == cos(3) + cos(2)*cos(3)
+    // assert TR9(-cos(y) + cos(x*y)) == -2*sin(x*y/2 - y/2)*sin(x*y/2 + y/2)
+    // assert TR9(-sin(y) + sin(x*y)) == 2*sin(x*y/2 - y/2)*cos(x*y/2 + y/2)
+
+  }
   public void testTrigSimplifyTR10() {
     IExpr tr10 = TrigSimplifyFu.tr10(F.Cos(F.Plus(F.a, F.b)));
     assertEquals(tr10.toString(), //

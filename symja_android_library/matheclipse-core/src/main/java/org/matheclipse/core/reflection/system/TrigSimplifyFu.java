@@ -9,6 +9,7 @@ import java.util.function.Function;
 import org.matheclipse.core.builtin.SimplifyFunctions;
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.sympy.ValueError;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -742,9 +743,179 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  private static IExpr tr9(IExpr expr) {
+  public static IExpr tr9(IExpr expr) {
+    return Traversal.bottomUp(expr, x -> tr9Step(x));
+  }
+
+  private static IExpr tr9Step(IExpr expr) {
+    // TODO implement missing methods
+    // if (expr.isPlus()) {
+    // return processCommonAddends((IAST) expr, TrigSimplifyFu::tr9DoIt, null, true);
+    // }
+    return F.NIL;
+  }
+
+  public static IExpr tr9DoIt(IExpr rv) {
+    // # cos(a)+/-cos(b) can be combined into a product of cosines and
+    // # sin(a)+/-sin(b) can be combined into a product of cosine and
+    // # sine.
+    // #
+    // # If there are more than two args, the pairs which "work" will
+    // # have a gcd extractable and the remaining two terms will have
+    // # the above structure -- all pairs must be checked to find the
+    // # ones that work. args that don't have a common set of symbols
+    // # are skipped since this doesn't lead to a simpler formula and
+    // # also has the arbitrariness of combining, for example, the x
+    // # and y term instead of the y and z term in something like
+    // # cos(x) + cos(y) + cos(z).
+    if (rv.isPlus()) {
+      IASTMutable args = ((IAST) rv).copy();
+      if (args.argSize() != 2) {
+        boolean hit = false;
+        for (int i = 1; i < args.size(); i++) {
+          IExpr ai = args.get(i);
+          if (ai == S.None) {
+            continue;
+          }
+          for (int j = i + 1; j < args.size(); j++) {
+            IExpr aj = args.get(j);
+            if (aj == S.None) {
+              continue;
+            }
+            IExpr was = ai.plus(aj);
+            IExpr newDoIt = tr9DoIt(was);
+            if (newDoIt.isPresent() && !newDoIt.equals(was)) {
+              args.set(i, newDoIt);
+              args.set(j, S.None);
+              hit = true;
+              break; // go to next i
+            }
+          }
+        }
+
+        if (hit) {
+          IASTAppendable plusAST = F.PlusAlloc(args.size());
+          for (int i = 1; i < args.size(); i++) {
+            IExpr _f = args.get(i);
+            if (_f != S.None) {
+              plusAST.append(_f);
+            }
+          }
+          rv = plusAST.oneIdentity0();
+          if (rv.isPlus()) {
+            rv = tr9DoIt(rv).orElse(rv);
+          }
+          return rv;
+        }
+
+        return F.NIL;
+      }
+
+      // two args Plus(...)
+      IAST split = trigSplit(args);
+      if (!split.isList()) {
+        return rv;
+      }
+      IExpr gcd = split.arg1();
+      IExpr n1 = split.arg2();
+      IExpr n2 = split.arg3();
+      IExpr a = split.get(4);
+      IExpr b = split.get(5);
+      IExpr isCos = split.get(6);
+
+      // application of rule if possible
+      if (isCos.isTrue()) {
+        if (n1.equals(n2)) {
+          // gcd*n1*2*cos((a + b)/2)*cos((a - b)/2)
+          return F.Times(F.C2, gcd, n1, F.Cos(F.Times(F.C1D2, F.Plus(a, b))),
+              F.Cos(F.Times(F.C1D2, F.Subtract(a, b))));
+        } else if (n1.isNegative()) {
+          IExpr temp = a;
+          a = b;
+          b = temp;
+        }
+        // -2*gcd*sin((a + b)/2)*sin((a - b)/2)
+        return F.Times(F.CN2, gcd, F.Sin(F.Times(F.C1D2, F.Plus(a, b))),
+            F.Sin(F.Times(F.C1D2, F.Subtract(a, b))));
+      }
+      if (n1.equals(n2)) {
+        // gcd*n1*2*sin((a + b)/2)*cos((a - b)/2)
+        return F.Times(F.C2, gcd, n1, F.Sin(F.Times(F.C1D2, F.Plus(a, b))),
+            F.Cos(F.Times(F.C1D2, F.Subtract(a, b))));
+      } else if (n1.isNegative()) {
+        IExpr temp = a;
+        a = b;
+        b = temp;
+      }
+      // 2*gcd*cos((a + b)/2)*sin((a - b)/2)
+      return F.Times(F.C2, gcd, F.Cos(F.Times(F.C1D2, F.Plus(a, b))),
+          F.Sin(F.Times(F.C1D2, F.Subtract(a, b))));
+    }
+    return F.NIL;
+  }
+
+  private static IAST trigSplit(IASTMutable args) {
     // TODO
-    return expr;
+    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/simplify/fu.py#L1716
+    return F.NIL;
+  }
+
+  private static IExpr processCommonAddends(IAST rv, Function<IExpr, IExpr> doIt,
+      Function<IExpr, IExpr> key2, boolean key1) {
+    // """Apply ``doIt`` to addends of ``rv`` that (if ``key1=True``) share at least
+    // a common absolute value of their coefficient and the value of ``key2`` when
+    // applied to the argument. If ``key1`` is False ``key2`` must be supplied and
+    // will be the only key applied.
+    // """
+
+    // collect by absolute value of coefficient and key2
+    DefaultDict<IASTAppendable> absc = new DefaultDict<IASTAppendable>(() -> F.PlusAlloc(8));
+    if (key1) {
+      for (int i = 1; i < rv.size(); i++) {
+        IExpr a = rv.get(i);
+        Pair asCoeffMul = a.asCoeffMul();
+        IExpr c = asCoeffMul.first();
+        a = asCoeffMul.second();
+        if (c.isNegative()) {
+          c = c.negate();
+          a = a.negate();
+        }
+        absc.get(F.pair(c, (key2 != null) ? key2.apply(a) : F.C1)).append(a);
+      }
+    } else if (key2 != null) {
+      for (int i = 1; i < rv.size(); i++) {
+        IExpr a = rv.get(i);
+        absc.get(F.pair(F.C1, key2.apply(a))).append(a);
+      }
+    } else {
+      throw new ValueError("must have at least one key");
+    }
+
+    IASTAppendable plusAST = F.PlusAlloc(absc.size());
+    boolean hit = false;
+    for (IExpr k : absc.keySet()) {
+      IASTAppendable v = absc.get(k);
+      IExpr c = k;
+      // IExpr _c = k;
+      if (v.argSize() > 1) {
+        IAST e = v;
+        IExpr newExpr = doIt.apply(e);
+        if (!newExpr.equals(e)) {
+          e = (IAST) newExpr;
+          hit = true;
+        }
+        plusAST.append(F.Times(c, e));
+      } else {
+        plusAST.append(F.Times(c, v.first()));
+      }
+    }
+
+    if (hit) {
+      return plusAST;
+    }
+
+    return F.NIL;
+
   }
 
   public static IExpr tr10(IExpr expr) {
