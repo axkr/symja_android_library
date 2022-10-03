@@ -185,7 +185,7 @@
 			<dependency>
 				<groupId>io.javalin</groupId>
 				<artifactId>javalin</artifactId>
-				<version>4.6.5</version>
+				<version>5.0.1</version>
 			</dependency>
 
 			<dependency>
