@@ -4426,16 +4426,16 @@ public class Algebra {
     private static IExpr reduceFactorConstant(IExpr p, EvalEngine engine) {
 
       if (!engine.isNumericMode() && p.isPlus() && !engine.isTogetherMode()) {
-        IExpr e = p;
-        // ((reduceConstantTerm /@ (List @@ e)) // Transpose)[[1]]
+        IAST plusAST = (IAST) p;
+        // ((reduceConstantTerm /@ (List @@ plusAST)) // Transpose)[[1]]
         IExpr cTerms = S.Transpose
             .of(engine,
-                F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(S.List, e)))
+                F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(S.List, plusAST)))
             .first();
-        if (cTerms.isPresent()) {
+        if (cTerms.isList()) {
           // GCD @@ cTerms
           IExpr c = S.Apply.of(engine, S.GCD, cTerms);
-          if (cTerms.last().isNegative()) {
+          if (cTerms.first().isNegative()) {
             c = c.negate();
           }
           IExpr gcd;
@@ -4446,7 +4446,7 @@ public class Algebra {
             gcd = engine.evaluate(c);
           }
           if (gcd.isFree(S.GCD)) {
-            return F.Times(gcd, S.Distribute.of(engine, F.Divide(e, gcd)));
+            return F.Times(gcd, S.Distribute.of(engine, F.Divide(plusAST, gcd)));
           }
         }
       }

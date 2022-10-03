@@ -2223,6 +2223,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testCancel() {
+    check("Cancel((1/8-Cos(2/7*Pi)/8) / (8-8*Cos(2/7*Pi)))", //
+        "1/64");
     // check("Factor(y*(2*3*x+Pi*x))", //
     // "(6+Pi)*x*y");
     check("Cancel((x*Log(2))/(2*3*x+Pi*x))", //
@@ -7589,7 +7591,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x))");
     System.out.print('.');
     check("Factor(12 * x^2 -75 * y^2)", //
-        "-3*(-2*x+5*y)*(2*x+5*y)");
+        "3*(2*x-5*y)*(2*x+5*y)");
 
     // example from paper
     // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
@@ -24009,6 +24011,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTogether() {
+    check("Together( 8-8*Cos(2/7*Pi))", //
+        "8*(1-Cos(2/7*Pi))");
     check("Together(6/5*c*f+6/5*b*g+2/5*c*f*m+1/5*b*g*m+2/5*c*f*n+3/5*b*g*n)", //
         "1/5*(6*c*f+6*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n)");
 

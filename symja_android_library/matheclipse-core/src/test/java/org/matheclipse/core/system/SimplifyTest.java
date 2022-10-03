@@ -142,7 +142,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     for (int i = 0; i < 10; i++) {
       times.append(F.Cos(F.C2.pow(i)));
     }
-      trMorrie = TrigSimplifyFu.trMorrie(times);
+    trMorrie = TrigSimplifyFu.trMorrie(times);
     assertEquals(trMorrie.toString(), //
         // sympy sin(1024)/(1024*sin(1))
         "1/1024*Csc(1)*Sin(1024)");
@@ -470,17 +470,49 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
   }
 
   public void testTrigSimplifyTR8() {
-    IExpr tr8 = TrigSimplifyFu.tr8Step(F.Times(F.Cos(F.C2), F.Cos(F.C3)), true);
+    IExpr tr8 = TrigSimplifyFu.tr8(F.Times(F.Cos(F.C2), F.Cos(F.C3)), true);
     assertEquals(tr8.toString(), //
         "1/2*(Cos(1)+Cos(5))");
 
-    tr8 = TrigSimplifyFu.tr8Step(F.Times(F.Cos(F.C2), F.Sin(F.C3)), true);
+    tr8 = TrigSimplifyFu.tr8(F.Times(F.Cos(F.C2), F.Sin(F.C3)), true);
     assertEquals(tr8.toString(), //
         "1/2*(Sin(1)+Sin(5))");
 
-    tr8 = TrigSimplifyFu.tr8Step(F.Times(F.Sin(F.C2), F.Sin(F.C3)), true);
+    tr8 = TrigSimplifyFu.tr8(F.Times(F.Sin(F.C2), F.Sin(F.C3)), true);
     assertEquals(tr8.toString(), //
         "1/2*(Cos(1)-Cos(5))");
+
+    // sin(1)*sin(2)*sin(3)
+    tr8 = TrigSimplifyFu.tr8(F.Times(F.Sin(F.C1), F.Sin(F.C2), F.Sin(F.C3)), true);
+    assertEquals(tr8.toString(), //
+        // sympy sin(4)/4 - sin(6)/4 + sin(2)/4)
+        "Sin(2)/4+Sin(4)/4-Sin(6)/4");
+
+    // cos(2)*cos(3)*cos(4)*cos(5)
+    tr8 = TrigSimplifyFu.tr8(F.Times(F.Cos(F.C2), F.Cos(F.C3), F.Cos(F.C4), F.Cos(F.C5)), true);
+    assertEquals(tr8.toString(), //
+        // sympy cos(4)/4 + cos(10)/8 + cos(2)/8 + cos(8)/8 + cos(14)/8 + cos(6)/8 + Rational(1, 8)
+        "1/8+Cos(2)/8+Cos(4)/4+Cos(6)/8+Cos(8)/8+Cos(10)/8+Cos(14)/8");
+
+    // cos(2)*cos(3)*cos(4)*cos(5)*cos(6)
+    tr8 = TrigSimplifyFu
+        .tr8(F.Times(F.Cos(F.C2), F.Cos(F.C3), F.Cos(F.C4), F.Cos(F.C5), F.Cos(F.C6)), true);
+    tr8 = F.eval(tr8);
+    assertEquals(tr8.toString(), //
+        // sympy cos(10)/8 + cos(4)/8 + 3*cos(2)/16 + cos(16)/16 + cos(8)/8 + cos(14)/16 +
+        // cos(20)/16 + cos(12)/16 + Rational(1, 16) + cos(6)/8
+        "1/16+3/16*Cos(2)+Cos(4)/8+Cos(6)/8+Cos(8)/8+Cos(10)/8+Cos(12)/16+Cos(14)/16+Cos(\n"
+            + "16)/16+Cos(20)/16");
+
+    // sin(pi*Rational(3, 7))**2*cos(pi*Rational(3, 7))**2/(16*sin(pi/7)**2)
+    tr8 = TrigSimplifyFu.tr8(
+        F.Times(F.Sqr(F.Sin(F.Times(F.QQ(3, 7), S.Pi))), F.Sqr(F.Cos(F.Times(F.QQ(3, 7), S.Pi))),
+            F.Power(F.Times(16, F.Sqr(F.Sin(F.Times(F.QQ(1, 7), S.Pi)))), F.CN1)),
+        true);
+    assertEquals(tr8.toString(), //
+        // sympy Rational(1, 64)
+        "1/64");
+
   }
 
   public void testTrigSimplifyTR10() {

@@ -661,7 +661,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
    */
   public static IExpr tr8Step(IExpr expr, boolean first) {
     if (expr.isTimes() || (expr.isPower() && (expr.base().isSin() || expr.base().isCos())
-        && (expr.exponent().isInteger() || expr.base().isPositive()))) {
+        && (expr.exponent().isIntegerResult() || expr.base().isPositive()))) {
 
       if (first) {
         EvalEngine engine = EvalEngine.get();
@@ -671,7 +671,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
         IExpr newn = tr8(TrigReduce.trigReduce(n, engine), false);
         IExpr newd = tr8(TrigReduce.trigReduce(d, engine), false);
         if (!newn.equals(n) || !newd.equals(d)) {
-          if (d.isOne()) {
+          if (newd.isOne()) {
             return newn;
           }
           IExpr rv = ExprTools.gcdTerms(F.Divide(newn, newd));
@@ -691,18 +691,19 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       DefaultDict<IASTAppendable> args = new DefaultDict<IASTAppendable>();
       args.get(S.Cos);
       args.get(S.Sin);
-      args.get(S.None);
+
       IASTMutable argsList = Operations.makeArgs(S.Times, expr);
+      IASTAppendable argsResult = F.TimesAlloc(argsList.argSize() + 5);
       argsList.sortInplace();
       for (int i = 1; i < argsList.size(); i++) {
         IExpr a = argsList.get(i);
         if (a.isCos() || a.isSin()) {
           args.get(a.head()).append(a.first());
-        } else if (a.isPower() && a.exponent().isInteger() && a.exponent().isPositive()
+        } else if (a.isPower() && a.exponent().isIntegerResult() && a.exponent().isPositive()
             && (a.base().isCos() || a.base().isSin())) {
           args.get(a.base().head()).append(a.base().first().times(a.exponent()));
         } else {
-          args.get(S.None).append(a);
+          argsResult.append(a);
         }
       }
       IASTAppendable c = args.get(S.Cos);
@@ -710,8 +711,6 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       if (!(c.argSize() > 1 || s.argSize() > 1)) {
         return F.NIL;
       }
-      IASTAppendable argsResult = F.TimesAlloc(8);
-      argsResult.appendArgs(args.get(S.None));
 
       int n = Math.min(c.argSize(), s.argSize());
       for (int i = 0; i < n; i++) {
