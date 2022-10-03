@@ -2,8 +2,6 @@ package org.matheclipse.core.system;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.util.Assumptions;
-import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -390,12 +388,8 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         // sympy (cos(5) + 1)**a*sin(5)**(-a)
         "(1+Cos(5))^a/Sin(5)^a");
 
-
-    ISymbol i = F.Dummy("i");
     // i = symbols('i', integer=True)
-    IAssumptions assumptions = Assumptions.getInstance(F.Element(i, S.Integers));
-    EvalEngine.get().setAssumptions(assumptions);
-
+    ISymbol i = F.symbol("i", F.Element(F.Slot1, S.Integers));
     // ((cos(5) + 1)**i*sin(5)**(-i)), half=True
     tr2i = TrigSimplifyFu.tr2i(F.Times(//
         F.Power(F.Plus(F.C1, F.Cos(F.C5)), i), //
