@@ -32,6 +32,7 @@ import com.twosigma.beakerx.TryResult;
 import com.twosigma.beakerx.autocomplete.AutocompleteResult;
 import com.twosigma.beakerx.autocomplete.MagicCommandAutocompletePatterns;
 import com.twosigma.beakerx.evaluator.BaseEvaluator;
+import com.twosigma.beakerx.evaluator.ClasspathScanner;
 import com.twosigma.beakerx.evaluator.JobDescriptor;
 import com.twosigma.beakerx.evaluator.TempFolderFactory;
 import com.twosigma.beakerx.evaluator.TempFolderFactoryImpl;
@@ -87,9 +88,10 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
 
   public SymjaMMAEvaluator(String id, String sId, CellExecutor cellExecutor,
       TempFolderFactory tempFolderFactory, EvaluatorParameters evaluatorParameters,
-      BeakerXClient beakerxClient, MagicCommandAutocompletePatterns autocompletePatterns) {
+      BeakerXClient beakerxClient, MagicCommandAutocompletePatterns autocompletePatterns,
+      ClasspathScanner classpathScanner) {
     super(id, sId, cellExecutor, tempFolderFactory, evaluatorParameters, beakerxClient,
-        autocompletePatterns);
+        autocompletePatterns, classpathScanner);
     gac = createAutocomplete(autocompletePatterns);
     outDir = envVariablesFilter(outDir, System.getenv());
     EvalEngine engine = new EvalEngine(false);
@@ -105,9 +107,10 @@ public class SymjaMMAEvaluator extends BaseEvaluator {
   }
 
   public SymjaMMAEvaluator(String id, String sId, EvaluatorParameters evaluatorParameters,
-      BeakerXClient beakerxClient, MagicCommandAutocompletePatterns autocompletePatterns) {
+      BeakerXClient beakerxClient, MagicCommandAutocompletePatterns autocompletePatterns,
+      ClasspathScanner classpathScanner) {
     this(id, sId, new BeakerCellExecutor("symjamma"), new TempFolderFactoryImpl(),
-        evaluatorParameters, beakerxClient, autocompletePatterns);
+        evaluatorParameters, beakerxClient, autocompletePatterns, classpathScanner);
   }
 
   @Override
