@@ -8,7 +8,6 @@ import java.awt.Desktop;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.URI;
-import javax.servlet.Servlet;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +23,7 @@ import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
+import jakarta.servlet.Servlet;
 
 public class ServletServer {
   private static final Logger LOGGER = LogManager.getLogger();
