@@ -1587,8 +1587,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "242999/30");
 
     // slow
-    check("BernoulliB(1009,-1+Sqrt(2))", //
-        "BernoulliB(1009,-1+Sqrt(2))");
+    check("BernoulliB(2009,-1+Sqrt(2))", //
+        "BernoulliB(2009,-1+Sqrt(2))");
     check("BernoulliB(-2147483648,1/2)", //
         "BernoulliB(-2147483648,1/2)");
     check("BernoulliB(18, 1/2)", //
@@ -11097,11 +11097,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testInfinity() {
     // 1/2*(2+3*l+l^2-4*(-Infinity)-2*l*(-Infinity)+(-Infinity)^2)
     check("-2*l*(-Infinity)", //
-        "l*Infinity");
+        "Infinity*l");
     check("(-Infinity)^2", //
         "Infinity");
     check("1/2*(2+3*l+l^2-4*(-Infinity)-2*l*(-Infinity)+(-Infinity)^2)", //
-        "1/2*(Infinity+3*l+l*Infinity+l^2)");
+        "1/2*(Infinity+3*l+Infinity*l+l^2)");
 
     check("1 / Infinity", //
         "0");
@@ -13087,7 +13087,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("LaguerreL(10,l,Infinity)", //
         "Indeterminate");
     check("LaguerreL(3,l,-Infinity)", //
-        "1/3*(-(2+l)*(l+Infinity)+1/2*(l+Infinity)*(Infinity+3*l+l*Infinity+l^2))");
+        "1/3*(-(2+l)*(Infinity+l)+1/2*(Infinity+l)*(Infinity+3*l+Infinity*l+l^2))");
     // mesage Polynomial degree 101 exceeded
     check("LaguerreL(101,l,-Infinity)", //
         "LaguerreL(101,l,-Infinity)");
@@ -13890,7 +13890,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Infinity");
 
     check("Limit(Log(x^y), x->0)", //
-        "y*(-Infinity)");
+        "(-Infinity)*y");
     check("Limit(Log(y*x, b), x->1)", //
         "Log(b)/Log(y)");
     check("Limit(Log(y*x), x->0)", //
@@ -14885,7 +14885,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Refine(Max(Infinity,x,y), x>0&&y>0)", //
         "Infinity");
     check("Refine(Max(Infinity,x,y), x>0)", //
-        "Max(y,Infinity)");
+        "Max(Infinity,y)");
     check("Refine(Max(x,Infinity), x>0)", //
         "Infinity");
     check("Refine(Max(x,y,Infinity), x>0&&y>0)", //
@@ -15284,7 +15284,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Refine(Min(-Infinity,x,y), x>0&&y>0)", //
         "-Infinity");
     check("Refine(Min(-Infinity,x,y), x>0)", //
-        "Min(y,-Infinity)");
+        "Min(-Infinity,y)");
     check("Refine(Min(x,-Infinity), x>0)", //
         "-Infinity");
     check("Refine(Min(x,y,-Infinity), x>0&&y>0)", //
@@ -18027,7 +18027,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-2-5*Cosh(x)^2");
 
     check("x+1/(3!*E)-Infinity+1/(5!*E)+1/(6!*E)", //
-        "x-Infinity");
+        "-Infinity+x");
     check("Refine(Infinity+x, x>0)", //
         "Infinity");
 
@@ -18786,6 +18786,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testPower() {
+    // TODO improve output - if base is Sqrt avoid parnethesis
+    check("x^Sqrt(y)^a", //
+        "x^(Sqrt(y))^a");
+
     check("a^(1/Log(a)^4)", //
         "E^(1/Log(a)^3)");
     check("a^(Log(a)^7)", //

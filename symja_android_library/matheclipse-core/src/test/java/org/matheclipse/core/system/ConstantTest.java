@@ -11,6 +11,11 @@ public class ConstantTest extends ExprEvaluatorTestCase {
     super(name);
   }
 
+  public void testCharcterEncoding() {
+    check("$CharacterEncoding", //
+        "UTF-8");
+  }
+
   public void testIn() {
     check("x=1", //
         "1");

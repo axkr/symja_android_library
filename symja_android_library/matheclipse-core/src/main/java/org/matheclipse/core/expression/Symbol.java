@@ -208,9 +208,9 @@ public class Symbol implements ISymbol, Serializable {
     }
     if (expr.isAST()) {
       int id = expr.headID();
-      if (id == ID.DirectedInfinity && expr.isDirectedInfinity()) {
-        return -1;
-      }
+      // if (id == ID.DirectedInfinity && expr.isDirectedInfinity()) {
+      // return -1;
+      // }
       if (id >= ID.Not && id <= ID.Power) {
         if (expr.isNot() && expr.first().isSymbol()) {
           int cp = compareTo(expr.first());

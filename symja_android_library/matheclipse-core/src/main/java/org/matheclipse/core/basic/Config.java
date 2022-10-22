@@ -55,6 +55,11 @@ public class Config {
           + "Distributed under the GNU Public License.\n" + "See the file license.txt\n\n";
 
   /**
+   * "UTF-8" is used as default character encoding
+   */
+  public static String SYSTEM_CHARACTER_ENCODING = "UTF-8";
+
+  /**
    * A global expression cache which compares keys with <code>==</code> object identity instead of
    * <code>equals()</code>. The keys and values are weak references.
    */

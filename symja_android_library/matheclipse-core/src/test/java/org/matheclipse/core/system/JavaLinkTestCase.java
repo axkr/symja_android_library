@@ -24,6 +24,9 @@ public class JavaLinkTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testInstanceOf001() {
+    check("InstanceOf[-0.8, \"\"]", //
+        "False");
+
     check("loc= JavaNew[\"java.util.Locale\",\"US\"]", //
         "JavaObject[class java.util.Locale]");
 

@@ -260,9 +260,9 @@ public interface INumber extends IExpr {
   default Pair asCoeffAdd() {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/numbers.py#L816
     if (isInteger() || isFraction()) {
-      return F.pair(this, F.CEmptyList);
+      return F.pair(this, F.Plus());
     }
-    return F.pair(F.C0, F.List(this));
+    return F.pair(F.C0, F.Plus(this));
   }
 
   @Override
@@ -307,6 +307,9 @@ public interface INumber extends IExpr {
   default INumber zero() {
     return F.C0;
   }
+
+  @Override
+  public INumber negate();
 
   /**
    * Multiplicative neutral element of this number

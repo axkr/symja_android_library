@@ -94,6 +94,7 @@ public class ConstantDefinitions {
       S.$RootDirectory.setEvaluator(new $RootDirectory());
       S.$ScriptCommandLine.setEvaluator(new $ScriptCommandLine());
       S.$SystemCharacterEncoding.setEvaluator(new $SystemCharacterEncoding());
+      S.$CharacterEncoding.setEvaluator(new $CharacterEncoding());
       S.$SystemMemory.setEvaluator(new $SystemMemory());
       S.$TemporaryDirectory.setEvaluator(new $TemporaryDirectory());
       S.$UserBaseDirectory.setEvaluator(new $UserBaseDirectory());
@@ -181,6 +182,32 @@ public class ConstantDefinitions {
       }
       Path path = Paths.get(userHome, "Symja");
       return F.stringx(path.toString());
+    }
+  }
+
+  private static class $CharacterEncoding extends AbstractSymbolEvaluator
+      implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      AbstractSymbolEvaluator evaluator =
+          (AbstractSymbolEvaluator) S.$SystemCharacterEncoding.getEvaluator();
+      IExpr systemCharacterEncoding = evaluator.evaluate(symbol, engine);
+      final String characterEncoding;
+      if (systemCharacterEncoding.isString()) {
+        characterEncoding = systemCharacterEncoding.toString();
+      } else {
+        characterEncoding = Config.SYSTEM_CHARACTER_ENCODING;
+      }
+      return F.stringx(characterEncoding);
+    }
+
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      if (rightHandSide.isString()) {
+        S.$CharacterEncoding.assignValue(rightHandSide, setDelayed);
+      }
+      return rightHandSide;
     }
   }
 
@@ -498,7 +525,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      String characterEncoding = System.getProperty("file.encoding", "UTF-8");
+      String characterEncoding = Config.SYSTEM_CHARACTER_ENCODING;
       return F.stringx(characterEncoding);
     }
   }

@@ -73,7 +73,7 @@ public class TeXConverterTestCase extends TestCase {
 
   public void testTeX008() {
     check("1 + 2 - 3 \\times 4 \\div 5", //
-        "1+2-4/5*3");
+        "(-4/5)*3+1+2");
   }
 
   public void testTeX009() {
@@ -232,18 +232,18 @@ public class TeXConverterTestCase extends TestCase {
     check("-\\nabla \\times e", //
         "-e*∇");
     check("\\nabla \\times B - 4\\pi j", //
-        "B*∇-4*j*Pi");
+        "-4*j*Pi+B*∇");
   }
 
   public void testTeX034() {
     check("\\lim_{x\\to 0}{\\frac{E^x-1}{2x}}", //
-        "Limit((E^x+(-1)*1)/(2*x),x->0)");
+        "Limit((-1+E^x)/(2*x),x->0)");
     checkEval("\\lim_{x\\to 0}{\\frac{E^x-1}{2x}}", //
         "1/2");
 
     // only "upper case" E is interpreted as euler's constant
     check("\\lim_{x\\to 0}{\\frac{e^x-1}{2x}}", //
-        "Limit((e^x+(-1)*1)/(2*x),x->0)");
+        "Limit((-1+e^x)/(2*x),x->0)");
     checkEval("\\lim_{x\\to 0}{\\frac{e^x-1}{2x}}", //
         "Log(e)/2");
   }

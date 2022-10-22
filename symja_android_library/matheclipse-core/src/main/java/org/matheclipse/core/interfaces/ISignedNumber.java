@@ -148,6 +148,14 @@ public interface ISignedNumber extends INumber {
     return isLT(that);
   }
 
+  default ISignedNumber max(ISignedNumber that) {
+    return isGT(that) ? this : that;
+  }
+
+  default ISignedNumber min(ISignedNumber that) {
+    return isLT(that) ? this : that;
+  }
+
   /**
    * Test if this number is negative.
    *

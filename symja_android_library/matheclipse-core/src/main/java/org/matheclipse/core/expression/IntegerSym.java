@@ -12,6 +12,7 @@ import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -688,22 +689,25 @@ public class IntegerSym extends AbstractIntegerSym {
    * @throws ArithmeticException if this integer is negative and n is even.
    */
   @Override
-  public IExpr nthRoot(int n) throws ArithmeticException {
+  public IPair nthRoot(int n) throws ArithmeticException {
     if (n < 0) {
       throw new IllegalArgumentException("nthRoot(" + n + ") n must be >= 0");
     }
     if (n == 2) {
-      return sqrt();
+      IInteger result = valueOf(IntMath.sqrt(fIntValue, RoundingMode.DOWN));
+      boolean exact = result.pow(n).equals(this);
+      return F.pair(result, F.booleSymbol(exact));
     }
     if (complexSign() == 0) {
-      return F.C0;
+      return F.pair(F.C0, S.True);
     } else if (complexSign() < 0) {
       if (n % 2 == 0) {
         // even exponent n
         throw new ArithmeticException();
       } else {
         // odd exponent n
-        return negate().nthRoot(n).negate();
+        IPair p = negate().nthRoot(n);
+        return F.pair(p.first().negate(), p.second());
       }
     } else {
       IInteger result;
@@ -714,7 +718,8 @@ public class IntegerSym extends AbstractIntegerSym {
             .add(temp.multiply(AbstractIntegerSym.valueOf(n - 1)))
             .divideAndRemainder(AbstractIntegerSym.valueOf(n))[0];
       } while (temp.compareTo(result) < 0);
-      return result;
+      boolean exact = result.pow(n).equals(this);
+      return F.pair(result, F.booleSymbol(exact));
     }
   }
 

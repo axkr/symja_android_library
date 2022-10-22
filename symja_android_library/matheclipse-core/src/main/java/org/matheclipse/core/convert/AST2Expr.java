@@ -48,8 +48,9 @@ public class AST2Expr {
   public static final String[] UPPERCASE_SYMBOL_STRINGS = {"C", "D", "E", "I", "N", "O"};
 
   public static final String[] DOLLAR_STRINGS = {"$Aborted", "$Assumptions", "$BaseDirectory",
-      "$Cancel", "$Context", "$CreationDate", "$ContextPath", "$DisplayFunction", "$Failed",
-      "$HistoryLength", "$HomeDirectory", "$IdentityMatrix", // for MarixD
+      "$Cancel", "$CharacterEncoding", "$Context", "$CreationDate", "$ContextPath",
+      "$DisplayFunction", "$Failed", "$HistoryLength", "$HomeDirectory", "$IdentityMatrix", // for
+                                                                                            // MarixD
       "$Input", "$InputFileName", "$IterationLimit", "$Line", "$MachineEpsilon",
       "$MachinePrecision", "$MaxMachineNumber", "$MessageList", "$MinMachineNumber", "$Notebooks",
       "$OperatingSystem", "$OutputSizeLimit", "$Packages", "$Path", "$PathnameSeparator",
@@ -231,11 +232,11 @@ public class AST2Expr {
       "Operate", "OptimizeExpression", "Optional", "Options", "OptionsPattern", "OptionValue", "Or",
       "Order", "Ordering", "OrderedQ", "Orthogonalize", "OrthogonalMatrixQ", "Out", "Outer",
       "OutputForm", "OutputStream", "Overflow", "Overscript", "OverscriptBox", "OwnValues",
-      "Package", "PadeApproximant", "PadLeft", "PadRight", "ParametricPlot", "Parenthesis",
-      "ParetoDistribution", "Part", "Partition", "PartitionsP", "PartitionsQ", "ParzenWindow",
-      "PathGraph", "PathGraphQ", "PatternOrder", "PauliMatrix", "Pause", "PearsonChiSquareTest",
-      "PerfectNumber", "PerfectNumberQ", "Pattern", "PatternTest", "PDF", "Perimeter",
-      "PermutationCycles", "PermutationCyclesQ", "PermutationList", "PermutationListQ",
+      "Package", "PadeApproximant", "PadLeft", "PadRight", "ParallelMap", "ParametricPlot",
+      "Parenthesis", "ParetoDistribution", "Part", "Partition", "PartitionsP", "PartitionsQ",
+      "ParzenWindow", "PathGraph", "PathGraphQ", "PatternOrder", "PauliMatrix", "Pause",
+      "PearsonChiSquareTest", "PerfectNumber", "PerfectNumberQ", "Pattern", "PatternTest", "PDF",
+      "Perimeter", "PermutationCycles", "PermutationCyclesQ", "PermutationList", "PermutationListQ",
       "PermutationReplace", "Permutations", "Permute", "PetersenGraph", "Pick", "PieChart",
       "Piecewise", "PiecewiseExpand", "PlanarGraph", "PlanarGraphQ", "Plot", "Plot3D", "Plus",
       "Pochhammer", "PolarPlot", "Point", "PointLight", "PoissonDistribution", "PoissonProcess",

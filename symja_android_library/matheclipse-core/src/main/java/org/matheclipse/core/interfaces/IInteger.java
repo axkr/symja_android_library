@@ -2,6 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import java.math.BigInteger;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 
 /** An expression representing a big integer number */
 public interface IInteger extends IRational {
@@ -10,7 +11,7 @@ public interface IInteger extends IRational {
   public void checkBitLength();
 
   /** Certainty for the isProbablePrime() method */
-  public static final int PRIME_CERTAINTY = 32;
+  public static final int PRIME_CERTAINTY = 100;
 
   /** {@inheritDoc} */
   @Override
@@ -291,13 +292,16 @@ public interface IInteger extends IRational {
   public IInteger negate();
 
   /**
-   * Returns the n-th integer root
+   * Returns a pair with the n-th integer root as first element and {@link S#True} or
+   * {@link S#False} as the second element to indicate if the root is exact.
+   *
    *
    * @param n
    * @return
-   * @throws ArithmeticException
+   * @throws IllegalArgumentException if {@code this < 0}
+   * @throws ArithmeticException if this integer is negative and n is even.
    */
-  public IExpr nthRoot(int n);
+  public IPair nthRoot(int n);
 
   /**
    * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest

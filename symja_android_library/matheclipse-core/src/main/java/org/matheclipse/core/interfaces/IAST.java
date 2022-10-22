@@ -502,6 +502,20 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    */
   public IASTAppendable copyUntil(final int intialCapacity, int position);
 
+  default int count(Predicate<? super IExpr> predicate) {
+    return count(predicate, 1);
+  }
+
+  /**
+   * Test each argument with the {@link Predicate} and sum up how often it returns
+   * <code>true</code>.
+   * 
+   * @param predicate
+   * @param fromIndex
+   * @return
+   */
+  public int count(Predicate<? super IExpr> predicate, int fromIndex);
+
   /**
    * Calls <code>get(position).equals(expr)</code>.
    *
@@ -1177,6 +1191,12 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    * @return
    */
   public boolean isFreeAt(int position, final IExpr pattern);
+
+  /** {@inheritDoc} */
+  @Override
+  default boolean isNumberOrInfinity() {
+    return isInfinity() || isNegativeInfinity();
+  }
 
   @Override
   default boolean isNotDefined() {

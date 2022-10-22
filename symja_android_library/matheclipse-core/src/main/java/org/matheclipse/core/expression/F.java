@@ -209,7 +209,7 @@ public class F extends S {
    *
    * @see java.util.Optional#isPresent
    */
-  public static final IAssociation NIL = AbstractAST.NIL;
+  public static final AbstractAST.NILPointer NIL = AbstractAST.NIL;
 
   // public final static ISymbol usage = initFinalHiddenSymbol("usage");
 
@@ -6915,6 +6915,19 @@ public class F extends S {
     return new AST2(NMinimize, a0, a1);
   }
 
+  public static IAST NonCommutativeMultiply(final IExpr... a) {
+    switch (a.length) {
+      case 1:
+        return new AST1(NonCommutativeMultiply, a[0]);
+      case 2:
+        return new AST2(NonCommutativeMultiply, a[0], a[1]);
+      case 3:
+        return new AST3(NonCommutativeMultiply, a[0], a[1], a[2]);
+      default:
+        return new AST(NonCommutativeMultiply, a);
+    }
+  }
+
   public static IAST Norm(final IExpr a) {
     return new AST1(Norm, a);
   }
@@ -8969,7 +8982,12 @@ public class F extends S {
    * @return
    */
   public static IAST Subtract(final IExpr x, final IExpr y) {
-    return new B2.Plus(x, new B2.Times(CN1, y));
+    IExpr yInverse = y.opposite();
+    if (x.compareTo(yInverse) > 0) {
+      // swap arguments
+      return new B2.Plus(yInverse, x);
+    }
+    return new B2.Plus(x, yInverse);
   }
 
   /**

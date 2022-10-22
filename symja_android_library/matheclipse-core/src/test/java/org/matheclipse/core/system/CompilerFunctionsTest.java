@@ -11,7 +11,19 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     super(name);
   }
 
-  public void testCompileSinReal() {
+  public void testCompileSinReal001() {
+    if (ToggleFeature.COMPILE) {
+
+      check("cf = Compile({{x}}, x^2 + Sin(x^2));", //
+          "");
+      check("cf(Pi)", //
+          "9.4393");
+      check("Pi^2 + Sin(Pi^2) // N", //
+          "9.4393");
+    }
+  }
+
+  public void testCompileSinReal002() {
     if (ToggleFeature.COMPILE) {
 
       check("cf = Compile({{x, _Real}}, Sin(x) + x^2 - 1/(1 + x));", //
@@ -62,6 +74,20 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
           "");
       check("newt(-0.75,25)", //
           "3.0");
+    }
+  }
+
+  public void testCompileModuleOverflow() {
+    if (ToggleFeature.COMPILE) {
+      // check(
+      // "CompilePrint({{n, _Integer}},\n" //
+      // + " Module({s = 1}, Do(s = (2*s + i), {i, n}); s))", //
+      // "3.80295*10^30 ");
+      check(
+          "fi1 = Compile({{n, _Integer}},\n" //
+              + "   Module({s = 1}, Do(s = (2*s + i), {i, n}); s));\n" //
+              + "fi1(100)", //
+          "3802951800684688204490109616026");
     }
   }
 
@@ -169,8 +195,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
               + "      F.eval(F.Do(F.CompoundExpression(F.Set(vars.get(\"x\"),F.RandomInteger(F.list(F.C1,vars.get(\"i\")))),F.Set(vars.get(\"t\"),F.Part(vars.get(\"p\"),vars.get(\"i\"))),F.Set(F.Part(vars.get(\"p\"),vars.get(\"i\")),F.Part(vars.get(\"p\"),vars.get(\"x\"))),F.Set(F.Part(vars.get(\"p\"),vars.get(\"x\")),vars.get(\"t\"))),F.List(\n"
               + "      vars.get(\"i\"),\n" + "      stack.get(1),\n" + "      F.C2,\n"
               + "      F.CN1\n" + "      )));\n" + "      return F.eval(vars.get(\"p\"));\n"
-              + "    } finally {top = oldTop;}\n" + "  }\n" + "  \n" + "  \n" + "}\n"
-              + "");
+              + "    } finally {top = oldTop;}\n" + "  }\n" + "  \n" + "  \n" + "}\n" + "");
       // check(
       // "f = Compile({{n, _Integer}}, Module({p = Range(n),i,x,t}, Do(x =
       // RandomInteger({1,i}); t = p[[i]]; p[[i]] = p[[x]]; p[[x]] = t,{i,n,2,-1}); p));", //
@@ -282,8 +307,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
               + "    \n" + "  }\n" + "  public double evalDouble(IExpr expr)  {\n"
               + "    return engine.evalDouble(expr);\n" + "  }\n" + "  \n"
               + "  public Complex evalComplex(IExpr expr)  {\n"
-              + "    return engine.evalComplex(expr);\n" + "  }\n" + "  \n" + "  \n" + "}\n"
-              + "");
+              + "    return engine.evalComplex(expr);\n" + "  }\n" + "  \n" + "  \n" + "}\n" + "");
     }
   }
 

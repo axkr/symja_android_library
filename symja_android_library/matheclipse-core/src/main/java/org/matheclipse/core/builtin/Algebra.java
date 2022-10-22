@@ -49,9 +49,9 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
+import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.sympy.DefaultDict;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -1235,12 +1235,12 @@ public class Algebra {
 
     public void addOneIdentityPowerFactor(IExpr key, IAST subAST,
         DefaultDict<IASTAppendable> defaultdict) {
-      IASTAppendable resultList = defaultdict.get(key);
+      IASTAppendable resultList = defaultdict.getValue(key);
       resultList.appendOneIdentity(subAST);
     }
 
     public void addPowerFactor(IExpr key, IExpr value, DefaultDict<IASTAppendable> defaultdict) {
-      IASTAppendable resultList = defaultdict.get(key);
+      IASTAppendable resultList = defaultdict.getValue(key);
       resultList.append(value);
     }
 

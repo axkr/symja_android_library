@@ -87,19 +87,19 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
   // }
 
   public void testOut001() {
-    IExpr ast1, ast2;
+    IExpr x1, x2;
     // -Infinity
-    ast1 = CNInfinity;
+    x1 = CNInfinity;
     // x
-    ast2 = x;
-    ast1 = eval(ast1);
-    ast2 = eval(ast2);
+    x2 = x;
+    x1 = eval(x1);
+    x2 = eval(x2);
 
-    int res = ast1.compareTo(ast2);
-    assertEquals(1, res);
+    int res = x1.compareTo(x2);
+    assertEquals(-1, res);
 
     check("-Infinity+b+a", //
-        "a+b-Infinity");
+        "-Infinity+a+b");
   }
 
   public void testOut002() {
@@ -112,10 +112,10 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
     ast2 = eval(ast2);
 
     int res = ast1.compareTo(ast2);
-    assertEquals(1, res);
+    assertEquals(-1, res);
 
     check("-Infinity+b+a", //
-        "a+b-Infinity");
+        "-Infinity+a+b");
   }
 
   public void testCT004() {
@@ -151,7 +151,7 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
     assertEquals(1, res);
 
     check("-Infinity+b+a", //
-        "a+b-Infinity");
+        "-Infinity+a+b");
   }
 
   public void testIssue122b() {
@@ -175,7 +175,7 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
     assertEquals(-1, res);
 
     check("-Infinity+b+a", //
-        "a+b-Infinity");
+        "-Infinity+a+b");
   }
 
   public void testIssue122c() {
@@ -198,7 +198,7 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
     res = ast2.compareTo(ast1);
     assertEquals(-1, res);
 
-    check("-Infinity+b+a", //
-        "a+b-Infinity");
+    check("a+b-Infinity", //
+        "-Infinity+a+b");
   }
 }

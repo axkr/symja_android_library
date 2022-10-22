@@ -51,7 +51,6 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
-import org.matheclipse.core.expression.sympy.DefaultDict;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.ObjIntFunction;
 import org.matheclipse.core.generic.ObjIntPredicate;
@@ -71,6 +70,7 @@ import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -177,7 +177,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
    * @see org.matheclipse.core.expression.F#NIL
    * @see java.util.Optional#isPresent
    */
-  private static final class NILPointer extends AbstractAST implements IAssociation {
+  public static final class NILPointer extends AbstractAST implements IAssociation, IPair {
 
     private static final long serialVersionUID = -3552302876858011292L;
 
@@ -1442,17 +1442,17 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       DefaultDict<IExpr> dict = new DefaultDict<IExpr>(() -> F.C0);
       dict.put(base(), exponent());
       return dict;
-    } else if (isTimes()) {
+    } else if (isASTSizeGE(S.Times, 1)) {
       DefaultDict<IExpr> dict = new DefaultDict<IExpr>(() -> F.C0);
       for (int i = 1; i < size(); i++) {
         IExpr a = get(i);
         if (a.isPower()) {
           IExpr base = a.base();
-          IExpr exponents = dict.get(base);
+          IExpr exponents = dict.getValue(base);
           exponents = exponents.plus(a.exponent());
           dict.put(base, exponents);
         } else {
-          IExpr exponents = dict.get(a);
+          IExpr exponents = dict.getValue(a);
           exponents = exponents.plus(F.C1);
           dict.put(a, exponents);
         }
@@ -1549,7 +1549,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
     } else {
       if (lhsOrdinal == ID.DirectedInfinity && isDirectedInfinity()) {
-        if (rhsExpr.isNumber() || rhsExpr.isSymbol()) {
+        if (rhsExpr.isNumber()) {
           // O-7
           return 1;
         }
@@ -1566,6 +1566,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     if (rhsExpr.isAST()) {
       if (rhsOrdinal == ID.DirectedInfinity && rhsExpr.isDirectedInfinity()) {
+        if (isNumber()) {
+          return -1;
+        }
         if (!isDirectedInfinity()) {
           return 1;
         }
@@ -1735,6 +1738,17 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return AST.newInstance(intialCapacity, this, index);
   }
 
+  @Override
+  public int count(Predicate<? super IExpr> predicate, int fromIndex) {
+    int counter = 0;
+    for (int i = fromIndex; i < size(); i++) {
+      if (predicate.test(getRule(i))) {
+        counter++;
+      }
+    }
+    return counter;
+  }
+
   /** {@inheritDoc} */
   @Override
   public int depth() {
@@ -1816,6 +1830,27 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     // return forAll((x, i) -> x.equals(list.get(i)), 0);
     // }
     return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean equalsArgs(final IExpr that, int startPosition, int endPosition) {
+    if (this == that) {
+      return true;
+    }
+    if (!(that instanceof IAST)) {
+      return false;
+    }
+    IAST other = (IAST) that;
+    if (size() != other.size()) {
+      return false;
+    }
+    for (int i = startPosition; i < endPosition; i++) {
+      if (!getRule(i).equals(other.getRule(i))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /** {@inheritDoc} */
@@ -3216,6 +3251,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public final boolean isEmpty() {
     return size() == 1;
+  }
+
+  @Override
+  public final boolean isNotEmpty() {
+    return size() >= 1;
   }
 
   /** {@inheritDoc} */

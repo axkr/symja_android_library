@@ -28,26 +28,26 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.exception.sympy.ValueError;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ComplexNum;
+import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.Pair;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.BDDExpr;
-import org.matheclipse.core.expression.sympy.DefaultDict;
-import org.matheclipse.core.expression.sympy.Iterables;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.core.sympy.exception.ValueError;
+import org.matheclipse.core.sympy.utilities.Iterables;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -713,6 +713,31 @@ public interface IExpr
   @Override
   default IExpr[] egcd(IExpr b) {
     throw new UnsupportedOperationException(toString());
+  }
+
+  /**
+   * Check if this expression and that expression are both {@link IAST}s with the same number of
+   * arguments, where all arguments from position <code>1</code> to the end position are equals each
+   * other.
+   * 
+   * @param expr
+   * @return
+   */
+  default boolean equalsArgs(final IExpr that) {
+    return equalsArgs(that, 1, size());
+  }
+
+  /**
+   * Check if this expression and that expression are both {@link IAST}s with the same number of
+   * arguments, where all arguments are equals each other.
+   * 
+   * @param expr
+   * @param startPosition (inclusive)
+   * @param endPosition (exclusive)
+   * @return
+   */
+  default boolean equalsArgs(final IExpr that, int startPosition, int endPosition) {
+    return false;
   }
 
   /**
@@ -1946,6 +1971,25 @@ public interface IExpr
     return false;
   }
 
+
+  /**
+   * Test if this expression is an {@link IAST} and contains no argument
+   *
+   * @return
+   */
+  default public boolean isEmpty() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is an {@link IAST} and contains at least 1 argument
+   *
+   * @return
+   */
+  default public boolean isNotEmpty() {
+    return false;
+  }
+
   /**
    * Test if this expression is an empty list (i.e. a list <code>{}</code>)
    *
@@ -2821,6 +2865,15 @@ public interface IExpr
    */
   default boolean isNumber() {
     return false;
+  }
+
+  /**
+   * Test if this expression is a number or +/- Infinity.
+   *
+   * @return
+   */
+  default boolean isNumberOrInfinity() {
+    return isNumber();
   }
 
   /**
@@ -5356,6 +5409,17 @@ public interface IExpr
     return F.pair(this, F.C1);
   }
 
+  /**
+   * Return the pair <code>{c, Plus(args)}</code> where this is written as an
+   * <code>Plus(...)</code>, <code>a</code>. <code>c</code> should be a Rational added to any terms
+   * of the <code>Plus(...)</code that are independent of deps. args should be a tuple of all other
+   * terms of ``a``; args is empty if self is a Number or if self is independent of deps (when
+   * given). This should be used when you do not know if self is an Add or not but you want to treat
+   * self as an Add or if you want to process the individual arguments of the tail of self as an
+   * Add.
+   * 
+   * @return
+   */
   default Pair asCoeffAdd() {
     if (isPlus()) {
       Pair asCoeffAdd = first().asCoeffAdd();
@@ -5363,28 +5427,27 @@ public interface IExpr
       if (!coeff.isZero()) {
         IAST notrat = (IAST) asCoeffAdd.arg2();
         IASTMutable list2 = ((IAST) this).removeAtCopy(1);
-        return F.pair(coeff, join(S.List, notrat, list2));
+        return F.pair(coeff, join(S.Plus, notrat, list2));
       }
-      return F.pair(F.C0, ((IAST) this).setAtCopy(0, S.List));
+      return F.pair(F.C0, this); // ((IAST) this).setAtCopy(0, S.Plus));
     }
-    return F.pair(F.C0, F.List(this));
+    return F.pair(F.C0, F.Plus(this));
   }
 
   default Pair asCoeffAdd(ISymbol x) {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2076
 
     if (!has(x)) {
-      return F.pair(this, F.CEmptyList);
+      return F.pair(this, F.Plus());
     }
     if (isPlus()) {
       IAST plusAST = (IAST) this;
       IASTAppendable[] filter = plusAST.filter(arg -> arg.has(x));
       IASTAppendable l1 = filter[0];
       IASTAppendable l2 = filter[1];
-      l1.set(0, S.List);
       return F.pair(l2.oneIdentity0(), l1);
     }
-    return F.pair(F.C0, F.List(this));
+    return F.pair(F.C0, F.Plus(this));
   }
 
   default Pair asCoeffmul() {
@@ -5495,7 +5558,7 @@ public interface IExpr
         }
         return F.pair(F.CN1, negExpr);
       }
-      return F.pair(F.C1, ((IAST) this).setAtCopy(0, S.List));
+      // return F.pair(F.C1, ((IAST) this).setAtCopy(0, S.List));
     }
     return F.pair(F.C1, this);
   }
@@ -5579,5 +5642,6 @@ public interface IExpr
     }
     return this;
   }
+
 
 }

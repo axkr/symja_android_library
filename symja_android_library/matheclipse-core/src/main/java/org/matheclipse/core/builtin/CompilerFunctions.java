@@ -338,11 +338,11 @@ public class CompilerFunctions {
           StringBuilder subMethods = new StringBuilder();
           for (int i = 1; i < f.size() - 1; i++) {
             expressions = new StringBuilder();
-            fFactory.convert(expressions, subMethods, f.get(i), true);
+            fFactory.convert(expressions, subMethods, f.get(i), false, true);
             methods.append(expressions.toString() + ";\n");
           }
           expressions = new StringBuilder();
-          fFactory.convert(expressions, subMethods, f.last(), true);
+          fFactory.convert(expressions, subMethods, f.last(), false, true);
           methods.append("return " + expressions.toString() + ";\n");
           tryEnd(methods);
           methods.append("}\n\n");
@@ -414,7 +414,7 @@ public class CompilerFunctions {
         }
 
         parentBuffer.append("IExpr " + variable + " = ");
-        fFactory.convert(parentBuffer, methods, f.arg2(), true);
+        fFactory.convert(parentBuffer, methods, f.arg2(), true, true);
         // parentBuffer.append(")");
         return true;
       }
@@ -441,17 +441,17 @@ public class CompilerFunctions {
           methods.append("public IExpr ifExpression" + m + "() {\n");
           StringBuilder expression = new StringBuilder();
           StringBuilder subMethods = new StringBuilder();
-          fFactory.convert(expression, subMethods, f.arg1(), true);
+          fFactory.convert(expression, subMethods, f.arg1(), false, true);
           methods.append("if(engine.evalTrue(" + expression.toString() + ")){\n");
           expression = new StringBuilder();
-          fFactory.convert(expression, subMethods, f.arg2(), true);
+          fFactory.convert(expression, subMethods, f.arg2(), false, true);
           methods.append("return ");
           methods.append(expression);
           methods.append(";\n");
           if (f.size() == 4) {
             methods.append("} else {\n");
             expression = new StringBuilder();
-            fFactory.convert(expression, subMethods, f.arg3(), true);
+            fFactory.convert(expression, subMethods, f.arg3(), false, true);
             methods.append("return ");
             methods.append(expression);
             methods.append(";\n");
@@ -508,13 +508,13 @@ public class CompilerFunctions {
             localVariables.add(arg.toString());
             methods.append("vars.put(\"" + symbolName + "\"," + symbolName + ");\n");
             expressions = new StringBuilder();
-            fFactory.convert(expressions, methods, arg.second(), false);
+            fFactory.convert(expressions, methods, arg.second(), true, false);
             methods.append("F.eval(F.Set(" + symbolName + "," + expressions.toString() + "));\n");
           }
 
           expressions = new StringBuilder();
           StringBuilder subMethods = new StringBuilder();
-          fFactory.convert(expressions, subMethods, f.arg2(), true);
+          fFactory.convert(expressions, subMethods, f.arg2(), false, true);
           methods.append("return " + expressions.toString() + ";\n");
           // tryEnd
           methods.append("} finally {top = oldTop; vars = oldVars;}\n");
@@ -571,16 +571,21 @@ public class CompilerFunctions {
      * @param buf
      * @param methods
      * @param expression
+     * @param symbolic TODO
      * @param addEval if <code>true</code> wrap the expression with a <code>F.eval( ... )</code>
      *        statement.
      */
     public void convert(StringBuilder buf, StringBuilder methods, IExpr expression,
-        boolean addEval) {
+        boolean symbolic, boolean addEval) {
       if (expression.isNumericFunction(numericVariables)) {
-        int type = convertNumeric(buf, expression, defaultNumericType);
-        if (type > 0) {
-          return;
+        if (!symbolic) {
+          int type = convertNumeric(buf, expression, defaultNumericType);
+          if (type > 0) {
+            return;
+          }
         }
+        convertSymbolic(buf, expression);
+        return;
       }
 
       if (expression.isAST()) {
@@ -899,14 +904,12 @@ public class CompilerFunctions {
                 .append("double " + variable + "d = engine.evalDouble(" + variable + ");\n");
             break;
           case VECTOR:
-            variablesBuf
-                .append(
-                    "double[] " + variable + "d = engine.evalDoubleVector(" + variable + ");\n");
+            variablesBuf.append(
+                "double[] " + variable + "d = engine.evalDoubleVector(" + variable + ");\n");
             break;
           case MATRIX:
-            variablesBuf
-                .append(
-                    "double[][] " + variable + "d = engine.evalDoubleMatrix(" + variable + ");\n");
+            variablesBuf.append(
+                "double[][] " + variable + "d = engine.evalDoubleMatrix(" + variable + ");\n");
             break;
         }
         symbolicVariables.put(variable, variable.toString());
@@ -937,10 +940,12 @@ public class CompilerFunctions {
         variablesBuf.append("IExpr " + variable + " = ast.get(" + i + ");\n");
         switch (rank) {
           case SCALAR:
-            variablesBuf.append("Complex " + variable + "c = engine.evalComplex(" + variable + ");\n");
+            variablesBuf
+                .append("Complex " + variable + "c = engine.evalComplex(" + variable + ");\n");
             break;
           case VECTOR:
-            variablesBuf.append("Complex[] " + variable + "c = engine.evalComplexVector(" + variable + ");\n");
+            variablesBuf.append(
+                "Complex[] " + variable + "c = engine.evalComplexVector(" + variable + ");\n");
             break;
           case MATRIX:
             variablesBuf.append(
@@ -987,7 +992,7 @@ public class CompilerFunctions {
       StringBuilder variablesBuf, int argsSize) {
     StringBuilder expressionBuf = new StringBuilder();
     StringBuilder methodsBuf = new StringBuilder();
-    cf.convert(expressionBuf, methodsBuf, expression, true);
+    cf.convert(expressionBuf, methodsBuf, expression, false, true);
     expressionBuf.append(";\n");
     String source = JAVA_SOURCE_CODE.replace("{$variables}", variablesBuf.toString());
     source = source.replace("{$methods}", methodsBuf.toString());

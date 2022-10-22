@@ -44,8 +44,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.exception.sympy.PoleError;
-import org.matheclipse.core.eval.exception.sympy.ValueError;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -99,6 +97,8 @@ import org.matheclipse.core.reflection.system.rules.SincRules;
 import org.matheclipse.core.reflection.system.rules.SinhRules;
 import org.matheclipse.core.reflection.system.rules.TanRules;
 import org.matheclipse.core.reflection.system.rules.TanhRules;
+import org.matheclipse.core.sympy.exception.PoleError;
+import org.matheclipse.core.sympy.exception.ValueError;
 import com.google.common.math.DoubleMath;
 
 public class ExpTrigsFunctions {
@@ -2481,6 +2481,7 @@ public class ExpTrigsFunctions {
       // STEP 5
       if (c.isNegative() && !z.im().isZero()) {
         int i = 0;
+        IExpr term = F.NIL;
         while (i < 5) {
           // term in enumerate(z.lseries(t)):
           // if not term.is_real or i == 5:
@@ -2490,7 +2491,7 @@ public class ExpTrigsFunctions {
         if (i < 5) {
           // coeff, _ = term.as_coeff_exponent(t)
           // res += -2*I*S.Pi*Heaviside(-im(coeff), 0)
-          IExpr coeff = F.C1;// , _ = term.as_coeff_exponent(t)
+          IExpr coeff = term.asCoeffExponent(t).first();
           res.append(F.Times(F.CN2, F.CI, S.Pi, F.heaviside(coeff.im().negate(), F.C0, engine)));
         }
       }
