@@ -1,4 +1,4 @@
-package org.matheclipse.core.expression.sympy;
+package org.matheclipse.core.sympy.core;
 
 import java.util.function.Function;
 import org.matheclipse.core.expression.F;

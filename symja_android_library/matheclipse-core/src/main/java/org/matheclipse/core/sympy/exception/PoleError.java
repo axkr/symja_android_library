@@ -1,4 +1,4 @@
-package org.matheclipse.core.eval.exception.sympy;
+package org.matheclipse.core.sympy.exception;
 
 import org.matheclipse.core.eval.exception.FlowControlException;
 
