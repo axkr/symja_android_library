@@ -58,6 +58,9 @@ public class S {
 
   public final static IBuiltInSymbol $Cancel = F.initFinalSymbol("$Cancel", ID.$Cancel);
 
+  public final static IBuiltInSymbol $CharacterEncoding =
+      F.initFinalSymbol("$CharacterEncoding", ID.$CharacterEncoding);
+
   public final static IBuiltInSymbol $Context = F.initFinalSymbol("$Context", ID.$Context);
 
   public final static IBuiltInSymbol $ContextPath =
@@ -7274,6 +7277,8 @@ public class S {
 
   public final static IBuiltInSymbol PadeApproximant =
       F.initFinalSymbol("PadeApproximant", ID.PadeApproximant);
+
+  public final static IBuiltInSymbol ParallelMap = F.initFinalSymbol("ParallelMap", ID.ParallelMap);
 
   /**
    * ParametricPlot({function1, function2}, {t, tMin, tMax}) - generate a JavaScript control for the

@@ -78,6 +78,7 @@ public class StructureFunctions {
       S.Order.setEvaluator(new Order());
       S.OrderedQ.setEvaluator(new OrderedQ());
       S.Operate.setEvaluator(new Operate());
+      S.ParallelMap.setEvaluator(new ParallelMap());
       S.PatternOrder.setEvaluator(new PatternOrder());
       S.Quit.setEvaluator(new QuitExit());
       S.Scan.setEvaluator(new Scan());
@@ -1567,6 +1568,44 @@ public class StructureFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
+    }
+  }
+
+  private static class ParallelMap extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      int lastIndex = ast.argSize();
+      boolean heads = false;
+      final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
+      if (options.isInvalidPosition(3)) {
+        return options.printNonopt(ast, 3, engine);
+      }
+      IExpr option = options.getOption(S.Heads);
+      if (option.isPresent()) {
+        lastIndex--;
+        heads = option.isTrue();
+      }
+
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (ast.isAST2()) {
+        if (arg2.isSparseArray()) {
+          return ((ISparseArray) arg2).map(x -> F.unaryAST1(arg1, x));
+        }
+      }
+      VisitorLevelSpecification level;
+      if (lastIndex == 3) {
+        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), ast.get(lastIndex), heads,
+            engine);
+      } else {
+        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, heads);
+      }
+      return arg2.accept(level).orElse(arg2);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_4_2;
     }
   }
 
