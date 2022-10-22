@@ -44,11 +44,11 @@ import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.Sequence;
 import org.matheclipse.core.expression.ASTRealVector;
+import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DispatchExpr;
-import org.matheclipse.core.expression.sympy.DefaultDict;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
@@ -3340,7 +3340,7 @@ public final class ListFunctions {
         IASTAppendable result = F.ListAlloc(arg1AST.size());
         for (int i = 1; i < arg1AST.size(); i++) {
           IExpr arg = arg1AST.get(i);
-          IASTAppendable subResult = defaultdict.get(arg);
+          IASTAppendable subResult = defaultdict.getValue(arg);
           if (subResult.isEmpty()) {
             result.append(subResult);
           }
@@ -3443,7 +3443,7 @@ public final class ListFunctions {
       for (int i = 1; i < list1.size(); i++) {
         IExpr list1Element = list1.get(i);
         IExpr temp = engine.evaluate(F.unaryAST1(arg2, list1Element));
-        IASTAppendable subResult = defaultdict.get(temp);
+        IASTAppendable subResult = defaultdict.getValue(temp);
         if (subResult.isEmpty()) {
           result.append(subResult);
         }

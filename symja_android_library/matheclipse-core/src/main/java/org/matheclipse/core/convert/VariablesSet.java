@@ -441,6 +441,10 @@ public class VariablesSet {
     return list;
   }
 
+  public Set<IExpr> getVariablesSet() {
+    return fVariablesSet;
+  }
+
   /**
    * Transform the set of variables into an <code>IAST</code> list of ordered variables.
    *

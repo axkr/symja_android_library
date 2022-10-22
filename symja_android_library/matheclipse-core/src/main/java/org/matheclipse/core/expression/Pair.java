@@ -4,13 +4,14 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPair;
 
 /**
  * A pair of values extnding the {@link IAST} interface. Create pairs with
  * {@link F#pair(IExpr, IExpr)} method.
  *
  */
-public class Pair extends B2 {
+public class Pair extends B2 implements IPair {
 
   public Pair() {
     super();
