@@ -596,6 +596,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     /** {@inheritDoc} */
     @Override
+    public boolean isNIL() {
+      return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public boolean isNonEmptyList() {
       return false;
     }
@@ -2215,7 +2221,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       if (predicate.test(arg)) {
         continue;
       }
-      if (!result.isPresent()) {
+      if (result.isNIL()) {
         result = copyHead(argSize());
       }
       result.appendRule(arg);
@@ -2257,7 +2263,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     IExpr value = startValue;
     for (int i = start; i < size(); i++) {
       value = function.apply(value, get(i));
-      if (!value.isPresent()) {
+      if (value.isNIL()) {
         return F.NIL;
       }
     }
@@ -2272,7 +2278,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     int end = argSize();
     for (int i = end; i >= start; i--) {
       value = function.apply(value, get(i));
-      if (!value.isPresent()) {
+      if (value.isNIL()) {
         return F.NIL;
       }
     }
@@ -5347,7 +5353,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
    */
   @Override
   public IASTAppendable reverse(IASTAppendable resultList) {
-    if (!resultList.isPresent()) {
+    if (resultList.isNIL()) {
       resultList = F.ListAlloc(argSize());
     }
     for (int i = argSize(); i >= 1; i--) {

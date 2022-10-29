@@ -33,6 +33,7 @@ import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
+import org.matheclipse.core.expression.AbstractAST.NILPointer;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
@@ -47,6 +48,7 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.sympy.exception.ValueError;
+import org.matheclipse.core.sympy.simplify.Powsimp;
 import org.matheclipse.core.sympy.utilities.Iterables;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -1051,7 +1053,8 @@ public interface IExpr
   }
 
   /**
-   * Evaluate Greater, if both arguments are real numbers
+   * Evaluate {@link S#Greater} directly if both arguments are real numbers, otherwise evaluate the
+   * built-in <code>Greater</code> function.
    *
    * @param a1
    * @return
@@ -1065,8 +1068,9 @@ public interface IExpr
   }
 
   /**
-   * Evaluate GreaterEqual, if both arguments are real numbers
-   *
+   * Evaluate {@link S#GreaterEqual} directly if both arguments are real numbers, otherwise evaluate
+   * the built-in <code>GreaterEqual</code> function.
+   * 
    * @param a1
    * @return
    */
@@ -3350,6 +3354,19 @@ public interface IExpr
   }
 
   /**
+   * Checks if the expression equals the {@link F#NIL} <i>Not In List</i> expression. Often
+   * {@link F#NIL} is returned for a functions expression which couldn't be evaluated. {@link F#NIL}
+   * is used to define a value similar to <code>null</code>. Return {@code true} if this expression
+   * equals {@link F#NIL}, otherwise {@code false}.
+   *
+   * @return {@code true} if the expression equals {@link F#NIL}, otherwise {@code false}.
+   * @see java.util.Optional#isPresent()
+   */
+  default boolean isNIL() {
+    return false;
+  }
+
+  /**
    * Return {@code true} if this expression unequals <code>F.NIL</code>, otherwise {@code false}.
    * This method is similar to <code>java.util.Optional#isPresent()</code>.
    *
@@ -3942,8 +3959,9 @@ public interface IExpr
   }
 
   /**
-   * Evaluate Less, if both arguments are real numbers
-   *
+   * Evaluate {@link S#Less} directly if both arguments are real numbers, otherwise evaluate the
+   * built-in <code>Less</code> function.
+   * 
    * @param a1
    * @return
    */
@@ -3956,7 +3974,8 @@ public interface IExpr
   }
 
   /**
-   * Evaluate LessEqual, if both arguments are real numbers
+   * Evaluate {@link S#LessEqual} directly if both arguments are real numbers, otherwise evaluate
+   * the built-in <code>LessEqual</code> function.
    *
    * @param a1
    * @return
@@ -5358,7 +5377,11 @@ public interface IExpr
     if (isFree(x)) {
       return this;
     }
-    return evalAsLeadingTerm(x, logx, cdir);
+    IExpr obj = evalAsLeadingTerm(x, logx, cdir);
+    if (obj.isPresent()) {
+      return Powsimp.powsimp(obj, true, "exp");
+    }
+    throw new UnsupportedOperationException("asLeadingTerm(" + this + "," + x);
   }
 
   default IExpr evalAsLeadingTerm(ISymbol x, IExpr logx, int cdir) {
@@ -5372,7 +5395,7 @@ public interface IExpr
       }
     }
 
-    return F.NIL;
+    return this;
   }
 
   default Pair asBaseExp() {
@@ -5397,7 +5420,7 @@ public interface IExpr
         Pair list = m.asBaseExp();
         IExpr b = list.first();
         IExpr e = list.second();
-        if (!e1.isPresent()) {
+        if (e1.isNIL()) {
           e1 = e;
         } else if (!e.equals(e1)) {
           return F.pair(this, F.C1);
@@ -5563,7 +5586,7 @@ public interface IExpr
     return F.pair(F.C1, this);
   }
 
-  default Pair asCoeffExponent(ISymbol x) {
+  default IPair asCoeffExponent(ISymbol x) {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L3479
     // ``c*x**e -> c,e`` where x can be any symbolic expression.
     EvalEngine engine = EvalEngine.get();
@@ -5598,28 +5621,33 @@ public interface IExpr
     return dict;
   }
 
+
+  default IPair leadTerm(ISymbol x) {
+    return leadTerm(x, F.NIL, 0);
+  }
+
   /**
    * Returns the leading term <code>a*x**b</code> as a tuple (a, b).
    * 
    * @return
    */
-  default IAST leadTerm(ISymbol x, IExpr logx, int cdir) {
+  default IPair leadTerm(ISymbol x, IExpr logx, int cdir) {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L3491
-
     IExpr l = asLeadingTerm(x, logx, cdir);
+
     ISymbol d = F.Dummy("logx");
     if (l.has(F.Log(x))) {
       l = l.subs(F.Log(x), d);
     }
-    IAST coeffExp = l.asCoeffExponent(x);
-    IExpr c = coeffExp.arg1();
-    IExpr e = coeffExp.arg2();
+    IPair coeffExp = l.asCoeffExponent(x);
+    IExpr c = coeffExp.first();
+    IExpr e = coeffExp.second();
     if (!c.isFree(x)) {
       throw new ValueError(
           "cannot compute leadterm(%s, %s). The coefficient should have been free of %s");
     }
     c = c.subs(d, F.Log(x));
-    return F.List(c, e);
+    return F.pair(c, e);
   }
 
   default IExpr cancel() {
@@ -5642,6 +5670,5 @@ public interface IExpr
     }
     return this;
   }
-
 
 }
