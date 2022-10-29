@@ -564,12 +564,6 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      // if (ast.isAST1()) {
-      // ast = F.operatorForm1Append(ast);
-      // if (!ast.isPresent()) {
-      // return F.NIL;
-      // }
-      // }
       IExpr arg1 = engine.evaluate(ast.arg1());
       IExpr arg2 = engine.evaluate(ast.arg2());
       if (arg1.isAST()) {
@@ -1262,12 +1256,6 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      // if (ast.isAST1()) {
-      // ast = F.operatorForm2Prepend(ast);
-      // if (!ast.isPresent()) {
-      // return F.NIL;
-      // }
-      // }
       if (ast.arg2().isAST()) {
         int level = 1;
         if (ast.isAST3()) {
@@ -1908,12 +1896,6 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      // if (ast.isAST1()) {
-      // ast = F.operatorForm1Append(ast);
-      // if (!ast.isPresent()) {
-      // return F.NIL;
-      // }
-      // }
       if (ast.isAST2()) {
         try {
           if (ast.arg1().isDataset()) {

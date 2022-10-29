@@ -470,7 +470,7 @@ public class Algebra {
       IAST variableList = null;
       if (ast.isAST2()) {
         variableList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
-        if (!variableList.isPresent()) {
+        if (variableList.isNIL()) {
           return F.NIL;
         }
       } else {
@@ -1684,7 +1684,7 @@ public class Algebra {
           if (arg.isAST()) {
             IExpr temp = expandAST((IAST) arg);
             if (temp.isPresent()) {
-              if (!result.isPresent()) {
+              if (result.isNIL()) {
                 result = ast.copyUntil(ast.size(), i);
               }
               result.append(temp);
@@ -1826,14 +1826,14 @@ public class Algebra {
           if (!isPatternFree(arg)) {
             if (arg.isPower()) {
               arg = expandPowerNIL((IAST) arg);
-              if (!arg.isPresent()) {
+              if (arg.isNIL()) {
                 arg = timesAST.get(i);
               } else {
                 evaled = true;
               }
             } else if (arg.isPlus()) {
               arg = expandPlus((IAST) arg);
-              if (!arg.isPresent()) {
+              if (arg.isNIL()) {
                 arg = timesAST.get(i);
               } else {
                 evaled = true;
@@ -2515,7 +2515,7 @@ public class Algebra {
       arrayList.addAll(varSet);
       IExpr factorization =
           factorComplex(subsPolynomial, arrayList, S.Times, gaussianIntegers, engine);
-      if (!factorization.isPresent() || factorization.size() == 2) {
+      if (factorization.isNIL() || factorization.size() == 2) {
         VariablesSet newVariables = new VariablesSet(subsPolynomial);
         if (newVariables.size() == 1) {
           IAST resultList = RootsFunctions.findRoots(subsPolynomial, newVariables.getVarList());
@@ -2574,7 +2574,7 @@ public class Algebra {
           IExpr replaceBackward =
               substitutions.replaceDenominatorBackwardLCM((ISymbol) varList.arg1(), factor);
           if (replaceBackward.isPresent()) {
-            if (!resultList.isPresent()) {
+            if (resultList.isNIL()) {
               resultList = F.ListAlloc(listOfRules.argSize());
             }
             resultList.append(replaceBackward);
@@ -2938,7 +2938,7 @@ public class Algebra {
           variableList = eVar.getVarList();
         }
       }
-      if (!variableList.isPresent() || variableList.size() != 2) {
+      if (variableList.isNIL() || variableList.size() != 2) {
         // FactorTerms only possible for univariate polynomials
         return F.NIL;
       }
@@ -3034,7 +3034,7 @@ public class Algebra {
         }
         variableList = eVar.getVarList();
       }
-      if (!variableList.isPresent() || variableList.size() != 2) {
+      if (variableList.isNIL() || variableList.size() != 2) {
         // FactorTerms only possible for univariate polynomials
         return F.NIL;
       }
@@ -3777,7 +3777,7 @@ public class Algebra {
           variable = ast.arg3();
         } else {
           variable = Validate.checkIsVariable(ast, 3, engine);
-          if (!variable.isPresent()) {
+          if (variable.isNIL()) {
             return F.NIL;
           }
         }
@@ -3921,7 +3921,7 @@ public class Algebra {
         variable = ast.arg3();
       } else {
         variable = Validate.checkIsVariable(ast, 3, engine);
-        if (!variable.isPresent()) {
+        if (variable.isNIL()) {
           return F.NIL;
         }
       }
@@ -4056,7 +4056,7 @@ public class Algebra {
         variable = ast.arg3();
       } else {
         variable = Validate.checkIsVariable(ast, 3, engine);
-        if (!variable.isPresent()) {
+        if (variable.isNIL()) {
           return F.NIL;
         }
       }
@@ -4467,7 +4467,7 @@ public class Algebra {
         if (arg.isAST()) {
           final IExpr temp = togetherNull((IAST) arg, engine);
           if (temp.isPresent()) {
-            if (!result.isPresent()) {
+            if (result.isNIL()) {
               result = ast.copy();
             }
             result.set(i, temp);
@@ -4488,7 +4488,7 @@ public class Algebra {
     private static IExpr togetherNull(IAST ast, EvalEngine engine) {
       boolean evaled = false;
       IExpr temp = expandAll(ast, null, true, false, true, engine);
-      if (!temp.isPresent()) {
+      if (temp.isNIL()) {
         temp = ast;
       } else {
         evaled = true;
@@ -4649,7 +4649,7 @@ public class Algebra {
       if (ast.arg1().isAST()) {
         IExpr temp = togetherNull((IAST) ast.arg1(), engine);
         if (temp.isPresent()) {
-          if (!result.isPresent()) {
+          if (result.isNIL()) {
             result = ast.copy();
           }
           if (ast.arg2().isNegative() && temp.isTimes()) {
@@ -5033,7 +5033,7 @@ public class Algebra {
         IExpr t =
             expandAll((IAST) x, patt, expandNegativePowers, distributePlus, factorTerms, engine);
         if (t.isPresent()) {
-          if (!result[0].isPresent()) {
+          if (result[0].isNIL()) {
             int size = localASTSize;
             if (t.isAST()) {
               size += ((IAST) t).size();
@@ -5048,7 +5048,7 @@ public class Algebra {
       result[0].ifAppendable(r -> r.append(x));
     });
 
-    if (!result[0].isPresent()) {
+    if (result[0].isNIL()) {
       temp = expand(localAST, patt, expandNegativePowers, distributePlus, true, factorTerms);
       if (temp.isPresent()) {
         ExpandAll.setAllExpanded(temp, expandNegativePowers, distributePlus);
@@ -5759,7 +5759,7 @@ public class Algebra {
     }
     return ast;
     // IExpr temp = expandAll(ast, null, true, false, engine);
-    // if (!temp.isPresent()) {
+    // if (temp.isNIL()) {
     // temp = ast;
     // }
     // if (temp.isAST()) {

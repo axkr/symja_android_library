@@ -1658,7 +1658,7 @@ public class IntegerFunctions {
               return expr;
             }
             k = temp;
-            if (!res.isPresent()) {
+            if (res.isNIL()) {
               res = ast.setAtCopy(2, temp);
             } else {
               res.set(2, temp);

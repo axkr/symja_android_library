@@ -124,6 +124,8 @@ import org.matheclipse.core.reflection.system.rules.AbsRules;
 import org.matheclipse.core.reflection.system.rules.ConjugateRules;
 import org.matheclipse.core.reflection.system.rules.GammaRules;
 import org.matheclipse.core.reflection.system.rules.PowerRules;
+import org.matheclipse.core.sympy.core.Expr;
+import org.matheclipse.core.sympy.series.Order;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.ParserConfig;
@@ -466,7 +468,7 @@ public final class Arithmetic {
           IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
           if (eval instanceof ISetEvaluator) {
             IExpr temp = engine.evaluateNIL(leftHandSide);
-            if (!temp.isPresent()) {
+            if (temp.isNIL()) {
               return F.NIL;
             }
             IExpr rhs = engine.evaluate(F.binaryAST2(getArithmeticSymbol(), temp, ast.arg2()));
@@ -1217,7 +1219,7 @@ public final class Arithmetic {
           temp = conjugate(clone.get(i));
           if (temp.isPresent()) {
             clone.remove(i);
-            if (!result.isPresent()) {
+            if (result.isNIL()) {
               result = ((IAST) arg1).copyHead();
             }
             result.append(temp);
@@ -2881,7 +2883,7 @@ public final class Arithmetic {
     }
 
     private static IASTAppendable createPiecewise(IASTAppendable piecewiseAST, IAST resultList) {
-      if (!piecewiseAST.isPresent()) {
+      if (piecewiseAST.isNIL()) {
         piecewiseAST = F.ast(S.Piecewise);
         piecewiseAST.append(resultList);
       }
@@ -2890,7 +2892,7 @@ public final class Arithmetic {
 
     private static IASTAppendable appendPiecewise(IASTAppendable list, IExpr function,
         IExpr predicate, int matrixSize) {
-      if (!list.isPresent()) {
+      if (list.isNIL()) {
         list = F.ListAlloc(matrixSize);
       }
       list.append(F.list(function, predicate));
@@ -3217,6 +3219,91 @@ public final class Arithmetic {
       return evaluate(ast, engine);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evalAsLeadingTerm(IAST self, ISymbol x, IExpr logx, int cdir) {
+      IExpr o = Expr.getO(self);
+      if (o.isNIL()) {
+        o = F.O(F.C0);
+      }
+      IExpr old = Expr.removeO(self);
+      if (old.has(S.Piecewise)) {
+        old = S.PiecewiseExpand.of(old);
+      }
+      // This expansion is the last part of expand_log. expand_log also calls
+      // expand_mul with factor=True, which would be more expensive
+      if (self.exists(a -> a.isLog())) {
+        // TODO
+      }
+      IExpr expr = org.matheclipse.core.sympy.core.Function.expandMul(old);
+
+      if (!expr.isPlus()) {
+        return expr.asLeadingTerm(x, logx, cdir);
+      }
+      IAST plusAST = (IAST) expr;
+      // infinite = [t for t in expr.args if t.is_infinite]
+      IAST infinite = plusAST.select(a -> a.isDirectedInfinity());
+
+      IExpr _logx = logx.orElse(F.Dummy("logx"));
+      IASTAppendable leadingTerms = F.PlusAlloc(plusAST.argSize());
+      for (int i = 1; i < plusAST.size(); i++) {
+        IExpr t = plusAST.get(i);
+        leadingTerms.append(t.asLeadingTerm(x, _logx, cdir));
+      }
+      IExpr min = F.O(F.C0);
+      IExpr newExpr = F.C0;
+      try {
+        for (int i = 1; i < leadingTerms.size(); i++) {
+          IExpr term = leadingTerms.get(i);
+          IExpr order = Order.order(term, x);
+          if (min.isPresent() && !((IAST) min).contains(order)) {
+            min = order;
+            newExpr = term;
+          } else if (((IAST) min).contains(order)) {
+            newExpr = newExpr.plus(term);
+          }
+        }
+      } catch (ClassCastException e) {
+        return expr;
+      }
+      if (logx.isNIL()) {
+        newExpr = newExpr.subs(_logx, F.Log(x));
+      }
+
+      boolean isZero = newExpr.isZero();
+      if (!isZero) {
+        newExpr = newExpr.trigsimp().cancel();
+        isZero = newExpr.isZero();
+      }
+      if (isZero) {
+        // simple leading term analysis gave us cancelled terms but we have to send
+        // back a term, so compute the leading term (via series)
+        IExpr n0;
+        try {
+          n0 = Expr.getN(min);
+        } catch (UnsupportedOperationException e) {
+          n0 = F.C1;
+        }
+
+        if (n0.has(S.Symbol)) {
+          n0 = F.C1;
+        }
+        IExpr res = F.O(F.C1);
+        IExpr incr = F.C1;
+        while (res.isAST(S.O, 2)) {
+          // TODO
+          // res = old._eval_nseries(x, n=n0+incr, logx=logx,
+          // cdir=cdir).cancel().powsimp().trigsimp()
+          incr = incr.times(F.C2);
+        }
+        return res.asLeadingTerm(x, logx, cdir);
+      }
+      if (newExpr.isIndeterminate()) {
+        return F.eval(F.Plus(infinite, o));
+      }
+      return newExpr;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT
@@ -3307,7 +3394,7 @@ public final class Arithmetic {
     // }catch(ArgumentTypeError ate) {
     // return expr;
     // }
-    // if (!log.isPresent()) {
+    // if (log.isNIL()) {
     // new_expr = new_expr.subs(_logx, log(x));
     // }
     // boolean is_zero = new_expr.isZero();
@@ -4626,7 +4713,7 @@ public final class Arithmetic {
       for (int i = 1; i < timesAST.size(); i++) {
         final IExpr arg = timesAST.get(i);
         if (arg.isPower() && arg.exponent().isReal()) {
-          if (!resultAST.isPresent()) {
+          if (resultAST.isNIL()) {
             resultAST = timesAST.copyAppendable();
             resultAST.map(resultAST, x -> F.Power(x, arg2));
           }
@@ -4719,7 +4806,7 @@ public final class Arithmetic {
       for (int i = plus.argSize(); i > 0; i--) {
         final IExpr arg = plus.get(i);
         if (arg.isLog()) {
-          if (!multiplicationFactors.isPresent()) {
+          if (multiplicationFactors.isNIL()) {
             multiplicationFactors = F.TimesAlloc(8);
             plusClone = plus.copyAppendable();
           }
@@ -4729,7 +4816,7 @@ public final class Arithmetic {
             && arg.first().isReal()) {
           IAST times = (IAST) arg;
           IExpr logArgument = times.arg2().first();
-          if (!multiplicationFactors.isPresent()) {
+          if (multiplicationFactors.isNIL()) {
             multiplicationFactors = F.TimesAlloc(8);
             plusClone = plus.copyAppendable();
           }
@@ -5062,12 +5149,14 @@ public final class Arithmetic {
           IInteger numerator = (IInteger) numeratorExpr;
           IInteger denominator = (IInteger) denominatorExpr;
           if (denominator.isZero()) {
-            LOGGER.log(engine.getLogLevel(), "Division by zero expression: {}/{}", numerator,
-                denominator);
             if (numerator.isZero()) {
               // 0^0
+              // Indeterminate expression `1` encountered.
+              IOFunctions.printMessage(S.Divide, "indet", F.List(ast), engine);
               return S.Indeterminate;
             }
+            // Infinite expression `1` encountered.
+            IOFunctions.printMessage(S.Divide, "infy", F.List(ast), engine);
             return F.CComplexInfinity;
           }
           if (numerator.isZero()) {
@@ -6058,13 +6147,13 @@ public final class Arithmetic {
      *
      * @param noEvalExpression return this expression if no evaluation step was done
      * @param originalExpr the original expression which is used, if <code>
-     *     !noEvalExpression.isPresent()</code>
+     *     noEvalExpression.isNIL()</code>
      * @return the evaluated object or <code>noEvalExpression</code>, if the distribution of an
      *         integer factor isn't possible
      */
     private static IExpr distributeLeadingFactor(IExpr noEvalExpression, IAST originalExpr) {
       IExpr expr = noEvalExpression;
-      if (!expr.isPresent()) {
+      if (expr.isNIL()) {
         expr = originalExpr;
       }
       if (expr.isTimes() && expr.first().isInteger()) {
@@ -6116,7 +6205,7 @@ public final class Arithmetic {
               }
             }
             if (count > 0) {
-              if (!result.isPresent()) {
+              if (result.isNIL()) {
                 result = times.copyAppendable();
               }
               result.set(i, F.Power(arg.base(), F.Plus(F.ZZ(count), arg.exponent())));
@@ -6504,7 +6593,7 @@ public final class Arithmetic {
 
           IExpr binaryResult = binaryOperator(astTimes, tempArg1, astTimes.get(i), engine);
 
-          if (!binaryResult.isPresent()) {
+          if (binaryResult.isNIL()) {
 
             for (int j = i + 1; j < astTimes.size(); j++) {
               binaryResult = binaryOperator(astTimes, tempArg1, astTimes.get(j), engine);
@@ -6523,8 +6612,8 @@ public final class Arithmetic {
               }
             }
 
-            if (!binaryResult.isPresent()) {
-              if (!result.isPresent()) {
+            if (binaryResult.isNIL()) {
+              if (result.isNIL()) {
                 result = F.ast(sym, astTimes.size() - i + 1);
               }
               result.append(tempArg1);
@@ -6541,7 +6630,7 @@ public final class Arithmetic {
             tempArg1 = binaryResult;
 
             if (i == astTimes.argSize()) {
-              if (!result.isPresent()) {
+              if (result.isNIL()) {
                 result = F.ast(sym, astTimes.size() - i + 1);
               }
               result.append(tempArg1);
@@ -7014,6 +7103,14 @@ public final class Arithmetic {
     if (power0Arg1.equals(power1Arg1)) {
       // x^(a)*x^(b) => x ^(a+b)
       return F.Power(power0Arg1, power0Arg2.plus(power1Arg2));
+    }
+    if (power0Arg2.equals(power1Arg2) //
+        && (!power0Arg2.isInteger()) && (!power0Arg2.isMinusOne())
+        // && (!power0Arg2.isNegativeResult())
+        && (power0Arg1.isNumber() || power0Arg1.isRealConstant())//
+        && (power1Arg1.isNumber() || power1Arg1.isRealConstant())) {
+      // 2^(a+b)*E^(a+b) => (2*E)^(a+b)
+      return F.Power(power0Arg1.times(power1Arg1), power0Arg2);
     }
     return F.NIL;
   }

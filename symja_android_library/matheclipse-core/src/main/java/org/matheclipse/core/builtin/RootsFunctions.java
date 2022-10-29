@@ -210,7 +210,7 @@ public class RootsFunctions {
         variables = eVar.getVarList();
       } else {
         variables = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
-        if (!variables.isPresent()) {
+        if (variables.isNIL()) {
           return F.NIL;
         }
       }
@@ -902,7 +902,7 @@ public class RootsFunctions {
       // }
       IASTAppendable newResult = F.ListAlloc(8);
       IAST factorRational = Algebra.factorRational(polyRat, jas, S.List, null);
-      if (!factorRational.isPresent()) {
+      if (factorRational.isNIL()) {
         factorRational = F.Times(expr);
       }
       for (int i = 1; i < factorRational.size(); i++) {
@@ -921,7 +921,7 @@ public class RootsFunctions {
         } else {
           polyRat = jas.expr2JAS(temp, numericSolutions);
           IAST factorComplex = Algebra.factorRational(polyRat, jas, S.List, null);
-          if (!factorComplex.isPresent()) {
+          if (factorComplex.isNIL()) {
             factorComplex = F.Times(expr);
           }
           for (int k = 1; k < factorComplex.size(); k++) {
@@ -960,7 +960,7 @@ public class RootsFunctions {
         while (i < result.size()) {
           IExpr temp = denominator.replaceAll(F.Rule(variables.arg1(), result.get(i)));
           if (temp.isPresent() && engine.evaluate(temp).isZero()) {
-            if (!appendable.isPresent()) {
+            if (appendable.isNIL()) {
               appendable = result.removeAtClone(i);
               continue;
             }

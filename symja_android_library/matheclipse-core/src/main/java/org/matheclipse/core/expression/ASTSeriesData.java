@@ -8,7 +8,9 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.util.ArithmeticUtils;
+import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -76,7 +78,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     this(x, x0, nMin, nMin, truncate, denominator, new OpenIntToIExprHashMap<IExpr>());
   }
 
-  private ASTSeriesData(IExpr x, IExpr x0, int nMin, int nMax, int truncate, int denominator,
+  public ASTSeriesData(IExpr x, IExpr x0, int nMin, int nMax, int truncate, int denominator,
       OpenIntToIExprHashMap<IExpr> vals) {
     super();
     this.coefficientValues = vals;
@@ -510,13 +512,17 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    */
   @Override
   public ASTSeriesData inverse() {
-    ASTSeriesData reversion = reversion();
-    if (reversion != null) {
-      return reversion;
-    }
-
     ASTSeriesData result = new ASTSeriesData(x, x0, 0, truncate, denominator);
-    IExpr d = coefficient(0).inverse(); // may fail
+    final IExpr coefficient0 = coefficient(0);
+    if (coefficient0.isPossibleZero(true)) {
+      ASTSeriesData reversion = reversion();
+      if (reversion != null) {
+        return reversion;
+      }
+      // Infinite expression `1` encountered.
+      throw new ArgumentTypeException("infy", F.List(F.Power(coefficient0, F.CN1)));
+    }
+    IExpr d = coefficient0.inverse(); // may fail
     for (int i = 0; i < truncate; i++) {
       if (i == 0) {
         result.setCoeff(i, d);
@@ -534,11 +540,31 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return result;
   }
 
+  private IAST coeffBellSeq(int n) {
+    IASTAppendable coeffs = F.ListAlloc(n + 1);
+    for (int j = 1; j < n + 1; j++) {
+      IInteger factorial = NumberTheory.factorial(j);
+      IExpr bell_coeff = factorial.times(this.coefficient(j));
+      coeffs.append(bell_coeff);
+    }
+    return coeffs;
+  }
+
+  private IAST coeffBell(int n, IAST coeffBellSeq) {
+    IASTAppendable inner_coeffs = F.ListAlloc(n + 1);
+    for (int j = 1; j < n + 1; j++) {
+      inner_coeffs.append(S.BellY.of(F.ZZ(n), F.ZZ(j), coeffBellSeq.copyUntil(n - j + 1)));
+    }
+    return inner_coeffs;
+  }
+
   public ASTSeriesData reversion() {
     IExpr x0Value = this.x0;
     if (isInvertible()) {
       x0Value = F.C1;
     }
+
+    // inverseTest();
 
     if (!this.coefficient(1).isZero()) {
       final int maxPower = truncate;
@@ -676,6 +702,41 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       return ps;
     }
     return null;
+  }
+
+  /**
+   * @deprecated
+   */
+  @Deprecated
+  private void inverseTest() {
+    int n = truncate;
+    IExpr inv = coefficient(0);
+    IASTAppendable inv_seq = F.ListAlloc(n);
+    for (int k = 1; k < n; k++) {
+      inv_seq.append(F.Power(inv, (-(k + 1))));
+    }
+    IASTAppendable aux_seq = F.ListAlloc(n);
+    IInteger sign = F.CN1;
+    for (int i = 1; i < n; i++) {
+      if (sign.isOne()) {
+        sign = F.CN1;
+      } else {
+        sign = F.C1;
+      }
+      aux_seq.append(sign.times(NumberTheory.factorial(i)).times(inv_seq.get(i)));
+    }
+    IASTAppendable seq = F.PlusAlloc(n);
+    IAST coeffBellSeq = coeffBellSeq(n);
+    for (int i = 1; i < n; i++) {
+      IAST bell_seq = coeffBell(i, coeffBellSeq);
+      seq.append(aux_seq.get(i).times(bell_seq.get(i)));
+    }
+
+    IASTAppendable terms = F.ListAlloc(n);
+    for (int i = 1; i < n; i++) {
+      terms.append(seq.copyUntil(i).divide(NumberTheory.factorial(i)).times(coefficient(i)));
+    }
+    System.out.println(terms);
   }
 
   /** {@inheritDoc} */
@@ -1184,9 +1245,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         continue;
       }
       final int iMax = n;
-      IASTAppendable sum =
-          F.mapRange(S.Plus, minSize, iMax + 1,
-              i -> this.coefficient(i).times(b.coefficient(iMax - i)));
+      IASTAppendable sum = F.mapRange(S.Plus, minSize, iMax + 1,
+          i -> this.coefficient(i).times(b.coefficient(iMax - i)));
 
       // for (int i = minSize; i <= n; i++) {
       // sum.append(this.coefficient(i).times(b.coefficient(n - i)));

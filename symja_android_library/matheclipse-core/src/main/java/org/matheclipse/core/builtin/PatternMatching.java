@@ -225,7 +225,7 @@ public final class PatternMatching {
       IASTMutable mutable = ast.copyAST();
       for (int i = 1; i < ast.size(); i++) {
         IExpr x = Validate.checkIdentifierHoldPattern(ast.get(i), ast, engine);
-        if (!x.isPresent()) {
+        if (x.isNIL()) {
           return F.NIL;
         }
         if (((ISymbol) x).isProtected()) {
@@ -266,7 +266,7 @@ public final class PatternMatching {
       IASTMutable mutable = ast.copyAST();
       for (int i = 1; i < ast.size(); i++) {
         IExpr x = Validate.checkIdentifierHoldPattern(ast.get(i), ast, engine);
-        if (!x.isPresent()) {
+        if (x.isNIL()) {
           return F.NIL;
         }
         if (((ISymbol) x).isProtected()) {
@@ -334,7 +334,7 @@ public final class PatternMatching {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr x = Validate.checkIdentifierHoldPattern(ast.arg1(), ast, engine);
-        if (!x.isPresent()) {
+        if (x.isNIL()) {
           return F.NIL;
         }
         return F.stringx(((ISymbol) x).getContext().getContextName());
@@ -1622,7 +1622,7 @@ public final class PatternMatching {
       leftHandSide = engine.evaluate(leftHandSide);
       // }
       IExpr arg2 = engine.evaluateNIL(ast.arg2());
-      if (!arg2.isPresent()) {
+      if (arg2.isNIL()) {
         if (leftHandSide.equals(ast.arg1())) {
           return F.NIL;
         }

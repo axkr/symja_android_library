@@ -95,7 +95,7 @@ public class ComputationalGeometryFunctions {
         }
         ++k1;
       }
-      if (!point1.isPresent()) {
+      if (point1.isNIL()) {
         return F.List(point0);
       }
       ++k1;
@@ -488,7 +488,7 @@ public class ComputationalGeometryFunctions {
             if (listOfPoints.get(i).isList3()) {
               IAST p3 = (IAST) listOfPoints.get(i);
               IExpr temp = collinearPoints3D(p1, p2, p3, engine);
-              if (!temp.isPresent()) {
+              if (temp.isNIL()) {
                 return F.NIL;
               }
               result.append(temp);

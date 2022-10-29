@@ -1643,7 +1643,7 @@ public class TeXFormFactory {
   }
 
   public void convertAST(StringBuilder buf, final IAST list, int precedence) {
-    if (!list.isPresent()) {
+    if (list.isNIL()) {
       buf.append("NIL");
       return;
     }
@@ -1871,7 +1871,7 @@ public class TeXFormFactory {
   }
 
   public void convertAST(StringBuilder buf, final IAST f, String headString) {
-    if (!f.isPresent()) {
+    if (f.isNIL()) {
       buf.append("NIL");
       return;
     }

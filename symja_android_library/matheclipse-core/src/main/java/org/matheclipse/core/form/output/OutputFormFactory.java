@@ -1044,7 +1044,7 @@ public class OutputFormFactory {
       throws IOException {
     if (o instanceof IAST) {
       final IAST list = (IAST) o;
-      if (!list.isPresent()) {
+      if (list.isNIL()) {
         append(buf, "NIL");
         return;
       }

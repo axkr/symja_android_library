@@ -41,7 +41,7 @@ public class VisitorReplaceArgs extends VisitorExpr {
       temp = ast.get(i);
       for (int j = 1; i < astSlots.size(); i++) {
         if (astSlots.get(j).equals(temp)) {
-          if (!result.isPresent()) {
+          if (result.isNIL()) {
             result = ast.copyAppendable();
           }
           result.set(i, F.Slot(F.ZZ(j)));
@@ -53,7 +53,7 @@ public class VisitorReplaceArgs extends VisitorExpr {
       if (!evaled) {
         temp = temp.accept(this);
         if (temp.isPresent()) {
-          if (!result.isPresent()) {
+          if (result.isNIL()) {
             // something was evaluated - return a new IAST:
             result = ast.copyAppendable();
           }

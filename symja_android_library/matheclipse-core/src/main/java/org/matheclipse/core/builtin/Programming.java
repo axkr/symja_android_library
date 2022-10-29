@@ -4095,7 +4095,7 @@ public final class Programming {
       IASTAppendable result = F.NIL;
       IExpr temp = assignPart(assignedAST.get(indx), part, partPositionPlus1, value, engine);
       if (temp.isPresent()) {
-        if (!result.isPresent()) {
+        if (result.isNIL()) {
           result = assignedAST.copyAppendable();
         }
         result.set(indx, temp);
@@ -4162,7 +4162,7 @@ public final class Programming {
           }
 
           if (temp.isPresent()) {
-            if (!result.isPresent()) {
+            if (result.isNIL()) {
               result = assignedAST.copyAppendable();
             }
             result.set(i, temp);
@@ -4179,7 +4179,7 @@ public final class Programming {
           }
 
           if (temp.isPresent()) {
-            if (!result.isPresent()) {
+            if (result.isNIL()) {
               result = assignedAST.copyAppendable();
             }
             result.set(i, temp);
@@ -4277,7 +4277,7 @@ public final class Programming {
       int partPosition, IASTAppendable result, int position, IExpr value, EvalEngine engine) {
     IExpr resultValue = assignPart(element, part, partPosition, value, engine);
     if (resultValue.isPresent()) {
-      if (!result.isPresent()) {
+      if (result.isNIL()) {
         result = expr.copyAppendable();
       }
       result.set(position, resultValue);

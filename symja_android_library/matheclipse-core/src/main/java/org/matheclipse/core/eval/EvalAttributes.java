@@ -597,7 +597,7 @@ public class EvalAttributes {
           subResult.set(i, ast.get(i));
         }
       }
-      if (!result.isPresent()) {
+      if (result.isNIL()) {
         IExpr head = listHead == S.SparseArray ? S.List : listHead;
         switch (listLength) {
           case 1:

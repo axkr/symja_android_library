@@ -69,10 +69,12 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.ISeqBase;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
+import org.matheclipse.core.sympy.series.Sequences;
 import org.matheclipse.core.visit.VisitorExpr;
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
@@ -1331,7 +1333,7 @@ public final class NumberTheory {
           }
           IExpr negated = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
           if (negated.isPresent()) {
-            if (!result.isPresent()) {
+            if (result.isNIL()) {
               result = F.ast(S.DiracDelta);
             }
             result.append(negated);
@@ -1423,7 +1425,7 @@ public final class NumberTheory {
         INumber temp = expr.evalNumber();
         if (temp != null) {
           if (temp.isZero()) {
-            if (!result.isPresent()) {
+            if (result.isNIL()) {
               result = ast.removeAtClone(i);
             } else {
               result.remove(j);
@@ -2762,6 +2764,30 @@ public final class NumberTheory {
     }
   }
 
+  private static class FindLinearRecurrence extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (ast.isAST1()) {
+        if (arg1.isList()) {
+          ISeqBase seq = Sequences.sequence(arg1);
+          IAST linearRecurrence = seq.find_linear_recurrence(arg1.argSize());
+          return linearRecurrence;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
   /**
    *
    *
@@ -3205,8 +3231,7 @@ public final class NumberTheory {
           if (n != Integer.MIN_VALUE) {
             if (n < 0) {
               // Positive integer expected at position `2` in `1`.
-              return IOFunctions.printMessage(S.LinearRecurrence, "intp",
-                  F.List(arg3, F.C1),
+              return IOFunctions.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C1),
                   engine);
             }
             IAST result = linearRecurrence(list1, list2, n, ast, engine);
@@ -3824,7 +3849,7 @@ public final class NumberTheory {
         IAST reducedMultinomial = ast.removeFromEnd(argSize);
         IAST reducedPlus = reducedMultinomial.apply(S.Plus);
         IExpr multinomial = multinomial(reducedMultinomial);
-        if (!multinomial.isPresent()) {
+        if (multinomial.isNIL()) {
           return F.Times(F.Multinomial(reducedPlus, ast.last()));
         }
         return F.Times(F.Multinomial(reducedPlus, ast.last()), multinomial);
@@ -4234,11 +4259,11 @@ public final class NumberTheory {
       // - 2*k), {k, 1, Floor(n/2)})
       IFraction nInverse = F.QQ(F.C1, n);
       IExpr sum1 = sumPartitionsQ1(engine, n);
-      if (!sum1.isPresent()) {
+      if (sum1.isNIL()) {
         return F.NIL;
       }
       IExpr sum2 = sumPartitionsQ2(engine, n);
-      if (!sum2.isPresent()) {
+      if (sum2.isNIL()) {
         return F.NIL;
       }
       return engine.evaluate(Plus(Times(nInverse, sum1), Times(F.CN2, nInverse, sum2)));
@@ -5394,6 +5419,7 @@ public final class NumberTheory {
       S.Factorial2.setEvaluator(new Factorial2());
       S.FactorInteger.setEvaluator(new FactorInteger());
       S.Fibonacci.setEvaluator(new Fibonacci());
+      S.FindLinearRecurrence.setEvaluator(new FindLinearRecurrence());
       S.FrobeniusNumber.setEvaluator(new FrobeniusNumber());
       S.FromContinuedFraction.setEvaluator(new FromContinuedFraction());
       S.Hyperfactorial.setEvaluator(new Hyperfactorial());

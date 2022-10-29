@@ -556,10 +556,10 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       IExpr powerExpandLHS = Algebra.powerExpand(F.Log(plusAST.first()), false);
       IExpr powerExpandRHS = Algebra.powerExpand(F.Log(plusAST.second().negate()), false);
       if (powerExpandLHS.isPresent() || powerExpandRHS.isPresent()) {
-        if (!powerExpandLHS.isPresent()) {
+        if (powerExpandLHS.isNIL()) {
           powerExpandLHS = F.Log(plusAST.first());
         }
-        if (!powerExpandRHS.isPresent()) {
+        if (powerExpandRHS.isNIL()) {
           powerExpandRHS = F.Log(plusAST.second());
         }
         IExpr termsEqualZero = engine.evaluate(F.Subtract(powerExpandLHS, powerExpandRHS));
@@ -704,11 +704,11 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     try {
       IAST termsEqualZeroList = checkEquations(ast, 1, engine);
-      if (!termsEqualZeroList.isPresent()) {
+      if (termsEqualZeroList.isNIL()) {
         return F.NIL;
       }
       IAST vars = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
-      if (!vars.isPresent()) {
+      if (vars.isNIL()) {
         return F.NIL;
       }
 

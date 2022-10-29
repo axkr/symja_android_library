@@ -194,7 +194,7 @@ public class VisitorLevelSpecification extends AbstractLevelVisitor {
         assoc.forEach((x, i) -> {
           final IExpr temp = x.accept(this);
           if (temp.isPresent()) {
-            if (!result[0].isPresent()) {
+            if (result[0].isNIL()) {
               result[0] = createResult(assoc, temp);
             }
             result[0].set(i, assoc.getRule(i).setAtCopy(2, temp));
@@ -208,7 +208,7 @@ public class VisitorLevelSpecification extends AbstractLevelVisitor {
       }
       fCurrentDepth = --minDepth[0];
       if (isInRange(fCurrentLevel, minDepth[0])) {
-        if (!result[0].isPresent()) {
+        if (result[0].isNIL()) {
           return fFunction.apply(assoc);
         } else {
           IExpr temp = fFunction.apply(result[0]);
@@ -231,7 +231,7 @@ public class VisitorLevelSpecification extends AbstractLevelVisitor {
         if (fIncludeHeads) {
           final IExpr temp = ast.get(0).accept(this);
           if (temp.isPresent()) {
-            if (!result[0].isPresent()) {
+            if (result[0].isNIL()) {
               result[0] = createResult(ast, temp);
             }
             result[0].set(0, temp);
@@ -243,7 +243,7 @@ public class VisitorLevelSpecification extends AbstractLevelVisitor {
         ast.forEach((x, i) -> {
           final IExpr temp = x.accept(this);
           if (temp.isPresent()) {
-            if (!result[0].isPresent()) {
+            if (result[0].isNIL()) {
               result[0] = createResult(ast, temp);
             }
             result[0].set(i, temp);
@@ -257,7 +257,7 @@ public class VisitorLevelSpecification extends AbstractLevelVisitor {
       }
       fCurrentDepth = --minDepth[0];
       if (isInRange(fCurrentLevel, minDepth[0])) {
-        if (!result[0].isPresent()) {
+        if (result[0].isNIL()) {
           return fFunction.apply(ast);
         } else {
           IExpr temp = fFunction.apply(result[0]);

@@ -63,6 +63,12 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   public void testInverseSeries() {
+    // check("InverseSeries(Series(Exp(x), {x, 0, 6}))", //
+    // "x+x^3/6+3/40*x^5+5/112*x^7+35/1152*x^9+O(x)^10");
+
+    check("Series(E^x,{x,0,4})^(-1)", //
+        "1-x+x^2/2-x^3/6+x^4/24+O(x)^5");
+
     check("InverseSeries(SeriesData(x,0,{1,1,1},0,3,1))", //
         "(-1+x)-(1-x)^2+O(-1+x)^3");
     check("InverseSeries(SeriesData(x,x0,{1,1,1},0,3,1))", //

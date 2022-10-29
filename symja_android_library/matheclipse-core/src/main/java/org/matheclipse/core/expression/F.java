@@ -3732,8 +3732,8 @@ public class F extends S {
    * @see EvalEngine#evaluate(IExpr)
    */
   public static IExpr evalExpand(IExpr expr) {
-    EvalEngine engine = EvalEngine.get();
     if (expr.isAST()) {
+      EvalEngine engine = EvalEngine.get();
       IAST ast = (IAST) expr;
       if (ast.isPlus()) {
         if (ast.exists(IExpr::isPlusTimesPower)) {
@@ -3742,6 +3742,14 @@ public class F extends S {
       } else if (ast.isTimes() || ast.isPower()) {
         return engine.evaluate(Expand(expr));
       }
+    }
+    return expr;
+  }
+
+  public static IExpr evalSimplify(IExpr expr) {
+    if (expr.isAST()) {
+      EvalEngine engine = EvalEngine.get();
+      return engine.evaluate(Simplify(expr));
     }
     return expr;
   }
@@ -8147,6 +8155,17 @@ public class F extends S {
     StringBuilder buf = new StringBuilder();
     Documentation.usageDocumentation(buf, symbolName);
     return buf.toString();
+  }
+  /**
+   * Create a unique dummy symbol which is retrieved from the evaluation engines DUMMY context. A
+   * &quot;Dummy&quot; symbol is not known in string parsing.
+   *
+   * @param symbolName the name of the symbol
+   * @return the symbol object from the context path
+   * @see #symbol(String)
+   */
+  public static ISymbol Dummy(final char symbolName) {
+    return Dummy(new String("" + symbolName));
   }
 
   /**

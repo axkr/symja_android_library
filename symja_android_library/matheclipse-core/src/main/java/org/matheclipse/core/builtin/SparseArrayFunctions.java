@@ -246,7 +246,7 @@ public class SparseArrayFunctions {
         }
 
         if (checkedDimensions) {
-          if (!defaultValue.isPresent() || defaultValue.equals(sparseArray.getDefaultValue())) {
+          if (defaultValue.isNIL() || defaultValue.equals(sparseArray.getDefaultValue())) {
             return sparseArray;
           }
           if (defaultValue.isPresent()) {

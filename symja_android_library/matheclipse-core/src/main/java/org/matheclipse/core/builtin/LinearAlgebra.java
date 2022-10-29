@@ -1379,18 +1379,7 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr matrixEval(final FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
-      if (matrix.getRowDimension() == 2 && matrix.getColumnDimension() == 2) {
-        return determinant2x2(matrix);
-      }
-      if (matrix.getRowDimension() == 3 && matrix.getColumnDimension() == 3) {
-        return determinant3x3(matrix);
-      }
-      // @since version 1.9
-      // final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,
-      // zeroChecker);
-      final FieldLUDecomposition<IExpr> lu =
-          new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false);
-      return F.evalExpand(lu.getDeterminant());
+      return determinant(matrix, zeroChecker);
     }
 
     @Override
@@ -5694,6 +5683,22 @@ public final class LinearAlgebra {
         .subtract((row1[2].times(row2[1].times(row3[0])))));
   }
 
+  public static IExpr determinant(final FieldMatrix<IExpr> matrix) {
+    return determinant(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
+  }
+
+  public static IExpr determinant(final FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+    if (matrix.getRowDimension() == 2 && matrix.getColumnDimension() == 2) {
+      return determinant2x2(matrix);
+    }
+    if (matrix.getRowDimension() == 3 && matrix.getColumnDimension() == 3) {
+      return determinant3x3(matrix);
+    }
+    final FieldLUDecomposition<IExpr> lu =
+        new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false);
+    return F.evalExpand(lu.getDeterminant());
+  }
+
   /**
    * Create a diagonal matrix from <code>valueArray[0]</code> (non-diagonal elements) and <code>
    * valueArray[1]</code> (diagonal elements).
@@ -6072,7 +6077,7 @@ public final class LinearAlgebra {
       smallList = cramersRule3x4(matrix, true, engine);
     }
     if (smallList != null) {
-      if (!smallList.isPresent()) {
+      if (smallList.isNIL()) {
         // no solution
         return F.CEmptyList;
       }

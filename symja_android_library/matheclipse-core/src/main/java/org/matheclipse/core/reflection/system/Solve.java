@@ -289,7 +289,11 @@ public class Solve extends AbstractFunctionEvaluator {
             if (fEquationType == LINEAR) {
               fEquationType = POLYNOMIAL;
             }
-            getTimesArgumentEquationType(expr.base());
+            if (expr.exponent().isNumIntValue()) {
+              getTimesArgumentEquationType(expr.base());
+            } else {
+              getTimesArgumentEquationType(expr.exponent());
+            }
           } else {
             fLeafCount += eqExpr.leafCount();
             if (fEquationType <= POLYNOMIAL) {
@@ -348,6 +352,16 @@ public class Solve extends AbstractFunctionEvaluator {
             fEquationType = POLYNOMIAL;
           }
           getTimesArgumentEquationType(base);
+          return;
+        }
+        if (exponent.isVariable()) {
+          int position = fListOfVariables.indexOf(exponent);
+          if (position > 0) {
+            if (fEquationType <= POLYNOMIAL) {
+              fEquationType = OTHERS;
+            }
+            fVariableSet.add(exponent);
+          }
           return;
         }
       }
@@ -670,7 +684,7 @@ public class Solve extends AbstractFunctionEvaluator {
       for (int i = 1; i < times.size(); i++) {
         if (times.get(i).isFree(Predicates.in(fListOfVariables), true)
             && times.get(i).isNumericFunction(true)) {
-          if (!result.isPresent()) {
+          if (result.isNIL()) {
             result = times.copyAppendable();
           }
           result.remove(j);
@@ -678,7 +692,7 @@ public class Solve extends AbstractFunctionEvaluator {
         }
         j++;
       }
-      if (!result.isPresent()) {
+      if (result.isNIL()) {
         return rewriteInverseFunction(times, F.C0);
       }
       IExpr temp0 = result.oneIdentity1();
@@ -953,7 +967,7 @@ public class Solve extends AbstractFunctionEvaluator {
     if (numerator.isNumericMode() && denominator.isOne()) {
       temp = RootsFunctions.roots(numerator, F.list(variable), engine);
     }
-    if (!temp.isPresent()) {
+    if (temp.isNIL()) {
       temp = RootsFunctions.rootsOfVariable(numerator, denominator, F.list(variable),
           numerator.isNumericMode(), engine);
     }
@@ -1064,7 +1078,7 @@ public class Solve extends AbstractFunctionEvaluator {
           boolean numericFlag = isNumeric[0] || numeric;
           if (lists[2].isPresent()) {
             IExpr result = solveNumeric(lists[2], numericFlag, engine);
-            if (!result.isPresent()) {
+            if (result.isNIL()) {
               // The system cannot be solved with the methods available to Solve.
               return IOFunctions.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()),
                   engine);
@@ -1074,7 +1088,7 @@ public class Solve extends AbstractFunctionEvaluator {
           IASTMutable termsEqualZeroList = lists[0];
           IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag,
               userDefinedVariables, engine);
-          if (!result.isPresent()) {
+          if (result.isNIL()) {
             // The system cannot be solved with the methods available to Solve.)
             return IOFunctions.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
           }
@@ -1276,7 +1290,7 @@ public class Solve extends AbstractFunctionEvaluator {
     if (inequationsList.isEmpty() && termsEqualZeroList.size() == 2 && variables.size() == 2) {
       IExpr firstVariable = variables.arg1();
       IExpr res = eliminateOneVariable(termsEqualZeroList, firstVariable, true, engine);
-      if (!res.isPresent()) {
+      if (res.isNIL()) {
         if (numericFlag) {
           // find numerically with start value 0
           res =
@@ -1439,8 +1453,7 @@ public class Solve extends AbstractFunctionEvaluator {
         if (augmentedMatrix != null) {
           IAST subSolutionList =
               LinearAlgebra.rowReduced2RulesList(augmentedMatrix, variables, resultList, engine);
-          return solveInequations((IASTMutable) subSolutionList, inequationsList,
-              engine);
+          return solveInequations((IASTMutable) subSolutionList, inequationsList, engine);
         }
         return F.NIL;
       }
@@ -1609,7 +1622,7 @@ public class Solve extends AbstractFunctionEvaluator {
             IExpr firstVariable = variables.arg1();
             IExpr res =
                 eliminateOneVariable(clonedEqualZeroList, firstVariable, multipleValues, engine);
-            if (!res.isPresent()) {
+            if (res.isNIL()) {
               if (numericFlag) {
                 // find numerically with start value 0
                 res = S.FindRoot.ofNIL(engine, clonedEqualZeroList.arg1(),

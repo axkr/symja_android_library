@@ -67,6 +67,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -2448,9 +2449,9 @@ public class ExpTrigsFunctions {
       IExpr c = F.C1;
       IExpr e = F.C0;
       try {
-        IAST leadTerm = z.leadTerm(t, logx, cdir);
-        c = leadTerm.arg1();
-        e = leadTerm.arg2();
+        IPair leadTerm = z.leadTerm(t, logx, cdir);
+        c = leadTerm.first();
+        e = leadTerm.second();
       } catch (ValueError ve) {
         IExpr arg = arg0.asLeadingTerm(x, logx, cdir);
         return F.Log(arg);
@@ -2472,7 +2473,7 @@ public class ExpTrigsFunctions {
       IASTAppendable res = F.Plus(F.Subtract(F.Log(c), F.Times(e, F.Log(cdir))));
 
       // logx = log(x) if logx is None else logx
-      if (!logx.isPresent()) {
+      if (logx.isNIL()) {
         logx = F.Log(x);
       }
       // res += e*logx

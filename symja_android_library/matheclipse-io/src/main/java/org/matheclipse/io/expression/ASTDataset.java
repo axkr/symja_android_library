@@ -535,7 +535,7 @@ public class ASTDataset extends AbstractAST
             IExpr arg = dataToExpr(table.get(i, j), t);
 
             IExpr value = S.Part.of1(engine, arg, part);
-            if (value.isAST(S.Part) || !value.isPresent()) {
+            if (value.isAST(S.Part) || value.isNIL()) {
               IASTAppendable missing = F.ast(S.Missing);
               missing.append(F.$str("PartAbsent"));
               missing.appendAll(part, 0, part.length);

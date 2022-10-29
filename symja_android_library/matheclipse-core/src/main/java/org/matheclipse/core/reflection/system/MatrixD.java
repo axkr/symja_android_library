@@ -77,7 +77,7 @@ public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
           IExpr temp = fx;
           for (int i = 0; i < n; i++) {
             temp = S.MatrixD.ofNIL(engine, temp, x);
-            if (!temp.isPresent()) {
+            if (temp.isNIL()) {
               return F.NIL;
             }
           }

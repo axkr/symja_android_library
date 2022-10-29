@@ -253,7 +253,7 @@ public class PolynomialFunctions {
         symbolList = eVar.getVarList();
       } else {
         symbolList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
-        if (!symbolList.isPresent()) {
+        if (symbolList.isNIL()) {
           return F.NIL;
         }
         varList = new ArrayList<IExpr>(symbolList.argSize());
@@ -328,7 +328,7 @@ public class PolynomialFunctions {
         symbolList = eVar.getVarList();
       } else {
         symbolList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
-        if (!symbolList.isPresent()) {
+        if (symbolList.isNIL()) {
           return F.NIL;
         }
         varList = new ArrayList<IExpr>(symbolList.argSize());
@@ -791,7 +791,7 @@ public class PolynomialFunctions {
       // IExpr expr = a1;
       // if (a1.isAST()) {
       // expr = Algebra.expandAll((IAST) a1, null, true, true, engine);
-      // if (!expr.isPresent()) {
+      // if (expr.isNIL()) {
       // expr = a1;
       // }
       // }
@@ -999,7 +999,7 @@ public class PolynomialFunctions {
         // IExpr abExp = aExp.times(bExp);
         if (S.Less.ofQ(engine, aExp, bExp)) {
           IExpr resultant = resultant(b, a, x, engine);
-          if (!resultant.isPresent()) {
+          if (resultant.isNIL()) {
             return F.NIL;
           }
           return resultant;
@@ -1878,7 +1878,7 @@ public class PolynomialFunctions {
         symbolList = eVar.getVarList();
       } else {
         symbolList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
-        if (!symbolList.isPresent()) {
+        if (symbolList.isNIL()) {
           return F.NIL;
         }
         varList = new ArrayList<IExpr>(symbolList.argSize());

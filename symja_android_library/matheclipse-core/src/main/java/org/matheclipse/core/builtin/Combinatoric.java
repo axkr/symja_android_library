@@ -3211,7 +3211,7 @@ public final class Combinatoric {
           }
         } else {
           positions[i] = -1;
-          if (!cycleList.isPresent()) {
+          if (cycleList.isNIL()) {
             cycleList = F.ListAlloc(permList.argSize() < 16 ? permList.size() : 16);
             mainList.append(cycleList);
           }

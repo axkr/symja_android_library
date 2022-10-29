@@ -129,7 +129,7 @@ public class DSolve extends AbstractFunctionEvaluator {
       IExpr C_1 = F.unaryAST1(S.C, F.C1); // constant C(1)
       IExpr equation = listOfEquations.arg1();
       IExpr temp = solveSingleODE(equation, xVar, listOfVariables, C_1, engine);
-      if (!temp.isPresent()) {
+      if (temp.isNIL()) {
         temp = odeSolve(engine, equation, xVar, uFunction1Arg, C_1);
       }
       if (temp.isPresent()) {

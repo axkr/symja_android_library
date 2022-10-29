@@ -1110,44 +1110,44 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
     // assert trig_split(cos(x), sin(x)) is None
     trigSplit = TrigSimplifyFu.trigSplit(F.Cos(F.x), F.Sin(F.x));
-    assertTrue(!trigSplit.isPresent());
+    assertTrue(trigSplit.isNIL());
 
     // assert trig_split(cos(x), sin(z)) is None
     trigSplit = TrigSimplifyFu.trigSplit(F.Cos(F.x), F.Sin(F.z));
-    assertTrue(!trigSplit.isPresent());
+    assertTrue(trigSplit.isNIL());
 
     // assert trig_split(2*cos(x), -sin(x)) is None
     trigSplit = TrigSimplifyFu.trigSplit(F.Times(2, F.Cos(F.x)), F.Sin(F.x).negate());
-    assertTrue(!trigSplit.isPresent());
+    assertTrue(trigSplit.isNIL());
 
     // assert trig_split(cos(x), -sqrt(3)*sin(x)) is None
     trigSplit = TrigSimplifyFu.trigSplit(F.Cos(F.x), F.Times(F.Sqrt(3).negate(), F.Sin(F.x)));
-    assertTrue(!trigSplit.isPresent());
+    assertTrue(trigSplit.isNIL());
     // assert trig_split(cos(x)*cos(y), sin(x)*sin(z)) is None
     trigSplit =
         TrigSimplifyFu.trigSplit(F.Times(F.Cos(F.x), F.Cos(F.y)), F.Times(F.Sin(F.x), F.Sin(F.z)));
-    assertTrue(!trigSplit.isPresent());
+    assertTrue(trigSplit.isNIL());
     // assert trig_split(cos(x)*cos(y), sin(x)*sin(y)) is None
     trigSplit =
         TrigSimplifyFu.trigSplit(F.Times(F.Cos(F.x), F.Cos(F.y)), F.Times(F.Sin(F.x), F.Sin(F.y)));
-    assertTrue(!trigSplit.isPresent());
+    assertTrue(trigSplit.isNIL());
     // assert trig_split(-sqrt(6)*cos(x), sqrt(2)*sin(x)*sin(y), two=True) is \
     // None
     trigSplit = TrigSimplifyFu.trigSplit(F.Times(F.Sqrt(6).negate(), F.Cos(F.x)),
         F.Times(F.Sqrt(2), F.Sin(F.x), F.Sin(F.y)));
-    assertTrue(!trigSplit.isPresent());
+    assertTrue(trigSplit.isNIL());
 
     // assert trig_split(sqrt(3)*sqrt(x), cos(3), two=True) is None
     trigSplit = TrigSimplifyFu.trigSplit(F.Times(F.Sqrt(3), F.Sqrt(F.x)), F.Cos(F.C3), true);
-    assertTrue(!trigSplit.isPresent());
+    assertTrue(trigSplit.isNIL());
     // assert trig_split(sqrt(3)*root(x, 3), sin(3)*cos(2), two=True) is None
     trigSplit = TrigSimplifyFu.trigSplit(F.Times(F.Sqrt(3), F.Power(F.x, F.C3)),
         F.Times(F.Sin(F.C3), F.Cos(F.C2)), true);
-    assertTrue(!trigSplit.isPresent());
+    assertTrue(trigSplit.isNIL());
     // assert trig_split(cos(5)*cos(6), cos(7)*sin(5), two=True) is None
     trigSplit = TrigSimplifyFu.trigSplit(F.Times(F.Cos(F.C5), F.Cos(F.C6)),
         F.Times(F.Cos(F.C7), F.Sin(F.C5)), true);
-    assertTrue(!trigSplit.isPresent());
+    assertTrue(trigSplit.isNIL());
   }
 
   /** The JUnit setup method */

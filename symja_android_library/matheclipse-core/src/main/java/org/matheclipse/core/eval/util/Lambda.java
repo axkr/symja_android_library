@@ -157,7 +157,7 @@ public class Lambda {
     for (int i = 1; i < size; i++) {
       IExpr temp = ast.get(i);
       if (predicate.test(temp)) {
-        if (!result.isPresent()) {
+        if (result.isNIL()) {
           result = ast.copyAppendable();
         }
         temp = function.apply(temp);
@@ -178,7 +178,7 @@ public class Lambda {
     for (int i = 1; i < size; i++) {
       IExpr temp = list.get(i);
       if (predicate.test(temp)) {
-        if (!result.isPresent()) {
+        if (result.isNIL()) {
           result = list.copyAppendable();
           for (int j = 0; j < i; j++) {
             result.set(j, function2.apply(temp));

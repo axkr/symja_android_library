@@ -107,7 +107,7 @@ public class IndexedLevel extends AbstractLevelVisitor {
         }
         final IExpr temp = visitAtom(element, newIndx);
         if (temp.isPresent()) {
-          if (!result[0].isPresent()) {
+          if (result[0].isNIL()) {
             result[0] = createResult(ast, temp);
           }
           result[0].set(0, temp);
@@ -129,12 +129,12 @@ public class IndexedLevel extends AbstractLevelVisitor {
         }
         final IExpr temp = visitAtom(element, newIndx);
         if (temp.isPresent()) {
-          if (!result[0].isPresent()) {
+          if (result[0].isNIL()) {
             result[0] = createResult(ast, temp);
           }
           result[0].set(i, temp);
         } else if (evaled) {
-          if (!result[0].isPresent()) {
+          if (result[0].isNIL()) {
             result[0] = createResult(ast, temp);
           }
           result[0].set(i, element);
@@ -150,7 +150,7 @@ public class IndexedLevel extends AbstractLevelVisitor {
     fCurrentDepth = --minDepth[0];
     if (isInRange(fCurrentLevel, minDepth[0])) {
       IASTAppendable indxList = F.mapRange(0, indx.length, i -> F.ZZ(indx[i]));
-      if (!result[0].isPresent()) {
+      if (result[0].isNIL()) {
         return fFunction.apply(ast, indxList);
       } else {
         IExpr temp = fFunction.apply(result[0], indxList);

@@ -381,7 +381,7 @@ public class ManipulateFunction {
                 F.list(plotRange.negate(), plotRange));
           }
         }
-        if (!optionPlotRange.isPresent()) {
+        if (optionPlotRange.isNIL()) {
           // Value of option `1` is not All, Full, Automatic, a positive machine
           // number, or an appropriate list of range specifications.
           IOFunctions.printMessage(plot.topHead(), "prng", F.list(F.Rule(S.PlotRange, plotRange)),
@@ -407,7 +407,7 @@ public class ManipulateFunction {
         listOfFunctions = F.unaryAST1(S.List, plotFunction);
       }
       if (plotID == ID.Plot3D || plotID == ID.ContourPlot || plotID == ID.DensityPlot) {
-        if (!plotRangeY.isPresent()) {
+        if (plotRangeY.isNIL()) {
           return F.NIL;
         }
         for (int i = 1; i < listOfFunctions.size(); i++) {
@@ -452,12 +452,12 @@ public class ManipulateFunction {
       StringBuilder graphicControl = new StringBuilder();
 
       if (plotID == ID.ContourPlot || plotID == ID.DensityPlot) {
-        if (!plotRangeY.isPresent()) {
+        if (plotRangeY.isNIL()) {
           return F.NIL;
         }
         contourPlot(listOfFunctions, plotRangeX, plotRangeY, graphicControl, plotID, toJS);
       } else if (plotID == ID.Plot3D) {
-        if (!plotRangeY.isPresent()) {
+        if (plotRangeY.isNIL()) {
           return F.NIL;
         }
         plot3D(listOfFunctions, plotRangeX, plotRangeY, graphicControl, colorMap, toJS);

@@ -498,7 +498,7 @@ public final class RulesData implements Serializable {
               if (showSteps) {
                 if (isShowSteps(pmEvaluator)) {
                   IExpr rhs = pmEvaluator.getRHS();
-                  if (!rhs.isPresent()) {
+                  if (rhs.isNIL()) {
                     rhs = S.Null;
                   }
                   LOGGER.info("\nCOMPLEX: {} := {}", pmEvaluator.getLHS(), rhs);

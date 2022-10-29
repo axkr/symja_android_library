@@ -82,6 +82,14 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     fSymbolName = symbolName;
   }
 
+
+  public BuiltInDummy(final String symbolName, IEvaluator evaluator) {
+    super();
+    // fContext = context;
+    fSymbolName = symbolName;
+    fEvaluator = evaluator;
+  }
+
   /** {@inheritDoc} */
   @Override
   public IExpr accept(IVisitor visitor) {
@@ -1049,8 +1057,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   }
 
   @Override
-  public void setEvaluator(IEvaluator module) {
-    fEvaluator = module;
+  public void setEvaluator(IEvaluator evaluator) {
+    fEvaluator = evaluator;
   }
 
   @Override

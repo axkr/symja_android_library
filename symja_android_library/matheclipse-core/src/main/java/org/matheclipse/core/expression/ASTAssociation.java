@@ -258,7 +258,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
           // for Rules eval rhs / for RuleDelayed don't
           IExpr temp = engine.evaluateNIL(arg.second());
           if (temp.isPresent()) {
-            if (!result.isPresent()) {
+            if (result.isNIL()) {
               result = copy();
             }
             result.set(i, getRule(i).setAtCopy(2, temp));

@@ -191,7 +191,7 @@ public class VariablesSet {
 
     @Override
     public boolean visit(IAST list) {
-      if (!list.isPresent()) {
+      if (list.isNIL()) {
         return false;
       }
       if (list instanceof ASTSeriesData) {

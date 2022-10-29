@@ -594,12 +594,6 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      // if (ast.isAST1()) {
-      // ast = F.operatorForm1Append(ast);
-      // if (!ast.isPresent()) {
-      // return F.NIL;
-      // }
-      // }
       if (ast.arg1().isAST()) {
         IAST list = (IAST) ast.arg1();
         IExpr head = ast.arg2();
@@ -853,12 +847,6 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      // if (ast.isAST1()) {
-      // ast = F.operatorForm1Append(ast);
-      // if (!ast.isPresent()) {
-      // return F.NIL;
-      // }
-      // }
       if (ast.arg1().isAST()) {
         IAST list = (IAST) ast.arg1();
         IExpr head = ast.arg2();
@@ -1852,14 +1840,14 @@ public final class BooleanFunctions {
       for (int i = 1; i < ast.size(); i++) {
         final IExpr arg = ast.get(i);
         if (arg.isFalse()) {
-          if (!boole.isPresent()) {
+          if (boole.isNIL()) {
             boole = S.False;
           } else if (boole.isTrue()) {
             return S.False;
           }
           evaled = true;
         } else if (arg.isTrue()) {
-          if (!boole.isPresent()) {
+          if (boole.isNIL()) {
             boole = S.True;
           } else if (boole.isFalse()) {
             return S.False;
@@ -1880,7 +1868,7 @@ public final class BooleanFunctions {
           if (boole.isPresent()) {
             return S.True;
           }
-        } else if (result.isAST1() && !boole.isPresent()) {
+        } else if (result.isAST1() && boole.isNIL()) {
           return S.True;
         }
         if (boole.isPresent()) {
@@ -3507,12 +3495,6 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      // if (ast.isAST1()) {
-      // ast = F.operatorForm1Append(ast);
-      // if (!ast.isPresent()) {
-      // return F.NIL;
-      // }
-      // }
       if (ast.arg1().isAST()) {
         IAST list = (IAST) ast.arg1();
         IExpr head = ast.arg2();
@@ -4228,7 +4210,7 @@ public final class BooleanFunctions {
           }
         }
       }
-      if (!userDefinedVariables.isPresent()) {
+      if (userDefinedVariables.isNIL()) {
         userDefinedVariables = variablesInFormula;
       }
       return satisfiabilityInstances(arg1, userDefinedVariables, maxChoices);

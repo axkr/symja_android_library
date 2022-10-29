@@ -164,7 +164,7 @@ public class ModuleReplaceAll extends VisitorExpr {
         variables = new IdentityHashMap<>(fModuleVariables);
       }
       variables.remove(symbol);
-      if (!temp.isPresent()) {
+      if (temp.isNIL()) {
         variables.put(symbol, F.Dummy(symbol.toString() + varAppend));
       }
     }

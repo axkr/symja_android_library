@@ -125,7 +125,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
     IExpr arg1 = ast.arg1();
     if (arg1.isAST()) {
       arg1 = F.expand(arg1, false, false, false);
-      if (!arg1.isPresent()) {
+      if (arg1.isNIL()) {
         arg1 = ast.arg1();
       }
     }
@@ -272,7 +272,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
         temp = F.NIL;
         IAST resultList = Times();
         temp = evaluateLast(preevaledProduct.arg1(), iterator, resultList, F.C1);
-        if (!temp.isPresent() || temp.equals(resultList)) {
+        if (temp.isNIL() || temp.equals(resultList)) {
           return F.NIL;
         }
       } catch (final ValidateException ve) {

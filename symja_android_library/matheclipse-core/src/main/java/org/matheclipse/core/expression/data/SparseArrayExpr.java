@@ -1012,7 +1012,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         } else {
           if (rule1.arg1().isBlank()) {
             // pattern matching
-            if (!defaultValue[0].isPresent()) {
+            if (defaultValue[0].isNIL()) {
               defaultValue[0] = rule1.arg2();
             } else if (!defaultValue[0].equals(rule1.arg2())) {
               // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
@@ -1086,7 +1086,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           } else {
             if (rule.arg1().isBlank()) {
               // pattern matching
-              if (!defaultValue[0].isPresent()) {
+              if (defaultValue[0].isNIL()) {
                 defaultValue[0] = rule.arg2();
               } else if (!defaultValue[0].equals(rule.arg2())) {
                 // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
@@ -1124,7 +1124,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       IAST arrayRulesList, EvalEngine engine) {
     final int depth = dimension.length;
     if (ruleLHSPositionsList.forAll(x -> x.isBlank())) {
-      if (!defaultValue[0].isPresent()) {
+      if (defaultValue[0].isNIL()) {
         defaultValue[0] = ruleRHS;
         return true;
       } else if (!defaultValue[0].equals(ruleRHS)) {

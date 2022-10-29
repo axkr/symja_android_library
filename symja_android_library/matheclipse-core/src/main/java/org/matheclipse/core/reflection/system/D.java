@@ -325,7 +325,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
             IExpr temp = fx;
             for (int i = 0; i < n; i++) {
               temp = S.D.ofNIL(engine, temp, x);
-              if (!temp.isPresent()) {
+              if (temp.isNIL()) {
                 return F.NIL;
               }
             }

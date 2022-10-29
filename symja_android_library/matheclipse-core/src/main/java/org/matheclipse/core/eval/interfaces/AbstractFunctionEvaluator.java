@@ -556,7 +556,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
         IASTMutable result = plus.setAtCopy(1, arg);
         for (int i = 2; i < plus.size(); i++) {
           arg = pureImaginaryPart(plus.get(i));
-          if (!arg.isPresent()) {
+          if (arg.isNIL()) {
             return F.NIL;
           }
           result.set(i, arg);

@@ -583,7 +583,7 @@ public final class Validate {
     if (ast.get(position).isList()) {
       IAST listOfSymbols = (IAST) ast.get(position);
       for (int i = 1; i < listOfSymbols.size(); i++) {
-        if (!Validate.checkSymbolType(listOfSymbols, i, engine).isPresent()) {
+        if (Validate.checkSymbolType(listOfSymbols, i, engine).isNIL()) {
           return F.NIL;
         }
       }
@@ -648,14 +648,14 @@ public final class Validate {
       vars = (IAST) ast.get(position);
       for (int i = 1; i < vars.size(); i++) {
         temp = Validate.checkIsVariable(vars, i, head, engine);
-        if (!temp.isPresent()) {
+        if (temp.isNIL()) {
           return F.NIL;
         }
       }
       return vars;
     } else {
       temp = Validate.checkIsVariable(ast, position, head, engine);
-      if (!temp.isPresent()) {
+      if (temp.isNIL()) {
         return F.NIL;
       }
       return F.list(temp);

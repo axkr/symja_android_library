@@ -727,7 +727,7 @@ public class ExprEvaluatorTests {
           result = eval.eval(ast);
         }
         if (result.isAST()) {
-          if (!result.isFree(x -> x == null || !x.isPresent(), true)) {
+          if (!result.isFree(x -> x == null || x.isNIL(), true)) {
             System.out.println(
                 "Corrupted AST: " + ast.toString() + "\n" + "       ===> " + result.toString());
             throw new NullPointerException();

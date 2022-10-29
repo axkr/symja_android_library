@@ -389,7 +389,7 @@ public final class ListFunctions {
                 fCurrentIndex[index] = iter.next();
                 fCurrentVariable[index] = iter.getVariable();
                 IExpr temp = table();
-                if (temp == null || !temp.isPresent()) {
+                if (temp == null || temp.isNIL()) {
                   temp = fDefaultValue;
                 }
                 if (temp.isNumber()) {
@@ -430,7 +430,7 @@ public final class ListFunctions {
                 fCurrentIndex[index] = iter.next();
                 fCurrentVariable[index] = iter.getVariable();
                 IExpr temp = table();
-                if (temp == null || !temp.isPresent()) {
+                if (temp == null || temp.isNIL()) {
                   temp = fDefaultValue;
                 }
                 if (temp.isNumber()) {
@@ -518,7 +518,7 @@ public final class ListFunctions {
         fCurrentIndex[index] = iter.next();
         fCurrentVariable[index] = iter.getVariable();
         IExpr temp = table();
-        if (temp == null || !temp.isPresent()) {
+        if (temp == null || temp.isNIL()) {
           result.append(fDefaultValue);
         } else {
           result.append(temp);
@@ -620,7 +620,7 @@ public final class ListFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, arg1, 1, engine);
-      if (!arg1AST.isPresent()) {
+      if (arg1AST.isNIL()) {
         return F.NIL;
       }
       IExpr arg2 = engine.evaluate(ast.arg2());
@@ -2028,7 +2028,7 @@ public final class ListFunctions {
             // IAST result = list;
             // for (int i = 1; i < indxList.size(); i++) {
             // result = deleteListOfPositions(result, (IAST) indxList.get(i), engine);
-            // if (!result.isPresent()) {
+            // if (result.isNIL()) {
             // return F.NIL;
             // }
             // }
@@ -2435,10 +2435,6 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // IAST evaledAST = (IAST) engine.evalAttributes(S.Drop, ast);
-      // if (!evaledAST.isPresent()) {
-      // evaledAST = ast;
-      // }
       final IExpr arg1 = ast.arg1();
       try {
         final ISequence[] sequ = Sequence.createSequences(ast, 2, "drop", engine);
@@ -2723,7 +2719,7 @@ public final class ListFunctions {
                 return F.NIL;
               }
               IExpr temp = extract(list, positions, engine);
-              if (!temp.isPresent()) {
+              if (temp.isNIL()) {
                 return F.NIL;
               }
               if (arg3.isPresent()) {
@@ -2791,7 +2787,7 @@ public final class ListFunctions {
     private static IExpr extract(final IAST list, final IAST positions, int headOffset) {
       int p = 0;
       IAST temp = list;
-      if (!temp.isPresent()) {
+      if (temp.isNIL()) {
         return F.NIL;
       }
       int posSize = positions.argSize();
@@ -3666,13 +3662,13 @@ public final class ListFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST1() || ast.isAST2()) {
         ast = F.operatorFormAppend2(ast);
-        if (!ast.isPresent()) {
+        if (ast.isNIL()) {
           return F.NIL;
         }
       }
       IExpr arg1 = engine.evaluate(ast.arg1());
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, arg1, 1, engine);
-      if (!arg1AST.isPresent()) {
+      if (arg1AST.isNIL()) {
         return F.NIL;
       }
       IExpr arg2 = engine.evaluate(ast.arg2());
@@ -5225,7 +5221,7 @@ public final class ListFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, arg1, 1, engine);
-      if (!arg1AST.isPresent()) {
+      if (arg1AST.isNIL()) {
         return F.NIL;
       }
       IExpr arg2 = engine.evaluate(ast.arg2());
@@ -7382,7 +7378,7 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // IAST evaledAST = (IAST) engine.evalAttributes(S.Take, ast);
-      // if (!evaledAST.isPresent()) {
+      // if (evaledAST.isNIL()) {
       // evaledAST = ast;
       // }
 
@@ -7620,7 +7616,7 @@ public final class ListFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         ast = F.operatorForm1Append(ast);
-        if (!ast.isPresent()) {
+        if (ast.isNIL()) {
           return F.NIL;
         }
       }
@@ -7720,7 +7716,7 @@ public final class ListFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         ast = F.operatorForm1Append(ast);
-        if (!ast.isPresent()) {
+        if (ast.isNIL()) {
           return F.NIL;
         }
       }

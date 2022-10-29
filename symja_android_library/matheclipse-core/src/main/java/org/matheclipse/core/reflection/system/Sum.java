@@ -244,7 +244,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
           if (iterator.isValidVariable() && iterator.isNumericFunction()) {
             IAST resultList = Plus();
             temp = evaluateLast(preevaledSum.arg1(), iterator, resultList, F.C0);
-            if (!temp.isPresent() || temp.equals(resultList)) {
+            if (temp.isNIL() || temp.equals(resultList)) {
               return F.NIL;
             }
             if (preevaledSum.isAST2()) {

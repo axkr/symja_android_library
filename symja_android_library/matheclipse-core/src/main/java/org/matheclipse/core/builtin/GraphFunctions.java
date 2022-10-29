@@ -638,7 +638,7 @@ public class GraphFunctions {
         //
         // if (option.isPresent() && option.toString().equals("PseudoDiameter")) {
         // pseudoDiameter = true;
-        // } else if (!option.isPresent()) {
+        // } else if (option.isNIL()) {
         // return engine.printMessage("GraphPeriphery: Option PseudoDiameter expected!");
         // }
         // }
@@ -2498,7 +2498,7 @@ public class GraphFunctions {
   public static IExpr graphToIExpr(AbstractBaseGraph<IExpr, ExprEdge> graph) {
     IASTAppendable vertexes = vertexToIExpr(graph);
     IASTAppendable[] edgeData = edgesToIExpr(graph);
-    if (!edgeData[1].isPresent()) {
+    if (edgeData[1].isNIL()) {
       return F.Graph(vertexes, edgeData[0]);
     }
     return F.Graph(vertexes, edgeData[0], F.list(F.Rule(S.EdgeWeight, edgeData[1])));

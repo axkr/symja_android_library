@@ -1859,7 +1859,7 @@ public interface IPatternMap {
       // IExpr temp = lhsPatternExpr.get(i).accept(visitor);
       result = result.setIfPresent(lhsPatternExpr, i, lhsPatternExpr.get(i).accept(visitor));
       // if (temp.isPresent()) {
-      // if (!result.isPresent()) {
+      // if (result.isNIL()) {
       // result = lhsPatternExpr.setAtCopy(i, temp);
       // // result.setEvalFlags(lhsPatternExpr.getEvalFlags());
       // } else {

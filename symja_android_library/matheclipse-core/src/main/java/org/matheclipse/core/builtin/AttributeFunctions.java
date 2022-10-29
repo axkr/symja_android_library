@@ -74,7 +74,7 @@ public class AttributeFunctions {
         // final IASTAppendable result = F.ListAlloc(list.size());
         // for (int i = 1; i < list.size(); i++) {
         // IExpr temp = attributesList(list.get(i), ast, engine);
-        // if (!temp.isPresent()) {
+        // if (temp.isNIL()) {
         // return F.NIL;
         // }
         // result.append(temp);
@@ -160,7 +160,7 @@ public class AttributeFunctions {
             IExpr arg2 = engine.evaluate(ast.arg2());
             for (int i = 1; i < list.size(); i++) {
               IExpr temp = clearAttributes(list.get(i), arg2, ast, engine);
-              if (!temp.isPresent()) {
+              if (temp.isNIL()) {
                 return F.NIL;
               }
             }
@@ -188,7 +188,7 @@ public class AttributeFunctions {
      */
     private IExpr clearAttributes(final IExpr expr, IExpr attributes, IAST ast, EvalEngine engine) {
       IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
-      if (!x.isPresent()) {
+      if (x.isNIL()) {
         return F.NIL;
       }
       ISymbol sym = (ISymbol) x;
@@ -287,7 +287,7 @@ public class AttributeFunctions {
       IASTMutable mutable = ast.copyAST();
       for (int i = 1; i < ast.size(); i++) {
         IExpr x = Validate.checkIdentifierHoldPattern(ast.get(i), ast, engine);
-        if (!x.isPresent()) {
+        if (x.isNIL()) {
           return F.NIL;
         }
         mutable.set(i, x);
@@ -319,7 +319,7 @@ public class AttributeFunctions {
         IASTMutable mutable = ast.copyAST();
         for (int i = 1; i < ast.size(); i++) {
           IExpr x = Validate.checkIdentifierHoldPattern(ast.get(i), ast, engine);
-          if (!x.isPresent()) {
+          if (x.isNIL()) {
             return F.NIL;
           }
           mutable.set(i, x);
@@ -406,7 +406,7 @@ public class AttributeFunctions {
       for (int i = 1; i < listOfSymbols.size(); i++) {
         final IExpr arg = listOfSymbols.get(i);
         if (arg.isSymbol()) {
-          if (!addAttributes(arg, attributes, ast, engine).isPresent()) {
+          if (addAttributes(arg, attributes, ast, engine).isNIL()) {
             return F.NIL;
           }
         }
@@ -425,7 +425,7 @@ public class AttributeFunctions {
     private static IExpr addAttributes(final IExpr expr, IExpr attributes, IAST ast,
         EvalEngine engine) {
       IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
-      if (!x.isPresent()) {
+      if (x.isNIL()) {
         return F.NIL;
       }
       ISymbol sym = (ISymbol) x;
@@ -531,7 +531,7 @@ public class AttributeFunctions {
    */
   public static IAST attributesList(final IExpr expr, IAST ast, EvalEngine engine) {
     IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
-    if (!x.isPresent()) {
+    if (x.isNIL()) {
       return F.NIL;
     }
     ISymbol symbol = (ISymbol) x;

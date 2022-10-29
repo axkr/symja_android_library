@@ -55,7 +55,7 @@ public class TrigToExp extends AbstractEvaluator {
     IExpr arg1 = ast.arg1();
     Function<IExpr, IExpr> fun = x -> {
       IExpr t = x.rewrite(ID.Exp);
-      if (!t.isPresent()) {
+      if (t.isNIL()) {
         return x.rewrite(ID.Log);
       }
       return t.rewrite(ID.Log).orElse(t);

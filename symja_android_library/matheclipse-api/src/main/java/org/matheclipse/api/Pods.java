@@ -1133,7 +1133,7 @@ public class Pods {
               if (numpods == 1) {
                 // only Identity pod was appended
                 if (errorString.length() == 0 && //
-                    !firstEval.isPresent()) {
+                    firstEval.isNIL()) {
                   addSymjaPod(podsArray, expr, outExpr, "Evaluated result", "Expression", formats,
                       engine);
                   numpods++;
@@ -1560,7 +1560,7 @@ public class Pods {
     // // this includes syntax errors
     // LOGGER.debug("Pods: Ask.ask() failed", ex);
     // }
-    if (!inExpr.isPresent()) {
+    if (inExpr.isNIL()) {
       final FuzzyParser parser = new FuzzyParser(engine);
       try {
         inExpr = parser.parseFuzzyList(inputStr);
@@ -1592,7 +1592,7 @@ public class Pods {
             specialFunction.remove(1);
           }
         }
-        if (!specialFunction.isPresent()) {
+        if (specialFunction.isNIL()) {
           stemForm = getStemForm(rest.last().toString().toLowerCase());
           if (stemForm != null) {
             head = STEM.getSymbol(stemForm);

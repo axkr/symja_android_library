@@ -225,7 +225,7 @@ public final class PlusOp {
           evaled = true;
           return F.NIL;
         }
-        if (!numberValue.isPresent()) {
+        if (numberValue.isNIL()) {
           numberValue = arg;
           return F.NIL;
         }
@@ -256,7 +256,7 @@ public final class PlusOp {
         return F.NIL;
       } else if (arg.isQuantity()) {
         // if (arg.isQuantity()) {
-        if (!numberValue.isPresent()) {
+        if (numberValue.isNIL()) {
           numberValue = arg;
           return F.NIL;
         }
@@ -279,7 +279,7 @@ public final class PlusOp {
           switch (headID) {
             case ID.DirectedInfinity:
               if (arg.isDirectedInfinity()) {
-                if (!numberValue.isPresent()) {
+                if (numberValue.isNIL()) {
                   numberValue = arg;
                   if (arg.isComplexInfinity()) {
                     if (plusMap != null && plusMap.size() > 0) {
@@ -344,7 +344,7 @@ public final class PlusOp {
               return F.NIL;
             case ID.Interval:
               if (arg.isInterval()) {
-                if (!numberValue.isPresent()) {
+                if (numberValue.isNIL()) {
                   numberValue = arg;
                   return F.NIL;
                 }
@@ -367,7 +367,7 @@ public final class PlusOp {
               break;
             // case ID.Quantity:
             // if (arg.isQuantity()) {
-            // if (!numberValue.isPresent()) {
+            // if (numberValue.isNIL()) {
             // numberValue = arg;
             // return F.NIL;
             // }
@@ -381,7 +381,7 @@ public final class PlusOp {
             // break;
             case ID.SeriesData:
               if (arg instanceof ASTSeriesData) {
-                if (!numberValue.isPresent()) {
+                if (numberValue.isNIL()) {
                   numberValue = arg;
                   return F.NIL;
                 }
@@ -392,7 +392,7 @@ public final class PlusOp {
               break;
           }
         }
-        // } else if (!numberValue.isPresent() && arg.isRealResult()) {
+        // } else if (numberValue.isNIL() && arg.isRealResult()) {
         // numberValue = arg;
         // return F.NIL;
       }

@@ -7597,7 +7597,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     System.out.print('.');
     check("Factor(4^(2*x+1)*5^(x-2)-6^(1-x))", //
-        "(2^(1-x)*(-75+2^(1+5*x)*3^x*5^x))/(25*3^x)");
+        "(2^(1-x)*(-75+2^(1+5*x)*15^x))/(25*3^x)");
     System.out.print('.');
     check("Factor(E^x+E^(2*x))", //
         "E^x*(1+E^x)");
@@ -8636,6 +8636,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FindFit(Table(Prime(x), {x, 20}), a*x*Log(b + c*x), {{a,0},{b,0},{c,0}}, x)", //
         "FindFit({2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71},a*x*Log(b+c*x),{{a,\n"
             + "0},{b,0},{c,0}},x)");
+  }
+
+  public void testFindLinearRecurrence() {
+    check("FindLinearRecurrence({1, 2, 4, 7, 28, 128, 582, 2745, 13021, 61699, 292521, 1387138})", //
+        "{5,-2,6,-11}");
+    check("FindLinearRecurrence(Table(2^k, {k, 10}))", //
+        "{2}");
+    check("FindLinearRecurrence(Table(Fibonacci(k)*Fibonacci(k-1)^2, {k, 10}))", //
+        "{3,6,-3,-1}");
+
+    check("data = LinearRecurrence({4, 3, 2, 1}, {1, 2, 3, 4}, 10)", //
+        "{1,2,3,4,30,140,661,3128,14805,70066}");
+    check("FindLinearRecurrence(data)", //
+        "{4,3,2,1}");
+
   }
 
   public void testFindMaximum() {
@@ -19223,7 +19238,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Power(a, Power(b, c))");
     check("FullForm((a^b)^c)", //
         "Power(Power(a, b), c)");
-    check("(a*b)^3", "a^3*b^3");
+    check("(a*b)^3", //
+        "a^3*b^3");
     check("(a*b)^(1/2)", //
         "Sqrt(a*b)");
     check("FullForm((a^b)^3)", //
@@ -21855,6 +21871,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // }
 
   public void testSimplify() {
+
     check("Simplify(0^x, x==0)", //
         "Indeterminate");
     check("Simplify(0^x, x>0)", //

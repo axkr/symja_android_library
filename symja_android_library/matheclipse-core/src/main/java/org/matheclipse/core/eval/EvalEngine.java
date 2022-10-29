@@ -709,7 +709,7 @@ public class EvalEngine implements Serializable {
 
     final IExpr evaledArg = evalLoop(arg);
     if (evaledArg.isPresent()) {
-      if (!result0[0].isPresent()) {
+      if (result0[0].isNIL()) {
         result0[0] = ast.copy();
         if (isNumericFunction && evaledArg.isNumericArgument()) {
           result0[0].addEvalFlags(
@@ -823,7 +823,7 @@ public class EvalEngine implements Serializable {
       }
       if (!isNumericArgument && ast.isNumericArgument()) {
         // one of the arguments is a numeric value
-        if (!rlist[0].isPresent()) {
+        if (rlist[0].isNIL()) {
           return evalArgs(ast, attributes);
         }
       }
@@ -1040,7 +1040,7 @@ public class EvalEngine implements Serializable {
           case 1:
             if (ast.isAST1()) {
               opres.result = F.operatorForm1Append(ast);
-              if (!opres.result.isPresent()) {
+              if (opres.result.isNIL()) {
                 return null;
               }
             }
@@ -1048,7 +1048,7 @@ public class EvalEngine implements Serializable {
           case 2:
             if (ast.head().isAST1()) {
               opres.result = F.operatorForm2Prepend(ast, expected, this);
-              if (!opres.result.isPresent()) {
+              if (opres.result.isNIL()) {
                 return null;
               }
             }
@@ -1509,7 +1509,7 @@ public class EvalEngine implements Serializable {
               IAST temp = (IAST) ast.get(i);
               IExpr expr = evalFlatOrderlessAttributesRecursive(temp);
               if (expr.isPresent()) {
-                if (!resultList.isPresent()) {
+                if (resultList.isNIL()) {
                   resultList = ast.copy();
                 }
                 resultList.set(i, expr);
@@ -1606,7 +1606,7 @@ public class EvalEngine implements Serializable {
    * @see #evaluateNIL(IExpr)
    */
   private final IExpr evalLoop(final IExpr expr) {
-    if (expr == null || !expr.isPresent()) {
+    if (expr == null || expr.isNIL()) {
       if (Config.FUZZ_TESTING) {
         throw new NullPointerException();
       }
@@ -1817,7 +1817,7 @@ public class EvalEngine implements Serializable {
       if (!temp.isInexactNumber() && temp.isNumericFunction(true)) {
         temp = evalLoop(F.N(temp));
         if (temp.isPresent()) {
-          if (!copy.isPresent()) {
+          if (copy.isNIL()) {
             copy = ast1.copy();
           }
           copy.set(i, evalN(temp));
@@ -3387,7 +3387,7 @@ public class EvalEngine implements Serializable {
       if (arg.isAST()) {
         arg = preevalForwardBackward((IAST) arg);
         if (arg.isPresent()) {
-          if (!preevaled.isPresent()) {
+          if (preevaled.isNIL()) {
             preevaled = ast.copy();
           }
           preevaled.set(i, arg);

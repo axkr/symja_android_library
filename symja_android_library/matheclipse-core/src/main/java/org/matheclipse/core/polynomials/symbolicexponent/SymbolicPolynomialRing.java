@@ -585,7 +585,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
         continue;
       } else if (expr.equals(x)) {
         final IExpr exponent = F.C1;
-        if (!mainExponent.isPresent()) {
+        if (mainExponent.isNIL()) {
           mainExponent = exponent;
           continue;
         }
@@ -593,7 +593,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
         final IExpr exponent = expr.exponent();
         if (exponent.isFree(x)) {
           if (expr.base().equals(x)) {
-            if (!mainExponent.isPresent()) {
+            if (mainExponent.isNIL()) {
               mainExponent = exponent;
               continue;
             }
@@ -618,7 +618,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
         times.append(expr);
         continue;
       } else if (expr.equals(x)) {
-        if (!mainExponent.isPresent()) {
+        if (mainExponent.isNIL()) {
           mainExponent = F.C1;
           continue;
         }
@@ -627,7 +627,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
         final IExpr exponent = expr.exponent();
         if (exponent.isFree(x)) {
           if (base.equals(x)) {
-            if (exponent.isInteger() && !mainExponent.isPresent()) {
+            if (exponent.isInteger() && mainExponent.isNIL()) {
               mainExponent = exponent;
               continue;
             }

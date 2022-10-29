@@ -1998,7 +1998,7 @@ public final class StringFunctions {
             for (int i = 1; i < list.size(); i++) {
               IExpr temp =
                   stringPosition(ast, arg1, list.get(i), maxOccurences, ignoreCase, result, engine);
-              if (!temp.isPresent()) {
+              if (temp.isNIL()) {
                 return F.NIL;
               }
               if (maxOccurences < result.size()) {

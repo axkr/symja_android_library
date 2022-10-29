@@ -3552,6 +3552,9 @@ public class S {
   public final static IBuiltInSymbol FindInstance =
       F.initFinalSymbol("FindInstance", ID.FindInstance);
 
+  public final static IBuiltInSymbol FindLinearRecurrence =
+      F.initFinalSymbol("FindLinearRecurrence", ID.FindLinearRecurrence);
+
   /**
    * FindMaximum(f, {x, xstart}) - searches for a local numerical maximum of `f` for the variable
    * `x` and the start value `xstart`.

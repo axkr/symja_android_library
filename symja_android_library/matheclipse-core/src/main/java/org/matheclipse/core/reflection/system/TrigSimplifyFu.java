@@ -29,9 +29,9 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.sympy.core.ExprTools;
+import org.matheclipse.core.sympy.core.ExprTools.Factors;
 import org.matheclipse.core.sympy.core.Operations;
 import org.matheclipse.core.sympy.core.Traversal;
-import org.matheclipse.core.sympy.core.ExprTools.Factors;
 import org.matheclipse.core.sympy.exception.ValueError;
 import org.matheclipse.core.sympy.ntheory.Factor;
 
@@ -513,7 +513,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   }
 
   private static boolean tr3IsPositive(IExpr arg) {
-    return !AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg).isPresent();
+    return AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg).isNIL();
   }
 
   private static IExpr tr3Step(IExpr expr) {
@@ -693,7 +693,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       e = ((IInteger) exp).iquo(F.C2);
     } else {
       IExpr p = Factor.perfectPower(exp);
-      if (!p.isPresent()) {
+      if (p.isNIL()) {
         return F.NIL;
       }
       e = ((IInteger) exp).iquo(F.C2);
@@ -880,7 +880,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
       // two args Plus(a1, a2)
       IAST split = trigSplit(args.arg1(), args.arg2());
-      if (!split.isPresent()) {
+      if (split.isNIL()) {
         return rv;
       }
       IExpr gcd = split.arg1();
@@ -953,7 +953,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
     // get the parts
     IAST m = powCosSin(a, two);
-    if (!m.isPresent()) {
+    if (m.isNIL()) {
       return F.NIL;
     }
     IExpr coa = m.arg1();
@@ -961,7 +961,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     IExpr sa = m.arg3();
 
     m = powCosSin(b, two);
-    if (!m.isPresent()) {
+    if (m.isNIL()) {
       return F.NIL;
     }
     IExpr cob = m.arg1();
@@ -970,7 +970,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
     // check them
 
-    if (!ca.isPresent() && cb.isPresent() || ca.isSin()) {
+    if (ca.isNIL() && cb.isPresent() || ca.isSin()) {
       // coa, ca, sa, cob, cb, sb = cob, cb, sb, coa, ca, sa
       temp = coa;
       coa = cob;
@@ -998,7 +998,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       return F.List(gcd, n1, n2, c.first(), s.first(), F.booleSymbol(c.isCos()));
     }
 
-    if (!coa.isPresent() && !cob.isPresent()) {
+    if (coa.isNIL() && cob.isNIL()) {
       if (ca.isPresent() && cb.isPresent() && sa.isPresent() && sb.isPresent()) {
         if (ca.isAST(sa.head()) && !cb.isAST(sb.head())) {
           return F.NIL;
@@ -1016,7 +1016,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       }
     }
     if (ca.isPresent() && sa.isPresent() || cb.isPresent() && sb.isPresent() //
-        || two && (!ca.isPresent() && !sa.isPresent() || !cb.isPresent() && !sb.isPresent())) {
+        || two && (ca.isNIL() && sa.isNIL() || cb.isNIL() && sb.isNIL())) {
       return F.NIL;
     }
     IExpr c = ca.isPresent() ? ca : sa;
@@ -1024,10 +1024,10 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     if (!c.equalsArgs(s)) {
       return F.NIL;
     }
-    if (!coa.isPresent()) {
+    if (coa.isNIL()) {
       coa = F.C1;
     }
-    if (!cob.isPresent()) {
+    if (cob.isNIL()) {
       cob = F.C1;
     }
     if (coa.equals(cob)) {
@@ -1105,7 +1105,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     } else if (a.isSin()) {
       s = a;
     }
-    if (!c.isPresent() && !s.isPresent()) {
+    if (c.isNIL() && s.isNIL()) {
       return F.NIL;
     }
     if (co.isOne()) {
@@ -1345,7 +1345,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
     // two-arg Plus
     IAST split = trigSplit(rv.arg1(), rv.arg2(), true);
-    if (!split.isPresent()) {
+    if (split.isNIL()) {
       return F.NIL;
     }
     IExpr gcd = split.arg1();
@@ -1543,7 +1543,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
         e = F.C1;
       }
       IAST m = asFSign1(a);
-      if (!m.isPresent() //
+      if (m.isNIL() //
           || (!m.second().isCos() && !m.second().isSin())) {
         if (e.isOne()) {
           other.append(a);

@@ -73,7 +73,7 @@ public class TrigExpand extends AbstractEvaluator {
 
     private static IExpr distributeTimes(IExpr expr) {
       if (expr.isTimes()) {
-        return Algebra.distributeTimes((IAST) expr);
+        return Algebra.distributeTimes(expr);
       }
       return expr;
     }
@@ -377,7 +377,7 @@ public class TrigExpand extends AbstractEvaluator {
 
     IExpr result = evalExpandAll(ast.arg1(), engine);
     temp = result.accept(TRIG_EXPAND_VISITOR);
-    if (!temp.isPresent()) {
+    if (temp.isNIL()) {
       return ast.arg1();
     }
     do {

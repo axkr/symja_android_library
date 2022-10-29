@@ -137,7 +137,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         IExpr result = F.NIL;
         for (int i = 1; i < derivativeHead.size(); i++) {
           IExpr nTimes = derivativeHead.get(i);
-          if (!result.isPresent()) {
+          if (result.isNIL()) {
             result = functions;
           }
           if (result.size() >= 2) {
@@ -241,7 +241,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
           dExpr = F.D(newFunction, symbol);
           dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);
           dResult = engine.evalRules(S.D, dExpr);
-          if (!dResult.isPresent()) {
+          if (dResult.isNIL()) {
             return F.NIL;
           } else {
             newFunction = engine.evaluate(dResult);

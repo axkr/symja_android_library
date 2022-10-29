@@ -135,7 +135,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
         }
 
         final IAST color = GraphicsFunctions.plotStyleColorExpr(lineColorNumber++, plotStyle);
-        if (!resultList.isPresent()) {
+        if (resultList.isNIL()) {
           resultList = F.ListAlloc(valuesSize);
         }
         resultList.append(color);

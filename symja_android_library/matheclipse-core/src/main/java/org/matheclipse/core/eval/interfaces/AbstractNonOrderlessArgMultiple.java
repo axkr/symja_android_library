@@ -58,7 +58,7 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 
       while (i < size) {
         tres = binaryOperator(ast, temp, ast.get(i), engine);
-        if (!tres.isPresent()) {
+        if (tres.isNIL()) {
           result.append(temp);
           if (i == size - 1) {
             result.append(ast.get(i));

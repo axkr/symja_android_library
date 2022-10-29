@@ -49,7 +49,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
   public void testExpand004() {
     IAST ast = Plus(Sow(Power(a, 2)), C1);
     IExpr temp = Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
-    if (!temp.isPresent()) {
+    if (temp.isNIL()) {
       temp = ast;
     }
     assertEquals(temp.toString(), "1+Sow(a^2)");
@@ -80,7 +80,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
     // Sec(x)^2*Sin(x)^2
     IAST ast = Times(Power(Sec(x), C2), Power(Sin(x), 2));
     IExpr temp = Algebra.expand(ast, null, true, false, true);
-    if (!temp.isPresent()) {
+    if (temp.isNIL()) {
       assertEquals(ast.toString(), "Sec(x)^2*Sin(x)^2");
       return;
     }

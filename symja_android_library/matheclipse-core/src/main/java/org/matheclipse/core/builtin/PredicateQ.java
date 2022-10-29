@@ -660,12 +660,6 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      // if (ast.isAST1()) {
-      // ast = F.operatorForm1Append(ast);
-      // if (!ast.isPresent()) {
-      // return F.NIL;
-      // }
-      // }
       if ((ast.isAST2())) {
         IExpr arg1 = ast.arg1();
         IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
