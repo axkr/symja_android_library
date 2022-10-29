@@ -319,6 +319,7 @@
 * [FindGraphIsomorphism](functions/FindGraphIsomorphism.md)
 * [FindHamiltonianCycle](functions/FindHamiltonianCycle.md)
 * [FindInstance](functions/FindInstance.md)
+* [FindLinearRecurrence](functions/FindLinearRecurrence.md)
 * [FindMaximum](functions/FindMaximum.md)
 * [FindMinimum](functions/FindMinimum.md)
 * [FindPermutation](functions/FindPermutation.md)
