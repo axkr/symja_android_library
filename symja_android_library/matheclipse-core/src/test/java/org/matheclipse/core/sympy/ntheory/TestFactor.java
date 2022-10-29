@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.math.BigInteger;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.sympy.ntheory.Factor;
 
 public class TestFactor {
   @Test

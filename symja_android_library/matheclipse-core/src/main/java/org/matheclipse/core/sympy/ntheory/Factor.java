@@ -125,7 +125,7 @@ public class Factor {
 
       long minPossible = 2L + notSquare;
       if (maxPossible > 0) {
-        if (!candidates.isPresent()) {
+        if (candidates.isNIL()) {
           candidates = Generate.primeRange(minPossible, maxPossible);
         } else {
           IASTAppendable newCandidates = F.ListAlloc();
@@ -197,7 +197,7 @@ public class Factor {
               // gcd(e, E) != 1 so n = (fac**(e//E)*r)**E
               IInteger m = ni.iquo(fac).powerRational(ei);
               IPair rE = perfectPower(m, divisors(F.ZZ(ei), true, false));
-              if (!rE.isPresent()) {
+              if (rE.isNIL()) {
                 return F.NIL;
               }
               r = (IInteger) rE.first();

@@ -9,7 +9,7 @@ public class TestHyperbolic {
   public void test_asinh_leading_term() {
     // https://github.com/sympy/sympy/blob/3cd03df7724a6a05405693cc0aaabaf5a780b844/sympy/functions/elementary/tests/test_hyperbolic.py#L572
     ISymbol x = F.x;
-    // assertEquals(F.ArcSinh(x).asLeadingTerm(x, 1).toString(),//
+    // assertEquals(F.ArcSinh(x).asLeadingTerm(x, 1).toString(), //
     // "x");
     // assertEquals(F.ArcSinh(F.Plus(F.CI, x)).asLeadingTerm(x, 1).toString(), //
     // "1/2*I*Pi");

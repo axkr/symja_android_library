@@ -8,7 +8,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.sympy.core.Expr;
 
 public class TestExpr {
   @Test
@@ -333,6 +332,27 @@ public class TestExpr {
   }
 
   @Test
+  public void test_leadterm() {
+    // https://github.com/sympy/sympy/blob/7158ec42de7d8b02ad8809fdbb87daa0da4ca121/sympy/core/tests/test_expr.py#L1268
+    ISymbol x = F.x;
+    ISymbol y = F.y;
+
+    // assert (3 + 2*x**(log(3)/log(2) - 1)).leadterm(x) == (3, 0)
+    //
+    // assert (1/x**2 + 1 + x + x**2).leadterm(x)[1] == -2
+    // assert (1/x + 1 + x + x**2).leadterm(x)[1] == -1
+    // assert (x**2 + 1/x).leadterm(x)[1] == -1
+    // assert (1 + x**2).leadterm(x)[1] == 0
+    // assert (x + 1).leadterm(x)[1] == 0
+    // assert (x + x**2).leadterm(x)[1] == 1
+    // assertEquals(F.Plus(x, F.Power(x, 2)).leadTerm(x).toString(), //
+    // "1");
+    // // assert (x**2).leadterm(x)[1] == 2
+    // assertEquals(F.Power(x, 2).leadTerm(x).toString(), //
+    // "{1,2}");
+  }
+
+  @Test
   public void test_as_powers_dict() {
     ISymbol x = F.x;
     ISymbol y = F.y;
@@ -413,7 +433,7 @@ public class TestExpr {
 
     // assert (z*(1 + x)*x**2).coeff(1 + x) == z*x**2
     assertEquals(Expr.coeff(F.Times(F.Plus(F.C1, x), F.Power(x, 2), z), F.Plus(F.C1, x)).toString(), //
-        "x^2*z");
+        "z*x^2");
 
     // assert (1 + 2*x*x**(1 + x)).coeff(x*x**(1 + x)) == 2
     assertEquals(

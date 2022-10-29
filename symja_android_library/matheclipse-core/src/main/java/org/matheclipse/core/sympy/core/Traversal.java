@@ -75,7 +75,7 @@ public class Traversal {
         for (int i = 1; i < size; i++) {
           IExpr arg = bottomUpNIL(ast.get(i), function, atoms, nonbasic);
           if (arg.isPresent()) {
-            if (!result.isPresent()) {
+            if (result.isNIL()) {
               result = ast.copy();
             }
             result.set(i, arg);

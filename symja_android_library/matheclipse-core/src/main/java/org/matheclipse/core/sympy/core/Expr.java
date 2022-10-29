@@ -250,7 +250,7 @@ public class Expr {
       IExpr co = p.first();
       IExpr t = p.second();
       IExpr xa = extractAdditively(co, c);
-      if (!xa.isPresent()) {
+      if (xa.isNIL()) {
         return F.NIL;
       }
       return xa.plus(((IAST) t).oneIdentity0());
@@ -275,11 +275,11 @@ public class Expr {
       IExpr sh = ps.first();
       IExpr st = ps.second();
       IExpr xa = extractAdditively(sh, h);
-      if (!xa.isPresent()) {
+      if (xa.isNIL()) {
         return F.NIL;
       }
       IExpr xa2 = extractAdditively(st, t);
-      if (!xa2.isPresent()) {
+      if (xa2.isNIL()) {
         return F.NIL;
       }
       return xa.plus(xa2);
@@ -302,14 +302,14 @@ public class Expr {
       IExpr ac = pa.first();
       IExpr at = pa.second();
       IExpr co = coeff(self, at);
-      if (!co.isPresent()) {
+      if (co.isNIL()) {
         return F.NIL;
       }
       Pair pc = co.asCoeffAdd();
       IExpr coc = pc.first();
       IExpr cot = pc.second();
       IExpr xa = extractAdditively(coc, ac);
-      if (!xa.isPresent()) {
+      if (xa.isNIL()) {
         return F.NIL;
       }
       self = self.subtract(co.times(at));
@@ -321,6 +321,10 @@ public class Expr {
 
   public static IExpr coeff(IExpr self, IExpr x) {
     return coeff(self, x, 1, false, true);
+  }
+
+  public static IExpr coeff(IExpr self, IExpr x, int n) {
+    return coeff(self, x, n, false, true);
   }
 
   public static IExpr coeff(IExpr self, final IExpr x0, int n, boolean right, boolean _first) {
@@ -422,6 +426,92 @@ public class Expr {
       return co.oneIdentity0();
     }
     return F.NIL;
+  }
+
+  /**
+   * Removes the additive O(..) order symbol if there is one
+   * 
+   * @param self
+   * @return
+   */
+  public static IExpr removeO(IExpr self) {
+    if (self.isPlus()) {
+      IAST selected = ((IAST) self).select(x -> !x.isAST(S.O, 2));
+      return selected;
+    }
+    return self;
+  }
+
+  /**
+   * Returns the additive O(..) order symbol if there is one, else {@link F#NIL}
+   * 
+   * @param self
+   * @return
+   */
+  public static IExpr getO(IExpr self) {
+    if (self.isPlus()) {
+      IAST selected = ((IAST) self).select(x -> x.isAST(S.O, 2));
+      if (selected.argSize() > 0) {
+        return selected;
+      }
+    }
+    return F.NIL;
+  }
+
+  public static IExpr getN(IExpr self) throws UnsupportedOperationException {
+    // Returns the order of the expression.
+    //
+    // Explanation
+    // ===========
+    //
+    // The order is determined either from the O(...) term. If there
+    // is no O(...) term, it returns None.
+    //
+    // Examples
+    // ========
+    //
+    // >>> from sympy import O
+    // >>> from sympy.abc import x
+    // >>> (1 + x + O(x**2)).getn()
+    // 2
+    // >>> (1 + x).getn()
+    IExpr o = getO(self);
+    if (o.isNIL()) {
+      return F.NIL;
+    }
+    if (o.isAST(S.O, 2)) {
+      o = o.first();
+      if (o.isOne()) {
+        return F.C0;
+      }
+      if (o.isSymbol()) {
+        return F.C1;
+      }
+      if (o.isPower()) {
+        return o.second();
+      }
+      if (o.isTimes()) {
+        IAST timesAST = (IAST) o;
+        for (int i = 1; i < timesAST.size(); i++) {
+          IExpr oi = timesAST.get(i);
+          if (oi.isSymbol()) {
+            return F.C1;
+          }
+          if (oi.isPower()) {
+            IASTAppendable syms = Basic.atoms((IAST) oi, x -> x.isSymbol());
+            if (syms.argSize() == 1) {
+              IExpr x = syms.remove(1);
+              oi = oi.subs(x, F.symbol("x", F.Greater(F.Slot1, F.C0)));
+              if (oi.base().isSymbol() && oi.exponent().isRational()) {
+                return oi.exponent().abs();
+              }
+            }
+
+          }
+        }
+      }
+    }
+    throw new UnsupportedOperationException("not sure of order of " + o);
   }
 
 }
