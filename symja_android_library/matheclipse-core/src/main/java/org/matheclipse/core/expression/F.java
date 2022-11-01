@@ -141,6 +141,7 @@ import org.matheclipse.parser.trie.TrieMatch;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import edu.jas.kern.ComputerThreads;
+import edu.jas.kern.JASConfig;
 import edu.jas.kern.PreemptStatus;
 
 /** Factory for creating Symja predefined function expression objects (interface {@link IAST}). */
@@ -804,6 +805,8 @@ public class F extends S {
       ExprParserFactory.initialize();
 
       PreemptStatus.setNotAllow();
+      JASConfig.MAX_DEGREE_KRONECKER_FACTORIZATION = 100;
+      JASConfig.MAX_ITERATIONS_KRONECKER_FACTORIZATION = 100;
       ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;
 
       ApfloatContext ctx = ApfloatContext.getContext();
@@ -3742,6 +3745,14 @@ public class F extends S {
       } else if (ast.isTimes() || ast.isPower()) {
         return engine.evaluate(Expand(expr));
       }
+    }
+    return expr;
+  }
+
+  public static IExpr evalCollect(IExpr expr, IExpr x) {
+    if (expr.isAST()) {
+      EvalEngine engine = EvalEngine.get();
+      return engine.evaluate(Collect(expr, x));
     }
     return expr;
   }
@@ -8156,6 +8167,7 @@ public class F extends S {
     Documentation.usageDocumentation(buf, symbolName);
     return buf.toString();
   }
+
   /**
    * Create a unique dummy symbol which is retrieved from the evaluation engines DUMMY context. A
    * &quot;Dummy&quot; symbol is not known in string parsing.

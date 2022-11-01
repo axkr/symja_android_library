@@ -245,7 +245,7 @@
 			<dependency>
 				<groupId>de.uni-mannheim.rz.krum</groupId>
 				<artifactId>jas</artifactId>
-				<version>2.7.150</version>
+				<version>2.7.161</version>
 			</dependency>
 
 			<dependency>
