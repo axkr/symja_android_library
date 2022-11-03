@@ -15,8 +15,12 @@ public interface IGraphics3D {
     return false;
   }
 
-  default boolean graphics2D(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
+  default boolean graphics2DSVG(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
       IExpr opacity) {
+    return false;
+  }
+
+  default boolean graphics2D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
     return false;
   }
 

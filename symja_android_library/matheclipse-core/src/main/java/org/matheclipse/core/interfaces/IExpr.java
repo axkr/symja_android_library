@@ -1083,6 +1083,21 @@ public interface IExpr
   }
 
   /**
+   * * Compare if <code>this >= other</code:
+   * <ul>
+   * <li>return S.True if the comparison is <code>true</code></li>
+   * <li>return S.False if the comparison is <code>false</code></li>
+   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * </ul>
+   * 
+   * @param other
+   * @return
+   */
+  public default IExpr greaterEqualThan(int other) {
+    return greaterEqualThan(F.ZZ(other));
+  }
+
+  /**
    * Compare if <code>this >= that</code:
    * <ul>
    * <li>return S.True if the comparison is <code>true</code></li>
@@ -1099,6 +1114,21 @@ public interface IExpr
   }
 
   /**
+   * Compare if <code>this > other</code:
+   * <ul>
+   * <li>return S.True if the comparison is <code>true</code></li>
+   * <li>return S.False if the comparison is <code>false</code></li>
+   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * </ul>
+   * 
+   * @param other
+   * @return
+   */
+  public default IExpr greaterThan(int other) {
+    return greaterThan(F.ZZ(other));
+  }
+
+  /**
    * Compare if <code>this > that</code:
    * <ul>
    * <li>return S.True if the comparison is <code>true</code></li>
@@ -1112,6 +1142,23 @@ public interface IExpr
   public default IExpr greaterThan(IExpr that) {
     COMPARE_TERNARY temp = BooleanFunctions.CONST_GREATER.prepareCompare(this, that);
     return convertToExpr(temp);
+  }
+
+  /**
+   * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the
+   * expression itself, did not match the collection of pattern-matching expressions. Calls
+   * {@link #has(pattern, true)}.
+   * 
+   * @param collection a collection of pattern-matching expressions
+   * @return
+   */
+  default boolean has(Collection<IExpr> collection) {
+    for (IExpr expr : collection) {
+      if (has(expr, true)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -3989,6 +4036,21 @@ public interface IExpr
   }
 
   /**
+   * Compare if <code>this <= other</code:
+   * <ul>
+   * <li>return S.True if the comparison is <code>true</code></li>
+   * <li>return S.False if the comparison is <code>false</code></li>
+   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * </ul>
+   * 
+   * @param other
+   * @return
+   */
+  public default IExpr lessEqualThan(int other) {
+    return lessEqualThan(F.ZZ(other));
+  }
+
+  /**
    * Compare if <code>this <= that</code:
    * <ul>
    * <li>return S.True if the comparison is <code>true</code></li>
@@ -4002,6 +4064,21 @@ public interface IExpr
   public default IExpr lessEqualThan(IExpr that) {
     COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS_EQUAL.prepareCompare(this, that);
     return convertToExpr(temp);
+  }
+
+  /**
+   * Compare if <code>this < that</code:
+   * <ul>
+   * <li>return S.True if the comparison is <code>true</code></li>
+   * <li>return S.False if the comparison is <code>false</code></li>
+   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * </ul>
+   * 
+   * @param other
+   * @return
+   */
+  public default IExpr lessThan(int other) {
+    return lessThan(F.ZZ(other));
   }
 
   /**
@@ -5457,7 +5534,23 @@ public interface IExpr
     return F.pair(F.C0, F.Plus(this));
   }
 
-  default Pair asCoeffAdd(ISymbol x) {
+  default Pair asCoeffAdd(Collection<IExpr> collection) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2076
+
+    if (!has(collection)) {
+      return F.pair(this, F.Plus());
+    }
+    if (isPlus()) {
+      IAST plusAST = (IAST) this;
+      IASTAppendable[] filter = plusAST.filter(arg -> arg.has(collection));
+      IASTAppendable l1 = filter[0];
+      IASTAppendable l2 = filter[1];
+      return F.pair(l2.oneIdentity0(), l1);
+    }
+    return F.pair(F.C0, F.Plus(this));
+  }
+
+  default Pair asCoeffAdd(IExpr x) {
     // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2076
 
     if (!has(x)) {

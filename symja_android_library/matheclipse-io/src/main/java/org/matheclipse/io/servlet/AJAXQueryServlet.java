@@ -199,17 +199,27 @@ public class AJAXQueryServlet extends HttpServlet {
         IExpr outExpr = evalTopLevel(engine, outBuffer, inExpr);
         if (outExpr != null) {
           if (outExpr.isAST(S.Graphics)) {
-            try {
-              String html = Config.SVG_PAGE;
-              StringBuilder stw = new StringBuilder();
-              GraphicsFunctions.graphicsToSVG((IAST) outExpr, stw);
-              html = StringUtils.replace(html, "`1`", stw.toString());
-              html = StringEscapeUtils.escapeHtml4(html);
-              return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-            } catch (Exception ex) {
-              LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
+            StringBuilder buf = new StringBuilder();
+            if (GraphicsFunctions.renderGraphics2D(buf, (IAST) outExpr, engine)) {
+              try {
+                return JSONBuilder.createGraphics2DIFrame(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE,
+                    buf.toString());
+              } catch (Exception ex) {
+                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
+              }
             }
+            // try {
+            // String html = Config.SVG_PAGE;
+            // StringBuilder stw = new StringBuilder();
+            // GraphicsFunctions.graphicsToSVG((IAST) outExpr, stw);
+            // html = StringUtils.replace(html, "`1`", stw.toString());
+            // html = StringEscapeUtils.escapeHtml4(html);
+            // return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
+            // + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"
+            // ></iframe>");
+            // } catch (Exception ex) {
+            // LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
+            // }
           } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
             StringBuilder buf = new StringBuilder();
             if (GraphicsFunctions.renderGraphics3D(buf, (IAST) outExpr, engine)) {

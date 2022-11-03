@@ -10020,13 +10020,23 @@ public class F extends S {
   public static String showGraphic(IExpr expr) {
     try {
       if (expr.isSameHeadSizeGE(Graphics, 2)) {
-        return openSVGOnDesktop((IAST) expr);
+        StringBuilder buf = new StringBuilder();
+        if (GraphicsFunctions.renderGraphics2D(buf, (IAST) expr, EvalEngine.get())) {
+          try {
+            String graphicsStr = buf.toString();
+            String html = JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_TEMPLATE, graphicsStr);
+            return openHTMLOnDesktop(html);
+          } catch (Exception ex) {
+            LOGGER.debug("JSBuilder.buildGraphics2D() failed", ex);
+          }
+        }
+        // return openSVGOnDesktop((IAST) expr);
       } else if (expr.isSameHeadSizeGE(Graphics3D, 2)) {
         StringBuilder buf = new StringBuilder();
         if (GraphicsFunctions.renderGraphics3D(buf, (IAST) expr, EvalEngine.get())) {
           try {
-            String manipulateStr = buf.toString();
-            String html = JSBuilder.buildGraphics3D(JSBuilder.GRAPHICS3D_TEMPLATE, manipulateStr);
+            String graphics3DStr = buf.toString();
+            String html = JSBuilder.buildGraphics3D(JSBuilder.GRAPHICS3D_TEMPLATE, graphics3DStr);
             return openHTMLOnDesktop(html);
           } catch (Exception ex) {
             LOGGER.debug("JSBuilder.buildGraphics3D() failed", ex);

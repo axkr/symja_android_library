@@ -180,7 +180,7 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
+    public boolean graphics2DSVG(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
         IExpr opacity) {
       try {
 
@@ -565,7 +565,7 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
+    public boolean graphics2DSVG(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
         IExpr opacity) {
       try {
         if (ast.arg1().isList()) {
@@ -608,6 +608,21 @@ public class GraphicsFunctions {
       } finally {
         buf.append(
             "\" \n style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\" />");
+      }
+      return false;
+    }
+
+    @Override
+    public boolean graphics2D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+      if (ast.argSize() > 0 && ast.arg1().isList()) {
+        IAST list = (IAST) ast.arg1();
+        buf.append("{type: \'line\',");
+        setColor(buf, color, F.NIL, true);
+        setOpacity(buf, opacity.orElse(F.C1));
+        if (list.isListOfLists() && graphics2DCoords(buf, list)) {
+          buf.append("}");
+          return true;
+        }
       }
       return false;
     }
@@ -725,7 +740,7 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
+    public boolean graphics2DSVG(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
         IExpr opacity) {
       if (ast.size() == 2) {
         IExpr arg1 = ast.arg1();
@@ -741,6 +756,21 @@ public class GraphicsFunctions {
         } else if (arg1.isAST(S.List, 3)) {
           IAST point = (IAST) arg1;
           singlePointToSVG(point, buf, dim);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public boolean graphics2D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+      if (ast.argSize() > 0 && ast.arg1().isList()) {
+        IAST list = (IAST) ast.arg1();
+        buf.append("{type: \'point\',");
+        setColor(buf, color, F.RGBColor(F.C0, F.C0, F.C0), true);
+        setOpacity(buf, opacity.orElse(F.C1));
+        if (list.isListOfLists() && graphics2DCoords(buf, list)) {
+          buf.append(",pointSize: 0.02}");
           return true;
         }
       }
@@ -776,6 +806,21 @@ public class GraphicsFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public boolean graphics2D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+      if (ast.argSize() > 0 && ast.arg1().isList()) {
+        IAST list = (IAST) ast.arg1();
+        buf.append("{type: \'polygon\',");
+        setColor(buf, color, F.NIL, true);
+        setOpacity(buf, opacity.orElse(F.C1));
+        if (list.isListOfLists() && graphics2DCoords(buf, list)) {
+          buf.append("}");
+          return true;
+        }
+      }
+      return false;
     }
 
     @Override
@@ -859,7 +904,7 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
+    public boolean graphics2DSVG(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
         IExpr opacity) {
       try {
         int width = dim.width;
@@ -1137,7 +1182,7 @@ public class GraphicsFunctions {
               }
               first = false;
 
-              if (!((IGraphics3D) evaluator).graphics2D(buf, primitive, dim, rgbColor, opacity)) {
+              if (!((IGraphics3D) evaluator).graphics2DSVG(buf, primitive, dim, rgbColor, opacity)) {
                 return false;
               }
               continue;
@@ -1194,6 +1239,30 @@ public class GraphicsFunctions {
     return false;
   }
 
+  private static boolean graphics2DCoords(StringBuilder buf, IAST ast) {
+    return graphics2DCoords(buf, ast, "coords");
+  }
+
+  private static boolean graphics2DCoords(StringBuilder buf, IAST ast, String coordStr) {
+    buf.append(coordStr + ": [");
+
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (!arg.isList2()) {
+        return false;
+      }
+      IAST coords = (IAST) arg;
+      buf.append("[[");
+      coords.joinToString(buf, ",");
+      buf.append("]]");
+      if (i < ast.size() - 1) {
+        buf.append(",");
+      }
+    }
+    buf.append("]");
+    return true;
+  }
+
   private static boolean graphics3DCoords(StringBuilder buf, IAST ast) {
     return graphics3DCoords(buf, ast, "coords");
   }
@@ -1244,6 +1313,85 @@ public class GraphicsFunctions {
 
   public static void initialize() {
     Initializer.init();
+  }
+
+  public static boolean renderGraphics2D(StringBuilder graphics2DBuffer, IAST graphics2DAST,
+      EvalEngine engine) {
+    IExpr arg1 = graphics2DAST.first();
+    if (!arg1.isList()) {
+      arg1 = F.list(arg1);
+    }
+    // IExpr lighting = S.Automatic;
+    OptionArgs options = OptionArgs.createOptionArgs(graphics2DAST, engine);
+    if (options != null) {
+      // lighting = options.getOption(S.Lighting).orElse(lighting);
+    }
+    IExpr data2D = engine.evaluate(F.N(arg1));
+    if (data2D.isAST() && data2D.head().isBuiltInSymbol()) {
+      StringBuilder jsonPrimitives = new StringBuilder();
+      if (GraphicsFunctions.exportGraphics2DRecursive(jsonPrimitives, (IAST) data2D)) {
+        try {
+          graphics2DBuffer.append("drawGraphics2d(document.getElementById('graphics2d'),\n");
+          graphics2DBuffer.append("{");
+          // graphics2DBuffer.append("\naxes: {},");
+          graphics2DBuffer.append("\nelements: [");
+          graphics2DBuffer.append(jsonPrimitives.toString());
+          graphics2DBuffer.append("],");
+          // graphics3DLigthing(graphics2DBuffer, lighting);
+          // graphics2DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
+          graphics2DBuffer.append("}\n");
+          graphics2DBuffer.append(");");
+          return true;
+        } catch (Exception ex) {
+          LOGGER.debug("GraphicsFunctions.renderGraphics2D() failed", ex);
+        }
+      }
+    }
+    return false;
+  }
+
+  public static boolean exportGraphics2DRecursive(StringBuilder buf, IAST data2D) {
+    if (data2D.isList()) {
+      boolean first = true;
+      IAST rgbColor = F.NIL;
+      IExpr opacity = F.NIL;
+      IAST list = data2D;
+      for (int i = 1; i < list.size(); i++) {
+        IExpr arg = list.get(i);
+        if (arg.isAST()) {
+          IAST ast = (IAST) arg;
+          if (ast.isList()) {
+            StringBuilder primitivesBuffer = new StringBuilder();
+            if (exportGraphics2DRecursive(primitivesBuffer, ast)) {
+              if (!first) {
+                buf.append(",");
+              }
+              first = false;
+              buf.append(primitivesBuffer);
+            }
+          } else if (ast.isRGBColor()) {
+            rgbColor = ast;
+          } else if (ast.isAST(S.Opacity, 2)) {
+            opacity = ast.arg1();
+          } else if (ast.head().isBuiltInSymbol()) {
+            IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
+            IEvaluator evaluator = symbol.getEvaluator();
+            if (evaluator instanceof IGraphics3D) {
+              StringBuilder primitivesBuffer = new StringBuilder();
+              if (((IGraphics3D) evaluator).graphics2D(primitivesBuffer, ast, rgbColor, opacity)) {
+                if (!first) {
+                  buf.append(",");
+                }
+                first = false;
+                buf.append(primitivesBuffer);
+              }
+            }
+          }
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   public static boolean renderGraphics3D(StringBuilder graphics3DBuffer, IAST graphics3DAST,
