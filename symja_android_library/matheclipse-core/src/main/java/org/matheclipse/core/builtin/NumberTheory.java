@@ -2772,8 +2772,7 @@ public final class NumberTheory {
       if (ast.isAST1()) {
         if (arg1.isList()) {
           ISeqBase seq = Sequences.sequence(arg1);
-          IAST linearRecurrence = seq.find_linear_recurrence(arg1.argSize());
-          return linearRecurrence;
+          return seq.find_linear_recurrence(arg1.argSize());
         }
       }
       return F.NIL;

@@ -414,13 +414,14 @@ public class TensorFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
-        if (ast.arg1().isAST() && ast.arg2().isAST()) {
-          IAST kernel = (IAST) ast.arg1();
-          IAST tensor = (IAST) ast.arg2();
+        IExpr k = ast.arg1().normal(false);
+        IExpr t = ast.arg2().normal(false);
+        if (k.isAST() && t.isAST()) {
+          IAST kernel = (IAST) k;
+          IAST tensor = (IAST) t;
           IntList kernelDims = LinearAlgebra.dimensions(kernel);
           IntList tensorDims = LinearAlgebra.dimensions(tensor);
           if (kernelDims.size() > 0 && kernelDims.size() == tensorDims.size()) {
-
             return listCorrelate(kernel, tensor, S.Plus, S.Times);
           }
         }

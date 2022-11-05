@@ -25,14 +25,18 @@ public class TestFormal {
     assertEquals(Formal.fps(F.C2, x, '-').toString(), //
         "2");
 
-    // TODO
     // assert fps(1/x + 1/x**2) == 1/x + 1/x**2
-    // assertEquals(Formal.fps(F.Plus(x.inverse(), x.pow(2).inverse())).toString(), //
+    // TODO
+    // assertEquals(Formal.fps(F.Plus(x.inverse(), x.pow(-2))).toString(), //
     // "1/x^2+1/x+O(x)^5");
 
 
     // assert fps(log(1 + x), hyper=False, rational=False) == log(1 + x)
-    //
+    assertEquals(
+        Formal.fps(F.Log(F.C1.plus(F.x)), F.NIL, F.C0, F.C1, false, 4, false, false)
+            .toString(), //
+        "Log(1+x)");
+
     // f = fps(x**2 + x + 1)
     // assert isinstance(f, FormalPowerSeries)
     // assert f.function == x**2 + x + 1

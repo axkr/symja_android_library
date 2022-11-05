@@ -25,6 +25,95 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.sympy.exception.ValueError;
 
 public class Sequences {
+  interface ISeqIterator extends Iterator<IExpr> {
+    public void setLength(int n);
+  }
+
+  /**
+   * Represents term-wise multiplication of sequences.
+   *
+   */
+  public static class SeqMul extends SeqBase {
+    ISeqBase[] args;
+
+    public SeqMul(ISeqBase... args) {
+      // TODO clean up base class
+      super(F.NIL);
+      this.args = args;
+    }
+
+    protected static SeqBase __new__(boolean evaluate, SeqBase... args) {
+      if (args.length == 0) {
+        return new EmptySequence();
+      }
+      for (int i = 0; i < args.length - 1; i++) {
+        SeqBase iSeq = args[i];
+        for (int j = i + 1; j < args.length; j++) {
+          SeqBase jSeq = args[j];
+          IExpr interval =
+              S.IntervalIntersection.ofNIL(EvalEngine.get(), iSeq.interval(), jSeq.interval());
+          if (!interval.isInterval() || interval.isEmptyList()) {
+            return new EmptySequence();
+          }
+        }
+      }
+      if (evaluate) {
+        return SeqMul.reduce(args);
+      }
+      return new SeqMul(args);
+    }
+
+    private static SeqBase reduce(SeqBase... args) {
+      // Simplify a :class:`SeqMul` using known rules.
+      //
+      // Explanation
+      // ===========
+      //
+      // Iterates through all pairs and ask the constituent
+      // sequences if they can simplify themselves with any other constituent.
+      boolean new_args = true;
+      while (new_args) {
+        for (int i = 0; i < args.length - 1; i++) {
+          new_args = false;
+          SeqBase[] newArgs = null;
+          SeqBase id1 = args[i];
+          SeqBase s = args[i + 1];
+          for (int j = 0; j < args.length - 1; j++) {
+            SeqBase id2 = args[j];
+            if (id1 == id2) {
+              continue;
+            }
+            SeqBase t = args[j + 1];
+            SeqBase new_seq = s._mul(t);
+            // This returns null if s does not know how to multiply
+            // with t. Returns the newly multiplied sequence otherwise
+            if (new_seq != null) {
+              int na = 0;
+              newArgs = new SeqBase[args.length - 2];
+              for (int k = 0; k < args.length; k++) {
+                SeqBase seq = args[k];
+                if (seq != s && seq != t) {
+                  newArgs[na++] = seq;
+                }
+              }
+              newArgs[na++] = new_seq;
+              break;
+            }
+
+          }
+          if (newArgs.length > 0) {
+            args = newArgs;
+            break;
+          }
+        }
+      }
+      if (args.length == 1) {
+        return args[0];
+      } else {
+        return SeqMul(args);
+      }
+    }
+  }
 
   /**
    * Represents a periodic sequence.
@@ -35,13 +124,34 @@ public class Sequences {
    * @param limits
    * @return
    */
-  public static ISeqBase SeqPer(IExpr seq, IAST limits) {
+  public static SeqBase SeqPer(IExpr seq, IAST limits) {
     BuiltInDummy head = new BuiltInDummy("$seqper");
     IASTMutable ast = F.binaryAST2(head, seq, limits);
 
     SeqPer res = new SeqPer(ast);
     head.setEvaluator(res);
     return res;
+  }
+
+  /**
+   * Represents term-wise multiplication of sequences.
+   * 
+   * @param args
+   * @return
+   */
+  public static SeqBase SeqMul(SeqBase... args) {
+    return SeqMul(false, args);
+  }
+
+  /**
+   * Represents term-wise multiplication of sequences.
+   * 
+   * @param evaluate
+   * @param args
+   * @return
+   */
+  public static SeqBase SeqMul(boolean evaluate, SeqBase... args) {
+    return SeqMul.__new__(evaluate, args);
   }
 
   public static ISeqBase SeqFormula(IExpr seq) {
@@ -57,7 +167,7 @@ public class Sequences {
    * @param limits
    * @return
    */
-  public static ISeqBase SeqFormula(IExpr seq, IAST limits) {
+  public static SeqBase SeqFormula(IExpr seq, IAST limits) {
     BuiltInDummy head = new BuiltInDummy("$seqformula");
     IASTMutable ast = F.binaryAST2(head, seq, limits);
     SeqFormula res = new SeqFormula(ast);
@@ -65,7 +175,7 @@ public class Sequences {
     return res;
   }
 
-  private static class SeqBase extends AbstractFunctionEvaluator implements ISeqBase {
+  public static class SeqBase extends AbstractFunctionEvaluator implements ISeqBase {
     protected IASTMutable seqAST;
 
     protected int length;
@@ -80,6 +190,23 @@ public class Sequences {
     @Override
     public IASTMutable asAST() {
       return seqAST;
+    }
+
+    @Override
+    public IExpr interval() {
+      return F.Interval(args1().arg2(), args1().arg3());
+    }
+
+    public IExpr[] _intersect_interval(ISeqBase other) {
+      // """Returns start and stop.
+      //
+      // Takes intersection over the two intervals.
+
+      IExpr interval = S.IntervalIntersection.ofNIL(EvalEngine.get(), interval(), other.interval());
+      if (interval.isInterval()) {
+        return new IExpr[] {interval.first(), interval.second()};
+      }
+      return new IExpr[] {F.CNInfinity, F.CInfinity};
     }
 
     @Override
@@ -105,6 +232,38 @@ public class Sequences {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    public ISeqBase __mul__(ISeqBase other) {
+      if (other instanceof SeqBase) {
+        return new SeqMul(this, other);
+      }
+      throw new IllegalArgumentException("cannot multiply sequence and " + other);
+    }
+
+    /**
+     * <p>
+     * Should only be used internally.
+     * <p>
+     * this._mul(other) returns a new, term-wise multiplied sequence if this knows how to multiply
+     * with other, otherwise it returns <code>null</code>.
+     * 
+     * @param other
+     * @return <code>null</code>
+     */
+    public SeqBase _mul(SeqBase other) {
+      // Should only be used internally.
+      //
+      // Explanation
+      // ===========
+      //
+      // self._mul(other) returns a new, term-wise multiplied sequence if self
+      // knows how to multiply with other, otherwise it returns ``None``.
+      //
+      // ``other`` should only be a sequence object.
+      //
+      // Used within :class:`SeqMul` class.
+      return null;
     }
 
     /**
@@ -155,7 +314,7 @@ public class Sequences {
 
       // x = [simplify(expand(t)) for t in self[:n]]
       IASTAppendable x = F.ListAlloc(n);
-      SeqIterator iterator = iterator();
+      ISeqIterator iterator = iterator();
       iterator.setLength(n);
       while (iterator.hasNext()) {
         IExpr t = iterator.next();
@@ -170,7 +329,7 @@ public class Sequences {
       } else {
         r = d.toIntDefault();
         if (r == Integer.MIN_VALUE) {
-          throw new ArgumentTypeException("d must be machine-size integer");
+          throw new ArgumentTypeException("d must be a machine-size integer");
         }
         if (temp < r) {
           r = temp;
@@ -184,6 +343,10 @@ public class Sequences {
           mlist.append(x.copyFrom(k + 1, k + l + 1));
         }
         FieldMatrix<IExpr> m = Convert.list2Matrix(mlist);
+        if (m == null) {
+          // mlist is no valid matrix
+          return F.NIL;
+        }
         IExpr mDet = LinearAlgebra.determinant(m);
         if (!mDet.isZero()) {
 
@@ -193,6 +356,10 @@ public class Sequences {
           if (solver.isNonSingular()) {
 
             FieldMatrix<IExpr> m2 = Convert.list2Matrix(F.List(x.copyFrom(l + 1, l2 + 1)));
+            if (m2 == null) {
+              // not a valid matrix
+              return F.NIL;
+            }
             m2 = m2.transpose();
             FieldMatrix<IExpr> y = solver.solve(m2);
             if (lx == l2) {
@@ -206,14 +373,18 @@ public class Sequences {
             }
             m = Convert.list2Matrix(mlist);
             FieldMatrix<IExpr> mDoty = m.multiply(y);
-            FieldMatrix<IExpr> m3 = Convert.list2Matrix(F.List(x.copyFrom(l2 + 1))).transpose();
+            FieldMatrix<IExpr> m3 = Convert.list2Matrix(F.List(x.copyFrom(l2 + 1)));
+            if (m3 == null) {
+              // not a valid matrix
+              return F.NIL;
+            }
+            m3 = m3.transpose();
             if (mDoty.equals(m3)) {
               coeffs = EvalAttributes.flatten(Convert.matrix2List(y).reverse(F.NIL));
               break;
             }
           }
         }
-        // return F.evalExpand(lu.getDeterminant());
       }
       if (gfvar.isNIL()) {
         return coeffs;
@@ -222,7 +393,6 @@ public class Sequences {
         if (l == 0) {
           return F.List(F.CEmptyList, S.None);
         } else {
-          // TODO
           IExpr n1 = x.get(l).times(gfvar.pow(l - 1));
           IExpr d1 = F.C1.subtract(coeffs.get(l).times(gfvar.pow(l)));
           for (int i = 0; i < l - 1; i++) {
@@ -242,7 +412,7 @@ public class Sequences {
       // newSymbol.setAttributes(ISymbol.LISTABLE);
     }
 
-    protected static final class SeqIterator implements Iterator<IExpr> {
+    protected static final class SeqIterator implements ISeqIterator {
 
       private int length;
 
@@ -256,6 +426,7 @@ public class Sequences {
         this.self = self;
       }
 
+      @Override
       public void setLength(int n) {
         this.length = n;
       };
@@ -277,12 +448,81 @@ public class Sequences {
     }
 
     @Override
-    public SeqIterator iterator() {
+    public ISeqIterator iterator() {
       return new SeqIterator(this, length);
     }
   }
 
-  private static class SeqFormula extends SeqBase {
+
+
+  public static class EmptySequence extends SeqBase {
+    // """Represents an empty sequence.
+    //
+    // The empty sequence is also available as a singleton as
+    // ``S.EmptySequence``.
+    //
+    // Examples
+    // ========
+    //
+    // >>> from sympy import EmptySequence, SeqPer
+    // >>> from sympy.abc import x
+    // >>> EmptySequence
+    // EmptySequence
+    // >>> SeqPer((1, 2), (x, 0, 10)) + EmptySequence
+    // SeqPer((1, 2), (x, 0, 10))
+    // >>> SeqPer((1, 2)) * EmptySequence
+    // EmptySequence
+    // >>> EmptySequence.coeff_mul(-1)
+    // EmptySequence
+    // """
+
+    public EmptySequence() {
+      super(F.NIL);
+    }
+
+    @Override
+    public IAST interval() {
+      return F.CEmptyList;
+    }
+
+    public int length() {
+      return 0;
+    }
+
+    public ISeqBase coeff_mul(IExpr coeff) {
+      // """See docstring of SeqBase.coeff_mul"""
+      return this;
+    }
+
+    protected static final class EmptySeqIterator implements ISeqIterator {
+
+
+      public EmptySeqIterator() {}
+
+      @Override
+      public void setLength(int n) {
+        //
+      };
+
+      @Override
+      public boolean hasNext() {
+        return false;
+      }
+
+      @Override
+      public IExpr next() {
+        throw new NoSuchElementException();
+      }
+
+    }
+
+    @Override
+    public ISeqIterator iterator() {
+      return new EmptySeqIterator();
+    }
+  }
+
+  public static class SeqFormula extends SeqBase {
 
     public SeqFormula(IASTMutable seqFormula) {
       super(seqFormula);
@@ -319,7 +559,7 @@ public class Sequences {
       VariablesSet free = new VariablesSet(formula);
       if (free.size() == 1) {
         return free.getArrayList().get(0);
-      } else if (free.size() > 1) {
+      } else if (free.size() == 0) {
         return F.Dummy('k');
       }
       throw new ValueError(" specify dummy variables for " + formula + ". If the formula contains"
@@ -335,6 +575,28 @@ public class Sequences {
     public IExpr _eval_coeff(IExpr pt) {
       IExpr d = variables().first();
       return formula().subs(d, pt);
+    }
+
+    @Override
+    public SeqBase _mul(SeqBase other) {
+      if (other instanceof SeqFormula) {
+        SeqFormula otherFormula = (SeqFormula) other;
+        IExpr form1 = formula();
+        IExpr v1 = variables.first();
+        IExpr form2 = otherFormula.formula();
+        IExpr v2 = otherFormula.variables.first();
+        IExpr formula = form1.times(form2.subs(v2, v1));
+        IExpr[] interval = _intersect_interval(other);
+        start = interval[0];
+        stop = interval[1];
+        return SeqFormula(formula, F.List(v1, start, stop));
+        // form1, v1 = self.formula, self.variables[0]
+        // form2, v2 = other.formula, other.variables[0]
+        // formula = form1 * form2.subs(v2, v1)
+        // start, stop = self._intersect_interval(other)
+        // return SeqFormula(formula, (v1, start, stop));
+      }
+      return null;
     }
 
     public ISeqBase expand(IExpr pt) {

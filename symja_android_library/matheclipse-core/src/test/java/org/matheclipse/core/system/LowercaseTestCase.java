@@ -2223,6 +2223,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testCancel() {
+
+    check("Simplify(((1 + Sqrt(5))/2)^7 + (-(1 + Sqrt(5))/2)^(-7))", //
+        // TODO 29
+        "128/(-1-Sqrt(5))^7+(1+Sqrt(5))^7/128");
+
     check("Cancel((1/8-Cos(2/7*Pi)/8) / (8-8*Cos(2/7*Pi)))", //
         "1/64");
     // check("Factor(y*(2*3*x+Pi*x))", //
@@ -8639,6 +8644,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFindLinearRecurrence() {
+
+    check("FindLinearRecurrence({{1,0},Sqrt(2)/2})", //
+        "FindLinearRecurrence({{1,0},1/Sqrt(2)})");
+
     check("FindLinearRecurrence({1, 2, 4, 7, 28, 128, 582, 2745, 13021, 61699, 292521, 1387138})", //
         "{5,-2,6,-11}");
     check("FindLinearRecurrence(Table(2^k, {k, 10}))", //

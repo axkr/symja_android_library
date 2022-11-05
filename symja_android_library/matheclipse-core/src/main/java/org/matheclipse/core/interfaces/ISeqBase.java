@@ -1,6 +1,7 @@
 package org.matheclipse.core.interfaces;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.sympy.series.Sequences;
 
 public interface ISeqBase extends Iterable<IExpr> {
   public IExpr args0();
@@ -53,6 +54,16 @@ public interface ISeqBase extends Iterable<IExpr> {
     throw new UnsupportedOperationException("The _eval_coeff method should be added"//
         + " to return coefficient so it is available" //
         + "when coeff calls it.");
+  }
+
+  /**
+   * Returns the term-wise multiplication of <code>this</code> and <code>other</code>'.
+   * 
+   * @param other
+   * @return
+   */
+  default ISeqBase mul(ISeqBase other) {
+    return Sequences.SeqMul((Sequences.SeqBase) this, (Sequences.SeqBase) other);
   }
 
   default IExpr _ith_point(int i) {
