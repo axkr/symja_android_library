@@ -5528,7 +5528,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         for (int j = 1; j <= dim[1]; j++) {
           signedNumber = row.get(j).evalReal();
           if (signedNumber != null) {
-            result[i - 1][j - 1] = signedNumber.evalDouble();
+            result[i - 1][j - 1] = signedNumber.evalf();
           } else {
             return null;
           }
@@ -5674,7 +5674,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     try {
       double[] result = new double[argSize()];
       for (int i = 1; i < size(); i++) {
-        result[i - 1] = get(i).evalDouble();
+        result[i - 1] = get(i).evalf();
       }
       return result;
     } catch (ArgumentTypeException rex) {
@@ -5691,7 +5691,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     double[] temp = new double[argSize()];
     while (j < size()) {
       try {
-        temp[i] = get(j).evalDouble();
+        temp[i] = get(j).evalf();
         i++;
       } catch (ArgumentTypeException rex) {
 
@@ -5715,7 +5715,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     try {
       Complex[] result = new Complex[argSize()];
       for (int i = 1; i < size(); i++) {
-        result[i - 1] = get(i).evalComplex();
+        result[i - 1] = get(i).evalfc();
       }
       return result;
     } catch (ArgumentTypeException ex) {
@@ -5734,7 +5734,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         for (int i = 0; i < dims[0]; i++) {
           IAST subList = (IAST) get(i + 1);
           for (int j = 0; j < dims[1]; j++) {
-            result[i][j] = subList.get(j + 1).evalComplex();
+            result[i][j] = subList.get(j + 1).evalfc();
           }
         }
         return result;

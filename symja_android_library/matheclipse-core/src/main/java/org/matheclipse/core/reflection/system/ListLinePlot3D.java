@@ -38,7 +38,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
       // e.g.: ListLinePlot3D[{1, 2, 3, 4, 5}]
       if (ast.arg1().isASTSizeGE(S.List, 2)) {
         try {
-          double d = ((IAST) ast.arg1()).arg1().evalDouble();
+          double d = ((IAST) ast.arg1()).arg1().evalf();
           IExpr heightLinePlot = heightLinePlot(F.list(ast.arg1()), plotStyle, engine);
           if (heightLinePlot.isPresent()) {
             IASTAppendable result = F.Graphics3D(heightLinePlot);
@@ -73,7 +73,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
       // e.g.: ListLinePlot3D[{{1, 2, 3, 4}, {-1, -2, -3, -4}}]
       if (ast.arg1().isASTSizeGE(S.List, 2) && ((IAST) ast.arg1()).arg1().isASTSizeGE(S.List, 2)) {
         try {
-          double d = ((IAST) ((IAST) ast.arg1()).arg1()).arg1().evalDouble();
+          double d = ((IAST) ((IAST) ast.arg1()).arg1()).arg1().evalf();
           IExpr heightLinePlot = heightLinePlot((IAST) ast.arg1(), plotStyle, engine);
           if (heightLinePlot.isPresent()) {
             IASTAppendable result = F.Graphics3D(heightLinePlot);
@@ -114,7 +114,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
 
     IExpr flattenHeights = engine.evaluate(F.Flatten(heights));
     final double deltaHeight =
-        engine.evaluate(F.Max(flattenHeights).subtract(F.Min(flattenHeights))).evalDouble();
+        engine.evaluate(F.Max(flattenHeights).subtract(F.Min(flattenHeights))).evalf();
     if (F.isZero(deltaHeight)) {
       // Division by zero `1`.
       throw new ArgumentTypeException("zzdivzero", F.List("- delta height is 0"));
@@ -146,13 +146,13 @@ public class ListLinePlot3D extends AbstractEvaluator {
   }
 
   private IExpr coordinateLinePlot(IAST coordinates, IAST plotStyle, EvalEngine engine) {
-    double minX = ((IAST) (((IAST) coordinates.arg1()).arg1())).arg1().evalDouble();
+    double minX = ((IAST) (((IAST) coordinates.arg1()).arg1())).arg1().evalf();
     double maxX = minX;
 
-    double minY = ((IAST) (((IAST) coordinates.arg1()).arg1())).arg2().evalDouble();
+    double minY = ((IAST) (((IAST) coordinates.arg1()).arg1())).arg2().evalf();
     double maxY = minY;
 
-    double minZ = ((IAST) (((IAST) coordinates.arg1()).arg1())).arg3().evalDouble();
+    double minZ = ((IAST) (((IAST) coordinates.arg1()).arg1())).arg3().evalf();
     double maxZ = minZ;
 
     for (int i = 1; i <= coordinates.argSize(); i++) {
@@ -163,19 +163,19 @@ public class ListLinePlot3D extends AbstractEvaluator {
           IAST coordinate = (IAST) line.get(j);
 
           // evalDouble may throw ArgumentTypeException
-          double x = coordinate.arg1().evalDouble();
+          double x = coordinate.arg1().evalf();
           if (x < minX)
             minX = x;
           if (x > maxX)
             maxX = x;
 
-          double y = coordinate.arg2().evalDouble();
+          double y = coordinate.arg2().evalf();
           if (y < minY)
             minY = y;
           if (y > maxY)
             maxY = y;
 
-          double z = coordinate.arg3().evalDouble();
+          double z = coordinate.arg3().evalf();
           if (z < minZ)
             minZ = z;
           if (z > maxZ)

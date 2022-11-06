@@ -1063,13 +1063,13 @@ public class ExpTrigsFunctions {
         double xd = Double.NaN;
         double yd = Double.NaN;
         try {
-          xd = x.evalDouble();
-          yd = y.evalDouble();
+          xd = x.evalf();
+          yd = y.evalf();
         } catch (ValidateException ve) {
         }
         if (Double.isNaN(xd) || Double.isNaN(yd)) {
-          Complex xc = x.evalComplex();
-          Complex yc = y.evalComplex();
+          Complex xc = x.evalfc();
+          Complex yc = y.evalfc();
           // the first argument of atan2 is y and the second is x.
           return F.complexNum(yc.atan2(xc));
         } else {

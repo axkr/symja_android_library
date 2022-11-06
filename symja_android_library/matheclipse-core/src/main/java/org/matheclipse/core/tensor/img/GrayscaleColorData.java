@@ -23,7 +23,7 @@ public class GrayscaleColorData implements ColorDataGradient {
 
   @Override // from ScalarTensorFunction
   public IAST apply(IExpr scalar) {
-    double value = scalar.evalDouble();
+    double value = scalar.evalf();
     if (value > 1.0 || value < 0.0) {
       return Transparent.rgba();
     }
@@ -34,7 +34,7 @@ public class GrayscaleColorData implements ColorDataGradient {
 
   @Override // from ColorDataGradient
   public ColorDataGradient deriveWithOpacity(IExpr opacity) {
-    double value = opacity.evalDouble();
+    double value = opacity.evalf();
     return new GrayscaleColorData(toInt(value));
   }
 

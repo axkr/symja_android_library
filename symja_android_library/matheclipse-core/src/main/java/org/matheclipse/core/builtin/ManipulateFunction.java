@@ -660,10 +660,10 @@ public class ManipulateFunction {
           new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
       IASTAppendable newsliderRange = sliderRange.copyAppendable();
       double stepValue = 1.0;
-      double minValue = sliderRange.arg2().evalDouble();
-      double maxValue = sliderRange.arg3().evalDouble();
+      double minValue = sliderRange.arg2().evalf();
+      double maxValue = sliderRange.arg3().evalf();
       if (sliderRange.size() == 5) {
-        stepValue = sliderRange.arg4().evalDouble();
+        stepValue = sliderRange.arg4().evalf();
       } else {
         stepValue = (maxValue - minValue) / 100.0;
         newsliderRange.append(stepValue);
@@ -2083,8 +2083,8 @@ public class ManipulateFunction {
     double[] result = new double[2];
     IExpr zMin = plotRange.arg2();
     IExpr zMax = plotRange.arg3();
-    Complex cMin = zMin.evalComplex();
-    Complex cMax = zMax.evalComplex();
+    Complex cMin = zMin.evalfc();
+    Complex cMax = zMax.evalfc();
     if (cMin != null && cMax != null) {
       double reMin = cMin.getReal();
       double imMin = cMin.getImaginary();

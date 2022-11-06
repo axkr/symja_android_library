@@ -839,17 +839,71 @@ public interface IExpr
   }
 
   /**
-   * Evaluate the expression to a <code>Complex</code> value.
-   *
+   * Evaluate the expression to a <code>org.hipparchus.complex.Complex</code> complex float value.
+   * 
    * @return
    * @throws ArgumentTypeException
+   * @deprecated use {@link #evalfc()}
    */
+  @Deprecated
   default Complex evalComplex() throws ArgumentTypeException {
     return EvalEngine.get().evalComplex(this);
   }
 
+  /**
+   * Evaluate the expression to a <code>org.hipparchus.complex.Complex</code> complex float value.
+   *
+   * @return
+   * @throws ArgumentTypeException
+   */
+  default Complex evalfc() throws ArgumentTypeException {
+    return EvalEngine.get().evalComplex(this);
+  }
+
+  /**
+   * Evaluate the expression to a <code>org.hipparchus.complex.Complex</code> complex float value.
+   *
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @return
+   * @throws ArgumentTypeException
+   */
+  default Complex evalfc(final Function<IExpr, IExpr> function)
+      throws ArgumentTypeException {
+    return EvalEngine.get().evalComplex(this, function);
+  }
+
+  /**
+   * Evaluate the expression to a Java <code>double</code> value.
+   * 
+   * @return
+   * @throws ArgumentTypeException
+   * @deprecated use {@link #evalf()}
+   */
+  @Deprecated
   default double evalDouble() throws ArgumentTypeException {
+    return evalf();
+  }
+
+  /**
+   * Evaluate the expression to a Java <code>double</code> value.
+   *
+   * @return
+   * @throws ArgumentTypeException
+   */
+  default double evalf() throws ArgumentTypeException {
     return EvalEngine.get().evalDouble(this);
+  }
+
+  /**
+   * Evaluate the expression to a Java <code>double</code> value.
+   * 
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @return
+   * @throws ArgumentTypeException
+   */
+  default double evalf(final Function<IExpr, IExpr> function)
+      throws ArgumentTypeException {
+    return EvalEngine.get().evalDouble(this, function);
   }
 
   /**
@@ -1049,7 +1103,7 @@ public interface IExpr
     } else if (isNegativeInfinity()) {
       return Double.NEGATIVE_INFINITY;
     }
-    return evalDouble();
+    return evalf();
   }
 
   /**
@@ -5132,7 +5186,7 @@ public interface IExpr
    *     </code> or {@link Double#MIN_VALUE} if this expression cannot be converted.
    */
   default double toDoubleDefault() {
-    return EvalEngine.get().evalDouble(this, Double.MIN_VALUE);
+    return EvalEngine.get().evalDouble(this, null, Double.MIN_VALUE);
   }
 
   /**
@@ -5147,7 +5201,7 @@ public interface IExpr
    * @return
    */
   default double toDoubleDefault(double defaultValue) {
-    return EvalEngine.get().evalDouble(this, defaultValue);
+    return EvalEngine.get().evalDouble(this, null, defaultValue);
   }
 
   /**
@@ -5269,7 +5323,7 @@ public interface IExpr
   }
 
   default Number toNumber(Number defaultValue) {
-    return evalDouble();
+    return evalf();
   }
 
   /**

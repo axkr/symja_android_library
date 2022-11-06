@@ -252,7 +252,7 @@ public interface INumber extends IExpr {
   public IAST toPolarCoordinates();
 
   @Override
-  default Complex evalComplex() throws ArgumentTypeException {
+  default Complex evalfc() throws ArgumentTypeException {
     return new Complex(reDoubleValue(), imDoubleValue());
   }
 

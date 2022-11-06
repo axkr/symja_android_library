@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.Operator;
+import org.matheclipse.parser.client.operator.Precedence;
 
 /**
  * Transpile an internal <code>IExpr</code> into a JavaScript string. It can especially generate
@@ -365,8 +366,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
   }
 
   @Override
-  public void convertAST(final StringBuilder buf, final IAST function) {
-    if (function.isNumericFunction(true)) {
+  public void convertAST(final StringBuilder buf, final IAST function, boolean eval) {
+    if (eval && function.isNumericFunction(true)) {
       try {
         double value = EvalEngine.get().evalDouble(function);
         buf.append("(" + value + ")");
@@ -423,7 +424,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     }
     if (function.isAST(S.Defer, 2) || function.isAST(S.Evaluate, 2) || function.isAST(S.Hold, 2)
         || function.isUnevaluated()) {
-      convertInternal(buf, function.first());
+      convertInternal(buf, function.first(), Integer.MIN_VALUE, false, false);
       return;
     }
     if (javascriptFlavor == USE_MATHCELL) {
@@ -539,6 +540,30 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         buf.append("Number.NaN");
       }
       buf.append(" ))");
+      return;
+    }
+    if (function.isAST(S.Mod, 3)) {
+      IExpr arg1 = function.arg1();
+      IExpr arg2 = function.arg2();
+      if ((arg1.isNonNegativeResult() && arg2.isNonNegativeResult()) //
+          || (arg1.isNegativeResult() && arg2.isNegativeResult())) {
+        buf.append("(");
+        convertInternal(buf, arg1, Precedence.POWER, false, true);
+        buf.append(" % ");
+        convertInternal(buf, arg2, Precedence.POWER, false, true);
+        buf.append(")");
+        return;
+      }
+      buf.append("(((");
+      convertInternal(buf, arg1, Precedence.POWER, false, true);
+      buf.append(" % ");
+      convertInternal(buf, arg2, Precedence.POWER, false, true);
+      buf.append(")");
+      buf.append(" + ");
+      convertInternal(buf, arg2, Precedence.POWER, false, true);
+      buf.append(") % ");
+      convertInternal(buf, arg2, Precedence.POWER, false, true);
+      buf.append(")");
       return;
     }
     if (function.isAST(S.Missing)) {
@@ -729,7 +754,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
       final StringBuilder buf, final int precedence, ISymbol head) {
     if (!super.convertOperator(operator, list, buf, precedence, head)) {
       if (javascriptFlavor == USE_MATHCELL) {
-        convertAST(buf, list);
+        convertAST(buf, list, true);
         return true;
       }
       return false;

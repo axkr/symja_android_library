@@ -220,7 +220,7 @@ public class Vector3d {
   /** Normalizes this vector in place. */
   public void normalize() {
     IExpr scalar = Vector2NormSquared.of(toTensor());
-    double lenSqr = scalar.evalDouble();
+    double lenSqr = scalar.evalf();
     double err = lenSqr - 1;
     if (err > (2 * DOUBLE_PREC) || err < -(2 * DOUBLE_PREC)) {
       double len = Math.sqrt(lenSqr);

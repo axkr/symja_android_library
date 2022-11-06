@@ -1762,7 +1762,7 @@ public final class Arithmetic {
       }
 
       // TODO improve lanczos approx:
-      return F.complexNum(lanczosApproxGamma(c.evalComplex()));
+      return F.complexNum(lanczosApproxGamma(c.evalfc()));
     }
 
     @Override
@@ -1788,7 +1788,7 @@ public final class Arithmetic {
       if (d0.isZero() && d1.isZero()) {
         return F.CInfinity;
       }
-      return F.complexNum(GammaJS.gamma(d0.evalComplex(), d1.evalComplex()));
+      return F.complexNum(GammaJS.gamma(d0.evalfc(), d1.evalfc()));
     }
 
     @Override
@@ -1820,7 +1820,7 @@ public final class Arithmetic {
         return F.CInfinity;
       }
       if (d0.isZero() || d0.isNegative() || d1.isNegative()) {
-        return F.complexNum(GammaJS.gamma(d0.evalComplex(), d1.evalComplex()));
+        return F.complexNum(GammaJS.gamma(d0.evalfc(), d1.evalfc()));
       }
       double c = GammaJS.gamma(d0.doubleValue(), d1.doubleValue());
       // if (F.isZero(c.getImaginary())) {

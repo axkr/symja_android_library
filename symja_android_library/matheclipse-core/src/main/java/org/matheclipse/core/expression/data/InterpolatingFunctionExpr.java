@@ -98,7 +98,7 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
       }
       boolean evaled = false;
       try {
-        double value = arg1.evalDouble();
+        double value = arg1.evalf();
         evaled = true;
         if (value < min || value > max) {
           // Input value `1` lies outside the range of data in the interpolating function.

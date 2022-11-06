@@ -95,8 +95,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
           tMinExpr = tRangeList.arg2();
           tMaxExpr = tRangeList.arg3();
         }
-        final double tMin = tMinExpr.evalDouble();
-        final double tMax = tMaxExpr.evalDouble();
+        final double tMin = tMinExpr.evalf();
+        final double tMax = tMaxExpr.evalf();
         final double tStep = 0.1;
         IASTAppendable listOfEquations = Validate.checkEquations(ast, 1).copyAppendable();
         IExpr[][] boundaryCondition = new IExpr[2][numberOfVariables];

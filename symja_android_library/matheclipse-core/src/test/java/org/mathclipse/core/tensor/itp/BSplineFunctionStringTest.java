@@ -73,9 +73,9 @@ class BSplineFunctionStringTest {
     IExpr r1 = bSplineFunction.apply(F.num(0.5));
     IExpr r2 = bSplineFunction.apply(F.num(1.5));
     IExpr r3 = bSplineFunction.apply(F.num(2.5)); // does not evaluate correctly
-    assertTrue(F.isFuzzyEquals(r1.evalDouble(), 1.0 / 3.0, Config.DOUBLE_TOLERANCE));
+    assertTrue(F.isFuzzyEquals(r1.evalf(), 1.0 / 3.0, Config.DOUBLE_TOLERANCE));
     assertEquals(r2, F.num(1.5));
-    assertTrue(F.isFuzzyEquals(r3.evalDouble(), 8.0 / 3.0, Config.DOUBLE_TOLERANCE));
+    assertTrue(F.isFuzzyEquals(r3.evalf(), 8.0 / 3.0, Config.DOUBLE_TOLERANCE));
   }
 
   @Test
@@ -93,7 +93,7 @@ class BSplineFunctionStringTest {
     assertEquals(bSplineFunction.apply(F.num(0)), F.ZZ(2));
     assertEquals(bSplineFunction.apply(F.num(1)), F.QQ(13, 12));
     assertEquals(bSplineFunction.apply(F.num(2)), F.num(0));
-    assertTrue(F.isFuzzyEquals(bSplineFunction.apply(F.num(3.999999999999)).evalDouble(), -2.0,
+    assertTrue(F.isFuzzyEquals(bSplineFunction.apply(F.num(3.999999999999)).evalf(), -2.0,
         Config.DOUBLE_TOLERANCE));
     // Tolerance.CHOP.requireClose(bSplineFunction.apply(F.num(3.999999999999)), F.num(-2));
     assertEquals(bSplineFunction.apply(F.num(4)), F.ZZ(-2));
@@ -111,7 +111,7 @@ class BSplineFunctionStringTest {
       System.out.println(res1f);
       // degree 0: {1, 1, 5, 5, 3, 3, 3, -1, -1, 0, 0}
       IExpr zeroDifference = EvalEngine.get().evalN(F.Total(res1f.subtract(res1r)));
-      assertTrue(F.isFuzzyEquals(zeroDifference.evalDouble(), 0.0, Config.DEFAULT_CHOP_DELTA));
+      assertTrue(F.isFuzzyEquals(zeroDifference.evalf(), 0.0, Config.DEFAULT_CHOP_DELTA));
     }
   }
   //
@@ -153,7 +153,7 @@ class BSplineFunctionStringTest {
           assertTrue(tensor.stream().map(IExpr.class::cast).allMatch(Clips.unit()::isInside));
           assertTrue(//
               F.isFuzzyEquals(1.0, //
-                  engine.evalN(F.Total(tensor)).evalDouble(), //
+                  engine.evalN(F.Total(tensor)).evalf(), //
                   Config.DOUBLE_TOLERANCE));
           // ExactTensorQ.require(tensor);
         }

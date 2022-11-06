@@ -92,13 +92,13 @@ public class ND extends AbstractFunctionEvaluator {
       EvalEngine engine) {
     double a3Double = Double.NaN;
     try {
-      a3Double = value.evalDouble();
+      a3Double = value.evalf();
     } catch (ValidateException ve) {
     }
 
     if (Double.isNaN(a3Double)) {
       Complex a3Complex = Complex.NaN;
-      a3Complex = value.evalComplex();
+      a3Complex = value.evalfc();
       if (a3Complex != null) {
         // FDSFactory<Complex> factory = new FDSFactory<Complex>(ComplexField.getInstance(),
         // 1, order);

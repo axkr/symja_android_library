@@ -2,7 +2,6 @@ package org.matheclipse.core.generic;
 
 import org.hipparchus.analysis.MultivariateFunction;
 import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.eval.DoubleStackEvaluator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
@@ -36,8 +35,6 @@ public class MultiVariateFunction implements MultivariateFunction {
 
   @Override
   public double value(double[] point) {
-    double result = 0.0;
-    final double[] stack = new double[10];
     try {
       // substitution is more thread safe than direct value assigning to global variable
       IASTAppendable list = F.ListAlloc();
@@ -45,11 +42,10 @@ public class MultiVariateFunction implements MultivariateFunction {
         list.append(F.Rule(fVariableList.get(i + 1), F.num(point[i])));
       }
       IExpr temp = F.subst(fFunction, list);
-      result = DoubleStackEvaluator.eval(stack, 0, temp);
+      return temp.evalf();
     } catch (RuntimeException rex) {
       return Double.NaN;
     }
-    return result;
   }
 
 }

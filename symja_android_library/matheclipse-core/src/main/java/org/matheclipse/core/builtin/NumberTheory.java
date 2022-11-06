@@ -2257,8 +2257,8 @@ public final class NumberTheory {
         } else {
           if (engine.isDoubleMode()) {
             if (!x.isMathematicalIntegerNegative()) {
-              Complex cx = x.evalComplex();
-              Complex cn = n.evalComplex();
+              Complex cx = x.evalfc();
+              Complex cn = n.evalfc();
               cx = cx.add(1.0);
               cn = cx.subtract(cn);
               if (!(cn.isMathematicalInteger() && cn.getReal() < 0.0)) {
@@ -2268,9 +2268,9 @@ public final class NumberTheory {
             }
             double real = Double.NaN;
             try {
-              real = x.evalDouble();
+              real = x.evalf();
             } catch (ArgumentTypeException ate) {
-              Complex temp = x.evalComplex();
+              Complex temp = x.evalfc();
               if (temp == null) {
                 return F.NIL;
               }
@@ -2281,7 +2281,7 @@ public final class NumberTheory {
             }
             long iterationLimit = EvalEngine.get().getIterationLimit();
             long k = 0L;
-            double dN = n.evalDouble();
+            double dN = n.evalf();
             double i = real - dN + 1;
             while (real >= i) {
               result = result.multiply(x);
@@ -2323,9 +2323,9 @@ public final class NumberTheory {
         } else {
           if (engine.isDoubleMode()) {
             if (!x.isMathematicalIntegerNegative()) {
-              Complex cx = x.evalComplex();
-              Complex cn = n.evalComplex();
-              Complex ch = h.evalComplex();
+              Complex cx = x.evalfc();
+              Complex cn = n.evalfc();
+              Complex ch = h.evalfc();
 
               Complex cxDch = cx.divide(ch);
               Complex cxDchPlus1 = cxDch.add(1.0);
@@ -2339,9 +2339,9 @@ public final class NumberTheory {
             }
             double real = Double.NaN;
             try {
-              real = x.evalDouble();
+              real = x.evalf();
             } catch (ArgumentTypeException ate) {
-              Complex temp = x.evalComplex();
+              Complex temp = x.evalfc();
               if (temp == null) {
                 return F.NIL;
               }
@@ -2350,8 +2350,8 @@ public final class NumberTheory {
             if (Double.isNaN(real)) {
               return F.NIL;
             }
-            double dN = n.evalDouble();
-            double doubleH = h.evalDouble();
+            double dN = n.evalf();
+            double doubleH = h.evalf();
             if (h.isZero()) {
               while (engine.evalTrue(F.Greater(n, F.C0))) {
                 result = result.multiply(x);

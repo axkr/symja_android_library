@@ -107,7 +107,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     }
     if (engine.isDoubleMode() && !value.isInexactNumber()) {
       try {
-        double qDouble = value.evalDouble();
+        double qDouble = value.evalf();
         return new QuantityImpl(F.num(qDouble), fData); // setAtCopy(1, F.num(qDouble));
       } catch (RuntimeException rex) {
       }

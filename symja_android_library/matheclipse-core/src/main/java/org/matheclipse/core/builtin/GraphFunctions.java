@@ -2279,14 +2279,14 @@ public class GraphFunctions {
         DefaultDirectedWeightedGraph gw = (DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>) g;
         for (int i = 1; i < list.size(); i++) {
           IAST edge = list.getAST(i);
-          gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeight.get(i).evalDouble());
+          gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeight.get(i).evalf());
         }
       } else {
         DefaultUndirectedWeightedGraph gw =
             (DefaultUndirectedWeightedGraph<IExpr, ExprWeightedEdge>) g;
         for (int i = 1; i < list.size(); i++) {
           IAST edge = list.getAST(i);
-          gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeight.get(i).evalDouble());
+          gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeight.get(i).evalf());
         }
       }
 

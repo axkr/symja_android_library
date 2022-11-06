@@ -627,7 +627,7 @@ public class ExprEvaluator {
     EvalEngine.setReset(fEngine);
     IExpr temp = eval(F.N(expr));
     if (temp.isNumber()) {
-      return temp.evalComplex();
+      return temp.evalfc();
     }
     return Complex.NaN;
   }
@@ -639,7 +639,7 @@ public class ExprEvaluator {
       if (fExpr != null) {
         IExpr temp = eval(F.N(fExpr));
         if (temp.isNumber()) {
-          return temp.evalComplex();
+          return temp.evalfc();
         }
       }
     }

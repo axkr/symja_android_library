@@ -288,7 +288,7 @@ public class Convert {
             return null;
           }
           for (int j = 1; j < colSize + 1; j++) {
-            elements[i - 1][j - 1] = currInRow.get(j).evalComplex();
+            elements[i - 1][j - 1] = currInRow.get(j).evalfc();
           }
         }
         return new Array2DRowFieldMatrix<Complex>(elements, false);
@@ -572,7 +572,7 @@ public class Convert {
         IAST list = (IAST) expr;
         final Complex[] elements = new Complex[rowSize];
         for (int i = 0; i < rowSize; i++) {
-          elements[i] = list.get(i + 1).evalComplex();
+          elements[i] = list.get(i + 1).evalfc();
         }
         return new ArrayFieldVector<Complex>(elements, false);
       } catch (ValidateException vex) {
@@ -1048,9 +1048,9 @@ public class Convert {
   public static RGBColor toAWTColorDefault(IExpr rgbColorAST, RGBColor defaultColor) {
     if (rgbColorAST.isAST(S.RGBColor, 4, 5)) {
       IAST rgbColor = (IAST) rgbColorAST;
-      float r = (float) rgbColor.arg1().evalDouble();
-      float g = (float) rgbColor.arg2().evalDouble();
-      float b = (float) rgbColor.arg3().evalDouble();
+      float r = (float) rgbColor.arg1().evalf();
+      float g = (float) rgbColor.arg2().evalf();
+      float b = (float) rgbColor.arg3().evalf();
       return new RGBColor(r, g, b);
     }
     return defaultColor;

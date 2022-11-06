@@ -427,7 +427,7 @@ public class ComplexNum implements IComplexNum {
 
   /** {@inheritDoc} */
   @Override
-  public Complex evalComplex() {
+  public Complex evalfc() {
     return fComplex;
   }
 

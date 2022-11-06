@@ -76,7 +76,7 @@ public class BarLegend {
     int ascent = fontMetrics.getAscent();
     for (Entry<IExpr, String> entry : map.entrySet()) {
       IExpr rescale = F.C1.subtract(clip.rescale(entry.getKey()));
-      int piy = (int) (height * rescale.evalDouble() + ascent / 2);
+      int piy = (int) (height * rescale.evalf() + ascent / 2);
       piy = Integers.clip(ascent, height).applyAsInt(piy);
       // piy = Math.min(Math.max(ascent, piy), height);
       graphics.drawString(entry.getValue(), width + space, piy);

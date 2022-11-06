@@ -15,11 +15,11 @@ public class AffineTransforms {
    */
   public static AffineTransform of(IAST matrix) {
     return new AffineTransform( //
-        matrix.getPart(1, 1).evalDouble(), //
-        matrix.getPart(2, 1).evalDouble(), //
-        matrix.getPart(1, 2).evalDouble(), //
-        matrix.getPart(2, 2).evalDouble(), //
-        matrix.getPart(1, 3).evalDouble(), //
-        matrix.getPart(2, 3).evalDouble());
+        matrix.getPart(1, 1).evalf(), //
+        matrix.getPart(2, 1).evalf(), //
+        matrix.getPart(1, 2).evalf(), //
+        matrix.getPart(2, 2).evalf(), //
+        matrix.getPart(1, 3).evalf(), //
+        matrix.getPart(2, 3).evalf());
   }
 }

@@ -774,7 +774,7 @@ public class IntegerFunctions {
           IInteger intValue = signedNumber.integerPart();
           return F.Subtract(arg1, intValue);
         } else {
-          Complex complexNumber = arg1.evalComplex();
+          Complex complexNumber = arg1.evalfc();
           if (complexNumber != null) {
             double re = complexNumber.getReal();
             double im = complexNumber.getImaginary();
@@ -1033,7 +1033,7 @@ public class IntegerFunctions {
         if (signedNumber != null) {
           return signedNumber.integerPart();
         } else {
-          Complex complexNumber = arg1.evalComplex();
+          Complex complexNumber = arg1.evalfc();
           if (complexNumber != null) {
             return F.complexNum(complexNumber).integerPart();
           }
@@ -1325,13 +1325,13 @@ public class IntegerFunctions {
             double zDouble = Double.NaN;
             double nDouble = Double.NaN;
             try {
-              zDouble = z.evalDouble();
-              nDouble = n.evalDouble();
+              zDouble = z.evalf();
+              nDouble = n.evalf();
             } catch (RuntimeException ve) {
             }
             if (Double.isNaN(zDouble) || Double.isNaN(nDouble)) {
-              Complex zComplex = z.evalComplex();
-              Complex nComplex = n.evalComplex();
+              Complex zComplex = z.evalfc();
+              Complex nComplex = n.evalfc();
               Complex[] qr = ComplexNum.quotientRemainder(zComplex, nComplex);
               return F.complexNum(qr[0]).floorFraction();
             } else {
@@ -1459,13 +1459,13 @@ public class IntegerFunctions {
             double zDouble = Double.NaN;
             double nDouble = Double.NaN;
             try {
-              zDouble = arg1.evalDouble();
-              nDouble = arg2.evalDouble();
+              zDouble = arg1.evalf();
+              nDouble = arg2.evalf();
             } catch (RuntimeException ve) {
             }
             if (Double.isNaN(zDouble) || Double.isNaN(nDouble)) {
-              Complex zComplex = arg1.evalComplex();
-              Complex nComplex = arg2.evalComplex();
+              Complex zComplex = arg1.evalfc();
+              Complex nComplex = arg2.evalfc();
               Complex[] qr = ComplexNum.quotientRemainder(zComplex, nComplex);
               return F.list(F.complexNum(qr[0]).floorFraction(), F.complexNum(qr[1]));
             } else {

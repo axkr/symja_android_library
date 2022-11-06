@@ -1374,13 +1374,13 @@ public class BufferedImagePlot extends Plot implements ValueAxisPlot, Pannable, 
     // g2.clip(null);
     {
       double x1 =
-          getDomainAxis().valueToJava2D(clipX.min().evalDouble(), dataArea, getDomainAxisEdge());
+          getDomainAxis().valueToJava2D(clipX.min().evalf(), dataArea, getDomainAxisEdge());
       double x2 =
-          getDomainAxis().valueToJava2D(clipX.max().evalDouble(), dataArea, getDomainAxisEdge());
+          getDomainAxis().valueToJava2D(clipX.max().evalf(), dataArea, getDomainAxisEdge());
       double y1 =
-          getRangeAxis().valueToJava2D(clipY.min().evalDouble(), dataArea, getRangeAxisEdge());
+          getRangeAxis().valueToJava2D(clipY.min().evalf(), dataArea, getRangeAxisEdge());
       double y2 =
-          getRangeAxis().valueToJava2D(clipY.max().evalDouble(), dataArea, getRangeAxisEdge());
+          getRangeAxis().valueToJava2D(clipY.max().evalf(), dataArea, getRangeAxisEdge());
       BufferedImage bufferedImage = ImageResize.of( //
           visualImage.getBufferedImage(), //
           (int) (x2 - x1 + 1), //

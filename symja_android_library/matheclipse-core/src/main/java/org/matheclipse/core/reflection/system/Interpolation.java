@@ -61,8 +61,8 @@ public class Interpolation extends AbstractEvaluator {
           IExpr arg1 = matrix.get(j).first();
           minMaxList.append(arg1);
         }
-        double min = engine.evaluate(minMaxList.apply(S.Min, 1)).evalDouble();
-        double max = engine.evaluate(minMaxList.apply(S.Max, 1)).evalDouble();
+        double min = engine.evaluate(minMaxList.apply(S.Min, 1)).evalf();
+        double max = engine.evaluate(minMaxList.apply(S.Max, 1)).evalf();
         if (rowsSize <= 5) {
           IAST interpolator = F.Function(F.InterpolatingPolynomial(matrix, F.Slot1));
           return InterpolatingFunctionExpr.newInstance(interpolator, min, max);
@@ -120,8 +120,8 @@ public class Interpolation extends AbstractEvaluator {
       return arg1;
     });
 
-    double min = engine.evaluate(minMaxList.apply(S.Min, 1)).evalDouble();
-    double max = engine.evaluate(minMaxList.apply(S.Max, 1)).evalDouble();
+    double min = engine.evaluate(minMaxList.apply(S.Min, 1)).evalf();
+    double max = engine.evaluate(minMaxList.apply(S.Max, 1)).evalf();
     return InterpolatingFunctionExpr.newInstance(interpolator, min, max);
   }
 

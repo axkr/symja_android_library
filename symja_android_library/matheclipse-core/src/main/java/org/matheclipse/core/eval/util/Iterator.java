@@ -137,7 +137,7 @@ public class Iterator {
           return !sub.isNegative();
         }
         try {
-          double d = sub.evalDouble();
+          double d = sub.evalf();
           return !(d < 0.0);
         } catch (ValidateException ve) {
           // return false;

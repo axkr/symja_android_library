@@ -77,8 +77,8 @@ public class ComputationalGeometryFunctions {
         public int compare(IAST p1, IAST p2) {
           IAST d10 = (IAST) F.eval(F.Subtract(p1, point0));
           IAST d20 = (IAST) F.eval(F.Subtract(p2, point0));
-          double atan1 = d10.arg1().isZero() ? 0.0 : F.ArcTan(d10.arg1(), d10.arg2()).evalDouble();
-          double atan2 = d20.arg1().isZero() ? 0.0 : F.ArcTan(d20.arg1(), d20.arg2()).evalDouble();
+          double atan1 = d10.arg1().isZero() ? 0.0 : F.ArcTan(d10.arg1(), d10.arg2()).evalf();
+          double atan2 = d20.arg1().isZero() ? 0.0 : F.ArcTan(d20.arg1(), d20.arg2()).evalf();
           int cmp = F.isEqual(atan1, atan2) ? 0 : atan1 < atan2 ? -1 : 1;
           return cmp != 0 ? cmp : MINY_MINX.compare(p1, p2);
         }

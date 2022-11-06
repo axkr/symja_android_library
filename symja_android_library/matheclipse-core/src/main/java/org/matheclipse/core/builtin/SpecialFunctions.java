@@ -127,15 +127,15 @@ public class SpecialFunctions {
             double bDouble = Double.NaN;
             double zDouble = Double.NaN;
             try {
-              zDouble = z.evalDouble();
-              aDouble = a.evalDouble();
-              bDouble = b.evalDouble();
+              zDouble = z.evalf();
+              aDouble = a.evalf();
+              bDouble = b.evalf();
             } catch (ValidateException ve) {
             }
             if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
-              Complex zc = z.evalComplex();
-              Complex ac = a.evalComplex();
-              Complex bc = b.evalComplex();
+              Complex zc = z.evalfc();
+              Complex ac = a.evalfc();
+              Complex bc = b.evalfc();
 
               return F.complexNum(GammaJS.beta(zc, ac, bc));
 
@@ -183,13 +183,13 @@ public class SpecialFunctions {
           double aDouble = Double.NaN;
           double bDouble = Double.NaN;
           try {
-            aDouble = a.evalDouble();
-            bDouble = b.evalDouble();
+            aDouble = a.evalf();
+            bDouble = b.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(aDouble) || Double.isNaN(bDouble)) {
-            Complex ac = a.evalComplex();
-            Complex bc = b.evalComplex();
+            Complex ac = a.evalfc();
+            Complex bc = b.evalfc();
 
             return F.complexNum(GammaJS.beta(ac, bc));
 
@@ -660,8 +660,8 @@ public class SpecialFunctions {
           double aDouble = Double.NaN;
           double z1Double = Double.NaN;
           try {
-            aDouble = a.evalDouble();
-            z1Double = z1.evalDouble();
+            aDouble = a.evalf();
+            z1Double = z1.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(aDouble) || Double.isNaN(z1Double)) {
@@ -702,9 +702,9 @@ public class SpecialFunctions {
           double z1Double = Double.NaN;
           double z2Double = Double.NaN;
           try {
-            aDouble = a.evalDouble();
-            z1Double = z1.evalDouble();
-            z2Double = z2.evalDouble();
+            aDouble = a.evalf();
+            z1Double = z1.evalf();
+            z2Double = z2.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(aDouble) || Double.isNaN(z1Double) || Double.isNaN(z2Double)) {
@@ -883,13 +883,13 @@ public class SpecialFunctions {
           double sDouble = Double.NaN;
           double aDouble = Double.NaN;
           try {
-            sDouble = s.evalDouble();
-            aDouble = a.evalDouble();
+            sDouble = s.evalf();
+            aDouble = a.evalf();
           } catch (ValidateException ve) {
           }
           if (aDouble < 0.0 || Double.isNaN(sDouble) || Double.isNaN(aDouble)) {
-            Complex sc = s.evalComplex();
-            Complex ac = a.evalComplex();
+            Complex sc = s.evalfc();
+            Complex ac = a.evalfc();
             return F.complexNum(ZetaJS.hurwitzZeta(sc, ac));
           } else {
             if (aDouble >= 0 && sDouble != 1.0) {
@@ -1070,9 +1070,9 @@ public class SpecialFunctions {
           if (engine.isDoubleMode() && (z.isNumericFunction(true) && a.isNumericFunction(true)
               && b.isNumericFunction(true))) {
             org.hipparchus.distribution.continuous.BetaDistribution beta = //
-                new org.hipparchus.distribution.continuous.BetaDistribution(a.evalDouble(),
-                    b.evalDouble());
-            return F.num(beta.inverseCumulativeProbability(z.evalDouble()));
+                new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(),
+                    b.evalf());
+            return F.num(beta.inverseCumulativeProbability(z.evalf()));
           }
         } else {
           IExpr z1 = ast.arg1();
@@ -1575,7 +1575,7 @@ public class SpecialFunctions {
             if (n >= 0) {
               double xDouble = Double.NaN;
               try {
-                xDouble = arg2.evalDouble();
+                xDouble = arg2.evalf();
               } catch (ValidateException ve) {
               }
               if (Double.isNaN(xDouble)) {
@@ -1679,14 +1679,14 @@ public class SpecialFunctions {
           double nDouble = Double.NaN;
           double xDouble = Double.NaN;
           try {
-            nDouble = arg1.evalDouble();
-            xDouble = arg2.evalDouble();
+            nDouble = arg1.evalf();
+            xDouble = arg2.evalf();
           } catch (ValidateException ve) {
           }
 
           if (Double.isNaN(nDouble) || Double.isNaN(xDouble)) {
-            Complex nComplex = arg1.evalComplex();
-            Complex xComplex = arg2.evalComplex();
+            Complex nComplex = arg1.evalfc();
+            Complex xComplex = arg2.evalfc();
             return F.complexNum(ZetaJS.polyLog(nComplex, xComplex));
           } else {
             return F.complexNum(ZetaJS.polyLog(nDouble, xDouble));
@@ -1935,10 +1935,10 @@ public class SpecialFunctions {
             return F.CComplexInfinity;
           }
         } else if (arg1 instanceof INum && arg2 instanceof INum) {
-          return F.num(BesselJS.struveH(arg1.evalDouble(), arg2.evalDouble()));
+          return F.num(BesselJS.struveH(arg1.evalf(), arg2.evalf()));
           // return e2DblArg((INum) arg1, (INum) arg2);
         } else if (arg1.isComplexNumeric() || arg2.isComplexNumeric()) {
-          return F.complexNum(BesselJS.struveH(arg1.evalComplex(), arg2.evalComplex()));
+          return F.complexNum(BesselJS.struveH(arg1.evalfc(), arg2.evalfc()));
         } else {
           IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
           if (negArg2.isPresent()) {
@@ -2012,10 +2012,10 @@ public class SpecialFunctions {
             return F.CComplexInfinity;
           }
         } else if (arg1 instanceof INum && arg2 instanceof INum) {
-          return F.num(BesselJS.struveL(arg1.evalDouble(), arg2.evalDouble()));
+          return F.num(BesselJS.struveL(arg1.evalf(), arg2.evalf()));
           // return e2DblArg((INum) arg1, (INum) arg2);
         } else if (arg1.isComplexNumeric() || arg2.isComplexNumeric()) {
-          return F.complexNum(BesselJS.struveL(arg1.evalComplex(), arg2.evalComplex()));
+          return F.complexNum(BesselJS.struveL(arg1.evalfc(), arg2.evalfc()));
         } else {
           IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
           if (negArg2.isPresent()) {

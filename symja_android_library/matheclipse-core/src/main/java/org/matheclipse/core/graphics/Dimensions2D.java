@@ -93,9 +93,9 @@ public class Dimensions2D {
 
   public void setColorRGB(IAST rgbColor) {
     if (rgbColor.size() == 4 || rgbColor.size() == 5) {
-      float r = (float) rgbColor.arg1().evalDouble();
-      float g = (float) rgbColor.arg2().evalDouble();
-      float b = (float) rgbColor.arg3().evalDouble();
+      float r = (float) rgbColor.arg1().evalf();
+      float g = (float) rgbColor.arg2().evalf();
+      float b = (float) rgbColor.arg3().evalf();
       color = new RGBColor(r, g, b);
     }
   }

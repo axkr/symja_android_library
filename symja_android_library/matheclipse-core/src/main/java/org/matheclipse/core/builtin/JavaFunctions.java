@@ -574,9 +574,9 @@ public class JavaFunctions {
             return null;
           }
         } else if (clazz.equals(double.class)) {
-          params[j] = Double.valueOf(arg.evalDouble());
+          params[j] = Double.valueOf(arg.evalf());
         } else if (clazz.equals(float.class)) {
-          params[j] = Float.valueOf((float) arg.evalDouble());
+          params[j] = Float.valueOf((float) arg.evalf());
         } else if (clazz.equals(int.class)) {
           int n = arg.toIntDefault();
           if (n == Integer.MIN_VALUE) {
@@ -616,7 +616,7 @@ public class JavaFunctions {
           }
           params[j] = arg.toString();
         } else if (clazz.equals(org.hipparchus.complex.Complex.class)) {
-          org.hipparchus.complex.Complex complex = arg.evalComplex();
+          org.hipparchus.complex.Complex complex = arg.evalfc();
           if (complex == null) {
             return null;
           }

@@ -62,7 +62,7 @@ public class ListPlot3D extends AbstractEvaluator {
           IASTAppendable polygonList =
               F.ListAlloc((values.argSize() - 1) * (values.arg1().argSize() - 1) * 2);
 
-          double minHeight = (((IAST) values.arg1()).arg1()).evalDouble();
+          double minHeight = (((IAST) values.arg1()).arg1()).evalf();
           double maxHeight = minHeight;
 
           ArrayList<double[]> heightRows = new ArrayList<double[]>();
@@ -73,7 +73,7 @@ public class ListPlot3D extends AbstractEvaluator {
               double[] heights = new double[row.argSize()];
               for (int j = 1; j <= row.argSize(); j++) {
                 // evalDouble may throw ArgumentTypeException
-                heights[j - 1] = row.get(j).evalDouble();
+                heights[j - 1] = row.get(j).evalf();
                 double height = heights[j - 1];
                 if (height < minHeight)
                   minHeight = height;

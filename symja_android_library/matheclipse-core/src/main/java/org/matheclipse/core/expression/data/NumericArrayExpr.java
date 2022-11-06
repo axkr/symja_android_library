@@ -174,7 +174,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (arg.isList()) {
           return false;
         }
-        Complex value = arg.evalComplex();
+        Complex value = arg.evalfc();
         floatArr[index[0]++] = (float) value.getReal();
         floatArr[index[0]++] = (float) value.getImaginary();
       } else {
@@ -195,7 +195,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (arg.isList()) {
           return false;
         }
-        Complex value = arg.evalComplex();
+        Complex value = arg.evalfc();
         doubleArr[index[0]++] = value.getReal();
         doubleArr[index[0]++] = value.getImaginary();
       } else {
@@ -216,7 +216,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (arg.isList()) {
           return false;
         }
-        doubleArr[index[0]++] = arg.evalDouble();
+        doubleArr[index[0]++] = arg.evalf();
       } else {
         if (!arg.isList() || !arrayDoubleRecursive((IAST) arg, level, doubleArr, index)) {
           return false;
@@ -235,7 +235,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (arg.isList()) {
           return false;
         }
-        floatArr[index[0]++] = (float) arg.evalDouble();
+        floatArr[index[0]++] = (float) arg.evalf();
       } else {
         if (!arg.isList() || !arrayFloatRecursive((IAST) arg, level, floatArr, index)) {
           return false;

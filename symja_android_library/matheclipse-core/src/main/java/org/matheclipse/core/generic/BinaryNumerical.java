@@ -1,8 +1,8 @@
 package org.matheclipse.core.generic;
 
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.eval.DoubleStackEvaluator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ComplexNum;
@@ -56,14 +56,16 @@ public class BinaryNumerical implements BinaryOperator<IExpr> {
       final INum xValue = F.num(x);
       final INum yValue = F.num(y);
       // substitution is more thread safe than direct value assigning to global variables
-      IExpr temp = F.subst(fun, arg -> {
+      final Function<IExpr, IExpr> function = arg -> {
         if (arg.equals(variable1)) {
           return xValue;
         }
-        return arg.equals(variable2) ? yValue : arg;
-      });
-      final double[] stack = new double[10];
-      result = DoubleStackEvaluator.eval(stack, 0, temp);
+        if (arg.equals(variable2)) {
+          return yValue;
+        }
+        return F.NIL;
+      };
+      result = fun.evalf(function);
     } catch (RuntimeException rex) {
       return Double.NaN;
     }

@@ -668,14 +668,12 @@ public class Algebra {
       IExpr p0 = part0;
       if (part0.isPlus() || part0.isTimes()) {
         if (VariablesSet.isUnivariate(part0)) {
-          // univariate - see https://github.com/kredel/java-algebra-system/issues/31
           p0 = S.Factor.of(part0);
         }
       }
       IExpr p1 = part1;
       if (part1.isPlus() || part1.isTimes()) {
         if (VariablesSet.isUnivariate(part1)) {
-          // univariate - see https://github.com/kredel/java-algebra-system/issues/31
           p1 = S.Factor.of(part1);
         }
       }
@@ -4428,9 +4426,8 @@ public class Algebra {
       if (!engine.isNumericMode() && p.isPlus() && !engine.isTogetherMode()) {
         IAST plusAST = (IAST) p;
         // ((reduceConstantTerm /@ (List @@ plusAST)) // Transpose)[[1]]
-        IExpr cTerms = S.Transpose
-            .of(engine,
-                F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(S.List, plusAST)))
+        IExpr cTerms = S.Transpose.of(engine,
+            F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(S.List, plusAST)))
             .first();
         if (cTerms.isList()) {
           // GCD @@ cTerms

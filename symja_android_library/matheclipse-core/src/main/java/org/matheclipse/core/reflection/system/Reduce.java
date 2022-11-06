@@ -145,7 +145,7 @@ public class Reduce extends AbstractEvaluator {
 
       public IExpr reduceAnd(int headID, IExpr rhs) throws ArgumentTypeException {
         try {
-          Complex c = rhs.evalComplex();
+          Complex c = rhs.evalfc();
           if (c != null && !F.isZero(c.getImaginary())) {
             // complex values are not allowed in intervals
             return S.False;

@@ -16739,7 +16739,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "");
 
     checkNumeric("NSolve({2==x-0.091*y, y==0.054-0.0171*z, x==Exp(z)+1}, {x,y,z})", //
-        "{{z->0.004894386769035739,y->0.053916305986249774,x->2.004906383844749}}");
+        "{{z->0.0048943867690357514,y->0.053916305986249774,x->2.004906383844749}}");
 
     // check("Eliminate({sin(x)-11==y, x+y==-9}, {y,x})",
     // "x+Sin(x)==2");

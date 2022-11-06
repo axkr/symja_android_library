@@ -58,12 +58,12 @@ public interface ISignedNumber extends INumber {
   public double doubleValue();
 
   @Override
-  default double evalDouble() throws ArgumentTypeException {
+  default double evalf() throws ArgumentTypeException {
     return doubleValue();
   }
 
   @Override
-  default Complex evalComplex() throws ArgumentTypeException {
+  default Complex evalfc() throws ArgumentTypeException {
     return new Complex(doubleValue());
   }
 

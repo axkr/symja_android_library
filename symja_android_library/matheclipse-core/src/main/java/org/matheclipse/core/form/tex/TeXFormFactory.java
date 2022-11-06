@@ -1711,14 +1711,14 @@ public class TeXFormFactory {
                 IExpr min = subList.arg1();
                 IExpr max = subList.arg2();
                 if (min instanceof INum) {
-                  convertDoubleString(buf, convertDoubleToFormattedString(min.evalDouble()), 0,
+                  convertDoubleString(buf, convertDoubleToFormattedString(min.evalf()), 0,
                       false);
                 } else {
                   convertInternal(buf, min, 0);
                 }
                 buf.append(",");
                 if (max instanceof INum) {
-                  convertDoubleString(buf, convertDoubleToFormattedString(max.evalDouble()), 0,
+                  convertDoubleString(buf, convertDoubleToFormattedString(max.evalf()), 0,
                       false);
                 } else {
                   convertInternal(buf, max, 0);

@@ -153,7 +153,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
         variableList = F.list(list.arg1());
       } else if (list.argSize() == 2 && !list.arg2().isSymbol()) {
         initialValues = new double[1];
-        initialValues[0] = list.arg2().evalDouble();
+        initialValues[0] = list.arg2().evalf();
         variableList = F.list(list.arg1());
       } else {
         initialValues = new double[list.argSize()];
@@ -169,7 +169,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
           initialValues = new double[list.argSize()];
           for (int i = 0; i < list.argSize(); i++) {
             IAST row = (IAST) list.get(i + 1);
-            initialValues[i] = list.getPart(i + 1, 2).evalDouble();
+            initialValues[i] = list.getPart(i + 1, 2).evalf();
             vars.append(row.arg1());
           }
           variableList = vars;
@@ -177,7 +177,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
           initialValues = new double[list.argSize()];
           for (int i = 0; i < list.argSize(); i++) {
             IAST row = (IAST) list.get(i + 1);
-            initialValues[i] = row.arg2().evalDouble();
+            initialValues[i] = row.arg2().evalf();
             vars.append(row.arg1());
           }
           variableList = vars;

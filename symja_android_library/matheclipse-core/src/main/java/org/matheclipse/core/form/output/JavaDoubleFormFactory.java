@@ -109,7 +109,7 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
   }
 
   @Override
-  public void convertAST(final StringBuilder buf, final IAST function) {
+  public void convertAST(final StringBuilder buf, final IAST function, boolean eval) {
     if (function.isNumericFunction(true)) {
       try {
         double value = EvalEngine.get().evalDouble(function);

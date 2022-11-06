@@ -13,6 +13,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.Level;
@@ -72,6 +73,7 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
+import org.matheclipse.core.visit.VisitorReplaceEvalf;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
@@ -1334,7 +1336,20 @@ public class EvalEngine implements Serializable {
    * @see #evaluate(IExpr)
    */
   public final double evalDouble(final IExpr expr) throws ArgumentTypeException {
-    return evalDouble(expr, Double.NaN);
+    return evalDouble(expr, null, Double.NaN);
+  }
+
+  /**
+   * Evaluate the expression to a Java <code>double</code> value.
+   * 
+   * @param expr
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @return
+   * @throws ArgumentTypeException
+   */
+  public final double evalDouble(final IExpr expr, Function<IExpr, IExpr> function)
+      throws ArgumentTypeException {
+    return evalDouble(expr, function, Double.NaN);
   }
 
   public final double[] evalDoubleVector(final IExpr expr) {
@@ -1345,7 +1360,15 @@ public class EvalEngine implements Serializable {
     return expr.toDoubleMatrix();
   }
 
-  public final double evalDouble(final IExpr expr, double defaultValue) {
+  /**
+   * Evaluate the expression to a Java <code>double</code> value.
+   * 
+   * @param expr
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @param defaultValue
+   * @return
+   */
+  public final double evalDouble(IExpr expr, Function<IExpr, IExpr> function, double defaultValue) {
     if (expr.isReal()) {
       return ((ISignedNumber) expr).doubleValue();
     }
@@ -1355,19 +1378,15 @@ public class EvalEngine implements Serializable {
     boolean quietMode = fQuietMode;
     try {
       fQuietMode = true;
-      if (expr.isNumericFunction(true)) {
-        IExpr result = evalN(expr);
-        if (result.isReal()) {
-          return ((ISignedNumber) result).doubleValue();
-        }
-      } else {
-        IExpr temp = evaluateNIL(expr);
-        if (temp.isNumericFunction(true)) {
-          IExpr result = evalN(temp);
-          if (result.isReal()) {
-            return ((ISignedNumber) result).doubleValue();
-          }
-        }
+      if (function != null) {
+        expr = expr.accept(new VisitorReplaceEvalf(function)).orElse(expr);
+      }
+      IExpr result = evalN(expr);
+      if (result.isReal()) {
+        return ((ISignedNumber) result).doubleValue();
+      }
+      if (result.isQuantity()) {
+        return result.evalReal().doubleValue();
       }
     } finally {
       fQuietMode = quietMode;
@@ -1422,6 +1441,20 @@ public class EvalEngine implements Serializable {
    * @throws ArgumentTypeException
    */
   public final Complex evalComplex(final IExpr expr) throws ArgumentTypeException {
+    return evalComplex(expr, null);
+  }
+
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>
+   * org.hipparchus.complex.Complex</code> value.
+   *
+   * @param expr
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @return
+   * @throws ArgumentTypeException
+   */
+  public final Complex evalComplex(IExpr expr, final Function<IExpr, IExpr> function)
+      throws ArgumentTypeException {
     if (expr.isReal()) {
       return new Complex(((ISignedNumber) expr).doubleValue());
     }
@@ -1431,27 +1464,18 @@ public class EvalEngine implements Serializable {
     boolean quietMode = fQuietMode;
     try {
       fQuietMode = true;
-      if (expr.isNumericFunction(true)) {
-        IExpr result = evalN(expr);
-        if (result.isReal()) {
-          return new Complex(((ISignedNumber) result).doubleValue());
-        }
-        if (result.isNumber()) {
-          return new Complex(((INumber) result).reDoubleValue(),
-              ((INumber) result).imDoubleValue());
-        }
-      } else {
-        IExpr temp = evaluateNIL(expr);
-        if (temp.isNumericFunction(true)) {
-          IExpr result = evalN(temp);
-          if (result.isReal()) {
-            return new Complex(((ISignedNumber) result).doubleValue());
-          }
-          if (result.isNumber()) {
-            return new Complex(((INumber) result).reDoubleValue(),
-                ((INumber) result).imDoubleValue());
-          }
-        }
+      if (function != null) {
+        expr = expr.accept(new VisitorReplaceEvalf(function)).orElse(expr);
+      }
+      IExpr result = evalN(expr);
+      if (result.isReal()) {
+        return new Complex(((ISignedNumber) result).doubleValue());
+      }
+      if (result.isQuantity()) {
+        return new Complex(result.evalReal().doubleValue());
+      }
+      if (result.isNumber()) {
+        return new Complex(((INumber) result).reDoubleValue(), ((INumber) result).imDoubleValue());
       }
     } finally {
       fQuietMode = quietMode;

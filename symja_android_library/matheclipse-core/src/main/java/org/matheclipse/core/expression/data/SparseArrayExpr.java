@@ -1946,7 +1946,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       try {
         double[][] result = new double[fDimension[0]][fDimension[1]];
         if (!fDefaultValue.isZero()) {
-          double d = fDefaultValue.evalDouble();
+          double d = fDefaultValue.evalf();
           for (int i = 0; i < fDimension[0]; i++) {
             for (int j = 0; j < fDimension[1]; j++) {
               result[i][j] = d;
@@ -1956,7 +1956,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
           int[] key = entry.getKey();
           IExpr value = entry.getValue();
-          result[key[0] - 1][key[1] - 1] = value.evalDouble();
+          result[key[0] - 1][key[1] - 1] = value.evalf();
         }
         return result;
       } catch (ArgumentTypeException rex) {
@@ -1973,7 +1973,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       try {
         double[] result = new double[fDimension[0]];
         if (!fDefaultValue.isZero()) {
-          double d = fDefaultValue.evalDouble();
+          double d = fDefaultValue.evalf();
           for (int i = 0; i < result.length; i++) {
             result[i] = d;
           }
@@ -1981,7 +1981,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
           int[] key = entry.getKey();
           IExpr value = entry.getValue();
-          result[key[0] - 1] = value.evalDouble();
+          result[key[0] - 1] = value.evalf();
         }
         return result;
       } catch (ArgumentTypeException rex) {
@@ -2014,7 +2014,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       try {
         OpenMapRealMatrix result = new OpenMapRealMatrix(fDimension[0], fDimension[1]);
         if (!fDefaultValue.isZero()) {
-          double d = fDefaultValue.evalDouble();
+          double d = fDefaultValue.evalf();
           for (int i = 0; i < fDimension[0]; i++) {
             for (int j = 0; j < fDimension[1]; j++) {
               result.setEntry(i, j, d);
@@ -2024,7 +2024,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
           int[] key = entry.getKey();
           IExpr value = entry.getValue();
-          result.setEntry(key[0] - 1, key[1] - 1, value.evalDouble());
+          result.setEntry(key[0] - 1, key[1] - 1, value.evalf());
         }
         return result;
       } catch (ArgumentTypeException rex) {
@@ -2041,7 +2041,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       try {
         OpenMapRealVector result = new OpenMapRealVector(fDimension[0]);
         if (!fDefaultValue.isZero()) {
-          double d = fDefaultValue.evalDouble();
+          double d = fDefaultValue.evalf();
           for (int i = 0; i < fDimension[0]; i++) {
             result.setEntry(i, d);
           }
@@ -2049,7 +2049,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
           int[] key = entry.getKey();
           IExpr value = entry.getValue();
-          result.setEntry(key[0] - 1, value.evalDouble());
+          result.setEntry(key[0] - 1, value.evalf());
         }
         return result;
       } catch (ArgumentTypeException rex) {

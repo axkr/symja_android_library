@@ -118,7 +118,7 @@ public class SpectrogramArray implements TensorUnaryOperator {
   // helper function
   private static int windowLength(IExpr windowDuration, IExpr samplingFrequency) {
     // return Round.intValueExact(windowDuration.multiply(samplingFrequency));
-    return (int) Math.round(windowDuration.multiply(samplingFrequency).evalDouble());
+    return (int) Math.round(windowDuration.multiply(samplingFrequency).evalf());
   }
 
   // ---

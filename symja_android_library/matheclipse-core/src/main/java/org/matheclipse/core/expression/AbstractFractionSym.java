@@ -229,7 +229,7 @@ public abstract class AbstractFractionSym implements IFraction {
    * Rationalizes the given double value exactly.
    * <p>
    * This methods returns an {@link IExpr} that, when being evaluated to a double value (using
-   * {@link IExpr#evalDouble()}), results to the exact same value (per bit) as the given one.
+   * {@link IExpr#evalf()}), results to the exact same value (per bit) as the given one.
    * <p>
    * Although it is not possible to express all real numbers as a fraction of two integers, it is
    * possible for all finite floating-point numbers to be expressed as fraction with exact same

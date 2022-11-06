@@ -608,7 +608,7 @@ public interface ISymbol extends IExpr {
     for (int i = 0; i < array.length; i++) {
       array[i] = F.num(args[i]);
     }
-    return of(array).evalDouble();
+    return of(array).evalf();
   }
 
   /**

@@ -195,11 +195,11 @@ public class HypergeometricFunctions {
         try {
           double zDouble = Double.NaN;
           try {
-            zDouble = z.evalDouble();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(zDouble)) {
-            Complex zc = z.evalComplex();
+            Complex zc = z.evalfc();
             return F.complexNum(GammaJS.cosIntegral(zc));
 
           } else {
@@ -291,11 +291,11 @@ public class HypergeometricFunctions {
         try {
           double zDouble = Double.NaN;
           try {
-            zDouble = z.evalDouble();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(zDouble)) {
-            Complex zc = z.evalComplex();
+            Complex zc = z.evalfc();
             return F.complexNum(GammaJS.coshIntegral(zc));
           } else {
             if (F.isZero(zDouble)) {
@@ -353,14 +353,14 @@ public class HypergeometricFunctions {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            nDouble = n.evalDouble();
-            zDouble = z.evalDouble();
+            nDouble = n.evalf();
+            zDouble = z.evalf();
             return F.complexNum(GammaJS.expIntegralE(new Complex(nDouble), new Complex(zDouble)));
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
-            Complex nc = n.evalComplex();
-            Complex zc = z.evalComplex();
+            Complex nc = n.evalfc();
+            Complex zc = z.evalfc();
             return F.complexNum(GammaJS.expIntegralE(nc, zc));
           }
 
@@ -451,11 +451,11 @@ public class HypergeometricFunctions {
         try {
           double zDouble = Double.NaN;
           try {
-            zDouble = z.evalDouble();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(zDouble)) {
-            Complex zc = z.evalComplex();
+            Complex zc = z.evalfc();
             return F.complexNum(GammaJS.expIntegralEi(zc));
 
           } else {
@@ -765,13 +765,13 @@ public class HypergeometricFunctions {
           double bDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            bDouble = b.evalDouble();
-            zDouble = z.evalDouble();
+            bDouble = b.evalf();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
-            Complex bc = b.evalComplex();
-            Complex zc = z.evalComplex();
+            Complex bc = b.evalfc();
+            Complex zc = z.evalfc();
 
             return F.complexNum(HypergeometricJS.hypergeometric0F1(bc, zc));
 
@@ -846,15 +846,15 @@ public class HypergeometricFunctions {
           double bDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            aDouble = a.evalDouble();
-            bDouble = b.evalDouble();
-            zDouble = z.evalDouble();
+            aDouble = a.evalf();
+            bDouble = b.evalf();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
-            Complex ac = a.evalComplex();
-            Complex bc = b.evalComplex();
-            Complex zc = z.evalComplex();
+            Complex ac = a.evalfc();
+            Complex bc = b.evalfc();
+            Complex zc = z.evalfc();
 
             return F.complexNum(HypergeometricJS.hypergeometric1F1(ac, bc, zc));
 
@@ -990,18 +990,18 @@ public class HypergeometricFunctions {
           double cDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            aDouble = a.evalDouble();
-            bDouble = b.evalDouble();
-            cDouble = c.evalDouble();
-            zDouble = z.evalDouble();
+            aDouble = a.evalf();
+            bDouble = b.evalf();
+            cDouble = c.evalf();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(cDouble)
               || Double.isNaN(zDouble) || (zDouble > 1.0) || (zDouble == -1.0)) {
-            Complex ac = a.evalComplex();
-            Complex bc = b.evalComplex();
-            Complex cc = c.evalComplex();
-            Complex zc = z.evalComplex();
+            Complex ac = a.evalfc();
+            Complex bc = b.evalfc();
+            Complex cc = c.evalfc();
+            Complex zc = z.evalfc();
 
             return F.complexNum(HypergeometricJS.hypergeometric2F1(ac, bc, cc, zc));
 
@@ -1093,14 +1093,14 @@ public class HypergeometricFunctions {
           double B[] = b.toDoubleVector();
           double cDouble = Double.NaN;
           try {
-            cDouble = c.evalDouble();
+            cDouble = c.evalf();
           } catch (ValidateException ve) {
           }
           if (A == null || B == null || Double.isNaN(cDouble)) {
             Complex AC[] = a.toComplexVector();
             Complex BC[] = b.toComplexVector();
             if (AC != null && BC != null) {
-              return F.complexNum(HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalComplex(),
+              return F.complexNum(HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalfc(),
                   Config.DOUBLE_TOLERANCE));
             }
           } else {
@@ -1183,17 +1183,17 @@ public class HypergeometricFunctions {
           double bDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            aDouble = a.evalDouble();
-            bDouble = b.evalDouble();
-            zDouble = z.evalDouble();
+            aDouble = a.evalf();
+            bDouble = b.evalf();
+            zDouble = z.evalf();
             return F.complexNum(HypergeometricJS.hypergeometricU(new Complex(aDouble),
                 new Complex(bDouble), new Complex(zDouble)));
           } catch (ValidateException ve) {
             IOFunctions.printMessage(ast.topHead(), ve, engine);
           }
-          Complex ac = a.evalComplex();
-          Complex bc = b.evalComplex();
-          Complex zc = z.evalComplex();
+          Complex ac = a.evalfc();
+          Complex bc = b.evalfc();
+          Complex zc = z.evalfc();
           return F.complexNum(HypergeometricJS.hypergeometricU(ac, bc, zc));
         }
       } catch (ThrowException te) {
@@ -1281,11 +1281,11 @@ public class HypergeometricFunctions {
         try {
           double zDouble = Double.NaN;
           try {
-            zDouble = arg1.evalDouble();
+            zDouble = arg1.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(zDouble)) {
-            Complex zc = arg1.evalComplex();
+            Complex zc = arg1.evalfc();
             return F.complexNum(GammaJS.logIntegral(zc));
 
           } else {
@@ -1379,11 +1379,11 @@ public class HypergeometricFunctions {
         try {
           double zDouble = Double.NaN;
           try {
-            zDouble = z.evalDouble();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(zDouble)) {
-            Complex zc = z.evalComplex();
+            Complex zc = z.evalfc();
             return F.complexNum(GammaJS.sinIntegral(zc));
 
           } else {
@@ -1457,11 +1457,11 @@ public class HypergeometricFunctions {
         try {
           double zDouble = Double.NaN;
           try {
-            zDouble = z.evalDouble();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(zDouble)) {
-            Complex zc = z.evalComplex();
+            Complex zc = z.evalfc();
             return F.complexNum(GammaJS.sinhIntegral(zc));
 
           } else {
@@ -1527,17 +1527,17 @@ public class HypergeometricFunctions {
           double mDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            kDouble = k.evalDouble();
-            mDouble = m.evalDouble();
-            zDouble = z.evalDouble();
+            kDouble = k.evalf();
+            mDouble = m.evalf();
+            zDouble = z.evalf();
             return F.complexNum(HypergeometricJS.whittakerM(new Complex(kDouble),
                 new Complex(mDouble), new Complex(zDouble)));
           } catch (ValidateException ve) {
             IOFunctions.printMessage(ast.topHead(), ve, engine);
           }
-          Complex kc = k.evalComplex();
-          Complex mc = m.evalComplex();
-          Complex zc = z.evalComplex();
+          Complex kc = k.evalfc();
+          Complex mc = m.evalfc();
+          Complex zc = z.evalfc();
           return F.complexNum(HypergeometricJS.whittakerM(kc, mc, zc));
 
         } catch (ThrowException te) {

@@ -11,8 +11,12 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * Not supported any longer
+ */
+@Deprecated
 public class DoubleStackEvaluator {
-
+  @Deprecated
   public static double evalSymbol(final ISymbol symbol) {
     IExpr value = symbol.assignedValue();
     if (value != null) {
@@ -40,6 +44,7 @@ public class DoubleStackEvaluator {
         "EvalDouble#evalSymbol() - no value assigned for symbol: " + symbol);
   }
 
+  @Deprecated
   public static double evalAST(double[] stack, final int top, final IAST ast) {
     if (ast.head().isBuiltInSymbol()) {
       final IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
@@ -68,6 +73,7 @@ public class DoubleStackEvaluator {
     throw new UnsupportedOperationException("EvalDouble#evalAST(): " + ast);
   }
 
+  @Deprecated
   public static double eval(final double[] stack, final int top, final IExpr expr) {
     if (expr instanceof IAST) {
       return evalAST(stack, top, (IAST) expr);

@@ -410,7 +410,7 @@ class FractionTestCase {
   }
 
   private static void assertExactSame(double value, IExpr expression) {
-    Assertions.assertEquals(value, expression.evalDouble(),
+    Assertions.assertEquals(value, expression.evalf(),
         () -> "Not exact representation of value " + value + " by expression: " + expression);
   }
 

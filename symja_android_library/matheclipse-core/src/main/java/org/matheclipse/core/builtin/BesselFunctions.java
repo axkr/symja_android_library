@@ -75,7 +75,7 @@ public class BesselFunctions {
       if (engine.isDoubleMode() && z.isNumber()) {
         if (!z.isComplexNumeric()) {
           try {
-            Complex airyAi = BesselJS.airyAi(z.evalDouble());
+            Complex airyAi = BesselJS.airyAi(z.evalf());
             if (F.isZero(airyAi.getImaginary())) {
               return F.num(airyAi.getReal());
             }
@@ -90,7 +90,7 @@ public class BesselFunctions {
         }
 
         try {
-          return F.complexNum(BesselJS.airyAi(z.evalComplex()));
+          return F.complexNum(BesselJS.airyAi(z.evalfc()));
         } catch (NegativeArraySizeException nae) {
           LOGGER.log(engine.getLogLevel(), "AiryAi: {} caused NegativeArraySizeException", ast);
         } catch (RuntimeException rex) {
@@ -122,7 +122,7 @@ public class BesselFunctions {
       if (engine.isDoubleMode() && z.isNumber()) {
         if (!z.isComplexNumeric()) {
           try {
-            Complex airyAiPrime = BesselJS.airyAiPrime(z.evalDouble());
+            Complex airyAiPrime = BesselJS.airyAiPrime(z.evalf());
             if (F.isZero(airyAiPrime.getImaginary())) {
               return F.num(airyAiPrime.getReal());
             }
@@ -136,7 +136,7 @@ public class BesselFunctions {
         }
 
         try {
-          return F.complexNum(BesselJS.airyAiPrime(z.evalComplex()));
+          return F.complexNum(BesselJS.airyAiPrime(z.evalfc()));
         } catch (NegativeArraySizeException nae) {
           LOGGER.log(engine.getLogLevel(), "AiryAiPrime: {} caused NegativeArraySizeException",
               ast);
@@ -171,7 +171,7 @@ public class BesselFunctions {
 
         if (!z.isComplexNumeric()) {
           try {
-            Complex airyBi = BesselJS.airyBi(z.evalDouble());
+            Complex airyBi = BesselJS.airyBi(z.evalf());
             if (F.isZero(airyBi.getImaginary())) {
               return F.num(airyBi.getReal());
             }
@@ -184,7 +184,7 @@ public class BesselFunctions {
         }
 
         try {
-          return F.complexNum(BesselJS.airyBi(z.evalComplex()));
+          return F.complexNum(BesselJS.airyBi(z.evalfc()));
         } catch (NegativeArraySizeException nae) {
           LOGGER.log(engine.getLogLevel(), "AiryBi: {} caused NegativeArraySizeException", ast);
         } catch (RuntimeException rex) {
@@ -216,7 +216,7 @@ public class BesselFunctions {
       if (engine.isDoubleMode() && z.isNumber()) {
         if (!z.isComplexNumeric()) {
           try {
-            Complex airyBiPrime = BesselJS.airyBiPrime(z.evalDouble());
+            Complex airyBiPrime = BesselJS.airyBiPrime(z.evalf());
             if (F.isZero(airyBiPrime.getImaginary())) {
               return F.num(airyBiPrime.getReal());
             }
@@ -230,7 +230,7 @@ public class BesselFunctions {
         }
 
         try {
-          return F.complexNum(BesselJS.airyBiPrime(z.evalComplex()));
+          return F.complexNum(BesselJS.airyBiPrime(z.evalfc()));
         } catch (NegativeArraySizeException nae) {
           LOGGER.log(engine.getLogLevel(), "AiryBiPrime: {} caused NegativeArraySizeException", ast,
               nae);
@@ -392,13 +392,13 @@ public class BesselFunctions {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            nDouble = n.evalDouble();
-            zDouble = z.evalDouble();
+            nDouble = n.evalf();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
-            Complex nc = n.evalComplex();
-            Complex zc = z.evalComplex();
+            Complex nc = n.evalfc();
+            Complex zc = z.evalfc();
             return F.complexNum(BesselJS.besselJ(nc, zc));
           } else {
             return F.num(BesselJS.besselJDouble(nDouble, zDouble));
@@ -467,7 +467,7 @@ public class BesselFunctions {
           try {
             // numeric mode evaluation
             if (n.isReal()) {
-              return F.num(BesselJS.besselJZero(n.evalDouble(), k));
+              return F.num(BesselJS.besselJZero(n.evalf(), k));
             }
           } catch (MathRuntimeException e) {
             // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a
@@ -560,13 +560,13 @@ public class BesselFunctions {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            nDouble = n.evalDouble();
-            zDouble = z.evalDouble();
+            nDouble = n.evalf();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
-            Complex nc = n.evalComplex();
-            Complex zc = z.evalComplex();
+            Complex nc = n.evalfc();
+            Complex zc = z.evalfc();
             return F.complexNum(BesselJS.besselI(nc, zc));
           } else {
             return F.num(BesselJS.besselIDouble(nDouble, zDouble));
@@ -656,13 +656,13 @@ public class BesselFunctions {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            nDouble = n.evalDouble();
-            zDouble = z.evalDouble();
+            nDouble = n.evalf();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
-            Complex nc = n.evalComplex();
-            Complex zc = z.evalComplex();
+            Complex nc = n.evalfc();
+            Complex zc = z.evalfc();
             return F.complexNum(BesselJS.besselK(nc, zc));
           } else {
             return F.num(BesselJS.besselKDouble(nDouble, zDouble));
@@ -753,13 +753,13 @@ public class BesselFunctions {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            nDouble = n.evalDouble();
-            zDouble = z.evalDouble();
+            nDouble = n.evalf();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
-            Complex nc = n.evalComplex();
-            Complex zc = z.evalComplex();
+            Complex nc = n.evalfc();
+            Complex zc = z.evalfc();
             return F.complexNum(BesselJS.besselY(nc, zc));
           } else {
             return F.num(BesselJS.besselYDouble(nDouble, zDouble));
@@ -798,7 +798,7 @@ public class BesselFunctions {
         try {
           // numeric mode evaluation
           if (n.isReal()) {
-            return F.num(BesselJS.besselYZero(n.evalDouble(), k));
+            return F.num(BesselJS.besselYZero(n.evalf(), k));
           }
         } catch (MathRuntimeException e) {
           // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
@@ -831,13 +831,13 @@ public class BesselFunctions {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            nDouble = n.evalDouble();
-            zDouble = z.evalDouble();
+            nDouble = n.evalf();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
-            Complex nc = n.evalComplex();
-            Complex zc = z.evalComplex();
+            Complex nc = n.evalfc();
+            Complex zc = z.evalfc();
             return F.complexNum(BesselJS.hankelH1(nc, zc));
           } else {
             Complex hankelH1 = BesselJS.hankelH1(nDouble, zDouble);
@@ -877,13 +877,13 @@ public class BesselFunctions {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            nDouble = n.evalDouble();
-            zDouble = z.evalDouble();
+            nDouble = n.evalf();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
           if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
-            Complex nc = n.evalComplex();
-            Complex zc = z.evalComplex();
+            Complex nc = n.evalfc();
+            Complex zc = z.evalfc();
             return F.complexNum(BesselJS.hankelH2(nc, zc));
           } else {
             Complex hankelH2 = BesselJS.hankelH2(nDouble, zDouble);
@@ -962,14 +962,14 @@ public class BesselFunctions {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            nDouble = n.evalDouble();
-            zDouble = z.evalDouble();
+            nDouble = n.evalf();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
 
           if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
-            Complex nc = n.evalComplex();
-            Complex zc = z.evalComplex();
+            Complex nc = n.evalfc();
+            Complex zc = z.evalfc();
             return F.complexNum(BesselJS.sphericalBesselJ(nc, zc));
           } else {
             return F.complexNum(BesselJS.sphericalBesselJ(nDouble, zDouble));
@@ -1165,14 +1165,14 @@ public class BesselFunctions {
           double nDouble = Double.NaN;
           double zDouble = Double.NaN;
           try {
-            nDouble = n.evalDouble();
-            zDouble = z.evalDouble();
+            nDouble = n.evalf();
+            zDouble = z.evalf();
           } catch (ValidateException ve) {
           }
 
           if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
-            Complex nc = n.evalComplex();
-            Complex zc = z.evalComplex();
+            Complex nc = n.evalfc();
+            Complex zc = z.evalfc();
             return F.complexNum(BesselJS.sphericalBesselY(nc, zc));
           } else {
             return F.complexNum(BesselJS.sphericalBesselY(nDouble, zDouble));
@@ -1205,10 +1205,10 @@ public class BesselFunctions {
       IExpr z = ast.arg2();
       if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
         try {
-          Complex nc = n.evalComplex();
-          Complex zc = z.evalComplex();
+          Complex nc = n.evalfc();
+          Complex zc = z.evalfc();
           if (ast.isAST3()) {
-            Complex a3 = ast.arg3().evalComplex();
+            Complex a3 = ast.arg3().evalfc();
           }
           return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
 

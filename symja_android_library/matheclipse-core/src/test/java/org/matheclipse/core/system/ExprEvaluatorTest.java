@@ -41,7 +41,7 @@ public class ExprEvaluatorTest extends TestCase {
     IExpr e = eval.eval(str);
     int i = 100;
     eval.defineVariable("x", i);
-    double result = e.evalDouble();
+    double result = e.evalf();
     assertEquals(-0.5063656411097588, result, 0E-10);
   }
 

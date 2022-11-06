@@ -8,7 +8,6 @@ import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.eval.DoubleStackEvaluator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ComplexNum;
@@ -63,17 +62,14 @@ public class UnaryNumerical
   }
 
   @Override
-  public double value(double x) {
-    double result = 0.0;
-    final double[] stack = new double[10];
+  public double value(double d) {
     try {
       // substitution is more thread safe than direct value assigning to global variable
-      IExpr temp = F.subs(fFunction, fVariable, Num.valueOf(x));
-      result = DoubleStackEvaluator.eval(stack, 0, temp);
+      final Num num = Num.valueOf(d);
+      return fFunction.evalf(x -> x.equals(fVariable) ? num : F.NIL);
     } catch (RuntimeException rex) {
       return Double.NaN;
     }
-    return result;
   }
 
   // @Override

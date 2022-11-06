@@ -607,7 +607,7 @@ public abstract class ComplexFormFactory {
       return;
     }
     if (o instanceof ISignedNumber) {
-      double d = o.evalDouble();
+      double d = o.evalf();
       if (fPackagePrefix) {
         buf.append("org.hipparchus.complex.");
       }
@@ -615,7 +615,7 @@ public abstract class ComplexFormFactory {
       return;
     }
     if (o instanceof INumber) {
-      Complex c = o.evalComplex();
+      Complex c = o.evalfc();
       if (c != null) {
         if (fPackagePrefix) {
           buf.append("org.hipparchus.complex.");

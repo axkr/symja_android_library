@@ -2633,7 +2633,7 @@ public class F extends S {
         return C0;
       }
     } else if (arg instanceof IComplexNum) {
-      Complex c = ((IComplexNum) arg).evalComplex();
+      Complex c = ((IComplexNum) arg).evalfc();
       if (isZero(c.getReal(), delta)) {
         if (isZero(c.getImaginary(), delta)) {
           return C0;
@@ -4268,7 +4268,7 @@ public class F extends S {
    * Create a "fractional" expression that exactly represents the given double number.
    * <p>
    * This methods returns an {@link IExpr} that, when being evaluated to a double value (using
-   * {@link IExpr#evalDouble()}), results to the exact same value (per bit) as the given one.
+   * {@link IExpr#evalf()}), results to the exact same value (per bit) as the given one.
    * <p>
    * <p>
    * Because double values are not exact in all cases but this method returns an exact
@@ -10021,7 +10021,7 @@ public class F extends S {
     try {
       if (expr.isSameHeadSizeGE(Graphics, 2)) {
         StringBuilder buf = new StringBuilder();
-        if (GraphicsFunctions.renderGraphics2D(buf, (IAST) expr, EvalEngine.get())) {
+        if (GraphicsFunctions.renderGraphics2D(buf, (IAST) expr, true, EvalEngine.get())) {
           try {
             String graphicsStr = buf.toString();
             String html = JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_TEMPLATE, graphicsStr);
@@ -10033,7 +10033,7 @@ public class F extends S {
         // return openSVGOnDesktop((IAST) expr);
       } else if (expr.isSameHeadSizeGE(Graphics3D, 2)) {
         StringBuilder buf = new StringBuilder();
-        if (GraphicsFunctions.renderGraphics3D(buf, (IAST) expr, EvalEngine.get())) {
+        if (GraphicsFunctions.renderGraphics3D(buf, (IAST) expr, true, EvalEngine.get())) {
           try {
             String graphics3DStr = buf.toString();
             String html = JSBuilder.buildGraphics3D(JSBuilder.GRAPHICS3D_TEMPLATE, graphics3DStr);

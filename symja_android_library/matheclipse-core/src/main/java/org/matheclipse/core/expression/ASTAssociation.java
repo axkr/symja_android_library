@@ -646,7 +646,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
         IExpr key = element.getKey();
         if (!key.isReal()) {
           @SuppressWarnings("unused")
-          double d = key.evalDouble(); // create possible exception
+          double d = key.evalf(); // create possible exception
           numericKeys = false;
           break;
         }

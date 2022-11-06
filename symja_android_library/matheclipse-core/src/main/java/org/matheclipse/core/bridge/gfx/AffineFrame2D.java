@@ -21,12 +21,12 @@ import org.matheclipse.core.interfaces.IAST;
   public AffineFrame2D(IAST matrix) {
     // Integers.requireEquals(matrix.length(), 3);
     this.matrix = matrix;
-    m00 = matrix.getPart(2, 2).evalDouble();
-    m01 = matrix.getPart(1, 2).evalDouble();
-    m02 = matrix.getPart(1, 3).evalDouble();
-    m10 = matrix.getPart(2, 1).evalDouble();
-    m11 = matrix.getPart(2, 2).evalDouble();
-    m12 = matrix.getPart(2, 3).evalDouble();
+    m00 = matrix.getPart(2, 2).evalf();
+    m01 = matrix.getPart(1, 2).evalf();
+    m02 = matrix.getPart(1, 3).evalf();
+    m10 = matrix.getPart(2, 1).evalf();
+    m11 = matrix.getPart(2, 2).evalf();
+    m12 = matrix.getPart(2, 3).evalf();
   }
 
   /**
