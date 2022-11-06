@@ -27,9 +27,9 @@ public class TestFactor {
         0);
 
     BigInteger b = BigInteger.ONE;
-    b = b.shiftLeft(1000001);
+    b = b.shiftLeft(100001);
     assertEquals(Factor.trailing(F.ZZ(b)), //
-        1000001);
+        100001);
     // for i in range(100):
     // assert trailing(1 << i) == i
     // assert trailing((1 << i) * 31337) == i
