@@ -4246,6 +4246,9 @@ public class S {
 
   public final static IBuiltInSymbol Graphics = F.initFinalSymbol("Graphics", ID.Graphics);
 
+  public final static IBuiltInSymbol GraphicsJSON =
+      F.initFinalSymbol("GraphicsJSON", ID.GraphicsJSON);
+
   /**
    * Graphics3D(primitives, options) - represents a three-dimensional graphic.
    * 
@@ -4254,6 +4257,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Graphics3D = F.initFinalSymbol("Graphics3D", ID.Graphics3D);
+
+  public final static IBuiltInSymbol Graphics3DJSON =
+      F.initFinalSymbol("Graphics3DJSON", ID.Graphics3DJSON);
 
   public final static IBuiltInSymbol GraphicsComplex =
       F.initFinalSymbol("GraphicsComplex", ID.GraphicsComplex);

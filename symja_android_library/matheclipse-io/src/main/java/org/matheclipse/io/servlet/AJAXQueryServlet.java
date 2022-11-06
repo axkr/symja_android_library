@@ -200,7 +200,7 @@ public class AJAXQueryServlet extends HttpServlet {
         if (outExpr != null) {
           if (outExpr.isAST(S.Graphics)) {
             StringBuilder buf = new StringBuilder();
-            if (GraphicsFunctions.renderGraphics2D(buf, (IAST) outExpr, engine)) {
+            if (GraphicsFunctions.renderGraphics2D(buf, (IAST) outExpr, true, engine)) {
               try {
                 return JSONBuilder.createGraphics2DIFrame(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE,
                     buf.toString());
@@ -222,7 +222,7 @@ public class AJAXQueryServlet extends HttpServlet {
             // }
           } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
             StringBuilder buf = new StringBuilder();
-            if (GraphicsFunctions.renderGraphics3D(buf, (IAST) outExpr, engine)) {
+            if (GraphicsFunctions.renderGraphics3D(buf, (IAST) outExpr, true, engine)) {
               try {
                 return JSONBuilder.createGraphics3DIFrame(JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE,
                     buf.toString());
@@ -251,27 +251,27 @@ public class AJAXQueryServlet extends HttpServlet {
             // BufferedImage bImage = imageExpr.getBufferedImage();
             byte[] data = imageExpr.toData();
             if (data != null) {
-                String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
-                String[] argsToRender = new String[3];
-                argsToRender[0] = imageExpr.toBase64EncodedString();
-                html = IOFunctions.templateRender(html, argsToRender);
-                html = StringEscapeUtils.escapeHtml4(html);
-                return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-                    + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-                // } else {
-                // try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                // final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
-                // ImageIO.write(bImage, "png", b64);
-                // String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
-                // String[] argsToRender = new String[3];
-                // argsToRender[0] = outputStream.toString();
-                // System.out.println(argsToRender[0]);
-                // html = IOFunctions.templateRender(html, argsToRender);
-                // html = StringEscapeUtils.escapeHtml4(html);
-                // return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-                // + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"
-                // ></iframe>");
-                // }
+              String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
+              String[] argsToRender = new String[3];
+              argsToRender[0] = imageExpr.toBase64EncodedString();
+              html = IOFunctions.templateRender(html, argsToRender);
+              html = StringEscapeUtils.escapeHtml4(html);
+              return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
+                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+              // } else {
+              // try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+              // final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
+              // ImageIO.write(bImage, "png", b64);
+              // String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
+              // String[] argsToRender = new String[3];
+              // argsToRender[0] = outputStream.toString();
+              // System.out.println(argsToRender[0]);
+              // html = IOFunctions.templateRender(html, argsToRender);
+              // html = StringEscapeUtils.escapeHtml4(html);
+              // return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
+              // + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"
+              // ></iframe>");
+              // }
             }
           } else if (outExpr instanceof ASTDataset) {
             String javaScriptStr = ((ASTDataset) outExpr).datasetToJSForm();

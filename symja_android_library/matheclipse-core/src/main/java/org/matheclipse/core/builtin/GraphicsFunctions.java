@@ -64,6 +64,21 @@ public class GraphicsFunctions {
     }
 
     @Override
+    public boolean graphics2D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+      if (ast.argSize() > 0 && ast.arg1().isList()) {
+        IAST list = (IAST) ast.arg1();
+        buf.append("{type: \'arrow\',");
+        setColor(buf, color, F.NIL, true);
+        setOpacity(buf, opacity.orElse(F.C1));
+        if (list.isListOfLists() && graphics2DCoords(buf, list)) {
+          buf.append("}");
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
     public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
@@ -176,6 +191,59 @@ public class GraphicsFunctions {
         return true;
       }
 
+      return false;
+    }
+
+    private static boolean circle(StringBuilder buf, IAST circleCoords, double circleRadius1,
+        double circleRadius2, IAST color, IExpr opacity) {
+      buf.append("{type: \'circle\',");
+      setColor(buf, color, color, true);
+      setOpacity(buf, opacity.orElse(F.C1D2));
+      buf.append("radius1: " + circleRadius1 + ",");
+      buf.append("radius2: " + circleRadius2 + ",");
+      if (circleCoords.isList2() && graphics2DCoords(buf, F.list(circleCoords))) {
+        buf.append("}");
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public boolean graphics2D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+      if (ast.argSize() > 0 && ast.arg1().isList()) {
+        double radius1 = 1.0;
+        double radius2 = 1.0;
+        if (ast.argSize() == 2) {
+          IExpr arg2 = ast.arg2();
+          if (arg2.isList2()) {
+            // ellipsis
+            IAST pair = (IAST) arg2;
+            radius1 = pair.first().toDoubleDefault(1.0);
+            radius2 = pair.second().toDoubleDefault(1.0);
+          } else {
+            // circle radius
+            radius1 = arg2.toDoubleDefault(1.0);
+            radius2 = radius1;
+          }
+        }
+        IAST list = (IAST) ast.arg1();
+        if (list.isListOfLists()) {
+          for (int i = 1; i < list.size(); i++) {
+            IExpr arg = list.get(i);
+            if (!arg.isList2()) {
+              return false;
+            }
+            if (!circle(buf, (IAST) arg, radius1, radius2, color, opacity)) {
+              return false;
+            }
+            if (i < list.size() - 1) {
+              buf.append(",");
+            }
+          }
+          return true;
+        }
+        return circle(buf, list, radius1, radius2, color, opacity);
+      }
       return false;
     }
 
@@ -464,6 +532,48 @@ public class GraphicsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  private static class GraphicsJSON extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST(S.Graphics)) {
+        StringBuilder graphics2DBuffer = new StringBuilder();
+        if (renderGraphics2D(graphics2DBuffer, (IAST) arg1, false, engine)) {
+          return F.stringx(graphics2DBuffer.toString());
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+  }
+
+  private static class Graphics3DJSON extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST(S.Graphics3D)) {
+        StringBuilder graphics3DBuffer = new StringBuilder();
+        if (renderGraphics3D(graphics3DBuffer, (IAST) arg1, false, engine)) {
+          return F.stringx(graphics3DBuffer.toString());
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+  }
+
   private static class Icosahedron extends Tetrahedron {
 
     @Override
@@ -510,6 +620,8 @@ public class GraphicsFunctions {
       S.Tetrahedron.setEvaluator(new Tetrahedron());
       S.Tube.setEvaluator(new Tube());
       S.Volume.setEvaluator(new Volume());
+      S.GraphicsJSON.setEvaluator(new GraphicsJSON());
+      S.Graphics3DJSON.setEvaluator(new Graphics3DJSON());
     }
   }
 
@@ -1182,7 +1294,8 @@ public class GraphicsFunctions {
               }
               first = false;
 
-              if (!((IGraphics3D) evaluator).graphics2DSVG(buf, primitive, dim, rgbColor, opacity)) {
+              if (!((IGraphics3D) evaluator).graphics2DSVG(buf, primitive, dim, rgbColor,
+                  opacity)) {
                 return false;
               }
               continue;
@@ -1316,7 +1429,7 @@ public class GraphicsFunctions {
   }
 
   public static boolean renderGraphics2D(StringBuilder graphics2DBuffer, IAST graphics2DAST,
-      EvalEngine engine) {
+      boolean javaScript, EvalEngine engine) {
     IExpr arg1 = graphics2DAST.first();
     if (!arg1.isList()) {
       arg1 = F.list(arg1);
@@ -1327,24 +1440,35 @@ public class GraphicsFunctions {
       // lighting = options.getOption(S.Lighting).orElse(lighting);
     }
     IExpr data2D = engine.evaluate(F.N(arg1));
-    if (data2D.isAST() && data2D.head().isBuiltInSymbol()) {
-      StringBuilder jsonPrimitives = new StringBuilder();
-      if (GraphicsFunctions.exportGraphics2DRecursive(jsonPrimitives, (IAST) data2D)) {
-        try {
+    if (data2D.isAST() && data2D.head().isBuiltInSymbol()
+        && graphics2DJSON(graphics2DBuffer, data2D, javaScript)) {
+      return true;
+    }
+    return false;
+  }
+
+  private static boolean graphics2DJSON(StringBuilder graphics2DBuffer, IExpr data2D,
+      boolean javaScript) {
+    StringBuilder jsonPrimitives = new StringBuilder();
+    if (GraphicsFunctions.exportGraphics2DRecursive(jsonPrimitives, (IAST) data2D)) {
+      try {
+        if (javaScript) {
           graphics2DBuffer.append("drawGraphics2d(document.getElementById('graphics2d'),\n");
-          graphics2DBuffer.append("{");
-          // graphics2DBuffer.append("\naxes: {},");
-          graphics2DBuffer.append("\nelements: [");
-          graphics2DBuffer.append(jsonPrimitives.toString());
-          graphics2DBuffer.append("],");
-          // graphics3DLigthing(graphics2DBuffer, lighting);
-          // graphics2DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
-          graphics2DBuffer.append("}\n");
-          graphics2DBuffer.append(");");
-          return true;
-        } catch (Exception ex) {
-          LOGGER.debug("GraphicsFunctions.renderGraphics2D() failed", ex);
         }
+        graphics2DBuffer.append("{");
+        // graphics2DBuffer.append("\naxes: {},");
+        graphics2DBuffer.append("elements: [");
+        graphics2DBuffer.append(jsonPrimitives.toString());
+        graphics2DBuffer.append("]");
+        // graphics3DLigthing(graphics2DBuffer, lighting);
+        // graphics2DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
+        graphics2DBuffer.append("}");
+        if (javaScript) {
+          graphics2DBuffer.append("\n);");
+        }
+        return true;
+      } catch (Exception ex) {
+        LOGGER.debug("GraphicsFunctions.renderGraphics2D() failed", ex);
       }
     }
     return false;
@@ -1395,7 +1519,7 @@ public class GraphicsFunctions {
   }
 
   public static boolean renderGraphics3D(StringBuilder graphics3DBuffer, IAST graphics3DAST,
-      EvalEngine engine) {
+      boolean javaScript, EvalEngine engine) {
     IExpr arg1 = graphics3DAST.first();
     if (!arg1.isList()) {
       arg1 = F.list(arg1);
@@ -1410,25 +1534,35 @@ public class GraphicsFunctions {
       // }
     }
     IExpr data3D = engine.evaluate(F.N(arg1));
-    if (data3D.isAST() && data3D.head().isBuiltInSymbol()) {
-      StringBuilder jsonPrimitives = new StringBuilder();
-      if (GraphicsFunctions.exportGraphics3DRecursive(jsonPrimitives, (IAST) data3D)) {
-        try {
+    if (data3D.isAST() && data3D.head().isBuiltInSymbol()
+        && graphics3DJSON(graphics3DBuffer, lighting, data3D, javaScript)) {
+      return true;
+    }
+    return false;
+  }
 
+  public static boolean graphics3DJSON(StringBuilder graphics3DBuffer, IExpr lighting, IExpr data3D,
+      boolean javaScript) {
+    StringBuilder jsonPrimitives = new StringBuilder();
+    if (GraphicsFunctions.exportGraphics3DRecursive(jsonPrimitives, (IAST) data3D)) {
+      try {
+        if (javaScript) {
           graphics3DBuffer.append("drawGraphics3d(document.getElementById('graphics3d'),\n");
-          graphics3DBuffer.append("{");
-          graphics3DBuffer.append("\naxes: {},");
-          graphics3DBuffer.append("\nelements: [");
-          graphics3DBuffer.append(jsonPrimitives.toString());
-          graphics3DBuffer.append("],");
-          graphics3DLigthing(graphics3DBuffer, lighting);
-          graphics3DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
-          graphics3DBuffer.append("}\n");
-          graphics3DBuffer.append(");");
-          return true;
-        } catch (Exception ex) {
-          LOGGER.debug("GraphicsFunctions.renderGraphics3D() failed", ex);
         }
+        graphics3DBuffer.append("{");
+        graphics3DBuffer.append("\naxes: {},");
+        graphics3DBuffer.append("\nelements: [");
+        graphics3DBuffer.append(jsonPrimitives.toString());
+        graphics3DBuffer.append("],");
+        graphics3DLigthing(graphics3DBuffer, lighting);
+        graphics3DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
+        graphics3DBuffer.append("}");
+        if (javaScript) {
+          graphics3DBuffer.append("\n);");
+        }
+        return true;
+      } catch (Exception ex) {
+        LOGGER.debug("GraphicsFunctions.renderGraphics3D() failed", ex);
       }
     }
     return false;
