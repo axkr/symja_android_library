@@ -2681,6 +2681,10 @@ public class F extends S {
     return arg;
   }
 
+  public static IAST Circle(final IAST originList) {
+    return new AST1(Circle, originList);
+  }
+
   public static IAST CentralMoment(final IExpr a0, final IExpr a1) {
     return new AST2(CentralMoment, a0, a1);
   }
@@ -3368,6 +3372,10 @@ public class F extends S {
 
   public static IAST DirectedInfinity(final IExpr a0) {
     return new AST1(DirectedInfinity, a0);
+  }
+
+  public static IAST Disk(final IAST originList) {
+    return new AST1(Disk, originList);
   }
 
   public static IAST DiscreteDelta(final IExpr a) {
@@ -7929,6 +7937,10 @@ public class F extends S {
 
   public static IAST Rationalize(final IExpr a0, final IExpr a1) {
     return new AST2(Rationalize, a0, a1);
+  }
+
+  public static IAST Rectangle(final IAST originList) {
+    return new AST1(Rectangle, originList);
   }
 
   /**

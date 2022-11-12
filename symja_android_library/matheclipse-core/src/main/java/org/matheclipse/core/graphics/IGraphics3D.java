@@ -2,6 +2,7 @@ package org.matheclipse.core.graphics;
 
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Interface for 3D graphics primitives like Cubiod, Sphere, Cylinder,... which create a threejs
@@ -20,7 +21,15 @@ public interface IGraphics3D {
     return false;
   }
 
-  default boolean graphics2D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+  /**
+   * 
+   * @param json the JSON object tree
+   * @param ast the graphics primitive (Circle, Disk, Line, Point,...)
+   * @param color the RGB color which should be used
+   * @param opacity the opacity (converted to a double number internally)
+   * @return
+   */
+  default boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
     return false;
   }
 
@@ -30,13 +39,13 @@ public interface IGraphics3D {
    * <a href="https://github.com/Mathics3/mathics-threejs-backend/wiki">mathics-threejs-backend
    * library</a>.
    *
-   * @param buf
+   * @param json the JSON object tree
    * @param ast the graphics primitive (Cuboid, Sphere, Cylinder,...)
    * @param color the RGB color which should be used
-   * @param opacity the opecity (converted to a double number internally)
+   * @param opacity the opacity (converted to a double number internally)
    * @return
    */
-  default boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+  default boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
     return false;
   }
 }

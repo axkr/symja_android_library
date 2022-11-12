@@ -24,9 +24,18 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class GraphicsFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
+
+  /**
+   * From the docs: "Mapper instances are fully thread-safe provided that ALL configuration of the
+   * instance occurs before ANY read or write calls."
+   */
+  public static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
 
   private static final DecimalFormatSymbols US_SYMBOLS = new DecimalFormatSymbols(Locale.US);
   protected static final DecimalFormat FORMATTER = new DecimalFormat("0.0####", US_SYMBOLS);
@@ -64,14 +73,13 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        buf.append("{type: \'arrow\',");
-        setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity.orElse(F.C1));
-        if (list.isListOfLists() && graphics2DCoords(buf, list)) {
-          buf.append("}");
+        json.put("type", "arrow");
+        setColor(json, color, F.NIL);
+        setOpacity(json, opacity.orElse(F.C1));
+        if (list.isListOfLists() && graphics2DCoords(json, list)) {
           return true;
         }
       }
@@ -79,14 +87,13 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+    public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        buf.append("{type: \'arrow\',");
-        setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity.orElse(F.C1));
-        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
-          buf.append("}");
+        json.put("type", "arrow");
+        setColor(json, color, F.NIL);
+        setOpacity(json, opacity.orElse(F.C1));
+        if (list.isListOfLists() && graphics3DCoords(json, list)) {
           return true;
         }
       }
@@ -149,12 +156,19 @@ public class GraphicsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 0) {
+        return F.Circle(F.List(F.C0, F.C0));
+      }
       return F.NIL;
+    }
+
+    protected String getJSONType() {
+      return "circle";
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_INFINITY;
+      return ARGS_0_3;
     }
 
     @Override
@@ -194,26 +208,33 @@ public class GraphicsFunctions {
       return false;
     }
 
-    private static boolean circle(StringBuilder buf, IAST circleCoords, double circleRadius1,
-        double circleRadius2, IAST color, IExpr opacity) {
-      buf.append("{type: \'circle\',");
-      setColor(buf, color, color, true);
-      setOpacity(buf, opacity.orElse(F.C1D2));
-      buf.append("radius1: " + circleRadius1 + ",");
-      buf.append("radius2: " + circleRadius2 + ",");
-      if (circleCoords.isList2() && graphics2DCoords(buf, F.list(circleCoords))) {
-        buf.append("}");
+    private static boolean circle(ObjectNode json, String jsonType, IAST circleCoords,
+        double circleRadius1, double circleRadius2, double angle1, double angle2, IAST color,
+        IExpr opacity) {
+      json.put("type", jsonType);
+      setColor(json, color, color);
+      setOpacity(json, opacity.orElse(F.C1D2));
+      json.put("radius1", circleRadius1);
+      json.put("radius2", circleRadius2);
+      if (angle1 != 0.0 || angle2 != Math.PI * 2) {
+        // not a full circle
+        json.put("angle1", angle1);
+        json.put("angle2", angle2);
+      }
+      if (circleCoords.isList2() && graphics2DCoords(json, F.list(circleCoords))) {
         return true;
       }
       return false;
     }
 
     @Override
-    public boolean graphics2D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
-      if (ast.argSize() > 0 && ast.arg1().isList()) {
+    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
+      if (ast.argSize() > 0 && ast.arg1().isList2()) {
         double radius1 = 1.0;
         double radius2 = 1.0;
-        if (ast.argSize() == 2) {
+        double angle1 = 0.0;
+        double angle2 = Math.PI * 2.0;
+        if (ast.argSize() >= 2) {
           IExpr arg2 = ast.arg2();
           if (arg2.isList2()) {
             // ellipsis
@@ -226,6 +247,12 @@ public class GraphicsFunctions {
             radius2 = radius1;
           }
         }
+        if (ast.argSize() == 3 && ast.arg3().isList2()) {
+          // describe an arc with 2 angles
+          IAST pair = (IAST) ast.arg3();
+          angle1 = pair.first().toDoubleDefault(1.0);
+          angle2 = pair.second().toDoubleDefault(1.0);
+        }
         IAST list = (IAST) ast.arg1();
         if (list.isListOfLists()) {
           for (int i = 1; i < list.size(); i++) {
@@ -233,16 +260,16 @@ public class GraphicsFunctions {
             if (!arg.isList2()) {
               return false;
             }
-            if (!circle(buf, (IAST) arg, radius1, radius2, color, opacity)) {
+            if (!circle(json, getJSONType(), (IAST) arg, radius1, radius2, angle1, angle2, color,
+                opacity)) {
               return false;
-            }
-            if (i < list.size() - 1) {
-              buf.append(",");
             }
           }
           return true;
         }
-        return circle(buf, list, radius1, radius2, color, opacity);
+        if (circle(json, getJSONType(), list, radius1, radius2, angle1, angle2, color, opacity)) {
+          return true;
+        }
       }
       return false;
     }
@@ -371,52 +398,12 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
-      // {
-      // type: 'cuboid',
-      // color: [0.5, 0.5, 0.5],
-      // coords: [
-      // [null, [0, 0, 0]],
-      // [[1, 1, 1]],
-      // [[1, 1, 1]],
-      // [[2, 2, 2]]
-      // ],
-      // opacity: 0.5
-      // }
-      // ArrayNode node = ExpressionJSONConvert.JSON_OBJECT_MAPPER.createArrayNode();
-      // ObjectNode object = ExpressionJSONConvert.JSON_OBJECT_MAPPER.createObjectNode();
-      // object.put("type", "cuboid");
-      // node.add(object);
-      // ArrayNode param = ExpressionJSONConvert.JSON_OBJECT_MAPPER.createArrayNode();
-      // param.add(0.5);
-      // param.add(0.5);
-      // param.add(0.5);
-      // object = ExpressionJSONConvert.JSON_OBJECT_MAPPER.createObjectNode();
-      // object.putPOJO("color", param);
-      // node.add(object);
-      //
-      // param = ExpressionJSONConvert.JSON_OBJECT_MAPPER.createArrayNode();
-      // param.addNull();
-      // ArrayNode subParam = ExpressionJSONConvert.JSON_OBJECT_MAPPER.createArrayNode();
-      // subParam.add(0);
-      // subParam.add(0);
-      // subParam.add(0);
-      // param.addPOJO(subParam);
-      //
-      // object = ExpressionJSONConvert.JSON_OBJECT_MAPPER.createObjectNode();
-      // object.putPOJO("coords", param);
-      // node.add(object);
-      //
-      // object = ExpressionJSONConvert.JSON_OBJECT_MAPPER.createObjectNode();
-      // object.put("opacity", 0.5);
-      // node.add(object);
-      // return node;
+    public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
-        buf.append("{type: \'cuboid\',");
-        setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity.orElse(F.C1D2));
-        if (graphics3DCoords(buf, ast)) {
-          buf.append("}");
+        json.put("type", "cuboid");
+        setColor(json, color, F.NIL);
+        setOpacity(json, opacity.orElse(F.C1D2));
+        if (graphics3DCoords(json, ast)) {
           return true;
         }
       }
@@ -446,19 +433,18 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+    public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         double radius = 1.0;
         if (ast.argSize() == 2) {
           radius = ast.arg2().toDoubleDefault(1.0);
         }
         IAST list = (IAST) ast.arg1();
-        buf.append("{type: \'cone\',");
-        setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity.orElse(F.C1D2));
-        buf.append("radius: " + radius + ",");
-        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
-          buf.append("}");
+        json.put("type", "cone");
+        setColor(json, color, F.NIL);
+        setOpacity(json, opacity.orElse(F.C1D2));
+        json.put("radius", radius);
+        if (list.isListOfLists() && graphics3DCoords(json, list)) {
           return true;
         }
       }
@@ -488,19 +474,18 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+    public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         double radius = 1.0;
         if (ast.argSize() == 2) {
           radius = ast.arg2().toDoubleDefault(1.0);
         }
         IAST list = (IAST) ast.arg1();
-        buf.append("{type: \'cylinder\',");
-        setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity.orElse(F.C1D2));
-        buf.append("radius: " + radius + ",");
-        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
-          buf.append("}");
+        json.put("type", "cylinder");
+        setColor(json, color, F.NIL);
+        setOpacity(json, opacity.orElse(F.C1D2));
+        json.put("radius", radius);
+        if (list.isListOfLists() && graphics3DCoords(json, list)) {
           return true;
         }
       }
@@ -511,11 +496,27 @@ public class GraphicsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  private static class Disk extends Circle {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 0) {
+        return F.Disk(F.List(F.C0, F.C0));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    protected String getJSONType() {
+      return "disk";
+    }
+  }
+
   private static class Dodecahedron extends Tetrahedron {
 
     @Override
-    protected void addSubtypeThreejs(StringBuilder buf) {
-      buf.append("subType: \'dodecahedron\',");
+    protected void addSubtypeThreejs(ObjectNode json) {
+      json.put("subType", "dodecahedron");
     }
 
     @Override
@@ -577,8 +578,8 @@ public class GraphicsFunctions {
   private static class Icosahedron extends Tetrahedron {
 
     @Override
-    protected void addSubtypeThreejs(StringBuilder buf) {
-      buf.append("subType: \'icosahedron\',");
+    protected void addSubtypeThreejs(ObjectNode json) {
+      json.put("subType", "icosahedron");
     }
 
     @Override
@@ -605,6 +606,7 @@ public class GraphicsFunctions {
       S.Arrow.setEvaluator(new Arrow());
       S.BernsteinBasis.setEvaluator(new BernsteinBasis());
       S.Circle.setEvaluator(new Circle());
+      S.Disk.setEvaluator(new Disk());
       S.Cone.setEvaluator(new Cone());
       S.Cuboid.setEvaluator(new Cuboid());
       S.Cylinder.setEvaluator(new Cylinder());
@@ -725,14 +727,13 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        buf.append("{type: \'line\',");
-        setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity.orElse(F.C1));
-        if (list.isListOfLists() && graphics2DCoords(buf, list)) {
-          buf.append("}");
+        json.put("type", "line");
+        setColor(json, color, F.NIL);
+        setOpacity(json, opacity.orElse(F.C1));
+        if (list.isListOfLists() && graphics2DCoords(json, list)) {
           return true;
         }
       }
@@ -740,14 +741,13 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+    public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        buf.append("{type: \'line\',");
-        setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity.orElse(F.C1));
-        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
-          buf.append("}");
+        json.put("type", "line");
+        setColor(json, color, F.NIL);
+        setOpacity(json, opacity.orElse(F.C1));
+        if (list.isListOfLists() && graphics3DCoords(json, list)) {
           return true;
         }
       }
@@ -761,8 +761,8 @@ public class GraphicsFunctions {
   private static class Octahedron extends Tetrahedron {
 
     @Override
-    protected void addSubtypeThreejs(StringBuilder buf) {
-      buf.append("subType: \'octahedron\',");
+    protected void addSubtypeThreejs(ObjectNode json) {
+      json.put("subType", "octahedron");
     }
 
     @Override
@@ -875,14 +875,13 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        buf.append("{type: \'point\',");
-        setColor(buf, color, F.RGBColor(F.C0, F.C0, F.C0), true);
-        setOpacity(buf, opacity.orElse(F.C1));
-        if (list.isListOfLists() && graphics2DCoords(buf, list)) {
-          buf.append(",pointSize: 0.02}");
+        json.put("type", "point");
+        setColor(json, color, F.RGBColor(F.C0, F.C0, F.C0));
+        setOpacity(json, opacity.orElse(F.C1));
+        if (list.isListOfLists() && graphics2DCoords(json, list)) {
           return true;
         }
       }
@@ -890,14 +889,14 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+    public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        buf.append("{type: \'point\',");
-        setColor(buf, color, F.RGBColor(F.C0, F.C0, F.C0), true);
-        setOpacity(buf, opacity.orElse(F.C1));
-        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
-          buf.append(",pointSize: 0.02}");
+        json.put("type", "point");
+        setColor(json, color, F.RGBColor(F.C0, F.C0, F.C0));
+        setOpacity(json, opacity.orElse(F.C1));
+        if (list.isListOfLists() && graphics3DCoords(json, list)) {
+          json.put("pointSize", 0.02);
           return true;
         }
       }
@@ -921,14 +920,13 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        buf.append("{type: \'polygon\',");
-        setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity.orElse(F.C1));
-        if (list.isListOfLists() && graphics2DCoords(buf, list)) {
-          buf.append("}");
+        json.put("type", "polygon");
+        setColor(json, color, F.NIL);
+        setOpacity(json, opacity.orElse(F.C1));
+        if (list.isListOfLists() && graphics2DCoords(json, list)) {
           return true;
         }
       }
@@ -936,14 +934,13 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+    public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        buf.append("{type: \'polygon\',");
-        setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity.orElse(F.C1));
-        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
-          buf.append("}");
+        json.put("type", "polygon");
+        setColor(json, color, F.NIL);
+        setOpacity(json, opacity.orElse(F.C1));
+        if (list.isListOfLists() && graphics3DCoords(json, list)) {
           return true;
         }
       }
@@ -978,12 +975,46 @@ public class GraphicsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 0) {
+        return F.Rectangle(F.List(F.C0, F.C0));
+      }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_INFINITY;
+      return ARGS_0_3;
+    }
+
+    @Override
+    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
+      IAST list1;
+      IAST list2;
+      if (ast.argSize() == 0) {
+        list1 = F.List(F.C0, F.C0);
+        // unit square
+        list2 = F.List(F.C1, F.C1);
+        return rectangle(json, color, opacity, list1, list2);
+      }
+      if ((ast.argSize() == 1 || ast.argSize() == 2) && ast.arg1().isList2()) {
+        list1 = (IAST) ast.arg1();
+        if (ast.argSize() == 2 && ast.arg2().isList2()) {
+          list2 = (IAST) ast.arg1();
+        } else {
+          // unit square
+          list2 = F.List(F.C1, F.C1);
+        }
+        return rectangle(json, color, opacity, list1, list2);
+      }
+      return false;
+    }
+
+    private static boolean rectangle(ObjectNode json, IAST color, IExpr opacity, IAST list1,
+        IAST list2) {
+      json.put("type", "rectangle");
+      setColor(json, color, F.NIL);
+      setOpacity(json, opacity.orElse(F.C1));
+      return graphics2DCoords(json, F.List(list1, list2));
     }
 
     @Override
@@ -1106,21 +1137,20 @@ public class GraphicsFunctions {
       return ARGS_0_2;
     }
 
-    private boolean sphere(StringBuilder buf, IAST sphereCoords, double sphereRadius, IAST color,
+    private boolean sphere(ObjectNode json, IAST sphereCoords, double sphereRadius, IAST color,
         IExpr opacity) {
-      buf.append("{type: \'sphere\',");
-      setColor(buf, color, color, true);
-      setOpacity(buf, opacity.orElse(F.C1D2));
-      buf.append("radius: " + sphereRadius + ",");
-      if (sphereCoords.isList3() && graphics3DCoords(buf, F.list(sphereCoords))) {
-        buf.append("}");
+      json.put("type", "sphere");
+      setColor(json, color, color);
+      setOpacity(json, opacity.orElse(F.C1D2));
+      json.put("radius", sphereRadius);
+      if (sphereCoords.isList3() && graphics3DCoords(json, F.list(sphereCoords))) {
         return true;
       }
       return false;
     }
 
     @Override
-    public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+    public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         double radius = 1.0;
         if (ast.argSize() == 2) {
@@ -1133,16 +1163,17 @@ public class GraphicsFunctions {
             if (!arg.isList3()) {
               return false;
             }
-            if (!sphere(buf, (IAST) arg, radius, color, opacity)) {
+            if (!sphere(json, (IAST) arg, radius, color, opacity)) {
               return false;
             }
-            if (i < list.size() - 1) {
-              buf.append(",");
-            }
+            // if (i < list.size() - 1) {
+            // buf.append(",");
+            // }
           }
+
           return true;
         }
-        return sphere(buf, list, radius, color, opacity);
+        return sphere(json, list, radius, color, opacity);
       }
       return false;
     }
@@ -1153,8 +1184,8 @@ public class GraphicsFunctions {
 
   private static class Tetrahedron extends AbstractEvaluator implements IGraphics3D {
 
-    protected void addSubtypeThreejs(StringBuilder buf) {
-      buf.append("subType: \'tetrahedron\',");
+    protected void addSubtypeThreejs(ObjectNode json) {
+      json.put("subType", "tetrahedron");
     }
 
     @Override
@@ -1168,18 +1199,17 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+    public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
 
       IAST list = F.list(F.list(F.C0, F.C0, F.C0));
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         list = (IAST) ast.arg1();
       }
-      buf.append("{type: \'uniformPolyhedron\',");
-      setColor(buf, color, F.NIL, true);
-      setOpacity(buf, opacity.orElse(F.C1D2));
-      addSubtypeThreejs(buf);
-      if (list.isListOfLists() && graphics3DCoords(buf, list)) {
-        buf.append("}");
+      json.put("type", "uniformPolyhedron");
+      setColor(json, color, F.NIL);
+      setOpacity(json, opacity.orElse(F.C1D2));
+      addSubtypeThreejs(json);
+      if (list.isListOfLists() && graphics3DCoords(json, list)) {
         return true;
       }
 
@@ -1203,19 +1233,18 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics3D(StringBuilder buf, IAST ast, IAST color, IExpr opacity) {
+    public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         double radius = 0.01;
         if (ast.argSize() == 2) {
           radius = ast.arg2().toDoubleDefault(1.0);
         }
         IAST list = (IAST) ast.arg1();
-        buf.append("{type: \'tube\',");
-        setColor(buf, color, F.NIL, true);
-        setOpacity(buf, opacity.orElse(F.C1));
-        buf.append("radius: " + radius + ",");
-        if (list.isListOfLists() && graphics3DCoords(buf, list)) {
-          buf.append("}");
+        json.put("type", "tube");
+        setColor(json, color, F.NIL);
+        setOpacity(json, opacity.orElse(F.C1));
+        json.put("radius", radius);
+        if (list.isListOfLists() && graphics3DCoords(json, list)) {
           return true;
         }
       }
@@ -1308,9 +1337,9 @@ public class GraphicsFunctions {
     return false;
   }
 
-  public static boolean exportGraphics3DRecursive(StringBuilder buf, IAST data3D) {
+  public static boolean exportGraphics3DRecursive(ArrayNode arrayNode, IAST data3D) {
     if (data3D.isList()) {
-      boolean first = true;
+      // boolean first = true;
       IAST rgbColor = F.NIL;
       IExpr opacity = F.NIL;
       IAST list = data3D;
@@ -1319,13 +1348,13 @@ public class GraphicsFunctions {
         if (arg.isAST()) {
           IAST ast = (IAST) arg;
           if (ast.isList()) {
-            StringBuilder primitivesBuffer = new StringBuilder();
-            if (exportGraphics3DRecursive(primitivesBuffer, ast)) {
-              if (!first) {
-                buf.append(",");
-              }
-              first = false;
-              buf.append(primitivesBuffer);
+            // StringBuilder primitivesBuffer = new StringBuilder();
+            if (exportGraphics3DRecursive(arrayNode, ast)) {
+              // if (!first) {
+              // buf.append(",");
+              // }
+              // first = false;
+              // buf.append(primitivesBuffer);
             }
           } else if (ast.isRGBColor()) {
             rgbColor = ast;
@@ -1335,13 +1364,14 @@ public class GraphicsFunctions {
             IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
             IEvaluator evaluator = symbol.getEvaluator();
             if (evaluator instanceof IGraphics3D) {
-              StringBuilder primitivesBuffer = new StringBuilder();
-              if (((IGraphics3D) evaluator).graphics3D(primitivesBuffer, ast, rgbColor, opacity)) {
-                if (!first) {
-                  buf.append(",");
-                }
-                first = false;
-                buf.append(primitivesBuffer);
+              ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+              if (((IGraphics3D) evaluator).graphics3D(g, ast, rgbColor, opacity)) {
+                arrayNode.add(g);
+                // if (!first) {
+                // buf.append(",");
+                // }
+                // first = false;
+                // buf.append(primitivesBuffer);
               }
             }
           }
@@ -1352,27 +1382,75 @@ public class GraphicsFunctions {
     return false;
   }
 
-  private static boolean graphics2DCoords(StringBuilder buf, IAST ast) {
-    return graphics2DCoords(buf, ast, "coords");
+  private static boolean graphics2DCoords(ObjectNode json, IAST ast) {
+    return graphics2DCoords(json, ast, "coords");
   }
 
-  private static boolean graphics2DCoords(StringBuilder buf, IAST ast, String coordStr) {
-    buf.append(coordStr + ": [");
-
+  private static boolean graphics2DCoords(ObjectNode json, IAST ast, String coordStr) {
+    ArrayNode array = json.arrayNode();
     for (int i = 1; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
       if (!arg.isList2()) {
         return false;
       }
       IAST coords = (IAST) arg;
-      buf.append("[[");
-      coords.joinToString(buf, ",");
-      buf.append("]]");
-      if (i < ast.size() - 1) {
-        buf.append(",");
-      }
+      ArrayNode arrayNode0 = json.arrayNode();
+      ArrayNode arrayNode = json.arrayNode();
+      arrayNode.add(coords.arg1().evalf());
+      arrayNode.add(coords.arg2().evalf());
+      arrayNode0.add(arrayNode);
+      array.add(arrayNode0);
     }
-    buf.append("]");
+    json.set("coords", array);
+    return true;
+    // buf.append(coordStr + ": [");
+    //
+    // for (int i = 1; i < ast.size(); i++) {
+    // IExpr arg = ast.get(i);
+    // if (!arg.isList2()) {
+    // return false;
+    // }
+    // IAST coords = (IAST) arg;
+    // buf.append("[[");
+    // coords.joinToString(buf, ",");
+    // buf.append("]]");
+    // if (i < ast.size() - 1) {
+    // buf.append(",");
+    // }
+    // }
+    // buf.append("]");
+    // return true;
+  }
+
+  private static boolean graphics3DCoords(ObjectNode json, IAST ast) {
+    return graphics3DCoords(json, ast, "coords");
+  }
+
+  private static boolean graphics3DCoords(ObjectNode json, IAST ast, String coordStr) {
+    ArrayNode array = json.arrayNode();
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (!arg.isList3()) {
+        return false;
+      }
+      IAST coords = (IAST) arg;
+      ArrayNode arrayNode0 = json.arrayNode();
+      ArrayNode arrayNode = json.arrayNode();
+      arrayNode.add(coords.arg1().evalf());
+      arrayNode.add(coords.arg2().evalf());
+      arrayNode.add(coords.arg3().evalf());
+      arrayNode0.add(arrayNode);
+      array.add(arrayNode0);
+
+      // IAST coords = (IAST) arg;
+      // buf.append("[[");
+      // coords.joinToString(buf, ",");
+      // buf.append("]]");
+      // if (i < ast.size() - 1) {
+      // buf.append(",");
+      // }
+    }
+    json.set(coordStr, array);
     return true;
   }
 
@@ -1400,27 +1478,29 @@ public class GraphicsFunctions {
     return true;
   }
 
-  private static boolean graphics3DCoordsOrListOfCoords(StringBuilder buf,
-      IAST coordsOrListOfCoords, String coordStr) {
-    buf.append(coordStr + ": ");
-    buf.append("[");
+  private static boolean graphics3DCoordsOrListOfCoords(ObjectNode json, IAST coordsOrListOfCoords,
+      String coordStr) {
+    ArrayNode arrayNode = JSON_OBJECT_MAPPER.createArrayNode();
     if (coordsOrListOfCoords.isListOfLists()) {
       final int size = coordsOrListOfCoords.size();
       for (int i = 1; i < size; i++) {
-        buf.append("[");
+        ArrayNode subArrayNode = JSON_OBJECT_MAPPER.createArrayNode();
         IAST subList = (IAST) coordsOrListOfCoords.get(i);
-        subList.joinToString(buf, ",");
-        buf.append("]");
-        if (i < size - 1) {
-          buf.append(",");
+        for (int j = 1; j < subList.size(); j++) {
+          subArrayNode.add(subList.get(j).evalf());
         }
+        arrayNode.add(subArrayNode);
       }
+    } else if (coordsOrListOfCoords.isList()) {
+      ArrayNode subArrayNode = JSON_OBJECT_MAPPER.createArrayNode();
+      for (int i = 1; i < coordsOrListOfCoords.size(); i++) {
+        subArrayNode.add(coordsOrListOfCoords.get(i).evalf());
+      }
+      arrayNode.add(subArrayNode);
     } else {
-      buf.append("[");
-      coordsOrListOfCoords.joinToString(buf, ",");
-      buf.append("]");
+      return false;
     }
-    buf.append("]");
+    json.set(coordStr, arrayNode);
     return true;
   }
 
@@ -1449,20 +1529,25 @@ public class GraphicsFunctions {
 
   private static boolean graphics2DJSON(StringBuilder graphics2DBuffer, IExpr data2D,
       boolean javaScript) {
-    StringBuilder jsonPrimitives = new StringBuilder();
-    if (GraphicsFunctions.exportGraphics2DRecursive(jsonPrimitives, (IAST) data2D)) {
+    ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
+    ArrayNode arrayNode = JSON_OBJECT_MAPPER.createArrayNode();
+    if (GraphicsFunctions.exportGraphics2DRecursive(arrayNode, (IAST) data2D)) {
       try {
         if (javaScript) {
-          graphics2DBuffer.append("drawGraphics2d(document.getElementById('graphics2d'),\n");
+          graphics2DBuffer.append("drawGraphics2d(\"graphics2d\",\n");
         }
-        graphics2DBuffer.append("{");
-        // graphics2DBuffer.append("\naxes: {},");
-        graphics2DBuffer.append("elements: [");
-        graphics2DBuffer.append(jsonPrimitives.toString());
-        graphics2DBuffer.append("]");
-        // graphics3DLigthing(graphics2DBuffer, lighting);
-        // graphics2DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
-        graphics2DBuffer.append("}");
+        // json.set("axes", null);
+        json.set("elements", arrayNode);
+        graphics2DBuffer.append(json.toString());
+
+        // graphics2DBuffer.append("{");
+        // // graphics2DBuffer.append("\naxes: {},");
+        // graphics2DBuffer.append("elements: [");
+        // graphics2DBuffer.append(arrayNode.toString());
+        // graphics2DBuffer.append("]");
+        // // graphics3DLigthing(graphics2DBuffer, lighting);
+        // // graphics2DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
+        // graphics2DBuffer.append("}");
         if (javaScript) {
           graphics2DBuffer.append("\n);");
         }
@@ -1474,9 +1559,9 @@ public class GraphicsFunctions {
     return false;
   }
 
-  public static boolean exportGraphics2DRecursive(StringBuilder buf, IAST data2D) {
+  public static boolean exportGraphics2DRecursive(ArrayNode arrayNode, IAST data2D) {
     if (data2D.isList()) {
-      boolean first = true;
+      // boolean first = true;
       IAST rgbColor = F.NIL;
       IExpr opacity = F.NIL;
       IAST list = data2D;
@@ -1486,12 +1571,12 @@ public class GraphicsFunctions {
           IAST ast = (IAST) arg;
           if (ast.isList()) {
             StringBuilder primitivesBuffer = new StringBuilder();
-            if (exportGraphics2DRecursive(primitivesBuffer, ast)) {
-              if (!first) {
-                buf.append(",");
-              }
-              first = false;
-              buf.append(primitivesBuffer);
+            if (exportGraphics2DRecursive(arrayNode, ast)) {
+              // if (!first) {
+              // buf.append(",");
+              // }
+              // first = false;
+              // buf.append(primitivesBuffer);
             }
           } else if (ast.isRGBColor()) {
             rgbColor = ast;
@@ -1501,13 +1586,14 @@ public class GraphicsFunctions {
             IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
             IEvaluator evaluator = symbol.getEvaluator();
             if (evaluator instanceof IGraphics3D) {
-              StringBuilder primitivesBuffer = new StringBuilder();
-              if (((IGraphics3D) evaluator).graphics2D(primitivesBuffer, ast, rgbColor, opacity)) {
-                if (!first) {
-                  buf.append(",");
-                }
-                first = false;
-                buf.append(primitivesBuffer);
+              ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+              if (((IGraphics3D) evaluator).graphics2D(g, ast, rgbColor, opacity)) {
+                arrayNode.add(g);
+                // if (!first) {
+                // buf.append(",");
+                // }
+                // first = false;
+                // buf.append(json.toString());
               }
             }
           }
@@ -1541,22 +1627,31 @@ public class GraphicsFunctions {
     return false;
   }
 
-  public static boolean graphics3DJSON(StringBuilder graphics3DBuffer, IExpr lighting, IExpr data3D,
-      boolean javaScript) {
-    StringBuilder jsonPrimitives = new StringBuilder();
-    if (GraphicsFunctions.exportGraphics3DRecursive(jsonPrimitives, (IAST) data3D)) {
+  private static boolean graphics3DJSON(StringBuilder graphics3DBuffer, IExpr lighting,
+      IExpr data3D, boolean javaScript) {
+    ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
+    ArrayNode arrayNode = JSON_OBJECT_MAPPER.createArrayNode();
+    if (GraphicsFunctions.exportGraphics3DRecursive(arrayNode, (IAST) data3D)) {
       try {
         if (javaScript) {
           graphics3DBuffer.append("drawGraphics3d(document.getElementById('graphics3d'),\n");
         }
-        graphics3DBuffer.append("{");
-        graphics3DBuffer.append("\naxes: {},");
-        graphics3DBuffer.append("\nelements: [");
-        graphics3DBuffer.append(jsonPrimitives.toString());
-        graphics3DBuffer.append("],");
-        graphics3DLigthing(graphics3DBuffer, lighting);
-        graphics3DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
-        graphics3DBuffer.append("}");
+        json.set("elements", arrayNode);
+        graphics3DLigthing(json, lighting);
+        ArrayNode vp = JSON_OBJECT_MAPPER.createArrayNode();
+        vp.add(1.3);
+        vp.add(-2.4);
+        vp.add(2.0);
+        json.set("viewpoint", vp);
+        graphics3DBuffer.append(json.toString());
+        // graphics3DBuffer.append("{");
+        // graphics3DBuffer.append("\naxes: {},");
+        // graphics3DBuffer.append("\nelements: [");
+        // graphics3DBuffer.append(jsonPrimitives.toString());
+        // graphics3DBuffer.append("],");
+        // graphics3DLigthing(graphics3DBuffer, lighting);
+        // graphics3DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
+        // graphics3DBuffer.append("}");
         if (javaScript) {
           graphics3DBuffer.append("\n);");
         }
@@ -1568,7 +1663,7 @@ public class GraphicsFunctions {
     return false;
   }
 
-  private static void graphics3DLigthing(StringBuilder graphics3DBuffer, IExpr lighting) {
+  private static void graphics3DLigthing(ObjectNode json, IExpr lighting) {
     IAST automatic = F.List(F.AmbientLight(F.RGBColor(0.4, 0.2, 0.2)),
         F.DirectionalLight(F.RGBColor(0., 0.18, 0.5), F.List(2, 0, 2)),
         F.DirectionalLight(F.RGBColor(0.18, 0.5, 0.18), F.List(2, 2, 3)),
@@ -1587,40 +1682,46 @@ public class GraphicsFunctions {
     }
 
     boolean lightingDone = false;
-    graphics3DBuffer.append("\nlighting: [");
+    // graphics3DBuffer.append("\nlighting: [");
+    ArrayNode arrayNode = JSON_OBJECT_MAPPER.createArrayNode();
     if (result.isPresent()) {
       if (result.isList()) {
         for (int i = 1; i < result.size(); i++) {
           if (result.get(i).isAST()) {
-            if (lightingDone) {
-              graphics3DBuffer.append(",");
-            }
-            if (graphics3DSingleLight(graphics3DBuffer, (IAST) result.get(i))) {
-
+            // if (lightingDone) {
+            // graphics3DBuffer.append(",");
+            // }
+            ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+            if (graphics3DSingleLight(g, (IAST) result.get(i))) {
+              arrayNode.add(g);
               lightingDone = true;
             }
           }
         }
       } else {
-        lightingDone = graphics3DSingleLight(graphics3DBuffer, result);
+        ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+        if (graphics3DSingleLight(g, result)) {
+          arrayNode.add(g);
+          lightingDone = true;
+        }
       }
     }
 
     if (!lightingDone) {
-      lightingDone = graphics3DSingleLight(graphics3DBuffer, automatic);
+      ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+      lightingDone = graphics3DSingleLight(g, automatic);
+      arrayNode.add(g);
     }
-    graphics3DBuffer.append("\n],");
+    json.set("lighting", arrayNode);
   }
 
-  private static boolean graphics3DSingleLight(StringBuilder graphics3DBuffer, IAST result) {
+  private static boolean graphics3DSingleLight(ObjectNode json, IAST result) {
     if (result.isAST1()) {
       IExpr color = result.arg1();
       if (color.isRGBColor()) {
         if (result.head().equals(S.AmbientLight)) {
-          graphics3DBuffer.append("\n{");
-          graphics3DBuffer.append("type: 'ambient',");
-          setColor(graphics3DBuffer, (IAST) color, F.RGBColor(F.C1, F.C1, F.C1), false);
-          graphics3DBuffer.append("}");
+          json.put("type", "ambient");
+          setColor(json, (IAST) color, F.RGBColor(F.C1, F.C1, F.C1));
           return true;
         }
       }
@@ -1629,10 +1730,8 @@ public class GraphicsFunctions {
       if (name.equals("Ambient")) {
         IExpr color = result.arg2();
         if (color.isRGBColor()) {
-          graphics3DBuffer.append("\n{");
-          graphics3DBuffer.append("type: 'ambient',");
-          setColor(graphics3DBuffer, (IAST) color, F.NIL, false);
-          graphics3DBuffer.append("}");
+          json.put("type", "ambient");
+          setColor(json, (IAST) color, F.NIL);
           return true;
         }
       } else {
@@ -1640,18 +1739,14 @@ public class GraphicsFunctions {
         if (color.isRGBColor() && result.arg2().isList()) {
           IAST list = (IAST) result.arg2();
           if (result.head().equals(S.DirectionalLight) && list.isList()) {
-            graphics3DBuffer.append("\n{");
-            graphics3DBuffer.append("type: 'directional',");
-            setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
-            graphics3DCoordsOrListOfCoords(graphics3DBuffer, list, "coords");
-            graphics3DBuffer.append("}");
+            json.put("type", "directional");
+            setColor(json, (IAST) color, F.NIL);
+            graphics3DCoordsOrListOfCoords(json, list, "coords");
             return true;
           } else if (result.head().equals(S.PointLight) && list.isList3()) {
-            graphics3DBuffer.append("\n{");
-            graphics3DBuffer.append("type: 'point',");
-            setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
-            graphics3DCoordsOrListOfCoords(graphics3DBuffer, list, "coords");
-            graphics3DBuffer.append("}");
+            json.put("type", "point");
+            setColor(json, (IAST) color, F.NIL);
+            graphics3DCoordsOrListOfCoords(json, list, "coords");
             return true;
           } else if (result.head().equals(S.SpotLight) && list.isList2() && list.isListOfLists()) {
             IAST coords = (IAST) list.arg1();
@@ -1661,14 +1756,11 @@ public class GraphicsFunctions {
               if (result.size() == 5) {
                 angle = result.arg4().toDoubleDefault(1.0);
               }
-              graphics3DBuffer.append("\n{");
-              graphics3DBuffer.append("type: 'spot',");
-              graphics3DBuffer.append("angle: " + angle + ",");
-              setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
-              graphics3DCoordsOrListOfCoords(graphics3DBuffer, coords, "coords");
-              graphics3DBuffer.append(",");
-              graphics3DCoordsOrListOfCoords(graphics3DBuffer, target, "target");
-              graphics3DBuffer.append("}");
+              json.put("type", "spot");
+              json.put("angle", angle);
+              setColor(json, (IAST) color, F.NIL);
+              graphics3DCoordsOrListOfCoords(json, coords, "coords");
+              graphics3DCoordsOrListOfCoords(json, target, "target");
               return true;
             }
           }
@@ -1681,18 +1773,14 @@ public class GraphicsFunctions {
       IAST list = (IAST) result.arg3();
       if (color.isRGBColor()) {
         if (name.equals("Directional") && list.isList()) {
-          graphics3DBuffer.append("\n{");
-          graphics3DBuffer.append("type: 'directional',");
-          setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
-          graphics3DCoordsOrListOfCoords(graphics3DBuffer, list, "coords");
-          graphics3DBuffer.append("}");
+          json.put("type", "directional");
+          setColor(json, (IAST) color, F.NIL);
+          graphics3DCoordsOrListOfCoords(json, list, "coords");
           return true;
         } else if (name.equals("Point") && list.isList3()) {
-          graphics3DBuffer.append("\n{");
-          graphics3DBuffer.append("type: 'point',");
-          setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
-          graphics3DCoordsOrListOfCoords(graphics3DBuffer, list, "coords");
-          graphics3DBuffer.append("}");
+          json.put("type", "point");
+          setColor(json, (IAST) color, F.NIL);
+          graphics3DCoordsOrListOfCoords(json, list, "coords");
           return true;
         } else if (name.equals("Spot") && list.isList2() && list.isListOfLists()) {
           IAST coords = (IAST) list.arg1();
@@ -1702,20 +1790,70 @@ public class GraphicsFunctions {
             if (result.size() == 5) {
               angle = result.arg4().toDoubleDefault(1.0);
             }
-            graphics3DBuffer.append("\n{");
-            graphics3DBuffer.append("type: 'spot',");
-            graphics3DBuffer.append("angle: " + angle + ",");
-            setColor(graphics3DBuffer, (IAST) color, F.NIL, true);
-            graphics3DCoordsOrListOfCoords(graphics3DBuffer, coords, "coords");
-            graphics3DBuffer.append(",");
-            graphics3DCoordsOrListOfCoords(graphics3DBuffer, target, "target");
-            graphics3DBuffer.append("}");
+            json.put("type", "spot");
+            json.put("angle", angle);
+            setColor(json, (IAST) color, F.NIL);
+            graphics3DCoordsOrListOfCoords(json, coords, "coords");
+            graphics3DCoordsOrListOfCoords(json, target, "target");
             return true;
           }
         }
       }
     }
     return false;
+
+  }
+
+  private static void setColor(ObjectNode json, IAST color, IAST defaultColor) {
+    if (color.isPresent()) {
+      if (color.isAST(S.RGBColor, 4, 5)) {
+        if (color.size() == 5) {
+          double opacity = color.arg4().toDoubleDefault(1.0);
+          json.put("opacity", opacity);
+        }
+        double red = color.arg1().toDoubleDefault(0.0);
+        double green = color.arg2().toDoubleDefault(0.0);
+        double blue = color.arg3().toDoubleDefault(0.0);
+
+        ArrayNode arrayNode = json.arrayNode();
+        arrayNode.add(red);
+        arrayNode.add(green);
+        arrayNode.add(blue);
+        json.set("color", arrayNode);
+        return;
+      } else if (color.isAST(S.RGBColor, 1) && color.arg1().isAST(S.List, 4, 5)) {
+        IAST list = (IAST) color.arg1();
+        if (color.size() == 5) {
+          double opacity = list.arg4().toDoubleDefault(1.0);
+          json.put("opacity", opacity);
+        }
+        double red = list.arg1().toDoubleDefault(0.0);
+        double green = list.arg2().toDoubleDefault(0.0);
+        double blue = list.arg3().toDoubleDefault(0.0);
+        ArrayNode arrayNode = json.arrayNode();
+        arrayNode.add(red);
+        arrayNode.add(green);
+        arrayNode.add(blue);
+        json.set("color", arrayNode);
+        return;
+      }
+    }
+    if (defaultColor.isAST(S.RGBColor, 4)) {
+      double red = defaultColor.arg1().toDoubleDefault(0.0);
+      double green = defaultColor.arg2().toDoubleDefault(0.0);
+      double blue = defaultColor.arg3().toDoubleDefault(0.0);
+      ArrayNode arrayNode = json.arrayNode();
+      arrayNode.add(red);
+      arrayNode.add(green);
+      arrayNode.add(blue);
+      json.set("color", arrayNode);
+    } else {
+      ArrayNode arrayNode = json.arrayNode();
+      arrayNode.add(1.0);
+      arrayNode.add(0.5);
+      arrayNode.add(0.0);
+      json.set("color", arrayNode);
+    }
 
   }
 
@@ -1784,6 +1922,11 @@ public class GraphicsFunctions {
     if (setComma) {
       buf.append(",");
     }
+  }
+
+  private static void setOpacity(ObjectNode json, IExpr opacityExpr) {
+    double opacity = opacityExpr.toDoubleDefault(1.0);
+    json.put("opacity", opacity);
   }
 
   private static void setOpacity(StringBuilder buf, IExpr opacityExpr) {
@@ -1923,5 +2066,33 @@ public class GraphicsFunctions {
     RGBColor color = plotStyleColor(functionColorNumber, plotStyle);
     float[] rgbComponents = color.getRGBColorComponents(null);
     return F.RGBColor(rgbComponents[0], rgbComponents[1], rgbComponents[2]);
+  }
+
+  public static void main(String[] args) {
+    ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+    ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
+    // json.set("title", title);
+    // json.set("scanner", scanner);
+    json.put("error", "false");
+    json.put("numsubpods", 1);
+    json.putPOJO("subpods", temp);
+    ArrayNode array = json.arrayNode();
+
+    ArrayNode arrayNode0 = json.arrayNode();
+    ArrayNode arrayNode = json.arrayNode();
+    arrayNode.add(2.0);
+    arrayNode.add(3.0);
+    arrayNode0.add(arrayNode);
+    array.add(arrayNode0);
+
+    arrayNode0 = json.arrayNode();
+    arrayNode = json.arrayNode();
+    arrayNode.add(2.0);
+    arrayNode.add(3.0);
+    arrayNode0.add(arrayNode);
+    array.add(arrayNode0);
+    json.set("coords", array);
+
+    System.out.println(json);
   }
 }

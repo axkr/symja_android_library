@@ -47,9 +47,16 @@ public class JSBuilder {
           + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Graphics 2D</title>\n" + "</head>\n"
           + "\n" + "<body>\n"
           // 1 - libraries
-          + "`1`\n" + "<div id=\"graphics2d\"></div>\n" + "\n" + "<script type=\"module\"> \n"
+          + "`1`\n" //
+          + "<script src=\"/media/js/drawGraphics2d.js\"></script>\n" //
+          + "<div id=\"graphics2d\" class=\"jxgbox\" style=\"max-width:400px; aspect-ratio: 1/1;\"></div>\n"//
+          // + "<div id=\"graphics2d\" class=\"jxgbox\" style=\"width:100%; height:100%; margin: 0;
+          // padding: 0\"></div>\n" //
+          + "\n" //
+          + "<script> \n" //
           // 2 - JavaScript string
-          + "`2`\n" + "</script>\n"
+          + "`2`\n"//
+          + "</script>\n"//
           // 3 - JSFiddle string
           + "`3`\n" + "</body>"; //
 
@@ -59,9 +66,11 @@ public class JSBuilder {
           + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%;margin: 0; padding: 0\">\n"
           + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Graphics3D</title>\n" + "</head>\n"
-          + "\n" + "<body>\n"
+          + "\n" //
+          + "<body>\n"//
           // 1 - libraries
-          + "`1`\n" + "<div id=\"graphics3d\"></div>\n" + "\n" + "<script type=\"module\"> \n"
+          + "`1`\n"//
+          + "<div id=\"graphics3d\"></div>\n" + "\n" + "<script type=\"module\"> \n"
           // 2 - JavaScript string
           + "`2`\n" + "</script>\n"
           // 3 - JSFiddle string
@@ -69,10 +78,18 @@ public class JSBuilder {
 
   /** HTML template for Graphics 2D */
   public static final String GRAPHICS2D_TEMPLATE = //
-      "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Graphics 2D</title>\n"
-      // 1 - libraries
-          + "`1`\n" + "</head>\n" + "<body>\n"
-          + "<div id=\"graphics2d\" style=\"width:100%; height:100%; margin: 0; padding: 0\">\n"
+      "<html>\n" //
+          + "<head>\n"//
+          + "<meta charset=\"utf-8\">\n"//
+          + "<title>Graphics 2D</title>\n"//
+          // 1 - libraries
+          + "`1`\n" //
+          + "<script src=\"/media/js/drawGraphics2d.js\"></script>\n" //
+          + "</head>\n"//
+          + "<body>\n"//
+          + "<div id=\"graphics2d\" class=\"jxgbox\" style=\"max-width:400px; aspect-ratio: 1/1;\"></div>\n"//
+          // + "<div id=\"graphics2d\" class=\"jxgbox\" style=\"width:100%; height:100%; margin: 0;
+          // padding: 0\">\n"
           + "<script>\n"
           // 2 - JavaScript string
           + "`2`\n" + "</script>\n"
@@ -81,13 +98,19 @@ public class JSBuilder {
 
   /** HTML template for Graphics3D */
   public static final String GRAPHICS3D_TEMPLATE = //
-      "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Graphics3D</title>\n"
-      // 1 - libraries
-          + "`1`\n" + "</head>\n" + "<body>\n"
+      "<html>\n"//
+          + "<head>\n" //
+          + "<meta charset=\"utf-8\">\n" //
+          + "<title>Graphics3D</title>\n"
+          // 1 - libraries
+          + "`1`\n" //
+          + "</head>\n" //
+          + "<body>\n"
           + "<div id=\"graphics3d\" style=\"width:100%; height:100%; margin: 0; padding: 0\">\n"
           + "<script>\n"
           // 2 - JavaScript string
-          + "`2`\n" + "</script>\n"
+          + "`2`\n"//
+          + "</script>\n" //
           // 3 - JSFiddle string
           + "`3`\n" + "</div>\n" + "</body>\n" + "</html>"; //
 
@@ -97,8 +120,7 @@ public class JSBuilder {
           + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%;margin: 0; padding: 0\">\n"
           + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Image</title>\n"//
-          + "</head>\n"
-          + "<body>\n"
+          + "</head>\n" + "<body>\n"
           + "<div id=\"image\" style=\"width:100%; height:100%; margin: 0; padding: 0\">\n"
           + "    <img src=\"data:image/png;base64, `1`\"/> \n" //
           + "</div>\n" //
