@@ -471,7 +471,15 @@ public class Sum extends ListFunctions.Table implements SumRules {
       IExpr subSum = engine.evaluateNIL(F.Sum(expr, F.list(var, C1, to)));
       if (subSum.isPresent()) {
         if (S.Less.ofQ(engine, from, C1)) {
-          return F.Plus(F.Sum(expr, F.list(var, from, C0)), subSum);
+          IExpr subSum2 = engine.evaluateNIL(F.Sum(expr, F.list(var, from, C0)));
+          if (subSum2.isPresent()) {
+            subSum2 = subSum2.plus(subSum);
+            if (subSum2.isPlus()) {
+              return F.Together(subSum2);
+            }
+            return subSum2;
+          }
+          return F.NIL;
         }
         if (S.Greater.ofQ(engine, from, C1)) {
           return F.Subtract(subSum, F.Sum(expr, F.list(var, C1, from.minus(F.C1))));

@@ -7,6 +7,8 @@ public class SumTest extends ExprEvaluatorTestCase {
   }
 
   public void testSum001() {
+    check("Sum((1-n)^k,{k,0,Infinity})", //
+        "1/n");
     check("Sum(k^n, {k, 0, m})", //
         "0^n+HarmonicNumber(m,-n)");
     check("Sum(i, {i, 1, 1000000000}) ", //
@@ -229,7 +231,7 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(a^i,{i,0,1})", //
         "1+a");
     check("Sum(a^i,{i,0,Infinity})", //
-        "1-a/(-1+a)");
+        "-1/(-1+a)");
     check("Sum(a^i,{i,1,Infinity})", //
         "-a/(-1+a)");
     check("Sum(a^i,{i,3,Infinity})", //
