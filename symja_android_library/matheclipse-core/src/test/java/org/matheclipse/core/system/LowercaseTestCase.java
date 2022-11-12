@@ -2884,6 +2884,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testClearAttributes() {
+    // print error message "SetAttributes: test is not a known attribute."
+    check("SetAttributes(f, {Orderless, Test})", //
+        "");
+    // print error message "ClearAttributes: test is not a known attribute."
+    check("ClearAttributes(f, {Orderless, Test})", //
+        "");
+
     check("SetAttributes(f, {Orderless, Flat})", //
         "");
     check("Attributes(f)", //
@@ -16909,6 +16916,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testOneIdentity() {
     check("SetAttributes(f, OneIdentity)", //
         "");
+    // with a default argument, the pattern does match:
+    check("a /. f(x_:0, u_) -> {u}", //
+        "{a}");
+    // without a default argument, the pattern does not match:
+    check("a /. f(u_) -> {u}", //
+        "a");
+    // OneIdentity does not affect evaluation:
     check("f(a)", //
         "f(a)");
   }

@@ -203,7 +203,10 @@ public class AttributeFunctions {
       }
       if (attributes.isSymbol()) {
         ISymbol attribute = (ISymbol) attributes;
-        clearAttributes(sym, attribute);
+        if (!clearAttributes(sym, attribute)) {
+          // `1` is not a known attribute.
+          return IOFunctions.printMessage(S.ClearAttributes, "attnf", F.List(attribute), engine);
+        }
         return S.Null;
       } else {
         if (attributes.isList()) {
@@ -211,7 +214,10 @@ public class AttributeFunctions {
           // lst.forEach(x -> clearAttributes(sym, (ISymbol) x));
           for (int i = 1; i < lst.size(); i++) {
             ISymbol attribute = (ISymbol) lst.get(i);
-            clearAttributes(sym, attribute);
+            if (!clearAttributes(sym, attribute)) {
+              // `1` is not a known attribute.
+              IOFunctions.printMessage(S.ClearAttributes, "attnf", F.List(attribute), engine);
+            }
           }
           return S.Null;
         }
@@ -225,58 +231,58 @@ public class AttributeFunctions {
      * @param sym
      * @param attribute
      */
-    private void clearAttributes(final ISymbol sym, ISymbol attribute) {
+    private boolean clearAttributes(final ISymbol sym, ISymbol attribute) {
       int functionID = attribute.ordinal();
       if (functionID > ID.UNKNOWN) {
         switch (functionID) {
           case ID.Constant:
             sym.clearAttributes(ISymbol.CONSTANT);
-            break;
+            return true;
           case ID.Flat:
             sym.clearAttributes(ISymbol.FLAT);
-            break;
+            return true;
           case ID.Listable:
             sym.clearAttributes(ISymbol.LISTABLE);
-            break;
-
+            return true;
           case ID.OneIdentity:
             sym.clearAttributes(ISymbol.ONEIDENTITY);
-            break;
+            return true;
           case ID.Orderless:
             sym.clearAttributes(ISymbol.ORDERLESS);
-            break;
+            return true;
           case ID.HoldAll:
             sym.clearAttributes(ISymbol.HOLDALL);
-            break;
+            return true;
           case ID.HoldAllComplete:
             sym.clearAttributes(ISymbol.HOLDALLCOMPLETE);
-            break;
+            return true;
           case ID.HoldComplete:
             sym.clearAttributes(ISymbol.HOLDCOMPLETE);
-            break;
+            return true;
           case ID.HoldFirst:
             sym.clearAttributes(ISymbol.HOLDFIRST);
-            break;
+            return true;
           case ID.HoldRest:
             sym.clearAttributes(ISymbol.HOLDREST);
-            break;
+            return true;
           case ID.NHoldAll:
             sym.clearAttributes(ISymbol.NHOLDALL);
-            break;
+            return true;
           case ID.NHoldFirst:
             sym.clearAttributes(ISymbol.NHOLDFIRST);
-            break;
+            return true;
           case ID.NHoldRest:
             sym.clearAttributes(ISymbol.NHOLDREST);
-            break;
+            return true;
           case ID.NumericFunction:
             sym.clearAttributes(ISymbol.NUMERICFUNCTION);
-            break;
+            return true;
           case ID.SequenceHold:
             sym.clearAttributes(ISymbol.SEQUENCEHOLD);
-            break;
+            return true;
         }
       }
+      return false;
     }
   }
 
@@ -436,13 +442,19 @@ public class AttributeFunctions {
       }
       if (attributes.isSymbol()) {
         ISymbol attribute = (ISymbol) attributes;
-        addAttributes(sym, attribute);
+        if (!addAttributes(sym, attribute)) {
+          // `1` is not a known attribute.
+          return IOFunctions.printMessage(S.SetAttributes, "attnf", F.List(attribute), engine);
+        }
       } else if (attributes.isList()) {
         final IAST lst = (IAST) attributes;
         // lst.forEach(x -> addAttributes(sym, (ISymbol) x));
         for (int i = 1; i < lst.size(); i++) {
           final ISymbol attribute = (ISymbol) lst.get(i);
-          addAttributes(sym, attribute);
+          if (!addAttributes(sym, attribute)) {
+            // `1` is not a known attribute.
+            IOFunctions.printMessage(S.SetAttributes, "attnf", F.List(attribute), engine);
+          }
         }
       }
       return S.Null;
@@ -454,7 +466,7 @@ public class AttributeFunctions {
      * @param sym
      * @param attribute
      */
-    private static void addAttributes(final ISymbol sym, ISymbol attribute) {
+    private static boolean addAttributes(final ISymbol sym, ISymbol attribute) {
       if (sym.isProtected()) {
         IOFunctions.printMessage(S.SetAttributes, "write", F.list(sym), EvalEngine.get());
         throw new FailedException();
@@ -464,60 +476,61 @@ public class AttributeFunctions {
         switch (functionID) {
           case ID.Constant:
             sym.addAttributes(ISymbol.CONSTANT);
-            break;
+            return true;
           case ID.Flat:
             sym.addAttributes(ISymbol.FLAT);
-            break;
+            return true;
           case ID.Listable:
             sym.addAttributes(ISymbol.LISTABLE);
-            break;
+            return true;
           case ID.Locked:
             sym.addAttributes(ISymbol.LOCKED);
-            break;
+            return true;
           case ID.OneIdentity:
             sym.addAttributes(ISymbol.ONEIDENTITY);
-            break;
+            return true;
           case ID.Orderless:
             sym.addAttributes(ISymbol.ORDERLESS);
-            break;
+            return true;
           case ID.HoldAll:
             sym.addAttributes(ISymbol.HOLDALL);
-            break;
+            return true;
           case ID.HoldAllComplete:
             sym.addAttributes(ISymbol.HOLDALLCOMPLETE);
-            break;
+            return true;
           case ID.HoldComplete:
             sym.addAttributes(ISymbol.HOLDCOMPLETE);
-            break;
+            return true;
           case ID.HoldFirst:
             sym.addAttributes(ISymbol.HOLDFIRST);
-            break;
+            return true;
           case ID.HoldRest:
             sym.addAttributes(ISymbol.HOLDREST);
-            break;
+            return true;
           case ID.NHoldAll:
             sym.addAttributes(ISymbol.NHOLDALL);
-            break;
+            return true;
           case ID.NHoldFirst:
             sym.addAttributes(ISymbol.NHOLDFIRST);
-            break;
+            return true;
           case ID.NHoldRest:
             sym.addAttributes(ISymbol.NHOLDREST);
-            break;
+            return true;
           case ID.NumericFunction:
             sym.addAttributes(ISymbol.NUMERICFUNCTION);
-            break;
+            return true;
           case ID.Protected:
             sym.addAttributes(ISymbol.PROTECTED);
-            break;
+            return true;
           case ID.ReadProtected:
             sym.addAttributes(ISymbol.READPROTECTED);
-            break;
+            return true;
           case ID.SequenceHold:
             sym.addAttributes(ISymbol.SEQUENCEHOLD);
-            break;
+            return true;
         }
       }
+      return false;
     }
   }
 
