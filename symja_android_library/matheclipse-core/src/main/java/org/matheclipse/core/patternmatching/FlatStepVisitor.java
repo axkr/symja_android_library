@@ -75,14 +75,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
         } else {
           final ISymbol head = (lhsPatternExpr.isPatternSequence(false)) ? S.Sequence : fSymbol;
           final int row = j;
-          final IAST partitionElement;
-          if (fOneIdentity) {
-            partitionElement = F.mapRange(head, 0, n, i -> array[result[row][i]]);
-          } else {
-            // wrap the head around each argument, because the OneIdentity attribute isn't set
-            partitionElement =
-                F.mapRange(head, 0, n, i -> F.unaryAST1(head, array[result[row][i]]));
-          }
+          final IAST partitionElement = F.mapRange(head, 0, n, i -> array[result[row][i]]);
           if (!stackMatcher.push(lhsPatternExpr, partitionElement)) {
             matched = false;
             return false;
