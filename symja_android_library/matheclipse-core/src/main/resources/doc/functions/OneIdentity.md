@@ -24,7 +24,7 @@ However, without a default argument, the pattern does not match:
 a
 ```
 
-`OneIdentity` does not affect evaluation:
+Also, it does not affect evaluation:
 
 ```
 >> f(a)

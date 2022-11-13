@@ -943,10 +943,10 @@ public class EvalEngine implements Serializable {
             || symbol.equals(S.UpSetDelayed))) {
           return F.NIL;
         }
-        // } else {
-        // if ((ISymbol.NUMERICFUNCTION & attributes) != ISymbol.NUMERICFUNCTION) {
-        // return F.NIL;
-        // }
+      } else {
+        if ((ISymbol.NUMERICFUNCTION & attributes) != ISymbol.NUMERICFUNCTION) {
+          return F.NIL;
+        }
       }
     }
 
