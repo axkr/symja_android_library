@@ -367,8 +367,12 @@ public class ExprEvaluatorTests {
         F.Plus(F.Sqrt(2), F.C1), //
         F.Plus(F.Sqrt(2), F.CN1), //
         F.Exp(F.Times(F.Pi, F.CI, F.C1D3)), //
+        F.Plus(), // unreduced form
+        F.Plus(F.CN1), // unreduced form
         F.Plus(F.C1, F.CI), //
         F.Plus(F.CN1, F.CI), //
+        F.Times(), // unreduced form
+        F.Times(F.CN1), // unreduced form
         F.Times(F.Sqrt(2), F.C7), //
         F.Times(F.Sqrt(2), F.Sqrt(5)), //
         F.CSqrt2, //
