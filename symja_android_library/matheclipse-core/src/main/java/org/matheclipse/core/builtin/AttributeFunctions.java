@@ -153,29 +153,29 @@ public class AttributeFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST2()) {
-          if (ast.arg1().isList()) {
-            IAST list = (IAST) ast.arg1();
-            IExpr arg2 = engine.evaluate(ast.arg2());
-            for (int i = 1; i < list.size(); i++) {
-              IExpr temp = clearAttributes(list.get(i), arg2, ast, engine);
-              if (temp.isNIL()) {
-                return F.NIL;
-              }
-            }
-            return S.Null;
-          }
-          if (ast.arg1().isSymbol()) {
-            IExpr arg2 = engine.evaluate(ast.arg2());
-            final ISymbol sym = ((ISymbol) ast.arg1());
-            return clearAttributes(sym, arg2, ast, engine);
+
+      if (ast.arg1().isList()) {
+        IAST list = (IAST) ast.arg1();
+        IExpr arg2 = engine.evaluate(ast.arg2());
+        for (int i = 1; i < list.size(); i++) {
+          IExpr temp = clearAttributes(list.get(i), arg2, ast, engine);
+          if (temp.isNIL()) {
+            return F.NIL;
           }
         }
-      } catch (RuntimeException rex) {
-        //
+        return S.Null;
+      }
+      if (ast.arg1().isSymbol()) {
+        IExpr arg2 = engine.evaluate(ast.arg2());
+        final ISymbol sym = ((ISymbol) ast.arg1());
+        return clearAttributes(sym, arg2, ast, engine);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
 
     /**
@@ -389,21 +389,19 @@ public class AttributeFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST2()) {
-          if (ast.arg1().isList()) {
-            IAST list = (IAST) ast.arg1();
-            return setSymbolsAttributes(list, ast.arg2(), ast, engine);
-          }
-          IExpr arg1 = ast.arg1();
-          IExpr arg2 = engine.evaluate(ast.arg2());
-          final ISymbol sym = ((ISymbol) ast.arg1());
-          return addAttributes(arg1, arg2, ast, engine);
-        }
-      } catch (RuntimeException rex) {
-        //
+      if (ast.arg1().isList()) {
+        IAST list = (IAST) ast.arg1();
+        return setSymbolsAttributes(list, ast.arg2(), ast, engine);
       }
-      return F.NIL;
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = engine.evaluate(ast.arg2());
+      final ISymbol sym = ((ISymbol) ast.arg1());
+      return addAttributes(arg1, arg2, ast, engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
 
     private static IExpr setSymbolsAttributes(IAST listOfSymbols, IExpr attributes, IAST ast,

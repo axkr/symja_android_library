@@ -4,8 +4,8 @@
 OneIdentity
 ```
 
-> is an attribute specifying that `f(x)` should be treated as equivalent to `x` in pattern matching.    
- 
+> is an attribute assigned to a symbol, say `f`, indicating that `f(x)`, `f(f(x))`,... etc. are all equivalent to `x` in pattern matching.
+          
 ### Examples
 
 `OneIdentity` affects pattern matching. It does not affect evaluation.
