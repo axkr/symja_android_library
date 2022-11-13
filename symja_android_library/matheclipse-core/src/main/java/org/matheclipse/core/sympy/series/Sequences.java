@@ -372,6 +372,10 @@ public class Sequences {
               mlist.append(x.copyFrom(k + 1, k + l + 1));
             }
             m = Convert.list2Matrix(mlist);
+            if (m == null) {
+              // not a valid matrix
+              return F.NIL;
+            }
             FieldMatrix<IExpr> mDoty = m.multiply(y);
             FieldMatrix<IExpr> m3 = Convert.list2Matrix(F.List(x.copyFrom(l2 + 1)));
             if (m3 == null) {
