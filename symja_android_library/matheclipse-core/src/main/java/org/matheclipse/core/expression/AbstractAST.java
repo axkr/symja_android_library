@@ -3297,7 +3297,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isFlatAST() {
-    return topHead().hasFlatAttribute();
+    final IExpr head = head();
+    return head.isSymbol() ? ((ISymbol) head).hasFlatAttribute() : false;
   }
 
   /** {@inheritDoc} */
@@ -3967,7 +3968,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final boolean isOrderlessAST() {
-    return topHead().hasOrderlessAttribute();
+    final IExpr head = head();
+    return head.isSymbol() ? ((ISymbol) head).hasOrderlessAttribute() : false;
   }
 
   /** {@inheritDoc} */

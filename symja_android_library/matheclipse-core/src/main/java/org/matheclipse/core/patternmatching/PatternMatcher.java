@@ -849,6 +849,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     boolean matched = false;
     try {
       IExpr head = lhsPatternAST.head();
+      boolean flat = lhsPatternAST.isFlatAST();
       boolean oneIdentity = head.isSymbol() ? ((ISymbol) head).isOneIdentityAttribute() : false;
       if (lhsPatternAST.size() == lhsEvalAST.size()) {
         IAST[] removed = remove(lhsPatternAST, lhsEvalAST, engine, stackMatcher);
@@ -874,14 +875,16 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
 
       for (int i = 1; i < lhsPatternAST.size(); i++) {
-        if (oneIdentity) {
-          if (!stackMatcher.push(lhsPatternAST.getRule(i), lhsEvalAST.getRule(lhsEvalOffset + i))) {
+        IExpr patternArg = lhsPatternAST.getRule(i);
+        if (oneIdentity || !flat || !(patternArg instanceof IPatternObject)) {
+          if (!stackMatcher.push(patternArg, lhsEvalAST.getRule(lhsEvalOffset + i))) {
             matched = false;
             return false;
           }
         } else {
-          // wrap each argument with the head symbol because of missing OneIdentity attribute
-          if (!stackMatcher.push(lhsPatternAST.getRule(i),
+          // wrap each argument of the Flat expression with the head symbol because of missing
+          // OneIdentity attribute
+          if (!stackMatcher.push(patternArg,
               F.unaryAST1(head, lhsEvalAST.getRule(lhsEvalOffset + i)))) {
             matched = false;
             return false;

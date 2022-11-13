@@ -22826,7 +22826,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testStruveH() {
-    System.out.println("testStruveH: ");
     // message "BigInteger bit length 60600 exceeded"
     check(
         "StruveH(1009,-9223372036854775807/9223372036854775808-I*9223372036854775808/9223372036854775807)", //
@@ -22838,40 +22837,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("StruveH(0, 30.0)", //
         "-0.0960984");
 
-    System.out.print(".");
     check("StruveH(0, 5.2)", //
         "-0.212448");
-    System.out.print(".");
     check("StruveH(0, 4.0)", //
         "0.135015");
-    System.out.print(".");
     check("StruveH(7/3 + I, 4.5 - I)", //
         "2.35765+I*(-1.40054)");
-    System.out.print(".");
     check("StruveH(1,{0.5, 1.0, 1.5})", //
         "{0.0521737,0.198457,0.410288}");
-    System.out.print(".");
     check("StruveH(1.5, 3.5)", //
         "1.13192");
-    System.out.print(".");
     check("StruveH(I,0)", //
         "0");
-    System.out.print(".");
     check("StruveH(-1+I,0)", //
         "Indeterminate");
-    System.out.print(".");
     check("StruveH(-2+I,0)", //
         "ComplexInfinity");
-    System.out.print(".");
     check("StruveH(1/2,x)", //
         "Sqrt(2/Pi)*Sqrt(1/x)*(1-Cos(x))");
     System.out.print(".");
     check("StruveH(-1/2,x)", //
         "Sqrt(2/Pi)*Sqrt(1/x)*Sin(x)");
-    System.out.print(".");
     check("StruveH(a,-x)", //
         "(-(-x)^a*StruveH(a,x))/x^a");
-    System.out.print(".");
     // TODO values > 30
     check("Table(StruveH(0,x), {x, 0, 30.0})", //
         "{0.0,0.568657,0.790859,0.574306,0.135015,-0.185217,-0.184555,0.063383,0.301988,0.319876,0.118744,-0.111421,-0.172534,"
