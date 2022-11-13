@@ -284,6 +284,19 @@ public class PatternMatchingTestCase extends TestCase {
         "h[g[x_]]:=x^2");
   }
 
+  public void testPatternFlatOneIdentity() {
+    check("SetAttributes[r, Flat]", //
+        "");
+    check("r[a, b, b, c] /. r[x_, x_] -> rp[x]", //
+        "r[a,rp[r[b]],c]");
+    check("SetAttributes[r, OneIdentity]", //
+        "");
+    check("Attributes[r]", //
+        "{Flat,OneIdentity}");
+    check("r[a, b, b, c] /. r[x_, x_] -> rp[x]", //
+        "r[a,rp[b],c]");
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {

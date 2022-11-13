@@ -469,6 +469,10 @@ public interface ISymbol extends IExpr {
     return ((getAttributes() & NUMERICFUNCTION) == NUMERICFUNCTION);
   }
 
+  default boolean isOneIdentityAttribute() {
+    return (getAttributes() & ONEIDENTITY) == ONEIDENTITY;
+  }
+
   default boolean isProtected() {
     return ((getAttributes() & PROTECTED) == PROTECTED);
   }

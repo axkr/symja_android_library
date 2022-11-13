@@ -671,9 +671,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
       if (lhsPatternAST.size() <= lhsEvalAST.size()) {
         if (lhsPatternAST.isOrderlessAST()) {
-          IExpr temp =
-              fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
-                  .orElse(lhsPatternAST);
+          IExpr temp = fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
+              .orElse(lhsPatternAST);
           if (temp.isAST(lhsPatternAST.head())) {
             lhsPatternAST = (IAST) temp;
             IAST[] removed = removeOrderless(lhsPatternAST, lhsEvalAST);
@@ -684,9 +683,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             lhsEvalAST = removed[1];
           }
         } else if (lhsPatternAST.isFlatAST()) {
-          IExpr temp =
-              fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
-                  .orElse(lhsPatternAST);
+          IExpr temp = fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
+              .orElse(lhsPatternAST);
           if (temp.isAST(lhsPatternAST.head())) {
             IAST[] removed = removeFlat((IAST) temp, lhsEvalAST);
             if (removed == null) {
@@ -850,6 +848,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     int lastStackSize = stackMatcher.size();
     boolean matched = false;
     try {
+      IExpr head = lhsPatternAST.head();
+      boolean oneIdentity = head.isSymbol() ? ((ISymbol) head).isOneIdentityAttribute() : false;
       if (lhsPatternAST.size() == lhsEvalAST.size()) {
         IAST[] removed = remove(lhsPatternAST, lhsEvalAST, engine, stackMatcher);
         if (removed == null) {
@@ -874,9 +874,18 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
 
       for (int i = 1; i < lhsPatternAST.size(); i++) {
-        if (!stackMatcher.push(lhsPatternAST.getRule(i), lhsEvalAST.getRule(lhsEvalOffset + i))) {
-          matched = false;
-          return false;
+        if (oneIdentity) {
+          if (!stackMatcher.push(lhsPatternAST.getRule(i), lhsEvalAST.getRule(lhsEvalOffset + i))) {
+            matched = false;
+            return false;
+          }
+        } else {
+          // wrap each argument with the head symbol because of missing OneIdentity attribute
+          if (!stackMatcher.push(lhsPatternAST.getRule(i),
+              F.unaryAST1(head, lhsEvalAST.getRule(lhsEvalOffset + i)))) {
+            matched = false;
+            return false;
+          }
         }
       }
       matched = stackMatcher.matchRest();
@@ -1674,8 +1683,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
     if (removedPosition > 0) {
       IAST lhsPatternAST = lhsPattern.removePositionsAtCopy(removedPositionsArray, removedPosition);
-      IAST lhsEvalAST =
-          lhsEval.removePositionsAtCopy(removedPositionsArray, removedPosition);
+      IAST lhsEvalAST = lhsEval.removePositionsAtCopy(removedPositionsArray, removedPosition);
       if (matchedPattern) {
         lhsPatternAST =
             fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine).orElse(lhsPatternAST);
