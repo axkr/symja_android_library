@@ -607,50 +607,60 @@ public class StructureFunctions {
   private static final class Function extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.Function)) {
-        IExpr temp = engine.evalHoldPattern(ast, true, false);
-        if (temp.isPresent() && !temp.equals(ast)) {
+    public IExpr evaluate(final IAST ast1, EvalEngine engine) {
+      if (ast1.head().equals(S.Function)) {
+        if (ast1.argSize() > 3 || ast1.argSize() == 0) {
+          // `1` called with `2` arguments; between `3` and `4` arguments are expected.
+          return IOFunctions.printMessage(S.Function, "argb",
+              F.List(S.Function, F.ZZ(ast1.argSize()), F.C1, F.C3), engine);
+        }
+        IExpr temp = engine.evalHoldPattern(ast1, true, false);
+        if (temp.isPresent() && !temp.equals(ast1)) {
           return temp;
         }
         return F.NIL;
       }
 
-      if (ast.head().isAST()) {
-
-        final IAST function = (IAST) ast.head();
-        if (function.size() > 1) {
-          IExpr arg1 = function.arg1();
-          if (function.isAST1()) {
-            return Lambda.replaceSlotsOrElse(arg1, ast, arg1);
-          } else if (function.isAST2()) {
-            IExpr arg2 = function.arg2();
-            IAST symbolSlots;
-            if (arg1.isList()) {
-              symbolSlots = (IAST) arg1;
-            } else {
-              symbolSlots = F.list(arg1);
-            }
-            if (symbolSlots.size() > ast.size()) {
-              // To many parameters in `1` to be filled from `2`.
-              return IOFunctions.printMessage(S.Function, "fpct", F.list(symbolSlots, function),
-                  engine);
-            }
-            java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables =
-                new IdentityHashMap<ISymbol, IExpr>();
-            // final long moduleCounter = engine.incModuleCounter();
-            IExpr subst = arg2
-                .accept(new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
-            if (subst.isPresent()) {
-              arg2 = subst;
-            }
-
-            return arg2.replaceAll(x -> {
-              IExpr temp = getRulesMap(symbolSlots, ast).get(x);
-              return temp != null ? temp : F.NIL;
-            }).orElse(arg2);
-          }
+      if (ast1.head().isAST()) {
+        final IAST function = (IAST) ast1.head();
+        if (function.argSize() > 3 || function.argSize() <= 0) {
+          // `1` called with `2` arguments; between `3` and `4` arguments are expected.
+          return IOFunctions.printMessage(S.Function, "argb",
+              F.List(S.Function, F.ZZ(function.argSize()), F.C1, F.C3), engine);
         }
+        int attributes = ISymbol.NOATTRIBUTE;
+        if (function.argSize() == 3) {
+          final IExpr arg3 = function.arg3();
+          attributes = AttributeFunctions.getSymbolsAsAttributes(arg3.orNewList(), engine);
+        }
+        IAST ast = engine.evalArgs(ast1, attributes).orElse(ast1);
+
+        IExpr arg1 = function.arg1();
+        if (function.isAST1()) {
+          return Lambda.replaceSlotsOrElse(arg1, ast, arg1);
+        } else if (function.isAST2() || function.isAST3()) {
+          IExpr arg2 = function.arg2();
+          IAST symbolSlots = arg1.orNewList();
+          if (symbolSlots.size() > ast.size()) {
+            // To many parameters in `1` to be filled from `2`.
+            return IOFunctions.printMessage(S.Function, "fpct", F.list(symbolSlots, function),
+                engine);
+          }
+          java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables =
+              new IdentityHashMap<ISymbol, IExpr>();
+          // final long moduleCounter = engine.incModuleCounter();
+          IExpr subst = arg2
+              .accept(new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
+          if (subst.isPresent()) {
+            arg2 = subst;
+          }
+
+          return arg2.replaceAll(x -> {
+            IExpr temp = getRulesMap(symbolSlots, ast).get(x);
+            return temp != null ? temp : F.NIL;
+          }).orElse(arg2);
+        }
+
       }
       return F.NIL;
     }

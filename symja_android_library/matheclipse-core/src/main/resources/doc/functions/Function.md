@@ -24,6 +24,13 @@ or
 
 > represents a pure function with parameters `x1`, `x2`....
 
+
+```
+Function({x1, x2, ...}, body, attr)
+```
+
+> assume that the function has the attributes `attr`.
+
 See:  
 * [Wikipedia - Pure function](https://en.wikipedia.org/wiki/Pure_function)
 * [Wikipedia - Lambda calculus](https://en.wikipedia.org/wiki/Lambda_calculus)
@@ -55,7 +62,7 @@ Parameters are renamed, when necessary, to avoid confusion:
 >> Function({x}, Function({y}, f(x, y)))[y]
 ```
 
-### Related terms 
+### Related terms
 [Slot](Slot.md), [SlotSequence](SlotSequence.md) 
 
 ### Github

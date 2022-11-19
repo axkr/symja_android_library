@@ -2889,7 +2889,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "");
     // print error message "ClearAttributes: test is not a known attribute."
     check("ClearAttributes(f, {Orderless, Test})", //
-        "");
+        "ClearAttributes(f,{Orderless,test})");
 
     check("SetAttributes(f, {Orderless, Flat})", //
         "");
@@ -9783,6 +9783,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("fufufu=Function({x},Function({y},Function({z},x+y+z)))", //
     // "Function({x},Function({y},Function({z},x+y+z)))");
 
+    // Function: Function called with 4 arguments; between 1 and 3 arguments are expected.
+    check("Function(a,b,c,d)", //
+        "Function(a,b,c,d)");
     check("g = (#1 + #2) &[3,4]", //
         "7");
 
@@ -9856,6 +9859,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2,5,10,17,26,37,50,65,82,101}");
     check("(x \\[Function] {#1, x}) /@ #2 &[n0, {n1, n2, n3, n4, n5}]", //
         "{{n0,n1},{n0,n2},{n0,n3},{n0,n4},{n0,n5}}");
+
+    check("h := Function({x}, Hold(1+x))", //
+        "");
+    check("h(1 + 1)", //
+        "Hold(1+2)");
+
+    check("h := Function({x}, Hold(1+x), HoldAll)", //
+        "");
+    check("h(1 + 1)", //
+        "Hold(1+1+1)");
+
   }
 
   public void testFunctionRange() {
