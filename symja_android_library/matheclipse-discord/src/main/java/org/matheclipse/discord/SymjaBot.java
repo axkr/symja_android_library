@@ -386,6 +386,9 @@ public class SymjaBot {
         case IStringX.TEXT_MATHML:
           buf.append("\nOutput:\n```xml\n" + output + "\n```\n");
           return buf.toString();
+        case IStringX.TEXT_JSON:
+          buf.append("\nOutput:\n```json\n" + output + "\n```\n");
+          return buf.toString();
       }
       buf.append(output);
       return buf.toString();
