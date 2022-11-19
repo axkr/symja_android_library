@@ -297,6 +297,25 @@ public class PatternMatchingTestCase extends TestCase {
         "r[a,rp[b],c]");
   }
 
+
+  public void testNestedCondition() {
+    // delayed rule evaluates Condition
+    check("f[x]/.(f[u_]:>u^2/; u>3/; u>2)", //
+        "f[x]");
+    check("f[3]/.(f[u_]:>u^2/; u>3/; u>2)", //
+        "f[3]");
+    check("f[4]/.(f[u_]:>u^2/; u>3/; u>2)", //
+        "16");
+    check("f[x]/.(f[u_]->u^2/; u>3/; u>2)", //
+        "x^2/;x>3/;x>2");
+    // TODO 3^2 -> 9 - but why? Condition has attribute HoldAll
+    check("f[3]/.(f[u_]->u^2/; u>3/; u>2)", //
+        "3^2/;3>3/;3>2");
+    // TODO 4^2 -> 16 but why? Condition has attribute HoldAll
+    check("f[4]/.(f[u_]->u^2/; u>3/; u>2)", //
+        "4^2/;4>3/;4>2");
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {

@@ -2761,10 +2761,7 @@ public final class PatternMatching {
           extractRules(temp, result);
           return result;
         }
-        if (temp.isList()) {
-          return (IAST) temp;
-        }
-        return F.list(temp);
+        return temp.orNewList();
       }
     }
     return F.CEmptyList;

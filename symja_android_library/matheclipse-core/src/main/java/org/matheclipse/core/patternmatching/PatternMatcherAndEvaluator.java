@@ -250,6 +250,18 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     }
 
     if (fReturnResult.isPresent()) {
+      if (isFlagOn(IPatternMatcher.SET_DELAYED)) {
+        boolean oldEvalRHSMode = engine.isEvalRHSMode();
+        try {
+          engine.setEvalRHSMode(true);
+          IExpr temp = engine.evaluate(fReturnResult);
+          return temp;
+        } catch (ConditionException cex) {
+          return F.NIL;
+        } finally {
+          engine.setEvalRHSMode(oldEvalRHSMode);
+        }
+      }
       return fReturnResult;
     }
 
