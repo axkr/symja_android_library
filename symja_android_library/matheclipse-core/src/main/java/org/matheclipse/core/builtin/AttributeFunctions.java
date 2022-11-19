@@ -153,24 +153,22 @@ public class AttributeFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
-      if (ast.arg1().isList()) {
-        IAST list = (IAST) ast.arg1();
-        IExpr arg2 = engine.evaluate(ast.arg2());
-        for (int i = 1; i < list.size(); i++) {
-          IExpr temp = clearAttributes(list.get(i), arg2, ast, engine);
-          if (temp.isNIL()) {
-            return F.NIL;
-          }
+      IAST list = ast.arg1().orNewList();
+      IExpr arg2 = engine.evaluate(ast.arg2());
+      for (int i = 1; i < list.size(); i++) {
+        IExpr temp = clearAttributes(list.get(i), arg2, ast, engine);
+        if (temp.isNIL()) {
+          return F.NIL;
         }
-        return S.Null;
       }
-      if (ast.arg1().isSymbol()) {
-        IExpr arg2 = engine.evaluate(ast.arg2());
-        final ISymbol sym = ((ISymbol) ast.arg1());
-        return clearAttributes(sym, arg2, ast, engine);
-      }
-      return F.NIL;
+      return S.Null;
+
+      // if (ast.arg1().isSymbol()) {
+      // IExpr arg2 = engine.evaluate(ast.arg2());
+      // final ISymbol sym = ((ISymbol) ast.arg1());
+      // return clearAttributes(sym, arg2, ast, engine);
+      // }
+      // return F.NIL;
     }
 
     @Override
@@ -213,10 +211,14 @@ public class AttributeFunctions {
           final IAST lst = (IAST) attributes;
           // lst.forEach(x -> clearAttributes(sym, (ISymbol) x));
           for (int i = 1; i < lst.size(); i++) {
+            if (!lst.get(i).isSymbol()) {
+              continue;
+            }
             ISymbol attribute = (ISymbol) lst.get(i);
             if (!clearAttributes(sym, attribute)) {
               // `1` is not a known attribute.
-              IOFunctions.printMessage(S.ClearAttributes, "attnf", F.List(attribute), engine);
+              return IOFunctions.printMessage(S.ClearAttributes, "attnf", F.List(attribute),
+                  engine);
             }
           }
           return S.Null;
@@ -389,14 +391,13 @@ public class AttributeFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
-        IAST list = (IAST) ast.arg1();
-        return setSymbolsAttributes(list, ast.arg2(), ast, engine);
-      }
-      IExpr arg1 = ast.arg1();
-      IExpr arg2 = engine.evaluate(ast.arg2());
-      final ISymbol sym = ((ISymbol) ast.arg1());
-      return addAttributes(arg1, arg2, ast, engine);
+      IAST list = ast.arg1().orNewList();
+      return setSymbolsAttributes(list, ast.arg2(), ast, engine);
+
+      // IExpr arg1 = ast.arg1();
+      // IExpr arg2 = engine.evaluate(ast.arg2());
+      // final ISymbol sym = ((ISymbol) ast.arg1());
+      // return addAttributes(arg1, arg2, ast, engine);
     }
 
     @Override
@@ -410,9 +411,16 @@ public class AttributeFunctions {
       for (int i = 1; i < listOfSymbols.size(); i++) {
         final IExpr arg = listOfSymbols.get(i);
         if (arg.isSymbol()) {
+          if (((ISymbol) arg).isProtected()) {
+            IOFunctions.printMessage(S.ClearAttributes, "write", F.list(arg), EvalEngine.get());
+            throw new FailedException();
+          }
           if (addAttributes(arg, attributes, ast, engine).isNIL()) {
             return F.NIL;
           }
+        } else {
+          // Argument `1` at position `2` is expected to be a symbol.
+          return IOFunctions.printMessage(S.SetAttributes, "sym", F.List(arg, F.ZZ(i)), engine);
         }
       }
       return S.Null;
@@ -532,8 +540,77 @@ public class AttributeFunctions {
     }
   }
 
+  public static int getSymbolsAsAttributes(IAST listOfSymbols, EvalEngine engine) {
+    int attributes = ISymbol.NOATTRIBUTE;
+    for (int i = 1; i < listOfSymbols.size(); i++) {
+      final IExpr arg = listOfSymbols.get(i);
+      if (arg.isBuiltInSymbol()) {
+        int functionID = ((IBuiltInSymbol) arg).ordinal();
+        if (functionID > ID.UNKNOWN) {
+          switch (functionID) {
+            case ID.Constant:
+              attributes |= ISymbol.CONSTANT;
+              break;
+            case ID.Flat:
+              attributes |= ISymbol.FLAT;
+              break;
+            case ID.Listable:
+              attributes |= ISymbol.LISTABLE;
+              break;
+            case ID.Locked:
+              attributes |= ISymbol.LOCKED;
+              break;
+            case ID.OneIdentity:
+              attributes |= ISymbol.ONEIDENTITY;
+              break;
+            case ID.Orderless:
+              attributes |= ISymbol.ORDERLESS;
+              break;
+            case ID.HoldAll:
+              attributes |= ISymbol.HOLDALL;
+              break;
+            case ID.HoldAllComplete:
+              attributes |= ISymbol.HOLDALLCOMPLETE;
+              break;
+            case ID.HoldComplete:
+              attributes |= ISymbol.HOLDCOMPLETE;
+              break;
+            case ID.HoldFirst:
+              attributes |= ISymbol.HOLDFIRST;
+              break;
+            case ID.HoldRest:
+              attributes |= ISymbol.HOLDREST;
+              break;
+            case ID.NHoldAll:
+              attributes |= ISymbol.NHOLDALL;
+              break;
+            case ID.NHoldFirst:
+              attributes |= ISymbol.NHOLDFIRST;
+              break;
+            case ID.NHoldRest:
+              attributes |= ISymbol.NHOLDREST;
+              break;
+            case ID.NumericFunction:
+              attributes |= ISymbol.NUMERICFUNCTION;
+              break;
+            case ID.Protected:
+              attributes |= ISymbol.PROTECTED;
+              break;
+            case ID.ReadProtected:
+              attributes |= ISymbol.READPROTECTED;
+              break;
+            case ID.SequenceHold:
+              attributes |= ISymbol.SEQUENCEHOLD;
+              break;
+          }
+        }
+      }
+    }
+    return attributes;
+  }
+
   /**
-   * Get the attrbutes of this <code>expr</code> as symbolic constants in a list.
+   * Get the attributes of this <code>expr</code> as symbolic constants in a list.
    *
    * @param expr
    * @param ast
