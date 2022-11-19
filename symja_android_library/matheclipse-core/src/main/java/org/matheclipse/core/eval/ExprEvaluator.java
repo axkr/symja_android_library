@@ -28,6 +28,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.SyntaxError;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 
@@ -499,12 +500,12 @@ public class ExprEvaluator {
       try {
         fExpr = fEngine.parse(inputExpression);
         if (fExpr != null) {
-          final ExecutorService executor = Executors.newSingleThreadExecutor();
+          final ExecutorService executorService = Executors.newSingleThreadExecutor();
           EvalControlledCallable work = call == null ? new EvalControlledCallable(fEngine) : call;
           work.setExpr(fExpr);
           try {
             F.await();
-            TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor);
+            TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService);
             return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);
           } catch (org.matheclipse.core.eval.exception.TimeoutException
               | java.util.concurrent.TimeoutException
@@ -516,20 +517,7 @@ public class ExprEvaluator {
             return S.Null;
           } finally {
             work.cancel();
-            executor.shutdown(); // Disable new tasks from being submitted
-            try {
-              // Wait a while for existing tasks to terminate
-              if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                executor.shutdownNow(); // Cancel currently executing tasks
-                // Wait a while for tasks to respond to being cancelled
-                if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
-                  LOGGER.log(fEngine.getLogLevel(), "ExprEvaluator: pool did not terminate");
-                }
-              }
-            } catch (InterruptedException ie) {
-              // (Re-)Cancel if current thread also interrupted
-              executor.shutdownNow();
-            }
+            MoreExecutors.shutdownAndAwaitTermination(executorService, 1, TimeUnit.SECONDS);
           }
         }
       } finally {
