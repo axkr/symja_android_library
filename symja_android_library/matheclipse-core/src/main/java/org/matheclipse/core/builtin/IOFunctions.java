@@ -658,6 +658,7 @@ public class IOFunctions {
       "patop", "Pattern `1` contains inappropriate optional object.", //
       "patvar", "First element in `1` is not a valid pattern name.", //
       "perm", "`1` is not a valid permutation.", //
+      "perm2", "Entry `1` in `2` is out of bounds for a permutation of length `3`.", //
       "permlist", "Invalid permutation list `1`.", //
       "pilist",
       "The arguments to `1` must be two lists of integers of identical length, with the second list only containing positive integers.", //

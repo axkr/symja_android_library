@@ -9224,6 +9224,10 @@ public class F extends S {
     return new AST1(TeXForm, expr);
   }
 
+  public static IAST Text(final IExpr expr, IExpr coords) {
+    return new AST2(Text, expr, coords);
+  }
+
   /**
    * Create a function <code>head(arg1, arg2, arg3)</code> with 3 argument as an <code>AST3</code>
    * mutable object without evaluation.

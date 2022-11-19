@@ -10,7 +10,8 @@ public interface IStringX extends IExpr {
   public static final short APPLICATION_SYMJA = 5;
   public static final short APPLICATION_JAVA = 6;
   public static final short APPLICATION_JAVASCRIPT = 7;
-  // public static final String TEXT_MARKDOWN = "text/markdown";
+
+  public static final short TEXT_JSON = 8;
 
   /**
    * Test if this string equals the given character sequence.

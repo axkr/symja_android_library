@@ -190,24 +190,42 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 3,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"Sin\",\n"
-            + "        \"sinput\" : \"Sin\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Plot\",\n" + "      \"scanner\" : \"Plotter\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"Manipulate(Plot(Sin(a*x),{x,-10.0`,10.0`},PlotRange-&gt;{-2.0`,2.0`}),{a,1,10})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-11.55,2.75,11.55,-2.75]});\\nboard.suspendUpdate();\\nvar a = board.create('slider',[[-9.24,2.2],[9.24,2.2],[1,1,10]],{name:'a'});\\n\\nfunction $f1(x) { try { return [sin(mul(a.Value(),x))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -10.0, 10.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-11.55,2.75,11.55,-2.75]});\\nboard.suspendUpdate();\\nvar a = board.create('slider',[[-9.24,2.2],[9.24,2.2],[1,1,10]],{name:'a'});\\n\\nfunction $f1(x) { try { return [sin(mul(a.Value(),x))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -10.0, 10.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Documentation\",\n"
-            + "      \"scanner\" : \"help\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"markdown\" : \"## Sin\\n\\n```\\nSin(expr)\\n```\\n\\n> returns the sine of `expr` (measured in radians).\\n \\n`Sin(expr)` will evaluate automatically in the case `expr` is a multiple of `Pi, Pi/2, Pi/3, Pi/4` and `Pi/6`.\\n\\nSee\\n* [Wikipedia - Sine](https://en.wikipedia.org/wiki/Sine)\\n* [Fungrim - Sine](http://fungrim.org/topic/Sine/)\\n* [Wikipedia - Radian](https://en.wikipedia.org/wiki/Radian)\\n* [Wikipedia - Degree](https://en.wikipedia.org/wiki/Degree_(angle))\\n\\n### Examples\\n\\n```\\n>> Sin(0)\\n0\\n\\n>> Sin(0.5)\\n0.479425538604203\\n\\n>> Sin(3*Pi)\\n0\\n\\n>> Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n```\\n \\n\\n### Github\\n\\n* [Implementation of Sin](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2730) \\n[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2861)\\n\\n\",\n"
-            + "        \"html\" : \"<h2>Sin</h2>\\n<pre><code>Sin(expr)\\n</code></pre>\\n<blockquote>\\n<p>returns the sine of <code>expr</code> (measured in radians).</p>\\n</blockquote>\\n<p><code>Sin(expr)</code> will evaluate automatically in the case <code>expr</code> is a multiple of <code>Pi, Pi/2, Pi/3, Pi/4</code> and <code>Pi/6</code>.</p>\\n<p>See</p>\\n<ul>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Sine\\\">Wikipedia - Sine</a></li>\\n<li><a href=\\\"http://fungrim.org/topic/Sine/\\\">Fungrim - Sine</a></li>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Radian\\\">Wikipedia - Radian</a></li>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Degree_(angle)\\\">Wikipedia - Degree</a></li>\\n</ul>\\n<h3>Examples</h3>\\n<pre><code>&gt;&gt; Sin(0)\\n0\\n\\n&gt;&gt; Sin(0.5)\\n0.479425538604203\\n\\n&gt;&gt; Sin(3*Pi)\\n0\\n\\n&gt;&gt; Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n</code></pre>\\n<h3>Github</h3>\\n<ul>\\n<li><a href=\\\"https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2730\\\">Implementation of Sin</a>\\n<a href=\\\"https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2861\\\">Github master</a></li>\\n</ul>\\n\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 3,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"Sin\",\n" //
+            + "        \"sinput\" : \"Sin\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Plot\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"Manipulate(Plot(Sin(a*x),{x,-10.0`,10.0`},PlotRange-&gt;{-2.0`,2.0`}),{a,1,10})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-11.55,2.75,11.55,-2.75]});\\nboard.suspendUpdate();\\nvar a = board.create('slider',[[-9.24,2.2],[9.24,2.2],[1,1,10]],{name:'a'});\\n\\nfunction $f1(x) { try { return [sin(mul(a.Value(),x))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -10.0, 10.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-11.55,2.75,11.55,-2.75]});\\nboard.suspendUpdate();\\nvar a = board.create('slider',[[-9.24,2.2],[9.24,2.2],[1,1,10]],{name:'a'});\\n\\nfunction $f1(x) { try { return [sin(mul(a.Value(),x))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -10.0, 10.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Documentation\",\n" //
+            + "      \"scanner\" : \"help\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"markdown\" : \"## Sin\\n\\n```\\nSin(expr)\\n```\\n\\n> returns the sine of `expr` (measured in radians).\\n \\n`Sin(expr)` will evaluate automatically in the case `expr` is a multiple of `Pi, Pi/2, Pi/3, Pi/4` and `Pi/6`.\\n\\nSee\\n* [Wikipedia - Sine](https://en.wikipedia.org/wiki/Sine)\\n* [Fungrim - Sine](http://fungrim.org/topic/Sine/)\\n* [Wikipedia - Radian](https://en.wikipedia.org/wiki/Radian)\\n* [Wikipedia - Degree](https://en.wikipedia.org/wiki/Degree_(angle))\\n\\n### Examples\\n\\n```\\n>> Sin(0)\\n0\\n\\n>> Sin(0.5)\\n0.479425538604203\\n\\n>> Sin(3*Pi)\\n0\\n\\n>> Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n```\\n \\n\\n### Github\\n\\n* [Implementation of Sin](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2730) \\n[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2861)\\n\\n\",\n" //
+            + "        \"html\" : \"<h2>Sin</h2>\\n<pre><code>Sin(expr)\\n</code></pre>\\n<blockquote>\\n<p>returns the sine of <code>expr</code> (measured in radians).</p>\\n</blockquote>\\n<p><code>Sin(expr)</code> will evaluate automatically in the case <code>expr</code> is a multiple of <code>Pi, Pi/2, Pi/3, Pi/4</code> and <code>Pi/6</code>.</p>\\n<p>See</p>\\n<ul>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Sine\\\">Wikipedia - Sine</a></li>\\n<li><a href=\\\"http://fungrim.org/topic/Sine/\\\">Fungrim - Sine</a></li>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Radian\\\">Wikipedia - Radian</a></li>\\n<li><a href=\\\"https://en.wikipedia.org/wiki/Degree_(angle)\\\">Wikipedia - Degree</a></li>\\n</ul>\\n<h3>Examples</h3>\\n<pre><code>&gt;&gt; Sin(0)\\n0\\n\\n&gt;&gt; Sin(0.5)\\n0.479425538604203\\n\\n&gt;&gt; Sin(3*Pi)\\n0\\n\\n&gt;&gt; Sin(1.0 + I)\\n1.2984575814159773+I*0.6349639147847361\\n</code></pre>\\n<h3>Github</h3>\\n<ul>\\n<li><a href=\\\"https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2730\\\">Implementation of Sin</a>\\n<a href=\\\"https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2861\\\">Github master</a></li>\\n</ul>\\n\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}"); //
   }
 
   @Test
@@ -583,20 +601,34 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"Plot(Sin(x),{x,0,6*Pi})\",\n"
-            + "        \"sinput\" : \"Plot(Sin(x),{x,0,6*Pi})\",\n"
-            + "        \"latex\" : \"\\\\text{Plot}(\\\\sin (x),\\\\{x,0,6\\\\cdot \\\\pi\\\\})\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Function\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"Plot(Sin(x),{x,0,6*Pi})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.492477796076938,1.65,20.342033717615696,-1.65]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [sin(x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, 0, (18.84955592153876)],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.492477796076938,1.65,20.342033717615696,-1.65]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [sin(x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, 0, (18.84955592153876)],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 2,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"Plot(Sin(x),{x,0,6*Pi})\",\n" //
+            + "        \"sinput\" : \"Plot(Sin(x),{x,0,6*Pi})\",\n" //
+            + "        \"latex\" : \"\\\\text{Plot}(\\\\sin (x),\\\\{x,0,6\\\\cdot \\\\pi\\\\})\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Function\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"Plot(Sin(x),{x,0,6*Pi})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.492477796076938,1.65,20.342033717615696,-1.65]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [sin(x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, 0, (18.84955592153876)],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.492477796076938,1.65,20.342033717615696,-1.65]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [sin(x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, 0, (18.84955592153876)],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}"); //
   }
 
   @Test
@@ -660,21 +692,34 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"Plot(Evaluate(Table(BesselJ(n,x),{n,4})),{x,0,10})\",\n"
-            + "        \"sinput\" : \"Plot(Evaluate(Table(BesselJ(n,x),{n,4})),{x,0,10})\",\n"
-            + "        \"latex\" : \"\\\\text{Plot}(\\\\text{Evaluate}(\\\\text{Table}(J_n(x),\\\\{n,4\\\\})),\\\\{x,0,10\\\\})\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Function\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"Plot(Evaluate(Table(BesselJ(n,x),{n,4})),{x,0,10})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.05,1.1778908410078661,11.05,-0.9423347230773148]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [besselJ(1,x)];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [besselJ(2,x)];} catch(e) { return Number.NaN;} }\\nfunction $f3(x) { try { return [besselJ(3,x)];} catch(e) { return Number.NaN;} }\\nfunction $f4(x) { try { return [besselJ(4,x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, 0, 10],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, 0, 10],{strokecolor:'#e19c24'});\\nboard.create('functiongraph',[$f3, 0, 10],{strokecolor:'#8fb032'});\\nboard.create('functiongraph',[$f4, 0, 10],{strokecolor:'#eb6235'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.05,1.1778908410078661,11.05,-0.9423347230773148]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [besselJ(1,x)];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [besselJ(2,x)];} catch(e) { return Number.NaN;} }\\nfunction $f3(x) { try { return [besselJ(3,x)];} catch(e) { return Number.NaN;} }\\nfunction $f4(x) { try { return [besselJ(4,x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, 0, 10],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, 0, 10],{strokecolor:'#e19c24'});\\nboard.create('functiongraph',[$f3, 0, 10],{strokecolor:'#8fb032'});\\nboard.create('functiongraph',[$f4, 0, 10],{strokecolor:'#eb6235'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 2,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"Plot(Evaluate(Table(BesselJ(n,x),{n,4})),{x,0,10})\",\n" //
+            + "        \"sinput\" : \"Plot(Evaluate(Table(BesselJ(n,x),{n,4})),{x,0,10})\",\n" //
+            + "        \"latex\" : \"\\\\text{Plot}(\\\\text{Evaluate}(\\\\text{Table}(J_n(x),\\\\{n,4\\\\})),\\\\{x,0,10\\\\})\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Function\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"Plot(Evaluate(Table(BesselJ(n,x),{n,4})),{x,0,10})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.05,1.1778908410078661,11.05,-0.9423347230773148]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [besselJ(1,x)];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [besselJ(2,x)];} catch(e) { return Number.NaN;} }\\nfunction $f3(x) { try { return [besselJ(3,x)];} catch(e) { return Number.NaN;} }\\nfunction $f4(x) { try { return [besselJ(4,x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, 0, 10],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, 0, 10],{strokecolor:'#e19c24'});\\nboard.create('functiongraph',[$f3, 0, 10],{strokecolor:'#8fb032'});\\nboard.create('functiongraph',[$f4, 0, 10],{strokecolor:'#eb6235'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-1.05,1.1778908410078661,11.05,-0.9423347230773148]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [besselJ(1,x)];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [besselJ(2,x)];} catch(e) { return Number.NaN;} }\\nfunction $f3(x) { try { return [besselJ(3,x)];} catch(e) { return Number.NaN;} }\\nfunction $f4(x) { try { return [besselJ(4,x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, 0, 10],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, 0, 10],{strokecolor:'#e19c24'});\\nboard.create('functiongraph',[$f3, 0, 10],{strokecolor:'#8fb032'});\\nboard.create('functiongraph',[$f4, 0, 10],{strokecolor:'#eb6235'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}"); //
   }
 
   @Test
@@ -686,34 +731,63 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 5,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"Sin(x)\",\n"
-            + "        \"sinput\" : \"Sin(x)\",\n" + "        \"latex\" : \"\\\\sin (x)\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Function\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"Plot(Sin(x),{x,-7.0`,7.0`})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,1.6494784136660268,8.25,-1.6494784136660272]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [sin(x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,1.6494784136660268,8.25,-1.6494784136660272]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [sin(x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Alternate form\",\n"
-            + "      \"scanner\" : \"Simplification\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"(I*1/2)/E^(I*x)-I*1/2*E^(I*x)\",\n"
-            + "        \"sinput\" : \"TrigToExp(Sin(x))\",\n"
-            + "        \"latex\" : \"\\\\frac{\\\\frac{1}{2}\\\\,i }{{e}^{i \\\\cdot x}} + \\\\left( \\\\frac{-1}{2}\\\\,i \\\\right) \\\\cdot {e}^{i \\\\cdot x}\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Derivative\",\n"
-            + "      \"scanner\" : \"Derivative\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"Cos(x)\",\n" + "        \"sinput\" : \"D(Sin(x),x)\",\n"
-            + "        \"latex\" : \"\\\\cos (x)\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Indefinite integral\",\n" + "      \"scanner\" : \"Integral\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"-Cos(x)\",\n"
-            + "        \"sinput\" : \"Integrate(Sin(x),x)\",\n"
-            + "        \"latex\" : \" - \\\\cos (x)\"\n" + "      } ]\n" + "    } ]\n" + "  }\n"
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 5,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"Sin(x)\",\n" //
+            + "        \"sinput\" : \"Sin(x)\",\n" //
+            + "        \"latex\" : \"\\\\sin (x)\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Function\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"Plot(Sin(x),{x,-7.0`,7.0`})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,1.6494784136660268,8.25,-1.6494784136660272]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [sin(x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,1.6494784136660268,8.25,-1.6494784136660272]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [sin(x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Alternate form\",\n" //
+            + "      \"scanner\" : \"Simplification\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"(I*1/2)/E^(I*x)-I*1/2*E^(I*x)\",\n" //
+            + "        \"sinput\" : \"TrigToExp(Sin(x))\",\n" //
+            + "        \"latex\" : \"\\\\frac{\\\\frac{1}{2}\\\\,i }{{e}^{i \\\\cdot x}} + \\\\left( \\\\frac{-1}{2}\\\\,i \\\\right) \\\\cdot {e}^{i \\\\cdot x}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Derivative\",\n" //
+            + "      \"scanner\" : \"Derivative\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"Cos(x)\",\n" //
+            + "        \"sinput\" : \"D(Sin(x),x)\",\n" //
+            + "        \"latex\" : \"\\\\cos (x)\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Indefinite integral\",\n" //
+            + "      \"scanner\" : \"Integral\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"-Cos(x)\",\n" //
+            + "        \"sinput\" : \"Integrate(Sin(x),x)\",\n" //
+            + "        \"latex\" : \" - \\\\cos (x)\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
             + "}"); //
   }
 
@@ -726,37 +800,64 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 5,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"{-4+x^2,-2+x}\",\n"
-            + "        \"sinput\" : \"{-4 + x^2,-2 + x}\",\n"
-            + "        \"latex\" : \"\\\\{-4+{x}^{2},-2+x\\\\}\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Polynomial quotient and remainder\",\n"
-            + "      \"scanner\" : \"Polynomial\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{2+x,0}\",\n"
-            + "        \"sinput\" : \"PolynomialQuotientRemainder(-4 + x^2,-2 + x,x)\",\n"
-            + "        \"latex\" : \"\\\\{2+x,0\\\\}\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Function\",\n" + "      \"scanner\" : \"Plotter\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"Plot({-4 + x^2,-2 + x},{x,-7.0`,7.0`})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,48.25,8.25,-12.25]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [add(-4,pow(x,2))];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [add(-2,x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -7.0, 7.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,48.25,8.25,-12.25]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [add(-4,pow(x,2))];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [add(-2,x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -7.0, 7.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Derivative\",\n"
-            + "      \"scanner\" : \"Derivative\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{2*x,1}\",\n"
-            + "        \"sinput\" : \"D({-4 + x^2,-2 + x},x)\",\n"
-            + "        \"latex\" : \"\\\\{2\\\\cdot x,1\\\\}\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Indefinite integral\",\n" + "      \"scanner\" : \"Integral\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"{-4*x+x^3/3,-2*x+x^2/2}\",\n"
-            + "        \"sinput\" : \"Integrate({-4 + x^2,-2 + x},x)\",\n"
-            + "        \"latex\" : \"\\\\{\\\\left( -4\\\\right) \\\\cdot x+\\\\frac{{x}^{3}}{3},\\\\left( -2\\\\right) \\\\cdot x+\\\\frac{{x}^{2}}{2}\\\\}\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 5,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{-4+x^2,-2+x}\",\n" //
+            + "        \"sinput\" : \"{-4 + x^2,-2 + x}\",\n" //
+            + "        \"latex\" : \"\\\\{-4+{x}^{2},-2+x\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Polynomial quotient and remainder\",\n" //
+            + "      \"scanner\" : \"Polynomial\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{2+x,0}\",\n" //
+            + "        \"sinput\" : \"PolynomialQuotientRemainder(-4 + x^2,-2 + x,x)\",\n" //
+            + "        \"latex\" : \"\\\\{2+x,0\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Function\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"Plot({-4 + x^2,-2 + x},{x,-7.0`,7.0`})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,48.25,8.25,-12.25]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [add(-4,pow(x,2))];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [add(-2,x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -7.0, 7.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,48.25,8.25,-12.25]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [add(-4,pow(x,2))];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [add(-2,x)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -7.0, 7.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Derivative\",\n" //
+            + "      \"scanner\" : \"Derivative\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{2*x,1}\",\n" //
+            + "        \"sinput\" : \"D({-4 + x^2,-2 + x},x)\",\n" //
+            + "        \"latex\" : \"\\\\{2\\\\cdot x,1\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Indefinite integral\",\n" //
+            + "      \"scanner\" : \"Integral\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{-4*x+x^3/3,-2*x+x^2/2}\",\n" //
+            + "        \"sinput\" : \"Integrate({-4 + x^2,-2 + x},x)\",\n" //
+            + "        \"latex\" : \"\\\\{\\\\left( -4\\\\right) \\\\cdot x+\\\\frac{{x}^{3}}{3},\\\\left( -2\\\\right) \\\\cdot x+\\\\frac{{x}^{2}}{2}\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+        + "}"); //
   }
 
   @Test
@@ -863,34 +964,60 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 5,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"{1,2,3}\",\n"
-            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow></math>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Total\",\n"
-            + "      \"scanner\" : \"List\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"6\",\n"
-            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>6</mn></math>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Vector length\",\n"
-            + "      \"scanner\" : \"List\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"3.74166\",\n"
-            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>3.74166</mn></math>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Normalized vector\",\n"
-            + "      \"scanner\" : \"List\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{1/Sqrt(14),Sqrt(2/7),3/Sqrt(14)}\",\n"
-            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mfrac><mn>1</mn><msqrt><mn>14</mn></msqrt></mfrac><mo>,</mo><msqrt><mrow><mfrac><mn>2</mn><mn>7</mn></mfrac></mrow></msqrt><mo>,</mo><mfrac><mn>3</mn><msqrt><mn>14</mn></msqrt></mfrac></mrow><mo>}</mo></mrow></math>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Plot points\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"ListPlot({1.0,2.0,3.0})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.75,3.65,4.75,0.35]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.75,3.65,4.75,0.35]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 5,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{1,2,3}\",\n" //
+            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mn>1</mn><mo>,</mo><mn>2</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow></math>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Total\",\n" //
+            + "      \"scanner\" : \"List\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"6\",\n" //
+            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>6</mn></math>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Vector length\",\n" //
+            + "      \"scanner\" : \"List\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"3.74166\",\n" //
+            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mn>3.74166</mn></math>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Normalized vector\",\n" //
+            + "      \"scanner\" : \"List\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{1/Sqrt(14),Sqrt(2/7),3/Sqrt(14)}\",\n" //
+            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mo>{</mo><mrow><mfrac><mn>1</mn><msqrt><mn>14</mn></msqrt></mfrac><mo>,</mo><msqrt><mrow><mfrac><mn>2</mn><mn>7</mn></mfrac></mrow></msqrt><mo>,</mo><mfrac><mn>3</mn><msqrt><mn>14</mn></msqrt></mfrac></mrow><mo>}</mo></mrow></math>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Plot points\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"ListPlot({1.0,2.0,3.0})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.75,3.65,4.75,0.35]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.75,3.65,4.75,0.35]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+        + "}"); //
   }
 
   @Test
@@ -931,36 +1058,62 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 5,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"{{1,3},{3,4}}\",\n"
-            + "        \"sinput\" : \"{{1,3},{3,4}}\",\n"
-            + "        \"latex\" : \"\\\\{\\\\{1,3\\\\},\\\\{3,4\\\\}\\\\}\"\n" + "      } ]\n"
-            + "    }, {\n" + "      \"title\" : \"Properties\",\n"
-            + "      \"scanner\" : \"Matrix\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"The matrix is symmetric.\",\n"
-            + "        \"sinput\" : \"SymmetricMatrixQ({{1,3}, {3,4}})\"\n" + "      } ]\n"
-            + "    }, {\n" + "      \"title\" : \"Properties\",\n"
-            + "      \"scanner\" : \"Matrix\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"The determinant of the matrix is -5\",\n"
-            + "        \"sinput\" : \"Det({{1,3}, {3,4}})\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Inverse of matrix\",\n" + "      \"scanner\" : \"Matrix\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{{-4/5,3/5},\\n {3/5,-1/5}}\",\n"
-            + "        \"sinput\" : \"Inverse({{1,3}, {3,4}})\",\n"
-            + "        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cc}\\n\\\\frac{-4}{5} & \\\\frac{3}{5} \\\\\\\\\\n\\\\frac{3}{5} & \\\\frac{-1}{5} \\\\\\n\\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Plot points\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"ListPlot({{1.0,3.0},\\n {3.0,4.0}})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[0.35,4.6,3.65,2.4]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1.0;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3.0;},function() {return 4.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[0.35,4.6,3.65,2.4]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1.0;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3.0;},function() {return 4.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 5,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{{1,3},{3,4}}\",\n" //
+            + "        \"sinput\" : \"{{1,3},{3,4}}\",\n" //
+            + "        \"latex\" : \"\\\\{\\\\{1,3\\\\},\\\\{3,4\\\\}\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Properties\",\n" //
+            + "      \"scanner\" : \"Matrix\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"The matrix is symmetric.\",\n" //
+            + "        \"sinput\" : \"SymmetricMatrixQ({{1,3}, {3,4}})\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Properties\",\n" //
+            + "      \"scanner\" : \"Matrix\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"The determinant of the matrix is -5\",\n" //
+            + "        \"sinput\" : \"Det({{1,3}, {3,4}})\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Inverse of matrix\",\n" //
+            + "      \"scanner\" : \"Matrix\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{{-4/5,3/5},\\n {3/5,-1/5}}\",\n" //
+            + "        \"sinput\" : \"Inverse({{1,3}, {3,4}})\",\n" //
+            + "        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cc}\\n\\\\frac{-4}{5} & \\\\frac{3}{5} \\\\\\\\\\n\\\\frac{3}{5} & \\\\frac{-1}{5} \\\\\\n\\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Plot points\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"ListPlot({{1.0,3.0},\\n {3.0,4.0}})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[0.35,4.6,3.65,2.4]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1.0;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3.0;},function() {return 4.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[0.35,4.6,3.65,2.4]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1.0;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3.0;},function() {return 4.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}"); //
   }
 
   @Test
@@ -969,30 +1122,54 @@ public class TestPods {
     ObjectNode messageJSON = TestPods.createJUnitResult("3+x=10", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 4,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"3+x==10\",\n"
-            + "        \"sinput\" : \"3 + x==10\",\n" + "        \"latex\" : \"3+x == 10\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Function\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"Plot({x,7},{x,-20.0`,20.0`})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-22.55,22.54999999999999,22.55,-22.55]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [x];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [7];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -20.0, 20.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -20.0, 20.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-22.55,22.54999999999999,22.55,-22.55]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [x];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [7];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -20.0, 20.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -20.0, 20.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Alternate form\",\n"
-            + "      \"scanner\" : \"Simplification\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"-7+x==0\",\n" + "        \"sinput\" : \"-7 + x==0\",\n"
-            + "        \"latex\" : \"-7+x == 0\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Solution\",\n" + "      \"scanner\" : \"Reduce\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"{{x-&gt;7}}\",\n"
-            + "        \"sinput\" : \"Solve(x==7,{x})\",\n"
-            + "        \"latex\" : \"\\\\{\\\\{x\\\\to 7\\\\}\\\\}\"\n" + "      } ]\n"
-            + "    } ]\n" + "  }\n" + "}"); //
+    assertEquals(jsonStr, "{\n" //
+        + "  \"queryresult\" : {\n" //
+        + "    \"success\" : \"true\",\n" //
+        + "    \"error\" : \"false\",\n" //
+        + "    \"numpods\" : 4,\n" //
+        + "    \"version\" : \"0.1\",\n" //
+        + "    \"pods\" : [ {\n" //
+        + "      \"title\" : \"Input\",\n" //
+        + "      \"scanner\" : \"Identity\",\n" //
+        + "      \"error\" : \"false\",\n" //
+        + "      \"numsubpods\" : 1,\n" //
+        + "      \"subpods\" : [ {\n" //
+        + "        \"plaintext\" : \"3+x==10\",\n" //
+        + "        \"sinput\" : \"3 + x==10\",\n" //
+        + "        \"latex\" : \"3+x == 10\"\n" //
+        + "      } ]\n" //
+        + "    }, {\n" //
+        + "      \"title\" : \"Function\",\n" //
+        + "      \"scanner\" : \"Plotter\",\n" //
+        + "      \"error\" : \"false\",\n" //
+        + "      \"numsubpods\" : 1,\n" //
+        + "      \"subpods\" : [ {\n" //
+        + "        \"sinput\" : \"Plot({x,7},{x,-20.0`,20.0`})\",\n" //
+        + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-22.55,22.54999999999999,22.55,-22.55]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [x];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [7];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -20.0, 20.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -20.0, 20.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-22.55,22.54999999999999,22.55,-22.55]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [x];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [7];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -20.0, 20.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -20.0, 20.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+        + "      } ]\n" //
+        + "    }, {\n" //
+        + "      \"title\" : \"Alternate form\",\n" //
+        + "      \"scanner\" : \"Simplification\",\n" //
+        + "      \"error\" : \"false\",\n" //
+        + "      \"numsubpods\" : 1,\n" //
+        + "      \"subpods\" : [ {\n" //
+        + "        \"plaintext\" : \"-7+x==0\",\n" //
+        + "        \"sinput\" : \"-7 + x==0\",\n" //
+        + "        \"latex\" : \"-7+x == 0\"\n" //
+        + "      } ]\n" //
+        + "    }, {\n" //
+        + "      \"title\" : \"Solution\",\n" //
+        + "      \"scanner\" : \"Reduce\",\n" //
+        + "      \"error\" : \"false\",\n" //
+        + "      \"numsubpods\" : 1,\n" //
+        + "      \"subpods\" : [ {\n" //
+        + "        \"plaintext\" : \"{{x-&gt;7}}\",\n" //
+        + "        \"sinput\" : \"Solve(x==7,{x})\",\n" //
+        + "        \"latex\" : \"\\\\{\\\\{x\\\\to 7\\\\}\\\\}\"\n" //
+        + "      } ]\n" //
+        + "    } ]\n" //
+        + "  }\n" //
+        + "}"); //
   }
 
   @Test
@@ -1002,29 +1179,54 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 4,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"1+x^2==0\",\n"
-            + "        \"sinput\" : \"1 + x^2==0\",\n" + "        \"latex\" : \"1+{x}^{2} == 0\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Function\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"Plot({x^2,-1},{x,-20.0`,20.0`})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-22.55,407.8972000000001,22.55,-39.25720000000001]});\\nboard.suspendUpdate();\\n\\nfunction $f3(x) { try { return [pow(x,2)];} catch(e) { return Number.NaN;} }\\nfunction $f4(x) { try { return [-1];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f3, -20.0, 20.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f4, -20.0, 20.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-22.55,407.8972000000001,22.55,-39.25720000000001]});\\nboard.suspendUpdate();\\n\\nfunction $f3(x) { try { return [pow(x,2)];} catch(e) { return Number.NaN;} }\\nfunction $f4(x) { try { return [-1];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f3, -20.0, 20.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f4, -20.0, 20.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Alternate form\",\n"
-            + "      \"scanner\" : \"Simplification\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"1+x^2==0\",\n" + "        \"sinput\" : \"1 + x^2==0\",\n"
-            + "        \"latex\" : \"1+{x}^{2} == 0\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Solution\",\n" + "      \"scanner\" : \"Reduce\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"{{x-&gt;-I},{x-&gt;I}}\",\n"
-            + "        \"sinput\" : \"Solve(x^2==-1,{x})\",\n"
-            + "        \"latex\" : \"\\\\{\\\\{x\\\\to  - i \\\\},\\\\{x\\\\to i \\\\}\\\\}\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 4,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"1+x^2==0\",\n" //
+            + "        \"sinput\" : \"1 + x^2==0\",\n" //
+            + "        \"latex\" : \"1+{x}^{2} == 0\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Function\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"Plot({x^2,-1},{x,-20.0`,20.0`})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-22.55,407.8972000000001,22.55,-39.25720000000001]});\\nboard.suspendUpdate();\\n\\nfunction $f3(x) { try { return [pow(x,2)];} catch(e) { return Number.NaN;} }\\nfunction $f4(x) { try { return [-1];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f3, -20.0, 20.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f4, -20.0, 20.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-22.55,407.8972000000001,22.55,-39.25720000000001]});\\nboard.suspendUpdate();\\n\\nfunction $f3(x) { try { return [pow(x,2)];} catch(e) { return Number.NaN;} }\\nfunction $f4(x) { try { return [-1];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f3, -20.0, 20.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f4, -20.0, 20.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Alternate form\",\n" //
+            + "      \"scanner\" : \"Simplification\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"1+x^2==0\",\n" //
+            + "        \"sinput\" : \"1 + x^2==0\",\n" //
+            + "        \"latex\" : \"1+{x}^{2} == 0\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Solution\",\n" //
+            + "      \"scanner\" : \"Reduce\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{{x-&gt;-I},{x-&gt;I}}\",\n" //
+            + "        \"sinput\" : \"Solve(x^2==-1,{x})\",\n" //
+            + "        \"latex\" : \"\\\\{\\\\{x\\\\to  - i \\\\},\\\\{x\\\\to i \\\\}\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}"); //
   }
 
   @Test
@@ -1432,55 +1634,93 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 8,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{3,Sin(1),Pi,3/4,42,1.2}\",\n"
-            + "        \"sinput\" : \"{3,Sin(1),Pi,3/4,42,1.2`}\",\n"
-            + "        \"latex\" : \"\\\\{3,\\\\sin (1),\\\\pi,\\\\frac{3}{4},42,1.2\\\\}\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Total\",\n"
-            + "      \"scanner\" : \"List\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"50.93306\",\n"
-            + "        \"sinput\" : \"Total({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\n"
-            + "        \"latex\" : \"50.93306\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Vector length\",\n" + "      \"scanner\" : \"List\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"42.25613\",\n"
-            + "        \"sinput\" : \"Norm({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\n"
-            + "        \"latex\" : \"42.25613\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Normalized vector\",\n" + "      \"scanner\" : \"List\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{0.0709956233478567,0.01991358569852382,0.07434644291555152,0.017748905836964174,0.9939387268699937,0.028398249339142676}\",\n"
-            + "        \"sinput\" : \"Normalize({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\n"
-            + "        \"latex\" : \"\\\\{0.0709956,0.0199136,0.0743464,0.0177489,0.993939,0.0283982\\\\}\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Plot points\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"ListPlot({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.9,44.6125,7.9,-1.8624999999999998]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 0.8414709848078965;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.141592653589793;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 0.75;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 42.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 6;},function() {return 1.2;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.9,44.6125,7.9,-1.8624999999999998]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 0.8414709848078965;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.141592653589793;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 0.75;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 42.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 6;},function() {return 1.2;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Five-number summary\",\n"
-            + "      \"scanner\" : \"Statistics\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{0.75,0.8414709848078965,2.1,3.141592653589793,42.0}\",\n"
-            + "        \"sinput\" : \"FiveNum({3,Sin(1),Pi,3/4,42,1.2`})\",\n"
-            + "        \"latex\" : \"\\\\{0.75,0.841471,2.1,3.14159,42.0\\\\}\"\n" + "      } ]\n"
-            + "    }, {\n" + "      \"title\" : \"Histogram\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"Histogram({3,Sin(1),Pi,3/4,42,1.2`})\",\n"
-            + "        \"plotly\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;Plotly&lt;/title&gt;\\n&lt;script src=&quot;https://cdn.plot.ly/plotly-latest.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;/head&gt;\\n&lt;body&gt;\\n&lt;div id='plotly' style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\n        var target_plotly = document.getElementById('plotly');\\n        var layout = {\\n    title: 'Histogram',\\n    height: 400,\\n    width: 600,\\n    autosize: true,\\n\\n\\n};\\n\\nvar trace0 =\\n{\\nx: [&quot;3.0&quot;,&quot;0.8414709848078965&quot;,&quot;3.141592653589793&quot;,&quot;0.75&quot;,&quot;42.0&quot;,&quot;1.2&quot;],\\nopacity: '1.0',\\nnbinsx: 0,\\nautobinx: false,\\nnbinsy: 0,\\nautobiny: false,\\n    histnorm: '',\\n    histfunc: 'count',\\nxaxis: 'x',\\nyaxis: 'y',\\ntype: 'histogram',\\nname: '',\\n};\\n\\n        var data = [ trace0];\\nPlotly.newPlot(target_plotly, data, layout);        \\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id='plotly' style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;        var target_plotly = document.getElementById('plotly');\\n        var layout = {\\n    title: 'Histogram',\\n    height: 400,\\n    width: 600,\\n    autosize: true,\\n\\n\\n};\\n\\nvar trace0 =\\n{\\nx: [&quot;3.0&quot;,&quot;0.8414709848078965&quot;,&quot;3.141592653589793&quot;,&quot;0.75&quot;,&quot;42.0&quot;,&quot;1.2&quot;],\\nopacity: '1.0',\\nnbinsx: 0,\\nautobinx: false,\\nnbinsy: 0,\\nautobiny: false,\\n    histnorm: '',\\n    histfunc: 'count',\\nxaxis: 'x',\\nyaxis: 'y',\\ntype: 'histogram',\\nname: '',\\n};\\n\\n        var data = [ trace0];\\nPlotly.newPlot(target_plotly, data, layout);        &lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.plot.ly/plotly-latest.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Alternate form\",\n"
-            + "      \"scanner\" : \"Simplification\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{3,(I*1/2)/E^I-I*1/2*E^I,Pi,3/4,42,1.2}\",\n"
-            + "        \"sinput\" : \"TrigToExp({3,Sin(1),Pi,3/4,42,1.2`})\",\n"
-            + "        \"latex\" : \"\\\\{3,\\\\frac{\\\\frac{1}{2}\\\\,i }{{e}^{i }} + \\\\left( \\\\frac{-1}{2}\\\\,i \\\\right) \\\\cdot {e}^{i },\\\\pi,\\\\frac{3}{4},42,1.2\\\\}\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 8,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{3,Sin(1),Pi,3/4,42,1.2}\",\n" //
+            + "        \"sinput\" : \"{3,Sin(1),Pi,3/4,42,1.2`}\",\n" //
+            + "        \"latex\" : \"\\\\{3,\\\\sin (1),\\\\pi,\\\\frac{3}{4},42,1.2\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Total\",\n" //
+            + "      \"scanner\" : \"List\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"50.93306\",\n" //
+            + "        \"sinput\" : \"Total({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\n" //
+            + "        \"latex\" : \"50.93306\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Vector length\",\n" //
+            + "      \"scanner\" : \"List\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"42.25613\",\n" //
+            + "        \"sinput\" : \"Norm({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\n" //
+            + "        \"latex\" : \"42.25613\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Normalized vector\",\n" //
+            + "      \"scanner\" : \"List\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{0.0709956233478567,0.01991358569852382,0.07434644291555152,0.017748905836964174,0.9939387268699937,0.028398249339142676}\",\n" //
+            + "        \"sinput\" : \"Normalize({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\n" //
+            + "        \"latex\" : \"\\\\{0.0709956,0.0199136,0.0743464,0.0177489,0.993939,0.0283982\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Plot points\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"ListPlot({3.0,0.8414709848078965,3.141592653589793,0.75,42.0,1.2})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.9,44.6125,7.9,-1.8624999999999998]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 0.8414709848078965;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.141592653589793;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 0.75;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 42.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 6;},function() {return 1.2;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.9,44.6125,7.9,-1.8624999999999998]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 0.8414709848078965;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.141592653589793;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 0.75;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 42.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 6;},function() {return 1.2;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Five-number summary\",\n" //
+            + "      \"scanner\" : \"Statistics\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{0.75,0.8414709848078965,2.1,3.141592653589793,42.0}\",\n" //
+            + "        \"sinput\" : \"FiveNum({3,Sin(1),Pi,3/4,42,1.2`})\",\n" //
+            + "        \"latex\" : \"\\\\{0.75,0.841471,2.1,3.14159,42.0\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Histogram\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"Histogram({3,Sin(1),Pi,3/4,42,1.2`})\",\n" //
+            + "        \"plotly\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;Plotly&lt;/title&gt;\\n&lt;script src=&quot;https://cdn.plot.ly/plotly-latest.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;/head&gt;\\n&lt;body&gt;\\n&lt;div id='plotly' style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\n        var target_plotly = document.getElementById('plotly');\\n        var layout = {\\n    title: 'Histogram',\\n    height: 400,\\n    width: 600,\\n    autosize: true,\\n\\n\\n};\\n\\nvar trace0 =\\n{\\nx: [&quot;3.0&quot;,&quot;0.8414709848078965&quot;,&quot;3.141592653589793&quot;,&quot;0.75&quot;,&quot;42.0&quot;,&quot;1.2&quot;],\\nopacity: '1.0',\\nnbinsx: 0,\\nautobinx: false,\\nnbinsy: 0,\\nautobiny: false,\\n    histnorm: '',\\n    histfunc: 'count',\\nxaxis: 'x',\\nyaxis: 'y',\\ntype: 'histogram',\\nname: '',\\n};\\n\\n        var data = [ trace0];\\nPlotly.newPlot(target_plotly, data, layout);        \\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id='plotly' style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;        var target_plotly = document.getElementById('plotly');\\n        var layout = {\\n    title: 'Histogram',\\n    height: 400,\\n    width: 600,\\n    autosize: true,\\n\\n\\n};\\n\\nvar trace0 =\\n{\\nx: [&quot;3.0&quot;,&quot;0.8414709848078965&quot;,&quot;3.141592653589793&quot;,&quot;0.75&quot;,&quot;42.0&quot;,&quot;1.2&quot;],\\nopacity: '1.0',\\nnbinsx: 0,\\nautobinx: false,\\nnbinsy: 0,\\nautobiny: false,\\n    histnorm: '',\\n    histfunc: 'count',\\nxaxis: 'x',\\nyaxis: 'y',\\ntype: 'histogram',\\nname: '',\\n};\\n\\n        var data = [ trace0];\\nPlotly.newPlot(target_plotly, data, layout);        &lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.plot.ly/plotly-latest.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Alternate form\",\n" //
+            + "      \"scanner\" : \"Simplification\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{3,(I*1/2)/E^I-I*1/2*E^I,Pi,3/4,42,1.2}\",\n" //
+            + "        \"sinput\" : \"TrigToExp({3,Sin(1),Pi,3/4,42,1.2`})\",\n" //
+            + "        \"latex\" : \"\\\\{3,\\\\frac{\\\\frac{1}{2}\\\\,i }{{e}^{i }} + \\\\left( \\\\frac{-1}{2}\\\\,i \\\\right) \\\\cdot {e}^{i },\\\\pi,\\\\frac{3}{4},42,1.2\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+        + "}"); //
   }
 
   @Test
@@ -1524,36 +1764,64 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 5,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"{1,2,3,4,5}\",\n"
-            + "        \"sinput\" : \"{1,2,3,4,5}\",\n"
-            + "        \"latex\" : \"\\\\{1,2,3,4,5\\\\}\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Total\",\n" + "      \"scanner\" : \"List\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"15\",\n"
-            + "        \"sinput\" : \"Total({1,2,3,4,5})\",\n" + "        \"latex\" : \"15\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Vector length\",\n"
-            + "      \"scanner\" : \"List\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"7.4162\",\n"
-            + "        \"sinput\" : \"N(Norm({1,2,3,4,5}))\",\n"
-            + "        \"latex\" : \"7.4162\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Normalized vector\",\n" + "      \"scanner\" : \"List\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{1/Sqrt(55),2/Sqrt(55),3/Sqrt(55),4/Sqrt(55),Sqrt(5/11)}\",\n"
-            + "        \"sinput\" : \"Normalize({1,2,3,4,5})\",\n"
-            + "        \"latex\" : \"\\\\{\\\\frac{1}{\\\\sqrt{55}},\\\\frac{2}{\\\\sqrt{55}},\\\\frac{3}{\\\\sqrt{55}},\\\\frac{4}{\\\\sqrt{55}},\\\\sqrt{\\\\frac{5}{11}}\\\\}\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Plot points\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"ListPlot({1.0,2.0,3.0,4.0,5.0})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.85,5.75,6.85,0.25]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 4.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 5.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.85,5.75,6.85,0.25]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 4.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 5.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 5,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{1,2,3,4,5}\",\n" //
+            + "        \"sinput\" : \"{1,2,3,4,5}\",\n" //
+            + "        \"latex\" : \"\\\\{1,2,3,4,5\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Total\",\n" //
+            + "      \"scanner\" : \"List\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"15\",\n" //
+            + "        \"sinput\" : \"Total({1,2,3,4,5})\",\n" //
+            + "        \"latex\" : \"15\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Vector length\",\n" //
+            + "      \"scanner\" : \"List\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"7.4162\",\n" //
+            + "        \"sinput\" : \"N(Norm({1,2,3,4,5}))\",\n" //
+            + "        \"latex\" : \"7.4162\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Normalized vector\",\n" //
+            + "      \"scanner\" : \"List\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{1/Sqrt(55),2/Sqrt(55),3/Sqrt(55),4/Sqrt(55),Sqrt(5/11)}\",\n" //
+            + "        \"sinput\" : \"Normalize({1,2,3,4,5})\",\n" //
+            + "        \"latex\" : \"\\\\{\\\\frac{1}{\\\\sqrt{55}},\\\\frac{2}{\\\\sqrt{55}},\\\\frac{3}{\\\\sqrt{55}},\\\\frac{4}{\\\\sqrt{55}},\\\\sqrt{\\\\frac{5}{11}}\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Plot points\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"ListPlot({1.0,2.0,3.0,4.0,5.0})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.85,5.75,6.85,0.25]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 4.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 5.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.85,5.75,6.85,0.25]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 4.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 5.0;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}"); //
   }
 
   @Test
@@ -1564,38 +1832,64 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 5,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"Plot({x,x^2,x^3,x^4})\",\n"
-            + "        \"sinput\" : \"Plot({x,x^2,x^3,x^4})\",\n"
-            + "        \"latex\" : \"\\\\text{Plot}(\\\\{x,{x}^{2},{x}^{3},{x}^{4}\\\\})\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Result\",\n"
-            + "      \"scanner\" : \"Identity\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{x,x^2,x^3,x^4}\",\n"
-            + "        \"sinput\" : \"Plot({x,x^2,x^3,x^4})\",\n"
-            + "        \"latex\" : \"\\\\{x,{x}^{2},{x}^{3},{x}^{4}\\\\}\"\n" + "      } ]\n"
-            + "    }, {\n" + "      \"title\" : \"Function\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"Plot({x,x^2,x^3,x^4},{x,-7.0`,7.0`})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,1911.6055445184015,8.25,-399.3420551104002]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [x];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [pow(x,2)];} catch(e) { return Number.NaN;} }\\nfunction $f3(x) { try { return [pow(x,3)];} catch(e) { return Number.NaN;} }\\nfunction $f4(x) { try { return [pow(x,4)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -7.0, 7.0],{strokecolor:'#e19c24'});\\nboard.create('functiongraph',[$f3, -7.0, 7.0],{strokecolor:'#8fb032'});\\nboard.create('functiongraph',[$f4, -7.0, 7.0],{strokecolor:'#eb6235'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,1911.6055445184015,8.25,-399.3420551104002]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [x];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [pow(x,2)];} catch(e) { return Number.NaN;} }\\nfunction $f3(x) { try { return [pow(x,3)];} catch(e) { return Number.NaN;} }\\nfunction $f4(x) { try { return [pow(x,4)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -7.0, 7.0],{strokecolor:'#e19c24'});\\nboard.create('functiongraph',[$f3, -7.0, 7.0],{strokecolor:'#8fb032'});\\nboard.create('functiongraph',[$f4, -7.0, 7.0],{strokecolor:'#eb6235'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Derivative\",\n"
-            + "      \"scanner\" : \"Derivative\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{1,2*x,3*x^2,4*x^3}\",\n"
-            + "        \"sinput\" : \"D({x,x^2,x^3,x^4},x)\",\n"
-            + "        \"latex\" : \"\\\\{1,2\\\\cdot x,3\\\\cdot {x}^{2},4\\\\cdot {x}^{3}\\\\}\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Indefinite integral\",\n"
-            + "      \"scanner\" : \"Integral\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{x^2/2,x^3/3,x^4/4,x^5/5}\",\n"
-            + "        \"sinput\" : \"Integrate({x,x^2,x^3,x^4},x)\",\n"
-            + "        \"latex\" : \"\\\\{\\\\frac{{x}^{2}}{2},\\\\frac{{x}^{3}}{3},\\\\frac{{x}^{4}}{4},\\\\frac{{x}^{5}}{5}\\\\}\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 5,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"Plot({x,x^2,x^3,x^4})\",\n" //
+            + "        \"sinput\" : \"Plot({x,x^2,x^3,x^4})\",\n" //
+            + "        \"latex\" : \"\\\\text{Plot}(\\\\{x,{x}^{2},{x}^{3},{x}^{4}\\\\})\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Result\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{x,x^2,x^3,x^4}\",\n" //
+            + "        \"sinput\" : \"Plot({x,x^2,x^3,x^4})\",\n" //
+            + "        \"latex\" : \"\\\\{x,{x}^{2},{x}^{3},{x}^{4}\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Function\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"Plot({x,x^2,x^3,x^4},{x,-7.0`,7.0`})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,1911.6055445184015,8.25,-399.3420551104002]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [x];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [pow(x,2)];} catch(e) { return Number.NaN;} }\\nfunction $f3(x) { try { return [pow(x,3)];} catch(e) { return Number.NaN;} }\\nfunction $f4(x) { try { return [pow(x,4)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -7.0, 7.0],{strokecolor:'#e19c24'});\\nboard.create('functiongraph',[$f3, -7.0, 7.0],{strokecolor:'#8fb032'});\\nboard.create('functiongraph',[$f4, -7.0, 7.0],{strokecolor:'#eb6235'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,1911.6055445184015,8.25,-399.3420551104002]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [x];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [pow(x,2)];} catch(e) { return Number.NaN;} }\\nfunction $f3(x) { try { return [pow(x,3)];} catch(e) { return Number.NaN;} }\\nfunction $f4(x) { try { return [pow(x,4)];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -7.0, 7.0],{strokecolor:'#e19c24'});\\nboard.create('functiongraph',[$f3, -7.0, 7.0],{strokecolor:'#8fb032'});\\nboard.create('functiongraph',[$f4, -7.0, 7.0],{strokecolor:'#eb6235'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Derivative\",\n" //
+            + "      \"scanner\" : \"Derivative\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{1,2*x,3*x^2,4*x^3}\",\n" //
+            + "        \"sinput\" : \"D({x,x^2,x^3,x^4},x)\",\n" //
+            + "        \"latex\" : \"\\\\{1,2\\\\cdot x,3\\\\cdot {x}^{2},4\\\\cdot {x}^{3}\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Indefinite integral\",\n" //
+            + "      \"scanner\" : \"Integral\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{x^2/2,x^3/3,x^4/4,x^5/5}\",\n" //
+            + "        \"sinput\" : \"Integrate({x,x^2,x^3,x^4},x)\",\n" //
+            + "        \"latex\" : \"\\\\{\\\\frac{{x}^{2}}{2},\\\\frac{{x}^{3}}{3},\\\\frac{{x}^{4}}{4},\\\\frac{{x}^{5}}{5}\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}"); //
   }
 
   @Test
@@ -1636,51 +1930,84 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 7,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"HornerForm(x^2+x^3+2*x^14)\",\n"
-            + "        \"sinput\" : \"HornerForm(x^2 + x^3 + 2*x^14)\",\n"
-            + "        \"latex\" : \"\\\\text{HornerForm}({x}^{2}+{x}^{3} + 2\\\\cdot {x}^{14})\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Result\",\n"
-            + "      \"scanner\" : \"Identity\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"x^2*(1+x*(1+2*x^11))\",\n"
-            + "        \"sinput\" : \"HornerForm(x^2 + x^3 + 2*x^14)\",\n"
-            + "        \"latex\" : \"{x}^{2}\\\\,\\\\left( 1 + x\\\\,\\\\left( 1 + 2\\\\cdot {x}^{11}\\\\right) \\\\right) \"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Function\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"Plot(x^2*(1 + x*(1 + 2*x^11)),{x,-7.0`,7.0`})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,6.303108521964081E11,8.25,-5.989379138567678E10]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [mul(pow(x,2),add(1,mul(x,add(1,mul(2,pow(x,11))))))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,6.303108521964081E11,8.25,-5.989379138567678E10]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [mul(pow(x,2),add(1,mul(x,add(1,mul(2,pow(x,11))))))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Factor\",\n"
-            + "      \"scanner\" : \"Polynomial\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"x^2*(1+x+2*x^12)\",\n"
-            + "        \"sinput\" : \"Factor(x^2*(1 + x*(1 + 2*x^11)))\",\n"
-            + "        \"latex\" : \"{x}^{2}\\\\,\\\\left( 1+x + 2\\\\cdot {x}^{12}\\\\right) \"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"GlobalExtrema\",\n"
-            + "      \"scanner\" : \"GlobalMinimum\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"min{x^2*(1+x*(1+2*x^11))} = 0 at x = 0\",\n"
-            + "        \"sinput\" : \"Minimize(x^2*(1 + x*(1 + 2*x^11)),x)\",\n"
-            + "        \"latex\" : \"\\\\{0,\\\\{x\\\\to 0\\\\}\\\\}\"\n" + "      } ]\n"
-            + "    }, {\n" + "      \"title\" : \"Derivative\",\n"
-            + "      \"scanner\" : \"Derivative\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"x^2*(1+24*x^11)+2*x*(1+x*(1+2*x^11))\",\n"
-            + "        \"sinput\" : \"D(x^2*(1 + x*(1 + 2*x^11)),x)\",\n"
-            + "        \"latex\" : \"{x}^{2}\\\\,\\\\left( 1 + 24\\\\cdot {x}^{11}\\\\right)  + 2\\\\cdot x\\\\cdot \\\\left( 1 + x\\\\,\\\\left( 1 + 2\\\\cdot {x}^{11}\\\\right) \\\\right) \"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Indefinite integral\",\n"
-            + "      \"scanner\" : \"Integral\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"x^3/3+x^4/4+2/15*x^15\",\n"
-            + "        \"sinput\" : \"Integrate(x^2*(1 + x*(1 + 2*x^11)),x)\",\n"
-            + "        \"latex\" : \"\\\\frac{{x}^{3}}{3}+\\\\frac{{x}^{4}}{4}+\\\\frac{2\\\\cdot {x}^{15}}{15}\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 7,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"HornerForm(x^2+x^3+2*x^14)\",\n" //
+            + "        \"sinput\" : \"HornerForm(x^2 + x^3 + 2*x^14)\",\n" //
+            + "        \"latex\" : \"\\\\text{HornerForm}({x}^{2}+{x}^{3} + 2\\\\cdot {x}^{14})\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Result\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"x^2*(1+x*(1+2*x^11))\",\n" //
+            + "        \"sinput\" : \"HornerForm(x^2 + x^3 + 2*x^14)\",\n" //
+            + "        \"latex\" : \"{x}^{2}\\\\,\\\\left( 1 + x\\\\,\\\\left( 1 + 2\\\\cdot {x}^{11}\\\\right) \\\\right) \"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Function\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"Plot(x^2*(1 + x*(1 + 2*x^11)),{x,-7.0`,7.0`})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,6.303108521964081E11,8.25,-5.989379138567678E10]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [mul(pow(x,2),add(1,mul(x,add(1,mul(2,pow(x,11))))))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,6.303108521964081E11,8.25,-5.989379138567678E10]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [mul(pow(x,2),add(1,mul(x,add(1,mul(2,pow(x,11))))))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Factor\",\n" //
+            + "      \"scanner\" : \"Polynomial\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"x^2*(1+x+2*x^12)\",\n" //
+            + "        \"sinput\" : \"Factor(x^2*(1 + x*(1 + 2*x^11)))\",\n" //
+            + "        \"latex\" : \"{x}^{2}\\\\,\\\\left( 1+x + 2\\\\cdot {x}^{12}\\\\right) \"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"GlobalExtrema\",\n" //
+            + "      \"scanner\" : \"GlobalMinimum\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"min{x^2*(1+x*(1+2*x^11))} = 0 at x = 0\",\n" //
+            + "        \"sinput\" : \"Minimize(x^2*(1 + x*(1 + 2*x^11)),x)\",\n" //
+            + "        \"latex\" : \"\\\\{0,\\\\{x\\\\to 0\\\\}\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Derivative\",\n" //
+            + "      \"scanner\" : \"Derivative\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"x^2*(1+24*x^11)+2*x*(1+x*(1+2*x^11))\",\n" //
+            + "        \"sinput\" : \"D(x^2*(1 + x*(1 + 2*x^11)),x)\",\n" //
+            + "        \"latex\" : \"{x}^{2}\\\\,\\\\left( 1 + 24\\\\cdot {x}^{11}\\\\right)  + 2\\\\cdot x\\\\cdot \\\\left( 1 + x\\\\,\\\\left( 1 + 2\\\\cdot {x}^{11}\\\\right) \\\\right) \"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Indefinite integral\",\n" //
+            + "      \"scanner\" : \"Integral\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"x^3/3+x^4/4+2/15*x^15\",\n" //
+            + "        \"sinput\" : \"Integrate(x^2*(1 + x*(1 + 2*x^11)),x)\",\n" //
+            + "        \"latex\" : \"\\\\frac{{x}^{3}}{3}+\\\\frac{{x}^{4}}{4}+\\\\frac{2\\\\cdot {x}^{15}}{15}\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+        + "}"); //
   }
 
   @Test
@@ -1720,23 +2047,42 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 3,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"CoshIntegral\",\n"
-            + "        \"sinput\" : \"CoshIntegral\",\n" + "        \"latex\" : \"CoshIntegral\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Plot\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"Manipulate(Plot({Re(CoshIntegral(a*x)),Im(CoshIntegral(a*x))},{x,-2.0`,2.0`},PlotRange-&gt;{-5.0`,5.0`}),{a,1,10})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-2.75,6.05,2.75,-6.05]});\\nboard.suspendUpdate();\\nvar a = board.create('slider',[[-2.2,4.84],[2.2,4.84],[1,1,10]],{name:'a'});\\n\\nfunction $f1(x) { try { return [re(coshIntegral(mul(a.Value(),x)))];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [im(coshIntegral(mul(a.Value(),x)))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -2.0, 2.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -2.0, 2.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-2.75,6.05,2.75,-6.05]});\\nboard.suspendUpdate();\\nvar a = board.create('slider',[[-2.2,4.84],[2.2,4.84],[1,1,10]],{name:'a'});\\n\\nfunction $f1(x) { try { return [re(coshIntegral(mul(a.Value(),x)))];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [im(coshIntegral(mul(a.Value(),x)))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -2.0, 2.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -2.0, 2.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Documentation\",\n"
-            + "      \"scanner\" : \"help\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"markdown\" : \"## CoshIntegral\\n\\n```\\nCoshIntegral(expr)\\n```\\n\\n> returns the hyperbolic cosine integral of `expr`.\\n  \\nSee\\n* [Wikipedia - Trigonometric integral](https://en.wikipedia.org/wiki/Trigonometric_integral)\\n\\n### Examples\\n\\n```\\n>> CoshIntegral(0)\\n-Infinity\\n```\\n \\n\\n### Github\\n\\n* [Implementation of CoshIntegral](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L237) \\n[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L239)\\n\\n\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 3,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"CoshIntegral\",\n" //
+            + "        \"sinput\" : \"CoshIntegral\",\n" //
+            + "        \"latex\" : \"CoshIntegral\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Plot\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"Manipulate(Plot({Re(CoshIntegral(a*x)),Im(CoshIntegral(a*x))},{x,-2.0`,2.0`},PlotRange-&gt;{-5.0`,5.0`}),{a,1,10})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-2.75,6.05,2.75,-6.05]});\\nboard.suspendUpdate();\\nvar a = board.create('slider',[[-2.2,4.84],[2.2,4.84],[1,1,10]],{name:'a'});\\n\\nfunction $f1(x) { try { return [re(coshIntegral(mul(a.Value(),x)))];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [im(coshIntegral(mul(a.Value(),x)))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -2.0, 2.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -2.0, 2.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-2.75,6.05,2.75,-6.05]});\\nboard.suspendUpdate();\\nvar a = board.create('slider',[[-2.2,4.84],[2.2,4.84],[1,1,10]],{name:'a'});\\n\\nfunction $f1(x) { try { return [re(coshIntegral(mul(a.Value(),x)))];} catch(e) { return Number.NaN;} }\\nfunction $f2(x) { try { return [im(coshIntegral(mul(a.Value(),x)))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -2.0, 2.0],{strokecolor:'#5e81b5'});\\nboard.create('functiongraph',[$f2, -2.0, 2.0],{strokecolor:'#e19c24'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Documentation\",\n" //
+            + "      \"scanner\" : \"help\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"markdown\" : \"## CoshIntegral\\n\\n```\\nCoshIntegral(expr)\\n```\\n\\n> returns the hyperbolic cosine integral of `expr`.\\n  \\nSee\\n* [Wikipedia - Trigonometric integral](https://en.wikipedia.org/wiki/Trigonometric_integral)\\n\\n### Examples\\n\\n```\\n>> CoshIntegral(0)\\n-Infinity\\n```\\n \\n\\n### Github\\n\\n* [Implementation of CoshIntegral](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L237) \\n[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L239)\\n\\n\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}"); //
   }
 
   @Test
@@ -1747,43 +2093,74 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 6,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"4+4*x-x^2\",\n"
-            + "        \"sinput\" : \"4 + 4*x - x^2\",\n"
-            + "        \"latex\" : \"4 + 4\\\\cdot x - {x}^{2}\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Function\",\n" + "      \"scanner\" : \"Plotter\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"Plot(4 + 4*x - x^2,{x,-7.0`,7.0`})\",\n"
-            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,12.598320000000001,8.25,-77.59992]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [add(add(4,mul(4,x)),mul(-1,pow(x,2)))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,12.598320000000001,8.25,-77.59992]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [add(add(4,mul(4,x)),mul(-1,pow(x,2)))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Factor\",\n"
-            + "      \"scanner\" : \"Polynomial\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"4+4*x-x^2\",\n"
-            + "        \"sinput\" : \"Factor(4 + 4*x - x^2)\",\n"
-            + "        \"latex\" : \"4 + 4\\\\cdot x - {x}^{2}\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"GlobalExtrema\",\n" + "      \"scanner\" : \"GlobalMaximum\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"max{4+4*x-x^2} = 8 at x = 2\",\n"
-            + "        \"sinput\" : \"Maximize(4 + 4*x - x^2,x)\",\n"
-            + "        \"latex\" : \"\\\\{8,\\\\{x\\\\to 2\\\\}\\\\}\"\n" + "      } ]\n"
-            + "    }, {\n" + "      \"title\" : \"Derivative\",\n"
-            + "      \"scanner\" : \"Derivative\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"4-2*x\",\n"
-            + "        \"sinput\" : \"D(4 + 4*x - x^2,x)\",\n"
-            + "        \"latex\" : \"4 - 2\\\\cdot x\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Indefinite integral\",\n" + "      \"scanner\" : \"Integral\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"4*x+2*x^2-x^3/3\",\n"
-            + "        \"sinput\" : \"Integrate(4 + 4*x - x^2,x)\",\n"
-            + "        \"latex\" : \"4\\\\cdot x + 2\\\\cdot {x}^{2}-\\\\frac{{x}^{3}}{3}\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 6,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"4+4*x-x^2\",\n" //
+            + "        \"sinput\" : \"4 + 4*x - x^2\",\n" //
+            + "        \"latex\" : \"4 + 4\\\\cdot x - {x}^{2}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Function\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"Plot(4 + 4*x - x^2,{x,-7.0`,7.0`})\",\n" //
+            + "        \"jsxgraph\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;JSXGraph&lt;/title&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css&quot;/&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&quot;&gt;&lt;/script&gt;\\n\\n&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,12.598320000000001,8.25,-77.59992]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [add(add(4,mul(4,x)),mul(-1,pow(x,2)))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div id=&quot;jxgbox&quot; class=&quot;jxgbox&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/div&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-8.25,12.598320000000001,8.25,-77.59992]});\\nboard.suspendUpdate();\\n\\nfunction $f1(x) { try { return [add(add(4,mul(4,x)),mul(-1,pow(x,2)))];} catch(e) { return Number.NaN;} }\\nboard.create('functiongraph',[$f1, -7.0, 7.0],{strokecolor:'#5e81b5'});\\n\\n\\nboard.unsuspendUpdate();\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js,https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Factor\",\n" //
+            + "      \"scanner\" : \"Polynomial\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"4+4*x-x^2\",\n" //
+            + "        \"sinput\" : \"Factor(4 + 4*x - x^2)\",\n" //
+            + "        \"latex\" : \"4 + 4\\\\cdot x - {x}^{2}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"GlobalExtrema\",\n" //
+            + "      \"scanner\" : \"GlobalMaximum\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"max{4+4*x-x^2} = 8 at x = 2\",\n" //
+            + "        \"sinput\" : \"Maximize(4 + 4*x - x^2,x)\",\n" //
+            + "        \"latex\" : \"\\\\{8,\\\\{x\\\\to 2\\\\}\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Derivative\",\n" //
+            + "      \"scanner\" : \"Derivative\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"4-2*x\",\n" //
+            + "        \"sinput\" : \"D(4 + 4*x - x^2,x)\",\n" //
+            + "        \"latex\" : \"4 - 2\\\\cdot x\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Indefinite integral\",\n" //
+            + "      \"scanner\" : \"Integral\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"4*x+2*x^2-x^3/3\",\n" //
+            + "        \"sinput\" : \"Integrate(4 + 4*x - x^2,x)\",\n" //
+            + "        \"latex\" : \"4\\\\cdot x + 2\\\\cdot {x}^{2}-\\\\frac{{x}^{3}}{3}\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}"); //
   }
 
   @Test

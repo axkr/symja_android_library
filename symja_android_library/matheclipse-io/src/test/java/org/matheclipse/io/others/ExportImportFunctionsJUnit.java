@@ -82,6 +82,16 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
     }
   }
 
+  public void testExportStringTrue() {
+    if (Config.FILESYSTEM_ENABLED) {
+      String s = System.getProperty("os.name");
+      if (s.contains("Windows")) {
+        check("ExportString[ True ,\"ExpressionJSON\"]", //
+            "true");
+      }
+    }
+  }
+
   public void testExportStringComplex() {
     if (Config.FILESYSTEM_ENABLED) {
       String s = System.getProperty("os.name");

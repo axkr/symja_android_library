@@ -81,8 +81,7 @@ public class ExpressionJSONConvert {
    * @throws JsonGenerationException
    * @throws JsonMappingException
    */
-  public static JsonNode exportExpressionJSON(IExpr expr)
-      throws IOException, JsonGenerationException, JsonMappingException {
+  public static JsonNode exportExpressionJSON(IExpr expr) {
     if (expr.isASTOrAssociation()) {
       IAST ast = (IAST) expr;
       ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
@@ -106,7 +105,13 @@ public class ExpressionJSONConvert {
             temp.add(apfloatValue.doubleValue());
           }
         } else if (arg.isNumber() || arg.isSymbol()) {
-          temp.add(arg.toString());
+          if (arg.isTrue()) {
+            temp.add(true);
+          } else if (arg.isFalse()) {
+            temp.add(false);
+          } else {
+            temp.add(arg.toString());
+          }
         } else if (arg.isString()) {
           temp.add("'" + arg.toString() + "'");
         } else {
@@ -116,7 +121,17 @@ public class ExpressionJSONConvert {
       return temp;
     }
     ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
-    temp.add(temp.toString());
+    if (expr.isSymbol()) {
+      if (expr.isTrue()) {
+        temp.add(true);
+      } else if (expr.isFalse()) {
+        temp.add(false);
+      } else {
+        temp.add(temp.toString());
+      }
+    } else {
+      temp.add(temp.toString());
+    }
     return temp;
   }
 

@@ -48,7 +48,7 @@ public class JSBuilder {
           + "\n" + "<body>\n"
           // 1 - libraries
           + "`1`\n" //
-          + "<script src=\"/media/js/drawGraphics2d.js\"></script>\n" //
+          // + "<script src=\"/media/js/drawGraphics2d.js\"></script>\n"
           + "<div id=\"graphics2d\" class=\"jxgbox\" style=\"max-width:400px; aspect-ratio: 1/1;\"></div>\n"//
           // + "<div id=\"graphics2d\" class=\"jxgbox\" style=\"width:100%; height:100%; margin: 0;
           // padding: 0\"></div>\n" //
@@ -84,7 +84,7 @@ public class JSBuilder {
           + "<title>Graphics 2D</title>\n"//
           // 1 - libraries
           + "`1`\n" //
-          + "<script src=\"/media/js/drawGraphics2d.js\"></script>\n" //
+          // + "<script src=\"/media/js/drawGraphics2d.js\"></script>\n" //
           + "</head>\n"//
           + "<body>\n"//
           + "<div id=\"graphics2d\" class=\"jxgbox\" style=\"max-width:400px; aspect-ratio: 1/1;\"></div>\n"//
@@ -201,7 +201,8 @@ public class JSBuilder {
   /** CDN JavaScript libraries */
   private static final String[] JS_CDN_JSXGRAPH =
       {"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js",
-          "https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js"};
+          "https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js",
+          "https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js"};
 
   /** CSS libraries */
   private static final String[] CSS_CDN_MATHCELL = {};

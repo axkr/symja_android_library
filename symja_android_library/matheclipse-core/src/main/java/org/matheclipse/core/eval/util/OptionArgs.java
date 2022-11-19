@@ -226,6 +226,10 @@ public class OptionArgs {
     return fLastPosition;
   }
 
+  public IASTAppendable getCurrentOptionsList() {
+    return fCurrentOptionsList;
+  }
+
   /**
    * Get the option which ist set in the options argument <code>option -&gt; ...</code>.
    *
