@@ -44,6 +44,12 @@ public class ExportString extends AbstractEvaluator {
     try (StringWriter writer = new StringWriter()) {
       if (format.equals(Extension.EXPRESSIONJSON)) {
         if (arg1.isNumber() || arg1.isSymbol()) {
+          if (arg1.isTrue()) {
+            return F.stringx("true");
+          }
+          if (arg1.isFalse()) {
+            return F.stringx("false");
+          }
           return F.stringx(arg1.toString());
         } else if (arg1.isString()) {
           return F.stringx("'" + arg1.toString() + "'");
