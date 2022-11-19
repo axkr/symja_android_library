@@ -50,6 +50,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 
@@ -3048,8 +3049,8 @@ public final class Programming {
         // Positive machine-sized integer expected at position `2` in `1`.
         return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
       }
-      final ExecutorService executor = Executors.newSingleThreadExecutor();
-      TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor); // Executors.newSingleThreadExecutor());
+      final ExecutorService executorService = Executors.newSingleThreadExecutor();
+      TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService); // Executors.newSingleThreadExecutor());
       EvalControlledCallable work = new EvalControlledCallable(engine);
 
       try {
@@ -3073,20 +3074,21 @@ public final class Programming {
         return S.Null;
       } finally {
         work.cancel();
-        executor.shutdown(); // Disable new tasks from being submitted
-        try {
-          // Wait a while for existing tasks to terminate
-          if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-            executor.shutdownNow(); // Cancel currently executing tasks
-            // Wait a while for tasks to respond to being cancelled
-            if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-              LOGGER.log(engine.getLogLevel(), "TimeConstrained: pool did not terminate");
-            }
-          }
-        } catch (InterruptedException ie) {
-          // (Re-)Cancel if current thread also interrupted
-          executor.shutdownNow();
-        }
+        MoreExecutors.shutdownAndAwaitTermination(executorService, 1, TimeUnit.SECONDS);
+        // executorService.shutdown(); // Disable new tasks from being submitted
+        // try {
+        // // Wait a while for existing tasks to terminate
+        // if (!executorService.awaitTermination(1, TimeUnit.SECONDS)) {
+        // executorService.shutdownNow(); // Cancel currently executing tasks
+        // // Wait a while for tasks to respond to being cancelled
+        // if (!executorService.awaitTermination(1, TimeUnit.SECONDS)) {
+        // LOGGER.log(engine.getLogLevel(), "TimeConstrained: pool did not terminate");
+        // }
+        // }
+        // } catch (InterruptedException ie) {
+        // // (Re-)Cancel if current thread also interrupted
+        // executorService.shutdownNow();
+        // }
       }
     }
 
