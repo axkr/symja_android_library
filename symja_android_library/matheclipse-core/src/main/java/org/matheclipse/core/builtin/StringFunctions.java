@@ -1292,10 +1292,7 @@ public final class StringFunctions {
           boolean ignoreCase = option[0].isTrue();
 
           String str = ((IStringX) arg1).toString();
-          IExpr arg2 = ast.arg2();
-          if (!arg2.isList()) {
-            arg2 = F.list(arg2);
-          }
+          IExpr arg2 = ast.arg2().orNewList();
           IAST list = (IAST) arg2;
           int counter = 0;
           for (int i = 1; i < list.size(); i++) {

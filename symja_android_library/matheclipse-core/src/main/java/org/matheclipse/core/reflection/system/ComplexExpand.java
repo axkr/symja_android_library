@@ -185,7 +185,7 @@ public class ComplexExpand extends AbstractEvaluator {
       IExpr arg1 = ast.arg1();
       final IAST arg2;
       if (ast.isAST2()) {
-        arg2 = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
+        arg2 = ast.arg2().orNewList();
       } else {
         arg2 = F.NIL;
       }

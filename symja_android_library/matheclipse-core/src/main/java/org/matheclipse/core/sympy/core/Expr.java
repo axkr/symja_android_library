@@ -122,7 +122,8 @@ public class Expr {
       }
     } else {
       IExpr asAdd = hint.get("as_Add");
-      if ((asAdd == null && self.isPlus()) || asAdd.isTrue()) {
+      if ((asAdd == null && self.isPlus()) //
+          || (asAdd != null && asAdd.isTrue())) {
         want = S.Plus;
       }
     }

@@ -128,7 +128,7 @@ public class MagicProcessor {
     if (equations.isAST()) {
       // equation is list for more than 1 equations
       int num_equations = equations.isList() ? getSize(equations) - 1 : 1;
-      // If equations is AST and num_equations = num variables
+      // if equations is AST and num_equations = num variables
       if (equations.isAST() && eVar.isSize(num_equations)) {
         String vars = getVarString(eVar, false);
         LOGGER.debug("\t list of var = {}", vars);

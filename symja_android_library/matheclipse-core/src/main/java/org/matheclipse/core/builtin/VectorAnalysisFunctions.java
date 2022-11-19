@@ -65,22 +65,18 @@ public class VectorAnalysisFunctions {
       if (dim1 >= 2 && dim1 <= 3 && dim1 == dim2) {
         IAST v = (IAST) ast.arg2().normal(false);
         IAST f = (IAST) ast.arg1().normal(false);
-        if (dim1 == 2 && dim2 == 2) {
+        if (dim1 == 2) {
           // D(f2, v1) - D(f1, v2)
-          return F.Subtract(F.D(f.arg2(), v.arg1()),
-              F.D(f.arg1(), v.arg2()));
+          return F.Subtract(F.D(f.arg2(), v.arg1()), F.D(f.arg1(), v.arg2()));
         }
-        if (dim1 == 3 && dim2 == 3) {
+        if (dim1 == 3) {
           // {D(f3, v3) - D(f2, v3),
           // D(f1, v3) - D(f3, v1),
           // D(f2, v1) - D(f1, v2)}
           IASTAppendable curlVector = F.ListAlloc(f.size());
-          curlVector.append(F.Subtract(F.D(f.arg3(), v.arg2()),
-              F.D(f.arg2(), v.arg3())));
-          curlVector.append(F.Subtract(F.D(f.arg1(), v.arg3()),
-              F.D(f.arg3(), v.arg1())));
-          curlVector.append(F.Subtract(F.D(f.arg2(), v.arg1()),
-              F.D(f.arg1(), v.arg2())));
+          curlVector.append(F.Subtract(F.D(f.arg3(), v.arg2()), F.D(f.arg2(), v.arg3())));
+          curlVector.append(F.Subtract(F.D(f.arg1(), v.arg3()), F.D(f.arg3(), v.arg1())));
+          curlVector.append(F.Subtract(F.D(f.arg2(), v.arg1()), F.D(f.arg1(), v.arg2())));
           return curlVector;
         }
       }

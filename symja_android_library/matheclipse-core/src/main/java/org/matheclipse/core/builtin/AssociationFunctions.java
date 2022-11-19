@@ -1084,11 +1084,9 @@ public class AssociationFunctions {
           if (arg1.forAll(x -> x.isListOfRulesOrAssociation(true))) {
             return arg1.mapThread(ast, 1);
           }
-          IExpr arg2 = ast.arg2();
-          if (!arg2.isList()) {
-            arg2 = F.list(arg2);
-          }
-          return keyTake(arg1, (IAST) arg2);
+          IAST arg2 = ast.arg2().orNewList();
+
+          return keyTake(arg1, arg2);
         } else {
           LOGGER.log(engine.getLogLevel(),
               "KeyTake: Association or list of rules expected at position 1.");

@@ -25,7 +25,7 @@ import org.matheclipse.core.tensor.sca.Clips;
    * @return vector of given length */
   public static IAST samples(int length) {
     return (IAST) S.Subdivide.of(EvalEngine.get(), //
-        Clips.absolute(F.C1D2.add(F.QQ(-1, 2 * length))), //
+        Clips.absolute(F.C1D2.add(F.QQ(-1, 2L * length))), //
         length - 1);
   }
 }

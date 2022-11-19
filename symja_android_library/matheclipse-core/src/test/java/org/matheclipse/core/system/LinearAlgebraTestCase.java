@@ -135,6 +135,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testCoordinateBounds() {
+
+    check("CoordinateBounds({{1.0,-1.0},{0.0,2.6457513110645907},{-1.0,-1.0}})", //
+        "{{-1,1},\n"//
+            + " {-1,2.6457513110645907}}");
+
     check("CoordinateBounds({{0, 1}, {1, 2}, {2, 1}, {3, 2}, {4, 0}})", //
         "{{0,4},\n"//
             + " {0,2}}");
@@ -1611,6 +1616,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTranspose() {
+
+    check("Transpose({{-1}},{2})", //
+        "Transpose({{-1}},{2})");
     check("Transpose({{0,1,2},{0.7121489163040792,-0.4571283540266432 }})", //
         "Transpose({{0,1,2},{0.712149,-0.457128}})");
 

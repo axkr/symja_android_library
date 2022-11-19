@@ -1478,6 +1478,16 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "2)},{x->2,y->-2,z->3*Sqrt(2)},{x->2,y->2,z->-3*Sqrt(2)},{x->2,y->2,z->3*Sqrt(2)}}");
   }
 
+  public void testSolveLinearEquations() {
+
+    // https://github.com/asc-community/AngouriMath/issues/608
+    check("Solve({2 * x1 * (-66) - 6 * x2 + 24 * x3 - 12 * x4 + 270 == 0,\n"//
+        + "-6 * x1 - 2 * x2 * 74 - 8 * x3 + 4 * x4 - 440 == 0,\n"//
+        + "24 * x1 - 8 * x2 - 2 * x3 * 59 - 16 * x4 - 190 == 0,\n"//
+        + "-12 * x1 + 4 * x2 - 16 * x3 - 2 * x4 * 71 + 20 == 0},"//
+        + "{x1,x2,x3,x4})", //
+        "{{x1->2,x2->-3,x3->-1,x4->0}}");
+  }
 
   // public void testSolveFindRoot() {
   // // multivariate FindRoot cases

@@ -111,9 +111,9 @@ public class SequenceFunctions {
           for (int j = i + 1; j <= ast.size(); j++) {
             IExpr subResult = F.NIL;
             for (int k = j; k <= ast.size(); k++) {
-              if (i >= k) {
-                break;
-              }
+              // if (i >= k) {
+              // break;
+              // }
               // TODO optimize by classifying pattern matchers
               // use greedy search because of possible pattern sequences
               IASTAppendable subSequence = ast.copyFrom(i, k);
@@ -166,9 +166,9 @@ public class SequenceFunctions {
             IExpr subResult = F.NIL;
             IExpr result = F.NIL;
             for (int k = j; k <= ast.size(); k++) {
-              if (i >= k) {
-                break;
-              }
+              // if (i >= k) {
+              // break;
+              // }
               // TODO optimize by classifying pattern matchers
               // use greedy search because of possible pattern sequences
               IASTAppendable subSequence = ast.copyFrom(i, k);

@@ -88,7 +88,7 @@ public class Plot extends ListPlot {
       }
     }
 
-    final IAST list = arg1.isList() ? (IAST) arg1 : F.List(arg1);
+    final IAST list = arg1.orNewList();
     int size = list.size();
     VisualSet visualSet = new VisualSet();
     double[] yMinMax = new double[] {Double.MAX_VALUE, Double.MIN_VALUE};

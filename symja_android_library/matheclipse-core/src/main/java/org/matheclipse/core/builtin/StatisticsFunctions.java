@@ -3672,9 +3672,7 @@ public class StatisticsFunctions {
             IExpr x = ast.arg2().first();
             IExpr distribution = ast.arg2().second();
             if (distribution.isList()) {
-              //
               IAST data = (IAST) distribution;
-
               // Sum( predicate , data ) / data.argSize()
               IASTAppendable sum = F.PlusAlloc(data.size());
               for (int i = 1; i < data.size(); i++) {

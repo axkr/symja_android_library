@@ -3464,7 +3464,7 @@ public final class ListFunctions {
       if (ast.size() >= 3) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
-        IAST list2 = arg2.isList() ? (IAST) ast.arg2() : F.list(arg2);
+        IAST list2 = arg2.orNewList();
         if (list2.isEmptyList()) {
           return arg1;
         }
@@ -7057,7 +7057,7 @@ public final class ListFunctions {
           final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
           for (int i = 2; i < ast.size(); i++) {
             IExpr arg = ast.get(i);
-            iterList.add(Iterator.create(arg.isList() ? (IAST) arg : F.list(arg), i, engine));
+            iterList.add(Iterator.create(arg.orNewList(), i, engine));
           }
 
           final TableGenerator generator = new TableGenerator(iterList, resultList,

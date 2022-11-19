@@ -57,6 +57,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -5222,7 +5223,12 @@ public final class LinearAlgebra {
       private IAST transposeRecursive(int permutationIndex, IASTAppendable resultList) {
         if (permutationIndex >= permutation.length) {
           if (resultList != null) {
-            resultList.append(tensor.getPart(positions));
+            IExpr part = tensor.getPart(positions);
+            if (part.isNIL()) {
+              // Entry `1` in `2` is out of bounds for a permutation of length `3`.
+              throw new ArgumentTypeStopException("perm2", F.List());
+            }
+            resultList.append(part);
           }
         } else {
           int size = dimensions[permutation[permutationIndex] - 1];
@@ -5275,6 +5281,14 @@ public final class LinearAlgebra {
           if (permutation == null) {
             return F.NIL;
           }
+          for (int i = 0; i < permutation.length; i++) {
+            if (permutation[i] > permutation.length) {
+              // Entry `1` in `2` is out of bounds for a permutation of length `3`.
+              return IOFunctions.printMessage(ast.topHead(), "perm2",
+                  F.List(F.ZZ(i + 1), ast.arg2(), F.ZZ(permutation.length)), engine);
+            }
+          }
+
           return new TransposePermute(tensor, dims, permutation).transposeRecursive();
         }
       }

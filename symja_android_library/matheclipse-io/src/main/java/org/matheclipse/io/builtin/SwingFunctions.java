@@ -235,20 +235,12 @@ public class SwingFunctions {
         IAST list;
         if (dialogNoteBook == null) {
           if (ast.isAST1()) {
-            if (ast.arg1().isList()) {
-              list = (IAST) ast.arg1();
-            } else {
-              list = F.List(ast.arg1());
-            }
+            list = ast.arg1().orNewList();
           } else {
             return F.NIL;
           }
         } else {
-          if (dialogNoteBook.arg1().isList()) {
-            list = (IAST) dialogNoteBook.arg1();
-          } else {
-            list = F.List(dialogNoteBook.arg1());
-          }
+          list = dialogNoteBook.arg1().orNewList();
         }
 
         JDialog dialog = new JDialog();
@@ -337,12 +329,7 @@ public class SwingFunctions {
               continue;
             case ID.Column:
               if (arg.size() == 2) {
-                IAST column;
-                if (arg.first().isList()) {
-                  column = (IAST) arg.first();
-                } else {
-                  column = F.List(arg.first());
-                }
+                IAST column = arg.first().orNewList();
                 JPanel columnPanel = new JPanel();
                 columnPanel.setLayout(new GridLayout(column.argSize(), 1));
                 container.add(columnPanel);
@@ -371,12 +358,7 @@ public class SwingFunctions {
               continue;
             case ID.Row:
               if (arg.size() == 2) {
-                IAST row;
-                if (arg.first().isList()) {
-                  row = (IAST) arg.first();
-                } else {
-                  row = F.List(arg.first());
-                }
+                IAST row = arg.first().orNewList();
                 JPanel rowPanel = new JPanel();
                 rowPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
                 container.add(rowPanel);

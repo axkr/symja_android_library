@@ -82,7 +82,7 @@ public class Plot extends AbstractEvaluator {
           IASTAppendable line = Line();
           IExpr temp;
           Dimensions2D dim = new Dimensions2D();
-          final IAST list = ast.arg1().isList() ? (IAST) ast.arg1() : F.List(ast.arg1());
+          final IAST list = ast.arg1().orNewList();
 
           int size = list.size();
           final IASTAppendable primitives = F.ListAlloc(size - 1);
