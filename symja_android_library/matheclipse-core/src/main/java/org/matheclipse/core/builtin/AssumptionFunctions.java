@@ -59,7 +59,7 @@ public class AssumptionFunctions {
       IExpr oldValue = S.$Assumptions.assignedValue();
       IExpr value = S.True;
       if (oldValue == null) {
-        value = ast.arg1().orNewList();
+        value = ast.arg1().makeList();
       } else {
         value = oldValue;
         if (value.isList()) {

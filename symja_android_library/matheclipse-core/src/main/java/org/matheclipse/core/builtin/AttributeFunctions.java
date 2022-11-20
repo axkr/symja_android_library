@@ -153,7 +153,7 @@ public class AttributeFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IAST list = ast.arg1().orNewList();
+      IAST list = ast.arg1().makeList();
       IExpr arg2 = engine.evaluate(ast.arg2());
       for (int i = 1; i < list.size(); i++) {
         IExpr temp = clearAttributes(list.get(i), arg2, ast, engine);
@@ -391,7 +391,7 @@ public class AttributeFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IAST list = ast.arg1().orNewList();
+      IAST list = ast.arg1().makeList();
       return setSymbolsAttributes(list, ast.arg2(), ast, engine);
 
       // IExpr arg1 = ast.arg1();

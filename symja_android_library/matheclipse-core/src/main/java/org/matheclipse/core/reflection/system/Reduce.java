@@ -489,7 +489,7 @@ public class Reduce extends AbstractEvaluator {
     IAST vars;
     ISymbol domain = S.Reals;
     if (ast.isAST2() || ast.isAST3()) {
-      vars = ast.arg2().orNewList();
+      vars = ast.arg2().makeList();
     } else {
       VariablesSet eVar = new VariablesSet(ast.arg1());
       vars = eVar.getVarList();

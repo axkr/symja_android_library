@@ -1596,7 +1596,7 @@ public class GraphicsFunctions {
 
   public static boolean renderGraphics2D(StringBuilder graphics2DBuffer, IAST graphics2DAST,
       boolean javaScript, EvalEngine engine) {
-    IAST arg1 = graphics2DAST.first().orNewList();
+    IAST arg1 = graphics2DAST.first().makeList();
     // IExpr lighting = S.Automatic;
     final OptionArgs options =
         new OptionArgs(graphics2DAST.topHead(), graphics2DAST, 2, engine, true);
@@ -2175,7 +2175,7 @@ public class GraphicsFunctions {
       int height = dim.height;
 
       if (ast.size() > 1) {
-        IExpr arg1 = ast.arg1().orNewList();
+        IExpr arg1 = ast.arg1().makeList();
         primitivesDimension((IAST) arg1, dim);
         exportGraphicsSVG(buf, (IAST) arg1, dim);
       }

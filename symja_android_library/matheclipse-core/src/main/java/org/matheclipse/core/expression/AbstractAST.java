@@ -4810,6 +4810,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
+  public IAST makeList() {
+    return isList() ? this : F.List(this);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public IAST map(final Function<IExpr, ? extends IExpr> function) {
     return map(function, 1);
   }

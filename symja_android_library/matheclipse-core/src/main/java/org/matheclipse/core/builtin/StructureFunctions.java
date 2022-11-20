@@ -631,7 +631,7 @@ public class StructureFunctions {
         int attributes = ISymbol.NOATTRIBUTE;
         if (function.argSize() == 3) {
           final IExpr arg3 = function.arg3();
-          attributes = AttributeFunctions.getSymbolsAsAttributes(arg3.orNewList(), engine);
+          attributes = AttributeFunctions.getSymbolsAsAttributes(arg3.makeList(), engine);
         }
         IAST ast = engine.evalArgs(ast1, attributes).orElse(ast1);
 
@@ -640,7 +640,7 @@ public class StructureFunctions {
           return Lambda.replaceSlotsOrElse(arg1, ast, arg1);
         } else if (function.isAST2() || function.isAST3()) {
           IExpr arg2 = function.arg2();
-          IAST symbolSlots = arg1.orNewList();
+          IAST symbolSlots = arg1.makeList();
           if (symbolSlots.size() > ast.size()) {
             // To many parameters in `1` to be filled from `2`.
             return IOFunctions.printMessage(S.Function, "fpct", F.list(symbolSlots, function),

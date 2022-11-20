@@ -88,7 +88,7 @@ public class Plot extends ListPlot {
       }
     }
 
-    final IAST list = arg1.orNewList();
+    final IAST list = arg1.makeList();
     int size = list.size();
     VisualSet visualSet = new VisualSet();
     double[] yMinMax = new double[] {Double.MAX_VALUE, Double.MIN_VALUE};

@@ -1084,7 +1084,7 @@ public class AssociationFunctions {
           if (arg1.forAll(x -> x.isListOfRulesOrAssociation(true))) {
             return arg1.mapThread(ast, 1);
           }
-          IAST arg2 = ast.arg2().orNewList();
+          IAST arg2 = ast.arg2().makeList();
 
           return keyTake(arg1, arg2);
         } else {

@@ -3464,7 +3464,7 @@ public final class ListFunctions {
       if (ast.size() >= 3) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
-        IAST list2 = arg2.orNewList();
+        IAST list2 = arg2.makeList();
         if (list2.isEmptyList()) {
           return arg1;
         }
@@ -6801,7 +6801,7 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isASTOrAssociation()) {
-        return splitByFunction(ast.arg2().orNewList(), 1, (IAST) ast.arg1(), engine);
+        return splitByFunction(ast.arg2().makeList(), 1, (IAST) ast.arg1(), engine);
       }
       return F.NIL;
     }
@@ -7057,7 +7057,7 @@ public final class ListFunctions {
           final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
           for (int i = 2; i < ast.size(); i++) {
             IExpr arg = ast.get(i);
-            iterList.add(Iterator.create(arg.orNewList(), i, engine));
+            iterList.add(Iterator.create(arg.makeList(), i, engine));
           }
 
           final TableGenerator generator = new TableGenerator(iterList, resultList,

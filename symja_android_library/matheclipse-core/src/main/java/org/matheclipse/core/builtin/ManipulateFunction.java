@@ -399,7 +399,7 @@ public class ManipulateFunction {
 
       // function z1(x,y) { return [ x, y, Math.sin( a * x * y ) ]; }
       StringBuilder function = new StringBuilder();
-      IAST listOfFunctions = engine.evaluate(plot.arg1()).orNewList();
+      IAST listOfFunctions = engine.evaluate(plot.arg1()).makeList();
       if (plotID == ID.Plot3D || plotID == ID.ContourPlot || plotID == ID.DensityPlot) {
         if (plotRangeY.isNIL()) {
           return F.NIL;
@@ -1101,7 +1101,7 @@ public class ManipulateFunction {
       // Double.MAX_VALUE };
 
       JSXGraph.sliderNamesFromList(manipulateAST, toJS);
-      IExpr arg1 = engine.evaluate(plot.arg1()).orNewList();
+      IExpr arg1 = engine.evaluate(plot.arg1()).makeList();
       ISymbol plotSymbolX = (ISymbol) plotRangeX.arg1();
       // double plotRangeXMax = Double.MIN_VALUE;
       // double plotRangeXMin = Double.MAX_VALUE;

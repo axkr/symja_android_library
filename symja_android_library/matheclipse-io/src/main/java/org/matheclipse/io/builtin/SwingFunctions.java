@@ -235,12 +235,12 @@ public class SwingFunctions {
         IAST list;
         if (dialogNoteBook == null) {
           if (ast.isAST1()) {
-            list = ast.arg1().orNewList();
+            list = ast.arg1().makeList();
           } else {
             return F.NIL;
           }
         } else {
-          list = dialogNoteBook.arg1().orNewList();
+          list = dialogNoteBook.arg1().makeList();
         }
 
         JDialog dialog = new JDialog();
@@ -329,7 +329,7 @@ public class SwingFunctions {
               continue;
             case ID.Column:
               if (arg.size() == 2) {
-                IAST column = arg.first().orNewList();
+                IAST column = arg.first().makeList();
                 JPanel columnPanel = new JPanel();
                 columnPanel.setLayout(new GridLayout(column.argSize(), 1));
                 container.add(columnPanel);
@@ -358,7 +358,7 @@ public class SwingFunctions {
               continue;
             case ID.Row:
               if (arg.size() == 2) {
-                IAST row = arg.first().orNewList();
+                IAST row = arg.first().makeList();
                 JPanel rowPanel = new JPanel();
                 rowPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
                 container.add(rowPanel);

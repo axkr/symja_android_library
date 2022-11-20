@@ -140,7 +140,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 
   private IExpr evaluateProduct(final IAST preevaledProduct, IExpr arg1, EvalEngine engine) {
     if (preevaledProduct.size() > 2) {
-      final IAST list = preevaledProduct.last().orNewList();
+      final IAST list = preevaledProduct.last().makeList();
       if (list.isAST1()) {
         // indefinite product case
         IExpr variable = list.arg1();

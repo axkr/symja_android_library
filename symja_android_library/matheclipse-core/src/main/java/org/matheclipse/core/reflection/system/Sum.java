@@ -171,7 +171,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
   private static IExpr evaluateSum(final IAST preevaledSum, EvalEngine engine) {
     if (preevaledSum.size() > 2) {
       try {
-        IAST list = preevaledSum.last().orNewList();
+        IAST list = preevaledSum.last().makeList();
         if (list.isAST1()) {
           // indefinite sum case
           IExpr variable = list.arg1();

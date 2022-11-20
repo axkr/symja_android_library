@@ -867,8 +867,7 @@ public interface IExpr
    * @return
    * @throws ArgumentTypeException
    */
-  default Complex evalfc(final Function<IExpr, IExpr> function)
-      throws ArgumentTypeException {
+  default Complex evalfc(final Function<IExpr, IExpr> function) throws ArgumentTypeException {
     return EvalEngine.get().evalComplex(this, function);
   }
 
@@ -901,8 +900,7 @@ public interface IExpr
    * @return
    * @throws ArgumentTypeException
    */
-  default double evalf(final Function<IExpr, IExpr> function)
-      throws ArgumentTypeException {
+  default double evalf(final Function<IExpr, IExpr> function) throws ArgumentTypeException {
     return EvalEngine.get().evalDouble(this, function);
   }
 
@@ -4250,6 +4248,17 @@ public interface IExpr
   }
 
   /**
+   * Return <code>this</code> if <code>isList()==true</code>, otherwise create a new list <code>
+   * {this}</code> from this (i.e. return <code>F.List(this)</code>).
+   *
+   * @return <code>this</code> if <code>isList()==true</code>, otherwise return <code>F.List(this)
+   *     </code>.
+   */
+  default IAST makeList() {
+    return F.List(this);
+  }
+
+  /**
    * If a value is present (i.e. this unequals F.NIL), apply the provided mapping function to it,
    * and if the result is non-NIL, return the result. Otherwise return <code>F.NIL</code>
    *
@@ -4528,17 +4537,6 @@ public interface IExpr
   default <X extends Throwable> IExpr orElseThrow(Supplier<? extends X> exceptionSupplier)
       throws X {
     return this;
-  }
-
-  /**
-   * Return <code>this</code> if <code>isList()==true</code>, otherwise create a new list <code>
-   * {this}</code> from this (i.e. return <code>F.List(this)</code>).
-   *
-   * @return <code>this</code> if <code>isList()==true</code>, otherwise return <code>F.List(this)
-   *     </code>.
-   */
-  default IAST orNewList() {
-    return isList() ? (IAST) this : F.List(this);
   }
 
   /**

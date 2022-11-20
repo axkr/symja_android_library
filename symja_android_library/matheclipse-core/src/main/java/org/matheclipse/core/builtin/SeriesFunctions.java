@@ -998,7 +998,7 @@ public class SeriesFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST heads = F.CEmptyList;
       if (ast.isAST2()) {
-        heads = ast.arg2().orNewList();
+        heads = ast.arg2().makeList();
       }
       final IExpr arg1 = ast.arg1();
       // IExpr normal=arg1.normal(true);

@@ -2761,7 +2761,7 @@ public final class PatternMatching {
           extractRules(temp, result);
           return result;
         }
-        return temp.orNewList();
+        return temp.makeList();
       }
     }
     return F.CEmptyList;

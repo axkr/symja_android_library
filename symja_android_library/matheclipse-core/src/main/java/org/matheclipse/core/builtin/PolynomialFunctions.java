@@ -294,7 +294,7 @@ public class PolynomialFunctions {
         return ((IAST) arg1).mapThread(ast, 1);
       }
       IExpr expr = F.evalExpandAll(arg1, engine).normal(false);
-      IAST list = ast.arg2().orNewList();
+      IAST list = ast.arg2().makeList();
       return coefficientList(expr, list);
     }
 

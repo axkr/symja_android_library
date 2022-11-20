@@ -1495,7 +1495,7 @@ public final class BooleanFunctions {
         BDDExpr bddExpr = (BDDExpr) ast.arg1();
         final int n;
         if (ast.isAST2()) {
-          IAST variables = ast.arg2().orNewList();
+          IAST variables = ast.arg2().makeList();
           n = variables.argSize();
         } else {
           BDD bdd = bddExpr.toData();
@@ -1507,7 +1507,7 @@ public final class BooleanFunctions {
       }
       final IAST variables;
       if (ast.isAST2()) {
-        variables = ast.arg2().orNewList();
+        variables = ast.arg2().makeList();
       } else {
         variables = BooleanVariables.booleanVariables(ast.arg1());
       }
@@ -4090,7 +4090,7 @@ public final class BooleanFunctions {
       // currently only SAT is available
       String method = "SAT";
       if (ast.size() > 2) {
-        userDefinedVariables = ast.arg2().orNewList();
+        userDefinedVariables = ast.arg2().makeList();
         if (ast.size() > 3) {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
           // "BDD" (binary decision diagram), "SAT", "TREE" ?
@@ -4191,7 +4191,7 @@ public final class BooleanFunctions {
           }
         }
         if (argSize > 1) {
-          userDefinedVariables = ast.arg2().orNewList();
+          userDefinedVariables = ast.arg2().makeList();
           IExpr complement = S.Complement.of(engine, userDefinedVariables, variablesInFormula);
           if (complement.size() > 1 && complement.isList()) {
             IASTAppendable or = F.Or();
