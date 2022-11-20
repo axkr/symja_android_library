@@ -1643,28 +1643,7 @@ public class GraphicsFunctions {
               IExpr rhs = rule.arg2();
 
               if (lhs == S.Axes) {
-                ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
-                if (rhs.isList2()) {
-                  IExpr a1 = rhs.first();
-                  IExpr a2 = rhs.second();
-                  ArrayNode an = JSON_OBJECT_MAPPER.createArrayNode();
-                  if (a1.isTrue()) {
-                    an.add(true);
-                  } else {
-                    an.add(false);
-                  }
-                  if (a2.isTrue()) {
-                    an.add(true);
-                  } else {
-                    an.add(false);
-                  }
-                  g.set("hasaxes", an);
-                } else if (rhs.isTrue()) {
-                  g.put("hasaxes", true);
-                } else {
-                  g.put("hasaxes", false);
-                }
-                json.set("axes", g);
+                graphics2DAxes(json, rhs, optionsList);
               }
             }
           }
@@ -1678,6 +1657,7 @@ public class GraphicsFunctions {
             return false;
           }
         }
+
 
         graphics2DBuffer.append(json.toString());
 
@@ -1698,6 +1678,31 @@ public class GraphicsFunctions {
       }
     }
     return false;
+  }
+
+  private static void graphics2DAxes(ObjectNode json, IExpr axesOptions, IAST optionsList) {
+    ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+    if (axesOptions.isList2()) {
+      IExpr a1 = axesOptions.first();
+      IExpr a2 = axesOptions.second();
+      ArrayNode an = JSON_OBJECT_MAPPER.createArrayNode();
+      if (a1.isTrue()) {
+        an.add(true);
+      } else {
+        an.add(false);
+      }
+      if (a2.isTrue()) {
+        an.add(true);
+      } else {
+        an.add(false);
+      }
+      g.set("hasaxes", an);
+    } else if (axesOptions.isTrue()) {
+      g.put("hasaxes", true);
+    } else {
+      g.put("hasaxes", false);
+    }
+    json.set("axes", g);
   }
 
   public static boolean exportGraphics2DRecursive(ArrayNode arrayNode, IAST data2D,

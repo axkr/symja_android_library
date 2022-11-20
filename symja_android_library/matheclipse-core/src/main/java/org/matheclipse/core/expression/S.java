@@ -10083,6 +10083,10 @@ public class S {
    */
   public final static IBuiltInSymbol Throw = F.initFinalSymbol("Throw", ID.Throw);
 
+  public final static IBuiltInSymbol Ticks = F.initFinalSymbol("Ticks", ID.Ticks);
+
+  public final static IBuiltInSymbol TicksStyle = F.initFinalSymbol("TicksStyle", ID.TicksStyle);
+
   /**
    * TimeConstrained(expression, seconds) - stop evaluation of `expression` if time measurement of
    * the evaluation exceeds `seconds` and return `$Aborted`.
