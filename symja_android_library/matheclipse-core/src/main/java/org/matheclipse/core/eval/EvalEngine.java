@@ -1372,9 +1372,6 @@ public class EvalEngine implements Serializable {
     if (expr.isReal()) {
       return ((ISignedNumber) expr).doubleValue();
     }
-    if (expr.isQuantity()) {
-      return expr.evalReal().doubleValue();
-    }
     boolean quietMode = fQuietMode;
     try {
       fQuietMode = true;
@@ -1387,6 +1384,9 @@ public class EvalEngine implements Serializable {
       }
       if (result.isQuantity()) {
         return result.evalReal().doubleValue();
+      }
+      if (result.isAST(S.Labeled, 3, 4)) {
+        return result.first().evalReal().doubleValue();
       }
     } finally {
       fQuietMode = quietMode;
@@ -1476,6 +1476,9 @@ public class EvalEngine implements Serializable {
       }
       if (result.isNumber()) {
         return new Complex(((INumber) result).reDoubleValue(), ((INumber) result).imDoubleValue());
+      }
+      if (result.isAST(S.Labeled, 3, 4)) {
+        return evalComplex(result.first(), function);
       }
     } finally {
       fQuietMode = quietMode;
