@@ -230,6 +230,10 @@ public class OptionArgs {
     return fCurrentOptionsList;
   }
 
+  public int size() {
+    return fCurrentOptionsList.argSize();
+  }
+
   /**
    * Get the option which ist set in the options argument <code>option -&gt; ...</code>.
    *

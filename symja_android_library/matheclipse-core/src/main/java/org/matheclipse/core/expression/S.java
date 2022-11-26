@@ -7617,6 +7617,8 @@ public class S {
    */
   public final static IBuiltInSymbol Point = F.initFinalSymbol("Point", ID.Point);
 
+  public final static IBuiltInSymbol PointSize = F.initFinalSymbol("PointSize", ID.PointSize);
+
   public final static IBuiltInSymbol PointLight = F.initFinalSymbol("PointLight", ID.PointLight);
 
   /**

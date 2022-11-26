@@ -22,11 +22,12 @@ public interface IGraphics2D {
    * @param ast the graphics primitive (Circle, Disk, Line, Point,...)
    * @param color the RGB color which should be used
    * @param opacity the opacity (converted to a double number internally)
+   * @param pointSize TODO
    * @param listOfCoords collect all coordinates for calculating a bounding box
    * @return
    */
   default boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity,
-      IASTAppendable listOfCoords) {
+      double pointSize, IASTAppendable listOfCoords) {
     return false;
   }
 

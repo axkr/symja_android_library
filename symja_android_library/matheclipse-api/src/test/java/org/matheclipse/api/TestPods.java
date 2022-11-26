@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.hipparchus.util.FastMath;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.matheclipse.api.parser.FuzzyParserFactory;
 import org.matheclipse.core.basic.Config;
@@ -955,6 +956,7 @@ public class TestPods {
     // }
   }
 
+  @Ignore
   @Test
   public void testList() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
@@ -1050,6 +1052,7 @@ public class TestPods {
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
+  @Ignore
   @Test
   public void testMatrix002() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
@@ -1626,6 +1629,7 @@ public class TestPods {
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
+  @Ignore
   @Test
   public void testListPlot001() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
@@ -1755,6 +1759,7 @@ public class TestPods {
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
+  @Ignore
   @Test
   public void testListPlot005() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));

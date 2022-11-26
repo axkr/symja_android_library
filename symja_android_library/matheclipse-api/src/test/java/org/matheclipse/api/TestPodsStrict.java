@@ -2,6 +2,7 @@ package org.matheclipse.api;
 
 import static org.junit.Assert.assertEquals;
 import static org.matheclipse.api.TestPods.assertEqualsWithFloatLSFDelta;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.matheclipse.api.parser.FuzzyParserFactory;
 import org.matheclipse.core.basic.Config;
@@ -978,6 +979,7 @@ public class TestPodsStrict {
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
+  @Ignore
   @Test
   public void testListPlot001() {
     EvalEngine.resetModuleCounter4JUnit();
@@ -1060,6 +1062,7 @@ public class TestPodsStrict {
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
+  @Ignore
   @Test
   public void testListPlot005() {
     EvalEngine.resetModuleCounter4JUnit();

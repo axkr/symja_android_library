@@ -50,47 +50,47 @@ public class GraphicsTest extends ExprEvaluatorTestCase {
 
   public void testGraphicsJSON() {
     check("GraphicsJSON(Graphics(Polygon({{1, -1}, {0, Sqrt(7)}, {-1, -1}})))", //
-        "{\"elements\":[{\"type\":\"polygon\",\"color\":[1.0,0.5,0.0],\"opacity\":1.0,\"coords\":[[[1.0,-1.0]],[[0.0,2.6457513110645907]],[[-1.0,-1.0]]]}],\"extent\":{\"xmin\":-1.0,\"xmax\":1.0,\"ymin\":-1.0,\"ymax\":2.6457513110645907}}");
+        "{\"elements\":[{\"type\":\"polygon\",\"color\":[0.0,0.0,0.0],\"opacity\":1.0,\"coords\":[[[1.0,-1.0]],[[0.0,2.6457513110645907]],[[-1.0,-1.0]]]}],\"extent\":{\"xmin\":-1.0,\"xmax\":1.0,\"ymin\":-1.0,\"ymax\":2.6457513110645907},\"axes\":{\"hasaxes\":false}}");
 
     check("GraphicsJSON(Graphics({Red, Rectangle({0, 0}), Purple, Rectangle({0.75, 0.75})}))", //
-        "{\"elements\":[{\"type\":\"rectangle\",\"color\":[1.0,0.0,0.0],\"opacity\":1.0,\"coords\":[[[0.0,0.0]],[[1.0,1.0]]]},{\"type\":\"rectangle\",\"color\":[0.5,0.0,0.5],\"opacity\":1.0,\"coords\":[[[0.75,0.75]],[[1.0,1.0]]]}],\"extent\":{\"xmin\":0.0,\"xmax\":1.0,\"ymin\":0.0,\"ymax\":1.0}}");
+        "{\"elements\":[{\"type\":\"rectangle\",\"color\":[1.0,0.0,0.0],\"opacity\":1.0,\"coords\":[[[0.0,0.0]],[[1.0,1.0]]]},{\"type\":\"rectangle\",\"color\":[0.5,0.0,0.5],\"opacity\":1.0,\"coords\":[[[0.75,0.75]],[[1.0,1.0]]]}],\"extent\":{\"xmin\":0.0,\"xmax\":1.0,\"ymin\":0.0,\"ymax\":1.0},\"axes\":{\"hasaxes\":false}}");
 
     check("GraphicsJSON(Graphics({Red, Disk({1, 1}, 1, {0, Pi/4})}))", //
-        "{\"elements\":[{\"type\":\"disk\",\"color\":[1.0,0.0,0.0],\"opacity\":0.5,\"radius1\":1.0,\"radius2\":1.0,\"angle1\":0.0,\"angle2\":0.7853981633974483,\"coords\":[[[1.0,1.0]]]}],\"extent\":{\"xmin\":0.0,\"xmax\":2.0,\"ymin\":0.0,\"ymax\":2.0}}");
+        "{\"elements\":[{\"type\":\"disk\",\"color\":[1.0,0.0,0.0],\"opacity\":0.5,\"radius1\":1.0,\"radius2\":1.0,\"angle1\":0.0,\"angle2\":0.7853981633974483,\"coords\":[[[1.0,1.0]]]}],\"extent\":{\"xmin\":0.0,\"xmax\":2.0,\"ymin\":0.0,\"ymax\":2.0},\"axes\":{\"hasaxes\":false}}");
 
     check(
         "GraphicsJSON(Graphics({Blue, Circle({2,0}), Yellow, Polygon( {{2, 0}, {4, 1}, {4, -1}})}))", //
-        "{\"elements\":[{\"type\":\"circle\",\"color\":[0.0,0.0,1.0],\"opacity\":0.5,\"radius1\":1.0,\"radius2\":1.0,\"coords\":[[[2.0,0.0]]]},{\"type\":\"polygon\",\"color\":[1.0,1.0,0.0],\"opacity\":1.0,\"coords\":[[[2.0,0.0]],[[4.0,1.0]],[[4.0,-1.0]]]}],\"extent\":{\"xmin\":1.0,\"xmax\":4.0,\"ymin\":-1.0,\"ymax\":1.0}}");
+        "{\"elements\":[{\"type\":\"circle\",\"color\":[0.0,0.0,1.0],\"opacity\":0.5,\"radius1\":1.0,\"radius2\":1.0,\"coords\":[[[2.0,0.0]]]},{\"type\":\"polygon\",\"color\":[1.0,1.0,0.0],\"opacity\":1.0,\"coords\":[[[2.0,0.0]],[[4.0,1.0]],[[4.0,-1.0]]]}],\"extent\":{\"xmin\":1.0,\"xmax\":4.0,\"ymin\":-1.0,\"ymax\":1.0},\"axes\":{\"hasaxes\":false}}");
 
     check("GraphicsJSON(Graphics(Point( Table({t, Sin(t)}, {t, 0, 2 Pi, 2*Pi/10}) )))", //
-        "{\"elements\":[{\"type\":\"point\",\"color\":[0.0,0.0,0.0],\"opacity\":1.0,\"coords\":[[[0.0,0.0]],[[0.6283185307179586,0.5877852522924731]],[[1.2566370614359172,0.9510565162951535]],[[1.8849555921538759,0.9510565162951535]],[[2.5132741228718345,0.5877852522924731]],[[3.141592653589793,0.0]],[[3.7699111843077517,-0.5877852522924731]],[[4.39822971502571,-0.9510565162951535]],[[5.026548245743669,-0.9510565162951535]],[[5.654866776461628,-0.5877852522924731]],[[6.283185307179586,0.0]]]}],\"extent\":{\"xmin\":0.0,\"xmax\":6.283185307179586,\"ymin\":-0.9510565162951535,\"ymax\":0.9510565162951535}}");
+        "{\"elements\":[{\"type\":\"point\",\"pointSize\":0.0013,\"color\":[0.0,0.0,0.0],\"opacity\":1.0,\"coords\":[[[0.0,0.0]],[[0.6283185307179586,0.5877852522924731]],[[1.2566370614359172,0.9510565162951535]],[[1.8849555921538759,0.9510565162951535]],[[2.5132741228718345,0.5877852522924731]],[[3.141592653589793,0.0]],[[3.7699111843077517,-0.5877852522924731]],[[4.39822971502571,-0.9510565162951535]],[[5.026548245743669,-0.9510565162951535]],[[5.654866776461628,-0.5877852522924731]],[[6.283185307179586,0.0]]]}],\"extent\":{\"xmin\":0.0,\"xmax\":6.283185307179586,\"ymin\":-0.9510565162951535,\"ymax\":0.9510565162951535},\"axes\":{\"hasaxes\":false}}");
 
     check("GraphicsJSON(Graphics(Line({{1, 1}, {3, 1}, {4, 3}, {4, 7}})))", //
-        "{\"elements\":[{\"type\":\"line\",\"color\":[1.0,0.5,0.0],\"opacity\":1.0,\"coords\":[[[1.0,1.0]],[[3.0,1.0]],[[4.0,3.0]],[[4.0,7.0]]]}],\"extent\":{\"xmin\":1.0,\"xmax\":4.0,\"ymin\":1.0,\"ymax\":7.0}}");
+        "{\"elements\":[{\"type\":\"line\",\"color\":[0.0,0.0,0.0],\"opacity\":1.0,\"coords\":[[[1.0,1.0]],[[3.0,1.0]],[[4.0,3.0]],[[4.0,7.0]]]}],\"extent\":{\"xmin\":1.0,\"xmax\":4.0,\"ymin\":1.0,\"ymax\":7.0},\"axes\":{\"hasaxes\":false}}");
 
     check("GraphicsJSON(Graphics(Circle({1, 1}, {3, 4})))", //
-        "{\"elements\":[{\"type\":\"circle\",\"color\":[1.0,0.5,0.0],\"opacity\":0.5,\"radius1\":3.0,\"radius2\":4.0,\"coords\":[[[1.0,1.0]]]}],\"extent\":{\"xmin\":-2.0,\"xmax\":4.0,\"ymin\":-3.0,\"ymax\":5.0}}");
+        "{\"elements\":[{\"type\":\"circle\",\"color\":[0.0,0.0,0.0],\"opacity\":0.5,\"radius1\":3.0,\"radius2\":4.0,\"coords\":[[[1.0,1.0]]]}],\"extent\":{\"xmin\":-2.0,\"xmax\":4.0,\"ymin\":-3.0,\"ymax\":5.0},\"axes\":{\"hasaxes\":false}}");
 
     check("GraphicsJSON(Graphics(Arrow({{1, 0}, {2, 3}, {3, 7}, {4, 2}})))", //
-        "{\"elements\":[{\"type\":\"arrow\",\"color\":[1.0,0.5,0.0],\"opacity\":1.0,\"coords\":[[[1.0,0.0]],[[2.0,3.0]],[[3.0,7.0]],[[4.0,2.0]]]}],\"extent\":{\"xmin\":1.0,\"xmax\":4.0,\"ymin\":0.0,\"ymax\":7.0}}");
+        "{\"elements\":[{\"type\":\"arrow\",\"color\":[0.0,0.0,0.0],\"opacity\":1.0,\"coords\":[[[1.0,0.0]],[[2.0,3.0]],[[3.0,7.0]],[[4.0,2.0]]]}],\"extent\":{\"xmin\":1.0,\"xmax\":4.0,\"ymin\":0.0,\"ymax\":7.0},\"axes\":{\"hasaxes\":false}}");
   }
 
   public void testGraphicsJSONWithOptions() {
     check(
         "GraphicsJSON(Graphics({Green, Rectangle()}, PlotRangePadding -> {{0.5, 0.4}, {0.3, 0.3}}, Frame -> True))", //
-        "{\"elements\":[{\"type\":\"rectangle\",\"color\":[0.0,1.0,0.0],\"opacity\":1.0,\"coords\":[[[0.0,0.0]],[[1.0,1.0]]]}],\"extent\":{\"xmin\":0.0,\"xmax\":1.0,\"ymin\":0.0,\"ymax\":1.0},\"options\":[{\"plotrangepadding\":[\"List\",[\"List\",0.5,0.4],[\"List\",0.3,0.3]]},{\"frame\":true}]}");
+        "{\"elements\":[{\"type\":\"rectangle\",\"color\":[0.0,1.0,0.0],\"opacity\":1.0,\"coords\":[[[0.0,0.0]],[[1.0,1.0]]]}],\"extent\":{\"xmin\":0.0,\"xmax\":1.0,\"ymin\":0.0,\"ymax\":1.0},\"axes\":{\"hasaxes\":false}}");
 
     check("GraphicsJSON(Graphics(Circle(), Axes ->  True ))", //
-        "{\"elements\":[{\"type\":\"circle\",\"color\":[1.0,0.5,0.0],\"opacity\":0.5,\"radius1\":1.0,\"radius2\":1.0,\"coords\":[[[0.0,0.0]]]}],\"extent\":{\"xmin\":-1.0,\"xmax\":1.0,\"ymin\":-1.0,\"ymax\":1.0},\"axes\":{\"hasaxes\":true}}");
+        "{\"elements\":[{\"type\":\"circle\",\"color\":[0.0,0.0,0.0],\"opacity\":0.5,\"radius1\":1.0,\"radius2\":1.0,\"coords\":[[[0.0,0.0]]]}],\"extent\":{\"xmin\":-1.0,\"xmax\":1.0,\"ymin\":-1.0,\"ymax\":1.0},\"axes\":{\"hasaxes\":true}}");
 
     check("GraphicsJSON(Graphics(Circle(), Axes -> {False, True}))", //
-        "{\"elements\":[{\"type\":\"circle\",\"color\":[1.0,0.5,0.0],\"opacity\":0.5,\"radius1\":1.0,\"radius2\":1.0,\"coords\":[[[0.0,0.0]]]}],\"extent\":{\"xmin\":-1.0,\"xmax\":1.0,\"ymin\":-1.0,\"ymax\":1.0},\"axes\":{\"hasaxes\":[false,true]}}");
+        "{\"elements\":[{\"type\":\"circle\",\"color\":[0.0,0.0,0.0],\"opacity\":0.5,\"radius1\":1.0,\"radius2\":1.0,\"coords\":[[[0.0,0.0]]]}],\"extent\":{\"xmin\":-1.0,\"xmax\":1.0,\"ymin\":-1.0,\"ymax\":1.0},\"axes\":{\"hasaxes\":[false,true]}}");
 
   }
 
   public void testGraphicsJSONText() {
     check("GraphicsJSON(Graphics({Circle(), Text(x^2 + y^2 < 1, {0, 0})}))", //
-        "{\"elements\":[{\"type\":\"circle\",\"color\":[1.0,0.5,0.0],\"opacity\":0.5,\"radius1\":1.0,\"radius2\":1.0,\"coords\":[[[0.0,0.0]]]},{\"type\":\"text\",\"color\":[1.0,0.5,0.0],\"opacity\":1.0,\"coords\":[[[0.0,0.0]]],\"texts\":[\"x^2+y^2<1\"]}],\"extent\":{\"xmin\":-1.0,\"xmax\":1.0,\"ymin\":-1.0,\"ymax\":1.0}}");
+        "{\"elements\":[{\"type\":\"circle\",\"color\":[0.0,0.0,0.0],\"opacity\":0.5,\"radius1\":1.0,\"radius2\":1.0,\"coords\":[[[0.0,0.0]]]},{\"type\":\"text\",\"color\":[0.0,0.0,0.0],\"opacity\":1.0,\"coords\":[[[0.0,0.0]]],\"texts\":[\"x^2+y^2<1\"]}],\"extent\":{\"xmin\":-1.0,\"xmax\":1.0,\"ymin\":-1.0,\"ymax\":1.0},\"axes\":{\"hasaxes\":false}}");
   }
 
   public void testGraphics3DJSON() {

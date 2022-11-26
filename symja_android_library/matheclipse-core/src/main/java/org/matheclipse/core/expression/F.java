@@ -4474,6 +4474,12 @@ public class F extends S {
     return ast(Graphics);
   }
 
+  public static IASTAppendable Graphics(final IExpr graphicPrimitives) {
+    IASTAppendable ast = ast(Graphics);
+    ast.append(graphicPrimitives);
+    return ast;
+  }
+
   public static IASTAppendable Graphics3D(final IExpr graphicPrimitives) {
     IASTAppendable ast = ast(Graphics3D);
     ast.append(graphicPrimitives);
@@ -7582,6 +7588,14 @@ public class F extends S {
 
   public static IAST PolynomialRemainder(final IExpr poly1, final IExpr poly2, final IExpr x) {
     return new AST3(PolynomialRemainder, poly1, poly2, x);
+  }
+
+  public static IAST PointSize(final IExpr a0) {
+    return new AST1(PointSize, a0);
+  }
+
+  public static IAST PointSize(final double value) {
+    return new AST1(PointSize, F.num(value));
   }
 
   public static IAST Position(final IExpr a0, final IExpr a1) {
