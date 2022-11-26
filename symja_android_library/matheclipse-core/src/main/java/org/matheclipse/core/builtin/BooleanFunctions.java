@@ -25,7 +25,6 @@ import org.logicng.transformations.cnf.BDDCNFTransformation;
 import org.logicng.transformations.cnf.CNFFactorization;
 import org.logicng.transformations.dnf.DNFFactorization;
 import org.logicng.transformations.simplification.AdvancedSimplifier;
-import org.logicng.transformations.simplification.DefaultRatingFunction;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -288,13 +287,13 @@ public final class BooleanFunctions {
     }
 
     public IExpr factorSimplifyCNF(final Formula formula) {
-      final AdvancedSimplifier simplifier = new AdvancedSimplifier(new DefaultRatingFunction());
+      final AdvancedSimplifier simplifier = new AdvancedSimplifier();
       final Formula simplified = formula.transform(simplifier);
       return booleanFunction2Expr(new CNFFactorization().apply(simplified, false));
     }
 
     public IExpr factorSimplifyDNF(final Formula formula) {
-      final AdvancedSimplifier simplifier = new AdvancedSimplifier(new DefaultRatingFunction());
+      final AdvancedSimplifier simplifier = new AdvancedSimplifier();
       final Formula simplified = formula.transform(simplifier);
       return booleanFunction2Expr(new DNFFactorization().apply(simplified, false));
     }
@@ -5001,8 +5000,7 @@ public final class BooleanFunctions {
       map = LogicFormula.name2Position(vars);
     } else {
       Variable[] vars = lf.ast2Variable(variables);
-      assignments =
-          logicNGSatisfiabilityInstances(booleanExpression, vars, lf, maxChoices);
+      assignments = logicNGSatisfiabilityInstances(booleanExpression, vars, lf, maxChoices);
       map = LogicFormula.name2Position(vars);
     }
     IASTAppendable list = F.ListAlloc(assignments.size());
