@@ -1747,6 +1747,9 @@ public class GraphicsFunctions {
             }
           } else if (ast.isRGBColor()) {
             rgbColor = ast;
+            ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+            setColorOption(g, rgbColor);
+            arrayNode.add(g);
           } else if (ast.isAST(S.Opacity, 2)) {
             try {
               opacity = ast.arg1().evalf();
@@ -1754,12 +1757,14 @@ public class GraphicsFunctions {
               opacity = 1.0;
             }
             ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
-            g.put("opacity", opacity);
+            g.put("option", "opacity");
+            g.put("value", opacity);
             arrayNode.add(g);
           } else if (ast.isAST(S.PointSize, 2)) {
             pointSize = pointSize(ast);
             ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
-            g.put("pointSize", pointSize);
+            g.put("option", "pointSize");
+            g.put("value", pointSize);
             arrayNode.add(g);
           } else if (ast.head().isBuiltInSymbol()) {
             IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
@@ -2064,6 +2069,42 @@ public class GraphicsFunctions {
     }
     return false;
 
+  }
+
+  private static void setColorOption(ObjectNode json, IAST color) {
+    if (color.isPresent()) {
+      if (color.isAST(S.RGBColor, 4)) {
+        double red = color.arg1().toDoubleDefault(0.0);
+        double green = color.arg2().toDoubleDefault(0.0);
+        double blue = color.arg3().toDoubleDefault(0.0);
+        ArrayNode arrayNode = json.arrayNode();
+        arrayNode.add(red);
+        arrayNode.add(green);
+        arrayNode.add(blue);
+        json.put("option", "color");
+        json.set("value", arrayNode);
+        return;
+      } else if (color.isAST(S.RGBColor, 1) && color.arg1().isAST(S.List, 4)) {
+        IAST list = (IAST) color.arg1();
+        double red = list.arg1().toDoubleDefault(0.0);
+        double green = list.arg2().toDoubleDefault(0.0);
+        double blue = list.arg3().toDoubleDefault(0.0);
+        ArrayNode arrayNode = json.arrayNode();
+        arrayNode.add(red);
+        arrayNode.add(green);
+        arrayNode.add(blue);
+        json.put("option", "color");
+        json.set("value", arrayNode);
+        return;
+      }
+    }
+    // black
+    ArrayNode arrayNode = json.arrayNode();
+    arrayNode.add(0.0);
+    arrayNode.add(0.0);
+    arrayNode.add(0.0);
+    json.put("option", "color");
+    json.set("value", arrayNode);
   }
 
   private static void setColor(ObjectNode json, IAST color, IAST defaultColor, boolean color3D) {
