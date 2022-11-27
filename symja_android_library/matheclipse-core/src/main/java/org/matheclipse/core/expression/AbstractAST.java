@@ -1951,6 +1951,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         return (ISignedNumber) result;
       }
     }
+    if (isAST(S.Labeled, 3, 4)) {
+      IExpr arg1 = arg1();
+      if (arg1.isNumericFunction(true)) {
+        IExpr result = EvalEngine.get().evalN(arg1);
+        if (result.isReal()) {
+          return (ISignedNumber) result;
+        }
+      }
+    }
     return null;
   }
 
