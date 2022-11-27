@@ -5,6 +5,11 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     super(name);
   }
 
+  public void testQuantityList() {
+    check("Quantity(Sqrt(Range(3)), \"Meters\")", //
+        "{1[Meters],Sqrt(2)[Meters],Sqrt(3)[Meters]}");
+  }
+
   public void testQuantity() {
     check("Quantity(\"StandardAccelerationOfGravity\")", //
         "1[StandardAccelerationOfGravity]");

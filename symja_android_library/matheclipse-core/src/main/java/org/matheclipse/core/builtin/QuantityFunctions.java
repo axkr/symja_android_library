@@ -24,6 +24,7 @@ import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.tensor.qty.IUnit;
 import org.matheclipse.core.tensor.qty.UnitSystem;
@@ -266,7 +267,7 @@ public class QuantityFunctions {
    *
    * </blockquote>
    */
-  private static final class Quantity extends AbstractCoreFunctionEvaluator {
+  private static final class Quantity extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -283,6 +284,9 @@ public class QuantityFunctions {
         }
         if (ast.size() == 3) {
           IExpr arg1 = engine.evaluate(ast.arg1());
+          if (arg1.isList()) {
+            return ((IAST) arg1).mapThread(F.Quantity(F.Slot1, ast.arg2()), 1);
+          }
           IExpr arg2 = engine.evaluate(ast.arg2());
           if (arg2.isString()) {
             IUnit unit = IUnit.of(arg2.toString());
@@ -301,6 +305,11 @@ public class QuantityFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDREST | ISymbol.NHOLDREST);
     }
   }
 
