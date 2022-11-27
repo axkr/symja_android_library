@@ -5582,6 +5582,8 @@ public class S {
   public final static IBuiltInSymbol LaplaceTransform =
       F.initFinalSymbol("LaplaceTransform", ID.LaplaceTransform);
 
+  public final static IBuiltInSymbol Large = F.initFinalSymbol("Large", ID.Large);
+
   /**
    * Last(expr) - returns the last element in `expr`.
    * 
@@ -6369,6 +6371,8 @@ public class S {
    */
   public final static IBuiltInSymbol MedianFilter =
       F.initFinalSymbol("MedianFilter", ID.MedianFilter);
+
+  public final static IBuiltInSymbol Medium = F.initFinalSymbol("Medium", ID.Medium);
 
   public final static IBuiltInSymbol MeijerG = F.initFinalSymbol("MeijerG", ID.MeijerG);
 
@@ -9051,6 +9055,8 @@ public class S {
   public final static IBuiltInSymbol SlotSequence =
       F.initFinalSymbol("SlotSequence", ID.SlotSequence);
 
+  public final static IBuiltInSymbol Small = F.initFinalSymbol("Small", ID.Small);
+
   /**
    * SokalSneathDissimilarity(u, v) - returns the Sokal-Sneath dissimilarity between the two boolean
    * 1-D lists `u` and `v`, which is defined as `R / (c_tt + R)` where n is `len(u)`, `c_ij` is the
@@ -10141,6 +10147,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Timing = F.initFinalSymbol("Timing", ID.Timing);
+
+  public final static IBuiltInSymbol Tiny = F.initFinalSymbol("Tiny", ID.Tiny);
 
   public final static IBuiltInSymbol ToBoxes = F.initFinalSymbol("ToBoxes", ID.ToBoxes);
 
