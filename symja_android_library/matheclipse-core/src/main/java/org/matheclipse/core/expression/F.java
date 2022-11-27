@@ -193,15 +193,9 @@ public class F extends S {
     return PREDEFINED_PATTERNSEQUENCE_MAP.get(key);
   }
 
-  public static final ISymbolObserver SYMBOL_OBSERVER = new ISymbolObserver() {
-    @Override
-    public final boolean createPredefinedSymbol(String symbol) {
-      return false;
-    }
+  public static final ISymbolObserver SYMBOL_OBSERVER=new ISymbolObserver(){@Override public final boolean createPredefinedSymbol(String symbol){return false;}
 
-    @Override
-    public void createUserSymbol(ISymbol symbol) {}
-  };
+  @Override public void createUserSymbol(ISymbol symbol){}};
 
   /**
    * The constant object <code>NIL</code> (not in list) indicates in the evaluation process that no
@@ -4477,6 +4471,15 @@ public class F extends S {
   public static IASTAppendable Graphics(final IExpr graphicPrimitives) {
     IASTAppendable ast = ast(Graphics);
     ast.append(graphicPrimitives);
+    return ast;
+  }
+
+  public static IASTAppendable Graphics(final IExpr graphicPrimitives, IAST... optionRules) {
+    IASTAppendable ast = ast(Graphics);
+    ast.append(graphicPrimitives);
+    for (int i = 0; i < optionRules.length; i++) {
+      ast.append(optionRules[i]);
+    }
     return ast;
   }
 
@@ -9238,7 +9241,7 @@ public class F extends S {
     return new AST1(TeXForm, expr);
   }
 
-  public static IAST Text(final IExpr expr, IExpr coords) {
+  public static IAST Text(final IExpr expr, IAST coords) {
     return new AST2(Text, expr, coords);
   }
 

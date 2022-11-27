@@ -35,7 +35,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class GraphicsFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
 
-  public static double DEFAULT_POINTSIZE = 0.0013;
+  public static double TINY_POINTSIZE = 0.00032;
+  public static double SMALL_POINTSIZE = 0.00065;
+  public static double MEDIUM_POINTSIZE = 0.0013;
+  public static double LARGE_POINTSIZE = 0.0026;
   /**
    * From the docs: "Mapper instances are fully thread-safe provided that ALL configuration of the
    * instance occurs before ANY read or write calls."
@@ -78,13 +81,13 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity,
+    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, double opacity,
         double pointSize, IASTAppendable listOfCoords) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
         json.put("type", "arrow");
         setColor(json, color, F.NIL, false);
-        setOpacity(json, opacity.orElse(F.C1));
+        setOpacity(json, opacity);
         if (list.isListOfLists() && graphics2DCoords(json, list, listOfCoords)) {
           return true;
         }
@@ -216,10 +219,10 @@ public class GraphicsFunctions {
 
     private static boolean circle(ObjectNode json, String jsonType, IAST circleCoords,
         double circleRadius1, double circleRadius2, double angle1, double angle2, IAST color,
-        IExpr opacity, IASTAppendable listOfCoords) {
+        double opacity, IASTAppendable listOfCoords) {
       json.put("type", jsonType);
       setColor(json, color, color, false);
-      setOpacity(json, opacity.orElse(F.C1D2));
+      setOpacity(json, opacity);
       json.put("radius1", circleRadius1);
       json.put("radius2", circleRadius2);
       if (angle1 != 0.0 || angle2 != Math.PI * 2) {
@@ -235,7 +238,7 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity,
+    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, double opacity,
         double pointSize, IASTAppendable listOfCoords) {
       if (ast.argSize() > 0 && ast.arg1().isList2()) {
         double radius1 = 1.0;
@@ -737,13 +740,13 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity,
+    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, double opacity,
         double pointSize, IASTAppendable listOfCoords) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
         json.put("type", "line");
         setColor(json, color, F.NIL, false);
-        setOpacity(json, opacity.orElse(F.C1));
+        setOpacity(json, opacity);
         if (list.isListOfLists() && graphics2DCoords(json, list, listOfCoords)) {
           return true;
         }
@@ -886,16 +889,21 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity,
+    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, double opacity,
         double pointSize, IASTAppendable listOfCoords) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
         json.put("type", "point");
         json.put("pointSize", pointSize);
         setColor(json, color, F.RGBColor(F.C0, F.C0, F.C0), false);
-        setOpacity(json, opacity.orElse(F.C1));
-        if (list.isListOfLists() && graphics2DCoords(json, list, listOfCoords)) {
-          return true;
+        setOpacity(json, opacity);
+        if (list.isList()) {
+          if (list.isListOfLists()) {
+            return graphics2DCoords(json, list, listOfCoords);
+          }
+          if (list.isList2()) {
+            return graphics2DCoords(json, F.List(list), listOfCoords);
+          }
         }
       }
       return false;
@@ -933,13 +941,13 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity,
+    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, double opacity,
         double pointSize, IASTAppendable listOfCoords) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
         json.put("type", "polygon");
         setColor(json, color, F.NIL, false);
-        setOpacity(json, opacity.orElse(F.C1));
+        setOpacity(json, opacity);
         if (list.isListOfLists() && graphics2DCoords(json, list, listOfCoords)) {
           return true;
         }
@@ -1001,7 +1009,7 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity,
+    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, double opacity,
         double pointSize, IASTAppendable listOfCoords) {
       IAST list1;
       IAST list2;
@@ -1024,11 +1032,11 @@ public class GraphicsFunctions {
       return false;
     }
 
-    private static boolean rectangle(ObjectNode json, IAST color, IExpr opacity, IAST list1,
+    private static boolean rectangle(ObjectNode json, IAST color, double opacity, IAST list1,
         IAST list2, IASTAppendable listOfCoords) {
       json.put("type", "rectangle");
       setColor(json, color, F.NIL, false);
-      setOpacity(json, opacity.orElse(F.C1));
+      setOpacity(json, opacity);
       return graphics2DCoords(json, F.List(list1, list2), listOfCoords);
     }
 
@@ -1247,19 +1255,16 @@ public class GraphicsFunctions {
       return ARGS_1_2;
     }
 
-
     @Override
-    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity,
+    public boolean graphics2D(ObjectNode json, IAST ast, IAST color, double opacity,
         double pointSize, IASTAppendable listOfCoords) {
       if (ast.argSize() == 1) {
         ast = F.Text(ast.arg1(), F.List(F.C0, F.C0));
       }
       if (ast.argSize() == 2 && ast.arg2().isList2()) {
-        IAST expr = (IAST) ast.arg1();
+        IExpr expr = ast.arg1();
         IAST coords = (IAST) ast.arg2();
         json.put("type", "text");
-        setColor(json, color, F.NIL, false);
-        setOpacity(json, opacity.orElse(F.C1));
         if (graphics2DCoords(json, F.List(coords), listOfCoords)) {
           return graphicsTexts(json, expr.toString());
         }
@@ -1730,8 +1735,8 @@ public class GraphicsFunctions {
     if (data2D.isList()) {
       // boolean first = true;
       IAST rgbColor = F.NIL;
-      IExpr opacity = F.NIL;
-      double pointSize = DEFAULT_POINTSIZE;
+      double opacity = 1.0;
+      double pointSize = MEDIUM_POINTSIZE;
       IAST list = data2D;
       for (int i = 1; i < list.size(); i++) {
         IExpr arg = list.get(i);
@@ -1743,9 +1748,19 @@ public class GraphicsFunctions {
           } else if (ast.isRGBColor()) {
             rgbColor = ast;
           } else if (ast.isAST(S.Opacity, 2)) {
-            opacity = ast.arg1();
+            try {
+              opacity = ast.arg1().evalf();
+            } catch (RuntimeException rex) {
+              opacity = 1.0;
+            }
+            ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+            g.put("opacity", opacity);
+            arrayNode.add(g);
           } else if (ast.isAST(S.PointSize, 2)) {
-            pointSize = ast.arg1().evalf();
+            pointSize = pointSize(ast);
+            ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+            g.put("pointSize", pointSize);
+            arrayNode.add(g);
           } else if (ast.head().isBuiltInSymbol()) {
             IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
             IEvaluator evaluator = symbol.getEvaluator();
@@ -1762,6 +1777,30 @@ public class GraphicsFunctions {
       return true;
     }
     return false;
+
+  }
+
+  private static double pointSize(IAST pointSizeAST) {
+    if (pointSizeAST.isAST(S.PointSize, 2)) {
+      try {
+        IExpr arg1 = pointSizeAST.arg1();
+        if (arg1.isBuiltInSymbol()) {
+          if (arg1 == S.Large) {
+            return LARGE_POINTSIZE;
+          } else if (arg1 == S.Medium) {
+            return MEDIUM_POINTSIZE;
+          } else if (arg1 == S.Small) {
+            return SMALL_POINTSIZE;
+          } else if (arg1 == S.Tiny) {
+            return TINY_POINTSIZE;
+          }
+        }
+        return pointSizeAST.arg1().evalf();
+      } catch (RuntimeException rex) {
+        //
+      }
+    }
+    return MEDIUM_POINTSIZE;
   }
 
   private static boolean exportGraphics2DOptions(ArrayNode arrayNode, IAST optionsList) {
@@ -2154,6 +2193,10 @@ public class GraphicsFunctions {
   // buf.append(",");
   // }
   // }
+
+  private static void setOpacity(ObjectNode json, double opacity) {
+    json.put("opacity", opacity);
+  }
 
   private static void setOpacity(ObjectNode json, IExpr opacityExpr) {
     double opacity = opacityExpr.toDoubleDefault(1.0);

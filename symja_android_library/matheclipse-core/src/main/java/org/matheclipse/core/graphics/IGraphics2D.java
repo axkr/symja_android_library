@@ -26,7 +26,7 @@ public interface IGraphics2D {
    * @param listOfCoords collect all coordinates for calculating a bounding box
    * @return
    */
-  default boolean graphics2D(ObjectNode json, IAST ast, IAST color, IExpr opacity,
+  default boolean graphics2D(ObjectNode json, IAST ast, IAST color, double opacity,
       double pointSize, IASTAppendable listOfCoords) {
     return false;
   }
