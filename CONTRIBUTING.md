@@ -42,8 +42,8 @@ Before you do anything, make sure you check the current list of [pull requests][
 to ensure you aren't duplicating anyone's work. Then, do the following:
 
 1. [Fork the repository][6]
-2. Add tests for your unimplemented feature or bug fix.
 3. Implement your feature or bug fix.
+2. Add tests for your unimplemented feature or bug fix.
 4. Run `mvn clean install` to run the tests.  
 5. Commit your changes, and be sure to leave a detailed commit message.
 6. Push the changes to your forked repo on Github 
