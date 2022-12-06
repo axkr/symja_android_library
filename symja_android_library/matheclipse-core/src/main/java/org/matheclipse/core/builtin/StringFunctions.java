@@ -535,10 +535,6 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() != 2) {
-        return F.NIL;
-      }
-
       if (ast.arg1().isList()) {
         final IAST list = (IAST) ast.arg1();
         return fromCharacterCode(list, ast, engine);
@@ -548,6 +544,11 @@ public final class StringFunctions {
       }
 
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
 
     private static IExpr fromCharacterCode(final IAST charList, final IAST fromCharacterCodeAST,
