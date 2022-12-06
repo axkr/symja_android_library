@@ -5486,24 +5486,26 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   @Override
   public void sortInplace(Comparator<IExpr> comparator) {
-    final IExpr[] a = toArray();
-    int end = a.length;
-    if (Config.FUZZ_TESTING) {
-      try {
+    if (size() > 1) {
+      final IExpr[] a = toArray();
+      int end = a.length;
+      if (Config.FUZZ_TESTING) {
+        try {
+          Arrays.sort(a, 1, size(), comparator);
+          for (int j = 1; j < end; j++) {
+            set(j, a[j]);
+          }
+        } catch (java.lang.IllegalArgumentException iae) {
+          // java.util.TimSort.mergeHi(TimSort.java:899) - Comparison method violates its general
+          // contract!
+          LOGGER.error(this, iae);
+          throw iae;
+        }
+      } else {
         Arrays.sort(a, 1, size(), comparator);
         for (int j = 1; j < end; j++) {
           set(j, a[j]);
         }
-      } catch (java.lang.IllegalArgumentException iae) {
-        // java.util.TimSort.mergeHi(TimSort.java:899) - Comparison method violates its general
-        // contract!
-        LOGGER.error(this, iae);
-        throw iae;
-      }
-    } else {
-      Arrays.sort(a, 1, size(), comparator);
-      for (int j = 1; j < end; j++) {
-        set(j, a[j]);
       }
     }
   }
