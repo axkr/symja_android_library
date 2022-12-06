@@ -2332,6 +2332,10 @@ public class S {
    */
   public final static IBuiltInSymbol DSolve = F.initFinalSymbol("DSolve", ID.DSolve);
 
+  public final static IBuiltInSymbol Dashed = F.initFinalSymbol("Dashed", ID.Dashed);
+
+  public final static IBuiltInSymbol Dashing = F.initFinalSymbol("Dashing", ID.Dashing);
+
   public final static IBuiltInSymbol DataRange = F.initFinalSymbol("DataRange", ID.DataRange);
 
   /**
@@ -2816,6 +2820,10 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Dot = F.initFinalSymbol("Dot", ID.Dot);
+
+  public final static IBuiltInSymbol DotDashed = F.initFinalSymbol("DotDashed", ID.DotDashed);
+
+  public final static IBuiltInSymbol Dotted = F.initFinalSymbol("Dotted", ID.Dotted);
 
   /**
    * DownValues(symbol) - prints the down-value rules associated with `symbol`.

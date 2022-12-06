@@ -3202,6 +3202,10 @@ public class F extends S {
     return new AST2(D, f, x);
   }
 
+  public static IAST Dashing(final IExpr a) {
+    return new AST1(Dashing, a);
+  }
+
   public static IAST Decrement(final IExpr a) {
     return new AST1(Decrement, a);
   }
