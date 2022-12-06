@@ -216,6 +216,7 @@ public class ExprTools {
           args.append(F.Power(factor, exp));
         }
       }
+//      args.sortInplace();
       return args.oneIdentity1();
     }
 
