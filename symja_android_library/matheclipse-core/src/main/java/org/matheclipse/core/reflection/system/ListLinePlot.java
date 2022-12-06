@@ -35,6 +35,7 @@ public class ListLinePlot extends ListPlot {
     int[] colour = new int[] {1};
     IAST graphicsPrimitives = plot(ast, boundingbox, colour, true, engine);
     if (graphicsPrimitives.isPresent()) {
+      addPadding(boundingbox);
       IExpr result = F.Graphics(graphicsPrimitives, //
           F.Rule(S.Axes, S.True),
           F.Rule(S.PlotRange, F.List(F.List(F.num(boundingbox[0]), F.num(boundingbox[1])),

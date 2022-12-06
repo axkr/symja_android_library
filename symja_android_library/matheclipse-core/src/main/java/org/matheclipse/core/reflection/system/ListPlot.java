@@ -43,6 +43,7 @@ public class ListPlot extends AbstractEvaluator {
     int[] colour = new int[] {1};
     IAST graphicsPrimitives = plot(ast, boundingbox, colour, false, engine);
     if (graphicsPrimitives.isPresent()) {
+      addPadding(boundingbox);
       IExpr result = F.Graphics(graphicsPrimitives, //
           F.Rule(S.Axes, S.True),
           F.Rule(S.PlotRange, F.List(F.List(F.num(boundingbox[0]), F.num(boundingbox[1])),
@@ -53,17 +54,33 @@ public class ListPlot extends AbstractEvaluator {
     return F.NIL;
   }
 
+  protected void addPadding(double[] boundingbox) {
+    // add some "padding" around bounding box
+    double xPadding = (boundingbox[1] - boundingbox[0]) / 12.0;
+    double yPadding = (boundingbox[3] - boundingbox[2]) / 12.0;
+    if (F.isZero(xPadding)) {
+      xPadding = 0.05;
+    }
+    if (F.isZero(yPadding)) {
+      yPadding = 0.05;
+    }
+    boundingbox[0] = boundingbox[0] - xPadding; // xMin
+    boundingbox[1] = boundingbox[1] + xPadding; // xMax
+    boundingbox[2] = boundingbox[2] - yPadding; // yMin
+    boundingbox[3] = boundingbox[3] + yPadding; // yMax
+  }
+
   /**
    * 
    * @param plot
    * @param boundingbox an array of double values (length 4) which describes the bounding box
    *        <code>[xMin, yMax, xMax, yMin]</code>
    * @param colour
-   * @param listLinePlot
+   * @param linePlot draw a line between points
    * @param engine
    * @return
    */
-  protected static IAST plot(IAST plot, double[] boundingbox, int[] colour, boolean listLinePlot,
+  protected static IAST plot(IAST plot, double[] boundingbox, int[] colour, boolean linePlot,
       EvalEngine engine) {
     // final OptionArgs options = new OptionArgs(plot.topHead(), plot, 2, engine);
     if (plot.size() < 2) {
@@ -83,12 +100,12 @@ public class ListPlot extends AbstractEvaluator {
       final IASTAppendable graphicsPrimitives = F.ListAlloc();
       IAST pointList = (IAST) arg1;
       // TODO Labeled lists
-      if (pointList.isList(x -> x.isList() || x.isAST(S.Labeled, 3))) {
+      if (pointList.isList(x -> x.isList())) {
         int[] dimension = pointList.isMatrix(false);
         if (dimension != null) {
           if (dimension[1] == 2) {
-            sequencePointListPlot(graphicsPrimitives, 1, pointList, boundingbox, colour,
-                listLinePlot, engine);
+            sequencePointListPlot(graphicsPrimitives, 1, pointList, boundingbox, colour, linePlot,
+                engine);
             return graphicsPrimitives;
           }
         }
@@ -98,18 +115,18 @@ public class ListPlot extends AbstractEvaluator {
           dimension = pointList.isMatrix(false);
           if (dimension != null) {
             if (dimension[1] == 2) {
-              sequencePointListPlot(graphicsPrimitives, i, pointList, boundingbox, colour,
-                  listLinePlot, engine);
+              sequencePointListPlot(graphicsPrimitives, i, pointList, boundingbox, colour, linePlot,
+                  engine);
             } else {
               return graphicsPrimitives;
             }
           } else {
-            sequenceYValuesListPlot(graphicsPrimitives, i, pointList, boundingbox, colour,
-                listLinePlot, engine);
+            sequenceYValuesListPlot(graphicsPrimitives, i, pointList, boundingbox, colour, linePlot,
+                engine);
           }
         }
       } else {
-        sequenceYValuesListPlot(graphicsPrimitives, 1, pointList, boundingbox, colour, listLinePlot,
+        sequenceYValuesListPlot(graphicsPrimitives, 1, pointList, boundingbox, colour, linePlot,
             engine);
       }
       return graphicsPrimitives; // JSXGraph.boundingBox(manipulateAST, boundingbox,
@@ -125,20 +142,18 @@ public class ListPlot extends AbstractEvaluator {
    * 
    * @param arg the number of the current argument
    * @param pointList
-   * @param listLinePLot TODO
+   * @param linePlot draw a line between points
    * @param engine
-   * @param ast
-   * @param toJS
    * 
    * @return
    */
   private static void sequencePointListPlot(IASTAppendable graphicsPrimitives, int arg,
-      IAST pointList, double[] boundingbox, int[] colour, boolean listLinePLot, EvalEngine engine) {
+      IAST pointList, double[] boundingbox, int[] colour, boolean linePlot, EvalEngine engine) {
     // plot a list of 2D points
 
     IAST color = GraphicsFunctions.plotStyleColorExpr(colour[0]++, F.NIL);
 
-    if (listLinePLot) {
+    if (linePlot) {
       if (pointList.size() > 2) {
         // if (ast.arg1().isAST(S.ListLinePlot) && pointList.size() > 2) {
         // IAST lastPoint = (IAST) pointList.arg1();
@@ -156,8 +171,8 @@ public class ListPlot extends AbstractEvaluator {
         }
 
         if (start < Integer.MAX_VALUE && lastPoint.isPresent()) {
-          xBoundingBox(engine, boundingbox, lastPoint.arg1());
-          yBoundingBox(engine, boundingbox, lastPoint.arg2());
+          xBoundingBox(boundingbox, lastPoint.arg1(), engine);
+          yBoundingBox(boundingbox, lastPoint.arg2(), engine);
           graphicsPrimitives.append(color);
 
           IASTAppendable pointPrimitives = F.ListAlloc();
@@ -175,20 +190,20 @@ public class ListPlot extends AbstractEvaluator {
               continue;
             }
             if (!isConnected && lastPoint.isPresent()) {
-              xBoundingBox(engine, boundingbox, lastPoint.arg1());
-              yBoundingBox(engine, boundingbox, lastPoint.arg2());
+              xBoundingBox(boundingbox, lastPoint.arg1(), engine);
+              yBoundingBox(boundingbox, lastPoint.arg2(), engine);
               addSinglePoint(pointPrimitives, textPrimitives, boundingbox, engine, lastPoint.arg1(),
                   lastPoint.arg2());
-              xBoundingBox(engine, boundingbox, point.arg1());
-              yBoundingBox(engine, boundingbox, point.arg2());
+              xBoundingBox(boundingbox, point.arg1(), engine);
+              yBoundingBox(boundingbox, point.arg2(), engine);
               addSinglePoint(pointPrimitives, textPrimitives, boundingbox, engine, point.arg1(),
                   point.arg2());
               isConnected = true;
               continue;
             }
             if (isConnected) {
-              xBoundingBox(engine, boundingbox, point.arg1());
-              yBoundingBox(engine, boundingbox, point.arg2());
+              xBoundingBox(boundingbox, point.arg1(), engine);
+              yBoundingBox(boundingbox, point.arg2(), engine);
               addSinglePoint(pointPrimitives, textPrimitives, boundingbox, engine, point.arg1(),
                   point.arg2());
             }
@@ -196,8 +211,8 @@ public class ListPlot extends AbstractEvaluator {
           }
           if (!isConnected && lastPoint.isPresent()) {
             // dummy line for a single point
-            xBoundingBox(engine, boundingbox, lastPoint.arg1());
-            yBoundingBox(engine, boundingbox, lastPoint.arg2());
+            xBoundingBox(boundingbox, lastPoint.arg1(), engine);
+            yBoundingBox(boundingbox, lastPoint.arg2(), engine);
             addSinglePoint(pointPrimitives, textPrimitives, boundingbox, engine, lastPoint.arg1(),
                 lastPoint.arg2());
             addSinglePoint(pointPrimitives, textPrimitives, boundingbox, engine, lastPoint.arg1(),
@@ -221,8 +236,8 @@ public class ListPlot extends AbstractEvaluator {
         if (isNonReal(point.arg1(), point.arg2())) {
           continue;
         }
-        xBoundingBox(engine, boundingbox, point.arg1());
-        yBoundingBox(engine, boundingbox, point.arg2());
+        xBoundingBox(boundingbox, point.arg1(), engine);
+        yBoundingBox(boundingbox, point.arg2(), engine);
         addSinglePoint(pointPrimitives, textPrimitives, boundingbox, engine, point.arg1(),
             point.arg2());
       }
@@ -239,19 +254,17 @@ public class ListPlot extends AbstractEvaluator {
    * Plot a list of points for Y-values for the X-values <code>1,2,3,...</code>.
    * 
    * @param pointList
-   * @param listLinePlot TODO
+   * @param linePlot draw a line between points
    * @param engine
-   * @param ast
-   * @param toJS
    *
    * @return
    */
   private static void sequenceYValuesListPlot(IASTAppendable graphicsPrimitives, int arg,
-      IAST pointList, double[] boundingbox, int[] colour, boolean listLinePlot, EvalEngine engine) {
+      IAST pointList, double[] boundingbox, int[] colour, boolean linePlot, EvalEngine engine) {
     IAST color = GraphicsFunctions.plotStyleColorExpr(colour[0]++, F.NIL);
-    xBoundingBox(engine, boundingbox, F.C0);
-    xBoundingBox(engine, boundingbox, F.ZZ(pointList.size()));
-    if (listLinePlot) {
+    xBoundingBox(boundingbox, F.C0, engine);
+    xBoundingBox(boundingbox, F.ZZ(pointList.size()), engine);
+    if (linePlot) {
       graphicsPrimitives.append(color);
       IExpr lastPoint = F.NIL;
       int lastPosition = -1;
@@ -268,7 +281,7 @@ public class ListPlot extends AbstractEvaluator {
         break;
       }
       if (start < Integer.MAX_VALUE) {
-        yBoundingBox(engine, boundingbox, lastPoint);
+        yBoundingBox(boundingbox, lastPoint, engine);
         IASTAppendable pointPrimitives = F.ListAlloc();
         IASTAppendable textPrimitives = F.ListAlloc();
         for (int i = start; i < pointList.size(); i++) {
@@ -315,7 +328,7 @@ public class ListPlot extends AbstractEvaluator {
       graphicsPrimitives.append(color);
       if (pointList.isAST(S.Labeled, 3) && pointList.arg1().isList()) {
         pointList = (IAST) pointList.arg1();
-        xBoundingBox(engine, boundingbox, F.ZZ(pointList.size()));
+        xBoundingBox(boundingbox, F.ZZ(pointList.size()), engine);
       }
       IASTAppendable pointPrimitives = F.ListAlloc();
       IASTAppendable textPrimitives = F.ListAlloc();
@@ -341,11 +354,11 @@ public class ListPlot extends AbstractEvaluator {
     ISignedNumber x = currentPointX.evalReal();
     ISignedNumber y = currentPointY.evalReal();
     if (x != null && y != null) {
-      yBoundingBox(engine, boundingbox, x);
+      yBoundingBox(boundingbox, x, engine);
       if (currentPointX.isAST(S.Labeled, 3)) {
         textPrimitives.append(F.Text(currentPointX.second(), F.List(x, y)));
       }
-      yBoundingBox(engine, boundingbox, y);
+      yBoundingBox(boundingbox, y, engine);
       if (currentPointY.isAST(S.Labeled, 3)) {
         textPrimitives.append(F.Text(currentPointY.second(), F.List(x, y)));
       }
@@ -361,7 +374,7 @@ public class ListPlot extends AbstractEvaluator {
     ISignedNumber x = F.num(i);
     ISignedNumber y = currentPointY.evalReal();
     if (y != null) {
-      yBoundingBox(engine, boundingbox, currentPointY);
+      yBoundingBox(boundingbox, currentPointY, engine);
       if (currentPointY.isAST(S.Labeled, 3)) {
         textPrimitives.append(F.Text(currentPointY.second(), F.List(x, y)));
       }
@@ -381,7 +394,7 @@ public class ListPlot extends AbstractEvaluator {
     return isNonReal(lastPointX) || isNonReal(lastPointY);
   }
 
-  private static void xBoundingBox(EvalEngine engine, double[] boundingbox, IExpr xExpr) {
+  private static void xBoundingBox(double[] boundingbox, IExpr xExpr, EvalEngine engine) {
     try {
       double xValue = engine.evalDouble(xExpr);
       if (Double.isFinite(xValue)) {
@@ -397,7 +410,7 @@ public class ListPlot extends AbstractEvaluator {
     }
   }
 
-  private static void yBoundingBox(EvalEngine engine, double[] boundingbox, IExpr yExpr) {
+  private static void yBoundingBox(double[] boundingbox, IExpr yExpr, EvalEngine engine) {
     try {
       double yValue = engine.evalDouble(yExpr);
       if (Double.isFinite(yValue)) {
