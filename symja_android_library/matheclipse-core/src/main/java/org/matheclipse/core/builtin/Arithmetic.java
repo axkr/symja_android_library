@@ -6287,27 +6287,9 @@ public final class Arithmetic {
       // the case where both args are numbers is already handled in binaryOperator()
       if (arg1.isReal() || arg2.isReal()) {
         if (arg1.isZero()) {
-          if (arg2.isQuantity()) {
-            return ((IQuantity) arg2).ofUnit(F.C0);
-          }
-          if (arg2.isDirectedInfinity()) {
-            // Indeterminate expression `1` encountered.
-            IOFunctions.printMessage(S.Infinity, "indet", F.list(F.Times(arg1, arg2)),
-                EvalEngine.get());
-            return S.Indeterminate;
-          }
-          return F.C0;
+          return evalZeroTimesX(arg1, arg2, false);
         } else if (arg2.isZero()) {
-          if (arg1.isQuantity()) {
-            return ((IQuantity) arg1).ofUnit(F.C0);
-          }
-          if (arg1.isDirectedInfinity()) {
-            // Indeterminate expression `1` encountered.
-            IOFunctions.printMessage(S.Infinity, "indet", F.list(F.Times(arg1, arg2)),
-                EvalEngine.get());
-            return S.Indeterminate;
-          }
-          return F.C0;
+          return evalZeroTimesX(arg2, arg1, true);
         } else if (arg1.isOne()) {
           return arg2;
         } else if (arg2.isOne()) {
@@ -6463,6 +6445,37 @@ public final class Arithmetic {
 
           default:
         }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Return <code>0</code> if <code>zeroArg</code> is an exact number or <code>otherArg</code>
+     * contains no {@link S#Slot} or {@link S#SlotSequence} AST expression.
+     * 
+     * @param zeroArg {@link IExpr#isZero()} returns true for this expression
+     * @param otherArg
+     * @param swappedArgs TODO
+     * @return
+     */
+    private static IExpr evalZeroTimesX(final IExpr zeroArg, final IExpr otherArg,
+        boolean swappedArgs) {
+      if (otherArg.isQuantity()) {
+        return ((IQuantity) otherArg).ofUnit(F.C0);
+      }
+      if (otherArg.isDirectedInfinity()) {
+        IASTMutable messageAST =
+            swappedArgs ? F.Times(otherArg, zeroArg) : F.Times(zeroArg, otherArg);
+        // Indeterminate expression `1` encountered.
+        IOFunctions.printMessage(S.Infinity, "indet", F.list(messageAST), EvalEngine.get());
+        return S.Indeterminate;
+      }
+      if (zeroArg.isExactNumber() //
+          || !otherArg.isAST() //
+          || otherArg.argSize() == 0 //
+          || zeroArg.equals(F.CD0) //
+          || otherArg.isFree(x -> x.isSlot() || x.isSlotSequence(), true)) {
+        return F.C0;
       }
       return F.NIL;
     }

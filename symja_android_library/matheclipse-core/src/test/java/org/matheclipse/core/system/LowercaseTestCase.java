@@ -17768,6 +17768,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testPDF() {
+    check("PDF(BinomialDistribution(50.0, 0.5), 27.0)", //
+        "0.0959617");
     check("PDF(BetaDistribution(2,3), 0.1)", //
         "0.972");
     check("PDF(BetaDistribution(2,3), 0.9)", //
@@ -23849,6 +23851,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTimes() {
+    check("0.0*Sin(#)", //
+        "0");
+    check("8.88178*10^-16 * Binomial(50.0, #)", //
+        "8.88178*10^-16*Binomial(50.0,#1)");
+    check("0.5^#1*(-0.5+1)^(50.0-#1)", //
+        "8.88178*10^-16");
+    check("0.5^27.0*(-0.5+1)^(50.0-27.0)", //
+        "8.88178*10^-16");
+
     check("Times(Sqrt[2/Pi]*Sqrt[Pi])", //
         "Sqrt(2)");
     check("Times(I, 1/2) // FullForm", //
