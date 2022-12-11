@@ -2705,6 +2705,9 @@ public class S {
 
   public final static IBuiltInSymbol DisplayForm = F.initFinalSymbol("DisplayForm", ID.DisplayForm);
 
+  public final static IBuiltInSymbol DisplayFunction =
+      F.initFinalSymbol("DisplayFunction", ID.DisplayFunction);
+
   public final static IBuiltInSymbol Disputed = F.initFinalSymbol("Disputed", ID.Disputed);
 
   public final static IBuiltInSymbol DisrectedEdges =
@@ -3560,6 +3563,13 @@ public class S {
   public final static IBuiltInSymbol FindInstance =
       F.initFinalSymbol("FindInstance", ID.FindInstance);
 
+  /**
+   * FindLinearRecurrence(list) - compute a minimal linear recurrence which returns list.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindLinearRecurrence.md">FindLinearRecurrence
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol FindLinearRecurrence =
       F.initFinalSymbol("FindLinearRecurrence", ID.FindLinearRecurrence);
 
@@ -4254,9 +4264,6 @@ public class S {
 
   public final static IBuiltInSymbol Graphics = F.initFinalSymbol("Graphics", ID.Graphics);
 
-  public final static IBuiltInSymbol GraphicsJSON =
-      F.initFinalSymbol("GraphicsJSON", ID.GraphicsJSON);
-
   /**
    * Graphics3D(primitives, options) - represents a three-dimensional graphic.
    * 
@@ -4274,6 +4281,9 @@ public class S {
 
   public final static IBuiltInSymbol GraphicsGroup =
       F.initFinalSymbol("GraphicsGroup", ID.GraphicsGroup);
+
+  public final static IBuiltInSymbol GraphicsJSON =
+      F.initFinalSymbol("GraphicsJSON", ID.GraphicsJSON);
 
   public final static IBuiltInSymbol Gray = F.initFinalSymbol("Gray", ID.Gray);
 
@@ -5424,6 +5434,8 @@ public class S {
    */
   public final static IBuiltInSymbol Join = F.initFinalSymbol("Join", ID.Join);
 
+  public final static IBuiltInSymbol Joined = F.initFinalSymbol("Joined", ID.Joined);
+
   public final static IBuiltInSymbol KOrderlessPartitions =
       F.initFinalSymbol("KOrderlessPartitions", ID.KOrderlessPartitions);
 
@@ -5918,6 +5930,9 @@ public class S {
    */
   public final static IBuiltInSymbol ListLogLogPlot =
       F.initFinalSymbol("ListLogLogPlot", ID.ListLogLogPlot);
+
+  public final static IBuiltInSymbol ListLogLinearPlot =
+      F.initFinalSymbol("ListLogLinearPlot", ID.ListLogLinearPlot);
 
   /**
    * ListLogPlot( { list-of-points } ) - generate an image of a logarithmic Y plot for the
@@ -6758,6 +6773,15 @@ public class S {
 
   public final static IBuiltInSymbol Needs = F.initFinalSymbol("Needs", ID.Needs);
 
+  public final static IBuiltInSymbol NegativeIntegers =
+      F.initFinalSymbol("NegativeIntegers", ID.NegativeIntegers);
+
+  public final static IBuiltInSymbol NegativeRationals =
+      F.initFinalSymbol("NegativeRationals", ID.NegativeRationals);
+
+  public final static IBuiltInSymbol NegativeReals =
+      F.initFinalSymbol("NegativeReals", ID.NegativeReals);
+
   /**
    * Negative(x) - returns `True` if `x` is a negative real number.
    * 
@@ -6831,6 +6855,15 @@ public class S {
 
   public final static IBuiltInSymbol NonCommutativeMultiply =
       F.initFinalSymbol("NonCommutativeMultiply", ID.NonCommutativeMultiply);
+
+  public final static IBuiltInSymbol NonNegativeIntegers =
+      F.initFinalSymbol("NonNegativeIntegers", ID.NonNegativeIntegers);
+
+  public final static IBuiltInSymbol NonNegativeRationals =
+      F.initFinalSymbol("NonNegativeRationals", ID.NonNegativeRationals);
+
+  public final static IBuiltInSymbol NonNegativeReals =
+      F.initFinalSymbol("NonNegativeReals", ID.NonNegativeReals);
 
   /**
    * NonNegative(x) - returns `True` if `x` is a positive real number or zero.
@@ -7059,8 +7092,8 @@ public class S {
   public final static IBuiltInSymbol On = F.initFinalSymbol("On", ID.On);
 
   /**
-   * OneIdentity - is an attribute specifying that `f(x)` should be treated as equivalent to `x` in
-   * pattern matching.
+   * OneIdentity - is an attribute assigned to a symbol, say `f`, indicating that `f(x)`,
+   * `f(f(x))`,... etc. are all equivalent to `x` in pattern matching.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OneIdentity.md">OneIdentity
@@ -7629,9 +7662,9 @@ public class S {
    */
   public final static IBuiltInSymbol Point = F.initFinalSymbol("Point", ID.Point);
 
-  public final static IBuiltInSymbol PointSize = F.initFinalSymbol("PointSize", ID.PointSize);
-
   public final static IBuiltInSymbol PointLight = F.initFinalSymbol("PointLight", ID.PointLight);
+
+  public final static IBuiltInSymbol PointSize = F.initFinalSymbol("PointSize", ID.PointSize);
 
   /**
    * PoissonDistribution(m) - returns a Poisson distribution.
@@ -7788,6 +7821,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Positive = F.initFinalSymbol("Positive", ID.Positive);
+
+  public final static IBuiltInSymbol PositiveIntegers =
+      F.initFinalSymbol("PositiveIntegers", ID.PositiveIntegers);
+
+  public final static IBuiltInSymbol PositiveRationals =
+      F.initFinalSymbol("PositiveRationals", ID.PositiveRationals);
+
+  public final static IBuiltInSymbol PositiveReals =
+      F.initFinalSymbol("PositiveReals", ID.PositiveReals);
 
   /**
    * PossibleZeroQ(expr) - returns `True` if basic symbolic and numerical methods suggests that
@@ -8633,6 +8675,13 @@ public class S {
   public final static IBuiltInSymbol RotationMatrix =
       F.initFinalSymbol("RotationMatrix", ID.RotationMatrix);
 
+  /**
+   * RotationTransform(phi) - gives a rotation by `phi`
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RotationTransform.md">RotationTransform
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol RotationTransform =
       F.initFinalSymbol("RotationTransform", ID.RotationTransform);
 
@@ -8751,6 +8800,13 @@ public class S {
   public final static IBuiltInSymbol ScalingFunctions =
       F.initFinalSymbol("ScalingFunctions", ID.ScalingFunctions);
 
+  /**
+   * ScalingTransform(v) - gives a scaling transform of `v`. `v` may be a scalar or a vector.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ScalingTransform.md">ScalingTransform
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ScalingTransform =
       F.initFinalSymbol("ScalingTransform", ID.ScalingTransform);
 
@@ -8931,6 +8987,13 @@ public class S {
    */
   public final static IBuiltInSymbol Share = F.initFinalSymbol("Share", ID.Share);
 
+  /**
+   * ShearingTransform(phi, {1, 0}, {0, 1}) - gives a horizontal shear by the angle `phi`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ShearingTransform.md">ShearingTransform
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ShearingTransform =
       F.initFinalSymbol("ShearingTransform", ID.ShearingTransform);
 
@@ -10289,9 +10352,23 @@ public class S {
   public final static IBuiltInSymbol TraditionalForm =
       F.initFinalSymbol("TraditionalForm", ID.TraditionalForm);
 
+  /**
+   * TransformationFunction(m) - represents a transformation.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TransformationFunction.md">TransformationFunction
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol TransformationFunction =
       F.initFinalSymbol("TransformationFunction", ID.TransformationFunction);
 
+  /**
+   * TranslationTransform(v) - gives the translation by the vector `v`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TranslationTransform.md">TranslationTransform
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol TranslationTransform =
       F.initFinalSymbol("TranslationTransform", ID.TranslationTransform);
 
@@ -10663,6 +10740,17 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol VectorAngle = F.initFinalSymbol("VectorAngle", ID.VectorAngle);
+
+  public final static IBuiltInSymbol VectorGreater =
+      F.initFinalSymbol("VectorGreater", ID.VectorGreater);
+
+  public final static IBuiltInSymbol VectorGreaterEqual =
+      F.initFinalSymbol("VectorGreaterEqual", ID.VectorGreaterEqual);
+
+  public final static IBuiltInSymbol VectorLess = F.initFinalSymbol("VectorLess", ID.VectorLess);
+
+  public final static IBuiltInSymbol VectorLessEqual =
+      F.initFinalSymbol("VectorLessEqual", ID.VectorLessEqual);
 
   /**
    * VectorQ(v) - returns `True` if `v` is a list of elements which are not themselves lists.
