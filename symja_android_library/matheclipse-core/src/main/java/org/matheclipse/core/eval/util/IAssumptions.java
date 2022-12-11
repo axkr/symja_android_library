@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval.util;
 
 import java.util.Map;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -131,6 +132,24 @@ public interface IAssumptions {
   public boolean isNegative(IExpr expr);
 
   /**
+   * Gives <code>true</code>, if the expression is assumed to be a positive rational value (i.e. an
+   * element of the {@link S#NegativeRationals} domain), <code>false</code> in all other cases.
+   * 
+   * @param expr
+   * @return
+   */
+  public boolean isNegativeRational(IExpr expr);
+
+  /**
+   * Gives <code>true</code>, if the expression is assumed to be a negative real value (i.e. an
+   * element of the {@link S#NegativeReals} domain), <code>false</code> in all other cases.
+   * 
+   * @param expr
+   * @return
+   */
+  public boolean isNegativeReal(IExpr expr);
+
+  /**
    * Gives <code>true</code>, if the expression is assumed to be a non-negative value, <code>false
    * </code> in all other cases.
    *
@@ -140,6 +159,24 @@ public interface IAssumptions {
   public boolean isNonNegative(IExpr expr);
 
   /**
+   * Gives <code>true</code>, if the expression is assumed to be a positive rational value (i.e. an
+   * element of the {@link S#NonNegativeRationals} domain), <code>false</code> in all other cases.
+   * 
+   * @param expr
+   * @return
+   */
+  public boolean isNonNegativeRational(IExpr expr);
+
+  /**
+   * Gives <code>true</code>, if the expression is assumed to be a non negative real value (i.e. an
+   * element of the {@link S#NonNegativeReals} domain), <code>false</code> in all other cases.
+   * 
+   * @param expr
+   * @return
+   */
+  public boolean isNonNegativeReal(IExpr expr);
+
+  /**
    * Gives <code>true</code>, if the expression is assumed to be a positive value, <code>false
    * </code> in all other cases.
    *
@@ -147,6 +184,24 @@ public interface IAssumptions {
    * @return
    */
   public boolean isPositive(IExpr expr);
+
+  /**
+   * Gives <code>true</code>, if the expression is assumed to be a positive rational value (i.e. an
+   * element of the {@link S#PositiveRationals} domain), <code>false</code> in all other cases.
+   * 
+   * @param expr
+   * @return
+   */
+  public boolean isPositiveRational(IExpr expr);
+
+  /**
+   * Gives <code>true</code>, if the expression is assumed to be a positive real value (i.e. an
+   * element of the {@link S#PositiveReals} domain), <code>false</code> in all other cases.
+   * 
+   * @param expr
+   * @return
+   */
+  public boolean isPositiveReal(IExpr expr);
 
   /**
    * Gives <code>true</code>, if the expression is assumed to be a prime number (i.e. an element of

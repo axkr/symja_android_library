@@ -626,27 +626,6 @@ public class Assumptions extends AbstractAssumptions {
   }
 
   @Override
-  public boolean isEqual(IExpr expr, ISignedNumber number) {
-    ISignedNumber num;
-    SignedNumberRelations gla = valueMap.get(expr);
-    if (gla != null) {
-      num = gla.getEquals();
-      if (num != null) {
-        if (num.equals(number)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  @Override
-  public final IAST tensors(IExpr expr) {
-    IAST tensor = tensorsMap.get(expr);
-    return (tensor == null) ? F.NIL : tensor;
-  }
-
-  @Override
   public IExpr get$Assumptions() {
     return $assumptions;
   }
@@ -674,6 +653,21 @@ public class Assumptions extends AbstractAssumptions {
   private final boolean isDomain(IExpr expr, ISymbol domain) {
     ISymbol mappedDomain = elementsMap.get(expr);
     return mappedDomain != null && mappedDomain.equals(domain);
+  }
+
+  @Override
+  public boolean isEqual(IExpr expr, ISignedNumber number) {
+    ISignedNumber num;
+    SignedNumberRelations gla = valueMap.get(expr);
+    if (gla != null) {
+      num = gla.getEquals();
+      if (num != null) {
+        if (num.equals(number)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @Override
@@ -801,13 +795,43 @@ public class Assumptions extends AbstractAssumptions {
   }
 
   @Override
+  public boolean isNegativeRational(IExpr expr) {
+    return isDomain(expr, S.NegativeRationals);
+  }
+
+  @Override
+  public boolean isNegativeReal(IExpr expr) {
+    return isDomain(expr, S.NegativeReals);
+  }
+
+  @Override
   public boolean isNonNegative(IExpr expr) {
     return isGreaterEqual(expr, F.C0);
   }
 
   @Override
+  public boolean isNonNegativeRational(IExpr expr) {
+    return isDomain(expr, S.NonNegativeRationals);
+  }
+
+  @Override
+  public boolean isNonNegativeReal(IExpr expr) {
+    return isDomain(expr, S.NonNegativeReals);
+  }
+
+  @Override
   public boolean isPositive(IExpr expr) {
     return isGreaterThan(expr, F.C0);
+  }
+
+  @Override
+  public boolean isPositiveRational(IExpr expr) {
+    return isDomain(expr, S.PositiveRationals);
+  }
+
+  @Override
+  public boolean isPositiveReal(IExpr expr) {
+    return isDomain(expr, S.PositiveReals);
   }
 
   @Override
@@ -822,8 +846,8 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public boolean isReal(IExpr expr) {
-    SignedNumberRelations gla = valueMap.get(expr);
-    if (gla != null && gla.isLessOrGreaterRelation()) {
+    SignedNumberRelations relation = valueMap.get(expr);
+    if (relation != null && relation.isLessOrGreaterRelation()) {
       return true;
     }
     return isDomain(expr, S.Reals);
@@ -919,8 +943,15 @@ public class Assumptions extends AbstractAssumptions {
     return null;
   }
 
+
   @Override
   public void set$Assumptions(IExpr $assumptions) {
     this.$assumptions = $assumptions;
+  }
+
+  @Override
+  public final IAST tensors(IExpr expr) {
+    IAST tensor = tensorsMap.get(expr);
+    return (tensor == null) ? F.NIL : tensor;
   }
 }

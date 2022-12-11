@@ -17,26 +17,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public abstract class AbstractAssumptions implements IAssumptions {
 
-  @Override
-  public IAssumptions addAssumption(IExpr expr) {
-    return null;
-  }
-
-  @Override
-  public IAST distribution(IExpr expr) {
-    return F.NIL;
-  }
-
-  @Override
-  public Map<IExpr, IAST> getTensorsMap() {
-    return new HashMap<IExpr, IAST>();
-  }
-
-  @Override
-  public IAST tensors(IExpr expr) {
-    return F.NIL;
-  }
-
   /**
    * TODO implement algebraic number conditions.
    *
@@ -102,28 +82,6 @@ public abstract class AbstractAssumptions implements IAssumptions {
     if (assumptions != null) {
       IAST temp = assumptions.tensors(expr);
       if (temp.isAST(S.Arrays, 2, 4)) {
-        return S.True;
-      }
-    }
-    return null;
-  }
-
-  public static ISymbol assumeMatrices(final IExpr expr) {
-    IAssumptions assumptions = EvalEngine.get().getAssumptions();
-    if (assumptions != null) {
-      IAST temp = assumptions.tensors(expr);
-      if (temp.isAST(S.Matrices, 3, 4)) {
-        return S.True;
-      }
-    }
-    return null;
-  }
-
-  public static ISymbol assumeVectors(final IExpr expr) {
-    IAssumptions assumptions = EvalEngine.get().getAssumptions();
-    if (assumptions != null) {
-      IAST temp = assumptions.tensors(expr);
-      if (temp.isAST(S.Vectors, 3, 4)) {
         return S.True;
       }
     }
@@ -221,6 +179,46 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return false;
   }
 
+  public static boolean assumeGreaterEqual(final IExpr expr, final ISignedNumber number) {
+    if (expr.isReal()) {
+      return ((ISignedNumber) expr).isGT(number);
+    }
+    if (expr.isNumber()) {
+      return false;
+    }
+    if (expr.isRealConstant()) {
+      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= number
+          .doubleValue();
+    }
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      if (assumptions.isGreaterEqual(expr, number)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static boolean assumeGreaterThan(final IExpr expr, ISignedNumber number) {
+    if (expr.isReal()) {
+      return ((ISignedNumber) expr).isGT(number);
+    }
+    if (expr.isNumber()) {
+      return false;
+    }
+    if (expr.isRealConstant()) {
+      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > number
+          .doubleValue();
+    }
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      if (assumptions.isGreaterThan(expr, number)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Test if <code>expr</code> is assumed to be an integer.
    *
@@ -251,32 +249,6 @@ public abstract class AbstractAssumptions implements IAssumptions {
       }
     }
     return null;
-  }
-
-  /**
-   * Test if <code>expr</code> is assumed to be an negative number.
-   *
-   * @param expr
-   * @return <code>true</code> if <code>expr</code> is assumed to be a negative number. Return
-   *         <code>false</code> in all other cases.
-   */
-  public static boolean assumeNegative(final IExpr expr) {
-    if (expr.isReal()) {
-      return expr.isNegative();
-    }
-    if (expr.isNumber()) {
-      return false;
-    }
-    if (expr.isRealConstant()) {
-      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < 0.0;
-    }
-    IAssumptions assumptions = EvalEngine.get().getAssumptions();
-    if (assumptions != null) {
-      if (assumptions.isNegative(expr)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   public static boolean assumeLessEqual(final IExpr expr, final ISignedNumber number) {
@@ -319,6 +291,43 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return false;
   }
 
+  public static ISymbol assumeMatrices(final IExpr expr) {
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      IAST temp = assumptions.tensors(expr);
+      if (temp.isAST(S.Matrices, 3, 4)) {
+        return S.True;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Test if <code>expr</code> is assumed to be an negative number.
+   *
+   * @param expr
+   * @return <code>true</code> if <code>expr</code> is assumed to be a negative number. Return
+   *         <code>false</code> in all other cases.
+   */
+  public static boolean assumeNegative(final IExpr expr) {
+    if (expr.isReal()) {
+      return expr.isNegative();
+    }
+    if (expr.isNumber()) {
+      return false;
+    }
+    if (expr.isRealConstant()) {
+      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < 0.0;
+    }
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      if (assumptions.isNegative(expr)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Test if <code>expr</code> is assumed to be an non negative number.
    *
@@ -345,26 +354,6 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return false;
   }
 
-  public static boolean assumeGreaterEqual(final IExpr expr, final ISignedNumber number) {
-    if (expr.isReal()) {
-      return ((ISignedNumber) expr).isGT(number);
-    }
-    if (expr.isNumber()) {
-      return false;
-    }
-    if (expr.isRealConstant()) {
-      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= number
-          .doubleValue();
-    }
-    IAssumptions assumptions = EvalEngine.get().getAssumptions();
-    if (assumptions != null) {
-      if (assumptions.isGreaterEqual(expr, number)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   /**
    * Test if <code>expr</code> is assumed to be an positive number.
    *
@@ -385,26 +374,6 @@ public abstract class AbstractAssumptions implements IAssumptions {
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
       if (assumptions.isPositive(expr)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public static boolean assumeGreaterThan(final IExpr expr, ISignedNumber number) {
-    if (expr.isReal()) {
-      return ((ISignedNumber) expr).isGT(number);
-    }
-    if (expr.isNumber()) {
-      return false;
-    }
-    if (expr.isRealConstant()) {
-      return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > number
-          .doubleValue();
-    }
-    IAssumptions assumptions = EvalEngine.get().getAssumptions();
-    if (assumptions != null) {
-      if (assumptions.isGreaterThan(expr, number)) {
         return true;
       }
     }
@@ -510,6 +479,17 @@ public abstract class AbstractAssumptions implements IAssumptions {
         return S.True;
       }
       if (assumptions.isRational(expr)) {
+        return S.True;
+      }
+    }
+    return null;
+  }
+
+  public static ISymbol assumeVectors(final IExpr expr) {
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      IAST temp = assumptions.tensors(expr);
+      if (temp.isAST(S.Vectors, 3, 4)) {
         return S.True;
       }
     }
@@ -710,6 +690,21 @@ public abstract class AbstractAssumptions implements IAssumptions {
   }
 
   @Override
+  public IAssumptions addAssumption(IExpr expr) {
+    return null;
+  }
+
+  @Override
+  public IAST distribution(IExpr expr) {
+    return F.NIL;
+  }
+
+  @Override
+  public Map<IExpr, IAST> getTensorsMap() {
+    return new HashMap<IExpr, IAST>();
+  }
+
+  @Override
   public boolean isAlgebraic(IExpr expr) {
     return false;
   }
@@ -724,11 +719,11 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return false;
   }
 
-
   @Override
   public boolean isEqual(IExpr expr, ISignedNumber number) {
     return false;
   }
+
 
   @Override
   public boolean isGreaterEqual(IExpr expr, ISignedNumber number) {
@@ -761,12 +756,43 @@ public abstract class AbstractAssumptions implements IAssumptions {
   }
 
   @Override
+  public boolean isNegativeRational(IExpr expr) {
+    return false;
+  }
+
+  @Override
+  public boolean isNegativeReal(IExpr expr) {
+    return false;
+  }
+
+  @Override
   public boolean isNonNegative(IExpr expr) {
     return false;
   }
 
   @Override
+  public boolean isNonNegativeRational(IExpr expr) {
+    return false;
+  }
+
+  @Override
+  public boolean isNonNegativeReal(IExpr expr) {
+    return false;
+  }
+
+
+  @Override
   public boolean isPositive(IExpr expr) {
+    return false;
+  }
+
+  @Override
+  public boolean isPositiveRational(IExpr expr) {
+    return false;
+  }
+
+  @Override
+  public boolean isPositiveReal(IExpr expr) {
     return false;
   }
 
@@ -783,5 +809,10 @@ public abstract class AbstractAssumptions implements IAssumptions {
   @Override
   public boolean isReal(IExpr expr) {
     return false;
+  }
+
+  @Override
+  public IAST tensors(IExpr expr) {
+    return F.NIL;
   }
 }
