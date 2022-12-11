@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ITensorAccess;
 import org.matheclipse.core.tensor.opt.qh3.ConvexHull3D;
 import org.matheclipse.core.tensor.opt.qh3.Vector3d;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -29,6 +30,11 @@ public class ComputationalGeometryFunctions {
       S.CoordinateBoundingBox.setEvaluator(new CoordinateBoundingBox());
       S.CoordinateBounds.setEvaluator(new CoordinateBounds());
       S.CoplanarPoints.setEvaluator(new CoplanarPoints());
+
+      S.VectorGreater.setEvaluator(new VectorGreater());
+      S.VectorGreaterEqual.setEvaluator(new VectorGreaterEqual());
+      S.VectorLess.setEvaluator(new VectorLess());
+      S.VectorLessEqual.setEvaluator(new VectorLessEqual());
     }
   }
 
@@ -586,6 +592,76 @@ public class ComputationalGeometryFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+  }
+
+  private static class VectorGreater extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      int[] dims = arg1.isMatrix(false);
+      if (arg1.isList2() && dims != null) {
+        IAST listOfVectors = (IAST) arg1;
+        ITensorAccess v1 = (ITensorAccess) listOfVectors.arg1();
+        ITensorAccess v2 = (ITensorAccess) listOfVectors.arg2();
+        if (v1.size() >= 1) {
+          int[] index = new int[] {0};
+          for (int i = 1; i < v1.size(); i++) {
+            index[0] = i;
+            final IExpr compareResult = compare(v1, v2, index, engine);
+            if (compareResult.isPresent()) {
+              if (compareResult.isTrue()) {
+                continue;
+              } else if (compareResult.isFalse()) {
+                return S.False;
+              }
+            }
+            // undecidable
+            return F.NIL;
+          }
+          return S.True;
+        }
+      }
+      return F.NIL;
+    }
+
+
+    protected IExpr compare(ITensorAccess v1, ITensorAccess v2, int[] index, EvalEngine engine) {
+      return S.Greater.ofNIL(engine, v1.getIndex(index), v2.getIndex(index));
+    }
+
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class VectorGreaterEqual extends VectorGreater {
+
+    @Override
+    protected IExpr compare(ITensorAccess v1, ITensorAccess v2, int[] index, EvalEngine engine) {
+      return S.GreaterEqual.ofNIL(engine, v1.getIndex(index), v2.getIndex(index));
+    }
+
+  }
+
+  private static class VectorLess extends VectorGreater {
+
+    @Override
+    protected IExpr compare(ITensorAccess v1, ITensorAccess v2, int[] index, EvalEngine engine) {
+      return S.Less.ofNIL(engine, v1.getIndex(index), v2.getIndex(index));
+    }
+
+  }
+
+  private static class VectorLessEqual extends VectorGreater {
+
+    @Override
+    protected IExpr compare(ITensorAccess v1, ITensorAccess v2, int[] index, EvalEngine engine) {
+      return S.LessEqual.ofNIL(engine, v1.getIndex(index), v2.getIndex(index));
     }
 
   }

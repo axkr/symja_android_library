@@ -2540,6 +2540,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   }
 
   @Override
+  public IExpr getIndex(int... positions) {
+    return getPart(positions);
+  }
+
+  @Override
   public final IExpr getPart(final IntList positions) {
     IExpr expr = this;
     int size = positions.size();

@@ -6,7 +6,7 @@ import org.hipparchus.linear.FieldVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.trie.Trie;
 
-public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
+public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>>, ITensorAccess {
 
   /**
    * Get the dimensions of the sparse array.
@@ -30,15 +30,6 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>> {
   public IExpr getDefaultValue();
 
   public IExpr get(int position);
-
-  /**
-   * Low level access. It is assumed that <code>positions</code> is a full index within the
-   * dimensions of this sparse array.
-   *
-   * @param positions
-   * @return
-   */
-  public IExpr getIndex(int... positions);
 
   /**
    * Get the <code>Part(-ISparseArray-,...)</code> of a sparse array, with index being an integer
