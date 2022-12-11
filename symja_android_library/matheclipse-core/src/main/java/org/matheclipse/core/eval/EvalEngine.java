@@ -56,6 +56,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -1381,6 +1382,12 @@ public class EvalEngine implements Serializable {
       IExpr result = evalN(expr);
       if (result.isReal()) {
         return ((ISignedNumber) result).doubleValue();
+      }
+      if (result.isComplexNumeric()) {
+        IComplexNum cc = (IComplexNum) result;
+        if (F.isZero(cc.getImaginaryPart())) {
+          return cc.getRealPart();
+        }
       }
       if (result.isQuantity()) {
         return result.evalReal().doubleValue();
