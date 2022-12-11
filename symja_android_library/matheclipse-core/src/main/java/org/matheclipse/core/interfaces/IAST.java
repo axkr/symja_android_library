@@ -41,7 +41,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>,
  * <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph</a>
  */
-public interface IAST extends IExpr, Iterable<IExpr> {
+public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
 
   /**
    * The enumeration for the properties (keys) of the map possibly associated with this <code>IAST
@@ -1154,6 +1154,7 @@ public interface IAST extends IExpr, Iterable<IExpr> {
    *
    * @return
    */
+  @Override
   public boolean isEmpty();
 
   @Override

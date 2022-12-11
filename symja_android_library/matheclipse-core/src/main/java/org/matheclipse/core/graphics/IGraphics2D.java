@@ -3,7 +3,7 @@ package org.matheclipse.core.graphics;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 public interface IGraphics2D {
 
@@ -18,12 +18,14 @@ public interface IGraphics2D {
 
   /**
    * 
-   * @param json the JSON object tree
+   * @param json the JSON array node
    * @param ast the graphics primitive (Circle, Disk, Line, Point,...)
    * @param listOfCoords collect all coordinates for calculating a bounding box
+   * @param options TODO
    * @return
    */
-  default boolean graphics2D(ObjectNode json, IAST ast, IASTAppendable listOfCoords) {
+  default boolean graphics2D(ArrayNode json, IAST ast, IASTAppendable listOfCoords,
+      GraphicsOptions options) {
     return false;
   }
 

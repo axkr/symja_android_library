@@ -12818,6 +12818,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     EvalEngine.resetModuleCounter4JUnit();
     // check("JSForm(Ramp(x))", //
     // "((x>=0) ? x : ( 0 ))");
+
+
+    check("JSForm( {Identity( x ),Log( y )} )", //
+        "[x,Math.log(y)]");
     check("JSForm(Sign(x)*Abs(x)^(1/3))", //
         "Math.cbrt(Math.abs(x))*Math.sign(x)");
     check("JSForm(Clip(x))", //

@@ -1794,4 +1794,15 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  public void testVectorGreater() {
+    check("VectorGreater({{ },{ }})", //
+        "True");
+    check("VectorGreater({{11,12,13},{1/2,-4,-2/3}})", //
+        "True");
+    check("VectorGreater({{11,12,13},{1/2,12,-2/3}})", //
+        "False");
+    check("VectorGreater({{11,12,13},{1/2,b,-2/3}})", //
+        "VectorGreater({{11,12,13},{1/2,b,-2/3}})");
+  }
+
 }

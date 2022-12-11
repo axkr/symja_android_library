@@ -10,8 +10,8 @@ public class ImageInit {
     S.ArrayPlot.setEvaluator(new org.matheclipse.image.builtin.ArrayPlot());
     S.ImageCrop.setEvaluator(new org.matheclipse.image.builtin.ImageCrop());
     S.ListDensityPlot.setEvaluator(new org.matheclipse.image.builtin.ListDensityPlot());
-    S.ListLogPlot.setEvaluator(new org.matheclipse.image.builtin.ListLogPlot());
-    S.ListLogLogPlot.setEvaluator(new org.matheclipse.image.builtin.ListLogLogPlot());
+    // S.ListLogPlot.setEvaluator(new org.matheclipse.image.builtin.ListLogPlot());
+    // S.ListLogLogPlot.setEvaluator(new org.matheclipse.image.builtin.ListLogLogPlot());
 
   }
 }

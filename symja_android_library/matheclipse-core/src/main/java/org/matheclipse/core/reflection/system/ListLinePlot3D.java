@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -8,6 +7,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -134,7 +134,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
               rowList.get(j).divide(deltaHeight)));
         }
 
-        final IAST color = GraphicsFunctions.plotStyleColorExpr(lineColorNumber++, plotStyle);
+        final IAST color = GraphicsOptions.plotStyleColorExpr(lineColorNumber++, plotStyle);
         if (resultList.isNIL()) {
           resultList = F.ListAlloc(valuesSize);
         }
@@ -195,7 +195,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
     IASTAppendable lineList = F.ListAlloc(coordinates.size() * 2);
 
     for (int i = 1; i <= coordinates.argSize(); i++) {
-      final IAST color = GraphicsFunctions.plotStyleColorExpr(lineColorNumber++, plotStyle);
+      final IAST color = GraphicsOptions.plotStyleColorExpr(lineColorNumber++, plotStyle);
 
       lineList.append(color);
       // (# / deltaXYZ)& /@ line

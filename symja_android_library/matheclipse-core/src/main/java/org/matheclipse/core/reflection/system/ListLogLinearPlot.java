@@ -1,52 +1,31 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
-/** Plot a list of Points as a single line */
-public class ListLinePlot extends ListPlot {
-  private static final Logger LOGGER = LogManager.getLogger();
-
-  /** Constructor for the singleton */
-  // public final static ListLinePlot CONST = new ListLinePlot();
-
-  public ListLinePlot() {}
-
+public class ListLogLinearPlot extends ListPlot {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    // if (Config.USE_MANIPULATE_JS) {
-    // IExpr temp = S.Manipulate.of(engine, ast);
-    // if (temp.headID() == ID.JSFormData) {
-    // return temp;
-    // }
-    // return F.NIL;
-    // }
-
     GraphicsOptions graphicsOptions = new GraphicsOptions();
-    graphicsOptions.setJoined(true);
-    // boundingbox an array of double values (length 4) which describes the bounding box
-    // <code>[xMin, xMax, yMin, yMax]</code>
+    graphicsOptions.setXFunction(x -> F.Log(x));
     int[] colour = new int[] {1};
     IAST graphicsPrimitives = plot(ast, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
       double[] boundingbox = graphicsOptions.boundingBox();
       IExpr result = F.Graphics(graphicsPrimitives, //
+          F.Rule(S.ScalingFunctions, //
+              F.List(F.stringx("Log"), S.None)), //
           F.Rule(S.Axes, S.True),
           F.Rule(S.PlotRange, F.List(F.List(F.num(boundingbox[0]), F.num(boundingbox[1])),
               F.List(F.num(boundingbox[2]), F.num(boundingbox[3])))));
       return result;
     }
+
     return F.NIL;
   }
-
-  @Override
-  public void setUp(final ISymbol newSymbol) {}
 }

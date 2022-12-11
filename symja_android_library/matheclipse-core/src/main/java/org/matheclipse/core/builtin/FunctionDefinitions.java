@@ -34,6 +34,9 @@ import static org.matheclipse.core.expression.S.LaplaceTransform;
 import static org.matheclipse.core.expression.S.LinearProgramming;
 import static org.matheclipse.core.expression.S.ListLinePlot;
 import static org.matheclipse.core.expression.S.ListLinePlot3D;
+import static org.matheclipse.core.expression.S.ListLogLinearPlot;
+import static org.matheclipse.core.expression.S.ListLogLogPlot;
+import static org.matheclipse.core.expression.S.ListLogPlot;
 import static org.matheclipse.core.expression.S.ListPlot;
 import static org.matheclipse.core.expression.S.ListPlot3D;
 import static org.matheclipse.core.expression.S.ListPointPlot3D;
@@ -114,6 +117,10 @@ public final class FunctionDefinitions {
       ListLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot());
       ListLinePlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot3D());
       ListPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot());
+      ListLogPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLogPlot());
+      ListLogLogPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLogLogPlot());
+      ListLogLinearPlot
+          .setEvaluator(new org.matheclipse.core.reflection.system.ListLogLinearPlot());
       ListPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot3D());
       ListPointPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPointPlot3D());
       MatrixD.setEvaluator(new org.matheclipse.core.reflection.system.MatrixD());
