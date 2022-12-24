@@ -41,8 +41,7 @@
 		Must not be last to not break deployment entirely.
 		See description of 'skipNexusStagingDeployMojo' in 
 		https://github.com/sonatype/nexus-maven-plugins/blob/master/staging/maven-plugin/README.md#plugin-flags-->
-	<!--	<module>matheclipse-beakerx</module>
-	-->
+	    <module>matheclipse-beakerx</module>
 		<module>matheclipse-jar</module>
 		<module>tools</module>
 
