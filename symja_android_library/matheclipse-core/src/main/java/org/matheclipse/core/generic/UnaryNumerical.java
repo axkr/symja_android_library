@@ -1,6 +1,7 @@
 package org.matheclipse.core.generic;
 
 import java.util.function.DoubleFunction;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.UnaryOperator;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.Derivative;
@@ -20,7 +21,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /** Unary numerical function for functions like Plot */
 public class UnaryNumerical
-    implements UnaryOperator<IExpr>, UnivariateDifferentiableFunction, DoubleFunction<IExpr> {
+    implements UnaryOperator<IExpr>, UnivariateDifferentiableFunction, DoubleFunction<IExpr>,
+    DoubleUnaryOperator {
   final IExpr fFunction;
   final ISymbol fVariable;
   final EvalEngine fEngine;
@@ -52,8 +54,8 @@ public class UnaryNumerical
   }
 
   @Override
-  public IExpr apply(final IExpr arg1) {
-    return fEngine.evalN(F.subst(fFunction, F.Rule(fVariable, arg1)));
+  public IExpr apply(final IExpr value) {
+    return fEngine.evalN(F.subst(fFunction, F.Rule(fVariable, value)));
   }
 
   @Override
@@ -123,5 +125,10 @@ public class UnaryNumerical
       return (INum) temp;
     }
     throw new ArithmeticException("Expected numerical double value object!");
+  }
+
+  @Override
+  public double applyAsDouble(double value) {
+    return F.subst(fFunction, F.Rule(fVariable, F.num(value))).evalf();
   }
 }
