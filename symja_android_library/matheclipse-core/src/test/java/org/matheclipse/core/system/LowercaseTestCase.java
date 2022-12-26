@@ -12860,7 +12860,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // JSXGraph.org syntax
     check(
         "JSForm(Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}, PlotRange->{-1,2}), {a,0,10}))", //
-        "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.8641592653589794,2.7,7.147344572538565,-1.7]});\n"
+        "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,showCopyright:false,boundingbox:[-0.8641592653589794,2.7,7.147344572538565,-1.7]});\n"
             + "board.suspendUpdate();\n"
             + "var a = board.create('slider',[[-0.0630088815692249,2.2600000000000002],[6.346194188748811,2.2600000000000002],[0,0,10]],{name:'a'});\n"
             + "\n"
@@ -14539,12 +14539,42 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testMantissaExponent() {
+    // message - MantissaExponent: The value (3.0+I*2.0) is not a real number.
+    check("MantissaExponent(3+2*I, 2)", //
+        "MantissaExponent(3+I*2,2)");
+    
+    
+    check("MantissaExponent(125.24)", //
+        "{0.12524,3}");
+    check("MantissaExponent(125., 2)", //
+        "{0.976562,7}");
+    check("MantissaExponent(10, b)", //
+        "MantissaExponent(10,b)");
+    check("MantissaExponent(E, Pi)", //
+        "{E/Pi,1}");
+    check("MantissaExponent(Pi, Pi)", //
+        "{1/Pi,2}");
+    check("MantissaExponent(5/2 + 3, Pi)", //
+        "{11/2*1/Pi^2,2}");
+    check("MantissaExponent(17, E)", //
+        "{17/E^3,3}");
+    check("MantissaExponent(17.0, E)", //
+        "{0.84638,3}");
+    check("MantissaExponent(Exp(Pi), 2)", //
+        "{E^Pi/32,5}");
+    check("MantissaExponent(0.0000124)", //
+        "{0.124,-4}");
+    check("MantissaExponent(0.0000124, 2)", //
+        "{0.812646,-16}");
+    check("MantissaExponent(0)", //
+        "{0,0}");
+
     check("MantissaExponent(N(Pi, 21))", //
         "{0.314159265358979323846,1}");
     check("MantissaExponent(N(Pi, 20))", //
         "{0.31415926535897932384,1}");
     check("MantissaExponent(3.4*10^30)", //
-        "{0.34,31}");
+        "{0.34,31.0}");
   }
 
   public void testMap() {
