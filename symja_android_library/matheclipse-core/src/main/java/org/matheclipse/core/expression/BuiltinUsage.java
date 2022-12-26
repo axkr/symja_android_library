@@ -55,10 +55,11 @@ public class BuiltinUsage {
     USAGE[ID.Break] = "exit a 'For', 'While', or 'Do' loop";
     USAGE[ID.ByteArray] = "array of bytes";
 
+    USAGE[ID.C] = "n-th intertermined constant in the solution of a differential equation";
     USAGE[ID.Catch] = "handle an exception raised by a 'Throw'";
     USAGE[ID.Catenate] = "catenate elements from a list of lists";
-    USAGE[ID.Catenate] = "central moments of distributions and data";
-    USAGE[ID.CentralMoment] = "expression defined under condition";
+    USAGE[ID.CentralMoment] = "central moments of distributions and data";
+    USAGE[ID.Condition] = "expression defined under condition";
     USAGE[ID.Characters] = "list the characters in a string";
     USAGE[ID.CharacterRange] = "range of characters with successive character codes";
     USAGE[ID.Check] = "discard the result if the evaluation produced messages";
@@ -67,9 +68,11 @@ public class BuiltinUsage {
     USAGE[ID.Constant] = "attribute that indicates that a symbol is a (numerical) constant";
     USAGE[ID.ConstantArray] = "form a constant array";
     USAGE[ID.Continue] = "continue with the next iteration in a 'For', 'While' or 'Do' loop";
+    USAGE[ID.ContinuedFraction] = "continued fraction expansion";
     USAGE[ID.ContainsOnly] = "test if all the elements of a list appear into another list";
     USAGE[ID.Complement] = "find the complement with respect to a universal set";
     USAGE[ID.Complex] = "head for complex numbers";
+    USAGE[ID.Complexes] = "the domain complex numbers";
     USAGE[ID.CompoundExpression] = "execute expressions in sequence";
     USAGE[ID.Conjugate] = "complex conjugate value";
     USAGE[ID.Context] = "give the name of the context of a symbol";
@@ -88,14 +91,20 @@ public class BuiltinUsage {
     USAGE[ID.Delete] = "delete elements from a list at given positions";
     USAGE[ID.DeleteCases] = "delete all occurrences of a pattern";
     USAGE[ID.DeleteDuplicates] = "delete duplicate elements in a list";
+    USAGE[ID.Derivative] = "symbolic and numerical derivative functions";
+    USAGE[ID.Diagonal] = "gives a list with the diagonal elements of a given matrix";
+    USAGE[ID.DiagonalMatrix] = "give a diagonal matrix with the elements of a given list";
     USAGE[ID.DiceDissimilarity] = "Dice dissimilarity";
     USAGE[ID.DigitCharacter] = "digit 0-9";
     USAGE[ID.DigitQ] = "test whether all the characters are digits";
     USAGE[ID.DirectedInfinity] = "infinite quantity with a defined direction in the complex plane";
+    USAGE[ID.DiscretePlot] = "discrete plot of a one-parameter function";
     USAGE[ID.DisjointQ] = "test whether two lists do not have common elements";
+    USAGE[ID.Divisors] = "integer divisors";
     USAGE[ID.Do] = "evaluate an expression looping over a variable";
     USAGE[ID.Drop] = "remove a number of elements from a list";
     USAGE[ID.Definition] = "give values of a symbol in a form that can be stored in a package";
+    USAGE[ID.DSolve] = "differential equation analytical solver";
 
     USAGE[ID.EditDistance] = "Edit distance";
     USAGE[ID.EllipticE] = "elliptic integral of the second kind E(ϕ|m)";
@@ -105,6 +114,7 @@ public class BuiltinUsage {
     USAGE[ID.EndOfLine] = "a string pattern matching EOL";
     USAGE[ID.Equal] = "numerical equality";
     USAGE[ID.Equivalent] = "logic equivalence";
+    USAGE[ID.EulerPhi] = "Euler totient function";
     USAGE[ID.Evaluate] =
         "forces evaluation of $expr$, even if it occurs inside a held argument or a 'Hold' form";
     USAGE[ID.EvenQ] = "test whether elements are even numbers";
@@ -115,9 +125,13 @@ public class BuiltinUsage {
 
     USAGE[ID.Factorial] = "factorial";
     USAGE[ID.Factorial2] = "semi-factorial";
+    USAGE[ID.FactorInteger] = "list of prime factors and exponents";
     // USAGE[ID.Failure] = "a failure at the level of the interpreter";
     USAGE[ID.False] = "boolean constant for False";
     USAGE[ID.FileFormat] = "determine the file format of a file";
+    USAGE[ID.FindMaximum] = "local maximum optimization";
+    USAGE[ID.FindMinimum] = "local minimum optimization";
+    USAGE[ID.FindRoot] = "looks for a root of an equation or a zero of a numerical expression";
     USAGE[ID.FindClusters] = "divide data into lists of similar elements";
     USAGE[ID.First] = "first element of a list or expression";
     USAGE[ID.FirstCase] = "first element that matches a pattern";
@@ -130,7 +144,10 @@ public class BuiltinUsage {
     USAGE[ID.FoldList] =
         "list of the results of applying a binary operation interatively over elements of a list";
     USAGE[ID.For] = "a 'For' loop";
+    USAGE[ID.FractionalPart] = "fractional part of a number";
     USAGE[ID.FromCharacterCode] = "convert from a list of character codes to a string";
+    USAGE[ID.FromContinuedFraction] =
+        "reconstructs a number from its continued fraction representation";
     USAGE[ID.FullForm] = "get the underlying M-Expression representation";
 
     USAGE[ID.Gamma] = "complete and incomplete gamma functions";
@@ -154,6 +171,7 @@ public class BuiltinUsage {
     USAGE[ID.HoldRest] =
         "attribute specifying that all but the first argument should be left unevaluated";
 
+    USAGE[ID.IdentityMatrix] = "give the identity matrix with a given dimension";
     USAGE[ID.Import] = "import elements from a file";
     USAGE[ID.ImportString] = "import elements from a string";
     USAGE[ID.InverseHaversine] = "inverse haversine function";
@@ -168,6 +186,7 @@ public class BuiltinUsage {
     USAGE[ID.InputForm] = "plain-text input format";
     USAGE[ID.Insert] = "insert an element at a given position";
     USAGE[ID.Integer] = "head for integer numbers";
+    USAGE[ID.Integers] = "the domain integers numbers";
     USAGE[ID.Integrate] = "indefinite or definite integral of a function";
     USAGE[ID.Interrupt] = "interrupt evaluation and return '$Aborted'";
     USAGE[ID.Intersection] = "enumerate common elements";
@@ -192,6 +211,7 @@ public class BuiltinUsage {
     USAGE[ID.LetterQ] = "test whether all the characters are letters";
     USAGE[ID.Level] = "get subexpressions at a level specification";
     USAGE[ID.LevelQ] = "test whether is a valid level specification";
+    USAGE[ID.Limit] = "directed and undirected limits";
     USAGE[ID.List] = "specify a list explicitly";
     USAGE[ID.Listable] = "Attribute for functions that automatically thread over their arguments";
     USAGE[ID.ListQ] = "test if an expression is a list";
@@ -205,9 +225,11 @@ public class BuiltinUsage {
         "perform lookup of a value by key, returning a specified default if it is not found";
     USAGE[ID.LowerCaseQ] = "test wether all the characters are lower-case letters";
 
+    USAGE[ID.MantissaExponent] = "decomposes numbers as mantissa and exponent";
     USAGE[ID.MatchingDissimilarity] = "simple matching dissimilarity";
     USAGE[ID.MathMLForm] = "format expression as MathML commands";
     USAGE[ID.MatrixForm] = "format as a matrix";
+    USAGE[ID.MatrixQ] = "gives 'True' if the given argument is a list of equal-length lists";
     USAGE[ID.Max] = "The smallest argument or the largest element of a list";
     USAGE[ID.Mean] = "returns the statistical mean of a list";
     USAGE[ID.Median] = "central value of a dataset";
@@ -228,12 +250,14 @@ public class BuiltinUsage {
     USAGE[ID.Nest] = "give the result of nesting a function";
     USAGE[ID.NestList] = "successively nest a function and append the results to a list";
     USAGE[ID.NestWhile] = "nest while a condition is satisfied returning the last expression";
+    USAGE[ID.NextPrime] = "closest, smallest prime number";
     USAGE[ID.NHoldAll] =
         "attribute that indicates that the arguments must not be evaluated in numerical evaluations";
     USAGE[ID.NHoldFirst] =
         "attribute that indicates that the first argument must not be evaluated in numerical evaluations";
     USAGE[ID.NHoldRest] =
         "attribute that indicates that just the first  argument must be evaluated in numerical evaluations";
+    USAGE[ID.NIntegrate] = "numerical integration";
     USAGE[ID.Nor] = "negation of logic (inclusive) disjunction";
     USAGE[ID.Normal] = "convert objects to normal expressions";
     USAGE[ID.Normalize] = "normalizes a vector";
@@ -245,6 +269,7 @@ public class BuiltinUsage {
     USAGE[ID.NonNegative] = "test whether an expression is a non-negative number";
     USAGE[ID.NonPositive] = "test whether an expression is a non-positive number";
 
+    USAGE[ID.O] = "symbolic representation of a higher-order series term";
     USAGE[ID.OddQ] = "test whether elements are odd numbers";
     // USAGE[ID.Off] = "turn off a message for printing";
     // USAGE[ID.On] = "turn on a message for printing";
@@ -258,12 +283,16 @@ public class BuiltinUsage {
     USAGE[ID.PadLeft] = "pad out by the left a ragged array to make a matrix";
     USAGE[ID.PadRight] = "pad out by the right a ragged array to make a matrix";
     USAGE[ID.Part] = "get/set any part of an expression";
+    USAGE[ID.ParametricPlot] = "2D parametric curves or regions";
     USAGE[ID.Partition] = "partition a list into sublists of a given length";
+    USAGE[ID.PartitionsP] = "number of unrestricted partitions";
     USAGE[ID.PauliMatrix] = "Pauli spin matrix";
     USAGE[ID.Permutations] = "form permutations of a list";
     USAGE[ID.Pick] = "pick out elements according to a boolean mask";
     USAGE[ID.Piecewise] = "an arbitrary piecewise function";
+    USAGE[ID.Plot] = "curves of one or more functions";
     USAGE[ID.Pochhammer] = "Pochhammer's symbols";
+    USAGE[ID.PolarPlot] = "draw a polar plot";
     USAGE[ID.PolyGamma] = "polygamma function";
     USAGE[ID.PossibleZeroQ] =
         "returns 'True' if basic symbolic and numerical methods suggest that expr has value zero, and 'False' otherwise";
@@ -274,6 +303,9 @@ public class BuiltinUsage {
     USAGE[ID.Prefix] = "prefix form";
     USAGE[ID.Prepend] = "add an element at the beginning";
     USAGE[ID.PrependTo] = "add an element at the beginning of an stored list or expression";
+    USAGE[ID.Prime] = "n-th prime number";
+    USAGE[ID.PrimePi] = "amount of prime numbers less than or equal";
+    USAGE[ID.PrimePowerQ] = "test if a number is a power of a prime number";
     USAGE[ID.PrimeQ] = "test whether elements are prime numbers";
     USAGE[ID.Print] = "print strings and formatted text";
     USAGE[ID.Product] = "discrete product";
@@ -292,6 +324,7 @@ public class BuiltinUsage {
     USAGE[ID.RandomInteger] = "pick an integer number at random from a range";
     USAGE[ID.RandomChoice] = "choice items at random from a list";
     USAGE[ID.RandomComplex] = "pick a complex number at random from a rectangular region";
+    USAGE[ID.RandomPrime] = "picks a random prime in an interval";
     USAGE[ID.RandomReal] = "pick a real number at random from an interval";
     USAGE[ID.RandomSample] = "pick a sample at random from a list";
     USAGE[ID.Range] = "generate a list of equispaced, consecutive numbers";
@@ -300,6 +333,7 @@ public class BuiltinUsage {
     USAGE[ID.Rational] = "head for rational numbers";
     USAGE[ID.Re] = "returns the real component of the complex number $z$";
     USAGE[ID.ReadProtected] = "attribute of symbols with hidden definitions";
+    USAGE[ID.Reals] = "the domain of the Real numbers";
     USAGE[ID.Reap] = "create lists of elements \"sown\" inside programs";
     USAGE[ID.RemoveDiacritics] = "remove diacritics from a string";
     USAGE[ID.Real] = "head for real numbers";
@@ -314,19 +348,22 @@ public class BuiltinUsage {
     USAGE[ID.Reverse] = "reverse a list at any level";
     USAGE[ID.Riffle] = "intersperse additional elements";
     USAGE[ID.RogersTanimotoDissimilarity] = "Rogers-Tanimoto dissimilarity";
+    USAGE[ID.Root] = "the i-th root of a polynomial";
     USAGE[ID.RotateLeft] = "cyclically rotate lists to the left, at any depth";
     USAGE[ID.RotateRight] = "cyclically rotate lists to the right, at any depth";
     USAGE[ID.RotationTransform] = "symbolic representation of a rotation in 3D";
     USAGE[ID.RussellRaoDissimilarity] = "Russell-Rao dissimilarity";
 
     USAGE[ID.SameQ] = "literal symbolic identity";
-    USAGE[ID.ScalingTransform] =  "symbolic representation of a scale transformation";
+    USAGE[ID.ScalingTransform] = "symbolic representation of a scale transformation";
     USAGE[ID.Sec] = "secant function";
     USAGE[ID.Sech] = "hyperbolic secant function";
     USAGE[ID.Select] = "pick elements according to a criterion";
     USAGE[ID.Sequence] = "represents a sequence of arguments to a function";
     USAGE[ID.SequenceHold] =
         "attribute that prevents 'Sequence' objects from being spliced into a function's arguments.";
+    USAGE[ID.Series] = "power series and asymptotic expansions";
+    USAGE[ID.SeriesData] = "power series of a variable about a point";
     USAGE[ID.SetAttributes] = "set attributes for a symbol";
     USAGE[ID.ShearingTransform] = "symbolic representation of a shearing transformation";
     USAGE[ID.Sign] = "return -1, 0, or 1 depending on whether $x$ is negative, zero, or positive";
@@ -335,6 +372,7 @@ public class BuiltinUsage {
     USAGE[ID.Skewness] = "skewness coefficient";
     USAGE[ID.Slot] = "`#` serves as a pure function's first parameter ";
     USAGE[ID.SokalSneathDissimilarity] = "Sokal-Sneath dissimilarity";
+    USAGE[ID.Solve] = "find generic solutions for variables";
     USAGE[ID.Sow] = "send an expression to the innermost Reap";
     USAGE[ID.Span] = "general specification for spans or blocks of elements";
     USAGE[ID.Split] = "split into runs of identical elements";
