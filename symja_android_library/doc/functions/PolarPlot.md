@@ -41,13 +41,13 @@ The number of blades and be change by adjusting the `t` multiplier. A slight cha
 Coils around a ring:
 
 ```
->> PolarPlot({1, 1 + Sin(20*t) / 5}, {t, 0, 2*Pi}]
+>> PolarPlot({1, 1 + Sin(20*t) / 5}, {t, 0, 2*Pi})
 ```
 
 A spring having 16 turns:
 
 ```
->> PolarPlot(Sqrt(t), {t, 0, 16*Pi}]
+>> PolarPlot(Sqrt(t), {t, 0, 16*Pi})
 ```
 
 
