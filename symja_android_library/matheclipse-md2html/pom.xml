@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.matheclipse</groupId>
+		<artifactId>matheclipse</artifactId>
+		<version>3.0.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>matheclipse-md2html</artifactId>
+	<packaging>jar</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>The Markdown math enriched document to HTML converter</description>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License, Version 3</name>
+			<url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
+			<distribution>repo</distribution>
+			<comments>A free, copyleft license for software and other kinds of works</comments>
+		</license>
+	</licenses>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-image</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-gpl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>it.unimi.dsi</groupId>
+			<artifactId>fastutil</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.commonmark</groupId>
+			<artifactId>commonmark-ext-gfm-tables</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.roaringbitmap</groupId>
+			<artifactId>RoaringBitmap</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.classgraph</groupId>
+			<artifactId>classgraph</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.wnameless.json</groupId>
+			<artifactId>json-flattener</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.biojava</groupId>
+			<artifactId>biojava-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.biojava</groupId>
+			<artifactId>biojava-alignment</artifactId>
+		</dependency>
+
+		<!-- logging dependencies -->
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-logging</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- test dependencies -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-script</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit4</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>appassembler-maven-plugin</artifactId>
+					<version>2.1.0</version>
+					<configuration>
+						<assembleDirectory>${project.build.directory}/binary</assembleDirectory>
+						<repositoryLayout>flat</repositoryLayout>
+						<repositoryName>lib</repositoryName>
+						<useWildcardClassPath>true</useWildcardClassPath>
+						<programs>
+							<program>
+								<mainClass>org.matheclipse.io.servlet.ServletServer</mainClass>
+								<id>server</id>
+							</program>
+							<program>
+								<mainClass>org.matheclipse.io.servlet.MMAServletServer</mainClass>
+								<id>mmaserver</id>
+							</program>
+							<program>
+								<mainClass>org.matheclipse.io.eval.Console</mainClass>
+								<id>symja</id>
+							</program>
+							<program>
+								<mainClass>org.matheclipse.io.eval.MMAConsole</mainClass>
+								<id>mma</id>
+							</program>
+						</programs>
+					</configuration>
+					<executions>
+						<execution>
+							<id>make-distribution</id>
+							<phase>package</phase>
+							<goals>
+								<goal>assemble</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>

@@ -44,6 +44,7 @@
 	    <module>matheclipse-beakerx</module>
 		<module>matheclipse-jar</module>
 		<module>tools</module>
+		<module>matheclipse-md2html</module>
 
 		<!-- Deployed modules -->
 		<module>matheclipse-external</module>
