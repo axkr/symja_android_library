@@ -5,7 +5,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 /** Build a page to show a JavaScript graphic. */
 public class JSBuilder {
   /** Maximum size in byte for jsFiddle */
-  private static final int MAX_JSFIDDLE_SOURCE_CODE = 50000;
+  private static final int MAX_JSFIDDLE_SOURCE_CODE = 100000;
 
   /**
    * HTML template for the <a href="https://github.com/paulmasson/mathcell">MathCell</a> and
