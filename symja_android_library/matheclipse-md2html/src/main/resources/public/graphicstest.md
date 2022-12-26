@@ -7,6 +7,10 @@ Plot[Sin[x], {x, -Pi, Pi}]
 ```
 
 ```mma
+Plot[Tan[x], {x, -Pi, Pi}]
+```
+
+```mma
 LogPlot[{x^x, Exp[x], x!}, {x, 1, 5}]
 ```
 
@@ -55,4 +59,10 @@ Graphics[Point[Table[{t, Cos[t]}, {t,-Pi, Pi, 0.2}]]]
 
 ```mma
 Graphics[ Table[{Hue[RandomReal[]], Arrow[RandomReal[1, {2, 2}]]}, {75}]]
+```
+
+```mma
+data = Table[15 {Cos[t], Sin[t]}, {t, 0, 4*Pi, 4*Pi/5}];
+
+Graphics[GraphicsComplex[data, {Green, Line[{1, 2, 3, 4, 5, 6}], Red, Point[{1, 2, 3, 4, 5}]}]]
 ```
