@@ -166,6 +166,14 @@ public class GraphicsOptions {
     return F.RGBColor(rgbComponents[0], rgbComponents[1], rgbComponents[2]);
   }
 
+  private static void setColor(ObjectNode json, double red, double green, double blue) {
+    ArrayNode arrayNode = json.arrayNode();
+    arrayNode.add(red);
+    arrayNode.add(green);
+    arrayNode.add(blue);
+    json.put("color", arrayNode);
+  }
+
   public static void setColor(ObjectNode json, IAST color, IAST defaultColor, boolean color3D) {
     if (color.isPresent()) {
       if (color.isAST(S.RGBColor, 4, 5)) {
@@ -561,8 +569,29 @@ public class GraphicsOptions {
     }
   }
 
+  public void setColor(ObjectNode json) {
+    if (rgbColor.isPresent()) {
+      if (rgbColor.isAST(S.RGBColor, 4)) {
+        double red = rgbColor.arg1().toDoubleDefault(0.0);
+        double green = rgbColor.arg2().toDoubleDefault(0.0);
+        double blue = rgbColor.arg3().toDoubleDefault(0.0);
+        setColor(json, red, green, blue);
+        return;
+      } else if (rgbColor.isAST(S.RGBColor, 1) && rgbColor.arg1().isAST(S.List, 4)) {
+        IAST list = (IAST) rgbColor.arg1();
+        double red = list.arg1().toDoubleDefault(0.0);
+        double green = list.arg2().toDoubleDefault(0.0);
+        double blue = list.arg3().toDoubleDefault(0.0);
+        setColor(json, red, green, blue);
+        return;
+      }
+    }
+    // black
+    setColor(json, 0.0, 0.0, 0.0);
+  }
+
   /**
-   * Set the default RGBColor in JSON format
+   * Set the default RGBColor in JSON option format
    * 
    * @param json
    */
@@ -594,6 +623,27 @@ public class GraphicsOptions {
 
   public void setPointSize(double pointSize) {
     this.pointSize = pointSize;
+  }
+
+  public void setRGBColor(IAST color) {
+    if (color.isPresent()) {
+      if (color.isAST(S.RGBColor, 4)) {
+        double red = color.arg1().toDoubleDefault(0.0);
+        double green = color.arg2().toDoubleDefault(0.0);
+        double blue = color.arg3().toDoubleDefault(0.0);
+        rgbColor = F.RGBColor(red, green, blue);
+        return;
+      } else if (color.isAST(S.RGBColor, 1) && color.arg1().isAST(S.List, 4)) {
+        IAST list = (IAST) color.arg1();
+        double red = list.arg1().toDoubleDefault(0.0);
+        double green = list.arg2().toDoubleDefault(0.0);
+        double blue = list.arg3().toDoubleDefault(0.0);
+        rgbColor = F.RGBColor(red, green, blue);
+        return;
+      }
+    }
+    // black
+    rgbColor = F.RGBColor(0.0, 0.0, 0.0);
   }
 
   public void setScalingFunctions() {

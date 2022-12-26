@@ -66,6 +66,7 @@ public class GraphicsFunctions {
         IExpr list = ast.arg1();
         ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
         g.put("type", "arrow");
+        options.setColor(g);
         if (graphicsComplex2DCoords(arrayNode, g, list)) {
           return true;
         }
@@ -234,6 +235,7 @@ public class GraphicsFunctions {
         IExpr list = ast.arg1();
         ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
         g.put("type", getJSONType());
+        options.setColor(g);
         if (graphicsComplex2DCoords(arrayNode, g, list)) {
           return true;
         }
@@ -493,6 +495,8 @@ public class GraphicsFunctions {
                 if (((IGraphics2D) evaluator).graphicsComplex2D(array, (IAST) primitive,
                     listOfCoords, options)) {
                 }
+              } else if (primitive.isRGBColor()) {
+                options.setRGBColor((IAST) primitive);
               }
             }
           }
@@ -688,6 +692,7 @@ public class GraphicsFunctions {
         IExpr list = ast.arg1();
         ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
         g.put("type", "line");
+        options.setColor(g);
         if (graphicsComplex2DCoords(arrayNode, g, list)) {
           return true;
         }
@@ -826,6 +831,7 @@ public class GraphicsFunctions {
         IExpr list = ast.arg1();
         ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
         g.put("type", "point");
+        options.setColor(g);
         if (graphicsComplex2DCoords(arrayNode, g, list)) {
           return true;
         }
@@ -907,6 +913,7 @@ public class GraphicsFunctions {
         IAST list = (IAST) ast.arg1();
         ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
         g.put("type", "polygon");
+        options.setColor(g);
         if (list.isList() && graphicsComplex2DCoords(g, list)) {
           arrayNode.add(g);
           return true;
@@ -992,6 +999,7 @@ public class GraphicsFunctions {
         IExpr list = ast.arg1();
         ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
         g.put("type", "rectangle");
+        options.setColor(g);
         if (graphicsComplex2DCoords(arrayNode, g, list)) {
           return true;
         }
@@ -1200,6 +1208,7 @@ public class GraphicsFunctions {
         IExpr list = ast.arg2();
         ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
         g.put("type", "text");
+        options.setColor(g);
         if (graphicsComplex2DCoords(arrayNode, g, list) && graphicsTexts(g, expr.toString())) {
           return true;
         }
@@ -1385,7 +1394,6 @@ public class GraphicsFunctions {
           IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
           IEvaluator evaluator = symbol.getEvaluator();
           if (evaluator instanceof IGraphics2D) {
-
             if (((IGraphics2D) evaluator).graphics2D(arrayNode, ast, listOfCoords,
                 graphicsOptions)) {
             }
