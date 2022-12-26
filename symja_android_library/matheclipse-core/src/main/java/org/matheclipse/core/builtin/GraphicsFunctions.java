@@ -17,7 +17,6 @@ import org.matheclipse.core.graphics.Dimensions2D;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.IGraphics2D;
 import org.matheclipse.core.graphics.IGraphics3D;
-import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -54,6 +53,20 @@ public class GraphicsFunctions {
         g.put("type", "arrow");
         if (list.isListOfLists() && graphics2DCoords(g, list, listOfCoords)) {
           arrayNode.add(g);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public boolean graphicsComplex2D(ArrayNode arrayNode, IAST ast,
+        IASTAppendable listOfIntPositions, GraphicsOptions options) {
+      if (ast.argSize() > 0) {
+        IExpr list = ast.arg1();
+        ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+        g.put("type", "arrow");
+        if (graphicsComplex2DCoords(arrayNode, g, list)) {
           return true;
         }
       }
@@ -215,6 +228,20 @@ public class GraphicsFunctions {
     }
 
     @Override
+    public boolean graphicsComplex2D(ArrayNode arrayNode, IAST ast,
+        IASTAppendable listOfIntPositions, GraphicsOptions options) {
+      if (ast.argSize() > 0) {
+        IExpr list = ast.arg1();
+        ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+        g.put("type", getJSONType());
+        if (graphicsComplex2DCoords(arrayNode, g, list)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
     public boolean graphics2DDimension(IAST ast, Dimensions2D dim) {
       if (ast.size() == 1) {
         double cx = 1.0;
@@ -248,104 +275,6 @@ public class GraphicsFunctions {
         return true;
       }
 
-      return false;
-    }
-
-    @Override
-    public boolean graphics2DSVG(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
-        IExpr opacity) {
-      try {
-
-        // <svg width=\"350.66666666666674px\" height=\"350.66666666666674px\"
-        // xmlns:svg=\"http://www.w3.org/2000/svg\"
-        // xmlns=\"http://www.w3.org/2000/svg\"
-        // version=\"1.1\
-        // viewBox=\"-0.333333 -0.333333 350.666667 350.666667\">
-        // <ellipse cx=\"175.000000\" cy=\"175.000000\" rx=\"175.000000\" ry=\"175.000000\"
-        // style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width:
-        // 0.666667px; fill: none; opacity: 1.0\" />"
-
-        int width = dim.width;
-        int height = dim.height;
-        double xMin = dim.xMin;
-        double xMax = dim.xMax;
-        double yMin = dim.yMin;
-        double yMax = dim.yMax;
-        if (ast.size() == 1) {
-          buf.append("<ellipse ");
-          double xAxisScalingFactor = width / (xMax - xMin);
-          double yAxisScalingFactor = height / (yMax - yMin);
-
-          double cx = 1.0;
-          double cy = 1.0;
-          double rx = 1.0;
-          double ry = 1.0;
-          // x="0.000000" y="0.000000" width="350.000000" height="350.000000"
-          buf.append("cx=\"");
-          buf.append(FORMATTER.format(cx * xAxisScalingFactor));
-          buf.append("\" cy=\"");
-          buf.append(FORMATTER.format(cy * yAxisScalingFactor));
-          buf.append("\" rx=\"");
-          buf.append(FORMATTER.format(rx * xAxisScalingFactor));
-          buf.append("\" ry=\"");
-          buf.append(FORMATTER.format(ry * yAxisScalingFactor));
-          return true;
-
-        } else if (ast.size() == 2) {
-          if (ast.arg1().isAST(S.List, 3)) {
-            IAST list1 = (IAST) ast.arg1();
-            buf.append("<ellipse ");
-            double xAxisScalingFactor = width / (xMax - xMin);
-            double yAxisScalingFactor = height / (yMax - yMin);
-
-            double cx = ((ISignedNumber) list1.arg1()).doubleValue();
-            double cy = ((ISignedNumber) list1.arg2()).doubleValue();
-            double rx = 1.0;
-            double ry = 1.0;
-            // x="0.000000" y="0.000000" width="350.000000" height="350.000000"
-            buf.append("cx=\"");
-            buf.append(FORMATTER.format(cx * xAxisScalingFactor));
-            buf.append("\" cy=\"");
-            buf.append(FORMATTER.format(cy * yAxisScalingFactor));
-            buf.append("\" rx=\"");
-            buf.append(FORMATTER.format(rx * xAxisScalingFactor));
-            buf.append("\" ry=\"");
-            buf.append(FORMATTER.format(ry * yAxisScalingFactor));
-            return true;
-          }
-        } else if (ast.size() == 3 && ast.arg1().isAST(S.List, 3) && ast.arg2().isAST(S.List, 3)) {
-          IAST list1 = (IAST) ast.arg1();
-          IAST list2 = (IAST) ast.arg2();
-          buf.append("<ellipse ");
-          double xAxisScalingFactor = width / (xMax - xMin);
-          double yAxisScalingFactor = height / (yMax - yMin);
-
-          double cx = ((ISignedNumber) list1.arg1()).doubleValue();
-          double cy = ((ISignedNumber) list1.arg2()).doubleValue();
-          double rx = ((ISignedNumber) list2.arg1()).doubleValue();
-          double ry = ((ISignedNumber) list2.arg2()).doubleValue();
-
-          buf.append("cx=\"");
-          buf.append(FORMATTER.format(cx * xAxisScalingFactor));
-          buf.append("\" cy=\"");
-          buf.append(FORMATTER.format(cy * yAxisScalingFactor));
-          buf.append("\" rx=\"");
-          buf.append(FORMATTER.format(rx * xAxisScalingFactor));
-          buf.append("\" ry=\"");
-          buf.append(FORMATTER.format(ry * yAxisScalingFactor));
-          return true;
-        }
-
-      } catch (RuntimeException ex) {
-        // catch cast exceptions for example
-        LOGGER.error("Circle.graphics2D() failed", ex);
-      } finally {
-        buf.append("\" \n      style=\"stroke: none; stroke-width: 0.000000px; ");
-        buf.append("fill: rgb(");
-        dim.getColorRGB(buf);
-        buf.append("); ");
-        buf.append("stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n");
-      }
       return false;
     }
 
@@ -531,6 +460,81 @@ public class GraphicsFunctions {
     }
   }
 
+  private static class GraphicsComplex extends AbstractEvaluator
+      implements IGraphics2D, IGraphics3D {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public boolean graphics2D(ArrayNode arrayNode, IAST ast, IASTAppendable listOfCoords,
+        GraphicsOptions options) {
+      if (ast.argSize() == 2 && ast.arg1().isList()) {
+        IAST list = (IAST) ast.arg1();
+        IAST primitives = ast.arg2().makeList();
+        ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+        g.put("type", "graphicscomplex");
+        if (list.isListOfLists() && graphics2DCoords(g, list, listOfCoords)) {
+          arrayNode.add(g);
+          ArrayNode array = JSON_OBJECT_MAPPER.createArrayNode();
+          for (int i = 1; i < primitives.size(); i++) {
+            IExpr primitive = primitives.get(i);
+            if (primitive.isAST() && primitive.head().isBuiltInSymbol()) {
+              IBuiltInSymbol symbol = (IBuiltInSymbol) primitive.head();
+              IEvaluator evaluator = symbol.getEvaluator();
+              if (evaluator instanceof IGraphics2D) {
+                if (((IGraphics2D) evaluator).graphicsComplex2D(array, (IAST) primitive,
+                    listOfCoords, options)) {
+                }
+              }
+            }
+          }
+          g.set("data", array);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
+      if (ast.argSize() == 2 && ast.arg1().isList()) {
+        IAST list = (IAST) ast.arg1();
+        IAST primitives = ast.arg2().makeList();
+        json.put("type", "graphicscomplex");
+        if (list.isListOfLists() && graphics3DCoords(json, list)) {
+          ArrayNode array = JSON_OBJECT_MAPPER.createArrayNode();
+          for (int i = 1; i < primitives.size(); i++) {
+            IExpr primitive = primitives.get(i);
+            if (primitive.isAST() && primitive.head().isBuiltInSymbol()) {
+              IBuiltInSymbol symbol = (IBuiltInSymbol) primitive.head();
+              IEvaluator evaluator = symbol.getEvaluator();
+              if (evaluator instanceof IGraphics3D) {
+                ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+                if (((IGraphics3D) evaluator).graphics3D(g, (IAST) primitive, color, opacity)) {
+                  array.add(g);
+                }
+              }
+            }
+          }
+          json.set("elements", array);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
   private static class Graphics3DJSON extends AbstractEvaluator {
 
     @Override
@@ -538,7 +542,7 @@ public class GraphicsFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.Graphics3D)) {
         StringBuilder graphics3DBuffer = new StringBuilder();
-        if (renderGraphics3D(graphics3DBuffer, (IAST) arg1, false, engine)) {
+        if (renderGraphics3D(graphics3DBuffer, (IAST) arg1, false, true, engine)) {
           return F.stringx(graphics3DBuffer.toString(), IStringX.TEXT_JSON);
         }
       }
@@ -559,7 +563,7 @@ public class GraphicsFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.Graphics)) {
         StringBuilder graphics2DBuffer = new StringBuilder();
-        if (renderGraphics2D(graphics2DBuffer, (IAST) arg1, false, engine)) {
+        if (renderGraphics2D(graphics2DBuffer, (IAST) arg1, false, true, engine)) {
           return F.stringx(graphics2DBuffer.toString(), IStringX.TEXT_JSON);
         }
       }
@@ -626,6 +630,7 @@ public class GraphicsFunctions {
       S.Text.setEvaluator(new Text());
       S.Tube.setEvaluator(new Tube());
       S.Volume.setEvaluator(new Volume());
+      S.GraphicsComplex.setEvaluator(new GraphicsComplex());
       S.GraphicsJSON.setEvaluator(new GraphicsJSON());
       S.Graphics3DJSON.setEvaluator(new Graphics3DJSON());
     }
@@ -677,6 +682,21 @@ public class GraphicsFunctions {
     }
 
     @Override
+    public boolean graphicsComplex2D(ArrayNode arrayNode, IAST ast,
+        IASTAppendable listOfIntPositions, GraphicsOptions options) {
+      if (ast.argSize() > 0) {
+        IExpr list = ast.arg1();
+        ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+        g.put("type", "line");
+        if (graphicsComplex2DCoords(arrayNode, g, list)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+
+    @Override
     public boolean graphics2DDimension(IAST ast, Dimensions2D dim) {
       if (ast.arg1().isList()) {
         IAST pointList = (IAST) ast.arg1();
@@ -711,54 +731,6 @@ public class GraphicsFunctions {
         }
         dim.minMax(xMin, xMax, yMin, yMax);
         return true;
-      }
-      return false;
-    }
-
-    @Override
-    public boolean graphics2DSVG(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
-        IExpr opacity) {
-      try {
-        if (ast.arg1().isList()) {
-          buf.append("<polyline points=\"");
-          IAST pointList = (IAST) ast.arg1();
-          double x[], y[];
-          int numberOfPoints = pointList.argSize();
-
-          int width = dim.width;
-          int height = dim.height;
-          double xMin = dim.xMin;
-          double xMax = dim.xMax;
-          double yMin = dim.yMin;
-          double yMax = dim.yMax;
-          x = new double[numberOfPoints];
-          y = new double[numberOfPoints];
-          IExpr point;
-          for (int i = 0; i < numberOfPoints; i++) {
-            point = pointList.get(i + 1);
-            if (point.isList() && ((IAST) point).isAST2()) {
-              x[i] = ((ISignedNumber) point.first()).doubleValue();
-              y[i] = ((ISignedNumber) point.second()).doubleValue();
-            }
-          }
-          double xAxisScalingFactor = width / (xMax - xMin);
-          double yAxisScalingFactor = height / (yMax - yMin);
-          for (int i = 0; i < numberOfPoints; i++) {
-            buf.append(FORMATTER.format(((x[i] - xMin) * xAxisScalingFactor)));
-            buf.append(",");
-            buf.append(FORMATTER.format(height - ((y[i] - yMin) * yAxisScalingFactor)));
-            if (i < numberOfPoints - 1) {
-              buf.append(" ");
-            }
-          }
-          return true;
-        }
-      } catch (RuntimeException ex) {
-        // catch cast exceptions for example
-        LOGGER.error("Line.graphics2D() failed", ex);
-      } finally {
-        buf.append(
-            "\" \n style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\" />");
       }
       return false;
     }
@@ -812,37 +784,6 @@ public class GraphicsFunctions {
           y1 - Config.DOUBLE_TOLERANCE, y1 + Config.DOUBLE_TOLERANCE);
     }
 
-    private static void singlePointToSVG(IAST point, StringBuilder buf, Dimensions2D dim) {
-      try {
-        double xMin = dim.xMin;
-        double yMax = dim.yMax;
-        buf.append("<circle ");
-        double xAxisScalingFactor = dim.getXScale();
-        double yAxisScalingFactor = dim.getYScale();
-        double x1 = ((ISignedNumber) point.arg1()).doubleValue();
-        double y1 = ((ISignedNumber) point.arg2()).doubleValue();
-        double r = 2.166667;
-        // x="0.000000" y="0.000000" width="350.000000" height="350.000000"
-        double cx = (x1 - xMin) * xAxisScalingFactor;
-        double cy = (yMax - y1) * yAxisScalingFactor;
-        buf.append("cx=\"");
-        buf.append(FORMATTER.format(cx));
-        buf.append("\" cy=\"");
-        buf.append(FORMATTER.format(cy));
-        buf.append("\" r=\"");
-        buf.append(FORMATTER.format(r));
-      } catch (RuntimeException ex) {
-        // catch cast exceptions for example
-        LOGGER.error("Point.singlePointToSVG() failed", ex);
-      } finally {
-        buf.append("\" \n      style=\"stroke: none; stroke-width: 0.000000px; ");
-        buf.append("fill: rgb(");
-        dim.getColorRGB(buf);
-        buf.append("); ");
-        buf.append("fill-opacity: 1\" />\n");
-      }
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
@@ -879,6 +820,20 @@ public class GraphicsFunctions {
     }
 
     @Override
+    public boolean graphicsComplex2D(ArrayNode arrayNode, IAST ast,
+        IASTAppendable listOfIntPositions, GraphicsOptions options) {
+      if (ast.argSize() > 0) {
+        IExpr list = ast.arg1();
+        ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+        g.put("type", "point");
+        if (graphicsComplex2DCoords(arrayNode, g, list)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
     public boolean graphics2DDimension(IAST ast, Dimensions2D dim) {
       if (ast.size() == 2) {
         IExpr arg1 = ast.arg1();
@@ -894,29 +849,6 @@ public class GraphicsFunctions {
           IAST point = (IAST) ast.arg1();
 
           singlePointDimensions(point, dim);
-        }
-      }
-      return false;
-    }
-
-    @Override
-    public boolean graphics2DSVG(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
-        IExpr opacity) {
-      if (ast.size() == 2) {
-        IExpr arg1 = ast.arg1();
-        if (arg1.isListOfLists()) {
-          IAST list = (IAST) arg1;
-          for (int i = 1; i < list.size(); i++) {
-            if (list.get(i).isAST(S.List, 3)) {
-              IAST point = (IAST) list.get(i);
-              singlePointToSVG(point, buf, dim);
-              return true;
-            }
-          }
-        } else if (arg1.isAST(S.List, 3)) {
-          IAST point = (IAST) arg1;
-          singlePointToSVG(point, buf, dim);
-          return true;
         }
       }
       return false;
@@ -969,6 +901,21 @@ public class GraphicsFunctions {
     }
 
     @Override
+    public boolean graphicsComplex2D(ArrayNode arrayNode, IAST ast,
+        IASTAppendable listOfIntPositions, GraphicsOptions options) {
+      if (ast.argSize() > 0 && ast.arg1().isList()) {
+        IAST list = (IAST) ast.arg1();
+        ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+        g.put("type", "polygon");
+        if (list.isList() && graphicsComplex2DCoords(g, list)) {
+          arrayNode.add(g);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
     public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() > 0 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
@@ -983,7 +930,9 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NHOLDREST);
+    }
   }
 
   private static class Rectangle extends AbstractEvaluator implements IGraphics2D, IGraphics3D {
@@ -1037,6 +986,20 @@ public class GraphicsFunctions {
     }
 
     @Override
+    public boolean graphicsComplex2D(ArrayNode arrayNode, IAST ast,
+        IASTAppendable listOfIntPositions, GraphicsOptions options) {
+      if (ast.argSize() > 0) {
+        IExpr list = ast.arg1();
+        ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+        g.put("type", "rectangle");
+        if (graphicsComplex2DCoords(arrayNode, g, list)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
     public boolean graphics2DDimension(IAST ast, Dimensions2D dim) {
       if (ast.size() == 2) {
         if (ast.arg1().isList2()) {
@@ -1061,75 +1024,6 @@ public class GraphicsFunctions {
 
         dim.minMax(x1, x2, y1, y2);
         return true;
-      }
-      return false;
-    }
-
-    @Override
-    public boolean graphics2DSVG(StringBuilder buf, IAST ast, Dimensions2D dim, IAST color,
-        IExpr opacity) {
-      try {
-        int width = dim.width;
-        int height = dim.height;
-        double xMin = dim.xMin;
-        double xMax = dim.xMax;
-        double yMin = dim.yMin;
-        double yMax = dim.yMax;
-        if (ast.size() == 2) {
-          if (ast.arg1().isAST(S.List, 3)) {
-            IAST list1 = (IAST) ast.arg1();
-            buf.append("<rect ");
-            double xAxisScalingFactor = width / (xMax - xMin);
-            double yAxisScalingFactor = height / (yMax - yMin);
-
-            double x1 = ((ISignedNumber) list1.arg1()).doubleValue();
-            double y1 = ((ISignedNumber) list1.arg2()).doubleValue();
-            double w = 1.0;
-            double h = 1.0;
-            // x="0.000000" y="0.000000" width="350.000000" height="350.000000"
-            buf.append("x=\"");
-            buf.append(FORMATTER.format((x1 - xMin) * xAxisScalingFactor));
-            buf.append("\" y=\"");
-            buf.append(FORMATTER.format((yMax - y1 - 1) * yAxisScalingFactor));
-            buf.append("\" width=\"");
-            buf.append(FORMATTER.format(w * xAxisScalingFactor));
-            buf.append("\" height=\"");
-            buf.append(FORMATTER.format(h * yAxisScalingFactor));
-            return true;
-          }
-        } else if (ast.size() == 3 && ast.arg1().isAST(S.List, 3) && ast.arg2().isAST(S.List, 3)) {
-          IAST list1 = (IAST) ast.arg1();
-          IAST list2 = (IAST) ast.arg2();
-          buf.append("<rect ");
-          double xAxisScalingFactor = width / (xMax - xMin);
-          double yAxisScalingFactor = height / (yMax - yMin);
-
-          double x1 = ((ISignedNumber) list1.arg1()).doubleValue();
-          double y1 = ((ISignedNumber) list1.arg2()).doubleValue();
-          double x2 = ((ISignedNumber) list2.arg1()).doubleValue();
-          double y2 = ((ISignedNumber) list2.arg2()).doubleValue();
-          double w = x2 - x1;
-          double h = y2 - y1;
-          buf.append("x=\"");
-          buf.append(FORMATTER.format((x1 - xMin) * xAxisScalingFactor));
-          buf.append("\" y=\"");
-          buf.append(FORMATTER.format((yMax - y1 - h) * yAxisScalingFactor));
-          buf.append("\" width=\"");
-          buf.append(FORMATTER.format(w * xAxisScalingFactor));
-          buf.append("\" height=\"");
-          buf.append(FORMATTER.format(h * yAxisScalingFactor));
-          return true;
-        }
-
-      } catch (RuntimeException ex) {
-        // catch cast exceptions for example
-        LOGGER.error("Rectangle.graphics2D() failed", ex);
-      } finally {
-        buf.append("\" \n      style=\"stroke: none; stroke-width: 0.000000px; ");
-        buf.append("fill: rgb(");
-        dim.getColorRGB(buf);
-        buf.append("); ");
-        buf.append("stroke-opacity: 1; stroke-width: 0.666667px; fill-opacity: 1\" />\n");
       }
       return false;
     }
@@ -1299,6 +1193,21 @@ public class GraphicsFunctions {
     }
 
     @Override
+    public boolean graphicsComplex2D(ArrayNode arrayNode, IAST ast,
+        IASTAppendable listOfIntPositions, GraphicsOptions options) {
+      if (ast.argSize() > 0) {
+        IExpr expr = ast.arg1();
+        IExpr list = ast.arg2();
+        ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+        g.put("type", "text");
+        if (graphicsComplex2DCoords(arrayNode, g, list) && graphicsTexts(g, expr.toString())) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
     public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
       if (ast.argSize() == 1) {
         ast = F.Text(ast.arg1(), F.List(F.C0, F.C0, F.C0));
@@ -1407,63 +1316,84 @@ public class GraphicsFunctions {
 
   protected static final DecimalFormat FORMATTER = new DecimalFormat("0.0####", US_SYMBOLS);
 
-  public static boolean exportGraphics2DRecursive(ArrayNode arrayNode, IAST data2D,
-      IASTAppendable listOfCoords) {
+  public static boolean exportGraphics2D(ObjectNode objectNode, ArrayNode arrayNode, IAST data2D,
+      GraphicsOptions graphicsOptions, IASTAppendable listOfCoords) {
     if (data2D.isList()) {
-      // boolean first = true;
-      IAST rgbColor = F.NIL;
-      GraphicsOptions graphicsOptions = new GraphicsOptions();
+      // GraphicsOptions graphicsOptions = new GraphicsOptions(EvalEngine.get());
+      // graphicsOptions.setOptions(options);
       GraphicsOptions.optionDouble(arrayNode, "opacity", graphicsOptions.opacity());
       GraphicsOptions.optionDouble(arrayNode, "pointSize", graphicsOptions.pointSize());
       // TODO delete textSize because of renaming to fontSize in next version
       GraphicsOptions.optionInt(arrayNode, "textSize", graphicsOptions.fontSize());
       GraphicsOptions.optionInt(arrayNode, "fontSize", graphicsOptions.fontSize());
-      ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
-      GraphicsOptions.setColorOption(g, GraphicsOptions.BLACK);
-      arrayNode.add(g);
-      IAST list = data2D;
-      for (int i = 1; i < list.size(); i++) {
-        IExpr arg = list.get(i);
-        if (arg.isAST()) {
-          IAST ast = (IAST) arg;
-          if (ast.isList()) {
-            if (exportGraphics2DRecursive(arrayNode, ast, listOfCoords)) {
-            }
-          } else if (ast.isRGBColor()) {
-            rgbColor = ast;
-            g = JSON_OBJECT_MAPPER.createObjectNode();
-            GraphicsOptions.setColorOption(g, rgbColor);
-            arrayNode.add(g);
-          } else if (ast.isAST(S.Opacity, 2)) {
-            double opacity = graphicsOptions.opacity();
-            try {
-              opacity = ast.arg1().evalf();
-            } catch (RuntimeException rex) {
-              //
-            }
-            GraphicsOptions.optionDouble(arrayNode, "opacity", opacity);
-          } else if (ast.isAST(S.PointSize, 2)) {
-            double pointSize = graphicsOptions.pointSize(ast);
-            GraphicsOptions.optionDouble(arrayNode, "pointSize", pointSize);
-          } else if (ast.isAST(S.Dashing, 2) && ast.arg1().isList()) {
-            IAST dashingList = (IAST) ast.arg1();
-            // TODO
-          } else if (ast.head().isBuiltInSymbol()) {
-            IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
-            IEvaluator evaluator = symbol.getEvaluator();
-            if (evaluator instanceof IGraphics2D) {
+      ObjectNode blackJSON = JSON_OBJECT_MAPPER.createObjectNode();
+      GraphicsOptions.setColorOption(blackJSON, GraphicsOptions.BLACK);
+      arrayNode.add(blackJSON);
 
-              if (((IGraphics2D) evaluator).graphics2D(arrayNode, ast, listOfCoords,
-                  graphicsOptions)) {
-              }
+      // graphicsOptions.graphics2DScalingFunctions(arrayNode);
+      graphicsOptions.graphics2DAxes(objectNode);
+      graphics2DAspectRatio(arrayNode, graphicsOptions.options());
+      graphicsOptions.graphics2DFilling(arrayNode);
+
+      IAST list = data2D;
+      return export2DRecursive(arrayNode, list, 1, data2D.size(), listOfCoords, graphicsOptions);
+    }
+    return false;
+
+  }
+
+  public static boolean export2DRecursive(ArrayNode arrayNode, IAST list, int startPosition,
+      int endPosition, IASTAppendable listOfCoords, GraphicsOptions graphicsOptions) {
+    for (int i = startPosition; i < endPosition; i++) {
+      IExpr arg = list.get(i);
+      if (arg.isAST()) {
+        IAST ast = (IAST) arg;
+        if (ast.isList()) {
+          if (export2DRecursive(arrayNode, ast, 1, ast.size(), listOfCoords, graphicsOptions)) {
+          }
+        } else if (ast.isASTSizeGE(S.Style, 2)) {
+          GraphicsOptions styledGraphicsOptions = graphicsOptions.copy();
+          if (export2DRecursive(arrayNode, ast, 2, ast.size(), listOfCoords,
+              styledGraphicsOptions)) {
+            if (export2DRecursive(arrayNode, ast, 1, 2, listOfCoords, styledGraphicsOptions)) {
+            }
+          }
+        } else if (ast.isAST(S.Hue, 2, 4)) {
+          ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+          if (GraphicsOptions.setHueColor(g, ast)) {
+            arrayNode.add(g);
+          }
+        } else if (ast.isRGBColor()) {
+          ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+          GraphicsOptions.setColorOption(g, ast);
+          arrayNode.add(g);
+        } else if (ast.isAST(S.Opacity, 2)) {
+          double opacity = graphicsOptions.opacity();
+          try {
+            opacity = ast.arg1().evalf();
+          } catch (RuntimeException rex) {
+            //
+          }
+          GraphicsOptions.optionDouble(arrayNode, "opacity", opacity);
+        } else if (ast.isAST(S.PointSize, 2)) {
+          double pointSize = graphicsOptions.pointSize(ast);
+          GraphicsOptions.optionDouble(arrayNode, "pointSize", pointSize);
+        } else if (ast.isAST(S.Dashing, 2) && ast.arg1().isList()) {
+          IAST dashingList = (IAST) ast.arg1();
+          // TODO
+        } else if (ast.head().isBuiltInSymbol()) {
+          IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
+          IEvaluator evaluator = symbol.getEvaluator();
+          if (evaluator instanceof IGraphics2D) {
+
+            if (((IGraphics2D) evaluator).graphics2D(arrayNode, ast, listOfCoords,
+                graphicsOptions)) {
             }
           }
         }
       }
-      return true;
     }
-    return false;
-
+    return true;
   }
 
   public static boolean exportGraphics3DRecursive(ArrayNode arrayNode, IAST data3D) {
@@ -1484,6 +1414,22 @@ public class GraphicsFunctions {
               // }
               // first = false;
               // buf.append(primitivesBuffer);
+            }
+          } else if (ast.isAST(S.Hue, 2, 5)) {
+            IAST hueColor = ast;
+            RGBColor rgb = null;
+            if (hueColor.argSize() == 1) {
+              rgb = RGBColor.getHSBColor((float) hueColor.arg1().evalf(), 1.0f, 1.0f);
+            } else if (hueColor.argSize() >= 3) {
+              rgb = RGBColor.getHSBColor((float) hueColor.arg1().evalf(),
+                  (float) hueColor.arg2().evalf(), (float) hueColor.arg3().evalf());
+              if (hueColor.argSize() == 4) {
+                opacity = ast.arg4();
+              }
+            }
+            if (rgb != null) {
+              rgbColor =
+                  F.RGBColor(rgb.getRed() / 255.0, rgb.getGreen() / 255.0, rgb.getBlue() / 255.0);
             }
           } else if (ast.isRGBColor()) {
             rgbColor = ast;
@@ -1511,49 +1457,49 @@ public class GraphicsFunctions {
     return false;
   }
 
-  public static boolean exportGraphicsSVG(StringBuilder buf, IAST data2D, Dimensions2D dim) {
-    if (data2D.isList()) {
-      boolean first = true;
-      IAST rgbColor = F.NIL;
-      IExpr opacity = F.num(0.75);
+  // public static boolean exportGraphicsSVG(StringBuilder buf, IAST data2D, Dimensions2D dim) {
+  // if (data2D.isList()) {
+  // boolean first = true;
+  // IAST rgbColor = F.NIL;
+  // IExpr opacity = F.num(0.75);
+  //
+  // for (int i = 1; i < data2D.size(); i++) {
+  // IExpr arg = data2D.get(i);
+  // if (arg.isAST()) {
+  // IAST primitive = (IAST) arg;
+  // if (primitive.isAST(S.RGBColor, 4)) {
+  // rgbColor = primitive;
+  // continue;
+  // }
+  // if (primitive.isAST(S.Opacity, 2)) {
+  // opacity = primitive.arg1();
+  // continue;
+  // }
+  //
+  // if (primitive.head().isBuiltInSymbol()) {
+  // IBuiltInSymbol symbol = (IBuiltInSymbol) primitive.head();
+  // IEvaluator evaluator = symbol.getEvaluator();
+  // if (evaluator instanceof IGraphics2D) {
+  // if (!first) {
+  // buf.append(",");
+  // }
+  // first = false;
+  //
+  // if (!((IGraphics2D) evaluator).graphics2DSVG(buf, primitive, dim, rgbColor,
+  // opacity)) {
+  // return false;
+  // }
+  // continue;
+  // }
+  // }
+  // }
+  // }
+  // return true;
+  // }
+  // return false;
+  // }
 
-      for (int i = 1; i < data2D.size(); i++) {
-        IExpr arg = data2D.get(i);
-        if (arg.isAST()) {
-          IAST primitive = (IAST) arg;
-          if (primitive.isAST(S.RGBColor, 4)) {
-            rgbColor = primitive;
-            continue;
-          }
-          if (primitive.isAST(S.Opacity, 2)) {
-            opacity = primitive.arg1();
-            continue;
-          }
-
-          if (primitive.head().isBuiltInSymbol()) {
-            IBuiltInSymbol symbol = (IBuiltInSymbol) primitive.head();
-            IEvaluator evaluator = symbol.getEvaluator();
-            if (evaluator instanceof IGraphics2D) {
-              if (!first) {
-                buf.append(",");
-              }
-              first = false;
-
-              if (!((IGraphics2D) evaluator).graphics2DSVG(buf, primitive, dim, rgbColor,
-                  opacity)) {
-                return false;
-              }
-              continue;
-            }
-          }
-        }
-      }
-      return true;
-    }
-    return false;
-  }
-
-  private static void graphics2DAspectRatio(OptionArgs options, ObjectNode json) {
+  public static void graphics2DAspectRatio(ArrayNode arrayNode, OptionArgs options) {
     IExpr option;
     option = options.getOption(S.AspectRatio);
     if (option.isPresent()) {
@@ -1564,44 +1510,52 @@ public class GraphicsFunctions {
       } else {
         g.put("symbol", option.toString().toLowerCase());
       }
-      json.set("aspectRatio", g);
+      ObjectNode aspectRatio = JSON_OBJECT_MAPPER.createObjectNode();
+      aspectRatio.set("aspectRatio", g);
+      arrayNode.add(aspectRatio);
     } else {
       ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
       g.put("symbol", "automatic");
-      json.set("aspectRatio", g);
+      ObjectNode aspectRatio = JSON_OBJECT_MAPPER.createObjectNode();
+      aspectRatio.set("aspectRatio", g);
+      arrayNode.add(aspectRatio);
     }
   }
 
-  private static boolean graphics2DAxes(ObjectNode json, OptionArgs options) {
-    ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
-    IExpr axesOptions = options.getOption(S.Axes);
-    if (axesOptions.isPresent()) {
-      if (axesOptions.isList2()) {
-        IExpr a1 = axesOptions.first();
-        IExpr a2 = axesOptions.second();
-        ArrayNode an = JSON_OBJECT_MAPPER.createArrayNode();
-        if (a1.isTrue()) {
-          an.add(true);
-        } else {
-          an.add(false);
-        }
-        if (a2.isTrue()) {
-          an.add(true);
-        } else {
-          an.add(false);
-        }
-        g.set("hasaxes", an);
-      } else if (axesOptions.isTrue()) {
-        g.put("hasaxes", true);
-      } else if (axesOptions.isFalse()) {
-        g.put("hasaxes", false);
-      } else {
+  private static boolean graphicsComplex2DCoords(ArrayNode arrayNode, ObjectNode g, IExpr expr) {
+    if (expr.isList() && graphicsComplex2DCoords(g, (IAST) expr)) {
+      arrayNode.add(g);
+      return true;
+    } else {
+      int iValue = expr.toIntDefault();
+      if (iValue <= 0) {
         return false;
       }
-    } else {
-      g.put("hasaxes", false);
+      g.put("position", iValue);
+      arrayNode.add(g);
+      return true;
     }
-    json.set("axes", g);
+  }
+
+  private static boolean graphicsComplex2DCoords(ObjectNode json, IAST ast) {
+    ArrayNode array = json.arrayNode();
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isList()) {
+        ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+        if (!graphicsComplex2DCoords(g, (IAST) arg)) {
+          return false;
+        }
+        array.add(g);
+      } else if (arg.isInteger()) {
+        int iValue = arg.toIntDefault();
+        if (iValue <= 0) {
+          return false;
+        }
+        array.add(iValue);
+      }
+    }
+    json.set("positions", array);
     return true;
   }
 
@@ -1658,40 +1612,48 @@ public class GraphicsFunctions {
   }
 
   private static boolean graphics2DJSON(StringBuilder graphics2DBuffer, IExpr data2D,
-      OptionArgs options, boolean javaScript) {
+      OptionArgs options, boolean javaScript, boolean prettyPrint) {
     ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
     ArrayNode arrayNode = JSON_OBJECT_MAPPER.createArrayNode();
     IASTAppendable listOfCoords = F.ListAlloc();
-    if (GraphicsFunctions.exportGraphics2DRecursive(arrayNode, (IAST) data2D, listOfCoords)) {
+    GraphicsOptions graphicsOptions = new GraphicsOptions(EvalEngine.get());
+    graphicsOptions.setOptions(options);
+    IExpr plotRange = options.getOption(S.PlotRange);
+
+    if (GraphicsFunctions.exportGraphics2D(json, arrayNode, (IAST) data2D, graphicsOptions,
+        listOfCoords)) {
       try {
-        graphics2DScalingFunctions(arrayNode, options);
         if (javaScript) {
           graphics2DBuffer.append("drawGraphics2d(\"graphics2d\",\n");
         }
         json.set("elements", arrayNode);
-        if (listOfCoords.argSize() > 0) {
-          IExpr coordinateBounds = S.CoordinateBounds.ofNIL(EvalEngine.get(), listOfCoords);
-          ObjectNode objectNode = JSON_OBJECT_MAPPER.createObjectNode();
-
-          IExpr option = options.getOption(S.PlotRange);
-          int[] matrix = option.isMatrix();
-          if (matrix != null && matrix[0] == 2 && matrix[1] == 2) {
-            if (GraphicsFunctions.graphicsExtent(objectNode, (IAST) option, 2)) {
-              json.set("extent", objectNode);
-            }
-          } else {
-            if (coordinateBounds.isList2()
-                && GraphicsFunctions.graphicsExtent(objectNode, (IAST) coordinateBounds, 2)) {
-              json.set("extent", objectNode);
+        options = graphicsOptions.options();
+        ObjectNode objectNode = JSON_OBJECT_MAPPER.createObjectNode();
+        if (plotRange.isPresent()
+            && graphicsOptions.graphicsExtent2D(objectNode, (IAST) plotRange)) {
+          json.set("extent", objectNode);
+        } else {
+          if (listOfCoords.argSize() > 0) {
+            IExpr coordinateBounds = S.CoordinateBounds.ofNIL(EvalEngine.get(), listOfCoords);
+            IExpr option = options.getOption(S.PlotRange);
+            int[] matrix = option.isMatrix();
+            if (matrix != null && matrix[0] == 2 && matrix[1] == 2) {
+              if (GraphicsFunctions.graphicsExtent(objectNode, (IAST) option, 2)) {
+                json.set("extent", objectNode);
+              }
             } else {
-              // return false;
-              // fall through?
+              if (coordinateBounds.isList2()
+                  && GraphicsFunctions.graphicsExtent(objectNode, (IAST) coordinateBounds, 2)) {
+                json.set("extent", objectNode);
+              } else {
+                // return false;
+                // fall through?
+              }
             }
-          }
-          graphics2DAxes(json, options);
-          graphics2DAspectRatio(options, json);
 
+          }
         }
+
         // if (options.size() > 0) {
         // IAST optionsList = F.List();
         // // lighting = options.getOption(S.Lighting).orElse(lighting);
@@ -1719,9 +1681,11 @@ public class GraphicsFunctions {
         // return false;
         // }
         // }
-
-        graphics2DBuffer.append(json.toString());
-
+        if (prettyPrint) {
+          graphics2DBuffer.append(json.toPrettyString());
+        } else {
+          graphics2DBuffer.append(json.toString());
+        }
         // graphics2DBuffer.append("{");
         // // graphics2DBuffer.append("\naxes: {},");
         // graphics2DBuffer.append("elements: [");
@@ -1739,39 +1703,6 @@ public class GraphicsFunctions {
       }
     }
     return false;
-  }
-
-  private static void graphics2DScalingFunctions(ArrayNode arrayNode, OptionArgs options) {
-    IExpr scalingFunctions = options.getOption(S.ScalingFunctions);
-    if (scalingFunctions.isPresent()) {
-      ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
-      ArrayNode array = JSON_OBJECT_MAPPER.createArrayNode();
-      if (scalingFunctions.isList1()) {
-        getScale(array, scalingFunctions.first());
-        array.add("None");
-      } else if (scalingFunctions.isList2()) {
-        getScale(array, scalingFunctions.first());
-        getScale(array, scalingFunctions.second());
-      } else if (!scalingFunctions.isList()) {
-        getScale(array, scalingFunctions);
-        array.add("None");
-      } else {
-        return;
-      }
-      g.put("option", "scaling");
-      g.set("value", array);
-      arrayNode.add(g);
-    }
-  }
-
-  private static void getScale(ArrayNode array, IExpr scale) {
-    if (scale.isString()) {
-      array.add(scale.toString());
-    } else if (scale.equals(S.None)) {
-      array.add("None");
-    } else {
-      array.add("None");
-    }
   }
 
   private static boolean graphics3DCoords(ObjectNode json, IAST ast) {
@@ -1857,7 +1788,7 @@ public class GraphicsFunctions {
   }
 
   private static boolean graphics3DJSON(StringBuilder graphics3DBuffer, IExpr lighting,
-      IExpr data3D, boolean javaScript) {
+      IExpr data3D, boolean javaScript, boolean prettyPrint) {
     ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
     ArrayNode arrayNode = JSON_OBJECT_MAPPER.createArrayNode();
     if (GraphicsFunctions.exportGraphics3DRecursive(arrayNode, (IAST) data3D)) {
@@ -1872,7 +1803,11 @@ public class GraphicsFunctions {
         vp.add(-2.4);
         vp.add(2.0);
         json.set("viewpoint", vp);
-        graphics3DBuffer.append(json.toString());
+        if (prettyPrint) {
+          graphics3DBuffer.append(json.toString());
+        } else {
+          graphics3DBuffer.append(json.toString());
+        }
         // graphics3DBuffer.append("{");
         // graphics3DBuffer.append("\naxes: {},");
         // graphics3DBuffer.append("\nelements: [");
@@ -2096,74 +2031,6 @@ public class GraphicsFunctions {
     return true;
   }
 
-  public static void graphicsToSVG(IAST ast, StringBuilder buf) {
-    EvalEngine engine = EvalEngine.get();
-    IAST numericAST = (IAST) engine.evalN(ast);
-    Dimensions2D dim = new Dimensions2D(350, 350);
-    // set a default value
-    dim.color = RGBColor.BLUE;
-    if (numericAST.size() > 2) {
-      final OptionArgs options = new OptionArgs(numericAST.topHead(), numericAST, 2, engine);
-      IExpr option = options.getOption(S.PlotRange);
-      if (option.isListOfLists() && option.size() == 3) {
-        IAST list = (IAST) option;
-        dim.setPlotRange(list.getAST(1), list.getAST(2));
-      }
-      option = options.getOption(S.Axes);
-      if (option.isTrue()) {
-        dim.setAxes(true);
-      }
-    }
-
-    try {
-      int width = dim.width;
-      int height = dim.height;
-
-      if (ast.size() > 1) {
-        IExpr arg1 = ast.arg1().makeList();
-        primitivesDimension((IAST) arg1, dim);
-        exportGraphicsSVG(buf, (IAST) arg1, dim);
-      }
-
-      if (dim.isAxes()) {
-        double xScale = width / (dim.xMax - dim.xMin);
-        double yScale = height / (dim.yMax - dim.yMin);
-        double x1 = 0;
-
-        // vertical axe
-        // + "0.000000,233.333333 6.666667,233.333333");
-        buf.append("<polyline points=\"");
-
-        buf.append(Show2SVG.FORMATTER.format((x1 - dim.xMin) * xScale));
-        buf.append(",");
-        buf.append(Show2SVG.FORMATTER.format(0.0));
-        buf.append(" ");
-        buf.append(Show2SVG.FORMATTER.format((x1 - dim.xMin) * xScale));
-        buf.append(",");
-        buf.append(Show2SVG.FORMATTER.format(height));
-
-        buf.append(
-            "\" style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\"/>\n");
-
-        // horizontals axe
-        double y1 = (-dim.yMin) * yScale;
-        buf.append("<polyline points=\"");
-
-        buf.append(Show2SVG.FORMATTER.format(0));
-        buf.append(",");
-        buf.append(Show2SVG.FORMATTER.format(y1));
-        buf.append(" ");
-        buf.append(Show2SVG.FORMATTER.format(width));
-        buf.append(",");
-        buf.append(Show2SVG.FORMATTER.format(y1));
-
-        buf.append(
-            "\" style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\"/>\n");
-      }
-    } finally {
-    }
-  }
-
   public static void initialize() {
     Initializer.init();
   }
@@ -2187,20 +2054,30 @@ public class GraphicsFunctions {
   }
 
   public static boolean renderGraphics2D(StringBuilder graphics2DBuffer, IAST graphics2DAST,
-      boolean javaScript, EvalEngine engine) {
+      EvalEngine engine) {
+    return renderGraphics2D(graphics2DBuffer, graphics2DAST, true, false, engine);
+  }
+
+  public static boolean renderGraphics2D(StringBuilder graphics2DBuffer, IAST graphics2DAST,
+      boolean javaScript, boolean prettyPrint, EvalEngine engine) {
     IAST arg1 = graphics2DAST.first().makeList();
     // IExpr lighting = S.Automatic;
     final OptionArgs options =
         new OptionArgs(graphics2DAST.topHead(), graphics2DAST, 2, engine, true);
     if (arg1.isAST() && arg1.head().isBuiltInSymbol()
-        && graphics2DJSON(graphics2DBuffer, arg1, options, javaScript)) {
+        && graphics2DJSON(graphics2DBuffer, arg1, options, javaScript, prettyPrint)) {
       return true;
     }
     return false;
   }
 
   public static boolean renderGraphics3D(StringBuilder graphics3DBuffer, IAST graphics3DAST,
-      boolean javaScript, EvalEngine engine) {
+      EvalEngine engine) {
+    return renderGraphics3D(graphics3DBuffer, graphics3DAST, true, false, engine);
+  }
+
+  public static boolean renderGraphics3D(StringBuilder graphics3DBuffer, IAST graphics3DAST,
+      boolean javaScript, boolean prettyPrint, EvalEngine engine) {
     IExpr arg1 = graphics3DAST.first();
     if (!arg1.isList()) {
       arg1 = F.list(arg1);
@@ -2216,7 +2093,7 @@ public class GraphicsFunctions {
     }
 
     if (arg1.isAST() && arg1.head().isBuiltInSymbol()
-        && graphics3DJSON(graphics3DBuffer, lighting, arg1, javaScript)) {
+        && graphics3DJSON(graphics3DBuffer, lighting, arg1, javaScript, prettyPrint)) {
       return true;
     }
     return false;
@@ -2235,5 +2112,6 @@ public class GraphicsFunctions {
   }
 
   private GraphicsFunctions() {}
+
 
 }

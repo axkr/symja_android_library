@@ -200,7 +200,7 @@ public class AJAXQueryServlet extends HttpServlet {
         if (outExpr != null) {
           if (outExpr.isAST(S.Graphics)) {
             StringBuilder buf = new StringBuilder();
-            if (GraphicsFunctions.renderGraphics2D(buf, (IAST) outExpr, true, engine)) {
+            if (GraphicsFunctions.renderGraphics2D(buf, (IAST) outExpr, engine)) {
               try {
                 return JSONBuilder.createGraphics2DIFrame(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE,
                     buf.toString());
@@ -222,7 +222,7 @@ public class AJAXQueryServlet extends HttpServlet {
             // }
           } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
             StringBuilder buf = new StringBuilder();
-            if (GraphicsFunctions.renderGraphics3D(buf, (IAST) outExpr, true, engine)) {
+            if (GraphicsFunctions.renderGraphics3D(buf, (IAST) outExpr, engine)) {
               try {
                 return JSONBuilder.createGraphics3DIFrame(JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE,
                     buf.toString());

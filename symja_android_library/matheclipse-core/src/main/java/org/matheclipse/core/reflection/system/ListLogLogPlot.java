@@ -10,21 +10,18 @@ import org.matheclipse.core.interfaces.IExpr;
 public class ListLogLogPlot extends ListPlot {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    GraphicsOptions graphicsOptions = new GraphicsOptions();
+    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     graphicsOptions.setXFunction(x -> F.Log(x));
     graphicsOptions.setYFunction(y -> F.Log(y));
-    int[] colour = new int[] {1};
     IAST graphicsPrimitives = plot(ast, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
-      double[] boundingbox = graphicsOptions.boundingBox();
-      IExpr result = F.Graphics(graphicsPrimitives, //
+      IAST listOfOptions = F.List(//
           F.Rule(S.ScalingFunctions, //
               F.List(F.stringx("Log"), F.stringx("Log"))), //
-          F.Rule(S.Axes, S.True),
-          F.Rule(S.PlotRange, F.List(F.List(F.num(boundingbox[0]), F.num(boundingbox[1])),
-              F.List(F.num(boundingbox[2]), F.num(boundingbox[3])))));
-      return result;
+          F.Rule(S.Axes, S.True), //
+          graphicsOptions.plotRange());
+      return createGraphicsFunction(graphicsPrimitives, listOfOptions, graphicsOptions);
     }
 
     return F.NIL;

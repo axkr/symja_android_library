@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
@@ -10,22 +11,24 @@ import org.matheclipse.core.interfaces.IExpr;
 public class ListLogPlot extends ListPlot {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    GraphicsOptions graphicsOptions = new GraphicsOptions();
+    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     graphicsOptions.setYFunction(y -> F.Log(y));
-    int[] colour = new int[] {1};
     IAST graphicsPrimitives = plot(ast, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
-      double[] boundingbox = graphicsOptions.boundingBox();
-      IExpr result = F.Graphics(graphicsPrimitives, //
+      IAST listOfOptions = F.List(//
           F.Rule(S.ScalingFunctions, //
               F.List(S.None, F.stringx("Log"))), //
-          F.Rule(S.Axes, S.True),
-          F.Rule(S.PlotRange, F.List(F.List(F.num(boundingbox[0]), F.num(boundingbox[1])),
-              F.List(F.num(boundingbox[2]), F.num(boundingbox[3])))));
-      return result;
+          F.Rule(S.Axes, S.True), //
+          graphicsOptions.plotRange());
+      return createGraphicsFunction(graphicsPrimitives, listOfOptions, graphicsOptions);
     }
 
     return F.NIL;
+  }
+
+  @Override
+  public int[] expectedArgSize(IAST ast) {
+    return IFunctionEvaluator.ARGS_1_INFINITY;
   }
 }

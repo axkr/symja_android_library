@@ -18,6 +18,46 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class OptionArgs {
   public static final OptionArgs DUMMY_OPTIONS_ARGS = new OptionArgs();
 
+  public static OptionArgs createOptionArgs(IAST ast, EvalEngine engine) {
+    final OptionArgs options = new OptionArgs(ast.topHead(), ast, ast.size() - 1, engine, false);
+    return options.fInvalidPosition == ast.size() - 1 ? null : options;
+  }
+
+  public static IExpr determineAssumptions(final IAST ast, int position, OptionArgs options) {
+    IExpr assumptionExpr = F.NIL;
+    if (options != null) {
+      if (options.fInvalidPosition > 0 && options.fInvalidPosition <= position
+          && ast.size() > position) {
+        assumptionExpr = ast.get(position);
+      } else {
+        IExpr option = options.getOption(S.Assumptions);
+        if (option.isPresent()) {
+          if (option.equals(S.$Assumptions)) {
+            assumptionExpr = S.$Assumptions.assignedValue();
+            if (assumptionExpr == null) {
+              assumptionExpr = F.NIL;
+            }
+          } else {
+            assumptionExpr = option;
+            if (option.isTrue()) {
+              if (position > 0 && ast.size() > position) {
+                assumptionExpr = ast.get(position);
+              }
+            }
+          }
+        } else if (position > 0 && ast.size() > position) {
+          assumptionExpr = ast.get(position);
+        }
+      }
+    } else {
+      assumptionExpr = S.$Assumptions.assignedValue();
+      if (assumptionExpr == null) {
+        assumptionExpr = F.NIL;
+      }
+    }
+    return assumptionExpr;
+  }
+
   /** The default options list determined by evaluating {@link F#Options(symbol)} */
   private IAST fDefaultOptionsList = F.NIL;
 
@@ -30,13 +70,14 @@ public class OptionArgs {
 
   private int fInvalidPosition = -1;
 
-  public static OptionArgs createOptionArgs(IAST ast, EvalEngine engine) {
-    final OptionArgs options = new OptionArgs(ast.topHead(), ast, ast.size() - 1, engine, false);
-    return options.fInvalidPosition == ast.size() - 1 ? null : options;
-  }
-
   private OptionArgs() {
     //
+  }
+
+  public OptionArgs(final EvalEngine engine) {
+    fEngine = engine;
+    evalDefaultOptions(S.None);
+    this.fCurrentOptionsList = F.NIL;
   }
 
   /**
@@ -123,30 +164,6 @@ public class OptionArgs {
     }
   }
 
-  private boolean checkOptionRule(int i, IAST rule) {
-    if (fDefaultOptionsList.isPresent()) {
-      if (fDefaultOptionsList.exists(x -> x.first().equals(rule.first()))) {
-        return true;
-      }
-      fInvalidPosition = i;
-      return false;
-    }
-    return true;
-  }
-
-  private boolean appendOptionRule(int i, IAST rule) {
-    if (fDefaultOptionsList.isPresent()) {
-      if (fDefaultOptionsList.exists(x -> x.first().equals(rule.first()))) {
-        this.fCurrentOptionsList.append(rule);
-        return true;
-      }
-      fInvalidPosition = i;
-      return false;
-    }
-    this.fCurrentOptionsList.append(rule);
-    return true;
-  }
-
   /**
    * Construct special <i>Options</i> used in evaluation of function symbols (i.e. <code>
    * Modulus-&gt;n</code> is an option which could be used for an integer <code>n</code> in a
@@ -197,6 +214,44 @@ public class OptionArgs {
     this.fCurrentOptionsList.append(optionExpr);
   }
 
+  private boolean appendOptionRule(int i, IAST rule) {
+    if (fDefaultOptionsList.isPresent()) {
+      if (fDefaultOptionsList.exists(x -> x.first().equals(rule.first()))) {
+        this.fCurrentOptionsList.append(rule);
+        return true;
+      }
+      fInvalidPosition = i;
+      return false;
+    }
+    int indx = fCurrentOptionsList.indexOf(x -> x.first().equals(rule.first()));
+    if (indx > 0) {
+      this.fCurrentOptionsList.set(indx, rule);
+    } else {
+      this.fCurrentOptionsList.append(rule);
+    }
+    return true;
+  }
+
+  public void appendOptionRules(IAST listOfRules) {
+    if (fCurrentOptionsList.isNIL()) {
+      fCurrentOptionsList = F.ListAlloc();
+    }
+    for (int j = 1; j < listOfRules.size(); j++) {
+      appendOptionRule(-1, (IAST) listOfRules.get(j));
+    }
+  }
+
+  private boolean checkOptionRule(int i, IAST rule) {
+    if (fDefaultOptionsList.isPresent()) {
+      if (fDefaultOptionsList.exists(x -> x.first().equals(rule.first()))) {
+        return true;
+      }
+      fInvalidPosition = i;
+      return false;
+    }
+    return true;
+  }
+
   /**
    * Evaluate {@link F#Options(IExpr)} for the <code>symbol</code> to determine the List of
    * pre-defined default options.
@@ -206,6 +261,10 @@ public class OptionArgs {
   private void evalDefaultOptions(final ISymbol symbol) {
     final IExpr temp = fEngine.evaluate(F.Options(symbol));
     fDefaultOptionsList = temp.isList() && temp.size() > 1 ? (IAST) temp : F.NIL;
+  }
+
+  public IASTAppendable getCurrentOptionsList() {
+    return fCurrentOptionsList;
   }
 
   /**
@@ -226,12 +285,11 @@ public class OptionArgs {
     return fLastPosition;
   }
 
-  public IASTAppendable getCurrentOptionsList() {
-    return fCurrentOptionsList;
-  }
-
-  public int size() {
-    return fCurrentOptionsList.argSize();
+  public IAST getListOfRules() {
+    if (fCurrentOptionsList.isPresent()) {
+      return fCurrentOptionsList;
+    }
+    return F.CEmptyList;
   }
 
   /**
@@ -397,38 +455,12 @@ public class OptionArgs {
     return options;
   }
 
-  public static IExpr determineAssumptions(final IAST ast, int position, OptionArgs options) {
-    IExpr assumptionExpr = F.NIL;
-    if (options != null) {
-      if (options.fInvalidPosition > 0 && options.fInvalidPosition <= position
-          && ast.size() > position) {
-        assumptionExpr = ast.get(position);
-      } else {
-        IExpr option = options.getOption(S.Assumptions);
-        if (option.isPresent()) {
-          if (option.equals(S.$Assumptions)) {
-            assumptionExpr = S.$Assumptions.assignedValue();
-            if (assumptionExpr == null) {
-              assumptionExpr = F.NIL;
-            }
-          } else {
-            assumptionExpr = option;
-            if (option.isTrue()) {
-              if (position > 0 && ast.size() > position) {
-                assumptionExpr = ast.get(position);
-              }
-            }
-          }
-        } else if (position > 0 && ast.size() > position) {
-          assumptionExpr = ast.get(position);
-        }
-      }
-    } else {
-      assumptionExpr = S.$Assumptions.assignedValue();
-      if (assumptionExpr == null) {
-        assumptionExpr = F.NIL;
-      }
-    }
-    return assumptionExpr;
+  public int size() {
+    return fCurrentOptionsList.argSize();
+  }
+
+  @Override
+  public String toString() {
+    return fCurrentOptionsList.toString();
   }
 }

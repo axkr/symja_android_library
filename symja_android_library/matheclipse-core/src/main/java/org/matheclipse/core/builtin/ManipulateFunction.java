@@ -1458,9 +1458,11 @@ public class ManipulateFunction {
 
       StringBuilder jsControl = new StringBuilder();
       if (axes) {
-        jsControl.append("var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[");
+        jsControl.append(
+            "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,showCopyright:false,boundingbox:[");
       } else {
-        jsControl.append("var board = JXG.JSXGraph.initBoard('jxgbox', {axis:false,boundingbox:[");
+        jsControl.append(
+            "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:false,showCopyright:false,boundingbox:[");
       }
 
       for (int i = 0; i < boundingbox.length; i++) {

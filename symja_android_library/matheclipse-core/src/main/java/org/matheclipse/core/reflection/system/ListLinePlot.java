@@ -21,31 +21,19 @@ public class ListLinePlot extends ListPlot {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    // if (Config.USE_MANIPULATE_JS) {
-    // IExpr temp = S.Manipulate.of(engine, ast);
-    // if (temp.headID() == ID.JSFormData) {
-    // return temp;
-    // }
-    // return F.NIL;
-    // }
-
-    GraphicsOptions graphicsOptions = new GraphicsOptions();
+    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     graphicsOptions.setJoined(true);
-    // boundingbox an array of double values (length 4) which describes the bounding box
-    // <code>[xMin, xMax, yMin, yMax]</code>
-    int[] colour = new int[] {1};
     IAST graphicsPrimitives = plot(ast, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
-      double[] boundingbox = graphicsOptions.boundingBox();
-      IExpr result = F.Graphics(graphicsPrimitives, //
-          F.Rule(S.Axes, S.True),
-          F.Rule(S.PlotRange, F.List(F.List(F.num(boundingbox[0]), F.num(boundingbox[1])),
-              F.List(F.num(boundingbox[2]), F.num(boundingbox[3])))));
-      return result;
+      IAST listOfOptions = F.List(F.Rule(S.Axes, S.True), //
+          graphicsOptions.plotRange());
+      return createGraphicsFunction(graphicsPrimitives, listOfOptions, graphicsOptions);
     }
+
     return F.NIL;
   }
+
 
   @Override
   public void setUp(final ISymbol newSymbol) {}

@@ -21,19 +21,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.ExprEvaluator;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import com.twosigma.beakerx.TryResult;
 import com.twosigma.beakerx.jvm.object.SimpleEvaluationObject;
 import com.twosigma.beakerx.symjamma.output.MarkdownNotebookOutput;
-import com.twosigma.beakerx.symjamma.output.SVGImageNotebookOutput;
 
 class SymjaMMACodeRunner implements Callable<TryResult> {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -50,13 +46,13 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
     theOutput = out;
   }
 
-  private String createSVGOutput(IAST show) {
-    StringBuilder svgData = new StringBuilder();
-    if (show.isAST() && show.size() > 1 && show.first().isAST()) {
-      GraphicsFunctions.graphicsToSVG((IAST) show.arg1(), svgData);
-    }
-    return svgData.toString();
-  }
+  // private String createSVGOutput(IAST show) {
+  // StringBuilder svgData = new StringBuilder();
+  // if (show.isAST() && show.size() > 1 && show.first().isAST()) {
+  // GraphicsFunctions.graphicsToSVG((IAST) show.arg1(), svgData);
+  // }
+  // return svgData.toString();
+  // }
 
   public Object interpreter(ExprEvaluator fEvaluator, OutputFormFactory fOutputFactory,
       final String inputExpression) {
@@ -101,9 +97,9 @@ class SymjaMMACodeRunner implements Callable<TryResult> {
       if (result instanceof IExpr) {
         if (result instanceof IStringX) {
           return TryResult.createResult(((IStringX) result).toString());
-        } else if (((IExpr) result).isASTSizeGE(F.Show, 2)) {
-          IAST show = (IAST) result;
-          return TryResult.createResult(new SVGImageNotebookOutput(createSVGOutput(show)));
+          // } else if (((IExpr) result).isASTSizeGE(F.Show, 2)) {
+          // IAST show = (IAST) result;
+          // return TryResult.createResult(new SVGImageNotebookOutput(createSVGOutput(show)));
         } else {
           return symjammaEvaluator.printForm(this, result);
         }

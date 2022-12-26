@@ -4,6 +4,8 @@ import java.util.function.Function;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.RGBColor;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -67,6 +69,40 @@ public class GraphicsOptions {
     boundingbox[1] = boundingbox[1] + xPadding; // xMax
     boundingbox[2] = boundingbox[2] - yPadding; // yMin
     boundingbox[3] = boundingbox[3] + yPadding; // yMax
+  }
+
+  public static Function<IExpr, IExpr> getScaling(ArrayNode array, IExpr scale) {
+    if (scale.isString()) {
+      String scaleStr = scale.toString();
+      if (scaleStr.equals("Log")) {
+        array.add(scaleStr);
+        return x -> F.Log(x);
+      } else if (scaleStr.equals("Log2")) {
+        array.add(scaleStr);
+        return x -> F.Log(x, F.C2);
+      } else if (scaleStr.equals("Log10")) {
+        array.add(scaleStr);
+        return x -> F.Log(x, F.C10);
+      }
+    }
+    array.add("None");
+    // Identity
+    return x -> x;
+  }
+
+  public static Function<IExpr, IExpr> getScaling(IExpr scale) {
+    if (scale.isString()) {
+      String scaleStr = scale.toString();
+      if (scaleStr.equals("Log")) {
+        return x -> F.Log(x);
+      } else if (scaleStr.equals("Log2")) {
+        return x -> F.Log(x, F.C2);
+      } else if (scaleStr.equals("Log10")) {
+        return x -> F.Log(x, F.C10);
+      }
+    }
+    // Identity
+    return x -> x;
   }
 
   public static void optionBoolean(ArrayNode arrayNode, String optionName, boolean value) {
@@ -190,40 +226,49 @@ public class GraphicsOptions {
 
   }
 
+  public static void setColorOption(ObjectNode json, double red, double green, double blue) {
+    ArrayNode arrayNode = json.arrayNode();
+    arrayNode.add(red);
+    arrayNode.add(green);
+    arrayNode.add(blue);
+    json.put("option", "color");
+    json.set("value", arrayNode);
+  }
+
   public static void setColorOption(ObjectNode json, IAST color) {
     if (color.isPresent()) {
       if (color.isAST(S.RGBColor, 4)) {
         double red = color.arg1().toDoubleDefault(0.0);
         double green = color.arg2().toDoubleDefault(0.0);
         double blue = color.arg3().toDoubleDefault(0.0);
-        ArrayNode arrayNode = json.arrayNode();
-        arrayNode.add(red);
-        arrayNode.add(green);
-        arrayNode.add(blue);
-        json.put("option", "color");
-        json.set("value", arrayNode);
+        setColorOption(json, red, green, blue);
         return;
       } else if (color.isAST(S.RGBColor, 1) && color.arg1().isAST(S.List, 4)) {
         IAST list = (IAST) color.arg1();
         double red = list.arg1().toDoubleDefault(0.0);
         double green = list.arg2().toDoubleDefault(0.0);
         double blue = list.arg3().toDoubleDefault(0.0);
-        ArrayNode arrayNode = json.arrayNode();
-        arrayNode.add(red);
-        arrayNode.add(green);
-        arrayNode.add(blue);
-        json.put("option", "color");
-        json.set("value", arrayNode);
+        setColorOption(json, red, green, blue);
         return;
       }
     }
     // black
-    ArrayNode arrayNode = json.arrayNode();
-    arrayNode.add(0.0);
-    arrayNode.add(0.0);
-    arrayNode.add(0.0);
-    json.put("option", "color");
-    json.set("value", arrayNode);
+    setColorOption(json, 0.0, 0.0, 0.0);
+  }
+
+  public static boolean setHueColor(ObjectNode g, IAST hueColor) {
+    RGBColor rgb = null;
+    if (hueColor.argSize() == 1) {
+      rgb = RGBColor.getHSBColor((float) hueColor.arg1().evalf(), 1.0f, 1.0f);
+    } else if (hueColor.argSize() == 3) {
+      rgb = RGBColor.getHSBColor((float) hueColor.arg1().evalf(), (float) hueColor.arg2().evalf(),
+          (float) hueColor.arg3().evalf());
+    }
+    if (rgb != null) {
+      setColorOption(g, rgb.getRed() / 255.0, rgb.getGreen() / 255.0, rgb.getBlue() / 255.0);
+      return true;
+    }
+    return false;
   }
 
   double opacity = 1.0;
@@ -235,6 +280,8 @@ public class GraphicsOptions {
   int fontSize = GraphicsOptions.MEDIUM_FONTSIZE;
 
   IAST rgbColor;
+
+  int colorIndex = 1;
 
   /**
    * If <code>true</code> points in a dataset should be joined into a line, otherwise they should be
@@ -249,11 +296,15 @@ public class GraphicsOptions {
 
   Function<IExpr, IExpr> yFunction;
 
-  public GraphicsOptions() {
+  OptionArgs options;
+
+  public GraphicsOptions(EvalEngine engine) {
     // Identity mapping as default
     xFunction = x -> x;
-    yFunction = x -> x;
+    yFunction = y -> y;
     rgbColor = GraphicsOptions.BLACK;
+
+    options = new OptionArgs(engine);
   }
 
   public void addPadding() {
@@ -275,8 +326,156 @@ public class GraphicsOptions {
     return boundingbox;
   }
 
+  public GraphicsOptions copy() {
+    GraphicsOptions graphicsOptions = new GraphicsOptions(EvalEngine.get());
+    graphicsOptions.boundingbox = new double[] {//
+        this.boundingbox[0], this.boundingbox[1], this.boundingbox[2], this.boundingbox[3]};
+    graphicsOptions.fontSize = this.fontSize;
+    graphicsOptions.joined = this.joined;
+    graphicsOptions.opacity = this.opacity;
+    graphicsOptions.options = this.options;
+    graphicsOptions.thickness = this.thickness;
+    graphicsOptions.rgbColor = this.rgbColor;
+    graphicsOptions.xFunction = this.xFunction;
+    graphicsOptions.yFunction = this.yFunction;
+    return graphicsOptions;
+  }
+
   public int fontSize() {
     return fontSize;
+  }
+
+  public int getColorIndex() {
+    return colorIndex;
+  }
+
+  public boolean graphics2DAxes(ObjectNode axes) {
+    OptionArgs options = options();
+
+    ArrayNode scalingArray = null;
+    IExpr scalingFunctions = options.getOption(S.ScalingFunctions);
+    if (scalingFunctions.isPresent()) {
+      if (scalingFunctions.isList1()) {
+        scalingArray = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
+        setXFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions.first()));
+        scalingArray.add("None");
+        setYFunction(y -> y);
+      } else if (scalingFunctions.isList2()) {
+        scalingArray = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
+        setXFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions.first()));
+        setYFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions.second()));
+      } else if (!scalingFunctions.isList()) {
+        scalingArray = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
+        scalingArray.add("None");
+        setXFunction(x -> x);
+        setYFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions));
+      } else {
+        return false;
+      }
+    }
+
+    ObjectNode g = GraphicsFunctions.JSON_OBJECT_MAPPER.createObjectNode();
+    IExpr axesOptions = options.getOption(S.Axes);
+    if (!axesOptions.isPresent()) {
+      axesOptions = S.False;
+    }
+    if (axesOptions.isList2()) {
+      IExpr a1 = axesOptions.first();
+      IExpr a2 = axesOptions.second();
+      ArrayNode an = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
+      if (a1.isTrue()) {
+        an.add(true);
+      } else {
+        an.add(false);
+      }
+      if (a2.isTrue()) {
+        an.add(true);
+      } else {
+        an.add(false);
+      }
+      g.set("hasaxes", an);
+    } else if (axesOptions.isTrue()) {
+      g.put("hasaxes", true);
+    } else if (axesOptions.isFalse()) {
+      g.put("hasaxes", false);
+    } else {
+      return false;
+    }
+
+    if (scalingArray != null) {
+      g.set("scaling", scalingArray);
+    }
+    axes.set("axes", g);
+    return true;
+  }
+
+  public void graphics2DFilling(ArrayNode arrayNode) {
+    OptionArgs options = options();
+    IExpr filling = options.getOption(S.Filling);
+    if (filling.isPresent()) {
+      ObjectNode g = GraphicsFunctions.JSON_OBJECT_MAPPER.createObjectNode();
+      g.put("option", "filling");
+      if (filling == S.None) {
+        g.put("value", "none");
+      } else if (filling == S.Axis) {
+        g.put("value", "axis");
+      } else if (filling == S.Top) {
+        g.put("value", "top");
+      } else if (filling == S.Bottom) {
+        g.put("value", "bottom");
+      } else {
+        return;
+      }
+      arrayNode.add(g);
+    }
+  }
+
+  public void graphics2DScalingFunctions(ArrayNode arrayNode) {
+    OptionArgs options = options();
+    IExpr scalingFunctions = options.getOption(S.ScalingFunctions);
+    if (scalingFunctions.isPresent()) {
+      ObjectNode g = GraphicsFunctions.JSON_OBJECT_MAPPER.createObjectNode();
+      ArrayNode array = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
+      if (scalingFunctions.isList1()) {
+        setXFunction(GraphicsOptions.getScaling(array, scalingFunctions.first()));
+        array.add("None");
+        setYFunction(y -> y);
+      } else if (scalingFunctions.isList2()) {
+        setXFunction(GraphicsOptions.getScaling(array, scalingFunctions.first()));
+        setYFunction(GraphicsOptions.getScaling(array, scalingFunctions.second()));
+      } else if (!scalingFunctions.isList()) {
+        array.add("None");
+        setXFunction(x -> x);
+        setYFunction(GraphicsOptions.getScaling(array, scalingFunctions));
+      } else {
+        return;
+      }
+      g.put("option", "scaling");
+      g.set("value", array);
+      arrayNode.add(g);
+    }
+  }
+
+  public boolean graphicsExtent2D(ObjectNode objectNode, IAST plotRange) {
+    if (plotRange.isList2() //
+        && plotRange.first().isList2() && plotRange.second().isList2()) {
+      IAST arg = (IAST) plotRange.arg1();
+      objectNode.put("xmin", arg.arg1().evalf());
+      objectNode.put("xmax", arg.arg2().evalf());
+      arg = (IAST) plotRange.arg2();
+      objectNode.put("ymin", arg.arg1().evalf());
+      objectNode.put("ymax", arg.arg2().evalf());
+      return true;
+    }
+    return false;
+  }
+
+  public int incColorIndex() {
+    if (PLOT_COLORS.length - 1 == colorIndex) {
+      colorIndex = 1;
+      return PLOT_COLORS.length - 1;
+    }
+    return colorIndex++;
   }
 
   /**
@@ -291,6 +490,21 @@ public class GraphicsOptions {
 
   public double opacity() {
     return opacity;
+  }
+
+  public OptionArgs options() {
+    return options;
+  }
+
+  /**
+   * Return <code>PlotRange</code> (extent) option rule.
+   * 
+   * @param boundingbox
+   * @return
+   */
+  public IAST plotRange() {
+    return F.Rule(S.PlotRange, F.List(F.List(F.num(boundingbox[0]), F.num(boundingbox[1])),
+        F.List(F.num(boundingbox[2]), F.num(boundingbox[3]))));
   }
 
   public double pointSize() {
@@ -327,6 +541,26 @@ public class GraphicsOptions {
     this.boundingbox = boundingbox;
   }
 
+  public void setBoundingBoxScaled(double[] boundingbox) {
+    double b = xFunction.apply(F.num(boundingbox[0])).evalf();
+    if (b < this.boundingbox[0]) {
+      this.boundingbox[0] = b;
+    }
+    b = xFunction.apply(F.num(boundingbox[1])).evalf();
+    if (b > this.boundingbox[1]) {
+      this.boundingbox[1] = b;
+    }
+
+    b = yFunction.apply(F.num(boundingbox[2])).evalf();
+    if (b < this.boundingbox[2]) {
+      this.boundingbox[2] = b;
+    }
+    b = yFunction.apply(F.num(boundingbox[3])).evalf();
+    if (b > this.boundingbox[3]) {
+      this.boundingbox[3] = b;
+    }
+  }
+
   /**
    * Set the default RGBColor in JSON format
    * 
@@ -354,8 +588,32 @@ public class GraphicsOptions {
     this.opacity = opacity;
   }
 
+  public void setOptions(OptionArgs options) {
+    this.options = options;
+  }
+
   public void setPointSize(double pointSize) {
     this.pointSize = pointSize;
+  }
+
+  public void setScalingFunctions() {
+    OptionArgs options = options();
+    IExpr scalingFunctions = options.getOption(S.ScalingFunctions);
+    if (scalingFunctions.isPresent()) {
+      if (scalingFunctions.isList1()) {
+        setXFunction(getScaling(scalingFunctions.first()));
+        setYFunction(y -> y);
+        return;
+      } else if (scalingFunctions.isList2()) {
+        setXFunction(getScaling(scalingFunctions.first()));
+        setYFunction(getScaling(scalingFunctions.second()));
+        return;
+      } else if (!scalingFunctions.isList()) {
+        setXFunction(x -> x);
+        setYFunction(getScaling(scalingFunctions));
+        return;
+      }
+    }
   }
 
   public void setThickness(double thickness) {
@@ -381,5 +639,4 @@ public class GraphicsOptions {
   public Function<IExpr, IExpr> yFunction() {
     return yFunction;
   }
-
 }
