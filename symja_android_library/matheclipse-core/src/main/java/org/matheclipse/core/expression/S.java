@@ -815,6 +815,8 @@ public class S {
 
   public final static IBuiltInSymbol Automatic = F.initFinalSymbol("Automatic", ID.Automatic);
 
+  public final static IBuiltInSymbol Axis = F.initFinalSymbol("Axis", ID.Axis);
+
   public final static IBuiltInSymbol Axes = F.initFinalSymbol("Axes", ID.Axes);
 
   public final static IBuiltInSymbol AxesLabel = F.initFinalSymbol("AxesLabel", ID.AxesLabel);
@@ -2635,6 +2637,9 @@ public class S {
   public final static IBuiltInSymbol DirectedEdge =
       F.initFinalSymbol("DirectedEdge", ID.DirectedEdge);
 
+  public final static IBuiltInSymbol DirectedEdges =
+      F.initFinalSymbol("DirectedEdges", ID.DirectedEdges);
+
   /**
    * DirectedInfinity(z) - represents an infinite multiple of the complex number `z`.
    * 
@@ -2668,6 +2673,9 @@ public class S {
    */
   public final static IBuiltInSymbol DiscreteDelta =
       F.initFinalSymbol("DiscreteDelta", ID.DiscreteDelta);
+
+  public final static IBuiltInSymbol DiscretePlot =
+      F.initFinalSymbol("DiscretePlot", ID.DiscretePlot);
 
   /**
    * DiscreteUniformDistribution({min, max}) - returns a discrete uniform distribution.
@@ -2709,9 +2717,6 @@ public class S {
       F.initFinalSymbol("DisplayFunction", ID.DisplayFunction);
 
   public final static IBuiltInSymbol Disputed = F.initFinalSymbol("Disputed", ID.Disputed);
-
-  public final static IBuiltInSymbol DisrectedEdges =
-      F.initFinalSymbol("DisrectedEdges", ID.DisrectedEdges);
 
   public final static IBuiltInSymbol DistanceFunction =
       F.initFinalSymbol("DistanceFunction", ID.DistanceFunction);
@@ -5975,6 +5980,10 @@ public class S {
   public final static IBuiltInSymbol ListPointPlot3D =
       F.initFinalSymbol("ListPointPlot3D", ID.ListPointPlot3D);
 
+  public final static IBuiltInSymbol ListPolarPlot =
+      F.initFinalSymbol("ListPolarPlot", ID.ListPolarPlot);
+
+
   /**
    * ListQ(expr) - tests whether `expr` is a `List`.
    * 
@@ -6056,6 +6065,13 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol LogIntegral = F.initFinalSymbol("LogIntegral", ID.LogIntegral);
+
+  public final static IBuiltInSymbol LogPlot = F.initFinalSymbol("LogPlot", ID.LogPlot);
+
+  public final static IBuiltInSymbol LogLinearPlot =
+      F.initFinalSymbol("LogLinearPlot", ID.LogLinearPlot);
+
+  public final static IBuiltInSymbol LogLogPlot = F.initFinalSymbol("LogLogPlot", ID.LogLogPlot);
 
   /**
    * LogNormalDistribution(m, s) - returns a log-normal distribution.

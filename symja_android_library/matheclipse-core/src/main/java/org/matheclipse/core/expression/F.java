@@ -606,6 +606,9 @@ public class F extends S {
    */
   public static final IAST CListCN1;
 
+  /** Represents <code>List(0,0)</code> */
+  public static final IAST CListC0C0;
+
   /** Represents <code>List(1,1)</code> */
   public static final IAST CListC1C1;
 
@@ -822,6 +825,7 @@ public class F extends S {
       CListC2 = new B1.List(C2).functionEvaled();
       CListCN1 = new B1.List(CN1).functionEvaled();
 
+      CListC0C0 = new B2.List(C0, C0).functionEvaled();
       CListC1C1 = new B2.List(C1, C1).functionEvaled();
       CListC1C2 = new B2.List(C1, C2).functionEvaled();
       CListC2C1 = new B2.List(C2, C1).functionEvaled();
@@ -10058,7 +10062,7 @@ public class F extends S {
     try {
       if (expr.isSameHeadSizeGE(Graphics, 2)) {
         StringBuilder buf = new StringBuilder();
-        if (GraphicsFunctions.renderGraphics2D(buf, (IAST) expr, true, EvalEngine.get())) {
+        if (GraphicsFunctions.renderGraphics2D(buf, (IAST) expr, EvalEngine.get())) {
           try {
             String graphicsStr = buf.toString();
             String html = JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_TEMPLATE, graphicsStr);
@@ -10070,7 +10074,7 @@ public class F extends S {
         // return openSVGOnDesktop((IAST) expr);
       } else if (expr.isSameHeadSizeGE(Graphics3D, 2)) {
         StringBuilder buf = new StringBuilder();
-        if (GraphicsFunctions.renderGraphics3D(buf, (IAST) expr, true, EvalEngine.get())) {
+        if (GraphicsFunctions.renderGraphics3D(buf, (IAST) expr, EvalEngine.get())) {
           try {
             String graphics3DStr = buf.toString();
             String html = JSBuilder.buildGraphics3D(JSBuilder.GRAPHICS3D_TEMPLATE, graphics3DStr);
@@ -10173,20 +10177,20 @@ public class F extends S {
     return null;
   }
 
-  public static String openSVGOnDesktop(IAST show) throws IOException {
-    String html = Config.SVG_PAGE;
-    StringBuilder stw = new StringBuilder();
-    GraphicsFunctions.graphicsToSVG(show.getAST(1), stw);
-    html = StringUtils.replace(html, "`1`", stw.toString());
-    File temp = java.io.File.createTempFile("tempfile", ".svg");
-    try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp))) {
-      bw.write(html);
-    }
-    if (Desktop.isDesktopSupported()) {
-      Desktop.getDesktop().open(temp);
-    }
-    return temp.toString();
-  }
+  // public static String openSVGOnDesktop(IAST show) throws IOException {
+  // String html = Config.SVG_PAGE;
+  // StringBuilder stw = new StringBuilder();
+  // GraphicsFunctions.graphicsToSVG(show.getAST(1), stw);
+  // html = StringUtils.replace(html, "`1`", stw.toString());
+  // File temp = java.io.File.createTempFile("tempfile", ".svg");
+  // try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp))) {
+  // bw.write(html);
+  // }
+  // if (Desktop.isDesktopSupported()) {
+  // Desktop.getDesktop().open(temp);
+  // }
+  // return temp.toString();
+  // }
 
   public static String openHTMLOnDesktop(String html) throws IOException {
     File temp = java.io.File.createTempFile("tempfile", ".html");

@@ -2520,6 +2520,10 @@ public interface IExpr
     return false;
   }
 
+  default boolean isListOfPoints(int pointDimension) {
+    return false;
+  }
+
   /**
    * Test if this expression is a list (i.e. an AST with head List) with all arguments fulfill the
    * predicate.

@@ -61,6 +61,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IContinuousDistribution;
 import org.matheclipse.core.interfaces.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.IDistribution;
@@ -609,6 +610,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     /** {@inheritDoc} */
     @Override
     public boolean isList() {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isListOfPoints(int dimension) {
       return false;
     }
 
@@ -1950,6 +1957,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       if (result.isReal()) {
         return (ISignedNumber) result;
       }
+      if (result.isComplexNumeric()) {
+        IComplexNum cc = (IComplexNum) result;
+        if (cc.im().isZero()) {
+          return cc.re();
+        }
+      }
     }
     if (isAST(S.Labeled, 3, 4)) {
       IExpr arg1 = arg1();
@@ -1957,6 +1970,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         IExpr result = EvalEngine.get().evalN(arg1);
         if (result.isReal()) {
           return (ISignedNumber) result;
+        }
+        if (result.isComplexNumeric()) {
+          IComplexNum cc = (IComplexNum) result;
+          if (cc.im().isZero()) {
+            return cc.re();
+          }
         }
       }
     }
@@ -3543,6 +3562,31 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public boolean isList() {
     return isSameHeadSizeGE(S.List, 1);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isListOfPoints(int pointDimension) {
+    if (isList()) {
+      for (int i = 1; i < size(); i++) {
+        IExpr arg = get(i);
+        if (arg.isAST(S.List, pointDimension + 1)) {
+          continue;
+        }
+        if (arg.isASTSizeGE(S.Style, 2)) {
+          if (arg.first().isAST(S.List, pointDimension + 1)) {
+            continue;
+          }
+        } else if (arg.isASTSizeGE(S.Labeled, 2)) {
+          if (arg.first().isAST(S.List, pointDimension + 1)) {
+            continue;
+          }
+        }
+        return false;
+      }
+      return true;
+    }
+    return false;
   }
 
   @Override
