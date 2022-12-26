@@ -365,7 +365,7 @@ public final class RandomFunctions {
             if (arg2.isList()) {
               // n1 x n2 x n3 ... array
               int[] dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
-              if (dimension == null) {
+              if (dimension == null || dimension.length == 0) {
                 return F.NIL;
               }
               final int min2 = min;
@@ -523,9 +523,9 @@ public final class RandomFunctions {
             }
             final BigInteger lowLimit = lowerLimit;
             final BigInteger highLimit = upperLimit;
-            return Tensors.build(() -> randomPrime(lowLimit, highLimit, ast, engine), dimension);
+            return Tensors.build(() -> randomPrime(lowLimit, highLimit, engine), dimension);
           }
-          return randomPrime(lowerLimit, upperLimit, ast, engine);
+          return randomPrime(lowerLimit, upperLimit, engine);
         } catch (ValidateException ve) {
           IOFunctions.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
@@ -537,8 +537,7 @@ public final class RandomFunctions {
       return F.NIL;
     }
 
-    private static IExpr randomPrime(BigInteger lowerLimit, BigInteger upperLimit, final IAST ast,
-        EvalEngine engine) {
+    private static IExpr randomPrime(BigInteger lowerLimit, BigInteger upperLimit, EvalEngine engine) {
 
       if (lowerLimit.isProbablePrime(32)
           && upperLimit.compareTo(lowerLimit.nextProbablePrime()) < 0) {

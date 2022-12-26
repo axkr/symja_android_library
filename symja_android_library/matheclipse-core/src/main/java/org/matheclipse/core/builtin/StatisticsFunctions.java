@@ -6094,22 +6094,23 @@ public class StatisticsFunctions {
                 if (ast.size() == 3) {
                   IExpr arg2 = ast.arg2();
                   if (arg2.isList()) {
-                    int[] indx = Validate.checkListOfInts(ast, arg2, 0, Integer.MAX_VALUE, engine);
-                    if (indx == null || indx.length == 0) {
+                    // n1 x n2 x n3 ... array
+                    int[] dimension = Validate.checkListOfInts(ast, arg2, 0, Integer.MAX_VALUE, engine);
+                    if (dimension == null || dimension.length == 0) {
                       return F.NIL;
                     }
-                    if (indx.length == 1) {
+                    if (dimension.length == 1) {
                       // create a list
-                      if (indx[0] >= Config.MAX_AST_SIZE) {
-                        ASTElementLimitExceeded.throwIt(indx[0]);
+                      if (dimension[0] >= Config.MAX_AST_SIZE) {
+                        ASTElementLimitExceeded.throwIt(dimension[0]);
                       }
-                      return variate.randomVariate(random, dist, indx[0]);
+                      return variate.randomVariate(random, dist, dimension[0]);
                     }
                     // create a tensor recursively
-                    int sampleSize = indx[indx.length - 1];
-                    System.arraycopy(indx, 0, indx, 1, indx.length - 1);
-                    IASTAppendable list = F.ListAlloc(indx[0]);
-                    return createTensorRecursive(indx, 1, list,
+                    int sampleSize = dimension[dimension.length - 1];
+                    System.arraycopy(dimension, 0, dimension, 1, dimension.length - 1);
+                    IASTAppendable list = F.ListAlloc(dimension[0]);
+                    return createTensorRecursive(dimension, 1, list,
                         () -> variate.randomVariate(random, dist, sampleSize));
                   } else {
                     int n = arg2.toIntDefault();
