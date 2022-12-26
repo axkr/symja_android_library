@@ -568,13 +568,13 @@ public class ApcomplexNum implements IComplexNum {
   /** {@inheritDoc} */
   @Override
   public ISignedNumber im() {
-    return F.num(getImaginaryPart());
+    return F.num(fApcomplex.imag());
   }
 
   /** {@inheritDoc} */
   @Override
   public ISignedNumber re() {
-    return F.num(getRealPart());
+    return F.num(fApcomplex.real());
   }
 
   /** {@inheritDoc} */

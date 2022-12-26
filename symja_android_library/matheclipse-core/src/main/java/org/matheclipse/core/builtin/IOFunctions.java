@@ -684,6 +684,7 @@ public class IOFunctions {
       "precgt", "Requested precision `1` is greater than `2`.", //
       "pts", "`1` should be a non-empty list of points.", //
       "range", "Range specification in `1` does not have appropriate bounds.", //
+      "rbase", "Base `1` is not a real number greater than 1.", //
       "rank", "The rank `1` is not an integer between `2` and  `3`.", //
       "rankl", "The list `1` of dimensions must have length `2`.", "rctndm1",
       "The argument `1` at position `2` should be a rectangular array of real numbers with length greater than the dimension of the array or two such arrays with of equal dimension.",

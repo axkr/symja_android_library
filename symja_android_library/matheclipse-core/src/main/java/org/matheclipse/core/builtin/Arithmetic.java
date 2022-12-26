@@ -2506,30 +2506,54 @@ public final class Arithmetic {
   }
 
 
-  private static final class MantissaExponent extends AbstractCoreFunctionEvaluator {
+  private static final class MantissaExponent extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isReal()) {
-          Apfloat x;
-          if (arg1 instanceof ApfloatNum) {
-            x = ((ApfloatNum) arg1).apfloatValue();
-          } else {
-            x = ((ISignedNumber) arg1).apfloatValue();
-          }
-          Apfloat mantissa = ApfloatMath.scale(x, -x.scale());
-          long exponent = x.scale();
-          return F.list(F.num(mantissa), F.ZZ(exponent));
+      IExpr n = ast.arg1();
+      IExpr base = F.C10;
+      if (ast.size() == 3) {
+        base = ast.arg2();
+        if (!base.minus(F.C1).isPositiveResult()) {
+          // "Base `1` is not a real number greater than 1.",
+          return IOFunctions.printMessage(ast.topHead(), "rbase", F.List(base), engine);
         }
       }
+      if (n.equals(F.C0) || n.equals(F.CD0)) {
+        return F.CListC0C0;
+      }
+      IExpr nN = engine.evalN(n);
+      if (!nN.isRealResult()) {
+        // "The value `1` is not a real number."
+        return IOFunctions.printMessage(ast.topHead(), "realx", F.List(nN), engine);
+      }
+      IExpr baseN = engine.evalN(base);
+      if (baseN.isRealResult()) {
+        if (engine.isArbitraryMode()) {
+          Apfloat x = ((ISignedNumber) nN).apfloatValue();
+          Apfloat b = ((ISignedNumber) baseN).apfloatValue();
+          long baseExp = ApfloatMath.log(x, b).longValue();
+          IInteger exp = F.ZZ((baseExp >= 0) ? baseExp + 1 : baseExp);
+          return F.list(F.Divide(n, F.Power(base, exp)), exp);
+        }
+        double x = ((ISignedNumber) nN).evalf();
+        double b = ((ISignedNumber) baseN).evalf();
+        long baseExp = (long) (Math.log(x) / Math.log(b));
+        IInteger exp = F.ZZ((baseExp >= 0) ? baseExp + 1 : baseExp);
+        return F.list(F.Divide(n, F.Power(base, exp)), exp);
+      }
+
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -6471,10 +6495,7 @@ public final class Arithmetic {
         return S.Indeterminate;
       }
       if (zeroArg.isExactNumber() //
-          || !otherArg.isAST() //
-          || otherArg.argSize() == 0 //
-          || zeroArg.equals(F.CD0) //
-          || otherArg.isFree(x -> x.isSlot() || x.isSlotSequence(), true)) {
+          || zeroArg.equals(F.CD0)) {
         return F.C0;
       }
       return F.NIL;
