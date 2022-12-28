@@ -434,6 +434,7 @@ public class BuiltinUsage {
     USAGE[ID.TransformationFunction] = "general symbolic representation of transformation";
     USAGE[ID.TranslationTransform] = "symbolic representation of translation";
     USAGE[ID.Transliterate] = "transliterate an UTF string in different alphabets to ASCII";
+    USAGE[ID.Transpose] = "transpose to rearrange indices in any way";
     USAGE[ID.True] = "boolean constant for True";
     USAGE[ID.TrueQ] = "returns 'true' if and only if $expr$ is 'true'";
     USAGE[ID.Tuples] = "form n-tuples from a list";
@@ -452,6 +453,7 @@ public class BuiltinUsage {
     USAGE[ID.ValueQ] = "test whether a symbol can be considered to have a value";
     USAGE[ID.Values] = "list association values";
     USAGE[ID.Variance] = "variance of a dataset";
+    USAGE[ID.VectorQ] = "test whether an object is a vector";
 
     USAGE[ID.Which] = "test which of a sequence of conditions are true";
     USAGE[ID.While] = "evaluate an expression while a criterion is true";
