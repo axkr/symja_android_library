@@ -31,3 +31,6 @@ TransformationFunction(
  {0,-1,-1},
  {0,0,1}})
 ```
+
+### Related terms
+[RotationTransform](RotationTransform.md), [TranslationTransform](TranslationTransform.md)
