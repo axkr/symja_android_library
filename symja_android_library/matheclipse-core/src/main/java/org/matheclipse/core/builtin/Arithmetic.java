@@ -2530,14 +2530,14 @@ public final class Arithmetic {
       IExpr baseN = engine.evalN(base);
       if (baseN.isRealResult()) {
         if (engine.isArbitraryMode()) {
-          Apfloat x = ((ISignedNumber) nN).apfloatValue();
-          Apfloat b = ((ISignedNumber) baseN).apfloatValue();
+          Apfloat x = nN.evalReal().apfloatValue();
+          Apfloat b = baseN.evalReal().apfloatValue();
           long baseExp = ApfloatMath.log(x, b).longValue();
           IInteger exp = F.ZZ((baseExp >= 0) ? baseExp + 1 : baseExp);
           return F.list(F.Divide(n, F.Power(base, exp)), exp);
         }
-        double x = ((ISignedNumber) nN).evalf();
-        double b = ((ISignedNumber) baseN).evalf();
+        double x = nN.evalf();
+        double b = baseN.evalf();
         long baseExp = (long) (Math.log(x) / Math.log(b));
         IInteger exp = F.ZZ((baseExp >= 0) ? baseExp + 1 : baseExp);
         return F.list(F.Divide(n, F.Power(base, exp)), exp);
