@@ -256,6 +256,16 @@ public class TensorTest extends ExprEvaluatorTestCase {
   }
 
   public void testTranslationTransform() {
+
+    check("t = TranslationTransform({x0, y0})", //
+        "TransformationFunction(\n" //
+            + "{{1,0,x0},\n" //
+            + " {0,1,y0},\n" //
+            + " {0,0,1}})");
+    check("t({x, y})", //
+        "{x+x0,y+y0}");
+
+
     check("TranslationTransform({a,b,c,d})", //
         "TransformationFunction(\n" //
             + "{{1,0,0,0,a},\n" //
