@@ -14542,8 +14542,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // message - MantissaExponent: The value (3.0+I*2.0) is not a real number.
     check("MantissaExponent(3+2*I, 2)", //
         "MantissaExponent(3+I*2,2)");
-    
-    
+
+
     check("MantissaExponent(125.24)", //
         "{0.12524,3}");
     check("MantissaExponent(125., 2)", //
@@ -24828,6 +24828,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testUnevaluated() {
+    check(
+        "SetAttributes(symbolLength, HoldAll); " //
+            + "symbolLength(s_Symbol) := StringLength(SymbolName(Unevaluated(s)))", //
+        "");
+    check("testSymbol = 42", //
+        "42");
+    check("symbolLength(testSymbol)", //
+        "10");
+
     check("Sqrt(Unevaluated(x))", //
         "Sqrt(x)");
     check("Length(Unevaluated(5 + 6 + 7 + 8))", //

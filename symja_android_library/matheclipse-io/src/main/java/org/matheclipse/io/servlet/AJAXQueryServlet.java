@@ -193,8 +193,6 @@ public class AJAXQueryServlet extends HttpServlet {
         if (numericMode.equals("N")) {
           inExpr = F.N(inExpr);
         }
-        // inExpr contains the user input from the web interface in
-        // internal format now
         StringWriter outBuffer = new StringWriter();
         IExpr outExpr = evalTopLevel(engine, outBuffer, inExpr);
         if (outExpr != null) {
@@ -208,18 +206,6 @@ public class AJAXQueryServlet extends HttpServlet {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
             }
-            // try {
-            // String html = Config.SVG_PAGE;
-            // StringBuilder stw = new StringBuilder();
-            // GraphicsFunctions.graphicsToSVG((IAST) outExpr, stw);
-            // html = StringUtils.replace(html, "`1`", stw.toString());
-            // html = StringEscapeUtils.escapeHtml4(html);
-            // return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-            // + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"
-            // ></iframe>");
-            // } catch (Exception ex) {
-            // LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
-            // }
           } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
             StringBuilder buf = new StringBuilder();
             if (GraphicsFunctions.renderGraphics3D(buf, (IAST) outExpr, engine)) {
