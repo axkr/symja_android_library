@@ -5993,6 +5993,12 @@ public class S {
    */
   public final static IBuiltInSymbol ListQ = F.initFinalSymbol("ListQ", ID.ListQ);
 
+  public final static IBuiltInSymbol ListStreamPlot =
+      F.initFinalSymbol("ListStreamPlot", ID.ListStreamPlot);
+
+  public final static IBuiltInSymbol ListVectorPlot =
+      F.initFinalSymbol("ListVectorPlot", ID.ListVectorPlot);
+
   /**
    * Listable - is an attribute specifying that a function should be automatically applied to each
    * element of a list.
@@ -9413,6 +9419,8 @@ public class S {
    */
   public final static IBuiltInSymbol StirlingS2 = F.initFinalSymbol("StirlingS2", ID.StirlingS2);
 
+  public final static IBuiltInSymbol StreamPlot = F.initFinalSymbol("StreamPlot", ID.StreamPlot);
+
   public final static IBuiltInSymbol Strict = F.initFinalSymbol("Strict", ID.Strict);
 
   /**
@@ -10767,6 +10775,8 @@ public class S {
 
   public final static IBuiltInSymbol VectorLessEqual =
       F.initFinalSymbol("VectorLessEqual", ID.VectorLessEqual);
+
+  public final static IBuiltInSymbol VectorPlot = F.initFinalSymbol("VectorPlot", ID.VectorPlot);
 
   /**
    * VectorQ(v) - returns `True` if `v` is a list of elements which are not themselves lists.
