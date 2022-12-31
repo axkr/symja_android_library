@@ -569,6 +569,17 @@ public class GraphicsOptions {
     }
   }
 
+  // public double[] yMinMaxScaled(double[] yMinMax) {
+  // double[] result = new double[2];
+  // result[0] = yFunction.apply(F.num(yMinMax[0])).evalf();
+  // result[1] = yFunction.apply(F.num(yMinMax[1])).evalf();
+  // return result;
+  // }
+
+  public IAST point(double x, double y) {
+    return F.List(F.num(x), F.num(y));
+  }
+
   public void setColor(ObjectNode json) {
     if (rgbColor.isPresent()) {
       if (rgbColor.isAST(S.RGBColor, 4)) {

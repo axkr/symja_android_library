@@ -13,7 +13,7 @@ public class ListLogPlot extends ListPlot {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     graphicsOptions.setYFunction(y -> F.Log(y));
-    IAST graphicsPrimitives = plot(ast, graphicsOptions, engine);
+    IAST graphicsPrimitives = listPlot(ast, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
       IAST listOfOptions = F.List(//

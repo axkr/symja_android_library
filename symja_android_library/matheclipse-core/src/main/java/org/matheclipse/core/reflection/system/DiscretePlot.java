@@ -36,7 +36,7 @@ public class DiscretePlot extends ListPlot {
           GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
           IASTMutable listPlot = ast.removeAtCopy(2);
           listPlot.set(1, tableValues);
-          IAST graphicsPrimitives = plot(listPlot, graphicsOptions, engine);
+          IAST graphicsPrimitives = listPlot(listPlot, graphicsOptions, engine);
           if (graphicsPrimitives.isPresent()) {
             graphicsOptions.addPadding();
             IAST listOfOptions = F.List(F.Rule(S.Filling, S.Axis), //

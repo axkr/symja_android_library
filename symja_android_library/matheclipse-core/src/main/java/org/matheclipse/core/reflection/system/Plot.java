@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import static java.lang.Double.compare;
 import static java.lang.Double.isFinite;
 import static java.util.stream.Collectors.toList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.SortedSet;
@@ -12,7 +13,6 @@ import java.util.stream.DoubleStream;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
 import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -29,6 +29,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /** Plots x/y functions */
 public class Plot extends ListPlot {
+  final static double NUMBER_OF_PIXELS = 1200.0;
+
   private static class AdaptivePlot {
     private static class Point {
       final double x, y;
@@ -41,7 +43,8 @@ public class Plot extends ListPlot {
 
     public static double[][] computePlot(final UnaryNumerical hun, double[][] data,
         final double xMin, final double xMax) {
-      List<Point> plot = new AdaptivePlot(hun, xMin, xMax).computePlot(8, 0.0025).getPlot();
+      List<Point> plot =
+          new AdaptivePlot(hun, xMin, xMax).computePlot(8, 1.0 / NUMBER_OF_PIXELS).getPlot();
       if (plot.size() > 0) {
         data = new double[2][plot.size()];
         int i = 0;
@@ -58,15 +61,6 @@ public class Plot extends ListPlot {
       return !isFinite(ya) || !isFinite(yb) || !isFinite(yc) || (yb > ya && yb > yc)
           || (yb < ya && yb < yc);
     }
-    // public static void main(String[] args) {
-    // // List<Point> plot =
-    // // new AdaptivePlot(x -> x * Math.sin(x), -2d * PI, 2d * PI).computePlot(6, 0.005).getPlot();
-    // List<Point> plot =
-    // new AdaptivePlot(x -> x * Math.tan(x), -2d * PI, 2d * PI).computePlot(6, 0.005).getPlot();
-    // for (Point p : plot) {
-    // System.out.println(p.x + "\t" + p.y);
-    // }
-    // }
 
     private static boolean oscillates(double ya, double ya1, double yb, double yb1, double yc) {
       return isOscillation(ya, ya1, yb) && isOscillation(ya1, yb, yb1)
@@ -107,7 +101,7 @@ public class Plot extends ListPlot {
     public AdaptivePlot computePlot(int depth, double eps) {
       plot.clear();
       Point pa = null;
-      double step = (c - a) / 400.0;
+      double step = (c - a) / NUMBER_OF_PIXELS;
       while (a <= c) {
         pa = pointAt(a);
         if (pa != null) {
@@ -208,8 +202,8 @@ public class Plot extends ListPlot {
     return F.NIL;
   }
 
-  private static IAST plotToListPoints(IExpr function, final IAST rangeList, final IAST ast,
-      GraphicsOptions graphicsOptions, EvalEngine engine) {
+  private static IAST plotToListPoints(IExpr functionOrListOfFunctions, final IAST rangeList,
+      final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine) {
     if (!rangeList.arg1().isSymbol()) {
       // `1` is not a valid variable.
       return IOFunctions.printMessage(S.LogPlot, "ivar", F.list(rangeList.arg1()), engine);
@@ -222,33 +216,44 @@ public class Plot extends ListPlot {
       return IOFunctions.printMessage(ast.topHead(), "plld", F.List(x, rangeList), engine);
     }
     double xMinD = ((INum) xMin).getRealPart();
-    double xMaxd = ((INum) xMax).getRealPart();
-    if (xMaxd < xMinD) {
+    double xMaxD = ((INum) xMax).getRealPart();
+    if (xMaxD < xMinD) {
       double temp = xMinD;
-      xMinD = xMaxd;
-      xMaxd = temp;
+      xMinD = xMaxD;
+      xMaxD = temp;
     }
-    double yMinD = 0.0f;
-    double yMaxD = 0.0f;
 
-    if ((ast.isAST3()) && ast.arg3().isList()) {
-      final IAST lsty = (IAST) ast.arg3();
-      if (lsty.isAST2()) {
-        final IExpr y0 = engine.evalN(lsty.arg1());
-        final IExpr y1 = engine.evalN(lsty.arg2());
-        if ((y0 instanceof INum) && (y1 instanceof INum)) {
-          yMinD = ((INum) y0).getRealPart();
-          yMaxD = ((INum) y1).getRealPart();
-        }
+    // double yMinD = 0.0f;
+    // double yMaxD = 0.0f;
+    // if ((ast.isAST3()) && ast.arg3().isList()) {
+    // final IAST lsty = (IAST) ast.arg3();
+    // if (lsty.isAST2()) {
+    // final IExpr y0 = engine.evalN(lsty.arg1());
+    // final IExpr y1 = engine.evalN(lsty.arg2());
+    // if ((y0 instanceof INum) && (y1 instanceof INum)) {
+    // yMinD = ((INum) y0).getRealPart();
+    // yMaxD = ((INum) y1).getRealPart();
+    // }
+    // }
+    // }
+
+    final IAST list = functionOrListOfFunctions.makeList();
+    int size = list.size();
+    List<double[][]> dataList = new ArrayList<double[][]>(size - 1);
+    final IASTAppendable listOfLines = F.ListAlloc(size - 1);
+    double[] yMinMax = new double[] {Double.MAX_VALUE, Double.MIN_VALUE};
+    for (int i = 1; i < size; i++) {
+      IExpr function = list.get(i);
+      double[][] data = null;
+      final UnaryNumerical hun = new UnaryNumerical(function, x, engine);
+      data = AdaptivePlot.computePlot(hun, data, xMinD, xMaxD);
+      if (data != null) {
+        dataList.add(data);
+        automaticPlotRange(data[1], yMinMax);
       }
     }
-    IExpr temp;
-    final IAST list = function.makeList();
-
-    int size = list.size();
-    final IASTAppendable listOfLines = F.ListAlloc(size - 1);
-    for (int i = 1; i < size; i++) {
-      temp = plotLine(xMinD, xMaxd, yMinD, yMaxD, list.get(i), x, graphicsOptions, engine);
+    for (int i = 0; i < dataList.size(); i++) {
+      IExpr temp = plotLine(dataList.get(i), x, xMinD, xMaxD, yMinMax, graphicsOptions, engine);
       if (temp.isPresent()) {
         // line.append(temp);
         listOfLines.append(temp);
@@ -258,29 +263,54 @@ public class Plot extends ListPlot {
   }
 
   /**
+   * Plot a single data line.
+   * 
+   * @param data the function data points which should be plotted
+   * @param xVar the variable symbol
    * @param xMin the minimum x-range value
    * @param xMax the maximum x-range value
-   * @param yMin if <code>yMin != 0 && yMax != 0</code> filter only results which are in the y-range
-   *        and set yMin or yMax as plot result-range.
-   * @param yMax if <code>yMin != 0 && yMax != 0</code> filter only results which are in the y-range
-   *        and set yMin or yMax as plot result-range.
-   * @param function the function which should be plotted
-   * @param xVar the variable symbol
+   * @param yMinMax the y plot-range
+   * @param graphicsOptions options context
    * @param engine the evaluation engine
    * @return <code>F.NIL</code> is no conversion of the data into an <code>IExpr</code> was possible
    */
-  public static IAST plotLine(final double xMin, final double xMax, final double yMin,
-      final double yMax, final IExpr function, final ISymbol xVar, GraphicsOptions graphicsOptions,
+  public static IAST plotLine(double[][] data, final ISymbol xVar, final double xMin,
+      final double xMax, double[] yMinMax, GraphicsOptions graphicsOptions,
       final EvalEngine engine) {
-    double[][] data = null;
-    final UnaryNumerical hun = new UnaryNumerical(function, xVar, engine);
-    data = AdaptivePlot.computePlot(hun, data, xMin, xMax);
-    if (data != null) {
-      double[] yMinMax = automaticPlotRange(data[1]);
-      graphicsOptions.setBoundingBoxScaled(new double[] {xMin, xMax, yMinMax[0], yMinMax[1]});
-      return Convert.toExprTransposed(data);
+
+    graphicsOptions.setBoundingBoxScaled(new double[] {xMin, xMax, yMinMax[0], yMinMax[1]});
+    final IASTAppendable listOfLines = F.ListAlloc();
+    IASTAppendable lineList = F.NIL;
+    double lastx = Double.NaN;
+    double lasty = Double.NaN;
+    for (int i = 0; i < data[0].length; i++) {
+      if (data[1][i] < yMinMax[0] //
+          || data[1][i] > yMinMax[1]) {
+        if (lineList.isPresent()) {
+          lineList.append(graphicsOptions.point(data[0][i], data[1][i]));
+          listOfLines.append(lineList);
+          lineList = F.NIL;
+          lastx = Double.NaN;
+          lasty = Double.NaN;
+        } else {
+          lastx = data[0][i];
+          lasty = data[1][i];
+        }
+        continue;
+      }
+      if (lineList.isNIL()) {
+        lineList = F.ListAlloc();
+        if (!Double.isNaN(lastx) && !Double.isNaN(lasty)) {
+          lineList.append(graphicsOptions.point(lastx, lasty));
+        }
+      }
+      lineList.append(graphicsOptions.point(data[0][i], data[1][i]));
     }
-    return F.NIL;
+    if (lineList.isPresent()) {
+      listOfLines.append(lineList);
+      lineList = F.NIL;
+    }
+    return listOfLines;
   }
 
   protected void setGraphicOptions(GraphicsOptions graphicsOptions) {
@@ -296,7 +326,7 @@ public class Plot extends ListPlot {
     return listOfOptions;
   }
 
-  private static double[] automaticPlotRange(final double[] values) {
+  private static double[] automaticPlotRange(final double[] values, double[] yMinMax) {
 
     double thresh = 2.0;
     double[] yValues = new double[values.length];
@@ -326,14 +356,32 @@ public class Plot extends ListPlot {
       }
     }
 
+    double vrange = yValues[n2] - yValues[n1];
+    double vmin = yValues[n1] - 0.05 * vrange; // 5% extra looks nice
+    double vmax = yValues[n2] + 0.05 * vrange;
+
     // double vrange = yValues[n2] - yValues[n1];
-    double vmin = yValues[n1]; // 5% extra looks nice
+    // double vmin = yValues[n1]; // 5% extra looks nice
     if (vmin < yValues[0]) {
       vmin = yValues[0];
+    } else if (vmin - vrange < yValues[0]) {
+      vmin = yValues[0];
+    } else if (vmin - vrange > yValues[0]) {
+      vmin = vmin - vrange;
     }
-    double vmax = yValues[n2];
+    // double vmax = yValues[n2];
     if (vmax > yValues[yValues.length - 1]) {
       vmax = yValues[yValues.length - 1];
+    } else if (vmax + vrange > yValues[yValues.length - 1]) {
+      vmax = yValues[yValues.length - 1];
+    } else if (vmax + vrange < yValues[yValues.length - 1]) {
+      vmax = vmax + vrange;
+    }
+    if (vmin < yMinMax[0]) {
+      yMinMax[0] = vmin;
+    }
+    if (vmax > yMinMax[1]) {
+      yMinMax[1] = vmax;
     }
     return new double[] {vmin, vmax};
   }

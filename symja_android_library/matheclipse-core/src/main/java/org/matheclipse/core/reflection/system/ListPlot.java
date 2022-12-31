@@ -38,7 +38,7 @@ public class ListPlot extends AbstractEvaluator {
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     // boundingbox an array of double values (length 4) which describes the bounding box
     // <code>[xMin, xMax, yMin, yMax]</code>
-    IAST graphicsPrimitives = plot(ast, graphicsOptions, engine);
+    IAST graphicsPrimitives = listPlot(ast, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
       IAST listOfOptions = F.List(F.Rule(S.Axes, S.True), //
@@ -60,13 +60,60 @@ public class ListPlot extends AbstractEvaluator {
 
   /**
    * 
+   * @param plot a list of lists of lists of points
+   * @param graphicsOptions
+   * @param engine
+   * @param colour
+   * @return
+   */
+  protected static IAST plot(IAST plot, GraphicsOptions graphicsOptions, EvalEngine engine) {
+    if (plot.size() < 2) {
+      return F.NIL;
+    }
+    final OptionArgs options = new OptionArgs(plot.topHead(), plot, 2, engine, true);
+    if (options.isTrue(S.Joined)) {
+      graphicsOptions.setJoined(true);
+    }
+    graphicsOptions.setOptions(options);
+    graphicsOptions.setScalingFunctions();
+
+    IExpr arg1 = plot.arg1();
+    if (!arg1.isList()) {
+      arg1 = engine.evaluate(arg1);
+    }
+    if (arg1.isAssociation()) {
+      IAssociation assoc = ((IAssociation) arg1);
+      arg1 = assoc.matrixOrList();
+    }
+    if (arg1.isListOfLists()) {
+      IAST listOfLists = (IAST) arg1;
+      final IASTAppendable graphicsPrimitives = F.ListAlloc();
+      for (int j = 1; j < listOfLists.size(); j++) {
+        IAST pointList = (IAST) listOfLists.get(j);
+        IAST color = GraphicsOptions.plotStyleColorExpr(graphicsOptions.incColorIndex(), F.NIL);
+        Function<IExpr, IExpr> xFunction = graphicsOptions.xFunction();
+        Function<IExpr, IExpr> yFunction = graphicsOptions.yFunction();
+        for (int i = 1; i < pointList.size(); i++) {
+          IAST singlePointList = (IAST) pointList.get(i);
+          sequencePointListPlot(graphicsPrimitives, singlePointList, graphicsOptions, color,
+              xFunction, yFunction, engine);
+        }
+      }
+      return graphicsPrimitives;
+    }
+
+    return F.NIL;
+  }
+
+  /**
+   * 
    * @param plot
    * @param graphicsOptions TODO
    * @param engine
    * @param colour
    * @return
    */
-  protected static IAST plot(IAST plot, GraphicsOptions graphicsOptions, EvalEngine engine) {
+  protected static IAST listPlot(IAST plot, GraphicsOptions graphicsOptions, EvalEngine engine) {
     if (plot.size() < 2) {
       return F.NIL;
     }
@@ -91,7 +138,11 @@ public class ListPlot extends AbstractEvaluator {
       // TODO Labeled lists
       if (pointList.isList()) {// x -> x.isList())) {
         if (pointList.isListOfPoints(2)) {
-          sequencePointListPlot(graphicsPrimitives, pointList, graphicsOptions, engine);
+          IAST color = GraphicsOptions.plotStyleColorExpr(graphicsOptions.incColorIndex(), F.NIL);
+          Function<IExpr, IExpr> xFunction = graphicsOptions.xFunction();
+          Function<IExpr, IExpr> yFunction = graphicsOptions.yFunction();
+          sequencePointListPlot(graphicsPrimitives, pointList, graphicsOptions, color, xFunction,
+              yFunction, engine);
           return graphicsPrimitives;
         }
         if (pointList.isListOfLists()) {
@@ -100,13 +151,17 @@ public class ListPlot extends AbstractEvaluator {
             pointList = (IAST) listOfLists.get(i);
             // int[] dimension = pointList.isMatrix(false);
             if (pointList.isListOfPoints(2)) {
-              sequencePointListPlot(graphicsPrimitives, pointList, graphicsOptions, engine);
+              IAST color =
+                  GraphicsOptions.plotStyleColorExpr(graphicsOptions.incColorIndex(), F.NIL);
+              Function<IExpr, IExpr> xFunction = graphicsOptions.xFunction();
+              Function<IExpr, IExpr> yFunction = graphicsOptions.yFunction();
+              sequencePointListPlot(graphicsPrimitives, pointList, graphicsOptions, color,
+                  xFunction, yFunction, engine);
               // } else {
               // return graphicsPrimitives;
               // }
             } else {
-              sequenceYValuesListPlot(graphicsPrimitives, pointList, graphicsOptions,
-                  engine);
+              sequenceYValuesListPlot(graphicsPrimitives, pointList, graphicsOptions, engine);
             }
           }
           return graphicsPrimitives;
@@ -130,13 +185,10 @@ public class ListPlot extends AbstractEvaluator {
    * @return
    */
   private static void sequencePointListPlot(IASTAppendable graphicsPrimitives, IAST pointList,
-      GraphicsOptions graphicsOptions, EvalEngine engine) {
+      GraphicsOptions graphicsOptions, IAST color, Function<IExpr, IExpr> xFunction,
+      Function<IExpr, IExpr> yFunction, EvalEngine engine) {
     // plot a list of 2D points
     double[] boundingbox = graphicsOptions.boundingBox();
-    IAST color = GraphicsOptions.plotStyleColorExpr(graphicsOptions.incColorIndex(), F.NIL);
-    Function<IExpr, IExpr> xFunction = graphicsOptions.xFunction();
-    Function<IExpr, IExpr> yFunction = graphicsOptions.yFunction();
-
     // if (linePlot) {
     if (pointList.size() > 2) {
       IAST lastPoint = F.NIL;
@@ -181,14 +233,14 @@ public class ListPlot extends AbstractEvaluator {
             IExpr yLast = yFunction.apply(lastPoint.arg2());
             if (xBoundingBox(boundingbox, xLast, engine)
                 && yBoundingBox(boundingbox, yLast, engine)) {
-              addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast, yLast,
-                  lastArg);
+              addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
+                  yLast, lastArg);
             }
 
             if (xBoundingBox(boundingbox, xValue, engine)
                 && yBoundingBox(boundingbox, yValue, engine)) {
-              addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xValue, yValue,
-                  (IAST) arg);
+              addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xValue,
+                  yValue, (IAST) arg);
               isConnected = true;
               continue;
             }
@@ -196,8 +248,8 @@ public class ListPlot extends AbstractEvaluator {
           if (isConnected) {
             if (xBoundingBox(boundingbox, xValue, engine)
                 && yBoundingBox(boundingbox, yValue, engine)) {
-              addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xValue, yValue,
-                  (IAST) arg);
+              addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xValue,
+                  yValue, (IAST) arg);
             }
           }
           lastPoint = point;
@@ -208,10 +260,10 @@ public class ListPlot extends AbstractEvaluator {
           IExpr yLast = yFunction.apply(lastPoint.arg2());
           if (xBoundingBox(boundingbox, xLast, engine)
               && yBoundingBox(boundingbox, yLast, engine)) {
-            addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast, yLast,
-                lastArg);
-            addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast, yLast,
-                lastArg);
+            addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
+                yLast, lastArg);
+            addSinglePoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
+                yLast, lastArg);
           }
         }
 

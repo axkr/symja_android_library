@@ -19,7 +19,7 @@ public class ListPolarPlot extends ListPlot {
       if (table.isPresent()) {
         IASTMutable listPlot = ast.setAtCopy(1, table);
         GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
-        IAST graphicsPrimitives = plot(listPlot, graphicsOptions, engine);
+        IAST graphicsPrimitives = listPlot(listPlot, graphicsOptions, engine);
         if (graphicsPrimitives.isPresent()) {
           graphicsOptions.addPadding();
           IAST listOfOptions = F.List(//

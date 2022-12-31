@@ -23,7 +23,7 @@ public class ListLinePlot extends ListPlot {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     graphicsOptions.setJoined(true);
-    IAST graphicsPrimitives = plot(ast, graphicsOptions, engine);
+    IAST graphicsPrimitives = listPlot(ast, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
       IAST listOfOptions = F.List(F.Rule(S.Axes, S.True), //
