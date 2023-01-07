@@ -1,13 +1,13 @@
 
-Test the `Graphic` function for creating correct JSON output for the `json2D_JSXGraph` project:
-- [https://github.com/jsxgraph/json2D_JSXGraph](https://github.com/jsxgraph/json2D_JSXGraph)
+Test the `Graphics` function for creating correct JSON output for the `Mathics 3D Graphics backend using three.js` project:
+- [https://github.com/Mathics3/mathics-threejs-backend](https://github.com/Mathics3/mathics-threejs-backend)
 
 ```mma
 Plot[Sin[x], {x, -Pi, Pi}]
 ```
 
 ```mma
-Plot[Tan[x], {x, -Pi, Pi}]
+Plot[Tan[x], {x, -Pi, Pi}, PlotRange->{-10,10}]
 ```
 
 ```mma
@@ -69,4 +69,8 @@ Graphics[GraphicsComplex[{{0, 0}, {2, 0}, {2, 2}, {0, 2}}, Table[Circle[i], {i, 
 data = Table[15 {Cos[t], Sin[t]}, {t, 0, 4*Pi, 4*Pi/5}];
 
 Graphics[GraphicsComplex[data, {Green, Line[{1, 2, 3, 4, 5, 6}], Red, Point[{1, 2, 3, 4, 5}]}]]
+```
+
+```mma
+Graphics[Line[{{-1, -1}, {3,3}, {1, 1}, {4, 5}}],Axes->True, PlotRange->{0.0, 2.0}]
 ```

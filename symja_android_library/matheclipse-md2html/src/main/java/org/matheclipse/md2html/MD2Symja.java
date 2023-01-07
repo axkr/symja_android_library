@@ -146,25 +146,14 @@ public class MD2Symja {
     } else {
       URL resource = MD2Symja.class.getClassLoader().getResource("public/graphicstest.md");
       source = Resources.asCharSource(resource, StandardCharsets.UTF_8);
-    }
-    if (source != null) {
-      String html;
-      try {
-        html = generateHTMLString(source.read());
-      } catch (IOException ioe) {
-        ioe.printStackTrace();
-        return;
-      }
+      renderHTML(source);
 
-      html = IOFunctions.templateRender(HTML_TEMPLATE, new String[] {html});
-      // html = StringEscapeUtils.escapeHtml4(html);
-      System.out.println(html);
-      try {
-        F.openHTMLOnDesktop(html);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+      resource = MD2Symja.class.getClassLoader().getResource("public/graphics3Dtest.md");
+      source = Resources.asCharSource(resource, StandardCharsets.UTF_8);
+      renderHTML(source);
+      return;
     }
+    renderHTML(source);
     // InputStream is =
     // MD2Symja.class.getClassLoader().getResourceAsStream("public/graphicstest.md");
     // if (is != null) {
@@ -196,5 +185,26 @@ public class MD2Symja {
     // }
 
 
+  }
+
+  private static void renderHTML(CharSource source) {
+    if (source != null) {
+      String html;
+      try {
+        html = generateHTMLString(source.read());
+      } catch (IOException ioe) {
+        ioe.printStackTrace();
+        return;
+      }
+
+      html = IOFunctions.templateRender(HTML_TEMPLATE, new String[] {html});
+      // html = StringEscapeUtils.escapeHtml4(html);
+      System.out.println(html);
+      try {
+        F.openHTMLOnDesktop(html);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
   }
 }
