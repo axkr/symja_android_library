@@ -8751,6 +8751,14 @@ public class F extends S {
     return new AST1(Standardize, a0);
   }
 
+  public static IAST Standardize(final IExpr a0, final IExpr a1) {
+    return new AST2(Standardize, a0, a1);
+  }
+
+  public static IAST Standardize(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Standardize, a0, a1, a2);
+  }
+
   public static IAST StieltjesGamma(final IExpr a0) {
     return new AST1(StieltjesGamma, a0);
   }

@@ -14,11 +14,13 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.distribution.RealDistribution;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.stat.StatUtils;
 import org.hipparchus.stat.correlation.PearsonsCorrelation;
+import org.hipparchus.stat.projection.PCA;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
@@ -29,6 +31,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -113,6 +116,7 @@ public class StatisticsFunctions {
       S.ParetoDistribution.setEvaluator(new ParetoDistribution());
       S.PoissonDistribution.setEvaluator(new PoissonDistribution());
       S.PoissonProcess.setEvaluator(new PoissonProcess());
+      S.PrincipalComponents.setEvaluator(new PrincipalComponents());
       S.Probability.setEvaluator(new Probability());
       S.Quantile.setEvaluator(new Quantile());
       S.Quartiles.setEvaluator(new Quartiles());
@@ -729,8 +733,8 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(),
-                b.evalf()) //
+            return F.num(
+                new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(), b.evalf()) //
                     .cumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
@@ -757,8 +761,8 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(),
-                b.evalf()) //
+            return F.num(
+                new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(), b.evalf()) //
                     .inverseCumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
@@ -853,8 +857,8 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(),
-                b.evalf()) //
+            return F.num(
+                new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(), b.evalf()) //
                     .density(k.evalf()));
           } catch (RuntimeException rex) {
             //
@@ -1399,8 +1403,8 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (v.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalf()) //
+            return F
+                .num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalf()) //
                     .cumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
@@ -1424,8 +1428,8 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (v.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalf()) //
+            return F
+                .num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalf()) //
                     .inverseCumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
@@ -1458,8 +1462,8 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (v.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(
-                new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalf()) //
+            return F
+                .num(new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v.evalf()) //
                     .density(k.evalf()));
           } catch (RuntimeException rex) {
             //
@@ -1869,8 +1873,8 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(new org.hipparchus.distribution.continuous.FDistribution(n.evalf(),
-                m.evalf()) //
+            return F
+                .num(new org.hipparchus.distribution.continuous.FDistribution(n.evalf(), m.evalf()) //
                     .cumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
@@ -1894,8 +1898,8 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(new org.hipparchus.distribution.continuous.FDistribution(n.evalf(),
-                m.evalf()) //
+            return F
+                .num(new org.hipparchus.distribution.continuous.FDistribution(n.evalf(), m.evalf()) //
                     .inverseCumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
@@ -1930,8 +1934,8 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(new org.hipparchus.distribution.continuous.FDistribution(n.evalf(),
-                m.evalf()) //
+            return F
+                .num(new org.hipparchus.distribution.continuous.FDistribution(n.evalf(), m.evalf()) //
                     .density(k.evalf()));
           } catch (RuntimeException rex) {
             //
@@ -2222,10 +2226,9 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.GammaDistribution(a.evalf(),
-                    b.evalf()) //
-                        .cumulativeProbability(k.evalf()));
+            return F.num(
+                new org.hipparchus.distribution.continuous.GammaDistribution(a.evalf(), b.evalf()) //
+                    .cumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }
@@ -2264,10 +2267,9 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.GammaDistribution(a.evalf(),
-                    b.evalf()) //
-                        .inverseCumulativeProbability(k.evalf()));
+            return F.num(
+                new org.hipparchus.distribution.continuous.GammaDistribution(a.evalf(), b.evalf()) //
+                    .inverseCumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }
@@ -2394,10 +2396,9 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.GammaDistribution(a.evalf(),
-                    b.evalf()) //
-                        .density(k.evalf()));
+            return F.num(
+                new org.hipparchus.distribution.continuous.GammaDistribution(a.evalf(), b.evalf()) //
+                    .density(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }
@@ -3260,6 +3261,11 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr realMatrixEval(RealMatrix matrix) {
+      if (matrix.getRowDimension()<=1) {
+        // The argument `1` should have at least `2` arguments.
+        return IOFunctions.printMessage(S.Covariance, "shlen",
+            F.List(new ASTRealMatrix(matrix, false), F.stringx("two")), EvalEngine.get());
+      }
       org.hipparchus.stat.correlation.Covariance cov =
           new org.hipparchus.stat.correlation.Covariance(matrix);
       return new ASTRealMatrix(cov.getCovarianceMatrix(), false);
@@ -4151,8 +4157,8 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(
-                n.evalf(), m.evalf()) //
+            return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(n.evalf(),
+                m.evalf()) //
                     .cumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
@@ -4181,8 +4187,8 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(
-                n.evalf(), m.evalf()) //
+            return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(n.evalf(),
+                m.evalf()) //
                     .inverseCumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
@@ -4218,8 +4224,8 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(
-                n.evalf(), m.evalf()) //
+            return F.num(new org.hipparchus.distribution.continuous.LogNormalDistribution(n.evalf(),
+                m.evalf()) //
                     .density(k.evalf()));
           } catch (RuntimeException rex) {
             //
@@ -4702,10 +4708,9 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalf(),
-                    m.evalf()) //
-                        .cumulativeProbability(k.evalf()));
+            return F.num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalf(),
+                m.evalf()) //
+                    .cumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }
@@ -4729,10 +4734,9 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalf(),
-                    m.evalf()) //
-                        .inverseCumulativeProbability(k.evalf()));
+            return F.num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalf(),
+                m.evalf()) //
+                    .inverseCumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }
@@ -4766,10 +4770,9 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalf(),
-                    m.evalf()) //
-                        .density(k.evalf()));
+            return F.num(new org.hipparchus.distribution.continuous.NakagamiDistribution(n.evalf(),
+                m.evalf()) //
+                    .density(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }
@@ -5006,10 +5009,9 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.NormalDistribution(n.evalf(),
-                    m.evalf()) //
-                        .cumulativeProbability(k.evalf()));
+            return F.num(
+                new org.hipparchus.distribution.continuous.NormalDistribution(n.evalf(), m.evalf()) //
+                    .cumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }
@@ -5038,10 +5040,9 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.NormalDistribution(n.evalf(),
-                    m.evalf()) //
-                        .inverseCumulativeProbability(k.evalf()));
+            return F.num(
+                new org.hipparchus.distribution.continuous.NormalDistribution(n.evalf(), m.evalf()) //
+                    .inverseCumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }
@@ -5071,10 +5072,9 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.NormalDistribution(n.evalf(),
-                    m.evalf()) //
-                        .density(k.evalf()));
+            return F.num(
+                new org.hipparchus.distribution.continuous.NormalDistribution(n.evalf(), m.evalf()) //
+                    .density(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }
@@ -5136,6 +5136,48 @@ public class StatisticsFunctions {
     }
   }
 
+  private static final class PrincipalComponents extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
+      int[] dimension = ast.arg1().isMatrix();
+      RealMatrix matrix = ast.arg1().toRealMatrix();
+      if (dimension != null) {
+        if (dimension[0] == 1) {
+          if (dimension[1] == 0) {
+            return F.CEmptyList;
+          } else {
+            return F.List(F.constantArray(F.CD0, dimension[1]));
+          }
+        }
+        if (dimension[0] > 1 && dimension[1] > 0) {
+          PCA pca = null;
+          String method = option[0].toString();
+          if (method.equals("Covariance")) {
+            pca = new PCA(dimension[1]);
+          } else if (method.equals("Correlation")) {
+            pca = new PCA(dimension[1], true, true);
+          } else {
+            pca = new PCA(dimension[1]);
+          }
+          double[][] data = pca.fitAndTransform(matrix.getData());
+          return Convert.matrix2List(new Array2DRowRealMatrix(data));
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Method, F.stringx("Covariance"));
+    }
+  }
   /**
    *
    *
@@ -6095,7 +6137,8 @@ public class StatisticsFunctions {
                   IExpr arg2 = ast.arg2();
                   if (arg2.isList()) {
                     // n1 x n2 x n3 ... array
-                    int[] dimension = Validate.checkListOfInts(ast, arg2, 0, Integer.MAX_VALUE, engine);
+                    int[] dimension =
+                        Validate.checkListOfInts(ast, arg2, 0, Integer.MAX_VALUE, engine);
                     if (dimension == null || dimension.length == 0) {
                       return F.NIL;
                     }
@@ -6274,7 +6317,8 @@ public class StatisticsFunctions {
 
     private static IExpr rescale(IExpr x, IExpr min, IExpr max, EvalEngine engine) {
       IExpr inverseDifference = engine.evaluate(F.Power(F.Subtract(max, min), -1));
-      return engine.evaluate(F.Plus(F.Times(F.CN1, inverseDifference, min), F.Times(inverseDifference, x)));
+      return engine
+          .evaluate(F.Plus(F.Times(F.CN1, inverseDifference, min), F.Times(inverseDifference, x)));
     }
 
     @Override
@@ -6452,26 +6496,32 @@ public class StatisticsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      final IExpr f1 = ast.getArg(2, S.Mean);
+      final IExpr f2 = ast.getArg(3, S.StandardDeviation);
 
       int[] dim = arg1.isMatrix();
       if (dim == null && arg1.isListOfLists()) {
         return F.NIL;
       }
       if (dim != null) {
-        IExpr temp = arg1.mapMatrixColumns(dim, v -> F.Standardize(v));
+        IExpr temp = arg1.mapMatrixColumns(dim, v -> F.Standardize(v, f1, f2));
         return temp.ifPresent(x -> F.Transpose(x));
       }
 
-      IExpr sd = S.StandardDeviation.of(engine, arg1);
-      if (!sd.isZero()) {
-        return engine.evaluate(F.Divide(F.Subtract(arg1, F.Mean(arg1)), sd));
+
+      IExpr standardDeviation = engine.evaluateNIL(F.unaryAST1(f2, arg1));
+      if (standardDeviation.isPresent() && !standardDeviation.isZero()) {
+        IExpr mean = engine.evaluate(F.unaryAST1(f1, arg1));
+        if (mean.isPresent()) {
+          return engine.evaluate(F.Divide(F.Subtract(arg1, mean), standardDeviation));
+        }
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_3;
     }
   }
 
@@ -6869,9 +6919,10 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(new org.hipparchus.distribution.continuous.UniformRealDistribution(
-                a.evalf(), b.evalf()) //
-                    .cumulativeProbability(k.evalf()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.UniformRealDistribution(a.evalf(),
+                    b.evalf()) //
+                        .cumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }
@@ -6897,9 +6948,10 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (a.isNumericArgument() || b.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F.num(new org.hipparchus.distribution.continuous.UniformRealDistribution(
-                a.evalf(), b.evalf()) //
-                    .inverseCumulativeProbability(k.evalf()));
+            return F
+                .num(new org.hipparchus.distribution.continuous.UniformRealDistribution(a.evalf(),
+                    b.evalf()) //
+                        .inverseCumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }
@@ -7169,10 +7221,9 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(),
-                    m.evalf()) //
-                        .cumulativeProbability(k.evalf()));
+            return F.num(
+                new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(), m.evalf()) //
+                    .cumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }
@@ -7195,10 +7246,9 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(),
-                    m.evalf()) //
-                        .inverseCumulativeProbability(k.evalf()));
+            return F.num(
+                new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(), m.evalf()) //
+                    .inverseCumulativeProbability(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }
@@ -7232,10 +7282,9 @@ public class StatisticsFunctions {
         if (!engine.isArbitraryMode() && //
             (n.isNumericArgument() || m.isNumericArgument() || k.isNumericArgument())) {
           try {
-            return F
-                .num(new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(),
-                    m.evalf()) //
-                        .density(k.evalf()));
+            return F.num(
+                new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(), m.evalf()) //
+                    .density(k.evalf()));
           } catch (RuntimeException rex) {
             //
           }

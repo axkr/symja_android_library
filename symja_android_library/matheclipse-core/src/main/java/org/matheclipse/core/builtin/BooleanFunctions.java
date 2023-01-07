@@ -3004,21 +3004,35 @@ public final class BooleanFunctions {
    * </pre>
    */
   private static class Max extends Min {
+    private final static ISymbol MAX_DUMMY_SYMBOL = F.Dummy("$max");
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         return F.CNInfinity;
       }
 
-      if (ast.arg1().isInterval()) {
-        return IntervalSym.max((IAST) ast.arg1());
-      }
+      IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
+      IExpr dummyEvaled = engine.evaluate(copy);
+      if (dummyEvaled.isAST(getDummySymbol()) && copy instanceof IASTMutable) {
+        copy = (IASTMutable) dummyEvaled;
+        copy.set(0, S.Max);
+        ast = copy;
+        if (ast.arg1().isInterval()) {
+          return IntervalSym.max((IAST) ast.arg1());
+        }
 
-      int allocSize = F.allocLevel1(ast, x -> x.isList());
-      IASTAppendable result = F.ast(S.Max, allocSize);
-      boolean evaled = flattenListRecursive(ast, result);
-      return maximum(result, evaled);
+        int allocSize = F.allocLevel1(ast, x -> x.isList());
+        IASTAppendable result = F.ast(S.Max, allocSize);
+        boolean evaled = flattenListRecursive(ast, result, engine); 
+        return maximum(result, evaled);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    protected ISymbol getDummySymbol() {
+      return MAX_DUMMY_SYMBOL;
     }
 
     @Override
@@ -3028,7 +3042,6 @@ public final class BooleanFunctions {
 
     private static IExpr maximum(IAST list, boolean flattenedList) {
       boolean evaled = false;
-      // int j = 1;
       IASTAppendable f = list.remove(x -> x.isNegativeInfinity());
       if (f.isPresent()) {
         if (f.isAST0()) {
@@ -3079,6 +3092,7 @@ public final class BooleanFunctions {
         if (!evaled) {
           return F.NIL;
         }
+        f.sortInplace();
         return f;
       } else {
         return max1;
@@ -3089,6 +3103,7 @@ public final class BooleanFunctions {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(
           ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.NUMERICFUNCTION);
+      MAX_DUMMY_SYMBOL.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT);
     }
   }
 
@@ -3146,20 +3161,34 @@ public final class BooleanFunctions {
    * x
    * </pre>
    */
-  private static class Min extends AbstractFunctionEvaluator {
+  private static class Min extends AbstractCoreFunctionEvaluator {
+    private final static ISymbol MIN_DUMMY_SYMBOL = F.Dummy("$Min");
+
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         return F.CInfinity;
       }
 
-      if (ast.arg1().isInterval()) {
-        return IntervalSym.min((IAST) ast.arg1());
+      IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
+      IExpr dummyEvaled = engine.evaluate(copy);
+      if (dummyEvaled.isAST(getDummySymbol()) && copy instanceof IASTMutable) {
+        copy = (IASTMutable) dummyEvaled;
+        copy.set(0, S.Min);
+        ast = copy;
+        if (ast.arg1().isInterval()) {
+          return IntervalSym.min((IAST) ast.arg1());
+        }
+        int allocSize = F.allocLevel1(ast, x -> x.isList());
+        IASTAppendable result = F.ast(S.Min, allocSize);
+        boolean evaled = flattenListRecursive(ast, result, engine);
+        return minimum(result, evaled);
       }
-      int allocSize = F.allocLevel1(ast, x -> x.isList());
-      IASTAppendable result = F.ast(S.Min, allocSize);
-      boolean evaled = flattenListRecursive(ast, result);
-      return minimum(result, evaled);
+      return F.NIL;
+    }
+
+    protected ISymbol getDummySymbol() {
+      return MIN_DUMMY_SYMBOL;
     }
 
     @Override
@@ -3167,7 +3196,7 @@ public final class BooleanFunctions {
       return ARGS_0_INFINITY;
     }
 
-    protected boolean flattenListRecursive(IAST ast, IASTAppendable result) {
+    protected boolean flattenListRecursive(IAST ast, IASTAppendable result, EvalEngine engine) {
       boolean evaled = false;
       for (int i = 1; i < ast.size(); i++) {
         final IExpr arg = ast.get(i);
@@ -3175,12 +3204,12 @@ public final class BooleanFunctions {
         if (dim >= 0) {
           IExpr normal = arg.normal(false);
           if (normal.isList()) {
-            flattenListRecursive((IAST) normal, result);
+            flattenListRecursive((IAST) normal, result, engine);
             evaled = true;
             continue;
           }
         } else if (arg.isList()) {
-          flattenListRecursive((IAST) arg, result);
+          flattenListRecursive((IAST) arg, result, engine);
           evaled = true;
           continue;
         }
@@ -3245,6 +3274,7 @@ public final class BooleanFunctions {
         if (!evaled) {
           return F.NIL;
         }
+        f.sortInplace();
         return f;
       } else {
         return min1;
@@ -3255,6 +3285,8 @@ public final class BooleanFunctions {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(
           ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.NUMERICFUNCTION);
+      MIN_DUMMY_SYMBOL.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT);
+
     }
   }
 

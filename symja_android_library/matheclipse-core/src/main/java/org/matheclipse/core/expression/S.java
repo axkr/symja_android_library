@@ -7998,6 +7998,10 @@ public class S {
   public final static IBuiltInSymbol PrimitiveRootList =
       F.initFinalSymbol("PrimitiveRootList", ID.PrimitiveRootList);
 
+
+  public final static IBuiltInSymbol PrincipalComponents =
+      F.initFinalSymbol("PrincipalComponents", ID.PrincipalComponents);
+
   /**
    * Print(expr) - print the `expr` to the default output stream and return `Null`.
    * 

@@ -723,7 +723,7 @@ public class EvalEngine implements Serializable {
       }
       result0[0].set(i, evaledArg);
     } else {
-      if (isNumericFunction && arg.isNumericArgument()) {
+      if (arg.isNumericArgument()) {
         ast.addEvalFlags(ast.getEvalFlags() | IAST.CONTAINS_NUMERIC_ARG);
       }
     }

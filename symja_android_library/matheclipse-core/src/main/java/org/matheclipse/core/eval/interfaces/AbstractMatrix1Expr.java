@@ -37,7 +37,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
    * @return
    */
   public int[] checkMatrixDimensions(IExpr arg1) {
-    return arg1.isMatrix();
+    return arg1.isMatrix(false);
   }
 
   @Override
@@ -46,6 +46,12 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
     try {
       int[] dim = checkMatrixDimensions(ast.arg1());
       if (dim != null) {
+        if (ast.arg1().isNumericArgument()) {
+          RealMatrix m = ast.arg1().toRealMatrix();
+          if (m != null) {
+            return realMatrixEval(m);
+          }
+        }
         matrix = Convert.list2Matrix(ast.arg1());
         if (matrix != null) {
           Predicate<IExpr> zeroChecker = optionZeroTest(ast, 2, engine);
