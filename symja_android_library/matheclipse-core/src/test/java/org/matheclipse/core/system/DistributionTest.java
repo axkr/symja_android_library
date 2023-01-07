@@ -41,6 +41,117 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "(b*(t-t1))/(-t1+t2)+(a*(-t+t2))/(-t1+t2)");
   }
 
+
+  public void testCDF() {
+
+    check("CDF(BetaDistribution(2,3), 0.1)", //
+        "0.0523");
+    check("CDF(BetaDistribution(2,3), 0.9)", //
+        "0.9963");
+    check("CDF(ChiSquareDistribution(3), 0.1)", //
+        "0.00816258");
+    check("CDF(ChiSquareDistribution(3), 0.9)", //
+        "0.174572");
+    check("CDF(ExponentialDistribution(3), 0.1)", //
+        "0.259182");
+    check("CDF(ExponentialDistribution(3), 0.9)", //
+        "0.932794");
+    check("CDF(FRatioDistribution(2,3), 0.1)", //
+        "0.0922695");
+    check("CDF(FRatioDistribution(2,3), 0.9)", //
+        "0.505894");
+    check("CDF(GammaDistribution(2,3), 0.1)", //
+        "0.000543363");
+    check("CDF(GammaDistribution(2,3), 0.9)", //
+        "0.0369363");
+    check("CDF(GumbelDistribution(2,3), 0.1)", //
+        "0.411877");
+    check("CDF(GompertzMakehamDistribution(2,3), 0.1)", //
+        "0.485319");
+    check("CDF(GumbelDistribution(2,3), 0.9)", //
+        "0.499947");
+    check("CDF(LogNormalDistribution(2,3), 0.1)", //
+        "0.0757583");
+    check("CDF(LogNormalDistribution(2,3), 0.9)", //
+        "0.241406");
+    check("CDF(NakagamiDistribution(2,3), 0.1)", //
+        "0.0000221237");
+    check("CDF(NakagamiDistribution(2,3), 0.9)", //
+        "0.102568");
+    check("CDF(NormalDistribution(2,3), 0.1)", //
+        "0.263258");
+    check("CDF(NormalDistribution(2,3), 0.9)", //
+        "0.356934");
+    check("CDF(UniformDistribution({0,1}), 0.1)", //
+        "0.1");
+    check("CDF(UniformDistribution({0,1}), 0.9)", //
+        "0.9");
+    check("CDF(WeibullDistribution(2,3), 0.1)", //
+        "0.00111049");
+    check("CDF(WeibullDistribution(2,3), 0.9)", //
+        "0.0860688");
+
+    // github #56
+    check("CDF(NormalDistribution(),-0.41)", //
+        "0.340903");
+    check("CDF(NormalDistribution(),0.41)", //
+        "0.659097");
+    check("Table(CDF(NormalDistribution(0, s), x), {s, {.75, 1, 2}}, {x, -6,6}) // N", //
+        "{{6.22096*10^-16,1.30839*10^-11,4.8213*10^-8,0.0000316712,0.00383038,0.0912112,0.5,0.908789,0.99617,0.999968,1.0,1.0,1.0},{9.86588*10^-10,2.86652*10^-7,0.0000316712,0.0013499,0.0227501,0.158655,0.5,0.841345,0.97725,0.99865,0.999968,1.0,1.0},{0.0013499,0.00620967,0.0227501,0.0668072,0.158655,0.308538,0.5,0.691462,0.841345,0.933193,0.97725,0.99379,0.99865}}");
+    checkNumeric("Table(CDF(NormalDistribution(0, s), x), {s, {.75, 1, 2}}, {x, -6,6}) // N", //
+        "{{6.220960574271835E-16,1.308392468605314E-11,4.821303365114145E-8,3.167124183311997E-5,0.0038303805675897404,0.09121121972586804,0.5,0.9087887802741319,0.9961696194324102,0.9999683287581669,0.9999999517869663,0.999999999986916,0.9999999999999993},{9.865876450376937E-10,2.866515718791937E-7,3.1671241833119884E-5,0.0013498980316300926,0.022750131948179195,0.158655253931457,0.5,0.841344746068543,0.9772498680518208,0.9986501019683699,0.9999683287581669,0.9999997133484281,0.9999999990134123},{0.0013498980316300926,0.006209665325776133,0.022750131948179195,0.06680720126885804,0.158655253931457,0.3085375387259869,0.5,0.6914624612740131,0.841344746068543,0.9331927987311419,0.9772498680518208,0.9937903346742238,0.9986501019683699}}");
+
+    check("CDF(NormalDistribution(n, m),k)", //
+        "Erfc((-k+n)/(Sqrt(2)*m))/2");
+
+    check("CDF(BernoulliDistribution(p),k)", //
+        "Piecewise({{0,k<0},{1-p,0<=k&&k<1}},1)");
+    check("CDF(BetaDistribution(a,b),k)", //
+        "Piecewise({{BetaRegularized(k,a,b),0<k<1},{1,k>=1}},0)");
+    check("CDF(BinomialDistribution(n, m),k)", //
+        "Piecewise({{BetaRegularized(1-m,n-Floor(k),1+Floor(k)),0<=k&&k<n},{1,k>=n}},0)");
+    check("CDF(ExponentialDistribution(n),k)", //
+        "Piecewise({{1-1/E^(k*n),k>=0}},0)");
+    check("CDF(PoissonDistribution(p),k)", //
+        "Piecewise({{GammaRegularized(1+Floor(k),p),k>=0}},0)");
+    check("CDF(DiscreteUniformDistribution({a, b}), k)", //
+        "Piecewise({{(1-a+Floor(k))/(1-a+b),a<=k&&k<b},{1,k>=b}},0)");
+    check("CDF(UniformDistribution({a, b}), k)", //
+        "Piecewise({{(-a+k)/(-a+b),a<=k<=b},{1,k>b}},0)");
+    check("CDF(ErlangDistribution(n, m),k)", //
+        "Piecewise({{GammaRegularized(n,0,k*m),k>0}},0)");
+    check("CDF(LogNormalDistribution(n,m),k)", //
+        "Piecewise({{Erfc((n-Log(k))/(Sqrt(2)*m))/2,k>0}},0)");
+    check("CDF(NakagamiDistribution(n, m),k)", //
+        "Piecewise({{GammaRegularized(n,0,(k^2*n)/m),k>0}},0)");
+    check("CDF(NormalDistribution(n, m),k)", //
+        "Erfc((-k+n)/(Sqrt(2)*m))/2");
+    check("CDF(FrechetDistribution(n, m),k)", //
+        "Piecewise({{E^(-1/(k/m)^n),k>0}},0)");
+    check("CDF(GammaDistribution(n, m),k)", //
+        "Piecewise({{GammaRegularized(n,0,k/m),k>0}},0)");
+    check("CDF(GeometricDistribution(n),k)", //
+        "Piecewise({{1-(1-n)^(1+Floor(k)),k>=0}},0)");
+    check("CDF(GumbelDistribution(n, m),k)", //
+        "1-1/E^E^((k-n)/m)");
+    check("CDF(GompertzMakehamDistribution(m,n) )", //
+        "Piecewise({{1-E^((1-E^(m*#1))*n),#1>=0}},0)&");
+    check("CDF(HypergeometricDistribution(n, ns, nt),k)", //
+        "Piecewise({{1+(-ns!*(-ns+nt)!*HypergeometricPFQRegularized({1,1-n+Floor(k),1-ns+Floor(k)},{\n"
+            + "2+Floor(k),2-n-ns+nt+Floor(k)},1))/(Binomial(nt,n)*(-1+n-Floor(k))!*(-1+ns-Floor(k))!),\n"
+            + "0<=k&&n+ns-nt<=k&&k<n&&k<ns},{1,k>=n||k>=ns}},0)");
+    check("CDF(StudentTDistribution(n),k)", //
+        "Piecewise({{BetaRegularized(n/(k^2+n),n/2,1/2)/2,k<=0}},1/2*(1+BetaRegularized(k^\n"
+            + "2/(n+k^2),1/2,n/2)))");
+    check("CDF(WeibullDistribution(n, m),k)", //
+        "Piecewise({{1-1/E^(k/m)^n,k>0}},0)");
+    check("CDF(BernoulliDistribution(4),k)", //
+        "Piecewise({{0,k<0},{-3,0<=k&&k<1}},1)");
+
+    check("CDF(DiscreteUniformDistribution({1, 5}), 3)", //
+        "3/5");
+  }
+
   public void testChiSquareDistribution() {
     check("StandardDeviation(ChiSquareDistribution(v))", //
         "Sqrt(2)*Sqrt(v)");
@@ -247,6 +358,121 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("Variance(ParetoDistribution(k,a,g,m))", //
         "Piecewise({{(k^2*(-Gamma(a-g)^2*Gamma(1+g)^2+Gamma(a)*Gamma(a-2*g)*Gamma(1+2*g)))/Gamma(a)^\n"
             + "2,a>2*g}},Indeterminate)");
+  }
+
+  public void testPDF() {
+    check("PDF(BinomialDistribution(50.0, 0.5), 27.0)", //
+        "0.0959617");
+    check("PDF(BetaDistribution(2,3), 0.1)", //
+        "0.972");
+    check("PDF(BetaDistribution(2,3), 0.9)", //
+        "0.108");
+    check("PDF(ChiSquareDistribution(3), 0.1)", //
+        "0.120004");
+    check("PDF(CauchyDistribution(a, b), x)", //
+        "1/(b*Pi*(1+(-a+x)^2/b^2))");
+    check("PDF(ChiSquareDistribution(3), 0.9)", //
+        "0.241323");
+    check("PDF(FRatioDistribution(2,3), 0.1)", //
+        "0.850997");
+    check("PDF(FRatioDistribution(2,3), 0.9)", //
+        "0.308816");
+    check("PDF(GammaDistribution(2,3), 0.1)", //
+        "0.0107468");
+    check("PDF(GammaDistribution(2,3), 0.9)", //
+        "0.0740818");
+    check("PDF(GompertzMakehamDistribution(2,3), 0.9)", //
+        "9.56708*10^-6");
+    check("PDF(LogNormalDistribution(2,3), 0.1)", //
+        "0.475483");
+    check("PDF(LogNormalDistribution(2,3), 0.9)", //
+        "0.115505");
+    check("PDF(NakagamiDistribution(2,3), 0.1)", //
+        "0.000882983");
+    check("PDF(NakagamiDistribution(2,3), 0.9)", //
+        "0.377621");
+    check("PDF(NormalDistribution(2,3), 0.1)", //
+        "0.108815");
+    check("PDF(NormalDistribution(2,3), 0.9)", //
+        "0.124335");
+    check("PDF(StudentTDistribution(3), 0.1)", //
+        "0.365114");
+    check("PDF(StudentTDistribution(3), 0.9)", //
+        "0.227883");
+    check("PDF(UniformDistribution({0,1}), 0.1)", //
+        "1");
+    check("PDF(UniformDistribution({0,1}), 0.9)", //
+        "1");
+    check("PDF(WeibullDistribution(2,3), 0.1)", //
+        "0.0221975");
+    check("PDF(WeibullDistribution(2,3), 0.9)", //
+        "0.182786");
+
+    check("Table(PDF(NormalDistribution(m, 1.5), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}}) ", //
+        "{{0.265962,0.10934,0.035994},{0.10934,0.265962,0.212965},{0.035994,0.212965,0.265962}}");
+    check("Table(PDF(NormalDistribution(0.0,1.0), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}})//N ", //
+        "{{0.241971,0.241971,0.053991},{0.241971,0.241971,0.053991},{0.241971,0.241971,0.053991}}");
+    check("Table(PDF(NormalDistribution( ), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}})//N ", //
+        "{{0.241971,0.241971,0.053991},{0.241971,0.241971,0.053991},{0.241971,0.241971,0.053991}}");
+
+    check("PDF(NormalDistribution(0, 1), {x, y})", //
+        "{1/(E^(x^2/2)*Sqrt(2*Pi)),1/(E^(y^2/2)*Sqrt(2*Pi))}");
+
+    check("PDF(NormalDistribution(n, m))", //
+        "1/(E^((-n+#1)^2/(2*m^2))*m*Sqrt(2*Pi))&");
+    check("PDF(NormalDistribution(n, m),k)", //
+        "1/(E^((k-n)^2/(2*m^2))*m*Sqrt(2*Pi))");
+    check("PDF(BernoulliDistribution(p),k)", //
+        "Piecewise({{1-p,k==0},{p,k==1}},0)");
+    check("PDF(BetaDistribution(a,b),k)", //
+        "Piecewise({{1/((1-k)^(1-b)*k^(1-a)*Beta(a,b)),0<k<1}},0)");
+    check("PDF(BinomialDistribution(n, m),k)", //
+        "Piecewise({{(m^k*Binomial(n,k))/(1-m)^(k-n),0<=k<=n}},0)");
+    check("PDF(ExponentialDistribution(n),k)", //
+        "Piecewise({{n/E^(k*n),k>=0}},0)");
+    check("PDF(PoissonDistribution(p),k)", //
+        "Piecewise({{p^k/(E^p*k!),k>=0}},0)");
+    check("PDF(DiscreteUniformDistribution({a, b}), k)", //
+        "Piecewise({{1/(1-a+b),a<=k<=b}},0)");
+    check("PDF(UniformDistribution({a, b}), k)", //
+        "Piecewise({{1/(-a+b),a<=k<=b}},0)");
+    check("PDF(ErlangDistribution(n, m),k)", //
+        "Piecewise({{m^n/(E^(k*m)*k^(1-n)*Gamma(n)),k>0}},0)");
+    check("PDF(GompertzMakehamDistribution(m,n),k)", //
+        "Piecewise({{E^(k*m+(1-E^(k*m))*n)*m*n,k>=0}},0)");
+    check("PDF(LogNormalDistribution(n,m),k)", //
+        "Piecewise({{1/(E^((-n+Log(k))^2/(2*m^2))*k*m*Sqrt(2*Pi)),k>0}},0)");
+    check("PDF(NakagamiDistribution(n, m),k)", //
+        "Piecewise({{(2*(n/m)^n)/(E^((k^2*n)/m)*k^(1-2*n)*Gamma(n)),k>0}},0)");
+
+    check("PDF(FrechetDistribution(n, m),k)", //
+        "Piecewise({{n/(E^(k/m)^(-n)*(k/m)^(1+n)*m),k>0}},0)");
+    check("PDF(GammaDistribution(n, m),k)", //
+        "Piecewise({{1/(E^(k/m)*k^(1-n)*m^n*Gamma(n)),k>0}},0)");
+    check("PDF(GeometricDistribution(n),k)", //
+        "Piecewise({{(1-n)^k*n,k>=0}},0)");
+    check("PDF(GumbelDistribution(n, m),k)", //
+        "1/(E^(E^((k-n)/m)-(k-n)/m)*m)");
+    check("PDF(HypergeometricDistribution(n, ns, nt),k)", //
+        "Piecewise({{(Binomial(ns,k)*Binomial(-ns+nt,-k+n))/Binomial(nt,n),0<=k<=n&&n+ns-nt<=k<=n&&\n"
+            + "0<=k<=ns&&n+ns-nt<=k<=ns}},0)");
+    check("PDF(StudentTDistribution(n),k)", //
+        "(n/(k^2+n))^(1/2*(1+n))/(Sqrt(n)*Beta(n/2,1/2))");
+    check("PDF(WeibullDistribution(n, m),k)", //
+        "Piecewise({{n/(E^(k/m)^n*(k/m)^(1-n)*m),k>0}},0)");
+    check("PDF(StudentTDistribution(4),k)", //
+        "12*((1/(4+k^2)))^(5/2)");
+
+    check("PDF(DiscreteUniformDistribution({1, 5}), 3)", //
+        "1/5");
+    check("N(PDF(NormalDistribution(0, 1), 0))", //
+        "0.398942");
+    checkNumeric("N(PDF(BinomialDistribution(40, 0.5), 1))", //
+        "3.637978807091713E-11");
+    checkNumeric("N(PDF(HypergeometricDistribution(20,50,100), 10))", //
+        "0.19687121770654945");
+    checkNumeric("N(PDF(PoissonDistribution(10), 15))", //
+        "0.03471806963068414");
   }
 
   public void testPoissonDistribution() {

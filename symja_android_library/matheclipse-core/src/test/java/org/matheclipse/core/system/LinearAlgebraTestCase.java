@@ -137,8 +137,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   public void testCoordinateBounds() {
 
     check("CoordinateBounds({{1.0,-1.0},{0.0,2.6457513110645907},{-1.0,-1.0}})", //
-        "{{-1,1},\n"//
-            + " {-1,2.6457513110645907}}");
+        "{{-1.0,1.0},\n" //
+        + " {-1.0,2.64575}}");
 
     check("CoordinateBounds({{0, 1}, {1, 2}, {2, 1}, {3, 2}, {4, 0}})", //
         "{{0,4},\n"//
