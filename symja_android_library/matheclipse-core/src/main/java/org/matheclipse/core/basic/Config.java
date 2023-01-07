@@ -50,9 +50,10 @@ public class Config {
 
   /** Copyright message */
   public static final String COPYRIGHT = //
-      "\nCopyright (C) 2009 - 2022 - the Symja team.\n"
-          + "This program comes with ABSOLUTELY NO WARRANTY.\n"
-          + "Distributed under the GNU Public License.\n" + "See the file license.txt\n\n";
+      "\nCopyright (C) 2009 - 2023 - the Symja team.\n" //
+          + "This program comes with ABSOLUTELY NO WARRANTY.\n" //
+          + "Distributed under the GNU Public License.\n" //
+          + "See the file license.txt\n\n";
 
   /**
    * "UTF-8" is used as default character encoding
