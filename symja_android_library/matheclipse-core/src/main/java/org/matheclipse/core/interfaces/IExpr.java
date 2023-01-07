@@ -1064,6 +1064,17 @@ public interface IExpr
   }
 
   /**
+   * Return <code>this.get(position)</code> if <code>argSize() >= position</code>, otherwise return
+   * <code>defaultValue</code>
+   *
+   * @return <code>this.get(position)</code> if <code>argSize() >= position</code>, otherwise return
+   *         <code>defaultValue</code>
+   */
+  default IExpr getArg(int position, IExpr defaultValue) {
+    return defaultValue;
+  }
+
+  /**
    * Get the element at the specified <code>index</code> if this object is of type <code>IAST</code>
    * .
    *

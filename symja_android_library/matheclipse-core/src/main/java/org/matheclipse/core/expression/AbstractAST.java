@@ -4868,6 +4868,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
+  public IExpr getArg(int position, IExpr defaultValue) {
+    return argSize() >= position ? get(position) : defaultValue;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public IAST makeList() {
     return isList() ? this : F.List(this);
   }

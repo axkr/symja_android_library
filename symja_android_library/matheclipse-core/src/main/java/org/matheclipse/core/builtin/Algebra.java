@@ -1438,10 +1438,7 @@ public class Algebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      IExpr head = S.Plus;
-      if (ast.size() >= 3) {
-        head = ast.arg2();
-      }
+      IExpr head = ast.getArg(2, S.Plus);
       if (ast.isAST3()) {
         if (!arg1.head().equals(ast.arg3())) {
           return arg1;
