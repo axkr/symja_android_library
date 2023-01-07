@@ -1,10 +1,16 @@
 ## Association
 
 ```
-Association(list-of-rules) 
+Association[key1 -> val1, key2 -> val2, ...>
 ```
 
-> create a `key->value` association map from the `list-of-rules`.
+or 
+
+```
+<|key1 -> val1, key2 -> val2, ...|>
+```
+
+> represents an association between `key`s and `value`s.
  
 ### Examples
 
