@@ -1,11 +1,14 @@
 package org.matheclipse.api;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.hipparchus.util.FastMath;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.matheclipse.api.client.JSONQueryResult;
 import org.matheclipse.api.parser.FuzzyParserFactory;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
@@ -16,7 +19,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
 
 public class TestPods {
-
   static int formatsMATHML = 0;
 
   static int formatsTEX = 0;
@@ -169,6 +171,10 @@ public class TestPods {
   public void testSyntaxError001() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("?#?", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+    assertEquals(queryResult.isError(), false);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -188,6 +194,9 @@ public class TestPods {
     EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = TestPods.createJUnitResult("Sin", formatsHTML);
+
+    JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     // assertEquals(jsonStr, //
@@ -297,6 +306,9 @@ public class TestPods {
 
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("\\sin 30 ^ { \\circ }", formatsHTML);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -323,6 +335,9 @@ public class TestPods {
 
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("Cs", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -509,6 +524,9 @@ public class TestPods {
 
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("17", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -575,6 +593,8 @@ public class TestPods {
     ObjectNode messageJSON = TestPods.createJUnitResult("1/2", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     assertEquals(jsonStr, //
         "{\n" + //
             "  \"queryresult\" : {\n" + //
@@ -624,6 +644,8 @@ public class TestPods {
     ObjectNode messageJSON = TestPods.createJUnitResult("1/2+3/4", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
             + "    \"error\" : \"false\",\n" + "    \"numpods\" : 5,\n"
@@ -662,6 +684,9 @@ public class TestPods {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods.createJUnitResult("Plot(Sin(x), {x, 0, 6*Pi} )", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     // assertEquals(jsonStr, //
@@ -733,6 +758,9 @@ public class TestPods {
     EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods
         .createJUnitResult("Plot({Sin(x),Cos(x),Tan(x)},{x,-2*Pi,2*Pi}) // JSForm", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     // assertEquals(jsonStr, //
@@ -786,6 +814,9 @@ public class TestPods {
     EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = TestPods.createJUnitResult("Plot(f(x), {x, 0, 6*Pi} )", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     // assertEquals(jsonStr, //
@@ -813,6 +844,9 @@ public class TestPods {
 
     ObjectNode messageJSON = TestPods
         .createJUnitResult("Plot(Evaluate(Table(BesselJ(n, x), {n, 4})), {x, 0, 10})", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     // assertEquals(jsonStr, //
@@ -896,6 +930,9 @@ public class TestPods {
     EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = TestPods.createJUnitResult("Sin(x)", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     // assertEquals(jsonStr, //
@@ -998,6 +1035,9 @@ public class TestPods {
     EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = TestPods.createJUnitResult(" x**2-4,x-2", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     // assertEquals(jsonStr, //
@@ -1103,6 +1143,9 @@ public class TestPods {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
 
     ObjectNode messageJSON = TestPods.createJUnitResult("Sin(x*y)", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -1136,6 +1179,9 @@ public class TestPods {
     ObjectNode messageJSON = TestPods.createJUnitResult( //
         "Yellow", //
         formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -1164,6 +1210,8 @@ public class TestPods {
         formatsMATHML);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
             + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
@@ -1186,11 +1234,11 @@ public class TestPods {
 
     ObjectNode messageJSON = TestPods.createJUnitResult(
         "Histogram(RandomVariate(NormalDistribution(0, 1), 200))", formatsMATHML);
-    final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
-    // if (s.contains("Windows")) {
-    // RandomVariate gives random results
 
-    // }
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+    assertFalse(queryResult.isError());
+    assertTrue(queryResult.containsPodsScanner(new String[] {"Plotter"}));
+
   }
 
   @Ignore
@@ -1200,6 +1248,10 @@ public class TestPods {
     EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = TestPods.createJUnitResult("1,2,3", formatsMATHML);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+    assertEquals(queryResult.isError(), false);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -1256,7 +1308,7 @@ public class TestPods {
             + "      } ]\n" //
             + "    } ]\n" //
             + "  }\n" //
-        + "}"); //
+            + "}"); //
   }
 
   @Test
@@ -1264,6 +1316,9 @@ public class TestPods {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("1, 17 + 4*I\n17 - 4*I, 10", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+    assertEquals(queryResult.isError(), false);
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
@@ -1296,6 +1351,8 @@ public class TestPods {
 
     ObjectNode messageJSON = TestPods.createJUnitResult("1,3\n3,4", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
 
     assertEquals(jsonStr, //
         "{\n" //
@@ -1360,6 +1417,9 @@ public class TestPods {
   public void testSolve001() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("3+x=10", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     // assertEquals(jsonStr, "{\n" //
@@ -1450,6 +1510,9 @@ public class TestPods {
   public void testSolve002() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("x^2+1=0", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     // assertEquals(jsonStr, //
@@ -1541,6 +1604,9 @@ public class TestPods {
   public void testSolve003() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("Solver x+3=10", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -1564,6 +1630,9 @@ public class TestPods {
   public void testInteger4294967295() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("2**32-1", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -1618,6 +1687,8 @@ public class TestPods {
     ObjectNode messageJSON = TestPods.createJUnitResult("NormalDistribution(a,b)", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
             + "    \"error\" : \"false\",\n" + "    \"numpods\" : 4,\n"
@@ -1654,6 +1725,9 @@ public class TestPods {
   public void testLogic001() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("a&&b||c", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -1684,6 +1758,9 @@ public class TestPods {
   public void testLogic002() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("a&b|c", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -1716,6 +1793,8 @@ public class TestPods {
     ObjectNode messageJSON = TestPods.createJUnitResult("convert 111 cm in m", formatsHTML);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
             + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
@@ -1735,6 +1814,9 @@ public class TestPods {
   public void testTimes() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("10*11*12", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -1790,6 +1872,9 @@ public class TestPods {
   public void testTransliterate() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("Transliterate(\"Càfé\")", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
@@ -1820,6 +1905,8 @@ public class TestPods {
         TestPods.createJUnitResult("simplificate Sqrt(9-4*Sqrt(5))", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
             + "    \"error\" : \"false\",\n" + "    \"numpods\" : 3,\n"
@@ -1848,6 +1935,9 @@ public class TestPods {
   public void testIntegrate001() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("Integral Sin(x)", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -1878,6 +1968,9 @@ public class TestPods {
   public void testIntegrate002() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("integrate Tan(x)*Cos(x)*Pi x", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -1911,6 +2004,8 @@ public class TestPods {
     ObjectNode messageJSON = TestPods.createJUnitResult("derive tan(x^3)", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
             + "    \"error\" : \"false\",\n" + "    \"numpods\" : 3,\n"
@@ -1940,6 +2035,9 @@ public class TestPods {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods.createJUnitResult("3,Sin(1),Pi,3/4,42,1.2", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -2029,7 +2127,7 @@ public class TestPods {
             + "      } ]\n" //
             + "    } ]\n" //
             + "  }\n" //
-        + "}"); //
+            + "}"); //
   }
 
   @Test
@@ -2038,6 +2136,9 @@ public class TestPods {
     EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON =
         TestPods.createJUnitResult("1, 2, 3, None, 3, 5, f(), 2, 1, foo, 2, 3", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -2071,6 +2172,9 @@ public class TestPods {
     EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = TestPods.createJUnitResult("1, 2, 3, 4, 5", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -2139,6 +2243,9 @@ public class TestPods {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods.createJUnitResult("plot ([x,x**2,x**3,x**4])", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     // assertEquals(jsonStr, //
@@ -2255,6 +2362,8 @@ public class TestPods {
         "Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)})", //
         formatsTEX);
 
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -2281,6 +2390,9 @@ public class TestPods {
     EvalEngine.resetModuleCounter4JUnit();
     String s = System.getProperty("os.name");
     ObjectNode messageJSON = TestPods.createJUnitResult("HornerForm(x^2+x^3+2*x^14)", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     // assertEquals(jsonStr, //
@@ -2407,6 +2519,8 @@ public class TestPods {
         "E*Pi", //
         formatsTEX);
 
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     assertEquals(jsonStr, //
@@ -2432,6 +2546,8 @@ public class TestPods {
     ObjectNode messageJSON = TestPods.createJUnitResult( //
         "CoshIntegral", //
         formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
 
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
@@ -2527,6 +2643,9 @@ public class TestPods {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods.createJUnitResult("-x^2 + 4*x + 4", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
 
     // assertEquals(jsonStr, //
@@ -2638,6 +2757,9 @@ public class TestPods {
     EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = TestPods.createJUnitResult("1/0", formatsTEX);
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+    assertEquals(queryResult.isError(), false);
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
