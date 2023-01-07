@@ -16,6 +16,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
@@ -31,6 +32,12 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class Plot extends ListPlot {
   final static double NUMBER_OF_PIXELS = 1200.0;
 
+  /**
+   * See: <a href=
+   * "https://www.andr.mu/logs/acquiring-samples-to-plot-a-math-function-adaptive/">Acquiring
+   * Samples to Plot a Math Function: Adaptive Sampling</a>
+   *
+   */
   private static class AdaptivePlot {
     private static class Point {
       final double x, y;
@@ -81,7 +88,7 @@ public class Plot extends ListPlot {
       double[] yg = DoubleStream.of(ya, ya1, yb, yb1, yc).map(y -> y - y0).toArray();
       double q4 = quadrature(yg[0], yg[1], yg[2], yg[3]);
       double q3 = quadrature(yg[2], yg[3], yg[4]);
-      return Math.abs(q4 - q3) > eps * q3;
+      return Math.abs(q4 - q3) >= eps * q3;
     }
 
     private final DoubleUnaryOperator f;
@@ -176,6 +183,8 @@ public class Plot extends ListPlot {
           if (rangeList.isList3()) {
             GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
             setGraphicOptions(graphicsOptions);
+            final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
+            graphicsOptions.setOptions(options);
             final IAST listOfLines =
                 plotToListPoints(function, rangeList, ast, graphicsOptions, engine);
             if (listOfLines.isNIL()) {
@@ -189,6 +198,7 @@ public class Plot extends ListPlot {
             if (graphicsPrimitives.isPresent()) {
               graphicsOptions.addPadding();
               listPlotOptions.setBoundingBox(graphicsOptions.boundingBox());
+              // listPlotOptions.mergeOptions(listPlotOptions.options().getListOfRules());
               IAST listOfOptions = listOfOptionRules(listPlotOptions);
               return createGraphicsFunction(graphicsPrimitives, listOfOptions, listPlotOptions);
             }
@@ -206,7 +216,7 @@ public class Plot extends ListPlot {
       final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine) {
     if (!rangeList.arg1().isSymbol()) {
       // `1` is not a valid variable.
-      return IOFunctions.printMessage(S.LogPlot, "ivar", F.list(rangeList.arg1()), engine);
+      return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
     }
     final ISymbol x = (ISymbol) rangeList.arg1();
     final IExpr xMin = engine.evalN(rangeList.arg2());
@@ -252,6 +262,7 @@ public class Plot extends ListPlot {
         automaticPlotRange(data[1], yMinMax);
       }
     }
+    graphicsOptions.mergeOptions(graphicsOptions.options().getListOfRules(), yMinMax);
     for (int i = 0; i < dataList.size(); i++) {
       IExpr temp = plotLine(dataList.get(i), x, xMinD, xMaxD, yMinMax, graphicsOptions, engine);
       if (temp.isPresent()) {
@@ -274,7 +285,7 @@ public class Plot extends ListPlot {
    * @param engine the evaluation engine
    * @return <code>F.NIL</code> is no conversion of the data into an <code>IExpr</code> was possible
    */
-  public static IAST plotLine(double[][] data, final ISymbol xVar, final double xMin,
+  private static IAST plotLine(double[][] data, final ISymbol xVar, final double xMin,
       final double xMax, double[] yMinMax, GraphicsOptions graphicsOptions,
       final EvalEngine engine) {
 
@@ -284,6 +295,15 @@ public class Plot extends ListPlot {
     double lastx = Double.NaN;
     double lasty = Double.NaN;
     for (int i = 0; i < data[0].length; i++) {
+      if (!Double.isFinite(data[1][i])) {
+        if (lineList.isPresent()) {
+          listOfLines.append(lineList);
+          lineList = F.NIL;
+        }
+        lastx = Double.NaN;
+        lasty = Double.NaN;
+        continue;
+      }
       if (data[1][i] < yMinMax[0] //
           || data[1][i] > yMinMax[1]) {
         if (lineList.isPresent()) {
@@ -300,7 +320,7 @@ public class Plot extends ListPlot {
       }
       if (lineList.isNIL()) {
         lineList = F.ListAlloc();
-        if (!Double.isNaN(lastx) && !Double.isNaN(lasty)) {
+        if (Double.isFinite(lastx) && Double.isFinite(lasty)) {
           lineList.append(graphicsOptions.point(lastx, lasty));
         }
       }

@@ -1629,31 +1629,32 @@ public class GraphicsFunctions {
           graphics2DBuffer.append("drawGraphics2d(\"graphics2d\",\n");
         }
         json.set("elements", arrayNode);
+
         options = graphicsOptions.options();
         ObjectNode objectNode = JSON_OBJECT_MAPPER.createObjectNode();
+        if (listOfCoords.argSize() > 0) {
+          IExpr coordinateBounds = S.CoordinateBounds.ofNIL(EvalEngine.get(), listOfCoords);
+          IExpr option = options.getOption(S.PlotRange);
+          int[] matrix = option.isMatrix();
+          if (matrix != null && matrix[0] == 2 && matrix[1] == 2) {
+            if (graphicsOptions.graphicsExtent2D(objectNode, (IAST) option)) {
+              json.set("extent", objectNode);
+            }
+          } else {
+            if (coordinateBounds.isList2()
+                && graphicsOptions.graphicsExtent2D(objectNode, (IAST) coordinateBounds)) {
+              json.set("extent", objectNode);
+            } else {
+              // return false;
+              // fall through?
+            }
+          }
+
+        }
+
         if (plotRange.isPresent()
             && graphicsOptions.graphicsExtent2D(objectNode, (IAST) plotRange)) {
           json.set("extent", objectNode);
-        } else {
-          if (listOfCoords.argSize() > 0) {
-            IExpr coordinateBounds = S.CoordinateBounds.ofNIL(EvalEngine.get(), listOfCoords);
-            IExpr option = options.getOption(S.PlotRange);
-            int[] matrix = option.isMatrix();
-            if (matrix != null && matrix[0] == 2 && matrix[1] == 2) {
-              if (GraphicsFunctions.graphicsExtent(objectNode, (IAST) option, 2)) {
-                json.set("extent", objectNode);
-              }
-            } else {
-              if (coordinateBounds.isList2()
-                  && GraphicsFunctions.graphicsExtent(objectNode, (IAST) coordinateBounds, 2)) {
-                json.set("extent", objectNode);
-              } else {
-                // return false;
-                // fall through?
-              }
-            }
-
-          }
         }
 
         // if (options.size() > 0) {
@@ -1998,39 +1999,6 @@ public class GraphicsFunctions {
     }
     return false;
 
-  }
-
-  private static boolean graphicsExtent(ObjectNode objectNode, IAST extentList, int dimension) {
-    for (int i = 1; i < extentList.size(); i++) {
-      IExpr arg = extentList.get(i);
-      if (arg.isAST(S.List, dimension + 1)) {
-        IAST list = (IAST) arg;
-        if (dimension == 2) {
-          if (i == 1) {
-            objectNode.put("xmin", list.arg1().evalf());
-            objectNode.put("xmax", list.arg2().evalf());
-          } else if (i == 2) {
-            objectNode.put("ymin", list.arg1().evalf());
-            objectNode.put("ymax", list.arg2().evalf());
-          }
-          continue;
-        } else if (dimension == 3) {
-          if (i == 1) {
-            objectNode.put("xmin", list.arg1().evalf());
-            objectNode.put("xmax", list.arg2().evalf());
-          } else if (i == 2) {
-            objectNode.put("ymin", list.arg1().evalf());
-            objectNode.put("ymax", list.arg2().evalf());
-          } else if (i == 3) {
-            objectNode.put("zmin", list.arg1().evalf());
-            objectNode.put("zmax", list.arg2().evalf());
-          }
-          continue;
-        }
-      }
-      return false;
-    }
-    return true;
   }
 
   public static void initialize() {

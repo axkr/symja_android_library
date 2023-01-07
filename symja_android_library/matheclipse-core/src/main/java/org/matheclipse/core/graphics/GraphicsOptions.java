@@ -5,6 +5,7 @@ import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -465,15 +466,28 @@ public class GraphicsOptions {
   }
 
   public boolean graphicsExtent2D(ObjectNode objectNode, IAST plotRange) {
-    if (plotRange.isList2() //
-        && plotRange.first().isList2() && plotRange.second().isList2()) {
-      IAST arg = (IAST) plotRange.arg1();
-      objectNode.put("xmin", arg.arg1().evalf());
-      objectNode.put("xmax", arg.arg2().evalf());
-      arg = (IAST) plotRange.arg2();
-      objectNode.put("ymin", arg.arg1().evalf());
-      objectNode.put("ymax", arg.arg2().evalf());
-      return true;
+    if (plotRange.isList2()) {
+      IExpr arg1 = plotRange.first();
+      IExpr arg2 = plotRange.second();
+      if (arg1.isList2() && arg2.isList2()) {
+        boundingbox[0] = arg1.first().evalf();
+        boundingbox[1] = arg1.second().evalf();
+        boundingbox[2] = arg2.first().evalf();
+        boundingbox[3] = arg2.second().evalf();
+        objectNode.put("xmin", boundingbox[0]);
+        objectNode.put("xmax", boundingbox[1]);
+        objectNode.put("ymin", boundingbox[2]);
+        objectNode.put("ymax", boundingbox[3]);
+        return true;
+      } else {
+        objectNode.put("xmin", boundingbox[0]);
+        objectNode.put("xmax", boundingbox[1]);
+        boundingbox[2] = arg1.evalf();
+        boundingbox[3] = arg2.evalf();
+        objectNode.put("ymin", boundingbox[2]);
+        objectNode.put("ymax", boundingbox[3]);
+        return true;
+      }
     }
     return false;
   }
@@ -543,6 +557,39 @@ public class GraphicsOptions {
       }
     }
     return pointSize;
+  }
+
+
+  public void mergeOptions(IAST listOfOptions, double[] yMinMax) {
+    for (int i = 1; i < listOfOptions.size(); i++) {
+      if (listOfOptions.get(i).isRuleAST()) {
+        IExpr option = listOfOptions.get(i).first();
+        if (option == S.PlotRange) {
+          IExpr plotRange = listOfOptions.get(i).second();
+          if (plotRange.isList2()) {
+            try {
+              IExpr arg1 = plotRange.first();
+              IExpr arg2 = plotRange.second();
+              if (arg1.isList2() && arg2.isList2()) {
+                boundingbox[0] = arg1.first().evalf();
+                boundingbox[1] = arg1.second().evalf();
+                boundingbox[2] = arg2.first().evalf();
+                boundingbox[3] = arg2.second().evalf();
+                yMinMax[0] = boundingbox[2];
+                yMinMax[1] = boundingbox[3];
+              } else {
+                boundingbox[2] = arg1.evalf();
+                boundingbox[3] = arg2.evalf();
+                yMinMax[0] = boundingbox[2];
+                yMinMax[1] = boundingbox[3];
+              }
+            } catch (ArgumentTypeException ate) {
+              // ignore false plot ranges
+            }
+          }
+        }
+      }
+    }
   }
 
   public void setBoundingBox(double[] boundingbox) {

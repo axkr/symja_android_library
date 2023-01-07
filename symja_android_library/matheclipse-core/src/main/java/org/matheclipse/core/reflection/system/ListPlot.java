@@ -70,7 +70,7 @@ public class ListPlot extends AbstractEvaluator {
     if (plot.size() < 2) {
       return F.NIL;
     }
-    final OptionArgs options = new OptionArgs(plot.topHead(), plot, 2, engine, true);
+    final OptionArgs options = new OptionArgs(plot.topHead(), plot, 3, engine, true);
     if (options.isTrue(S.Joined)) {
       graphicsOptions.setJoined(true);
     }
