@@ -3008,23 +3008,22 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST0()) {
-        return F.CNInfinity;
-      }
-
       IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
       IExpr dummyEvaled = engine.evaluate(copy);
       if (dummyEvaled.isAST(getDummySymbol()) && copy instanceof IASTMutable) {
         copy = (IASTMutable) dummyEvaled;
         copy.set(0, S.Max);
         ast = copy;
+        if (ast.isAST0()) {
+          return F.CNInfinity;
+        }
         if (ast.arg1().isInterval()) {
           return IntervalSym.max((IAST) ast.arg1());
         }
 
         int allocSize = F.allocLevel1(ast, x -> x.isList());
         IASTAppendable result = F.ast(S.Max, allocSize);
-        boolean evaled = flattenListRecursive(ast, result, engine); 
+        boolean evaled = flattenListRecursive(ast, result, engine);
         return maximum(result, evaled);
       }
       return F.NIL;
@@ -3166,16 +3165,15 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST0()) {
-        return F.CInfinity;
-      }
-
       IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
       IExpr dummyEvaled = engine.evaluate(copy);
       if (dummyEvaled.isAST(getDummySymbol()) && copy instanceof IASTMutable) {
         copy = (IASTMutable) dummyEvaled;
         copy.set(0, S.Min);
         ast = copy;
+        if (ast.isAST0()) {
+          return F.CInfinity;
+        }
         if (ast.arg1().isInterval()) {
           return IntervalSym.min((IAST) ast.arg1());
         }

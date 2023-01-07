@@ -317,6 +317,8 @@ public class ExprEvaluatorTests {
             F.List(F.Rule(S.EdgeWeight, F.List(F.CD0, F.CD1, F.CD1)))), //
         F.CEmptySequence, //
         F.CEmptyList, //
+        F.List(F.List()), //
+        F.List(F.List(F.List())), //
         F.List(F.List(F.C0)), //
         F.List(F.List(F.C1)), //
         F.List(F.List(F.CN1)), //

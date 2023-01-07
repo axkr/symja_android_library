@@ -14891,6 +14891,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testMax() {
 
+    check("Max(Sequence())", //
+        "-Infinity");
     check("Refine(Max(Infinity,x), x>0)", //
         "Infinity");
     check("Max(Interval({1,2}))", //
@@ -15289,6 +15291,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testMin() {
+    check("Min(Sequence())", //
+        "Infinity");
     check("Min(Interval({1,2}))", //
         "1");
 
