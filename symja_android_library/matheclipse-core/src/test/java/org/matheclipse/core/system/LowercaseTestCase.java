@@ -12769,7 +12769,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "var a = board.create('slider',[[-0.0630088815692249,2.2600000000000002],[6.346194188748811,2.2600000000000002],[0,0,10]],{name:'a'});\n"
             + "\n"
             + "function $f1(x) { try { return [mul(cos(add(1,mul(a.Value(),x))),sin(x))];} catch(e) { return Number.NaN;} }\n"
-            + "board.create('functiongraph',[$f1, 0, (6.283185307179586)],{strokecolor:'#5e81b5'});\n"
+            + "board.create('functiongraph',[$f1, 0, (6.283185307179586)],{strokecolor:'#e19c24'});\n"
             + "\n" + "\n" + "board.unsuspendUpdate();\n" + "");
     // Mathcell syntax / generate TeX for MathJAX
     check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
