@@ -265,6 +265,7 @@ public class BuiltinUsage {
     USAGE[ID.Normalize] = "normalizes a vector";
     USAGE[ID.Not] = "logic negation";
     USAGE[ID.NotListQ] = "test if an expression is not a list";
+    USAGE[ID.NumberLinePlot] = "plot along a number line";
     USAGE[ID.NumberQ] = "test whether an expression is a number";
     USAGE[ID.NumberString] = "characters in string representation of a number";
     USAGE[ID.NumericFunction] = "attribute that indicates that a symbol is a numerical function";

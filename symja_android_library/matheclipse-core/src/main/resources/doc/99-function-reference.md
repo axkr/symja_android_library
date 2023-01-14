@@ -628,6 +628,7 @@
 * [NSolve](functions/NSolve.md)
 * [Null](functions/Null.md)
 * [NullSpace](functions/NullSpace.md)
+* [NumberLinePlot](functions/NumberLinePlot.md)
 * [NumberQ](functions/NumberQ.md)
 * [NumberString](functions/NumberString.md)
 * [Numerator](functions/Numerator.md)

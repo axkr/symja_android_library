@@ -75,6 +75,7 @@ public final class FunctionDefinitions {
       S.NonCommutativeMultiply
           .setEvaluator(new org.matheclipse.core.reflection.system.NonCommutativeMultiply());
       S.NSolve.setEvaluator(new org.matheclipse.core.reflection.system.NSolve());
+      S.NumberLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.NumberLinePlot());
 
       S.Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
       S.Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());

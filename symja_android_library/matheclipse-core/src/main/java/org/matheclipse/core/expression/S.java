@@ -7028,6 +7028,9 @@ public class S {
   public final static IBuiltInSymbol NumberFieldRootsOfUnity =
       F.initFinalSymbol("NumberFieldRootsOfUnity", ID.NumberFieldRootsOfUnity);
 
+  public final static IBuiltInSymbol NumberLinePlot =
+      F.initFinalSymbol("NumberLinePlot", ID.NumberLinePlot);
+
   /**
    * NumberQ(expr) - returns `True` if `expr` is an explicit number, and `False` otherwise.
    * 

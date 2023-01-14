@@ -19,6 +19,10 @@ LogPlot[{x^x, Exp[x], x!}, {x, 1, 5}]
 ```
 
 ```mma
+NumberLinePlot[{Prime[Range[20]],Prime[Range[40]],Prime[Range[80]]}]
+```
+
+```mma
 LogLogPlot[{Log[x]^x, x^x}, {x, 0.1, 10}]
 ```
 

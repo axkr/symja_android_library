@@ -150,7 +150,7 @@ public class GraphicsOptions {
         }
       }
     }
-    return PLOT_COLORS[(functionColorNumber - 1) % PLOT_COLORS.length];
+    return PLOT_COLORS[(functionColorNumber) % PLOT_COLORS.length];
   }
 
   /**
@@ -290,7 +290,7 @@ public class GraphicsOptions {
 
   IAST rgbColor;
 
-  int colorIndex = 1;
+  int colorIndex = 0;
 
   /**
    * If <code>true</code> points in a dataset should be joined into a line, otherwise they should be
