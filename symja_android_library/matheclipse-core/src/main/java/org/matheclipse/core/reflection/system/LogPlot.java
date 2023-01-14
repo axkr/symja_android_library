@@ -20,6 +20,7 @@ public class LogPlot extends Plot {
   @Override
   protected void setGraphicOptions(GraphicsOptions graphicsOptions) {
     graphicsOptions.setYFunction(y -> F.Log(y));
+    graphicsOptions.setYScale("Log");
     graphicsOptions.setJoined(true);
   }
 

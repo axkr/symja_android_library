@@ -301,6 +301,10 @@ public class GraphicsOptions {
   double[] boundingbox =
       new double[] {Double.MAX_VALUE, Double.MIN_VALUE, Double.MAX_VALUE, Double.MIN_VALUE};
 
+  String xScale = "";
+
+  String yScale = "";
+
   Function<IExpr, IExpr> xFunction;
 
   Function<IExpr, IExpr> yFunction;
@@ -510,56 +514,6 @@ public class GraphicsOptions {
     return joined;
   }
 
-  public double opacity() {
-    return opacity;
-  }
-
-  public OptionArgs options() {
-    return options;
-  }
-
-  /**
-   * Return <code>PlotRange</code> (extent) option rule.
-   * 
-   * @param boundingbox
-   * @return
-   */
-  public IAST plotRange() {
-    return F.Rule(S.PlotRange, F.List(F.List(F.num(boundingbox[0]), F.num(boundingbox[1])),
-        F.List(F.num(boundingbox[2]), F.num(boundingbox[3]))));
-  }
-
-  public double pointSize() {
-    return pointSize;
-  }
-
-  public double pointSize(IAST pointSizeAST) {
-    if (pointSizeAST.isAST(S.PointSize, 2)) {
-      try {
-        IExpr arg1 = pointSizeAST.arg1();
-        if (arg1.isBuiltInSymbol()) {
-          if (arg1 == S.Large) {
-            pointSize = LARGE_POINTSIZE;
-          } else if (arg1 == S.Medium) {
-            pointSize = MEDIUM_POINTSIZE;
-          } else if (arg1 == S.Small) {
-            pointSize = SMALL_POINTSIZE;
-          } else if (arg1 == S.Tiny) {
-            pointSize = TINY_POINTSIZE;
-          } else {
-            pointSize = pointSizeAST.arg1().evalf();
-          }
-        } else {
-          pointSize = pointSizeAST.arg1().evalf();
-        }
-      } catch (RuntimeException rex) {
-        pointSize = MEDIUM_POINTSIZE;
-      }
-    }
-    return pointSize;
-  }
-
-
   public void mergeOptions(IAST listOfOptions, double[] yMinMax) {
     for (int i = 1; i < listOfOptions.size(); i++) {
       if (listOfOptions.get(i).isRuleAST()) {
@@ -592,6 +546,59 @@ public class GraphicsOptions {
     }
   }
 
+  public double opacity() {
+    return opacity;
+  }
+
+  public OptionArgs options() {
+    return options;
+  }
+
+  /**
+   * Return <code>PlotRange</code> (extent) option rule.
+   * 
+   * @param boundingbox
+   * @return
+   */
+  public IAST plotRange() {
+    return F.Rule(S.PlotRange, F.List(F.List(F.num(boundingbox[0]), F.num(boundingbox[1])),
+        F.List(F.num(boundingbox[2]), F.num(boundingbox[3]))));
+  }
+
+  public IAST point(double x, double y) {
+    return F.List(F.num(x), F.num(y));
+  }
+
+  public double pointSize() {
+    return pointSize;
+  }
+
+  public double pointSize(IAST pointSizeAST) {
+    if (pointSizeAST.isAST(S.PointSize, 2)) {
+      try {
+        IExpr arg1 = pointSizeAST.arg1();
+        if (arg1.isBuiltInSymbol()) {
+          if (arg1 == S.Large) {
+            pointSize = LARGE_POINTSIZE;
+          } else if (arg1 == S.Medium) {
+            pointSize = MEDIUM_POINTSIZE;
+          } else if (arg1 == S.Small) {
+            pointSize = SMALL_POINTSIZE;
+          } else if (arg1 == S.Tiny) {
+            pointSize = TINY_POINTSIZE;
+          } else {
+            pointSize = pointSizeAST.arg1().evalf();
+          }
+        } else {
+          pointSize = pointSizeAST.arg1().evalf();
+        }
+      } catch (RuntimeException rex) {
+        pointSize = MEDIUM_POINTSIZE;
+      }
+    }
+    return pointSize;
+  }
+
   public void setBoundingBox(double[] boundingbox) {
     this.boundingbox = boundingbox;
   }
@@ -616,16 +623,6 @@ public class GraphicsOptions {
     }
   }
 
-  // public double[] yMinMaxScaled(double[] yMinMax) {
-  // double[] result = new double[2];
-  // result[0] = yFunction.apply(F.num(yMinMax[0])).evalf();
-  // result[1] = yFunction.apply(F.num(yMinMax[1])).evalf();
-  // return result;
-  // }
-
-  public IAST point(double x, double y) {
-    return F.List(F.num(x), F.num(y));
-  }
 
   public void setColor(ObjectNode json) {
     if (rgbColor.isPresent()) {
@@ -660,6 +657,13 @@ public class GraphicsOptions {
   public void setFontSize(int fontSize) {
     this.fontSize = fontSize;
   }
+
+  // public double[] yMinMaxScaled(double[] yMinMax) {
+  // double[] result = new double[2];
+  // result[0] = yFunction.apply(F.num(yMinMax[0])).evalf();
+  // result[1] = yFunction.apply(F.num(yMinMax[1])).evalf();
+  // return result;
+  // }
 
   /**
    * If set to <code>true</code> points in a dataset should be joined into a line, otherwise they
@@ -732,8 +736,16 @@ public class GraphicsOptions {
     this.xFunction = xFunction;
   }
 
+  public void setXScale(String xScale) {
+    this.xScale = xScale;
+  }
+
   public void setYFunction(Function<IExpr, IExpr> yFunction) {
     this.yFunction = yFunction;
+  }
+
+  public void setYScale(String yScale) {
+    this.yScale = yScale;
   }
 
   public double thickness() {
@@ -744,7 +756,15 @@ public class GraphicsOptions {
     return xFunction;
   }
 
+  public String xScale() {
+    return xScale;
+  }
+
   public Function<IExpr, IExpr> yFunction() {
     return yFunction;
+  }
+
+  public String yScale() {
+    return yScale;
   }
 }

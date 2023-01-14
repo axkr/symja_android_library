@@ -16,6 +16,8 @@ public class LogLogPlot extends Plot {
   protected void setGraphicOptions(GraphicsOptions graphicsOptions) {
     graphicsOptions.setXFunction(x -> F.Log(x));
     graphicsOptions.setYFunction(y -> F.Log(y));
+    graphicsOptions.setXScale("Log");
+    graphicsOptions.setYScale("Log");
     graphicsOptions.setJoined(true);
   }
 

@@ -13,6 +13,7 @@ public class LogLinearPlot extends Plot {
   @Override
   protected void setGraphicOptions(GraphicsOptions graphicsOptions) {
     graphicsOptions.setXFunction(x -> F.Log(x));
+    graphicsOptions.setXScale("Log");
     graphicsOptions.setJoined(true);
   }
 

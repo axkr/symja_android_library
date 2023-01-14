@@ -13,6 +13,8 @@ public class ListLogLogPlot extends ListPlot {
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     graphicsOptions.setXFunction(x -> F.Log(x));
     graphicsOptions.setYFunction(y -> F.Log(y));
+    graphicsOptions.setXScale("Log");
+    graphicsOptions.setYScale("Log");
     IAST graphicsPrimitives = listPlot(ast, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();

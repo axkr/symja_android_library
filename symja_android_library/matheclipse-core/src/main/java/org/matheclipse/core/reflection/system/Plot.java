@@ -1,20 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
-import static java.lang.Double.compare;
-import static java.lang.Double.isFinite;
-import static java.util.stream.Collectors.toList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.function.DoubleUnaryOperator;
-import java.util.stream.DoubleStream;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -30,6 +22,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /** Plots x/y functions */
 public class Plot extends ListPlot {
+  // public static void main(String[] args) {
+  // double[] linspace = Numpy.logspace(2.0, 3.0, 4, true, 10.0);
+  // for (int i = 0; i < linspace.length; i++) {
+  // System.out.println(linspace[i]);
+  // }
+  // }
+
   final static double NUMBER_OF_PIXELS = 1200.0;
 
   /**
@@ -38,139 +37,132 @@ public class Plot extends ListPlot {
    * Samples to Plot a Math Function: Adaptive Sampling</a>
    *
    */
-  private static class AdaptivePlot {
-    private static class Point {
-      final double x, y;
-
-      public Point(double x, double y) {
-        this.x = x;
-        this.y = y;
-      }
-    }
-
-    public static double[][] computePlot(final UnaryNumerical hun, double[][] data,
-        final double xMin, final double xMax) {
-      List<Point> plot =
-          new AdaptivePlot(hun, xMin, xMax).computePlot(8, 1.0 / NUMBER_OF_PIXELS).getPlot();
-      if (plot.size() > 0) {
-        data = new double[2][plot.size()];
-        int i = 0;
-        for (Point p : plot) {
-          data[0][i] = p.x;
-          data[1][i] = p.y;
-          i++;
-        }
-      }
-      return data;
-    }
-
-    private static boolean isOscillation(double ya, double yb, double yc) {
-      return !isFinite(ya) || !isFinite(yb) || !isFinite(yc) || (yb > ya && yb > yc)
-          || (yb < ya && yb < yc);
-    }
-
-    private static boolean oscillates(double ya, double ya1, double yb, double yb1, double yc) {
-      return isOscillation(ya, ya1, yb) && isOscillation(ya1, yb, yb1)
-          && isOscillation(yb, yb1, yc);
-    }
-
-    private static double quadrature(double y0, double y1, double y2) {
-      return 5d / 12d * y0 + 2d / 3d * y1 - 1d / 12d * y2;
-    }
-
-    private static double quadrature(double y0, double y1, double y2, double y3) {
-      return 3d / 8d * y0 + 19d / 24d * y1 - 5d / 24d * y2 + 1d / 24d * y3;
-    }
-
-    private static boolean unsmooth(double ya, double ya1, double yb, double yb1, double yc,
-        double eps) {
-      double y0 = DoubleStream.of(ya, ya1, yb, yb1, yc).min().getAsDouble();
-      double[] yg = DoubleStream.of(ya, ya1, yb, yb1, yc).map(y -> y - y0).toArray();
-      double q4 = quadrature(yg[0], yg[1], yg[2], yg[3]);
-      double q3 = quadrature(yg[2], yg[3], yg[4]);
-      return Math.abs(q4 - q3) >= eps * q3;
-    }
-
-    private final DoubleUnaryOperator f;
-
-    private double a;
-
-    private double c;
-
-    private final SortedSet<Point> plot = new TreeSet<>((s, t) -> compare(s.x, t.x));
-
-    public AdaptivePlot(DoubleUnaryOperator f, double a, double c) {
-      this.f = f;
-      this.a = a;
-      this.c = c;
-    }
-
-    public AdaptivePlot computePlot(int depth, double eps) {
-      plot.clear();
-      Point pa = null;
-      double step = (c - a) / NUMBER_OF_PIXELS;
-      while (a <= c) {
-        pa = pointAt(a);
-        if (pa != null) {
-          break;
-        }
-        a += step;
-      }
-      if (pa != null) {
-        Point pc = null;
-        while (c >= a) {
-          pc = pointAt(c);
-          if (pc != null) {
-            break;
-          }
-          c -= step;
-
-        }
-        if (pc != null) {
-          plot.add(pa);
-          plot.add(pc);
-          computePlot(pa, pc, depth, eps);
-        }
-      }
-      return this;
-    }
-
-    private void computePlot(Point pa, Point pc, int depth, double eps) {
-      Point pb = pointAt(0.5 * (pa.x + pc.x));
-      if (pb != null) {
-        Point pa1 = pointAt(0.5 * (pa.x + pb.x));
-        Point pb1 = pointAt(0.5 * (pb.x + pc.x));
-        if (pa1 != null && pb1 != null) {
-          plot.add(pb);
-          if (depth > 0 && (oscillates(pa.y, pa1.y, pb.y, pb1.y, pc.y)
-              || unsmooth(pa.y, pa1.y, pb.y, pb1.y, pc.y, eps))) {
-            computePlot(pa, pb, depth - 1, 2 * eps);
-            computePlot(pb, pc, depth - 1, 2 * eps);
-          }
-          plot.add(pa1);
-          plot.add(pb1);
-        }
-      }
-    }
-
-    public List<Point> getPlot() {
-      return plot.stream().collect(toList());
-    }
-
-    private Point pointAt(double x) {
-      try {
-        return new Point(x, f.applyAsDouble(x));
-      } catch (ArgumentTypeException ate) {
-
-      }
-      return null;
-    }
-  }
+  // private static class AdaptivePlot {
+  //
+  // public static double[][] computePlot(final UnaryNumerical hun, double[][] data,
+  // final double xMin, final double xMax) {
+  // List<Point> plot =
+  // new AdaptivePlot(hun, xMin, xMax).computePlot(8, 1.0 / NUMBER_OF_PIXELS).getPlot();
+  // if (plot.size() > 0) {
+  // data = new double[2][plot.size()];
+  // int i = 0;
+  // for (Point p : plot) {
+  // data[0][i] = p.x;
+  // data[1][i] = p.y;
+  // i++;
+  // }
+  // }
+  // return data;
+  // }
+  //
+  // private static boolean isOscillation(double ya, double yb, double yc) {
+  // return !isFinite(ya) || !isFinite(yb) || !isFinite(yc) || (yb > ya && yb > yc)
+  // || (yb < ya && yb < yc);
+  // }
+  //
+  // private static boolean oscillates(double ya, double ya1, double yb, double yb1, double yc) {
+  // return isOscillation(ya, ya1, yb) && isOscillation(ya1, yb, yb1)
+  // && isOscillation(yb, yb1, yc);
+  // }
+  //
+  // private static double quadrature(double y0, double y1, double y2) {
+  // return 5d / 12d * y0 + 2d / 3d * y1 - 1d / 12d * y2;
+  // }
+  //
+  // private static double quadrature(double y0, double y1, double y2, double y3) {
+  // return 3d / 8d * y0 + 19d / 24d * y1 - 5d / 24d * y2 + 1d / 24d * y3;
+  // }
+  //
+  // private static boolean unsmooth(double ya, double ya1, double yb, double yb1, double yc,
+  // double eps) {
+  // double y0 = DoubleStream.of(ya, ya1, yb, yb1, yc).min().getAsDouble();
+  // double[] yg = DoubleStream.of(ya, ya1, yb, yb1, yc).map(y -> y - y0).toArray();
+  // double q4 = quadrature(yg[0], yg[1], yg[2], yg[3]);
+  // double q3 = quadrature(yg[2], yg[3], yg[4]);
+  // return Math.abs(q4 - q3) >= eps * q3;
+  // }
+  //
+  // private final DoubleUnaryOperator f;
+  //
+  // private double a;
+  //
+  // private double c;
+  //
+  // private final SortedSet<Point> plot = new TreeSet<>((s, t) -> compare(s.x, t.x));
+  //
+  // public AdaptivePlot(DoubleUnaryOperator f, double a, double c) {
+  // this.f = f;
+  // this.a = a;
+  // this.c = c;
+  // }
+  //
+  // public AdaptivePlot computePlot(int depth, double eps) {
+  // plot.clear();
+  // Point pa = null;
+  // double step = (c - a) / NUMBER_OF_PIXELS;
+  // while (a <= c) {
+  // pa = pointAt(a);
+  // if (pa != null) {
+  // break;
+  // }
+  // a += step;
+  // }
+  // if (pa != null) {
+  // Point pc = null;
+  // while (c >= a) {
+  // pc = pointAt(c);
+  // if (pc != null) {
+  // break;
+  // }
+  // c -= step;
+  //
+  // }
+  // if (pc != null) {
+  // plot.add(pa);
+  // plot.add(pc);
+  // computePlot(pa, pc, depth, eps);
+  // }
+  // }
+  // return this;
+  // }
+  //
+  // private void computePlot(Point pa, Point pc, int depth, double eps) {
+  // Point pb = pointAt(0.5 * (pa.x + pc.x));
+  // if (pb != null) {
+  // Point pa1 = pointAt(0.5 * (pa.x + pb.x));
+  // Point pb1 = pointAt(0.5 * (pb.x + pc.x));
+  // if (pa1 != null && pb1 != null) {
+  // plot.add(pb);
+  // if (depth > 0 && (oscillates(pa.y, pa1.y, pb.y, pb1.y, pc.y)
+  // || unsmooth(pa.y, pa1.y, pb.y, pb1.y, pc.y, eps))) {
+  // computePlot(pa, pb, depth - 1, 2 * eps);
+  // computePlot(pb, pc, depth - 1, 2 * eps);
+  // }
+  // plot.add(pa1);
+  // plot.add(pb1);
+  // }
+  // }
+  // }
+  //
+  // public List<Point> getPlot() {
+  // return plot.stream().collect(toList());
+  // }
+  //
+  // private Point pointAt(double x) {
+  // try {
+  // return new Point(x, f.applyAsDouble(x));
+  // } catch (ArgumentTypeException ate) {
+  //
+  // }
+  // return null;
+  // }
+  // }
 
   /** Constructor for the singleton */
   public static final Plot CONST = new Plot();
 
   public Plot() {}
+
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -256,7 +248,9 @@ public class Plot extends ListPlot {
       IExpr function = list.get(i);
       double[][] data = null;
       final UnaryNumerical hun = new UnaryNumerical(function, x, engine);
-      data = AdaptivePlot.computePlot(hun, data, xMinD, xMaxD);
+      // data = AdaptivePlot.computePlot(hun, data, xMinD, xMaxD);
+      data = org.matheclipse.core.sympy.plotting.Plot.computePlot(hun, data, xMinD, xMaxD,
+          graphicsOptions.xScale());
       if (data != null) {
         dataList.add(data);
         automaticPlotRange(data[1], yMinMax);
@@ -266,7 +260,6 @@ public class Plot extends ListPlot {
     for (int i = 0; i < dataList.size(); i++) {
       IExpr temp = plotLine(dataList.get(i), x, xMinD, xMaxD, yMinMax, graphicsOptions, engine);
       if (temp.isPresent()) {
-        // line.append(temp);
         listOfLines.append(temp);
       }
     }
@@ -347,19 +340,31 @@ public class Plot extends ListPlot {
   }
 
   private static double[] automaticPlotRange(final double[] values, double[] yMinMax) {
-
+    if (values.length == 0) {
+      return new double[] {-5.0, 5.0};
+    }
     double thresh = 2.0;
     double[] yValues = new double[values.length];
-    // for (int i = 0; i < values.length; i++) {
-    // yValues[i] = values[1][i];
-    // }
     System.arraycopy(values, 0, yValues, 0, values.length);
     Arrays.sort(yValues);
+    for (int i = 0; i < yValues.length; i++) {
+      if (!Double.isFinite(yValues[i])) {
+        double[] tempValues = new double[i];
+        System.arraycopy(yValues, 0, tempValues, 0, i);
+        yValues = tempValues;
+        break;
+      }
+    }
     double valavg = new Mean().evaluate(yValues);
+    if (!Double.isFinite(valavg)) {
+      return new double[] {-10.0, 10.0};
+    }
     double valdev = new StandardDeviation().evaluate(yValues, valavg);
-
+    if (!Double.isFinite(valdev)) {
+      return new double[] {-10.0, 10.0};
+    }
     int n1 = 0;
-    int n2 = values.length - 1;
+    int n2 = yValues.length - 1;
     if (valdev != 0) {
       for (double v : yValues) {
         if (Math.abs(v - valavg) / valdev < thresh) {
@@ -376,21 +381,29 @@ public class Plot extends ListPlot {
       }
     }
 
+    if (n1 >= values.length) {
+      n1 = values.length - 1;
+    }
+    if (n2 < 0) {
+      n2 = 0;
+    }
+
     double vrange = yValues[n2] - yValues[n1];
     double vmin = yValues[n1] - 0.05 * vrange; // 5% extra looks nice
-    double vmax = yValues[n2] + 0.05 * vrange;
-
-    // double vrange = yValues[n2] - yValues[n1];
-    // double vmin = yValues[n1]; // 5% extra looks nice
-    if (vmin < yValues[0]) {
+    if (yValues[0] > -10.0) {
+      vmin = yValues[0];
+    } else if (vmin < yValues[0]) {
       vmin = yValues[0];
     } else if (vmin - vrange < yValues[0]) {
       vmin = yValues[0];
     } else if (vmin - vrange > yValues[0]) {
       vmin = vmin - vrange;
     }
-    // double vmax = yValues[n2];
-    if (vmax > yValues[yValues.length - 1]) {
+
+    double vmax = yValues[n2] + 0.05 * vrange;// 5% extra looks nice
+    if (yValues[yValues.length-1] < 10.0) {
+      vmax = yValues[yValues.length - 1];
+    } else if (vmax > yValues[yValues.length - 1]) {
       vmax = yValues[yValues.length - 1];
     } else if (vmax + vrange > yValues[yValues.length - 1]) {
       vmax = yValues[yValues.length - 1];
