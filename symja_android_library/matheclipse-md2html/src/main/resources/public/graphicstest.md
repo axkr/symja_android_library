@@ -11,6 +11,10 @@ Plot[Tan[x], {x, -Pi, Pi}, PlotRange->{-10,10}]
 ```
 
 ```mma
+Plot[Sin[E^x],{x,-2,6},PlotRange->{-3,3}]
+```
+
+```mma
 LogPlot[{x^x, Exp[x], x!}, {x, 1, 5}]
 ```
 
