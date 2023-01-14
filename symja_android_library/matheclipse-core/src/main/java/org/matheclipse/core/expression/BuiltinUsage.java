@@ -157,6 +157,7 @@ public class BuiltinUsage {
     USAGE[ID.General] = "general-purpose messages";
     USAGE[ID.Greater] = "greater than";
     USAGE[ID.GreaterEqual] = "greater than or equal to";
+    USAGE[ID.Gudermannian] = "Gudermannian function gd(z)";
 
     USAGE[ID.HammingDistance] = "Hamming distance";
     USAGE[ID.Haversine] = "haversine function";
@@ -191,6 +192,7 @@ public class BuiltinUsage {
     USAGE[ID.Interrupt] = "interrupt evaluation and return '$Aborted'";
     USAGE[ID.Intersection] = "enumerate common elements";
     USAGE[ID.IntersectingQ] = "test whether two lists have common elements";
+    USAGE[ID.InverseGudermannian] = "Gudermannian function gd^-1(z)";
 
     USAGE[ID.JaccardDissimilarity] = "Jaccard dissimilarity";
     USAGE[ID.JavaForm] = "translate expressions as Java source code";
