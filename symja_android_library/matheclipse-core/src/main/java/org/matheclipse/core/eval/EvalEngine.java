@@ -35,6 +35,7 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.eval.exception.ValidateException;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -1067,23 +1068,18 @@ public class EvalEngine implements Serializable {
           return null;
         }
         if (ast.argSize() > expected[0]) {
-          if (functionEvaluator instanceof AbstractFunctionOptionEvaluator) {
-            AbstractFunctionOptionEvaluator optionEvaluator =
-                (AbstractFunctionOptionEvaluator) functionEvaluator;
-            opres = getOptions(optionEvaluator, opres, ast, expected);
-            if (opres != null) {
-              return opres;
-            }
+          opres = getOptions(functionEvaluator, opres, ast, expected);
+          if (opres != null) {
+            return opres;
           }
         }
         IOFunctions.printArgMessage(ast, expected, this);
         return null;
       }
     }
-    if (functionEvaluator instanceof AbstractFunctionOptionEvaluator) {
-      AbstractFunctionOptionEvaluator optionEvaluator =
-          (AbstractFunctionOptionEvaluator) functionEvaluator;
-      opres = getOptions(optionEvaluator, opres, ast, expected);
+    if (functionEvaluator instanceof AbstractFunctionOptionEvaluator
+        || functionEvaluator instanceof AbstractCoreFunctionOptionEvaluator) {
+      opres = getOptions(functionEvaluator, opres, ast, expected);
       if (opres != null) {
         return opres;
       }
@@ -1102,8 +1098,8 @@ public class EvalEngine implements Serializable {
     return experimatalSymbols.containsKey(symbol);
   }
 
-  private OptionsResult getOptions(AbstractFunctionOptionEvaluator optionEvaluator,
-      OptionsResult opres, IAST ast, int[] expected) {
+  private OptionsResult getOptions(IFunctionEvaluator optionEvaluator, OptionsResult opres,
+      IAST ast, int[] expected) {
     IBuiltInSymbol[] optionSymbols = optionEvaluator.getOptionSymbols();
     if (optionSymbols != null) {
       opres.options = new IExpr[optionSymbols.length];

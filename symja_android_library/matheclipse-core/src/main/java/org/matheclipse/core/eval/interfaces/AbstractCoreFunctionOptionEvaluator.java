@@ -34,8 +34,13 @@ public abstract class AbstractCoreFunctionOptionEvaluator extends AbstractCoreFu
   protected void setOptions(final ISymbol symbol, IBuiltInSymbol[] lhsOptionSymbol,
       IExpr[] rhsValue) {
     optionSymbols = lhsOptionSymbol;
-    IASTAppendable list = F.mapRange(0, rhsValue.length, i -> F.Rule(lhsOptionSymbol[i], rhsValue[i]));
+    IASTAppendable list =
+        F.mapRange(0, rhsValue.length, i -> F.Rule(lhsOptionSymbol[i], rhsValue[i]));
     super.setOptions(symbol, list);
+  }
+
+  public IBuiltInSymbol[] getOptionSymbols() {
+    return optionSymbols;
   }
 
   protected abstract IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,

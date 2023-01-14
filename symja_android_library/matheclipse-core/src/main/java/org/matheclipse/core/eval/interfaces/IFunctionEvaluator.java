@@ -4,6 +4,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -341,6 +342,16 @@ public interface IFunctionEvaluator extends IEvaluator {
    * @return <code>null</code> if no range for the number of arguments is specified.
    */
   default int[] expectedArgSize(IAST ast) {
+    return null;
+  }
+
+  /**
+   * Get the options in the order, in which they are predefined in the
+   * {@link #setUp(org.matheclipse.core.interfaces.ISymbol)} method.
+   * 
+   * @return <code>null</code> if no option was defined for the built-in symbol
+   */
+  default IBuiltInSymbol[] getOptionSymbols() {
     return null;
   }
 

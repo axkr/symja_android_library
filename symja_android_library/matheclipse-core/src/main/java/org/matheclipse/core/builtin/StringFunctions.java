@@ -2434,7 +2434,7 @@ public final class StringFunctions {
   private static class StringSplit extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (!arg1.isString()) {
@@ -2450,8 +2450,14 @@ public final class StringFunctions {
       }
       boolean ignoreCase = option[0].isTrue();
 
-      if (ast.isAST2()) {
+      if (argSize >= 2) {
         IExpr arg2 = ast.arg2();
+        if (arg2.isList()) {
+          if (!arg2.isListOfRules()) {
+            // rewrite lists on first level to Alternatives
+            arg2 = ((IAST) arg2).setAtCopy(0, S.Alternatives);
+          }
+        }
         Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
         java.util.regex.Pattern pattern =
             toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
@@ -2467,7 +2473,13 @@ public final class StringFunctions {
       if (result == null || str.length() == 0) {
         return F.CEmptyList;
       }
-      return F.mapRange(0, result.length, i -> F.stringx(result[i]));
+      return F.mapRange(0, result.length, i -> {
+        // TODO empty strings are not generally a problem
+        // if (result[i].length() == 0) {
+        // return F.NIL;
+        // }
+        return F.stringx(result[i]);
+      });
     }
 
     @Override
@@ -3634,6 +3646,21 @@ public final class StringFunctions {
         }
       }
       return pieces.toString();
+    } else if (partOfRegex.isExcept()) {
+      IAST exceptions = (IAST) partOfRegex;
+      StringBuilder pieces = new StringBuilder();
+      for (int i = 1; i < exceptions.size(); i++) {
+        String str = toRegexString(exceptions.get(i), abbreviatedPatterns, stringFunction,
+            shortestLongest, groups, engine);
+        if (str == null) {
+          // `1` currently not supported in `2`.
+          IOFunctions.printMessage(stringFunction.topHead(), "unsupported",
+              F.list(exceptions.get(i), stringFunction.topHead()), engine);
+          return null;
+        }
+        pieces.append(str);
+      }
+      return "[^" + pieces.toString() + "]";
     } else if (partOfRegex.isAST(S.Shortest, 2)) {
       String str = toRegexString(partOfRegex.first(), abbreviatedPatterns, stringFunction,
           REGEX_SHORTEST, groups, engine);

@@ -463,6 +463,42 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   public void testStringSplit() {
+    check("StringSplit(\"a bbb cccc aa d\")", //
+        "{a,bbb,cccc,aa,d}");
+    check("StringSplit(\"a--bbb---ccc--dddd\", \"--\")", //
+        "{a,bbb,-ccc,dddd}");
+    check("StringSplit(\"the cat in the hat\")", //
+        "{the,cat,in,the,hat}");
+    check("StringSplit(\"192.168.0.1\",\".\")", //
+        "{192,168,0,1}");
+    check("StringSplit(\"123 2.3 4 6\",WhitespaceCharacter ..)", //
+        "{123,2.3,4,6}");
+    check("StringSplit(StringSplit(\"11:12:13//21:22:23//31:32:33\", \"//\"), \":\" )", //
+        "{{11,12,13},{21,22,23},{31,32,33}}");
+    check(
+        "StringSplit(\"A tree, an apple, four pears. And more: two sacks\",RegularExpression(\"\\\\W+\"))", //
+        "{A,tree,an,apple,four,pears,And,more,two,sacks}");
+    check(
+        "StringSplit(\"primes: 2 two 3 three 5 five ...\", Whitespace ~~ RegularExpression(\"\\\\d\") ~~ Whitespace)", //
+        "{primes:,two,three,five ...}");
+    check("StringSplit(\"a-b:c-d:e-f-g\", \":\" | \"-\" )", //
+        "{a,b,c,d,e,f,g}");
+    check("StringSplit(\"a-b:c-d:e-f-g\", {\":\", \"-\"})", //
+        "{a,b,c,d,e,f,g}");
+    check("StringSplit({\"a:b:c:d\", \"listable:element\"}, \":\" | \"-\" )", //
+        "{{a,b,c,d},{listable,element}}");
+    // TODO fix the empty string at the beginning of the sequence
+    check("StringSplit(\"cat Cat hat CAT\", \"c\", IgnoreCase -> True) // InputForm", //
+        "{\"\",\"at \",\"at hat \",\"AT\"}");
+    check("StringSplit(\"This is a sentence, which goes on.\",  Except(WordCharacter) ..)", //
+        "{This,is,a,sentence,which,goes,on}");
+
+    // TODO fix these forms, which are not implemented yet:
+    // ('StringSplit["11a22b3", _?LetterQ]', '{11, 22, 3}'),
+    // ('StringSplit["a b::c d::e f g", "::" -> "--"]'), '{a, b, --, c d, --, e f g}'),
+    // ('StringSplit["a--b c--d e", x : "--" :> x]', {a, --, b c, --, d e}),
+    // ('StringSplit[":a:b:c:", ":", All]', '{"", "a", "b", "c", ""}'),
+
     check("StringSplit(\"a\\nb\\r\\nc\\rd\", WhitespaceCharacter)//InputForm", //
         "{\"a\",\"b\",\"\",\"c\",\"d\"}");
     check("StringSplit(\"x\", \"x\")", //
@@ -486,13 +522,7 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "{}");
     check("StringSplit(\"test\")", //
         "{test}");
-    check("StringSplit(\"a bbb  cccc aa   d\")", //
-        "{a,bbb,cccc,aa,d}");
-    check(
-        "StringSplit(\"A tree, an apple, four pears. And more: two sacks\", RegularExpression(\"\\\\W+\"))", //
-        "{A,tree,an,apple,four,pears,And,more,two,sacks}");
-    check("StringSplit(\"a--bbb---ccc--dddd\", \"--\")", //
-        "{a,bbb,-ccc,dddd}");
+
     check("StringSplit(\"128.0.0.1\", \".\")", //
         "{128,0,0,1}");
     check("StringSplit(\"128.0.0.1\", RegularExpression(\"\\\\W+\"))", //
