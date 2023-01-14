@@ -343,6 +343,7 @@ public class TensorFunctions {
             if (kernelSize <= tensorSize) {
               IAST reversed = nestedReverseRecursive(kernel, kernelDims, 0);
               IASTAppendable resultList = F.ListAlloc();
+              tensor = (IAST) tensor.normal(false);
               return ListCorrelate.listCorrelate(reversed, tensor, S.Plus, S.Times);
             }
           }
