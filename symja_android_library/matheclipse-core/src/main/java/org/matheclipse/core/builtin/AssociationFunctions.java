@@ -1088,8 +1088,8 @@ public class AssociationFunctions {
 
           return keyTake(arg1, arg2);
         } else {
-          LOGGER.log(engine.getLogLevel(),
-              "KeyTake: Association or list of rules expected at position 1.");
+          // The argument `1` is not a valid Association or a list of rules.
+          return IOFunctions.printMessage(ast.topHead(), "invrl", F.List(ast.arg1()), engine);
         }
       } catch (final ValidateException ve) {
         IOFunctions.printMessage(ast.topHead(), ve, engine);

@@ -803,23 +803,22 @@ public class IOFunctions {
   }
 
   /**
-   * Print the Symja <code>MathException</code> into the default error log.
+   * Print the Symja {@link MathException#getMessage()} into the error log
    * 
    * @param symbol
-   * @param ve
+   * @param mex
    * @param engine
    * @return
    */
-  public static IExpr printMessage(ISymbol symbol, final MathException ve, EvalEngine engine) {
+  public static IExpr printMessage(ISymbol symbol, final MathException mex, EvalEngine engine) {
     if (Config.SHOW_STACKTRACE) {
-      ve.printStackTrace();
+      mex.printStackTrace();
     }
-    LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, ve.getMessage());
-    return F.NIL;
+    return printMessage(symbol, "error", F.List(mex.getMessage()), engine);
   }
 
   /**
-   * Print the hipparchus <code>MathRuntimeException</code> into the default error log.
+   * Print the hipparchus {@link MathRuntimeException#getMessage()} into the default error log.
    * 
    * @param symbol
    * @param mex
@@ -831,8 +830,7 @@ public class IOFunctions {
     if (Config.SHOW_STACKTRACE) {
       mex.printStackTrace();
     }
-    LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, mex.getMessage());
-    return F.NIL;
+    return printMessage(symbol, "error", F.List(mex.getMessage()), engine);
   }
 
   /**
@@ -857,6 +855,29 @@ public class IOFunctions {
   public static void printIfunMessage(ISymbol symbol) {
     // Inverse functions are being used. Values may be lost for multivalued inverses.
     printMessage(symbol, "ifun", F.CEmptyList, EvalEngine.get());
+  }
+
+  /**
+   * Format a message according to the shortcut from the {@link #MESSAGES} array and print it to the
+   * error stream with the <code>engine.printMessage()</code>method.
+   *
+   * <p>
+   * Usage pattern:
+   *
+   * <pre>
+   *    // corresponding long text of "&lt;message-shortcut&gt;" stored in the MESSAGES array
+   *    printMessage(S.&lt;builtin-symbol&gt;, "&lt;message-shortcut&gt;", F.list(&lt;param1&gt;, &lt;param2&gt;, ...), engine);
+   * </pre>
+   *
+   * @param symbol
+   * @param messageShortcut the message shortcut defined in the {@link #MESSAGES} array
+   * @param listOfParameters a list of arguments which should be inserted into the message shortcuts
+   *        placeholder
+   * @return always <code>F.NIL</code>
+   */
+  public static IAST printMessage(ISymbol symbol, String messageShortcut,
+      final IAST listOfParameters) {
+    return printMessage(symbol, messageShortcut, listOfParameters, EvalEngine.get());
   }
 
   /**

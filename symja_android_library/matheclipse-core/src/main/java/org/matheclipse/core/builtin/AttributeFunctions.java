@@ -337,9 +337,9 @@ public class AttributeFunctions {
         mutable.forEach(x -> appendUnprotected(result, x));
         return result;
       }
-      LOGGER.log(engine.getLogLevel(),
-          "Unprotect: not allowed. Set Config.UNPROTECT_ALLOWED if necessary");
-      return F.NIL;
+      return IOFunctions.printMessage(ast.topHead(), "error",
+          F.List("Unprotect not allowed. Set Config.UNPROTECT_ALLOWED on Java level if necessary"),
+          engine);
     }
 
     private static void appendUnprotected(final IASTAppendable result, IExpr x) {
