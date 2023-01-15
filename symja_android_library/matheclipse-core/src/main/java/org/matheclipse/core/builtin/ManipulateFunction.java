@@ -953,7 +953,7 @@ public class ManipulateFunction {
       StringBuilder function = new StringBuilder();
       JavaScriptFormFactory toJS =
           new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
-      int[] colour = new int[] {1};
+      int[] colour = new int[] {0};
       for (int i = 1; i < plots.size(); i++) {
         IAST plot = (IAST) plots.get(i);
         if (plot.isAST(S.ListLinePlot) //
