@@ -17,6 +17,7 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.FieldSinhCosh;
 import org.jgrapht.GraphType;
@@ -886,11 +887,20 @@ public interface IExpr
   /**
    * Evaluate the expression to a Java <code>double</code> value.
    *
-   * @return
    * @throws ArgumentTypeException
    */
   default double evalf() throws ArgumentTypeException {
     return EvalEngine.get().evalDouble(this);
+  }
+
+  /**
+   * Evaluate the expression to a Java <code>double</code> value and wrap the result in a
+   * {@link Binary64} object.
+   * 
+   * @throws ArgumentTypeException
+   */
+  default Binary64 evalBinary64() throws ArgumentTypeException {
+    return new Binary64(evalf());
   }
 
   /**
@@ -5010,17 +5020,6 @@ public interface IExpr
     if (isPower()) {
       return F.Power(base(), F.Times(F.C1D2, exponent()));
     } else {
-      // if (isAST(S.Plus, 3)) {
-      // IAST plus = (IAST) this;
-      // final IExpr arg1 = plus.arg1();
-      // final IExpr arg2 = plus.arg2();
-      // if (arg1.isRational()) {
-      // IExpr temp = FunctionExpand.sqrtDenest((IRational) arg1, arg2);
-      // if (temp.isPresent()) {
-      // return temp;
-      // }
-      // }
-      // }
       if (isTimes()) {
         // see github issue #2: Get only real results
         IAST times = (IAST) this;

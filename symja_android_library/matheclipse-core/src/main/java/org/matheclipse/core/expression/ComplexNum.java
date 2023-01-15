@@ -347,7 +347,7 @@ public class ComplexNum implements IComplexNum {
       return newInstance(fComplex.copySign(((ComplexNum) that).fComplex));
     }
     if (that instanceof Num) {
-      return newInstance(fComplex.copySign(((Num) that).fDouble));
+      return newInstance(fComplex.copySign(((Num) that).value));
     }
     return IComplexNum.super.copySign(that);
   }

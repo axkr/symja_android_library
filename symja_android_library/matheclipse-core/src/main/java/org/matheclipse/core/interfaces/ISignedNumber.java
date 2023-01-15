@@ -2,6 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
+import org.hipparchus.util.Binary64;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
@@ -56,6 +57,15 @@ public interface ISignedNumber extends INumber {
    * @return the numeric value represented by this object after conversion to type {@code double}.
    */
   public double doubleValue();
+
+  /**
+   * Returns the value of the specified number as a {@link Binary64} which may involve rounding.
+   *
+   * @return the numeric value represented by this object after conversion to type {@link Binary64}.
+   */
+  default Binary64 binary64() {
+    return new Binary64(doubleValue());
+  }
 
   @Override
   default double evalf() throws ArgumentTypeException {

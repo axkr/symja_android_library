@@ -7070,7 +7070,7 @@ public class F extends S {
    * @param value
    * @return
    */
-  public static INum num(final double value) {
+  public static Num num(final double value) {
     return Num.valueOf(value);
   }
 

@@ -29,11 +29,11 @@ public final class NumStr extends Num {
     }
 
     if (fExponent != 0) {
-      fDouble = Double.parseDouble(fFloatStr + "E" + fExponent);
+      this.value = Double.parseDouble(fFloatStr + "E" + fExponent);
       // // value * 10 ^ exponent
       // fDouble = fDouble * Math.pow(10, fExponent);
     } else {
-      fDouble = Double.parseDouble(fFloatStr);
+      this.value = Double.parseDouble(fFloatStr);
     }
 
     fPrecision = fFloatStr.length();
