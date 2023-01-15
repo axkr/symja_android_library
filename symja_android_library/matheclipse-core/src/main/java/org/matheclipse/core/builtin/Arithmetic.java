@@ -41,7 +41,6 @@ import static org.matheclipse.core.expression.S.y;
 import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -5005,8 +5004,8 @@ public final class Arithmetic {
       if (arg1 instanceof IComplexNum) {
         return F.ZZ(((IComplexNum) arg1).precision());
       }
-      LOGGER.log(engine.getLogLevel(), "Precision: Numeric expression expected");
-      return F.NIL;
+      // assume symbolic evaluation
+      return F.CInfinity;
     }
 
     @Override
@@ -5751,8 +5750,8 @@ public final class Arithmetic {
     @Override
     public IExpr e2ApfloatArg(final ApfloatNum af0, final ApfloatNum af1) {
       if (af1.isZero()) {
-        EvalEngine ee = EvalEngine.get();
-        LOGGER.log(ee.getLogLevel(), "Surd(a,b) division by zero");
+        // Indeterminate expression `1` encountered.
+        IOFunctions.printMessage(S.Surd, "indet", F.List(F.Surd(af0, af1)), EvalEngine.get());
         return S.Indeterminate;
       }
       if (af0.isNegative()) {
@@ -5767,6 +5766,8 @@ public final class Arithmetic {
       double r = d1.doubleValue();
       double result = doubleSurd(val, r);
       if (Double.isNaN(result)) {
+        // Indeterminate expression `1` encountered.
+        IOFunctions.printMessage(S.Surd, "indet", F.List(F.Surd(d0, d1)), EvalEngine.get());
         return S.Indeterminate;
       }
       return F.num(result);
@@ -5776,13 +5777,17 @@ public final class Arithmetic {
     public IExpr e2ObjArg(IAST ast, final IExpr base, final IExpr root) {
       if (base.isNumber() && root.isInteger()) {
         EvalEngine engine = EvalEngine.get();
-        if (base.isComplex() || base.isComplexNumeric()) {
-          LOGGER.log(engine.getLogLevel(), "Surd(a,b) - \"a\" should be a real value.");
-          return F.NIL;
+        if (base.isNumber() && !base.isReal()) {
+          // The parameter `1` should be real.
+          return IOFunctions.printMessage(S.Surd, "preal", F.List(base), engine);
         }
-
+        if (root.isNumber() && !root.isInteger()) {
+          // Integer expected at position `2` in `1`.
+          return IOFunctions.printMessage(S.Surd, "int", F.List(F.C2, ast), engine);
+        }
         if (root.isZero()) {
-          LOGGER.log(engine.getLogLevel(), "Surd(a,b) division by zero");
+          // Indeterminate expression `1` encountered.
+          IOFunctions.printMessage(S.Surd, "indet", F.List(ast), engine);
           return S.Indeterminate;
         }
         if (base.isNegative()) {
@@ -5818,8 +5823,8 @@ public final class Arithmetic {
 
     private static double doubleSurd(double val, double r) {
       if (r == 0.0d) {
-        EvalEngine ee = EvalEngine.get();
-        LOGGER.log(ee.getLogLevel(), "Surd(a,b) division by zero");
+        IOFunctions.printMessage(S.Surd, "indet", F.List(F.Surd(F.num(val), F.num(r))),
+            EvalEngine.get());
         return Double.NaN;
       }
       if (val < 0.0d) {
@@ -5828,8 +5833,8 @@ public final class Arithmetic {
           // integer type
           int iRoot = (int) root;
           if ((iRoot & 0x0001) == 0x0000) {
-            Level level = EvalEngine.get().getLogLevel();
-            LOGGER.log(level, "Surd(a,b) - undefined for negative \"a\" and even \"b\" values");
+            // Surd is not defined for even roots of negative values.
+            IOFunctions.printMessage(S.Surd, "nonegs", F.CEmptyList, EvalEngine.get());
             return Double.NaN;
           }
           return -Math.pow(Math.abs(val), 1.0d / r);

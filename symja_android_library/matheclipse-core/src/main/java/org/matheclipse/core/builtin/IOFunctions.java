@@ -547,6 +547,7 @@ public class IOFunctions {
       "ins", "Cannot insert at position `1` in `2`.", //
       "insuff", "Cannot take `1` elements from a list of length `2` ", "int",
       "Integer expected at position `2` in `1`.", //
+      "int", "Integer expected at position `2` in `1`.", //
       "intjava", "Java int value greater equal `1` expected instead of `2`.", //
       "intlevel", "Level specification value greater equal `1` expected instead of `2`.", //
       "intnn", "Non-negative integer expected.", //
@@ -667,6 +668,7 @@ public class IOFunctions {
       "pllim", "Range specification `1` is not of the form {x, xmin, xmax}.", //
       "plln", "Limiting value `1` in `2` is not a machine-size real number.", //
       "pkspec1", "The expression `1` cannot be used as a part specification.", //
+      "preal", "The parameter `1` should be real.", //
       "prng",
       "Value of option `1` is not All, Full, Automatic, a positive machine number, or an appropriate list of range specifications.",
       "psl1", "Position specification `1` in `2` is not applicable.", //
