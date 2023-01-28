@@ -24,7 +24,7 @@ public class LogLogPlot extends Plot {
   @Override
   protected IAST listOfOptionRules(GraphicsOptions listPlotOptions) {
     IAST listOfOptions = F.List(//
-        F.Rule(S.ScalingFunctions, //
+        F.Rule(S.$Scaling, //
             F.List(F.stringx("Log"), F.stringx("Log"))), //
         F.Rule(S.Axes, S.True), //
         listPlotOptions.plotRange());

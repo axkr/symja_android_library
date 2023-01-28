@@ -54,9 +54,9 @@ public class AST2Expr {
       "$Input", "$InputFileName", "$IterationLimit", "$Line", "$MachineEpsilon",
       "$MachinePrecision", "$MaxMachineNumber", "$MessageList", "$MinMachineNumber", "$Notebooks",
       "$OperatingSystem", "$OutputSizeLimit", "$Packages", "$Path", "$PathnameSeparator",
-      "$PrePrint", "$PreRead", "$RecursionLimit", "$RootDirectory", "$SingleEntryMatrix",
-      "$ScriptCommandLine", "$SystemCharacterEncoding", "$SystemMemory", "$TemporaryDirectory",
-      "$UserBaseDirectory", "$UserName", "$Version"};
+      "$PrePrint", "$PreRead", "$RecursionLimit", "$RootDirectory", "$Scaling",
+      "$SingleEntryMatrix", "$ScriptCommandLine", "$SystemCharacterEncoding", "$SystemMemory",
+      "$TemporaryDirectory", "$UserBaseDirectory", "$UserName", "$Version"};
 
   public static final String[] SYMBOL_STRINGS = {"All", "AllowedHeads", "AllowShortContext",
       "Algebraics", "AspectRatio", "Automatic", "Axis", "Axes", "AxesLabel", "AxesOrigin",
@@ -134,10 +134,10 @@ public class AST2Expr {
       "ContourPlot", "Convergents", "ConvexHullMesh", "CoordinateBoundingBox", "CoordinateBounds",
       "CoplanarPoints", "CoprimeQ", "Correlation", "CorrelationDistance", "Cos", "Cosh",
       "CosineDistance", "CosIntegral", "CoshIntegral", "Cot", "Coth", "Count", "CountDistinct",
-      "Counts", "Covariance", "CreateFile", "CreateDirectory", "Cross", "Csc", "Csch", "CubeRoot",
-      "Cuboid", "Curl", "Cyclotomic", "CycleGraph", "Cycles", "Cylinder", "Dataset", "DateObject",
-      "Dashing", "DateString", "DateValue", "Decrement", "Default", "DefaultButton", "Defer",
-      "Definition", "Delete", "DeleteCases", "DeleteDuplicates", "DeleteDuplicatesBy",
+      "Counts", "Covariance", "CreateFile", "CreateDirectory", "Cross", "Csc", "Csch", "Cube",
+      "CubeRoot", "Cuboid", "Curl", "Cyclotomic", "CycleGraph", "Cycles", "Cylinder", "Dataset",
+      "DateObject", "Dashing", "DateString", "DateValue", "Decrement", "Default", "DefaultButton",
+      "Defer", "Definition", "Delete", "DeleteCases", "DeleteDuplicates", "DeleteDuplicatesBy",
       "Denominator", "DensityHistogram", "DensityPlot", "Depth", "Derivative", "DesignMatrix",
       "Det", "Diagonal", "DiagonalMatrix", "DiagonalMatrixQ", "DialogInput", "DialogNotebook",
       "DialogReturn", "DiceDissimilarity", "DifferenceDelta", "Differences", "DigitCount", "DigitQ",

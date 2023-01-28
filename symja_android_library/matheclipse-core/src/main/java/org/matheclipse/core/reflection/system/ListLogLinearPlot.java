@@ -17,7 +17,7 @@ public class ListLogLinearPlot extends ListPlot {
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
       IAST listOfOptions = F.List(//
-          F.Rule(S.ScalingFunctions, F.List(F.stringx("Log"), S.None)), //
+          F.Rule(S.$Scaling, F.List(F.stringx("Log"), S.None)), //
           F.Rule(S.Axes, S.True), //
           graphicsOptions.plotRange());
       return createGraphicsFunction(graphicsPrimitives, listOfOptions, graphicsOptions);

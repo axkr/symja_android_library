@@ -193,9 +193,15 @@ public class F extends S {
     return PREDEFINED_PATTERNSEQUENCE_MAP.get(key);
   }
 
-  public static final ISymbolObserver SYMBOL_OBSERVER=new ISymbolObserver(){@Override public final boolean createPredefinedSymbol(String symbol){return false;}
+  public static final ISymbolObserver SYMBOL_OBSERVER = new ISymbolObserver() {
+    @Override
+    public final boolean createPredefinedSymbol(String symbol) {
+      return false;
+    }
 
-  @Override public void createUserSymbol(ISymbol symbol){}};
+    @Override
+    public void createUserSymbol(ISymbol symbol) {}
+  };
 
   /**
    * The constant object <code>NIL</code> (not in list) indicates in the evaluation process that no
@@ -3176,6 +3182,11 @@ public class F extends S {
   public static IAST Csch(final IExpr z) {
     return new AST1(Csch, z);
   }
+
+  public static IAST Cube(final IExpr center, final IExpr length) {
+    return new AST2(Cube, center, length);
+  }
+
 
   /**
    * @param pMin lower corner

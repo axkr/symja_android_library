@@ -4237,7 +4237,7 @@ public interface IExpr
 
   /**
    * If this is an expression of the form <code>a + b * x^n</code> with <code>n</code> integer,
-   * return the addend at index <code>0</code> and the multiplicant at index <code>0</code> and the
+   * return the addend at index <code>0</code> and the multiplicant at index <code>1</code> and the
    * exponent <code>n</code> at index <code>2</code>.
    *
    * @param variable the variable <code>x</code> in the formula

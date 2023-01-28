@@ -1907,7 +1907,6 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         for (int i = 1; i < size1; i++) {
           b = get(i).equalTernary(list2.get(i), engine);
           if (b == IExpr.COMPARE_TERNARY.FALSE) {
-
             return IExpr.COMPARE_TERNARY.FALSE;
           }
           if (b != IExpr.COMPARE_TERNARY.TRUE) {
@@ -1918,18 +1917,14 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       } else {
         int size1 = size();
         if (size1 == list2.size() && size1 > 0 && head().equals(list2.head())) {
-          boolean unequal = false;
           IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.TRUE;
           for (int i = 1; i < size1; i++) {
             b = get(i).equalTernary(list2.get(i), engine);
             if (b != IExpr.COMPARE_TERNARY.TRUE) {
-              unequal = true;
-              break;
+              return IASTMutable.super.equalTernary(that, engine);
             }
           }
-          if (!unequal) {
-            return IExpr.COMPARE_TERNARY.TRUE;
-          }
+          return IExpr.COMPARE_TERNARY.TRUE;
         }
       }
     }
@@ -1963,8 +1958,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           return cc.re();
         }
       }
-    }
-    if (isAST(S.Labeled, 3, 4)) {
+    } else if (isAST(S.Labeled, 3, 4)) {
       IExpr arg1 = arg1();
       if (arg1.isNumericFunction(true)) {
         IExpr result = EvalEngine.get().evalN(arg1);
@@ -4787,66 +4781,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   @Override
   public IExpr[] linearPower(IExpr variable) {
-    int size = size();
-    int counter = 0;
 
     if (isPlus()) {
-      // a + b + c....
-      IASTAppendable plusClone = copyAppendable();
-      IExpr[] subLinear = null;
-      int j = 1;
-      for (int i = 1; i < size; i++) {
-        if (get(i).isFree(variable, true)) {
-          j++;
-        } else {
-          if (counter > 0 || get(i).isPlus()) {
-            return null;
-          }
-          subLinear = get(i).linearPower(variable);
-          if (subLinear != null) {
-            counter++;
-            plusClone.remove(j);
-          } else {
-            return null;
-          }
-        }
-      }
-      if (subLinear != null) {
-        return new IExpr[] {plusClone.oneIdentity0(), subLinear[1], subLinear[2]};
-      }
-      return new IExpr[] {plusClone.oneIdentity0(), F.C0, F.C1};
+      return linearPowerPlus(variable);
     } else if (isTimes()) {
-      IInteger exp = F.C1;
-      // a * b * c....
-      IASTAppendable timesClone = copyAppendable();
-      int j = 1;
-      for (int i = 1; i < size; i++) {
-        if (get(i).isFree(variable, true)) {
-          j++;
-        } else {
-          if (get(i).equals(variable)) {
-            if (counter > 0) {
-              return null;
-            }
-            counter++;
-            timesClone.remove(j);
-            continue;
-          } else if (get(i).isPower()) {
-            if (counter > 0) {
-              return null;
-            }
-            IAST power = (IAST) get(i);
-            if (power.base().equals(variable) && power.exponent().isInteger()) {
-              exp = (IInteger) power.exponent();
-              counter++;
-              timesClone.remove(j);
-              continue;
-            }
-          }
-          return null;
-        }
-      }
-      return new IExpr[] {F.C0, timesClone.oneIdentity1(), exp};
+      return linearPowerTimes(variable);
     } else if (isPower() && base().equals(variable) && exponent().isInteger()) {
       return new IExpr[] {F.C0, F.C1, exponent()};
     } else if (this.equals(variable)) {
@@ -4855,6 +4794,85 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return new IExpr[] {this, F.C0, F.C1};
     }
     return null;
+  }
+
+  /**
+   * Helper method for {@link #linearPower(IExpr)}. Assumes that {@link IExpr#isPlus()} returns true
+   * for this {@link IAST}.
+   * 
+   * @param variable the variable <code>x</code> in the formula
+   * @return
+   */
+  private IExpr[] linearPowerPlus(IExpr variable) {
+    // a + b + c....
+    int size = size();
+    int counter = 0;
+    IASTAppendable plusClone = copyAppendable();
+    IExpr[] subLinear = null;
+    int j = 1;
+    for (int i = 1; i < size; i++) {
+      if (get(i).isFree(variable, true)) {
+        j++;
+      } else {
+        if (counter > 0 || get(i).isPlus()) {
+          return null;
+        }
+        subLinear = get(i).linearPower(variable);
+        if (subLinear != null) {
+          counter++;
+          plusClone.remove(j);
+        } else {
+          return null;
+        }
+      }
+    }
+    if (subLinear != null) {
+      return new IExpr[] {plusClone.oneIdentity0(), subLinear[1], subLinear[2]};
+    }
+    return new IExpr[] {plusClone.oneIdentity0(), F.C0, F.C1};
+  }
+
+  /**
+   * Helper method for {@link #linearPower(IExpr)}. Assumes that {@link IExpr#isTimes()} returns
+   * true for this {@link IAST}.
+   * 
+   * @param variable the variable <code>x</code> in the formula
+   * @return
+   */
+  private IExpr[] linearPowerTimes(IExpr variable) {
+    // a * b * c....
+    IInteger exp = F.C1;
+    int size = size();
+    int counter = 0;
+    IASTAppendable timesClone = copyAppendable();
+    int j = 1;
+    for (int i = 1; i < size; i++) {
+      if (get(i).isFree(variable, true)) {
+        j++;
+      } else {
+        if (get(i).equals(variable)) {
+          if (counter > 0) {
+            return null;
+          }
+          counter++;
+          timesClone.remove(j);
+          continue;
+        } else if (get(i).isPower()) {
+          if (counter > 0) {
+            return null;
+          }
+          IAST power = (IAST) get(i);
+          if (power.base().equals(variable) && power.exponent().isInteger()) {
+            exp = (IInteger) power.exponent();
+            counter++;
+            timesClone.remove(j);
+            continue;
+          }
+        }
+        return null;
+      }
+    }
+    return new IExpr[] {F.C0, timesClone.oneIdentity1(), exp};
   }
 
   /** {@inheritDoc} */

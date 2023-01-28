@@ -20,7 +20,7 @@ public class LogLinearPlot extends Plot {
   @Override
   protected IAST listOfOptionRules(GraphicsOptions listPlotOptions) {
     IAST listOfOptions = F.List(//
-        F.Rule(S.ScalingFunctions, //
+        F.Rule(S.$Scaling, //
             F.List(F.stringx("Log"), S.None)), //
         F.Rule(S.Axes, S.True), //
         listPlotOptions.plotRange());

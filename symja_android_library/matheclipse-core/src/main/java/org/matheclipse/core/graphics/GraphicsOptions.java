@@ -75,14 +75,15 @@ public class GraphicsOptions {
   public static Function<IExpr, IExpr> getScaling(ArrayNode array, IExpr scale) {
     if (scale.isString()) {
       String scaleStr = scale.toString();
+      String lowerScaleStr = scale.toString().toLowerCase();
       if (scaleStr.equals("Log")) {
-        array.add(scaleStr);
+        array.add(lowerScaleStr);
         return x -> F.Log(x);
       } else if (scaleStr.equals("Log2")) {
-        array.add(scaleStr);
+        array.add(lowerScaleStr);
         return x -> F.Log(x, F.C2);
       } else if (scaleStr.equals("Log10")) {
-        array.add(scaleStr);
+        array.add(lowerScaleStr);
         return x -> F.Log(x, F.C10);
       }
     }
@@ -366,7 +367,7 @@ public class GraphicsOptions {
     OptionArgs options = options();
 
     ArrayNode scalingArray = null;
-    IExpr scalingFunctions = options.getOption(S.ScalingFunctions);
+    IExpr scalingFunctions = options.getOption(S.$Scaling);
     if (scalingFunctions.isPresent()) {
       if (scalingFunctions.isList1()) {
         scalingArray = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
@@ -445,19 +446,19 @@ public class GraphicsOptions {
 
   public void graphics2DScalingFunctions(ArrayNode arrayNode) {
     OptionArgs options = options();
-    IExpr scalingFunctions = options.getOption(S.ScalingFunctions);
+    IExpr scalingFunctions = options.getOption(S.$Scaling);
     if (scalingFunctions.isPresent()) {
       ObjectNode g = GraphicsFunctions.JSON_OBJECT_MAPPER.createObjectNode();
       ArrayNode array = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
       if (scalingFunctions.isList1()) {
         setXFunction(GraphicsOptions.getScaling(array, scalingFunctions.first()));
-        array.add("None");
+        array.add("none");
         setYFunction(y -> y);
       } else if (scalingFunctions.isList2()) {
         setXFunction(GraphicsOptions.getScaling(array, scalingFunctions.first()));
         setYFunction(GraphicsOptions.getScaling(array, scalingFunctions.second()));
       } else if (!scalingFunctions.isList()) {
-        array.add("None");
+        array.add("none");
         setXFunction(x -> x);
         setYFunction(GraphicsOptions.getScaling(array, scalingFunctions));
       } else {
@@ -494,6 +495,14 @@ public class GraphicsOptions {
       }
     }
     return false;
+  }
+
+  public boolean graphicsExtent2D(ObjectNode objectNode) {
+    objectNode.put("xmin", boundingbox[0]);
+    objectNode.put("xmax", boundingbox[1]);
+    objectNode.put("ymin", boundingbox[2]);
+    objectNode.put("ymax", boundingbox[3]);
+    return true;
   }
 
   public int incColorIndex() {
@@ -604,22 +613,50 @@ public class GraphicsOptions {
   }
 
   public void setBoundingBoxScaled(double[] boundingbox) {
-    double b = xFunction.apply(F.num(boundingbox[0])).evalf();
-    if (b < this.boundingbox[0]) {
-      this.boundingbox[0] = b;
+    try {
+      // first do all evaluations, so if exception is raised no value is changed
+      double x0 = xFunction.apply(F.num(boundingbox[0])).evalf();
+      double x1 = xFunction.apply(F.num(boundingbox[1])).evalf();
+      double y0 = yFunction.apply(F.num(boundingbox[2])).evalf();
+      double y1 = yFunction.apply(F.num(boundingbox[3])).evalf();
+      if (x0 < this.boundingbox[0]) {
+        this.boundingbox[0] = x0;
+      }
+      if (x1 > this.boundingbox[1]) {
+        this.boundingbox[1] = x1;
+      }
+      if (y0 < this.boundingbox[2]) {
+        this.boundingbox[2] = y0;
+      }
+      if (y1 > this.boundingbox[3]) {
+        this.boundingbox[3] = y1;
+      }
+    } catch (ArgumentTypeException ate) {
+      //
     }
-    b = xFunction.apply(F.num(boundingbox[1])).evalf();
-    if (b > this.boundingbox[1]) {
-      this.boundingbox[1] = b;
-    }
+  }
 
-    b = yFunction.apply(F.num(boundingbox[2])).evalf();
-    if (b < this.boundingbox[2]) {
-      this.boundingbox[2] = b;
-    }
-    b = yFunction.apply(F.num(boundingbox[3])).evalf();
-    if (b > this.boundingbox[3]) {
-      this.boundingbox[3] = b;
+  public void setBoundingBoxScaled(double x, double y) {
+    try {
+      // first do all evaluations, so if exception is raised no value is changed
+      double xValue = xFunction.apply(F.num(x)).evalf();
+      double yValue = yFunction.apply(F.num(y)).evalf();
+
+      if (xValue < this.boundingbox[0]) {
+        this.boundingbox[0] = xValue;
+      }
+      if (xValue > this.boundingbox[1]) {
+        this.boundingbox[1] = xValue;
+      }
+
+      if (yValue < this.boundingbox[2]) {
+        this.boundingbox[2] = yValue;
+      }
+      if (yValue > this.boundingbox[3]) {
+        this.boundingbox[3] = yValue;
+      }
+    } catch (ArgumentTypeException ate) {
+      //
     }
   }
 
@@ -710,7 +747,7 @@ public class GraphicsOptions {
 
   public void setScalingFunctions() {
     OptionArgs options = options();
-    IExpr scalingFunctions = options.getOption(S.ScalingFunctions);
+    IExpr scalingFunctions = options.getOption(S.$Scaling);
     if (scalingFunctions.isPresent()) {
       if (scalingFunctions.isList1()) {
         setXFunction(getScaling(scalingFunctions.first()));

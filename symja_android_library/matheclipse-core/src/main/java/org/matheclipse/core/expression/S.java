@@ -157,6 +157,7 @@ public class S {
 
   public final static IBuiltInSymbol $PreRead = F.initFinalSymbol("$PreRead", ID.$PreRead);
 
+  public final static IBuiltInSymbol $Scaling = F.initFinalSymbol("$$Scaling", ID.$Scaling);
   /**
    * $RecursionLimit - holds the current input line number
    * 
@@ -2256,6 +2257,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Csch = F.initFinalSymbol("Csch", ID.Csch);
+
+  public final static IBuiltInSymbol Cube = F.initFinalSymbol("Cube", ID.Cube);
 
   /**
    * CubeRoot(n) - finds the real-valued cube root of the given `n`.
