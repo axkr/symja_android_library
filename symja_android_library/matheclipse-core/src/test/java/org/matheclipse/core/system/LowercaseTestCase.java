@@ -4415,16 +4415,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("Covariance({{0.25,0.33,0.45} })", //
         "Covariance(\n"//
-        + "{{0.25,0.33,0.45}})");
+            + "{{0.25,0.33,0.45}})");
     check("Covariance({{0.25,0.13,0.45,0.02},{0.25,0.36,0.45,0.02}})", //
         "{{0.0,0.0,0.0,0.0},\n" //
             + " {0.0,0.02645,0.0,0.0},\n" //
             + " {0.0,0.0,0.0,0.0},\n" //
-        + " {0.0,0.0,0.0,0.0}}");
+            + " {0.0,0.0,0.0,0.0}}");
     check("Covariance({{0.25,0.33,0.45},{0.25,0.33,0.45}})", //
         "{{0.0,0.0,0.0},\n" //
             + " {0.0,0.0,0.0},\n" //
-        + " {0.0,0.0,0.0}}");
+            + " {0.0,0.0,0.0}}");
     check("Covariance(I,x^2)", //
         "Covariance(I,x^2)");
     check(
@@ -5593,6 +5593,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testDirectedInfinity() {
+    check("DirectedInfinity(a*b^(-3)*c^2)", //
+        "DirectedInfinity((Sign(a)*Sign(c)^2)/Sign(b)^3)");
+    check("DirectedInfinity(a*b*c^(-1)*z ^(-2))", //
+        "DirectedInfinity(Sign(a*b)/(Sign(c)*Sign(z)^2))");
+
+    check("DirectedInfinity(a/b)", //
+        "DirectedInfinity(Sign(a)/Sign(b))");
+    check("DirectedInfinity(a)", //
+        "DirectedInfinity(a)");
+
+
     // message: Infinity: Indeterminate expression 0*DirectedInfinity(a) encountered.
     check("DirectedInfinity(a)*0", //
         "Indeterminate");
@@ -8356,7 +8367,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testFibonacci() {
     // check("Fibonacci(10007,Quantity(1.2,\"m\"))", //
     // "Fibonacci(10007,1.2[m])");
-
+    // Fibonacci(11,{13,2,3,a})
+    check("Fibonacci(11,{13,2,3,a})", //
+        "{145336221161,5741,141481,1+15*a^2+35*a^4+28*a^6+9*a^8+a^10}");
     // message Polynomial degree 101 exceeded
     check("Fibonacci(101,11/9223372036854775807)", //
         "Fibonacci(101,11/9223372036854775807)");
@@ -15340,20 +15353,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testMinMax() {
-     check("MinMax({1, 2, 3, 4})", //
-     "{1,4}");
-     check("MinMax({1, 2, 3, 4},.2)", //
-     "{0.8,4.2}");
-     check("MinMax({1, 2, 3, 4}, Scaled(.2))", //
-     "{0.4,4.6}");
-     check("MinMax({Pi, 1.3, E, Sqrt(10)})", //
-     "{1.3,Sqrt(10)}");
-     check("MinMax({Pi, 1.3, E, Sqrt(10)}, 1)", //
-     "{0.3,1+Sqrt(10)}");
-     check("MinMax({Pi, 1.3, E, Sqrt(10)}, Scaled(1/4))", //
-     "{0.834431,3.62785}");
-     check("MinMax({Pi, 1.3, E, Sqrt(10)}, {0, 1})", //
-         "{1.3,1+Sqrt(10)}");
+    check("MinMax({1, 2, 3, 4})", //
+        "{1,4}");
+    check("MinMax({1, 2, 3, 4},.2)", //
+        "{0.8,4.2}");
+    check("MinMax({1, 2, 3, 4}, Scaled(.2))", //
+        "{0.4,4.6}");
+    check("MinMax({Pi, 1.3, E, Sqrt(10)})", //
+        "{1.3,Sqrt(10)}");
+    check("MinMax({Pi, 1.3, E, Sqrt(10)}, 1)", //
+        "{0.3,1+Sqrt(10)}");
+    check("MinMax({Pi, 1.3, E, Sqrt(10)}, Scaled(1/4))", //
+        "{0.834431,3.62785}");
+    check("MinMax({Pi, 1.3, E, Sqrt(10)}, {0, 1})", //
+        "{1.3,1+Sqrt(10)}");
     check("Max({{1, 2}, {a, b}, {3, 2}})", //
         "Max(3,a,b)");
     check("MinMax({{1, 2}, {a, b}, {3, 2}})", //
@@ -21826,6 +21839,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSign() {
+    check("Sign(a*b^(-3)*c^2)", //
+        "(Sign(a)*Sign(c)^2)/Sign(b)^3");
+
     // message Power: Infinite expression 1/0 encountered.
     check("Sign(1/0^(0.8+I*(-1.2)))", //
         "Indeterminate");

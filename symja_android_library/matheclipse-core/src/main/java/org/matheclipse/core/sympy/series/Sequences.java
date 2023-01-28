@@ -101,7 +101,7 @@ public class Sequences {
             }
 
           }
-          if (newArgs.length > 0) {
+          if (newArgs != null && newArgs.length > 0) {
             args = newArgs;
             break;
           }

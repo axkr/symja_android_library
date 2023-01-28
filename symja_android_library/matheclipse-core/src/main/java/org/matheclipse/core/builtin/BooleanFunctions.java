@@ -320,16 +320,6 @@ public final class BooleanFunctions {
       return factory.or(factory.and(result1), factory.and(result2));
     }
 
-    // private Formula convertXor(IAST ast, boolean substituteExpressions) {
-    // Formula arg1 = expr2BooleanFunction(ast.arg1(), substituteExpressions);
-    // Formula arg2 = expr2BooleanFunction(ast.arg2(), substituteExpressions);if(ast.size()>3)
-    // {
-    // IASTAppendable clone = ast.copyAppendable();
-    // clone.remove(1);
-    // arg2 = convertXor(clone);
-    // }return factory.or(factory.and(arg1,factory.not(arg2)),factory.and(factory.not(arg1),arg2));
-    // }
-
     /**
      * Convert the {@link IExpr} to a LogicNG {@link Formula}.
      *
@@ -338,7 +328,6 @@ public final class BooleanFunctions {
      *        {@link FormulaFactory#variable(String)} variable. if <code>true</code> substitute non
      *        boolean expressions with a virtual new {@link FormulaFactory#variable(String)}
      *        variable by the string of their {@link IExpr#fullFormString()}
-     * @return
      * @throws ArgumentTypeException
      * @see {@link #booleanFunction2Expr(Formula)}
      */
@@ -365,21 +354,15 @@ public final class BooleanFunctions {
                 ast.forEach((x, i) -> {
                   result[i - 1] = factory.not(expr2BooleanFunction(x, substituteExpressions));
                 });
-                // for (int i = 1; i < ast.size(); i++) {
-                // result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
-                // }
                 return factory.or(result);
               }
               break;
             case ID.Nor:
               if (ast.isSameHeadSizeGE(S.Nor, 3)) {
                 Formula[] result = new Formula[ast.argSize()];
-                ast.forEach((x, i) -> {
+                 ast.forEach((x, i) -> {
                   result[i - 1] = factory.not(expr2BooleanFunction(x, substituteExpressions));
                 });
-                // for (int i = 1; i < ast.size(); i++) {
-                // result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
-                // }
                 return factory.and(result);
               }
               break;
@@ -442,8 +425,6 @@ public final class BooleanFunctions {
           throw new ArgumentTypeException(message);
         }
         return addSymbolOrSlotToMap(symbol);
-        // } else if (logicExpr instanceof BDDExpr) {
-        // return ((BDDExpr) logicExpr).toData().dnf();
       }
       if (substituteExpressions) {
         Variable v = symbol2variableMap.get(logicExpr);
@@ -683,7 +664,6 @@ public final class BooleanFunctions {
       }
 
       boolean evaled = false;
-
       int index = 1;
       IExpr temp = F.NIL;
 
