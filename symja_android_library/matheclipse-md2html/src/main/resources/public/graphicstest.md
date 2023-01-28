@@ -1,6 +1,6 @@
 
-Test the `Graphics` function for creating correct JSON output for the `Mathics 3D Graphics backend using three.js` project:
-- [https://github.com/Mathics3/mathics-threejs-backend](https://github.com/Mathics3/mathics-threejs-backend)
+Test the `Graphics3D` function for creating correct JSON output for the `json2D_JSXGraph` project:
+- [https://github.com/jsxgraph/json2D_JSXGraph](https://github.com/jsxgraph/json2D_JSXGraph)
 
 ```mma
 Plot[Sin[x], {x, -Pi, Pi}]
