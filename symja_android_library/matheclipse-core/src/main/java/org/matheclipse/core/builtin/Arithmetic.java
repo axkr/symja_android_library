@@ -1628,6 +1628,20 @@ public final class Arithmetic {
                 return F.DirectedInfinity(F.C1);
               }
             }
+          } else if (arg1.isTimes() || arg1.isPower()) {
+            IExpr[] parts = Algebra.fractionalPartsTimesPower((IAST) arg1, true, false, false,
+                false, false, false);
+            if (parts != null && !parts[1].isOne()
+                && !(parts[1].isAST(S.Sign) || parts[0].isAST(S.Sign))) {
+              final IExpr numerator = parts[0];
+              final IExpr denominator = parts[1];
+              IExpr tmp = engine.evaluate(F.Times(F.Sign(numerator), //
+                  F.Power(F.Sign(denominator), F.CN1)));
+              if (!tmp.equals(arg1)) {
+                return F.DirectedInfinity(tmp);
+              }
+
+            }
           }
           if (evaled) {
             return F.DirectedInfinity(arg1);

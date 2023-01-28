@@ -5325,11 +5325,7 @@ public class Algebra {
       boolean splitFractionalNumbers, boolean trig, boolean evalParts, boolean negateNumerDenom,
       boolean splitPowerPlusExponents) {
     if (timesPower.isPower()) {
-      IExpr[] parts = Apart.fractionalPartsPower(timesPower, trig, splitPowerPlusExponents);
-      if (parts != null) {
-        return parts;
-      }
-      return null;
+      return Apart.fractionalPartsPower(timesPower, trig, splitPowerPlusExponents);
     }
 
     IAST timesAST = timesPower;
@@ -5338,7 +5334,6 @@ public class Algebra {
     IASTAppendable numerator = F.TimesAlloc(timesAST.size());
     IASTAppendable denominator = F.TimesAlloc(timesAST.size());
 
-    // IExpr arg;
     IAST argAST;
     boolean evaled = false;
     boolean splitFractionEvaled = false;
