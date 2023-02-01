@@ -2768,7 +2768,7 @@ public class TestPods {
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"1/0\",\n"
-            + "        \"sinput\" : \"1/0\",\n" + "        \"latex\" : \"\\\\frac{1}{{0}^{1}}\"\n"
+            + "        \"sinput\" : \"1/0\",\n" + "        \"latex\" : \"\\\\frac{1}{0}\"\n"
             + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Result\",\n"
             + "      \"scanner\" : \"Identity\",\n" + "      \"error\" : \"false\",\n"
             + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
