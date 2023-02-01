@@ -894,7 +894,11 @@ public class TeXFormFactory {
       IExpr arg2 = f.arg2();
       if (arg2.isNegative()) {
         buf.append("\\frac{1}{");
-        fFactory.convertInternal(buf, F.Power(arg1, arg2.negate()), 0);
+        if (arg2.isMinusOne()) {
+          fFactory.convertInternal(buf, arg1, 0);
+        } else {
+          fFactory.convertInternal(buf, F.Power(arg1, arg2.negate()), 0);
+        }
         buf.append('}');
         return true;
       }
@@ -1247,7 +1251,7 @@ public class TeXFormFactory {
             buf.append('-');
             arg1Negate = true;
           } else {
-          buf.append('+');
+            buf.append('+');
           }
         }
         precedenceOpen(buf, precedence);
@@ -1711,15 +1715,13 @@ public class TeXFormFactory {
                 IExpr min = subList.arg1();
                 IExpr max = subList.arg2();
                 if (min instanceof INum) {
-                  convertDoubleString(buf, convertDoubleToFormattedString(min.evalf()), 0,
-                      false);
+                  convertDoubleString(buf, convertDoubleToFormattedString(min.evalf()), 0, false);
                 } else {
                   convertInternal(buf, min, 0);
                 }
                 buf.append(",");
                 if (max instanceof INum) {
-                  convertDoubleString(buf, convertDoubleToFormattedString(max.evalf()), 0,
-                      false);
+                  convertDoubleString(buf, convertDoubleToFormattedString(max.evalf()), 0, false);
                 } else {
                   convertInternal(buf, max, 0);
                 }
