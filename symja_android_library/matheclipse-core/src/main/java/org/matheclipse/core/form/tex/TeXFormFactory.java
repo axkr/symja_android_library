@@ -45,7 +45,10 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.TrieMatch;
 
-/** Generates TeX presentation output */
+/**
+ * Generates TeX presentation output. This class is not thread safe. Create a new instance for every
+ * usage.
+ */
 public class TeXFormFactory {
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -58,26 +61,7 @@ public class TeXFormFactory {
    */
   public static final boolean PLUS_CALL = true;
 
-  private abstract static class AbstractConverter {
-    protected TeXFormFactory fFactory;
-
-    public AbstractConverter() {
-      fFactory = null;
-    }
-
-    public AbstractConverter(final TeXFormFactory factory) {
-      fFactory = factory;
-    }
-
-    public abstract boolean convert(final StringBuilder buf, final IAST f, final int precedence);
-
-    /** @param factory */
-    public void setFactory(final TeXFormFactory factory) {
-      fFactory = factory;
-    }
-  }
-
-  private static class AbstractOperator extends AbstractConverter {
+  private static class AbstractOperator extends AbstractTeXConverter {
     protected int fPrecedence;
     protected String fOperator;
 
@@ -94,24 +78,24 @@ public class TeXFormFactory {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       final boolean isOr = f.isOr();
-      precedenceOpen(buf, precedence);
+      precedenceOpen(buffer, precedence);
       for (int i = 1; i < f.size(); i++) {
         if (isOr && f.get(i).isAnd()) {
-          buf.append("\\left( ");
+          buffer.append("\\left( ");
         }
-        fFactory.convertInternal(buf, f.get(i), fPrecedence);
+        fFactory.convertInternal(buffer, f.get(i), fPrecedence);
         if (isOr && f.get(i).isAnd()) {
-          buf.append("\\right) ");
+          buffer.append("\\right) ");
         }
         if (i < f.argSize()) {
           if (fOperator.compareTo("") != 0) {
-            buf.append(fOperator);
+            buffer.append(fOperator);
           }
         }
       }
-      precedenceClose(buf, precedence);
+      precedenceClose(buffer, precedence);
       return true;
     }
 
@@ -128,19 +112,19 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class Binomial extends AbstractConverter {
+  private static final class Binomial extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() != 3) {
         return false;
       }
-      buf.append('{');
-      fFactory.convertInternal(buf, f.arg1(), 0);
-      buf.append("\\choose ");
-      fFactory.convertInternal(buf, f.arg2(), 0);
-      buf.append('}');
+      buffer.append('{');
+      fFactory.convertInternal(buffer, f.arg1(), 0);
+      buffer.append("\\choose ");
+      fFactory.convertInternal(buffer, f.arg2(), 0);
+      buffer.append('}');
       return true;
     }
   }
@@ -152,30 +136,30 @@ public class TeXFormFactory {
     }
 
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() != 3) {
-        return super.convert(buf, f, precedence);
+        return super.convert(buffer, f, precedence);
       }
-      precedenceOpen(buf, precedence);
+      precedenceOpen(buffer, precedence);
       IExpr arg1 = f.arg1();
       boolean reZero = arg1.isZero();
       IExpr arg2 = f.arg2();
       boolean imZero = arg2.isZero();
 
       if (!reZero) {
-        fFactory.convertInternal(buf, arg1, 0);
+        fFactory.convertInternal(buffer, arg1, 0);
       }
       if (!imZero) {
         if (!reZero && !arg2.isNegativeSigned()) {
-          buf.append(" + ");
+          buffer.append(" + ");
         }
         if (arg2.isMinusOne()) {
-          buf.append(" - ");
+          buffer.append(" - ");
         } else if (!arg2.isOne()) {
-          fFactory.convertInternal(buf, arg2, 0);
-          buf.append("\\,"); // InvisibleTimes
+          fFactory.convertInternal(buffer, arg2, 0);
+          buffer.append("\\,"); // InvisibleTimes
         }
-        buf.append("\\imag");
+        buffer.append("\\imag");
       }
       return true;
     }
@@ -188,23 +172,23 @@ public class TeXFormFactory {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() != 2) {
         return false;
       }
-      precedenceOpen(buf, precedence);
-      fFactory.convertInternal(buf, f.arg1(), 0);
-      buf.append("^*");
-      precedenceClose(buf, precedence);
+      precedenceOpen(buffer, precedence);
+      fFactory.convertInternal(buffer, f.arg1(), 0);
+      buffer.append("^*");
+      precedenceClose(buffer, precedence);
       return true;
     }
   }
 
-  private static final class D extends AbstractConverter {
+  private static final class D extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.isAST2()) {
         IExpr arg2 = f.arg2();
         int n = 1;
@@ -215,17 +199,17 @@ public class TeXFormFactory {
           }
           arg2 = arg2.first();
         }
-        buf.append("\\frac{\\partial ");
+        buffer.append("\\frac{\\partial ");
         if (n > 1) {
-          buf.append("^" + n + " ");
+          buffer.append("^" + n + " ");
         }
-        fFactory.convertInternal(buf, f.arg1(), 0);
-        buf.append("}{\\partial ");
-        fFactory.convertInternal(buf, arg2, 0);
+        fFactory.convertInternal(buffer, f.arg1(), 0);
+        buffer.append("}{\\partial ");
+        fFactory.convertInternal(buffer, arg2, 0);
         if (n > 1) {
-          buf.append("^" + n);
+          buffer.append("^" + n);
         }
-        buf.append("}");
+        buffer.append("}");
 
         return true;
       }
@@ -233,20 +217,20 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class DirectedInfinity extends AbstractConverter {
+  private static final class DirectedInfinity extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.isComplexInfinity()) {
-        buf.append("ComplexInfinity");
+        buffer.append("ComplexInfinity");
         return true;
       } else if (f.isAST1()) {
         if (f.arg1().isOne()) {
-          buf.append("\\infty");
+          buffer.append("\\infty");
           return true;
         } else if (f.arg1().isMinusOne()) {
-          buf.append("- \\infty");
+          buffer.append("- \\infty");
           return true;
         }
       }
@@ -254,193 +238,48 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class HoldForm extends AbstractConverter {
+  private static final class HoldForm extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() == 2) {
-        fFactory.convertInternal(buf, f.arg1(), 0);
+        fFactory.convertInternal(buffer, f.arg1(), 0);
         return true;
       }
       return false;
     }
   }
 
-  private static final class HarmonicNumber extends AbstractConverter {
+  private static final class HarmonicNumber extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.isAST1()) {
-        buf.append("H_");
-        fFactory.convertInternal(buf, f.arg1(), 0);
+        buffer.append("H_");
+        fFactory.convertInternal(buffer, f.arg1(), 0);
         return true;
       } else if (f.isAST2()) {
-        buf.append("H_");
-        fFactory.convertInternal(buf, f.arg1(), 0);
+        buffer.append("H_");
+        fFactory.convertInternal(buffer, f.arg1(), 0);
 
-        buf.append("^{(");
-        fFactory.convertInternal(buf, f.arg2(), 0);
-        buf.append(")}");
+        buffer.append("^{(");
+        fFactory.convertInternal(buffer, f.arg2(), 0);
+        buffer.append(")}");
         return true;
       }
       return false;
     }
   }
 
-  /**
-   * Used for: <code>HermiteH(a,b)) ==> H_a(b)</code>, <code>LaguerreL(a,b)) ==> L_a(b)</code>
-   *
-   */
-  private static final class BinaryFunction extends AbstractConverter {
-
-    final String first;
-    final String middle;
-    final String last;
-
-    public BinaryFunction(String first, String middle, String last) {
-      super();
-      this.first = first;
-      this.middle = middle;
-      this.last = last;
-    }
+  private static final class Integrate extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      if (f.size() != 3) {
-        return false;
-      }
-      buf.append(first);
-      fFactory.convertInternal(buf, f.arg1(), 0);
-      buf.append(middle);
-      fFactory.convertInternal(buf, f.arg2(), 0);
-      buf.append(last);
-      return true;
-    }
-  }
-
-  private static final class TernaryFunction extends AbstractConverter {
-
-    final String first;
-    final String middle1;
-    final String middle2;
-    final String last;
-
-    public TernaryFunction(String first, String middle1, String middle2, String last) {
-      super();
-      this.first = first;
-      this.middle1 = middle1;
-      this.middle2 = middle2;
-      this.last = last;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      if (f.size() != 4) {
-        return false;
-      }
-      buf.append(first);
-      fFactory.convertInternal(buf, f.arg1(), 0);
-      buf.append(middle1);
-      fFactory.convertInternal(buf, f.arg2(), 0);
-      buf.append(middle2);
-      fFactory.convertInternal(buf, f.arg3(), 0);
-      buf.append(last);
-      return true;
-    }
-  }
-
-
-  private static final class QuadrupleFunction extends AbstractConverter {
-
-    final String first;
-    final String middle1;
-    final String middle2;
-    final String middle3;
-    final String last;
-
-    public QuadrupleFunction(String first, String middle1, String middle2, String middle3,
-        String last) {
-      super();
-      this.first = first;
-      this.middle1 = middle1;
-      this.middle2 = middle2;
-      this.middle3 = middle3;
-      this.last = last;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      if (f.size() != 5) {
-        return false;
-      }
-      buf.append(first);
-      fFactory.convertInternal(buf, f.arg1(), 0);
-      buf.append(middle1);
-      fFactory.convertInternal(buf, f.arg2(), 0);
-      buf.append(middle2);
-      fFactory.convertInternal(buf, f.arg3(), 0);
-      buf.append(middle3);
-      fFactory.convertInternal(buf, f.arg4(), 0);
-      buf.append(last);
-      return true;
-    }
-  }
-
-  private static final class BinaryTernaryFunction extends AbstractConverter {
-    final boolean takePenultimate;
-    final String first;
-    final String middle1;
-    final String middle2;
-    final String last;
-
-    public BinaryTernaryFunction(String first, String middle1, String middle2, String last,
-        boolean takePenultimate) {
-      super();
-      this.first = first;
-      this.middle1 = middle1;
-      this.middle2 = middle2;
-      this.last = last;
-      this.takePenultimate = takePenultimate;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      if (f.size() != 3 && f.size() != 4) {
-        return false;
-      }
-      buf.append(first);
-      fFactory.convertInternal(buf, f.arg1(), 0);
-      if (f.size() == 3) {
-        if (takePenultimate) {
-          buf.append(middle2);
-        } else {
-          buf.append(middle1);
-        }
-        fFactory.convertInternal(buf, f.arg2(), 0);
-      } else {
-        buf.append(middle1);
-        fFactory.convertInternal(buf, f.arg2(), 0);
-        buf.append(middle2);
-        fFactory.convertInternal(buf, f.arg3(), 0);
-      }
-      buf.append(last);
-      return true;
-    }
-  }
-
-  private static final class Integrate extends AbstractConverter {
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() >= 3) {
-        return iteratorStep(buf, "\\int", f, 2);
+        return iteratorStep(buffer, "\\int", f, 2);
       }
       return false;
     }
@@ -484,19 +323,19 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class Limit extends AbstractConverter {
+  private static final class Limit extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.isAST2() && f.arg2().isRuleAST()) {
         final IAST rule = (IAST) f.arg2();
-        buf.append("\\lim_{");
-        fFactory.convertSubExpr(buf, rule.arg1(), 0);
-        buf.append("\\to ");
-        fFactory.convertSubExpr(buf, rule.arg2(), 0);
-        buf.append(" }\\,");
-        fFactory.convertSubExpr(buf, f.arg1(), 0);
+        buffer.append("\\lim_{");
+        fFactory.convertSubExpr(buffer, rule.arg1(), 0);
+        buffer.append("\\to ");
+        fFactory.convertSubExpr(buffer, rule.arg2(), 0);
+        buffer.append(" }\\,");
+        fFactory.convertSubExpr(buffer, f.arg1(), 0);
 
         // buf.append("\\mathop {\\lim }\\limits_{");
         // fFactory.convert(buf, rule.arg1(), 0);
@@ -510,14 +349,14 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class List extends AbstractConverter {
+  private static final class List extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST ast, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST ast, final int precedence) {
 
       if ((ast.getEvalFlags() & IAST.OUTPUT_MULTILINE) == IAST.OUTPUT_MULTILINE) {
-        if (convertMultiline(buf, ast)) {
+        if (convertMultiline(buffer, ast)) {
           return true;
         }
       }
@@ -530,45 +369,45 @@ public class TeXFormFactory {
 
           if (Config.MATRIX_TEXFORM) {
             // problem with KaTeX?
-            buf.append("\\left(\n\\begin{array}{");
+            buffer.append("\\left(\n\\begin{array}{");
             for (int i = 0; i < dims[1]; i++) {
-              buf.append("c");
+              buffer.append("c");
             }
-            buf.append("}\n");
+            buffer.append("}\n");
             if (ast.size() > 1) {
               for (int i = 1; i < ast.size(); i++) {
                 IAST row = ast.getAST(i);
                 for (int j = 1; j < row.size(); j++) {
-                  fFactory.convert(buf, row.get(j), 0);
+                  fFactory.convert(buffer, row.get(j), 0);
                   if (j < row.argSize()) {
-                    buf.append(" & ");
+                    buffer.append(" & ");
                   }
                 }
                 if (i < ast.argSize()) {
-                  buf.append(" \\\\\n");
+                  buffer.append(" \\\\\n");
                 } else {
-                  buf.append(" \\\n");
+                  buffer.append(" \\\n");
                 }
               }
             }
-            buf.append("\\\\\n\\end{array}\n\\right) ");
+            buffer.append("\\\\\n\\end{array}\n\\right) ");
           } else {
-            buf.append("\\begin{pmatrix}\n");
+            buffer.append("\\begin{pmatrix}\n");
             IAST row;
             for (int i = 1; i < matrix.size(); i++) {
               row = (IAST) matrix.get(i);
               for (int j = 1; j < row.size(); j++) {
-                buf.append(' ');
-                fFactory.convertInternal(buf, row.get(j), 0);
-                buf.append(' ');
+                buffer.append(' ');
+                fFactory.convertInternal(buffer, row.get(j), 0);
+                buffer.append(' ');
                 if (j < row.argSize()) {
-                  buf.append('&');
+                  buffer.append('&');
                 }
               }
-              buf.append("\\\\\n");
+              buffer.append("\\\\\n");
             }
 
-            buf.append("\\end{pmatrix}");
+            buffer.append("\\end{pmatrix}");
           }
           return true;
         }
@@ -577,26 +416,26 @@ public class TeXFormFactory {
       if ((ast.getEvalFlags() & IAST.IS_VECTOR) == IAST.IS_VECTOR) {
         // create a LaTeX row vector
         // \begin{pmatrix} x & y \end{pmatrix}
-        buf.append("\\begin{pmatrix} ");
+        buffer.append("\\begin{pmatrix} ");
         if (ast.size() > 1) {
           for (int j = 1; j < ast.size(); j++) {
-            fFactory.convertInternal(buf, ast.get(j), 0);
+            fFactory.convertInternal(buffer, ast.get(j), 0);
             if (j < ast.argSize()) {
-              buf.append(" & ");
+              buffer.append(" & ");
             }
           }
         }
-        buf.append(" \\end{pmatrix} ");
+        buffer.append(" \\end{pmatrix} ");
       } else {
-        buf.append("\\{");
+        buffer.append("\\{");
         if (ast.size() > 1) {
-          fFactory.convertInternal(buf, ast.arg1(), 0);
+          fFactory.convertInternal(buffer, ast.arg1(), 0);
           for (int i = 2; i < ast.size(); i++) {
-            buf.append(',');
-            fFactory.convertInternal(buf, ast.get(i), 0);
+            buffer.append(',');
+            fFactory.convertInternal(buffer, ast.get(i), 0);
           }
         }
-        buf.append("\\}");
+        buffer.append("\\}");
       }
       return true;
     }
@@ -620,11 +459,11 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class MatrixForm extends AbstractConverter {
+  private static final class MatrixForm extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() != 2) {
         return false;
       }
@@ -635,73 +474,73 @@ public class TeXFormFactory {
           return false;
         } else {
           final IAST vector = (IAST) f.arg1();
-          buf.append("\\begin{pmatrix}\n");
+          buffer.append("\\begin{pmatrix}\n");
           IExpr element;
           for (int i = 1; i < vector.size(); i++) {
             element = vector.get(i);
-            buf.append(' ');
-            fFactory.convertInternal(buf, element, 0);
-            buf.append(' ');
+            buffer.append(' ');
+            fFactory.convertInternal(buffer, element, 0);
+            buffer.append(' ');
             if (i < vector.argSize()) {
-              buf.append('&');
+              buffer.append('&');
             }
           }
-          buf.append("\\end{pmatrix}");
+          buffer.append("\\end{pmatrix}");
         }
       } else {
         final IAST matrix = (IAST) f.arg1().normal(false);
         if (Config.MATRIX_TEXFORM) {
           // problem with KaTeX?
-          buf.append("\\left(\n\\begin{array}{");
+          buffer.append("\\left(\n\\begin{array}{");
           for (int i = 0; i < dims[1]; i++) {
-            buf.append("c");
+            buffer.append("c");
           }
-          buf.append("}\n");
+          buffer.append("}\n");
           if (matrix.size() > 1) {
             for (int i = 1; i < matrix.size(); i++) {
               IAST row = matrix.getAST(i);
               for (int j = 1; j < row.size(); j++) {
-                fFactory.convert(buf, row.get(j), 0);
+                fFactory.convert(buffer, row.get(j), 0);
                 if (j < row.argSize()) {
-                  buf.append(" & ");
+                  buffer.append(" & ");
                 }
               }
               if (i < matrix.argSize()) {
-                buf.append(" \\\\\n");
+                buffer.append(" \\\\\n");
               } else {
-                buf.append(" \\\n");
+                buffer.append(" \\\n");
               }
             }
           }
-          buf.append("\\\\\n\\end{array}\n\\right) ");
+          buffer.append("\\\\\n\\end{array}\n\\right) ");
         } else {
-          buf.append("\\begin{pmatrix}\n");
+          buffer.append("\\begin{pmatrix}\n");
           IAST row;
           for (int i = 1; i < matrix.size(); i++) {
             row = (IAST) matrix.get(i);
             for (int j = 1; j < row.size(); j++) {
-              buf.append(' ');
-              fFactory.convertInternal(buf, row.get(j), 0);
-              buf.append(' ');
+              buffer.append(' ');
+              fFactory.convertInternal(buffer, row.get(j), 0);
+              buffer.append(' ');
               if (j < row.argSize()) {
-                buf.append('&');
+                buffer.append('&');
               }
             }
-            buf.append("\\\\\n");
+            buffer.append("\\\\\n");
           }
 
-          buf.append("\\end{pmatrix}");
+          buffer.append("\\end{pmatrix}");
         }
       }
       return true;
     }
   }
 
-  private static final class TableForm extends AbstractConverter {
+  private static final class TableForm extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() != 2) {
         return false;
       }
@@ -712,41 +551,41 @@ public class TeXFormFactory {
           return false;
         } else {
           final IAST vector = (IAST) f.arg1();
-          buf.append("\\begin{array}{c}\n");
+          buffer.append("\\begin{array}{c}\n");
           IExpr element;
           for (int i = 1; i < vector.size(); i++) {
             element = vector.get(i);
-            buf.append(' ');
-            fFactory.convertInternal(buf, element, 0);
-            buf.append(' ');
+            buffer.append(' ');
+            fFactory.convertInternal(buffer, element, 0);
+            buffer.append(' ');
             if (i < vector.argSize()) {
-              buf.append("\\\\\n");
+              buffer.append("\\\\\n");
             }
           }
-          buf.append("\n\\end{array}");
+          buffer.append("\n\\end{array}");
         }
       } else {
         final IAST matrix = (IAST) f.arg1();
-        buf.append("\\begin{array}{");
+        buffer.append("\\begin{array}{");
         for (int i = 0; i < dims[1]; i++) {
-          buf.append("c");
+          buffer.append("c");
         }
-        buf.append("}\n");
+        buffer.append("}\n");
         IAST row;
         for (int i = 1; i < matrix.size(); i++) {
           row = (IAST) matrix.get(i);
           for (int j = 1; j < row.size(); j++) {
-            buf.append(' ');
-            fFactory.convertInternal(buf, row.get(j), 0);
-            buf.append(' ');
+            buffer.append(' ');
+            fFactory.convertInternal(buffer, row.get(j), 0);
+            buffer.append(' ');
             if (j < row.argSize()) {
-              buf.append('&');
+              buffer.append('&');
             }
           }
-          buf.append("\\\\\n");
+          buffer.append("\\\\\n");
         }
 
-        buf.append("\\end{array}");
+        buffer.append("\\end{array}");
       }
       return true;
     }
@@ -769,34 +608,34 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class Parenthesis extends AbstractConverter {
+  private static final class Parenthesis extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      buf.append("(");
-      fFactory.convertInternal(buf, f.arg1(), 0);
-      buf.append(")");
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      buffer.append("(");
+      fFactory.convertInternal(buffer, f.arg1(), 0);
+      buffer.append(")");
       return true;
     }
   }
 
-  private static final class Part extends AbstractConverter {
+  private static final class Part extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() > 2) {
-        fFactory.convertHead(buf, f.arg1());
-        buf.append("[[");
+        fFactory.convertHead(buffer, f.arg1());
+        buffer.append("[[");
         int argSize = f.argSize();
         for (int i = 2; i <= argSize; i++) {
-          fFactory.convertInternal(buf, f.get(i), 0);
+          fFactory.convertInternal(buffer, f.get(i), 0);
           if (i < argSize) {
-            buf.append(",");
+            buffer.append(",");
           }
         }
-        buf.append("]]");
+        buffer.append("]]");
         return true;
       }
       return false;
@@ -811,35 +650,35 @@ public class TeXFormFactory {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       IExpr expr;
-      precedenceOpen(buf, precedence);
+      precedenceOpen(buffer, precedence);
       final Times timesConverter = new Times();
       timesConverter.setFactory(fFactory);
       for (int i = 1; i < f.size(); i++) {
         expr = f.get(i);
 
         if ((i > 1) && (expr instanceof IAST) && expr.isTimes()) {
-          timesConverter.convertTimesFraction(buf, (IAST) expr, fPrecedence, Times.PLUS_CALL);
+          timesConverter.convertTimesFraction(buffer, (IAST) expr, fPrecedence, Times.PLUS_CALL);
         } else {
           if (i > 1) {
             if (expr.isNumber() && (((INumber) expr).complexSign() < 0)) {
-              buf.append("-");
+              buffer.append("-");
               expr = ((INumber) expr).negate();
             } else if (expr.isNegativeSigned()) {
             } else {
-              buf.append("+");
+              buffer.append("+");
             }
           }
-          fFactory.convertInternal(buf, expr, fPrecedence);
+          fFactory.convertInternal(buffer, expr, fPrecedence);
         }
       }
-      precedenceClose(buf, precedence);
+      precedenceClose(buffer, precedence);
       return true;
     }
   }
 
-  private static final class PostOperator extends AbstractConverter {
+  private static final class PostOperator extends AbstractTeXConverter {
     protected int fPrecedence;
     protected String fOperator;
 
@@ -851,14 +690,14 @@ public class TeXFormFactory {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() != 2) {
         return false;
       }
-      precedenceOpen(buf, precedence);
-      fFactory.convertInternal(buf, f.arg1(), fPrecedence);
-      buf.append(fOperator);
-      precedenceClose(buf, precedence);
+      precedenceOpen(buffer, precedence);
+      fFactory.convertInternal(buffer, f.arg1(), fPrecedence);
+      buffer.append(fOperator);
+      precedenceClose(buffer, precedence);
       return true;
     }
 
@@ -886,59 +725,59 @@ public class TeXFormFactory {
     }
 
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() != 3) {
-        return super.convert(buf, f, precedence);
+        return super.convert(buffer, f, precedence);
       }
       IExpr arg1 = f.arg1();
       IExpr arg2 = f.arg2();
       if (arg2.isNegative()) {
-        buf.append("\\frac{1}{");
+        buffer.append("\\frac{1}{");
         if (arg2.isMinusOne()) {
-          fFactory.convertInternal(buf, arg1, 0);
+          fFactory.convertInternal(buffer, arg1, 0);
         } else {
-          fFactory.convertInternal(buf, F.Power(arg1, arg2.negate()), 0);
+          fFactory.convertInternal(buffer, F.Power(arg1, arg2.negate()), 0);
         }
-        buf.append('}');
+        buffer.append('}');
         return true;
       }
       if (arg2.isNumEqualRational(F.C1D2)) {
-        buf.append("\\sqrt{");
-        fFactory.convertInternal(buf, arg1, fPrecedence);
-        buf.append('}');
+        buffer.append("\\sqrt{");
+        fFactory.convertInternal(buffer, arg1, fPrecedence);
+        buffer.append('}');
         return true;
       }
       if (arg2.isFraction()) {
         if (((IFraction) arg2).numerator().isOne()) {
-          buf.append("\\sqrt[");
-          fFactory.convertInternal(buf, ((IFraction) arg2).denominator(), fPrecedence);
-          buf.append("]{");
-          fFactory.convertInternal(buf, arg1, fPrecedence);
-          buf.append('}');
+          buffer.append("\\sqrt[");
+          fFactory.convertInternal(buffer, ((IFraction) arg2).denominator(), fPrecedence);
+          buffer.append("]{");
+          fFactory.convertInternal(buffer, arg1, fPrecedence);
+          buffer.append('}');
           return true;
         }
       }
 
-      precedenceOpen(buf, precedence);
+      precedenceOpen(buffer, precedence);
 
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
-      buf.append('{');
-      fFactory.convertInternal(buf, arg1, fPrecedence);
-      buf.append('}');
+      buffer.append('{');
+      fFactory.convertInternal(buffer, arg1, fPrecedence);
+      buffer.append('}');
       if (fOperator.compareTo("") != 0) {
-        buf.append(fOperator);
+        buffer.append(fOperator);
       }
 
-      buf.append('{');
-      fFactory.convertInternal(buf, arg2, 0);
-      buf.append('}');
-      precedenceClose(buf, precedence);
+      buffer.append('{');
+      fFactory.convertInternal(buffer, arg2, 0);
+      buffer.append('}');
+      precedenceClose(buffer, precedence);
       return true;
     }
   }
 
-  private static final class PreOperator extends AbstractConverter {
+  private static final class PreOperator extends AbstractTeXConverter {
     protected int fPrecedence;
     protected String fOperator;
 
@@ -950,14 +789,14 @@ public class TeXFormFactory {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() != 2) {
         return false;
       }
-      precedenceOpen(buf, precedence);
-      buf.append(fOperator);
-      fFactory.convertInternal(buf, f.arg1(), fPrecedence);
-      precedenceClose(buf, precedence);
+      precedenceOpen(buffer, precedence);
+      buffer.append(fOperator);
+      fFactory.convertInternal(buffer, f.arg1(), fPrecedence);
+      precedenceClose(buffer, precedence);
       return true;
     }
 
@@ -977,9 +816,9 @@ public class TeXFormFactory {
   private static final class Product extends Sum {
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() >= 3) {
-        return iteratorStep(buf, "\\prod", f, 2);
+        return iteratorStep(buffer, "\\prod", f, 2);
       }
       return false;
     }
@@ -992,26 +831,26 @@ public class TeXFormFactory {
     }
 
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() != 3) {
-        return super.convert(buf, f, precedence);
+        return super.convert(buffer, f, precedence);
       }
-      precedenceOpen(buf, precedence);
-      buf.append("\\frac{");
-      fFactory.convertInternal(buf, f.arg1(), fPrecedence);
-      buf.append("}{");
-      fFactory.convertInternal(buf, f.arg2(), fPrecedence);
-      buf.append('}');
-      precedenceClose(buf, precedence);
+      precedenceOpen(buffer, precedence);
+      buffer.append("\\frac{");
+      fFactory.convertInternal(buffer, f.arg1(), fPrecedence);
+      buffer.append("}{");
+      fFactory.convertInternal(buffer, f.arg2(), fPrecedence);
+      buffer.append('}');
+      precedenceClose(buffer, precedence);
       return true;
     }
   }
 
-  private static final class Style extends AbstractConverter {
+  private static final class Style extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() != 3) {
         return false;
       }
@@ -1020,11 +859,11 @@ public class TeXFormFactory {
       if (arg2.isBuiltInSymbol()) {
         if (((IBuiltInSymbol) arg2).isSymbolID(ID.Black, ID.Brown, ID.Blue, ID.Cyan, ID.Green,
             ID.Pink, ID.Red, ID.Yellow, ID.White)) {
-          buf.append("\\textcolor{");
-          buf.append(arg2.toString().toLowerCase());
-          buf.append("}{");
-          fFactory.convertInternal(buf, arg1, 0);
-          buf.append("}");
+          buffer.append("\\textcolor{");
+          buffer.append(arg2.toString().toLowerCase());
+          buffer.append("}{");
+          fFactory.convertInternal(buffer, arg1, 0);
+          buffer.append("}");
           return true;
         }
       }
@@ -1032,9 +871,9 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class Subscript extends AbstractConverter {
+  private static final class Subscript extends AbstractTeXConverter {
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() < 3) {
         return false;
       }
@@ -1042,28 +881,28 @@ public class TeXFormFactory {
 
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
-      buf.append('{');
-      fFactory.convertInternal(buf, arg1, precedence);
-      buf.append('}');
-      buf.append("_");
+      buffer.append('{');
+      fFactory.convertInternal(buffer, arg1, precedence);
+      buffer.append('}');
+      buffer.append("_");
 
-      buf.append('{');
+      buffer.append('{');
 
       for (int i = 2; i < f.size(); i++) {
-        fFactory.convertInternal(buf, f.get(i), precedence);
+        fFactory.convertInternal(buffer, f.get(i), precedence);
         if (i < f.size() - 1) {
-          buf.append(',');
+          buffer.append(',');
         }
       }
-      buf.append('}');
+      buffer.append('}');
       return true;
     }
   }
 
-  private static final class Subsuperscript extends AbstractConverter {
+  private static final class Subsuperscript extends AbstractTeXConverter {
 
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() != 4) {
         return false;
       }
@@ -1073,30 +912,30 @@ public class TeXFormFactory {
 
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
-      buf.append('{');
-      fFactory.convertInternal(buf, arg1, Integer.MAX_VALUE);
-      buf.append('}');
-      buf.append("_");
+      buffer.append('{');
+      fFactory.convertInternal(buffer, arg1, Integer.MAX_VALUE);
+      buffer.append('}');
+      buffer.append("_");
 
-      buf.append('{');
-      fFactory.convertInternal(buf, arg2, Integer.MAX_VALUE);
-      buf.append('}');
-      buf.append("^");
+      buffer.append('{');
+      fFactory.convertInternal(buffer, arg2, Integer.MAX_VALUE);
+      buffer.append('}');
+      buffer.append("^");
 
-      buf.append('{');
-      fFactory.convertInternal(buf, arg3, Integer.MAX_VALUE);
-      buf.append('}');
+      buffer.append('{');
+      fFactory.convertInternal(buffer, arg3, Integer.MAX_VALUE);
+      buffer.append('}');
       return true;
     }
   }
 
-  private static class Sum extends AbstractConverter {
+  private static class Sum extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() >= 3) {
-        return iteratorStep(buf, "\\sum", f, 2);
+        return iteratorStep(buffer, "\\sum", f, 2);
       }
       return false;
     }
@@ -1154,10 +993,10 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class Superscript extends AbstractConverter {
+  private static final class Superscript extends AbstractTeXConverter {
 
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() != 3) {
         return false;
       }
@@ -1166,19 +1005,19 @@ public class TeXFormFactory {
 
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
-      buf.append('{');
-      fFactory.convertInternal(buf, arg1, 0);
-      buf.append('}');
+      buffer.append('{');
+      fFactory.convertInternal(buffer, arg1, 0);
+      buffer.append('}');
 
-      buf.append("^");
-      buf.append('{');
-      fFactory.convertInternal(buf, arg2, 0);
-      buf.append('}');
+      buffer.append("^");
+      buffer.append('{');
+      fFactory.convertInternal(buffer, arg2, 0);
+      buffer.append('}');
       return true;
     }
   }
 
-  private static final class TeXFunction extends AbstractConverter {
+  private static final class TeXFunction extends AbstractTeXConverter {
 
     String fFunctionName;
 
@@ -1189,17 +1028,17 @@ public class TeXFormFactory {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      buf.append('\\');
-      buf.append(fFunctionName);
-      buf.append('(');
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      buffer.append('\\');
+      buffer.append(fFunctionName);
+      buffer.append('(');
       for (int i = 1; i < f.size(); i++) {
-        fFactory.convertInternal(buf, f.get(i), 0);
+        fFactory.convertInternal(buffer, f.get(i), 0);
         if (i < f.argSize()) {
-          buf.append(',');
+          buffer.append(',');
         }
       }
-      buf.append(')');
+      buffer.append(')');
       return true;
     }
   }
@@ -1218,12 +1057,12 @@ public class TeXFormFactory {
     /**
      * Converts a given function into the corresponding TeX output
      *
-     * @param buf StringBuilder for TeX output
+     * @param buffer StringBuilder for TeX output
      * @param f The math function which should be converted to TeX
      */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      return convertTimesFraction(buf, f, precedence, NO_SPECIAL_CALL);
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      return convertTimesFraction(buffer, f, precedence, NO_SPECIAL_CALL);
     }
 
     /**
@@ -1413,64 +1252,11 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class UnaryFunction extends AbstractConverter {
-    String pre;
-    String post;
-
-    /** constructor will be called by reflection */
-    public UnaryFunction(String pre, String post) {
-      this.pre = pre;
-      this.post = post;
-    }
-
+  private static final class Zeta extends AbstractTeXConverter {
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      if (f.size() != 2) {
-        return false;
-      }
-      buf.append(pre);
-      fFactory.convertInternal(buf, f.arg1(), 0);
-      buf.append(post);
-      return true;
-    }
-  }
-
-  private static final class UnaryBinaryFunction extends AbstractConverter {
-
-    final String first;
-    final String middle;
-    final String last;
-
-    public UnaryBinaryFunction(String first, String middle, String last) {
-      super();
-      this.first = first;
-      this.middle = middle;
-      this.last = last;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      if (f.size() != 2 && f.size() != 3) {
-        return false;
-      }
-      buf.append(first);
-      fFactory.convertInternal(buf, f.arg1(), 0);
-      if (f.size() == 3) {
-        buf.append(middle);
-        fFactory.convertInternal(buf, f.arg2(), 0);
-      }
-      buf.append(last);
-      return true;
-    }
-  }
-
-  private static final class Zeta extends AbstractConverter {
-    /** {@inheritDoc} */
-    @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      fFactory.convertAST(buf, f, "\\zeta ");
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      fFactory.convertAST(buffer, f, "\\zeta ");
       return true;
     }
   }
@@ -1483,8 +1269,8 @@ public class TeXFormFactory {
   public static final Map<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>(199);
 
   /** Description of the Field */
-  public static final Map<ISymbol, AbstractConverter> operTab =
-      new HashMap<ISymbol, AbstractConverter>(199);
+  public static final Map<ISymbol, AbstractTeXConverter> operTab =
+      new HashMap<ISymbol, AbstractTeXConverter>(199);
 
   public static final boolean USE_IDENTIFIERS = false;
 
@@ -1587,7 +1373,7 @@ public class TeXFormFactory {
     return false;
   }
 
-  private void convertInternal(final StringBuilder buf, final Object o, final int precedence) {
+  void convertInternal(final StringBuilder buf, final Object o, final int precedence) {
     if (o instanceof IExpr) {
       IExpr expr = (IExpr) o;
       String str = CONSTANT_EXPRS.get(expr);
@@ -1600,7 +1386,7 @@ public class TeXFormFactory {
       final IAST f = ((IAST) o);
       IExpr h = f.head();
       if (h.isSymbol()) {
-        final AbstractConverter converter = operTab.get((h));
+        final AbstractTeXConverter converter = operTab.get((h));
         if (converter != null) {
           converter.setFactory(this);
           if (converter.convert(buf, f, precedence)) {
@@ -2152,189 +1938,195 @@ public class TeXFormFactory {
     plusPrec = ASTNodeFactory.RELAXED_STYLE_FACTORY.get("Plus").getPrecedence();
     // timesPrec =
     // ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence();
-    operTab.put(S.Abs, new UnaryFunction("|", "|"));
+    initTeXConverter(S.Abs, new UnaryFunction("|", "|"));
 
-    operTab.put(S.Beta, new BinaryFunction("B(", ",", ")"));
-    operTab.put(S.BesselI, new BinaryFunction("I_", "(", ")"));
-    operTab.put(S.BesselJ, new BinaryFunction("J_", "(", ")"));
-    operTab.put(S.BesselK, new BinaryFunction("K_", "(", ")"));
-    operTab.put(S.BesselY, new BinaryFunction("Y_", "(", ")"));
-    operTab.put(S.CarlsonRC, new BinaryFunction("R_C(", ",", ")"));
-    operTab.put(S.CarlsonRD, new TernaryFunction("R_D(", ",", ",", ")"));
-    operTab.put(S.CarlsonRF, new TernaryFunction("R_F(", ",", ",", ")"));
-    operTab.put(S.CarlsonRG, new TernaryFunction("R_G(", ",", ",", ")"));
-    operTab.put(S.CarlsonRJ, new QuadrupleFunction("R_J(", ",", ",", ",", ")"));
-    operTab.put(S.ChebyshevT, new BinaryFunction("T_", "(", ")"));
-    operTab.put(S.ChebyshevU, new BinaryFunction("U_", "(", ")"));
-    operTab.put(S.CosIntegral, new UnaryFunction("\\text{Ci}(", ")"));
-    operTab.put(S.CoshIntegral, new UnaryFunction("\\text{Chi}(", ")"));
+    initTeXConverter(S.Beta, new BinaryFunction("B(", ",", ")"));
+    initTeXConverter(S.BesselI, new BinaryFunction("I_", "(", ")"));
+    initTeXConverter(S.BesselJ, new BinaryFunction("J_", "(", ")"));
+    initTeXConverter(S.BesselK, new BinaryFunction("K_", "(", ")"));
+    initTeXConverter(S.BesselY, new BinaryFunction("Y_", "(", ")"));
+    initTeXConverter(S.CarlsonRC, new BinaryFunction("R_C(", ",", ")"));
+    initTeXConverter(S.CarlsonRD, new TernaryFunction("R_D(", ",", ",", ")"));
+    initTeXConverter(S.CarlsonRF, new TernaryFunction("R_F(", ",", ",", ")"));
+    initTeXConverter(S.CarlsonRG, new TernaryFunction("R_G(", ",", ",", ")"));
+    initTeXConverter(S.CarlsonRJ, new QuadrupleFunction("R_J(", ",", ",", ",", ")"));
+    initTeXConverter(S.ChebyshevT, new BinaryFunction("T_", "(", ")"));
+    initTeXConverter(S.ChebyshevU, new BinaryFunction("U_", "(", ")"));
+    initTeXConverter(S.CosIntegral, new UnaryFunction("\\text{Ci}(", ")"));
+    initTeXConverter(S.CoshIntegral, new UnaryFunction("\\text{Chi}(", ")"));
 
-    operTab.put(S.BetaRegularized, new TernaryFunction("I_", "(", ",", ")"));
-    operTab.put(S.Binomial, new Binomial());
+    initTeXConverter(S.BetaRegularized, new TernaryFunction("I_", "(", ",", ")"));
+    initTeXConverter(S.Binomial, new Binomial());
 
-    operTab.put(S.Ceiling, new UnaryFunction(" \\left \\lceil ", " \\right \\rceil "));
-    operTab.put(S.Conjugate, new Conjugate());
-    operTab.put(S.Complex, new Complex());
-    operTab.put(S.CompoundExpression, new AbstractOperator(
+    initTeXConverter(S.Ceiling, new UnaryFunction(" \\left \\lceil ", " \\right \\rceil "));
+    initTeXConverter(S.Conjugate, new Conjugate());
+    initTeXConverter(S.Complex, new Complex());
+    initTeXConverter(S.CompoundExpression, new AbstractOperator(
         ASTNodeFactory.MMA_STYLE_FACTORY.get("CompoundExpression").getPrecedence(), ", "));
-    operTab.put(S.D, new D());
-    operTab.put(S.Defer, new HoldForm());
-    operTab.put(S.DirectedInfinity, new DirectedInfinity());
+    initTeXConverter(S.D, new D());
+    initTeXConverter(S.Defer, new HoldForm());
+    initTeXConverter(S.DirectedInfinity, new DirectedInfinity());
 
-    operTab.put(S.EllipticE, new UnaryBinaryFunction("E(", ",", ")"));
-    operTab.put(S.EllipticF, new BinaryFunction("F(", "|", ")"));
-    operTab.put(S.EllipticK, new UnaryFunction("K(", ")"));
-    operTab.put(S.EllipticPi, new BinaryTernaryFunction("\\Pi (", ";", "|", ")", true));
-    operTab.put(S.EllipticTheta, new BinaryTernaryFunction("\\vartheta _", "(", ",", ")", false));
-    operTab.put(S.Erf, new UnaryFunction("\\text{erf}(", ")"));
-    operTab.put(S.Erfc, new UnaryFunction("\\text{erfc}(", ")"));
-    operTab.put(S.Erfi, new UnaryFunction("\\text{erfi}(", ")"));
+    initTeXConverter(S.EllipticE, new UnaryBinaryFunction("E(", ",", ")"));
+    initTeXConverter(S.EllipticF, new BinaryFunction("F(", "|", ")"));
+    initTeXConverter(S.EllipticK, new UnaryFunction("K(", ")"));
+    initTeXConverter(S.EllipticPi, new BinaryTernaryFunction("\\Pi (", ";", "|", ")", true));
+    initTeXConverter(S.EllipticTheta,
+        new BinaryTernaryFunction("\\vartheta _", "(", ",", ")", false));
+    initTeXConverter(S.Erf, new UnaryFunction("\\text{erf}(", ")"));
+    initTeXConverter(S.Erfc, new UnaryFunction("\\text{erfc}(", ")"));
+    initTeXConverter(S.Erfi, new UnaryFunction("\\text{erfi}(", ")"));
 
-    operTab.put(S.FactorialPower, new BinaryTernaryFunction("", "^{(", ",", ")}", false));
-    operTab.put(S.Floor, new UnaryFunction(" \\left \\lfloor ", " \\right \\rfloor "));
-    operTab.put(S.Function, new UnaryFunction("", "\\&"));
+    initTeXConverter(S.FactorialPower, new BinaryTernaryFunction("", "^{(", ",", ")}", false));
+    initTeXConverter(S.Floor, new UnaryFunction(" \\left \\lfloor ", " \\right \\rfloor "));
+    initTeXConverter(S.Function, new UnaryFunction("", "\\&"));
 
-    operTab.put(S.GammaRegularized, new BinaryTernaryFunction("Q(", ",", ",", ")", false));
-    operTab.put(S.Gudermannian, new UnaryFunction("\\text{gd}(", ")"));
+    initTeXConverter(S.GammaRegularized, new BinaryTernaryFunction("Q(", ",", ",", ")", false));
+    initTeXConverter(S.Gudermannian, new UnaryFunction("\\text{gd}(", ")"));
 
-    operTab.put(S.HankelH1, new BinaryFunction("H_", "^{(1)}(", ")"));
-    operTab.put(S.HankelH2, new BinaryFunction("H_", "^{(2)}(", ")"));
-    operTab.put(S.HarmonicNumber, new HarmonicNumber());
-    operTab.put(S.HermiteH, new BinaryFunction("H_", "(", ")"));
-    operTab.put(S.HoldForm, new HoldForm());
-    operTab.put(S.HurwitzZeta, new Zeta());
-    operTab.put(S.Hypergeometric0F1, new BinaryFunction("\\,_0F_1(;", ";", ")"));
-    operTab.put(S.Hypergeometric1F1, new TernaryFunction("\\,_1F_1(", ",", ",", ")"));
-    operTab.put(S.HypergeometricU, new TernaryFunction("U(", ",", ",", ")"));
+    initTeXConverter(S.HankelH1, new BinaryFunction("H_", "^{(1)}(", ")"));
+    initTeXConverter(S.HankelH2, new BinaryFunction("H_", "^{(2)}(", ")"));
+    initTeXConverter(S.HarmonicNumber, new HarmonicNumber());
+    initTeXConverter(S.HermiteH, new BinaryFunction("H_", "(", ")"));
+    initTeXConverter(S.HoldForm, new HoldForm());
+    initTeXConverter(S.HurwitzZeta, new Zeta());
+    initTeXConverter(S.Hypergeometric0F1, new BinaryFunction("\\,_0F_1(;", ";", ")"));
+    initTeXConverter(S.Hypergeometric1F1, new TernaryFunction("\\,_1F_1(", ",", ",", ")"));
+    initTeXConverter(S.HypergeometricU, new TernaryFunction("U(", ",", ",", ")"));
 
-    operTab.put(S.Integrate, new Integrate());
-    operTab.put(S.InverseBetaRegularized, new TernaryFunction("I_", "^{-1}(", ",", ")"));
-    operTab.put(S.InverseErf, new UnaryFunction("\\text{erf}^{-1}(", ")"));
-    operTab.put(S.InverseErfc, new UnaryFunction("\\text{erfc}^{-1}(", ")"));
-    operTab.put(S.InverseGammaRegularized, new BinaryFunction("Q^{-1}(", ",", ")"));
-    operTab.put(S.InverseGudermannian, new UnaryFunction("\\text{gd}^{-1}(", ")"));
+    initTeXConverter(S.Integrate, new Integrate());
+    initTeXConverter(S.InverseBetaRegularized, new TernaryFunction("I_", "^{-1}(", ",", ")"));
+    initTeXConverter(S.InverseErf, new UnaryFunction("\\text{erf}^{-1}(", ")"));
+    initTeXConverter(S.InverseErfc, new UnaryFunction("\\text{erfc}^{-1}(", ")"));
+    initTeXConverter(S.InverseGammaRegularized, new BinaryFunction("Q^{-1}(", ",", ")"));
+    initTeXConverter(S.InverseGudermannian, new UnaryFunction("\\text{gd}^{-1}(", ")"));
 
-    operTab.put(S.LaguerreL, new BinaryFunction("L_", "(", ")"));
-    operTab.put(S.LegendreP, new BinaryTernaryFunction("P_", "^", "(", ")", true));
-    operTab.put(S.LegendreQ, new BinaryTernaryFunction("Q_", "^", "(", ")", true));
+    initTeXConverter(S.LaguerreL, new BinaryFunction("L_", "(", ")"));
+    initTeXConverter(S.LegendreP, new BinaryTernaryFunction("P_", "^", "(", ")", true));
+    initTeXConverter(S.LegendreQ, new BinaryTernaryFunction("Q_", "^", "(", ")", true));
 
-    operTab.put(S.Limit, new Limit());
-    operTab.put(S.List, new List());
-    // operTab.put(S.$RealMatrix, new List());
-    // operTab.put(S.$RealVector, new List());
+    initTeXConverter(S.Limit, new Limit());
+    initTeXConverter(S.List, new List());
+    // initTeXConverter(S.$RealMatrix, new List());
+    // initTeXConverter(S.$RealVector, new List());
 
-    operTab.put(S.MatrixForm, new MatrixForm());
-    operTab.put(S.TableForm, new TableForm());
-    operTab.put(S.Parenthesis, new Parenthesis());
-    operTab.put(S.Part, new Part());
-    operTab.put(S.Plus, new Plus());
-    operTab.put(S.Pochhammer, new BinaryFunction("(", ")_", ""));
-    operTab.put(S.Power, new Power());
-    operTab.put(S.Product, new Product());
+    initTeXConverter(S.MatrixForm, new MatrixForm());
+    initTeXConverter(S.TableForm, new TableForm());
+    initTeXConverter(S.Parenthesis, new Parenthesis());
+    initTeXConverter(S.Part, new Part());
+    initTeXConverter(S.Plus, new Plus());
+    initTeXConverter(S.Pochhammer, new BinaryFunction("(", ")_", ""));
+    initTeXConverter(S.Power, new Power());
+    initTeXConverter(S.Product, new Product());
 
-    operTab.put(S.Rational, new Rational());
+    initTeXConverter(S.Rational, new Rational());
 
-    operTab.put(S.SinIntegral, new UnaryFunction("\\text{Si}(", ")"));
-    operTab.put(S.SinhIntegral, new UnaryFunction("\\text{Shi}(", ")"));
-    operTab.put(S.Slot, new UnaryFunction("\\text{$\\#$", "}"));
-    operTab.put(S.SlotSequence, new UnaryFunction("\\text{$\\#\\#$", "}"));
-    operTab.put(S.SphericalBesselJ, new BinaryFunction("j_", "(", ")"));
-    operTab.put(S.SphericalBesselY, new BinaryFunction("y_", "(", ")"));
-    operTab.put(S.Sqrt, new UnaryFunction("\\sqrt{", "}"));
-    operTab.put(S.Style, new Style());
-    operTab.put(S.Subscript, new Subscript());
-    operTab.put(S.Subsuperscript, new Subsuperscript());
-    operTab.put(S.Sum, new Sum());
-    operTab.put(S.Superscript, new Superscript());
+    initTeXConverter(S.SinIntegral, new UnaryFunction("\\text{Si}(", ")"));
+    initTeXConverter(S.SinhIntegral, new UnaryFunction("\\text{Shi}(", ")"));
+    initTeXConverter(S.Slot, new UnaryFunction("\\text{$\\#$", "}"));
+    initTeXConverter(S.SlotSequence, new UnaryFunction("\\text{$\\#\\#$", "}"));
+    initTeXConverter(S.SphericalBesselJ, new BinaryFunction("j_", "(", ")"));
+    initTeXConverter(S.SphericalBesselY, new BinaryFunction("y_", "(", ")"));
+    initTeXConverter(S.Sqrt, new UnaryFunction("\\sqrt{", "}"));
+    initTeXConverter(S.Style, new Style());
+    initTeXConverter(S.Subscript, new Subscript());
+    initTeXConverter(S.Subsuperscript, new Subsuperscript());
+    initTeXConverter(S.Sum, new Sum());
+    initTeXConverter(S.Superscript, new Superscript());
 
-    operTab.put(S.Times, new Times());
+    initTeXConverter(S.Times, new Times());
 
-    operTab.put(S.WhittakerM, new TernaryFunction("M_{", ",", "}(", ")"));
-    operTab.put(S.WhittakerW, new TernaryFunction("W_{", ",", "}(", ")"));
+    initTeXConverter(S.WhittakerM, new TernaryFunction("M_{", ",", "}(", ")"));
+    initTeXConverter(S.WhittakerW, new TernaryFunction("W_{", ",", "}(", ")"));
 
-    operTab.put(S.Zeta, new Zeta());
+    initTeXConverter(S.Zeta, new Zeta());
 
-    operTab.put(S.Condition, new AbstractOperator(this, Precedence.CONDITION, "\\text{/;}"));
-    operTab.put(S.Unset, new PostOperator(this, Precedence.UNSET, "\\text{=.}"));
-    operTab.put(S.UpSetDelayed, new AbstractOperator(this, Precedence.UPSETDELAYED, "\\text{^:=}"));
-    operTab.put(S.UpSet, new AbstractOperator(this, Precedence.UPSET, "\\text{^=}"));
-    operTab.put(S.NonCommutativeMultiply,
+    initTeXConverter(S.Condition, new AbstractOperator(this, Precedence.CONDITION, "\\text{/;}"));
+    initTeXConverter(S.Unset, new PostOperator(this, Precedence.UNSET, "\\text{=.}"));
+    initTeXConverter(S.UpSetDelayed,
+        new AbstractOperator(this, Precedence.UPSETDELAYED, "\\text{^:=}"));
+    initTeXConverter(S.UpSet, new AbstractOperator(this, Precedence.UPSET, "\\text{^=}"));
+    initTeXConverter(S.NonCommutativeMultiply,
         new AbstractOperator(this, Precedence.NONCOMMUTATIVEMULTIPLY, "\\text{**}"));
-    operTab.put(S.PreDecrement, new PreOperator(this, Precedence.PREDECREMENT, "\\text{--}"));
-    operTab.put(S.ReplaceRepeated,
+    initTeXConverter(S.PreDecrement, new PreOperator(this, Precedence.PREDECREMENT, "\\text{--}"));
+    initTeXConverter(S.ReplaceRepeated,
         new AbstractOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}"));
-    operTab.put(S.MapAll, new AbstractOperator(this, Precedence.MAPALL, "\\text{//@}"));
-    operTab.put(S.AddTo, new AbstractOperator(this, Precedence.ADDTO, "\\text{+=}"));
-    operTab.put(S.Greater, new AbstractOperator(this, Precedence.GREATER, " > "));
-    operTab.put(S.GreaterEqual, new AbstractOperator(this, Precedence.GREATEREQUAL, "\\geq "));
-    operTab.put(S.SubtractFrom, new AbstractOperator(this, Precedence.SUBTRACTFROM, "\\text{-=}"));
-    operTab.put(S.Subtract, new AbstractOperator(this, Precedence.SUBTRACT, " - "));
-    operTab.put(S.CompoundExpression,
+    initTeXConverter(S.MapAll, new AbstractOperator(this, Precedence.MAPALL, "\\text{//@}"));
+    initTeXConverter(S.AddTo, new AbstractOperator(this, Precedence.ADDTO, "\\text{+=}"));
+    initTeXConverter(S.Greater, new AbstractOperator(this, Precedence.GREATER, " > "));
+    initTeXConverter(S.GreaterEqual, new AbstractOperator(this, Precedence.GREATEREQUAL, "\\geq "));
+    initTeXConverter(S.SubtractFrom,
+        new AbstractOperator(this, Precedence.SUBTRACTFROM, "\\text{-=}"));
+    initTeXConverter(S.Subtract, new AbstractOperator(this, Precedence.SUBTRACT, " - "));
+    initTeXConverter(S.CompoundExpression,
         new AbstractOperator(this, Precedence.COMPOUNDEXPRESSION, ";"));
-    operTab.put(S.DivideBy, new AbstractOperator(this, Precedence.DIVIDEBY, "\\text{/=}"));
-    operTab.put(S.StringJoin, new AbstractOperator(this, Precedence.STRINGJOIN, "\\text{<>}"));
-    operTab.put(S.UnsameQ, new AbstractOperator(this, Precedence.UNSAMEQ, "\\text{=!=}"));
-    operTab.put(S.Decrement, new PostOperator(this, Precedence.DECREMENT, "\\text{--}"));
-    operTab.put(S.LessEqual, new AbstractOperator(this, Precedence.LESSEQUAL, "\\leq "));
-    operTab.put(S.Colon, new AbstractOperator(this, Precedence.COLON, "\\text{:}"));
-    operTab.put(S.Increment, new PostOperator(this, Precedence.INCREMENT, "\\text{++}"));
-    operTab.put(S.Alternatives, new AbstractOperator(this, Precedence.ALTERNATIVES, "\\text{|}"));
-    operTab.put(S.Equal, new AbstractOperator(this, Precedence.EQUAL, " == "));
-    operTab.put(S.DirectedEdge, new AbstractOperator(this, Precedence.DIRECTEDEDGE, "\\to "));
-    operTab.put(S.Divide, new AbstractOperator(this, Precedence.DIVIDE, "\\text{/}"));
-    operTab.put(S.Apply, new AbstractOperator(this, Precedence.APPLY, "\\text{@@}"));
-    operTab.put(S.Set, new AbstractOperator(this, Precedence.SET, " = "));
-    // operTab.put(F.Minus,
+    initTeXConverter(S.DivideBy, new AbstractOperator(this, Precedence.DIVIDEBY, "\\text{/=}"));
+    initTeXConverter(S.StringJoin, new AbstractOperator(this, Precedence.STRINGJOIN, "\\text{<>}"));
+    initTeXConverter(S.UnsameQ, new AbstractOperator(this, Precedence.UNSAMEQ, "\\text{=!=}"));
+    initTeXConverter(S.Decrement, new PostOperator(this, Precedence.DECREMENT, "\\text{--}"));
+    initTeXConverter(S.LessEqual, new AbstractOperator(this, Precedence.LESSEQUAL, "\\leq "));
+    initTeXConverter(S.Colon, new AbstractOperator(this, Precedence.COLON, "\\text{:}"));
+    initTeXConverter(S.Increment, new PostOperator(this, Precedence.INCREMENT, "\\text{++}"));
+    initTeXConverter(S.Alternatives,
+        new AbstractOperator(this, Precedence.ALTERNATIVES, "\\text{|}"));
+    initTeXConverter(S.Equal, new AbstractOperator(this, Precedence.EQUAL, " == "));
+    initTeXConverter(S.DirectedEdge, new AbstractOperator(this, Precedence.DIRECTEDEDGE, "\\to "));
+    initTeXConverter(S.Divide, new AbstractOperator(this, Precedence.DIVIDE, "\\text{/}"));
+    initTeXConverter(S.Apply, new AbstractOperator(this, Precedence.APPLY, "\\text{@@}"));
+    initTeXConverter(S.Set, new AbstractOperator(this, Precedence.SET, " = "));
+    // initTeXConverter(F.Minus,
     // new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Minus").getPrecedence(),
     // "\\text{-}"));
-    operTab.put(S.Map, new AbstractOperator(this, Precedence.MAP, "\\text{/@}"));
-    operTab.put(S.SameQ, new AbstractOperator(this, Precedence.SAMEQ, "\\text{===}"));
-    operTab.put(S.Less, new AbstractOperator(this, Precedence.LESS, " < "));
-    operTab.put(S.PreIncrement, new PreOperator(this, Precedence.PREINCREMENT, "\\text{++}"));
-    operTab.put(S.Unequal, new AbstractOperator(this, Precedence.UNEQUAL, "\\neq "));
-    operTab.put(S.Or, new AbstractOperator(this, Precedence.OR, " \\lor "));
-    // operTab.put(F.PrePlus,
+    initTeXConverter(S.Map, new AbstractOperator(this, Precedence.MAP, "\\text{/@}"));
+    initTeXConverter(S.SameQ, new AbstractOperator(this, Precedence.SAMEQ, "\\text{===}"));
+    initTeXConverter(S.Less, new AbstractOperator(this, Precedence.LESS, " < "));
+    initTeXConverter(S.PreIncrement, new PreOperator(this, Precedence.PREINCREMENT, "\\text{++}"));
+    initTeXConverter(S.Unequal, new AbstractOperator(this, Precedence.UNEQUAL, "\\neq "));
+    initTeXConverter(S.Or, new AbstractOperator(this, Precedence.OR, " \\lor "));
+    // initTeXConverter(F.PrePlus,
     // new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("PrePlus").getPrecedence(),
     // "\\text{+}"));
-    operTab.put(S.TimesBy, new AbstractOperator(this, Precedence.TIMESBY, "\\text{*=}"));
-    operTab.put(S.And, new AbstractOperator(this, Precedence.AND, " \\land "));
-    operTab.put(S.Not, new PreOperator(this, Precedence.NOT, "\\neg "));
-    operTab.put(S.Factorial, new PostOperator(this, Precedence.FACTORIAL, " ! "));
-    operTab.put(S.Factorial2, new PostOperator(this, Precedence.FACTORIAL2, " !! "));
+    initTeXConverter(S.TimesBy, new AbstractOperator(this, Precedence.TIMESBY, "\\text{*=}"));
+    initTeXConverter(S.And, new AbstractOperator(this, Precedence.AND, " \\land "));
+    initTeXConverter(S.Not, new PreOperator(this, Precedence.NOT, "\\neg "));
+    initTeXConverter(S.Factorial, new PostOperator(this, Precedence.FACTORIAL, " ! "));
+    initTeXConverter(S.Factorial2, new PostOperator(this, Precedence.FACTORIAL2, " !! "));
 
-    operTab.put(S.ReplaceAll, new AbstractOperator(this, Precedence.REPLACEALL, "\\text{/.}\\,"));
-    operTab.put(S.ReplaceRepeated,
+    initTeXConverter(S.ReplaceAll,
+        new AbstractOperator(this, Precedence.REPLACEALL, "\\text{/.}\\,"));
+    initTeXConverter(S.ReplaceRepeated,
         new AbstractOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}\\,"));
-    operTab.put(S.Rule, new AbstractOperator(this, Precedence.RULE, "\\to "));
-    operTab.put(S.RuleDelayed, new AbstractOperator(this, Precedence.RULEDELAYED, ":\\to "));
-    operTab.put(S.Set, new AbstractOperator(this, Precedence.SET, " = "));
-    operTab.put(S.SetDelayed, new AbstractOperator(this, Precedence.SETDELAYED, "\\text{:=}\\,"));
-    operTab.put(S.UndirectedEdge,
+    initTeXConverter(S.Rule, new AbstractOperator(this, Precedence.RULE, "\\to "));
+    initTeXConverter(S.RuleDelayed, new AbstractOperator(this, Precedence.RULEDELAYED, ":\\to "));
+    initTeXConverter(S.Set, new AbstractOperator(this, Precedence.SET, " = "));
+    initTeXConverter(S.SetDelayed,
+        new AbstractOperator(this, Precedence.SETDELAYED, "\\text{:=}\\,"));
+    initTeXConverter(S.UndirectedEdge,
         new AbstractOperator(this, Precedence.UNDIRECTEDEDGE, "\\leftrightarrow "));
-    operTab.put(S.TwoWayRule,
+    initTeXConverter(S.TwoWayRule,
         new AbstractOperator(this, Precedence.TWOWAYRULE, "\\leftrightarrow "));
-    operTab.put(S.CenterDot, new AbstractOperator(this, Precedence.CENTERDOT, "\\cdot "));
-    operTab.put(S.CircleDot, new AbstractOperator(this, Precedence.CIRCLEDOT, "\\odot "));
+    initTeXConverter(S.CenterDot, new AbstractOperator(this, Precedence.CENTERDOT, "\\cdot "));
+    initTeXConverter(S.CircleDot, new AbstractOperator(this, Precedence.CIRCLEDOT, "\\odot "));
 
-    operTab.put(S.Sin, new TeXFunction(this, "sin "));
-    operTab.put(S.Cos, new TeXFunction(this, "cos "));
-    operTab.put(S.Tan, new TeXFunction(this, "tan "));
-    operTab.put(S.Cot, new TeXFunction(this, "cot "));
-    operTab.put(S.Sinh, new TeXFunction(this, "sinh "));
-    operTab.put(S.Cosh, new TeXFunction(this, "cosh "));
-    operTab.put(S.Tanh, new TeXFunction(this, "tanh "));
-    operTab.put(S.Coth, new TeXFunction(this, "coth "));
-    operTab.put(S.Csc, new TeXFunction(this, "csc "));
-    operTab.put(S.Sec, new TeXFunction(this, "sec "));
-    operTab.put(S.ArcSin, new TeXFunction(this, "arcsin "));
-    operTab.put(S.ArcCos, new TeXFunction(this, "arccos "));
-    operTab.put(S.ArcTan, new TeXFunction(this, "arctan "));
-    operTab.put(S.ArcCot, new TeXFunction(this, "arccot "));
-    operTab.put(S.ArcSinh, new TeXFunction(this, "arcsinh "));
-    operTab.put(S.ArcCosh, new TeXFunction(this, "arccosh "));
-    operTab.put(S.ArcTanh, new TeXFunction(this, "arctanh "));
-    operTab.put(S.ArcCoth, new TeXFunction(this, "arccoth "));
-    operTab.put(S.Log, new TeXFunction(this, "log "));
+    initTeXConverter(S.Sin, new TeXFunction(this, "sin "));
+    initTeXConverter(S.Cos, new TeXFunction(this, "cos "));
+    initTeXConverter(S.Tan, new TeXFunction(this, "tan "));
+    initTeXConverter(S.Cot, new TeXFunction(this, "cot "));
+    initTeXConverter(S.Sinh, new TeXFunction(this, "sinh "));
+    initTeXConverter(S.Cosh, new TeXFunction(this, "cosh "));
+    initTeXConverter(S.Tanh, new TeXFunction(this, "tanh "));
+    initTeXConverter(S.Coth, new TeXFunction(this, "coth "));
+    initTeXConverter(S.Csc, new TeXFunction(this, "csc "));
+    initTeXConverter(S.Sec, new TeXFunction(this, "sec "));
+    initTeXConverter(S.ArcSin, new TeXFunction(this, "arcsin "));
+    initTeXConverter(S.ArcCos, new TeXFunction(this, "arccos "));
+    initTeXConverter(S.ArcTan, new TeXFunction(this, "arctan "));
+    initTeXConverter(S.ArcCot, new TeXFunction(this, "arccot "));
+    initTeXConverter(S.ArcSinh, new TeXFunction(this, "arcsinh "));
+    initTeXConverter(S.ArcCosh, new TeXFunction(this, "arccosh "));
+    initTeXConverter(S.ArcTanh, new TeXFunction(this, "arctanh "));
+    initTeXConverter(S.ArcCoth, new TeXFunction(this, "arccoth "));
+    initTeXConverter(S.Log, new TeXFunction(this, "log "));
 
     CONSTANT_SYMBOLS.put("Alpha", "\\alpha");
     CONSTANT_SYMBOLS.put("Beta", "\\beta");
@@ -2398,5 +2190,9 @@ public class TeXFormFactory {
     CONSTANT_EXPRS.put(S.Pi, "\\pi");
     CONSTANT_EXPRS.put(F.CInfinity, "\\infty");
     CONSTANT_EXPRS.put(F.CNInfinity, "-\\infty");
+  }
+
+  public void initTeXConverter(ISymbol key, AbstractTeXConverter value) {
+    operTab.put(key, value);
   }
 }
