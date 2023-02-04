@@ -2,6 +2,11 @@ package org.matheclipse.parser.client.operator;
 
 /** Precedences of the built-in Symja operators */
 public class Precedence {
+  /**
+   * Use 0 precedence, if at the start of an expression.
+   */
+  public static final int NO_PRECEDENCE = 0;
+
   public static final int ADDTO = 100;
   public static final int ALTERNATIVES = 160;
   public static final int AND = 215;

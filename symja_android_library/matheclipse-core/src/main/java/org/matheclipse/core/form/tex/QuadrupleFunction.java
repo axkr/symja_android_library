@@ -27,13 +27,13 @@ public class QuadrupleFunction extends AbstractTeXConverter {
       return false;
     }
     buffer.append(first);
-    fFactory.convertInternal(buffer, f.arg1(), 0);
+    fFactory.convertInternal(buffer, f.arg1(), 0, TeXFormFactory.NO_PLUS_CALL);
     buffer.append(middle1);
-    fFactory.convertInternal(buffer, f.arg2(), 0);
+    fFactory.convertInternal(buffer, f.arg2(), 0, TeXFormFactory.NO_PLUS_CALL);
     buffer.append(middle2);
-    fFactory.convertInternal(buffer, f.arg3(), 0);
+    fFactory.convertInternal(buffer, f.arg3(), 0, TeXFormFactory.NO_PLUS_CALL);
     buffer.append(middle3);
-    fFactory.convertInternal(buffer, f.arg4(), 0);
+    fFactory.convertInternal(buffer, f.arg4(), 0, TeXFormFactory.NO_PLUS_CALL);
     buffer.append(last);
     return true;
   }

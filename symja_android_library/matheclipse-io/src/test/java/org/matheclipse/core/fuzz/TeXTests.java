@@ -21,6 +21,7 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
+import org.matheclipse.parser.client.operator.Precedence;
 import junit.framework.TestCase;
 
 public class TeXTests extends TestCase {
@@ -143,7 +144,7 @@ public class TeXTests extends TestCase {
               System.err.flush();
             }
             // eval.eval(mutantStr);
-            fTeXFactory.convert(buf, mutant, 0);
+            fTeXFactory.convert(buf, mutant, Precedence.NO_PRECEDENCE);
             System.out.println(buf.toString());
           } catch (FlowControlException mex) {
             if (!quietMode) {

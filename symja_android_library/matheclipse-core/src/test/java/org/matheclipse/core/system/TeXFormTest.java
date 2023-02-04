@@ -162,7 +162,7 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
 
   public void testHypergeometric0F1() {
     check("TeXForm(f*g(Hypergeometric0F1(a,b)))", //
-        "f\\,g(\\,_0F_1(;a;b))");
+        "f \\cdot g(\\,_0F_1(;a;b))");
   }
 
   public void testHypergeometric1F1() {
@@ -216,7 +216,7 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
 
   public void testPochhammer() {
     check("TeXForm(f*Pochhammer(a,b)*z(a,b))", //
-        "f\\,(a)_b\\,z(a,b)");
+        "f \\cdot (a)_b \\cdot z(a,b)");
   }
 
   public void testSinIntegral() {
@@ -241,7 +241,7 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
 
   public void testTeXForm() {
     check("TeXForm(Hold(2^3*3*5*11))", //
-        "\\text{Hold}({2}^{3}\\cdot 3\\cdot 5\\cdot 11)");
+        "\\text{Hold}({2}^{3} \\cdot 3 \\cdot 5 \\cdot 11)");
     check("TeXForm(Hold(D(Sin(x),{x,3})))", //
         "\\text{Hold}(\\frac{\\partial ^3 \\sin (x)}{\\partial x^3})");
     check("TeXForm(Hold(D(Sin(x),x)))", //
@@ -249,11 +249,11 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     check("TeXForm(Hold(Integrate(Sin(x),x)))", //
         "\\text{Hold}(\\int  \\sin (x)\\,\\mathrm{d}x)");
     check("TeXForm(-2.12 * x )", //
-        "\\left( -2.12\\right) \\cdot x");
+        "-2.12 \\cdot x");
     check("TeXForm( f(#,#3)&  )", //
         "f(\\text{$\\#$1},\\text{$\\#$3})\\&");
     check("TeXForm( f(#,#3)*2&  )", //
-        "f(\\text{$\\#$1},\\text{$\\#$3})\\cdot 2\\&");
+        "f(\\text{$\\#$1},\\text{$\\#$3}) \\cdot 2\\&");
     check("TeXForm(N(1.1+Pi*I,30))", //
         "1.1 + 3.14159\\,i ");
     check("TeXForm(N(Pi,2))", //
@@ -271,11 +271,11 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     check("TeXForm(2+I*3)", //
         "2 + 3\\,i ");
     check("TeXForm(a+b^2)", //
-        "a+{b}^{2}");
+        "a + {b}^{2}");
     check("TeXForm(Expand((x+y)^3))", //
-        "{x}^{3} + 3\\cdot {x}^{2}\\cdot y + 3\\cdot x\\cdot {y}^{2}+{y}^{3}");
+        "{x}^{3}+3 \\cdot {x}^{2} \\cdot y+3 \\cdot x \\cdot {y}^{2} + {y}^{3}");
     check("TeXForm(3*a+b^2)", //
-        "3\\cdot a+{b}^{2}");
+        "3 \\cdot a + {b}^{2}");
     check("TeXForm(x/Sqrt(5))", //
         "\\frac{x}{\\sqrt{5}}");
     check("TeXForm(x^(1/3))", //
@@ -302,7 +302,7 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     check("TeXForm(Superscript(a,b))", //
         "{a}^{b}");
     check("TeXForm(Subscript(x,2*k+1))", //
-        "{x}_{1 + 2\\cdot k}");
+        "{x}_{1+2 \\cdot k}");
     check("TeXForm(Subsuperscript(a,b,c))", //
         "{a}_{b}^{c}");
     check("TeXForm(HarmonicNumber(n))", //
@@ -320,7 +320,7 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
 
   public void testTeXFormNegativeFraction() {
     check("TeXForm(a/2+Tan(x)/4-Tan(x)^2/3+12)", //
-        "12+\\frac{a}{2}+\\frac{\\tan (x)}{4}-\\frac{{\\tan (x)}^{2}}{3}");
+        "12 + \\frac{a}{2} + \\frac{\\tan (x)}{4} - \\frac{{\\tan (x)}^{2}}{3}");
   }
 
   public void testWeierstrassHalfPeriods() {

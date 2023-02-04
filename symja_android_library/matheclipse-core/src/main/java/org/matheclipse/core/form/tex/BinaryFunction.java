@@ -42,9 +42,9 @@ public class BinaryFunction extends AbstractTeXConverter {
       return false;
     }
     buffer.append(first);
-    fFactory.convertInternal(buffer, f.arg1(), 0);
+    fFactory.convertInternal(buffer, f.arg1(), 0, TeXFormFactory.NO_PLUS_CALL);
     buffer.append(middle);
-    fFactory.convertInternal(buffer, f.arg2(), 0);
+    fFactory.convertInternal(buffer, f.arg2(), 0, TeXFormFactory.NO_PLUS_CALL);
     buffer.append(last);
     return true;
   }

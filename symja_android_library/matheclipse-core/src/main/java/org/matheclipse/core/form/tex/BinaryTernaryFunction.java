@@ -26,19 +26,19 @@ public class BinaryTernaryFunction extends AbstractTeXConverter {
       return false;
     }
     buffer.append(first);
-    fFactory.convertInternal(buffer, f.arg1(), 0);
+    fFactory.convertInternal(buffer, f.arg1(), 0, TeXFormFactory.NO_PLUS_CALL);
     if (f.size() == 3) {
       if (takePenultimate) {
         buffer.append(middle2);
       } else {
         buffer.append(middle1);
       }
-      fFactory.convertInternal(buffer, f.arg2(), 0);
+      fFactory.convertInternal(buffer, f.arg2(), 0, TeXFormFactory.NO_PLUS_CALL);
     } else {
       buffer.append(middle1);
-      fFactory.convertInternal(buffer, f.arg2(), 0);
+      fFactory.convertInternal(buffer, f.arg2(), 0, TeXFormFactory.NO_PLUS_CALL);
       buffer.append(middle2);
-      fFactory.convertInternal(buffer, f.arg3(), 0);
+      fFactory.convertInternal(buffer, f.arg3(), 0, TeXFormFactory.NO_PLUS_CALL);
     }
     buffer.append(last);
     return true;

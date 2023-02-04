@@ -33,7 +33,7 @@ public class UnaryFunction extends AbstractTeXConverter {
       return false;
     }
     buffer.append(pre);
-    fFactory.convertInternal(buffer, f.arg1(), 0);
+    fFactory.convertInternal(buffer, f.arg1(), 0, TeXFormFactory.NO_PLUS_CALL);
     buffer.append(post);
     return true;
   }

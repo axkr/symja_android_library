@@ -755,22 +755,23 @@ public class OutputFormFactory {
 
   private void convertTimesOperator(final Appendable buf, final IAST timesAST,
       final InfixOperator oper, final int precedence, boolean caller) throws IOException {
+    int size = timesAST.size();
     boolean showOperator = true;
     int currPrecedence = oper.getPrecedence();
     if (currPrecedence < precedence) {
       append(buf, "(");
     }
 
-    if (timesAST.size() > 1) {
+    if (size > 1) {
       IExpr arg1 = timesAST.arg1();
-      if (arg1.isReal() && timesAST.size() > 2 && !timesAST.arg2().isNumber()) {
+      if (arg1.isReal() && size > 2 && !timesAST.arg2().isNumber()) {
         if (arg1.isMinusOne()) {
           append(buf, fInputForm && (caller == PLUS_CALL) ? " - " : "-");
           showOperator = false;
         } else {
           convertNumber(buf, (ISignedNumber) arg1, Precedence.PLUS, caller);
         }
-      } else if (arg1.isComplex() && timesAST.size() > 2) {
+      } else if (arg1.isComplex() && size > 2) {
         convertComplex(buf, (IComplex) arg1, oper.getPrecedence(), caller);
       } else {
         if (caller == PLUS_CALL) {
@@ -779,7 +780,7 @@ public class OutputFormFactory {
         convert(buf, arg1, oper.getPrecedence(), false);
       }
     }
-    for (int i = 2; i < timesAST.size(); i++) {
+    for (int i = 2; i < size; i++) {
       if (showOperator) {
         append(buf, oper.getOperatorString());
       } else {

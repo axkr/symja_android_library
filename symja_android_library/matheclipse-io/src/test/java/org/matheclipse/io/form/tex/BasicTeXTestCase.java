@@ -1,41 +1,56 @@
 package org.matheclipse.io.form.tex;
 
+import static org.junit.Assert.assertEquals;
 import java.io.StringWriter;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import junit.framework.TestCase;
+import org.matheclipse.parser.client.operator.Precedence;
 
 /** Tests LaTeX export function */
-public class BasicTeXTestCase extends TestCase {
+public class BasicTeXTestCase {
 
   TeXUtilities texUtil;
 
-  public BasicTeXTestCase(String name) {
-    super(name);
-  }
+  // pubLIC BASICTEXTESTCASE(STRING NAME) {
+  // SUPER(NAME);
+  // }
 
-  /** Test mathml function */
+  @Test
   public void testTeX001() {
-    check("-0.0", "0.0");
-    check("0.0", "0.0");
-    check("a*b", "a\\,b");
+    check("-0.0", //
+        "0.0");
+    check("0.0", //
+        "0.0");
+    check("a*b", //
+        "a \\cdot b");
   }
 
+  @Test
   public void testTeX002() {
-    check("a*b+c", "a\\,b+c");
+    check("a*b+c", //
+        "a \\cdot b + c");
   }
 
+  @Test
   public void testTeX003() {
-    check("1/3", "\\frac{1}{3}");
-    check("theta", "\\theta");
-    check("Theta", "\\theta");
+    check("1/3", //
+        "\\frac{1}{3}");
+    check("theta", //
+        "\\theta");
+    check("Theta", //
+        "\\theta");
   }
 
+  @Test
   public void testTeX004() {
     check("Sum(a,{x,1,z})", //
         "\\sum_{x = 1}^{z} a");
@@ -47,6 +62,7 @@ public class BasicTeXTestCase extends TestCase {
         "\\sum_{i} f");
   }
 
+  @Test
   public void testTeX005() {
     check("Product(a,{x,1,z})", //
         "\\prod_{x = 1}^{z} a");
@@ -54,11 +70,13 @@ public class BasicTeXTestCase extends TestCase {
         "\\prod_{i} f");
   }
 
+  @Test
   public void testTeX006() {
     check("Integrate(f(x),y)", //
         "\\int  f(x)\\,\\mathrm{d}y");
   }
 
+  @Test
   public void testTeX007() {
     check("Integrate(f(x),{x,1,10})", //
         "\\int_{1}^{10} f(x)\\,\\mathrm{d}x");
@@ -66,26 +84,31 @@ public class BasicTeXTestCase extends TestCase {
         "\\int_{0}^{\\infty} {e}^{ - x}\\,\\mathrm{d}x");
   }
 
+  @Test
   public void testTeX008() {
     check("alpha + beta", //
-        "\\alpha+\\beta");
+        "\\alpha + \\beta");
   }
 
+  @Test
   public void testTeX009() {
     check("Limit(Sin(x),x->0)", //
         "\\lim_{x\\to 0 }\\,{\\sin (x)}");
   }
 
+  @Test
   public void testTeX010() {
     check("3+x*(4+x*(5+(33+x^2)*x^4))", //
-        "3 + x\\,\\left( 4 + x\\,\\left( 5 + \\left( 33+{x}^{2}\\right) \\,{x}^{4}\\right) \\right) ");
+        "3 + x \\cdot \\left( 4 + x \\cdot \\left( 5 + \\left( 33 + {x}^{2}\\right)  \\cdot {x}^{4}\\right) \\right) ");
   }
 
+  @Test
   public void testTeX011() {
     check("x^(3/4*y)", //
-        "{x}^{\\frac{3\\cdot y}{4}}");
+        "{x}^{\\frac{3}{4} \\cdot y}");
   }
 
+  @Test
   public void testTeX012a() {
     check(F.MatrixForm(F.List(F.List(1, 2, 3), F.List(3, 4, 5))), //
         "\\left(\n" + //
@@ -97,6 +120,7 @@ public class BasicTeXTestCase extends TestCase {
             "\\right) ");
   }
 
+  @Test
   public void testTeX012b() {
     check("TableForm({1,2,3,4,5,6})", //
         "\\begin{array}{c}\n" + //
@@ -108,6 +132,7 @@ public class BasicTeXTestCase extends TestCase {
             " 6 \n" + "\\end{array}");
   }
 
+  @Test
   public void testTeX012c() {
     check("TableForm({{1,2,3},{4,5,6}})", //
         "\\begin{array}{ccc}\n" + //
@@ -116,18 +141,21 @@ public class BasicTeXTestCase extends TestCase {
             "\\end{array}");
   }
 
+  @Test
   public void testTeX013() {
     check("a*b+c; a*b+c", //
-        "a\\,b+c;a\\,b+c");
+        "a \\cdot b + c;a \\cdot b + c");
   }
 
+  @Test
   public void testTeX014() {
     check("Sin(x)^2", //
         "{\\sin (x)}^{2}");
     check("Sin(2*x)^2", //
-        "{\\sin (2\\cdot x)}^{2}");
+        "{\\sin (2 \\cdot x)}^{2}");
   }
 
+  @Test
   public void testTeX015() {
 
     check("-I", //
@@ -192,21 +220,25 @@ public class BasicTeXTestCase extends TestCase {
     check("Complex(0,-1)", " - i ");
   }
 
+  @Test
   public void testTeX016() {
     check("(a*d+b*c)*d^(-1)*f^(-1)", //
-        "\\frac{b\\,c + a\\,d}{d\\,f}");
+        "\\frac{b \\cdot c + a \\cdot d}{d \\cdot f}");
   }
 
+  @Test
   public void testTeX017() {
     check("1/4*d^(-1)*f^(-1)", //
-        "\\frac{1}{4\\cdot d\\cdot f}");
+        "\\frac{1}{4 \\cdot d \\cdot f}");
   }
 
+  @Test
   public void testTeX018() {
     check("1/4*a^2*b^(-1)*f^(-1)", //
-        "\\frac{{a}^{2}}{4\\cdot b\\cdot f}");
+        "\\frac{{a}^{2}}{4 \\cdot b \\cdot f}");
   }
 
+  @Test
   public void testTeX019() {
     check("n!", //
         "n ! ");
@@ -214,23 +246,26 @@ public class BasicTeXTestCase extends TestCase {
         "n !! ");
   }
 
+  @Test
   public void testTeX020() {
+    check("Integrate(8+5*x, {x, 5, 10})", //
+        "\\int_{5}^{10} 8+5 \\cdot x\\,\\mathrm{d}x");
+    check("Hold(1 * 5 * x + 1 * 63)", //
+        "\\text{Hold}(1 \\cdot 5 \\cdot x + 1 \\cdot 63)");
     check("Hold(++x)", //
         "\\text{Hold}(\\text{++}x)");
     check("Hold(y^2/.x->3)", //
         "\\text{Hold}({y}^{2}\\text{/.}\\,x\\to 3)");
     check("Hold(y^2//.x->3)", //
         "\\text{Hold}({y}^{2}\\text{//.}\\,x\\to 3)");
-    check("Hold(1 * 5 * x + 1 * 63)", //
-        "\\text{Hold}(5\\,x + 63)");
+
     check("10*f(x)", //
-        "10\\cdot f(x)");
+        "10 \\cdot f(x)");
     check("Hold((5*3)/2)", //
-        "\\text{Hold}(\\frac{3\\cdot 5}{2})");
-    check("Integrate(8+5*x, {x, 5, 10})", //
-        "\\int_{5}^{10} 8 + 5\\cdot x\\,\\mathrm{d}x");
+        "\\text{Hold}(\\frac{1}{2} \\cdot 3 \\cdot 5)");
   }
 
+  @Test
   public void testTeX021() {
     check("\\[Alpha]", //
         "\\alpha");
@@ -259,18 +294,20 @@ public class BasicTeXTestCase extends TestCase {
 
   }
 
+  @Test
   public void testTeX022() {
-    // issue #116
     check("-I*1/2*Sqrt(2)", //
-        "\\frac{ - i }{\\sqrt{2}}");
+        " - \\frac{i }{\\sqrt{2}}");
   }
 
+  @Test
   public void testTeX023() {
     // issue #117
     check("5*3^(5*x)*Log(3)", //
-        "5\\cdot {3}^{5\\cdot x}\\cdot \\log (3)");
+        "5 \\cdot {3}^{5 \\cdot x} \\cdot \\log (3)");
   }
 
+  @Test
   public void testTeX024() {
     check("\"a hello { % # } _&$ world string\"", //
         "\\textnormal{a hello \\{ \\% \\# \\} \\_\\&\\$ world string}");
@@ -279,6 +316,7 @@ public class BasicTeXTestCase extends TestCase {
             "this is \\& and $<$ to $>$ \" world}");
   }
 
+  @Test
   public void testTeX025() {
     StringWriter stw = new StringWriter();
     TeXUtilities localTexUtil = new TeXUtilities(EvalEngine.get(), true);
@@ -286,6 +324,7 @@ public class BasicTeXTestCase extends TestCase {
     assertEquals(stw.toString(), "0.3");
   }
 
+  @Test
   public void testTeX026() {
     check("DirectedEdge(a,b)", //
         "a\\to b");
@@ -297,6 +336,7 @@ public class BasicTeXTestCase extends TestCase {
         "\\text{Graph}(\\{1,2,3\\},\\{1\\to 2,2\\to 3\\})");
   }
 
+  @Test
   public void testTeX027() {
     check(new ASTRealMatrix(new double[][] {{1.0, 2.0, 3.0}, {3.3, 4.4, 5.5}}, false), //
         "\\left(\n" + //
@@ -308,11 +348,13 @@ public class BasicTeXTestCase extends TestCase {
             "\\right) ");
   }
 
+  @Test
   public void testTeX028() {
     check(new ASTRealVector(new double[] {1.0, 2.0, 3.0}, false), //
         "\\{1.0,2.0,3.0\\}");
   }
 
+  @Test
   public void testTeX029() {
     check("Inequality(c,Greater,0,GreaterEqual,a)", //
         "c > 0\\geq a");
@@ -321,33 +363,39 @@ public class BasicTeXTestCase extends TestCase {
         "a < 0\\leq b == c\\neq d");
   }
 
+  @Test
   public void testTeX30() {
     check("Quantity(3,\"m\")", //
         "\\text{Quantity}(3,\\textnormal{m})");
   }
 
+  @Test
   public void testTeX31() {
     check("a&&b||c", //
         "\\left( a \\land b\\right)  \\lor c");
   }
 
+  @Test
   public void testTeX32() {
     check("{{a,b,c},{a,c,b},{c,a,b}}", //
         "\\{\\{a,b,c\\},\\{a,c,b\\},\\{c,a,b\\}\\}");
   }
 
+  @Test
   public void testTeX033() {
     IExpr expr = EvalEngine.get().evaluate("2.7*6");
     check(expr, //
         "16.2");
   }
 
+  @Test
   public void testTeX034() {
     IExpr expr = EvalEngine.get().evaluate("ComplexInfinity");
     check(expr, //
         "ComplexInfinity");
   }
 
+  @Test
   public void testTeX035() {
     IExpr expr = EvalEngine.get().evaluate("a[[1]]");
     check(expr, //
@@ -357,6 +405,7 @@ public class BasicTeXTestCase extends TestCase {
         "\\text{test}[[1,2,3]]");
   }
 
+  @Test
   public void testTeX036() {
     try {
       IExpr expr = new EvalEngine(true).evaluate("HoldForm(f(x,y))");
@@ -370,12 +419,14 @@ public class BasicTeXTestCase extends TestCase {
     }
   }
 
+  @Test
   public void testTeX037() {
     IExpr expr = EvalEngine.get().evaluate("f(#,#3,##)");
     check(expr, //
         "f(\\text{$\\#$1},\\text{$\\#$3},\\text{$\\#\\#$1})");
   }
 
+  @Test
   public void testTeX038() {
     // gitlab #108
     IExpr expr = EvalEngine.get().evaluate("Solve({Log10(x)==21.69},{x})");
@@ -383,6 +434,7 @@ public class BasicTeXTestCase extends TestCase {
         "\\{\\{x\\to 4.89779*10^{21}\\}\\}");
   }
 
+  @Test
   public void testTeX039() {
     // gitlab #108
     IExpr expr = EvalEngine.get().evaluate("Superscript(2,10)");
@@ -390,6 +442,7 @@ public class BasicTeXTestCase extends TestCase {
         "{2}^{10}");
   }
 
+  @Test
   public void testTeX040() {
     IExpr expr = EvalEngine.get().evaluate("Subscript(\"zzz\",36)");
     check(expr, //
@@ -399,24 +452,28 @@ public class BasicTeXTestCase extends TestCase {
         "{a}_{1,2,3}");
   }
 
+  @Test
   public void testTeX041() {
     IExpr expr = EvalEngine.get().evaluate("Interval({-3.21625*10^-16,5.66554*10^-16})");
     check(expr, //
         "Interval(\\{-3.21625*10^{-16},5.66554*10^{-16}\\})");
   }
 
+  @Test
   public void testTeX042() {
     IExpr expr = EvalEngine.get().evaluate("Cot(Interval({3*Pi/4,6*Pi/5}))");
     check(expr, //
-        "Interval(\\{-\\infty,-1\\},\\{\\sqrt{\\left( 1+\\frac{2}{\\sqrt{5}}\\right) },\\infty\\})");
+        "Interval(\\{-\\infty,-1\\},\\{\\sqrt{\\left( 1 + \\frac{2}{\\sqrt{5}}\\right) },\\infty\\})");
   }
 
+  @Test
   public void testTeX043() {
     IExpr expr = EvalEngine.get().evaluate("<|a -> x, b -> y, c -> z|>");
     check(expr, //
         "\\langle|a\\to x,b\\to y,c\\to z|\\rangle");
   }
 
+  @Test
   public void testTeX044() {
     IExpr expr = EvalEngine.get().evaluate("{{{a->b},{c:>d}},{4,5,6}}");
     ((IAST) expr).setEvalFlags(IAST.OUTPUT_MULTILINE);
@@ -427,36 +484,67 @@ public class BasicTeXTestCase extends TestCase {
             "\\end{array}");
   }
 
+  @Test
   public void testTeX045() {
     IExpr expr = EvalEngine.get().evaluate("Derivative(2)[10/x^4]");
     check(expr, //
         "\\left( \\frac{10}{{x}^{4}}\\right) ''");
   }
 
+  @Test
   public void testTeX046() {
     IExpr expr = EvalEngine.get().evaluate("Derivative(a)[10/x^4]");
     check(expr, //
         "\\left( \\frac{10}{{x}^{4}}\\right) ^{(a)}");
   }
 
+  @Test
   public void testTeX047() {
     IExpr expr = EvalEngine.get().evaluate("Log(b,z)");
     check(expr, //
         "\\frac{\\log (z)}{\\log (b)}");
   }
 
+  @Test
   public void testTeX048() {
     IExpr expr = EvalEngine.get().evaluate("s^(-2)");
     check(expr, //
         "\\frac{1}{{s}^{2}}");
   }
 
+  @Test
   public void testTeX049() {
     IExpr expr = EvalEngine.get().evaluate("Conjugate(x)");
     check(expr, //
         "x^*");
   }
 
+  @Test
+  public void testTeX050() {
+    StringBuilder sb = new StringBuilder();
+    TeXFormFactory fTeXFactory = new TeXFormFactory();
+    fTeXFactory.convert(sb, F.symjify(-2).multiply(F.symjify("x")), Precedence.NO_PRECEDENCE);
+    Assertions.assertEquals("-2 \\cdot x", sb.toString());
+  }
+
+  @Test
+  public void testTeX050_TimesOperator() {
+    StringBuilder sb = new StringBuilder();
+    TeXFormFactory fTeXFactory = new TeXFormFactory(" \\, ");
+    fTeXFactory.convert(sb, F.symjify(-2).multiply(F.symjify("x")), Precedence.NO_PRECEDENCE);
+    Assertions.assertEquals("-2 \\, x", sb.toString());
+  }
+
+  @Test
+  public void testTeX051() {
+    StringBuilder sb = new StringBuilder();
+    TeXFormFactory fTeXFactory = new TeXFormFactory();
+    fTeXFactory.convert(sb, F.symjify("x").add(F.symjify(-2).divide(F.symjify(4))),
+        Precedence.NO_PRECEDENCE);
+    Assertions.assertEquals("-\\frac{1}{2} + x", sb.toString());
+  }
+
+  @Test
   public void testMatrixForm() {
     IExpr expr = EvalEngine.get().evaluate(
         "SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4}) // MatrixForm");
@@ -465,6 +553,7 @@ public class BasicTeXTestCase extends TestCase {
             + "0 & 0 & 3 \\\n" + "\\\\\n" + "\\end{array}\n" + "\\right) ");
   }
 
+  @Test
   public void testStyle() {
     IExpr expr = EvalEngine.get().parse("Style(1/Sqrt(7), Red)");
     check(expr, //
@@ -484,8 +573,8 @@ public class BasicTeXTestCase extends TestCase {
   }
 
   /** The JUnit setup method */
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     try {
       // F.initSymbols();
       EvalEngine engine = new EvalEngine(true);

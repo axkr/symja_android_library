@@ -42,6 +42,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
+import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.TrieMatch;
 
@@ -85,7 +86,7 @@ public class TeXFormFactory {
         if (isOr && f.get(i).isAnd()) {
           buffer.append("\\left( ");
         }
-        fFactory.convertInternal(buffer, f.get(i), fPrecedence);
+        fFactory.convertInternal(buffer, f.get(i), fPrecedence, NO_PLUS_CALL);
         if (isOr && f.get(i).isAnd()) {
           buffer.append("\\right) ");
         }
@@ -121,9 +122,9 @@ public class TeXFormFactory {
         return false;
       }
       buffer.append('{');
-      fFactory.convertInternal(buffer, f.arg1(), 0);
+      fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
       buffer.append("\\choose ");
-      fFactory.convertInternal(buffer, f.arg2(), 0);
+      fFactory.convertInternal(buffer, f.arg2(), 0, NO_PLUS_CALL);
       buffer.append('}');
       return true;
     }
@@ -132,7 +133,7 @@ public class TeXFormFactory {
   private static final class Complex extends AbstractOperator {
 
     public Complex() {
-      super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence(), "+");
+      super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence(), " + ");
     }
 
     @Override
@@ -147,7 +148,7 @@ public class TeXFormFactory {
       boolean imZero = arg2.isZero();
 
       if (!reZero) {
-        fFactory.convertInternal(buffer, arg1, 0);
+        fFactory.convertInternal(buffer, arg1, 0, NO_PLUS_CALL);
       }
       if (!imZero) {
         if (!reZero && !arg2.isNegativeSigned()) {
@@ -156,7 +157,7 @@ public class TeXFormFactory {
         if (arg2.isMinusOne()) {
           buffer.append(" - ");
         } else if (!arg2.isOne()) {
-          fFactory.convertInternal(buffer, arg2, 0);
+          fFactory.convertInternal(buffer, arg2, 0, NO_PLUS_CALL);
           buffer.append("\\,"); // InvisibleTimes
         }
         buffer.append("\\imag");
@@ -177,7 +178,7 @@ public class TeXFormFactory {
         return false;
       }
       precedenceOpen(buffer, precedence);
-      fFactory.convertInternal(buffer, f.arg1(), 0);
+      fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
       buffer.append("^*");
       precedenceClose(buffer, precedence);
       return true;
@@ -203,9 +204,9 @@ public class TeXFormFactory {
         if (n > 1) {
           buffer.append("^" + n + " ");
         }
-        fFactory.convertInternal(buffer, f.arg1(), 0);
+        fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
         buffer.append("}{\\partial ");
-        fFactory.convertInternal(buffer, arg2, 0);
+        fFactory.convertInternal(buffer, arg2, 0, NO_PLUS_CALL);
         if (n > 1) {
           buffer.append("^" + n);
         }
@@ -244,7 +245,7 @@ public class TeXFormFactory {
     @Override
     public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() == 2) {
-        fFactory.convertInternal(buffer, f.arg1(), 0);
+        fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
         return true;
       }
       return false;
@@ -258,14 +259,14 @@ public class TeXFormFactory {
     public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.isAST1()) {
         buffer.append("H_");
-        fFactory.convertInternal(buffer, f.arg1(), 0);
+        fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
         return true;
       } else if (f.isAST2()) {
         buffer.append("H_");
-        fFactory.convertInternal(buffer, f.arg1(), 0);
+        fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
 
         buffer.append("^{(");
-        fFactory.convertInternal(buffer, f.arg2(), 0);
+        fFactory.convertInternal(buffer, f.arg2(), 0, NO_PLUS_CALL);
         buffer.append(")}");
         return true;
       }
@@ -288,7 +289,7 @@ public class TeXFormFactory {
         int i) {
       if (i >= f.size()) {
         buf.append(" ");
-        fFactory.convertInternal(buf, f.arg1(), 0);
+        fFactory.convertInternal(buf, f.arg1(), 0, NO_PLUS_CALL);
         return true;
       }
       if (f.get(i).isList()) {
@@ -297,9 +298,9 @@ public class TeXFormFactory {
           ISymbol symbol = (ISymbol) list.arg1();
           buf.append(mathSymbol);
           buf.append("_{");
-          fFactory.convertInternal(buf, list.arg2(), 0);
+          fFactory.convertInternal(buf, list.arg2(), 0, NO_PLUS_CALL);
           buf.append("}^{");
-          fFactory.convertInternal(buf, list.arg3(), 0);
+          fFactory.convertInternal(buf, list.arg3(), 0, NO_PLUS_CALL);
           buf.append('}');
           if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
             return false;
@@ -378,7 +379,7 @@ public class TeXFormFactory {
               for (int i = 1; i < ast.size(); i++) {
                 IAST row = ast.getAST(i);
                 for (int j = 1; j < row.size(); j++) {
-                  fFactory.convert(buffer, row.get(j), 0);
+                  fFactory.convert(buffer, row.get(j), Precedence.NO_PRECEDENCE);
                   if (j < row.argSize()) {
                     buffer.append(" & ");
                   }
@@ -398,7 +399,7 @@ public class TeXFormFactory {
               row = (IAST) matrix.get(i);
               for (int j = 1; j < row.size(); j++) {
                 buffer.append(' ');
-                fFactory.convertInternal(buffer, row.get(j), 0);
+                fFactory.convertInternal(buffer, row.get(j), 0, NO_PLUS_CALL);
                 buffer.append(' ');
                 if (j < row.argSize()) {
                   buffer.append('&');
@@ -419,7 +420,7 @@ public class TeXFormFactory {
         buffer.append("\\begin{pmatrix} ");
         if (ast.size() > 1) {
           for (int j = 1; j < ast.size(); j++) {
-            fFactory.convertInternal(buffer, ast.get(j), 0);
+            fFactory.convertInternal(buffer, ast.get(j), 0, NO_PLUS_CALL);
             if (j < ast.argSize()) {
               buffer.append(" & ");
             }
@@ -429,10 +430,10 @@ public class TeXFormFactory {
       } else {
         buffer.append("\\{");
         if (ast.size() > 1) {
-          fFactory.convertInternal(buffer, ast.arg1(), 0);
+          fFactory.convertInternal(buffer, ast.arg1(), 0, NO_PLUS_CALL);
           for (int i = 2; i < ast.size(); i++) {
             buffer.append(',');
-            fFactory.convertInternal(buffer, ast.get(i), 0);
+            fFactory.convertInternal(buffer, ast.get(i), 0, NO_PLUS_CALL);
           }
         }
         buffer.append("\\}");
@@ -447,7 +448,7 @@ public class TeXFormFactory {
       for (int i = 1; i < list.size(); i++) {
         element = list.get(i);
         buf.append(' ');
-        fFactory.convertInternal(buf, element, 0);
+        fFactory.convertInternal(buf, element, 0, NO_PLUS_CALL);
         buf.append(' ');
         if (i < list.argSize()) {
           buf.append("\\\\\n");
@@ -479,7 +480,7 @@ public class TeXFormFactory {
           for (int i = 1; i < vector.size(); i++) {
             element = vector.get(i);
             buffer.append(' ');
-            fFactory.convertInternal(buffer, element, 0);
+            fFactory.convertInternal(buffer, element, 0, NO_PLUS_CALL);
             buffer.append(' ');
             if (i < vector.argSize()) {
               buffer.append('&');
@@ -500,7 +501,7 @@ public class TeXFormFactory {
             for (int i = 1; i < matrix.size(); i++) {
               IAST row = matrix.getAST(i);
               for (int j = 1; j < row.size(); j++) {
-                fFactory.convert(buffer, row.get(j), 0);
+                fFactory.convert(buffer, row.get(j), Precedence.NO_PRECEDENCE);
                 if (j < row.argSize()) {
                   buffer.append(" & ");
                 }
@@ -520,7 +521,7 @@ public class TeXFormFactory {
             row = (IAST) matrix.get(i);
             for (int j = 1; j < row.size(); j++) {
               buffer.append(' ');
-              fFactory.convertInternal(buffer, row.get(j), 0);
+              fFactory.convertInternal(buffer, row.get(j), 0, NO_PLUS_CALL);
               buffer.append(' ');
               if (j < row.argSize()) {
                 buffer.append('&');
@@ -556,7 +557,7 @@ public class TeXFormFactory {
           for (int i = 1; i < vector.size(); i++) {
             element = vector.get(i);
             buffer.append(' ');
-            fFactory.convertInternal(buffer, element, 0);
+            fFactory.convertInternal(buffer, element, 0, NO_PLUS_CALL);
             buffer.append(' ');
             if (i < vector.argSize()) {
               buffer.append("\\\\\n");
@@ -576,7 +577,7 @@ public class TeXFormFactory {
           row = (IAST) matrix.get(i);
           for (int j = 1; j < row.size(); j++) {
             buffer.append(' ');
-            fFactory.convertInternal(buffer, row.get(j), 0);
+            fFactory.convertInternal(buffer, row.get(j), 0, NO_PLUS_CALL);
             buffer.append(' ');
             if (j < row.argSize()) {
               buffer.append('&');
@@ -614,7 +615,7 @@ public class TeXFormFactory {
     @Override
     public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       buffer.append("(");
-      fFactory.convertInternal(buffer, f.arg1(), 0);
+      fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
       buffer.append(")");
       return true;
     }
@@ -630,7 +631,7 @@ public class TeXFormFactory {
         buffer.append("[[");
         int argSize = f.argSize();
         for (int i = 2; i <= argSize; i++) {
-          fFactory.convertInternal(buffer, f.get(i), 0);
+          fFactory.convertInternal(buffer, f.get(i), 0, NO_PLUS_CALL);
           if (i < argSize) {
             buffer.append(",");
           }
@@ -645,36 +646,46 @@ public class TeXFormFactory {
   private static final class Plus extends AbstractOperator {
 
     public Plus() {
-      super(Precedence.PLUS, "+");
+      super(Precedence.PLUS, " + ");
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       IExpr expr;
-      precedenceOpen(buffer, precedence);
-      final Times timesConverter = new Times();
-      timesConverter.setFactory(fFactory);
-      for (int i = 1; i < f.size(); i++) {
-        expr = f.get(i);
-
-        if ((i > 1) && (expr instanceof IAST) && expr.isTimes()) {
-          timesConverter.convertTimesFraction(buffer, (IAST) expr, fPrecedence, Times.PLUS_CALL);
+      int size = f.size();
+      if (size > 0) {
+        precedenceOpen(buffer, precedence);
+        final Times timesConverter = new Times();
+        timesConverter.setFactory(fFactory);
+        expr = f.arg1();
+        if (expr.isTimes()) {
+          timesConverter.convertTimesFraction(buffer, (IAST) expr, timesConverter.TIMES_OPERATOR,
+              fPrecedence, NO_PLUS_CALL);
         } else {
-          if (i > 1) {
+          fFactory.convertInternal(buffer, expr, fPrecedence, NO_PLUS_CALL);
+        }
+        for (int i = 2; i < f.size(); i++) {
+          expr = f.get(i);
+
+          if (expr.isTimes()) {
+            timesConverter.convertTimesFraction(buffer, (IAST) expr, timesConverter.TIMES_OPERATOR,
+                fPrecedence, PLUS_CALL);
+          } else {
             if (expr.isNumber() && (((INumber) expr).complexSign() < 0)) {
               buffer.append("-");
               expr = ((INumber) expr).negate();
             } else if (expr.isNegativeSigned()) {
             } else {
-              buffer.append("+");
+              buffer.append(" + ");
             }
+            fFactory.convertInternal(buffer, expr, fPrecedence, NO_PLUS_CALL);
           }
-          fFactory.convertInternal(buffer, expr, fPrecedence);
         }
+        precedenceClose(buffer, precedence);
+        return true;
       }
-      precedenceClose(buffer, precedence);
-      return true;
+      return false;
     }
   }
 
@@ -695,7 +706,7 @@ public class TeXFormFactory {
         return false;
       }
       precedenceOpen(buffer, precedence);
-      fFactory.convertInternal(buffer, f.arg1(), fPrecedence);
+      fFactory.convertInternal(buffer, f.arg1(), fPrecedence, NO_PLUS_CALL);
       buffer.append(fOperator);
       precedenceClose(buffer, precedence);
       return true;
@@ -734,25 +745,26 @@ public class TeXFormFactory {
       if (arg2.isNegative()) {
         buffer.append("\\frac{1}{");
         if (arg2.isMinusOne()) {
-          fFactory.convertInternal(buffer, arg1, 0);
+          fFactory.convertInternal(buffer, arg1, 0, NO_PLUS_CALL);
         } else {
-          fFactory.convertInternal(buffer, F.Power(arg1, arg2.negate()), 0);
+          fFactory.convertInternal(buffer, F.Power(arg1, arg2.negate()), 0, NO_PLUS_CALL);
         }
         buffer.append('}');
         return true;
       }
       if (arg2.isNumEqualRational(F.C1D2)) {
         buffer.append("\\sqrt{");
-        fFactory.convertInternal(buffer, arg1, fPrecedence);
+        fFactory.convertInternal(buffer, arg1, fPrecedence, NO_PLUS_CALL);
         buffer.append('}');
         return true;
       }
       if (arg2.isFraction()) {
         if (((IFraction) arg2).numerator().isOne()) {
           buffer.append("\\sqrt[");
-          fFactory.convertInternal(buffer, ((IFraction) arg2).denominator(), fPrecedence);
+          fFactory.convertInternal(buffer, ((IFraction) arg2).denominator(), fPrecedence,
+              NO_PLUS_CALL);
           buffer.append("]{");
-          fFactory.convertInternal(buffer, arg1, fPrecedence);
+          fFactory.convertInternal(buffer, arg1, fPrecedence, NO_PLUS_CALL);
           buffer.append('}');
           return true;
         }
@@ -763,14 +775,14 @@ public class TeXFormFactory {
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg1, fPrecedence);
+      fFactory.convertInternal(buffer, arg1, fPrecedence, NO_PLUS_CALL);
       buffer.append('}');
       if (fOperator.compareTo("") != 0) {
         buffer.append(fOperator);
       }
 
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg2, 0);
+      fFactory.convertInternal(buffer, arg2, 0, NO_PLUS_CALL);
       buffer.append('}');
       precedenceClose(buffer, precedence);
       return true;
@@ -795,7 +807,7 @@ public class TeXFormFactory {
       }
       precedenceOpen(buffer, precedence);
       buffer.append(fOperator);
-      fFactory.convertInternal(buffer, f.arg1(), fPrecedence);
+      fFactory.convertInternal(buffer, f.arg1(), fPrecedence, NO_PLUS_CALL);
       precedenceClose(buffer, precedence);
       return true;
     }
@@ -837,9 +849,9 @@ public class TeXFormFactory {
       }
       precedenceOpen(buffer, precedence);
       buffer.append("\\frac{");
-      fFactory.convertInternal(buffer, f.arg1(), fPrecedence);
+      fFactory.convertInternal(buffer, f.arg1(), fPrecedence, NO_PLUS_CALL);
       buffer.append("}{");
-      fFactory.convertInternal(buffer, f.arg2(), fPrecedence);
+      fFactory.convertInternal(buffer, f.arg2(), fPrecedence, NO_PLUS_CALL);
       buffer.append('}');
       precedenceClose(buffer, precedence);
       return true;
@@ -862,7 +874,7 @@ public class TeXFormFactory {
           buffer.append("\\textcolor{");
           buffer.append(arg2.toString().toLowerCase());
           buffer.append("}{");
-          fFactory.convertInternal(buffer, arg1, 0);
+          fFactory.convertInternal(buffer, arg1, 0, NO_PLUS_CALL);
           buffer.append("}");
           return true;
         }
@@ -882,14 +894,14 @@ public class TeXFormFactory {
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg1, precedence);
+      fFactory.convertInternal(buffer, arg1, precedence, NO_PLUS_CALL);
       buffer.append('}');
       buffer.append("_");
 
       buffer.append('{');
 
       for (int i = 2; i < f.size(); i++) {
-        fFactory.convertInternal(buffer, f.get(i), precedence);
+        fFactory.convertInternal(buffer, f.get(i), precedence, NO_PLUS_CALL);
         if (i < f.size() - 1) {
           buffer.append(',');
         }
@@ -913,17 +925,17 @@ public class TeXFormFactory {
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg1, Integer.MAX_VALUE);
+      fFactory.convertInternal(buffer, arg1, Integer.MAX_VALUE, NO_PLUS_CALL);
       buffer.append('}');
       buffer.append("_");
 
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg2, Integer.MAX_VALUE);
+      fFactory.convertInternal(buffer, arg2, Integer.MAX_VALUE, NO_PLUS_CALL);
       buffer.append('}');
       buffer.append("^");
 
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg3, Integer.MAX_VALUE);
+      fFactory.convertInternal(buffer, arg3, Integer.MAX_VALUE, NO_PLUS_CALL);
       buffer.append('}');
       return true;
     }
@@ -967,7 +979,7 @@ public class TeXFormFactory {
             buf.append(" = ");
             fFactory.convertSubExpr(buf, iterator.getLowerLimit(), 0);
             buf.append("}^{");
-            fFactory.convertInternal(buf, iterator.getUpperLimit(), 0);
+            fFactory.convertInternal(buf, iterator.getUpperLimit(), 0, NO_PLUS_CALL);
             buf.append('}');
             if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
               return false;
@@ -1006,12 +1018,12 @@ public class TeXFormFactory {
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg1, 0);
+      fFactory.convertInternal(buffer, arg1, 0, NO_PLUS_CALL);
       buffer.append('}');
 
       buffer.append("^");
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg2, 0);
+      fFactory.convertInternal(buffer, arg2, 0, NO_PLUS_CALL);
       buffer.append('}');
       return true;
     }
@@ -1033,7 +1045,7 @@ public class TeXFormFactory {
       buffer.append(fFunctionName);
       buffer.append('(');
       for (int i = 1; i < f.size(); i++) {
-        fFactory.convertInternal(buffer, f.get(i), 0);
+        fFactory.convertInternal(buffer, f.get(i), 0, NO_PLUS_CALL);
         if (i < f.argSize()) {
           buffer.append(',');
         }
@@ -1044,14 +1056,17 @@ public class TeXFormFactory {
   }
 
   private static final class Times extends AbstractOperator {
-    public static final int NO_SPECIAL_CALL = 0;
+    /** The conversion wasn't called with an operator preceding the <code>IExpr</code> object. */
 
-    public static final int PLUS_CALL = 1;
+    public final InfixOperator TIMES_OPERATOR;
 
     // public static Times CONST = new Times();
 
     public Times() {
-      super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "\\,");
+      // " \\cdot " is only a placeholder here. The <code>ffactory.timesOperator</code> is used as
+      // multiplication operator
+      super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), " \\cdot ");
+      TIMES_OPERATOR = (InfixOperator) ASTNodeFactory.MMA_STYLE_FACTORY.get("Times");
     }
 
     /**
@@ -1062,178 +1077,290 @@ public class TeXFormFactory {
      */
     @Override
     public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
-      return convertTimesFraction(buffer, f, precedence, NO_SPECIAL_CALL);
+      convertTimesFraction(buffer, f, TIMES_OPERATOR, precedence, NO_PLUS_CALL);
+      return true;
     }
 
-    /**
-     * Try to split a given <code>Times[...]</code> function into nominator and denominator and add
-     * the corresponding TeX output
-     *
-     * @param buf StringBuilder for TeX output
-     * @param f The math function which should be converted to TeX
-     * @precedence
-     * @caller
-     */
-    public boolean convertTimesFraction(final StringBuilder buf, final IAST f, final int precedence,
-        final int caller) {
-      IExpr[] parts = Algebra.fractionalPartsTimesPower(f, false, true, false, false, false, false);
+
+    private void convertTimesFraction(final StringBuilder buf, final IAST timesAST,
+        final InfixOperator oper, final int precedence, boolean caller) {
+      IExpr[] parts =
+          Algebra.fractionalPartsTimesPower(timesAST, true, false, false, false, false, false);
       if (parts == null) {
-        convertTimesOperator(buf, f, precedence, false, caller);
-        return true;
+        convertTimesOperator(buf, timesAST, oper, precedence, caller);
+        return;
       }
-      final IExpr numerator = parts[0];
+      IExpr numerator = parts[0];
       final IExpr denominator = parts[1];
       if (!denominator.isOne()) {
-        boolean arg1Negate = false;
-        if (caller == PLUS_CALL) {
-          if (numerator.isTimes() && numerator.first().isReal() && numerator.first().isNegative()) {
-            buf.append('-');
-            arg1Negate = true;
-          } else {
-            buf.append('+');
-          }
+        boolean isNegative = numerator.isNegativeSigned();
+        if (isNegative) {
+          numerator = numerator.negate();
         }
         precedenceOpen(buf, precedence);
+        final IExpr fraction = parts[2];
+        if (fraction != null) {
+          fFactory.convertNumber(buf, fraction, Precedence.PLUS, caller);
+          buf.append(fFactory.timesOperator);
+          caller = NO_PLUS_CALL;
+        }
+        if (isNegative) {
+          buf.append(" - ");
+        } else if (caller == PLUS_CALL) {
+          buf.append(" + ");
+        }
         buf.append("\\frac{");
-        // insert numerator in buffer:
-        if (numerator.isTimes()) {
-          convertTimesOperator(buf, (IAST) numerator, fPrecedence, arg1Negate, NO_SPECIAL_CALL);
+        if (numerator.isReal()) {
+          // don't use Precedence.PLUS here
+          fFactory.convertNumber(buf, numerator, Precedence.NO_PRECEDENCE, false);
+        } else if (numerator.isComplex() || numerator.isComplexNumeric()) {
+          fFactory.convertNumber(buf, numerator, Precedence.DIVIDE, false);
         } else {
-          fFactory.convertInternal(buf, numerator, 0);
+          if (numerator.isTimes() && numerator.isAST2() && numerator.first().isMinusOne()) {
+            buf.append(" - ");
+            fFactory.convert(buf, numerator.second(), Precedence.TIMES);
+          } else {
+            // insert numerator in buffer:
+            if (numerator.isTimes()) {
+              convertTimesOperator(buf, (IAST) numerator, oper, 0, NO_PLUS_CALL);
+            } else {
+              // don't use Precedence.DIVIDE here
+              fFactory.convert(buf, numerator, Precedence.NO_PRECEDENCE);
+            }
+          }
         }
         buf.append("}{");
         // insert denominator in buffer:
         if (denominator.isTimes()) {
-          convertTimesOperator(buf, (IAST) denominator, fPrecedence, false, NO_SPECIAL_CALL);
+          // don't use Precedence.DIVIDE here
+          convertTimesOperator(buf, (IAST) denominator, oper, Precedence.NO_PRECEDENCE,
+              NO_PLUS_CALL);
         } else {
-          fFactory.convertInternal(buf, denominator, 0);
+          // don't use Precedence.DIVIDE here
+          fFactory.convert(buf, denominator, Precedence.NO_PRECEDENCE);
         }
-        buf.append('}');
+        buf.append("}");
         precedenceClose(buf, precedence);
-      } else {
-        if (numerator.isTimes()) {
-          convertTimesOperator(buf, (IAST) numerator, fPrecedence, false, NO_SPECIAL_CALL);
-        } else {
-          fFactory.convertInternal(buf, numerator, precedence);
-        }
+        return;
       }
-
-      return true;
+      convertTimesOperator(buf, timesAST, oper, precedence, caller);
     }
 
-    /**
-     * Converts a given <code>Times[...]</code> function into the corresponding TeX output.
-     * 
-     * @param buf
-     * @param timesAST
-     * @param precedence
-     * @param arg1Negate negate first argument, because negative sign is already printed
-     * @param caller
-     * @return
-     */
-    private boolean convertTimesOperator(final StringBuilder buf, final IAST timesAST,
-        final int precedence, boolean arg1Negate, final int caller) {
+    private void convertTimesOperator(final StringBuilder buf, final IAST timesAST,
+        final InfixOperator oper, final int precedence, boolean caller) {
       int size = timesAST.size();
-      IExpr arg1 = F.NIL;
-      String timesOperator = "\\,";
+      boolean showOperator = true;
+      int currPrecedence = oper.getPrecedence();
+      if (caller && currPrecedence < precedence) {
+        buf.append("\\left( ");
+      }
+
       if (size > 1) {
-        arg1 = timesAST.arg1();
-        if (arg1Negate) {
-          arg1 = arg1.negate();
-        }
-        if (arg1.isMinusOne()) {
-          if (size == 2) {
-            precedenceOpen(buf, precedence);
-            fFactory.convertInternal(buf, arg1, fPrecedence);
+        IExpr arg1 = timesAST.arg1();
+        if (arg1.isReal() && size > 2 && !timesAST.arg2().isNumber()) {
+          if (arg1.isMinusOne()) {
+            buf.append(" - ");
+            showOperator = false;
           } else {
-            if (caller == PLUS_CALL) {
-              buf.append(" - ");
-              if (size == 3) {
-                fFactory.convertInternal(buf, timesAST.arg2(), fPrecedence);
-                return true;
-              }
-            } else {
-              precedenceOpen(buf, precedence);
-              buf.append(" - ");
-            }
+            fFactory.convertNumber(buf, arg1, Precedence.PLUS, caller);
           }
-        } else if (arg1.isOne()) {
-          if (size == 2) {
-            precedenceOpen(buf, precedence);
-            fFactory.convertInternal(buf, arg1, fPrecedence);
-          } else {
-            if (caller == PLUS_CALL) {
-              if (size == 3) {
-                buf.append(" + ");
-                fFactory.convertInternal(buf, timesAST.arg2(), fPrecedence);
-                return true;
-              }
-            } else {
-              precedenceOpen(buf, precedence);
-            }
-          }
+        } else if (arg1.isComplex() && size > 2) {
+          fFactory.convertComplex(buf, (IComplex) arg1, oper.getPrecedence(), caller);
         } else {
           if (caller == PLUS_CALL) {
-            if ((arg1.isReal()) && arg1.isNegative()) {
-              buf.append(" - ");
-              arg1 = ((ISignedNumber) arg1).opposite();
-            } else {
-              buf.append(" + ");
-            }
-          } else {
-            precedenceOpen(buf, precedence);
+            buf.append(" + ");
           }
-          fFactory.convertInternal(buf, arg1, fPrecedence);
-          if (fOperator.compareTo("") != 0) {
-            if (size > 2) {
-              if (isTeXNumberDigit(timesAST.arg1()) || isTeXNumberDigit(timesAST.arg2())) {
-                // Issue #67, #117: if we have 2 TeX number
-                // expressions we use
-                // the \cdot operator see
-                // http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
-                timesOperator = "\\cdot ";
-              } else {
-                for (int i = 2; i < size; i++) {
-                  if ((i < timesAST.argSize())) {
-                    if (isTeXNumberDigit(timesAST.get(i))
-                        && isTeXNumberDigit(timesAST.get(i + 1))) {
-                      timesOperator = "\\cdot ";
-                      break;
-                    }
-                  }
-                }
-              }
-              buf.append(timesOperator);
-            }
-          }
+          fFactory.convert(buf, arg1, oper.getPrecedence());
         }
       }
-
       for (int i = 2; i < size; i++) {
-        if (i == 2 && (arg1.isOne() || arg1.isMinusOne())) {
-          fFactory.convertInternal(buf, timesAST.get(i), precedence);
+        if (showOperator) {
+          buf.append(fFactory.timesOperator);
         } else {
-          fFactory.convertInternal(buf, timesAST.get(i), fPrecedence);
+          showOperator = true;
         }
-        if (i < timesAST.argSize()) {
-          buf.append(timesOperator);
-        }
-        // if ((i < timesAST.argSize()) && (fOperator.compareTo("") != 0)) {
-        // if (isTeXNumberDigit(timesAST.get(i)) && isTeXNumberDigit(timesAST.get(i + 1))) {
-        // // Issue #67, #117: if we have 2 TeX number expressions we
-        // // use
-        // // the \cdot operator see
-        // //
-        // http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
-        // buf.append("\\cdot ");
-        // } else {
-        // buf.append("\\,");
-        // }
-        // }
+        fFactory.convert(buf, timesAST.get(i), oper.getPrecedence());
       }
-      precedenceClose(buf, precedence);
-      return true;
+      if (caller && currPrecedence < precedence) {
+        buf.append("\\right) ");
+      }
     }
+
+
+    // /**
+    // * Try to split a given <code>Times[...]</code> function into nominator and denominator and
+    // add
+    // * the corresponding TeX output
+    // *
+    // * @param buf StringBuilder for TeX output
+    // * @param f The math function which should be converted to TeX
+    // * @precedence
+    // * @caller
+    // */
+    // public boolean convertTimesFraction(final StringBuilder buf, final IAST f, final int
+    // precedence,
+    // final int caller) {
+    // IExpr[] parts = Algebra.fractionalPartsTimesPower(f, false, true, false, false, false,
+    // false);
+    // if (parts == null) {
+    // convertTimesOperator(buf, f, precedence, caller);
+    // return true;
+    // }
+    // final IExpr numerator = parts[0];
+    // final IExpr denominator = parts[1];
+    // if (!denominator.isOne()) {
+    // boolean arg1Negate = false;
+    // if (caller == PLUS_CALL) {
+    // if (numerator.isTimes() && numerator.first().isReal() && numerator.first().isNegative()) {
+    // buf.append('-');
+    // arg1Negate = true;
+    // } else {
+    // buf.append('+');
+    // }
+    // }
+    // precedenceOpen(buf, precedence);
+    // buf.append("\\frac{");
+    // // insert numerator in buffer:
+    // if (numerator.isTimes()) {
+    // convertTimesOperator(buf, (IAST) numerator, fPrecedence, arg1Negate, NO_SPECIAL_CALL);
+    // } else {
+    // fFactory.convertInternal(buf, numerator, 0);
+    // }
+    // buf.append("}{");
+    // // insert denominator in buffer:
+    // if (denominator.isTimes()) {
+    // convertTimesOperator(buf, (IAST) denominator, fPrecedence, false, NO_SPECIAL_CALL);
+    // } else {
+    // fFactory.convertInternal(buf, denominator, 0);
+    // }
+    // buf.append('}');
+    // precedenceClose(buf, precedence);
+    // } else {
+    // if (numerator.isTimes()) {
+    // convertTimesOperator(buf, (IAST) numerator, fPrecedence, false, NO_SPECIAL_CALL);
+    // } else {
+    // fFactory.convertInternal(buf, numerator, precedence);
+    // }
+    // }
+    //
+    // return true;
+    // }
+    //
+    // /**
+    // * Converts a given <code>Times[...]</code> function into the corresponding TeX output.
+    // *
+    // * @param buf
+    // * @param timesAST
+    // * @param precedence
+    // * @param arg1Negate negate first argument, because negative sign is already printed
+    // * @param caller
+    // * @return
+    // */
+    // private boolean convertTimesOperator(final StringBuilder buf, final IAST timesAST,
+    // final int precedence, final int caller) {
+    // int size = timesAST.size();
+    // IExpr arg1 = F.NIL;
+    // String timesOperator = "\\,";
+    // if (size > 1) {
+    // arg1 = timesAST.arg1();
+    // // if (arg1Negate) {
+    // // arg1 = arg1.negate();
+    // // }
+    // if (arg1.isMinusOne()) {
+    // if (size == 2) {
+    // precedenceOpen(buf, precedence);
+    // fFactory.convertInternal(buf, arg1, fPrecedence);
+    // } else {
+    // if (caller == PLUS_CALL) {
+    // buf.append(" - ");
+    // if (size == 3) {
+    // fFactory.convertInternal(buf, timesAST.arg2(), fPrecedence);
+    // return true;
+    // }
+    // } else {
+    // precedenceOpen(buf, precedence);
+    // buf.append(" - ");
+    // }
+    // }
+    // } else if (arg1.isOne()) {
+    // if (size == 2) {
+    // precedenceOpen(buf, precedence);
+    // fFactory.convertInternal(buf, arg1, fPrecedence);
+    // } else {
+    // if (caller == PLUS_CALL) {
+    // if (size == 3) {
+    // buf.append(" + ");
+    // fFactory.convertInternal(buf, timesAST.arg2(), fPrecedence);
+    // return true;
+    // }
+    // } else {
+    // precedenceOpen(buf, precedence);
+    // }
+    // }
+    // } else {
+    // if (caller == PLUS_CALL) {
+    // if ((arg1.isReal()) && arg1.isNegative()) {
+    // buf.append(" - ");
+    // arg1 = ((ISignedNumber) arg1).opposite();
+    // } else {
+    // buf.append(" + ");
+    // }
+    // } else {
+    // precedenceOpen(buf, precedence);
+    // }
+    // fFactory.convertInternal(buf, arg1, fPrecedence);
+    // if (fOperator.compareTo("") != 0) {
+    // if (size > 2) {
+    // if (isTeXNumberDigit(timesAST.arg1()) || isTeXNumberDigit(timesAST.arg2())) {
+    // // Issue #67, #117: if we have 2 TeX number
+    // // expressions we use
+    // // the \cdot operator see
+    // //
+    // http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
+    // timesOperator = "\\cdot ";
+    // } else {
+    // for (int i = 2; i < size; i++) {
+    // if ((i < timesAST.argSize())) {
+    // if (isTeXNumberDigit(timesAST.get(i))
+    // && isTeXNumberDigit(timesAST.get(i + 1))) {
+    // timesOperator = "\\cdot ";
+    // break;
+    // }
+    // }
+    // }
+    // }
+    // buf.append(timesOperator);
+    // }
+    // }
+    // }
+    // }
+    //
+    // for (int i = 2; i < size; i++) {
+    // if (i == 2 && (arg1.isOne() || arg1.isMinusOne())) {
+    // fFactory.convertInternal(buf, timesAST.get(i), precedence);
+    // } else {
+    // fFactory.convertInternal(buf, timesAST.get(i), fPrecedence);
+    // }
+    // if (i < timesAST.argSize()) {
+    // buf.append(timesOperator);
+    // }
+    // // if ((i < timesAST.argSize()) && (fOperator.compareTo("") != 0)) {
+    // // if (isTeXNumberDigit(timesAST.get(i)) && isTeXNumberDigit(timesAST.get(i + 1))) {
+    // // // Issue #67, #117: if we have 2 TeX number expressions we
+    // // // use
+    // // // the \cdot operator see
+    // // //
+    // //
+    // http://tex.stackexchange.com/questions/40794/when-should-cdot-be-used-to-indicate-multiplication
+    // // buf.append("\\cdot ");
+    // // } else {
+    // // buf.append("\\,");
+    // // }
+    // // }
+    // }
+    // precedenceClose(buf, precedence);
+    // return true;
+    // }
 
     /**
      * Does the TeX Form of <code>expr</code> begin with a number digit?
@@ -1274,25 +1401,36 @@ public class TeXFormFactory {
 
   public static final boolean USE_IDENTIFIERS = false;
 
-  private int plusPrec;
 
-  // protected NumberFormat fNumberFormat = null;
   private boolean fUseSignificantFigures = false;
+
   private int fExponentFigures;
+
   private int fSignificantFigures;
+
+  /**
+   * <code>\codt</code>
+   */
+  private final String timesOperator;
 
   /** Constructor */
   public TeXFormFactory() {
-    this(-1, -1);
+    this(" \\cdot ");
+  }
+
+  public TeXFormFactory(String timesOperator) {
+    this(-1, -1, timesOperator);
   }
 
   /**
    * @param exponentFigures
    * @param significantFigures
+   * @param timesOperator TODO
    */
-  public TeXFormFactory(int exponentFigures, int significantFigures) {
-    fExponentFigures = exponentFigures;
-    fSignificantFigures = significantFigures;
+  public TeXFormFactory(int exponentFigures, int significantFigures, String timesOperator) {
+    this.fExponentFigures = exponentFigures;
+    this.fSignificantFigures = significantFigures;
+    this.timesOperator = timesOperator;
     init();
   }
 
@@ -1324,7 +1462,7 @@ public class TeXFormFactory {
         }
       } else {
         if (caller == PLUS_CALL) {
-          buf.append("+");
+          buf.append(" + ");
           caller = false;
         }
 
@@ -1361,7 +1499,7 @@ public class TeXFormFactory {
 
   public boolean convert(final StringBuilder buf, final IExpr o, final int precedence) {
     try {
-      convertInternal(buf, o, precedence);
+      convertInternal(buf, o, precedence, NO_PLUS_CALL);
       if (buf.length() >= Config.MAX_OUTPUT_SIZE) {
         return false;
       }
@@ -1373,7 +1511,8 @@ public class TeXFormFactory {
     return false;
   }
 
-  void convertInternal(final StringBuilder buf, final Object o, final int precedence) {
+  void convertInternal(final StringBuilder buf, final Object o, final int precedence,
+      boolean caller) {
     if (o instanceof IExpr) {
       IExpr expr = (IExpr) o;
       String str = CONSTANT_EXPRS.get(expr);
@@ -1397,28 +1536,7 @@ public class TeXFormFactory {
       convertAST(buf, f, precedence);
       return;
     }
-    if (o instanceof IInteger) {
-      convertInteger(buf, (IInteger) o, precedence);
-      return;
-    }
-    if (o instanceof IFraction) {
-      convertFraction(buf, (IFraction) o, precedence);
-      return;
-    }
-    if (o instanceof INum) {
-      convertDouble(buf, (INum) o, precedence);
-      return;
-    }
-    if (o instanceof IComplexNum) {
-      if (o instanceof ApcomplexNum) {
-        convertApcomplex(buf, ((ApcomplexNum) o).apcomplexValue(), precedence, NO_PLUS_CALL);
-        return;
-      }
-      convertDoubleComplex(buf, (IComplexNum) o, precedence);
-      return;
-    }
-    if (o instanceof IComplex) {
-      convertComplex(buf, (IComplex) o, precedence);
+    if (convertNumber(buf, o, precedence, caller)) {
       return;
     }
     if (o instanceof ISymbol) {
@@ -1430,6 +1548,60 @@ public class TeXFormFactory {
     // return;
     // }
     convertString(buf, o.toString());
+  }
+
+  private boolean convertNumber(final StringBuilder buf, final Object o, final int precedence,
+      boolean caller) {
+    if (o instanceof ISignedNumber) {
+      ISignedNumber number = (ISignedNumber) o;
+      boolean isNegative = number.isNegative();
+      if (isNegative) {
+        number = number.negate();
+      }
+      if (caller && isNegative && precedence > Precedence.PLUS) {
+        buf.append("\\left( ");
+      }
+      if (isNegative) {
+        buf.append("-");
+      } else if (caller) {
+        buf.append("+");
+      }
+      if (number instanceof IInteger) {
+        convertInteger(buf, (IInteger) number, precedence, caller);
+        if (caller && isNegative && precedence > Precedence.PLUS) {
+          buf.append("\\right) ");
+        }
+        return true;
+      }
+      if (number instanceof IFraction) {
+        convertFraction(buf, (IFraction) number, precedence, caller);
+        if (caller && isNegative && precedence > Precedence.PLUS) {
+          buf.append("\\right) ");
+        }
+        return true;
+      }
+      if (number instanceof INum) {
+        convertDouble(buf, (INum) number, precedence, caller);
+        if (caller && isNegative && precedence > Precedence.PLUS) {
+          buf.append("\\right) ");
+        }
+        return true;
+      }
+      return false;
+    }
+    if (o instanceof IComplexNum) {
+      if (o instanceof ApcomplexNum) {
+        convertApcomplex(buf, ((ApcomplexNum) o).apcomplexValue(), precedence, caller);
+        return true;
+      }
+      convertDoubleComplex(buf, (IComplexNum) o, precedence, caller);
+      return true;
+    }
+    if (o instanceof IComplex) {
+      convertComplex(buf, (IComplex) o, precedence, caller);
+      return true;
+    }
+    return false;
   }
 
   public void convertAST(StringBuilder buf, final IAST list, int precedence) {
@@ -1451,7 +1623,7 @@ public class TeXFormFactory {
             IExpr symbolOrAST = headAST.arg1();
             int n = a1Head.arg1().toIntDefault();
             if (n == 1 || n == 2) {
-              convertInternal(buf, symbolOrAST, Integer.MAX_VALUE);
+              convertInternal(buf, symbolOrAST, Integer.MAX_VALUE, NO_PLUS_CALL);
               if (n == 1) {
                 buf.append("'");
               } else if (n == 2) {
@@ -1462,9 +1634,9 @@ public class TeXFormFactory {
               }
               return;
             }
-            convertInternal(buf, symbolOrAST, Integer.MAX_VALUE);
+            convertInternal(buf, symbolOrAST, Integer.MAX_VALUE, NO_PLUS_CALL);
             buf.append("^{(");
-            convertInternal(buf, a1Head.arg1(), Integer.MIN_VALUE);
+            convertInternal(buf, a1Head.arg1(), Integer.MIN_VALUE, NO_PLUS_CALL);
             buf.append(")}");
             if (derivStruct[2] != null) {
               convertArgs(buf, symbolOrAST, list);
@@ -1477,7 +1649,7 @@ public class TeXFormFactory {
         }
       }
 
-      convertInternal(buf, header, Integer.MIN_VALUE);
+      convertInternal(buf, header, Integer.MIN_VALUE, NO_PLUS_CALL);
       convertFunctionArgs(buf, list);
       return;
     }
@@ -1503,13 +1675,13 @@ public class TeXFormFactory {
                 if (min instanceof INum) {
                   convertDoubleString(buf, convertDoubleToFormattedString(min.evalf()), 0, false);
                 } else {
-                  convertInternal(buf, min, 0);
+                  convertInternal(buf, min, 0, NO_PLUS_CALL);
                 }
                 buf.append(",");
                 if (max instanceof INum) {
                   convertDoubleString(buf, convertDoubleToFormattedString(max.evalf()), 0, false);
                 } else {
-                  convertInternal(buf, max, 0);
+                  convertInternal(buf, max, 0, NO_PLUS_CALL);
                 }
                 buf.append("\\}");
                 if (i < interval.size() - 1) {
@@ -1539,7 +1711,7 @@ public class TeXFormFactory {
     convertHead(buf, header);
     buf.append("(");
     for (int i = 1; i < list.size(); i++) {
-      convertInternal(buf, list.get(i), 0);
+      convertInternal(buf, list.get(i), 0, NO_PLUS_CALL);
       if (i < list.argSize()) {
         buf.append(',');
       }
@@ -1555,10 +1727,10 @@ public class TeXFormFactory {
       buf.append("(");
     }
     if (functionSize > 1) {
-      convertInternal(buf, function.arg1(), Integer.MIN_VALUE);
+      convertInternal(buf, function.arg1(), Integer.MIN_VALUE, NO_PLUS_CALL);
     }
     for (int i = 2; i < functionSize; i++) {
-      convertInternal(buf, function.get(i), 0);
+      convertInternal(buf, function.get(i), 0, NO_PLUS_CALL);
       if (i < function.argSize()) {
         buf.append(',');
       }
@@ -1573,7 +1745,7 @@ public class TeXFormFactory {
   public void convertFunctionArgs(final StringBuilder buf, final IAST list) {
     buf.append("(");
     list.joinToString(buf, //
-        (b, x) -> convertInternal(b, x, Integer.MIN_VALUE), ",");
+        (b, x) -> convertInternal(b, x, Integer.MIN_VALUE, NO_PLUS_CALL), ",");
     buf.append(")");
   }
 
@@ -1592,10 +1764,10 @@ public class TeXFormFactory {
     IAST ast = assoc.normal(false);
     buf.append("\\langle|");
     if (ast.size() > 1) {
-      convertInternal(buf, ast.arg1(), 0);
+      convertInternal(buf, ast.arg1(), 0, NO_PLUS_CALL);
       for (int i = 2; i < ast.size(); i++) {
         buf.append(',');
-        convertInternal(buf, ast.get(i), 0);
+        convertInternal(buf, ast.get(i), 0, NO_PLUS_CALL);
       }
     }
     buf.append("|\\rangle");
@@ -1614,7 +1786,7 @@ public class TeXFormFactory {
     final int listSize = inequality.size();
     int i = 1;
     while (i < listSize) {
-      convertInternal(tempBuffer, inequality.get(i++), 0);
+      convertInternal(tempBuffer, inequality.get(i++), 0, NO_PLUS_CALL);
       if (i == listSize) {
         if (Precedence.EQUAL < precedence) {
           tempBuffer.append(")");
@@ -1666,7 +1838,7 @@ public class TeXFormFactory {
     buf.append(headString);
     buf.append("(");
     for (int i = 1; i < f.size(); i++) {
-      convertInternal(buf, f.get(i), 0);
+      convertInternal(buf, f.get(i), 0, NO_PLUS_CALL);
       if (i < f.argSize()) {
         buf.append(',');
       }
@@ -1674,28 +1846,29 @@ public class TeXFormFactory {
     buf.append(")");
   }
 
-  public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence) {
+  public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence,
+      boolean caller) {
     if (c.isImaginaryUnit()) {
       buf.append("i ");
       return;
     }
     if (c.isNegativeImaginaryUnit()) {
-      if (precedence > plusPrec) {
+      if (caller && precedence > Precedence.PLUS) {
         buf.append("\\left( ");
       }
       buf.append(" - i ");
-      if (precedence > plusPrec) {
+      if (caller && precedence > Precedence.PLUS) {
         buf.append("\\right) ");
       }
       return;
     }
-    if (precedence > plusPrec) {
+    if (caller && precedence > Precedence.PLUS) {
       buf.append("\\left( ");
     }
     IRational re = c.getRealPart();
     IRational im = c.getImaginaryPart();
     if (!re.isZero()) {
-      convertInternal(buf, re, 0);
+      convertInternal(buf, re, 0, NO_PLUS_CALL);
       if (im.compareInt(0) >= 0) {
         buf.append(" + ");
       } else {
@@ -1703,15 +1876,16 @@ public class TeXFormFactory {
         im = im.negate();
       }
     }
-    convertInternal(buf, im, 0);
+    convertInternal(buf, im, 0, NO_PLUS_CALL);
     buf.append("\\,"); // InvisibleTimes
     buf.append("i ");
-    if (precedence > plusPrec) {
+    if (caller && precedence > Precedence.PLUS) {
       buf.append("\\right) ");
     }
   }
 
-  public void convertDouble(final StringBuilder buf, final INum d, final int precedence) {
+  public void convertDouble(final StringBuilder buf, final INum d, final int precedence,
+      boolean caller) {
     if (d.isZero()) {
       buf.append(convertDoubleToFormattedString(0.0));
       return;
@@ -1727,7 +1901,7 @@ public class TeXFormFactory {
   }
 
   public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc,
-      final int precedence) {
+      final int precedence, boolean caller) {
     double re = dc.getRealPart();
     double im = dc.getImaginaryPart();
     if (F.isZero(re)) {
@@ -1736,17 +1910,17 @@ public class TeXFormFactory {
         return;
       }
       if (F.isNumIntValue(im, -1)) {
-        if (precedence > plusPrec) {
+        if (precedence > Precedence.PLUS) {
           buf.append("\\left( ");
         }
         buf.append(" - i ");
-        if (precedence > plusPrec) {
+        if (precedence > Precedence.PLUS) {
           buf.append("\\right) ");
         }
         return;
       }
     }
-    if (precedence > plusPrec) {
+    if (precedence > Precedence.PLUS) {
       buf.append("\\left( ");
     }
     if (!F.isZero(re)) {
@@ -1761,7 +1935,7 @@ public class TeXFormFactory {
     buf.append(convertDoubleToFormattedString(im));
     buf.append("\\,"); // InvisibleTimes
     buf.append("i ");
-    if (precedence > plusPrec) {
+    if (precedence > Precedence.PLUS) {
       buf.append("\\right) ");
     }
   }
@@ -1790,10 +1964,11 @@ public class TeXFormFactory {
     return Double.toString(dValue);
   }
 
-  public void convertFraction(final StringBuilder buf, final IFraction f, final int precedence) {
-    if (f.isNegative() && (precedence > plusPrec)) {
-      buf.append("\\left( ");
-    }
+  public void convertFraction(final StringBuilder buf, final IFraction f, final int precedence,
+      boolean caller) {
+    // if (f.isNegative() && (precedence > Precedence.PLUS)) {
+    // buf.append("\\left( ");
+    // }
     if (f.denominator().isOne()) {
       buf.append(f.numerator().toString());
     } else {
@@ -1803,9 +1978,9 @@ public class TeXFormFactory {
       buf.append(f.toBigDenominator().toString());
       buf.append('}');
     }
-    if (f.isNegative() && (precedence > plusPrec)) {
-      buf.append("\\right) ");
-    }
+    // if (f.isNegative() && (precedence > Precedence.PLUS)) {
+    // buf.append("\\right) ");
+    // }
   }
 
   public void convertHead(final StringBuilder buf, final IExpr obj) {
@@ -1821,7 +1996,7 @@ public class TeXFormFactory {
       convertHeader(buf, str);
       return;
     }
-    convertInternal(buf, obj, 0);
+    convertInternal(buf, obj, 0, NO_PLUS_CALL);
   }
 
   private void convertHeader(final StringBuilder buf, String str) {
@@ -1841,14 +2016,15 @@ public class TeXFormFactory {
     }
   }
 
-  public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence) {
-    if (i.isNegative() && (precedence > plusPrec)) {
-      buf.append("\\left( ");
-    }
+  public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence,
+      boolean caller) {
+    // if (i.isNegative() && precedence > Precedence.PLUS) {
+    // buf.append("\\left( ");
+    // }
     buf.append(i.toBigNumerator().toString());
-    if (i.isNegative() && (precedence > plusPrec)) {
-      buf.append("\\right) ");
-    }
+    // if (i.isNegative() && precedence > Precedence.PLUS) {
+    // buf.append("\\right) ");
+    // }
   }
 
   /*
@@ -1874,7 +2050,7 @@ public class TeXFormFactory {
     if (o.isAST()) {
       buf.append("{");
     }
-    convertInternal(buf, o, precedence);
+    convertInternal(buf, o, precedence, NO_PLUS_CALL);
     if (o.isAST()) {
       buf.append("}");
     }
@@ -1935,7 +2111,6 @@ public class TeXFormFactory {
   }
 
   public void init() {
-    plusPrec = ASTNodeFactory.RELAXED_STYLE_FACTORY.get("Plus").getPrecedence();
     // timesPrec =
     // ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence();
     initTeXConverter(S.Abs, new UnaryFunction("|", "|"));
@@ -2105,8 +2280,8 @@ public class TeXFormFactory {
         new AbstractOperator(this, Precedence.UNDIRECTEDEDGE, "\\leftrightarrow "));
     initTeXConverter(S.TwoWayRule,
         new AbstractOperator(this, Precedence.TWOWAYRULE, "\\leftrightarrow "));
-    initTeXConverter(S.CenterDot, new AbstractOperator(this, Precedence.CENTERDOT, "\\cdot "));
-    initTeXConverter(S.CircleDot, new AbstractOperator(this, Precedence.CIRCLEDOT, "\\odot "));
+    initTeXConverter(S.CenterDot, new AbstractOperator(this, Precedence.CENTERDOT, " \\cdot "));
+    initTeXConverter(S.CircleDot, new AbstractOperator(this, Precedence.CIRCLEDOT, " \\odot "));
 
     initTeXConverter(S.Sin, new TeXFunction(this, "sin "));
     initTeXConverter(S.Cos, new TeXFunction(this, "cos "));
