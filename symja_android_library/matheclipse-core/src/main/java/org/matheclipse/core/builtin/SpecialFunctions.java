@@ -430,6 +430,11 @@ public class SpecialFunctions {
   private static final class Erf extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
 
     @Override
+    public IExpr e1ComplexArg(Complex c) {
+      return F.complexNum(GammaJS.erf(c));
+    }
+
+    @Override
     public double applyAsDouble(double operand) {
       return de.lab4inf.math.functions.Erf.erf(operand);
     }
@@ -458,25 +463,32 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-      if (arg1.isZero()) {
+    public IExpr evaluateArg1(final IExpr z, EvalEngine engine) {
+      if (z.isZero()) {
         return F.C0;
       }
-      if (arg1.equals(CInfinity)) {
+      if (z.equals(CInfinity)) {
         return F.C1;
       }
-      if (arg1.equals(CNInfinity)) {
+      if (z.equals(CNInfinity)) {
         return F.CN1;
       }
-      if (arg1.isComplexInfinity()) {
+      if (z.isComplexInfinity()) {
         return S.Indeterminate;
       }
-      if (arg1.isDirectedInfinity(F.CI) || arg1.isDirectedInfinity(F.CNI)) {
-        return arg1;
+      if (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI)) {
+        return z;
       }
-      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+      if (z.isAST(S.InverseErf, 2)) {
+        return z.first();
+      }
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
       if (negExpr.isPresent()) {
         return Negate(Erf(negExpr));
+      }
+      IExpr complexExpr = AbstractFunctionEvaluator.getComplexExpr(z, F.CNI);
+      if (complexExpr.isPresent()) {
+        return F.Times(F.CI, F.Erfi(complexExpr));
       }
       return F.NIL;
     }
@@ -517,6 +529,11 @@ public class SpecialFunctions {
     }
 
     @Override
+    public IExpr e1ComplexArg(Complex c) {
+      return F.complexNum(GammaJS.erfc(c));
+    }
+
+    @Override
     public double evalReal(final double[] stack, final int top, final int size) {
       if (size != 1) {
         throw new UnsupportedOperationException();
@@ -533,26 +550,28 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-      if (arg1.isReal()) {
-        if (arg1.isZero()) {
+    public IExpr evaluateArg1(final IExpr z, EvalEngine engine) {
+      if (z.isReal()) {
+        if (z.isZero()) {
           return F.C1;
         }
-        if (arg1.equals(CInfinity)) {
+        if (z.equals(CInfinity)) {
           return F.C0;
         }
-        if (arg1.equals(CNInfinity)) {
+        if (z.equals(CNInfinity)) {
           return F.C2;
         }
-        if (arg1.isComplexInfinity()) {
+        if (z.isComplexInfinity()) {
           return S.Indeterminate;
         }
-        if (arg1.isDirectedInfinity(F.CI) || arg1.isDirectedInfinity(F.CNI)) {
-          return arg1.negate();
+        if (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI)) {
+          return z.negate();
         }
+      } else if (z.isAST(S.InverseErfc, 2)) {
+        return z.first();
       }
       // don't transform negative arg:
-      // IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+      // IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
       // if (negExpr.isPresent()) {
       // return F.Subtract(F.C2, F.Erfc(negExpr));
       // }
@@ -579,11 +598,6 @@ public class SpecialFunctions {
       if (z.isZero()) {
         return F.C0;
       }
-      if (z.isNumber()) {
-        // (-I)*Erf(I*z)
-        INumber num = (INumber) ((INumber) z).times(F.CI);
-        return F.Times(F.CI, F.Erf(F.Times(num)));
-      }
       if (z.isInfinity()) {
         return F.CInfinity;
       }
@@ -599,6 +613,17 @@ public class SpecialFunctions {
       if (z.isComplexInfinity()) {
         return S.Indeterminate;
       }
+      if (engine.isDoubleMode() && z.isNumber()) {
+        try {
+          Complex zc = z.evalfc();
+          return F.complexNum(GammaJS.erfi(zc));
+        } catch (ValidateException ve) {
+          LOGGER.debug("Erfi.evaluate() failed", ve);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return F.NIL;
+        }
+      }
       if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
         // I * Erf(-I*z)
         return F.Times(S.I, F.Erf(F.Times(F.CNI, z)));
@@ -606,6 +631,10 @@ public class SpecialFunctions {
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
       if (negExpr.isPresent()) {
         return Negate(F.Erfi(negExpr));
+      }
+      IExpr complexExpr = AbstractFunctionEvaluator.getComplexExpr(z, F.CNI);
+      if (complexExpr.isPresent()) {
+        return F.Times(F.CI, F.Erf(complexExpr));
       }
       return F.NIL;
     }
@@ -1070,8 +1099,7 @@ public class SpecialFunctions {
           if (engine.isDoubleMode() && (z.isNumericFunction(true) && a.isNumericFunction(true)
               && b.isNumericFunction(true))) {
             org.hipparchus.distribution.continuous.BetaDistribution beta = //
-                new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(),
-                    b.evalf());
+                new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(), b.evalf());
             return F.num(beta.inverseCumulativeProbability(z.evalf()));
           }
         } else {

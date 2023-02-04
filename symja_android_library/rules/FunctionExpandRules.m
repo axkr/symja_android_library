@@ -25,6 +25,12 @@
  CosIntegral(Sqrt(z_^n_)) := CosIntegral(z^(n/2)) - Log(z^(n/2)) + Log(z^n)/2,
  CoshIntegral(Sqrt(z_^n_)) :=  CoshIntegral(z^(n/2)) - Log(z^(n/2)) + Log(z^n)/2,
  
+ Erf(Power(Power(a_,b_), 1/2)) := (Sqrt(a^b)*Erf(a^(b/2)))/a^(b/2),
+ Erf(Power(Power(a_,b_), -1/2)) := (a^(b/2)*Erf(a^(-b/2)))/Sqrt(a^b),
+ Erfc(a_^b_) := 1-Erf(a^b),    
+ Erfi(Power(Power(a_,b_), 1/2)) := (Sqrt(a^b)*Erfi(a^(b/2)))/a^(b/2),
+ Erfi(Power(Power(a_,b_), -1/2)) := (a^(b/2)*Erfi(a^(-b/2)))/Sqrt(a^b),
+  
  ExpIntegralE(n_,z_) := z^(-1 + n)*Gamma(1 - n, z),
  ExpIntegralEi(Log(z_)) := LogIntegral(z),
  

@@ -68,6 +68,21 @@ public interface FunctionExpandRules {
     // CoshIntegral(Sqrt(z_^n_)):=CoshIntegral(z^(n/2))-Log(z^(n/2))+Log(z^n)/2
     SetDelayed(CoshIntegral(Sqrt(Power(z_,n_))),
       Plus(CoshIntegral(Power(z,Times(C1D2,n))),Negate(Log(Power(z,Times(C1D2,n)))),Times(C1D2,Log(Power(z,n))))),
+    // Erf(Sqrt(a_^b_)):=(Sqrt(a^b)*Erf(a^(b/2)))/a^(b/2)
+    SetDelayed(Erf(Sqrt(Power(a_,b_))),
+      Times(Power(Power(a,Times(C1D2,b)),CN1),Sqrt(Power(a,b)),Erf(Power(a,Times(C1D2,b))))),
+    // Erf(1/Sqrt(a_^b_)):=(a^(b/2)*Erf(a^((-1)*1/2*b)))/Sqrt(a^b)
+    SetDelayed(Erf(Power(Power(a_,b_),CN1D2)),
+      Times(Power(a,Times(C1D2,b)),Power(Power(a,b),CN1D2),Erf(Power(a,Times(CN1,C1D2,b))))),
+    // Erfc(a_^b_):=1-Erf(a^b)
+    SetDelayed(Erfc(Power(a_,b_)),
+      Subtract(C1,Erf(Power(a,b)))),
+    // Erfi(Sqrt(a_^b_)):=(Sqrt(a^b)*Erfi(a^(b/2)))/a^(b/2)
+    SetDelayed(Erfi(Sqrt(Power(a_,b_))),
+      Times(Power(Power(a,Times(C1D2,b)),CN1),Sqrt(Power(a,b)),Erfi(Power(a,Times(C1D2,b))))),
+    // Erfi(1/Sqrt(a_^b_)):=(a^(b/2)*Erfi(a^((-1)*1/2*b)))/Sqrt(a^b)
+    SetDelayed(Erfi(Power(Power(a_,b_),CN1D2)),
+      Times(Power(a,Times(C1D2,b)),Power(Power(a,b),CN1D2),Erfi(Power(a,Times(CN1,C1D2,b))))),
     // ExpIntegralE(n_,z_):=Gamma(1-n,z)/z^(1-n)
     SetDelayed(ExpIntegralE(n_,z_),
       Times(Power(z,Plus(CN1,n)),Gamma(Subtract(C1,n),z))),
