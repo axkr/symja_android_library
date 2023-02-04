@@ -99,6 +99,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     FUNCTIONS_STR_MATHCELL.put(S.EllipticTheta, "jacobiTheta");
     FUNCTIONS_STR_MATHCELL.put(S.Erf, "erf");
     FUNCTIONS_STR_MATHCELL.put(S.Erfc, "erfc");
+    FUNCTIONS_STR_MATHCELL.put(S.Erfi, "erfi");
     FUNCTIONS_STR_MATHCELL.put(S.Exp, "exp");
     FUNCTIONS_STR_MATHCELL.put(S.ExpIntegralEi, "expIntegralEi");
     FUNCTIONS_STR_MATHCELL.put(S.ExpIntegralE, "expIntegralE");
