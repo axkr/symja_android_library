@@ -536,6 +536,15 @@ public class BasicTeXTestCase {
   }
 
   @Test
+  public void testTeX050_TimesPower() {
+    StringBuilder sb = new StringBuilder();
+    TeXFormFactory fTeXFactory = new TeXFormFactory(" \\, ");
+    fTeXFactory.convert(sb, F.symjify(-2).multiply(F.symjify("x")).power(2),
+        Precedence.NO_PRECEDENCE);
+    Assertions.assertEquals("{\\left( -2 \\, x\\right) }^{2}", sb.toString());
+  }
+
+  @Test
   public void testTeX051() {
     StringBuilder sb = new StringBuilder();
     TeXFormFactory fTeXFactory = new TeXFormFactory();
