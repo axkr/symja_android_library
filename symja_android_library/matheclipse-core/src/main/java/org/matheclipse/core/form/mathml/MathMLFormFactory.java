@@ -1997,10 +1997,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     tag(buf, "mo", "&lt;|");
     if (list.size() > 1) {
       tagStart(buf, "mrow");
-      convertInternal(buf, list.arg1(), 0, false);
+      convertInternal(buf, list.arg1(), Precedence.NO_PRECEDENCE, false);
       for (int i = 2; i < list.size(); i++) {
         tag(buf, "mo", ",");
-        convertInternal(buf, list.get(i), 0, false);
+        convertInternal(buf, list.get(i), Precedence.NO_PRECEDENCE, false);
       }
       tagEnd(buf, "mrow");
     }
@@ -2038,7 +2038,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
           // buf.append(convertDoubleToFormattedString(min.evalDouble()));
           // tagEnd(buf, "mn");
         } else {
-          convertInternal(buf, min, 0, false);
+          convertInternal(buf, min, Precedence.NO_PRECEDENCE, false);
         }
         tag(buf, "mo", ",");
         if (max instanceof INum) {
@@ -2047,7 +2047,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
           // buf.append(convertDoubleToFormattedString(max.evalDouble()));
           // tagEnd(buf, "mn");
         } else {
-          convertInternal(buf, max, 0, false);
+          convertInternal(buf, max, Precedence.NO_PRECEDENCE, false);
         }
         tag(buf, "mo", "}");
         tagEnd(buf, "mrow");

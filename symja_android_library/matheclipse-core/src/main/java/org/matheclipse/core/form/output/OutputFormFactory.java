@@ -201,10 +201,12 @@ public class OutputFormFactory {
 
   private void convertDouble(final Appendable buf, final double doubleValue) throws IOException {
     if (F.isZero(doubleValue, Config.ZERO_IN_OUTPUT_FORMAT)) {
-      convertDoubleString(buf, convertDoubleToFormattedString(0.0), 0, false);
+      convertDoubleString(buf, convertDoubleToFormattedString(0.0), Precedence.NO_PRECEDENCE,
+          false);
       return;
     }
-    convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), 0, false);
+    convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), Precedence.NO_PRECEDENCE,
+        false);
   }
 
   private String convertApfloatToFormattedString(Apfloat value) {
@@ -835,7 +837,7 @@ public class OutputFormFactory {
         } else {
           append(buf, "[");
         }
-        convert(buf, list.arg1(), 0, false);
+        convert(buf, list.arg1(), Precedence.NO_PRECEDENCE, false);
         if (fRelaxedSyntax) {
           append(buf, ")");
         } else {

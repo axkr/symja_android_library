@@ -122,9 +122,9 @@ public class TeXFormFactory {
         return false;
       }
       buffer.append('{');
-      fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
+      fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       buffer.append("\\choose ");
-      fFactory.convertInternal(buffer, f.arg2(), 0, NO_PLUS_CALL);
+      fFactory.convertInternal(buffer, f.arg2(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       buffer.append('}');
       return true;
     }
@@ -148,7 +148,7 @@ public class TeXFormFactory {
       boolean imZero = arg2.isZero();
 
       if (!reZero) {
-        fFactory.convertInternal(buffer, arg1, 0, NO_PLUS_CALL);
+        fFactory.convertInternal(buffer, arg1, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       }
       if (!imZero) {
         if (!reZero && !arg2.isNegativeSigned()) {
@@ -157,7 +157,7 @@ public class TeXFormFactory {
         if (arg2.isMinusOne()) {
           buffer.append(" - ");
         } else if (!arg2.isOne()) {
-          fFactory.convertInternal(buffer, arg2, 0, NO_PLUS_CALL);
+          fFactory.convertInternal(buffer, arg2, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
           buffer.append("\\,"); // InvisibleTimes
         }
         buffer.append("\\imag");
@@ -178,7 +178,7 @@ public class TeXFormFactory {
         return false;
       }
       precedenceOpen(buffer, precedence);
-      fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
+      fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       buffer.append("^*");
       precedenceClose(buffer, precedence);
       return true;
@@ -204,9 +204,9 @@ public class TeXFormFactory {
         if (n > 1) {
           buffer.append("^" + n + " ");
         }
-        fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
+        fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
         buffer.append("}{\\partial ");
-        fFactory.convertInternal(buffer, arg2, 0, NO_PLUS_CALL);
+        fFactory.convertInternal(buffer, arg2, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
         if (n > 1) {
           buffer.append("^" + n);
         }
@@ -245,7 +245,7 @@ public class TeXFormFactory {
     @Override
     public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() == 2) {
-        fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
+        fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
         return true;
       }
       return false;
@@ -259,14 +259,14 @@ public class TeXFormFactory {
     public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.isAST1()) {
         buffer.append("H_");
-        fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
+        fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
         return true;
       } else if (f.isAST2()) {
         buffer.append("H_");
-        fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
+        fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
 
         buffer.append("^{(");
-        fFactory.convertInternal(buffer, f.arg2(), 0, NO_PLUS_CALL);
+        fFactory.convertInternal(buffer, f.arg2(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
         buffer.append(")}");
         return true;
       }
@@ -289,7 +289,7 @@ public class TeXFormFactory {
         int i) {
       if (i >= f.size()) {
         buf.append(" ");
-        fFactory.convertInternal(buf, f.arg1(), 0, NO_PLUS_CALL);
+        fFactory.convertInternal(buf, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
         return true;
       }
       if (f.get(i).isList()) {
@@ -298,9 +298,9 @@ public class TeXFormFactory {
           ISymbol symbol = (ISymbol) list.arg1();
           buf.append(mathSymbol);
           buf.append("_{");
-          fFactory.convertInternal(buf, list.arg2(), 0, NO_PLUS_CALL);
+          fFactory.convertInternal(buf, list.arg2(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
           buf.append("}^{");
-          fFactory.convertInternal(buf, list.arg3(), 0, NO_PLUS_CALL);
+          fFactory.convertInternal(buf, list.arg3(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
           buf.append('}');
           if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
             return false;
@@ -399,7 +399,8 @@ public class TeXFormFactory {
               row = (IAST) matrix.get(i);
               for (int j = 1; j < row.size(); j++) {
                 buffer.append(' ');
-                fFactory.convertInternal(buffer, row.get(j), 0, NO_PLUS_CALL);
+                fFactory.convertInternal(buffer, row.get(j), Precedence.NO_PRECEDENCE,
+                    NO_PLUS_CALL);
                 buffer.append(' ');
                 if (j < row.argSize()) {
                   buffer.append('&');
@@ -420,7 +421,7 @@ public class TeXFormFactory {
         buffer.append("\\begin{pmatrix} ");
         if (ast.size() > 1) {
           for (int j = 1; j < ast.size(); j++) {
-            fFactory.convertInternal(buffer, ast.get(j), 0, NO_PLUS_CALL);
+            fFactory.convertInternal(buffer, ast.get(j), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
             if (j < ast.argSize()) {
               buffer.append(" & ");
             }
@@ -430,10 +431,10 @@ public class TeXFormFactory {
       } else {
         buffer.append("\\{");
         if (ast.size() > 1) {
-          fFactory.convertInternal(buffer, ast.arg1(), 0, NO_PLUS_CALL);
+          fFactory.convertInternal(buffer, ast.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
           for (int i = 2; i < ast.size(); i++) {
             buffer.append(',');
-            fFactory.convertInternal(buffer, ast.get(i), 0, NO_PLUS_CALL);
+            fFactory.convertInternal(buffer, ast.get(i), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
           }
         }
         buffer.append("\\}");
@@ -448,7 +449,7 @@ public class TeXFormFactory {
       for (int i = 1; i < list.size(); i++) {
         element = list.get(i);
         buf.append(' ');
-        fFactory.convertInternal(buf, element, 0, NO_PLUS_CALL);
+        fFactory.convertInternal(buf, element, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
         buf.append(' ');
         if (i < list.argSize()) {
           buf.append("\\\\\n");
@@ -480,7 +481,7 @@ public class TeXFormFactory {
           for (int i = 1; i < vector.size(); i++) {
             element = vector.get(i);
             buffer.append(' ');
-            fFactory.convertInternal(buffer, element, 0, NO_PLUS_CALL);
+            fFactory.convertInternal(buffer, element, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
             buffer.append(' ');
             if (i < vector.argSize()) {
               buffer.append('&');
@@ -521,7 +522,7 @@ public class TeXFormFactory {
             row = (IAST) matrix.get(i);
             for (int j = 1; j < row.size(); j++) {
               buffer.append(' ');
-              fFactory.convertInternal(buffer, row.get(j), 0, NO_PLUS_CALL);
+              fFactory.convertInternal(buffer, row.get(j), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
               buffer.append(' ');
               if (j < row.argSize()) {
                 buffer.append('&');
@@ -557,7 +558,7 @@ public class TeXFormFactory {
           for (int i = 1; i < vector.size(); i++) {
             element = vector.get(i);
             buffer.append(' ');
-            fFactory.convertInternal(buffer, element, 0, NO_PLUS_CALL);
+            fFactory.convertInternal(buffer, element, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
             buffer.append(' ');
             if (i < vector.argSize()) {
               buffer.append("\\\\\n");
@@ -577,7 +578,7 @@ public class TeXFormFactory {
           row = (IAST) matrix.get(i);
           for (int j = 1; j < row.size(); j++) {
             buffer.append(' ');
-            fFactory.convertInternal(buffer, row.get(j), 0, NO_PLUS_CALL);
+            fFactory.convertInternal(buffer, row.get(j), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
             buffer.append(' ');
             if (j < row.argSize()) {
               buffer.append('&');
@@ -615,7 +616,7 @@ public class TeXFormFactory {
     @Override
     public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       buffer.append("(");
-      fFactory.convertInternal(buffer, f.arg1(), 0, NO_PLUS_CALL);
+      fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       buffer.append(")");
       return true;
     }
@@ -631,7 +632,7 @@ public class TeXFormFactory {
         buffer.append("[[");
         int argSize = f.argSize();
         for (int i = 2; i <= argSize; i++) {
-          fFactory.convertInternal(buffer, f.get(i), 0, NO_PLUS_CALL);
+          fFactory.convertInternal(buffer, f.get(i), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
           if (i < argSize) {
             buffer.append(",");
           }
@@ -745,9 +746,10 @@ public class TeXFormFactory {
       if (arg2.isNegative()) {
         buffer.append("\\frac{1}{");
         if (arg2.isMinusOne()) {
-          fFactory.convertInternal(buffer, arg1, 0, NO_PLUS_CALL);
+          fFactory.convertInternal(buffer, arg1, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
         } else {
-          fFactory.convertInternal(buffer, F.Power(arg1, arg2.negate()), 0, NO_PLUS_CALL);
+          fFactory.convertInternal(buffer, F.Power(arg1, arg2.negate()), Precedence.NO_PRECEDENCE,
+              NO_PLUS_CALL);
         }
         buffer.append('}');
         return true;
@@ -782,7 +784,7 @@ public class TeXFormFactory {
       }
 
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg2, 0, NO_PLUS_CALL);
+      fFactory.convertInternal(buffer, arg2, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       buffer.append('}');
       precedenceClose(buffer, precedence);
       return true;
@@ -874,7 +876,7 @@ public class TeXFormFactory {
           buffer.append("\\textcolor{");
           buffer.append(arg2.toString().toLowerCase());
           buffer.append("}{");
-          fFactory.convertInternal(buffer, arg1, 0, NO_PLUS_CALL);
+          fFactory.convertInternal(buffer, arg1, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
           buffer.append("}");
           return true;
         }
@@ -925,17 +927,17 @@ public class TeXFormFactory {
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg1, Integer.MAX_VALUE, NO_PLUS_CALL);
+      fFactory.convertInternal(buffer, arg1, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       buffer.append('}');
       buffer.append("_");
 
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg2, Integer.MAX_VALUE, NO_PLUS_CALL);
+      fFactory.convertInternal(buffer, arg2, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       buffer.append('}');
       buffer.append("^");
 
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg3, Integer.MAX_VALUE, NO_PLUS_CALL);
+      fFactory.convertInternal(buffer, arg3, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       buffer.append('}');
       return true;
     }
@@ -975,11 +977,12 @@ public class TeXFormFactory {
           if (iterator.isValidVariable() && iterator.getStep().isOne()) {
             buf.append(mathSymbol);
             buf.append("_{");
-            fFactory.convertSubExpr(buf, iterator.getVariable(), 0);
+            fFactory.convertSubExpr(buf, iterator.getVariable(), Precedence.NO_PRECEDENCE);
             buf.append(" = ");
-            fFactory.convertSubExpr(buf, iterator.getLowerLimit(), 0);
+            fFactory.convertSubExpr(buf, iterator.getLowerLimit(), Precedence.NO_PRECEDENCE);
             buf.append("}^{");
-            fFactory.convertInternal(buf, iterator.getUpperLimit(), 0, NO_PLUS_CALL);
+            fFactory.convertInternal(buf, iterator.getUpperLimit(), Precedence.NO_PRECEDENCE,
+                NO_PLUS_CALL);
             buf.append('}');
             if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
               return false;
@@ -1018,12 +1021,12 @@ public class TeXFormFactory {
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg1, 0, NO_PLUS_CALL);
+      fFactory.convertInternal(buffer, arg1, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       buffer.append('}');
 
       buffer.append("^");
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg2, 0, NO_PLUS_CALL);
+      fFactory.convertInternal(buffer, arg2, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       buffer.append('}');
       return true;
     }
@@ -1045,7 +1048,7 @@ public class TeXFormFactory {
       buffer.append(fFunctionName);
       buffer.append('(');
       for (int i = 1; i < f.size(); i++) {
-        fFactory.convertInternal(buffer, f.get(i), 0, NO_PLUS_CALL);
+        fFactory.convertInternal(buffer, f.get(i), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
         if (i < f.argSize()) {
           buffer.append(',');
         }
@@ -1122,7 +1125,8 @@ public class TeXFormFactory {
           } else {
             // insert numerator in buffer:
             if (numerator.isTimes()) {
-              convertTimesOperator(buf, (IAST) numerator, oper, 0, NO_PLUS_CALL);
+              convertTimesOperator(buf, (IAST) numerator, oper, Precedence.NO_PRECEDENCE,
+                  NO_PLUS_CALL);
             } else {
               // don't use Precedence.DIVIDE here
               fFactory.convert(buf, numerator, Precedence.NO_PRECEDENCE);
@@ -1673,15 +1677,17 @@ public class TeXFormFactory {
                 IExpr min = subList.arg1();
                 IExpr max = subList.arg2();
                 if (min instanceof INum) {
-                  convertDoubleString(buf, convertDoubleToFormattedString(min.evalf()), 0, false);
+                  convertDoubleString(buf, convertDoubleToFormattedString(min.evalf()),
+                      Precedence.NO_PRECEDENCE, false);
                 } else {
-                  convertInternal(buf, min, 0, NO_PLUS_CALL);
+                  convertInternal(buf, min, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
                 }
                 buf.append(",");
                 if (max instanceof INum) {
-                  convertDoubleString(buf, convertDoubleToFormattedString(max.evalf()), 0, false);
+                  convertDoubleString(buf, convertDoubleToFormattedString(max.evalf()),
+                      Precedence.NO_PRECEDENCE, false);
                 } else {
-                  convertInternal(buf, max, 0, NO_PLUS_CALL);
+                  convertInternal(buf, max, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
                 }
                 buf.append("\\}");
                 if (i < interval.size() - 1) {
@@ -1711,7 +1717,7 @@ public class TeXFormFactory {
     convertHead(buf, header);
     buf.append("(");
     for (int i = 1; i < list.size(); i++) {
-      convertInternal(buf, list.get(i), 0, NO_PLUS_CALL);
+      convertInternal(buf, list.get(i), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       if (i < list.argSize()) {
         buf.append(',');
       }
@@ -1730,7 +1736,7 @@ public class TeXFormFactory {
       convertInternal(buf, function.arg1(), Integer.MIN_VALUE, NO_PLUS_CALL);
     }
     for (int i = 2; i < functionSize; i++) {
-      convertInternal(buf, function.get(i), 0, NO_PLUS_CALL);
+      convertInternal(buf, function.get(i), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       if (i < function.argSize()) {
         buf.append(',');
       }
@@ -1764,10 +1770,10 @@ public class TeXFormFactory {
     IAST ast = assoc.normal(false);
     buf.append("\\langle|");
     if (ast.size() > 1) {
-      convertInternal(buf, ast.arg1(), 0, NO_PLUS_CALL);
+      convertInternal(buf, ast.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       for (int i = 2; i < ast.size(); i++) {
         buf.append(',');
-        convertInternal(buf, ast.get(i), 0, NO_PLUS_CALL);
+        convertInternal(buf, ast.get(i), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       }
     }
     buf.append("|\\rangle");
@@ -1786,7 +1792,7 @@ public class TeXFormFactory {
     final int listSize = inequality.size();
     int i = 1;
     while (i < listSize) {
-      convertInternal(tempBuffer, inequality.get(i++), 0, NO_PLUS_CALL);
+      convertInternal(tempBuffer, inequality.get(i++), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       if (i == listSize) {
         if (Precedence.EQUAL < precedence) {
           tempBuffer.append(")");
@@ -1838,7 +1844,7 @@ public class TeXFormFactory {
     buf.append(headString);
     buf.append("(");
     for (int i = 1; i < f.size(); i++) {
-      convertInternal(buf, f.get(i), 0, NO_PLUS_CALL);
+      convertInternal(buf, f.get(i), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       if (i < f.argSize()) {
         buf.append(',');
       }
@@ -1868,7 +1874,7 @@ public class TeXFormFactory {
     IRational re = c.getRealPart();
     IRational im = c.getImaginaryPart();
     if (!re.isZero()) {
-      convertInternal(buf, re, 0, NO_PLUS_CALL);
+      convertInternal(buf, re, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       if (im.compareInt(0) >= 0) {
         buf.append(" + ");
       } else {
@@ -1876,7 +1882,7 @@ public class TeXFormFactory {
         im = im.negate();
       }
     }
-    convertInternal(buf, im, 0, NO_PLUS_CALL);
+    convertInternal(buf, im, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
     buf.append("\\,"); // InvisibleTimes
     buf.append("i ");
     if (caller && precedence > Precedence.PLUS) {
@@ -1996,7 +2002,7 @@ public class TeXFormFactory {
       convertHeader(buf, str);
       return;
     }
-    convertInternal(buf, obj, 0, NO_PLUS_CALL);
+    convertInternal(buf, obj, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
   }
 
   private void convertHeader(final StringBuilder buf, String str) {

@@ -107,7 +107,7 @@ public class ASCIIPrettyPrinter3 {
 
   public void convert(final IExpr expr) {
     fractionPrinted = false;
-    convert(expr, 0, NO_PLUS_CALL);
+    convert(expr, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
   }
 
   private void convert(final IExpr expr, final int precedence, boolean caller) {
@@ -145,7 +145,7 @@ public class ASCIIPrettyPrinter3 {
         if (i != 1) {
           print(", ");
         }
-        convert(ast.get(i), 0, false);
+        convert(ast.get(i), Precedence.NO_PRECEDENCE, false);
       }
       if (head.equals(S.List)) {
         print("}");
@@ -244,7 +244,7 @@ public class ASCIIPrettyPrinter3 {
           IFraction frac = (IFraction) number;
           printFraction(frac.toBigNumerator().toString(), frac.toBigDenominator().toString());
         } else {
-          convert(number, 0, NO_PLUS_CALL);
+          convert(number, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
         }
         return true;
       }

@@ -2,6 +2,7 @@ package org.matheclipse.core.form.tex;
 
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.parser.client.operator.Precedence;
 
 public class UnaryFunction extends AbstractTeXConverter {
   String pre;
@@ -33,7 +34,8 @@ public class UnaryFunction extends AbstractTeXConverter {
       return false;
     }
     buffer.append(pre);
-    fFactory.convertInternal(buffer, f.arg1(), 0, TeXFormFactory.NO_PLUS_CALL);
+    fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE,
+        TeXFormFactory.NO_PLUS_CALL);
     buffer.append(post);
     return true;
   }

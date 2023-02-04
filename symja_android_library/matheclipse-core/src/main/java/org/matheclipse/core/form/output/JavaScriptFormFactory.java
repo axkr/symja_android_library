@@ -780,9 +780,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
   public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence,
       boolean caller) {
     buf.append("complex(");
-    convertFraction(buf, c.getRealPart(), 0, NO_PLUS_CALL);
+    convertFraction(buf, c.getRealPart(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
     buf.append(",");
-    convertFraction(buf, c.getImaginaryPart(), 0, NO_PLUS_CALL);
+    convertFraction(buf, c.getImaginaryPart(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
     buf.append(")");
   }
 
@@ -790,9 +790,11 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
   public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc,
       final int precedence, boolean caller) {
     buf.append("complex(");
-    convertDoubleString(buf, convertDoubleToFormattedString(dc.getRealPart()), 0, false);
+    convertDoubleString(buf, convertDoubleToFormattedString(dc.getRealPart()),
+        Precedence.NO_PRECEDENCE, false);
     buf.append(",");
-    convertDoubleString(buf, convertDoubleToFormattedString(dc.getImaginaryPart()), 0, false);
+    convertDoubleString(buf, convertDoubleToFormattedString(dc.getImaginaryPart()),
+        Precedence.NO_PRECEDENCE, false);
     buf.append(")");
   }
 }

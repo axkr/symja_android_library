@@ -2,6 +2,7 @@ package org.matheclipse.core.form.tex;
 
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.parser.client.operator.Precedence;
 
 /**
  * Used for: <code>HermiteH(a,b)) ==> H_a(b)</code>, <code>LaguerreL(a,b)) ==> L_a(b)</code>
@@ -42,9 +43,11 @@ public class BinaryFunction extends AbstractTeXConverter {
       return false;
     }
     buffer.append(first);
-    fFactory.convertInternal(buffer, f.arg1(), 0, TeXFormFactory.NO_PLUS_CALL);
+    fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE,
+        TeXFormFactory.NO_PLUS_CALL);
     buffer.append(middle);
-    fFactory.convertInternal(buffer, f.arg2(), 0, TeXFormFactory.NO_PLUS_CALL);
+    fFactory.convertInternal(buffer, f.arg2(), Precedence.NO_PRECEDENCE,
+        TeXFormFactory.NO_PLUS_CALL);
     buffer.append(last);
     return true;
   }

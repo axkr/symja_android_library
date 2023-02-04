@@ -100,14 +100,16 @@ public abstract class DoubleFormFactory {
 
   private void convertDouble(final StringBuilder buf, final double doubleValue) {
     if (F.isZero(doubleValue, Config.ZERO_IN_OUTPUT_FORMAT)) {
-      convertDoubleString(buf, convertDoubleToFormattedString(0.0), 0, false);
+      convertDoubleString(buf, convertDoubleToFormattedString(0.0), Precedence.NO_PRECEDENCE,
+          false);
       return;
     }
     // final boolean isNegative = doubleValue < 0.0;
     // if (!isNegative && caller == PLUS_CALL) {
     // append(buf, "+");
     // }
-    convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), 0, false);
+    convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), Precedence.NO_PRECEDENCE,
+        false);
   }
 
   protected String convertDoubleToFormattedString(double dValue) {
@@ -710,7 +712,7 @@ public abstract class DoubleFormFactory {
         } else {
           append(buf, "[");
         }
-        convertInternal(buf, list.arg1(), 0, false, true);
+        convertInternal(buf, list.arg1(), Precedence.NO_PRECEDENCE, false, true);
         if (fRelaxedSyntax) {
           append(buf, ")");
         } else {
