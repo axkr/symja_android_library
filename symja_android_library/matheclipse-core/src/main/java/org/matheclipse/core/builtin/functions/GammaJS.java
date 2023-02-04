@@ -536,6 +536,38 @@ public class GammaJS extends JS {
     return gamma(Complex.ZERO, x);
   }
 
+  public static Complex erf(Complex x) {
+    int useAsymptotic = 5;
+    double absArg = Math.abs(x.getArgument());
+    if (x.norm() > useAsymptotic && (absArg < Math.PI / 4.0 || absArg > 3.0 * Math.PI / 4.0)) {
+      return sub(1, erfc(x));
+    }
+    return mul(2.0 / Math.sqrt(Math.PI), x,
+        HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5), neg(mul(x, x))));
+  }
+
+  public static Complex erfc(Complex x) {
+    int useAsymptotic = 5;
+    double absArg = Math.abs(x.getArgument());
+    if (x.norm() > useAsymptotic && (absArg < Math.PI / 4.0 || absArg > 3.0 * Math.PI / 4.0)) {
+      // as per dlmf.nist.gov/7.12.1 this could be an independent sum for minor improvement
+      // these numbers are tiny and need to stay in this function even though
+      // there is some code duplication with erf
+      Complex t = mul(1.0 / Math.sqrt(Math.PI), exp(neg(mul(x, x))), inv(x),
+          HypergeometricJS.hypergeometric2F0(new Complex(0.5), Complex.ONE, neg(inv(mul(x, x)))));
+      if (x.getReal() < 0) {
+        return t.add(2.0);
+      }
+      return t;
+    }
+
+    return sub(1, erf(x));
+  }
+
+  public static Complex erfi(Complex x) {
+    return mul(Complex.MINUS_I, erf(mul(Complex.I, x)));
+  }
+
   public static Complex expIntegralE(Complex n, Complex x) {
 
     if (F.isZero(n)) {
