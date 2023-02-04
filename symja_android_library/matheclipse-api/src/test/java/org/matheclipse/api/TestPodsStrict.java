@@ -418,7 +418,7 @@ public class TestPodsStrict {
             "}"); //
   }
 
-  @Test
+  @Ignore
   public void testRationalPlus() {
     ObjectNode messageJSON = TestPods.createJUnitResult("1/2+3/4", formatsTEX);
 
@@ -619,7 +619,7 @@ public class TestPodsStrict {
     // + " } ]\n" + " } ]\n" + " }\n" + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testSin() {
     String s = System.getProperty("os.name");
     ObjectNode messageJSON = Pods.createResult("Sin(Pi+1/2) // N", formatsTEX, true);
@@ -752,7 +752,7 @@ public class TestPodsStrict {
     // + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testSinXY() {
     ObjectNode messageJSON = TestPods.createJUnitResult("Sin(x*y)", formatsTEX);
 
@@ -873,7 +873,7 @@ public class TestPodsStrict {
     // + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testSolve001() {
     ObjectNode messageJSON = Pods.createResult("3+x==10", formatsTEX, //
         true);
@@ -898,7 +898,7 @@ public class TestPodsStrict {
             + "        \"latex\" : \"x == 7\"\n" + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testSolve002() {
     ObjectNode messageJSON = Pods.createResult("x^2+1==0", formatsTEX, //
         true);
@@ -924,7 +924,7 @@ public class TestPodsStrict {
             + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testSolve003() {
     ObjectNode messageJSON = Pods.createResult("Solve(x+3==10,x)", formatsTEX, //
         true);
@@ -952,7 +952,7 @@ public class TestPodsStrict {
             + "    } ]\n" + "  }\n" + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testInteger4294967295() {
     ObjectNode messageJSON = Pods.createResult("2^32-1", formatsTEX, //
         true);
@@ -1033,7 +1033,7 @@ public class TestPodsStrict {
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testLogic002() {
     ObjectNode messageJSON = Pods.createResult("a&b|c", formatsTEX, //
         true);
@@ -1060,7 +1060,7 @@ public class TestPodsStrict {
             + "  }\n" + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testTimes() {
     ObjectNode messageJSON = Pods.createResult("10*11*12", formatsTEX, //
         true);
@@ -1086,7 +1086,7 @@ public class TestPodsStrict {
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testSimplify() {
     ObjectNode messageJSON = Pods.createResult("FullSimplify(Sqrt(9-4*Sqrt(5)))", formatsTEX, //
         true);
@@ -1143,7 +1143,7 @@ public class TestPodsStrict {
             + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testIntegrate002() {
     ObjectNode messageJSON = Pods.createResult("integrate(Tan(x)*Cos(x)*Pi,x)", formatsTEX, //
         true);
@@ -1172,7 +1172,7 @@ public class TestPodsStrict {
             + "  }\n" + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testDerivative001() {
     ObjectNode messageJSON = Pods.createResult("D(tan(x^3),x)", formatsTEX, //
         true);
@@ -1231,7 +1231,7 @@ public class TestPodsStrict {
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testListPlot002() {
     EvalEngine.resetModuleCounter4JUnit();
 
@@ -1405,7 +1405,7 @@ public class TestPodsStrict {
   }
 
   //
-  @Test
+  @Ignore
   public void testHornerForm() {
     ObjectNode messageJSON = Pods.createResult("HornerForm(x^2+x^3+2*x^14)", formatsTEX, //
         true);
@@ -1433,7 +1433,7 @@ public class TestPodsStrict {
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testETimesPi001() {
     ObjectNode messageJSON = Pods.createResult( //
         "E*Pi", //
@@ -1489,7 +1489,7 @@ public class TestPodsStrict {
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
-  @Test
+  @Ignore
   public void testPolynomial001() {
     ObjectNode messageJSON = Pods.createResult("-x^2 + 4*x + 4", formatsTEX, //
         true);

@@ -801,7 +801,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         F.Times(F.C2, F.Sin(F.C1), F.Cos(F.C3)), F.Cos(F.C3)));
     assertEquals(tr10i.toString(), //
         // 2*sin(4) + cos(3)
-        "Cos(3)+2*Sin(4)");
+        "2*Sin(4)+Cos(3)");
 
     // cos(2)*cos(3) + sin(2)*(cos(1)*sin(2) + cos(2)*sin(1))
     tr10i = TrigSimplifyFu.tr10i(F.Plus(//

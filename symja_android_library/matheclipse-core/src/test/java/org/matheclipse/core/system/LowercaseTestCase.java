@@ -6577,10 +6577,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
   public void testErf() {
-    check("Erf(I*Infinity)", //
-        "I*Infinity");
-    check("Erf(-I*Infinity)", //
-        "-I*Infinity");
+    check("Erf(-Infinity, Infinity)", //
+        "2");
+
+    check("Erf(1.5-I)", //
+        "1.0784+I*0.0279637");
+    check("Erf({0.5, 1.0, 1.5})", //
+        "{0.5205,0.842701,0.966105}");
+    check("Erf({Infinity, -Infinity, I Infinity, -I Infinity})", //
+        "{1,-1,I*Infinity,-I*Infinity}");
 
     check("Erf(-x)", //
         "-Erf(x)");
@@ -6593,15 +6598,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("Erf(ComplexInfinity)", //
         "Indeterminate");
-    check("Erf(Infinity)", //
-        "1");
-    check("Erf(-Infinity)", //
-        "-1");
     checkNumeric("Erf(0.95)", //
         "0.8208908072732779");
   }
 
   public void testErfc() {
+    check("Erfc(1.5-I)", //
+        "-0.0783992+I*(-0.0279637)");
+    check("Erfc({0.5, 1.0, 1.5})", //
+        "{0.4795,0.157299,0.0338949}");
+    check("Erfc(0.95)", //
+        "0.179109");
     checkNumeric("Erfc(5/Sqrt(2))/2 // N", //
         "2.866515718791937E-7");
     check("Erfc(-0.28991)", //
@@ -6616,18 +6623,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testErfi() {
+    check("Erfi(1.5-I)", //
+        "-0.70136+I*(-1.84683)");
+    check("Erfi({0.5, 1.5, 2.5})", //
+        "{0.614952,4.58473,130.3958}");
+
     check("Erfi(-42*I*x)", //
         "-I*Erf(42*x)");
     check("Erfi(43*I*x)", //
         "I*Erf(43*x)");
+    check("Erfi((-1)^(1/4)*2^2)", //
+        "Erfi(4*(-1)^(1/4))");
     check("Erfi((-1)^(1/4)*2.0^2)", //
-        "(I*1.0)*Erf(-2.82843+I*2.82843)");
+        "-0.121816+I*1.07044");
     check("Erfi(0)", //
         "0");
-    check("Erfi(Infinity)", //
-        "Infinity");
-    check("Erfi(-Infinity)", //
-        "-Infinity");
+    check("Erfi({-Infinity, Infinity, I Infinity, -I Infinity})", //
+        "{-Infinity,Infinity,I,-I}");
     check("Erfi(I*Infinity)", //
         "I");
     check("Erfi(-I*Infinity)", //
@@ -9819,7 +9831,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFunctionURL() {
-    assertEquals(ID.LINE_NUMBER_OF_JAVA_CLASS.length, ID.Zeta + 1);
+    assertEquals(ID.LINE_NUMBER_OF_JAVA_CLASS.length, ID.ZTransform + 1);
     checkRegex("FunctionURL(NIntegrate)", //
         "^.+L?\\d$"
     // "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/NIntegrate.java#L771"
@@ -12786,22 +12798,36 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" + "\n" + "board.unsuspendUpdate();\n" + "");
     // Mathcell syntax / generate TeX for MathJAX
     check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
-        "var parent = document.currentScript.parentNode;\n" + "var id = generateId();\n"
-            + "parent.id = id;\n"
-            + "MathCell( id, [ { type: 'slider', min: 1.0, max: 5.0, step: 1.0, name: 'n', label: 'n' }\n"
-            + " ] );\n" + "\n" + "parent.update = function( id ) {\n" + "\n"
-            + "var n = getVariable(id, 'n');\n" + "\n" + "\n" + "var expressions = [ '1+x',\n"
-            + "'1+{x}^{2}',\n"
-            + "'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2}\\\\\\\\right) ',\n"
-            + "'1+{x}^{4}',\n"
-            + "'\\\\\\\\left( 1+x\\\\\\\\right) \\\\\\\\,\\\\\\\\left( 1 - x+{x}^{2} - {x}^{3}+{x}^{4}\\\\\\\\right) ' ];\n"
-            + "\n"
-            + "  var data = '\\\\\\\\[' + expressions[Math.trunc((n-1.0)/1.0)] + '\\\\\\\\]';\n"
-            + "\n" + "  data = data.replace( /\\\\\\\\/g, '&#92;' );\n" + "\n"
-            + "  var config = {type: 'text', center: true };\n" + "\n"
-            + "  evaluate( id, data, config );\n" + "\n"
-            + "  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n" + "\n" + "}\n"
-            + "parent.update( id );\n" + "");
+        "var parent = document.currentScript.parentNode;\n" //
+            + "var id = generateId();\n" //
+            + "parent.id = id;\n" //
+            + "MathCell( id, [ { type: 'slider', min: 1.0, max: 5.0, step: 1.0, name: 'n', label: 'n' }\n" //
+            + " ] );\n" //
+            + "\n" //
+            + "parent.update = function( id ) {\n" //
+            + "\n" //
+            + "var n = getVariable(id, 'n');\n" //
+            + "\n" //
+            + "\n" //
+            + "var expressions = [ '1 + x',\n" //
+            + "'1 + {x}^{2}',\n" //
+            + "'\\\\\\\\left( 1 + x\\\\\\\\right)  \\\\\\\\cdot \\\\\\\\left( 1 - x + {x}^{2}\\\\\\\\right) ',\n" //
+            + "'1 + {x}^{4}',\n" //
+            + "'\\\\\\\\left( 1 + x\\\\\\\\right)  \\\\\\\\cdot \\\\\\\\left( 1 - x + {x}^{2} - {x}^{3} + {x}^{4}\\\\\\\\right) ' ];\n" //
+            + "\n" //
+            + "  var data = '\\\\\\\\[' + expressions[Math.trunc((n-1.0)/1.0)] + '\\\\\\\\]';\n" //
+            + "\n" //
+            + "  data = data.replace( /\\\\\\\\/g, '&#92;' );\n" //
+            + "\n" //
+            + "  var config = {type: 'text', center: true };\n" //
+            + "\n" //
+            + "  evaluate( id, data, config );\n" //
+            + "\n" //
+            + "  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n" //
+            + "\n" //
+            + "}\n" //
+            + "parent.update( id );\n" //
+            + "");
 
     // JSXGraph.org syntax
     // @Ignore Deactivate, because of change to Graphics output
@@ -17430,7 +17456,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("x+Parenthesis(a+b+c)", //
         "x+(a+b+c)");
     check("TeXForm(x+Parenthesis(a+b+c))", //
-        "x+(a+b+c)");
+        "x + (a + b + c)");
     check("MathMLForm(x+Parenthesis(a+b+c))", //
         "<?xml version=\"1.0\"?>\n"
             + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
