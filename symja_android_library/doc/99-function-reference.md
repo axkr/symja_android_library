@@ -4,6 +4,8 @@
 * [$HistoryLength](functions/$HistoryLength.md)
 * [$IterationLimit](functions/$IterationLimit.md)
 * [$Line](functions/$Line.md)
+* [$MaxMachineNumber](functions/$MaxMachineNumber.md)
+* [$MinMachineNumber](functions/$MinMachineNumber.md)
 * [$OperatingSystem](functions/$OperatingSystem.md)
 * [$RecursionLimit](functions/$RecursionLimit.md)
 * [$ScriptCommandLine](functions/$ScriptCommandLine.md)

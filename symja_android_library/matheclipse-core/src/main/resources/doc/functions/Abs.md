@@ -18,6 +18,17 @@ See:
 3
 ```
 
-### Github
+The derivative of `Abs` will not be evaluated because the system assumes `x` could be non-real:
 
-* [Implementation of Abs](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L242) 
+```
+>> D(Abs(x), x)
+Abs'(x)
+```
+
+Use `RealAbs` to calculate the derivative:
+
+```
+>> D(RealAbs(x), x)
+x/RealAbs(x)
+```
+
