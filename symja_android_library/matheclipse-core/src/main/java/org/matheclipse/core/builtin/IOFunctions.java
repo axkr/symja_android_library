@@ -38,17 +38,17 @@ import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.trie.SuggestTree;
 import org.matheclipse.parser.trie.SuggestTree.Node;
-import com.mitchellbosecke.pebble.PebbleEngine;
-import com.mitchellbosecke.pebble.cache.PebbleCache;
-import com.mitchellbosecke.pebble.node.BodyNode;
-import com.mitchellbosecke.pebble.node.PrintNode;
-import com.mitchellbosecke.pebble.node.RenderableNode;
-import com.mitchellbosecke.pebble.node.RootNode;
-import com.mitchellbosecke.pebble.node.TextNode;
-import com.mitchellbosecke.pebble.node.expression.ContextVariableExpression;
-import com.mitchellbosecke.pebble.node.expression.Expression;
-import com.mitchellbosecke.pebble.template.PebbleTemplate;
-import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
+import io.pebbletemplates.pebble.PebbleEngine;
+import io.pebbletemplates.pebble.cache.PebbleCache;
+import io.pebbletemplates.pebble.node.BodyNode;
+import io.pebbletemplates.pebble.node.PrintNode;
+import io.pebbletemplates.pebble.node.RenderableNode;
+import io.pebbletemplates.pebble.node.RootNode;
+import io.pebbletemplates.pebble.node.TextNode;
+import io.pebbletemplates.pebble.node.expression.ContextVariableExpression;
+import io.pebbletemplates.pebble.node.expression.Expression;
+import io.pebbletemplates.pebble.template.PebbleTemplate;
+import io.pebbletemplates.pebble.template.PebbleTemplateImpl;
 
 public class IOFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
