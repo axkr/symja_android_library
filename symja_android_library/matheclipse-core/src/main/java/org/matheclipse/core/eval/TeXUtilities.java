@@ -8,7 +8,6 @@ import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.operator.Precedence;
 
 /** Convert an expression into TeX output */
 public class TeXUtilities {
@@ -76,7 +75,7 @@ public class TeXUtilities {
 
         TeXFormFactory teXFactory =
             new TeXFormFactory(exponentFigures, significantFigures, " \\cdot ");
-        if (teXFactory.convert(buf, result, Precedence.NO_PRECEDENCE)) {
+        if (teXFactory.convert(buf, result)) {
           out.write(buf.toString());
           return true;
         } else {

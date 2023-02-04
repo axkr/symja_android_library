@@ -1223,29 +1223,37 @@ public class TeXFormFactory {
   /** Table for constant expressions */
   public static final Map<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>(199);
 
-  /** Description of the Field */
-  public static final Map<ISymbol, AbstractTeXConverter> operTab =
+  /**
+   * Assign a specialized {@link AbstractTeXConverter} to an {@link ISymbol} symbol name in this
+   * {@link Map}
+   */
+  private final Map<ISymbol, AbstractTeXConverter> symbolToConverterMap =
       new HashMap<ISymbol, AbstractTeXConverter>(199);
 
   public static final boolean USE_IDENTIFIERS = false;
 
+  private boolean useSignificantFigures = false;
 
-  private boolean fUseSignificantFigures = false;
+  private int exponentFigures;
 
-  private int fExponentFigures;
-
-  private int fSignificantFigures;
+  private int significantFigures;
 
   /**
-   * <code>\codt</code>
+   * The current operator which will be used for {@link S#Times} conversion. <code>\cdot</code> isa
+   * used as the default operator.
    */
   private final String timesOperator;
 
-  /** Constructor */
   public TeXFormFactory() {
     this(" \\cdot ");
   }
 
+  /**
+   * 
+   * 
+   * @param timesOperator the current operator which will be used for {@link S#Times} conversion.
+   *        <code>\cdot</code> isa used as the default operator
+   */
   public TeXFormFactory(String timesOperator) {
     this(-1, -1, timesOperator);
   }
@@ -1253,11 +1261,12 @@ public class TeXFormFactory {
   /**
    * @param exponentFigures
    * @param significantFigures
-   * @param timesOperator TODO
+   * @param timesOperator timesOperator the current operator which will be used for {@link S#Times}
+   *        conversion. <code>\cdot</code> isa used as the default operator
    */
   public TeXFormFactory(int exponentFigures, int significantFigures, String timesOperator) {
-    this.fExponentFigures = exponentFigures;
-    this.fSignificantFigures = significantFigures;
+    this.exponentFigures = exponentFigures;
+    this.significantFigures = significantFigures;
     this.timesOperator = timesOperator;
     init();
   }
@@ -1310,25 +1319,34 @@ public class TeXFormFactory {
     StringBuilder buf = new StringBuilder();
     int numericPrecision = (int) EvalEngine.get().getNumericPrecision();
     ApfloatToMMA.apfloatToTeX(buf, value, numericPrecision, numericPrecision,
-        fUseSignificantFigures);
+        useSignificantFigures);
     return buf.toString();
   }
 
-  // public static String convertApfloat(Apfloat num) {
-  // String str = num.toString();
-  // int index = str.indexOf('e');
-  // if (index > 0) {
-  // String exponentStr = str.substring(index + 1);
-  // String result = str.substring(0, index);
-  // return result + "*10^" + exponentStr;
-  // }
-  // return str;
-  // }
 
-  public boolean convert(final StringBuilder buf, final IExpr o, final int precedence) {
+  /**
+   * Convert the <code>expression</code> into a LaTeX math string representation and appedn it to
+   * the <code>buffer</code>.
+   * 
+   * @param buffer the buffer, to which the TeX string will be appended
+   * @param expression the expression which should be converted to a TeX string
+   * @return <code>false</code> if the conversion couldn't be terminated
+   */
+  public boolean convert(final StringBuilder buffer, final IExpr expression) {
+    return convert(buffer, expression, Precedence.NO_PRECEDENCE);
+  }
+
+  /**
+   * 
+   * @param buffer the buffer, to which the TeX string will be appended
+   * @param expression the expression which should be converted to a TeX string
+   * @param precedence the precedence of the &quot;calling operator&quot;
+   * @return <code>false</code> if the conversion couldn't be terminated
+   */
+  public boolean convert(final StringBuilder buffer, final IExpr expression, final int precedence) {
     try {
-      convertInternal(buf, o, precedence, NO_PLUS_CALL);
-      if (buf.length() >= Config.MAX_OUTPUT_SIZE) {
+      convertInternal(buffer, expression, precedence, NO_PLUS_CALL);
+      if (buffer.length() >= Config.MAX_OUTPUT_SIZE) {
         return false;
       }
       return true;
@@ -1339,10 +1357,10 @@ public class TeXFormFactory {
     return false;
   }
 
-  void convertInternal(final StringBuilder buf, final Object o, final int precedence,
+  void convertInternal(final StringBuilder buf, final IExpr o, final int precedence,
       boolean caller) {
     if (o instanceof IExpr) {
-      IExpr expr = (IExpr) o;
+      IExpr expr = o;
       String str = CONSTANT_EXPRS.get(expr);
       if (str != null) {
         buf.append(str);
@@ -1353,7 +1371,7 @@ public class TeXFormFactory {
       final IAST f = ((IAST) o);
       IExpr h = f.head();
       if (h.isSymbol()) {
-        final AbstractTeXConverter converter = operTab.get((h));
+        final AbstractTeXConverter converter = symbolToConverterMap.get((h));
         if (converter != null) {
           converter.setFactory(this);
           if (converter.convert(buf, f, precedence)) {
@@ -1782,10 +1800,10 @@ public class TeXFormFactory {
   }
 
   protected String convertDoubleToFormattedString(double dValue) {
-    if (fSignificantFigures > 0) {
+    if (significantFigures > 0) {
       try {
         StringBuilder buf = new StringBuilder();
-        DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures, true);
+        DoubleToMMA.doubleToMMA(buf, dValue, exponentFigures, significantFigures, true);
         return buf.toString();
       } catch (IOException ioex) {
         LOGGER.error("TeXFormFactory.convertDoubleToFormattedString() failed", ioex);
@@ -1940,7 +1958,7 @@ public class TeXFormFactory {
     buf.append(convertedSymbol.toString());
   }
 
-  public void init() {
+  private void init() {
     // timesPrec =
     // ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence();
     initTeXConverter(S.Abs, new UnaryFunction("|", "|"));
@@ -2198,6 +2216,6 @@ public class TeXFormFactory {
   }
 
   public void initTeXConverter(ISymbol key, AbstractTeXConverter value) {
-    operTab.put(key, value);
+    symbolToConverterMap.put(key, value);
   }
 }
