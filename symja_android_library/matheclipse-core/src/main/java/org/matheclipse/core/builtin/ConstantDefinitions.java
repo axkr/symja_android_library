@@ -398,7 +398,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      return F.num(Double.valueOf("2.2250738585072014E-308"));
+      return F.num(Double.MIN_NORMAL);
     }
   }
 
