@@ -3,7 +3,6 @@ package org.matheclipse.core.expression;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.text.Collator;
 import java.util.Locale;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
@@ -24,7 +23,6 @@ import org.matheclipse.core.visit.IVisitorLong;
 public class StringX implements IStringX {
   private static final Logger LOGGER = LogManager.getLogger();
 
-  public static final Collator US_COLLATOR = Collator.getInstance(Locale.US);
   /** */
   private static final long serialVersionUID = -68464824682534930L;
 
@@ -218,7 +216,7 @@ public class StringX implements IStringX {
   @Override
   public int compareTo(final IExpr expr) {
     if (expr instanceof StringX) {
-      return US_COLLATOR.compare(fString, ((StringX) expr).fString);
+      return IStringX.US_COLLATOR.compare(fString, ((StringX) expr).fString);
     }
     return IStringX.super.compareTo(expr);
   }
@@ -229,7 +227,7 @@ public class StringX implements IStringX {
    */
   public int compareTo(final StringX anotherString) {
     // sort lexicographically
-    return US_COLLATOR.compare(fString, anotherString.fString);
+    return IStringX.US_COLLATOR.compare(fString, anotherString.fString);
   }
 
   /**

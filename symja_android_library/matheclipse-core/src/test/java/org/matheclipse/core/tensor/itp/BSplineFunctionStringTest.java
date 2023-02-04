@@ -1,4 +1,4 @@
-package org.mathclipse.core.tensor.itp;
+package org.matheclipse.core.tensor.itp;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

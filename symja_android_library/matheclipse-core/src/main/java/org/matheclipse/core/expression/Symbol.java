@@ -204,7 +204,7 @@ public class Symbol implements ISymbol, Serializable {
         return 0;
       }
       // sort lexicographically
-      return StringX.US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());
+      return IStringX.US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());
     }
     if (expr.isAST()) {
       int id = expr.headID();

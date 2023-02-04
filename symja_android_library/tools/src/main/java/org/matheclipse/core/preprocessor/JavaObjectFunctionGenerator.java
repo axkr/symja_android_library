@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.io.IOInit;
 
@@ -67,7 +68,7 @@ public class JavaObjectFunctionGenerator {
     for (int i = 0; i < AST2Expr.FUNCTION_STRINGS.length; i++) {
       list.add(AST2Expr.FUNCTION_STRINGS[i]);
     }
-    Collections.sort(list);
+    Collections.sort(list, IStringX.US_COLLATOR);
 
     System.out.println(HEADER);
     for (int i = 0; i < list.size(); i++) {

@@ -1,4 +1,4 @@
-package org.mathclipse.core.tensor.opt.qh3;
+package org.matheclipse.core.tensor.opt.qh3;
 
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;

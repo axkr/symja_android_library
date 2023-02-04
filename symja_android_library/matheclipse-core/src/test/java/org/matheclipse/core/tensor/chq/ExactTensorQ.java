@@ -1,5 +1,5 @@
 // code by jph
-package org.mathclipse.core.tensor.chq;
+package org.matheclipse.core.tensor.chq;
 
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;

@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.ParserConfig;
@@ -41,7 +42,7 @@ public class FunctionIDGenerator {
     for (int i = 0; i < AST2Expr.DOLLAR_STRINGS.length; i++) {
       list.add(AST2Expr.DOLLAR_STRINGS[i]);
     }
-    Collections.sort(list);
+    Collections.sort(list, IStringX.US_COLLATOR);
 
     System.out.println(HEADER);
     System.out.println("    public final static int UNKNOWN = -1;");

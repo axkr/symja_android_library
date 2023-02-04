@@ -1,5 +1,5 @@
 // code by jph
-package org.mathclipse.core.tensor.img;
+package org.matheclipse.core.tensor.img;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

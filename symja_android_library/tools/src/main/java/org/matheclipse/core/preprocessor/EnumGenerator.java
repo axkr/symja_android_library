@@ -3,6 +3,7 @@ package org.matheclipse.core.preprocessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.interfaces.IStringX;
 
 /** @deprecated not needed anymore */
 @Deprecated
@@ -38,7 +39,7 @@ public class EnumGenerator {
     for (int i = 0; i < AST2Expr.FUNCTION_STRINGS.length; i++) {
       list.add(AST2Expr.FUNCTION_STRINGS[i]);
     }
-    Collections.sort(list);
+    Collections.sort(list, IStringX.US_COLLATOR);
     // Map<String, String> map = AST2Expr.PREDEFINED_SYMBOLS_MAP;
     System.out.println(HEADER);
     for (int i = 0; i < list.size(); i++) {

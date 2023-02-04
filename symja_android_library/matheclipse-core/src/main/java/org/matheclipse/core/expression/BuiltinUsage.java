@@ -12,12 +12,15 @@ public class BuiltinUsage {
     IS_INITIALIZED.set(true);
     USAGE[ID.$IterationLimit] =
         "specifies the maximum number of times a reevaluation of an expression may happen";
+
+    USAGE[ID.$MaxMachineNumber] = "largest normalized positive machine number";
+    USAGE[ID.$MinMachineNumber] = "smallest normalized positive machine number";
     USAGE[ID.$RecursionLimit] =
         "specifies the maximum allowable recursion depth after which a calculation is terminated";
     USAGE[ID.Abort] = "generate an abort";
     USAGE[ID.Abs] = "absolute value of a number";
     USAGE[ID.Accumulate] = "accumulates the values of $list$, returning a new list";
-    USAGE[ID.All] = "all the parts in the level";
+    USAGE[ID.All] = "option value that specify using everything";
     USAGE[ID.AllTrue] = "all the elements are True";
     USAGE[ID.Alphabet] = "lowercase letters in an alphabet";
     USAGE[ID.And] = "logic conjunction";
@@ -260,6 +263,7 @@ public class BuiltinUsage {
     USAGE[ID.NHoldRest] =
         "attribute that indicates that just the first  argument must be evaluated in numerical evaluations";
     USAGE[ID.NIntegrate] = "numerical integration";
+    USAGE[ID.None] = "option value that disables the option";
     USAGE[ID.Nor] = "negation of logic (inclusive) disjunction";
     USAGE[ID.Normal] = "convert objects to normal expressions";
     USAGE[ID.Normalize] = "normalizes a vector";

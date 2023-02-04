@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.form.Documentation;
+import org.matheclipse.core.interfaces.IStringX;
 
 /**
  * The built-in symbols in class {@link org.matheclipse.core.expression.S} are generated with this
@@ -28,7 +29,7 @@ public class BuiltinGenerator {
     for (int i = 0; i < AST2Expr.DOLLAR_STRINGS.length; i++) {
       list.add(AST2Expr.DOLLAR_STRINGS[i]);
     }
-    Collections.sort(list);
+    Collections.sort(list, IStringX.US_COLLATOR);
     PrintStream out = System.out;
     // public final static IBuiltInSymbol XXXXX = BuiltIns.valueOf(BuiltIns.XXXXX);
     for (String sym : list) {

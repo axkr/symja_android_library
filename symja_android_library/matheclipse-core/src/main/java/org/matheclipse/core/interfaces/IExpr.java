@@ -2876,8 +2876,12 @@ public interface IExpr
   }
 
   /**
+   * <p>
    * Check if the expression is a negative signed expression. This method is used in output forms of
    * <code>Plus[...]</code> expressions.
+   * 
+   * <p>
+   * Note: For numbers the method {@link INumber#complexSign()} is used.
    *
    * @return <code>true</code> if the expression is a negative signed expression
    */

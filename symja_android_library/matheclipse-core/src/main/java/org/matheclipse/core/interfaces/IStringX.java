@@ -1,5 +1,8 @@
 package org.matheclipse.core.interfaces;
 
+import java.text.Collator;
+import java.util.Locale;
+
 /** (I)nterface for a (String) e(X)pression */
 public interface IStringX extends IExpr {
   public static final short TEXT_PLAIN = 1;
@@ -12,6 +15,11 @@ public interface IStringX extends IExpr {
   public static final short APPLICATION_JAVASCRIPT = 7;
 
   public static final short TEXT_JSON = 8;
+
+  /**
+   * Symbol names are compared lexicographically based on {@link Locale#US}
+   */
+  Collator US_COLLATOR = Collator.getInstance(Locale.US);
 
   /**
    * Test if this string equals the given character sequence.
