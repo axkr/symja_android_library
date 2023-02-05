@@ -3335,6 +3335,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // TODO
     // check("ComplexExpand(Sqrt(1+I))", //
     // "");
+    check("ComplexExpand((-42.0)^y)", //
+        "42.0^y*Cos(Pi*y)+I*42.0^y*Sin(Pi*y)");
+    check("ComplexExpand((-1/3)^y)", //
+        "(1/3)^y*Cos(Pi*y)+I*(1/3)^y*Sin(Pi*y)");
+    check("ComplexExpand((a+I*x)^y)", //
+        "(a^2+x^2)^(y/2)*Cos(y*Arg(a+I*x))+I*(a^2+x^2)^(y/2)*Sin(y*Arg(a+I*x))");
+    check("ComplexExpand((-1)^(1/20))", //
+        "Cos(Pi/20)+I*Sin(Pi/20)");
+    check("ComplexExpand(x^y)", //
+        "(x^2)^(y/2)*Cos(y*Arg(x))+I*(x^2)^(y/2)*Sin(y*Arg(x))");
 
     check("ComplexExpand(ArcTan(x+I*y))", //
         "Arg(1+I*x-y)/2-Arg(1-I*x+y)/2+I*(-Log(x^2+(1-y)^2)/4+Log(x^2+(1+y)^2)/4)");

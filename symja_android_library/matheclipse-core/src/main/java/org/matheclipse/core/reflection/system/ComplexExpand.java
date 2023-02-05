@@ -76,20 +76,51 @@ public class ComplexExpand extends AbstractEvaluator {
           return S.ComplexExpand.of(fEngine, expanded);
         }
       }
-      if (ast.isPower() //
-          && ast.exponent().isRational()) {
-        IExpr base = ast.base();
-        if (base.isInteger() && ast.base().isNegative()) {
-          IExpr exponent = ast.exponent();
-          // ((base^2)^(exponent/2))
-          IExpr coeff = F.Power(F.Power(base, F.C2), F.C1D2.times(exponent));
-          // exponent*Arg(base)
-          IExpr inner = exponent.times(F.Arg(base));
-          // coeff*Cos(inner) + I*coeff*Sin(inner);
-          IExpr temp = S.Expand.of(fEngine,
-              F.Plus(F.Times(coeff, F.Cos(inner)), F.Times(F.CI, coeff, F.Sin(inner))));
-          return temp;
+
+      if (ast.isPower()) {
+        IExpr x = ast.base();
+        IExpr y = ast.exponent();
+
+        if (y.isRational()) {
+          if (x.isInteger() && x.isNegative()) {
+            IExpr exponent = ast.exponent();
+            // ((base^2)^(exponent/2))
+            IExpr coeff = F.Power(F.Power(x, F.C2), F.C1D2.times(exponent));
+            // exponent*Arg(base)
+            IExpr inner = exponent.times(F.Arg(x));
+            // coeff*Cos(inner) + I*coeff*Sin(inner);
+            IExpr temp = S.Expand.of(fEngine,
+                F.Plus(F.Times(coeff, F.Cos(inner)), F.Times(F.CI, coeff, F.Sin(inner))));
+            return temp;
+          }
+          return F.NIL;
         }
+
+        IExpr a = x.re();
+        IExpr b = x.im();
+        if (a.isNegative()) {
+          if (b.isZero()) {
+            a = a.negate();
+            // a^y*Cos(y*Arg(x))+I*a^y*Sin(y*Arg(x))
+            return F.Plus(//
+                F.Times(F.Power(a, y), F.Cos(F.Times(y, F.Arg(x)))), //
+                F.Times(F.CI, F.Power(a, y), F.Sin(F.Times(y, F.Arg(x)))));
+          }
+          return F.NIL;
+        }
+        if (b.isZero()) {
+          // (x^2)^(y/2)*Cos(y*Arg(x))+I*(x^2)^(y/2)*Sin(y*Arg(x))
+          return F.Plus(//
+              F.Times(F.Power(F.Power(x, 2), F.Times(F.C1D2, y)), F.Cos(F.Times(y, F.Arg(x)))), //
+              F.Times(F.CI, F.Power(F.Power(x, 2), F.Times(F.C1D2, y)),
+                  F.Sin(F.Times(y, F.Arg(x)))));
+        }
+        // (a^2+b^2)^(y/2)*Cos(y*Arg(a + I*b))+I*(a^2+b^2)^(y/2)*Sin(y*Arg(a+I*b))
+        return F.Plus(//
+            F.Times(F.Power(F.Plus(F.Power(a, 2), F.Power(b, 2)), F.Times(F.C1D2, y)),
+                F.Cos(F.Times(y, F.Arg(x)))), //
+            F.Times(F.CI, F.Power(F.Plus(F.Power(a, 2), F.Power(b, 2)), F.Times(F.C1D2, y)),
+                F.Sin(F.Times(y, F.Arg(x)))));
       }
       return super.visit(ast);
     }
