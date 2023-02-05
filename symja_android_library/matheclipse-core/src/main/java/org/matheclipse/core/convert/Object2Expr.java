@@ -31,6 +31,9 @@ import com.google.common.util.concurrent.AtomicDouble;
 /** Converts objects into an IExpr expression */
 public class Object2Expr {
 
+  /**
+   * Convert a Java object with the mapped {@link Function} into a Symja {@link IExpr}.
+   */
   public static IdentityHashMap<Class<? extends Object>, Function<Object, IExpr>> CAST_MAP =
       new IdentityHashMap<Class<? extends Object>, Function<Object, IExpr>>(64);
 
@@ -66,7 +69,10 @@ public class Object2Expr {
   }
 
   /**
-   * Converts the following Java objects into an IExpr expression
+   * <p>
+   * Converts the following Java objects into an IExpr expression.
+   * <p>
+   * {@link #CAST_MAP} is used for converting non-arrays expressions into a Symja object.
    *
    * <pre>
    * Java Object       -&gt; Symja object
@@ -102,8 +108,12 @@ public class Object2Expr {
   }
 
   /**
-   * Converts the following Java objects into an IExpr expression
-   *
+   * <p>
+   * Converts the following Java objects into an IExpr expression.
+   * <p>
+   * {@link #CAST_MAP} is used for converting non-arrays expressions into a Symja object.
+   * 
+   * 
    * <pre>
    * Java Object       -&gt; Symja object
    * -------------------------------------
@@ -148,9 +158,8 @@ public class Object2Expr {
       if (parseString) {
         final ExprParser parser = new ExprParser(EvalEngine.get());
         return parser.parse((String) obj);
-      } else {
-        return F.stringx((String) obj);
       }
+      return F.stringx((String) obj);
     }
     if (obj instanceof Number) {
       return F.num(((Number) obj).doubleValue());
@@ -178,20 +187,10 @@ public class Object2Expr {
       return F.mapRange(0, length, i -> convert(array[i], parseString, javaObject));
     }
     if (obj instanceof boolean[]) {
-      final boolean[] array = (boolean[]) obj;
-      final IASTAppendable list = F.ListAlloc(array.length);
-      for (int i = 0; i < array.length; i++) {
-        list.append(array[i] ? S.True : S.False);
-      }
-      return list;
+      return convertBooleanArray((boolean[]) obj);
     }
     if (obj instanceof long[]) {
-      final long[] array = (long[]) obj;
-      final IASTAppendable list = F.ListAlloc(array.length);
-      for (int i = 0; i < array.length; i++) {
-        list.append(F.ZZ(array[i]));
-      }
-      return list;
+      return convertLongArray((long[]) obj);
     }
     if (javaObject) {
       return JavaObjectExpr.newInstance(obj);
@@ -211,66 +210,18 @@ public class Object2Expr {
     return result;
   }
 
-  /**
-   * If <code>obj instanceof String</code> return a Symja string object. Otherwise call
-   * {@link #convert(Object, boolean, boolean)}.
-   *
-   * @param obj the object which should be converted to a Symja object
-   * @return
-   */
-  public static IExpr convertString(Object obj) {
-    if (obj instanceof String) {
-      return F.stringx((String) obj);
+  public static IExpr convertBooleanArray(boolean[] array) {
+    final IASTAppendable list = F.ListAlloc(array.length);
+    for (int i = 0; i < array.length; i++) {
+      list.append(array[i] ? S.True : S.False);
     }
-    return convert(obj, true, false);
+    return list;
   }
 
-  /**
-   * Converts the following Java objects into an IExpr expression
-   *
-   * <pre>
-   * Java Object       -&gt; Symja object
-   * -------------------------------------
-   * BigInteger           {@link IInteger} value
-   * BigDecimal           {@link INum} with {@link Apfloat#Apfloat(java.math.BigDecimal)} value
-   * Double               {@link INum}  with doubleValue() value
-   * Float                {@link INum}  with doubleValue() value
-   * Integer              {@link IInteger} with intValue() value
-   * Long                 {@link IInteger} with longValue() value
-   * Number               {@link INum} with doubleValue() value
-   *
-   * </pre>
-   */
-  // private static IExpr convert(Number n) {
-  // if (n instanceof Integer) {
-  // return F.ZZ(((Integer) n).longValue());
-  // }
-  // if (n instanceof Double) {
-  // return F.num(((Double) n));
-  // }
-  // if (n instanceof Long) {
-  // return F.ZZ(((Long) n));
-  // }
-  // if (n instanceof BigInteger) {
-  // return F.ZZ((BigInteger) n);
-  // }
-  // if (n instanceof BigDecimal) {
-  // return F.num(new Apfloat((BigDecimal) n));
-  // }
-  // if (n instanceof Float) {
-  // return F.num(((Float) n).doubleValue());
-  // }
-  // if (n instanceof AtomicDouble) {
-  // return F.num(((AtomicDouble) n).doubleValue());
-  // }
-  // if (n instanceof AtomicInteger) {
-  // return F.ZZ(((AtomicInteger) n).longValue());
-  // }
-  // if (n instanceof AtomicLong) {
-  // return F.ZZ(((AtomicLong) n).longValue());
-  // }
-  // return F.num(n.doubleValue());
-  // }
+  public static IASTMutable convertComplex(boolean evalComplex,
+      org.hipparchus.complex.Complex[] array) {
+    return F.ast(S.List, evalComplex, array);
+  }
 
   /**
    * @param collection
@@ -294,8 +245,25 @@ public class Object2Expr {
     }
   }
 
-  public static IASTMutable convertComplex(boolean evalComplex,
-      org.hipparchus.complex.Complex[] array) {
-    return F.ast(S.List, evalComplex, array);
+  public static IExpr convertLongArray(long[] array) {
+    final IASTAppendable list = F.ListAlloc(array.length);
+    for (int i = 0; i < array.length; i++) {
+      list.append(F.ZZ(array[i]));
+    }
+    return list;
+  }
+
+  /**
+   * If <code>obj instanceof String</code> return a Symja string object. Otherwise call
+   * {@link #convert(Object, boolean, boolean)}.
+   *
+   * @param obj the object which should be converted to a Symja object
+   * @return
+   */
+  public static IExpr convertString(Object obj) {
+    if (obj instanceof String) {
+      return F.stringx((String) obj);
+    }
+    return convert(obj, true, false);
   }
 }
