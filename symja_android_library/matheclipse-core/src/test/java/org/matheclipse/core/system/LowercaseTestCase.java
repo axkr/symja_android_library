@@ -3332,9 +3332,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testComplexExpand() {
-    // TODO
-    // check("ComplexExpand(Sqrt(1+I))", //
-    // "");
+    check("ComplexExpand(Sqrt(1+I))", //
+        "(I*Sqrt(2-Sqrt(2)))/2^(3/4)+Sqrt(2+Sqrt(2))/2^(3/4)");
     check("ComplexExpand((-42.0)^y)", //
         "42.0^y*Cos(Pi*y)+I*42.0^y*Sin(Pi*y)");
     check("ComplexExpand((-1/3)^y)", //

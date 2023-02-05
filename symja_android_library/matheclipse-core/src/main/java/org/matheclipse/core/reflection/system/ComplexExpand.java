@@ -92,8 +92,9 @@ public class ComplexExpand extends AbstractEvaluator {
             IExpr temp = S.Expand.of(fEngine,
                 F.Plus(F.Times(coeff, F.Cos(inner)), F.Times(F.CI, coeff, F.Sin(inner))));
             return temp;
+          } else if (!(x.isComplex() || x.isComplexNumeric())) {
+            return F.NIL;
           }
-          return F.NIL;
         }
 
         IExpr a = x.re();
