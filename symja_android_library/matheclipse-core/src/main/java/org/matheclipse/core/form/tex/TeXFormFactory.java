@@ -1413,21 +1413,21 @@ public class TeXFormFactory {
         buf.append("+");
       }
       if (number instanceof IInteger) {
-        convertInteger(buf, (IInteger) number, precedence, caller);
+        convertInteger(buf, (IInteger) number, precedence);
         if (caller && isNegative && precedence > Precedence.PLUS) {
           buf.append("\\right) ");
         }
         return true;
       }
       if (number instanceof IFraction) {
-        convertFraction(buf, (IFraction) number, precedence, caller);
+        convertFraction(buf, (IFraction) number, precedence);
         if (caller && isNegative && precedence > Precedence.PLUS) {
           buf.append("\\right) ");
         }
         return true;
       }
       if (number instanceof INum) {
-        convertDouble(buf, (INum) number, precedence, caller);
+        convertDouble(buf, (INum) number, precedence);
         if (caller && isNegative && precedence > Precedence.PLUS) {
           buf.append("\\right) ");
         }
@@ -1732,8 +1732,7 @@ public class TeXFormFactory {
     }
   }
 
-  public void convertDouble(final StringBuilder buf, final INum d, final int precedence,
-      boolean caller) {
+  public void convertDouble(final StringBuilder buf, final INum d, final int precedence) {
     if (d.isZero()) {
       buf.append(convertDoubleToFormattedString(0.0));
       return;
@@ -1812,8 +1811,7 @@ public class TeXFormFactory {
     return Double.toString(dValue);
   }
 
-  public void convertFraction(final StringBuilder buf, final IFraction f, final int precedence,
-      boolean caller) {
+  public void convertFraction(final StringBuilder buf, final IFraction f, final int precedence) {
     // if (f.isNegative() && (precedence > Precedence.PLUS)) {
     // buf.append("\\left( ");
     // }
@@ -1864,8 +1862,7 @@ public class TeXFormFactory {
     }
   }
 
-  public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence,
-      boolean caller) {
+  public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence) {
     // if (i.isNegative() && precedence > Precedence.PLUS) {
     // buf.append("\\left( ");
     // }

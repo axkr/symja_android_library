@@ -64,6 +64,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testAbs() {
+    check("Abs(I^(2*Pi))", //
+        "1");
+    check("Abs(Undefined)", //
+        "Undefined");
     check("Abs(Indeterminate)", //
         "Indeterminate");
     // Integer.MIN_VALUE
@@ -123,6 +127,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Sqrt(Pi)");
     check("Abs(-3*Sqrt(Pi))", //
         "3*Sqrt(Pi)");
+
+    check("Abs(E)", //
+        "E");
   }
 
   public void testAbsArg() {
@@ -2617,7 +2624,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("CharacteristicPolynomial({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}},x)", //
         "-1/3-7/3*x+9/2*x^2-x^3");
     check("CharacteristicPolynomial(N({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}}),x)", //
-        "-0.333333-2.33333*x+4.5*x^2.0-x^3.0");
+        "-0.333333-2.33333*x+4.5*x^2-x^3");
     check("CharacteristicPolynomial({{1, 2*I}, {3 + 4*I, 5}}, z)", //
         "13-I*6-6*z+z^2");
   }
@@ -3064,6 +3071,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testCoefficientList() {
+    // check("1.0 * 10.0* x^9", //
+    // "10.0*x^9");
+    check("Expand((1.0 + x)^10)", //
+        "1.0+10.0*x+45.0*x^2+120.0*x^3+210.0*x^4+252.0*x^5+210.0*x^6+120.0*x^7+45.0*x^8+10.0*x^\n"//
+            + "9+x^10");
+    check("CoefficientList((1.0 + x)^10 , x)", //
+        "{1.0,10.0,45.0,120.0,210.0,252.0,210.0,120.0,45.0,10.0,1}");
+
     check("CoefficientList(Series(-(x/(-1 + x + x^2)), {x, 0, 20}), x)", //
         "{0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765}");
 
@@ -3134,8 +3149,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,10,45,120,210,252,210,120,45,10,1}");
     check("CoefficientList(a*42*x^3+12*b*x+c*4, x)", //
         "{4*c,12*b,0,42*a}");
-    check("CoefficientList((1.0 + x)^10 , x)", //
-        "{1.0,10.0,45.0,120.0,210.0,252.0,210.0,120.0,45.0,10.0,1}");
   }
 
   public void testCoefficientRules() {
@@ -8728,7 +8741,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n"
         + "$R=100;\n" + "$d=0.00;\n" + "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
         + "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})", //
-        "{p->0.04999709394010558}");
+        "{p->0.04999709394010556}");
     checkNumeric(
         "$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$res=15474;\n"
             + "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA)) - $res, {p, 0, 0.1})", //
@@ -21874,6 +21887,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSign() {
+    check("Sign(I^(2*Pi))", //
+        "I^(2*Pi)");
     check("Sign(a*b^(-3)*c^2)", //
         "(Sign(a)*Sign(c)^2)/Sign(b)^3");
 
@@ -22546,7 +22561,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Sort(<|a -> 4, b -> 1, c -> 3, d :> 2, e -> 2|>, Greater)", //
         "<|a->4,c->3,d:>2,e->2,b->1|>");
     check("Sort({2.1,1.1-I,2.1-I,I*E^(I*x)})", //
-        "{1.1+I*(-1.0),2.1,2.1+I*(-1.0),(I*1.0)*2.71828^((I*1.0)*x)}");
+        "{1.1+I*(-1.0),2.1,2.1+I*(-1.0),I*E^(I*x)}");
     check("Sort({2,1-I,2-I,I*E^(I*x)})", //
         "{1-I,2,2-I,I*E^(I*x)}");
     check("Sort(StringJoin /@ Tuples({\"a\",\"A\",\"b\",\"B\"},2))", //

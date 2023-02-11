@@ -6,6 +6,7 @@ import java.io.ObjectOutput;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.function.Function;
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.ArithmeticUtils;
@@ -276,7 +277,11 @@ public class IntegerSym extends AbstractIntegerSym {
     return valueOf(rest);
   }
 
-  /** Returns the greatest common divisor of this large integer and the one specified. */
+  /**
+   * Returns the greatest common divisor of this large integer and the one specified. If a
+   * {@link LocalizedCoreFormats#GCD_OVERFLOW_32_BITS} error is thrown in the <code>int</code>
+   * calculation, the calculation switches to {@link BigInteger#gcd(BigInteger)} calculation.
+   */
   @Override
   public IInteger gcd(final IInteger that) {
     if (that instanceof IntegerSym) {

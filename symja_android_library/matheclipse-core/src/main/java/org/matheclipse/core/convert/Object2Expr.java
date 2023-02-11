@@ -47,7 +47,6 @@ public class Object2Expr {
     CAST_MAP.put(Apfloat.class, n -> F.num((Apfloat) n));
     CAST_MAP.put(Apcomplex.class, n -> F.complexNum((Apcomplex) n));
     CAST_MAP.put(Float.class, n -> F.num(((Float) n).doubleValue()));
-    CAST_MAP.put(AtomicDouble.class, n -> F.num(((AtomicDouble) n).doubleValue()));
     CAST_MAP.put(AtomicInteger.class, n -> F.ZZ(((AtomicInteger) n).longValue()));
     CAST_MAP.put(AtomicDouble.class, n -> F.num(((AtomicDouble) n).doubleValue()));
     CAST_MAP.put(AtomicLong.class, n -> F.ZZ(((AtomicLong) n).longValue()));
