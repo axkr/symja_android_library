@@ -1390,6 +1390,27 @@ public class GraphicsFunctions {
             radius = graphic.second();
           }
           return F.Times(F.C3D4, S.Pi, F.Power(radius, F.C3));
+        } else if (graphic.isAST(S.Cylinder, 2, 3) && graphic.first().isList(new int[] {2, 3})) {
+          IExpr r = F.C1;
+          if (graphic.size() == 3) {
+            r = graphic.second();
+          }
+          IAST l1=(IAST)graphic.first().first();
+          IExpr a = l1.arg1();
+          IExpr b = l1.arg2();
+          IExpr c = l1.arg3();
+          IAST l2=(IAST)graphic.first().second();
+          IExpr d = l2.arg1();
+          IExpr e = l2.arg2();
+          IExpr f = l2.arg3();
+          // Sqrt((a-d)^2+(b-e)^2+(c-f)^2)*Pi*r^2
+          return F.Times(F.Sqrt(F.Plus(//
+              F.Power(F.Subtract(a, d), F.C2), //
+              F.Power(F.Subtract(b, e), F.C2) ,//
+              F.Power(F.Subtract(c, f), F.C2))),//
+              F.Pi, F.Sqr(r));
+
+
         } else if (graphic.isAST(S.Cuboid, 3) && graphic.first().isList3()
             && graphic.second().isList3()) {
           IAST v1 = (IAST) graphic.first();

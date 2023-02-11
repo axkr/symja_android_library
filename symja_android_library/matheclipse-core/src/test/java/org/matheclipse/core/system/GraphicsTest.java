@@ -31,6 +31,8 @@ public class GraphicsTest extends ExprEvaluatorTestCase {
   }
 
   public void testVolume() {
+    check("Volume(Cylinder({{0, 0, 0}, {1, 1, 1}}, 1/2))", //
+        "1/4*Sqrt(3)*Pi");
     check("Volume(Ball({a,b,c}, r))", //
         "3/4*Pi*r^3");
     check("Volume(Cuboid({a,b,c}, {x,y,z}))", //
