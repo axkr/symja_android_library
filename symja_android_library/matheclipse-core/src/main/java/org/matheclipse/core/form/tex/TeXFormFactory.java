@@ -14,7 +14,6 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.util.Iterator;
-import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
@@ -361,59 +360,12 @@ public class TeXFormFactory {
           return true;
         }
       }
-      if ((ast instanceof ASTRealMatrix) || ast.isEvalFlagOn(IAST.IS_MATRIX)) {
-        int[] dims = ast.isMatrix();
-        if (dims != null) {
-          // create a LaTeX matrix
-
-          final IAST matrix = ast;
-
-          if (Config.MATRIX_TEXFORM) {
-            // problem with KaTeX?
-            buffer.append("\\left(\n\\begin{array}{");
-            for (int i = 0; i < dims[1]; i++) {
-              buffer.append("c");
-            }
-            buffer.append("}\n");
-            if (ast.size() > 1) {
-              for (int i = 1; i < ast.size(); i++) {
-                IAST row = ast.getAST(i);
-                for (int j = 1; j < row.size(); j++) {
-                  fFactory.convert(buffer, row.get(j), Precedence.NO_PRECEDENCE);
-                  if (j < row.argSize()) {
-                    buffer.append(" & ");
-                  }
-                }
-                if (i < ast.argSize()) {
-                  buffer.append(" \\\\\n");
-                } else {
-                  buffer.append(" \\\n");
-                }
-              }
-            }
-            buffer.append("\\\\\n\\end{array}\n\\right) ");
-          } else {
-            buffer.append("\\begin{pmatrix}\n");
-            IAST row;
-            for (int i = 1; i < matrix.size(); i++) {
-              row = (IAST) matrix.get(i);
-              for (int j = 1; j < row.size(); j++) {
-                buffer.append(' ');
-                fFactory.convertInternal(buffer, row.get(j), Precedence.NO_PRECEDENCE,
-                    NO_PLUS_CALL);
-                buffer.append(' ');
-                if (j < row.argSize()) {
-                  buffer.append('&');
-                }
-              }
-              buffer.append("\\\\\n");
-            }
-
-            buffer.append("\\end{pmatrix}");
-          }
-          return true;
-        }
+      // if ((ast instanceof ASTRealMatrix) || ast.isEvalFlagOn(IAST.IS_MATRIX)) {
+      int[] dims = ast.isMatrix();
+      if (dims != null && dims[0] > 1 && dims[1] > 1) {
+        return convertMatrix(buffer, ast, dims);
       }
+      // }
 
       if ((ast.getEvalFlags() & IAST.IS_VECTOR) == IAST.IS_VECTOR) {
         // create a LaTeX row vector
@@ -438,6 +390,56 @@ public class TeXFormFactory {
           }
         }
         buffer.append("\\}");
+      }
+      return true;
+    }
+
+    private boolean convertMatrix(final StringBuilder buffer, final IAST ast, int[] dims) {
+      // create a LaTeX matrix
+
+      final IAST matrix = ast;
+
+      if (Config.MATRIX_TEXFORM) {
+        // problem with KaTeX?
+        buffer.append("\\left(\n\\begin{array}{");
+        for (int i = 0; i < dims[1]; i++) {
+          buffer.append("c");
+        }
+        buffer.append("}\n");
+        if (ast.size() > 1) {
+          for (int i = 1; i < ast.size(); i++) {
+            IAST row = ast.getAST(i);
+            for (int j = 1; j < row.size(); j++) {
+              fFactory.convert(buffer, row.get(j), Precedence.NO_PRECEDENCE);
+              if (j < row.argSize()) {
+                buffer.append(" & ");
+              }
+            }
+            if (i < ast.argSize()) {
+              buffer.append(" \\\\\n");
+            } else {
+              buffer.append(" \\\n");
+            }
+          }
+        }
+        buffer.append("\\\\\n\\end{array}\n\\right) ");
+      } else {
+        buffer.append("\\begin{pmatrix}\n");
+        IAST row;
+        for (int i = 1; i < matrix.size(); i++) {
+          row = (IAST) matrix.get(i);
+          for (int j = 1; j < row.size(); j++) {
+            buffer.append(' ');
+            fFactory.convertInternal(buffer, row.get(j), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+            buffer.append(' ');
+            if (j < row.argSize()) {
+              buffer.append('&');
+            }
+          }
+          buffer.append("\\\\\n");
+        }
+
+        buffer.append("\\end{pmatrix}");
       }
       return true;
     }
@@ -776,16 +778,23 @@ public class TeXFormFactory {
 
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
-      buffer.append('{');
+      if (!arg1.isSymbol() && !arg1.isInteger()) {
+        buffer.append('{');
+      }
       fFactory.convertInternal(buffer, arg1, fPrecedence, NO_PLUS_CALL);
-      buffer.append('}');
+      if (!arg1.isSymbol() && !arg1.isInteger()) {
+        buffer.append('}');
+      }
       if (fOperator.compareTo("") != 0) {
         buffer.append(fOperator);
       }
-
-      buffer.append('{');
+      if (!arg2.isSymbol() && !arg2.isInteger()) {
+        buffer.append('{');
+      }
       fFactory.convertInternal(buffer, arg2, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-      buffer.append('}');
+      if (!arg2.isSymbol() && !arg2.isInteger()) {
+        buffer.append('}');
+      }
       precedenceClose(buffer, precedence);
       return true;
     }
@@ -895,13 +904,15 @@ public class TeXFormFactory {
 
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
-      buffer.append('{');
+      if (!arg1.isSymbol()) {
+        buffer.append('{');
+      }
       fFactory.convertInternal(buffer, arg1, precedence, NO_PLUS_CALL);
-      buffer.append('}');
+      if (!arg1.isSymbol()) {
+        buffer.append('}');
+      }
       buffer.append("_");
-
       buffer.append('{');
-
       for (int i = 2; i < f.size(); i++) {
         fFactory.convertInternal(buffer, f.get(i), precedence, NO_PLUS_CALL);
         if (i < f.size() - 1) {
@@ -926,19 +937,31 @@ public class TeXFormFactory {
 
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
-      buffer.append('{');
+      if (!arg1.isSymbol()) {
+        buffer.append('{');
+      }
       fFactory.convertInternal(buffer, arg1, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-      buffer.append('}');
+      if (!arg1.isSymbol()) {
+        buffer.append('}');
+      }
       buffer.append("_");
 
-      buffer.append('{');
+      if (!arg2.isSymbol()) {
+        buffer.append('{');
+      }
       fFactory.convertInternal(buffer, arg2, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-      buffer.append('}');
+      if (!arg2.isSymbol()) {
+        buffer.append('}');
+      }
       buffer.append("^");
 
-      buffer.append('{');
+      if (!arg3.isSymbol()) {
+        buffer.append('{');
+      }
       fFactory.convertInternal(buffer, arg3, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-      buffer.append('}');
+      if (!arg3.isSymbol()) {
+        buffer.append('}');
+      }
       return true;
     }
   }
@@ -1020,14 +1043,22 @@ public class TeXFormFactory {
 
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
-      buffer.append('{');
+      if (!arg1.isSymbol()) {
+        buffer.append('{');
+      }
       fFactory.convertInternal(buffer, arg1, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-      buffer.append('}');
+      if (!arg1.isSymbol()) {
+        buffer.append('}');
+      }
 
       buffer.append("^");
-      buffer.append('{');
+      if (!arg2.isSymbol()) {
+        buffer.append('{');
+      }
       fFactory.convertInternal(buffer, arg2, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-      buffer.append('}');
+      if (!arg2.isSymbol()) {
+        buffer.append('}');
+      }
       return true;
     }
   }

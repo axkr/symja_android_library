@@ -312,60 +312,107 @@ public class TestPodsStrict {
 
     final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 9,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"17\",\n"
-            + "        \"sinput\" : \"17\",\n" + "        \"latex\" : \"17\"\n" + "      } ]\n"
-            + "    }, {\n" + "      \"title\" : \"Number name\",\n"
-            + "      \"scanner\" : \"Integer\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"seventeen\",\n"
-            + "        \"sinput\" : \"IntegerName(17,\\\"Words\\\")\",\n"
-            + "        \"latex\" : \"\\\\textnormal{seventeen}\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Roman numerals\",\n" + "      \"scanner\" : \"Integer\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"XVII\",\n"
-            + "        \"sinput\" : \"RomanNumeral(17)\",\n"
-            + "        \"latex\" : \"\\\\textnormal{XVII}\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Binary form\",\n" + "      \"scanner\" : \"Integer\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"10001_2\",\n"
-            + "        \"sinput\" : \"BaseForm(17,2)\",\n"
-            + "        \"latex\" : \"{\\\\textnormal{10001}}_{2}\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Prime factorization\",\n" + "      \"scanner\" : \"Integer\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"17 is a prime number.\",\n"
-            + "        \"sinput\" : \"FactorInteger(17)\",\n"
-            + "        \"latex\" : \"\\\\left(\\n\\\\begin{array}{cc}\\n17 & 1 \\\\\\n\\\\\\\\\\n\\\\end{array}\\n\\\\right) \"\n"
-            + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Residues modulo small integers\",\n"
-            + "      \"scanner\" : \"Integer\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"html\" : \"&lt;table style=\\\"border:solid 1px;\\\"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;m&lt;/th&gt;&lt;th&gt;2&lt;/th&gt;&lt;th&gt;3&lt;/th&gt;&lt;th&gt;4&lt;/th&gt;&lt;th&gt;5&lt;/th&gt;&lt;th&gt;6&lt;/th&gt;&lt;th&gt;7&lt;/th&gt;&lt;th&gt;8&lt;/th&gt;&lt;th&gt;9&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;17 mod m&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;5&lt;/td&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;8&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;\",\n"
-            + "        \"sinput\" : \"Mod(17,{2,3,4,5,6,7,8,9})\",\n"
-            + "        \"latex\" : \"\\\\{1,2,1,2,5,3,1,8\\\\}\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Properties\",\n" + "      \"scanner\" : \"Integer\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 2,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"17 is an odd number.\",\n"
-            + "        \"sinput\" : \"OddQ(17)\"\n" + "      }, {\n"
-            + "        \"plaintext\" : \"17 is the 7th prime number.\",\n"
-            + "        \"sinput\" : \"PrimePi(17)\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Quadratic residues modulo 17\",\n"
-            + "      \"scanner\" : \"Integer\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{0,1,2,4,8,9,13,15,16}\",\n"
-            + "        \"sinput\" : \"Union(PowerMod(Range(0,17/2),2,17))\",\n"
-            + "        \"latex\" : \"\\\\{0,1,2,4,8,9,13,15,16\\\\}\"\n" + "      } ]\n"
-            + "    }, {\n" + "      \"title\" : \"Primitive roots modulo 17\",\n"
-            + "      \"scanner\" : \"Integer\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{3,5,6,7,10,11,12,14}\",\n"
-            + "        \"sinput\" : \"Select(Range(16),MultiplicativeOrder(#1,17)==EulerPhi(17)&amp;)\",\n"
-            + "        \"latex\" : \"\\\\{3,5,6,7,10,11,12,14\\\\}\"\n" + "      } ]\n"
-            + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"error\" : \"false\",\n" //
+            + "    \"numpods\" : 9,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"17\",\n" //
+            + "        \"sinput\" : \"17\",\n" //
+            + "        \"latex\" : \"17\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Number name\",\n" //
+            + "      \"scanner\" : \"Integer\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"seventeen\",\n" //
+            + "        \"sinput\" : \"IntegerName(17,\\\"Words\\\")\",\n" //
+            + "        \"latex\" : \"\\\\textnormal{seventeen}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Roman numerals\",\n" //
+            + "      \"scanner\" : \"Integer\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"XVII\",\n" //
+            + "        \"sinput\" : \"RomanNumeral(17)\",\n" //
+            + "        \"latex\" : \"\\\\textnormal{XVII}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Binary form\",\n" //
+            + "      \"scanner\" : \"Integer\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"10001_2\",\n" //
+            + "        \"sinput\" : \"BaseForm(17,2)\",\n" //
+            + "        \"latex\" : \"{\\\\textnormal{10001}}_{2}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Prime factorization\",\n" //
+            + "      \"scanner\" : \"Integer\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"17 is a prime number.\",\n" //
+            + "        \"sinput\" : \"FactorInteger(17)\",\n" //
+            + "        \"latex\" : \"\\\\{\\\\{17,1\\\\}\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Residues modulo small integers\",\n" //
+            + "      \"scanner\" : \"Integer\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"html\" : \"&lt;table style=\\\"border:solid 1px;\\\"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;m&lt;/th&gt;&lt;th&gt;2&lt;/th&gt;&lt;th&gt;3&lt;/th&gt;&lt;th&gt;4&lt;/th&gt;&lt;th&gt;5&lt;/th&gt;&lt;th&gt;6&lt;/th&gt;&lt;th&gt;7&lt;/th&gt;&lt;th&gt;8&lt;/th&gt;&lt;th&gt;9&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;17 mod m&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;5&lt;/td&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;8&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;\",\n" //
+            + "        \"sinput\" : \"Mod(17,{2,3,4,5,6,7,8,9})\",\n" //
+            + "        \"latex\" : \"\\\\{1,2,1,2,5,3,1,8\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Properties\",\n" //
+            + "      \"scanner\" : \"Integer\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 2,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"17 is an odd number.\",\n" //
+            + "        \"sinput\" : \"OddQ(17)\"\n" //
+            + "      }, {\n" //
+            + "        \"plaintext\" : \"17 is the 7th prime number.\",\n" //
+            + "        \"sinput\" : \"PrimePi(17)\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Quadratic residues modulo 17\",\n" //
+            + "      \"scanner\" : \"Integer\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{0,1,2,4,8,9,13,15,16}\",\n" //
+            + "        \"sinput\" : \"Union(PowerMod(Range(0,17/2),2,17))\",\n" //
+            + "        \"latex\" : \"\\\\{0,1,2,4,8,9,13,15,16\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Primitive roots modulo 17\",\n" //
+            + "      \"scanner\" : \"Integer\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{3,5,6,7,10,11,12,14}\",\n" //
+            + "        \"sinput\" : \"Select(Range(16),MultiplicativeOrder(#1,17)==EulerPhi(17)&amp;)\",\n" //
+            + "        \"latex\" : \"\\\\{3,5,6,7,10,11,12,14\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}"); //
   }
 
   @Test
