@@ -5521,6 +5521,7 @@ public final class Arithmetic {
       IExpr arg1 = engine.evaluateNIL(ast.arg1());
       if (arg1.isPresent()) {
         result = F.Sign(arg1);
+        arg1 = result;
       } else {
         arg1 = ast.arg1();
       }
@@ -5565,35 +5566,6 @@ public final class Arithmetic {
       } else if (arg1.isAST(S.Sign, 2)) {
         return arg1;
       }
-      if (AbstractAssumptions.assumeNegative(arg1)) {
-        return F.CN1;
-      }
-      if (AbstractAssumptions.assumePositive(arg1)) {
-        return F.C1;
-      }
-
-      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-      if (negExpr.isPresent()) {
-        return F.Times(F.CN1, F.Sign(negExpr));
-      }
-      INumber number = arg1.evalNumber();
-      if (number != null) {
-        IExpr temp = numberSign(number);
-        if (temp.isPresent()) {
-          return temp;
-        }
-      }
-      if (arg1.isRealResult() && !arg1.isZero()) {
-        return F.Divide(arg1, F.Abs(arg1));
-      }
-      IExpr y = AbstractFunctionEvaluator.imaginaryPart(arg1, true);
-      if (y.isPresent() && y.isRealResult()) {
-        IExpr x = AbstractFunctionEvaluator.realPart(arg1, false);
-        if (x.isPresent() && x.isRealResult()) {
-          // (x + I*y)/Sqrt(x^2 + y^2)
-          return F.Times(F.Plus(x, F.Times(F.CI, y)), F.Power(F.Plus(F.Sqr(x), F.Sqr(y)), F.CN1D2));
-        }
-      }
       if (arg1.isInterval()) {
         if (arg1.size() == 2) {
           IAST list = (IAST) arg1.first();
@@ -5606,6 +5578,32 @@ public final class Arithmetic {
           }
         }
         return IntervalSym.mapSymbol(S.Sign, (IAST) arg1);
+      }
+      IExpr temp = engine.evaluateNIL(F.Abs(arg1));
+      if (temp.isPresent() && !temp.isAST(S.Abs)) {
+        return F.Divide(arg1, temp);
+      }
+      if (AbstractAssumptions.assumeNegative(arg1)) {
+        return F.CN1;
+      }
+      if (AbstractAssumptions.assumePositive(arg1)) {
+        return F.C1;
+      }
+
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+      if (negExpr.isPresent()) {
+        return F.Times(F.CN1, F.Sign(negExpr));
+      }
+      if (arg1.isRealResult() && !arg1.isZero()) {
+        return F.Divide(arg1, F.Abs(arg1));
+      }
+      IExpr y = AbstractFunctionEvaluator.imaginaryPart(arg1, true);
+      if (y.isPresent() && y.isRealResult()) {
+        IExpr x = AbstractFunctionEvaluator.realPart(arg1, false);
+        if (x.isPresent() && x.isRealResult()) {
+          // (x + I*y)/Sqrt(x^2 + y^2)
+          return F.Times(F.Plus(x, F.Times(F.CI, y)), F.Power(F.Plus(F.Sqr(x), F.Sqr(y)), F.CN1D2));
+        }
       }
       return result;
     }
@@ -6596,13 +6594,10 @@ public final class Arithmetic {
         }
         return F.NIL;
       }
-      final IExpr arg1 = ast.arg1();
+      IExpr arg1 = ast.arg1();
       if (size == 2) {
-        if (ast.head() == S.Times) {
-          // OneIdentity
-          return arg1;
-        }
-        return F.NIL;
+        // OneIdentity ?
+        return (ast.head() == S.Times) ? arg1 : F.NIL;
       }
       if (size > 2) {
         IAST temp = evaluateHashsRepeated(ast, engine);
@@ -6613,7 +6608,9 @@ public final class Arithmetic {
       if (ast.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
         IAST temp = engine.evalArgsOrderlessN(ast);
         if (temp.isPresent()) {
+          // reassign because of resorted arguments
           ast = temp;
+          arg1 = ast.arg1();
         }
       }
       if (size == 3) {

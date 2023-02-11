@@ -96,6 +96,7 @@ public interface ISymbol extends IExpr {
   /** ISymbol attribute for a symbol where no rule definition should be possible */
   public static final int PROTECTED = 0x8000;
 
+
   /** ISymbol attribute for a symbol where the definition shouldn't be displayed */
   public static final int READPROTECTED = 0x10000;
 
@@ -104,6 +105,10 @@ public interface ISymbol extends IExpr {
    */
   public static final int LOCKED = PROTECTED | 0x20000;
 
+  /**
+   * A mask which tests if any evaluation engine attribute is sets
+   */
+  public static final int NO_EVAL_ENGINE_ATTRIBUTE = 0xFFF877FF;
   //
   // Flags definition starts here
   //

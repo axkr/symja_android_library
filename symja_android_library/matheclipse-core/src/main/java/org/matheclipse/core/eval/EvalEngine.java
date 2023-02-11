@@ -795,9 +795,10 @@ public class EvalEngine implements Serializable {
           // the HoldRest attribute is disabled
           numericMode = fNumericMode;
           try {
-            selectNumericMode(attributes, ISymbol.NHOLDREST, localNumericMode);
+            final boolean nMode = localNumericMode;
             ast.forEach(2, astSize, (arg, i) -> {
               if (!arg.isUnevaluated()) {
+                selectNumericMode(attributes, ISymbol.NHOLDREST, nMode);
                 evalArg(rlist, ast, arg, i, isNumericFunction);
               }
             });
@@ -1128,14 +1129,17 @@ public class EvalEngine implements Serializable {
       return evalASTArg1(mutableAST);
     }
 
+    IExpr returnResult = F.NIL;
     IExpr result = mutableAST.head().evaluateHead(mutableAST, this);
     if (result.isPresent()) {
       return result;
     }
 
     if (astSize != 1) {
-      IASTMutable returnResult = F.NIL;
       final int attributes = symbol.getAttributes();
+      if ((attributes & ISymbol.NO_EVAL_ENGINE_ATTRIBUTE) == ISymbol.NOATTRIBUTE) {
+        return evalNoAttributes(mutableAST);
+      }
 
       if ((attributes & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
         if ((result = F.flattenSequence(mutableAST)).isPresent()) {
@@ -1154,7 +1158,7 @@ public class EvalEngine implements Serializable {
         IASTAppendable flattened;
         if ((flattened = EvalAttributes.flatten(mutableAST)).isPresent()) {
           returnResult = flattened;
-          mutableAST = returnResult;
+          mutableAST = flattened;
         }
       }
 
@@ -1195,10 +1199,37 @@ public class EvalEngine implements Serializable {
       if (temp.isPresent()) {
         return temp;
       }
-      return returnResult;
     }
 
-    return F.NIL;
+    return returnResult;
+  }
+
+  /**
+   * Evaluate an AST, which may have only the {@link ISymbol#PROTECTED} attribute set in the header
+   * symbol. Only the evaluation steps are processed, where no attributes are set.
+   * 
+   * @param mutableAST the AST which should be evaluated.
+   * @param attributes
+   * @return <code>F.NIL</code> if no evaluation was possible
+   */
+  private IExpr evalNoAttributes(IASTMutable mutableAST) {
+    IExpr result = F.flattenSequence(mutableAST);
+    if (result.isPresent()) {
+      return result;
+    }
+    final int astSize = mutableAST.size();
+    final boolean localNumericMode = fNumericMode;
+    IASTMutable[] rlist = new IASTMutable[] {F.NIL};
+    mutableAST.forEach(1, astSize, (arg, i) -> {
+      if (!arg.isUnevaluated()) {
+        fNumericMode = localNumericMode;
+        evalArg(rlist, mutableAST, arg, i, false);
+      }
+    });
+    if (rlist[0].isPresent()) {
+      return rlist[0];
+    }
+    return mutableAST.extractConditionalExpression(false);
   }
 
   public IExpr evalBlock(final Supplier<IExpr> supplier, final IAST localVariablesList) {
