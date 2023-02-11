@@ -111,8 +111,10 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
   public void testEulerianGraphQ() {
     check("EulerianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
+        "False");
+    check("EulerianGraphQ(Graph({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 }))", //
         "True");
-    check("EulerianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
+    check("EulerianGraphQ(Graph({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7}))", //
         "False");
   }
 
@@ -241,9 +243,9 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
     check("HamiltonianGraphQ(Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}}))", //
         "True");
 
-    check("HamiltonianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
+    check("HamiltonianGraphQ(Graph({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 }))", //
         "True");
-    check("HamiltonianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7})", //
+    check("HamiltonianGraphQ(Graph({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1, 4 -> 7}))", //
         "False");
   }
 
@@ -357,6 +359,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "Graph({1,2,6,3,4,5},{1->3,1->4,1->5,2->1,2->6,2->4,2->5,6->1,6->2,6->3,6->4,6->5,3->1,3->2,3->6,3->5,4->1,4->2,4->6,4->3,\n"
             + "5->1,5->2,5->3,5->4})");
   }
+
   public void testGraphDifference() {
     check(
         "GraphDifference({1 -> 2, 2 -> 3, 3 -> 1, 4 -> 3, 2 -> 4}, {1 -> 2, 3 -> 2, 4 -> 3, 4 -> 1, 5->2})", //
@@ -416,9 +419,9 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   public void testGraphUnion() {
-   check(
-       "GraphUnion(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}), Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 ->  2, 4 -> 1, 6->2}))", //
-       "Graph({1,2,3,4,6},{1->2,2->3,1->3,4->2,4->1,6->2})");
+    check(
+        "GraphUnion(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}), Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 ->  2, 4 -> 1, 6->2}))", //
+        "Graph({1,2,3,4,6},{1->2,2->3,1->3,4->2,4->1,6->2})");
 
   }
 
@@ -473,6 +476,18 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   public void testPlanarGraphQ() {
+    check("PlanarGraphQ(CycleGraph(4))", //
+        "True");
+    check("PlanarGraphQ(CompleteGraph(5))", //
+        "False");
+    check("PlanarGraphQ(CompleteGraph(4))", //
+        "True");
+    check("PlanarGraphQ(\"abc\")", //
+        "False");
+    check("PlanarGraphQ({})", //
+        "False");
+    check("PlanarGraphQ(Graph({}))", //
+        "True");
     check("PlanarGraphQ( PetersenGraph(5,2) )", //
         "False");
     check("PlanarGraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //

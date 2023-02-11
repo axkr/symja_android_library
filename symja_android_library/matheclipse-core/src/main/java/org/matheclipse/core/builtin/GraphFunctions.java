@@ -435,7 +435,7 @@ public class GraphFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
+          GraphExpr<?> gex = createGraph(ast);
           if (gex != null) {
             return gex;
           }
@@ -699,7 +699,7 @@ public class GraphFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
+          GraphExpr<?> gex = getGraphExpr(ast.arg1());
           if (gex != null) {
             return S.True;
           }
@@ -1157,7 +1157,7 @@ public class GraphFunctions {
 
         if (ast.isAST2() && ast.arg2().isEdge()) {
           IAST edge = (IAST) ast.arg2();
-          GraphExpr<?> gex = createGraph(ast.arg1());
+          GraphExpr<?> gex = getGraphExpr(ast.arg1());
           if (gex != null) {
             Graph<IExpr, ?> g = gex.toData();
             return F.booleSymbol(g.containsEdge(edge.first(), edge.second()));
@@ -1261,7 +1261,7 @@ public class GraphFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
+          GraphExpr<?> gex = getGraphExpr(ast.arg1());
           if (gex == null) {
             return F.NIL;
           }
@@ -1316,9 +1316,9 @@ public class GraphFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
+          GraphExpr<?> gex = getGraphExpr(ast.arg1());
           if (gex == null) {
-            return F.NIL;
+            return S.False;
           }
 
           // if (gex.isWeightedGraph()) {
@@ -1390,7 +1390,7 @@ public class GraphFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
+          GraphExpr<?> gex = getGraphExpr(ast.arg1());
           if (gex == null) {
             return F.NIL;
           }
@@ -1420,11 +1420,11 @@ public class GraphFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
-        GraphExpr<?> gex1 = createGraph(ast.arg1());
+        GraphExpr<?> gex1 = getGraphExpr(ast.arg1());
         if (gex1 == null) {
           return F.NIL;
         }
-        GraphExpr<?> gex2 = createGraph(ast.arg2());
+        GraphExpr<?> gex2 = getGraphExpr(ast.arg2());
         if (gex2 == null) {
           return F.NIL;
         }
@@ -1650,7 +1650,7 @@ public class GraphFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
-        GraphExpr<?> gex1 = createGraph(ast.arg1());
+        GraphExpr<?> gex1 = getGraphExpr(ast.arg1());
         if (gex1 == null) {
           return F.NIL;
         }
@@ -1876,7 +1876,7 @@ public class GraphFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
+          GraphExpr<?> gex = getGraphExpr(ast.arg1());
           if (gex == null) {
             return F.NIL;
           }
@@ -1926,7 +1926,7 @@ public class GraphFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
+          GraphExpr<?> gex = getGraphExpr(ast.arg1());
           if (gex == null) {
             return S.False;
           }
@@ -2115,7 +2115,7 @@ public class GraphFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST2()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
+          GraphExpr<?> gex = getGraphExpr(ast.arg1());
           if (gex != null) {
             Graph<IExpr, ?> g = gex.toData();
             return F.booleSymbol(g.containsVertex(ast.arg2()));
@@ -2195,7 +2195,7 @@ public class GraphFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
+          GraphExpr<?> gex = getGraphExpr(ast.arg1());
           if (gex != null && gex.isWeightedGraph()) {
             return S.True;
           }
@@ -2214,33 +2214,72 @@ public class GraphFunctions {
   }
 
   /**
-   * Create a <code>Graph<IExpr, ExprWeightedEdge></code> or <code>Graph<IExpr, ExprEdge></code>
+   * Get the <code>GraphExpr<?></code>.
    *
    * @param arg1
    * @return
    */
-  private static GraphExpr<?> createGraph(final IExpr arg1) {
+  private static GraphExpr<?> getGraphExpr(IExpr arg1) {
+    if (arg1 instanceof GraphExpr) {
+      return (GraphExpr<?>) arg1;
+    }
+    return null;
+  }
+
+  /**
+   * Create a <code>Graph<IExpr, ExprWeightedEdge></code> or <code>Graph<IExpr, ExprEdge></code>. In
+   * the case of a list of edges the method returns also a graph.
+   *
+   * @param arg1
+   * @return
+   */
+  private static GraphExpr<?> createGraph(IExpr arg1) {
+    Graph<IExpr, ExprEdge> g;
+    if (arg1.isList()) {
+      GraphType t = arg1.isListOfEdges();
+      if (t != null) {
+        if (t.isDirected()) {
+          g = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+        } else {
+          g = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+        }
+
+        IAST list = (IAST) arg1;
+        for (int i = 1; i < list.size(); i++) {
+          IAST edge = list.getAST(i);
+          g.addVertex(edge.arg1());
+          g.addVertex(edge.arg2());
+          g.addEdge(edge.arg1(), edge.arg2());
+        }
+
+        return GraphExpr.newInstance(g);
+      }
+      return null;
+    }
     if (arg1.head().equals(S.Graph) && arg1 instanceof GraphExpr) {
       return (GraphExpr<?>) arg1;
     }
-    Graph<IExpr, ExprEdge> g;
-    GraphType t = arg1.isListOfEdges();
-    if (t != null) {
-      if (t.isDirected()) {
-        g = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
-      } else {
-        g = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
-      }
+    if (arg1.isASTSizeGE(S.Graph, 2)) {
+      arg1 = arg1.first();
 
-      IAST list = (IAST) arg1;
-      for (int i = 1; i < list.size(); i++) {
-        IAST edge = list.getAST(i);
-        g.addVertex(edge.arg1());
-        g.addVertex(edge.arg2());
-        g.addEdge(edge.arg1(), edge.arg2());
-      }
+      GraphType t = arg1.isListOfEdges();
+      if (t != null) {
+        if (t.isDirected()) {
+          g = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+        } else {
+          g = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+        }
 
-      return GraphExpr.newInstance(g);
+        IAST list = (IAST) arg1;
+        for (int i = 1; i < list.size(); i++) {
+          IAST edge = list.getAST(i);
+          g.addVertex(edge.arg1());
+          g.addVertex(edge.arg2());
+          g.addEdge(edge.arg1(), edge.arg2());
+        }
+
+        return GraphExpr.newInstance(g);
+      }
     }
 
     return null;
