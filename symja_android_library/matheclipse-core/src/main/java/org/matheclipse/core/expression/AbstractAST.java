@@ -3558,6 +3558,32 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return isSameHeadSizeGE(S.List, 1);
   }
 
+
+  private boolean isList(int[] dimensions, int pos) {
+    if (isList() && dimensions[pos] == argSize()) {
+      final int posPlus1 = pos + 1;
+      if (dimensions.length == posPlus1) {
+        return true;
+      }
+      return this.forAll(x -> {
+        if (x.isList()) {
+          return ((AbstractAST) x).isList(dimensions, posPlus1);
+        }
+        return false;
+      });
+    }
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isList(int[] dimensions) {
+    if (dimensions == null) {
+      return false;
+    }
+    return isList(dimensions, 0);
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isListOfPoints(int pointDimension) {

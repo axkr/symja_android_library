@@ -2541,6 +2541,16 @@ public interface IExpr
     return false;
   }
 
+  /**
+   * Test if this expression is a nested list with the dimensions.
+   *
+   ** @param dimensions the dimensions of the tensor
+   * @return
+   */
+  default boolean isList(int[] dimensions) {
+    return false;
+  }
+
   default boolean isListOfPoints(int pointDimension) {
     return false;
   }
