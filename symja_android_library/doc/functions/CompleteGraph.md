@@ -4,7 +4,7 @@
 CompleteGraph(order)
 ```
 
-> create a new complete graph with `order` number of total vertices.
+> returns the complete graph with `order` vertices.
  
 See
 * [Wikipedia - Complete graph](https://en.wikipedia.org/wiki/Complete_graph) 
