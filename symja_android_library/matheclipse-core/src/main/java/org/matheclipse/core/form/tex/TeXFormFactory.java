@@ -778,23 +778,16 @@ public class TeXFormFactory {
 
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
-      if (!arg1.isSymbol() && !arg1.isInteger()) {
-        buffer.append('{');
-      }
+      buffer.append('{');
       fFactory.convertInternal(buffer, arg1, fPrecedence, NO_PLUS_CALL);
-      if (!arg1.isSymbol() && !arg1.isInteger()) {
-        buffer.append('}');
-      }
+      buffer.append('}');
       if (fOperator.compareTo("") != 0) {
         buffer.append(fOperator);
       }
-      if (!arg2.isSymbol() && !arg2.isInteger()) {
-        buffer.append('{');
-      }
+
+      buffer.append('{');
       fFactory.convertInternal(buffer, arg2, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-      if (!arg2.isSymbol() && !arg2.isInteger()) {
-        buffer.append('}');
-      }
+      buffer.append('}');
       precedenceClose(buffer, precedence);
       return true;
     }
@@ -904,15 +897,13 @@ public class TeXFormFactory {
 
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
-      if (!arg1.isSymbol()) {
-        buffer.append('{');
-      }
-      fFactory.convertInternal(buffer, arg1, precedence, NO_PLUS_CALL);
-      if (!arg1.isSymbol()) {
-        buffer.append('}');
-      }
-      buffer.append("_");
       buffer.append('{');
+      fFactory.convertInternal(buffer, arg1, precedence, NO_PLUS_CALL);
+      buffer.append('}');
+      buffer.append("_");
+
+      buffer.append('{');
+
       for (int i = 2; i < f.size(); i++) {
         fFactory.convertInternal(buffer, f.get(i), precedence, NO_PLUS_CALL);
         if (i < f.size() - 1) {
@@ -937,31 +928,19 @@ public class TeXFormFactory {
 
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
-      if (!arg1.isSymbol()) {
-        buffer.append('{');
-      }
+      buffer.append('{');
       fFactory.convertInternal(buffer, arg1, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-      if (!arg1.isSymbol()) {
-        buffer.append('}');
-      }
+      buffer.append('}');
       buffer.append("_");
 
-      if (!arg2.isSymbol()) {
-        buffer.append('{');
-      }
+      buffer.append('{');
       fFactory.convertInternal(buffer, arg2, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-      if (!arg2.isSymbol()) {
-        buffer.append('}');
-      }
+      buffer.append('}');
       buffer.append("^");
 
-      if (!arg3.isSymbol()) {
-        buffer.append('{');
-      }
+      buffer.append('{');
       fFactory.convertInternal(buffer, arg3, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-      if (!arg3.isSymbol()) {
-        buffer.append('}');
-      }
+      buffer.append('}');
       return true;
     }
   }
@@ -1043,22 +1022,14 @@ public class TeXFormFactory {
 
       // http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices
       // For powers with more than one digit, surround the power with {}.
-      if (!arg1.isSymbol()) {
-        buffer.append('{');
-      }
+      buffer.append('{');
       fFactory.convertInternal(buffer, arg1, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-      if (!arg1.isSymbol()) {
-        buffer.append('}');
-      }
+      buffer.append('}');
 
       buffer.append("^");
-      if (!arg2.isSymbol()) {
-        buffer.append('{');
-      }
+      buffer.append('{');
       fFactory.convertInternal(buffer, arg2, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-      if (!arg2.isSymbol()) {
-        buffer.append('}');
-      }
+      buffer.append('}');
       return true;
     }
   }

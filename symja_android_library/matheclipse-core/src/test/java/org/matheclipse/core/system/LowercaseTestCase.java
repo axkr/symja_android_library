@@ -12832,10 +12832,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "\n" //
             + "var expressions = [ '1 + x',\n" //
-            + "'1 + x^2',\n" //
-            + "'\\\\\\\\left( 1 + x\\\\\\\\right)  \\\\\\\\cdot \\\\\\\\left( 1 - x + x^2\\\\\\\\right) ',\n" //
-            + "'1 + x^4',\n" //
-            + "'\\\\\\\\left( 1 + x\\\\\\\\right)  \\\\\\\\cdot \\\\\\\\left( 1 - x + x^2 - x^3 + x^4\\\\\\\\right) ' ];\n" //
+            + "'1 + {x}^{2}',\n" //
+            + "'\\\\\\\\left( 1 + x\\\\\\\\right)  \\\\\\\\cdot \\\\\\\\left( 1 - x + {x}^{2}\\\\\\\\right) ',\n" //
+            + "'1 + {x}^{4}',\n" //
+            + "'\\\\\\\\left( 1 + x\\\\\\\\right)  \\\\\\\\cdot \\\\\\\\left( 1 - x + {x}^{2} - {x}^{3} + {x}^{4}\\\\\\\\right) ' ];\n" //
             + "\n" //
             + "  var data = '\\\\\\\\[' + expressions[Math.trunc((n-1.0)/1.0)] + '\\\\\\\\]';\n" //
             + "\n" //

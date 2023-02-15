@@ -81,7 +81,7 @@ public class BasicTeXTestCase {
     check("Integrate(f(x),{x,1,10})", //
         "\\int_{1}^{10} f(x)\\,\\mathrm{d}x");
     check("Integrate(E^(-x),{x,0,Infinity})", //
-        "\\int_{0}^{\\infty} e^{ - x}\\,\\mathrm{d}x");
+        "\\int_{0}^{\\infty} {e}^{ - x}\\,\\mathrm{d}x");
   }
 
   @Test
@@ -99,13 +99,13 @@ public class BasicTeXTestCase {
   @Test
   public void testTeX010() {
     check("3+x*(4+x*(5+(33+x^2)*x^4))", //
-        "3 + x \\cdot \\left( 4 + x \\cdot \\left( 5 + \\left( 33 + x^2\\right)  \\cdot x^4\\right) \\right) ");
+        "3 + x \\cdot \\left( 4 + x \\cdot \\left( 5 + \\left( 33 + {x}^{2}\\right)  \\cdot {x}^{4}\\right) \\right) ");
   }
 
   @Test
   public void testTeX011() {
     check("x^(3/4*y)", //
-        "x^{\\frac{3}{4} \\cdot y}");
+        "{x}^{\\frac{3}{4} \\cdot y}");
   }
 
   @Test
@@ -150,9 +150,9 @@ public class BasicTeXTestCase {
   @Test
   public void testTeX014() {
     check("Sin(x)^2", //
-        "{\\sin (x)}^2");
+        "{\\sin (x)}^{2}");
     check("Sin(2*x)^2", //
-        "{\\sin (2 \\cdot x)}^2");
+        "{\\sin (2 \\cdot x)}^{2}");
   }
 
   @Test
@@ -235,7 +235,7 @@ public class BasicTeXTestCase {
   @Test
   public void testTeX018() {
     check("1/4*a^2*b^(-1)*f^(-1)", //
-        "\\frac{a^2}{4 \\cdot b \\cdot f}");
+        "\\frac{{a}^{2}}{4 \\cdot b \\cdot f}");
   }
 
   @Test
@@ -255,9 +255,9 @@ public class BasicTeXTestCase {
     check("Hold(++x)", //
         "\\text{Hold}(\\text{++}x)");
     check("Hold(y^2/.x->3)", //
-        "\\text{Hold}(y^2\\text{/.}\\,x\\to 3)");
+        "\\text{Hold}({y}^{2}\\text{/.}\\,x\\to 3)");
     check("Hold(y^2//.x->3)", //
-        "\\text{Hold}(y^2\\text{//.}\\,x\\to 3)");
+        "\\text{Hold}({y}^{2}\\text{//.}\\,x\\to 3)");
 
     check("10*f(x)", //
         "10 \\cdot f(x)");
@@ -304,7 +304,7 @@ public class BasicTeXTestCase {
   public void testTeX023() {
     // issue #117
     check("5*3^(5*x)*Log(3)", //
-        "5 \\cdot 3^{5 \\cdot x} \\cdot \\log (3)");
+        "5 \\cdot {3}^{5 \\cdot x} \\cdot \\log (3)");
   }
 
   @Test
@@ -456,7 +456,7 @@ public class BasicTeXTestCase {
         "{\\textnormal{zzz}}_{36}");
     expr = EvalEngine.get().evaluate("Subscript(a,1,2,3)");
     check(expr, //
-        "a_{1,2,3}");
+        "{a}_{1,2,3}");
   }
 
   @Test
@@ -495,14 +495,14 @@ public class BasicTeXTestCase {
   public void testTeX045() {
     IExpr expr = EvalEngine.get().evaluate("Derivative(2)[10/x^4]");
     check(expr, //
-        "\\left( \\frac{10}{x^4}\\right) ''");
+        "\\left( \\frac{10}{{x}^{4}}\\right) ''");
   }
 
   @Test
   public void testTeX046() {
     IExpr expr = EvalEngine.get().evaluate("Derivative(a)[10/x^4]");
     check(expr, //
-        "\\left( \\frac{10}{x^4}\\right) ^{(a)}");
+        "\\left( \\frac{10}{{x}^{4}}\\right) ^{(a)}");
   }
 
   @Test
@@ -516,7 +516,7 @@ public class BasicTeXTestCase {
   public void testTeX048() {
     IExpr expr = EvalEngine.get().evaluate("s^(-2)");
     check(expr, //
-        "\\frac{1}{s^2}");
+        "\\frac{1}{{s}^{2}}");
   }
 
   @Test
@@ -548,7 +548,7 @@ public class BasicTeXTestCase {
     TeXFormFactory fTeXFactory = new TeXFormFactory(" \\, ");
     fTeXFactory.convert(sb, F.symjify(-2).multiply(F.symjify("x")).power(2),
         Precedence.NO_PRECEDENCE);
-    Assertions.assertEquals("{\\left( -2 \\, x\\right) }^2", sb.toString());
+    Assertions.assertEquals("{\\left( -2 \\, x\\right) }^{2}", sb.toString());
   }
 
   @Test
@@ -567,6 +567,14 @@ public class BasicTeXTestCase {
     check(expr, //
         "\\left(\n" + "\\begin{array}{ccc}\n" + "1 & 0 & 4 \\\\\n" + "0 & 2 & 0 \\\\\n"
             + "0 & 0 & 3 \\\n" + "\\\\\n" + "\\end{array}\n" + "\\right) ");
+  }
+
+  @Test
+  public void testPower10() {
+    StringBuilder sb = new StringBuilder();
+    TeXFormFactory fTeXFactory = new TeXFormFactory();
+    fTeXFactory.convert(sb, F.symjify("x").power(10), 0);
+    Assertions.assertEquals("{x}^{10}", sb.toString());
   }
 
   @Test
