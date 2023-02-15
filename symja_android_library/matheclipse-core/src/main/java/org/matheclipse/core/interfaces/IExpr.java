@@ -3824,18 +3824,19 @@ public interface IExpr
    * Sqrt[&lt;arg1&gt;]</code>) or <code>-Power[&lt;arg1&gt;, 1/2]</code> (i.e. <code>
    * -Sqrt[&lt;arg1&gt;]</code>)
    *
-   * @return
+   * @return the pair <code[{1,Sqrt(....)}</code> or <code>{-1,Sqrt(...))</code> if it's a
+   *         <code>Power()</code> form or {@link F#NIL} if it's not a <code>Power()</code> form.
    */
-  default boolean isSqrtExpr() {
+  default IPair isSqrtExpr() {
     if (isSqrt()) {
-      return true;
+      return F.pair(F.C1, this);
     }
     if (isTimes() && first().equals(F.CN1) && size() == 3) {
       if (second().isPower() && second().second().isNumEqualRational(F.C1D2)) {
-        return true;
+        return F.pair(F.CN1, second());
       }
     }
-    return false;
+    return F.NIL;
   }
 
   /**

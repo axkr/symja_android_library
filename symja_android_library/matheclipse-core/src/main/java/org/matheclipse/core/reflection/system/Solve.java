@@ -40,6 +40,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.QuarticSolver;
@@ -981,35 +982,6 @@ public class Solve extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  /**
-   * Return an immutable <code>List[numerator, denominator]</code> of the given expression. Uses
-   * <code>Numerator[] and Denominator[]</code> functions.
-   *
-   * @param expr
-   * @param engine
-   * @param evalTogether evaluate <code>Together[expr]</code> before determining numerator and
-   *        denominator of the expression.
-   * @return <code>List[numerator, denominator]</code>
-   */
-  private static IAST splitNumeratorDenominator(IAST expr, EvalEngine engine,
-      boolean evalTogether) {
-    IExpr numerator, denominator;
-    if (evalTogether) {
-      numerator = Algebra.together(expr, engine);
-    } else {
-      numerator = expr;
-    }
-    // split expr into numerator and denominator
-    denominator = engine.evaluate(F.Denominator(numerator));
-    if (!denominator.isOne()) {
-      // search roots for the numerator expression
-      numerator = engine.evaluate(F.Numerator(numerator));
-    } else {
-      numerator = expr;
-    }
-    return F.binaryAST2(S.List, numerator, denominator);
-  }
-
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     return of(ast, false, engine);
@@ -1417,10 +1389,17 @@ public class Solve extends AbstractFunctionEvaluator {
         if (eq.isEqual()) {
           IExpr arg1 = eq.first();
           if (arg1.isPlus2()) {
-            if (arg1.first().isSqrtExpr() && arg1.second().isSqrtExpr()) {
-              // Sqrt() + Sqrt() == constant
-              termsEqualZeroList.set(i, S.Subtract.of(S.Expand.of(F.Sqr(arg1.second())),
-                  S.Expand.of(F.Sqr(F.Subtract(eq.second(), arg1.first())))));
+            IPair p1 = arg1.first().isSqrtExpr();
+            IPair p2 = arg1.second().isSqrtExpr();
+            if (p1.isPresent() && p2.isPresent()) {
+              // +/- Sqrt(...) +/- Sqrt() == constant
+              IExpr squared = S.Expand.of(engine, F.Sqr(arg1.second()));
+              IExpr expandFirstAndSqr =
+                  S.Expand.of(engine, F.Sqr(F.Subtract(eq.second(), arg1.first())));
+              IExpr subtractFirstAndSqr = S.Subtract.of(engine, squared, //
+                  expandFirstAndSqr);
+              termsEqualZeroList.set(i, //
+                  subtractFirstAndSqr);
             }
           }
         }
@@ -1501,27 +1480,28 @@ public class Solve extends AbstractFunctionEvaluator {
    * expression. If true, set the factors equal to <code>0</code> and solve the equations
    * recursively.
    *
-   * @param termsEqualZeroList the list of expressions, which should equal <code>0</code>
+   * @param termsEqualZero the list of expressions, which should equal <code>0</code>
    * @param numericFlag
    * @param variables the variables for which the equations should be solved
    * @param engine the evaluation engine
    * @return
    */
-  private static IASTMutable solveTimesEquationsRecursively(IASTMutable termsEqualZeroList,
+  private static IASTMutable solveTimesEquationsRecursively(IASTMutable termsEqualZero,
       IAST inequationsList, boolean numericFlag, IAST variables, boolean multipleValues,
       EvalEngine engine) {
+    IASTMutable originalTermsEqualZero = termsEqualZero.copy();
     try {
       IASTMutable resultList =
-          solveEquations(termsEqualZeroList, inequationsList, variables, 0, engine);
+          solveEquations(termsEqualZero, inequationsList, variables, 0, engine);
       if (resultList.isPresent() && !resultList.isEmpty()) {
         return resultList;
       }
       Set<IExpr> subSolutionSet = new TreeSet<IExpr>();
-      for (int i = 1; i < termsEqualZeroList.size(); i++) {
-        IExpr termEQZero = termsEqualZeroList.get(i);
+      for (int i = 1; i < termsEqualZero.size(); i++) {
+        IExpr termEQZero = termsEqualZero.get(i);
         if (termEQZero.isTimes()) {
-          solveTimesAST((IAST) termEQZero, termsEqualZeroList, inequationsList, numericFlag,
-              variables, multipleValues, engine, subSolutionSet, i);
+          solveTimesAST((IAST) termEQZero, termsEqualZero, inequationsList, numericFlag, variables,
+              multipleValues, engine, subSolutionSet, i);
         } else {
           if (termEQZero.isAST()) {
             // try factoring
@@ -1539,7 +1519,7 @@ public class Solve extends AbstractFunctionEvaluator {
             }
             termEQZero = S.Factor.of(engine, termEQZero);
             if (termEQZero.isTimes()) {
-              solveTimesAST((IAST) termEQZero, termsEqualZeroList, inequationsList, numericFlag,
+              solveTimesAST((IAST) termEQZero, termsEqualZero, inequationsList, numericFlag,
                   variables, multipleValues, engine, subSolutionSet, i);
             }
 
@@ -1547,38 +1527,7 @@ public class Solve extends AbstractFunctionEvaluator {
         }
       }
       if (subSolutionSet.size() > 0) {
-        // cross check
-        IASTAppendable result = F.ListAlloc(subSolutionSet);
-        int[] removedPositions = new int[result.size()];
-        int untilPosition = 0;
-        for (int j = 1; j < result.size(); j++) {
-          IExpr expr = result.get(j);
-          // if (expr.isFree(S.ConditionalExpression, true)) {
-          // TODO cross check for ConditionalExpression
-          for (int i = 1; i < termsEqualZeroList.size(); i++) {
-            IExpr termEQZero = termsEqualZeroList.get(i);
-            IExpr replaceAll = termEQZero.replaceAll((IAST) expr);
-            if (replaceAll.isNumericFunction()) {
-              IExpr possibleZero = engine.evaluate(replaceAll);
-              if (possibleZero.isNumber()) {
-                if (!((INumber) possibleZero).isZero(Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-                  removedPositions[untilPosition++] = j;
-                  break;
-                }
-              } else {
-                if (!engine.evalTrue(F.PossibleZeroQ(replaceAll))) {
-                  removedPositions[untilPosition++] = j;
-                  break;
-                }
-              }
-            }
-          }
-        }
-        if (untilPosition > 0) {
-          return result.removePositionsAtCopy(removedPositions, untilPosition);
-        }
-
-        return result;
+        return crossChecking(originalTermsEqualZero, subSolutionSet, engine);
       }
       return resultList;
     } catch (LimitException le) {
@@ -1591,6 +1540,51 @@ public class Solve extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * After finding a possible solution, the process of cross-checking involves substituting the
+   * values of the variables into each equation in the system and checking to see if both sides of
+   * each equation are equal.
+   * 
+   * @param termsEqualZero terms which should be equal to <code>0</code>
+   * @param subSolutionSet a set of rules which should solve the terms
+   * @param engine
+   * @return
+   */
+  private static IASTMutable crossChecking(IASTMutable termsEqualZero, Set<IExpr> subSolutionSet,
+      EvalEngine engine) {
+    IASTAppendable result = F.ListAlloc(subSolutionSet);
+    int[] removedPositions = new int[result.size()];
+    int untilPosition = 0;
+    for (int j = 1; j < result.size(); j++) {
+      IExpr expr = result.get(j);
+      // if (expr.isFree(S.ConditionalExpression, true)) {
+      // TODO cross checking for ConditionalExpression
+      for (int i = 1; i < termsEqualZero.size(); i++) {
+        IExpr termEQZero = termsEqualZero.get(i);
+        IExpr replaceAll = termEQZero.replaceAll((IAST) expr);
+        if (replaceAll.isNumericFunction()) {
+          IExpr possibleZero = engine.evaluate(replaceAll);
+          if (possibleZero.isNumber()) {
+            if (!((INumber) possibleZero).isZero(Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+              removedPositions[untilPosition++] = j;
+              break;
+            }
+          } else {
+            if (!engine.evalTrue(F.PossibleZeroQ(replaceAll))) {
+              removedPositions[untilPosition++] = j;
+              break;
+            }
+          }
+        }
+      }
+    }
+    if (untilPosition > 0) {
+      return result.removePositionsAtCopy(removedPositions, untilPosition);
+    }
+
+    return result;
   }
 
   private static void solveTimesAST(IAST times, IAST termsEqualZeroList, IAST inequationsList,

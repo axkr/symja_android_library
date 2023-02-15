@@ -1382,6 +1382,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->5+I*20}}");
   }
 
+  public void testSystemSqrtSqrt() {
+    check("Solve(Sqrt(x+2)-Sqrt(x+3)==1,x)", //
+        "{}");
+  }
 
   public void testSystem805() {
     check("Solve({x^2==4,x+20==10},x)", "{}");
