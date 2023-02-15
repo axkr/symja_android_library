@@ -26,6 +26,10 @@ public class ComputationalGeometryFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.AASTriangle.setEvaluator(new AASTriangle());
+      S.ASATriangle.setEvaluator(new ASATriangle());
+      S.SASTriangle.setEvaluator(new SASTriangle());
+      S.SSSTriangle.setEvaluator(new SSSTriangle());
       S.ArcLength.setEvaluator(new ArcLength());
       S.Area.setEvaluator(new Area());
       S.Perimeter.setEvaluator(new Perimeter());
@@ -42,6 +46,136 @@ public class ComputationalGeometryFunctions {
       S.VectorLess.setEvaluator(new VectorLess());
       S.VectorLessEqual.setEvaluator(new VectorLessEqual());
     }
+  }
+
+  private static class AASTriangle extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr a = ast.arg1();
+      IExpr b = ast.arg2();
+      IExpr c = ast.arg3();
+      IAST angleSum = F.Plus(a, b);
+      if (a.isNegativeResult() || a.isZero()) {
+        // The angle `1` should be a positive number less than `2`.
+        return IOFunctions.printMessage(S.AASTriangle, "npa", F.List(a, S.Pi), engine);
+      }
+      if (b.isNegativeResult() || b.isZero()) {
+        // The angle `1` should be a positive number less than `2`.
+        return IOFunctions.printMessage(S.AASTriangle, "npa", F.List(b, S.Pi), engine);
+      }
+      if (angleSum.greaterEqualThan(S.Pi).isTrue()) {
+        // The sum of angles `1` and `2` should be less than `3`.
+        return IOFunctions.printMessage(S.AASTriangle, "asm", F.List(a, b, S.Pi), engine);
+      }
+      return F.Triangle(//
+          F.List(F.CListC0C0, //
+              F.List(F.Times(c, F.Csc(a), F.Sin(angleSum)), F.C0), //
+              F.List(F.Times(c, F.Cot(a), F.Sin(b)), F.Times(c, F.Sin(b)))) //
+      );
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+  }
+
+
+  private static class ASATriangle extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr a = ast.arg1();
+      IExpr b = ast.arg2();
+      IExpr c = ast.arg3();
+      IExpr angleSum = engine.evaluate(F.Plus(a, c));
+      if (angleSum.greaterEqualThan(S.Pi).isTrue()) {
+        // The sum of angles `1` and `2` should be less than `3`.
+        return IOFunctions.printMessage(S.ASATriangle, "asm", F.List(a, c, S.Pi), engine);
+      }
+      // Triangle({{0,0}, {b,0}, {b*Cos(a)*Csc(a+c)*Sin(c), b*Csc(a+c)*Sin(a)*Sin(c)}})
+      return F.Triangle(F.list(//
+          F.CListC0C0, //
+          F.list(b, F.C0), //
+          F.list(F.Times(b, F.Cos(a), F.Csc(angleSum), F.Sin(c)), //
+              F.Times(b, F.Csc(angleSum), F.Sin(a), F.Sin(c)))));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+  }
+
+  private static class SASTriangle extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr a = ast.arg1();
+      IExpr b = ast.arg2();
+      IExpr c = ast.arg3();
+      if (b.greaterEqualThan(S.Pi).isTrue()) {
+        // The angle `1` should be a positive number less than `2`
+        return IOFunctions.printMessage(S.SASTriangle, "npa", F.List(b, S.Pi), engine);
+      }
+      IAST plus = F.Plus(F.Sqr(a), F.Sqr(c), F.Times(F.CN2, a, c, F.Cos(b)));
+      IAST sqrtNumerator = F.Power(plus, F.C1D2);
+      IAST sqrtDenominator = F.Power(plus, F.CN1D2);
+      // Triangle({{0, 0}, {Sqrt(a^2+c^2-2*a*c*Cos(b)), 0},
+      // {(c^2-a*c*Cos(b))/Sqrt(a^2+c^2-2*a*c*Cos(b)),
+      // (a*c*Sin(b))/Sqrt(a^2+c^2-2*a*c*Cos(b))}})
+      return F.Triangle(F.list(//
+          F.CListC0C0, //
+          F.list(sqrtNumerator, F.C0), //
+          F.list(F.Times(F.Plus(F.Sqr(c), F.Times(F.CN1, a, c, F.Cos(b))), sqrtDenominator), //
+              F.Times(a, c, sqrtDenominator, F.Sin(b)))));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+  }
+
+  private static class SSSTriangle extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr a = ast.arg1();
+      IExpr b = ast.arg2();
+      IExpr c = ast.arg3();
+      if (a.isNegativeResult() || a.isZero()) {
+        // The triangle side `1`should be a positive number.
+        return IOFunctions.printMessage(S.SSSTriangle, "nps", F.List(a), engine);
+      }
+      if (b.isNegativeResult() || b.isZero()) {
+        // The triangle side `1`should be a positive number.
+        return IOFunctions.printMessage(S.SSSTriangle, "nps", F.List(b), engine);
+      }
+      if (c.isNegativeResult() || c.isZero()) {
+        // The triangle side `1`should be a positive number.
+        return IOFunctions.printMessage(S.SSSTriangle, "nps", F.List(c), engine);
+      }
+      return F.Triangle(F.list(//
+          F.CListC0C0, //
+          F.list(c, F.C0), //
+          F.list(//
+              F.Times(F.Plus(F.Negate(F.Sqr(a)), F.Sqr(b), F.Sqr(c)),
+                  F.Power(F.Times(F.C2, c), F.CN1)),
+              F.Times(F.Power(F.Times(F.C2, c), F.CN1), F.Sqrt(F.Times(F.Plus(a, b, F.Negate(c)),
+                  F.Plus(a, F.Negate(b), c), F.Plus(F.Negate(a), b, c), F.Plus(a, b, c))))) //
+      ));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
   }
 
   private static class ArcLength extends AbstractEvaluator {
@@ -161,6 +295,8 @@ public class ComputationalGeometryFunctions {
               return disk(geoForm);
             case ID.Rectangle:
               return rectangle(geoForm);
+            case ID.Triangle:
+              return triangle(geoForm);
           }
         }
       }
@@ -221,6 +357,24 @@ public class ComputationalGeometryFunctions {
           return F.NIL;
         }
         return F.Abs(F.Times(F.Plus(F.Negate(a), c), F.Plus(F.Negate(b), d)));
+      }
+      return F.NIL;
+    }
+
+    private static IExpr triangle(IAST geoForm) {
+
+      if (geoForm.argSize() >= 1 && geoForm.arg1().isList3() && geoForm.arg1().isListOfPoints(2)) {
+        IAST list = (IAST) geoForm.arg1();
+        IExpr a1 = list.arg1().first();
+        IExpr a2 = list.arg1().second();
+        IExpr b1 = list.arg2().first();
+        IExpr b2 = list.arg2().second();
+        IExpr c1 = list.arg3().first();
+        IExpr c2 = list.arg3().second();
+        return
+        // [$ (1/2)*Abs((-a2)*b1+a1*b2 +a2*c1-b2*c1-a1*c2+b1*c2) $]
+        F.Times(F.C1D2, F.Abs(F.Plus(F.Times(F.CN1, a2, b1), F.Times(a1, b2), F.Times(a2, c1),
+            F.Times(F.CN1, b2, c1), F.Times(F.CN1, a1, c2), F.Times(b1, c2)))); // $$;
       }
       return F.NIL;
     }

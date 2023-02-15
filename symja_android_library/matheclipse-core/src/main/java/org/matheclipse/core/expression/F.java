@@ -9585,6 +9585,10 @@ public class F extends S {
     return new AST1(Transpose, list);
   }
 
+  public static IAST Triangle(final IAST list) {
+    return new AST1(Triangle, list);
+  }
+
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/TrigExpand.md">TrigExpand</a>

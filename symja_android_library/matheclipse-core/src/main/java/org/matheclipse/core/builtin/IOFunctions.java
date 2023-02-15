@@ -495,6 +495,7 @@ public class IOFunctions {
       "argtype",
       "Arguments `1` and `2` of `3` should be either non-negative integers or one-character strings.", //
       "arg2", "Cannot divide sides of an equation or inequality by 0.", //
+      "asm", "The sum of angles `1` and `2` should be less than `3`.", //
       "attnf", "`1` is not a known attribute.", //
       "base", "Requested base `1` in `2` should be between 2 and `3`.", //
       "bfun", "`1` is not a boolean-valued pure function.", //
@@ -631,6 +632,8 @@ public class IOFunctions {
       "normal", "Nonatomic expression expected at position `1` in `2`.", //
       "nostr", "`1` is not a string.", //
       "notent", "`2` is not a known entity, class, or tag for `1`.", //
+      "npa", "The angle `1` should be a positive number less than `2`.", //
+      "nps", "The triangle side `1`should be a positive number.", //
       "nquan",
       "The Quantile specification `1` should be a number or a list of numbers between `2` and `3`.",
       "nvld", "The expression `1` is not a valid interval.", //
@@ -639,6 +642,7 @@ public class IOFunctions {
       "noprime", "There are no primes in the specified interval.", //
       "norel", "Expressions `1` and `2` cannot be related by a permutation.", //
       "noval", "Symbol `1` in part assignment does not have an immediate value.", //
+      "npa", "The angle `1` should be a positive number less than `2`.", //
       "nsmet", "The system cannot be solved with the methods available to `1`.", //
       "nupr", "`1` is not a univariate polynomial with rational number coefficients.", //
       "nvm", "The first Norm argument should be a scalar, vector or matrix.", //
