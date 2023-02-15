@@ -2429,20 +2429,21 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int rowSize = 0;
       int columnSize = 0;
-      if (ast.isAST1() && ast.arg1().isInteger()) {
-        rowSize = ast.arg1().toIntDefault();
+      IExpr arg1 = ast.arg1();
+      if (arg1.isInteger()) {
+        rowSize = arg1.toIntDefault();
         if (rowSize < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.list(ast, F.C1), engine);
         }
         columnSize = rowSize;
-      } else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
-        rowSize = ast.arg1().toIntDefault();
+      } else if (arg1.isList2() && arg1.first().isInteger() && arg1.second().isInteger()) {
+        rowSize = arg1.first().toIntDefault();
         if (rowSize < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.list(ast, F.C1), engine);
         }
-        columnSize = ast.arg2().toIntDefault();
+        columnSize = arg1.second().toIntDefault();
         if (columnSize < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.list(ast, F.C2), engine);
@@ -2455,7 +2456,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_1;
     }
   }
 
@@ -2484,23 +2485,39 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int rowSize = 0;
+      int columnSize = 0;
+      IExpr arg1 = ast.arg1();
       if (ast.arg1().isInteger()) {
-        int m = ast.arg1().toIntDefault();
-        if (m < 0) {
+        rowSize = ast.arg1().toIntDefault();
+        if (rowSize < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.IdentityMatrix, "intpm", F.list(ast, F.C1), engine);
         }
-        if (ast.isAST2()) {
-          if (ast.arg2().equals(S.SparseArray)) {
-            int[] dimension = new int[] {m, m};
-            // {{i_,i_} -> 1}
-            return F.sparseArray(F.list(F.Rule(List(F.i_, F.i_), F.C1)), dimension);
-          }
-          return F.NIL;
+        columnSize = rowSize;
+      } else if (arg1.isList2() && arg1.first().isInteger() && arg1.second().isInteger()) {
+        rowSize = arg1.first().toIntDefault();
+        if (rowSize < 0) {
+          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
+          return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.list(ast, F.C1), engine);
         }
-        return F.matrix((i, j) -> i == j ? F.C1 : F.C0, m, m);
+        columnSize = arg1.second().toIntDefault();
+        if (columnSize < 0) {
+          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
+          return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.list(ast, F.C2), engine);
+        }
+      } else {
+        return F.NIL;
       }
-      return F.NIL;
+      if (ast.isAST2()) {
+        if (ast.arg2().equals(S.SparseArray)) {
+          int[] dimension = new int[] {rowSize, columnSize};
+          // {{i_,i_} -> 1}
+          return F.sparseArray(F.list(F.Rule(List(F.i_, F.i_), F.C1)), dimension);
+        }
+        return F.NIL;
+      }
+      return F.matrix((i, j) -> i == j ? F.C1 : F.C0, rowSize, columnSize);
     }
 
     @Override
