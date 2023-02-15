@@ -6,6 +6,12 @@ IdentityMatrix(n)
 
 > gives the identity matrix with `n` rows and columns.
 
+```
+IdentityMatrix({n,m})
+```
+
+> gives the identity matrix with `n` rows and `m` columns.
+
 See
 * [Wikipedia - Identity matrix](https://en.wikipedia.org/wiki/Identity_matrix)
 

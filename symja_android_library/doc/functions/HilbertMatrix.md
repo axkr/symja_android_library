@@ -1,9 +1,16 @@
 ## HilbertMatrix
+
 ```
 HilbertMatrix(n)
 ```
 
 > gives the hilbert matrix with `n` rows and columns. 
+
+```
+HilbertMatrix({n,m})
+```
+
+> gives the hilbert matrix with `n` rows and `m` columns. 
 
 See
 * [Wikipedia - Hilbert matrix](http://en.wikipedia.org/wiki/Hilbert_matrix) 
