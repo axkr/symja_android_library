@@ -9,12 +9,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.matheclipse.api.client.JSONQueryResult;
-import org.matheclipse.api.parser.FuzzyParserFactory;
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.parser.client.ParserConfig;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
 
@@ -26,24 +21,24 @@ public class TestPods {
   static int formatsHTML = 0;
 
   static {
-    ToggleFeature.COMPILE = false;
-    ToggleFeature.COMPILE_PRINT = true;
-    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
-    Config.FUZZY_PARSER = true;
-    Config.UNPROTECT_ALLOWED = false;
-    Config.USE_MANIPULATE_JS = true;
-    Config.JAS_NO_THREADS = false;
-    Config.MATHML_TRIG_LOWERCASE = false;
-    Config.MAX_AST_SIZE = 10000;
-    Config.MAX_OUTPUT_SIZE = 10000;
-    Config.MAX_BIT_LENGTH = 200000;
-    Config.MAX_POLYNOMIAL_DEGREE = 100;
-    Config.MAX_INPUT_LEAVES = 100L;
-    Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-    EvalEngine.get().setPackageMode(true);
-    F.initSymbols();
-    FuzzyParserFactory.initialize();
-
+    // ToggleFeature.COMPILE = false;
+    // ToggleFeature.COMPILE_PRINT = true;
+    // ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    // Config.FUZZY_PARSER = true;
+    // Config.UNPROTECT_ALLOWED = false;
+    // Config.USE_MANIPULATE_JS = true;
+    // Config.JAS_NO_THREADS = false;
+    // Config.MATHML_TRIG_LOWERCASE = false;
+    // Config.MAX_AST_SIZE = 10000;
+    // Config.MAX_OUTPUT_SIZE = 10000;
+    // Config.MAX_BIT_LENGTH = 200000;
+    // Config.MAX_POLYNOMIAL_DEGREE = 100;
+    // Config.MAX_INPUT_LEAVES = 100L;
+    // Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+    // EvalEngine.get().setPackageMode(true);
+    // F.initSymbols();
+    // FuzzyParserFactory.initialize();
+    SymjaServer.initAPI();
     formatsMATHML = Pods.internFormat(new String[] {"mathml", "plaintext"});
     formatsTEX = Pods.internFormat(new String[] {"latex", "plaintext", "sinput"});
     formatsHTML = Pods.internFormat(new String[] {"html", "plaintext", "sinput"});

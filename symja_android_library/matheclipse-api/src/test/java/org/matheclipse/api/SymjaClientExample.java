@@ -1,6 +1,7 @@
 package org.matheclipse.api;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.matheclipse.api.client.JSONPod;
@@ -35,6 +36,9 @@ public class SymjaClientExample {
           System.out.println("    " + plaintext);
         }
       }
+    } catch (ConnectException cex) {
+      System.out.println("ConnectException: Please ensure the Symja server is running!");
+      cex.printStackTrace();
     } catch (JsonParseException e) {
       e.printStackTrace();
     } catch (JsonMappingException e) {

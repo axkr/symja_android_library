@@ -47,7 +47,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.ParserConfig;
 import com.google.common.base.CharMatcher;
-import com.ibm.icu.text.Transliterator;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
@@ -155,11 +154,8 @@ public final class StringFunctions {
   /** Map language name to alphabet string with characters not separated by comma.. */
   private static final Map<String, String> ALPHABET_MAP = new HashMap<String, String>();
 
-  /** Map language name to alphabet charcter strings */
+  /** Map language name to alphabet character strings */
   private static final Map<String, String[]> ALPHABET_CSV_MAP = new HashMap<String, String[]>();
-
-  /** Map English to Latin for the ICU <code>Transliterate()</code> function. */
-  private static final Map<String, String> TRANSLITERATE_MAP = new HashMap<String, String>();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -176,7 +172,6 @@ public final class StringFunctions {
         String[] result = alphabetCSV.split(",");
         ALPHABET_CSV_MAP.put(ALPHABETS_CSV[i], result);
       }
-      TRANSLITERATE_MAP.put("English", "Latin");
       S.Alphabet.setEvaluator(new Alphabet());
       S.BaseDecode.setEvaluator(new BaseDecode());
       S.BaseEncode.setEvaluator(new BaseEncode());
@@ -194,7 +189,6 @@ public final class StringFunctions {
       S.LetterQ.setEvaluator(new LetterQ());
       S.LowerCaseQ.setEvaluator(new LowerCaseQ());
       S.PrintableASCIIQ.setEvaluator(new PrintableASCIIQ());
-      S.RemoveDiacritics.setEvaluator(new RemoveDiacritics());
       S.StringCases.setEvaluator(new StringCases());
       S.StringCount.setEvaluator(new StringCount());
       S.StringContainsQ.setEvaluator(new StringContainsQ());
@@ -227,7 +221,6 @@ public final class StringFunctions {
       S.ToString.setEvaluator(new ToString());
       S.ToUnicode.setEvaluator(new ToUnicode());
       S.ToUpperCase.setEvaluator(new ToUpperCase());
-      S.Transliterate.setEvaluator(new Transliterate());
       S.UpperCaseQ.setEvaluator(new UpperCaseQ());
 
       TeXParser.initialize();
@@ -1117,55 +1110,6 @@ public final class StringFunctions {
         return true;
       }
       return CharMatcher.inRange('\u0020', '\u007E').matchesAllOf(str);
-    }
-  }
-
-  /**
-   *
-   *
-   * <pre>
-   * <code>RemoveDiacritics(&quot;string&quot;)
-   * </code>
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * replace characters with diacritics with characters without diacritics.
-   *
-   * </blockquote>
-   *
-   * <p>
-   * See:
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Diacritic">Wikipedia - Diacritic</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * <code>&gt;&gt; RemoveDiacritics(&quot;éèáàâ&quot;)
-   * eeaaa
-   * </code>
-   * </pre>
-   */
-  private static class RemoveDiacritics extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!(ast.arg1() instanceof IStringX)) {
-        return F.NIL;
-      }
-      String str = ast.arg1().toString();
-      Transliterator transform = Transliterator.getInstance("NFD; [:Nonspacing Mark:] Remove; NFC");
-      String value = transform.transliterate(str);
-      return F.$str(value);
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
     }
   }
 
@@ -3237,106 +3181,6 @@ public final class StringFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-  }
-
-  /**
-   *
-   *
-   * <pre>
-   * <code>Transliterate(&quot;string&quot;)
-   * </code>
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * try converting the given string to a similar ASCII string
-   *
-   * </blockquote>
-   *
-   * <p>
-   * See:
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Transliteration">Wikipedia - Transliteration</a>
-   * <li><a href=
-   * "https://unicode-org.github.io/icu/userguide/transforms/general/">unicode-org.github.io -
-   * General Transforms </a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * <code>&gt;&gt; Transliterate(&quot;Горбачёв, Михаил Сергеевич&quot;)
-   * Gorbacev, Mihail Sergeevic
-   * </code>
-   * </pre>
-   */
-  private static class Transliterate extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isList()) {
-        return ((IAST) arg1).mapThread(ast, 1);
-      }
-      if (!arg1.isString()) {
-        return F.NIL;
-      }
-      if (ast.isAST2()) {
-        IExpr arg2 = ast.arg2();
-        if (arg2.isRuleAST()) {
-          if (arg2.first().isString() //
-              && arg2.second().isString()) {
-            try {
-              String str1 = mapToICU4J(arg2.first().toString());
-              String str2 = mapToICU4J(arg2.second().toString());
-              String str = ast.arg1().toString();
-              Transliterator transform = Transliterator.getInstance(str1 + "-" + str2);
-              String result = transform.transliterate(str);
-              return F.$str(result);
-            } catch (IllegalArgumentException iae) {
-
-            }
-          }
-        } else if (arg2.isString()) {
-          try {
-            String str1 = "Latin";
-            String str2 = mapToICU4J(arg2.toString());
-            String str = ast.arg1().toString();
-            Transliterator transform = Transliterator.getInstance(str1 + "-" + str2);
-            String result = transform.transliterate(str);
-            return F.$str(result);
-          } catch (IllegalArgumentException iae) {
-
-          }
-        }
-        return F.NIL;
-      }
-      if (ast.isAST1()) {
-        String str = ast.arg1().toString();
-        Transliterator transform = Transliterator.getInstance("Any-Latin");
-        String latin = transform.transliterate(str);
-        transform = Transliterator.getInstance("Latin-ASCII");
-        // "NFD; [:Nonspacing Mark:] Remove; NFC."
-        String ascii = transform.transliterate(latin);
-        return F.$str(ascii);
-      }
-      return F.NIL;
-    }
-
-    private static String mapToICU4J(String language) {
-      String temp = TRANSLITERATE_MAP.get(language);
-      if (temp != null) {
-        language = temp;
-      }
-      return language;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
     }
   }
 

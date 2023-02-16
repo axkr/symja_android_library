@@ -12,6 +12,7 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
@@ -74,25 +75,7 @@ public class SymjaServer {
     }
 
     try {
-      ToggleFeature.COMPILE = false;
-      ToggleFeature.COMPILE_PRINT = true;
-      Config.FUZZY_PARSER = true;
-      Config.UNPROTECT_ALLOWED = false;
-      Config.USE_MANIPULATE_JS = true;
-      Config.JAS_NO_THREADS = false;
-      // Config.THREAD_FACTORY =
-      // com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
-      Config.MATHML_TRIG_LOWERCASE = false;
-      Config.MAX_AST_SIZE = 10000;
-      Config.MAX_OUTPUT_SIZE = 10000;
-      Config.MAX_BIT_LENGTH = 200000;
-      Config.MAX_POLYNOMIAL_DEGREE = 100;
-      Config.FILESYSTEM_ENABLED = false;
-      Config.MAX_INPUT_LEAVES = 100L;
-      Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-      EvalEngine.get().setPackageMode(true);
-      F.initSymbols();
-      FuzzyParserFactory.initialize();
+      initAPI();
 
       final APIHandler apiHandler = new APIHandler();
 
@@ -123,6 +106,31 @@ public class SymjaServer {
     } catch (Exception ex) {
       ex.printStackTrace();
     }
+  }
+
+  public static void initAPI() {
+    ToggleFeature.COMPILE = false;
+    ToggleFeature.COMPILE_PRINT = true;
+    Config.FUZZY_PARSER = true;
+    Config.UNPROTECT_ALLOWED = false;
+    Config.USE_MANIPULATE_JS = true;
+    Config.JAS_NO_THREADS = false;
+    // Config.THREAD_FACTORY =
+    // com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
+    Config.MATHML_TRIG_LOWERCASE = false;
+    Config.MAX_AST_SIZE = 10000;
+    Config.MAX_OUTPUT_SIZE = 10000;
+    Config.MAX_BIT_LENGTH = 200000;
+    Config.MAX_POLYNOMIAL_DEGREE = 100;
+    Config.FILESYSTEM_ENABLED = false;
+    Config.MAX_INPUT_LEAVES = 100L;
+    Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+    EvalEngine.get().setPackageMode(true);
+    F.initSymbols();
+    S.IntegerName.setEvaluator(new org.matheclipse.io.builtin.IntegerName());
+    S.RemoveDiacritics.setEvaluator(new org.matheclipse.io.builtin.RemoveDiacritics());
+    S.Transliterate.setEvaluator(new org.matheclipse.io.builtin.Transliterate());
+    FuzzyParserFactory.initialize();
   }
 
   protected static int setArgs(final String serverClass, final String args[]) {

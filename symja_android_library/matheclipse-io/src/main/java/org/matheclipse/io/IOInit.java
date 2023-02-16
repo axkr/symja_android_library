@@ -22,8 +22,11 @@ public class IOInit {
     ImageInit.init();
 
     S.Import.setEvaluator(new org.matheclipse.io.builtin.Import());
+    S.IntegerName.setEvaluator(new org.matheclipse.io.builtin.IntegerName());
+    S.RemoveDiacritics.setEvaluator(new org.matheclipse.io.builtin.RemoveDiacritics());
     S.SemanticImport.setEvaluator(new org.matheclipse.io.builtin.SemanticImport());
     S.SemanticImportString.setEvaluator(new org.matheclipse.io.builtin.SemanticImportString());
+    S.Transliterate.setEvaluator(new org.matheclipse.io.builtin.Transliterate());
     FileIOFunctions.initialize();
     DynamicSwingFunctions.initialize();
     SwingFunctions.initialize();

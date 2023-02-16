@@ -773,22 +773,6 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "THIS IS A TEST");
   }
 
-  public void testTransliterate() {
-    check("Transliterate(\"tadaima\", \"Hiragana\")", //
-        "ただいま");
-    check("Transliterate(\"fish\",\"Bopomofo\")", //
-        "ㄈㄧ˙ㄕ");
-    check("Transliterate(\"Фёдоров, Николай Алексеевич\",\"Cyrillic\"->\"English\")", //
-        "Fëdorov, Nikolaj Alekseevič");
-    check("Transliterate(\"Фёдоров, Николай Алексеевич\")", //
-        "Fedorov, Nikolaj Alekseevic");
-    check("Transliterate(\"Горбачёв, Михаил Сергеевич\")", //
-        "Gorbacev, Mihail Sergeevic");
-    check(
-        "Transliterate(\"\\[CapitalAlpha]\\[Lambda]\\[CurlyPhi]\\[Alpha]\\[Beta]\\[Eta]\\[Tau]\\[Iota]\\[Kappa]\\[Omega]\\[FinalSigma]\")", //
-        "Alphabetikos");
-  }
-
   public void testWhitespace() {
     check("StringMatchQ(\"\\r \\n\", Whitespace)", //
         "True");

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
@@ -45,8 +44,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.HornerScheme;
 import com.baeldung.algorithms.romannumerals.RomanArabicConverter;
 import com.github.freva.asciitable.AsciiTable;
-import com.ibm.icu.text.NumberFormat;
-import com.ibm.icu.text.RuleBasedNumberFormat;
+// import com.ibm.icu.text.NumberFormat;
+// import com.ibm.icu.text.RuleBasedNumberFormat;
 
 public final class OutputFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -64,7 +63,6 @@ public final class OutputFunctions {
       S.HoldForm.setEvaluator(new HoldForm());
       S.HornerForm.setEvaluator(new HornerForm());
       S.InputForm.setEvaluator(new InputForm());
-      S.IntegerName.setEvaluator(new IntegerName());
       S.JavaForm.setEvaluator(new JavaForm());
       S.JSForm.setEvaluator(new JSForm());
       S.MathMLForm.setEvaluator(new MathMLForm());
@@ -296,114 +294,6 @@ public final class OutputFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {}
-  }
-
-  private static class IntegerName extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (ast.arg1().isList()) {
-        return ((IAST) ast.arg1()).mapThread(ast, 1);
-      }
-      if (arg1.isInteger()) {
-        NumberFormat formatter = null;
-        try {
-          long value = ((IInteger) arg1).toLong();
-          if (value != Integer.MIN_VALUE && ast.isAST1()) {
-            formatter = new RuleBasedNumberFormat(RuleBasedNumberFormat.SPELLOUT);
-            String textNumber = formatter.format(value);
-            if (textNumber != null) {
-              return F.stringx(textNumber);
-            }
-          }
-          IStringX language = F.stringx("English");
-          IStringX qual = F.stringx("Words");
-          if (ast.isAST2()) {
-            if (!ast.arg2().isString()) {
-              return F.NIL;
-            }
-            IStringX arg2 = (IStringX) ast.arg2();
-            if (arg2.isString("Dutch") || arg2.isString("Finnish") || arg2.isString("English")
-                || arg2.isString("Esperanto") || arg2.isString("French") || arg2.isString("German")
-                || arg2.isString("Hungarian") || arg2.isString("Italian") || arg2.isString("Latin")
-                || arg2.isString("Polish") || arg2.isString("Portuguese")
-                || arg2.isString("Romanian") || arg2.isString("Russian") || arg2.isString("Spanish")
-                || arg2.isString("Swedish") || arg2.isString("Tongan")
-                || arg2.isString("Turkish")) {
-              language = arg2;
-            } else {
-              qual = arg2;
-            }
-          }
-
-          if (qual.isString("Words")) {
-            if (language.isString("Dutch")) {
-              formatter =
-                  new RuleBasedNumberFormat(new Locale("nl"), RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("English")) {
-              formatter = new RuleBasedNumberFormat(Locale.ENGLISH, RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("Esperanto")) {
-              formatter =
-                  new RuleBasedNumberFormat(new Locale("eo"), RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("Finnish")) {
-              formatter =
-                  new RuleBasedNumberFormat(new Locale("fi"), RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("French")) {
-              formatter = new RuleBasedNumberFormat(Locale.FRENCH, RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("German")) {
-              formatter = new RuleBasedNumberFormat(Locale.GERMAN, RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("Hungarian")) {
-              formatter =
-                  new RuleBasedNumberFormat(new Locale("hu"), RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("Italian")) {
-              formatter = new RuleBasedNumberFormat(Locale.ITALIAN, RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("Latin")) {
-              formatter =
-                  new RuleBasedNumberFormat(new Locale("vai"), RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("Polish")) {
-              formatter =
-                  new RuleBasedNumberFormat(new Locale("pl"), RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("Portuguese")) {
-              formatter =
-                  new RuleBasedNumberFormat(new Locale("pt"), RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("Romanian")) {
-              formatter =
-                  new RuleBasedNumberFormat(new Locale("ro"), RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("Russian")) {
-              formatter =
-                  new RuleBasedNumberFormat(new Locale("ru"), RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("Spanish")) {
-              formatter =
-                  new RuleBasedNumberFormat(new Locale("es"), RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("Swedish")) {
-              formatter =
-                  new RuleBasedNumberFormat(new Locale("sv"), RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("Tongan")) {
-              formatter =
-                  new RuleBasedNumberFormat(new Locale("sv"), RuleBasedNumberFormat.SPELLOUT);
-            } else if (language.isString("Turkish")) {
-              formatter =
-                  new RuleBasedNumberFormat(new Locale("tr"), RuleBasedNumberFormat.SPELLOUT);
-            }
-            if (formatter != null) {
-              String textNumber = formatter.format(value);
-              if (textNumber != null) {
-                return F.stringx(textNumber);
-              }
-            }
-          }
-        } catch (Exception ex) {
-          LOGGER.debug("IntegerName.evaluate() failed", ex);
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
-    }
   }
 
   /**
