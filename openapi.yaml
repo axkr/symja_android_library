@@ -1,117 +1,125 @@
-swagger: "2.0"
+openapi: 3.0.1
 info:
-  description: "A Symja API server."
-  version: "0.1"
-  title: "SymjaTalk"
-  termsOfService: "http://symja.org/about.html"
+  title: SymjaTalk
+  description: A Symja API server.
+  termsOfService: http://symja.org/about.html
   contact:
-    email: "axelclk@gmail.com"
+    email: axelclk@gmail.com
   license:
-    name: "GPL-3.0 License"
-    url: "https://www.gnu.org/licenses/gpl-3.0.html"
-host: "symja.org"
-basePath: "/v1"
+    name: GPL-3.0 License
+    url: https://www.gnu.org/licenses/gpl-3.0.html
+  version: "0.1"
+externalDocs:
+  description: Find out more about Symja
+  url: https://github.com/axkr/symja_android_library
+servers:
+- url: https://symja.org/v1
+- url: http://symja.org/v1
 tags:
-- name: "api"
-  description: "SymjaTalk"
+- name: api
+  description: SymjaTalk
   externalDocs:
-    description: "Find out more"
-    url: "https://github.com/axkr/symja_android_library"
-schemes:
-- "https"
-- "http"
+    description: Find out more
+    url: https://github.com/axkr/symja_android_library
 paths:
   /api:
     get:
       tags:
-      - "symjatalk"
-      summary: "Get an answer from the server"
-      description: ""
-      operationId: "answer"
-      consumes:
-      - "application/json" 
-      produces: 
-      - "application/json"
+      - symjatalk
+      summary: Get an answer from the server
+      operationId: answer
       parameters:
-      - in: "query"
-        name: "i"
-        description: "Input expresssion"
+      - name: i
+        in: query
+        description: Input expresssion
         required: true
-        type: string
-      - in: "query"
-        name: "appid"
-        description: "DEMO"
+        schema:
+          type: string
+      - name: appid
+        in: query
+        description: DEMO
         required: true
-        type: string
-      - in: "query"
-        name: "s"
-        description: "Parse strict Symja syntax"
-        required: false
-        type: string
-      - in: "query"
-        name: "f"
-        description: "Output format"
-        required: false
-        type: string
+        schema:
+          type: string
+      - name: s
+        in: query
+        description: Parse strict Symja syntax
+        schema:
+          type: string
+      - name: f
+        in: query
+        description: Output format
+        schema:
+          type: string
       responses:
-        '200':
+        200:
           description: OK
-          schema:
-            $ref: "#/definitions/queryresult"
-        "405":
-          description: "Invalid input"
-definitions: 
-  queryresult: 
-    type: object
-    properties: 
-      success: 
-        type: string
-        example: true
-      error: 
-        type: string
-        example: false
-      numpods: 
-        type: number
-        example: 3
-      version: 
-        type: string
-        example: 0.1
-      pods: 
-        type: array
-        items: 
+          content:
+            application/json: 
+              schema:   
+                  $ref: '#/components/schemas/definitions'
+        405:
+          description: Invalid input
+          content: {}
+components:
+  schemas:
+    definitions:
+      type: object
+      properties:
+        queryresult:
           type: object
-          properties: 
-            title: 
+          properties:
+            success:
               type: string
-              example: Input
-            scanner: 
-              type: string
-              example: Identity
-            error: 
-              type: string
-              example: false
-            numsubpods: 
+              example: "true"
+            error:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: 1
+                msg:
+                  type: string
+                  example: Appid missing
+            numpods:
               type: number
-              example: 1
-            subpods: 
+              example: 3.0
+            version:
+              type: string
+              example: "0.1"
+            pods:
               type: array
-              items: 
+              items:
                 type: object
-                properties: 
-                  plaintext: 
+                properties:
+                  title:
                     type: string
-                    example: Integrate(Cos(x)^5,x)
-                  sinput: 
+                    example: Input
+                  scanner:
                     type: string
-                    example: Integrate(Cos(x)^5,x)
-                  mathml: 
+                    example: Identity
+                  error:
                     type: string
-                    example: <math xmlns=http://www.w3.org/1999/xhtml><mo>&#x222B;</mo><msup><mrow><mi>Cos</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mn>5</mn></msup><mrow><mo>&#x2146;</mo><mi>x</mi></mrow></math>
-                  latex: 
-                    type: string
-                    example: \int  \cos (x)^5\\mathrmdx
-                  html: 
-                    type: string
-externalDocs:
-  description: "Find out more about Symja"
-  url: "https://github.com/axkr/symja_android_library"
+                    example: "false"
+                  numsubpods:
+                    type: number
+                    example: 1.0
+                  subpods:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        plaintext:
+                          type: string
+                          example: Integrate(Cos(x)^5,x)
+                        sinput:
+                          type: string
+                          example: Integrate(Cos(x)^5,x)
+                        mathml:
+                          type: string
+                          example: <math xmlns=http://www.w3.org/1999/xhtml><mo>&#x222B;</mo><msup><mrow><mi>Cos</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mn>5</mn></msup><mrow><mo>&#x2146;</mo><mi>x</mi></mrow></math>
+                        latex:
+                          type: string
+                          example: \int  \cos (x)^5\\mathrmdx
+                        html:
+                          type: string
