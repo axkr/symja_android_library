@@ -48,9 +48,12 @@ paths:
           type: string
       - name: f
         in: query
-        description: Output format
+        description: Output formats
+        required: true
         schema:
-          type: string
+          type: array
+          items:
+            type: string
       responses:
         200:
           description: OK
