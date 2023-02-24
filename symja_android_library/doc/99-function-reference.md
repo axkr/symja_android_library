@@ -352,6 +352,8 @@
 * [FoldList](functions/FoldList.md)
 * [For](functions/For.md)
 * [Fourier](functions/Fourier.md)
+* [FourierDCTMatrix](functions/FourierDCTMatrix.md)
+* [FourierDSTMatrix](functions/FourierDSTMatrix.md)
 * [FourierMatrix](functions/FourierMatrix.md)
 * [FractionalPart](functions/FractionalPart.md)
 * [FrechetDistribution](functions/FrechetDistribution.md)

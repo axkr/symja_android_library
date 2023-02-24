@@ -13,6 +13,10 @@ See:
 
 ### Examples
 
+ASCII translateration are for examples:
+- Russian language
+- Hiragana
+
 ```
 >> Transliterate("Горбачёв, Михаил Сергеевич")
 Gorbacev, Mihail Sergeevic

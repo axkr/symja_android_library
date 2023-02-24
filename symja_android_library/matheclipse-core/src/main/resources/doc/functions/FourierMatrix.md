@@ -6,9 +6,6 @@ FourierMatrix(n)
 
 > gives a fourier matrix with the dimension `n`.
 
-See
-* [Wikipedia - Pauli matrices](https://en.wikipedia.org/wiki/Pauli_matrices) 
-
 ### Examples
 
 ```
