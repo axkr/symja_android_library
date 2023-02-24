@@ -29,6 +29,10 @@ public final class FunctionDefinitions {
       S.FindMinimum.setEvaluator(new org.matheclipse.core.reflection.system.FindMinimum());
       S.FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
       S.Fourier.setEvaluator(new org.matheclipse.core.reflection.system.Fourier());
+      S.FourierDCTMatrix
+          .setEvaluator(new org.matheclipse.core.reflection.system.FourierDCTMatrix());
+      S.FourierDSTMatrix
+          .setEvaluator(new org.matheclipse.core.reflection.system.FourierDSTMatrix());
       S.FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
       S.FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
       S.HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());

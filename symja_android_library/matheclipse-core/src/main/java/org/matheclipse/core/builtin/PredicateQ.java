@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -71,6 +72,7 @@ public class PredicateQ {
       S.MemberQ.setEvaluator(new MemberQ());
       S.MissingQ.setPredicateQ(x -> x.isAST(S.Missing, 2));
       S.NotListQ.setPredicateQ(x -> !x.isList());
+      S.NormalMatrixQ.setEvaluator(new NormalMatrixQ());
       S.NameQ.setEvaluator(new NameQ());
       S.NumberQ.setPredicateQ(x -> x.isNumber());
       S.NumericQ.setPredicateQ(x -> x.isNumericFunction());
@@ -876,6 +878,31 @@ public class PredicateQ {
     }
   }
 
+
+  private static final class NormalMatrixQ extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr expr = ast.arg1();
+      if (isSquareMatrix(expr)) {
+        IExpr conjugateTransposeD = engine.evaluate(F.ConjugateTranspose(expr));
+        if (isSquareMatrix(conjugateTransposeD)) {
+          IExpr lhs = engine.evaluate(F.Dot(expr, conjugateTransposeD));
+          IExpr rhs = engine.evaluate(F.Dot(conjugateTransposeD, expr));
+          if (lhs.equals(rhs)) {
+            return S.True;
+          }
+        }
+      }
+      return F.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
   /**
    *
    *
@@ -1312,15 +1339,12 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
       final IExpr arg1 = engine.evaluate(ast.arg1());
-      int[] dims = arg1.isMatrix();
-      if (dims == null || dims[0] != dims[1]) {
-        // no square matrix
-        return S.False;
-      }
+      return isSquareMatrixQ(arg1);
+    }
 
-      return S.True;
+    private IExpr isSquareMatrixQ(IExpr expr) {
+      return F.booleSymbol(isSquareMatrix(expr));
     }
 
     @Override
@@ -1828,6 +1852,11 @@ public class PredicateQ {
         || h == ID.StruveH || h == ID.StruveL || h == ID.Tan || h == ID.WeierstrassHalfPeriods
         || h == ID.WeierstrassInvariants || h == ID.WeierstrassP || h == ID.WeierstrassPPrime
         || h == ID.InverseWeierstrassP;
+  }
+
+  public static boolean isSquareMatrix(IExpr expr) {
+    int[] dims = expr.isMatrix();
+    return dims != null && dims[0] == dims[1];
   }
 
   /**

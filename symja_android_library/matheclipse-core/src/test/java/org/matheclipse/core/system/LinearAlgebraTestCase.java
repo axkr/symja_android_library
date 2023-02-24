@@ -522,6 +522,139 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + "I*1/2)/Sqrt(2),1/4+I*1/4}}");
   }
 
+  public void testFourierDCTMatrix() {
+    check("FourierDCTMatrix(1, 1)", //
+        "{{1}}");
+    check("FourierDCTMatrix(2, 1)", //
+        "{{1/Sqrt(2),1/Sqrt(2)},\n" //
+            + " {1/Sqrt(2),-1/Sqrt(2)}}");
+    check("FourierDCTMatrix(3, 1)", //
+        "{{1/2,1/2,1/2},\n"//
+            + " {1,0,-1},\n"//
+            + " {1/2,-1/2,1/2}}");
+    check("FourierDCTMatrix(7, 1)", //
+        "{{1/(2*Sqrt(3)),1/(2*Sqrt(3)),1/(2*Sqrt(3)),1/(2*Sqrt(3)),1/(2*Sqrt(3)),1/(2*Sqrt(\n" //
+            + "3)),1/(2*Sqrt(3))},\n" //
+            + " {1/Sqrt(3),1/2,1/(2*Sqrt(3)),0,-1/(2*Sqrt(3)),-1/2,-1/Sqrt(3)},\n" //
+            + " {1/Sqrt(3),1/(2*Sqrt(3)),-1/(2*Sqrt(3)),-1/Sqrt(3),-1/(2*Sqrt(3)),1/(2*Sqrt(3)),1/Sqrt(\n" //
+            + "3)},\n" //
+            + " {1/Sqrt(3),0,-1/Sqrt(3),0,1/Sqrt(3),0,-1/Sqrt(3)},\n" //
+            + " {1/Sqrt(3),-1/(2*Sqrt(3)),-1/(2*Sqrt(3)),1/Sqrt(3),-1/(2*Sqrt(3)),-1/(2*Sqrt(3)),1/Sqrt(\n" //
+            + "3)},\n" //
+            + " {1/Sqrt(3),-1/2,1/(2*Sqrt(3)),0,-1/(2*Sqrt(3)),1/2,-1/Sqrt(3)},\n" //
+            + " {1/(2*Sqrt(3)),-1/(2*Sqrt(3)),1/(2*Sqrt(3)),-1/(2*Sqrt(3)),1/(2*Sqrt(3)),-1/(2*Sqrt(\n" //
+            + "3)),1/(2*Sqrt(3))}}");
+    check("FourierDCTMatrix(7, 3)", //
+        "{{1/Sqrt(7),1/Sqrt(7),1/Sqrt(7),1/Sqrt(7),1/Sqrt(7),1/Sqrt(7),1/Sqrt(7)},\n" //
+            + " {(2*Cos(Pi/14))/Sqrt(7),(2*Cos(3/14*Pi))/Sqrt(7),(2*Cos(5/14*Pi))/Sqrt(7),0,(-2*Cos(\n" //
+            + "5/14*Pi))/Sqrt(7),(-2*Cos(3/14*Pi))/Sqrt(7),(-2*Cos(Pi/14))/Sqrt(7)},\n" //
+            + " {(2*Cos(Pi/7))/Sqrt(7),(2*Cos(3/7*Pi))/Sqrt(7),(-2*Cos(2/7*Pi))/Sqrt(7),-2/Sqrt(\n" //
+            + "7),(-2*Cos(2/7*Pi))/Sqrt(7),(2*Cos(3/7*Pi))/Sqrt(7),(2*Cos(Pi/7))/Sqrt(7)},\n" //
+            + " {(2*Cos(3/14*Pi))/Sqrt(7),(-2*Cos(5/14*Pi))/Sqrt(7),(-2*Cos(Pi/14))/Sqrt(7),0,(\n" //
+            + "2*Cos(Pi/14))/Sqrt(7),(2*Cos(5/14*Pi))/Sqrt(7),(-2*Cos(3/14*Pi))/Sqrt(7)},\n" //
+            + " {(2*Cos(2/7*Pi))/Sqrt(7),(-2*Cos(Pi/7))/Sqrt(7),(-2*Cos(3/7*Pi))/Sqrt(7),2/Sqrt(\n" //
+            + "7),(-2*Cos(3/7*Pi))/Sqrt(7),(-2*Cos(Pi/7))/Sqrt(7),(2*Cos(2/7*Pi))/Sqrt(7)},\n" //
+            + " {(2*Cos(5/14*Pi))/Sqrt(7),(-2*Cos(Pi/14))/Sqrt(7),(2*Cos(3/14*Pi))/Sqrt(7),0,(-\n" //
+            + "2*Cos(3/14*Pi))/Sqrt(7),(2*Cos(Pi/14))/Sqrt(7),(-2*Cos(5/14*Pi))/Sqrt(7)},\n" //
+            + " {(2*Cos(3/7*Pi))/Sqrt(7),(-2*Cos(2/7*Pi))/Sqrt(7),(2*Cos(Pi/7))/Sqrt(7),-2/Sqrt(\n" //
+            + "7),(2*Cos(Pi/7))/Sqrt(7),(-2*Cos(2/7*Pi))/Sqrt(7),(2*Cos(3/7*Pi))/Sqrt(7)}}");
+
+    check("FourierDCTMatrix(7, 4)", //
+        "{{Sqrt(2/7)*Cos(Pi/28),Sqrt(2/7)*Cos(3/28*Pi),Sqrt(2/7)*Cos(5/28*Pi),1/Sqrt(7),Sqrt(\n" //
+            + "2/7)*Cos(9/28*Pi),Sqrt(2/7)*Cos(11/28*Pi),Sqrt(2/7)*Cos(13/28*Pi)},\n" //
+            + " {Sqrt(2/7)*Cos(3/28*Pi),Sqrt(2/7)*Cos(9/28*Pi),-Sqrt(2/7)*Cos(13/28*Pi),-1/Sqrt(\n" //
+            + "7),-Sqrt(2/7)*Cos(Pi/28),-Sqrt(2/7)*Cos(5/28*Pi),-Sqrt(2/7)*Cos(11/28*Pi)},\n" //
+            + " {Sqrt(2/7)*Cos(5/28*Pi),-Sqrt(2/7)*Cos(13/28*Pi),-Sqrt(2/7)*Cos(3/28*Pi),-1/Sqrt(\n" //
+            + "7),Sqrt(2/7)*Cos(11/28*Pi),Sqrt(2/7)*Cos(Pi/28),Sqrt(2/7)*Cos(9/28*Pi)},\n" //
+            + " {1/Sqrt(7),-1/Sqrt(7),-1/Sqrt(7),1/Sqrt(7),1/Sqrt(7),-1/Sqrt(7),-1/Sqrt(7)},\n" //
+            + " {Sqrt(2/7)*Cos(9/28*Pi),-Sqrt(2/7)*Cos(Pi/28),Sqrt(2/7)*Cos(11/28*Pi),1/Sqrt(7),-Sqrt(\n" //
+            + "2/7)*Cos(3/28*Pi),Sqrt(2/7)*Cos(13/28*Pi),Sqrt(2/7)*Cos(5/28*Pi)},\n" //
+            + " {Sqrt(2/7)*Cos(11/28*Pi),-Sqrt(2/7)*Cos(5/28*Pi),Sqrt(2/7)*Cos(Pi/28),-1/Sqrt(7),Sqrt(\n" //
+            + "2/7)*Cos(13/28*Pi),Sqrt(2/7)*Cos(9/28*Pi),-Sqrt(2/7)*Cos(3/28*Pi)},\n" //
+            + " {Sqrt(2/7)*Cos(13/28*Pi),-Sqrt(2/7)*Cos(11/28*Pi),Sqrt(2/7)*Cos(9/28*Pi),-1/Sqrt(\n" //
+            + "7),Sqrt(2/7)*Cos(5/28*Pi),-Sqrt(2/7)*Cos(3/28*Pi),Sqrt(2/7)*Cos(Pi/28)}}");
+    check("FourierDCTMatrix(7, 2)", //
+        "{{1/Sqrt(7),Cos(Pi/14)/Sqrt(7),Cos(Pi/7)/Sqrt(7),Cos(3/14*Pi)/Sqrt(7),Cos(2/7*Pi)/Sqrt(\n" //
+            + "7),Cos(5/14*Pi)/Sqrt(7),Cos(3/7*Pi)/Sqrt(7)},\n" //
+            + " {1/Sqrt(7),Cos(3/14*Pi)/Sqrt(7),Cos(3/7*Pi)/Sqrt(7),-Cos(5/14*Pi)/Sqrt(7),-Cos(Pi/\n" //
+            + "7)/Sqrt(7),-Cos(Pi/14)/Sqrt(7),-Cos(2/7*Pi)/Sqrt(7)},\n" //
+            + " {1/Sqrt(7),Cos(5/14*Pi)/Sqrt(7),-Cos(2/7*Pi)/Sqrt(7),-Cos(Pi/14)/Sqrt(7),-Cos(3/\n" //
+            + "7*Pi)/Sqrt(7),Cos(3/14*Pi)/Sqrt(7),Cos(Pi/7)/Sqrt(7)},\n" //
+            + " {1/Sqrt(7),0,-1/Sqrt(7),0,1/Sqrt(7),0,-1/Sqrt(7)},\n" //
+            + " {1/Sqrt(7),-Cos(5/14*Pi)/Sqrt(7),-Cos(2/7*Pi)/Sqrt(7),Cos(Pi/14)/Sqrt(7),-Cos(3/\n" //
+            + "7*Pi)/Sqrt(7),-Cos(3/14*Pi)/Sqrt(7),Cos(Pi/7)/Sqrt(7)},\n" //
+            + " {1/Sqrt(7),-Cos(3/14*Pi)/Sqrt(7),Cos(3/7*Pi)/Sqrt(7),Cos(5/14*Pi)/Sqrt(7),-Cos(Pi/\n" //
+            + "7)/Sqrt(7),Cos(Pi/14)/Sqrt(7),-Cos(2/7*Pi)/Sqrt(7)},\n" //
+            + " {1/Sqrt(7),-Cos(Pi/14)/Sqrt(7),Cos(Pi/7)/Sqrt(7),-Cos(3/14*Pi)/Sqrt(7),Cos(2/7*Pi)/Sqrt(\n" //
+            + "7),-Cos(5/14*Pi)/Sqrt(7),Cos(3/7*Pi)/Sqrt(7)}}");
+  }
+
+  public void testFourierDSTMatrix() {
+    check("FourierDSTMatrix(1, 1)", //
+        "{{1}}");
+    check("FourierDSTMatrix(2, 1)", //
+        "{{1/Sqrt(2),1/Sqrt(2)},\n" //
+            + " {1/Sqrt(2),-1/Sqrt(2)}}");
+    check("FourierDSTMatrix(3, 1)", //
+        "{{1/2,1/Sqrt(2),1/2},\n"//
+            + " {1/Sqrt(2),0,-1/Sqrt(2)},\n"//
+        + " {1/2,-1/Sqrt(2),1/2}}");
+    check("FourierDSTMatrix(7, 1)", //
+        "{{Sqrt(2-Sqrt(2))/4,1/(2*Sqrt(2)),Sqrt(2+Sqrt(2))/4,1/2,Sqrt(2+Sqrt(2))/4,1/(2*Sqrt(\n" //
+            + "2)),Sqrt(2-Sqrt(2))/4},\n" //
+            + " {1/(2*Sqrt(2)),1/2,1/(2*Sqrt(2)),0,-1/(2*Sqrt(2)),-1/2,-1/(2*Sqrt(2))},\n" //
+            + " {Sqrt(2+Sqrt(2))/4,1/(2*Sqrt(2)),-Sqrt(2-Sqrt(2))/4,-1/2,-Sqrt(2-Sqrt(2))/4,1/(\n" //
+            + "2*Sqrt(2)),Sqrt(2+Sqrt(2))/4},\n" //
+            + " {1/2,0,-1/2,0,1/2,0,-1/2},\n" //
+            + " {Sqrt(2+Sqrt(2))/4,-1/(2*Sqrt(2)),-Sqrt(2-Sqrt(2))/4,1/2,-Sqrt(2-Sqrt(2))/4,-1/(\n" //
+            + "2*Sqrt(2)),Sqrt(2+Sqrt(2))/4},\n" //
+            + " {1/(2*Sqrt(2)),-1/2,1/(2*Sqrt(2)),0,-1/(2*Sqrt(2)),1/2,-1/(2*Sqrt(2))},\n" //
+            + " {Sqrt(2-Sqrt(2))/4,-1/(2*Sqrt(2)),Sqrt(2+Sqrt(2))/4,-1/2,Sqrt(2+Sqrt(2))/4,-1/(\n" //
+            + "2*Sqrt(2)),Sqrt(2-Sqrt(2))/4}}");
+    check("FourierDSTMatrix(7, 3)", //
+        "{{(2*Sin(Pi/14))/Sqrt(7),(2*Sin(3/14*Pi))/Sqrt(7),(2*Sin(5/14*Pi))/Sqrt(7),2/Sqrt(\n" //
+            + "7),(2*Sin(5/14*Pi))/Sqrt(7),(2*Sin(3/14*Pi))/Sqrt(7),(2*Sin(Pi/14))/Sqrt(7)},\n" //
+            + " {(2*Sin(Pi/7))/Sqrt(7),(2*Sin(3/7*Pi))/Sqrt(7),(2*Sin(2/7*Pi))/Sqrt(7),0,(-2*Sin(\n" //
+            + "2/7*Pi))/Sqrt(7),(-2*Sin(3/7*Pi))/Sqrt(7),(-2*Sin(Pi/7))/Sqrt(7)},\n" //
+            + " {(2*Sin(3/14*Pi))/Sqrt(7),(2*Sin(5/14*Pi))/Sqrt(7),(-2*Sin(Pi/14))/Sqrt(7),-2/Sqrt(\n" //
+            + "7),(-2*Sin(Pi/14))/Sqrt(7),(2*Sin(5/14*Pi))/Sqrt(7),(2*Sin(3/14*Pi))/Sqrt(7)},\n" //
+            + " {(2*Sin(2/7*Pi))/Sqrt(7),(2*Sin(Pi/7))/Sqrt(7),(-2*Sin(3/7*Pi))/Sqrt(7),0,(2*Sin(\n" //
+            + "3/7*Pi))/Sqrt(7),(-2*Sin(Pi/7))/Sqrt(7),(-2*Sin(2/7*Pi))/Sqrt(7)},\n" //
+            + " {(2*Sin(5/14*Pi))/Sqrt(7),(-2*Sin(Pi/14))/Sqrt(7),(-2*Sin(3/14*Pi))/Sqrt(7),2/Sqrt(\n" //
+            + "7),(-2*Sin(3/14*Pi))/Sqrt(7),(-2*Sin(Pi/14))/Sqrt(7),(2*Sin(5/14*Pi))/Sqrt(7)},\n" //
+            + " {(2*Sin(3/7*Pi))/Sqrt(7),(-2*Sin(2/7*Pi))/Sqrt(7),(2*Sin(Pi/7))/Sqrt(7),0,(-2*Sin(Pi/\n" //
+            + "7))/Sqrt(7),(2*Sin(2/7*Pi))/Sqrt(7),(-2*Sin(3/7*Pi))/Sqrt(7)},\n" //
+            + " {1/Sqrt(7),-1/Sqrt(7),1/Sqrt(7),-1/Sqrt(7),1/Sqrt(7),-1/Sqrt(7),1/Sqrt(7)}}");
+
+    check("FourierDSTMatrix(7, 4)", //
+        "{{Sqrt(2/7)*Sin(Pi/28),Sqrt(2/7)*Sin(3/28*Pi),Sqrt(2/7)*Sin(5/28*Pi),1/Sqrt(7),Sqrt(\n" //
+            + "2/7)*Sin(9/28*Pi),Sqrt(2/7)*Sin(11/28*Pi),Sqrt(2/7)*Sin(13/28*Pi)},\n" //
+            + " {Sqrt(2/7)*Sin(3/28*Pi),Sqrt(2/7)*Sin(9/28*Pi),Sqrt(2/7)*Sin(13/28*Pi),1/Sqrt(7),Sqrt(\n" //
+            + "2/7)*Sin(Pi/28),-Sqrt(2/7)*Sin(5/28*Pi),-Sqrt(2/7)*Sin(11/28*Pi)},\n" //
+            + " {Sqrt(2/7)*Sin(5/28*Pi),Sqrt(2/7)*Sin(13/28*Pi),Sqrt(2/7)*Sin(3/28*Pi),-1/Sqrt(\n" //
+            + "7),-Sqrt(2/7)*Sin(11/28*Pi),-Sqrt(2/7)*Sin(Pi/28),Sqrt(2/7)*Sin(9/28*Pi)},\n" //
+            + " {1/Sqrt(7),1/Sqrt(7),-1/Sqrt(7),-1/Sqrt(7),1/Sqrt(7),1/Sqrt(7),-1/Sqrt(7)},\n" //
+            + " {Sqrt(2/7)*Sin(9/28*Pi),Sqrt(2/7)*Sin(Pi/28),-Sqrt(2/7)*Sin(11/28*Pi),1/Sqrt(7),Sqrt(\n" //
+            + "2/7)*Sin(3/28*Pi),-Sqrt(2/7)*Sin(13/28*Pi),Sqrt(2/7)*Sin(5/28*Pi)},\n" //
+            + " {Sqrt(2/7)*Sin(11/28*Pi),-Sqrt(2/7)*Sin(5/28*Pi),-Sqrt(2/7)*Sin(Pi/28),1/Sqrt(7),-Sqrt(\n" //
+            + "2/7)*Sin(13/28*Pi),Sqrt(2/7)*Sin(9/28*Pi),-Sqrt(2/7)*Sin(3/28*Pi)},\n" //
+            + " {Sqrt(2/7)*Sin(13/28*Pi),-Sqrt(2/7)*Sin(11/28*Pi),Sqrt(2/7)*Sin(9/28*Pi),-1/Sqrt(\n" //
+            + "7),Sqrt(2/7)*Sin(5/28*Pi),-Sqrt(2/7)*Sin(3/28*Pi),Sqrt(2/7)*Sin(Pi/28)}}");
+    check("FourierDSTMatrix(7, 2)", //
+        "{{Sin(Pi/14)/Sqrt(7),Sin(Pi/7)/Sqrt(7),Sin(3/14*Pi)/Sqrt(7),Sin(2/7*Pi)/Sqrt(7),Sin(\n" //
+            + "5/14*Pi)/Sqrt(7),Sin(3/7*Pi)/Sqrt(7),1/Sqrt(7)},\n" //
+            + " {Sin(3/14*Pi)/Sqrt(7),Sin(3/7*Pi)/Sqrt(7),Sin(5/14*Pi)/Sqrt(7),Sin(Pi/7)/Sqrt(7),-Sin(Pi/\n" //
+            + "14)/Sqrt(7),-Sin(2/7*Pi)/Sqrt(7),-1/Sqrt(7)},\n" //
+            + " {Sin(5/14*Pi)/Sqrt(7),Sin(2/7*Pi)/Sqrt(7),-Sin(Pi/14)/Sqrt(7),-Sin(3/7*Pi)/Sqrt(\n" //
+            + "7),-Sin(3/14*Pi)/Sqrt(7),Sin(Pi/7)/Sqrt(7),1/Sqrt(7)},\n" //
+            + " {1/Sqrt(7),0,-1/Sqrt(7),0,1/Sqrt(7),0,-1/Sqrt(7)},\n" //
+            + " {Sin(5/14*Pi)/Sqrt(7),-Sin(2/7*Pi)/Sqrt(7),-Sin(Pi/14)/Sqrt(7),Sin(3/7*Pi)/Sqrt(\n" //
+            + "7),-Sin(3/14*Pi)/Sqrt(7),-Sin(Pi/7)/Sqrt(7),1/Sqrt(7)},\n" //
+            + " {Sin(3/14*Pi)/Sqrt(7),-Sin(3/7*Pi)/Sqrt(7),Sin(5/14*Pi)/Sqrt(7),-Sin(Pi/7)/Sqrt(\n" //
+            + "7),-Sin(Pi/14)/Sqrt(7),Sin(2/7*Pi)/Sqrt(7),-1/Sqrt(7)},\n" //
+            + " {Sin(Pi/14)/Sqrt(7),-Sin(Pi/7)/Sqrt(7),Sin(3/14*Pi)/Sqrt(7),-Sin(2/7*Pi)/Sqrt(7),Sin(\n" //
+        + "5/14*Pi)/Sqrt(7),-Sin(3/7*Pi)/Sqrt(7),1/Sqrt(7)}}");
+  }
   public void testFromPolarCoordinates() {
     check("FromPolarCoordinates(SparseArray({r, t}))", //
         "{r*Cos(t),r*Sin(t)}");
@@ -1486,6 +1619,15 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("SquareMatrixQ({{}})", //
         "False");
     check("SquareMatrixQ({{a,b,c}, {d,e,f}})", //
+        "False");
+  }
+
+  public void testNormalMatrixQ() {
+    check("NormalMatrixQ({{5 + I, -2*I}, {2, 4 + 2*I}})", //
+        "True");
+    check("NormalMatrixQ({{1, 2, -1}, {-1, 1, 2}, {2, -1, 1}})", //
+        "True");
+    check("NormalMatrixQ({{a,b,c}, {d,e,f}, {g,h,i}})", //
         "False");
   }
 
