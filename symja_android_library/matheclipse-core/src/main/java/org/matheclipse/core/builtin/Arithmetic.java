@@ -91,6 +91,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
@@ -3216,11 +3217,14 @@ public final class Arithmetic {
           return plusOp.getSum();
         }
 
-        temp = evaluateHashsRepeated(ast, engine);
-        if (temp.isAST(S.Plus, 2)) {
-          return temp.first();
+        if (!engine.isNumericMode()) {
+          temp = evaluateHashsRepeated(ast, engine);
+          if (temp.isAST(S.Plus, 2)) {
+            return temp.first();
+          }
+          return temp;
         }
-        return temp;
+        return F.NIL;
       } else {
         if (size == 1) {
           if (ast.head() == S.Plus) {
@@ -6359,7 +6363,22 @@ public final class Arithmetic {
       // return ((IAST) arg2).map(x -> x.negate(), 1);
       // }
 
-      if (arg1.isInterval()) {
+      if (arg1.isIntervalData()) {
+        if (arg2.isIntervalData()) {
+          return IntervalDataSym.times((IAST) arg1, (IAST) arg2);
+        }
+        if (arg2.isRealResult()) {
+          return IntervalDataSym.times(arg2, (IAST) arg1);
+        }
+        // donn't create Power(...,...)
+        return F.NIL;
+      } else if (arg2.isIntervalData()) {
+        if (arg1.isRealResult()) {
+          return IntervalDataSym.times(arg1, (IAST) arg2);
+        }
+        // donn't create Power(...,...)
+        return F.NIL;
+      } else if (arg1.isInterval()) {
         if (arg2.isInterval()) {
           return IntervalSym.times((IAST) arg1, (IAST) arg2);
         }
@@ -6599,7 +6618,7 @@ public final class Arithmetic {
         // OneIdentity ?
         return (ast.head() == S.Times) ? arg1 : F.NIL;
       }
-      if (size > 2) {
+      if (size > 2 && !engine.isNumericMode()) {
         IAST temp = evaluateHashsRepeated(ast, engine);
         if (temp.isPresent()) {
           return temp.oneIdentity1();

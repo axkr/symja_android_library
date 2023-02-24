@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -353,6 +354,31 @@ public final class PlusOp {
                   temp = IntervalSym.plus((IAST) numberValue, (IAST) arg);
                 } else {
                   temp = IntervalSym.plus(numberValue, (IAST) arg);
+                }
+                if (temp.isPresent()) {
+                  numberValue = temp;
+                  evaled = true;
+                } else {
+                  if (addMerge(arg, F.C1)) {
+                    evaled = true;
+                  }
+                }
+                return F.NIL;
+              }
+              break;
+            case ID.IntervalData:
+              if (arg.isIntervalData()) {
+                if (numberValue.isNIL()) {
+                  numberValue = arg;
+                  return F.NIL;
+                }
+                IExpr temp = F.NIL;
+                if (numberValue.isIntervalData()) {
+                  temp = IntervalDataSym.plus((IAST) numberValue, (IAST) arg);
+                } else {
+                  if (!numberValue.isInterval()) {
+                    temp = IntervalDataSym.plus(numberValue, (IAST) arg);
+                  }
                 }
                 if (temp.isPresent()) {
                   numberValue = temp;

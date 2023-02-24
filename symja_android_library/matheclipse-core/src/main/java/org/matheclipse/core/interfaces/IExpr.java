@@ -59,6 +59,7 @@ import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
 import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.core.visit.VisitorReplacePart;
 import org.matheclipse.core.visit.VisitorReplaceSlots;
+import org.matheclipse.parser.client.ParserConfig;
 import edu.jas.structure.ElemFactory;
 import edu.jas.structure.GcdRingElem;
 
@@ -2501,9 +2502,9 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an interval expression with one or more <code>List[min, max]</code>
-   * arguments <code>Interval[{min1, max1}, {min2, max2}, ...]</code> which represent the union of
-   * the interval ranges.
+   * Test if this expression is a closed interval expression with one or more
+   * <code>List[min, max]</code> arguments <code>Interval[{min1, max1}, {min2, max2}, ...]</code>
+   * which represent the union of the interval ranges.
    *
    * @return
    */
@@ -2512,8 +2513,19 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an interval expression with one <code>List[min, max]</code> argument
-   * <code>Interval[{min, max}]</code>
+   * Test if this expression is a mixed opened/closed interval expression with one or more
+   * <code>List[min, Less/LessEqual, Less/LessEqual, max]</code> arguments which represent the union
+   * of the interval ranges.
+   * 
+   * @return
+   */
+  default boolean isIntervalData() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is a closed/open ended interval expression with one
+   * <code>List[min, max]</code> argument <code>Interval[{min, max}]</code>
    *
    * @return
    */
@@ -2591,6 +2603,15 @@ public interface IExpr
    */
   default boolean isList3() {
     return isList() && size() == 4;
+  }
+
+  /**
+   * Test if this expression is a list (i.e. an AST with head List) with exactly 4 arguments
+   *
+   * @return
+   */
+  default boolean isList4() {
+    return isList() && size() == 5;
   }
 
   /**
@@ -2725,7 +2746,8 @@ public interface IExpr
    * @return
    */
   default boolean isMachineNumber() {
-    return this instanceof Num || this instanceof ComplexNum;
+    return (this instanceof Num && ((Num) this).precision() <= ParserConfig.MACHINE_PRECISION)
+        || this instanceof ComplexNum;
   }
 
   /**

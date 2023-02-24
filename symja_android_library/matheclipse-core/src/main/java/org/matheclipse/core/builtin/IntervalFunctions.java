@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
@@ -9,6 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.ToIntervalDataRules;
 
 public class IntervalFunctions {
 
@@ -20,6 +22,8 @@ public class IntervalFunctions {
 
     private static void init() {
       S.Interval.setEvaluator(new Interval());
+      S.ToIntervalData.setEvaluator(new ToIntervalData());
+      S.IntervalData.setEvaluator(new IntervalData());
       S.IntervalMemberQ.setEvaluator(new IntervalMemberQ());
       S.IntervalIntersection.setEvaluator(new IntervalIntersection());
       S.IntervalUnion.setEvaluator(new IntervalUnion());
@@ -92,6 +96,38 @@ public class IntervalFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static final class IntervalData extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static final class ToIntervalData extends AbstractFunctionEvaluator
+      implements ToIntervalDataRules {
+
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      super.setUp(newSymbol);
+    }
   }
 
   /**
