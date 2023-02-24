@@ -3901,6 +3901,16 @@ public class S {
   public final static IBuiltInSymbol FourierMatrix =
       F.initFinalSymbol("FourierMatrix", ID.FourierMatrix);
 
+  public final static IBuiltInSymbol FourierDCT = F.initFinalSymbol("FourierDCT", ID.FourierDCT);
+
+  public final static IBuiltInSymbol FourierDCTMatrix =
+      F.initFinalSymbol("FourierDCTMatrix", ID.FourierDCTMatrix);
+
+  public final static IBuiltInSymbol FourierDST = F.initFinalSymbol("FourierDST", ID.FourierDST);
+
+  public final static IBuiltInSymbol FourierDSTMatrix =
+      F.initFinalSymbol("FourierDSTMatrix", ID.FourierDSTMatrix);
+
   /**
    * FractionalPart(number) - get the fractional part of a `number`.
    * 
@@ -5129,6 +5139,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Interval = F.initFinalSymbol("Interval", ID.Interval);
+
+  public final static IBuiltInSymbol IntervalData =
+      F.initFinalSymbol("IntervalData", ID.IntervalData);
 
   /**
    * IntervalIntersection(interval_1, interval_2, ...) - compute the intersection of the intervals
@@ -7025,6 +7038,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Normalize = F.initFinalSymbol("Normalize", ID.Normalize);
+
+  public final static IBuiltInSymbol NormalMatrixQ =
+      F.initFinalSymbol("NormalMatrixQ", ID.NormalMatrixQ);
 
   /**
    * Not(expr) - Logical Not function (negation). Returns `True` if the statement is `False`.
@@ -10396,6 +10412,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Together = F.initFinalSymbol("Together", ID.Together);
+
+  public final static IBuiltInSymbol ToIntervalData =
+      F.initFinalSymbol("ToIntervalData", ID.ToIntervalData);
 
   /**
    * ToLowerCase(string) - converts `string` into a string of corresponding lowercase character

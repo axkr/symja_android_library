@@ -5038,6 +5038,10 @@ public class F extends S {
     return ast(Interval, capacity);
   }
 
+  public static IASTAppendable IntervalDataAlloc(int capacity) {
+    return ast(IntervalData, capacity);
+  }
+
   /**
    * Create an "interval" expression: <code>Interval(list)</code>.
    *
@@ -5057,6 +5061,10 @@ public class F extends S {
    */
   public static IAST Interval(final IExpr min, final IExpr max) {
     return new AST1(Interval, binaryAST2(List, min, max));
+  }
+
+  public static IAST IntervalData(final IAST list) {
+    return new AST1(IntervalData, list);
   }
 
   /**
@@ -9539,6 +9547,14 @@ public class F extends S {
    */
   public static IAST ToExpression(final IExpr a0) {
     return new AST1(ToExpression, a0);
+  }
+
+  public static IAST ToIntervalData(final IExpr expr) {
+    return new AST1(ToIntervalData, expr);
+  }
+
+  public static IAST ToIntervalData(final IExpr expr, final IExpr variable) {
+    return new AST2(ToIntervalData, expr, variable);
   }
 
   /**
