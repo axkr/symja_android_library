@@ -55,7 +55,6 @@ public class TestPodsStrict {
         "{\n" + //
             "  \"queryresult\" : {\n" + //
             "    \"success\" : \"false\",\n" + //
-            "    \"error\" : \"false\",\n" + //
             "    \"numpods\" : 0,\n" + //
             "    \"version\" : \"0.1\"\n" + //
             "  }\n" + //
@@ -73,7 +72,7 @@ public class TestPodsStrict {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
+            + "    \"numpods\" : 2,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -95,7 +94,7 @@ public class TestPodsStrict {
     final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 3,\n"
+            + "    \"numpods\" : 3,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -122,7 +121,7 @@ public class TestPodsStrict {
     final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 34,\n"
+            + "    \"numpods\" : 34,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -311,7 +310,6 @@ public class TestPodsStrict {
         "{\n" //
             + "  \"queryresult\" : {\n" //
             + "    \"success\" : \"true\",\n" //
-            + "    \"error\" : \"false\",\n" //
             + "    \"numpods\" : 9,\n" //
             + "    \"version\" : \"0.1\",\n" //
             + "    \"pods\" : [ {\n" //
@@ -423,7 +421,6 @@ public class TestPodsStrict {
         "{\n" + //
             "  \"queryresult\" : {\n" + //
             "    \"success\" : \"true\",\n" + //
-            "    \"error\" : \"false\",\n" + //
             "    \"numpods\" : 3,\n" + //
             "    \"version\" : \"0.1\",\n" + //
             "    \"pods\" : [ {\n" + //
@@ -840,7 +837,7 @@ public class TestPodsStrict {
     final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
+            + "    \"numpods\" : 2,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -868,7 +865,7 @@ public class TestPodsStrict {
     final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
+            + "    \"numpods\" : 2,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -1032,7 +1029,7 @@ public class TestPodsStrict {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
+            + "    \"numpods\" : 2,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -1060,7 +1057,7 @@ public class TestPodsStrict {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
+            + "    \"numpods\" : 2,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -1170,7 +1167,7 @@ public class TestPodsStrict {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
+            + "    \"numpods\" : 2,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -1320,7 +1317,7 @@ public class TestPodsStrict {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
+            + "    \"numpods\" : 2,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -1432,7 +1429,7 @@ public class TestPodsStrict {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
+            + "    \"numpods\" : 2,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -1518,7 +1515,7 @@ public class TestPodsStrict {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
+            + "    \"numpods\" : 2,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"

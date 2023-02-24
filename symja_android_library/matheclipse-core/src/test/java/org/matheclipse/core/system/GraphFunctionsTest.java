@@ -102,6 +102,13 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{1->2,2->3,3->1}");
   }
 
+  public void testEigenvectorCentrality() {
+    // TODO {0.16238, 0.136013, 0.276307, 0.23144, 0.193859}
+    // check("EigenvectorCentrality(Graph({a -> b, b -> c, c -> d, d -> e, e -> c, e -> a}))", //
+    // "{0.352395,0.295128,0.599617,0.502223,0.420653}");
+
+  }
+
   public void testEdgeQ() {
     check("EdgeQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),2 -> 3)", //
         "True");

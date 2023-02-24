@@ -609,86 +609,26 @@ public class Pods {
   }
 
   public static ObjectNode createResult(String inputStr, int formats, boolean strictSymja) {
+
+    if (strictSymja) {
+      return createStrictResult(inputStr, formats);
+    }
     ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
 
     ObjectNode queryresult = JSON_OBJECT_MAPPER.createObjectNode();
     messageJSON.putPOJO("queryresult", queryresult);
     queryresult.put("success", "false");
-    queryresult.put("error", "false");
+    // queryresult.put("error", "false");
     queryresult.put("numpods", 0);
     queryresult.put("version", "0.1");
 
-    boolean error = false;
+    // boolean error = false;
     int numpods = 0;
     IExpr inExpr = S.Null;
     IExpr outExpr = S.Null;
     EvalEngine engine = EvalEngine.get();
 
     ArrayNode podsArray = JSON_OBJECT_MAPPER.createArrayNode();
-    if (strictSymja) {
-      engine.setPackageMode(false);
-      final ExprParser parser = new ExprParser(engine, true);
-      try {
-        inExpr = parser.parse(inputStr);
-        if (inExpr.isPresent()) {
-          long numberOfLeaves = inExpr.leafCount();
-          if (numberOfLeaves < Config.MAX_INPUT_LEAVES) {
-            outExpr = inExpr;
-
-            final StringWriter errorWriter = new StringWriter();
-            WriterOutputStream werrors = new WriterOutputStream(errorWriter);
-            PrintStream errors = new PrintStream(werrors);
-            IExpr firstEval = F.NIL;
-            try (ThreadLocalNotifierClosable c = setLogEventNotifier(errors)) {
-              engine.setErrorPrintStream(errors);
-              firstEval = engine.evaluateNIL(inExpr);
-            } finally {
-              engine.setErrorPrintStream(null);
-            }
-            addSymjaPod(podsArray, inExpr, inExpr, "Input", "Identity", formats, engine);
-            numpods++;
-            String errorString = "";
-            if (firstEval.isPresent()) {
-              outExpr = firstEval;
-            } else {
-              errorString = errorWriter.toString().trim();
-            }
-            outExpr = engine.evaluate(inExpr);
-            if (outExpr instanceof GraphExpr) {
-              String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) outExpr);
-              if (javaScriptStr != null) {
-                String html = VISJS_IFRAME;
-                html = StringUtils.replace(html, "`1`", javaScriptStr);
-                html = StringUtils.replace(html, "`2`", //
-                    "  var options = { };\n" //
-                );
-                // html = StringEscapeUtils.escapeHtml4(html);
-                int form = internFormat(SYMJA, "visjs");
-                addPod(podsArray, inExpr, outExpr, html, "Graph data", "Graph", form, engine);
-                numpods++;
-              } else {
-                addSymjaPod(podsArray, inExpr, outExpr, errorString, "Evaluated result",
-                    "Expression", formats, engine, true);
-                numpods++;
-              }
-            } else {
-              addSymjaPod(podsArray, inExpr, outExpr, errorString, "Evaluated result", "Expression",
-                  formats, engine, true);
-              numpods++;
-            }
-            resultStatistics(queryresult, error, numpods, podsArray);
-            return messageJSON;
-          }
-        }
-      } catch (SyntaxError serr) {
-        // this includes syntax errors
-        LOGGER.debug("Pods.createResult() failed", serr);
-
-        return errorJSON("0", serr.getMessage());
-      }
-      queryresult.put("error", error ? "true" : "false");
-      return messageJSON;
-    }
     inExpr = parseInput(inputStr, engine);
     if (inExpr.isPresent()) {
       long numberOfLeaves = inExpr.leafCount();
@@ -724,7 +664,8 @@ public class Pods {
         if (outExpr.isNumber() || outExpr.isQuantity()) {
           if (outExpr.isInteger()) {
             numpods += integerPods(podsArray, inExpr, (IInteger) outExpr, formats, engine);
-            resultStatistics(queryresult, error, numpods, podsArray);
+            // resultStatistics(queryresult, error, numpods, podsArray);
+            resultStatistics(queryresult, numpods, podsArray);
             return messageJSON;
           } else {
             podOut = outExpr;
@@ -781,8 +722,8 @@ public class Pods {
                 numpods++;
               }
             }
-
-            resultStatistics(queryresult, error, numpods, podsArray);
+            // resultStatistics(queryresult, error, numpods, podsArray);
+            resultStatistics(queryresult, numpods, podsArray);
             return messageJSON;
           }
         } else {
@@ -831,7 +772,8 @@ public class Pods {
 
               numpods += DocumentationPod.addDocumentationPod(
                   new DocumentationPod((ISymbol) outExpr), podsArray, buf, formats);
-              resultStatistics(queryresult, error, numpods, podsArray);
+              // resultStatistics(queryresult, error, numpods, podsArray);
+              resultStatistics(queryresult, numpods, podsArray);
               return messageJSON;
             } else {
               if (outExpr.isString()) {
@@ -842,7 +784,8 @@ public class Pods {
                   addSymjaPod(podsArray, inExpr, F.NIL, html, "Result", "String form", HTML,
                       engine);
                   numpods++;
-                  resultStatistics(queryresult, error, numpods, podsArray);
+                  // resultStatistics(queryresult, error, numpods, podsArray);
+                  resultStatistics(queryresult, numpods, podsArray);
                   return messageJSON;
                 } else if (outExpr.isString()) {
                   podOut = outExpr;
@@ -874,7 +817,8 @@ public class Pods {
                     }
                   }
                 }
-                resultStatistics(queryresult, error, numpods, podsArray);
+                // resultStatistics(queryresult, error, numpods, podsArray);
+                resultStatistics(queryresult, numpods, podsArray);
                 return messageJSON;
               }
             }
@@ -902,7 +846,8 @@ public class Pods {
                   numpods++;
                 }
               }
-              resultStatistics(queryresult, error, numpods, podsArray);
+              // resultStatistics(queryresult, error, numpods, podsArray);
+              resultStatistics(queryresult, numpods, podsArray);
               return messageJSON;
             } else if (inExpr.isAST(S.Integrate, 2, 3)) {
               if (inExpr.isAST1()) {
@@ -926,7 +871,8 @@ public class Pods {
                   numpods++;
                 }
               }
-              resultStatistics(queryresult, error, numpods, podsArray);
+              // resultStatistics(queryresult, error, numpods, podsArray);
+              resultStatistics(queryresult, numpods, podsArray);
               return messageJSON;
             } else if (inExpr.isAST(S.Solve, 2, 4)) {
               if (inExpr.isAST1()) {
@@ -951,7 +897,8 @@ public class Pods {
                   numpods++;
                 }
               }
-              resultStatistics(queryresult, error, numpods, podsArray);
+              // resultStatistics(queryresult, error, numpods, podsArray);
+              resultStatistics(queryresult, numpods, podsArray);
               return messageJSON;
             } else {
               IExpr expr = inExpr;
@@ -1021,8 +968,8 @@ public class Pods {
                     addSymjaPod(podsArray, inExpr, podOut, "Solution", "Reduce", formats, engine);
                     numpods++;
                   }
-
-                  resultStatistics(queryresult, error, numpods, podsArray);
+                  // resultStatistics(queryresult, error, numpods, podsArray);
+                  resultStatistics(queryresult, numpods, podsArray);
                   return messageJSON;
                 } else {
                   if (!inExpr.equals(outExpr)) {
@@ -1143,20 +1090,112 @@ public class Pods {
                   numpods++;
                 }
               }
-
-              resultStatistics(queryresult, error, numpods, podsArray);
+              // resultStatistics(queryresult, error, numpods, podsArray);
+              resultStatistics(queryresult, numpods, podsArray);
               return messageJSON;
             }
           }
         }
         if (numpods > 0) {
-          resultStatistics(queryresult, error, numpods, podsArray);
+          // resultStatistics(queryresult, error, numpods, podsArray);
+          resultStatistics(queryresult, numpods, podsArray);
           return messageJSON;
         }
       }
     }
 
-    queryresult.put("error", error ? "true" : "false");
+    // queryresult.put("error", error ? "true" : "false");
+    return messageJSON;
+  }
+
+  /**
+   * Parse the input string into a Symja expression and retuirn the evaluated results in the formats
+   * specified.
+   * 
+   * @param inputStr the Symja expression string
+   * @param formats bit mask combination of {@link #HTML}, {@link #MATHML}, {@link #MARKDOWN},
+   *        {@link #LATEX},
+   * @return
+   */
+  private static ObjectNode createStrictResult(String inputStr, int formats) {
+    ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
+
+    ObjectNode queryresult = JSON_OBJECT_MAPPER.createObjectNode();
+    messageJSON.putPOJO("queryresult", queryresult);
+    queryresult.put("success", "false");
+    // queryresult.put("error", "false");
+    queryresult.put("numpods", 0);
+    queryresult.put("version", "0.1");
+
+    // boolean error = false;
+    int numpods = 0;
+    IExpr inExpr = S.Null;
+    IExpr outExpr = S.Null;
+    EvalEngine engine = EvalEngine.get();
+
+    ArrayNode podsArray = JSON_OBJECT_MAPPER.createArrayNode();
+    engine.setPackageMode(false);
+    final ExprParser parser = new ExprParser(engine, true);
+    try {
+      inExpr = parser.parse(inputStr);
+      if (inExpr.isPresent()) {
+        long numberOfLeaves = inExpr.leafCount();
+        if (numberOfLeaves < Config.MAX_INPUT_LEAVES) {
+          outExpr = inExpr;
+
+          final StringWriter errorWriter = new StringWriter();
+          WriterOutputStream werrors = new WriterOutputStream(errorWriter);
+          PrintStream errors = new PrintStream(werrors);
+          IExpr firstEval = F.NIL;
+          try (ThreadLocalNotifierClosable c = setLogEventNotifier(errors)) {
+            engine.setErrorPrintStream(errors);
+            firstEval = engine.evaluateNIL(inExpr);
+          } finally {
+            engine.setErrorPrintStream(null);
+          }
+          addSymjaPod(podsArray, inExpr, inExpr, "Input", "Identity", formats, engine);
+          numpods++;
+          String errorString = "";
+          if (firstEval.isPresent()) {
+            outExpr = firstEval;
+          } else {
+            errorString = errorWriter.toString().trim();
+          }
+          outExpr = engine.evaluate(inExpr);
+          if (outExpr instanceof GraphExpr) {
+            String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) outExpr);
+            if (javaScriptStr != null) {
+              String html = VISJS_IFRAME;
+              html = StringUtils.replace(html, "`1`", javaScriptStr);
+              html = StringUtils.replace(html, "`2`", //
+                  "  var options = { };\n" //
+              );
+              // html = StringEscapeUtils.escapeHtml4(html);
+              int form = internFormat(SYMJA, "visjs");
+              addPod(podsArray, inExpr, outExpr, html, "Graph data", "Graph", form, engine);
+              numpods++;
+            } else {
+              addSymjaPod(podsArray, inExpr, outExpr, errorString, "Evaluated result", "Expression",
+                  formats, engine, true);
+              numpods++;
+            }
+          } else {
+            addSymjaPod(podsArray, inExpr, outExpr, errorString, "Evaluated result", "Expression",
+                formats, engine, true);
+            numpods++;
+          }
+          // resultStatistics(queryresult, error, numpods, podsArray);
+          resultStatistics(queryresult, numpods, podsArray);
+          return messageJSON;
+        }
+      }
+    } catch (SyntaxError serr) {
+      // this includes syntax errors
+      LOGGER.debug("Pods.createResult() failed", serr);
+
+      return errorJSON("0", serr.getMessage());
+    }
+    // queryresult.put("error", error ? "true" : "false");
     return messageJSON;
   }
 
@@ -1642,11 +1681,11 @@ public class Pods {
     return inExpr;
   }
 
-  private static void resultStatistics(ObjectNode queryresult, boolean error, int numpods,
-      ArrayNode podsArray) {
+  private static void resultStatistics(ObjectNode queryresult, // boolean error,
+      int numpods, ArrayNode podsArray) {
     queryresult.putPOJO("pods", podsArray);
     queryresult.put("success", "true");
-    queryresult.put("error", error ? "true" : "false");
+    // queryresult.put("error", error ? "true" : "false");
     queryresult.put("numpods", numpods);
   }
 

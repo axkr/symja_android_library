@@ -475,6 +475,10 @@ public class RGBColor implements Serializable {
     return new RGBColor(integer);
   }
 
+  public static RGBColor getGrayLevel(float grayLevel) {
+    return new RGBColor(grayLevel, grayLevel, grayLevel);
+  }
+
   /**
    * Gets a RGBColor object using the specified values of the HSB color model.
    *

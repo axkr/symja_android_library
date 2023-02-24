@@ -528,6 +528,7 @@ public class IOFunctions {
       "experimental", "Experimental implementation (search in Github issues for identifier `1`).",
       "fdup", "Duplicate parameter `1` found in `2`.", //
       "fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
+      "fttype", "The transform type `1` should be 1, 2, 3 or 4.", //
       "fpct", "To many parameters in `1` to be filled from `2`.", //
       "fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //
       "heads", "Heads `1` and `2` are expected to be the same.", //

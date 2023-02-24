@@ -176,7 +176,6 @@ public class TestPods {
         "{\n" + //
             "  \"queryresult\" : {\n" + //
             "    \"success\" : \"false\",\n" + //
-            "    \"error\" : \"false\",\n" + //
             "    \"numpods\" : 0,\n" + //
             "    \"version\" : \"0.1\"\n" + //
             "  }\n" + //
@@ -308,7 +307,7 @@ public class TestPods {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 3,\n"
+            + "    \"numpods\" : 3,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -337,7 +336,7 @@ public class TestPods {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 34,\n"
+            + "    \"numpods\" : 34,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -528,7 +527,6 @@ public class TestPods {
         "{\n" //
             + "  \"queryresult\" : {\n" //
             + "    \"success\" : \"true\",\n" //
-            + "    \"error\" : \"false\",\n" //
             + "    \"numpods\" : 9,\n" //
             + "    \"version\" : \"0.1\",\n" //
             + "    \"pods\" : [ {\n" //
@@ -641,7 +639,6 @@ public class TestPods {
         "{\n" + //
             "  \"queryresult\" : {\n" + //
             "    \"success\" : \"true\",\n" + //
-            "    \"error\" : \"false\",\n" + //
             "    \"numpods\" : 3,\n" + //
             "    \"version\" : \"0.1\",\n" + //
             "    \"pods\" : [ {\n" + //
@@ -1228,7 +1225,7 @@ public class TestPods {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
+            + "    \"numpods\" : 2,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -1256,7 +1253,7 @@ public class TestPods {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
+            + "    \"numpods\" : 2,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -1776,7 +1773,6 @@ public class TestPods {
         "{\n" //
             + "  \"queryresult\" : {\n" //
             + "    \"success\" : \"true\",\n" //
-            + "    \"error\" : \"false\",\n" //
             + "    \"numpods\" : 3,\n" //
             + "    \"version\" : \"0.1\",\n" //
             + "    \"pods\" : [ {\n" //
@@ -1827,7 +1823,6 @@ public class TestPods {
         "{\n" //
             + "  \"queryresult\" : {\n" //
             + "    \"success\" : \"true\",\n" //
-            + "    \"error\" : \"false\",\n" //
             + "    \"numpods\" : 3,\n" //
             + "    \"version\" : \"0.1\",\n" //
             + "    \"pods\" : [ {\n" //
@@ -1874,18 +1869,32 @@ public class TestPods {
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"111*cm*convert*In*m\",\n"
-            + "        \"sinput\" : \"111*cm*convert*In*m\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Evaluated result\",\n" + "      \"scanner\" : \"Expression\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"111*cm*convert*In*m\",\n"
-            + "        \"sinput\" : \"111*cm*convert*In*m\"\n" + "      } ]\n" + "    } ]\n"
-            + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"numpods\" : 2,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"111*cm*convert*In*m\",\n" //
+            + "        \"sinput\" : \"111*cm*convert*In*m\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Evaluated result\",\n" //
+            + "      \"scanner\" : \"Expression\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"111*cm*convert*In*m\",\n" //
+            + "        \"sinput\" : \"111*cm*convert*In*m\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}"); //
   }
 
   @Ignore
@@ -1956,7 +1965,7 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 3,\n"
+            + "    \"numpods\" : 3,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -2446,7 +2455,7 @@ public class TestPods {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
+            + "    \"numpods\" : 2,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
@@ -2841,7 +2850,7 @@ public class TestPods {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
+            + "    \"numpods\" : 2,\n"
             + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"

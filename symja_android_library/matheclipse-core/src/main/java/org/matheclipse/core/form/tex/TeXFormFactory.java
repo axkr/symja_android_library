@@ -2111,6 +2111,7 @@ public class TeXFormFactory {
     initTeXConverter(S.TimesBy, new AbstractOperator(this, Precedence.TIMESBY, "\\text{*=}"));
     initTeXConverter(S.And, new AbstractOperator(this, Precedence.AND, " \\land "));
     initTeXConverter(S.Not, new PreOperator(this, Precedence.NOT, "\\neg "));
+    initTeXConverter(S.Implies, new AbstractOperator(this, Precedence.IMPLIES, "\\Rightarrow "));
     initTeXConverter(S.Factorial, new PostOperator(this, Precedence.FACTORIAL, " ! "));
     initTeXConverter(S.Factorial2, new PostOperator(this, Precedence.FACTORIAL2, " !! "));
 

@@ -3261,7 +3261,7 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr realMatrixEval(RealMatrix matrix) {
-      if (matrix.getRowDimension()<=1) {
+      if (matrix.getRowDimension() <= 1) {
         // The argument `1` should have at least `2` arguments.
         return IOFunctions.printMessage(S.Covariance, "shlen",
             F.List(new ASTRealMatrix(matrix, false), F.stringx("two")), EvalEngine.get());
@@ -3656,47 +3656,64 @@ public class StatisticsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-      if (ast.size() == 3) {
-        try {
-          IExpr xExpr = ast.arg1();
-          if (xExpr.isFunction() && ast.arg2().isList()) {
-            IAST data = (IAST) ast.arg2();
+      try {
+        IExpr xExpr = ast.arg1();
+        if (xExpr.isFunction() && ast.arg2().isList()) {
+          IAST data = (IAST) ast.arg2();
+          IASTAppendable sum = F.PlusAlloc(data.size());
+          for (int i = 1; i < data.size(); i++) {
+            sum.append(F.unaryAST1(xExpr, data.get(i)));
+          }
+          return sum.divide(F.ZZ(data.argSize()));
+          // int sum = 0;
+          // for (int i = 1; i < data.size(); i++) {
+          // if (engine.evalTrue(F.unaryAST1(predicate, data.get(i)))) {
+          // sum++;
+          // }
+          // }
+          // return F.QQ(sum, data.argSize());
+        }
+        if (ast.arg2().isAST(S.Distributed, 3)) {
+          IExpr x = ast.arg2().first();
+          IExpr distribution = ast.arg2().second();
+          if (distribution.isList()) {
+            IAST data = (IAST) distribution;
+            // Sum( predicate , data ) / data.argSize()
             IASTAppendable sum = F.PlusAlloc(data.size());
             for (int i = 1; i < data.size(); i++) {
-              sum.append(F.unaryAST1(xExpr, data.get(i)));
+              sum.append(F.subst(xExpr, F.Rule(x, data.get(i))));
             }
             return sum.divide(F.ZZ(data.argSize()));
-            // int sum = 0;
-            // for (int i = 1; i < data.size(); i++) {
-            // if (engine.evalTrue(F.unaryAST1(predicate, data.get(i)))) {
-            // sum++;
-            // }
-            // }
-            // return F.QQ(sum, data.argSize());
-          }
-          if (ast.arg2().isAST(S.Distributed, 3)) {
-            IExpr x = ast.arg2().first();
-            IExpr distribution = ast.arg2().second();
-            if (distribution.isList()) {
-              IAST data = (IAST) distribution;
-              // Sum( predicate , data ) / data.argSize()
-              IASTAppendable sum = F.PlusAlloc(data.size());
-              for (int i = 1; i < data.size(); i++) {
-                sum.append(F.subst(xExpr, F.Rule(x, data.get(i))));
-              }
-              return sum.divide(F.ZZ(data.argSize()));
-            } else if (distribution.isContinuousDistribution()) {
-              IExpr pdf = S.PDF.of(engine, distribution, x);
-              if (pdf.isFree(S.Piecewise)) {
-                // TODO improve integration for piecewise functions
-                return F.Integrate(F.Times(ast.arg1(), pdf), F.list(x, F.CNInfinity, F.CInfinity));
-              }
+          } else if (distribution.isContinuousDistribution()) {
+            IExpr pdf = S.PDF.of(engine, distribution, x);
+            if (pdf.isFree(S.Piecewise)) {
+              return F.Integrate(F.Times(ast.arg1(), pdf), F.list(x, F.CNInfinity, F.CInfinity));
+            } else {
+              // TODO improve integration of Piecewise function
+              // if (pdf.isAST2()) {
+              // IExpr arg1 = pdf.first();
+              // IExpr arg2 = pdf.second();
+              // int[] dims = arg1.isMatrix(false);
+              // if (arg1.isListOfLists() && dims != null && dims.length == 2 && dims[1] == 2) {
+              // IAST piecewiseList = (IAST) arg1;
+              // IASTAppendable result = F.ListAlloc(piecewiseList.size());
+              // for (int i = 1; i < piecewiseList.size(); i++) {
+              // IAST pair = (IAST) piecewiseList.get(i);
+              // IExpr integrate = F.Integrate.of(engine, F.Times(ast.arg1(), pair.arg1()), x);
+              // result.append(F.List(integrate, pair.arg2()));
+              // }
+              // IExpr integrate = F.Integrate.of(engine, F.Times(ast.arg1(), arg2),
+              // F.list(x, F.CNInfinity, F.CInfinity));
+              // return F.Piecewise(result, integrate);
+              // }
+              // }
             }
           }
-        } catch (Exception ex) {
-          LOGGER.debug("Expectation.evaluate() failed", ex);
         }
+      } catch (Exception ex) {
+        LOGGER.debug("Expectation.evaluate() failed", ex);
       }
+
       return F.NIL;
     }
 

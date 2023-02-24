@@ -21,6 +21,9 @@ public class JSONQueryResult {
   }
 
   public boolean isError() {
+    if (queryresult.error == null) {
+      return false;
+    }
     return queryresult.error.error;
   }
 

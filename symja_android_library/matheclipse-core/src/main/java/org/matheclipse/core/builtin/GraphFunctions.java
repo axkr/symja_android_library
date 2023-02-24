@@ -86,6 +86,7 @@ public class GraphFunctions {
       S.EdgeList.setEvaluator(new EdgeList());
       S.EdgeQ.setEvaluator(new EdgeQ());
       S.EdgeRules.setEvaluator(new EdgeRules());
+      S.EigenvectorCentrality.setEvaluator(new EigenvectorCentrality());
       S.EulerianGraphQ.setEvaluator(new EulerianGraphQ());
       S.FindCycle.setEvaluator(new FindCycle());
       S.FindEulerianCycle.setEvaluator(new FindEulerianCycle());
@@ -1293,7 +1294,37 @@ public class GraphFunctions {
     }
   }
 
+  private static class EigenvectorCentrality extends AbstractEvaluator {
 
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // try {
+      // GraphExpr<?> gex = createGraph(ast.arg1());
+      // if (gex == null) {
+      // return F.NIL;
+      // }
+      // Graph<IExpr, IExpr> g = (Graph<IExpr, IExpr>) gex.toData();
+      // org.jgrapht.alg.scoring.EigenvectorCentrality<IExpr, IExpr> evc =
+      // new org.jgrapht.alg.scoring.EigenvectorCentrality<IExpr, IExpr>(g);
+      // Set<IExpr> vertexSet = g.vertexSet();
+      // IASTAppendable list = F.ListAlloc(vertexSet.size());
+      // for (IExpr entry : vertexSet) {
+      //
+      // Double score = evc.getVertexScore(entry);
+      // list.append(F.num(score));
+      // }
+      // return list;
+      // } catch (RuntimeException rex) {
+      // LOGGER.debug("EigenvectorCentrality.evaluate() failed", rex);
+      // }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
   /**
    *
    *
