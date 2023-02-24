@@ -1395,19 +1395,19 @@ public class GraphicsFunctions {
           if (graphic.size() == 3) {
             r = graphic.second();
           }
-          IAST l1=(IAST)graphic.first().first();
+          IAST l1 = (IAST) graphic.first().first();
           IExpr a = l1.arg1();
           IExpr b = l1.arg2();
           IExpr c = l1.arg3();
-          IAST l2=(IAST)graphic.first().second();
+          IAST l2 = (IAST) graphic.first().second();
           IExpr d = l2.arg1();
           IExpr e = l2.arg2();
           IExpr f = l2.arg3();
           // Sqrt((a-d)^2+(b-e)^2+(c-f)^2)*Pi*r^2
           return F.Times(F.Sqrt(F.Plus(//
               F.Power(F.Subtract(a, d), F.C2), //
-              F.Power(F.Subtract(b, e), F.C2) ,//
-              F.Power(F.Subtract(c, f), F.C2))),//
+              F.Power(F.Subtract(b, e), F.C2), //
+              F.Power(F.Subtract(c, f), F.C2))), //
               F.Pi, F.Sqr(r));
 
 
@@ -1451,9 +1451,9 @@ public class GraphicsFunctions {
       // TODO delete textSize because of renaming to fontSize in next version
       // GraphicsOptions.optionInt(arrayNode, "textSize", graphicsOptions.fontSize());
       GraphicsOptions.optionInt(arrayNode, "fontSize", graphicsOptions.fontSize());
-      ObjectNode blackJSON = JSON_OBJECT_MAPPER.createObjectNode();
-      GraphicsOptions.setColorOption(blackJSON, GraphicsOptions.BLACK);
-      arrayNode.add(blackJSON);
+      // ObjectNode blackJSON = JSON_OBJECT_MAPPER.createObjectNode();
+      GraphicsOptions.setColorOption(arrayNode, GraphicsOptions.BLACK);
+      // arrayNode.add(blackJSON);
 
       // graphicsOptions.graphics2DScalingFunctions(arrayNode);
       graphicsOptions.graphics2DAxes(objectNode);
@@ -1482,15 +1482,28 @@ public class GraphicsFunctions {
             if (export2DRecursive(arrayNode, ast, 1, 2, styledGraphicsOptions)) {
             }
           }
-        } else if (ast.isAST(S.Hue, 2, 4)) {
+          // } else if (ast.isASTSizeGE(S.EdgeForm, 2)) {
+          // if (export2DRecursive(arrayNode, ast, 1, ast.size(), graphicsOptions)) {
+          // }
+        } else if (ast.isAST(S.Hue, 2, 5)) {
           ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
-          if (GraphicsOptions.setHueColor(g, ast)) {
+          if (GraphicsOptions.setHueColor(arrayNode, ast)) {
             arrayNode.add(g);
           }
-        } else if (ast.isRGBColor()) {
+        } else if (ast.isAST(S.GrayLevel, 2, 3)) {
           ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
-          GraphicsOptions.setColorOption(g, ast);
-          arrayNode.add(g);
+          if (GraphicsOptions.setGrayLevel(g, ast)) {
+            arrayNode.add(g);
+          }
+          double opacity = 1.0;
+          if (ast.isAST2()) {
+            opacity = ast.arg2().evalf();
+          }
+          GraphicsOptions.optionDouble(arrayNode, "opacity", opacity);
+        } else if (ast.isRGBColor()) {
+          // ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+          GraphicsOptions.setColorOption(arrayNode, ast);
+          // arrayNode.add(g);
         } else if (ast.isAST(S.Opacity, 2)) {
           double opacity = graphicsOptions.opacity();
           try {
@@ -1521,8 +1534,8 @@ public class GraphicsFunctions {
   public static boolean exportGraphics3DRecursive(ArrayNode arrayNode, IAST data3D) {
     if (data3D.isList()) {
       // boolean first = true;
-      IAST rgbColor = F.NIL;
-      IExpr opacity = F.NIL;
+      IAST rgbColor = F.RGBColor(1.0, 0.5, 0.0);
+      IExpr opacity = F.num(1.0);
       IAST list = data3D;
       for (int i = 1; i < list.size(); i++) {
         IExpr arg = list.get(i);

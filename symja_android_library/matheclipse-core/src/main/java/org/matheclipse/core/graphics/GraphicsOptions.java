@@ -115,10 +115,14 @@ public class GraphicsOptions {
   }
 
   public static void optionDouble(ArrayNode arrayNode, String optionName, double value) {
-    ObjectNode jsonDefaults = GraphicsFunctions.JSON_OBJECT_MAPPER.createObjectNode();
-    jsonDefaults.put("option", optionName);
-    jsonDefaults.put("value", value);
+    ObjectNode jsonDefaults = arrayNode.objectNode();
+    optionDouble(jsonDefaults, optionName, value);
     arrayNode.add(jsonDefaults);
+  }
+
+  private static void optionDouble(ObjectNode objectNode, String optionName, double value) {
+    objectNode.put("option", optionName);
+    objectNode.put("value", value);
   }
 
   public static void optionInt(ArrayNode arrayNode, String optionName, int value) {
@@ -179,10 +183,6 @@ public class GraphicsOptions {
   public static void setColor(ObjectNode json, IAST color, IAST defaultColor, boolean color3D) {
     if (color.isPresent()) {
       if (color.isAST(S.RGBColor, 4, 5)) {
-        if (color.size() == 5) {
-          double opacity = color.arg4().toDoubleDefault(1.0);
-          json.put("opacity", opacity);
-        }
         double red = color.arg1().toDoubleDefault(0.0);
         double green = color.arg2().toDoubleDefault(0.0);
         double blue = color.arg3().toDoubleDefault(0.0);
@@ -195,10 +195,10 @@ public class GraphicsOptions {
         return;
       } else if (color.isAST(S.RGBColor, 1) && color.arg1().isAST(S.List, 4, 5)) {
         IAST list = (IAST) color.arg1();
-        if (color.size() == 5) {
-          double opacity = list.arg4().toDoubleDefault(1.0);
-          json.put("opacity", opacity);
-        }
+        // if (color.size() == 5) {
+        // double opacity = list.arg4().toDoubleDefault(1.0);
+        // json.put("opacity", opacity);
+        // }
         double red = list.arg1().toDoubleDefault(0.0);
         double green = list.arg2().toDoubleDefault(0.0);
         double blue = list.arg3().toDoubleDefault(0.0);
@@ -210,7 +210,7 @@ public class GraphicsOptions {
         return;
       }
     }
-    if (defaultColor.isAST(S.RGBColor, 4)) {
+    if (defaultColor.isAST(S.RGBColor, 4, 5)) {
       double red = defaultColor.arg1().toDoubleDefault(0.0);
       double green = defaultColor.arg2().toDoubleDefault(0.0);
       double blue = defaultColor.arg3().toDoubleDefault(0.0);
@@ -245,37 +245,74 @@ public class GraphicsOptions {
     json.set("value", arrayNode);
   }
 
-  public static void setColorOption(ObjectNode json, IAST color) {
+  public static void setColorOption(ArrayNode arrayNode, IAST color) {
     if (color.isPresent()) {
-      if (color.isAST(S.RGBColor, 4)) {
+      if (color.isAST(S.RGBColor, 4, 5)) {
         double red = color.arg1().toDoubleDefault(0.0);
         double green = color.arg2().toDoubleDefault(0.0);
         double blue = color.arg3().toDoubleDefault(0.0);
-        setColorOption(json, red, green, blue);
+        ObjectNode g = arrayNode.objectNode();
+        setColorOption(g, red, green, blue);
+        arrayNode.add(g);
+        double opacity = 1.0;
+        if (color.argSize() == 4) {
+          opacity = color.arg4().toDoubleDefault(1.0);
+        }
+        GraphicsOptions.optionDouble(arrayNode, "opacity", opacity);
         return;
-      } else if (color.isAST(S.RGBColor, 1) && color.arg1().isAST(S.List, 4)) {
+      } else if (color.isAST(S.RGBColor, 1) && color.arg1().isAST(S.List, 4, 5)) {
         IAST list = (IAST) color.arg1();
         double red = list.arg1().toDoubleDefault(0.0);
         double green = list.arg2().toDoubleDefault(0.0);
         double blue = list.arg3().toDoubleDefault(0.0);
-        setColorOption(json, red, green, blue);
+        ObjectNode g = arrayNode.objectNode();
+        setColorOption(g, red, green, blue);
+        arrayNode.add(g);
+        double opacity = 1.0;
+        if (list.argSize() == 4) {
+          opacity = list.arg4().toDoubleDefault(1.0);
+        }
+
+        GraphicsOptions.optionDouble(arrayNode, "opacity", opacity);
         return;
       }
     }
     // black
-    setColorOption(json, 0.0, 0.0, 0.0);
+    ObjectNode g = arrayNode.objectNode();
+    setColorOption(g, 0.0, 0.0, 0.0);
+    arrayNode.add(g);
   }
 
-  public static boolean setHueColor(ObjectNode g, IAST hueColor) {
+  public static boolean setGrayLevel(ObjectNode g, IAST grayLevel) {
     RGBColor rgb = null;
+    if (grayLevel.isAST1() || grayLevel.isAST2()) {
+      rgb = RGBColor.getGrayLevel((float) grayLevel.arg1().evalf());
+    }
+    if (rgb != null) {
+      setColorOption(g, rgb.getRed() / 255.0, rgb.getGreen() / 255.0, rgb.getBlue() / 255.0);
+      return true;
+    }
+    return false;
+  }
+
+  public static boolean setHueColor(ArrayNode arrayNode, IAST hueColor) {
+    RGBColor rgb = null;
+    double opacity = 1.0;
     if (hueColor.argSize() == 1) {
       rgb = RGBColor.getHSBColor((float) hueColor.arg1().evalf(), 1.0f, 1.0f);
     } else if (hueColor.argSize() == 3) {
       rgb = RGBColor.getHSBColor((float) hueColor.arg1().evalf(), (float) hueColor.arg2().evalf(),
           (float) hueColor.arg3().evalf());
+    } else if (hueColor.argSize() == 4) {
+      rgb = RGBColor.getHSBColor((float) hueColor.arg1().evalf(), (float) hueColor.arg2().evalf(),
+          (float) hueColor.arg3().evalf());
+      opacity = hueColor.arg4().toDoubleDefault(1.0);
     }
     if (rgb != null) {
+      ObjectNode g = arrayNode.objectNode();
       setColorOption(g, rgb.getRed() / 255.0, rgb.getGreen() / 255.0, rgb.getBlue() / 255.0);
+      arrayNode.add(g);
+      GraphicsOptions.optionDouble(arrayNode, "opacity", opacity);
       return true;
     }
     return false;
@@ -663,11 +700,12 @@ public class GraphicsOptions {
 
   public void setColor(ObjectNode json) {
     if (rgbColor.isPresent()) {
-      if (rgbColor.isAST(S.RGBColor, 4)) {
+      if (rgbColor.isAST(S.RGBColor, 4, 5)) {
         double red = rgbColor.arg1().toDoubleDefault(0.0);
         double green = rgbColor.arg2().toDoubleDefault(0.0);
         double blue = rgbColor.arg3().toDoubleDefault(0.0);
         setColor(json, red, green, blue);
+        //
         return;
       } else if (rgbColor.isAST(S.RGBColor, 1) && rgbColor.arg1().isAST(S.List, 4)) {
         IAST list = (IAST) rgbColor.arg1();
@@ -680,15 +718,6 @@ public class GraphicsOptions {
     }
     // black
     setColor(json, 0.0, 0.0, 0.0);
-  }
-
-  /**
-   * Set the default RGBColor in JSON option format
-   * 
-   * @param json
-   */
-  public void setColorOption(ObjectNode json) {
-    setColorOption(json, rgbColor);
   }
 
   public void setFontSize(int fontSize) {
@@ -726,11 +755,14 @@ public class GraphicsOptions {
 
   public void setRGBColor(IAST color) {
     if (color.isPresent()) {
-      if (color.isAST(S.RGBColor, 4)) {
+      if (color.isAST(S.RGBColor, 4, 5)) {
         double red = color.arg1().toDoubleDefault(0.0);
         double green = color.arg2().toDoubleDefault(0.0);
         double blue = color.arg3().toDoubleDefault(0.0);
         rgbColor = F.RGBColor(red, green, blue);
+        if (color.argSize() == 4) {
+          opacity = color.arg4().toDoubleDefault(1.0);
+        }
         return;
       } else if (color.isAST(S.RGBColor, 1) && color.arg1().isAST(S.List, 4)) {
         IAST list = (IAST) color.arg1();

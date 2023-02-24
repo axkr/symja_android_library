@@ -119,7 +119,7 @@ public class GraphicsTest extends ExprEvaluatorTestCase {
 
   public void testGraphics3DJSONText() {
     check("Graphics3DJSON(Graphics3D({Sphere(), Text(x^2 + y^2 + z^2 < 1, {0, 0,0})}))", //
-        "{\"elements\":[{\"type\":\"sphere\",\"color\":[1.0,0.5,0.0],\"opacity\":0.5,\"radius\":1.0,\"coords\":[[[0.0,0.0,0.0]]]},{\"type\":\"text\",\"color\":[1.0,0.5,0.0],\"opacity\":1.0,\"coords\":[[[0.0,0.0,0.0]]],\"texts\":[\"x^2+y^2+z^2<1\"]}],\"lighting\":[{\"type\":\"ambient\",\"color\":[0.4,0.2,0.2]},{\"type\":\"directional\",\"color\":[0.0,0.18,0.5],\"coords\":[[2.0,0.0,2.0]]},{\"type\":\"directional\",\"color\":[0.18,0.5,0.18],\"coords\":[[2.0,2.0,3.0]]},{\"type\":\"directional\",\"color\":[0.5,0.18,0.0],\"coords\":[[0.0,2.0,2.0]]},{\"type\":\"directional\",\"color\":[0.0,0.0,0.18],\"coords\":[[0.0,0.0,2.0]]}],\"viewpoint\":[1.3,-2.4,2.0]}");
+        "{\"elements\":[{\"type\":\"sphere\",\"color\":[1.0,0.5,0.0],\"opacity\":1.0,\"radius\":1.0,\"coords\":[[[0.0,0.0,0.0]]]},{\"type\":\"text\",\"color\":[1.0,0.5,0.0],\"opacity\":1.0,\"coords\":[[[0.0,0.0,0.0]]],\"texts\":[\"x^2+y^2+z^2<1\"]}],\"lighting\":[{\"type\":\"ambient\",\"color\":[0.4,0.2,0.2]},{\"type\":\"directional\",\"color\":[0.0,0.18,0.5],\"coords\":[[2.0,0.0,2.0]]},{\"type\":\"directional\",\"color\":[0.18,0.5,0.18],\"coords\":[[2.0,2.0,3.0]]},{\"type\":\"directional\",\"color\":[0.5,0.18,0.0],\"coords\":[[0.0,2.0,2.0]]},{\"type\":\"directional\",\"color\":[0.0,0.0,0.18],\"coords\":[[0.0,0.0,2.0]]}],\"viewpoint\":[1.3,-2.4,2.0]}");
   }
 
   /** The JUnit setup method */

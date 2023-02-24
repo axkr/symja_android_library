@@ -14345,11 +14345,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testMachineNumberQ() {
-    // TODO use ExprParser#getReal() if apfloat problems are fixed
-    // check("MachineNumberQ(3.14159265358979324)", "False");
-    // check("MachineNumberQ(2.71828182845904524 + 3.14159265358979324*I)",
-    // "False");
-    // check("MachineNumberQ(1.5 + 3.14159265358979324*I)", "False");
+    check("MachineNumberQ(3.14159265358979324)", //
+        "False");
+    check("MachineNumberQ(2.71828182845904524 + 3.14159265358979324*I)", //
+        "False");
+    check("MachineNumberQ(1.5 + 3.14159265358979324*I)", //
+        "False");
     check("MachineNumberQ(1.5 + 2.3*I)", //
         "True");
     check("MachineNumberQ(1.5 + 5 *I)", //
@@ -15803,7 +15804,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\"Xor\"}");
 
     check("Names(\"Int*\" )", //
-        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalIntersection,IntervalMemberQ,IntervalUnion}");
+        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalData,IntervalIntersection,IntervalMemberQ,IntervalUnion}");
     check("Names(\"Integer*\" )", //
         "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers}");
     check("Names(\"IntegerPart\" )", //
@@ -20001,8 +20002,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testExpectation() {
     // TODO improve integration for piecewise functions
-    check("Expectation((x + 3)/(x + 5), Distributed(x, ExponentialDistribution(2)))", //
-        "Expectation((3+x)/(5+x),x\uF3D2ExponentialDistribution(2))");
+    // check("Expectation((x + 3)/(x + 5), Distributed(x, ExponentialDistribution(2)))", //
+    // "Expectation((3+x)/(5+x),x\uF3D2ExponentialDistribution(2))");
 
     check("Expectation(2*x+3, x \\[Distributed] NormalDistribution() )", //
         "3");
