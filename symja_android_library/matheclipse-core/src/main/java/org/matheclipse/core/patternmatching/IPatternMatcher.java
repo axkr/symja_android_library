@@ -99,6 +99,8 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
     return v;
   }
 
+  public abstract IPatternMatcher copy();
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj)

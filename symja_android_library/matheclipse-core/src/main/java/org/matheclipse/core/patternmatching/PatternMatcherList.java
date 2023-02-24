@@ -13,10 +13,31 @@ public class PatternMatcherList extends PatternMatcherAndEvaluator {
     return fReplaceList;
   }
 
+  public PatternMatcherList() {
+    super();
+  }
+
   public PatternMatcherList(final int setSymbol, final IExpr leftHandSide,
       final IExpr rightHandSide) {
     super(setSymbol, leftHandSide, rightHandSide, true, 0);
     fReplaceList = F.ListAlloc();
+  }
+
+  @Override
+  public IPatternMatcher copy() {
+    PatternMatcherList v = new PatternMatcherList();
+    v.fLHSPriority = fLHSPriority;
+    v.fThrowIfTrue = fThrowIfTrue;
+    v.fLhsPatternExpr = fLhsPatternExpr;
+    if (fPatternMap != null) {
+      v.fPatternMap = fPatternMap.copy();
+    }
+    v.fLhsExprToMatch = fLhsExprToMatch;
+    v.fSetFlags = fSetFlags;
+    v.fRightHandSide = fRightHandSide;
+    v.fReturnResult = fReturnResult;
+    v.fReplaceList = fReplaceList;
+    return v;
   }
 
   @Override

@@ -83,6 +83,21 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     return v;
   }
 
+  @Override
+  public IPatternMatcher copy() {
+    PatternMatcherAndEvaluator v = new PatternMatcherAndEvaluator();
+    v.fLHSPriority = fLHSPriority;
+    v.fThrowIfTrue = fThrowIfTrue;
+    v.fLhsPatternExpr = fLhsPatternExpr;
+    if (fPatternMap != null) {
+      v.fPatternMap = fPatternMap.copy();
+    }
+    v.fLhsExprToMatch = fLhsExprToMatch;
+    v.fSetFlags = fSetFlags;
+    v.fRightHandSide = fRightHandSide;
+    v.fReturnResult = fReturnResult;
+    return v;
+  }
   /**
    * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
    * <code>f[a_,b_]</code> )

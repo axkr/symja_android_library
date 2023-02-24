@@ -520,6 +520,20 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     return v;
   }
 
+  @Override
+  public IPatternMatcher copy() {
+    PatternMatcher v = new PatternMatcher();
+    v.fLHSPriority = fLHSPriority;
+    v.fThrowIfTrue = fThrowIfTrue;
+    v.fLhsPatternExpr = fLhsPatternExpr;
+    if (fPatternMap != null) {
+      v.fPatternMap = fPatternMap.copy();
+    }
+    v.fLhsExprToMatch = fLhsExprToMatch;
+    v.fSetFlags = fSetFlags;
+    return v;
+  }
+
   public IPatternMap createPatternMap() {
     if (fPatternMap == null) {
       int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};

@@ -7,6 +7,9 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 public abstract class AbstractPatternMatcherMethod extends PatternMatcher {
+  protected AbstractPatternMatcherMethod() {
+    super();
+  }
 
   /**
    * Define a pattern-matching rule.

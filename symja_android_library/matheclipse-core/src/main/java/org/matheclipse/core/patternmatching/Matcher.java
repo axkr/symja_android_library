@@ -102,10 +102,29 @@ public class Matcher implements Function<IExpr, IExpr> {
   private static class PatternMatcherBiFunctionMethod extends AbstractPatternMatcherMethod {
     BiFunction<IExpr, IExpr, IExpr> fRightHandSide;
 
+    private PatternMatcherBiFunctionMethod() {
+      super();
+    }
+
     public PatternMatcherBiFunctionMethod(final IExpr leftHandSide,
         final BiFunction<IExpr, IExpr, IExpr> rightHandSide) {
       super(leftHandSide);
       fRightHandSide = rightHandSide;
+    }
+
+    @Override
+    public IPatternMatcher copy() {
+      PatternMatcherBiFunctionMethod v = new PatternMatcherBiFunctionMethod();
+      v.fLHSPriority = fLHSPriority;
+      v.fThrowIfTrue = fThrowIfTrue;
+      v.fLhsPatternExpr = fLhsPatternExpr;
+      if (fPatternMap != null) {
+        v.fPatternMap = fPatternMap.copy();
+      }
+      v.fLhsExprToMatch = fLhsExprToMatch;
+      v.fSetFlags = fSetFlags;
+      v.fRightHandSide = fRightHandSide;
+      return v;
     }
 
     @Override
@@ -115,15 +134,35 @@ public class Matcher implements Function<IExpr, IExpr> {
       IExpr arg2 = pm.getValue(1);
       return fRightHandSide.apply(arg1, arg2);
     }
+
   }
 
   private static class PatternMatcherBiPredicateMethod extends AbstractPatternMatcherMethod {
     BiPredicate<IExpr, IExpr> fRightHandSide;
 
+    private PatternMatcherBiPredicateMethod() {
+      super();
+    }
+
     public PatternMatcherBiPredicateMethod(final IExpr leftHandSide,
         final BiPredicate<IExpr, IExpr> rightHandSide) {
       super(leftHandSide);
       fRightHandSide = rightHandSide;
+    }
+
+    @Override
+    public IPatternMatcher copy() {
+      PatternMatcherBiPredicateMethod v = new PatternMatcherBiPredicateMethod();
+      v.fLHSPriority = fLHSPriority;
+      v.fThrowIfTrue = fThrowIfTrue;
+      v.fLhsPatternExpr = fLhsPatternExpr;
+      if (fPatternMap != null) {
+        v.fPatternMap = fPatternMap.copy();
+      }
+      v.fLhsExprToMatch = fLhsExprToMatch;
+      v.fSetFlags = fSetFlags;
+      v.fRightHandSide = fRightHandSide;
+      return v;
     }
 
     @Override
@@ -138,10 +177,29 @@ public class Matcher implements Function<IExpr, IExpr> {
   private static class PatternMatcherFunctionMethod extends AbstractPatternMatcherMethod {
     Function<IExpr, IExpr> fRightHandSide;
 
+    private PatternMatcherFunctionMethod() {
+      super();
+    }
+
     public PatternMatcherFunctionMethod(final IExpr leftHandSide,
         final Function<IExpr, IExpr> rightHandSide) {
       super(leftHandSide);
       fRightHandSide = rightHandSide;
+    }
+
+    @Override
+    public IPatternMatcher copy() {
+      PatternMatcherFunctionMethod v = new PatternMatcherFunctionMethod();
+      v.fLHSPriority = fLHSPriority;
+      v.fThrowIfTrue = fThrowIfTrue;
+      v.fLhsPatternExpr = fLhsPatternExpr;
+      if (fPatternMap != null) {
+        v.fPatternMap = fPatternMap.copy();
+      }
+      v.fLhsExprToMatch = fLhsExprToMatch;
+      v.fSetFlags = fSetFlags;
+      v.fRightHandSide = fRightHandSide;
+      return v;
     }
 
     @Override
@@ -153,11 +211,30 @@ public class Matcher implements Function<IExpr, IExpr> {
   }
 
   private static class PatternMatcherMapMethod extends AbstractPatternMatcherMethod {
-    final IPatternMethod fRightHandSide;
+    IPatternMethod fRightHandSide;
+
+    private PatternMatcherMapMethod() {
+      super();
+    }
 
     public PatternMatcherMapMethod(final IExpr leftHandSide, final IPatternMethod rightHandSide) {
       super(leftHandSide);
       fRightHandSide = rightHandSide;
+    }
+
+    @Override
+    public IPatternMatcher copy() {
+      PatternMatcherMapMethod v = new PatternMatcherMapMethod();
+      v.fLHSPriority = fLHSPriority;
+      v.fThrowIfTrue = fThrowIfTrue;
+      v.fLhsPatternExpr = fLhsPatternExpr;
+      if (fPatternMap != null) {
+        v.fPatternMap = fPatternMap.copy();
+      }
+      v.fLhsExprToMatch = fLhsExprToMatch;
+      v.fSetFlags = fSetFlags;
+      v.fRightHandSide = fRightHandSide;
+      return v;
     }
 
     @Override
@@ -170,10 +247,29 @@ public class Matcher implements Function<IExpr, IExpr> {
   private static class PatternMatcherPredicateMethod extends AbstractPatternMatcherMethod {
     Predicate<IExpr> fRightHandSide;
 
+    private PatternMatcherPredicateMethod() {
+      super();
+    }
+
     public PatternMatcherPredicateMethod(final IExpr leftHandSide,
         final Predicate<IExpr> rightHandSide) {
       super(leftHandSide);
       fRightHandSide = rightHandSide;
+    }
+
+    @Override
+    public IPatternMatcher copy() {
+      PatternMatcherPredicateMethod v = new PatternMatcherPredicateMethod();
+      v.fLHSPriority = fLHSPriority;
+      v.fThrowIfTrue = fThrowIfTrue;
+      v.fLhsPatternExpr = fLhsPatternExpr;
+      if (fPatternMap != null) {
+        v.fPatternMap = fPatternMap.copy();
+      }
+      v.fLhsExprToMatch = fLhsExprToMatch;
+      v.fSetFlags = fSetFlags;
+      v.fRightHandSide = fRightHandSide;
+      return v;
     }
 
     @Override

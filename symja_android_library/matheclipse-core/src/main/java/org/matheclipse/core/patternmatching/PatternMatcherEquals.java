@@ -58,6 +58,16 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
     return new PatternMatcherEquals(fSetFlags, fLhsPatternExpr, fRightHandSide);
   }
 
+  @Override
+  public IPatternMatcher copy() {
+    PatternMatcherEquals v = new PatternMatcherEquals();
+    v.fLhsPatternExpr = fLhsPatternExpr;
+    v.fLhsExprToMatch = fLhsExprToMatch;
+    v.fSetFlags = fSetFlags;
+    v.fRightHandSide = fRightHandSide;
+    return v;
+  }
+
   /** {@inheritDoc} */
   @Override
   public IExpr eval(IExpr leftHandSide, EvalEngine engine) {

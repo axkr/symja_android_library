@@ -25,6 +25,28 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
   @Override
   public Object clone() throws CloneNotSupportedException {
     PatternMatcherAndInvoker v = (PatternMatcherAndInvoker) super.clone();
+    v.fLHSPriority = fLHSPriority;
+    v.fThrowIfTrue = fThrowIfTrue;
+    v.fLhsPatternExpr = fLhsPatternExpr;
+    IPatternMap patternMap = createPatternMap();
+    v.fPatternMap = patternMap.copy();
+    v.fLhsExprToMatch = fLhsExprToMatch;
+    v.fSetFlags = fSetFlags;
+    v.fMethod = fMethod;
+    v.fTypes = fTypes;
+    v.fInstance = fInstance;
+    return v;
+  }
+
+  @Override
+  public IPatternMatcher copy() {
+    PatternMatcherAndInvoker v = new PatternMatcherAndInvoker();
+    v.fLhsPatternExpr = fLhsPatternExpr;
+    if (fPatternMap != null) {
+      v.fPatternMap = fPatternMap.copy();
+    }
+    v.fLhsExprToMatch = fLhsExprToMatch;
+    v.fSetFlags = fSetFlags;
     v.fMethod = fMethod;
     v.fTypes = fTypes;
     v.fInstance = fInstance;

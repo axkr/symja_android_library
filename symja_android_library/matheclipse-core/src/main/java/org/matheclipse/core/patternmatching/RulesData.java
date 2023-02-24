@@ -407,11 +407,13 @@ public final class RulesData implements Serializable {
   }
 
   /**
-   * Try matching the <code>expr</code> expression with this pattern-matching rules and if matched,
-   * return an evaluated right-hand-side expression, otherwise return {@link F#NIL}.
+   * Try matching the <code>expr</code> expression with this pattern-matching rules and if matching
+   * rule was found, return the evaluated right-hand-side of that matching rule, otherwise return
+   * {@link F#NIL}.
    *
-   * @param expr
-   * @return {@link F#NIL} if no evaluation was possible
+   * @param expr the expression which will be tested for matching an existing pattern-matching rule
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if no matching/evaluation was possible
    */
   public IExpr evalDownRule(final IExpr expr, EvalEngine engine) {
     if (Config.SHOW_PATTERN_EVAL_STEPS) {
@@ -455,7 +457,7 @@ public final class RulesData implements Serializable {
           // }
           // }
           if (patternEvaluator.isPatternHashAllowed(patternHash)) {
-            pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
+            pmEvaluator = patternEvaluator.copy();
             if (showSteps) {
               if (isShowSteps(pmEvaluator)) {
                 IExpr rhs = pmEvaluator.getRHS().orElse(S.Null);
@@ -515,8 +517,8 @@ public final class RulesData implements Serializable {
           }
         }
       }
-    } catch (CloneNotSupportedException cnse) {
-      LOGGER.error("RulesData.evalDownRule() failed", cnse);
+      // } catch (CloneNotSupportedException cnse) {
+      // LOGGER.error("RulesData.evalDownRule() failed", cnse);
     } finally {
       engine.setEvalRHSMode(evalRHSMode);
     }
@@ -545,21 +547,21 @@ public final class RulesData implements Serializable {
       }
     }
 
-    try {
-      IPatternMatcher pmEvaluator;
-      if ((fSimplePatternUpRules != null) && (expression.isASTOrAssociation())) {
-        IExpr result;
-        for (int i = 0; i < fSimplePatternUpRules.size(); i++) {
-          pmEvaluator = (IPatternMatcher) fSimplePatternUpRules.get(i).clone();
-          result = pmEvaluator.eval(expression, engine);
-          if (result.isPresent()) {
-            return result;
-          }
+    // try {
+    IPatternMatcher pmEvaluator;
+    if ((fSimplePatternUpRules != null) && (expression.isASTOrAssociation())) {
+      IExpr result;
+      for (int i = 0; i < fSimplePatternUpRules.size(); i++) {
+        pmEvaluator = fSimplePatternUpRules.get(i).copy();
+        result = pmEvaluator.eval(expression, engine);
+        if (result.isPresent()) {
+          return result;
         }
       }
-    } catch (CloneNotSupportedException cnse) {
-      LOGGER.error("RulesData.evalUpRule() failed", cnse);
     }
+    // } catch (CloneNotSupportedException cnse) {
+    // LOGGER.error("RulesData.evalUpRule() failed", cnse);
+    // }
     return F.NIL;
   }
 
