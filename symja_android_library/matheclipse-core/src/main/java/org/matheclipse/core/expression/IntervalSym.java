@@ -146,7 +146,7 @@ public class IntervalSym {
     return F.NIL;
   }
 
-  public static Apfloat[] interval(Apfloat x) {
+  private static Apfloat[] interval(Apfloat x) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     return new Apfloat[] {h.nextDown(x), h.nextUp(x)};
   }
@@ -859,9 +859,11 @@ public class IntervalSym {
         IExpr min2 = list2.arg1();
         IExpr max2 = list2.arg2();
 
+        IExpr min = scalar.times(min2);
+        IExpr max = scalar.times(max2);
         IAST list = F.list( //
-            F.Min(scalar.times(min2), scalar.times(max2), scalar.times(min2), scalar.times(max2)), //
-            F.Max(scalar.times(min2), scalar.times(max2), scalar.times(min2), scalar.times(max2)));
+            F.Min(min, max), //
+            F.Max(min, max));
         result.append(list);
       }
       return result;
