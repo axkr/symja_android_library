@@ -1,18 +1,15 @@
 package org.matheclipse.core.sympy.simplify;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
-public class TestPowsimp {
+public class TestPowsimp extends ExprEvaluatorTestCase {
 
-  @BeforeClass
-  public static void setupBeforeClass() {
-    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+  public TestPowsimp(String name) {
+    super(name);
   }
 
   @Test

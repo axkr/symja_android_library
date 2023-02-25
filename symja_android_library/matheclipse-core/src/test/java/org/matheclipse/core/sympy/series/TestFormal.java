@@ -1,16 +1,14 @@
 package org.matheclipse.core.sympy.series;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
-public class TestFormal {
-  @BeforeClass
-  public static void setupBeforeClass() {
-    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+public class TestFormal extends ExprEvaluatorTestCase {
+
+  public TestFormal(String name) {
+    super(name);
   }
 
   @Test
@@ -39,8 +37,7 @@ public class TestFormal {
 
     // assert fps(log(1 + x), hyper=False, rational=False) == log(1 + x)
     assertEquals(
-        Formal.fps(F.Log(F.C1.plus(F.x)), F.NIL, F.C0, F.C1, false, 4, false, false)
-            .toString(), //
+        Formal.fps(F.Log(F.C1.plus(F.x)), F.NIL, F.C0, F.C1, false, 4, false, false).toString(), //
         "Log(1+x)");
 
     // f = fps(x**2 + x + 1)

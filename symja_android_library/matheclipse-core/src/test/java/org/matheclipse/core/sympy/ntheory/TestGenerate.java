@@ -1,16 +1,13 @@
 package org.matheclipse.core.sympy.ntheory;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
-public class TestGenerate {
+public class TestGenerate extends ExprEvaluatorTestCase {
 
-  @BeforeClass
-  public static void setupBeforeClass() {
-    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+  public TestGenerate(String name) {
+    super(name);
   }
 
   @Test

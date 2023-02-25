@@ -1,17 +1,11 @@
 package org.matheclipse.core.sympy.printing;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
-import org.matheclipse.parser.client.ParserConfig;
 
 public class TestJSCode extends ExprEvaluatorTestCase {
-  @BeforeClass
-  public static void setupBeforeClass() {
-    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
-  }
 
   public TestJSCode(String name) {
     super(name);
