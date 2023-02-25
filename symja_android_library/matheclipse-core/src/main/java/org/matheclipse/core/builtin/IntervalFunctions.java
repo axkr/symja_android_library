@@ -192,6 +192,9 @@ public class IntervalFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isIntervalData()) {
+        return evaluateIntervalData(ast, engine);
+      }
       if (ast.arg1().isInterval()) {
         IAST interval1 = IntervalSym.normalize((IAST) ast.arg1());
         if (ast.arg2().isInterval()) {
@@ -241,6 +244,63 @@ public class IntervalFunctions {
           }
         }
       }
+      return S.False;
+    }
+
+    private static IExpr evaluateIntervalData(final IAST ast, EvalEngine engine) {
+      IAST interval1 = IntervalDataSym.normalize((IAST) ast.arg1());
+      if (ast.arg2().isIntervalData()) {
+        if (interval1.isPresent()) {
+          IAST interval2 = IntervalDataSym.normalize((IAST) ast.arg2());
+          if (interval2.isPresent()) {
+            IASTAppendable copyInterval2 = interval2.copyAppendable();
+
+            for (int i = 1; i < interval1.size(); i++) {
+              IAST list1 = (IAST) interval1.get(i);
+              IExpr min1 = list1.arg1();
+              IBuiltInSymbol left = (IBuiltInSymbol) list1.arg2();
+              IBuiltInSymbol right = (IBuiltInSymbol) list1.arg3();
+              IExpr max1 = list1.arg4();
+              boolean included = false;
+              for (int j = 1; j < interval2.size(); j++) {
+                IAST list2 = (IAST) interval2.get(j);
+                IExpr min2 = list2.arg1();
+                IExpr max2 = list2.arg4();
+
+                if (left.ofQ(engine, min1, min2) && //
+                    right.ofQ(engine, max2, max1)) {
+                  copyInterval2.remove(j);
+                  if (copyInterval2.size() <= 1) {
+                    return S.True;
+                  }
+                  included = true;
+                  break;
+                }
+              }
+              if (!included) {
+                return S.False;
+              }
+            }
+            if (copyInterval2.size() <= 1) {
+              return S.True;
+            }
+          }
+        }
+      } else {
+        IExpr scalar = ast.arg2();
+        for (int i = 1; i < interval1.size(); i++) {
+          IAST list1 = (IAST) interval1.get(i);
+          IExpr min1 = list1.arg1();
+          IBuiltInSymbol left = (IBuiltInSymbol) list1.arg2();
+          IBuiltInSymbol right = (IBuiltInSymbol) list1.arg3();
+          IExpr max1 = list1.arg4();
+          if (left.ofQ(engine, min1, scalar) && //
+              right.ofQ(engine, scalar, max1)) {
+            return S.True;
+          }
+        }
+      }
+
       return S.False;
     }
 

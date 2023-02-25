@@ -22,6 +22,15 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "IntervalData({-1/2,LessEqual,LessEqual,1/2},{2,Less,LessEqual,7/2})");
   }
 
+  public void testIntervalMemberQ() {
+    check("IntervalMemberQ(IntervalData({2,Less,Less, 5}), Pi)", //
+        "True");
+    check("IntervalMemberQ(IntervalData({2,Less,Less, Pi}), Pi)", //
+        "False");
+    check("IntervalMemberQ(IntervalData({2,Less,LessEqual, Pi}), Pi)", //
+        "True");
+  }
+
   public void testPlus() {
     check(
         "IntervalData({-1/2, LessEqual, LessEqual, 1/2})+IntervalData( {2, LessEqual, LessEqual, 3 + 1/2})", //
