@@ -324,7 +324,7 @@ public class PatternMatchingTestCase extends TestCase {
       // F.initSymbols();
       EvalEngine engine = new EvalEngine(); // EvalEngine.get();
       EvalEngine.set(engine);
-      engine.setSessionID("SpecialTestCase");
+      engine.setSessionID("PatternMatchingTestCase");
       engine.setRecursionLimit(256);
       engine.setIterationLimit(1024 * 1024);
       util = new EvalUtilities(engine, false, false);

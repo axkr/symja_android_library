@@ -31,7 +31,7 @@ public class EvalUtilities extends MathMLUtilities {
    *        &quot;[...]&quot; for function arguments (i.e. sin(...) instead of sin[...]).
    */
   public EvalUtilities(final boolean mathMLTagPrefix, final boolean relaxedSyntax) {
-    this(new EvalEngine(relaxedSyntax), mathMLTagPrefix, relaxedSyntax);
+    this(new EvalEngine(relaxedSyntax), mathMLTagPrefix, false);
   }
 
   /**
@@ -40,12 +40,11 @@ public class EvalUtilities extends MathMLUtilities {
    * @param evalEngine
    * @param mathMLTagPrefix if set to <code>true</code> use &quot;m:&quot; as tag prefix for the
    *        MathML output.
-   * @param relaxedSyntax if set to <code>true</code> use &quot;(...)&quot; instead of
-   *        &quot;[...]&quot; for function arguments (i.e. sin(...) instead of sin[...]).
+   * @param mathMLHeader print MathML header in output
    */
   public EvalUtilities(final EvalEngine evalEngine, final boolean mathMLTagPrefix,
-      final boolean relaxedSyntax) {
-    super(evalEngine, mathMLTagPrefix, relaxedSyntax);
+      final boolean mathMLHeader) {
+    super(evalEngine, mathMLTagPrefix, mathMLHeader);
   }
 
   /**

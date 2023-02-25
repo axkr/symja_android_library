@@ -1,8 +1,5 @@
 package org.matheclipse.core.system;
 
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.EvalEngine;
-
 /** Tests for compiler functions */
 public class IntervalDataTest extends ExprEvaluatorTestCase {
 
@@ -37,19 +34,4 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "IntervalData({-7/4,Less,LessEqual,-1})");
   }
 
-
-  /** The JUnit setup method */
-  @Override
-  protected void setUp() {
-    super.setUp();
-    Config.SHORTEN_STRING_LENGTH = 1024;
-    Config.MAX_AST_SIZE = 1000000;
-    EvalEngine.get().setIterationLimit(50000);
-  }
-
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
-    Config.SHORTEN_STRING_LENGTH = 80;
-  }
 }
