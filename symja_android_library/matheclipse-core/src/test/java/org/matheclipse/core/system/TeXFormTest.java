@@ -341,6 +341,16 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "\\text{WeierstrassHalfPeriods}(a)");
   }
 
+  public void testTeXFormIntersection() {
+    check("TeXForm(Intersection(a,b,c))", //
+        "a \\cap b \\cap c");
+  }
+
+  public void testTeXFormUnion() {
+    check("TeXForm(Union(a,b,c))", //
+        "a \\cup b \\cup c");
+  }
+
   @Override
   protected void setUp() {
     super.setUp();

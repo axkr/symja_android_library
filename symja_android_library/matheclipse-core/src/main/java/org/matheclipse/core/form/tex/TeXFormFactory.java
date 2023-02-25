@@ -2105,6 +2105,11 @@ public class TeXFormFactory {
     initTeXConverter(S.PreIncrement, new PreOperator(this, Precedence.PREINCREMENT, "\\text{++}"));
     initTeXConverter(S.Unequal, new AbstractOperator(this, Precedence.UNEQUAL, "\\neq "));
     initTeXConverter(S.Or, new AbstractOperator(this, Precedence.OR, " \\lor "));
+
+    initTeXConverter(S.Intersection,
+        new AbstractOperator(this, Precedence.INTERSECTION, " \\cap "));
+    initTeXConverter(S.Union, new AbstractOperator(this, Precedence.UNION, " \\cup "));
+
     // initTeXConverter(F.PrePlus,
     // new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("PrePlus").getPrecedence(),
     // "\\text{+}"));

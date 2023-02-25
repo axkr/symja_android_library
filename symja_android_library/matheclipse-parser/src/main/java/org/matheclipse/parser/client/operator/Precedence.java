@@ -57,6 +57,7 @@ public class Precedence {
   public static final int NOT = 230;
   public static final int OR = 213;
   public static final int PATTERNTEST = 680;
+  public static final int UNION = 300;
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Plus.md">Plus</a>
