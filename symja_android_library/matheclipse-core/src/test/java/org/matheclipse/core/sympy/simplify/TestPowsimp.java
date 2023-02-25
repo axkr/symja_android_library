@@ -1,12 +1,20 @@
 package org.matheclipse.core.sympy.simplify;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class TestPowsimp {
+
+  @BeforeClass
+  public static void setupBeforeClass() {
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+  }
+
   @Test
   public void test_powsimp() {
     // x, y, z, n = symbols('x,y,z,n')

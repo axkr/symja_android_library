@@ -2,10 +2,17 @@ package org.matheclipse.core.sympy.ntheory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.math.BigInteger;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class TestFactor {
+  @BeforeClass
+  public static void setupBeforeClass() {
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+  }
+
   @Test
   public void testTrailingBitcount() {
     assertEquals(Factor.trailing(F.C0), //

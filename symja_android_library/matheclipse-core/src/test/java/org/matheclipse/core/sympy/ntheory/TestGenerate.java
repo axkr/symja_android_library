@@ -1,11 +1,18 @@
 package org.matheclipse.core.sympy.ntheory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.sympy.ntheory.Generate;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class TestGenerate {
+
+  @BeforeClass
+  public static void setupBeforeClass() {
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+  }
+
   @Test
   public void testPrimeRange() {
     assertEquals(Generate.primeRange(F.C10, F.C1).toString(), //

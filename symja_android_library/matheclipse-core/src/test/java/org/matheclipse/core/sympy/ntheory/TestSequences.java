@@ -1,11 +1,18 @@
 package org.matheclipse.core.sympy.ntheory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.sympy.series.Sequences;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class TestSequences {
+  @BeforeClass
+  public static void setupBeforeClass() {
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+  }
+
   @Test
   public void test_find_linear_recurrence001() {
     // sequence(n**2).find_linear_recurrence(10)== [3, -3, 1]

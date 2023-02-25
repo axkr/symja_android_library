@@ -3,13 +3,21 @@ package org.matheclipse.core.sympy.core;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.matheclipse.core.sympy.core.Expr.argsCnc;
 import java.util.Map;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class TestExpr {
+
+  @BeforeClass
+  public static void setupBeforeClass() {
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+  }
+
   @Test
   public void test_as_coeff_add() {
     ISymbol x = F.x;
