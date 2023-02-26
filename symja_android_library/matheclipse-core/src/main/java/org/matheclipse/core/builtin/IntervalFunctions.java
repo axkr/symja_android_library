@@ -105,10 +105,7 @@ public class IntervalFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
-        IAST result = IntervalDataSym.normalize(ast, engine);
-        if (result.isPresent()) {
-          return result;
-        }
+        return IntervalDataSym.normalize(ast, engine);
       }
       return F.NIL;
     }
@@ -411,16 +408,31 @@ public class IntervalFunctions {
         }
       }
       IAST result = (IAST) ast.arg1();
-      result = IntervalDataSym.normalize(result, engine).orElse(result);
+      result = IntervalDataSym.normalize(result, engine);
+      if (result.isInvalid()) {
+        return F.NIL;
+      }
+      if (result.isNIL()) {
+        result = (IAST) ast.arg1();
+      }
       for (int i = 2; i < ast.size(); i++) {
         IAST interval = (IAST) ast.get(i);
-        IAST normalizedArg = IntervalDataSym.normalize(interval, engine).orElse(interval);
+        IAST normalizedArg = IntervalDataSym.normalize(interval, engine);
+        if (normalizedArg.isInvalid()) {
+          return F.NIL;
+        }
+        if (normalizedArg.isNIL()) {
+          normalizedArg = interval;
+        }
         result = intersectionIntervalData(result, normalizedArg, engine);
         if (result.size() == 1) {
           return result;
         }
       }
       IAST normalized = IntervalDataSym.normalize(result, engine);
+      if (normalized.isInvalid()) {
+        return F.NIL;
+      }
       return normalized.orElse(result);
     }
 
@@ -457,11 +469,13 @@ public class IntervalFunctions {
 
       for (int i = 1; i < interval1.size(); i++) {
         IAST list1 = (IAST) interval1.get(i);
-        IExpr min1 = list1.arg1();
-        IBuiltInSymbol left = (IBuiltInSymbol) list1.arg2();
-        IBuiltInSymbol right = (IBuiltInSymbol) list1.arg3();
-        IExpr max1 = list1.arg4();
         for (int j = 1; j < interval2.size(); j++) {
+          IExpr min1 = list1.arg1();
+          IBuiltInSymbol left1 = (IBuiltInSymbol) list1.arg2();
+          IBuiltInSymbol right1 = (IBuiltInSymbol) list1.arg3();
+          IExpr max1 = list1.arg4();
+
+
           IAST list2 = (IAST) interval2.get(j);
           IExpr min2 = list2.arg1();
           IBuiltInSymbol left2 = (IBuiltInSymbol) list2.arg2();
@@ -470,16 +484,34 @@ public class IntervalFunctions {
           if (S.Less.ofQ(engine, max1, min2) || S.Less.ofQ(engine, max2, min1)) {
             continue;
           }
-
+          if (S.Equal.ofQ(engine, max1, min2) || S.Equal.ofQ(engine, max2, min1)) {
+            if (right1 == S.Less || left2 == S.Less) {
+              continue;
+            }
+          }
           if (S.LessEqual.ofQ(engine, min1, min2)) {
-            min1 = min2;
-            left = left2;
+            if (S.Equal.ofQ(engine, min1, min2)) {
+              if (left2 == S.Less) {
+                min1 = min2;
+                left1 = left2;
+              }
+            } else {
+              min1 = min2;
+              left1 = left2;
+            }
           }
           if (S.GreaterEqual.ofQ(engine, max1, max2)) {
-            max1 = max2;
-            right = right2;
+            if (S.Equal.ofQ(engine, max1, max2)) {
+              if (right2 == S.Less) {
+                max1 = max2;
+                right1 = right2;
+              }
+            } else {
+              max1 = max2;
+              right1 = right2;
+            }
           }
-          result.append(F.List(min1, left, right, max1));
+          result.append(F.List(min1, left1, right1, max1));
         }
       }
       return result;
@@ -597,6 +629,9 @@ public class IntervalFunctions {
         }
       }
       IAST normalized = IntervalDataSym.normalize(result, engine);
+      if (normalized.isInvalid()) {
+        return F.NIL;
+      }
       return normalized.orElse(result);
     }
 

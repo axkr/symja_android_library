@@ -212,6 +212,7 @@ public class F extends S {
    */
   public static final AbstractAST.NILPointer NIL = AbstractAST.NIL;
 
+  public static final AbstractAST.NILPointer INVALID = AbstractAST.INVALID;
   // public final static ISymbol usage = initFinalHiddenSymbol("usage");
 
   /**
@@ -5070,6 +5071,10 @@ public class F extends S {
    */
   public static IAST IntervalIntersection(final IExpr... intervals) {
     return ast(intervals, IntervalIntersection);
+  }
+
+  public static IAST IntervalMemberQ(final IExpr interval, IExpr expr) {
+    return new AST2(IntervalMemberQ, interval, expr);
   }
 
   /**

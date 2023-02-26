@@ -610,6 +610,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     /** {@inheritDoc} */
     @Override
+    public boolean isInvalid() {
+      return this == INVALID;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public boolean isNonEmptyList() {
       return false;
     }
@@ -1229,6 +1235,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** package private */
   static final NILPointer NIL = new NILPointer();
+
+  static final NILPointer INVALID = new NILPointer();
 
   private static final long serialVersionUID = -8682706994448890660L;
 

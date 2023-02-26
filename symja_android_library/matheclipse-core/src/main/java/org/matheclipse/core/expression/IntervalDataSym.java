@@ -6,7 +6,6 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -66,13 +65,19 @@ public class IntervalDataSym {
    *
    * @param intervalList
    * @param engine
-   * @return <code>F.NIL</code> if the interval could not be normalized
+   * @return {@link F#INVALID} if the interval could not be normalized. {@link F#NIL} if the
+   *         interval could not be normalized.
    */
   public static IAST normalize(final IAST intervalList, EvalEngine engine) {
     IASTAppendable result = intervalList.copyAppendable();
     boolean evaled = false;
     for (int i = 1; i < intervalList.size(); i++) {
       IAST temp = normalizeArgument(intervalList.get(i), engine);
+      if (temp.isInvalid()) {
+        // The expression `1` is not a valid interval.
+        IOFunctions.printMessage(S.IntervalData, "nvld", F.list(intervalList.get(i)), engine);
+        return temp;
+      }
       if (temp.isPresent()) {
         evaled = true;
         result.set(i, temp);
@@ -86,31 +91,102 @@ public class IntervalDataSym {
       int j = 1;
       IAST list1 = (IAST) result.arg1();
       IExpr min1 = list1.arg1();
+      IBuiltInSymbol left1 = (IBuiltInSymbol) list1.arg2();
+      IBuiltInSymbol right1 = (IBuiltInSymbol) list1.arg3();
       IExpr max1 = list1.arg4();
       int i = 2;
       while (i < result.size()) {
         IAST list2 = (IAST) result.get(i);
         IExpr min2 = list2.arg1();
+        IBuiltInSymbol left2 = (IBuiltInSymbol) list2.arg2();
+        IBuiltInSymbol right2 = (IBuiltInSymbol) list2.arg3();
         IExpr max2 = list2.arg4();
-        if (min2.lessEqual(max1).isTrue()) {
-          if (max2.lessEqual(max1).isTrue()) {
+        if (min1.less(min2).isTrue()) {
+          if (max2.less(max1).isTrue()) {
+            // (min1<min2<max2<max1)
             evaled = true;
             result.remove(i);
-          } else {
+            continue;
+          } else if (min2.lessEqual(max1).isTrue() && max1.lessEqual(max2).isTrue()) {
             evaled = true;
             result.remove(i);
-            list1 = F.List(min1, //
-                list1.arg2(), //
-                list2.arg3(), //
-                max2);
-            max1 = max2;
+            list1 = F.List(min1, left1, right2, max2);
+            min1 = list1.arg1();
+            left1 = (IBuiltInSymbol) list1.arg2();
+            right1 = (IBuiltInSymbol) list1.arg3();
+            max1 = list1.arg4();
+            continue;
+          } else if (S.Equal.ofQ(max1, max2)) {
+            // (min1<min2<max1|max2)
+            evaled = true;
+            result.remove(i);
+            if (right1 == S.Less && right2 == S.Less) {
+              list1 = F.List(min1, left1, S.Less, max2);
+            } else if (right1 == S.LessEqual) {
+              list1 = F.List(min1, left1, S.LessEqual, max1);
+            } else {
+              list1 = F.List(min1, left1, S.LessEqual, max2);
+            }
+            min1 = list1.arg1();
+            left1 = (IBuiltInSymbol) list1.arg2();
+            right1 = (IBuiltInSymbol) list1.arg3();
+            max1 = list1.arg4();
+            continue;
           }
-          continue;
+
+        } else if (S.Equal.ofQ(min1, min2)) {
+          IExpr newMin = min1;
+          IBuiltInSymbol newLeft = S.Less;
+          IBuiltInSymbol newRight = S.Less;
+          IExpr newMax = max1;
+          if (left1 == S.Less && left2 == S.Less) {
+            newLeft = S.Less;
+            newMin = min1;
+          } else if (left1 == S.LessEqual) {
+            newLeft = S.LessEqual;
+            newMin = min1;
+          } else {
+            newLeft = S.LessEqual;
+            newMin = min2;
+          }
+          if (S.Equal.ofQ(max1, max2)) {
+            evaled = true;
+            result.remove(i);
+            if (right1 == S.Less && right2 == S.Less) {
+              newRight = S.Less;
+              newMax = max1;
+            } else if (right1 == S.LessEqual) {
+              newRight = S.LessEqual;
+              newMax = max1;
+            } else {
+              newRight = S.LessEqual;
+              newMax = max2;
+            }
+            list1 = F.List(newMin, newLeft, newRight, newMax);
+            min1 = list1.arg1();
+            left1 = (IBuiltInSymbol) list1.arg2();
+            right1 = (IBuiltInSymbol) list1.arg3();
+            max1 = list1.arg4();
+            continue;
+          }
+          if (max2.less(max1).isTrue()) {
+            // (min1|min2<max2<max1)
+            evaled = true;
+            result.remove(i);
+            list1 = F.List(newMin, newLeft, right2, max2);
+            min1 = list1.arg1();
+            left1 = (IBuiltInSymbol) list1.arg2();
+            right1 = (IBuiltInSymbol) list1.arg3();
+            max1 = list1.arg4();
+            continue;
+          }
         }
         result.set(j++, list1);
         list1 = list2;
-        min1 = min2;
-        max1 = max2;
+        min1 = list1.arg1();
+        left1 = (IBuiltInSymbol) list1.arg2();
+        right1 = (IBuiltInSymbol) list1.arg3();
+        max1 = list1.arg4();
         i++;
       }
       result.set(j, list1);
@@ -138,7 +214,8 @@ public class IntervalDataSym {
    *
    * @param arg
    * @param engine
-   * @return
+   * @return {@link F#INVALID} if the interval could not be normalized. {@link F#NIL} if the
+   *         interval doesn't need to be normalized.
    */
   private static IAST normalizeArgument(final IExpr arg, final EvalEngine engine) {
     if (arg.isList()) {
@@ -148,7 +225,10 @@ public class IntervalDataSym {
         IExpr arg4 = list.arg4();
         if (arg1.isReal() && arg4.isReal()) {
           if (arg1.greaterThan(arg4).isTrue()) {
-            return F.list(arg4, arg1);
+            return F.List(arg4, //
+                list.arg3(), //
+                list.arg2(), //
+                arg1);
           }
           return F.NIL;
         }
@@ -156,14 +236,16 @@ public class IntervalDataSym {
         IExpr max = arg4.isNumber() ? arg4 : engine.evaluate(arg4);
         if (min.isRealResult() && max.isRealResult()) {
           if (min.greaterThan(max).isTrue()) {
-            return F.list(max, min);
+            return F.List(max, //
+                list.arg3(), //
+                list.arg2(), //
+                min);
           }
         }
         return F.NIL;
       }
       // The expression `1` is not a valid interval.
-      String str = IOFunctions.getMessage("nvld", F.list(arg), engine);
-      throw new ArgumentTypeException(str);
+      return F.INVALID;
     }
     if (arg instanceof INum) {
       if (arg instanceof ApfloatNum) {
@@ -180,7 +262,10 @@ public class IntervalDataSym {
           S.LessEqual, //
           F.num(Math.nextUp(value)));
     }
-    return F.list(arg, arg);
+    return F.List(arg, //
+        S.LessEqual, //
+        S.LessEqual, //
+        arg);
   }
 
   public static IExpr plus(final IAST ast1, final IAST ast2) {

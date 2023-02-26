@@ -3526,6 +3526,21 @@ public interface IExpr
     return false;
   }
 
+
+  /**
+   * Checks if the expression equals the {@link F#INVALID} <i>Not In List</i> expression. Often
+   * {@link F#INVALID} is returned for a functions expression which couldn't be evaluated and is not
+   * valid for the further processing. {@link F#INVALID} is used to define a value similar to
+   * {@link F#NIL} but indicating an error in the data. Return {@code true} if this expression
+   * equals {@link F#INVALID}, otherwise {@code false}.
+   *
+   * @return {@code true} if the expression equals {@link F#INVALID}, otherwise {@code false}.
+   * @see java.util.Optional#isPresent()
+   */
+  default boolean isInvalid() {
+    return false;
+  }
+
   /**
    * Return {@code true} if this expression unequals <code>F.NIL</code>, otherwise {@code false}.
    * This method is similar to <code>java.util.Optional#isPresent()</code>.
