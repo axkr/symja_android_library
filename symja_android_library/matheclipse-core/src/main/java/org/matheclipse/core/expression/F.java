@@ -5063,6 +5063,24 @@ public class F extends S {
     return new AST1(Interval, binaryAST2(List, min, max));
   }
 
+  /**
+   * IntervalIntersection(interval_1, interval_2, ...) - compute the intersection of the intervals
+   * `interval_1, interval_2, ...`
+   * 
+   */
+  public static IAST IntervalIntersection(final IExpr... intervals) {
+    return ast(intervals, IntervalIntersection);
+  }
+
+  /**
+   * IntervalUnion(interval_1, interval_2, ...) - compute the union of the intervals `interval_1,
+   * interval_2, ...`
+   * 
+   */
+  public static IAST IntervalUnion(final IExpr... intervals) {
+    return ast(intervals, IntervalUnion);
+  }
+
   public static IAST IntervalData(final IAST list) {
     return new AST1(IntervalData, list);
   }
