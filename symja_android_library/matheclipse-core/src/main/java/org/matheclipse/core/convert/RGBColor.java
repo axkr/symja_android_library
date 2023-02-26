@@ -16,6 +16,7 @@ package org.matheclipse.core.convert;
  */
 
 import java.io.Serializable;
+import org.matheclipse.core.interfaces.IAST;
 
 /**
  * The RGBColor class defines colors in the default sRGB color space or in the specified ColorSpace.
@@ -417,6 +418,32 @@ public class RGBColor implements Serializable {
   }
 
   /**
+   * <p>
+   * Convert <code>Hue(hue, saturation,brightness,opacity)</code> to RGBColor.
+   * 
+   * <p>
+   * See: <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">Wikipedai HSL and HSV</a>
+   * 
+   * @param hueColor
+   * @return
+   */
+  public static RGBColor hueToRGB(IAST hueColor) {
+    RGBColor rgb = null;
+    if (hueColor.argSize() == 1) {
+      rgb = getHSBColor((float) hueColor.arg1().evalf(), 1.0f, 1.0f);
+    } else if (hueColor.argSize() == 2) {
+      rgb = getHSBColor((float) hueColor.arg1().evalf(), (float) hueColor.arg2().evalf(), 1.0f);
+    } else if (hueColor.argSize() == 3) {
+      rgb = getHSBColor((float) hueColor.arg1().evalf(), (float) hueColor.arg2().evalf(),
+          (float) hueColor.arg3().evalf());
+    } else if (hueColor.argSize() == 4) {
+      rgb = getHSBColor((float) hueColor.arg1().evalf(), (float) hueColor.arg2().evalf(),
+          (float) hueColor.arg3().evalf());
+    }
+    return rgb;
+  }
+
+  /**
    * Gets the RGBColor from the specified string, or returns the RGBColor specified by the second
    * parameter.
    *
@@ -492,15 +519,18 @@ public class RGBColor implements Serializable {
   }
 
   /**
-   * Converts the RGBColor specified by the RGB model to an equivalent color in the HSB model.
-   *
+   * <p>
+   * Converts the RGB color specified by the RGB model to an equivalent color in the HSB model.
+   * <p>
+   * See: <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">Wikipedai HSL and HSV</a>
+   * 
    * @param r the red component.
    * @param g the green component.
    * @param b the blue component.
    * @param hsbvals the array of result hue, saturation, brightness values or null.
    * @return the float array of hue, saturation, brightness values.
    */
-  public static float[] RGBtoHSB(int r, int g, int b, float[] hsbvals) {
+  public static float[] rgbToHue(int r, int g, int b, float[] hsbvals) {
     if (hsbvals == null) {
       hsbvals = new float[3];
     }

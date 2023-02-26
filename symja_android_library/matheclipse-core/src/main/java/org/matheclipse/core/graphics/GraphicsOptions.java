@@ -295,17 +295,9 @@ public class GraphicsOptions {
     return false;
   }
 
-  public static boolean setHueColor(ArrayNode arrayNode, IAST hueColor) {
-    RGBColor rgb = null;
-    double opacity = 1.0;
-    if (hueColor.argSize() == 1) {
-      rgb = RGBColor.getHSBColor((float) hueColor.arg1().evalf(), 1.0f, 1.0f);
-    } else if (hueColor.argSize() == 3) {
-      rgb = RGBColor.getHSBColor((float) hueColor.arg1().evalf(), (float) hueColor.arg2().evalf(),
-          (float) hueColor.arg3().evalf());
-    } else if (hueColor.argSize() == 4) {
-      rgb = RGBColor.getHSBColor((float) hueColor.arg1().evalf(), (float) hueColor.arg2().evalf(),
-          (float) hueColor.arg3().evalf());
+  public boolean setHueColor(ArrayNode arrayNode, IAST hueColor) {
+    RGBColor rgb = RGBColor.hueToRGB(hueColor);
+    if (hueColor.argSize() == 4) {
       opacity = hueColor.arg4().toDoubleDefault(1.0);
     }
     if (rgb != null) {

@@ -1487,7 +1487,7 @@ public class GraphicsFunctions {
           // }
         } else if (ast.isAST(S.Hue, 2, 5)) {
           ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
-          if (GraphicsOptions.setHueColor(arrayNode, ast)) {
+          if (graphicsOptions.setHueColor(arrayNode, ast)) {
             arrayNode.add(g);
           }
         } else if (ast.isAST(S.GrayLevel, 2, 3)) {
@@ -1546,15 +1546,9 @@ public class GraphicsFunctions {
             }
           } else if (ast.isAST(S.Hue, 2, 5)) {
             IAST hueColor = ast;
-            RGBColor rgb = null;
-            if (hueColor.argSize() == 1) {
-              rgb = RGBColor.getHSBColor((float) hueColor.arg1().evalf(), 1.0f, 1.0f);
-            } else if (hueColor.argSize() >= 3) {
-              rgb = RGBColor.getHSBColor((float) hueColor.arg1().evalf(),
-                  (float) hueColor.arg2().evalf(), (float) hueColor.arg3().evalf());
-              if (hueColor.argSize() == 4) {
-                opacity = ast.arg4();
-              }
+            RGBColor rgb = RGBColor.hueToRGB(hueColor);
+            if (hueColor.argSize() == 4) {
+              opacity = ast.arg4();
             }
             if (rgb != null) {
               rgbColor =
