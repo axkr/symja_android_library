@@ -107,7 +107,7 @@ public class IntervalDataSym {
             evaled = true;
             result.remove(i);
             continue;
-          } else if (min2.lessEqual(max1).isTrue() && max1.lessEqual(max2).isTrue()) {
+          } else if (min2.lessEqual(max1).isTrue() && max1.less(max2).isTrue()) {
             evaled = true;
             result.remove(i);
             list1 = F.List(min1, left1, right2, max2);
@@ -162,6 +162,18 @@ public class IntervalDataSym {
               newRight = S.LessEqual;
               newMax = max2;
             }
+            list1 = F.List(newMin, newLeft, newRight, newMax);
+            min1 = list1.arg1();
+            left1 = (IBuiltInSymbol) list1.arg2();
+            right1 = (IBuiltInSymbol) list1.arg3();
+            max1 = list1.arg4();
+            continue;
+          }
+          if (max1.less(max2).isTrue()) {
+            evaled = true;
+            result.remove(i);
+            newRight = right2;
+            newMax = max2;
             list1 = F.List(newMin, newLeft, newRight, newMax);
             min1 = list1.arg1();
             left1 = (IBuiltInSymbol) list1.arg2();

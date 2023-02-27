@@ -150,6 +150,27 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
   // assertTrue(EvalEngine.get().evaluate(F.Equal(iExprResult, iExprExpected)).isTrue());
   // }
 
+  public void testIssue684_7() {
+    EvalEngine engine = EvalEngine.get();
+    IExpr iExprResult = engine.evaluate(
+        F.IntervalUnion(F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(1))),
+            F.IntervalData(F.List(F.ZZ(1), F.Less, F.Less, F.ZZ(2))),
+            F.IntervalData(F.List(F.ZZ(2), F.LessEqual, F.LessEqual, F.ZZ(2)))));
+    IExpr iExprExpected =
+        engine.evaluate(F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(2))));
+    assertTrue(EvalEngine.get().evaluate(F.Equal(iExprResult, iExprExpected)).isTrue());
+  }
+
+  public void testIssue684_8() {
+    EvalEngine engine = EvalEngine.get();
+    IExpr iExprResult = engine.evaluate(
+        F.IntervalUnion(F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(3))),
+            F.IntervalData(F.List(F.ZZ(2), F.Less, F.Less, F.ZZ(3)))));
+    IExpr iExprExpected =
+        engine.evaluate(F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(3))));
+    assertTrue(EvalEngine.get().evaluate(F.Equal(iExprResult, iExprExpected)).isTrue());
+  }
+
   public void testIntervalDataIntersection() {
     check("IntervalIntersection(IntervalData({1, LessEqual, LessEqual, 2})," //
         + "IntervalData({0,LessEqual,LessEqual,1},{2,LessEqual,LessEqual,3}))", //
@@ -176,6 +197,15 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
   }
 
   public void testIntervalDataUnion() {
+    check("IntervalUnion(IntervalData({1, LessEqual, LessEqual, 3})," //
+        + "IntervalData({2, Less, Less, 3}))", //
+        "IntervalData({1,LessEqual,LessEqual,3})");
+
+    check("IntervalUnion(IntervalData({1, LessEqual, LessEqual, 1} )," //
+        + "IntervalData({1, Less, Less, 2} ),"//
+        + "IntervalData({2, LessEqual, LessEqual, 2} ))", //
+        "IntervalData({1,LessEqual,LessEqual,2})");
+
     check(
         "IntervalUnion(IntervalData({-1/2, LessEqual, LessEqual, 1/2}, {2, Less, LessEqual, 3 + 1/2})," //
             + "IntervalData({0, LessEqual, LessEqual, 1}, {E, LessEqual, Less, 4}))", //
