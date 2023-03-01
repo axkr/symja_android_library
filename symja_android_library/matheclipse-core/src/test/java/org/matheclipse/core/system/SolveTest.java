@@ -1387,6 +1387,11 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{}");
   }
 
+  public void testIssue685() {
+    check("Solve({a*b + c == 2020, a + b*c == 2021},{a,b,c},Integers)", //
+        "{{a->673,b->2,c->674},{a->2021,b->0,c->2020}}");
+  }
+
   public void testSystem805() {
     check("Solve({x^2==4,x+20==10},x)", "{}");
     check("Solve(4*x^(-2)-1==0,x)", //
@@ -1483,7 +1488,6 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   public void testSolveLinearEquations() {
-
     // https://github.com/asc-community/AngouriMath/issues/608
     check("Solve({2 * x1 * (-66) - 6 * x2 + 24 * x3 - 12 * x4 + 270 == 0,\n"//
         + "-6 * x1 - 2 * x2 * 74 - 8 * x3 + 4 * x4 - 440 == 0,\n"//

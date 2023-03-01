@@ -8,9 +8,6 @@ package org.matheclipse.core.basic;
  */
 public class ToggleFeature {
 
-  /** If <code>true</code>, enable choco solver in <code>Solve()</code> function. */
-  // public static boolean CHOCO_SOLVER = true;
-
   /**
    * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.Compile</code>
    * function.

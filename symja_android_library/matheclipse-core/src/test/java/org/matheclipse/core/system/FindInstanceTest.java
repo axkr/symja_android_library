@@ -10,7 +10,7 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
   public void testDiophantine() {
     // TODO return condition with extra variable C1
     check("FindInstance(13*x+51*y==0, {x,y}, Integers, 3)", //
-        "{{x->82595418,y->-21053734},{x->82595469,y->-21053747},{x->82595520,y->-21053760}}");
+        "{{x->-32742,y->8346},{x->-32691,y->8333},{x->-32640,y->8320}}");
   }
 
   public void testFindInstanceBooleans() {

@@ -17,6 +17,7 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
+import org.matheclipse.core.convert.ChocoConvert;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.CreamConvert;
 import org.matheclipse.core.convert.VariablesSet;
@@ -1102,32 +1103,30 @@ public class Solve extends AbstractFunctionEvaluator {
         return F.NIL;
       }
       try {
-        // if (ToggleFeature.CHOCO_SOLVER) {
-        // // try calling choco solver
-        // if (equationsAndInequations.isFreeAST(x -> x.equals(S.Power))) {
-        // try {
-        // IAST resultList =
-        // ChocoConvert.integerSolve(
-        // equationsAndInequations,
-        // equationVariables,
-        // userDefinedVariables,
-        // engine);
-        // if (resultList.isPresent()) {
-        // EvalAttributes.sort((IASTMutable) resultList);
-        // return resultList;
-        // }
-        // } catch (RuntimeException rex) {
-        // // try 2nd solver
-        // }
-        // }
-        // }
-        // call cream solver
-        CreamConvert converter = new CreamConvert();
-        IAST resultList = converter.integerSolve(equationsAndInequations, equationVariables,
-            userDefinedVariables, maximumNumberOfResults, engine);
-        if (resultList.isPresent()) {
-          EvalAttributes.sort((IASTMutable) resultList);
-          return resultList;
+        if (equationsAndInequations.isFreeAST(x -> x.equals(S.Power))) {
+          // choco-solver doesn't handle Power() expressions very well at the moment!
+          try {
+            IAST resultList = ChocoConvert.integerSolve(equationsAndInequations, equationVariables,
+                userDefinedVariables, maximumNumberOfResults, engine);
+            if (resultList.isPresent()) {
+              EvalAttributes.sort((IASTMutable) resultList);
+              return resultList;
+            }
+          } catch (RuntimeException rex) {
+            // try 2nd solver
+            if (Config.SHOW_STACKTRACE) {
+              rex.printStackTrace();
+            }
+          }
+        } else {
+          // call cream solver
+          CreamConvert converter = new CreamConvert();
+          IAST resultList = converter.integerSolve(equationsAndInequations, equationVariables,
+              userDefinedVariables, maximumNumberOfResults, engine);
+          if (resultList.isPresent()) {
+            EvalAttributes.sort((IASTMutable) resultList);
+            return resultList;
+          }
         }
       } catch (LimitException le) {
         LOGGER.debug("Solve.of() failed", le);

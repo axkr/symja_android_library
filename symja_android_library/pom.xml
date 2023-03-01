@@ -326,7 +326,11 @@
 				<artifactId>encoder</artifactId>
 				<version>1.2.3</version>
 			</dependency>
-
+			<dependency>
+				<groupId>org.choco-solver</groupId>
+				<artifactId>choco-solver</artifactId>
+				<version>4.10.11</version>
+			</dependency>
 			<dependency>
 				<groupId>org.roaringbitmap</groupId>
 				<artifactId>RoaringBitmap</artifactId>

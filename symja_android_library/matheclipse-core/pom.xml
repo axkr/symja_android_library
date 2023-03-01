@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
 	<parent>
 		<groupId>org.matheclipse</groupId>
 		<artifactId>matheclipse</artifactId>
 		<version>3.0.0-SNAPSHOT</version>
 	</parent>
-
 	<artifactId>matheclipse-core</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>The Symja core module</description>
-
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License, Version 3</name>
@@ -21,117 +18,98 @@
 			<comments>A free, copyleft license for software and other kinds of works</comments>
 		</license>
 	</licenses>
-
 	<dependencies>
-
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-external</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-parser</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>de.uni-mannheim.rz.krum</groupId>
 			<artifactId>jas</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apfloat</groupId>
 			<artifactId>apfloat</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.hipparchus</groupId>
 			<artifactId>hipparchus-clustering</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.hipparchus</groupId>
 			<artifactId>hipparchus-fft</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.hipparchus</groupId>
 			<artifactId>hipparchus-fitting</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.hipparchus</groupId>
 			<artifactId>hipparchus-ode</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.hipparchus</groupId>
 			<artifactId>hipparchus-optim</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.jgrapht</groupId>
 			<artifactId>jgrapht-io</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.logicng</groupId>
 			<artifactId>logicng</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.gavaghan</groupId>
 			<artifactId>geodesy</artifactId>
 		</dependency>
-
 		<dependency>
 			<!-- require only the smallest fastuil module -->
 			<groupId>it.unimi.dsi</groupId>
 			<artifactId>fastutil-core</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.codehaus.janino</groupId>
 			<artifactId>janino</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>com.univocity</groupId>
 			<artifactId>univocity-parsers</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.organicdesign</groupId>
 			<artifactId>Paguro</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.choco-solver</groupId>
+			<artifactId>choco-solver</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.esotericsoftware</groupId>
 			<artifactId>kryo</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>com.github.freva</groupId>
-			<artifactId>ascii-table</artifactId> 
+			<artifactId>ascii-table</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 		</dependency>
-
 		<!-- test dependencies -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -139,7 +117,5 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-
-
 	</dependencies>
 </project>
