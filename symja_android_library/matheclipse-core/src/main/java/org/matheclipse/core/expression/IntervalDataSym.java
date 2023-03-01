@@ -71,7 +71,8 @@ public class IntervalDataSym {
   public static IAST normalize(final IAST intervalList, EvalEngine engine) {
     IASTAppendable result = intervalList.copyAppendable();
     boolean evaled = false;
-    for (int i = 1; i < intervalList.size(); i++) {
+    int i = 1;
+    while (i < result.size()) {
       IAST temp = normalizeArgument(intervalList.get(i), engine);
       if (temp.isInvalid()) {
         // The expression `1` is not a valid interval.
@@ -80,8 +81,13 @@ public class IntervalDataSym {
       }
       if (temp.isPresent()) {
         evaled = true;
+        if (temp.isEmptyList()) {
+          result.remove(i);
+          continue;
+        }
         result.set(i, temp);
       }
+      i++;
     }
     if (EvalAttributes.sort(result, INTERVAL_COMPARATOR)) {
       evaled = true;
@@ -94,7 +100,7 @@ public class IntervalDataSym {
       IBuiltInSymbol left1 = (IBuiltInSymbol) list1.arg2();
       IBuiltInSymbol right1 = (IBuiltInSymbol) list1.arg3();
       IExpr max1 = list1.arg4();
-      int i = 2;
+      i = 2;
       while (i < result.size()) {
         IAST list2 = (IAST) result.get(i);
         IExpr min2 = list2.arg1();
@@ -227,7 +233,7 @@ public class IntervalDataSym {
    * @param arg
    * @param engine
    * @return {@link F#INVALID} if the interval could not be normalized. {@link F#NIL} if the
-   *         interval doesn't need to be normalized.
+   *         interval doesn't need to be normalized. {@link F#CEmptyList} if the interval is empty.
    */
   private static IAST normalizeArgument(final IExpr arg, final EvalEngine engine) {
     if (arg.isList()) {
@@ -241,6 +247,19 @@ public class IntervalDataSym {
                 list.arg3(), //
                 list.arg2(), //
                 arg1);
+          }
+          if (S.Equal.ofQ(arg1, arg4)) {
+            IBuiltInSymbol left = (IBuiltInSymbol) list.arg2();
+            IBuiltInSymbol right = (IBuiltInSymbol) list.arg3();
+            if (left == S.Less && right == S.Less) {
+              return F.CEmptyList;
+            }
+            if (left == S.Less || right == S.Less) {
+              return F.List(arg1, //
+                  S.LessEqual, //
+                  S.LessEqual, //
+                  arg4);
+            }
           }
           return F.NIL;
         }
@@ -297,8 +316,8 @@ public class IntervalDataSym {
           IExpr min2 = list2.arg1();
           IExpr max2 = list2.arg4();
           IAST list = F.List(min1.plus(min2), //
-              timesPrecedence(left1, (IBuiltInSymbol) list2.arg2()), //
-              timesPrecedence(right1, (IBuiltInSymbol) list2.arg3()), //
+              precedence(left1, (IBuiltInSymbol) list2.arg2()), //
+              precedence(right1, (IBuiltInSymbol) list2.arg3()), //
               max1.plus(max2));
           result.append(list);
         }
@@ -356,31 +375,31 @@ public class IntervalDataSym {
     IBuiltInSymbol left = S.LessEqual;
     switch (index[0]) {
       case 0:
-        left = timesPrecedence(symbols[0], symbols[1]);
+        left = precedence(symbols[0], symbols[1]);
         break;
       case 1:
-        left = timesPrecedence(symbols[0], symbols[3]);
+        left = precedence(symbols[0], symbols[3]);
         break;
       case 2:
-        left = timesPrecedence(symbols[1], symbols[2]);
+        left = precedence(symbols[1], symbols[2]);
         break;
       case 3:
-        left = timesPrecedence(symbols[1], symbols[3]);
+        left = precedence(symbols[1], symbols[3]);
         break;
     }
     IBuiltInSymbol right = S.LessEqual;
     switch (index[1]) {
       case 0:
-        right = timesPrecedence(symbols[0], symbols[1]);
+        right = precedence(symbols[0], symbols[1]);
         break;
       case 1:
-        right = timesPrecedence(symbols[0], symbols[3]);
+        right = precedence(symbols[0], symbols[3]);
         break;
       case 2:
-        right = timesPrecedence(symbols[1], symbols[2]);
+        right = precedence(symbols[1], symbols[2]);
         break;
       case 3:
-        right = timesPrecedence(symbols[1], symbols[3]);
+        right = precedence(symbols[1], symbols[3]);
         break;
     }
     IAST list = F.List(//
@@ -391,11 +410,8 @@ public class IntervalDataSym {
     return list;
   }
 
-  private static IBuiltInSymbol timesPrecedence(IBuiltInSymbol s1, IBuiltInSymbol s2) {
-    if (s1 == S.Less || s2 == S.Less) {
-      return S.Less;
-    }
-    return S.LessEqual;
+  private static IBuiltInSymbol precedence(IBuiltInSymbol s1, IBuiltInSymbol s2) {
+    return (s1 == S.Less || s2 == S.Less) ? S.Less : S.LessEqual;
   }
 
   public static IExpr times(final IAST ast1, final IAST ast2) {

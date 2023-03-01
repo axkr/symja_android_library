@@ -13,12 +13,12 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
   }
 
   public void testEqual() {
-    System.out.println( //
+    assertEquals(//
         EvalEngine.get().evaluate(//
             F.Equal(F.IntervalData(F.List(F.ZZ(2), S.Less, S.LessEqual, F.ZZ(5))), //
                 F.IntervalData(F.List(F.ZZ(2), S.Less, S.LessEqual, F.ZZ(5)))))
-            .isTrue() //
-    );
+            .isTrue(),
+        true);
     check("Equal(IntervalData({2,Less,Less, 5}), IntervalData({2,Less,Less, 5}))", //
         "True");
   }
@@ -34,6 +34,13 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
   }
 
   public void testIntervalData() {
+    check("IntervalData({1,LessEqual,  Less, -1 })", //
+        "IntervalData({-1,Less,LessEqual,1})");
+    check("IntervalData({0,Less,  Less, 0 })", //
+        "IntervalData()");
+
+
+
     check("IntervalData({1, LessEqual, LessEqual, 2}, {2, Less, LessEqual, 3})", //
         "IntervalData({1,LessEqual,LessEqual,3})");
 
