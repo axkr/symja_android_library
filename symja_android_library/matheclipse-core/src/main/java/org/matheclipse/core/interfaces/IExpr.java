@@ -2514,8 +2514,9 @@ public interface IExpr
 
   /**
    * Test if this expression is a mixed opened/closed interval expression with one or more
-   * <code>List[min, Less/LessEqual, Less/LessEqual, max]</code> arguments which represent the union
-   * of the interval ranges.
+   * <code>{min, Less/LessEqual, Less/LessEqual, max}</code> list arguments which represent the
+   * union of the interval ranges. The empty <code>IntervalData()</code> interval returns also
+   * <code>true</code>.
    * 
    * @return
    */

@@ -3552,13 +3552,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isIntervalData() {
-    if (isSameHeadSizeGE(S.IntervalData, 2)) {
-      for (int i = 1; i < size(); i++) {
-        if (!(get(i).isAST(S.List, 5))) {
-          return false;
+    if (isAST(S.IntervalData)) {
+        for (int i = 1; i < size(); i++) {
+          if (!(get(i).isAST(S.List, 5))) {
+            return false;
+          }
         }
-      }
-      return true;
+        // the empty IntervalData() interval returns also true.
+        return true;
+
     }
     return false;
   }

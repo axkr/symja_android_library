@@ -5140,6 +5140,9 @@ public class S {
    */
   public final static IBuiltInSymbol Interval = F.initFinalSymbol("Interval", ID.Interval);
 
+  public final static IBuiltInSymbol IntervalComplement =
+      F.initFinalSymbol("IntervalComplement", ID.IntervalComplement);
+
   public final static IBuiltInSymbol IntervalData =
       F.initFinalSymbol("IntervalData", ID.IntervalData);
 

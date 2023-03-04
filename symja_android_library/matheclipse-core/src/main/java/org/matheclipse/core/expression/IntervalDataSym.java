@@ -114,6 +114,10 @@ public class IntervalDataSym {
             result.remove(i);
             continue;
           } else if (min2.lessEqual(max1).isTrue() && max1.less(max2).isTrue()) {
+            if (S.Equal.ofQ(min2, max1) && left2 == S.Less && right1 == S.Less) {
+              i++;
+              continue;
+            }
             evaled = true;
             result.remove(i);
             list1 = F.List(min1, left1, right2, max2);
