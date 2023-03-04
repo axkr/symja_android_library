@@ -591,6 +591,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return false;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean isEmptyIntervalData() {
+      return false;
+    }
+
     @Override
     public final boolean isInterval1() {
       return false;
@@ -3563,6 +3569,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     }
     return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isEmptyIntervalData() {
+    return isAST(S.IntervalData, 1);
   }
 
   /** {@inheritDoc} */

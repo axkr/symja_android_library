@@ -32,7 +32,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "IntervalData({17,Less,Less,Infinity})||IntervalData({-Infinity,Less,Less,42})");
   }
 
-  public void testIntervalComplemen1() {
+  public void testIntervalComplement1() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(3))),
             F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(2)))));
@@ -41,7 +41,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
-  public void testIntervalComplemen2() {
+  public void testIntervalComplement2() {
     IExpr interval1 =
         F.eval(F.IntervalUnion(F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(1))),
             F.IntervalData(F.List(F.ZZ(3), F.LessEqual, F.LessEqual, F.ZZ(3))),
@@ -57,23 +57,23 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
-  public void testIntervalComplemen3() {
-    IExpr interval1 = F.eval(F.IntervalUnion(F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.LessEqual, F.ZZ(2))),
-        F.IntervalData(F.List(F.ZZ(2), F.LessEqual, F.LessEqual, F.ZZ(2))),
-        F.IntervalData(F.List(F.ZZ(3), F.LessEqual, F.LessEqual, F.ZZ(3))),
-        F.IntervalData(F.List(F.ZZ(4), F.LessEqual, F.LessEqual, F.ZZ(4)))));
+  public void testIntervalComplement3() {
+    IExpr interval1 =
+        F.eval(F.IntervalUnion(F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.LessEqual, F.ZZ(2))),
+            F.IntervalData(F.List(F.ZZ(2), F.LessEqual, F.LessEqual, F.ZZ(2))),
+            F.IntervalData(F.List(F.ZZ(3), F.LessEqual, F.LessEqual, F.ZZ(3))),
+            F.IntervalData(F.List(F.ZZ(4), F.LessEqual, F.LessEqual, F.ZZ(4)))));
     System.out.println(interval1);
-    IExpr iExprResult = F.eval(F.IntervalComplement(
-        interval1,
+    IExpr iExprResult = F.eval(F.IntervalComplement(interval1,
         F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(3)))));
 
-    // IExpr iExprExpected =
-    // F.eval(F.IntervalUnion(F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.Less, F.ZZ(1))),
-    // F.IntervalData(F.List(F.ZZ(4), F.LessEqual, F.LessEqual, F.ZZ(4)))));
-    assertEquals(iExprResult.toString(), "IntervalData({2,Less,Less,3},{4,LessEqual,LessEqual,4})");
+    IExpr iExprExpected =
+        F.eval(F.IntervalUnion(F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.Less, F.ZZ(1))),
+            F.IntervalData(F.List(F.ZZ(4), F.LessEqual, F.LessEqual, F.ZZ(4)))));
+    assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
-  public void testIntervalComplemen4() {
+  public void testIntervalComplement4() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.LessEqual, F.ZZ(5))),
             F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(4)))));
@@ -84,7 +84,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
-  public void testIntervalComplemen5() {
+  public void testIntervalComplement5() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity)),
             F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.Less, F.CInfinity))));
@@ -93,7 +93,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
-  public void testIntervalComplemen6() {
+  public void testIntervalComplement6() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(3))),
             F.IntervalData(F.List(F.ZZ(2), F.LessEqual, F.LessEqual, F.ZZ(3)))));
@@ -102,7 +102,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
-  public void testIntervalComplemen7() {
+  public void testIntervalComplement7() {
     IExpr iExprResult =
         F.eval(F.IntervalComplement(F.IntervalData(F.List(F.ZZ(1), F.Less, F.LessEqual, F.ZZ(3))),
             F.IntervalData(F.List(F.ZZ(2), F.LessEqual, F.LessEqual, F.ZZ(3)))));
@@ -111,7 +111,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
-  public void testIntervalComplemen8() {
+  public void testIntervalComplement8() {
     IExpr iExprResult =
         F.eval(F.IntervalComplement(F.IntervalData(F.List(F.ZZ(1), F.Less, F.LessEqual, F.ZZ(3))),
             F.IntervalData(F.List(F.ZZ(2), F.Less, F.LessEqual, F.ZZ(3)))));
@@ -119,7 +119,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
-  public void testIntervalComplemen9() {
+  public void testIntervalComplement9() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.LessEqual, F.ZZ(2))),
             F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(1)))));
@@ -130,7 +130,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
-  public void testIntervalComplemen10() {
+  public void testIntervalComplement10() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity)),
             F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.LessEqual, F.ZZ(1)))));
@@ -140,7 +140,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
-  public void testIntervalComplemen11() {
+  public void testIntervalComplement11() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity)),
             F.IntervalData(F.List(F.ZZ(0), F.Less, F.LessEqual, F.ZZ(1)))));
@@ -150,7 +150,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
-  public void testIntervalComplemen12() {
+  public void testIntervalComplement12() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity)),
             F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.Less, F.ZZ(1)))));
@@ -160,7 +160,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
-  public void testIntervalComplemen13() {
+  public void testIntervalComplement13() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity)),
             F.IntervalData(F.List(F.ZZ(0), F.Less, F.Less, F.ZZ(1)))));
@@ -170,17 +170,15 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
-  public void testIntervalComplemen14() {
-    IExpr interval2 = F.eval(F.IntervalUnion(
-        F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.LessEqual, F.ZZ(1))),
-        F.IntervalData(F.List(F.ZZ(2), F.LessEqual, F.LessEqual, F.ZZ(3)))));
+  public void testIntervalComplement14() {
+    IExpr interval2 =
+        F.eval(F.IntervalUnion(F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.LessEqual, F.ZZ(1))),
+            F.IntervalData(F.List(F.ZZ(2), F.LessEqual, F.LessEqual, F.ZZ(3)))));
     System.out.println(interval2.toString());
-    IExpr iExprResult =
-        F.eval(
-            F.IntervalComplement(F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity)),
-                interval2));
-    IExpr iExprExpected = F.eval(F.IntervalUnion(
-        F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.ZZ(0))),
+    IExpr iExprResult = F.eval(F.IntervalComplement(
+        F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity)), interval2));
+    IExpr iExprExpected =
+        F.eval(F.IntervalUnion(F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.ZZ(0))),
             F.IntervalData(F.List(F.ZZ(1), F.Less, F.Less, F.ZZ(2))),
             F.IntervalData(F.List(F.ZZ(3), F.Less, F.Less, F.CInfinity))));
     assertEquals(iExprResult.toString(), iExprExpected.toString());
@@ -188,10 +186,45 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
 
 
   public void testIntervalDataComplement() {
+    check("IntervalComplement(IntervalData({-Infinity, LessEqual, LessEqual, Infinity})," //
+        + "IntervalData({-Infinity, Less, Less, Infinity}))", //
+        "IntervalData()");
+    check("IntervalComplement(IntervalData({-Infinity, LessEqual, LessEqual, Infinity})," //
+        + "IntervalData({-Infinity, LessEqual, LessEqual, Infinity}))", //
+        "IntervalData()");
+
+    check("IntervalComplement(IntervalData({-3/4, LessEqual, LessEqual, 3/4})," //
+        + "IntervalData({-3/4, LessEqual, LessEqual, 3/4}))", //
+        "IntervalData()");
+    check("IntervalComplement(IntervalData()," //
+        + "IntervalData({-42, LessEqual, LessEqual, 42}))", //
+        "IntervalData()");
+    check("IntervalComplement(IntervalData({-3/4, LessEqual, LessEqual, 3/4})," //
+        + "IntervalData( ))", //
+        "IntervalData({-3/4,LessEqual,LessEqual,3/4})");
+
+    check("IntervalComplement(IntervalData({-3, Less, Less, 4})," //
+        + "IntervalData({-3, LessEqual, LessEqual, 1}))", //
+        "IntervalData({1,Less,Less,4})");
+    check("IntervalComplement(IntervalData({-3, LessEqual, Less, 4})," //
+        + "IntervalData({-3, Less, LessEqual, 1}))", //
+        "IntervalData({-3,LessEqual,LessEqual,-3},{1,Less,Less,4})");
+
+    check("IntervalComplement(IntervalData({-3, LessEqual, Less, 4})," //
+        + "IntervalData({-3, LessEqual, LessEqual, 1}))", //
+        "IntervalData({1,Less,Less,4})");
+
+
+    check("IntervalComplement(IntervalData({-4, LessEqual, Less, 3})," //
+        + "IntervalData({0, LessEqual, LessEqual, 3}))", //
+        "IntervalData({-4,LessEqual,Less,0})");
+    check("IntervalComplement(IntervalData({-4, LessEqual, LessEqual, 3})," //
+        + "IntervalData({0, LessEqual, Less, 3}))", //
+        "IntervalData({-4,LessEqual,Less,0},{3,LessEqual,LessEqual,3})");
 
     check("IntervalComplement(IntervalData({1/2, LessEqual, LessEqual, 3})," //
         + "IntervalData({0, LessEqual, LessEqual, 1}, {E, LessEqual, Less, 4}))", //
-        "IntervalData({1,Less,Less,3},{3,Less,LessEqual,4})");
+        "IntervalData({1,Less,Less,E})");
     check("IntervalComplement(ToIntervalData(Reals)," //
         + "IntervalData({0, LessEqual, LessEqual, 1}, {E, LessEqual, Less, 4}))", //
         "IntervalData({-Infinity,Less,Less,0},{1,Less,Less,E},{4,LessEqual,Less,Infinity})");

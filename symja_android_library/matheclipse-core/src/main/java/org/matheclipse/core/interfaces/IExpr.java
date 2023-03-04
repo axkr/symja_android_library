@@ -2524,6 +2524,10 @@ public interface IExpr
     return false;
   }
 
+  default boolean isEmptyIntervalData() {
+    return false;
+  }
+
   /**
    * Test if this expression is a closed/open ended interval expression with one
    * <code>List[min, max]</code> argument <code>Interval[{min, max}]</code>

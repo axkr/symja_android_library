@@ -592,6 +592,12 @@ public class F extends S {
   /** Represents <code>List()</code> (i.e. the constant empty list) */
   public static final IAST CEmptyList;
 
+  /** Represents <code>Interval()</code> (i.e. the constant empty interval with closed ends) */
+  public static final IAST CEmptyInterval;
+
+  /** Represents <code>Interval()</code> (i.e. the constant empty interval with closed/open ends) */
+  public static final IAST CEmptyIntervalData;
+
   /** Represents <code>Missing("NotFound")</code> */
   public static final IAST CMissingNotFound;
 
@@ -819,6 +825,8 @@ public class F extends S {
 
       CEmptySequence = headAST0(Sequence);
       CEmptyList = headAST0(List).functionEvaled();
+      CEmptyInterval = headAST0(Interval).functionEvaled();
+      CEmptyIntervalData = headAST0(IntervalData).functionEvaled();
       CEmptyString = $str("");
       CMissingNotFound = Missing("NotFound").functionEvaled();
       CListC0 = new B1.List(C0).functionEvaled();
