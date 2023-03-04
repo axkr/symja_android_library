@@ -425,22 +425,11 @@ public class GraphicsOptions {
     if (axesOptions.isList2()) {
       IExpr a1 = axesOptions.first();
       IExpr a2 = axesOptions.second();
-      ArrayNode an = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
-      if (a1.isTrue()) {
-        an.add(true);
-      } else {
-        an.add(false);
-      }
-      if (a2.isTrue()) {
-        an.add(true);
-      } else {
-        an.add(false);
-      }
-      g.set("hasaxes", an);
+      hasAxesJSON(g, a1, a2);
     } else if (axesOptions.isTrue()) {
-      g.put("hasaxes", true);
+      hasAxesJSON(g, S.True, S.True);
     } else if (axesOptions.isFalse()) {
-      g.put("hasaxes", false);
+      hasAxesJSON(g, S.False, S.False);
     } else {
       return false;
     }
@@ -450,6 +439,21 @@ public class GraphicsOptions {
     }
     axes.set("axes", g);
     return true;
+  }
+
+  private static void hasAxesJSON(ObjectNode g, IExpr a1, IExpr a2) {
+    ArrayNode an = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
+    if (a1.isTrue()) {
+      an.add(true);
+    } else {
+      an.add(false);
+    }
+    if (a2.isTrue()) {
+      an.add(true);
+    } else {
+      an.add(false);
+    }
+    g.set("hasaxes", an);
   }
 
   public void graphics2DFilling(ArrayNode arrayNode) {
