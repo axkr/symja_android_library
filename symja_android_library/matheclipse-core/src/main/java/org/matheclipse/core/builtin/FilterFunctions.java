@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import it.unimi.dsi.fastutil.ints.IntList;
 
 public class FilterFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -38,6 +39,12 @@ public class FilterFunctions {
       try {
         if (ast.arg1().isList()) {
           IAST list = (IAST) ast.arg1();
+          IntList dims = LinearAlgebra.dimensions(list);
+          if (dims.size() != 1) {
+            // Function `1` not implemented
+            return IOFunctions.printMessage(ast.topHead(), "zznotimpl",
+                F.List(F.stringx("\"with dimension other than 1\"")), engine);
+          }
           final int radius = ast.arg2().toIntDefault();
           if (radius >= 0) {
             return filterHead(list, radius, filterHead(), engine);
