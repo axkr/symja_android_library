@@ -17,8 +17,7 @@ package org.matheclipse.parser.client.math;
 
 /**
  * Some useful additions to the built-in functions in {@link Math}.
- *
- * @version $Revision: 1.1 $ $Date: 2008-02-10 12:28:59 -0700 (Sun, 10 Feb 2008) $
+ * 
  */
 public final class MathUtils {
 

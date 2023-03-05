@@ -20,8 +20,10 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- * A list of <code>ASTNode</code>'s which represents a parsed function.<br/s> The head of the
- * function (i.e. Sin, Cos, Times,...) is stored in the 0-th index of the list.<br>
+ * <p>
+ * A list of <code>ASTNode</code>'s which represents a parsed function.
+ * <p>
+ * The head of the function (i.e. Sin, Cos, Times,...) is stored in the 0-th index of the list.<br>
  * The arguments of the function are stored in the 1...n-th index of the list.
  */
 public final class FunctionNode extends ASTNode implements List<ASTNode> {

@@ -274,6 +274,9 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
 
   public void testTimes() {
     check(
+        "IntervalData({1,Less,Less, 6}) * IntervalData({0, Less,Less,2})", //
+        "IntervalData({0,Less,Less,12})");
+    check(
         "IntervalData({-1/2, LessEqual, LessEqual, 1/2})*IntervalData( {2, Less, LessEqual, 3 +   1/2})", //
         "IntervalData({-7/4,LessEqual,LessEqual,7/4})");
     check(

@@ -21,7 +21,7 @@ public interface IConstantOperators {
 
   public static final String Inequality = "Inequality";
 
-  /** Head for lists (i.e. &lt;|a->,b,...|&gt; ) */
+  /** Head for lists (i.e. &lt;|a-&lt;,b,...|&gt; ) */
   public static final String Association = "Association";
 
   /** Head for partial derivative */
