@@ -4,7 +4,7 @@
 Interval({a, b})
 ```
 
-> represents the interval from `a` to `b`.
+> represents the closed interval from `a` to `b`.
 
 
 See 

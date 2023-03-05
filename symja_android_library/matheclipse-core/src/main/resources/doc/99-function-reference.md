@@ -464,6 +464,8 @@
 * [Interrupt](functions/Interrupt.md)
 * [Intersection](functions/Intersection.md)
 * [Interval](functions/Interval.md)
+* [IntervalComplement](functions/IntervalComplement.md)
+* [IntervalData](functions/IntervalData.md)
 * [IntervalIntersection](functions/IntervalIntersection.md)
 * [IntervalMemberQ](functions/IntervalMemberQ.md)
 * [IntervalUnion](functions/IntervalUnion.md)

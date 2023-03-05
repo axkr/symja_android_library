@@ -7,7 +7,7 @@ IntervalUnion(interval_1, interval_2, ...)
 > compute the union of the intervals `interval_1, interval_2, ...`
 
 
-See 
+See:
 * [Wikipedia - Interval arithmetic](https://en.wikipedia.org/wiki/Interval_arithmetic)
 * [Wikipedia - Interval (mathematics)](https://en.wikipedia.org/wiki/Interval_(mathematics))
 
