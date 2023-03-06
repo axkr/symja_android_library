@@ -230,6 +230,13 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "IntervalData({-Infinity,Less,Less,0},{1,Less,Less,E},{4,LessEqual,Less,Infinity})");
   }
 
+
+
+  public void testIntervalDataNonsense() {
+    check("IntervalData(True,2+I,7*Sqrt(2))", //
+        "IntervalData(True,2+I,7*Sqrt(2))");
+  }
+
   public void testIntervalData() {
     check("IntervalData({1,LessEqual,  Less, -1 })", //
         "IntervalData({-1,Less,LessEqual,1})");

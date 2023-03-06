@@ -130,6 +130,7 @@ public class IntervalDataSym {
               left1 = (IBuiltInSymbol) list1.arg2();
               right1 = (IBuiltInSymbol) list1.arg3();
               max1 = list1.arg4();
+              continue;
             } else if (max2.less(max1).isTrue()) {
               evaled = true;
               result.remove(i);
@@ -139,9 +140,14 @@ public class IntervalDataSym {
               left1 = (IBuiltInSymbol) list1.arg2();
               right1 = (IBuiltInSymbol) list1.arg3();
               max1 = list1.arg4();
+              continue;
             }
           }
         }
+
+        // The expression `1` is not a valid interval.
+        IOFunctions.printMessage(S.IntervalData, "nvld", F.list(intervalList.get(i)), engine);
+        return F.INVALID;
       }
       result.set(j, list1);
     }
@@ -174,59 +180,67 @@ public class IntervalDataSym {
   private static IAST normalizeArgument(final IExpr arg, final EvalEngine engine) {
     if (arg.isList()) {
       if (arg.argSize() == 4) {
-        IAST list = (IAST) arg;
-        IExpr arg1 = list.arg1();
-        IExpr arg4 = list.arg4();
-        if (arg1.isReal() && arg4.isReal()) {
-          if (arg1.greaterThan(arg4).isTrue()) {
-            return F.List(arg4, //
-                list.arg3(), //
-                list.arg2(), //
-                arg1);
+        try {
+          IAST list = (IAST) arg;
+          IExpr arg1 = list.arg1();
+          IBuiltInSymbol left = (IBuiltInSymbol) list.arg2();
+          if (left != S.Less && left != S.LessEqual) {
+            return F.INVALID;
           }
-          if (S.Equal.ofQ(arg1, arg4)) {
-            IBuiltInSymbol left = (IBuiltInSymbol) list.arg2();
-            IBuiltInSymbol right = (IBuiltInSymbol) list.arg3();
-            if (left == S.Less && right == S.Less) {
-              return F.CEmptyList;
+          IBuiltInSymbol right = (IBuiltInSymbol) list.arg3();
+          if (right != S.Less && right != S.LessEqual) {
+            return F.INVALID;
+          }
+          IExpr arg4 = list.arg4();
+          if (arg1.isReal() && arg4.isReal()) {
+            if (arg1.greaterThan(arg4).isTrue()) {
+              return F.List(arg4, //
+                  list.arg3(), //
+                  list.arg2(), //
+                  arg1);
             }
-            if (left == S.Less || right == S.Less) {
-              return F.List(arg1, //
-                  S.LessEqual, //
-                  S.LessEqual, //
-                  arg4);
+            if (S.Equal.ofQ(arg1, arg4)) {
+              if (left == S.Less && right == S.Less) {
+                return F.CEmptyList;
+              }
+              if (left == S.Less || right == S.Less) {
+                return F.List(arg1, //
+                    S.LessEqual, //
+                    S.LessEqual, //
+                    arg4);
+              }
             }
+            return F.NIL;
+          }
+          IExpr min = arg1.isNumber() ? arg1 : engine.evaluate(arg1);
+          IExpr max = arg4.isNumber() ? arg4 : engine.evaluate(arg4);
+          if (min.isRealResult() && max.isRealResult()) {
+            if (min.greaterThan(max).isTrue()) {
+              return F.List(max, //
+                  list.arg3(), //
+                  list.arg2(), //
+                  min);
+            }
+          }
+          boolean evaled = false;
+          if (min.isInfinity() || min.isNegativeInfinity()) {
+            left = S.Less;
+            evaled = true;
+          }
+          if (max.isInfinity() || max.isNegativeInfinity()) {
+            right = S.Less;
+            evaled = true;
+          }
+          if (evaled) {
+            return F.List(min, //
+                left, //
+                right, //
+                max);
           }
           return F.NIL;
+        } catch (ClassCastException cce) {
+          // wrong IntervalData
         }
-        IExpr min = arg1.isNumber() ? arg1 : engine.evaluate(arg1);
-        IExpr max = arg4.isNumber() ? arg4 : engine.evaluate(arg4);
-        if (min.isRealResult() && max.isRealResult()) {
-          if (min.greaterThan(max).isTrue()) {
-            return F.List(max, //
-                list.arg3(), //
-                list.arg2(), //
-                min);
-          }
-        }
-        IBuiltInSymbol left = (IBuiltInSymbol) list.arg2();
-        IBuiltInSymbol right = (IBuiltInSymbol) list.arg3();
-        boolean evaled = false;
-        if (min.isInfinity() || min.isNegativeInfinity()) {
-          left = S.Less;
-          evaled = true;
-        }
-        if (max.isInfinity() || max.isNegativeInfinity()) {
-          right = S.Less;
-          evaled = true;
-        }
-        if (evaled) {
-          return F.List(min, //
-              left, //
-              right, //
-              max);
-        }
-        return F.NIL;
       }
       // The expression `1` is not a valid interval.
       return F.INVALID;
@@ -261,8 +275,8 @@ public class IntervalDataSym {
         IAST list1 = (IAST) interval1.get(i);
         IExpr min1 = list1.arg1();
         IExpr max1 = list1.arg4();
-        IBuiltInSymbol left1 = ((IBuiltInSymbol) list1.arg2());
-        IBuiltInSymbol right1 = ((IBuiltInSymbol) list1.arg3());
+        IBuiltInSymbol left1 = (IBuiltInSymbol) list1.arg2();
+        IBuiltInSymbol right1 = (IBuiltInSymbol) list1.arg3();
 
         for (int j = 1; j < interval2.size(); j++) {
           IAST list2 = (IAST) interval2.get(j);
@@ -355,12 +369,7 @@ public class IntervalDataSym {
         right = precedence(symbols[1], symbols[3]);
         break;
     }
-    IAST list = F.List(//
-        min, //
-        left, //
-        right, //
-        max);
-    return list;
+    return F.List(min, left, right, max);
   }
 
   private static IBuiltInSymbol precedenceUnion(IBuiltInSymbol s1, IBuiltInSymbol s2) {
