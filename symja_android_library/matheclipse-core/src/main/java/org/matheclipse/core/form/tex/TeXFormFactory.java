@@ -198,48 +198,14 @@ public class TeXFormFactory {
           } else {
             buffer.append("\\right]");
           }
+          if (i < f.size() - 1) {
+            buffer.append("\\, ");
+          }
         }
       }
       return true;
     }
 
-    public boolean iteratorStep(final StringBuilder buf, final String mathSymbol, final IAST f,
-        int i) {
-      if (i >= f.size()) {
-        buf.append(" ");
-        fFactory.convertInternal(buf, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-        return true;
-      }
-      if (f.get(i).isList()) {
-        IAST list = (IAST) f.get(i);
-        if (list.size() == 4 && list.arg1().isSymbol()) {
-          ISymbol symbol = (ISymbol) list.arg1();
-          buf.append(mathSymbol);
-          buf.append("_{");
-          fFactory.convertInternal(buf, list.arg2(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-          buf.append("}^{");
-          fFactory.convertInternal(buf, list.arg3(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-          buf.append('}');
-          if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
-            return false;
-          }
-          buf.append("\\,\\mathrm{d}");
-          fFactory.convertSymbol(buf, symbol);
-          return true;
-        }
-      } else if (f.get(i).isSymbol()) {
-        ISymbol symbol = (ISymbol) f.get(i);
-        buf.append(mathSymbol);
-        buf.append(" ");
-        if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
-          return false;
-        }
-        buf.append("\\,\\mathrm{d}");
-        fFactory.convertSymbol(buf, symbol);
-        return true;
-      }
-      return false;
-    }
   }
 
   private static final class Conjugate extends AbstractOperator {
