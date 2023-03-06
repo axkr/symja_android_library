@@ -446,7 +446,6 @@ public class ASTNodeFactory implements INodeParserFactory {
     }
   }
 
-  /** public Map<String, Operator> getIdentifier2OperatorMap() */
   @Override
   public Map<String, Operator> getIdentifier2OperatorMap() {
     return fOperatorMap;
@@ -457,13 +456,11 @@ public class ASTNodeFactory implements INodeParserFactory {
     return fOperatorMap.get(identifier);
   }
 
-  /** */
   @Override
   public Map<String, ArrayList<Operator>> getOperator2ListMap() {
     return fOperatorTokenStartSet;
   }
 
-  /** */
   @Override
   public List<Operator> getOperatorList(final String key) {
     return fOperatorTokenStartSet.get(key);

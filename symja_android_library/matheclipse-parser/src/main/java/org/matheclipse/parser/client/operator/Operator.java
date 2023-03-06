@@ -47,7 +47,7 @@ public abstract class Operator {
     return fOperatorString;
   }
 
-  /** @return <code>true</code> if the operator string equals str< */
+  /** @return <code>true</code> if the operator string equals str */
   public boolean isOperator(String str) {
     return fOperatorString.equals(str);
   }

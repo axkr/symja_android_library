@@ -145,13 +145,7 @@ public class Config {
 
   /**
    * The time in milliseconds an evaluation thread should run.<br>
-   * 0 => forever
-   */
-  // public static long TIME_CONSTRAINED_MILLISECONDS = 60000L;
-
-  /**
-   * The time in milliseconds an evaluation thread should run.<br>
-   * 0 => forever
+   * 0 =&gt; forever
    */
   public static final long FOREVER = 0L;
 
@@ -180,7 +174,7 @@ public class Config {
 
   /**
    * Shorten an output string to a maximum length of <code>SHORTEN_STRING_LENGTH</code> characters.
-   * Print <<SHORT>> as substitute of the middle of the expression if necessary.
+   * Print &lt;&lt;SHORT&gt;&gt; as substitute of the middle of the expression if necessary.
    */
   public static int SHORTEN_STRING_LENGTH = 80;
 

@@ -302,16 +302,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   public void clearHashCache();
 
   /**
-   * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not
-   * cloned).
-   *
-   * @return a clone of this <code>IAST</code> instance.
-   * @deprecated use {@link #copyAppendable()} or {@link #copy()}
-   */
-  // @Deprecated
-  // public IAST clone() throws CloneNotSupportedException;
-
-  /**
    * Compare all adjacent elements from lowest to highest index and return true, if the binary
    * predicate gives true in each step. If the size is &lt; 2 the method returns false;
    *
@@ -984,6 +974,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    * @return the element at the specified location.
    * @throws IndexOutOfBoundsException if {@code location < 0 || >= size()}
    */
+  @Override
   public IExpr get(int location);
 
   /**

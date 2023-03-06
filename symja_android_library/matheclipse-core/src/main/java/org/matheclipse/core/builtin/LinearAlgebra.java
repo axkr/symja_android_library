@@ -934,6 +934,16 @@ public final class LinearAlgebra {
      * @return
      */
     public static IAST generateCharacteristicPolynomial(int dim, IAST matrix, IExpr variable) {
+      // TODO use JAS public GenPolynomial<C> charPolynomial(GenMatrix<C> A) {
+      // see: https://en.wikipedia.org/wiki/Faddeev%E2%80%93LeVerrier_algorithm
+
+      // BigRational rf = new BigRational();
+      // ComplexRing<BigRational> cf = new ComplexRing<BigRational>(rf);
+      // String[] vars = new String[] {variable.toString()};
+      // GenPolynomialRing<edu.jas.poly.Complex<BigRational>> pf =
+      // new GenPolynomialRing<edu.jas.poly.Complex<BigRational>>(cf, vars);
+      // GenMatrix<edu.jas.poly.Complex<BigRational>> A;
+      // pf.charPolynomial(A);
       final IExpr[] valuesForIdentityMatrix = {F.C0, variable};
       return F.Det(F.Subtract(matrix, diagonalMatrix(valuesForIdentityMatrix, dim)));
     }
@@ -949,7 +959,11 @@ public final class LinearAlgebra {
           // `1` is not a valid variable.
           return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(variable), engine);
         }
-        return generateCharacteristicPolynomial(dimensions[0], matrix, variable);
+        IAST det = generateCharacteristicPolynomial(dimensions[0], matrix, variable);
+        IExpr polynomial = engine.evaluate(det);
+        if (!polynomial.isList()) {
+          return polynomial;
+        }
       }
 
       return F.NIL;

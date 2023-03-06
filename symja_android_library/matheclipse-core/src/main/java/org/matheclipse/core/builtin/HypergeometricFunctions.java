@@ -840,6 +840,9 @@ public class HypergeometricFunctions {
           // (E^z * (-1 + a + z)) / (-1 + a)
           return F.Times(F.Power(S.E, z), F.Divide(F.Plus(F.CN1, a, z), F.Plus(a, F.CN1)));
         }
+        // if (engine.isArbitraryMode()) {
+        // HypergeometricHelper
+        // }
         if (engine.isDoubleMode()) {
 
           double aDouble = Double.NaN;
@@ -1100,8 +1103,8 @@ public class HypergeometricFunctions {
             Complex AC[] = a.toComplexVector();
             Complex BC[] = b.toComplexVector();
             if (AC != null && BC != null) {
-              return F.complexNum(HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalfc(),
-                  Config.DOUBLE_TOLERANCE));
+              return F.complexNum(
+                  HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalfc(), Config.DOUBLE_TOLERANCE));
             }
           } else {
             INum result = F.num(HypergeometricJS.hypergeometricPFQ(A, B, cDouble));

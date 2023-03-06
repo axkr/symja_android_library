@@ -360,7 +360,7 @@ public final class BooleanFunctions {
             case ID.Nor:
               if (ast.isSameHeadSizeGE(S.Nor, 3)) {
                 Formula[] result = new Formula[ast.argSize()];
-                 ast.forEach((x, i) -> {
+                ast.forEach((x, i) -> {
                   result[i - 1] = factory.not(expr2BooleanFunction(x, substituteExpressions));
                 });
                 return factory.and(result);
@@ -4965,9 +4965,9 @@ public final class BooleanFunctions {
   }
 
   /**
-   * Transform <code>Inequality()</code> AST to <code>And()</code> expression.
+   * Transform the {@link S#Inequality} AST to an {@link S#And} expression.
    *
-   * @param ast an Inequality AST with <code>size()>=4</code>.
+   * @param ast an {@link S#Inequality} AST with <code>size() &gt;= 4</code>.
    * @return
    */
   public static IAST inequality2And(final IAST ast) {
@@ -5028,8 +5028,8 @@ public final class BooleanFunctions {
 
   /**
    * Example: Create a list of rules in the form <code>
-   * {{a->False,b->True,c->False,d->False},{a->True,b->False,c->False,d->False},...}</code> for the
-   * variables <code>{a,b,c,d}</code>
+   * {{a-&gt;False,b-&gt;True,c-&gt;False,d-&gt;False},{a-&gt;True,b-&gt;False,c-&gt;False,d-&gt;False},...}</code>
+   * for the variables <code>{a,b,c,d}</code>
    *
    * @param booleanExpression an expression build from symbols and boolean operators like <code>
    *     And, Or, Not, Xor, Nand, Nor, Implies, Equivalent,...</code>

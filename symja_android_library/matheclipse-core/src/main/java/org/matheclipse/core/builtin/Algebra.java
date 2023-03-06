@@ -5531,7 +5531,7 @@ public class Algebra {
    * numerator / Times( ... )</code> for the given <code>variable</code>
    *
    * @param numerator the numerator of the fraction expression
-   * @param denominatorTimes the <codeTimes( ... )</code> expression of the denominator of the
+   * @param denominatorTimes the <code>Times( ... )</code> expression of the denominator of the
    *        fraction expression
    * @param variable
    * @param count the recursion level

@@ -18,7 +18,7 @@ import org.matheclipse.tools.AbstractCodeGenerator;
  *
  * <pre>
  * MATCHER.caseOf(Csch(x_), //
- *     x -> // [$ 2/(E^x-E^(-x)) $]
+ *     x -&gt; // [$ 2/(E^x-E^(-x)) $]
  *     F.Times(F.C2, F.Power(F.Plus(F.Negate(F.Power(F.E, F.Negate(x))), F.Power(F.E, x)), -1))); // $$);
  * </pre>
  */

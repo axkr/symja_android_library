@@ -5817,7 +5817,7 @@ public final class NumberTheory {
    * Returns the Stirling number of the second kind, "{@code S(n,k)}", the number of ways of
    * partitioning an {@code n}-element set into {@code k} non-empty subsets.
    *
-   * @param n the size of the set. Must be a value > 0
+   * @param n the size of the set. Must be a value &gt; 0
    * @param k the number of non-empty subsets
    * @param ki the number of non-empty subsets as int value
    * @return {@code S2(nArg1,kArg2)} or throw <code>ArithmeticException</code> if <code>n</code>

@@ -2742,7 +2742,8 @@ public final class PatternMatching {
   }
 
   /**
-   * Returns a list of the default options of a symbol defined by <code>Option(f)={a->b,...}</code>.
+   * Returns a list of the default options of a symbol defined by
+   * <code>Option(f)={a-&gt;b,...}</code>.
    *
    * @param symbol
    * @param optionValueRules convert to &quot;string&quot;" rules, suitable for <code>OptionValue

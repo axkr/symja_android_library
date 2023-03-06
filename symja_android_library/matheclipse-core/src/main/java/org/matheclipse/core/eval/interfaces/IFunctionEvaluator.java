@@ -276,8 +276,8 @@ public interface IFunctionEvaluator extends IEvaluator {
    *
    * <p>
    * <b>Example:</b> the expression <code>Binomial(n,m)</code> is represented as AST with <code>
-   * ast.head() <=> F.Binomial</code>, <code>ast.arg1() <=> n</code> and <code>ast.arg2() <=> m
-   * </code>
+   * ast.head() &lt;=&gt; F.Binomial</code>, <code>ast.arg1() &lt;=&gt; n</code> and
+   * <code>ast.arg2() &lt;=&gt; m</code>
    *
    * <p>
    * If necessary use the methods from the <code>Validate</code> class to check the number or types
@@ -310,8 +310,8 @@ public interface IFunctionEvaluator extends IEvaluator {
    *
    * <p>
    * <b>Example:</b> the expression <code>Binomial(n,m)</code> is represented as AST with <code>
-   * ast.head() <=> F.Binomial</code>, <code>ast.arg1() <=> n</code> and <code>ast.arg2() <=> m
-   * </code>
+   * ast.head() &lt;=&gt; F.Binomial</code>, <code>ast.arg1() &lt;=&gt; n</code> and
+   * <code>ast.arg2() &lt;=&gt; m</code>
    *
    * <p>
    * If necessary use the methods from the <code>Validate</code> class to check the number or types

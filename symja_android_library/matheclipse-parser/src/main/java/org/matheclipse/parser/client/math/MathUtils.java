@@ -455,7 +455,7 @@ public final class MathUtils {
   }
 
   /**
-   * For a byte value x, this method returns (byte)(+1) if x >= 0 and (byte)(-1) if x < 0.
+   * For a byte value x, this method returns (byte)(+1) if x &gt;= 0 and (byte)(-1) if x &lt; 0.
    *
    * @param x the value, a byte
    * @return (byte)(+1) or (byte)(-1), depending on the sign of x
@@ -465,8 +465,8 @@ public final class MathUtils {
   }
 
   /**
-   * For a double precision value x, this method returns +1.0 if x >= 0 and -1.0 if x < 0. Returns
-   * <code>NaN</code> if <code>x</code> is <code>NaN</code>.
+   * For a double precision value x, this method returns +1.0 if x &gt;= 0 and -1.0 if x &lt; 0.
+   * Returns <code>NaN</code> if <code>x</code> is <code>NaN</code>.
    *
    * @param x the value, a double
    * @return +1.0 or -1.0, depending on the sign of x
@@ -479,8 +479,8 @@ public final class MathUtils {
   }
 
   /**
-   * For a float value x, this method returns +1.0F if x >= 0 and -1.0F if x < 0. Returns <code>NaN
-   * </code> if <code>x</code> is <code>NaN</code>.
+   * For a float value x, this method returns +1.0F if x &gt;= 0 and -1.0F if x &lt; 0. Returns
+   * <code>NaN</code> if <code>x</code> is <code>NaN</code>.
    *
    * @param x the value, a float
    * @return +1.0F or -1.0F, depending on the sign of x
@@ -493,7 +493,7 @@ public final class MathUtils {
   }
 
   /**
-   * For an int value x, this method returns +1 if x >= 0 and -1 if x < 0.
+   * For an int value x, this method returns +1 if x &gt;= 0 and -1 if x &lt; 0.
    *
    * @param x the value, an int
    * @return +1 or -1, depending on the sign of x
@@ -503,7 +503,7 @@ public final class MathUtils {
   }
 
   /**
-   * For a long value x, this method returns +1L if x >= 0 and -1L if x < 0.
+   * For a long value x, this method returns +1L if x &gt;= 0 and -1L if &lt; 0.
    *
    * @param x the value, a long
    * @return +1L or -1L, depending on the sign of x
@@ -513,7 +513,7 @@ public final class MathUtils {
   }
 
   /**
-   * For a short value x, this method returns (short)(+1) if x >= 0 and (short)(-1) if x < 0.
+   * For a short value x, this method returns (short)(+1) if x &gt;= 0 and (short)(-1) if x &lt; 0.
    *
    * @param x the value, a short
    * @return (short)(+1) or (short)(-1), depending on the sign of x
@@ -627,7 +627,7 @@ public final class MathUtils {
   }
 
   /**
-   * Normalize an angle in a 2&pi wide interval around a center value.
+   * Normalize an angle in a 2&pi; wide interval around a center value.
    *
    * <p>
    * This method has three main uses:
@@ -660,8 +660,8 @@ public final class MathUtils {
    * </code>.
    *
    * <p>
-   * For a byte value x, this method returns (byte)(+1) if x > 0, (byte)(0) if x = 0, and (byte)(-1)
-   * if x < 0.
+   * For a byte value x, this method returns (byte)(+1) if x &gt; 0, (byte)(0) if x = 0, and
+   * (byte)(-1) if x &lt; 0.
    *
    * @param x the value, a byte
    * @return (byte)(+1), (byte)(0), or (byte)(-1), depending on the sign of x
@@ -675,9 +675,9 @@ public final class MathUtils {
    * <code>x</code>.
    *
    * <p>
-   * For a double value <code>x</code>, this method returns <code>+1.0</code> if <code>x > 0
-   * </code>, <code>0.0</code> if <code>x = 0.0</code>, and <code>-1.0</code> if <code>x < 0</code>.
-   * Returns <code>NaN</code> if <code>x</code> is <code>NaN</code>.
+   * For a double value <code>x</code>, this method returns <code>+1.0</code> if <code>x &gt; 0
+   * </code>, <code>0.0</code> if <code>x = 0.0</code>, and <code>-1.0</code> if
+   * <code>x &lt; 0</code>. Returns <code>NaN</code> if <code>x</code> is <code>NaN</code>.
    *
    * @param x the value, a double
    * @return +1.0, 0.0, or -1.0, depending on the sign of x
@@ -694,8 +694,8 @@ public final class MathUtils {
    * </code>.
    *
    * <p>
-   * For a float value x, this method returns +1.0F if x > 0, 0.0F if x = 0.0F, and -1.0F if x < 0.
-   * Returns <code>NaN</code> if <code>x</code> is <code>NaN</code>.
+   * For a float value x, this method returns +1.0F if x &gt; 0, 0.0F if x = 0.0F, and -1.0F if x
+   * &lt; 0. Returns <code>NaN</code> if <code>x</code> is <code>NaN</code>.
    *
    * @param x the value, a float
    * @return +1.0F, 0.0F, or -1.0F, depending on the sign of x
@@ -712,7 +712,7 @@ public final class MathUtils {
    * </code>.
    *
    * <p>
-   * For an int value x, this method returns +1 if x > 0, 0 if x = 0, and -1 if x < 0.
+   * For an int value x, this method returns +1 if x &gt; 0, 0 if x = 0, and -1 if x &lt; 0.
    *
    * @param x the value, an int
    * @return +1, 0, or -1, depending on the sign of x
@@ -726,7 +726,7 @@ public final class MathUtils {
    * </code>.
    *
    * <p>
-   * For a long value x, this method returns +1L if x > 0, 0L if x = 0, and -1L if x < 0.
+   * For a long value x, this method returns +1L if x &gt; 0, 0L if x = 0, and -1L if x &lt; 0.
    *
    * @param x the value, a long
    * @return +1L, 0L, or -1L, depending on the sign of x
@@ -740,8 +740,8 @@ public final class MathUtils {
    * </code>.
    *
    * <p>
-   * For a short value x, this method returns (short)(+1) if x > 0, (short)(0) if x = 0, and
-   * (short)(-1) if x < 0.
+   * For a short value x, this method returns (short)(+1) if x &gt; 0, (short)(0) if x = 0, and
+   * (short)(-1) if x &lt; 0.
    *
    * @param x the value, a short
    * @return (short)(+1), (short)(0), or (short)(-1), depending on the sign of x

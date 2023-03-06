@@ -565,7 +565,8 @@ public class SwingFunctions {
 
   /**
    * Shorten the output string generated from <code>expr</code> to a maximum length of <code>80
-   * </code> characters. Print <<SHORT>> as substitute of the middle of the expression if necessary.
+   * </code> characters. Print &lt;&lt;SHORT&gt;&gt; as substitute of the middle of the expression
+   * if necessary.
    *
    * @param expr
    * @return
@@ -576,8 +577,8 @@ public class SwingFunctions {
 
   /**
    * Shorten the output string generated from <code>expr</code> to a maximum length of <code>
-   * maximuLength</code> characters. Print <<SHORT>> as substitute of the middle of the expression
-   * if necessary.
+   * maximuLength</code> characters. Print &lt;&lt;SHORT&gt;&gt; as substitute of the middle of the
+   * expression if necessary.
    *
    * @param expr
    * @param maximuLength the maximum length of the result string.

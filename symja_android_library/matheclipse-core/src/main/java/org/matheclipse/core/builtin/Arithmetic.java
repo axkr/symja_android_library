@@ -3735,7 +3735,7 @@ public final class Arithmetic {
      * <pre>
      * Example: sqrt(5 + 2*Sqrt(6))
      *
-     *   >> sqrtDenest(5, 2*Sqrt(6))
+     *   &gt;&gt; sqrtDenest(5, 2*Sqrt(6))
      *   sqrt(2) + sqrt(3)
      * </pre>
      *
