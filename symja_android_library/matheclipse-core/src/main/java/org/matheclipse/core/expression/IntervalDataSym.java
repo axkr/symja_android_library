@@ -107,109 +107,41 @@ public class IntervalDataSym {
         IBuiltInSymbol left2 = (IBuiltInSymbol) list2.arg2();
         IBuiltInSymbol right2 = (IBuiltInSymbol) list2.arg3();
         IExpr max2 = list2.arg4();
-        if (min1.less(min2).isTrue()) {
-          if (max2.less(max1).isTrue()) {
-            // (min1<min2<max2<max1)
-            evaled = true;
-            result.remove(i);
-            continue;
-          } else if (min2.lessEqual(max1).isTrue() && max1.less(max2).isTrue()) {
-            if (S.Equal.ofQ(min2, max1) && left2 == S.Less && right1 == S.Less) {
-              i++;
-              continue;
+        if (max1.less(min2).isTrue()) {
+          result.set(j++, list1);
+          list1 = list2;
+          min1 = list1.arg1();
+          left1 = (IBuiltInSymbol) list1.arg2();
+          right1 = (IBuiltInSymbol) list1.arg3();
+          max1 = list1.arg4();
+          i++;
+          continue;
+        }
+        if (min2.lessEqual(max1).isTrue()) {
+          if (min1.lessEqual(min2).isTrue()) {
+            if (max1.lessEqual(max2).isTrue()) {
+              evaled = true;
+              result.remove(i);
+              IBuiltInSymbol lNew = S.Equal.ofQ(min1, min2) ? precedenceUnion(left1, left2) : left1;
+              IBuiltInSymbol rNew =
+                  S.Equal.ofQ(max1, max2) ? precedenceUnion(right1, right2) : right2;
+              list1 = F.List(min1, lNew, rNew, max2);
+              min1 = list1.arg1();
+              left1 = (IBuiltInSymbol) list1.arg2();
+              right1 = (IBuiltInSymbol) list1.arg3();
+              max1 = list1.arg4();
+            } else if (max2.less(max1).isTrue()) {
+              evaled = true;
+              result.remove(i);
+              IBuiltInSymbol lNew = S.Equal.ofQ(min1, min2) ? precedenceUnion(left1, left2) : left1;
+              list1 = F.List(min1, lNew, right1, max1);
+              min1 = list1.arg1();
+              left1 = (IBuiltInSymbol) list1.arg2();
+              right1 = (IBuiltInSymbol) list1.arg3();
+              max1 = list1.arg4();
             }
-            evaled = true;
-            result.remove(i);
-            list1 = F.List(min1, left1, right2, max2);
-            min1 = list1.arg1();
-            left1 = (IBuiltInSymbol) list1.arg2();
-            right1 = (IBuiltInSymbol) list1.arg3();
-            max1 = list1.arg4();
-            continue;
-          } else if (S.Equal.ofQ(max1, max2)) {
-            // (min1<min2<max1|max2)
-            evaled = true;
-            result.remove(i);
-            if (right1 == S.Less && right2 == S.Less) {
-              list1 = F.List(min1, left1, S.Less, max2);
-            } else if (right1 == S.LessEqual) {
-              list1 = F.List(min1, left1, S.LessEqual, max1);
-            } else {
-              list1 = F.List(min1, left1, S.LessEqual, max2);
-            }
-            min1 = list1.arg1();
-            left1 = (IBuiltInSymbol) list1.arg2();
-            right1 = (IBuiltInSymbol) list1.arg3();
-            max1 = list1.arg4();
-            continue;
-          }
-
-        } else if (S.Equal.ofQ(min1, min2)) {
-          IExpr newMin = min1;
-          IBuiltInSymbol newLeft = S.Less;
-          IBuiltInSymbol newRight = S.Less;
-          IExpr newMax = max1;
-          if (left1 == S.Less && left2 == S.Less) {
-            newLeft = S.Less;
-            newMin = min1;
-          } else if (left1 == S.LessEqual) {
-            newLeft = S.LessEqual;
-            newMin = min1;
-          } else {
-            newLeft = S.LessEqual;
-            newMin = min2;
-          }
-          if (S.Equal.ofQ(max1, max2)) {
-            evaled = true;
-            result.remove(i);
-            if (right1 == S.Less && right2 == S.Less) {
-              newRight = S.Less;
-              newMax = max1;
-            } else if (right1 == S.LessEqual) {
-              newRight = S.LessEqual;
-              newMax = max1;
-            } else {
-              newRight = S.LessEqual;
-              newMax = max2;
-            }
-            list1 = F.List(newMin, newLeft, newRight, newMax);
-            min1 = list1.arg1();
-            left1 = (IBuiltInSymbol) list1.arg2();
-            right1 = (IBuiltInSymbol) list1.arg3();
-            max1 = list1.arg4();
-            continue;
-          }
-          if (max1.less(max2).isTrue()) {
-            evaled = true;
-            result.remove(i);
-            newRight = right2;
-            newMax = max2;
-            list1 = F.List(newMin, newLeft, newRight, newMax);
-            min1 = list1.arg1();
-            left1 = (IBuiltInSymbol) list1.arg2();
-            right1 = (IBuiltInSymbol) list1.arg3();
-            max1 = list1.arg4();
-            continue;
-          }
-          if (max2.less(max1).isTrue()) {
-            // (min1|min2<max2<max1)
-            evaled = true;
-            result.remove(i);
-            list1 = F.List(newMin, newLeft, right2, max2);
-            min1 = list1.arg1();
-            left1 = (IBuiltInSymbol) list1.arg2();
-            right1 = (IBuiltInSymbol) list1.arg3();
-            max1 = list1.arg4();
-            continue;
           }
         }
-        result.set(j++, list1);
-        list1 = list2;
-        min1 = list1.arg1();
-        left1 = (IBuiltInSymbol) list1.arg2();
-        right1 = (IBuiltInSymbol) list1.arg3();
-        max1 = list1.arg4();
-        i++;
       }
       result.set(j, list1);
     }
@@ -276,6 +208,23 @@ public class IntervalDataSym {
                 list.arg2(), //
                 min);
           }
+        }
+        IBuiltInSymbol left = (IBuiltInSymbol) list.arg2();
+        IBuiltInSymbol right = (IBuiltInSymbol) list.arg3();
+        boolean evaled = false;
+        if (min.isInfinity() || min.isNegativeInfinity()) {
+          left = S.Less;
+          evaled = true;
+        }
+        if (max.isInfinity() || max.isNegativeInfinity()) {
+          right = S.Less;
+          evaled = true;
+        }
+        if (evaled) {
+          return F.List(min, //
+              left, //
+              right, //
+              max);
         }
         return F.NIL;
       }
@@ -412,6 +361,10 @@ public class IntervalDataSym {
         right, //
         max);
     return list;
+  }
+
+  private static IBuiltInSymbol precedenceUnion(IBuiltInSymbol s1, IBuiltInSymbol s2) {
+    return (s1 == S.LessEqual || s2 == S.LessEqual) ? S.LessEqual : S.Less;
   }
 
   private static IBuiltInSymbol precedence(IBuiltInSymbol s1, IBuiltInSymbol s2) {

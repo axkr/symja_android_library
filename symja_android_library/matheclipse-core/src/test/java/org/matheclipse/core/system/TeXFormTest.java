@@ -175,6 +175,14 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "U(a,b,c)");
   }
 
+  public void testIntervalData() {
+    check("TeXForm(IntervalData({1,LessEqual,LessEqual,2}))", //
+        "\\left[1, 2\\right]");
+    check("TeXForm(IntervalData({-42,Less,Less,3/4}))", //
+        "\\left]-42, \\frac{3}{4}\\right[");
+    check("TeXForm(IntervalData({-Infinity,LessEqual,LessEqual,Infinity}))", //
+        "\\left]-\\infty, \\infty\\right[");
+  }
   public void testInverseBetaRegularized() {
     check("TeXForm(InverseBetaRegularized(a,b,c))", //
         "I_a^{-1}(b,c)");

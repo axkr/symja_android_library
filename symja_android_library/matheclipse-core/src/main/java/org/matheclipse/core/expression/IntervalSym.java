@@ -119,13 +119,13 @@ public class IntervalSym {
               list1 = F.list(min1, max2);
               max1 = max2;
             }
-            continue;
+          } else {
+            result.set(j++, list1);
+            list1 = list2;
+            min1 = min2;
+            max1 = max2;
+            i++;
           }
-          result.set(j++, list1);
-          list1 = list2;
-          min1 = min2;
-          max1 = max2;
-          i++;
         }
         result.set(j, list1);
       }

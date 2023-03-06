@@ -165,6 +165,83 @@ public class TeXFormFactory {
     }
   }
 
+  private static final class IntervalData extends AbstractTeXConverter {
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.size() == 1) {
+        buffer.append("\\left]\\right[");
+      } else {
+        for (int i = 1; i < f.size(); i++) {
+          IExpr expr = f.get(i);
+          if (!expr.isAST(S.List, 5)) {
+            return false;
+          }
+        }
+        for (int i = 1; i < f.size(); i++) {
+          IAST list4 = (IAST) f.get(i);
+          IExpr min = list4.arg1();
+          IBuiltInSymbol left = (IBuiltInSymbol) list4.arg2();
+          IBuiltInSymbol right = (IBuiltInSymbol) list4.arg3();
+          IExpr max = list4.arg4();
+          if (left == S.Less) {
+            buffer.append("\\left]");
+          } else {
+            buffer.append("\\left[");
+          }
+          fFactory.convertInternal(buffer, min, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+          buffer.append(", ");
+          fFactory.convertInternal(buffer, max, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+          if (right == S.Less) {
+            buffer.append("\\right[");
+          } else {
+            buffer.append("\\right]");
+          }
+        }
+      }
+      return true;
+    }
+
+    public boolean iteratorStep(final StringBuilder buf, final String mathSymbol, final IAST f,
+        int i) {
+      if (i >= f.size()) {
+        buf.append(" ");
+        fFactory.convertInternal(buf, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+        return true;
+      }
+      if (f.get(i).isList()) {
+        IAST list = (IAST) f.get(i);
+        if (list.size() == 4 && list.arg1().isSymbol()) {
+          ISymbol symbol = (ISymbol) list.arg1();
+          buf.append(mathSymbol);
+          buf.append("_{");
+          fFactory.convertInternal(buf, list.arg2(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+          buf.append("}^{");
+          fFactory.convertInternal(buf, list.arg3(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+          buf.append('}');
+          if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
+            return false;
+          }
+          buf.append("\\,\\mathrm{d}");
+          fFactory.convertSymbol(buf, symbol);
+          return true;
+        }
+      } else if (f.get(i).isSymbol()) {
+        ISymbol symbol = (ISymbol) f.get(i);
+        buf.append(mathSymbol);
+        buf.append(" ");
+        if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
+          return false;
+        }
+        buf.append("\\,\\mathrm{d}");
+        fFactory.convertSymbol(buf, symbol);
+        return true;
+      }
+      return false;
+    }
+  }
+
   private static final class Conjugate extends AbstractOperator {
     public Conjugate() {
       super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "^*");
@@ -2017,6 +2094,8 @@ public class TeXFormFactory {
     initTeXConverter(S.HypergeometricU, new TernaryFunction("U(", ",", ",", ")"));
 
     initTeXConverter(S.Integrate, new Integrate());
+    initTeXConverter(S.IntervalData, new IntervalData());
+
     initTeXConverter(S.InverseBetaRegularized, new TernaryFunction("I_", "^{-1}(", ",", ")"));
     initTeXConverter(S.InverseErf, new UnaryFunction("\\text{erf}^{-1}(", ")"));
     initTeXConverter(S.InverseErfc, new UnaryFunction("\\text{erfc}^{-1}(", ")"));

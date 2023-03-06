@@ -273,8 +273,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
   }
 
   public void testTimes() {
-    check(
-        "IntervalData({1,Less,Less, 6}) * IntervalData({0, Less,Less,2})", //
+    check("IntervalData({1,Less,Less, 6}) * IntervalData({0, Less,Less,2})", //
         "IntervalData({0,Less,Less,12})");
     check(
         "IntervalData({-1/2, LessEqual, LessEqual, 1/2})*IntervalData( {2, Less, LessEqual, 3 +   1/2})", //
@@ -401,6 +400,23 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         + "IntervalData({1, LessEqual, LessEqual, 2}))", //
         "IntervalData({1,LessEqual,Less,2.0})");
 
+  }
+
+  public void testIntervalUnionIssue684() {
+    IExpr iExprResult =
+        F.eval(F.IntervalUnion(F.IntervalData(F.List(F.ZZ(3), F.Less, F.Less, F.ZZ(4))),
+            F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.Less, F.ZZ(2))),
+            F.IntervalData(F.List(F.ZZ(7), F.LessEqual, F.Less, F.ZZ(8))),
+            F.IntervalData(F.List(F.ZZ(6), F.LessEqual, F.LessEqual, F.ZZ(9))),
+            F.IntervalData(F.List(F.ZZ(2), F.Less, F.LessEqual, F.ZZ(3))),
+            F.IntervalData(F.List(F.CNInfinity, F.Less, F.LessEqual, F.ZZ(-1)))));
+    System.out.println(iExprResult.toString());
+    IExpr iExprExpected =
+        F.eval(F.IntervalUnion(F.IntervalData(F.List(F.CNInfinity, F.Less, F.LessEqual, F.ZZ(-1))),
+            F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.Less, F.ZZ(2))),
+            F.IntervalData(F.List(F.ZZ(2), F.Less, F.Less, F.ZZ(4))),
+            F.IntervalData(F.List(F.ZZ(6), F.LessEqual, F.LessEqual, F.ZZ(9)))));
+    assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
   public void testIntervalDataUnion() {
